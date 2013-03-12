@@ -384,10 +384,6 @@
       Installation
     </a>
 
-    <a class="toc_title" href="#demo">
-      Demo
-    </a>
-
     <a class="toc_title" href="#Initialize">
       Initialize
     </a>
@@ -546,7 +542,8 @@ $ npm install sqlite3
 
     <p>
       <tt>Knex.Initialize</tt> is the initializing function that must be called before using Knex,
-      with multiple parameters.
+      with multiple parameters. The <tt>client</tt> parameter is required and determines which
+      client adapter will be used with the library.
     </p>
 
 <pre>
@@ -558,10 +555,13 @@ Knex.init({
     password : '',
     database : 'myapp_test',
     charset  : 'utf8'
-  },
-  pool: {
-    max : 10,
-    min : 2
+  }
+});
+
+Knex.init({
+  client: 'sqlite',
+  connection: {
+    database : './testdb'
   }
 });
 </pre>
