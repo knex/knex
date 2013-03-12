@@ -1,4 +1,4 @@
-knex
-====
 
-query builder
+# Knex Query Builder
+
+http://knexjs.org

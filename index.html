@@ -1,0 +1,1026 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <meta name="viewport" content="width=device-width">
+  <link rel="canonical" href="http://knexjs.org" />
+  <link rel="icon" href="docs/images/favicon.ico" />
+  <title>Knex.js</title>
+  <style>
+    body {
+      font-size: 14px;
+      line-height: 22px;
+      font-family: Helvetica Neue, Helvetica, Arial;
+      background: #FEFFFC url(docs/images/background.png);
+    }
+    .interface {
+      font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
+    }
+    div#sidebar {
+      background: #fff;
+      position: fixed;
+      z-index: 10;
+      top: 0; left: 0; bottom: 0;
+      width: 200px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding: 15px 0 30px 30px;
+      border-right: 1px solid #bbb;
+      box-shadow: 0 0 20px #ccc; -webkit-box-shadow: 0 0 20px #ccc; -moz-box-shadow: 0 0 20px #ccc;
+    }
+      a.toc_title.main {
+        font-size: 12px;
+      }
+      a.toc_title, a.toc_title:visited {
+        display: block;
+        color: black;
+        font-weight: bold;
+        margin-top: 15px;
+      }
+        a.toc_title:hover {
+          text-decoration: underline;
+        }
+        #sidebar .version {
+          font-size: 10px;
+          font-weight: normal;
+        }
+      ul.toc_section {
+        font-size: 11px;
+        line-height: 14px;
+        margin: 5px 0 0 0;
+        padding-left: 0px;
+        list-style-type: none;
+        font-family: Lucida Grande;
+      }
+        .toc_section li {
+          cursor: pointer;
+          margin: 0 0 3px 0;
+        }
+          .toc_section li a {
+            text-decoration: none;
+            color: black;
+          }
+            .toc_section li a:hover {
+              text-decoration: underline;
+            }
+    div.container {
+      position: relative;
+      width: 550px;
+      margin: 40px 0 50px 260px;
+    }
+    img#logo {
+      width: 450px;
+      height: 80px;
+    }
+    div.run {
+      position: absolute;
+      right: 15px;
+      width: 26px; height: 18px;
+      background: url('docs/images/arrows.png') no-repeat -26px 0;
+    }
+      div.run:active {
+        background-position: -51px 0;
+      }
+    p, div.container ul {
+      margin: 25px 0;
+      width: 550px;
+    }
+      p.warning {
+        font-size: 12px;
+        line-height: 18px;
+        font-style: italic;
+      }
+      div.container ul {
+        list-style: circle;
+        padding-left: 15px;
+        font-size: 13px;
+        line-height: 18px;
+      }
+        div.container ul li {
+          margin-bottom: 10px;
+        }
+        div.container ul.small {
+          font-size: 12px;
+        }
+    a, a:visited {
+      color: #444;
+    }
+    a:active, a:hover {
+      color: #000;
+    }
+    a.punch {
+      display: inline-block;
+      background: #4162a8;
+      border-top: 1px solid #38538c;
+      border-right: 1px solid #1f2d4d;
+      border-bottom: 1px solid #151e33;
+      border-left: 1px solid #1f2d4d;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      -ms-border-radius: 4px;
+      -o-border-radius: 4px;
+      border-radius: 4px;
+      -webkit-box-shadow: inset 0 1px 10px 1px #5c8bee, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+      -moz-box-shadow: inset 0 1px 10px 1px #5c8bee, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+      -ms-box-shadow: inset 0 1px 10px 1px #5c8bee, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+      -o-box-shadow: inset 0 1px 10px 1px #5c8bee, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+      box-shadow: inset 0 1px 10px 1px #5c8bee, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+      color: #fff;
+      font: bold 14px "helvetica neue", helvetica, arial, sans-serif;
+      line-height: 1;
+      margin-bottom: 15px;
+      padding: 8px 0 10px 0;
+      text-align: center;
+      text-shadow: 0px -1px 1px #1e2d4d;
+      text-decoration: none;
+      width: 225px;
+      -webkit-background-clip: padding-box; }
+      a.punch:hover {
+        -webkit-box-shadow: inset 0 0px 20px 1px #87adff, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+        -moz-box-shadow: inset 0 0px 20px 1px #87adff, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+        -ms-box-shadow: inset 0 0px 20px 1px #87adff, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+        -o-box-shadow: inset 0 0px 20px 1px #87adff, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+        box-shadow: inset 0 0px 20px 1px #87adff, 0px 1px 0 #1d2c4d, 0 6px 0px #1f3053, 0 8px 4px 1px #111111;
+        cursor: pointer; }
+      a.punch:active {
+        -webkit-box-shadow: inset 0 1px 10px 1px #5c8bee, 0 1px 0 #1d2c4d, 0 2px 0 #1f3053, 0 4px 3px 0 #111111;
+        -moz-box-shadow: inset 0 1px 10px 1px #5c8bee, 0 1px 0 #1d2c4d, 0 2px 0 #1f3053, 0 4px 3px 0 #111111;
+        -ms-box-shadow: inset 0 1px 10px 1px #5c8bee, 0 1px 0 #1d2c4d, 0 2px 0 #1f3053, 0 4px 3px 0 #111111;
+        -o-box-shadow: inset 0 1px 10px 1px #5c8bee, 0 1px 0 #1d2c4d, 0 2px 0 #1f3053, 0 4px 3px 0 #111111;
+        box-shadow: inset 0 1px 10px 1px #5c8bee, 0 1px 0 #1d2c4d, 0 2px 0 #1f3053, 0 4px 3px 0 #111111;
+        margin-top: 5px; margin-bottom: 10px }
+    a img {
+      border: 0;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      padding-top: 20px;
+    }
+      h2 {
+        font-size: 22px;
+      }
+    b.header {
+      font-size: 18px;
+      line-height: 35px;
+    }
+    span.alias {
+      font-size: 14px;
+      font-style: italic;
+      margin-left: 20px;
+    }
+    table {
+      margin: 15px 0 0; padding: 0;
+    }
+      tr, td {
+        margin: 0; padding: 0;
+      }
+        td {
+          padding: 0px 15px 5px 0;
+        }
+        table .rule {
+          height: 1px;
+          background: #ccc;
+          margin: 5px 0;
+        }
+    code, pre, tt {
+      font-family: Monaco, Consolas, "Lucida Console", monospace;
+      font-size: 12px;
+      line-height: 18px;
+      font-style: normal;
+    }
+      tt {
+        padding: 0px 3px;
+        background: #fff;
+        border: 1px solid #ddd;
+        zoom: 1;
+      }
+      code {
+        margin-left: 20px;
+      }
+      pre {
+        font-size: 12px;
+        padding: 2px 0 2px 15px;
+        border: 4px solid #bbb; border-top: 0; border-bottom: 0;
+        margin: 0px 0 25px;
+      }
+      img.example_image {
+        margin: 0px auto;
+      }
+        img.example_retina {
+          margin: 20px;
+          box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+        }
+    @media only screen and (-webkit-max-device-pixel-ratio: 1) and (max-width: 600px),
+           only screen and (max--moz-device-pixel-ratio: 1) and (max-width: 600px) {
+      div#sidebar {
+        display: none;
+      }
+      img#logo {
+        max-width: 450px;
+        width: 100%;
+        height: auto;
+      }
+      div.container {
+        width: auto;
+        margin-left: 15px;
+        margin-right: 15px;
+      }
+        p, div.container ul {
+          width: auto;
+        }
+    }
+    @media only screen and (-webkit-min-device-pixel-ratio: 1.5) and (max-width: 640px),
+          only screen and (-o-min-device-pixel-ratio: 3/2) and (max-width: 640px),
+          only screen and (min-device-pixel-ratio: 1.5) and (max-width: 640px) {
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+      div#sidebar {
+        -webkit-overflow-scrolling: initial;
+        position: relative;
+        width: 90%;
+        height: 120px;
+        left: 0;
+        top: -7px;
+        padding: 10px 0 10px 30px;
+        border: 0;
+      }
+      img#logo {
+        width: auto;
+        height: auto;
+      }
+      div.container {
+        margin: 0;
+        width: 100%;
+      }
+      p, div.container ul {
+        max-width: 98%;
+        overflow-x: scroll;
+      }
+      table {
+        position: relative;
+      }
+        tr:first-child td {
+          padding-bottom: 25px;
+        }
+        td.text {
+          padding: 0;
+          position: absolute;
+          left: 0;
+          top: 48px;
+        }
+        tr:last-child td.text {
+          top: 122px;
+        }
+      pre {
+        overflow: scroll;
+      }
+    }
+  </style>
+  <style>
+    .repl_wrapper {
+      padding: 0;
+      display: none;
+      position: fixed;
+      width: auto; height: auto;
+      left: 250px; top: 20px; right: 40px; bottom: 30px;
+      background: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#eaeaea));
+    }
+      .repl_wrapper.active {
+        display: block;
+      }
+      .code .minibutton {
+        top: 10px; right: 10px;
+        width: 40px;
+        text-transform: none;
+      }
+        .code a.minibutton.permalink {
+          top: 38px;
+          display: block;
+        }
+
+    .repl_wrapper .code {
+      cursor: text;
+      -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none;
+      background: #181a3a url(../images/banding.png);
+      border: 2px solid #555;
+      padding: 0;
+      position: absolute;
+      top: 15px; left: 15px; right: 15px; bottom: 15px;
+    }
+    .repl_wrapper .screenshadow {
+      position: absolute;
+      width: 200px; height: 150px;
+      background: url(../images/screenshadow.png?2);
+    }
+      .repl_wrapper .screenshadow.tl {
+        top: 0; left: 0;
+        background-position: 0 0;
+      }
+      .repl_wrapper .screenshadow.tr {
+        top: 0; right: 0;
+        background-position: -200px 0;
+      }
+      .repl_wrapper .screenshadow.bl {
+        bottom: 0; left: 0;
+        background-position: 0 -150px;
+      }
+      .repl_wrapper .screenshadow.br {
+        bottom: 0; right: 0;
+        background-position: -200px -150px;
+      }
+
+    #repl_source, #repl_results {
+      background: transparent;
+      outline: none;
+      margin: 5px 0 20px;
+      color: #def;
+    }
+      #repl_results, #repl_source_wrap {
+        width: auto; height: auto;
+        position: absolute;
+        margin-bottom: 0;
+        top: 10px; left: 10px; right: 10px; bottom: 15px;
+      }
+        #repl_source_wrap {
+          margin-left: 5px;
+          width: 47%; right: 50%;
+          float: left;
+        }
+          #repl_source {
+            padding-left: 5px;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            overflow-y: auto;
+            resize: none;
+          }
+        #repl_results_wrap {
+          white-space: pre;
+        }
+          #repl_results {
+            text-transform: none;
+            overflow-y: auto;
+            left: 50%;
+            border-left-color: #555;
+          }
+  </style>
+</head>
+<body>
+
+  <div id="sidebar" class="interface">
+
+    <a class="toc_title main" href="#">
+      Knex.js <span class="version">(0.1.0)</span>
+    </a>
+    <ul class="toc_section">
+      <li>&raquo; <a href="http://tgriesser.github.com/tgriesser/knex">GitHub Repository</a></li>
+      <li>&raquo; <a href="http://tgriesser.github.com/knex/source">Annotated Source</a></li>
+    </ul>
+
+    <a class="toc_title" href="#installation">
+      Installation
+    </a>
+
+    <a class="toc_title" href="#demo">
+      Demo
+    </a>
+
+    <a class="toc_title" href="#Initialize">
+      Initialize
+    </a>
+
+    <a class="toc_title" href="#Builder">
+      Builder
+    </a>
+    <ul class="toc_section">
+      <li>– <a href="#Builder-main"><b>constructor</b></a></li>
+      <li>– <a href="#Builder-from">from</a></li>
+      <li>– <a href="#Builder-where">where <b>16 methods</b></a></li>
+      <li>– <a href="#Builder-distinct">distinct</a></li>
+      <li>– <a href="#Builder-join">join</a></li>
+      <li>– <a href="#Builder-groupBy">groupBy</a></li>
+      <li>– <a href="#Builder-orderBy">orderBy</a></li>
+      <li>– <a href="#Builder-having">having</a></li>
+      <li>– <a href="#Builder-offset">offset</a></li>
+      <li>– <a href="#Builder-limit">limit</a></li>
+      <li><b><a href="#Builder-promises">Promises:</a></b></li>
+      <li>– <a href="#Builder-select">select</a></li>
+      <li>– <a href="#Builder-insert">insert *</a></li>
+      <li>– <a href="#Builder-update">update *</a></li>
+      <li>– <a href="#Builder-del">del / delete *</a></li>
+      <li>– <a href="#Builder-count">count</a></li>
+      <li>– <a href="#Builder-min">min</a></li>
+      <li>– <a href="#Builder-max">max</a></li>
+      <li>– <a href="#Builder-sum">sum</a></li>
+      <li>– <a href="#Builder-increment">increment</a></li>
+      <li>– <a href="#Builder-decrement">decrement</a></li>
+      <li>– <a href="#Builder-exists">exists</a></li>
+      <li>– <a href="#Builder-truncate">truncate *</a></li>
+    </ul>
+
+    <a class="toc_title" href="#Transaction">
+      Transaction
+    </a>
+
+    <a class="toc_title" href="#Schema">
+      Schema
+    </a>
+    <ul class="toc_section">
+      <li>– <a href="#Schema-connection">connection</a></li>
+      <li>– <a href="#Schema-create">create *</a></li>
+      <li>– <a href="#Schema-dropTable">dropTable</a></li>
+      <li>– <a href="#Schema-dropIfExists">dropIfExists *</a></li>
+      <li>– <a href="#Schema-table">table *</a></li>
+      <li>– <a href="#Schema-transacting">transacting *</a></li>
+      <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
+      <li>– <a href="#Schema-dropColumn">dropColumn</a></li>
+      <li>– <a href="#Schema-dropColumns">dropColumns</a></li>
+      <li>– <a href="#Schema-increments">increments</a></li>
+      <li>– <a href="#Schema-integer">integer *</a></li>
+      <li>– <a href="#Schema-text">text *</a></li>
+      <li>– <a href="#Schema-string">string *</a></li>
+      <li>– <a href="#Schema-float">float *</a></li>
+      <li>– <a href="#Schema-decimal">decimal *</a></li>
+      <li>– <a href="#Schema-boolean">boolean *</a></li>
+      <li>– <a href="#Schema-date">date *</a></li>
+      <li>– <a href="#Schema-dateTime">dateTime *</a></li>
+      <li>– <a href="#Schema-time">time *</a></li>
+      <li>– <a href="#Schema-timestamp">timestamp *</a></li>
+      <li>– <a href="#Schema-binary">binary *</a></li>
+      <li>– <a href="#Schema-enum">enum / enu *</a></li>
+      <li><a href="#Schema-chainable"><b>Chainable:</b></li>
+      <li>– <a href="#Schema-chainable-defaultTo">defaultTo</a></li>
+      <li>– <a href="#Schema-chainable-unsigned">unsigned</a></li>
+      <li>– <a href="#Schema-chainable-nullable">nullable</a></li>
+    </ul>
+
+
+    <a class="toc_title" href="#faq">
+      F.A.Q.
+    </a>
+
+    <a class="toc_title" href="#changelog">
+      Change Log
+    </a>
+
+  </div>
+
+  <div class="container">
+
+    <p>
+      <h1>Knex.js</h1>
+    </p>
+
+    <p>
+      <b>Knex.js</b> is a multi-dialect sql builder, designed to be flexible, portable, and fun to use.
+      It features <a href="http://documentup.com/kriskowal/q/">promises</a> for async flow control, full featured
+      query and schema builders, transaction support, and node.js adapters for postgres, mysql, and sqlite.
+    </p>
+
+    <p>
+      The project is <a href="http://github.com/tgriesser/knex">hosted on GitHub</a>,
+      and the <a href="docs/knex.html">annotated source code</a> is available,
+      and has a comprehensive <a href="">test suite</a>.
+    </p>
+
+    <p>
+      Knex is available for use under the <a href="http://github.com/tgriesser/knex/blob/master/LICENSE">MIT software license</a>.
+    </p>
+
+    <p>
+      You can report bugs and discuss features on the
+      <a href="http://github.com/tgriesser/knex/issues">GitHub issues page</a>,
+      add pages to the <a href="https://github.com/tgriesser/knex/wiki">wiki</a>
+      or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
+    </p>
+
+    <p>
+      Special thanks to Taylor Otwell
+      and his work on the <a href="http://four.laravel.com/docs/queries">Laravel Query Builder</a>,
+      from which much of the code and syntax is derived, and to Jeremy Ashkenas for the documentation
+      template, underscore.js, and docco.
+    </p>
+
+    <h2 id="installation">
+      Installation
+    </h2>
+
+    <p>
+      The only hard dependencies of Knex are <tt>underscore.js</tt> and <tt>q.js</tt>, which are 
+      specified in <tt>package.json</tt>. The <tt>generic-pool</tt> library is also included, 
+      as it is used by the included database adapters. You will need to install 
+      either <tt>mysql</tt>, <tt>pg</tt>, or <tt>sqlite3</tt> from <tt>npm</tt> if you wish 
+      to use one of these databases with node.js, or create your own client 
+      adapter and specify it in <a href="#Initialize">Knex.Initialize</a>.
+    </p>
+
+    <pre>
+$ npm install knex
+
+# Then add one of the following:
+$ npm install mysql
+$ npm install pg
+$ npm install sqlite3
+</pre>
+
+    <div class="repl_wrapper">
+      <div class="code">
+        <div class="screenshadow tl"></div>
+        <div class="screenshadow tr"></div>
+        <div class="screenshadow bl"></div>
+        <div class="screenshadow br"></div>
+        <div id="repl_source_wrap">
+          <textarea id="repl_source" rows="100" spellcheck="false">alert "Hello CoffeeScript!"</textarea>
+        </div>
+        <div id="repl_results_wrap"><pre id="repl_results"></pre></div>
+        <div class="minibutton dark run" title="Ctrl-Enter">Run</div>
+        <a class="minibutton permalink" id="repl_permalink">Link</a>
+        <br class="clear" />
+      </div>
+    </div>
+
+    <h2 id="Initialize">Knex.Initialize</h2>
+
+    <p>
+      <tt>Knex.Initialize</tt> is the initializing function that must be called before using Knex,
+      with multiple parameters.
+    </p>
+
+<pre>
+Knex.init({
+  client: 'mysql',
+  connection: {
+    host     : '127.0.0.1',
+    user     : 'root',
+    password : '',
+    database : 'myapp_test',
+    charset  : 'utf8'
+  },
+  pool: {
+    max : 10,
+    min : 2
+  }
+});
+</pre>
+
+    <h2 id="Builder">Knex.Builder</h2>
+
+    <p>
+      The <tt>Knex.Builder</tt> is the interface used for building and executing standard SQL queries,
+      such as <tt>select</tt>, <tt>insert</tt>, <tt>update</tt>, <tt>delete</tt>. The query is run
+      by specifying a <a href="#Builder-table">tableName</a>, adding additional query parameters, and calling
+      one of the <a href="#Builder-promises">promise methods</a>.
+    </p>
+
+    <p id="Builder-main">
+      <b class="header">Knex / Knex.Builder</b><code>Knex('tableName')...</code>
+      <br />
+      To begin working with the Knex query builder, you specify a table name by calling either 
+      <tt>new Knex.Builder().table('tableName')</tt>, <tt>new Knex.Builder('tableName')</tt> or the 
+      shorthand <tt>Knex('tableName')</tt>. This returns a chainable interface, similar to a jQuery chain, 
+      allowing you to specify additional query parameters, eventually calling one of the promise 
+      yielding methods <a href="#Builder-promises">listed below</a>.
+    </p>
+
+    <p id="Builder-from">
+      <b class="header">from</b><code>.from([tableName])</code>
+      <br />
+      Specifies the table used in the current query, replacing the current table name if
+      one has already been specified. If no parameters are specified, it returns the table
+      name specified on the current query.
+    </p>
+
+    <p id="Builder-where">
+      <b class="header">where</b><code>.where(~mixed~)</code>
+      <br />
+      One of the most flexible and imporant pieces of Knex, is the <tt>where</tt> clause generation.
+      <br />
+      There are several different types of arguments where may take, and several helper methods to simplify
+      or, and, whereIn, etc.
+    </p>
+
+<pre>
+// Basic Uses:
+
+.where('id', '=', 1).where('used_count', '>', 10);
+
+.where('title', 'like', 'test').orWhere('title', 'like', 'fail');
+
+</pre>
+
+<h3>Additional Where Methods:</h3>
+
+<ul class="small">
+  <li><b>andWhere(column, operator, value)</b> &mdash; alias to standard "where" clause.</li>
+  <li><b>orWhere(column, operator, value)</b> &mdash; adds an <tt>or where</tt> clause.</li>
+  <li><b>whereExists(callback)</b> &mdash; </li>
+  <li><b>whereNotExists(callback)</b> &mdash; </li>
+</ul>
+
+<h3>Advanced Where Methods:</h3>
+
+<ul class="small">
+  <li><b>andWhere(column, operator, value)</b> &mdash; Alias to default where.</li>
+  <li><b>orWhere(column, operator, value)</b> &mdash; adds an <tt>or where</tt> clause.</li>
+  <li><b>whereExists(callback)</b> &mdash; </li>
+  <li><b>whereNotExists(callback)</b> &mdash; </li>
+</ul>
+
+    <p id="Builder-distinct">
+      <b class="header">distinct</b><code>.distinct()</code>
+      <br />
+      Sets a <tt>distinct</tt> clause on the query.
+    </p>
+
+<pre>
+// SELECT DISTINCT 'first_name' FROM customers
+Knex('customers')
+  .distinct()
+  .select('first_name').then(...
+</pre>
+
+    <p id="Builder-join">
+      <b class="header">join</b><code>.join(~mixed~)</code>
+      <br />
+      The <tt>join</tt> builder can be used several different ways
+
+<pre>
+// SELECT DISTINCT 'name' FROM customers WHERE `order_date` > NOW()
+Knex('customers')
+  .where('order_date', '>', Knex.raw('NOW()'))
+  .distinct()
+  .select('id', 'name').then(...
+</pre>
+
+<pre>
+// SELECT DISTINCT 'name' FROM customers WHERE `order_date` > NOW()
+Knex('customers')
+  .where('order_date', '>', Knex.raw('NOW()'))
+  .distinct()
+  .select('id', 'name').then(...
+</pre>      
+      
+    </p>
+
+    <p id="Builder-groupBy">
+      <b class="header">groupBy</b><code>.groupBy(*names)</code>
+      <br />
+      Adds a <tt>group by</tt> clause to the query.
+    </p>
+
+    <p id="Builder-orderBy">
+      <b class="header">orderBy</b><code>.orderBy(column, [direction])</code>
+      <br />
+      Adds an <tt>order by</tt> clause to the query.
+    </p>
+
+    <p id="Builder-having">
+      <b class="header">having</b><code>.having(column, operator, value)</code>
+      <br />
+      Adds a <tt>having</tt> clause to the query.
+
+<pre>
+Knex('users')
+  .groupBy('count')
+  .orderBy('name', 'desc')
+  .having('count', '>', 100)
+  .select()
+  .then(...
+</pre>
+    </p>
+
+    <p id="Builder-offset">
+      <b class="header">offset</b><code>.offset(value)</code>
+      <br />
+      Adds an <tt>offset</tt> clause to the query.
+    </p>
+
+    <p id="Builder-limit">
+      <b class="header">limit</b><code>.limit(value)</code>
+      <br />
+      Adds a <tt>limit</tt> clause to the query.
+
+<pre>
+Knex('users')
+  .limit(10)
+  .offset(30)
+  .select()
+  .then(...
+</pre>
+
+    </p>
+
+    <h3 id="Builder-promises">Promise Methods:</h3>
+
+    <p>The promise methods finish up the query, assembling the database query string and
+      parameters, passes them to the <a href="#Knex.runQuery">Knex.runQuery</a> method, 
+      and returns a promise - resolving with the result of the query.
+    </p>
+
+    <p id="Builder-select">
+      <b class="header">select</b><code>.select([*columns]).then(...</code>
+      <br />
+      Creates a <tt>select</tt> query, taking an optional array of columns for the query, defaulting
+      to <tt>*</tt> if none are specified. Returns a promise, passing the Rows returned from the database query.
+
+<pre>
+  // generates: "INSERT INTO `books`
+  Knex('books').insert({title: 'Slaughterhouse Five'}).then(...
+  
+  // generates "select * from `books`;"
+  Knex('books')
+    .insert([{title: 'Great Gatsby'}, {title: ''}])
+    .then(...
+</pre>
+    </p>
+
+    <p id="Builder-insert">
+      <b class="header">insert</b><code>.insert(data).then(...</code>
+      <br />
+      Creates an <tt>insert</tt> query, taking either a hash of properties to be inserted into the row, or
+      an array of inserts, to be executed as a single insert command.
+
+<pre>
+  // generates: "select `title`, `author`, `year` from `books`;"
+  Knex('books').select('title', 'author', 'year').then(...
+  
+  // generates "select * from `books`;"
+  Knex('books').select().then(...
+</pre>
+    </p>
+
+    <p id="Builder-update">
+      <b class="header">update</b><code>.update(data).then(...</code>
+      <br />
+      Creates an <tt>update</tt> query, taking either a hash of properties to be updated into the row, or
+      an array of updates, to be executed as a single update command.
+
+<pre>
+  // generates: "select `title`, `author`, `year` from `books`;"
+  Knex('books').select(['title', 'author', 'year']).then(...
+  
+  // generates "select * from `books`;"
+  Knex('books').select().then(...
+</pre>
+    </p>
+
+    <p id="Builder-del">
+      <b class="header">del / delete</b><code>.del().then(...</code>
+      <br />
+      Aliased to <tt>del</tt> as <tt>delete</tt> is a reserved word in javascript, this method deletes
+      one or more rows, based on the conditions specified in the query.
+    </p>
+
+    <p id="Builder-count">
+      <b class="header">count</b><code>.count(column).then(...</code>
+      <br />
+      Performs a count on the specified column.
+    </p>
+
+    <p id="Builder-min">
+      <b class="header">min</b><code>.min(column).then(...</code>
+      <br />
+      Gets the minimum value for the specified column.
+    </p>
+
+    <p id="Builder-max">
+      <b class="header">max</b><code>.max(column).then(...</code>
+      <br />
+      Gets the maximum value for the specified column.
+    </p>
+
+    <p id="Builder-sum">
+      <b class="header">sum</b><code>.sum(column).then(...</code>
+      <br />
+      Retrieve the sum of the values of a given column.
+    </p>
+
+    <p id="Builder-increment">
+      <b class="header">increment</b><code>.increment(column, value).then(...</code>
+      <br />
+      Increments a column's value by the specified amount.
+    </p>
+
+    <p id="Builder-decrement">
+      <b class="header">decrement</b><code>.decrement(column, value).then(...</code>
+      <br />
+      Decrements a column's value by the specified amount.
+    </p>
+
+    <p id="Builder-exists">
+      <b class="header">exists</b><code>.exists(column, value).then(...</code>
+      <br />
+      Decrements a column's value by the specified amount.
+    </p>
+
+    <h2 id="Transaction">Knex.Transaction</h2>
+
+    <p>
+      Transactions are handled by passing a handler function into <tt>Knex.Transaction</tt>.
+      The handler function accepts a single argument, the promise for committing or rolling back
+      the transaction. This argument is then passed into any queries which are involved in the current
+      transcaction, working by explicitly passing the .
+    </p>
+
+<pre>
+Knex.Transaction(function (t) {
+  
+  Knex('pieces')
+    .transacting(t)
+    .insert([
+      {name: 'Rods'},
+      {name: 'Connectors'}
+    ]).then(function (rows) {
+      
+      Knex('piece_descriptions')
+        .transacting(t)
+        .insert([{
+          description: 
+        }, {
+
+        }])
+        .then(function () {
+          t.resolve();
+        });
+    
+    });
+
+});
+</pre>
+    
+    <h2 id="Schema">Knex.Schema</h2>
+
+    <p id="Schema-create">
+      <b class="header">create</b><code>Knex.Schema.create(tableName, callback).then(...</code>
+      <br />
+      Creates a new table on the database, with a call
+    </p>
+
+<pre>
+Knex.Schema.create('users', function (table) {
+  table.string('name');
+  table.timestamps();
+}).then(function () {
+  console.log('Users Table is Created!');
+});
+</pre>
+
+    <p id="Schema-table">
+      <b class="header">table</b><code>Knex.Schema.table(tableName, callback).then(...</code>
+      <br />
+      Chooses a database table, and then modifies the table, using the <a href="#Schema-Building">Schema Building</a>
+      functions inside of the callback, returning a promise to indicate when the queries are complete.
+    </p>
+
+<pre>
+Knex.Schema.table('users', function (table) {
+  table.dropColumn('name');
+  table.string('first_name');
+  table.string('last_name');
+}).then(function () {
+  console.log('Users Table is Updated!');
+});
+</pre>
+
+    <p id="Schema-connection">
+      <b class="header">connection</b><code>Knex.Schema.connection()</code>
+      <br />
+      Optional method to explicitly specifiy the 
+    </p>
+
+    <h3 id="Schema-Building">Schema Building:</h3>
+
+    <p id="Schema-dropColumn">
+      <b class="header">dropColumn</b><code>table.dropColumn(name)</code>
+      <br />
+      Drops a column.
+    </p>
+
+    <p id="Schema-dropColumns">
+      <b class="header">dropColumns</b><code>table.dropColumns(*columns)</code>
+      <br />
+      Takes a variable number of column names, and drops them.
+    </p>
+
+    <p id="Schema-increments">
+      <b class="header">increments</b><code>table.increments(name)</code>
+      <br />
+      Adds an auto incrementing column. This will be used as the primary key for the column.
+    </p>
+
+    <p id="Schema-integer">
+      <b class="header">integer</b><code>table.integer(name)</code>
+      <br />
+      Adds an integer column.
+    </p>
+
+    <p id="Schema-text">
+      <b class="header">text</b><code>table.text(name)</code>
+      <br />
+      Adds a text column.
+    </p>
+    
+    <p id="Schema-string">
+      <b class="header">string</b><code>table.string(name)</code>
+      <br />
+      Adds a string column.
+    </p>
+    
+    <p id="Schema-float">
+      <b class="header">float</b><code>table.float(column, [precision], [scale])</code>
+      <br />
+      Adds a float column, with optional precision and scale.
+    </p>
+    
+    <p id="Schema-decimal">
+      <b class="header">decimal</b><code>table.decimal(column, [precision], [scale])</code>
+      <br />
+      Adds a decimal column, with optional precision and scale.
+    </p>
+    
+    <p id="Schema-boolean">
+      <b class="header">boolean</b><code>table.boolean(name)</code>
+      <br />
+      Adds a boolean column.
+    </p>
+    
+    <p id="Schema-date">
+      <b class="header">date</b><code>table.date(name)</code>
+      <br />
+      Adds a date column.
+    </p>
+    
+    <p id="Schema-dateTime">
+      <b class="header">dateTime</b><code>table.dateTime(name)</code>
+      <br />
+      Adds a dateTime column.
+    </p>
+    
+    <p id="Schema-time">
+      <b class="header">time</b><code>table.time(name)</code>
+      <br />
+      Adds a time column.
+    </p>
+    
+    <p id="Schema-timestamp">
+      <b class="header">timestamp</b><code>table.timestamp(name)</code>
+      <br />
+      Adds a timestamp column.
+    </p>
+    
+    <p id="Schema-binary">
+      <b class="header">binary</b><code>table.binary(name)</code>
+      <br />
+      Adds a binary column.
+    </p>
+    
+    <p id="Schema-enum">
+      <b class="header">enum / enu</b><code>table.enu(col, values)</code>
+      <br />
+      Adds a enum column, (aliased to <tt>enu</tt>, as enum is a reserved word in javascript).
+    </p>
+
+    <h3 id="Schema-chainable">Chainable Methods:</h3>
+
+    <p>
+      The following three methods may be chained on the schema building methods, as modifiers to the column.
+    </p>
+
+    <p id="Schema-chainable-defaultTo">
+      <b class="header">defaultTo</b><code>.defaultTo(value)</code>
+      <br />
+      Sets the default value for the column on an insert.
+    </p>
+
+    <p id="Schema-chainable-unsigned">
+      <b class="header">unsigned</b><code>.unsigned()</code>
+      <br />
+      Specifies an integer as unsigned. No-op if this is chained off of a non-integer field.
+    </p>
+
+    <p id="Schema-chainable-nullable">
+      <b class="header">nullable</b><code>.nullable()</code>
+      <br />
+      Allows a field to be nullable. No-op if chained off of a non-nullable field.
+    </p>    
+
+    <h2 id="faq">F.A.Q.</h2>
+
+    <p>
+      Once some questions show up, I'll put them here.
+    </p>
+
+    <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.1.0</b> &mdash; <small><i>TBD</i></small><br />
+      Initial Knex release.
+    </p>
+
+  </div>
+
+</body>
+</html>
