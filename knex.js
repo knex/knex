@@ -473,30 +473,27 @@
 
     // Adds an `or where exists` clause to the query.
     orWhereExists: function(callback, condition) {
-      var type = condition ? 'NotExists' : 'Exists';
-      return this.whereExists(callback, 'or', 'NotExists');
+      return this.whereExists(callback, 'or');
     },
 
     // Adds a `where not exists` clause to the query.
     whereNotExists: function(callback, bool) {
-      bool || (bool = 'and');
-      return this.whereExists(callback, bool, true);
+      return this.whereExists(callback, 'and', 'NotExists');
     },
 
     // Adds a `or where not exists` clause to the query.
     orWhereNotExists: function(callback) {
-      return this.orWhereExists(callback, true);
+      return this.whereExists(callback, 'or', 'NotExists');
     },
 
     // Adds a `where in` clause to the query.
     whereIn: function(column, values, bool, condition) {
       bool || (bool = 'and');
-      var type = condition ? 'NotIn' : 'In';
       if (_.isFunction(values)) {
         return this._whereInSub(column, values, bool, 'not');
       }
       this.wheres.push({
-        type: type,
+        type: (condition || 'In'),
         column: column,
         values: values,
         bool: bool
@@ -512,12 +509,12 @@
 
     // Adds a `where not in` clause to the query.
     whereNotIn: function(column, values, bool) {
-      return this.whereIn(column, values, bool, true);
+      return this.whereIn(column, values, 'and', 'NotIn');
     },
 
     // Adds a `or where not in` clause to the query.
     orWhereNotIn: function(column, values) {
-      return this.whereNotIn(column, values, 'or');
+      return this.whereIn(column, values, 'or', 'NotIn');
     },
 
     // Adds a `where null` clause to the query.
@@ -528,17 +525,17 @@
 
     // Adds a `or where null` clause to the query.
     orWhereNull: function(column) {
-      return this.whereNull(column, 'or');
+      return this.whereNull(column, 'or', 'Null');
     },
 
     // Adds a `where not null` clause to the query.
     whereNotNull: function(column, bool) {
-      return this.whereNull(column, (bool || 'and'), 'NotNull');
+      return this.whereNull(column, 'and', 'NotNull');
     },
 
     // Adds a `or where not null` clause to the query.
     orWhereNotNull: function(column) {
-      return this.whereNotNull(column, 'or');
+      return this.whereNotNull(column, 'or', 'NotNull');
     },
 
     // Adds a `where between` clause to the query.
