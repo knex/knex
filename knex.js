@@ -811,7 +811,7 @@
   // --------
 
   var SchemaBuilder = Knex.SchemaBuilder = function() {
-    this.grammar = new Knex.SchemaGrammar(Knex.client.getSchemaGrammar());
+    this.grammar = new Knex.SchemaGrammar(Knex.client.schemaGrammar);
   };
 
   SchemaBuilder.prototype = {
