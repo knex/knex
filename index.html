@@ -376,8 +376,8 @@
       Knex.js <span class="version">(0.1.0)</span>
     </a>
     <ul class="toc_section">
-      <li>&raquo; <a href="http://tgriesser.github.com/tgriesser/knex">GitHub Repository</a></li>
-      <li>&raquo; <a href="http://tgriesser.github.com/knex/source">Annotated Source</a></li>
+      <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
+      <li>&raquo; <a href="http://knexjs.org/knex/source">Annotated Source</a></li>
     </ul>
 
     <a class="toc_title" href="#installation">
@@ -430,27 +430,27 @@
     </a>
     <ul class="toc_section">
       <li>– <a href="#Schema-connection">connection</a></li>
-      <li>– <a href="#Schema-create">create *</a></li>
+      <li>– <a href="#Schema-createTable">createTable</a></li>
       <li>– <a href="#Schema-dropTable">dropTable</a></li>
-      <li>– <a href="#Schema-dropIfExists">dropIfExists *</a></li>
-      <li>– <a href="#Schema-table">table *</a></li>
+      <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
+      <li>– <a href="#Schema-table">table</a></li>
       <li>– <a href="#Schema-transacting">transacting *</a></li>
       <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
       <li>– <a href="#Schema-dropColumn">dropColumn</a></li>
       <li>– <a href="#Schema-dropColumns">dropColumns</a></li>
       <li>– <a href="#Schema-increments">increments</a></li>
-      <li>– <a href="#Schema-integer">integer *</a></li>
-      <li>– <a href="#Schema-text">text *</a></li>
-      <li>– <a href="#Schema-string">string *</a></li>
-      <li>– <a href="#Schema-float">float *</a></li>
-      <li>– <a href="#Schema-decimal">decimal *</a></li>
-      <li>– <a href="#Schema-boolean">boolean *</a></li>
-      <li>– <a href="#Schema-date">date *</a></li>
-      <li>– <a href="#Schema-dateTime">dateTime *</a></li>
-      <li>– <a href="#Schema-time">time *</a></li>
-      <li>– <a href="#Schema-timestamp">timestamp *</a></li>
-      <li>– <a href="#Schema-binary">binary *</a></li>
-      <li>– <a href="#Schema-enum">enum / enu *</a></li>
+      <li>– <a href="#Schema-integer">integer</a></li>
+      <li>– <a href="#Schema-text">text</a></li>
+      <li>– <a href="#Schema-string">string</a></li>
+      <li>– <a href="#Schema-float">float</a></li>
+      <li>– <a href="#Schema-decimal">decimal</a></li>
+      <li>– <a href="#Schema-boolean">boolean</a></li>
+      <li>– <a href="#Schema-date">date</a></li>
+      <li>– <a href="#Schema-dateTime">dateTime</a></li>
+      <li>– <a href="#Schema-time">time</a></li>
+      <li>– <a href="#Schema-timestamp">timestamp</a></li>
+      <li>– <a href="#Schema-binary">binary</a></li>
+      <li>– <a href="#Schema-enum">enum / enu</a></li>
       <li><a href="#Schema-chainable"><b>Chainable:</b></li>
       <li>– <a href="#Schema-chainable-defaultTo">defaultTo</a></li>
       <li>– <a href="#Schema-chainable-unsigned">unsigned</a></li>
@@ -853,10 +853,11 @@ Knex.Transaction(function (t) {
     
     <h2 id="Schema">Knex.Schema</h2>
 
-    <p id="Schema-create">
-      <b class="header">create</b><code>Knex.Schema.create(tableName, callback).then(...</code>
+    <p id="Schema-createTable">
+      <b class="header">createTable</b><code>Knex.Schema.createTable(tableName, callback).then(...</code>
       <br />
-      Creates a new table on the database, with a call
+      Creates a new table on the database, with a callback function to modify the table's 
+      structure, using the <a href="#Schema-Building">schema-building</a> commands.
     </p>
 
 <pre>
@@ -867,6 +868,18 @@ Knex.Schema.create('users', function (table) {
   console.log('Users Table is Created!');
 });
 </pre>
+
+    <p id="Schema-dropTable">
+      <b class="header">dropTable</b><code>Knex.Schema.dropTable(tableName).then(...</code>
+      <br />
+      Drops a table, specified by <tt>tableName</tt>.
+    </p>
+
+    <p id="Schema-dropTableIfExists">
+      <b class="header">dropTableIfExists</b><code>Knex.Schema.dropTableIfExists(tableName).then(...</code>
+      <br />
+      Drops a table conditionally if the table exists, specified by <tt>tableName</tt>.
+    </p>
 
     <p id="Schema-table">
       <b class="header">table</b><code>Knex.Schema.table(tableName, callback).then(...</code>
