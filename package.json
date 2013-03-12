@@ -1,0 +1,29 @@
+{
+  "name": "knex",
+  "version": "0.0.0",
+  "description": "a fun sql query builder",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "mocha": "1.7.x"
+  },
+  "dependencies": {
+    "q": "0.8.x",
+    "underscore": "1.4.x",
+    "mysql": "~2.0.0-alpha5",
+    "generic-pool": "2.0.x"
+  },
+  "scripts": {
+    "test": "mocha -R spec -r should test/index.js"
+  },
+  "repository": "",
+  "keywords": [
+    "sql",
+    "query",
+    "builder"
+  ],
+  "author": "Tim Griesser",
+  "license": "MIT"
+}
