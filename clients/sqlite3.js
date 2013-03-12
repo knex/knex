@@ -79,7 +79,7 @@ exports.getConnection = function () {
 };
 
 // Extends the standard sql grammar.
-exports.grammar = {
+var grammar = exports.grammar = {
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
