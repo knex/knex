@@ -10,7 +10,7 @@ var init, debug, pool, connection, connectionSettings;
 // Initializes the mysql module with an options hash,
 // containing the connection settings, as well as the
 // pool config settings
-exports.init = function (options) {
+exports.initialize = function (options) {
 
   // If there isn't a connection setting
   if (!options.connection) return;
@@ -82,18 +82,16 @@ exports.getConnection = function () {
 
 // Extends the standard sql grammar.
 var grammar = exports.grammar = {
-  wrapValue: function(value) {
-    return (value !== '*' ? util.format('`%s`', value) : "*");
-  }
-};
-
-// Grammar for the schema builder.
-exports.schemaGrammar = _.extend(grammar, {
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
     return (value !== '*' ? util.format('`%s`', value) : "*");
-  },
+  }
+
+};
+
+// Grammar for the schema builder.
+exports.schemaGrammar = _.extend({}, grammar, {
 
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment'],

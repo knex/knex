@@ -10,7 +10,7 @@ var init, debug, pool, connection, connectionSettings;
 // Initializes the postgres module with an options hash,
 // containing the connection settings, as well as the
 // pool config settings
-exports.init = function (options) {
+exports.initialize = function (options) {
 
   // If there isn't a connection setting
   if (!options.connection) return;
@@ -83,6 +83,7 @@ exports.getConnection = function () {
 // Extends the standard sql grammar.
 var grammar = exports.grammar = {
 
+  // The keyword identifier wrapper format.
   wrapValue: function(value) {
     return (value !== '*' ? util.format('"%s"', value) : "*");
   },
@@ -100,12 +101,7 @@ var grammar = exports.grammar = {
 };
 
 // Grammar for the schema builder.
-exports.schemaGrammar = _.extend(grammar, {
-
-  // The keyword identifier wrapper format.
-  wrapValue: function(value) {
-    return (value !== '*' ? util.format('"%s"', value) : "*");
-  },
+exports.schemaGrammar = _.extend({}, grammar, {
 
   // The possible column modifiers.
   modifiers: ['Increment', 'Nullable', 'Default'],
@@ -276,5 +272,4 @@ exports.schemaGrammar = _.extend(grammar, {
       return ' primary key';
     }
   }
-
-};
+});

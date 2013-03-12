@@ -10,7 +10,7 @@ var init, debug, pool, connection, connectionSettings;
 // Initializes the sqlite3 module with an options hash,
 // containing the connection settings, as well as the
 // pool config settings
-exports.init = function (options) {
+exports.initialize = function (options) {
 
   // If there isn't a connection setting
   if (!options.connection) return;
@@ -81,6 +81,11 @@ exports.getConnection = function () {
 // Extends the standard sql grammar.
 exports.grammar = {
 
+  // The keyword identifier wrapper format.
+  wrapValue: function(value) {
+    return (value !== '*' ? util.format('"%s"', value) : "*");
+  },
+
   // Compile the "order by" portions of the query.
   compileOrders: function(qb, orders) {
     if (orders.length === 0) return;
@@ -130,20 +135,12 @@ exports.grammar = {
     sql['delete from sqlite_sequence where name = ?'] = [qb.from];
     sql['delete from ' + this.wrapTable(query.from)] = [];
     return sql;
-  },
-
-  wrapValue: function(value) {
-    return (value !== '*' ? util.format('"%s"', value) : "*");
   }
 };
 
 // Grammar for the schema builder.
-exports.schemaGrammar = {
+exports.schemaGrammar = _.extend({}, grammar, {
   
-  wrapValue: function(value) {
-    return (value !== '*' ? util.format('"%s"', value) : "*");
-  },
-
   // The possible column modifiers.
   modifiers: ['Nullable', 'Default', 'Increment'],
   
@@ -330,6 +327,4 @@ exports.schemaGrammar = {
       return ' primary key autoincrement';
     }
   }
-
-};
-
+});

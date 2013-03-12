@@ -26,14 +26,14 @@
   // Keep in sync with package.json
   Knex.VERSION = '0.1.0';
 
-  // Knex.init
+  // Knex.Initialize
   // -------
   
   // Takes a hash of options to initialize the database
   // connection. The `client` is required to choose which client
   // path above is loaded, or to specify a custom path to a client.
   // Other options, such as `connection` or `pool` are passed 
-  // into `client.init`.
+  // into `client.initialize`.
   Knex.Initialize = function(options) {
     options || (options = {});
     var client = options.client;
@@ -52,7 +52,7 @@
         Knex.client = client;
       }
     }
-    Knex.client.init(options);
+    Knex.client.initialize(options);
   };
 
   // Knex.Grammar
