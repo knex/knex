@@ -6,6 +6,9 @@
 //     http://knexjs.org
 (function() {
 
+  "use strict";
+  
+  // Required dependencies.
   var _ = require('underscore');
   var Q = require('q');
 
@@ -23,8 +26,10 @@
     'sqlite3'  : './clients/sqlite3.js'
   };
 
+  var push = Array.prototype.push;
+
   // Keep in sync with package.json
-  Knex.VERSION = '0.1.0';
+  Knex.VERSION = '0.0.0';
 
   // Knex.Initialize
   // -------
@@ -40,6 +45,7 @@
     if (!client) {
       throw new Error('The client is required to use Knex.');
     }
+    
     // Checks if this is a default client. If it's not,
     // require it as the path to the client if it's a string,
     // and otherwise, set the object to the client.
@@ -52,6 +58,7 @@
         Knex.client = client;
       }
     }
+
     Knex.client.initialize(options);
   };
 
@@ -127,7 +134,7 @@
           );
         }
         clauses[0] = clauses[0].replace(/and |or /, '');
-        sql.push('' + join.type + ' join ' + this.wrapTable(join.table) + ' on ' + clauses.join(' '));
+        sql.push(join.type + ' join ' + this.wrapTable(join.table) + ' on ' + clauses.join(' '));
       }
       return sql.join(' ');
     },
@@ -189,6 +196,11 @@
       return this.wrap(where.column) + ' not in (' + this.compileSelect(where.query) + ')';
     },
 
+    // Where between.
+    whereBetween: function(qb, where) {
+      return this.wrap(where.column) + ' between ? and ?';
+    },
+
     whereNull: function(qb, where) {
       return this.wrap(where.column) + ' is null';
     },
@@ -235,8 +247,6 @@
     // Compiles an `insert` query, allowing for multiple
     // inserts using a single query statement.
     compileInsert: function(qb, values) {
-      values = _arr(values);
-
       var table = this.wrapTable(qb.table);
       var columns = this.columnize(_.keys(values[0]));
       var parameters = this.parameterize(values[0]);
@@ -264,19 +274,21 @@
       return 'update ' + table + ' set ' + columns.join(', ') + ' ' + this.compileWheres(qb);
     },
 
+    // Compiles a `delete` query.
     compileDelete: function(qb) {
       var table = this.wrapTable(qb.table);
       var where = !_.isEmpty(qb.wheres) ? this.compileWheres(qb) : '';
       return 'delete from ' + table + ' ' + where;
     },
 
+    // Compiles a `truncate` query.
     compileTruncate: function(qb) {
       return 'truncate ' + this.wrapTable(qb.from);
     },
 
     wrap: function(value) {
       var segments;
-      if (this.isExpression(value)) return value.value;
+      if (value instanceof Knex.Raw) return value.value;
       if (_.isNumber(value)) return value;
       if (value.toLowerCase().indexOf(' as ') !== -1) {
         segments = value.split(' ');
@@ -300,9 +312,7 @@
     },
 
     wrapTable: function(table) {
-      if (this.isExpression(table)) {
-        return table.value;
-      }
+      if (table instanceof Knex.Raw) return table.value;
       return this.wrapValue(this.tablePrefix + table);
     },
 
@@ -315,11 +325,7 @@
     },
 
     parameter: function(value) {
-      return (this.isExpression(value) ? value.value : '?');
-    },
-
-    isExpression: function(value) {
-      return value instanceof Knex.Raw;
+      return (value instanceof Knex.Raw ? value.value : '?');
     }
   };
 
@@ -391,10 +397,10 @@
       var join;
       if (_.isFunction(first)) {
         type = operator;
-        join = new JoinClause((type || 'inner'), table);
-        first.call(join);
+        join = new JoinClause(type || 'inner', table);
+        first.call(join, join);
       } else {
-        join = new JoinClause((type || 'inner'), table);
+        join = new JoinClause(type || 'inner', table);
         join.on(first, operator, second);
       }
       this.joins.push(join);
@@ -405,7 +411,7 @@
     // The most basic is `where(key, value)`, which expands to
     // where key = value. 
     where: function(column, operator, value, bool) {
-      var key, type;
+      var key;
       bool || (bool = 'and');
       if (_.isFunction(column)) {
         return this._whereNested(column, bool);
@@ -424,9 +430,8 @@
       if (_.isFunction(value)) {
         return this._whereSub(column, operator, value, bool);
       }
-      type = 'Basic';
       this.wheres.push({
-        type: type,
+        type: 'Basic',
         column: column,
         operator: operator,
         value: value,
@@ -445,8 +450,8 @@
       bindings || (bindings = []);
       bool || (bool = 'and');
       this.wheres.push({type:'raw', sql:sql, bool:bool});
-      _.extend(this.bindings, bindings);
-      return this;      
+      push.apply(this.bindings, bindings);
+      return this;
     },
 
     orWhereRaw: function(sql, bindings) {
@@ -461,23 +466,24 @@
     // Adds a `where exists` clause to the query.
     whereExists: function(callback, bool, type) {
       var query = new Builder();
-      callback.call(query);
+      query.isSubQuery = true;
+      callback.call(query, query);
       this.wheres.push({
         type: (type || 'Exists'),
         query: query,
         bool: (bool || 'and')
       });
-      _.extend(this.bindings, query.bindings);
+      push.apply(this.bindings, query.bindings);
       return this;
     },
 
     // Adds an `or where exists` clause to the query.
-    orWhereExists: function(callback, condition) {
+    orWhereExists: function(callback) {
       return this.whereExists(callback, 'or');
     },
 
     // Adds a `where not exists` clause to the query.
-    whereNotExists: function(callback, bool) {
+    whereNotExists: function(callback) {
       return this.whereExists(callback, 'and', 'NotExists');
     },
 
@@ -498,7 +504,7 @@
         values: values,
         bool: bool
       });
-      _.extend(this.bindings, values);
+      push.apply(this.bindings, values);
       return this;
     },
 
@@ -508,7 +514,7 @@
     },
 
     // Adds a `where not in` clause to the query.
-    whereNotIn: function(column, values, bool) {
+    whereNotIn: function(column, values) {
       return this.whereIn(column, values, 'and', 'NotIn');
     },
 
@@ -529,24 +535,27 @@
     },
 
     // Adds a `where not null` clause to the query.
-    whereNotNull: function(column, bool) {
+    whereNotNull: function(column) {
       return this.whereNull(column, 'and', 'NotNull');
     },
 
     // Adds a `or where not null` clause to the query.
     orWhereNotNull: function(column) {
-      return this.whereNotNull(column, 'or', 'NotNull');
+      return this.whereNull(column, 'or', 'NotNull');
     },
 
     // Adds a `where between` clause to the query.
-    whereBetween: function(column, values, bool) {
-      this.wheres.push({column: column, type: 'between', bool: bool});
+    whereBetween: function(column, values) {
+      this.wheres.push({column: column, type: 'Between', bool: 'and'});
+      push.apply(this.bindings, values);
       return this;
     },
 
     // Adds a `or where between` clause to the query.
     orWhereBetween: function(column, values) {
-      return this.whereBetween(column, values, 'or');
+      this.wheres.push({column: column, type: 'Between', bool: 'or'});
+      push.apply(this.bindings, values);
+      return this;
     },
 
     // ----------------------------------------------------------------------
@@ -625,10 +634,11 @@
 
     // Performs a `select` query, returning a promise.
     select: function(columns) {
-      columns || (columns = '*');
-      columns = _arr(columns);
-      this.columns = this.columns.concat(columns);
-      return Knex.runQuery(this, {sql: this.grammar.compileSelect(this), bindings: this._cleanBindings()});
+      this.columns = this.columns.concat(columns ? (_.isArray(columns) ? columns : _.toArray(arguments)) : '*');
+      if (!this.isSubQuery) {
+        return Knex.runQuery(this, {sql: this.grammar.compileSelect(this), bindings: this._cleanBindings()});  
+      }
+      return this;
     },
 
     // Performs an `INSERT` query, returning a promise.
@@ -638,7 +648,7 @@
       values = _arr(values);
       for (var i = 0, l = values.length; i < l; i++) {
         var record = values[i];
-        this.bindings = _.values(record).concat(this.bindings);
+        this.bindings = this.bindings.concat(_.values(record));
       }
       if (returning) {
         str = this.grammar.compileInsertGetId(this, values, returning);
@@ -685,16 +695,18 @@
     _whereInSub: function(column, callback, bool, condition) {
       var type = condition ? 'NotInSub' : 'InSub';
       var query = new Builder();
-      callback.call(query);
+      query.isSubQuery = true;
+      callback.call(query, query);
       this.wheres.push({type: type, column: column, query: query, bool: bool});
-      _.extend(this.bindings, query.bindings);
+      push.apply(this.bindings, query.bindings);
       return this;
     },
 
     _whereNested: function(callback, bool) {
       var query = new Builder();
+      query.isSubQuery = true;
       query.table = this.table;
-      callback.call(query);
+      callback.call(query, query);
       this.wheres.push({type: 'Nested', query: query, bool: bool});
       this.bindings = this.bindings.concat(query.bindings);
       return this;
@@ -702,7 +714,8 @@
 
     _whereSub: function(column, operator, callback, bool) {
       var query = new Builder();
-      callback.call(query);
+      query.isSubQuery = true;
+      callback.call(query, query);
       this.wheres.push({
         type: 'Sub',
         column: column,
@@ -710,7 +723,7 @@
         query: query,
         bool: bool
       });
-      _.extend(this.bindings, query.bindings);
+      push.apply(this.bindings, query.bindings);
       return this;
     },
 
@@ -737,7 +750,6 @@
   // Knex.JoinClause
   // ---------
 
-  // Used internally by the 
   var JoinClause = Knex.JoinClause = function(type, table) {
     this.clauses = [];
     this.type = type;
@@ -746,13 +758,14 @@
 
   JoinClause.prototype = {
 
-    on: function(first, operator, second, bool) {
-      this.clauses.push({first: first, operator: operator, second: second, bool: (bool || 'and')});
+    on: function(first, operator, second) {
+      this.clauses.push({first: first, operator: operator, second: second, bool: 'and'});
       return this;
     },
 
     orOn: function(first, operator, second) {
-      return this.on(first, operator, second, 'or');
+      this.clauses.push({first: first, operator: operator, second: second, bool: 'or'});
+      return this;
     }
 
   };
@@ -760,7 +773,6 @@
   // Knex.Transaction
   // ---------
 
-  // Takes an anonymous function, which
   Knex.Transaction = function(container) {
 
     var connection = Knex.client.getConnection();
@@ -1030,19 +1042,20 @@
         continueIndex:
         for (var i2 = 0, l2 = indices.length; i2 < l2; i2++) {
           var index = indices[i2];
-          
+          var indexVar = 'is' + capitalize(index);
+
           // If the index has been specified on the given column, but is simply
           // equal to "true" (boolean), no name has been specified for this
           // index, so we will simply call the index methods without one.
-          if (column[index] === true) {
+          if (column[indexVar] === true) {
             this[index](column);
             continue continueIndex;
           
           // If the index has been specified on the column and it is something
           // other than boolean true, we will assume a name was provided on
           // the index specification, and pass in the name to the method.
-          } else if (_.has(column, index)) {
-            this[index](column.name, column[index]);
+          } else if (_.has(column, indexVar)) {
+            this[index](column.name, column[indexVar]);
             continue continueIndex;
           }
         }
@@ -1147,7 +1160,7 @@
 
     // Create a new auto-incrementing column on the table.
     increments: function(column) {
-      return this.integer(column, true);
+      return this._addColumn('integer', column, {autoIncrement: true});
     },
 
     // Create a new string column on the table.
@@ -1161,8 +1174,8 @@
     },
 
     // Create a new integer column on the table.
-    integer: function(column, autoIncrement) {
-      return this._addColumn('integer', column, {autoIncrement: (autoIncrement || false)});
+    integer: function(column) {
+      return this._addColumn('integer', column);
     },
 
     // Create a new float column on the table.
@@ -1241,25 +1254,15 @@
     // Add a new index command to the blueprint.
     // If no name was specified for this index, we will create one using a basic
     // convention of the table name, followed by the columns, followed by an
-    // index type, such as primary or index, which makes the index unique.    
+    // index type, such as primary or index, which makes the index unique.
     _indexCommand: function(type, columns, index) {
       index || (index = null);
       columns = _arr(columns);
-
       if (index === null) {
-        index = this._createIndexName(type, columns);
+        var table = this.table.replace(/\.|-/g, '_');
+        index = (table + '_' + _.map(columns, function (col) { return col.name; }).join('_') + '_' + type).toLowerCase();
       }
-
       return this._addCommand(type, {index: index, columns: columns});
-    },
-
-    // Create a default index name for the table.
-    _createIndexName: function(type, columns) {
-      var table = this.table;
-      for (var i = 0, l = targets.length; i < l; i++) {
-        table = table.replace(/\.|-/g, '_');
-      }
-      return (table + '_' + columns.join('_') + '_' + type).toLowerCase();
     },
 
     // Add a new column to the blueprint.
@@ -1302,17 +1305,36 @@
     nullable: function() {
       this.isNullable = true;
       return this;
+    },
+
+    index: function (name) {
+      this.isIndex = name || true;
+      return this;
+    },
+
+    primary: function (name) {
+      this.isPrimary = name || true;
+      return this;
+    },
+
+    unique: function (name) {
+      this.isUnique = name || true;
+      return this;
     }
+
   };
 
   // Helpers
   // ---------
+
+  // Simple word capitalize.
   var capitalize = function(word) {
     return word.charAt(0).toUpperCase() + word.slice(1);
   };
 
   // Ensures the value is returned as an array
   var _arr = function(val) {
+    if (val === void 0) return [];
     if (_.isArray(val)) return val;
     return [val];
   };
