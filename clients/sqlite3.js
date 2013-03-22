@@ -105,7 +105,7 @@ var grammar = exports.grammar = {
     // grammar insert builder because no special syntax is needed for the single
     // row inserts in SQLite. However, if there are multiples, we'll continue.
     if (values.length === 1) {
-      return require('../knex').Grammar.prototype.compileInsert.call(this, qb, values[0]);
+      return require('../knex').Grammar.prototype.compileInsert.call(this, qb, values);
     }
     
     var keys = _.keys(values[0]);
