@@ -47,7 +47,7 @@ exports.initialize = function (options) {
   }, options.pool));
 };
 
-exports.query = function (querystring, params, callback, connection) {
+exports.query = function (querystring, params, callback, connection, type) {
 
   // If there is a connection, use it.
   if (connection) {
@@ -57,13 +57,15 @@ exports.query = function (querystring, params, callback, connection) {
   // Acquire connection - callback function is called
   // once a resource becomes available.
   pool.acquire(function(err, client) {
-    
+
     if (err) throw new Error(err);
+    var method = (type === 'insert' || type === 'update') ? 'run' : 'all';
 
     // Call the querystring and then release the client
-    client.all(querystring, params, function (err, resp) {
+    client[method](querystring, params, function (err, resp) {
+      if (_.has(this, 'lastID')) resp = {insertId: this.lastID, changes: this.changes};
       pool.release(client);
-      callback.apply(this, arguments);
+      callback.call(this, err, resp);
     });
 
   });

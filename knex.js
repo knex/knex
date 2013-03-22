@@ -655,13 +655,13 @@
       } else {
         str = this.grammar.compileInsert(this, values);
       }
-      return Knex.runQuery(this, {sql: str, bindings: this._cleanBindings()});
+      return Knex.runQuery(this, {sql: str, bindings: this._cleanBindings(), type: 'insert'});
     },
 
     // Performs an `update` query, returning a promise.
     update: function(values) {
       this.bindings = _.values(values).concat(this.bindings);
-      return Knex.runQuery(this, {sql: this.grammar.compileUpdate(this, values), bindings: this._cleanBindings()});
+      return Knex.runQuery(this, {sql: this.grammar.compileUpdate(this, values), bindings: this._cleanBindings(), type: 'update'});
     },
 
     // Executes a delete statement on the query;
@@ -1361,7 +1361,7 @@
       Knex.lastQuery = data.sql;
       if (err) return deferred.reject(err);
       deferred.resolve(resp);
-    }, builder.connection);
+    }, builder.connection, data.type);
     return deferred.promise;
   };
 
