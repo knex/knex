@@ -31,7 +31,7 @@
   // Keep in sync with package.json
   Knex.VERSION = '0.0.0';
 
-  // Knex.Initialize
+  // Knex.initialize
   // -------
   
   // Takes a hash of options to initialize the database
@@ -39,7 +39,7 @@
   // path above is loaded, or to specify a custom path to a client.
   // Other options, such as `connection` or `pool` are passed 
   // into `client.initialize`.
-  Knex.Initialize = function(options) {
+  Knex.initialize = function(options) {
     options || (options = {});
     var client = options.client;
     if (!client) {
@@ -368,7 +368,7 @@
     clone: function() {
       var item = new Builder(this.table);
       var items = [
-        'isDistinct', 'idAttr', 'currentPage', 'joins',
+        'isDistinct', 'idAttr', 'joins',
         'wheres', 'orders', 'columns', 'bindings',
         'grammar', 'connection', 'transaction'
       ];
@@ -388,7 +388,18 @@
       this.bindings = [];
       this.idAttr = Builder.prototype.idAttr;
       this.isDistinct = false;
-      this.currentPage = 1;
+    },
+
+    toJSON: function () {
+      return {
+        joins: this.joins,
+        wheres: this.wheres,
+        order: this.orders,
+        columns: this.columns,
+        bindings: this.bindings,
+        idAttr: this.idAttr,
+        isDistinct: this.isDistinct
+      };
     },
 
     // Adds a join clause to the query, allowing for advanced joins
@@ -1160,6 +1171,7 @@
 
     // Create a new auto-incrementing column on the table.
     increments: function(column) {
+      column || (column = 'id');
       return this._addColumn('integer', column, {autoIncrement: true});
     },
 
@@ -1267,6 +1279,7 @@
 
     // Add a new column to the blueprint.
     _addColumn: function(type, name, parameters) {
+      if (!name) throw new Error('A `name` must be defined to add a column');
       var attrs = _.extend({type: type, name: name}, parameters);
       var column = new Chainable(attrs);
       this.columns.push(column);
