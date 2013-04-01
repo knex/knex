@@ -7,16 +7,16 @@
     "test": "test"
   },
   "devDependencies": {
-    "mocha": "1.7.x"
+    "mocha": "1.7.x",
+    "mysql": "~2.0.0-alpha5"
   },
   "dependencies": {
     "q": "0.8.x",
     "underscore": "1.4.x",
-    "mysql": "~2.0.0-alpha5",
     "generic-pool": "2.0.x"
   },
   "scripts": {
-    "test": "mocha -R spec -r should test/index.js"
+    "test": "mocha -R spec test/index.js"
   },
   "repository": "",
   "keywords": [

@@ -31,7 +31,7 @@
   // Keep in sync with package.json
   Knex.VERSION = '0.0.0';
 
-  // Knex.initialize
+  // Knex.Initialize
   // -------
   
   // Takes a hash of options to initialize the database
@@ -39,7 +39,7 @@
   // path above is loaded, or to specify a custom path to a client.
   // Other options, such as `connection` or `pool` are passed 
   // into `client.initialize`.
-  Knex.initialize = function(options) {
+  Knex.Initialize = function(options) {
     options || (options = {});
     var client = options.client;
     if (!client) {
@@ -646,7 +646,7 @@
     // Performs a `select` query, returning a promise.
     select: function(columns) {
       this.columns = this.columns.concat(columns ? (_.isArray(columns) ? columns : _.toArray(arguments)) : '*');
-      if (!this.isSubQuery) {
+      if (!this.isSubQuery && !this.isQueryString) {
         return Knex.runQuery(this, {sql: this.grammar.compileSelect(this), bindings: this._cleanBindings()});  
       }
       return this;
@@ -656,7 +656,7 @@
     insert: function(values, returning) {
       var str;
       returning || (returning = this.idAttr);
-      values = _arr(values);
+      if (!_.isArray(values)) values = values ? [values] : [];
       for (var i = 0, l = values.length; i < l; i++) {
         var record = values[i];
         this.bindings = this.bindings.concat(_.values(record));
@@ -1116,7 +1116,8 @@
 
     // Indicate that the given columns should be dropped.
     dropColumn: function(columns) {
-      return this._addCommand('dropColumn', {columns: _arr(columns)});
+      if (!_.isArray(columns)) columns = columns ? [columns] : [];
+      return this._addCommand('dropColumn', {columns: columns});
     },
 
     // Indicate that the given columns should be dropped.
@@ -1269,7 +1270,7 @@
     // index type, such as primary or index, which makes the index unique.
     _indexCommand: function(type, columns, index) {
       index || (index = null);
-      columns = _arr(columns);
+      if (!_.isArray(columns)) columns = columns ? [columns] : [];
       if (index === null) {
         var table = this.table.replace(/\.|-/g, '_');
         index = (table + '_' + _.map(columns, function (col) { return col.name; }).join('_') + '_' + type).toLowerCase();
@@ -1337,19 +1338,8 @@
 
   };
 
-  // Helpers
-  // ---------
-
-  // Simple word capitalize.
   var capitalize = function(word) {
     return word.charAt(0).toUpperCase() + word.slice(1);
-  };
-
-  // Ensures the value is returned as an array
-  var _arr = function(val) {
-    if (val === void 0) return [];
-    if (_.isArray(val)) return val;
-    return [val];
   };
 
   // Knex.Raw

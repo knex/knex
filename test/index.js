@@ -1,7 +1,5 @@
 
-require('coffee-script');
 require('./mock');
-
 
 // require('./mysql/index');
 // require('./sqlite3/index');
