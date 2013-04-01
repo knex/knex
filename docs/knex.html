@@ -923,7 +923,7 @@ pieces that have been set thus far</p>
             <div class="content"><div class='highlight'><pre>    clone: <span class="keyword">function</span>() {
       <span class="keyword">var</span> item = <span class="keyword">new</span> Builder(<span class="keyword">this</span>.table);
       <span class="keyword">var</span> items = [
-        <span class="string">'isDistinct'</span>, <span class="string">'idAttr'</span>, <span class="string">'currentPage'</span>, <span class="string">'joins'</span>,
+        <span class="string">'isDistinct'</span>, <span class="string">'idAttr'</span>, <span class="string">'joins'</span>,
         <span class="string">'wheres'</span>, <span class="string">'orders'</span>, <span class="string">'columns'</span>, <span class="string">'bindings'</span>,
         <span class="string">'grammar'</span>, <span class="string">'connection'</span>, <span class="string">'transaction'</span>
       ];
@@ -955,7 +955,18 @@ pieces that have been set thus far</p>
       <span class="keyword">this</span>.bindings = [];
       <span class="keyword">this</span>.idAttr = Builder.prototype.idAttr;
       <span class="keyword">this</span>.isDistinct = <span class="literal">false</span>;
-      <span class="keyword">this</span>.currentPage = <span class="number">1</span>;
+    },
+
+    toJSON: <span class="function"><span class="keyword">function</span> <span class="params">()</span> {</span>
+      <span class="keyword">return</span> {
+        joins: <span class="keyword">this</span>.joins,
+        wheres: <span class="keyword">this</span>.wheres,
+        order: <span class="keyword">this</span>.orders,
+        columns: <span class="keyword">this</span>.columns,
+        bindings: <span class="keyword">this</span>.bindings,
+        idAttr: <span class="keyword">this</span>.idAttr,
+        isDistinct: <span class="keyword">this</span>.isDistinct
+      };
     },</pre></div></div>
             
         </li>
@@ -1595,7 +1606,7 @@ where key = value. </p>
             
             <div class="content"><div class='highlight'><pre>    select: <span class="keyword">function</span>(columns) {
       <span class="keyword">this</span>.columns = <span class="keyword">this</span>.columns.concat(columns ? (_.isArray(columns) ? columns : _.toArray(arguments)) : <span class="string">'*'</span>);
-      <span class="keyword">if</span> (!<span class="keyword">this</span>.isSubQuery) {
+      <span class="keyword">if</span> (!<span class="keyword">this</span>.isSubQuery &amp;&amp; !<span class="keyword">this</span>.isQueryString) {
         <span class="keyword">return</span> Knex.runQuery(<span class="keyword">this</span>, {sql: <span class="keyword">this</span>.grammar.compileSelect(<span class="keyword">this</span>), bindings: <span class="keyword">this</span>._cleanBindings()});  
       }
       <span class="keyword">return</span> <span class="keyword">this</span>;
@@ -1617,7 +1628,7 @@ where key = value. </p>
             <div class="content"><div class='highlight'><pre>    insert: <span class="keyword">function</span>(values, returning) {
       <span class="keyword">var</span> str;
       returning || (returning = <span class="keyword">this</span>.idAttr);
-      values = _arr(values);
+      <span class="keyword">if</span> (!_.isArray(values)) values = values ? [values] : [];
       <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = values.length; i &lt; l; i++) {
         <span class="keyword">var</span> record = values[i];
         <span class="keyword">this</span>.bindings = <span class="keyword">this</span>.bindings.concat(_.values(record));
@@ -1627,7 +1638,7 @@ where key = value. </p>
       } <span class="keyword">else</span> {
         str = <span class="keyword">this</span>.grammar.compileInsert(<span class="keyword">this</span>, values);
       }
-      <span class="keyword">return</span> Knex.runQuery(<span class="keyword">this</span>, {sql: str, bindings: <span class="keyword">this</span>._cleanBindings()});
+      <span class="keyword">return</span> Knex.runQuery(<span class="keyword">this</span>, {sql: str, bindings: <span class="keyword">this</span>._cleanBindings(), type: <span class="string">'insert'</span>});
     },</pre></div></div>
             
         </li>
@@ -1645,7 +1656,7 @@ where key = value. </p>
             
             <div class="content"><div class='highlight'><pre>    update: <span class="keyword">function</span>(values) {
       <span class="keyword">this</span>.bindings = _.values(values).concat(<span class="keyword">this</span>.bindings);
-      <span class="keyword">return</span> Knex.runQuery(<span class="keyword">this</span>, {sql: <span class="keyword">this</span>.grammar.compileUpdate(<span class="keyword">this</span>, values), bindings: <span class="keyword">this</span>._cleanBindings()});
+      <span class="keyword">return</span> Knex.runQuery(<span class="keyword">this</span>, {sql: <span class="keyword">this</span>.grammar.compileUpdate(<span class="keyword">this</span>, values), bindings: <span class="keyword">this</span>._cleanBindings(), type: <span class="string">'update'</span>});
     },</pre></div></div>
             
         </li>
@@ -2760,7 +2771,8 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    dropColumn: <span class="keyword">function</span>(columns) {
-      <span class="keyword">return</span> <span class="keyword">this</span>._addCommand(<span class="string">'dropColumn'</span>, {columns: _arr(columns)});
+      <span class="keyword">if</span> (!_.isArray(columns)) columns = columns ? [columns] : [];
+      <span class="keyword">return</span> <span class="keyword">this</span>._addCommand(<span class="string">'dropColumn'</span>, {columns: columns});
     },</pre></div></div>
             
         </li>
@@ -2947,6 +2959,7 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    increments: <span class="keyword">function</span>(column) {
+      column || (column = <span class="string">'id'</span>);
       <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'integer'</span>, column, {autoIncrement: <span class="literal">true</span>});
     },</pre></div></div>
             
@@ -3259,7 +3272,7 @@ index type, such as primary or index, which makes the index unique.</p>
             
             <div class="content"><div class='highlight'><pre>    _indexCommand: <span class="keyword">function</span>(type, columns, index) {
       index || (index = <span class="literal">null</span>);
-      columns = _arr(columns);
+      <span class="keyword">if</span> (!_.isArray(columns)) columns = columns ? [columns] : [];
       <span class="keyword">if</span> (index === <span class="literal">null</span>) {
         <span class="keyword">var</span> table = <span class="keyword">this</span>.table.replace(<span class="regexp">/\.|-/g</span>, <span class="string">'_'</span>);
         index = (table + <span class="string">'_'</span> + _.map(columns, <span class="function"><span class="keyword">function</span> <span class="params">(col)</span> {</span> <span class="keyword">return</span> col.name; }).join(<span class="string">'_'</span>) + <span class="string">'_'</span> + type).toLowerCase();
@@ -3281,6 +3294,7 @@ index type, such as primary or index, which makes the index unique.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    _addColumn: <span class="keyword">function</span>(type, name, parameters) {
+      <span class="keyword">if</span> (!name) <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'A `name` must be defined to add a column'</span>);
       <span class="keyword">var</span> attrs = _.extend({type: type, name: name}, parameters);
       <span class="keyword">var</span> column = <span class="keyword">new</span> Chainable(attrs);
       <span class="keyword">this</span>.columns.push(column);
@@ -3396,6 +3410,10 @@ if the column type is not an integer.</p>
       <span class="keyword">return</span> <span class="keyword">this</span>;
     }
 
+  };
+
+  <span class="keyword">var</span> capitalize = <span class="keyword">function</span>(word) {
+    <span class="keyword">return</span> word.charAt(<span class="number">0</span>).toUpperCase() + word.slice(<span class="number">1</span>);
   };</pre></div></div>
             
         </li>
@@ -3407,7 +3425,7 @@ if the column type is not an integer.</p>
               <div class="pilwrap for-h2">
                 <a class="pilcrow" href="#section-174">&#182;</a>
               </div>
-              <h2>Helpers</h2>
+              <h2>Knex.Raw</h2>
 
             </div>
             
@@ -3420,55 +3438,6 @@ if the column type is not an integer.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-175">&#182;</a>
               </div>
-              <p>Simple word capitalize.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> capitalize = <span class="keyword">function</span>(word) {
-    <span class="keyword">return</span> word.charAt(<span class="number">0</span>).toUpperCase() + word.slice(<span class="number">1</span>);
-  };</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-176">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-176">&#182;</a>
-              </div>
-              <p>Ensures the value is returned as an array</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> _arr = <span class="keyword">function</span>(val) {
-    <span class="keyword">if</span> (val === <span class="keyword">void</span> <span class="number">0</span>) <span class="keyword">return</span> [];
-    <span class="keyword">if</span> (_.isArray(val)) <span class="keyword">return</span> val;
-    <span class="keyword">return</span> [val];
-  };</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-177">
-            <div class="annotation">
-              
-              <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-177">&#182;</a>
-              </div>
-              <h2>Knex.Raw</h2>
-
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-178">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-178">&#182;</a>
-              </div>
               
             </div>
             
@@ -3479,11 +3448,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-179">
+        <li id="section-176">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-179">&#182;</a>
+                <a class="pilcrow" href="#section-176">&#182;</a>
               </div>
               <h2>Knex.runQuery</h2>
 
@@ -3492,11 +3461,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-180">
+        <li id="section-177">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-180">&#182;</a>
+                <a class="pilcrow" href="#section-177">&#182;</a>
               </div>
               <p>Query runner, the context of this function is set to the caller,
 (either Builder or SchemaBuilder). Checks and fails on an already
@@ -3514,18 +3483,18 @@ and returns a deferred promise.</p>
       Knex.lastQuery = data.sql;
       <span class="keyword">if</span> (err) <span class="keyword">return</span> deferred.reject(err);
       deferred.resolve(resp);
-    }, builder.connection);
+    }, builder.connection, data.type);
     <span class="keyword">return</span> deferred.promise;
   };</pre></div></div>
             
         </li>
         
         
-        <li id="section-181">
+        <li id="section-178">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-181">&#182;</a>
+                <a class="pilcrow" href="#section-178">&#182;</a>
               </div>
               <p>Export the Knex module</p>
 
