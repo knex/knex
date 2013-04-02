@@ -48,16 +48,16 @@ exports.initialize = function (options) {
 // to the database.
 exports.query = function (querystring, params, callback, connection) {
 
+  // If there is a connection, use it.
+  if (connection) {
+    return connection.query(querystring, params, callback);
+  }
+
   var questionCount = 0;
   querystring = querystring.replace(/\?/g, function () {
     questionCount++;
     return '$' + questionCount;
   });
-
-  // If there is a connection, use it.
-  if (connection) {
-    return connection.query(querystring, params, callback);
-  }
 
   // Acquire connection - callback function is called
   // once a resource becomes available.
@@ -66,9 +66,15 @@ exports.query = function (querystring, params, callback, connection) {
     if (err) throw new Error(err);
 
     // Call the querystring and then release the client
-    client.query(querystring, params, function () {
+    client.query(querystring, params, function (err, resp) {
       pool.release(client);
-      callback.apply(this, arguments);
+      resp || (resp = {});
+      if (resp.command === 'INSERT' || resp.command === 'UPDATE') {
+        _.extend(resp, {insertId: resp.oid});
+        callback.call(this, err, resp);
+      } else {
+        callback.call(this, err, resp.rows);
+      }
     });
 
   });
@@ -96,7 +102,7 @@ var grammar = exports.grammar = {
 
   compileInsertGetId: function(qb, values, sequence) {
     if (!sequence) sequence = 'id';
-    return this.compileInsert(qb, values) + ' returning ' + this.wrap(sequence);
+    return this.compileInsert(qb, values); // + ' returning ' + this.wrap(sequence);
   },
 
   compileTruncate: function (qb) {
@@ -262,13 +268,13 @@ exports.schemaGrammar = _.extend({}, grammar, {
 
   // Get the SQL for a nullable column modifier.
   modifyNullable: function(blueprint, column) {
-    return column.nullable ? ' null' : ' not null';
+    return column.isNullable ? ' null' : ' not null';
   },
 
   // Get the SQL for a default column modifier.
   modifyDefault: function(blueprint, column) {
     if (column.defaultValue) {
-      return " default " + this.getDefaultValue(column.defaultValue);
+      return " default '" + this.getDefaultValue(column.defaultValue) + "'";
     }
   },
 
