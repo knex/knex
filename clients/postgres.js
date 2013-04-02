@@ -48,6 +48,12 @@ exports.initialize = function (options) {
 // to the database.
 exports.query = function (querystring, params, callback, connection) {
 
+  var questionCount = 0;
+  querystring = querystring.replace(/\?/g, function () {
+    questionCount++;
+    return '$' + questionCount;
+  });
+
   // If there is a connection, use it.
   if (connection) {
     return connection.query(querystring, params, callback);
@@ -112,7 +118,7 @@ exports.schemaGrammar = _.extend({}, grammar, {
   },
 
   // Compile a create table command.
-  compileCreate: function(blueprint, command) {
+  compileCreateTable: function(blueprint, command) {
     var columns = this.getColumns(blueprint).join(', ');
     return 'create table ' + this.wrapTable(blueprint) + " (" + columns + ")";
   },
@@ -144,12 +150,12 @@ exports.schemaGrammar = _.extend({}, grammar, {
   },
 
   // Compile a drop table command.
-  compileDrop: function(blueprint, command) {
+  compileDropTable: function(blueprint, command) {
     return 'drop table ' + this.wrapTable(blueprint);
   },
 
   // Compile a drop table (if exists) command.
-  compileDropIfExists: function(blueprint, command) {
+  compileDropTableIfExists: function(blueprint, command) {
     return 'drop table if exists ' + this.wrapTable(blueprint);
   },
 

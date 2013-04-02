@@ -30,9 +30,6 @@
       border-right: 1px solid #bbb;
       box-shadow: 0 0 20px #ccc; -webkit-box-shadow: 0 0 20px #ccc; -moz-box-shadow: 0 0 20px #ccc;
     }
-      a.toc_title.main {
-        font-size: 12px;
-      }
       a.toc_title, a.toc_title:visited {
         display: block;
         color: black;
@@ -279,100 +276,12 @@
       }
     }
   </style>
-  <style>
-    .repl_wrapper {
-      padding: 0;
-      display: none;
-      position: fixed;
-      width: auto; height: auto;
-      left: 250px; top: 20px; right: 40px; bottom: 30px;
-      background: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#eaeaea));
-    }
-      .repl_wrapper.active {
-        display: block;
-      }
-      .code .minibutton {
-        top: 10px; right: 10px;
-        width: 40px;
-        text-transform: none;
-      }
-        .code a.minibutton.permalink {
-          top: 38px;
-          display: block;
-        }
-
-    .repl_wrapper .code {
-      cursor: text;
-      -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none;
-      background: #181a3a url(../images/banding.png);
-      border: 2px solid #555;
-      padding: 0;
-      position: absolute;
-      top: 15px; left: 15px; right: 15px; bottom: 15px;
-    }
-    .repl_wrapper .screenshadow {
-      position: absolute;
-      width: 200px; height: 150px;
-      background: url(../images/screenshadow.png?2);
-    }
-      .repl_wrapper .screenshadow.tl {
-        top: 0; left: 0;
-        background-position: 0 0;
-      }
-      .repl_wrapper .screenshadow.tr {
-        top: 0; right: 0;
-        background-position: -200px 0;
-      }
-      .repl_wrapper .screenshadow.bl {
-        bottom: 0; left: 0;
-        background-position: 0 -150px;
-      }
-      .repl_wrapper .screenshadow.br {
-        bottom: 0; right: 0;
-        background-position: -200px -150px;
-      }
-
-    #repl_source, #repl_results {
-      background: transparent;
-      outline: none;
-      margin: 5px 0 20px;
-      color: #def;
-    }
-      #repl_results, #repl_source_wrap {
-        width: auto; height: auto;
-        position: absolute;
-        margin-bottom: 0;
-        top: 10px; left: 10px; right: 10px; bottom: 15px;
-      }
-        #repl_source_wrap {
-          margin-left: 5px;
-          width: 47%; right: 50%;
-          float: left;
-        }
-          #repl_source {
-            padding-left: 5px;
-            width: 100%;
-            height: 100%;
-            border: 0;
-            overflow-y: auto;
-            resize: none;
-          }
-        #repl_results_wrap {
-          white-space: pre;
-        }
-          #repl_results {
-            text-transform: none;
-            overflow-y: auto;
-            left: 50%;
-            border-left-color: #555;
-          }
-  </style>
 </head>
 <body>
 
   <div id="sidebar" class="interface">
 
-    <a class="toc_title main" href="#">
+    <a class="toc_title" href="#">
       Knex.js <span class="version">(0.1.0)</span>
     </a>
     <ul class="toc_section">
