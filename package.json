@@ -2,7 +2,7 @@
   "name": "knex",
   "version": "0.0.0",
   "description": "a fun sql query builder",
-  "main": "index.js",
+  "main": "knex.js",
   "directories": {
     "test": "test"
   },

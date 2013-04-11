@@ -249,7 +249,7 @@
     compileInsert: function(qb, values) {
       var table = this.wrapTable(qb.table);
       var columns = this.columnize(_.keys(values[0]));
-      var parameters = this.parameterize(values[0]);
+      var parameters = this.parameterize(_.values(values[0]));
       
       var paramBlocks = [];
       for (var i = 0, l = values.length; i < l; ++i) {
@@ -257,11 +257,6 @@
       }
 
       return "insert into " + table + " (" + columns + ") values " + paramBlocks.join(', ');
-    },
-
-    // Compiles an `insert`, getting the id of the insert row.
-    compileInsertGetId: function(qb, values) {
-      return this.compileInsert(qb, values);
     },
 
     // Compiles an `update` query.
@@ -342,18 +337,10 @@
 
   Builder.prototype = {
 
-    idAttr: 'id',
-
     // Sets the `tableName` on the query.
     from: function(tableName) {
       if (!tableName) return this.table;
       this.table = tableName;
-      return this;
-    },
-
-    // Set the `idAttribute` for the query.
-    idAttribute: function(id) {
-      this.idAttr = id;
       return this;
     },
 
@@ -368,7 +355,7 @@
     clone: function() {
       var item = new Builder(this.table);
       var items = [
-        'isDistinct', 'idAttr', 'joins',
+        'isDistinct', 'joins',
         'wheres', 'orders', 'columns', 'bindings',
         'grammar', 'connection', 'transaction'
       ];
@@ -386,7 +373,6 @@
       this.orders = [];
       this.columns = [];
       this.bindings = [];
-      this.idAttr = Builder.prototype.idAttr;
       this.isDistinct = false;
     },
 
@@ -397,7 +383,6 @@
         order: this.orders,
         columns: this.columns,
         bindings: this.bindings,
-        idAttr: this.idAttr,
         isDistinct: this.isDistinct
       };
     },
@@ -654,18 +639,12 @@
 
     // Performs an `INSERT` query, returning a promise.
     insert: function(values, returning) {
-      var str;
-      returning || (returning = this.idAttr);
       if (!_.isArray(values)) values = values ? [values] : [];
       for (var i = 0, l = values.length; i < l; i++) {
         var record = values[i];
         this.bindings = this.bindings.concat(_.values(record));
       }
-      if (returning) {
-        str = this.grammar.compileInsertGetId(this, values, returning);
-      } else {
-        str = this.grammar.compileInsert(this, values);
-      }
+      var str = this.grammar.compileInsert(this, values);
       return Knex.runQuery(this, {sql: str, bindings: this._cleanBindings(), type: 'insert'});
     },
 
