@@ -204,7 +204,7 @@ exports.schemaGrammar = _.extend({}, grammar, {
 
   // Create the column definition for a boolean type.
   typeBoolean: function(column) {
-    return 'tinyint';
+    return 'tinyint(1)';
   },
 
   // Create the column definition for a enum type.
