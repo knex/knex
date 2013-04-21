@@ -1151,8 +1151,7 @@
 
     // Create a new auto-incrementing column on the table.
     increments: function(column) {
-      column || (column = 'id');
-      return this._addColumn('integer', column, {autoIncrement: true});
+      return this._addColumn('integer', (column || 'id'), {autoIncrement: true});
     },
 
     // Create a new string column on the table.
@@ -1160,14 +1159,24 @@
       return this._addColumn('string', column, {length: (length || 255)});
     },
 
+    // Alias varchar to string
+    varchar: function(column, length) {
+      return this.string(column, length);
+    },
+
     // Create a new text column on the table.
-    text: function(column) {
-      return this._addColumn('text', column);
+    text: function(column, length) {
+      return this._addColumn('text', column, {length: (length || false)});
     },
 
     // Create a new integer column on the table.
-    integer: function(column) {
-      return this._addColumn('integer', column);
+    integer: function(column, length) {
+      return this._addColumn('integer', column, {length: (length || 11)});
+    },
+
+    // Create a new tinyinteger column on the table.
+    tinyInteger: function(column) {
+      return this._addColumn('tinyInteger', column);
     },
 
     // Create a new float column on the table.
@@ -1182,7 +1191,7 @@
 
     // Create a new boolean column on the table.
     boolean: function(column) {
-      return this.bool(columns);
+      return this._addColumn('boolean', column);
     },
 
     // Alias to "boolean".
@@ -1224,6 +1233,11 @@
     // Alias to enum.
     enu: function() {
       return this._addColumn('enum', column, {allowed: allowed});
+    },
+
+    // Create a new bit column on the table.
+    bit: function(column, length) {
+      return this._addColumn('bit', column, {length: (length || false)});
     },
 
     // Create a new binary column on the table.

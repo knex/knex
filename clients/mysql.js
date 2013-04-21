@@ -94,7 +94,7 @@ var grammar = exports.grammar = {
 exports.schemaGrammar = _.extend({}, grammar, {
 
   // The possible column modifiers.
-  modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment'],
+  modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After'],
   
   // Compile the query to determine if a table exists.
   compileTableExists: function() {
@@ -174,7 +174,7 @@ exports.schemaGrammar = _.extend({}, grammar, {
 
   // Compile a rename table command.
   compileRename: function(blueprint, command) {
-    return "rename table " + this.wrapTable(blueprint) + " to " + this.wrapTable(command.to);
+    return 'rename table ' + this.wrapTable(blueprint) + ' to ' + this.wrapTable(command.to);
   },
   
   // Create the column definition for a string type.
@@ -184,12 +184,26 @@ exports.schemaGrammar = _.extend({}, grammar, {
 
   // Create the column definition for a text type.
   typeText: function(column) {
-    return 'text';
+    switch (column.length) {
+      case 'medium':
+      case 'mediumtext':
+        return 'mediumtext';
+      case 'long':
+      case 'longtext':
+        return 'longtext';
+      default:
+        return 'text';
+    }
   },
 
   // Create the column definition for a integer type.
   typeInteger: function(column) {
-    return 'int';
+    return 'int(' + column.length + ')';
+  },
+
+  // Create the column definition for a tiny integer type.
+  typeTinyInteger: function() {
+    return 'tinyint';
   },
 
   // Create the column definition for a float type.
@@ -230,6 +244,11 @@ exports.schemaGrammar = _.extend({}, grammar, {
   // Create the column definition for a timestamp type.
   typeTimestamp: function(column) {
     return 'timestamp default 0';
+  },
+
+  // Create the column definition for a bit type.
+  typeBit: function(column) {
+    return column.length !== false ? 'bit(' + column.length + ')' : 'bit';
   },
 
   // Create the column definition for a binary type.

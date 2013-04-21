@@ -197,8 +197,7 @@ exports.schemaGrammar = _.extend({}, grammar, {
 
   // Compile a rename table command.
   compileRename: function(blueprint, command) {
-    var from = this.wrapTable(blueprint);
-    return "alter table " + from + " rename to " + this.wrapTable(command.to);
+    return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
   },
 
   // Create the column definition for a string type.
@@ -259,6 +258,11 @@ exports.schemaGrammar = _.extend({}, grammar, {
   // Create the column definition for a timestamp type.
   typeTimestamp: function(column) {
     return 'timestamp';
+  },
+
+  // Create the column definition for a bit type.
+  typeBit: function(column) {
+    return column.length !== false ? 'bit(' + column.length + ')' : 'bit';
   },
 
   // Create the column definition for a binary type.

@@ -280,6 +280,11 @@ exports.schemaGrammar = _.extend({}, grammar, {
   typeBoolean: function(column) {
     return 'tinyint';
   },
+
+  // Create the column definition for a tinyint type.
+  typeTinyInteger: function() {
+    return 'tinyint';
+  },
   
   // Create the column definition for a enum type.
   typeEnum: function(column) {
