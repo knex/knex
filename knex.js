@@ -1179,6 +1179,11 @@
       return this._addColumn('tinyInteger', column);
     },
 
+    // Alias for tinyinteger column.
+    tinyint: function(column) {
+      return this._addColumn('tinyInteger', column);
+    },
+
     // Create a new float column on the table.
     float: function(column, total, places) {
       return this._addColumn('float', column, {total: (total || 8), places: (places || 2)});

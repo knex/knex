@@ -3011,6 +3011,23 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-153">&#182;</a>
               </div>
+              <p>Alias for tinyinteger column.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    tinyint: <span class="keyword">function</span>(column) {
+      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'tinyInteger'</span>, column);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-154">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-154">&#182;</a>
+              </div>
               <p>Create a new float column on the table.</p>
 
             </div>
@@ -3022,11 +3039,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-154">
+        <li id="section-155">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-154">&#182;</a>
+                <a class="pilcrow" href="#section-155">&#182;</a>
               </div>
               <p>Create a new decimal column on the table.</p>
 
@@ -3039,11 +3056,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-155">
+        <li id="section-156">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-155">&#182;</a>
+                <a class="pilcrow" href="#section-156">&#182;</a>
               </div>
               <p>Create a new boolean column on the table.</p>
 
@@ -3056,11 +3073,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-156">
+        <li id="section-157">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-156">&#182;</a>
+                <a class="pilcrow" href="#section-157">&#182;</a>
               </div>
               <p>Alias to &quot;boolean&quot;.</p>
 
@@ -3073,11 +3090,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-157">
+        <li id="section-158">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-157">&#182;</a>
+                <a class="pilcrow" href="#section-158">&#182;</a>
               </div>
               <p>Create a new date column on the table.</p>
 
@@ -3090,11 +3107,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-158">
+        <li id="section-159">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-158">&#182;</a>
+                <a class="pilcrow" href="#section-159">&#182;</a>
               </div>
               <p>Create a new date-time column on the table.</p>
 
@@ -3107,11 +3124,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-159">
+        <li id="section-160">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-159">&#182;</a>
+                <a class="pilcrow" href="#section-160">&#182;</a>
               </div>
               <p>Create a new time column on the table.</p>
 
@@ -3124,11 +3141,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-160">
+        <li id="section-161">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-160">&#182;</a>
+                <a class="pilcrow" href="#section-161">&#182;</a>
               </div>
               <p>Create a new timestamp column on the table.</p>
 
@@ -3141,11 +3158,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-161">
+        <li id="section-162">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-161">&#182;</a>
+                <a class="pilcrow" href="#section-162">&#182;</a>
               </div>
               <p>Add creation and update timestamps to the table.</p>
 
@@ -3159,11 +3176,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-162">
+        <li id="section-163">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-162">&#182;</a>
+                <a class="pilcrow" href="#section-163">&#182;</a>
               </div>
               <p>Create a new enum column on the table.</p>
 
@@ -3176,11 +3193,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-163">
+        <li id="section-164">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-163">&#182;</a>
+                <a class="pilcrow" href="#section-164">&#182;</a>
               </div>
               <p>Alias to enum.</p>
 
@@ -3193,11 +3210,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-164">
+        <li id="section-165">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-164">&#182;</a>
+                <a class="pilcrow" href="#section-165">&#182;</a>
               </div>
               <p>Create a new bit column on the table.</p>
 
@@ -3210,11 +3227,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-165">
+        <li id="section-166">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-165">&#182;</a>
+                <a class="pilcrow" href="#section-166">&#182;</a>
               </div>
               <p>Create a new binary column on the table.</p>
 
@@ -3227,11 +3244,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-166">
+        <li id="section-167">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-166">&#182;</a>
+                <a class="pilcrow" href="#section-167">&#182;</a>
               </div>
               <hr>
 
@@ -3240,11 +3257,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-167">
+        <li id="section-168">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-167">&#182;</a>
+                <a class="pilcrow" href="#section-168">&#182;</a>
               </div>
               <p>Create a new drop index command on the blueprint.</p>
 
@@ -3262,11 +3279,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-168">
+        <li id="section-169">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-168">&#182;</a>
+                <a class="pilcrow" href="#section-169">&#182;</a>
               </div>
               <p>Add a new index command to the blueprint.
 If no name was specified for this index, we will create one using a basic
@@ -3288,11 +3305,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-169">
+        <li id="section-170">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-169">&#182;</a>
+                <a class="pilcrow" href="#section-170">&#182;</a>
               </div>
               <p>Add a new column to the blueprint.</p>
 
@@ -3309,11 +3326,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-170">
+        <li id="section-171">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-170">&#182;</a>
+                <a class="pilcrow" href="#section-171">&#182;</a>
               </div>
               <p>Add a new command to the blueprint.</p>
 
@@ -3329,11 +3346,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-171">
+        <li id="section-172">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-171">&#182;</a>
+                <a class="pilcrow" href="#section-172">&#182;</a>
               </div>
               <p>Chainable object used in creating SchemaBuilder commands.</p>
 
@@ -3348,11 +3365,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-172">
+        <li id="section-173">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-172">&#182;</a>
+                <a class="pilcrow" href="#section-173">&#182;</a>
               </div>
               <p>Sets the default value for a column.</p>
 
@@ -3366,11 +3383,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-173">
+        <li id="section-174">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-173">&#182;</a>
+                <a class="pilcrow" href="#section-174">&#182;</a>
               </div>
               <p>Sets an integer as unsigned, is a no-op
 if the column type is not an integer.</p>
@@ -3385,11 +3402,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-174">
+        <li id="section-175">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-174">&#182;</a>
+                <a class="pilcrow" href="#section-175">&#182;</a>
               </div>
               <p>Allows the column to contain null values.</p>
 
@@ -3424,11 +3441,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-175">
+        <li id="section-176">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-175">&#182;</a>
+                <a class="pilcrow" href="#section-176">&#182;</a>
               </div>
               <h2>Knex.Raw</h2>
 
@@ -3437,11 +3454,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-176">
+        <li id="section-177">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-176">&#182;</a>
+                <a class="pilcrow" href="#section-177">&#182;</a>
               </div>
               
             </div>
@@ -3453,11 +3470,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-177">
+        <li id="section-178">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-177">&#182;</a>
+                <a class="pilcrow" href="#section-178">&#182;</a>
               </div>
               <h2>Knex.runQuery</h2>
 
@@ -3466,11 +3483,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-178">
+        <li id="section-179">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-178">&#182;</a>
+                <a class="pilcrow" href="#section-179">&#182;</a>
               </div>
               <p>Query runner, the context of this function is set to the caller,
 (either Builder or SchemaBuilder). Checks and fails on an already
@@ -3495,11 +3512,11 @@ and returns a deferred promise.</p>
         </li>
         
         
-        <li id="section-179">
+        <li id="section-180">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-179">&#182;</a>
+                <a class="pilcrow" href="#section-180">&#182;</a>
               </div>
               <p>Export the Knex module</p>
 
