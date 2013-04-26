@@ -178,12 +178,12 @@
 
     // Compiles a where in clause.
     whereIn: function(qb, where) {
-      return this.wrap(where.column) + ' in (' + this.parameterize(where.values) + ')';
+      return this.wrap(where.column) + ' in (' + this.parameterize(where.value) + ')';
     },
 
     // Compiles a where not in clause.
     whereNotIn: function(qb, where) {
-      return this.wrap(where.column) + ' not in (' + this.parameterize(where.values) + ')';
+      return this.wrap(where.column) + ' not in (' + this.parameterize(where.value) + ')';
     },
 
     // Compiles a sub-where in clause.
@@ -250,13 +250,36 @@
       var table = this.wrapTable(qb.table);
       var columns = this.columnize(_.keys(values[0]).sort());
       var parameters = this.parameterize(_.values(values[0]));
-      
       var paramBlocks = [];
+
+      // If there are any "where" clauses, we need to omit 
+      // any bindings that may have been associated with them.
+      if (qb.wheres.length > 0) this._clearWhereBindings(qb);
+
       for (var i = 0, l = values.length; i < l; ++i) {
         paramBlocks.push("(" + parameters + ")");
       }
 
       return "insert into " + table + " (" + columns + ") values " + paramBlocks.join(', ');
+    },
+
+    // Depending on the type of `where` clause, this will appropriately
+    // remove any binding caused by "where" constraints, allowing the same
+    // query to be used for `insert` and `update` without issue.
+    _clearWhereBindings: function(qb) {
+      var wheres = qb.wheres;
+      var bindingCount = 0;
+      for (var i = 0, l = wheres.length; i<l; i++) {
+        var where = wheres[i];
+        if (_.isArray(where.value)) {
+          bindingCount += where.value.length;
+        } else if (where.query) {
+          bindingCount += where.query.bindings.length;
+        } else {
+          bindingCount += 1;
+        }
+      }
+      qb.bindings = qb.bindings.slice(bindingCount);
     },
 
     // Compiles an `update` query.
@@ -497,7 +520,7 @@
       this.wheres.push({
         type: (condition || 'In'),
         column: column,
-        values: values,
+        value: values,
         bool: bool
       });
       push.apply(this.bindings, values);
@@ -700,7 +723,7 @@
       query.table = this.table;
       callback.call(query, query);
       this.wheres.push({type: 'Nested', query: query, bool: bool});
-      this.bindings = this.bindings.concat(query.bindings);
+      push.apply(this.bindings, query.bindings);
       return this;
     },
 
