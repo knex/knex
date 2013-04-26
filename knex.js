@@ -248,7 +248,7 @@
     // inserts using a single query statement.
     compileInsert: function(qb, values) {
       var table = this.wrapTable(qb.table);
-      var columns = this.columnize(_.keys(values[0]));
+      var columns = this.columnize(_.keys(values[0]).sort());
       var parameters = this.parameterize(_.values(values[0]));
       
       var paramBlocks = [];
@@ -376,7 +376,7 @@
       this.isDistinct = false;
     },
 
-    toJSON: function () {
+    toJSON: function() {
       return {
         joins: this.joins,
         wheres: this.wheres,
@@ -637,11 +637,14 @@
       return this;
     },
 
-    // Performs an `INSERT` query, returning a promise.
+    // Performs an `insert` query, returning a promise.
     insert: function(values, returning) {
       if (!_.isArray(values)) values = values ? [values] : [];
-      for (var i = 0, l = values.length; i < l; i++) {
-        this.bindings = this.bindings.concat(_.values(values[i]));
+      for (var i = 0, l = values.length; i<l; i++) {
+        var obj = sortObject(values[i]);
+        for (var i2 = 0, l2 = obj.length; i2 < l2; i2++) {
+          this.bindings.push(obj[i2][1]);
+        }
       }
       var str = this.grammar.compileInsert(this, values);
       return Knex.runQuery(this, {sql: str, bindings: this._cleanBindings(), type: 'insert'});
@@ -1270,7 +1273,7 @@
       if (!_.isArray(columns)) columns = columns ? [columns] : [];
       if (index === null) {
         var table = this.table.replace(/\.|-/g, '_');
-        index = (table + '_' + _.map(columns, function (col) { return col.name; }).join('_') + '_' + type).toLowerCase();
+        index = (table + '_' + _.map(columns, function(col) { return col.name; }).join('_') + '_' + type).toLowerCase();
       }
       return this._addCommand(type, {index: index, columns: columns});
     },
@@ -1318,17 +1321,17 @@
       return this;
     },
 
-    index: function (name) {
+    index: function(name) {
       this.isIndex = name || true;
       return this;
     },
 
-    primary: function (name) {
+    primary: function(name) {
       this.isPrimary = name || true;
       return this;
     },
 
-    unique: function (name) {
+    unique: function(name) {
       this.isUnique = name || true;
       return this;
     }
@@ -1337,6 +1340,12 @@
 
   var capitalize = function(word) {
     return word.charAt(0).toUpperCase() + word.slice(1);
+  };
+
+  var sortObject = function(obj) {
+    return _.sortBy(_.pairs(obj), function(a) { 
+      return a[0]; 
+    });
   };
 
   // Knex.Raw
