@@ -1589,8 +1589,7 @@ where key = value. </p>
             <div class="content"><div class='highlight'><pre>    insert: <span class="keyword">function</span>(values, returning) {
       <span class="keyword">if</span> (!_.isArray(values)) values = values ? [values] : [];
       <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = values.length; i &lt; l; i++) {
-        <span class="keyword">var</span> record = values[i];
-        <span class="keyword">this</span>.bindings = <span class="keyword">this</span>.bindings.concat(_.values(record));
+        <span class="keyword">this</span>.bindings = <span class="keyword">this</span>.bindings.concat(_.values(values[i]));
       }
       <span class="keyword">var</span> str = <span class="keyword">this</span>.grammar.compileInsert(<span class="keyword">this</span>, values);
       <span class="keyword">return</span> Knex.runQuery(<span class="keyword">this</span>, {sql: str, bindings: <span class="keyword">this</span>._cleanBindings(), type: <span class="string">'insert'</span>});
@@ -2914,7 +2913,7 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    increments: <span class="keyword">function</span>(column) {
-      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'integer'</span>, (column || <span class="string">'id'</span>), {autoIncrement: <span class="literal">true</span>});
+      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'integer'</span>, (column || <span class="string">'id'</span>), {autoIncrement: <span class="literal">true</span>, length: <span class="number">11</span>});
     },</pre></div></div>
             
         </li>
