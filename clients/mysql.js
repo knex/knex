@@ -48,6 +48,8 @@ exports.initialize = function (options) {
 // to the database.
 exports.query = function (querystring, params, callback, connection) {
 
+  if (debug) console.log([querystring, params]);
+
   // If there is a connection, use it.
   if (connection) {
     return connection.query(querystring, params, callback);

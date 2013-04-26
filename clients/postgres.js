@@ -100,11 +100,6 @@ var grammar = exports.grammar = {
     return (value !== '*' ? util.format('"%s"', value) : "*");
   },
 
-  compileInsertGetId: function(qb, values, sequence) {
-    if (!sequence) sequence = 'id';
-    return this.compileInsert(qb, values); // + ' returning ' + this.wrap(sequence);
-  },
-
   compileTruncate: function (qb) {
     var query = {};
     query['truncate ' + this.wrapTable(qb.from) + ' restart identity'] = [];

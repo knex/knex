@@ -641,8 +641,7 @@
     insert: function(values, returning) {
       if (!_.isArray(values)) values = values ? [values] : [];
       for (var i = 0, l = values.length; i < l; i++) {
-        var record = values[i];
-        this.bindings = this.bindings.concat(_.values(record));
+        this.bindings = this.bindings.concat(_.values(values[i]));
       }
       var str = this.grammar.compileInsert(this, values);
       return Knex.runQuery(this, {sql: str, bindings: this._cleanBindings(), type: 'insert'});
@@ -1151,7 +1150,7 @@
 
     // Create a new auto-incrementing column on the table.
     increments: function(column) {
-      return this._addColumn('integer', (column || 'id'), {autoIncrement: true});
+      return this._addColumn('integer', (column || 'id'), {autoIncrement: true, length: 11});
     },
 
     // Create a new string column on the table.
