@@ -43,16 +43,33 @@ exports.initialize = function (options) {
   }, options.pool));
 };
 
+exports.beginTransaction = function() {
+  var connection = exports.getConnection();
+  connection.query("begin;");
+  return connection;
+};
+
+exports.commitTransaction = function(conn) {
+  conn.query("commit;");
+};
+
+exports.rollbackTransaction = function(conn) {
+  conn.query("rollback;");
+};
+
 // Execute a query on the database.
 // If the fourth parameter is set, this will be used as the connection
 // to the database.
 exports.query = function (querystring, params, callback, connection) {
+
+  if (debug) console.log([querystring, params]);
 
   // If there is a connection, use it.
   if (connection) {
     return connection.query(querystring, params, callback);
   }
 
+  // Bind all of the ? to numbered vars.
   var questionCount = 0;
   querystring = querystring.replace(/\?/g, function () {
     questionCount++;

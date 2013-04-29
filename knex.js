@@ -790,11 +790,11 @@
 
   Knex.Transaction = function(container) {
 
-    var connection = Knex.client.getConnection();
-
     // Initiate a deferred object, so we know when the
     // transaction completes or fails, we know what to do.
     var deferred = Q.defer();
+
+    var connection = Knex.client.beginTransaction();
 
     // Finish the transaction connection
     var finish = function(type, data) {
@@ -806,8 +806,14 @@
     // Call the container with the transaction
     // commit & rollback objects
     container({
-      commit: function(data) { finish.call(this, 'resolve', data); },
-      rollback: function(data) { finish.call(this, 'reject', data); },
+      commit: function(data) { 
+        Knex.client.commitTransaction(connection);
+        finish.call(this, 'resolve', data); 
+      },
+      rollback: function(data) {
+        Knex.client.rollbackTransaction(connection);
+        finish.call(this, 'reject', data); 
+      },
       connection: connection
     });
 

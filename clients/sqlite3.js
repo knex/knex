@@ -49,6 +49,8 @@ exports.initialize = function (options) {
 
 exports.query = function (querystring, params, callback, connection, type) {
 
+  if (debug) console.log([querystring, params]);
+  
   // If there is a connection, use it.
   if (connection) {
     return connection.run(querystring, params, callback);

@@ -70,6 +70,20 @@ exports.query = function (querystring, params, callback, connection) {
   });
 };
 
+exports.beginTransaction = function() {
+  var connection = exports.getConnection();
+  connection.query("start transaction;");
+  return connection;
+};
+
+exports.commitTransaction = function(conn) {
+  conn.query("commit;");
+};
+
+exports.rollbackTransaction = function(conn) {
+  conn.query("rollback;");
+};
+
 // TODO: Return table prefix.
 exports.getTablePrefix = function () {};
 
