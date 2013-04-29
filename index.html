@@ -720,6 +720,36 @@ Knex('users')
     </p>
 
 <pre>
+Knex.Transaction(function(t) {
+  
+  Knex('books')
+    .transacting(t)
+    .insert({name: 'Old Books'})
+    .then(function(row) {
+      
+      return Q.all(_.map([
+        {title: 'Canterbury Tales'},
+        {title: 'Moby Dick'},
+        {title: 'Hamlet'}
+      ], function(info) {
+
+        info.row_id = row.id;
+
+        // Some validation could take place here.
+        return Knex('book').transacting(t).insert(info);
+      
+      }));
+
+    })
+    .then(t.commit, t.rollback);
+
+}).then(function() {
+  console.log('3 new books saved.');
+}, function() {
+  console.log('Error saving the books.');
+});
+
+
 Knex.Transaction(function (t) {
   
   Knex('pieces')

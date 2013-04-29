@@ -1224,13 +1224,19 @@
     },
 
     // Create a new float column on the table.
-    float: function(column, total, places) {
-      return this._addColumn('float', column, {total: (total || 8), places: (places || 2)});
+    float: function(column, precision, scale) {
+      return this._addColumn('float', column, {
+        precision: (precision == null ? 8 : precision),
+        scale: (scale == null ? 2 : scale)
+      });
     },
 
     // Create a new decimal column on the table.
     decimal: function(column, precision, scale) {
-      return this._addColumn('decimal', column, {precision: (precision || 8), scale: (scale || 2)});
+      return this._addColumn('decimal', column, {
+        precision: (precision == null ? 8 : precision),
+        scale: (scale == null ? 2 : scale)
+      });
     },
 
     // Create a new boolean column on the table.
@@ -1292,6 +1298,8 @@
     // ----------------------------------------------------------------------
 
     // Create a new drop index command on the blueprint.
+    // If the index is an array of columns, the developer means
+    // to drop an index merely by specifying the columns involved.
     _dropIndexCommand: function(type, index) {
       var columns = [];
       if (_.isArray(index)) {
