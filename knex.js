@@ -794,27 +794,35 @@
     // transaction completes or fails, we know what to do.
     var deferred = Q.defer();
 
-    var connection = Knex.client.beginTransaction();
+    Knex.client.beginTransaction(function(err, connection) {
 
-    // Finish the transaction connection
-    var finish = function(type, data) {
-      this.connection.end();
-      this.transaction.connection = null;
-      deferred[type](data);
-    };
+      // Finish the transaction connection
+      var finish = function(type, data) {
+        connection.end();
+        this.connection = null;
+        deferred[type](data);
+      };
 
-    // Call the container with the transaction
-    // commit & rollback objects
-    container({
-      commit: function(data) { 
-        Knex.client.commitTransaction(connection);
-        finish.call(this, 'resolve', data); 
-      },
-      rollback: function(data) {
-        Knex.client.rollbackTransaction(connection);
-        finish.call(this, 'reject', data); 
-      },
-      connection: connection
+      // Call the container with the transaction
+      // commit & rollback objects
+      container({
+        commit: function(data) {
+          var transaction = this;
+          Knex.client.commitTransaction(connection, function(err) {
+            if (err) throw new Error(err);
+            finish.call(transaction, 'resolve', data);
+          });
+        },
+        rollback: function(data) {
+          var transaction = this;
+          Knex.client.rollbackTransaction(connection, function(err) {
+            if (err) throw new Error(err);
+            finish.call(transaction, 'reject', data);
+          });
+        },
+        connection: connection
+      });
+
     });
 
     return deferred.promise;
@@ -1391,8 +1399,9 @@
   // resolved transaction, otherwise calls the query on the specified client 
   // and returns a deferred promise.
   Knex.runQuery = function(builder, data) {
-    if (builder.transaction && ! builder.transaction.connection) {
-      return Q.reject(new Error('The transaction has already completed.'));
+    if (builder.transaction) {
+      if (!builder.transaction.connection) return Q.reject(new Error('The transaction has already completed.'));
+      builder.connection = builder.transaction.connection;
     }
     var deferred = Q.defer();
     Knex.client.query(data.sql, (data.bindings || []), function(err, resp) {

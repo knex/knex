@@ -40,8 +40,8 @@ exports.initialize = function (options) {
     destroy  : function(client) {
       client.close();
     },
-    max : 10,
-    min : 2,
+    max : 1,
+    min : 1,
     idleTimeoutMillis: 30000,
     log : false
   }, options.pool));
@@ -71,7 +71,21 @@ exports.query = function (querystring, params, callback, connection, type) {
     });
 
   });
+};
 
+exports.beginTransaction = function(callback) {
+  var connection = this.getConnection();
+  this.query("begin;", null, function(err) {
+    callback(err, connection);
+  }, connection);
+};
+
+exports.commitTransaction = function(connection, callback) {
+  this.query("commit;", null, callback, connection);
+};
+
+exports.rollbackTransaction = function(connection, callback) {
+  this.query("rollback;", null, callback, connection);
 };
 
 // Returns a mysql connection, with a __cid property uniquely

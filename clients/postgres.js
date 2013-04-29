@@ -43,18 +43,19 @@ exports.initialize = function (options) {
   }, options.pool));
 };
 
-exports.beginTransaction = function() {
-  var connection = exports.getConnection();
-  connection.query("begin;");
-  return connection;
+exports.beginTransaction = function(callback) {
+  var connection = this.getConnection();
+  this.query("begin;", null, function(err) {
+    callback(err, connection);
+  }, connection);
 };
 
-exports.commitTransaction = function(conn) {
-  conn.query("commit;");
+exports.commitTransaction = function(connection, callback) {
+  this.query("commit;", null, callback, connection);
 };
 
-exports.rollbackTransaction = function(conn) {
-  conn.query("rollback;");
+exports.rollbackTransaction = function(connection, callback) {
+  this.query("rollback;", null, callback, connection);
 };
 
 // Execute a query on the database.

@@ -48,7 +48,11 @@ exports.initialize = function (options) {
 // to the database.
 exports.query = function (querystring, params, callback, connection) {
 
-  if (debug) console.log([querystring, params]);
+  if (debug) {
+    var debugVars = [querystring, params];
+    if (connection) debugVars.push(connection.__cid);
+    console.log(debugVars);
+  }
 
   // If there is a connection, use it.
   if (connection) {
@@ -70,18 +74,19 @@ exports.query = function (querystring, params, callback, connection) {
   });
 };
 
-exports.beginTransaction = function() {
-  var connection = exports.getConnection();
-  connection.query("start transaction;");
-  return connection;
+exports.beginTransaction = function(callback) {
+  var connection = this.getConnection();
+  this.query("begin;", null, function(err) {
+    callback(err, connection);
+  }, connection);
 };
 
-exports.commitTransaction = function(conn) {
-  conn.query("commit;");
+exports.commitTransaction = function(connection, callback) {
+  this.query("commit;", null, callback, connection);
 };
 
-exports.rollbackTransaction = function(conn) {
-  conn.query("rollback;");
+exports.rollbackTransaction = function(connection, callback) {
+  this.query("rollback;", null, callback, connection);
 };
 
 // TODO: Return table prefix.
