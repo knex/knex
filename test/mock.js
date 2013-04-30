@@ -4,12 +4,14 @@ var Q      = require('q');
 var _      = require('underscore');
 
 Knex.Initialize({
-  client: 'mysql'
+  client: 'mysql',
+  connection: {}
 });
 
 originalQuery = Knex.client.query;
-Knex.client.query = function(querystring, bindings, callback, connection) {
-  return callback(null, [querystring, bindings, connection]);
+
+Knex.client.query = function(data, connection) {
+  return Q.resolve([data.sql, data.bindings, connection]);
 };
 
 describe('Knex', function() {

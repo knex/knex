@@ -1,87 +1,101 @@
 
 var mysql = require('mysql');
 
-var _ = require('underscore');
-var util = require('util');
+var Q           = require('q');
+var _           = require('underscore');
+var util        = require('util');
 var genericPool = require('generic-pool');
 
-var init, debug, pool, connection, connectionSettings;
+var MysqlClient = module.exports = function(name, options) {
+  if (!options.connection) {
+    throw new Error('The database connection properties must be specified.');
+  }
+  this.name  = name;
+  this.pool  = false;
+  this.debug = options.debug;
+  this.connectionSettings = options.connection;
 
-// Initializes the mysql module with an options hash,
-// containing the connection settings, as well as the
-// pool config settings
-exports.initialize = function (options) {
-
-  // If there isn't a connection setting
-  if (!options.connection) return;
-
-  connectionSettings = options.connection;
-  debug = options.debug;
-
-  // If pooling is disabled, set the query getter to
-  // something below and create a connection on the connection object
-  if (options.pool === false) {
-    pool = false;
-    connection = this.getConnection();
-    return;
+  // If pooling isn't disabled, merge the pool settings into a 
+  // new genericPool instance and set it as a property on the client.
+  if (options.pool !== false) {
+    
+    // Extend the genericPool with the options
+    // passed into the init under the "pool" option
+    var instance = this;
+    this.pool = genericPool.Pool(_.extend({
+      name : 'pool' + name,
+      create : function(callback) {
+        callback(null, instance.getConnection());
+      },
+      destroy  : function(client) {
+        client.end();
+      },
+      max : 10,
+      min : 2,
+      idleTimeoutMillis: 30000,
+      log : false
+    }, options.pool));
   }
 
-  // Extend the genericPool with the options
-  // passed into the init under the "pool" option
-  pool = genericPool.Pool(_.extend({
-    name : 'mysql',
-    create : function(callback) {
-      callback(null, exports.getConnection());
-    },
-    destroy  : function(client) {
-      client.end();
-    },
-    max : 10,
-    min : 2,
-    idleTimeoutMillis: 30000,
-    log : false
-  }, options.pool));
+  this.grammar = MysqlClient.grammar;
+  this.schemaGrammar = MysqlClient.schemaGrammar;
 };
 
-// Execute a query on the database.
-// If the fourth parameter is set, this will be used as the connection
-// to the database.
-exports.query = function (querystring, params, callback, connection) {
+_.extend(MysqlClient.prototype, {
 
-  // If there is a connection, use it.
-  if (connection) {
-    return connection.query(querystring, params, callback);
+  // Execute a query on the database.
+  // If the fourth parameter is set, this will be used as the connection
+  // to the database.
+  query: function (data, connection) {
+
+    var dfd = Q.defer();
+
+    // If there is a specific connection specified, use that.
+    if (connection) {
+
+      connection.query(data.sql, (data.bindings || []), function(err, res) {
+        if (err) return dfd.reject(err);
+        dfd.resolve(res);
+      });
+
+    } else {
+
+      // Acquire connection - callback function is called
+      // once a resource becomes available.
+      pool.acquire(function(err, client) {
+
+        if (err) return dfd.reject(err);
+
+        // Make the query and then release the client.
+        client.query(data.sql, (data.bindings || []), function (err, res) {
+          pool.release(client);
+          if (err) return dfd.reject(err);
+          dfd.resolve(res);
+        });
+
+      });
+
+    }
+
+    return dfd.promise;
+  },
+
+  // TODO: Return table prefix.
+  getTablePrefix: function () {},
+
+  // Returns a mysql connection, with a __cid property uniquely
+  // identifying the connection.
+  getConnection: function () {
+    var connection = mysql.createConnection(this.connectionSettings);
+        connection.connect();
+        connection.__cid = _.uniqueId('__cid');
+    return connection;
   }
 
-  // Acquire connection - callback function is called
-  // once a resource becomes available.
-  pool.acquire(function(err, client) {
-
-    if (err) throw new Error(err);
-
-    // Call the querystring and then release the client
-    client.query(querystring, params, function () {
-      pool.release(client);
-      callback.apply(this, arguments);
-    });
-
-  });
-};
-
-// TODO: Return table prefix.
-exports.getTablePrefix = function () {};
-
-// Returns a mysql connection, with a __cid property uniquely
-// identifying the connection.
-exports.getConnection = function () {
-  var connection = mysql.createConnection(connectionSettings);
-      connection.connect();
-      connection.__cid = _.uniqueId('__cid');
-  return connection;
-};
+});
 
 // Extends the standard sql grammar.
-var grammar = exports.grammar = {
+MysqlClient.grammar = {
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
@@ -91,7 +105,7 @@ var grammar = exports.grammar = {
 };
 
 // Grammar for the schema builder.
-exports.schemaGrammar = _.extend({}, grammar, {
+MysqlClient.schemaGrammar = _.extend({}, MysqlClient.grammar, {
 
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment'],

@@ -1,7 +1,7 @@
 //     Knex.js  0.1.0
 //
 //     (c) 2013 Tim Griesser
-//     Bookshelf may be freely distributed under the MIT license.
+//     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
 //     http://knexjs.org
 (function() {
@@ -12,55 +12,15 @@
   var _ = require('underscore');
   var Q = require('q');
 
-  // `Knex` is the root namespace and a chainable function where
-  // `Knex('tableName')` is shorthand for `new Knex.Builder('tableName')`
-  // or `new Knex.Builder().from('tableName')`.
-  var Knex = function(table) {
-    return new Knex.Builder(table);
-  };
-
-  // Default client paths, located in the `./clients` directory.
-  var Clients = {
-    'mysql'    : './clients/mysql.js',
-    'postgres' : './clients/postgres.js',
-    'sqlite3'  : './clients/sqlite3.js'
-  };
-
   var push = Array.prototype.push;
+
+  // `Knex` is the root namespace and a chainable function: `Knex('tableName')`
+  var Knex = function(table) {
+    return new Knex.Builder(table, Knex.client);
+  };
 
   // Keep in sync with package.json
   Knex.VERSION = '0.0.0';
-
-  // Knex.Initialize
-  // -------
-  
-  // Takes a hash of options to initialize the database
-  // connection. The `client` is required to choose which client
-  // path above is loaded, or to specify a custom path to a client.
-  // Other options, such as `connection` or `pool` are passed 
-  // into `client.initialize`.
-  Knex.Initialize = function(options) {
-    options || (options = {});
-    var client = options.client;
-    if (!client) {
-      throw new Error('The client is required to use Knex.');
-    }
-    
-    // Checks if this is a default client. If it's not,
-    // require it as the path to the client if it's a string,
-    // and otherwise, set the object to the client.
-    if (Clients[client]) {
-      Knex.client = require(Clients[client]);
-    } else {
-      if (_.isString(client)) {
-        Knex.client = require(client);  
-      } else {
-        Knex.client = client;
-      }
-    }
-
-    Knex.client.initialize(options);
-  };
 
   // Knex.Grammar
   // -------
@@ -331,18 +291,18 @@
 
   // Knex.Builder
   // -------
-  var Builder = Knex.Builder = function(table) {
+  var Builder = Knex.Builder = function(table, client) {
+    client || (client = {});
     this.table = table;
     this.reset();
-    this.grammar = new Grammar(Knex.client.grammar);
+    this.client = client;
+    this.grammar = new Grammar(client.grammar);
   };
 
   // All operators used in the `where` clause generation.
   var operators = ['=', '<', '>', '<=', '>=', 'like', 'not like', 'between', 'ilike'];
 
   Builder.prototype = {
-
-    idAttr: 'id',
 
     // Sets the `tableName` on the query.
     from: function(tableName) {
@@ -351,9 +311,9 @@
       return this;
     },
 
-    // Set the `idAttribute` for the query.
-    idAttribute: function(id) {
-      this.idAttr = id;
+    // Specifies to returns the statement as SQL rather than as a promise.
+    asSql: function() {
+      this.asSql = true;
       return this;
     },
 
@@ -368,7 +328,7 @@
     clone: function() {
       var item = new Builder(this.table);
       var items = [
-        'isDistinct', 'idAttr', 'joins',
+        'isDistinct', 'joins',
         'wheres', 'orders', 'columns', 'bindings',
         'grammar', 'connection', 'transaction'
       ];
@@ -386,7 +346,6 @@
       this.orders = [];
       this.columns = [];
       this.bindings = [];
-      this.idAttr = Builder.prototype.idAttr;
       this.isDistinct = false;
     },
 
@@ -397,7 +356,6 @@
         order: this.orders,
         columns: this.columns,
         bindings: this.bindings,
-        idAttr: this.idAttr,
         isDistinct: this.isDistinct
       };
     },
@@ -654,19 +612,15 @@
 
     // Performs an `INSERT` query, returning a promise.
     insert: function(values, returning) {
-      var str;
-      returning || (returning = this.idAttr);
       if (!_.isArray(values)) values = values ? [values] : [];
       for (var i = 0, l = values.length; i < l; i++) {
         var record = values[i];
         this.bindings = this.bindings.concat(_.values(record));
       }
-      if (returning) {
-        str = this.grammar.compileInsertGetId(this, values, returning);
-      } else {
-        str = this.grammar.compileInsert(this, values);
-      }
-      return Knex.runQuery(this, {sql: str, bindings: this._cleanBindings(), type: 'insert'});
+      return Knex.runQuery(this, {
+        sql: this.grammar.compileInsert(this, values), 
+        bindings: this._cleanBindings(), type: 'insert'
+      });
     },
 
     // Performs an `update` query, returning a promise.
@@ -786,7 +740,7 @@
 
   Knex.Transaction = function(container) {
 
-    var connection = Knex.client.getConnection();
+    var connection = this.client.getConnection();
 
     // Initiate a deferred object, so we know when the
     // transaction completes or fails, we know what to do.
@@ -810,28 +764,34 @@
     return deferred.promise;
   };
 
+
   // Knex.Schema
   // ---------
 
-  // Top level object for Schema related functions
-  var Schema = Knex.Schema = {};
+  var initSchema = function(Target, client) {
 
-  // Attach main static methods, which passthrough to the
-  // SchemaBuilder instance methods
-  _.each(['connection', 'createTable', 'dropTable', 'dropTableIfExists', 'table', 'transacting'], function(method) {
+    // Top level object for Schema related functions
+    var Schema = Target.Schema = {};
 
-    Schema[method] = function() {
-      var builder = new SchemaBuilder();
-      return builder[method].apply(builder, arguments);
-    };
-  });
+    // Attach main static methods, which passthrough to the
+    // SchemaBuilder instance methods
+    _.each(['connection', 'createTable', 'dropTable', 'dropTableIfExists', 'table', 'transacting'], function(method) {
+
+      Schema[method] = function() {
+        var builder = new SchemaBuilder(client);
+        return builder[method].apply(builder, arguments);
+      };
+    });
+
+  };
 
   
   // Knex.SchemaBuilder
   // --------
 
-  var SchemaBuilder = Knex.SchemaBuilder = function() {
-    this.grammar = new Knex.SchemaGrammar(Knex.client.schemaGrammar);
+  var SchemaBuilder = Knex.SchemaBuilder = function(client) {
+    this.client  = client;
+    this.grammar = new Knex.SchemaGrammar(client.schemaGrammar);
   };
 
   SchemaBuilder.prototype = {
@@ -839,15 +799,6 @@
     _connection: null,
 
     transaction: false,
-
-    // Connection
-    connection: function(connection) {
-      if (connection == null) {
-        return this._connection || Knex.client.getConnection();
-      }
-      this._connection = connection;
-      return this;
-    },
 
     // Used before a builder call, specifying if this call
     // is nested inside a transaction
@@ -1356,16 +1307,91 @@
   // resolved transaction, otherwise calls the query on the specified client 
   // and returns a deferred promise.
   Knex.runQuery = function(builder, data) {
+    
     if (builder.transaction && ! builder.transaction.connection) {
       return Q.reject(new Error('The transaction has already completed.'));
     }
-    var deferred = Q.defer();
-    Knex.client.query(data.sql, (data.bindings || []), function(err, resp) {
-      Knex.lastQuery = data.sql;
-      if (err) return deferred.reject(err);
-      deferred.resolve(resp);
-    }, builder.connection, data.type);
-    return deferred.promise;
+    
+    // Query on the query builder, which should resolve with a promise, 
+    // spreadable to include more information including the query.
+    return builder.client.query(data, builder.connection);
+  };
+
+  // Knex.Initialize
+  // -------
+  
+  // Takes a hash of options to initialize the database
+  // connection. The `client` is required to choose which client
+  // path above is loaded, or to specify a custom path to a client.
+  // Other options, such as `connection` or `pool` are passed 
+  // into `client.initialize`.
+  Knex.Initialize = function(name, options) {
+    var Target, ClientCtor, client;
+
+    if (_.isObject(name)) {
+      options = name;
+      name    = 'default';
+    }
+    
+    // Don't try to initialize the same `name` twice... If necessary,
+    // delete the instance from `Knex.Instances`.
+    if (Knex.Instances[name]) {
+      throw new Error('An instance named ' + name + ' already exists');
+    }
+
+    client = options.client;
+    
+    if (!client) throw new Error('The client is required to use Knex.');
+
+    // Checks if this is a default client. If it's not,
+    // require it as the path to the client if it's a string,
+    // and otherwise, set the object to the client.
+    if (Clients[client]) {
+      ClientCtor = require(Clients[client]);
+    } else if (_.isString(client)) {
+      ClientCtor = require(client);
+    } else {
+      ClientCtor = client;
+    }
+
+    // Creates a new instance of the db client, passing the name and options.
+    client = new ClientCtor(name, _.omit(options, 'client'));
+
+    // If this is named "default" then we're setting this on the Knex
+    if (name === 'default') {
+      Target = Knex.Instances['default'] = Knex;
+    } else {
+      Target = Knex.Instances[name] = function(table) {
+        return new Knex.Builder(table, client);
+      };
+
+      // Inherit static properties.
+      _.extend(Target, Knex);
+    }
+
+    // Initialize the schema builder methods.
+    initSchema(Target, client);
+
+    // Specifically set the client on the current target.
+    Target.client = client;
+  };
+
+  // Default client paths, located in the `./clients` directory.
+  var Clients = {
+    'mysql'    : './clients/mysql.js',
+    'postgres' : './clients/postgres.js',
+    'sqlite3'  : './clients/sqlite3.js'
+  };
+
+  // Named instances of Knex, presumably with different database
+  // connections, the main instance being named "default"...
+  Knex.Instances = {};
+
+  Knex.getInstance = function(name, options) {
+    if (!Knex.Instances[name]) {
+      throw new Error('There is no ' + name + ' instance of Knex.');
+    }
+    return Knex.Instances[name];
   };
 
   // Export the Knex module
