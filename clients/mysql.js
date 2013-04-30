@@ -80,9 +80,6 @@ _.extend(MysqlClient.prototype, {
     return dfd.promise;
   },
 
-  // TODO: Return table prefix.
-  getTablePrefix: function () {},
-
   // Returns a mysql connection, with a __cid property uniquely
   // identifying the connection.
   getConnection: function () {
@@ -90,6 +87,27 @@ _.extend(MysqlClient.prototype, {
         connection.connect();
         connection.__cid = _.uniqueId('__cid');
     return connection;
+  },
+
+  // Begins a transaction statement on the instance,
+  // resolving with the connection of the current transaction.
+  initTransaction: function() {
+    var dfd = Q.defer();
+    var connection = this.getConnection();
+    connection.query('begin;', [], function(err) {
+      if (err) dfd.reject(err);
+      dfd.resolve(connection);
+    });
+    return dfd.promise;
+  },
+
+  finishTransaction: function(type, trans, promise) {
+    trans.connection.query(type + ';', [], function(err, resp) {
+      trans.connection.end();
+      trans.connection = null;
+      if (type === 'commit') promise.resolve(resp);
+      if (type === 'rollback') promise.reject(resp);
+    });
   }
 
 });

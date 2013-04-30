@@ -41,16 +41,14 @@
 
   Grammar.prototype = {
 
-    tablePrefix: '',
-
     dateFormat: 'Y-m-d H:i:s',
 
     // Compiles the `select` statement, or nested sub-selects
     // by calling each of the component compilers, trimming out
     // the empties, and returning a generated query string.
     compileSelect: function(qb) {
-      if (_.isEmpty(qb.columns)) qb.columns = ['*'];
       var sql = {};
+      if (_.isEmpty(qb.columns)) qb.columns = ['*'];
       for (var i = 0, l = components.length; i < l; i++) {
         var component = components[i];
         if (_.result(qb, component) != null) {
@@ -291,7 +289,7 @@
 
     wrapTable: function(table) {
       if (table instanceof Knex.Raw) return table.value;
-      return this.wrapValue(this.tablePrefix + table);
+      return this.wrapValue(table);
     },
 
     columnize: function(columns) {
@@ -647,12 +645,12 @@
       return Knex.runQuery(this, {sql: this.grammar.compileUpdate(this, values), bindings: this._cleanBindings(), type: 'update'});
     },
 
-    // Executes a delete statement on the query;
+    // Alias to del
     "delete": function() {
       return this.del();
     },
 
-    // Alias to delete
+    // Executes a delete statement on the query;    
     del: function() {
       return Knex.runQuery(this, {sql: this.grammar.compileDelete(this), bindings: this._cleanBindings()});
     },
@@ -757,47 +755,32 @@
   // ---------
 
   Knex.Transaction = function(container) {
+    
+    var client = this.client;
+    
+    return client.initTransaction().then(function(connection) {
 
-    var connection = this.client.getConnection();
-
-    // Initiate a deferred object, so we know when the
-    // transaction completes or fails, we know what to do.
-    var deferred = Q.defer();
-
-    Knex.client.beginTransaction(function(err, connection) {
-
-      // Finish the transaction connection
-      var finish = function(type, data) {
-        connection.end();
-        this.connection = null;
-        deferred[type](data);
-      };
-
+      // Initiate a deferred object, so we know when the
+      // transaction completes or fails, we know what to do.
+      var dfd = Q.defer();
+    
       // Call the container with the transaction
       // commit & rollback objects
       container({
-        commit: function(data) {
-          var transaction = this;
-          Knex.client.commitTransaction(connection, function(err) {
-            if (err) throw new Error(err);
-            finish.call(transaction, 'resolve', data);
-          });
+        commit: function() {
+          client.finishTransaction('commit', this, dfd);
         },
-        rollback: function(data) {
-          var transaction = this;
-          Knex.client.rollbackTransaction(connection, function(err) {
-            if (err) throw new Error(err);
-            finish.call(transaction, 'reject', data);
-          });
+        rollback: function() {
+          client.finishTransaction('rollback', this, dfd);
         },
+        // "rollback to"?
+
         connection: connection
       });
 
+      return dfd.promise;
     });
-
-    return deferred.promise;
   };
-
 
   // Knex.Schema
   // ---------
@@ -818,7 +801,6 @@
     });
 
   };
-
   
   // Knex.SchemaBuilder
   // --------
@@ -844,7 +826,6 @@
     // Determine if the given table exists.
     hasTable: function(table) {
       var sql  = this.grammar.compileTableExists();
-      table = this.connection.getTablePrefix() + table;
       var deferred = Q.defer();
       Knex.runQuery(this, {sql: sql, bindings: [table]}).then(function(resp) {
         if (resp.length > 0) {
@@ -975,7 +956,7 @@
       return this["type" + capitalize(column.type)](column);
     },
 
-    // Add a prefix to an array of values.
+    // Add a prefix to an array of values, utilized in the client libs.
     prefixArray: function(prefix, values) {
       return _.map(values, function(value) { return prefix + ' ' + value; });
     },
@@ -1187,7 +1168,7 @@
 
     // Alias for tinyinteger column.
     tinyint: function(column) {
-      return this._addColumn('tinyInteger', column);
+      return this.tinyInteger(column);
     },
 
     // Create a new float column on the table.
@@ -1206,12 +1187,12 @@
       });
     },
 
-    // Create a new boolean column on the table.
+    // Alias to "bool"
     boolean: function(column) {
-      return this._addColumn('boolean', column);
+      return this.bool(column);
     },
 
-    // Alias to "boolean".
+    // Create a new boolean column on the table
     bool: function(column) {
       return this._addColumn('boolean', column);
     },
@@ -1242,13 +1223,13 @@
       this.timestamp('updated_at');
     },
 
-    // Create a new enum column on the table.
+    // Alias to enum.
     "enum": function(column, allowed) {
-      return this.enu.apply(this, arguments);
+      return this.enu(column, allowed);
     },
 
-    // Alias to enum.
-    enu: function() {
+    // Create a new enum column on the table.
+    enu: function(column, allowed) {
       return this._addColumn('enum', column, {allowed: allowed});
     },
 

@@ -98,9 +98,6 @@ exports.query = function (querystring, params, callback, connection) {
   });
 };
 
-// TODO: Return table prefix.
-exports.getTablePrefix = function () {};
-
 // Returns a pg connection, with a __cid property uniquely
 // identifying the connection.
 exports.getConnection = function () {
