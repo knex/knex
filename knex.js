@@ -138,12 +138,12 @@
 
     // Compiles a where in clause.
     whereIn: function(qb, where) {
-      return this.wrap(where.column) + ' in (' + this.parameterize(where.values) + ')';
+      return this.wrap(where.column) + ' in (' + this.parameterize(where.value) + ')';
     },
 
     // Compiles a where not in clause.
     whereNotIn: function(qb, where) {
-      return this.wrap(where.column) + ' not in (' + this.parameterize(where.values) + ')';
+      return this.wrap(where.column) + ' not in (' + this.parameterize(where.value) + ')';
     },
 
     // Compiles a sub-where in clause.
@@ -208,10 +208,14 @@
     // inserts using a single query statement.
     compileInsert: function(qb, values) {
       var table = this.wrapTable(qb.table);
-      var columns = this.columnize(_.keys(values[0]));
-      var parameters = this.parameterize(values[0]);
-      
+      var columns = this.columnize(_.keys(values[0]).sort());
+      var parameters = this.parameterize(_.values(values[0]));
       var paramBlocks = [];
+
+      // If there are any "where" clauses, we need to omit 
+      // any bindings that may have been associated with them.
+      if (qb.wheres.length > 0) this._clearWhereBindings(qb);
+
       for (var i = 0, l = values.length; i < l; ++i) {
         paramBlocks.push("(" + parameters + ")");
       }
@@ -219,9 +223,23 @@
       return "insert into " + table + " (" + columns + ") values " + paramBlocks.join(', ');
     },
 
-    // Compiles an `insert`, getting the id of the insert row.
-    compileInsertGetId: function(qb, values) {
-      return this.compileInsert(qb, values);
+    // Depending on the type of `where` clause, this will appropriately
+    // remove any binding caused by "where" constraints, allowing the same
+    // query to be used for `insert` and `update` without issue.
+    _clearWhereBindings: function(qb) {
+      var wheres = qb.wheres;
+      var bindingCount = 0;
+      for (var i = 0, l = wheres.length; i<l; i++) {
+        var where = wheres[i];
+        if (_.isArray(where.value)) {
+          bindingCount += where.value.length;
+        } else if (where.query) {
+          bindingCount += where.query.bindings.length;
+        } else {
+          bindingCount += 1;
+        }
+      }
+      qb.bindings = qb.bindings.slice(bindingCount);
     },
 
     // Compiles an `update` query.
@@ -349,7 +367,7 @@
       this.isDistinct = false;
     },
 
-    toJSON: function () {
+    toJSON: function() {
       return {
         joins: this.joins,
         wheres: this.wheres,
@@ -470,7 +488,7 @@
       this.wheres.push({
         type: (condition || 'In'),
         column: column,
-        values: values,
+        value: values,
         bool: bool
       });
       push.apply(this.bindings, values);
@@ -610,17 +628,17 @@
       return this;
     },
 
-    // Performs an `INSERT` query, returning a promise.
+    // Performs an `insert` query, returning a promise.
     insert: function(values, returning) {
       if (!_.isArray(values)) values = values ? [values] : [];
-      for (var i = 0, l = values.length; i < l; i++) {
-        var record = values[i];
-        this.bindings = this.bindings.concat(_.values(record));
+      for (var i = 0, l = values.length; i<l; i++) {
+        var obj = sortObject(values[i]);
+        for (var i2 = 0, l2 = obj.length; i2 < l2; i2++) {
+          this.bindings.push(obj[i2][1]);
+        }
       }
-      return Knex.runQuery(this, {
-        sql: this.grammar.compileInsert(this, values), 
-        bindings: this._cleanBindings(), type: 'insert'
-      });
+      var str = this.grammar.compileInsert(this, values);
+      return Knex.runQuery(this, {sql: str, bindings: this._cleanBindings(), type: 'insert'});
     },
 
     // Performs an `update` query, returning a promise.
@@ -673,7 +691,7 @@
       query.table = this.table;
       callback.call(query, query);
       this.wheres.push({type: 'Nested', query: query, bool: bool});
-      this.bindings = this.bindings.concat(query.bindings);
+      push.apply(this.bindings, query.bindings);
       return this;
     },
 
@@ -746,19 +764,35 @@
     // transaction completes or fails, we know what to do.
     var deferred = Q.defer();
 
-    // Finish the transaction connection
-    var finish = function(type, data) {
-      this.connection.end();
-      this.transaction.connection = null;
-      deferred[type](data);
-    };
+    Knex.client.beginTransaction(function(err, connection) {
 
-    // Call the container with the transaction
-    // commit & rollback objects
-    container({
-      commit: function(data) { finish.call(this, 'resolve', data); },
-      rollback: function(data) { finish.call(this, 'reject', data); },
-      connection: connection
+      // Finish the transaction connection
+      var finish = function(type, data) {
+        connection.end();
+        this.connection = null;
+        deferred[type](data);
+      };
+
+      // Call the container with the transaction
+      // commit & rollback objects
+      container({
+        commit: function(data) {
+          var transaction = this;
+          Knex.client.commitTransaction(connection, function(err) {
+            if (err) throw new Error(err);
+            finish.call(transaction, 'resolve', data);
+          });
+        },
+        rollback: function(data) {
+          var transaction = this;
+          Knex.client.rollbackTransaction(connection, function(err) {
+            if (err) throw new Error(err);
+            finish.call(transaction, 'reject', data);
+          });
+        },
+        connection: connection
+      });
+
     });
 
     return deferred.promise;
@@ -1123,8 +1157,7 @@
 
     // Create a new auto-incrementing column on the table.
     increments: function(column) {
-      column || (column = 'id');
-      return this._addColumn('integer', column, {autoIncrement: true});
+      return this._addColumn('integer', (column || 'id'), {autoIncrement: true, length: 11});
     },
 
     // Create a new string column on the table.
@@ -1132,29 +1165,50 @@
       return this._addColumn('string', column, {length: (length || 255)});
     },
 
+    // Alias varchar to string
+    varchar: function(column, length) {
+      return this.string(column, length);
+    },
+
     // Create a new text column on the table.
-    text: function(column) {
-      return this._addColumn('text', column);
+    text: function(column, length) {
+      return this._addColumn('text', column, {length: (length || false)});
     },
 
     // Create a new integer column on the table.
-    integer: function(column) {
-      return this._addColumn('integer', column);
+    integer: function(column, length) {
+      return this._addColumn('integer', column, {length: (length || 11)});
+    },
+
+    // Create a new tinyinteger column on the table.
+    tinyInteger: function(column) {
+      return this._addColumn('tinyInteger', column);
+    },
+
+    // Alias for tinyinteger column.
+    tinyint: function(column) {
+      return this._addColumn('tinyInteger', column);
     },
 
     // Create a new float column on the table.
-    float: function(column, total, places) {
-      return this._addColumn('float', column, {total: (total || 8), places: (places || 2)});
+    float: function(column, precision, scale) {
+      return this._addColumn('float', column, {
+        precision: (precision == null ? 8 : precision),
+        scale: (scale == null ? 2 : scale)
+      });
     },
 
     // Create a new decimal column on the table.
     decimal: function(column, precision, scale) {
-      return this._addColumn('decimal', column, {precision: (precision || 8), scale: (scale || 2)});
+      return this._addColumn('decimal', column, {
+        precision: (precision == null ? 8 : precision),
+        scale: (scale == null ? 2 : scale)
+      });
     },
 
     // Create a new boolean column on the table.
     boolean: function(column) {
-      return this.bool(columns);
+      return this._addColumn('boolean', column);
     },
 
     // Alias to "boolean".
@@ -1198,6 +1252,11 @@
       return this._addColumn('enum', column, {allowed: allowed});
     },
 
+    // Create a new bit column on the table.
+    bit: function(column, length) {
+      return this._addColumn('bit', column, {length: (length || false)});
+    },
+
     // Create a new binary column on the table.
     binary: function(column) {
       return this._addColumn('binary', column);
@@ -1206,6 +1265,8 @@
     // ----------------------------------------------------------------------
 
     // Create a new drop index command on the blueprint.
+    // If the index is an array of columns, the developer means
+    // to drop an index merely by specifying the columns involved.
     _dropIndexCommand: function(type, index) {
       var columns = [];
       if (_.isArray(index)) {
@@ -1224,7 +1285,7 @@
       if (!_.isArray(columns)) columns = columns ? [columns] : [];
       if (index === null) {
         var table = this.table.replace(/\.|-/g, '_');
-        index = (table + '_' + _.map(columns, function (col) { return col.name; }).join('_') + '_' + type).toLowerCase();
+        index = (table + '_' + _.map(columns, function(col) { return col.name; }).join('_') + '_' + type).toLowerCase();
       }
       return this._addCommand(type, {index: index, columns: columns});
     },
@@ -1272,17 +1333,17 @@
       return this;
     },
 
-    index: function (name) {
+    index: function(name) {
       this.isIndex = name || true;
       return this;
     },
 
-    primary: function (name) {
+    primary: function(name) {
       this.isPrimary = name || true;
       return this;
     },
 
-    unique: function (name) {
+    unique: function(name) {
       this.isUnique = name || true;
       return this;
     }
@@ -1291,6 +1352,12 @@
 
   var capitalize = function(word) {
     return word.charAt(0).toUpperCase() + word.slice(1);
+  };
+
+  var sortObject = function(obj) {
+    return _.sortBy(_.pairs(obj), function(a) { 
+      return a[0]; 
+    });
   };
 
   // Knex.Raw
@@ -1307,9 +1374,9 @@
   // resolved transaction, otherwise calls the query on the specified client 
   // and returns a deferred promise.
   Knex.runQuery = function(builder, data) {
-    
-    if (builder.transaction && ! builder.transaction.connection) {
-      return Q.reject(new Error('The transaction has already completed.'));
+    if (builder.transaction) {
+      if (!builder.transaction.connection) return Q.reject(new Error('The transaction has already completed.'));
+      builder.connection = builder.transaction.connection;
     }
     
     // Query on the query builder, which should resolve with a promise, 

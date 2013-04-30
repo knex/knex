@@ -40,8 +40,8 @@ exports.initialize = function (options) {
     destroy  : function(client) {
       client.close();
     },
-    max : 10,
-    min : 2,
+    max : 1,
+    min : 1,
     idleTimeoutMillis: 30000,
     log : false
   }, options.pool));
@@ -49,6 +49,8 @@ exports.initialize = function (options) {
 
 exports.query = function (querystring, params, callback, connection, type) {
 
+  if (debug) console.log([querystring, params]);
+  
   // If there is a connection, use it.
   if (connection) {
     return connection.run(querystring, params, callback);
@@ -69,7 +71,21 @@ exports.query = function (querystring, params, callback, connection, type) {
     });
 
   });
+};
 
+exports.beginTransaction = function(callback) {
+  var connection = this.getConnection();
+  this.query("begin;", null, function(err) {
+    callback(err, connection);
+  }, connection);
+};
+
+exports.commitTransaction = function(connection, callback) {
+  this.query("commit;", null, callback, connection);
+};
+
+exports.rollbackTransaction = function(connection, callback) {
+  this.query("rollback;", null, callback, connection);
 };
 
 // Returns a mysql connection, with a __cid property uniquely
@@ -278,6 +294,11 @@ exports.schemaGrammar = _.extend({}, grammar, {
   
   // Create the column definition for a boolean type.
   typeBoolean: function(column) {
+    return 'tinyint';
+  },
+
+  // Create the column definition for a tinyint type.
+  typeTinyInteger: function() {
     return 'tinyint';
   },
   

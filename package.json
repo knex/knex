@@ -2,7 +2,7 @@
   "name": "knex",
   "version": "0.0.0",
   "description": "a fun sql query builder",
-  "main": "index.js",
+  "main": "knex.js",
   "directories": {
     "test": "test"
   },
@@ -11,7 +11,7 @@
     "mysql": "~2.0.0-alpha5"
   },
   "dependencies": {
-    "q": "0.8.x",
+    "q": "0.9.x",
     "underscore": "1.4.x",
     "generic-pool": "2.0.x"
   },

@@ -12,7 +12,7 @@
       font-size: 14px;
       line-height: 22px;
       font-family: Helvetica Neue, Helvetica, Arial;
-      background: #FEFFFC url(docs/images/background.png);
+      background: #f7f7f7 url(docs/images/background.png);
     }
     .interface {
       font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
@@ -336,6 +336,7 @@
     <ul class="toc_section">
       <li>– <a href="#Schema-connection">connection</a></li>
       <li>– <a href="#Schema-createTable">createTable</a></li>
+      <li>– <a href="#Schema-renameTable">createTable</a></li>
       <li>– <a href="#Schema-dropTable">dropTable</a></li>
       <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
       <li>– <a href="#Schema-table">table</a></li>
@@ -719,6 +720,36 @@ Knex('users')
     </p>
 
 <pre>
+Knex.Transaction(function(t) {
+  
+  Knex('books')
+    .transacting(t)
+    .insert({name: 'Old Books'})
+    .then(function(row) {
+      
+      return Q.all(_.map([
+        {title: 'Canterbury Tales'},
+        {title: 'Moby Dick'},
+        {title: 'Hamlet'}
+      ], function(info) {
+
+        info.row_id = row.id;
+
+        // Some validation could take place here.
+        return Knex('book').transacting(t).insert(info);
+      
+      }));
+
+    })
+    .then(t.commit, t.rollback);
+
+}).then(function() {
+  console.log('3 new books saved.');
+}, function() {
+  console.log('Error saving the books.');
+});
+
+
 Knex.Transaction(function (t) {
   
   Knex('pieces')

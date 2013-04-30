@@ -43,16 +43,34 @@ exports.initialize = function (options) {
   }, options.pool));
 };
 
+exports.beginTransaction = function(callback) {
+  var connection = this.getConnection();
+  this.query("begin;", null, function(err) {
+    callback(err, connection);
+  }, connection);
+};
+
+exports.commitTransaction = function(connection, callback) {
+  this.query("commit;", null, callback, connection);
+};
+
+exports.rollbackTransaction = function(connection, callback) {
+  this.query("rollback;", null, callback, connection);
+};
+
 // Execute a query on the database.
 // If the fourth parameter is set, this will be used as the connection
 // to the database.
 exports.query = function (querystring, params, callback, connection) {
+
+  if (debug) console.log([querystring, params]);
 
   // If there is a connection, use it.
   if (connection) {
     return connection.query(querystring, params, callback);
   }
 
+  // Bind all of the ? to numbered vars.
   var questionCount = 0;
   querystring = querystring.replace(/\?/g, function () {
     questionCount++;
@@ -192,8 +210,7 @@ exports.schemaGrammar = _.extend({}, grammar, {
 
   // Compile a rename table command.
   compileRename: function(blueprint, command) {
-    var from = this.wrapTable(blueprint);
-    return "alter table " + from + " rename to " + this.wrapTable(command.to);
+    return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
   },
 
   // Create the column definition for a string type.
@@ -254,6 +271,11 @@ exports.schemaGrammar = _.extend({}, grammar, {
   // Create the column definition for a timestamp type.
   typeTimestamp: function(column) {
     return 'timestamp';
+  },
+
+  // Create the column definition for a bit type.
+  typeBit: function(column) {
+    return column.length !== false ? 'bit(' + column.length + ')' : 'bit';
   },
 
   // Create the column definition for a binary type.

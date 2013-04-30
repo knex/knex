@@ -482,7 +482,7 @@ including any nested join queries.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    whereIn: <span class="keyword">function</span>(qb, where) {
-      <span class="keyword">return</span> <span class="keyword">this</span>.wrap(where.column) + <span class="string">' in ('</span> + <span class="keyword">this</span>.parameterize(where.values) + <span class="string">')'</span>;
+      <span class="keyword">return</span> <span class="keyword">this</span>.wrap(where.column) + <span class="string">' in ('</span> + <span class="keyword">this</span>.parameterize(where.value) + <span class="string">')'</span>;
     },</pre></div></div>
             
         </li>
@@ -499,7 +499,7 @@ including any nested join queries.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    whereNotIn: <span class="keyword">function</span>(qb, where) {
-      <span class="keyword">return</span> <span class="keyword">this</span>.wrap(where.column) + <span class="string">' not in ('</span> + <span class="keyword">this</span>.parameterize(where.values) + <span class="string">')'</span>;
+      <span class="keyword">return</span> <span class="keyword">this</span>.wrap(where.column) + <span class="string">' not in ('</span> + <span class="keyword">this</span>.parameterize(where.value) + <span class="string">')'</span>;
     },</pre></div></div>
             
         </li>
@@ -672,16 +672,9 @@ inserts using a single query statement.</p>
             
             <div class="content"><div class='highlight'><pre>    compileInsert: <span class="keyword">function</span>(qb, values) {
       <span class="keyword">var</span> table = <span class="keyword">this</span>.wrapTable(qb.table);
-      <span class="keyword">var</span> columns = <span class="keyword">this</span>.columnize(_.keys(values[<span class="number">0</span>]));
-      <span class="keyword">var</span> parameters = <span class="keyword">this</span>.parameterize(values[<span class="number">0</span>]);
-      
-      <span class="keyword">var</span> paramBlocks = [];
-      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = values.length; i &lt; l; ++i) {
-        paramBlocks.push(<span class="string">"("</span> + parameters + <span class="string">")"</span>);
-      }
-
-      <span class="keyword">return</span> <span class="string">"insert into "</span> + table + <span class="string">" ("</span> + columns + <span class="string">") values "</span> + paramBlocks.join(<span class="string">', '</span>);
-    },</pre></div></div>
+      <span class="keyword">var</span> columns = <span class="keyword">this</span>.columnize(_.keys(values[<span class="number">0</span>]).sort());
+      <span class="keyword">var</span> parameters = <span class="keyword">this</span>.parameterize(_.values(values[<span class="number">0</span>]));
+      <span class="keyword">var</span> paramBlocks = [];</pre></div></div>
             
         </li>
         
@@ -692,12 +685,18 @@ inserts using a single query statement.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
-              <p>Compiles an <code>insert</code>, getting the id of the insert row.</p>
+              <p>If there are any &quot;where&quot; clauses, we need to omit 
+any bindings that may have been associated with them.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    compileInsertGetId: <span class="keyword">function</span>(qb, values) {
-      <span class="keyword">return</span> <span class="keyword">this</span>.compileInsert(qb, values);
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> (qb.wheres.length &gt; <span class="number">0</span>) <span class="keyword">this</span>._clearWhereBindings(qb);
+
+      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = values.length; i &lt; l; ++i) {
+        paramBlocks.push(<span class="string">"("</span> + parameters + <span class="string">")"</span>);
+      }
+
+      <span class="keyword">return</span> <span class="string">"insert into "</span> + table + <span class="string">" ("</span> + columns + <span class="string">") values "</span> + paramBlocks.join(<span class="string">', '</span>);
     },</pre></div></div>
             
         </li>
@@ -708,6 +707,37 @@ inserts using a single query statement.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>Depending on the type of <code>where</code> clause, this will appropriately
+remove any binding caused by &quot;where&quot; constraints, allowing the same
+query to be used for <code>insert</code> and <code>update</code> without issue.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _clearWhereBindings: <span class="keyword">function</span>(qb) {
+      <span class="keyword">var</span> wheres = qb.wheres;
+      <span class="keyword">var</span> bindingCount = <span class="number">0</span>;
+      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = wheres.length; i&lt;l; i++) {
+        <span class="keyword">var</span> where = wheres[i];
+        <span class="keyword">if</span> (_.isArray(where.value)) {
+          bindingCount += where.value.length;
+        } <span class="keyword">else</span> <span class="keyword">if</span> (where.query) {
+          bindingCount += where.query.bindings.length;
+        } <span class="keyword">else</span> {
+          bindingCount += <span class="number">1</span>;
+        }
+      }
+      qb.bindings = qb.bindings.slice(bindingCount);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Compiles an <code>update</code> query.</p>
 
@@ -725,11 +755,11 @@ inserts using a single query statement.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Compiles a <code>delete</code> query.</p>
 
@@ -744,11 +774,11 @@ inserts using a single query statement.</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Compiles a <code>truncate</code> query.</p>
 
@@ -804,11 +834,11 @@ inserts using a single query statement.</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <h2>Knex.Builder</h2>
 
@@ -817,11 +847,11 @@ inserts using a single query statement.</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               
             </div>
@@ -835,11 +865,11 @@ inserts using a single query statement.</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>All operators used in the <code>where</code> clause generation.</p>
 
@@ -847,28 +877,7 @@ inserts using a single query statement.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> operators = [<span class="string">'='</span>, <span class="string">'&lt;'</span>, <span class="string">'&gt;'</span>, <span class="string">'&lt;='</span>, <span class="string">'&gt;='</span>, <span class="string">'like'</span>, <span class="string">'not like'</span>, <span class="string">'between'</span>, <span class="string">'ilike'</span>];
 
-  Builder.prototype = {
-
-    idAttr: <span class="string">'id'</span>,</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-42">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
-              </div>
-              <p>Sets the <code>tableName</code> on the query.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    from: <span class="keyword">function</span>(tableName) {
-      <span class="keyword">if</span> (!tableName) <span class="keyword">return</span> <span class="keyword">this</span>.table;
-      <span class="keyword">this</span>.table = tableName;
-      <span class="keyword">return</span> <span class="keyword">this</span>;
-    },</pre></div></div>
+  Builder.prototype = {</pre></div></div>
             
         </li>
         
@@ -879,12 +888,13 @@ inserts using a single query statement.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
-              <p>Set the <code>idAttribute</code> for the query.</p>
+              <p>Sets the <code>tableName</code> on the query.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    idAttribute: <span class="keyword">function</span>(id) {
-      <span class="keyword">this</span>.idAttr = id;
+            <div class="content"><div class='highlight'><pre>    from: <span class="keyword">function</span>(tableName) {
+      <span class="keyword">if</span> (!tableName) <span class="keyword">return</span> <span class="keyword">this</span>.table;
+      <span class="keyword">this</span>.table = tableName;
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },</pre></div></div>
             
@@ -923,7 +933,7 @@ pieces that have been set thus far</p>
             <div class="content"><div class='highlight'><pre>    clone: <span class="keyword">function</span>() {
       <span class="keyword">var</span> item = <span class="keyword">new</span> Builder(<span class="keyword">this</span>.table);
       <span class="keyword">var</span> items = [
-        <span class="string">'isDistinct'</span>, <span class="string">'idAttr'</span>, <span class="string">'joins'</span>,
+        <span class="string">'isDistinct'</span>, <span class="string">'joins'</span>,
         <span class="string">'wheres'</span>, <span class="string">'orders'</span>, <span class="string">'columns'</span>, <span class="string">'bindings'</span>,
         <span class="string">'grammar'</span>, <span class="string">'connection'</span>, <span class="string">'transaction'</span>
       ];
@@ -953,18 +963,16 @@ pieces that have been set thus far</p>
       <span class="keyword">this</span>.orders = [];
       <span class="keyword">this</span>.columns = [];
       <span class="keyword">this</span>.bindings = [];
-      <span class="keyword">this</span>.idAttr = Builder.prototype.idAttr;
       <span class="keyword">this</span>.isDistinct = <span class="literal">false</span>;
     },
 
-    toJSON: <span class="function"><span class="keyword">function</span> <span class="params">()</span> {</span>
+    toJSON: <span class="keyword">function</span>() {
       <span class="keyword">return</span> {
         joins: <span class="keyword">this</span>.joins,
         wheres: <span class="keyword">this</span>.wheres,
         order: <span class="keyword">this</span>.orders,
         columns: <span class="keyword">this</span>.columns,
         bindings: <span class="keyword">this</span>.bindings,
-        idAttr: <span class="keyword">this</span>.idAttr,
         isDistinct: <span class="keyword">this</span>.isDistinct
       };
     },</pre></div></div>
@@ -1187,7 +1195,7 @@ where key = value. </p>
       <span class="keyword">this</span>.wheres.push({
         type: (condition || <span class="string">'In'</span>),
         column: column,
-        values: values,
+        value: values,
         bool: bool
       });
       push.apply(<span class="keyword">this</span>.bindings, values);
@@ -1621,23 +1629,19 @@ where key = value. </p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-80">&#182;</a>
               </div>
-              <p>Performs an <code>INSERT</code> query, returning a promise.</p>
+              <p>Performs an <code>insert</code> query, returning a promise.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    insert: <span class="keyword">function</span>(values, returning) {
-      <span class="keyword">var</span> str;
-      returning || (returning = <span class="keyword">this</span>.idAttr);
       <span class="keyword">if</span> (!_.isArray(values)) values = values ? [values] : [];
-      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = values.length; i &lt; l; i++) {
-        <span class="keyword">var</span> record = values[i];
-        <span class="keyword">this</span>.bindings = <span class="keyword">this</span>.bindings.concat(_.values(record));
+      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = values.length; i&lt;l; i++) {
+        <span class="keyword">var</span> obj = sortObject(values[i]);
+        <span class="keyword">for</span> (<span class="keyword">var</span> i2 = <span class="number">0</span>, l2 = obj.length; i2 &lt; l2; i2++) {
+          <span class="keyword">this</span>.bindings.push(obj[i2][<span class="number">1</span>]);
+        }
       }
-      <span class="keyword">if</span> (returning) {
-        str = <span class="keyword">this</span>.grammar.compileInsertGetId(<span class="keyword">this</span>, values, returning);
-      } <span class="keyword">else</span> {
-        str = <span class="keyword">this</span>.grammar.compileInsert(<span class="keyword">this</span>, values);
-      }
+      <span class="keyword">var</span> str = <span class="keyword">this</span>.grammar.compileInsert(<span class="keyword">this</span>, values);
       <span class="keyword">return</span> Knex.runQuery(<span class="keyword">this</span>, {sql: str, bindings: <span class="keyword">this</span>._cleanBindings(), type: <span class="string">'insert'</span>});
     },</pre></div></div>
             
@@ -1786,7 +1790,7 @@ the currently running transaction</p>
       query.table = <span class="keyword">this</span>.table;
       callback.call(query, query);
       <span class="keyword">this</span>.wheres.push({type: <span class="string">'Nested'</span>, query: query, bool: bool});
-      <span class="keyword">this</span>.bindings = <span class="keyword">this</span>.bindings.concat(query.bindings);
+      push.apply(<span class="keyword">this</span>.bindings, query.bindings);
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },
 
@@ -1907,9 +1911,7 @@ the currently running transaction</p>
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Knex.Transaction = <span class="keyword">function</span>(container) {
-
-    <span class="keyword">var</span> connection = Knex.client.getConnection();</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  Knex.Transaction = <span class="keyword">function</span>(container) {</pre></div></div>
             
         </li>
         
@@ -1925,7 +1927,9 @@ transaction completes or fails, we know what to do.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">var</span> deferred = Q.defer();</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">var</span> deferred = Q.defer();
+
+    Knex.client.beginTransaction(<span class="keyword">function</span>(err, connection) {</pre></div></div>
             
         </li>
         
@@ -1940,11 +1944,11 @@ transaction completes or fails, we know what to do.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">var</span> finish = <span class="keyword">function</span>(type, data) {
-      <span class="keyword">this</span>.connection.end();
-      <span class="keyword">this</span>.transaction.connection = <span class="literal">null</span>;
-      deferred[type](data);
-    };</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">var</span> finish = <span class="keyword">function</span>(type, data) {
+        connection.end();
+        <span class="keyword">this</span>.connection = <span class="literal">null</span>;
+        deferred[type](data);
+      };</pre></div></div>
             
         </li>
         
@@ -1960,10 +1964,24 @@ commit &amp; rollback objects</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    container({
-      commit: <span class="keyword">function</span>(data) { finish.call(<span class="keyword">this</span>, <span class="string">'resolve'</span>, data); },
-      rollback: <span class="keyword">function</span>(data) { finish.call(<span class="keyword">this</span>, <span class="string">'reject'</span>, data); },
-      connection: connection
+            <div class="content"><div class='highlight'><pre>      container({
+        commit: <span class="keyword">function</span>(data) {
+          <span class="keyword">var</span> transaction = <span class="keyword">this</span>;
+          Knex.client.commitTransaction(connection, <span class="keyword">function</span>(err) {
+            <span class="keyword">if</span> (err) <span class="keyword">throw</span> <span class="keyword">new</span> Error(err);
+            finish.call(transaction, <span class="string">'resolve'</span>, data);
+          });
+        },
+        rollback: <span class="keyword">function</span>(data) {
+          <span class="keyword">var</span> transaction = <span class="keyword">this</span>;
+          Knex.client.rollbackTransaction(connection, <span class="keyword">function</span>(err) {
+            <span class="keyword">if</span> (err) <span class="keyword">throw</span> <span class="keyword">new</span> Error(err);
+            finish.call(transaction, <span class="string">'reject'</span>, data);
+          });
+        },
+        connection: connection
+      });
+
     });
 
     <span class="keyword">return</span> deferred.promise;
@@ -2959,8 +2977,7 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    increments: <span class="keyword">function</span>(column) {
-      column || (column = <span class="string">'id'</span>);
-      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'integer'</span>, column, {autoIncrement: <span class="literal">true</span>});
+      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'integer'</span>, (column || <span class="string">'id'</span>), {autoIncrement: <span class="literal">true</span>, length: <span class="number">11</span>});
     },</pre></div></div>
             
         </li>
@@ -2989,12 +3006,12 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-151">&#182;</a>
               </div>
-              <p>Create a new text column on the table.</p>
+              <p>Alias varchar to string</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    text: <span class="keyword">function</span>(column) {
-      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'text'</span>, column);
+            <div class="content"><div class='highlight'><pre>    varchar: <span class="keyword">function</span>(column, length) {
+      <span class="keyword">return</span> <span class="keyword">this</span>.string(column, length);
     },</pre></div></div>
             
         </li>
@@ -3006,12 +3023,12 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-152">&#182;</a>
               </div>
-              <p>Create a new integer column on the table.</p>
+              <p>Create a new text column on the table.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    integer: <span class="keyword">function</span>(column) {
-      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'integer'</span>, column);
+            <div class="content"><div class='highlight'><pre>    text: <span class="keyword">function</span>(column, length) {
+      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'text'</span>, column, {length: (length || <span class="literal">false</span>)});
     },</pre></div></div>
             
         </li>
@@ -3022,6 +3039,57 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-153">&#182;</a>
+              </div>
+              <p>Create a new integer column on the table.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    integer: <span class="keyword">function</span>(column, length) {
+      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'integer'</span>, column, {length: (length || <span class="number">11</span>)});
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-154">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-154">&#182;</a>
+              </div>
+              <p>Create a new tinyinteger column on the table.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    tinyInteger: <span class="keyword">function</span>(column) {
+      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'tinyInteger'</span>, column);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-155">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-155">&#182;</a>
+              </div>
+              <p>Alias for tinyinteger column.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    tinyint: <span class="keyword">function</span>(column) {
+      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'tinyInteger'</span>, column);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-156">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-156">&#182;</a>
               </div>
               <p>Create a new float column on the table.</p>
 
@@ -3034,11 +3102,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-154">
+        <li id="section-157">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-154">&#182;</a>
+                <a class="pilcrow" href="#section-157">&#182;</a>
               </div>
               <p>Create a new decimal column on the table.</p>
 
@@ -3051,28 +3119,28 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-155">
+        <li id="section-158">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-155">&#182;</a>
+                <a class="pilcrow" href="#section-158">&#182;</a>
               </div>
               <p>Create a new boolean column on the table.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    boolean: <span class="keyword">function</span>(column) {
-      <span class="keyword">return</span> <span class="keyword">this</span>.bool(columns);
+      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'boolean'</span>, column);
     },</pre></div></div>
             
         </li>
         
         
-        <li id="section-156">
+        <li id="section-159">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-156">&#182;</a>
+                <a class="pilcrow" href="#section-159">&#182;</a>
               </div>
               <p>Alias to &quot;boolean&quot;.</p>
 
@@ -3085,11 +3153,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-157">
+        <li id="section-160">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-157">&#182;</a>
+                <a class="pilcrow" href="#section-160">&#182;</a>
               </div>
               <p>Create a new date column on the table.</p>
 
@@ -3102,11 +3170,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-158">
+        <li id="section-161">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-158">&#182;</a>
+                <a class="pilcrow" href="#section-161">&#182;</a>
               </div>
               <p>Create a new date-time column on the table.</p>
 
@@ -3119,11 +3187,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-159">
+        <li id="section-162">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-159">&#182;</a>
+                <a class="pilcrow" href="#section-162">&#182;</a>
               </div>
               <p>Create a new time column on the table.</p>
 
@@ -3136,11 +3204,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-160">
+        <li id="section-163">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-160">&#182;</a>
+                <a class="pilcrow" href="#section-163">&#182;</a>
               </div>
               <p>Create a new timestamp column on the table.</p>
 
@@ -3153,11 +3221,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-161">
+        <li id="section-164">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-161">&#182;</a>
+                <a class="pilcrow" href="#section-164">&#182;</a>
               </div>
               <p>Add creation and update timestamps to the table.</p>
 
@@ -3171,11 +3239,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-162">
+        <li id="section-165">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-162">&#182;</a>
+                <a class="pilcrow" href="#section-165">&#182;</a>
               </div>
               <p>Create a new enum column on the table.</p>
 
@@ -3188,11 +3256,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-163">
+        <li id="section-166">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-163">&#182;</a>
+                <a class="pilcrow" href="#section-166">&#182;</a>
               </div>
               <p>Alias to enum.</p>
 
@@ -3205,11 +3273,28 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-164">
+        <li id="section-167">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-164">&#182;</a>
+                <a class="pilcrow" href="#section-167">&#182;</a>
+              </div>
+              <p>Create a new bit column on the table.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    bit: <span class="keyword">function</span>(column, length) {
+      <span class="keyword">return</span> <span class="keyword">this</span>._addColumn(<span class="string">'bit'</span>, column, {length: (length || <span class="literal">false</span>)});
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-168">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-168">&#182;</a>
               </div>
               <p>Create a new binary column on the table.</p>
 
@@ -3222,11 +3307,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-165">
+        <li id="section-169">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-165">&#182;</a>
+                <a class="pilcrow" href="#section-169">&#182;</a>
               </div>
               <hr>
 
@@ -3235,11 +3320,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-166">
+        <li id="section-170">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-166">&#182;</a>
+                <a class="pilcrow" href="#section-170">&#182;</a>
               </div>
               <p>Create a new drop index command on the blueprint.</p>
 
@@ -3257,11 +3342,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-167">
+        <li id="section-171">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-167">&#182;</a>
+                <a class="pilcrow" href="#section-171">&#182;</a>
               </div>
               <p>Add a new index command to the blueprint.
 If no name was specified for this index, we will create one using a basic
@@ -3275,7 +3360,7 @@ index type, such as primary or index, which makes the index unique.</p>
       <span class="keyword">if</span> (!_.isArray(columns)) columns = columns ? [columns] : [];
       <span class="keyword">if</span> (index === <span class="literal">null</span>) {
         <span class="keyword">var</span> table = <span class="keyword">this</span>.table.replace(<span class="regexp">/\.|-/g</span>, <span class="string">'_'</span>);
-        index = (table + <span class="string">'_'</span> + _.map(columns, <span class="function"><span class="keyword">function</span> <span class="params">(col)</span> {</span> <span class="keyword">return</span> col.name; }).join(<span class="string">'_'</span>) + <span class="string">'_'</span> + type).toLowerCase();
+        index = (table + <span class="string">'_'</span> + _.map(columns, <span class="keyword">function</span>(col) { <span class="keyword">return</span> col.name; }).join(<span class="string">'_'</span>) + <span class="string">'_'</span> + type).toLowerCase();
       }
       <span class="keyword">return</span> <span class="keyword">this</span>._addCommand(type, {index: index, columns: columns});
     },</pre></div></div>
@@ -3283,11 +3368,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-168">
+        <li id="section-172">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-168">&#182;</a>
+                <a class="pilcrow" href="#section-172">&#182;</a>
               </div>
               <p>Add a new column to the blueprint.</p>
 
@@ -3304,11 +3389,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-169">
+        <li id="section-173">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-169">&#182;</a>
+                <a class="pilcrow" href="#section-173">&#182;</a>
               </div>
               <p>Add a new command to the blueprint.</p>
 
@@ -3324,11 +3409,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-170">
+        <li id="section-174">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-170">&#182;</a>
+                <a class="pilcrow" href="#section-174">&#182;</a>
               </div>
               <p>Chainable object used in creating SchemaBuilder commands.</p>
 
@@ -3343,11 +3428,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-171">
+        <li id="section-175">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-171">&#182;</a>
+                <a class="pilcrow" href="#section-175">&#182;</a>
               </div>
               <p>Sets the default value for a column.</p>
 
@@ -3361,11 +3446,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-172">
+        <li id="section-176">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-172">&#182;</a>
+                <a class="pilcrow" href="#section-176">&#182;</a>
               </div>
               <p>Sets an integer as unsigned, is a no-op
 if the column type is not an integer.</p>
@@ -3380,11 +3465,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-173">
+        <li id="section-177">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-173">&#182;</a>
+                <a class="pilcrow" href="#section-177">&#182;</a>
               </div>
               <p>Allows the column to contain null values.</p>
 
@@ -3395,17 +3480,17 @@ if the column type is not an integer.</p>
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },
 
-    index: <span class="function"><span class="keyword">function</span> <span class="params">(name)</span> {</span>
+    index: <span class="keyword">function</span>(name) {
       <span class="keyword">this</span>.isIndex = name || <span class="literal">true</span>;
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },
 
-    primary: <span class="function"><span class="keyword">function</span> <span class="params">(name)</span> {</span>
+    primary: <span class="keyword">function</span>(name) {
       <span class="keyword">this</span>.isPrimary = name || <span class="literal">true</span>;
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },
 
-    unique: <span class="function"><span class="keyword">function</span> <span class="params">(name)</span> {</span>
+    unique: <span class="keyword">function</span>(name) {
       <span class="keyword">this</span>.isUnique = name || <span class="literal">true</span>;
       <span class="keyword">return</span> <span class="keyword">this</span>;
     }
@@ -3414,16 +3499,22 @@ if the column type is not an integer.</p>
 
   <span class="keyword">var</span> capitalize = <span class="keyword">function</span>(word) {
     <span class="keyword">return</span> word.charAt(<span class="number">0</span>).toUpperCase() + word.slice(<span class="number">1</span>);
+  };
+
+  <span class="keyword">var</span> sortObject = <span class="keyword">function</span>(obj) {
+    <span class="keyword">return</span> _.sortBy(_.pairs(obj), <span class="keyword">function</span>(a) { 
+      <span class="keyword">return</span> a[<span class="number">0</span>]; 
+    });
   };</pre></div></div>
             
         </li>
         
         
-        <li id="section-174">
+        <li id="section-178">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-174">&#182;</a>
+                <a class="pilcrow" href="#section-178">&#182;</a>
               </div>
               <h2>Knex.Raw</h2>
 
@@ -3432,11 +3523,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-175">
+        <li id="section-179">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-175">&#182;</a>
+                <a class="pilcrow" href="#section-179">&#182;</a>
               </div>
               
             </div>
@@ -3448,11 +3539,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-176">
+        <li id="section-180">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-176">&#182;</a>
+                <a class="pilcrow" href="#section-180">&#182;</a>
               </div>
               <h2>Knex.runQuery</h2>
 
@@ -3461,11 +3552,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-177">
+        <li id="section-181">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-177">&#182;</a>
+                <a class="pilcrow" href="#section-181">&#182;</a>
               </div>
               <p>Query runner, the context of this function is set to the caller,
 (either Builder or SchemaBuilder). Checks and fails on an already
@@ -3475,8 +3566,9 @@ and returns a deferred promise.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  Knex.runQuery = <span class="keyword">function</span>(builder, data) {
-    <span class="keyword">if</span> (builder.transaction &amp;&amp; ! builder.transaction.connection) {
-      <span class="keyword">return</span> Q.reject(<span class="keyword">new</span> Error(<span class="string">'The transaction has already completed.'</span>));
+    <span class="keyword">if</span> (builder.transaction) {
+      <span class="keyword">if</span> (!builder.transaction.connection) <span class="keyword">return</span> Q.reject(<span class="keyword">new</span> Error(<span class="string">'The transaction has already completed.'</span>));
+      builder.connection = builder.transaction.connection;
     }
     <span class="keyword">var</span> deferred = Q.defer();
     Knex.client.query(data.sql, (data.bindings || []), <span class="keyword">function</span>(err, resp) {
@@ -3490,11 +3582,11 @@ and returns a deferred promise.</p>
         </li>
         
         
-        <li id="section-178">
+        <li id="section-182">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-178">&#182;</a>
+                <a class="pilcrow" href="#section-182">&#182;</a>
               </div>
               <p>Export the Knex module</p>
 

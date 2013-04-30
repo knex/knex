@@ -125,4 +125,26 @@ describe('Knex.Builder', function() {
     });
   });
 
+  describe('Inserts', function() {
+
+    it('Should take hashes passed into insert and keep them in the correct order', function(ok) {
+
+      Knex('tableName').insert([{
+        firstName: 'Test',
+        lastName: 'User',
+        item: 0
+      },{
+        item: 1,
+        lastName: 'Item',
+        firstName: 'Person'
+      }]).spread(function(sql, bindings) {
+        equal(sql, 'insert into `tableName` (`firstName`, `item`, `lastName`) values (?, ?, ?), (?, ?, ?)');
+        deepEqual(bindings, ['Test', 0, 'User', 'Person', 1, 'Item']);
+        ok();
+      });
+
+    });
+
+  });
+
 });
