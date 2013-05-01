@@ -965,14 +965,15 @@
     build: function(grammar) {
       var statements = this.toSql(grammar);
       var promises = [];
+      var connection = this.client.getConnection();
       for (var i = 0, l = statements.length; i < l; i++) {
         var statement = statements[i];
-        promises.push(Knex.runQuery(this, {sql: statement}));
+        promises.push(Knex.runQuery(this, {sql: statement}, connection));
       }
       // Ensures all queries for the same table
       // are run on the same connection.
-      return Q.all(promises).then(function() {
-
+      return Q.all(promises).fin(function() {
+        connection.end();
       });
     },
 

@@ -44,6 +44,8 @@ _.extend(MysqlClient.prototype, {
 
     var dfd = Q.defer();
 
+    if (this.debug) console.log([data, (connection ? connection.__cid : '')]);
+
     // If there is a specific connection specified, use that.
     if (connection) {
 
@@ -56,14 +58,13 @@ _.extend(MysqlClient.prototype, {
 
       // Acquire connection - callback function is called
       // once a resource becomes available.
-      var instance = this;
       this.pool.acquire(function(err, client) {
 
         if (err) return dfd.reject(err);
 
         // Make the query and then release the client.
         client.query(data.sql, (data.bindings || []), function (err, res) {
-          instance.pool.release(client);
+          pool.release(client);
           if (err) return dfd.reject(err);
           dfd.resolve(res);
         });
