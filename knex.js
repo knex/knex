@@ -1390,7 +1390,7 @@
       };
 
       // Inherit static properties.
-      _.extend(Target, Knex);
+      _.extend(Target, _.omit(Knex, 'Initialize', 'Instances'));
     }
 
     // Initialize the schema builder methods.
@@ -1410,13 +1410,6 @@
   // Named instances of Knex, presumably with different database
   // connections, the main instance being named "default"...
   Knex.Instances = {};
-
-  Knex.getInstance = function(name, options) {
-    if (!Knex.Instances[name]) {
-      throw new Error('There is no ' + name + ' instance of Knex.');
-    }
-    return Knex.Instances[name];
-  };
 
   // Export the Knex module
   module.exports = Knex;

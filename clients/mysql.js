@@ -44,7 +44,10 @@ _.extend(MysqlClient.prototype, {
 
     var dfd = Q.defer();
 
-    if (this.debug) console.log([data, (connection ? connection.__cid : '')]);
+    if (this.debug) {
+      if (connection) data.__cid = connection.__cid;
+      console.log(data);
+    }
 
     // If there is a specific connection specified, use that.
     if (connection) {
@@ -106,7 +109,6 @@ _.extend(MysqlClient.prototype, {
       if (type === 'rollback') promise.reject(resp);
     });
   }
-
 });
 
 // Extends the standard sql grammar.
