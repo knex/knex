@@ -11,31 +11,25 @@ var MysqlClient = module.exports = function(name, options) {
     throw new Error('The database connection properties must be specified.');
   }
   this.name  = name;
-  this.pool  = false;
   this.debug = options.debug;
   this.connectionSettings = options.connection;
 
-  // If pooling isn't disabled, merge the pool settings into a 
-  // new genericPool instance and set it as a property on the client.
-  if (options.pool !== false) {
-    
-    // Extend the genericPool with the options
-    // passed into the init under the "pool" option
-    var instance = this;
-    this.pool = genericPool.Pool(_.extend({
-      name : 'pool' + name,
-      create : function(callback) {
-        callback(null, instance.getConnection());
-      },
-      destroy  : function(client) {
-        client.end();
-      },
-      max : 10,
-      min : 2,
-      idleTimeoutMillis: 30000,
-      log : false
-    }, options.pool));
-  }
+  // Extend the genericPool with the options
+  // passed into the init under the "pool" option
+  var instance = this;
+  this.pool = genericPool.Pool(_.extend({
+    name : 'pool' + name,
+    create : function(callback) {
+      callback(null, instance.getConnection());
+    },
+    destroy  : function(client) {
+      client.end();
+    },
+    max : 10,
+    min : 2,
+    idleTimeoutMillis: 30000,
+    log : false
+  }, options.pool));
 
   this.grammar = MysqlClient.grammar;
   this.schemaGrammar = MysqlClient.schemaGrammar;
@@ -62,13 +56,14 @@ _.extend(MysqlClient.prototype, {
 
       // Acquire connection - callback function is called
       // once a resource becomes available.
-      pool.acquire(function(err, client) {
+      var instance = this;
+      this.pool.acquire(function(err, client) {
 
         if (err) return dfd.reject(err);
 
         // Make the query and then release the client.
         client.query(data.sql, (data.bindings || []), function (err, res) {
-          pool.release(client);
+          instance.pool.release(client);
           if (err) return dfd.reject(err);
           dfd.resolve(res);
         });
