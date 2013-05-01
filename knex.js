@@ -22,13 +22,13 @@
   // Keep in sync with package.json
   Knex.VERSION = '0.0.0';
 
-  // Knex.Grammar
+  // Grammar
   // -------
 
   // Creates a new Grammar, with the mixins for the
   // specified query dialect, which are defined in each
   // client's `exports.grammar`.
-  var Grammar = Knex.Grammar = function(mixins) {
+  var Grammar = function(mixins) {
     _.extend(this, mixins);
   };
 
@@ -620,7 +620,7 @@
     // Performs a `select` query, returning a promise.
     select: function(columns) {
       this.columns = this.columns.concat(columns ? (_.isArray(columns) ? columns : _.toArray(arguments)) : '*');
-      if (!this.isSubQuery && !this.isQueryString) {
+      if (!this.isSubQuery) {
         return Knex.runQuery(this, {sql: this.grammar.compileSelect(this), bindings: this._cleanBindings()});  
       }
       return this;
@@ -755,9 +755,7 @@
   // ---------
 
   Knex.Transaction = function(container) {
-    
     var client = this.client;
-    
     return client.initTransaction().then(function(connection) {
 
       // Initiate a deferred object, so we know when the
@@ -774,7 +772,6 @@
           client.finishTransaction('rollback', this, dfd);
         },
         // "rollback to"?
-
         connection: connection
       });
 
@@ -792,10 +789,10 @@
 
     // Attach main static methods, which passthrough to the
     // SchemaBuilder instance methods
-    _.each(['connection', 'createTable', 'dropTable', 'dropTableIfExists', 'table', 'transacting'], function(method) {
+    _.each(['hasTable', 'createTable', 'table', 'dropTable', 'dropTableIfExists', 'transacting'], function(method) {
 
       Schema[method] = function() {
-        var builder = new SchemaBuilder(client);
+        var builder = new Knex.SchemaBuilder(client);
         return builder[method].apply(builder, arguments);
       };
     });
@@ -806,86 +803,52 @@
   // --------
 
   var SchemaBuilder = Knex.SchemaBuilder = function(client) {
-    this.client  = client;
-    this.grammar = new Knex.SchemaGrammar(client.schemaGrammar);
+    this.client = client;
+    this.grammar = new SchemaGrammar(client.schemaGrammar);
   };
 
   SchemaBuilder.prototype = {
-    
-    _connection: null,
 
-    transaction: false,
-
-    // Used before a builder call, specifying if this call
-    // is nested inside a transaction
-    transacting: function(t) {
-      this.transaction = t;
-      return this;
-    },
-
-    // Determine if the given table exists.
-    hasTable: function(table) {
-      var sql  = this.grammar.compileTableExists();
-      var deferred = Q.defer();
-      Knex.runQuery(this, {sql: sql, bindings: [table]}).then(function(resp) {
-        if (resp.length > 0) {
-          return deferred.resolve(resp);
-        } else {
-          return deferred.reject(new Error('Table' + table + ' does not exist'));
-        }
-      }, deferred.reject);
-      return deferred.promise;
+    // Create a new table on the schema.
+    createTable: function(table, callback) {
+      return new Blueprint(table, this.client).createTable().callback(callback).build(this.grammar);
     },
 
     // Modify a table on the schema.
     table: function(table, callback) {
-      return this.build(this.createBlueprint(table, callback));
-    },
-    
-    // Create a new table on the schema.
-    createTable: function(table, callback) {
-      var blueprint = this.createBlueprint(table);
-      blueprint.createTable();
-      callback(blueprint);
-      return this.build(blueprint);
+      return new Blueprint(table, this.client).callback(callback).build(this.grammar);
     },
 
     // Drop a table from the schema.
     dropTable: function(table) {
-      var blueprint = this.createBlueprint(table);
-      blueprint.dropTable();
-      return this.build(blueprint);
+      return new Blueprint(table, this.client).dropTable().build(this.grammar);
     },
 
     // Drop a table from the schema if it exists.
     dropTableIfExists: function(table) {
-      var blueprint = this.createBlueprint(table);
-      blueprint.dropTableIfExists();
-      return this.build(blueprint);
+      return new Blueprint(table, this.client).dropTableIfExists().build(this.grammar);
     },
 
     // Rename a table on the schema.
     renameTable: function(from, to) {
-      var blueprint = this.createBlueprint(from);
-      blueprint.renameTable(to);
-      return this.build(blueprint);
-    },
-    
-    // Execute the blueprint to build / modify the table.
-    build: function(blueprint) {
-      return blueprint.build(this.connection, this.grammar);
+      return new Blueprint(from, this.client).renameTable(to).build(this.grammar);
     },
 
-    // Create a new command set with a Closure.
-    createBlueprint: function(table, callback) {
-      return new Blueprint(table, callback);
+    // Determine if the given table exists.
+    // TODO: Bindings here need to be fixed for mysql, including `table`.
+    hasTable: function(table) {
+      var sql = this.grammar.compileTableExists();
+      return Knex.runQuery(this, {sql: sql, bindings: [table]}).then(function(resp) {
+        return (resp.length > 0 ? resp : Q.reject('Table' + table + ' does not exist'));
+      });
     }
+
   };
 
-  // Knex.SchemaGrammar
+  // SchemaGrammar
   // --------
 
-  var SchemaGrammar = Knex.SchemaGrammar = function(mixins) {
+  var SchemaGrammar = function(mixins) {
     _.extend(this, mixins);
   };
 
@@ -924,7 +887,6 @@
         var sql = this.wrap(column) + ' ' + this.getType(column);
         columns.push(this.addModifiers(sql, blueprint, column));
       }
-
       return columns;
     },
     
@@ -964,13 +926,13 @@
     // Wrap a table in keyword identifiers.
     wrapTable: function(table) {
       if (table instanceof Blueprint) table = table.table;
-      return Knex.Grammar.prototype.wrapTable.call(this, table);
+      return Grammar.prototype.wrapTable.call(this, table);
     },
 
     // Wrap a value in keyword identifiers.
     wrap: function(value) {
       if (value instanceof Chainable) value = value.name;
-      return Knex.Grammar.prototype.wrap.call(this, value);
+      return Grammar.prototype.wrap.call(this, value);
     },
 
     // Format a value so that it can be used in "default" clauses.
@@ -982,25 +944,36 @@
     }
   });
 
-  // Knex.SchemaBlueprint
+  // Knex.Blueprint
   // ------
-  var Blueprint = Knex.SchemaBlueprint = function(table, callback) {
+  var Blueprint = Knex.Blueprint = function(table, client) {
     this.table = table;
     this.columns = [];
     this.commands = [];
-    if (callback) callback(this);
+    this.client = client;
   };
 
   Blueprint.prototype = {
-    
-    build: function(connection, grammar) {
+
+    // A callback from the table building `Knex.schemaBuilder` calls.
+    callback: function(callback) {
+      callback.call(this, this);
+      return this;
+    },
+
+    // Builds the schemaBuilder statements to be executed.
+    build: function(grammar) {
       var statements = this.toSql(grammar);
       var promises = [];
       for (var i = 0, l = statements.length; i < l; i++) {
         var statement = statements[i];
         promises.push(Knex.runQuery(this, {sql: statement}));
       }
-      return Q.all(promises);
+      // Ensures all queries for the same table
+      // are run on the same connection.
+      return Q.all(promises).then(function() {
+
+      });
     },
 
     // Get the raw sql statements for the blueprint.
@@ -1067,23 +1040,31 @@
 
     // Indicate that the table needs to be created.
     createTable: function() {
-      return this._addCommand('createTable');
+      this._addCommand('createTable');
+      return this;
     },
 
     // Indicate that the table should be dropped.
     dropTable: function() {
-      return this._addCommand('dropTable');
+      this._addCommand('dropTable');
+      return this;
     },
 
     // Indicate that the table should be dropped if it exists.
     dropTableIfExists: function() {
-      return this._addCommand('dropTableIfExists');
+      this._addCommand('dropTableIfExists');
+      return this;
     },
 
     // Indicate that the given columns should be dropped.
     dropColumn: function(columns) {
       if (!_.isArray(columns)) columns = columns ? [columns] : [];
       return this._addCommand('dropColumn', {columns: columns});
+    },
+
+    // Rename the table to a given name.
+    renameTable: function(to) {
+      return this._addCommand('renameTable', {to: to});
     },
 
     // Indicate that the given columns should be dropped.
@@ -1109,11 +1090,6 @@
     // Indicate that the given foreign key should be dropped.
     dropForeign: function(index) {
       return this._dropIndexCommand('dropForeign', index);
-    },
-
-    // Rename the table to a given name.
-    renameTable: function(to) {
-      return this._addCommand('renameTable', {to: to});
     },
 
     // Specify the primary key(s) for the table.

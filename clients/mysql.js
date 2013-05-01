@@ -91,7 +91,7 @@ _.extend(MysqlClient.prototype, {
 
   // Begins a transaction statement on the instance,
   // resolving with the connection of the current transaction.
-  initTransaction: function() {
+  startTransaction: function() {
     var dfd = Q.defer();
     var connection = this.getConnection();
     connection.query('begin;', [], function(err) {
