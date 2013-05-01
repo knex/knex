@@ -58,13 +58,14 @@ _.extend(MysqlClient.prototype, {
 
       // Acquire connection - callback function is called
       // once a resource becomes available.
+      var instance = this;
       this.pool.acquire(function(err, client) {
 
         if (err) return dfd.reject(err);
 
         // Make the query and then release the client.
         client.query(data.sql, (data.bindings || []), function (err, res) {
-          pool.release(client);
+          instance.pool.release(client);
           if (err) return dfd.reject(err);
           dfd.resolve(res);
         });
