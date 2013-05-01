@@ -1,7 +1,7 @@
 //     Knex.js  0.1.0
 //
 //     (c) 2013 Tim Griesser
-//     Bookshelf may be freely distributed under the MIT license.
+//     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
 //     http://knexjs.org
 (function() {
@@ -12,63 +12,23 @@
   var _ = require('underscore');
   var Q = require('q');
 
-  // `Knex` is the root namespace and a chainable function where
-  // `Knex('tableName')` is shorthand for `new Knex.Builder('tableName')`
-  // or `new Knex.Builder().from('tableName')`.
-  var Knex = function(table) {
-    return new Knex.Builder(table);
-  };
-
-  // Default client paths, located in the `./clients` directory.
-  var Clients = {
-    'mysql'    : './clients/mysql.js',
-    'postgres' : './clients/postgres.js',
-    'sqlite3'  : './clients/sqlite3.js'
-  };
-
   var push = Array.prototype.push;
+
+  // `Knex` is the root namespace and a chainable function: `Knex('tableName')`
+  var Knex = function(table) {
+    return new Knex.Builder(table, Knex.client);
+  };
 
   // Keep in sync with package.json
   Knex.VERSION = '0.0.0';
 
-  // Knex.Initialize
-  // -------
-  
-  // Takes a hash of options to initialize the database
-  // connection. The `client` is required to choose which client
-  // path above is loaded, or to specify a custom path to a client.
-  // Other options, such as `connection` or `pool` are passed 
-  // into `client.initialize`.
-  Knex.Initialize = function(options) {
-    options || (options = {});
-    var client = options.client;
-    if (!client) {
-      throw new Error('The client is required to use Knex.');
-    }
-    
-    // Checks if this is a default client. If it's not,
-    // require it as the path to the client if it's a string,
-    // and otherwise, set the object to the client.
-    if (Clients[client]) {
-      Knex.client = require(Clients[client]);
-    } else {
-      if (_.isString(client)) {
-        Knex.client = require(client);  
-      } else {
-        Knex.client = client;
-      }
-    }
-
-    Knex.client.initialize(options);
-  };
-
-  // Knex.Grammar
+  // Grammar
   // -------
 
   // Creates a new Grammar, with the mixins for the
   // specified query dialect, which are defined in each
   // client's `exports.grammar`.
-  var Grammar = Knex.Grammar = function(mixins) {
+  var Grammar = function(mixins) {
     _.extend(this, mixins);
   };
 
@@ -81,16 +41,14 @@
 
   Grammar.prototype = {
 
-    tablePrefix: '',
-
     dateFormat: 'Y-m-d H:i:s',
 
     // Compiles the `select` statement, or nested sub-selects
     // by calling each of the component compilers, trimming out
     // the empties, and returning a generated query string.
     compileSelect: function(qb) {
-      if (_.isEmpty(qb.columns)) qb.columns = ['*'];
       var sql = {};
+      if (_.isEmpty(qb.columns)) qb.columns = ['*'];
       for (var i = 0, l = components.length; i < l; i++) {
         var component = components[i];
         if (_.result(qb, component) != null) {
@@ -331,7 +289,7 @@
 
     wrapTable: function(table) {
       if (table instanceof Knex.Raw) return table.value;
-      return this.wrapValue(this.tablePrefix + table);
+      return this.wrapValue(table);
     },
 
     columnize: function(columns) {
@@ -349,10 +307,12 @@
 
   // Knex.Builder
   // -------
-  var Builder = Knex.Builder = function(table) {
+  var Builder = Knex.Builder = function(table, client) {
+    client || (client = {});
     this.table = table;
     this.reset();
-    this.grammar = new Grammar(Knex.client.grammar);
+    this.client = client;
+    this.grammar = new Grammar(client.grammar);
   };
 
   // All operators used in the `where` clause generation.
@@ -364,6 +324,12 @@
     from: function(tableName) {
       if (!tableName) return this.table;
       this.table = tableName;
+      return this;
+    },
+
+    // Specifies to returns the statement as SQL rather than as a promise.
+    asSql: function() {
+      this.asSql = true;
       return this;
     },
 
@@ -654,7 +620,7 @@
     // Performs a `select` query, returning a promise.
     select: function(columns) {
       this.columns = this.columns.concat(columns ? (_.isArray(columns) ? columns : _.toArray(arguments)) : '*');
-      if (!this.isSubQuery && !this.isQueryString) {
+      if (!this.isSubQuery) {
         return Knex.runQuery(this, {sql: this.grammar.compileSelect(this), bindings: this._cleanBindings()});  
       }
       return this;
@@ -679,12 +645,12 @@
       return Knex.runQuery(this, {sql: this.grammar.compileUpdate(this, values), bindings: this._cleanBindings(), type: 'update'});
     },
 
-    // Executes a delete statement on the query;
+    // Alias to del
     "delete": function() {
       return this.del();
     },
 
-    // Alias to delete
+    // Executes a delete statement on the query;    
     del: function() {
       return Knex.runQuery(this, {sql: this.grammar.compileDelete(this), bindings: this._cleanBindings()});
     },
@@ -789,155 +755,100 @@
   // ---------
 
   Knex.Transaction = function(container) {
+    var client = this.client;
+    return client.initTransaction().then(function(connection) {
 
-    // Initiate a deferred object, so we know when the
-    // transaction completes or fails, we know what to do.
-    var deferred = Q.defer();
-
-    Knex.client.beginTransaction(function(err, connection) {
-
-      // Finish the transaction connection
-      var finish = function(type, data) {
-        connection.end();
-        this.connection = null;
-        deferred[type](data);
-      };
-
+      // Initiate a deferred object, so we know when the
+      // transaction completes or fails, we know what to do.
+      var dfd = Q.defer();
+    
       // Call the container with the transaction
       // commit & rollback objects
       container({
-        commit: function(data) {
-          var transaction = this;
-          Knex.client.commitTransaction(connection, function(err) {
-            if (err) throw new Error(err);
-            finish.call(transaction, 'resolve', data);
-          });
+        commit: function() {
+          client.finishTransaction('commit', this, dfd);
         },
-        rollback: function(data) {
-          var transaction = this;
-          Knex.client.rollbackTransaction(connection, function(err) {
-            if (err) throw new Error(err);
-            finish.call(transaction, 'reject', data);
-          });
+        rollback: function() {
+          client.finishTransaction('rollback', this, dfd);
         },
+        // "rollback to"?
         connection: connection
       });
 
+      return dfd.promise;
     });
-
-    return deferred.promise;
   };
 
   // Knex.Schema
   // ---------
 
-  // Top level object for Schema related functions
-  var Schema = Knex.Schema = {};
+  var initSchema = function(Target, client) {
 
-  // Attach main static methods, which passthrough to the
-  // SchemaBuilder instance methods
-  _.each(['connection', 'createTable', 'dropTable', 'dropTableIfExists', 'table', 'transacting'], function(method) {
+    // Top level object for Schema related functions
+    var Schema = Target.Schema = {};
 
-    Schema[method] = function() {
-      var builder = new SchemaBuilder();
-      return builder[method].apply(builder, arguments);
-    };
-  });
+    // Attach main static methods, which passthrough to the
+    // SchemaBuilder instance methods
+    _.each(['hasTable', 'createTable', 'table', 'dropTable', 'dropTableIfExists', 'transacting'], function(method) {
 
+      Schema[method] = function() {
+        var builder = new Knex.SchemaBuilder(client);
+        return builder[method].apply(builder, arguments);
+      };
+    });
+
+  };
   
   // Knex.SchemaBuilder
   // --------
 
-  var SchemaBuilder = Knex.SchemaBuilder = function() {
-    this.grammar = new Knex.SchemaGrammar(Knex.client.schemaGrammar);
+  var SchemaBuilder = Knex.SchemaBuilder = function(client) {
+    this.client = client;
+    this.grammar = new SchemaGrammar(client.schemaGrammar);
   };
 
   SchemaBuilder.prototype = {
-    
-    _connection: null,
 
-    transaction: false,
-
-    // Connection
-    connection: function(connection) {
-      if (connection == null) {
-        return this._connection || Knex.client.getConnection();
-      }
-      this._connection = connection;
-      return this;
-    },
-
-    // Used before a builder call, specifying if this call
-    // is nested inside a transaction
-    transacting: function(t) {
-      this.transaction = t;
-      return this;
-    },
-
-    // Determine if the given table exists.
-    hasTable: function(table) {
-      var sql  = this.grammar.compileTableExists();
-      table = this.connection.getTablePrefix() + table;
-      var deferred = Q.defer();
-      Knex.runQuery(this, {sql: sql, bindings: [table]}).then(function(resp) {
-        if (resp.length > 0) {
-          return deferred.resolve(resp);
-        } else {
-          return deferred.reject(new Error('Table' + table + ' does not exist'));
-        }
-      }, deferred.reject);
-      return deferred.promise;
+    // Create a new table on the schema.
+    createTable: function(table, callback) {
+      return new Blueprint(table, this.client).createTable().callback(callback).build(this.grammar);
     },
 
     // Modify a table on the schema.
     table: function(table, callback) {
-      return this.build(this.createBlueprint(table, callback));
-    },
-    
-    // Create a new table on the schema.
-    createTable: function(table, callback) {
-      var blueprint = this.createBlueprint(table);
-      blueprint.createTable();
-      callback(blueprint);
-      return this.build(blueprint);
+      return new Blueprint(table, this.client).callback(callback).build(this.grammar);
     },
 
     // Drop a table from the schema.
     dropTable: function(table) {
-      var blueprint = this.createBlueprint(table);
-      blueprint.dropTable();
-      return this.build(blueprint);
+      return new Blueprint(table, this.client).dropTable().build(this.grammar);
     },
 
     // Drop a table from the schema if it exists.
     dropTableIfExists: function(table) {
-      var blueprint = this.createBlueprint(table);
-      blueprint.dropTableIfExists();
-      return this.build(blueprint);
+      return new Blueprint(table, this.client).dropTableIfExists().build(this.grammar);
     },
 
     // Rename a table on the schema.
     renameTable: function(from, to) {
-      var blueprint = this.createBlueprint(from);
-      blueprint.renameTable(to);
-      return this.build(blueprint);
-    },
-    
-    // Execute the blueprint to build / modify the table.
-    build: function(blueprint) {
-      return blueprint.build(this.connection, this.grammar);
+      return new Blueprint(from, this.client).renameTable(to).build(this.grammar);
     },
 
-    // Create a new command set with a Closure.
-    createBlueprint: function(table, callback) {
-      return new Blueprint(table, callback);
+    // Determine if the given table exists.
+    // TODO: Bindings here need to be fixed for mysql, including `table`.
+    hasTable: function(table) {
+      var sql = this.grammar.compileTableExists();
+      return Knex.runQuery(this, {sql: sql, bindings: [table]}).then(function(resp) {
+        return (resp.length > 0 ? resp : Q.reject('Table' + table + ' does not exist'));
+      });
     }
+
   };
 
-  // Knex.SchemaGrammar
+  // SchemaGrammar
   // --------
 
-  var SchemaGrammar = Knex.SchemaGrammar = function(mixins) {
+  var SchemaGrammar = function(mixins) {
     _.extend(this, mixins);
   };
 
@@ -976,7 +887,6 @@
         var sql = this.wrap(column) + ' ' + this.getType(column);
         columns.push(this.addModifiers(sql, blueprint, column));
       }
-
       return columns;
     },
     
@@ -1008,7 +918,7 @@
       return this["type" + capitalize(column.type)](column);
     },
 
-    // Add a prefix to an array of values.
+    // Add a prefix to an array of values, utilized in the client libs.
     prefixArray: function(prefix, values) {
       return _.map(values, function(value) { return prefix + ' ' + value; });
     },
@@ -1016,13 +926,13 @@
     // Wrap a table in keyword identifiers.
     wrapTable: function(table) {
       if (table instanceof Blueprint) table = table.table;
-      return Knex.Grammar.prototype.wrapTable.call(this, table);
+      return Grammar.prototype.wrapTable.call(this, table);
     },
 
     // Wrap a value in keyword identifiers.
     wrap: function(value) {
       if (value instanceof Chainable) value = value.name;
-      return Knex.Grammar.prototype.wrap.call(this, value);
+      return Grammar.prototype.wrap.call(this, value);
     },
 
     // Format a value so that it can be used in "default" clauses.
@@ -1034,25 +944,37 @@
     }
   });
 
-  // Knex.SchemaBlueprint
+  // Knex.Blueprint
   // ------
-  var Blueprint = Knex.SchemaBlueprint = function(table, callback) {
+  var Blueprint = Knex.Blueprint = function(table, client) {
     this.table = table;
     this.columns = [];
     this.commands = [];
-    if (callback) callback(this);
+    this.client = client;
   };
 
   Blueprint.prototype = {
-    
-    build: function(connection, grammar) {
+
+    // A callback from the table building `Knex.schemaBuilder` calls.
+    callback: function(callback) {
+      callback.call(this, this);
+      return this;
+    },
+
+    // Builds the schemaBuilder statements to be executed.
+    build: function(grammar) {
       var statements = this.toSql(grammar);
       var promises = [];
+      var connection = this.connection = this.client.getConnection();
       for (var i = 0, l = statements.length; i < l; i++) {
         var statement = statements[i];
         promises.push(Knex.runQuery(this, {sql: statement}));
       }
-      return Q.all(promises);
+      // Ensures all queries for the same table
+      // are run on the same connection.
+      return Q.all(promises).fin(function() {
+        connection.end();
+      });
     },
 
     // Get the raw sql statements for the blueprint.
@@ -1119,23 +1041,31 @@
 
     // Indicate that the table needs to be created.
     createTable: function() {
-      return this._addCommand('createTable');
+      this._addCommand('createTable');
+      return this;
     },
 
     // Indicate that the table should be dropped.
     dropTable: function() {
-      return this._addCommand('dropTable');
+      this._addCommand('dropTable');
+      return this;
     },
 
     // Indicate that the table should be dropped if it exists.
     dropTableIfExists: function() {
-      return this._addCommand('dropTableIfExists');
+      this._addCommand('dropTableIfExists');
+      return this;
     },
 
     // Indicate that the given columns should be dropped.
     dropColumn: function(columns) {
       if (!_.isArray(columns)) columns = columns ? [columns] : [];
       return this._addCommand('dropColumn', {columns: columns});
+    },
+
+    // Rename the table to a given name.
+    renameTable: function(to) {
+      return this._addCommand('renameTable', {to: to});
     },
 
     // Indicate that the given columns should be dropped.
@@ -1161,11 +1091,6 @@
     // Indicate that the given foreign key should be dropped.
     dropForeign: function(index) {
       return this._dropIndexCommand('dropForeign', index);
-    },
-
-    // Rename the table to a given name.
-    renameTable: function(to) {
-      return this._addCommand('renameTable', {to: to});
     },
 
     // Specify the primary key(s) for the table.
@@ -1220,7 +1145,7 @@
 
     // Alias for tinyinteger column.
     tinyint: function(column) {
-      return this._addColumn('tinyInteger', column);
+      return this.tinyInteger(column);
     },
 
     // Create a new float column on the table.
@@ -1239,12 +1164,12 @@
       });
     },
 
-    // Create a new boolean column on the table.
+    // Alias to "bool"
     boolean: function(column) {
-      return this._addColumn('boolean', column);
+      return this.bool(column);
     },
 
-    // Alias to "boolean".
+    // Create a new boolean column on the table
     bool: function(column) {
       return this._addColumn('boolean', column);
     },
@@ -1275,13 +1200,13 @@
       this.timestamp('updated_at');
     },
 
-    // Create a new enum column on the table.
+    // Alias to enum.
     "enum": function(column, allowed) {
-      return this.enu.apply(this, arguments);
+      return this.enu(column, allowed);
     },
 
-    // Alias to enum.
-    enu: function() {
+    // Create a new enum column on the table.
+    enu: function(column, allowed) {
       return this._addColumn('enum', column, {allowed: allowed});
     },
 
@@ -1411,13 +1336,86 @@
       if (!builder.transaction.connection) return Q.reject(new Error('The transaction has already completed.'));
       builder.connection = builder.transaction.connection;
     }
-    var deferred = Q.defer();
-    Knex.client.query(data.sql, (data.bindings || []), function(err, resp) {
-      Knex.lastQuery = data.sql;
-      if (err) return deferred.reject(err);
-      deferred.resolve(resp);
-    }, builder.connection, data.type);
-    return deferred.promise;
+    // Query on the query builder, which should resolve with a promise, 
+    // spreadable to include more information including the query.
+    return builder.client.query(data, builder.connection);
+  };
+
+  // Knex.Initialize
+  // -------
+  
+  // Takes a hash of options to initialize the database
+  // connection. The `client` is required to choose which client
+  // path above is loaded, or to specify a custom path to a client.
+  // Other options, such as `connection` or `pool` are passed 
+  // into `client.initialize`.
+  Knex.Initialize = function(name, options) {
+    var Target, ClientCtor, client;
+
+    if (_.isObject(name)) {
+      options = name;
+      name    = 'default';
+    }
+    
+    // Don't try to initialize the same `name` twice... If necessary,
+    // delete the instance from `Knex.Instances`.
+    if (Knex.Instances[name]) {
+      throw new Error('An instance named ' + name + ' already exists');
+    }
+
+    client = options.client;
+    
+    if (!client) throw new Error('The client is required to use Knex.');
+
+    // Checks if this is a default client. If it's not,
+    // require it as the path to the client if it's a string,
+    // and otherwise, set the object to the client.
+    if (Clients[client]) {
+      ClientCtor = require(Clients[client]);
+    } else if (_.isString(client)) {
+      ClientCtor = require(client);
+    } else {
+      ClientCtor = client;
+    }
+
+    // Creates a new instance of the db client, passing the name and options.
+    client = new ClientCtor(name, _.omit(options, 'client'));
+
+    // If this is named "default" then we're setting this on the Knex
+    if (name === 'default') {
+      Target = Knex.Instances['default'] = Knex;
+    } else {
+      Target = Knex.Instances[name] = function(table) {
+        return new Knex.Builder(table, client);
+      };
+
+      // Inherit static properties.
+      _.extend(Target, Knex);
+    }
+
+    // Initialize the schema builder methods.
+    initSchema(Target, client);
+
+    // Specifically set the client on the current target.
+    Target.client = client;
+  };
+
+  // Default client paths, located in the `./clients` directory.
+  var Clients = {
+    'mysql'    : './clients/mysql.js',
+    'postgres' : './clients/postgres.js',
+    'sqlite3'  : './clients/sqlite3.js'
+  };
+
+  // Named instances of Knex, presumably with different database
+  // connections, the main instance being named "default"...
+  Knex.Instances = {};
+
+  Knex.getInstance = function(name, options) {
+    if (!Knex.Instances[name]) {
+      throw new Error('There is no ' + name + ' instance of Knex.');
+    }
+    return Knex.Instances[name];
   };
 
   // Export the Knex module

@@ -1,37 +1,26 @@
 
 var mysql = require('mysql');
 
-var _ = require('underscore');
-var util = require('util');
+var Q           = require('q');
+var _           = require('underscore');
+var util        = require('util');
 var genericPool = require('generic-pool');
 
-var init, debug, pool, connection, connectionSettings;
-
-// Initializes the mysql module with an options hash,
-// containing the connection settings, as well as the
-// pool config settings
-exports.initialize = function (options) {
-
-  // If there isn't a connection setting
-  if (!options.connection) return;
-
-  connectionSettings = options.connection;
-  debug = options.debug;
-
-  // If pooling is disabled, set the query getter to
-  // something below and create a connection on the connection object
-  if (options.pool === false) {
-    pool = false;
-    connection = this.getConnection();
-    return;
+var MysqlClient = module.exports = function(name, options) {
+  if (!options.connection) {
+    throw new Error('The database connection properties must be specified.');
   }
+  this.name  = name;
+  this.debug = options.debug;
+  this.connectionSettings = options.connection;
 
   // Extend the genericPool with the options
   // passed into the init under the "pool" option
-  pool = genericPool.Pool(_.extend({
-    name : 'mysql',
+  var instance = this;
+  this.pool = genericPool.Pool(_.extend({
+    name : 'pool' + name,
     create : function(callback) {
-      callback(null, exports.getConnection());
+      callback(null, instance.getConnection());
     },
     destroy  : function(client) {
       client.end();
@@ -41,68 +30,87 @@ exports.initialize = function (options) {
     idleTimeoutMillis: 30000,
     log : false
   }, options.pool));
+
+  this.grammar = MysqlClient.grammar;
+  this.schemaGrammar = MysqlClient.schemaGrammar;
 };
 
-// Execute a query on the database.
-// If the fourth parameter is set, this will be used as the connection
-// to the database.
-exports.query = function (querystring, params, callback, connection) {
+_.extend(MysqlClient.prototype, {
 
-  if (debug) {
-    var debugVars = [querystring, params];
-    if (connection) debugVars.push(connection.__cid);
-    console.log(debugVars);
-  }
+  // Execute a query on the database.
+  // If the fourth parameter is set, this will be used as the connection
+  // to the database.
+  query: function (data, connection) {
 
-  // If there is a connection, use it.
-  if (connection) {
-    return connection.query(querystring, params, callback);
-  }
+    var dfd = Q.defer();
 
-  // Acquire connection - callback function is called
-  // once a resource becomes available.
-  pool.acquire(function(err, client) {
+    if (this.debug) console.log([data, (connection ? connection.__cid : '')]);
 
-    if (err) throw new Error(err);
+    // If there is a specific connection specified, use that.
+    if (connection) {
 
-    // Call the querystring and then release the client
-    client.query(querystring, params, function () {
-      pool.release(client);
-      callback.apply(this, arguments);
+      connection.query(data.sql, (data.bindings || []), function(err, res) {
+        if (err) return dfd.reject(err);
+        dfd.resolve(res);
+      });
+
+    } else {
+
+      // Acquire connection - callback function is called
+      // once a resource becomes available.
+      var instance = this;
+      this.pool.acquire(function(err, client) {
+
+        if (err) return dfd.reject(err);
+
+        // Make the query and then release the client.
+        client.query(data.sql, (data.bindings || []), function (err, res) {
+          instance.pool.release(client);
+          if (err) return dfd.reject(err);
+          dfd.resolve(res);
+        });
+
+      });
+
+    }
+
+    return dfd.promise;
+  },
+
+  // Returns a mysql connection, with a __cid property uniquely
+  // identifying the connection.
+  getConnection: function () {
+    var connection = mysql.createConnection(this.connectionSettings);
+        connection.connect();
+        connection.__cid = _.uniqueId('__cid');
+    return connection;
+  },
+
+  // Begins a transaction statement on the instance,
+  // resolving with the connection of the current transaction.
+  startTransaction: function() {
+    var dfd = Q.defer();
+    var connection = this.getConnection();
+    connection.query('begin;', [], function(err) {
+      if (err) dfd.reject(err);
+      dfd.resolve(connection);
     });
+    return dfd.promise;
+  },
 
-  });
-};
+  finishTransaction: function(type, trans, promise) {
+    trans.connection.query(type + ';', [], function(err, resp) {
+      trans.connection.end();
+      trans.connection = null;
+      if (type === 'commit') promise.resolve(resp);
+      if (type === 'rollback') promise.reject(resp);
+    });
+  }
 
-exports.beginTransaction = function(callback) {
-  var connection = this.getConnection();
-  this.query("begin;", null, function(err) {
-    callback(err, connection);
-  }, connection);
-};
-
-exports.commitTransaction = function(connection, callback) {
-  this.query("commit;", null, callback, connection);
-};
-
-exports.rollbackTransaction = function(connection, callback) {
-  this.query("rollback;", null, callback, connection);
-};
-
-// TODO: Return table prefix.
-exports.getTablePrefix = function () {};
-
-// Returns a mysql connection, with a __cid property uniquely
-// identifying the connection.
-exports.getConnection = function () {
-  var connection = mysql.createConnection(connectionSettings);
-      connection.connect();
-      connection.__cid = _.uniqueId('__cid');
-  return connection;
-};
+});
 
 // Extends the standard sql grammar.
-var grammar = exports.grammar = {
+MysqlClient.grammar = {
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
@@ -112,7 +120,7 @@ var grammar = exports.grammar = {
 };
 
 // Grammar for the schema builder.
-exports.schemaGrammar = _.extend({}, grammar, {
+MysqlClient.schemaGrammar = _.extend({}, MysqlClient.grammar, {
 
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After'],
