@@ -965,10 +965,10 @@
     build: function(grammar) {
       var statements = this.toSql(grammar);
       var promises = [];
-      var connection = this.client.getConnection();
+      var connection = this.connection = this.client.getConnection();
       for (var i = 0, l = statements.length; i < l; i++) {
         var statement = statements[i];
-        promises.push(Knex.runQuery(this, {sql: statement}, connection));
+        promises.push(Knex.runQuery(this, {sql: statement}));
       }
       // Ensures all queries for the same table
       // are run on the same connection.
@@ -1336,7 +1336,6 @@
       if (!builder.transaction.connection) return Q.reject(new Error('The transaction has already completed.'));
       builder.connection = builder.transaction.connection;
     }
-    
     // Query on the query builder, which should resolve with a promise, 
     // spreadable to include more information including the query.
     return builder.client.query(data, builder.connection);
