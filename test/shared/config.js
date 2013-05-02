@@ -14,7 +14,7 @@ module.exports = {
   },
 
   sqlite3: {
-    database: ':memory:'
+    filename: ':memory:'
   }
 
 };
