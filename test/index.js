@@ -1,7 +1,7 @@
 var Q      = require('q');
 var _      = require('underscore');
 var Knex   = require('../knex');
-var conn   = require(process.env.KNEX_TEST || './test/shared/config');
+var conn   = require(process.env.KNEX_TEST || './shared/config');
 var base   = require('../clients/base');
 var objectdump = require('objectdump');
 
