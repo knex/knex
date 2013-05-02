@@ -28,7 +28,7 @@
   // Creates a new Grammar, with the mixins for the
   // specified query dialect, which are defined in each
   // client's `exports.grammar`.
-  var Grammar = function(mixins) {
+  var Grammar = Knex.Grammar = function(mixins) {
     _.extend(this, mixins);
   };
 
@@ -320,16 +320,17 @@
 
   Builder.prototype = {
 
+    // Specifies to resolve the statement with the `data` rather 
+    // than a promise... useful in testing/debugging.
+    asSql: function(asSql) {
+      this._asSql = (asSql != null ? asSql : true);
+      return this;
+    },
+
     // Sets the `tableName` on the query.
     from: function(tableName) {
       if (!tableName) return this.table;
       this.table = tableName;
-      return this;
-    },
-
-    // Specifies to returns the statement as SQL rather than as a promise.
-    asSql: function() {
-      this.asSql = true;
       return this;
     },
 
@@ -789,7 +790,7 @@
 
     // Attach main static methods, which passthrough to the
     // SchemaBuilder instance methods
-    _.each(['hasTable', 'createTable', 'table', 'dropTable', 'dropTableIfExists', 'transacting'], function(method) {
+    _.each(['hasTable', 'createTable', 'table', 'dropTable', 'renameTable', 'dropTableIfExists'], function(method) {
 
       Schema[method] = function() {
         var builder = new Knex.SchemaBuilder(client);
@@ -808,6 +809,13 @@
   };
 
   SchemaBuilder.prototype = {
+
+    // Specifies to resolve the statement with the `data` rather 
+    // than a promise... useful in testing/debugging.
+    asSql: function(asSql) {
+      this._asSql = (asSql != null ? asSql : true);
+      return this;
+    },
 
     // Create a new table on the schema.
     createTable: function(table, callback) {
@@ -838,7 +846,9 @@
     // TODO: Bindings here need to be fixed for mysql, including `table`.
     hasTable: function(table) {
       var sql = this.grammar.compileTableExists();
+      var builder = this;
       return Knex.runQuery(this, {sql: sql, bindings: [table]}).then(function(resp) {
+        if (builder._asSql) return resp;
         return (resp.length > 0 ? resp : Q.reject('Table' + table + ' does not exist'));
       });
     }
@@ -1057,15 +1067,16 @@
       return this;
     },
 
+    // Rename the table to a given name.
+    renameTable: function(to) {
+      this._addCommand('renameTable', {to: to});
+      return this;
+    },
+
     // Indicate that the given columns should be dropped.
     dropColumn: function(columns) {
       if (!_.isArray(columns)) columns = columns ? [columns] : [];
       return this._addCommand('dropColumn', {columns: columns});
-    },
-
-    // Rename the table to a given name.
-    renameTable: function(to) {
-      return this._addCommand('renameTable', {to: to});
     },
 
     // Indicate that the given columns should be dropped.
@@ -1336,6 +1347,11 @@
       if (!builder.transaction.connection) return Q.reject(new Error('The transaction has already completed.'));
       builder.connection = builder.transaction.connection;
     }
+    
+    // If we want this as sql, resolve the promise with just the data that would
+    // be sent to the query.
+    if (builder._asSql) return Q.resolve(data);
+
     // Query on the query builder, which should resolve with a promise, 
     // spreadable to include more information including the query.
     return builder.client.query(data, builder.connection);
@@ -1383,14 +1399,15 @@
 
     // If this is named "default" then we're setting this on the Knex
     if (name === 'default') {
-      Target = Knex.Instances['default'] = Knex;
+      Target = Knex;
     } else {
-      Target = Knex.Instances[name] = function(table) {
+      Target = function(table) {
         return new Knex.Builder(table, client);
       };
 
-      // Inherit static properties.
-      _.extend(Target, _.omit(Knex, 'Initialize', 'Instances'));
+      // Inherit static properties, without any that don't apply except 
+      // on the "root" `Knex`.
+      _.extend(Target, _.omit(Knex, 'Initialize', 'Instances', 'VERSION'));
     }
 
     // Initialize the schema builder methods.
@@ -1398,12 +1415,18 @@
 
     // Specifically set the client on the current target.
     Target.client = client;
+    Target.name   = name;
+
+    Knex.Instances[name] = Target;
+
+    return Target;
   };
 
   // Default client paths, located in the `./clients` directory.
   var Clients = {
     'mysql'    : './clients/mysql.js',
     'postgres' : './clients/postgres.js',
+    'sqlite'   : './clients/sqlite3.js',
     'sqlite3'  : './clients/sqlite3.js'
   };
 

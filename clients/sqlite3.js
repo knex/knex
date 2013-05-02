@@ -1,103 +1,77 @@
 
-var sqlite3 = require('sqlite3');
+var Q           = require('q');
+var _           = require('underscore');
+var util        = require('util');
+var base        = require('./base');
+var sqlite3     = require('sqlite3');
 
-var _ = require('underscore');
-var util = require('util');
-var genericPool = require('generic-pool');
+// Constructor for the Sqlite3Client
+var Sqlite3Client = module.exports = function(name, options) {
+  base.setup.call(this, Sqlite3Client, name, options);
+};
 
-var init, debug, pool, connection, connectionSettings;
+_.extend(Sqlite3Client.prototype, base.protoProps, {
 
-// Initializes the sqlite3 module with an options hash,
-// containing the connection settings, as well as the
-// pool config settings
-exports.initialize = function (options) {
-
-  // If there isn't a connection setting
-  if (!options.connection) return;
-
-  connectionSettings = options.connection;
-  debug = options.debug;
-
-  // If pooling is disabled, set the query getter to
-  // something below and create a connection on the connection object
-  if (options.pool === false) {
-    pool = false;
-    connection = this.getConnection();
-    return;
-  }
-
-  // Extend the genericPool with the options
-  // passed into the init under the "pool" option
-  pool = genericPool.Pool(_.extend({
-    name : 'sqlite3',
-    create : function(callback) {
-      var conn = exports.getConnection();
-      // Set to allow multiple connections on the database.
-      conn.run("PRAGMA journal_mode=WAL;", function () {
-        callback(null, conn);
-      });
-    },
-    destroy  : function(client) {
-      client.close();
-    },
-    max : 1,
-    min : 1,
+  poolDefaults: {
+    max: 1,
+    min: 1,
     idleTimeoutMillis: 30000,
-    log : false
-  }, options.pool));
-};
+    destroy: function(client) {
+      client.close();
+    }
+  },
 
-exports.query = function (querystring, params, callback, connection, type) {
+  // Returns a mysql connection, with a __cid property uniquely
+  // identifying the connection. Adds an "end" method on the connection
+  // to make it standard with the other database connections.
+  getConnection: function() {
+    var connection   = new sqlite3.Database(this.connectionSettings.filename);
+    connection.__cid = _.uniqueId('__cid');
+    connection.end   = function() { this.close(); };
+    return connection;
+  },
 
-  if (debug) console.log([querystring, params]);
-  
-  // If there is a connection, use it.
-  if (connection) {
-    return connection.run(querystring, params, callback);
+  // Execute a query on the database.
+  // If the fourth parameter is set, this will be used as the connection
+  // to the database.
+  query: function (data, connection) {
+    var dfd = Q.defer();
+    var method = (data.type === 'insert' || data.type === 'update') ? 'run' : 'all';
+
+    if (this.debug) {
+      if (connection) data.__cid = connection.__cid;
+      console.log(data);
+    }
+
+    // If a `connection` is specified, use it, otherwise
+    // Acquire a connection - and resolve the deferred
+    // once a resource becomes available. If the connection
+    // is from the pool, release the connection back to the pool
+    // once the query completes.
+    if (connection) {
+      connection[method](data.sql, (data.bindings || []), function(err, res) {
+        if (err) return dfd.reject(err);
+        if (_.has(this, 'lastID')) resp = {insertId: this.lastID, changes: this.changes};
+        dfd.resolve(res);
+      });
+    } else {
+      var instance = this;
+      this.pool.acquire(function(err, client) {
+        if (err) return dfd.reject(err);
+        client.query(data.sql, (data.bindings || []), function (err, res) {
+          instance.pool.release(client);
+          if (err) return dfd.reject(err);
+          if (_.has(this, 'lastID')) res = {insertId: this.lastID, changes: this.changes};
+          dfd.resolve(res);
+        });
+      });
+    }
+    return dfd.promise;
   }
-
-  // Acquire connection - callback function is called
-  // once a resource becomes available.
-  pool.acquire(function(err, client) {
-
-    if (err) throw new Error(err);
-    var method = (type === 'insert' || type === 'update') ? 'run' : 'all';
-
-    // Call the querystring and then release the client
-    client[method](querystring, params, function (err, resp) {
-      if (_.has(this, 'lastID')) resp = {insertId: this.lastID, changes: this.changes};
-      pool.release(client);
-      callback.call(this, err, resp);
-    });
-
-  });
-};
-
-exports.beginTransaction = function(callback) {
-  var connection = this.getConnection();
-  this.query("begin;", null, function(err) {
-    callback(err, connection);
-  }, connection);
-};
-
-exports.commitTransaction = function(connection, callback) {
-  this.query("commit;", null, callback, connection);
-};
-
-exports.rollbackTransaction = function(connection, callback) {
-  this.query("rollback;", null, callback, connection);
-};
-
-// Returns a mysql connection, with a __cid property uniquely
-// identifying the connection.
-exports.getConnection = function () {
-  var connection = new sqlite3.Database(connectionSettings.filename);
-  connection.__cid = _.uniqueId('__cid');
-  return connection;
-};
+});
 
 // Extends the standard sql grammar.
-var grammar = exports.grammar = {
+Sqlite3Client.grammar = {
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
@@ -157,7 +131,7 @@ var grammar = exports.grammar = {
 };
 
 // Grammar for the schema builder.
-exports.schemaGrammar = _.extend({}, grammar, {
+Sqlite3Client.schemaGrammar = _.extend({}, Sqlite3Client.grammar, {
   
   // The possible column modifiers.
   modifiers: ['Nullable', 'Default', 'Increment'],
@@ -263,7 +237,7 @@ exports.schemaGrammar = _.extend({}, grammar, {
   },
 
   // Compile a rename table command.
-  compileRename: function(blueprint, command) {
+  compileRenameTable: function(blueprint, command) {
     return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
   },
   

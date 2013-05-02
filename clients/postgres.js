@@ -1,114 +1,94 @@
 
-var pg = require('pg');
+var Q           = require('q');
+var _           = require('underscore');
+var util        = require('util');
+var base        = require('./base');
+var pg          = require('pg');
 
-var _ = require('underscore');
-var util = require('util');
-var genericPool = require('generic-pool');
+// Constructor for the PostgresClient
+var PostgresClient = module.exports = function(name, options) {
+  base.setup.call(this, PostgresClient, name, options);
+};
 
-var init, debug, pool, connection, connectionSettings;
+_.extend(PostgresClient.prototype, base.protoProps, {
 
-// Initializes the postgres module with an options hash,
-// containing the connection settings, as well as the
-// pool config settings
-exports.initialize = function (options) {
-
-  // If there isn't a connection setting
-  if (!options.connection) return;
-
-  connectionSettings = options.connection;
-  debug = options.debug;
-
-  // If pooling is disabled, set the query getter to
-  // something below and create a connection on the connection object
-  if (options.pool === false) {
-    pool = false;
-    connection = this.getConnection();
-    return;
-  }
-
-  // Extend the genericPool with the options
-  // passed into the init under the "pool" option
-  pool = genericPool.Pool(_.extend({
-    name : 'postgres',
-    create : function(callback) {
-      callback(null, exports.getConnection());
-    },
-    destroy  : function(client) {
-      client.end();
-    },
-    max : 10,
-    min : 2,
+  poolDefaults: {
+    min: 2,
+    max: 10,
     idleTimeoutMillis: 30000,
-    log : false
-  }, options.pool));
-};
+    destroy: function(client) {
+      client.end();
+    }
+  },
 
-exports.beginTransaction = function(callback) {
-  var connection = this.getConnection();
-  this.query("begin;", null, function(err) {
-    callback(err, connection);
-  }, connection);
-};
+  // Returns a mysql connection, with a __cid property uniquely
+  // identifying the connection.
+  getConnection: function() {
+    var connection = new pg.Client(this.connectionSettings);
+        connection.connect();
+        connection.__cid = _.uniqueId('__cid');
+    return connection;
+  },
 
-exports.commitTransaction = function(connection, callback) {
-  this.query("commit;", null, callback, connection);
-};
+  // Execute a query on the database.
+  // If the fourth parameter is set, this will be used as the connection
+  // to the database.
+  query: function (data, connection) {
 
-exports.rollbackTransaction = function(connection, callback) {
-  this.query("rollback;", null, callback, connection);
-};
+    var dfd = Q.defer();
 
-// Execute a query on the database.
-// If the fourth parameter is set, this will be used as the connection
-// to the database.
-exports.query = function (querystring, params, callback, connection) {
+    if (this.debug) {
+      if (connection) data.__cid = connection.__cid;
+      console.log(data);
+    }
 
-  if (debug) console.log([querystring, params]);
-
-  // If there is a connection, use it.
-  if (connection) {
-    return connection.query(querystring, params, callback);
-  }
-
-  // Bind all of the ? to numbered vars.
-  var questionCount = 0;
-  querystring = querystring.replace(/\?/g, function () {
-    questionCount++;
-    return '$' + questionCount;
-  });
-
-  // Acquire connection - callback function is called
-  // once a resource becomes available.
-  pool.acquire(function(err, client) {
-
-    if (err) throw new Error(err);
-
-    // Call the querystring and then release the client
-    client.query(querystring, params, function (err, resp) {
-      pool.release(client);
-      resp || (resp = {});
-      if (resp.command === 'INSERT' || resp.command === 'UPDATE') {
-        _.extend(resp, {insertId: resp.oid});
-        callback.call(this, err, resp);
-      } else {
-        callback.call(this, err, resp.rows);
-      }
+    // Bind all of the ? to numbered vars.
+    var questionCount = 0;
+    querystring = querystring.replace(/\?/g, function () {
+      questionCount++;
+      return '$' + questionCount;
     });
 
-  });
-};
+    // If a `connection` is specified, use it, otherwise
+    // Acquire a connection - and resolve the deferred
+    // once a resource becomes available. If the connection
+    // is from the pool, release the connection back to the pool
+    // once the query completes.
+    if (connection) {
+      connection.query(data.sql, (data.bindings || []), function(err, res) {
+        if (err) return dfd.reject(err);
+        res || (res = {});
+        if (res.command === 'INSERT' || res.command === 'UPDATE') {
+          _.extend(res, {insertId: res.oid});
+          dfd.resolve(res);
+        } else {
+          dfd.resolve(res.rows);
+        }
+      });
+    } else {
+      var instance = this;
+      this.pool.acquire(function(err, client) {
+        if (err) return dfd.reject(err);
+        client.query(data.sql, (data.bindings || []), function (err, res) {
+          instance.pool.release(client);
+          if (err) return dfd.reject(err);
+          res || (res = {});
+          if (res.command === 'INSERT' || res.command === 'UPDATE') {
+            _.extend(res, {insertId: res.oid});
+            dfd.resolve(res);
+          } else {
+            dfd.resolve(res.rows);
+          }
+        });
+      });
+    }
 
-// Returns a pg connection, with a __cid property uniquely
-// identifying the connection.
-exports.getConnection = function () {
-  var connection = new pg.Client(connectionSettings);
-      connection.connect();
-      connection.__cid = _.uniqueId('__cid');
-  return connection;
-};
+    return dfd.promise;
+  }
+});
 
 // Extends the standard sql grammar.
-var grammar = exports.grammar = {
+PostgresClient.grammar = {
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
@@ -123,7 +103,7 @@ var grammar = exports.grammar = {
 };
 
 // Grammar for the schema builder.
-exports.schemaGrammar = _.extend({}, grammar, {
+PostgresClient.schemaGrammar = _.extend({}, PostgresClient.grammar, {
 
   // The possible column modifiers.
   modifiers: ['Increment', 'Nullable', 'Default'],
@@ -206,7 +186,7 @@ exports.schemaGrammar = _.extend({}, grammar, {
   },
 
   // Compile a rename table command.
-  compileRename: function(blueprint, command) {
+  compileRenameTable: function(blueprint, command) {
     return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
   },
 

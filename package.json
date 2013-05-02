@@ -8,17 +8,20 @@
   },
   "devDependencies": {
     "mocha": "1.7.x",
-    "mysql": "~2.0.0-alpha5"
+    "objectdump": "0.1.x",
+    "mysql": "~2.0.0-alpha7",
+    "pg": "~1.1.0",
+    "sqlite3": "~2.1.7"
   },
   "dependencies": {
-    "q": "0.9.x",
-    "underscore": "1.4.x",
-    "generic-pool": "2.0.x"
+    "q": "~0.9.3",
+    "underscore": "~1.4.4",
+    "generic-pool": "~2.0.3"
   },
   "scripts": {
-    "test": "mocha -R spec test/index.js"
+    "test": "mocha -b -R spec test/index.js"
   },
-  "repository": "",
+  "repository": "https://github.com/tgriesser/knex",
   "keywords": [
     "sql",
     "query",

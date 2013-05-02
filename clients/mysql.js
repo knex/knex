@@ -1,41 +1,34 @@
 
-var mysql = require('mysql');
-
 var Q           = require('q');
 var _           = require('underscore');
 var util        = require('util');
-var genericPool = require('generic-pool');
+var base        = require('./base');
+var mysql       = require('mysql');
 
+// Constructor for the MysqlClient
 var MysqlClient = module.exports = function(name, options) {
-  if (!options.connection) {
-    throw new Error('The database connection properties must be specified.');
-  }
-  this.name  = name;
-  this.debug = options.debug;
-  this.connectionSettings = options.connection;
-
-  // Extend the genericPool with the options
-  // passed into the init under the "pool" option
-  var instance = this;
-  this.pool = genericPool.Pool(_.extend({
-    name : 'pool' + name,
-    create : function(callback) {
-      callback(null, instance.getConnection());
-    },
-    destroy  : function(client) {
-      client.end();
-    },
-    max : 10,
-    min : 2,
-    idleTimeoutMillis: 30000,
-    log : false
-  }, options.pool));
-
-  this.grammar = MysqlClient.grammar;
-  this.schemaGrammar = MysqlClient.schemaGrammar;
+  base.setup.call(this, MysqlClient, name, options);
 };
 
-_.extend(MysqlClient.prototype, {
+_.extend(MysqlClient.prototype, base.protoProps, {
+
+  poolDefaults: {
+    min: 2,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    destroy: function(client) {
+      client.end();
+    }
+  },
+
+  // Returns a mysql connection, with a __cid property uniquely
+  // identifying the connection.
+  getConnection: function() {
+    var connection = mysql.createConnection(this.connectionSettings);
+    connection.connect();
+    connection.__cid = _.uniqueId('__cid');
+    return connection;
+  },
 
   // Execute a query on the database.
   // If the fourth parameter is set, this will be used as the connection
@@ -49,65 +42,29 @@ _.extend(MysqlClient.prototype, {
       console.log(data);
     }
 
-    // If there is a specific connection specified, use that.
+    // If a `connection` is specified, use it, otherwise
+    // Acquire a connection - and resolve the deferred
+    // once a resource becomes available. If the connection
+    // is from the pool, release the connection back to the pool
+    // once the query completes.
     if (connection) {
-
       connection.query(data.sql, (data.bindings || []), function(err, res) {
         if (err) return dfd.reject(err);
         dfd.resolve(res);
       });
-
     } else {
-
-      // Acquire connection - callback function is called
-      // once a resource becomes available.
       var instance = this;
       this.pool.acquire(function(err, client) {
-
         if (err) return dfd.reject(err);
-
-        // Make the query and then release the client.
         client.query(data.sql, (data.bindings || []), function (err, res) {
           instance.pool.release(client);
           if (err) return dfd.reject(err);
           dfd.resolve(res);
         });
-
       });
-
     }
 
     return dfd.promise;
-  },
-
-  // Returns a mysql connection, with a __cid property uniquely
-  // identifying the connection.
-  getConnection: function () {
-    var connection = mysql.createConnection(this.connectionSettings);
-        connection.connect();
-        connection.__cid = _.uniqueId('__cid');
-    return connection;
-  },
-
-  // Begins a transaction statement on the instance,
-  // resolving with the connection of the current transaction.
-  startTransaction: function() {
-    var dfd = Q.defer();
-    var connection = this.getConnection();
-    connection.query('begin;', [], function(err) {
-      if (err) dfd.reject(err);
-      dfd.resolve(connection);
-    });
-    return dfd.promise;
-  },
-
-  finishTransaction: function(type, trans, promise) {
-    trans.connection.query(type + ';', [], function(err, resp) {
-      trans.connection.end();
-      trans.connection = null;
-      if (type === 'commit') promise.resolve(resp);
-      if (type === 'rollback') promise.reject(resp);
-    });
   }
 });
 
@@ -204,7 +161,7 @@ MysqlClient.schemaGrammar = _.extend({}, MysqlClient.grammar, {
   },
 
   // Compile a rename table command.
-  compileRename: function(blueprint, command) {
+  compileRenameTable: function(blueprint, command) {
     return 'rename table ' + this.wrapTable(blueprint) + ' to ' + this.wrapTable(command.to);
   },
   

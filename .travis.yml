@@ -1,4 +1,6 @@
 # .travis.yml
+before_script:
+  - psql -c 'create database knex_test;' -U postgres
 language: node_js
 node_js:
   - 0.8
