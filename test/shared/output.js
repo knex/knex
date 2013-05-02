@@ -164,57 +164,57 @@ module.exports = {
   },
   'selects.2': {
     mysql: [{
-      sql: 'select `column1`, `column2` from `table` where `id` = ?',
+      sql: 'select `first_name`, `last_name` from `table` where `id` = ?',
       bindings: [1]
     },{
-      sql: 'select `column1`, `column2` from `table` where `id` > ?',
+      sql: 'select `email`, `logins` from `table` where `id` > ?',
       bindings: [1]
     },{
       sql: 'select * from `table` where `id` = ?',
       bindings: [1]
     },{
-      sql: 'select *, `column2` from `table` where `id` = ?',
+      sql: 'select * from `table` where `id` = ?',
       bindings: [undefined]
     },{
-      sql: 'select `column1`, `column2` from `table` where `id` = ?',
+      sql: 'select `first_name`, `email` from `table` where `id` = ?',
       bindings: [null]
     },{
       sql: 'select * from `table` where `id` = ?',
       bindings: ['']
     }],
     sqlite3: [{
-      sql: 'select "column1", "column2" from "table" where "id" = ?',
+      sql: 'select "first_name", "last_name" from "table" where "id" = ?',
       bindings: [1]
     },{
-      sql: 'select "column1", "column2" from "table" where "id" > ?',
+      sql: 'select "email", "logins" from "table" where "id" > ?',
       bindings: [1]
     },{
       sql: 'select * from "table" where "id" = ?',
       bindings: [1]
     },{
-      sql: 'select *, "column2" from "table" where "id" = ?',
+      sql: 'select * from "table" where "id" = ?',
       bindings: [undefined]
     },{
-      sql: 'select "column1", "column2" from "table" where "id" = ?',
+      sql: 'select "first_name", "email" from "table" where "id" = ?',
       bindings: [null]
     },{
       sql: 'select * from "table" where "id" = ?',
       bindings: ['']
     }],
     postgres: [{
-      sql: 'select "column1", "column2" from "table" where "id" = ?',
+      sql: 'select "first_name", "last_name" from "table" where "id" = ?',
       bindings: [1]
     },{
-      sql: 'select "column1", "column2" from "table" where "id" > ?',
+      sql: 'select "email", "logins" from "table" where "id" > ?',
       bindings: [1]
     },{
       sql: 'select * from "table" where "id" = ?',
       bindings: [1]
     },{
-      sql: 'select *, "column2" from "table" where "id" = ?',
+      sql: 'select * from "table" where "id" = ?',
       bindings: [undefined]
     },{
-      sql: 'select "column1", "column2" from "table" where "id" = ?',
+      sql: 'select "first_name", "email" from "table" where "id" = ?',
       bindings: [null]
     },{
       sql: 'select * from "table" where "id" = ?',
@@ -237,61 +237,16 @@ module.exports = {
   },
   'selects.4': {
     mysql: [{
-      sql: 'select `column1`, `column2` from `table` where `id` = ?',
-      bindings: [1]
-    },{
-      sql: 'select `column1`, `column2` from `table` where `id` > ?',
-      bindings: [1]
-    },{
-      sql: 'select * from `table` where `id` = ?',
-      bindings: [1]
-    },{
-      sql: 'select *, `column2` from `table` where `id` = ?',
-      bindings: [undefined]
-    },{
-      sql: 'select `column1`, `column2` from `table` where `id` = ?',
-      bindings: [null]
-    },{
-      sql: 'select * from `table` where `id` = ?',
-      bindings: ['']
+      sql: 'select `first_name`, `last_name`, `about` from `table` where `id` = ? and `email` = ?',
+      bindings: [1,'test@example.com']
     }],
     sqlite3: [{
-      sql: 'select "column1", "column2" from "table" where "id" = ?',
-      bindings: [1]
-    },{
-      sql: 'select "column1", "column2" from "table" where "id" > ?',
-      bindings: [1]
-    },{
-      sql: 'select * from "table" where "id" = ?',
-      bindings: [1]
-    },{
-      sql: 'select *, "column2" from "table" where "id" = ?',
-      bindings: [undefined]
-    },{
-      sql: 'select "column1", "column2" from "table" where "id" = ?',
-      bindings: [null]
-    },{
-      sql: 'select * from "table" where "id" = ?',
-      bindings: ['']
+      sql: 'select "first_name", "last_name", "about" from "table" where "id" = ? and "email" = ?',
+      bindings: [1,'test@example.com']
     }],
     postgres: [{
-      sql: 'select "column1", "column2" from "table" where "id" = ?',
-      bindings: [1]
-    },{
-      sql: 'select "column1", "column2" from "table" where "id" > ?',
-      bindings: [1]
-    },{
-      sql: 'select * from "table" where "id" = ?',
-      bindings: [1]
-    },{
-      sql: 'select *, "column2" from "table" where "id" = ?',
-      bindings: [undefined]
-    },{
-      sql: 'select "column1", "column2" from "table" where "id" = ?',
-      bindings: [null]
-    },{
-      sql: 'select * from "table" where "id" = ?',
-      bindings: ['']
+      sql: 'select "first_name", "last_name", "about" from "table" where "id" = ? and "email" = ?',
+      bindings: [1,'test@example.com']
     }]
   },
   'selects.5': {
@@ -307,6 +262,118 @@ module.exports = {
       sql: 'select * from "table" where ("x" = ? or "x" = ?)',
       bindings: [2,3]
     }]
+  },
+  'selects.6': {
+    mysql: [{
+      sql: 'select * from `accounts` where `x` in (?, ?, ?)',
+      bindings: [1,2,3]
+    }],
+    sqlite3: [{
+      sql: 'select * from "accounts" where "x" in (?, ?, ?)',
+      bindings: [1,2,3]
+    }],
+    postgres: [{
+      sql: 'select * from "accounts" where "x" in (?, ?, ?)',
+      bindings: [1,2,3]
+    }]
+  },
+  'selects.7': {
+    mysql: {
+      sql: 'select * from `table` where `id` = ? or `id` in (?, ?, ?)',
+      bindings: [1,2,3,4]
+    },
+    sqlite3: {
+      sql: 'select * from "table" where "id" = ? or "id" in (?, ?, ?)',
+      bindings: [1,2,3,4]
+    },
+    postgres: {
+      sql: 'select * from "table" where "id" = ? or "id" in (?, ?, ?)',
+      bindings: [1,2,3,4]
+    }
+  },
+  'selects.8': {
+    mysql: {
+      sql: 'select * from `accounts` where exists (select `column1` from `table2` where `id` = ? and `otherItem` = ?)',
+      bindings: [1,2]
+    },
+    sqlite3: {
+      sql: 'select * from "accounts" where exists (select "column1" from "table2" where "id" = ? and "otherItem" = ?)',
+      bindings: [1,2]
+    },
+    postgres: {
+      sql: 'select * from "accounts" where exists (select "column1" from "table2" where "id" = ? and "otherItem" = ?)',
+      bindings: [1,2]
+    }
+  },
+  'selects.9': {
+    mysql: {
+      sql: 'select * from `table` where `id` between ? and ?',
+      bindings: [1,100]
+    },
+    sqlite3: {
+      sql: 'select * from "table" where "id" between ? and ?',
+      bindings: [1,100]
+    },
+    postgres: {
+      sql: 'select * from "table" where "id" between ? and ?',
+      bindings: [1,100]
+    }
+  },
+  'selects.10': {
+    mysql: {
+      sql: 'select * from `table` where `id` between ? and ? or `id` between ? and ?',
+      bindings: [1,100,200,300]
+    },
+    sqlite3: {
+      sql: 'select * from "table" where "id" between ? and ? or "id" between ? and ?',
+      bindings: [1,100,200,300]
+    },
+    postgres: {
+      sql: 'select * from "table" where "id" between ? and ? or "id" between ? and ?',
+      bindings: [1,100,200,300]
+    }
+  },
+  'selects.11': {
+    mysql: {
+      sql: 'select `tableName`.*, `otherTable`.`name` from `tableName` inner join `otherTable` on `tableName`.`id` = `otherTable`.`otherId`',
+      bindings: []
+    },
+    sqlite3: {
+      sql: 'select "tableName".*, "otherTable"."name" from "tableName" inner join "otherTable" on "tableName"."id" = "otherTable"."otherId"',
+      bindings: []
+    },
+    postgres: {
+      sql: 'select "tableName".*, "otherTable"."name" from "tableName" inner join "otherTable" on "tableName"."id" = "otherTable"."otherId"',
+      bindings: []
+    }
+  },
+  'selects.12': {
+    mysql: {
+      sql: 'select `tableName`.*, `otherTable`.`name` from `tableName` left join `otherTable` on `tableName`.`id` = `otherTable`.`otherId`',
+      bindings: []
+    },
+    sqlite3: {
+      sql: 'select "tableName".*, "otherTable"."name" from "tableName" left join "otherTable" on "tableName"."id" = "otherTable"."otherId"',
+      bindings: []
+    },
+    postgres: {
+      sql: 'select "tableName".*, "otherTable"."name" from "tableName" left join "otherTable" on "tableName"."id" = "otherTable"."otherId"',
+      bindings: []
+    }
+  },
+  'selects.13': {
+    mysql: {
+      sql: 'select * from `tableName` left join `table2` on `tableName`.`one_id` = `table2`.`tableName_id` or `tableName`.`other_id` = `table2`.`tableName_id2`',
+      bindings: []
+    },
+    sqlite3: {
+      sql: 'select * from "tableName" left join "table2" on "tableName"."one_id" = "table2"."tableName_id" or "tableName"."other_id" = "table2"."tableName_id2"',
+      bindings: []
+    },
+    postgres: {
+      sql: 'select * from "tableName" left join "table2" on "tableName"."one_id" = "table2"."tableName_id" or "tableName"."other_id" = "table2"."tableName_id2"',
+      bindings: []
+    }
   },
   'deletes.1': {
     mysql: {

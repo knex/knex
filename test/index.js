@@ -1,7 +1,7 @@
 var Q      = require('q');
 var _      = require('underscore');
 var Knex   = require('../knex');
-var conn   = require(process.env.KNEX_TEST || './config');
+var conn   = require(process.env.KNEX_TEST || './test/shared/config');
 var base   = require('../clients/base');
 var objectdump = require('objectdump');
 
@@ -81,8 +81,4 @@ describe('Knex.Builder', function() {
   after(function() {
     require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(obj));
   });
-});
-
-describe('Knex.Initialize', function() {
-
 });
