@@ -1415,7 +1415,7 @@
 
     // Specifically set the client on the current target.
     Target.client = client;
-    Target.name   = name;
+    Target.instanceName = name;
 
     Knex.Instances[name] = Target;
 
