@@ -1,4 +1,3 @@
-
 var Q           = require('q');
 var _           = require('underscore');
 var util        = require('util');
@@ -15,58 +14,16 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
   poolDefaults: {
     max: 1,
     min: 1,
-    idleTimeoutMillis: 30000,
-    destroy: function(client) {
-      client.close();
-    }
+    destroy: function(client) { client.close(); }
   },
 
-  // Returns a mysql connection, with a __cid property uniquely
-  // identifying the connection. Adds an "end" method on the connection
-  // to make it standard with the other database connections.
-  getConnection: function() {
-    var connection   = new sqlite3.Database(this.connectionSettings.filename);
-    connection.__cid = _.uniqueId('__cid');
-    connection.end   = function() { this.close(); };
-    return connection;
+  getRawConnection: function() {
+    return new sqlite3.Database(this.connectionSettings.filename);
   },
 
-  // Execute a query on the database.
-  // If the fourth parameter is set, this will be used as the connection
-  // to the database.
-  query: function (data, connection) {
-    var dfd = Q.defer();
-    var method = (data.type === 'insert' || data.type === 'update') ? 'run' : 'all';
-
-    if (this.debug) {
-      if (connection) data.__cid = connection.__cid;
-      console.log(data);
-    }
-
-    // If a `connection` is specified, use it, otherwise
-    // Acquire a connection - and resolve the deferred
-    // once a resource becomes available. If the connection
-    // is from the pool, release the connection back to the pool
-    // once the query completes.
-    if (connection) {
-      connection[method](data.sql, (data.bindings || []), function(err, res) {
-        if (err) return dfd.reject(err);
-        if (_.has(this, 'lastID')) resp = {insertId: this.lastID, changes: this.changes};
-        dfd.resolve(res);
-      });
-    } else {
-      var instance = this;
-      this.pool.acquire(function(err, client) {
-        if (err) return dfd.reject(err);
-        client.query(data.sql, (data.bindings || []), function (err, res) {
-          instance.pool.release(client);
-          if (err) return dfd.reject(err);
-          if (_.has(this, 'lastID')) res = {insertId: this.lastID, changes: this.changes};
-          dfd.resolve(res);
-        });
-      });
-    }
-    return dfd.promise;
+  prepResp: function(resp) {
+    if (_.has(this, 'lastID')) resp = {insertId: this.lastID, changes: this.changes};
+    return resp;
   }
 });
 
@@ -308,7 +265,7 @@ Sqlite3Client.schemaGrammar = _.extend({}, Sqlite3Client.grammar, {
   
   // Get the SQL for a nullable column modifier.
   modifyNullable: function(blueprint, column) {
-    return column.nullable ? ' null' : ' not null';
+    return column.isNullable ? ' null' : ' not null';
   },
   
   // Get the SQL for a default column modifier.

@@ -1,4 +1,3 @@
-
 var Q           = require('q');
 var _           = require('underscore');
 var util        = require('util');
@@ -12,59 +11,28 @@ var MysqlClient = module.exports = function(name, options) {
 
 _.extend(MysqlClient.prototype, base.protoProps, {
 
-  poolDefaults: {
-    min: 2,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    destroy: function(client) {
-      client.end();
-    }
-  },
-
-  // Returns a mysql connection, with a __cid property uniquely
-  // identifying the connection.
-  getConnection: function() {
-    var connection = mysql.createConnection(this.connectionSettings);
-    connection.connect();
-    connection.__cid = _.uniqueId('__cid');
-    return connection;
+  getRawConnection: function() {
+    var conn = mysql.createConnection(this.connectionSettings);
+        conn.connect();
+    return conn;
   },
 
   // Execute a query on the database.
-  // If the fourth parameter is set, this will be used as the connection
-  // to the database.
+  // If a `connection` is specified, use it, otherwise
+  // acquire a connection, and then dispose of it when we're done.
   query: function (data, connection) {
-
-    var dfd = Q.defer();
-
-    if (this.debug) {
-      if (connection) data.__cid = connection.__cid;
-      console.log(data);
-    }
-
-    // If a `connection` is specified, use it, otherwise
-    // Acquire a connection - and resolve the deferred
-    // once a resource becomes available. If the connection
-    // is from the pool, release the connection back to the pool
-    // once the query completes.
-    if (connection) {
-      connection.query(data.sql, (data.bindings || []), function(err, res) {
-        if (err) return dfd.reject(err);
-        dfd.resolve(res);
+    data = this.prepData(data);
+    var emptyConnection = !connection;
+    var debug = this.debug;
+    return Q((connection || this.getConnection()))
+      .then(function(conn) {
+        if (debug) console.log(_.extend(data, {__cid: conn.__cid}));
+        return Q.nfinvoke(connection.query, data.sql, (data.bindings || []));
+      })
+      .then(this.prepResp)
+      .fin(function() {
+        if (emptyConnection) instance.pool.release(client);
       });
-    } else {
-      var instance = this;
-      this.pool.acquire(function(err, client) {
-        if (err) return dfd.reject(err);
-        client.query(data.sql, (data.bindings || []), function (err, res) {
-          instance.pool.release(client);
-          if (err) return dfd.reject(err);
-          dfd.resolve(res);
-        });
-      });
-    }
-
-    return dfd.promise;
   }
 });
 

@@ -6,7 +6,7 @@ module.exports = {
       sql: 'alter table `accounts` add index accounts_logins_index(`logins`)'
     }],
     sqlite3: [{
-      sql: 'create table "accounts" ("id" integer null primary key autoincrement, "first_name" varchar null, "last_name" varchar null, "email" varchar null, "logins" integer null default \'1\', "about" text null, "created_at" datetime null, "updated_at" datetime null)'
+      sql: 'create table "accounts" ("id" integer not null primary key autoincrement, "first_name" varchar not null, "last_name" varchar not null, "email" varchar null, "logins" integer not null default \'1\', "about" text not null, "created_at" datetime not null, "updated_at" datetime not null)'
     },{
       sql: 'create index accounts_logins_index on "accounts" ("logins")'
     }],

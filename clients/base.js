@@ -1,8 +1,5 @@
-
-// Shared Properties for all base Node.js Clients
 var Q = require('q');
 var _ = require('underscore');
-var genericPool = require('generic-pool');
 
 // Setup is called with the context of the current client.
 exports.setup = function(Client, name, options) {
@@ -18,35 +15,60 @@ exports.setup = function(Client, name, options) {
   // Extend the genericPool with the options
   // passed into the init under the "pool" option.
   var instance = this;
-  this.pool = genericPool.Pool(_.extend({
+  this.pool = require('generic-pool').Pool(_.extend({
     name: 'pool-' + name,
+    min: 2,
+    max: 10,
+    log: false,
+    idleTimeoutMillis: 30000,
     create: function(callback) {
-      callback(null, instance.getConnection());
+      var conn = instance.getRawConnection();
+      conn.__cid = _.uniqueId('__cid');
+      callback(null, conn);
     },
-    log : false
+    destroy: function(client) { client.end(); }
   }, this.poolDefaults, options.pool));
 };
 
 exports.protoProps = {
 
+  prepData: function(data) {
+    return data;
+  },
+
+  prepResp: function(resp) {
+    return resp;
+  },
+
+  // Retrieves a connection from the connection pool,
+  // returning a promise.
+  getConnection: function() {
+    return Q.ninvoke(this.pool, 'acquire');
+  },
+
+  // Releases a connection from the connection pool,
+  // returning a promise.
+  releaseConnection: function(conn) {
+    return Q.ninvoke(this.pool, 'release', conn);
+  },
+
   // Begins a transaction statement on the instance,
   // resolving with the connection of the current transaction.
   startTransaction: function() {
-    var dfd = Q.defer();
-    var connection = this.getConnection();
-    connection.query('begin;', [], function(err) {
-      if (err) dfd.reject(err);
-      dfd.resolve(connection);
+    return this.getConnection().then(function(connection) {
+      return Q.ninvoke(connection, 'query', 'begin;', []).then(function() {
+        return connection;
+      });
     });
-    return dfd.promise;
   },
 
-  finishTransaction: function(type, trans, promise) {
-    trans.connection.query(type + ';', [], function(err, resp) {
+  finishTransaction: function(type, trans, dfd) {
+    Q.ninvoke(trans.connection, 'query', type + ';', []).then(function() {
+      if (type === 'commit') dfd.resolve(resp);
+      if (type === 'rollback') dfd.reject(resp);
+    }).fin(function() {
       trans.connection.end();
       trans.connection = null;
-      if (type === 'commit') promise.resolve(resp);
-      if (type === 'rollback') promise.reject(resp);
     });
   }
 

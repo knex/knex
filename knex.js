@@ -345,9 +345,8 @@
     clone: function() {
       var item = new Builder(this.table);
       var items = [
-        'isDistinct', 'joins',
-        'wheres', 'orders', 'columns', 'bindings',
-        'grammar', 'connection', 'transaction'
+        'isDistinct', 'joins', 'wheres', 'orders',
+        'columns', 'bindings', 'grammar', 'transaction'
       ];
       for (var i = 0, l = items.length; i < l; i++) {
         var k = items[i];
@@ -974,16 +973,20 @@
     // Builds the schemaBuilder statements to be executed.
     build: function(grammar) {
       var statements = this.toSql(grammar);
-      var promises = [];
-      var connection = this.connection = this.client.getConnection();
-      for (var i = 0, l = statements.length; i < l; i++) {
-        var statement = statements[i];
-        promises.push(Knex.runQuery(this, {sql: statement}));
-      }
+      var builder = this;
+      
       // Ensures all queries for the same table
       // are run on the same connection.
-      return Q.all(promises).fin(function() {
-        connection.end();
+      return this.client.getConnection().then(function(connection) {
+        var promises = [];
+        builder.connection = connection;
+        for (var i = 0, l = statements.length; i < l; i++) {
+          var statement = statements[i];
+          promises.push(Knex.runQuery(builder, {sql: statement}));
+        }
+        return Q.all(promises).fin(function() {
+          builder.client.releaseConnection(connection);
+        });
       });
     },
 

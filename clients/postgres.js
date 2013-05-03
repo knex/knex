@@ -1,4 +1,3 @@
-
 var Q           = require('q');
 var _           = require('underscore');
 var util        = require('util');
@@ -12,78 +11,28 @@ var PostgresClient = module.exports = function(name, options) {
 
 _.extend(PostgresClient.prototype, base.protoProps, {
 
-  poolDefaults: {
-    min: 2,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    destroy: function(client) {
-      client.end();
-    }
+  // Returns a connection from the `pg` lib.
+  getRawConnection: function() {
+    var conn = new pg.Client(this.connectionSettings);
+        conn.connect();
+    return conn;
   },
 
-  // Returns a mysql connection, with a __cid property uniquely
-  // identifying the connection.
-  getConnection: function() {
-    var connection = new pg.Client(this.connectionSettings);
-        connection.connect();
-        connection.__cid = _.uniqueId('__cid');
-    return connection;
-  },
-
-  // Execute a query on the database.
-  // If the fourth parameter is set, this will be used as the connection
-  // to the database.
-  query: function (data, connection) {
-
-    var dfd = Q.defer();
-
-    if (this.debug) {
-      if (connection) data.__cid = connection.__cid;
-      console.log(data);
-    }
-
+  prepData: function(data) {
     // Bind all of the ? to numbered vars.
     var questionCount = 0;
-    querystring = querystring.replace(/\?/g, function () {
+    data.sql = data.sql.replace(/\?/g, function() {
       questionCount++;
       return '$' + questionCount;
     });
+    return data;
+  },
 
-    // If a `connection` is specified, use it, otherwise
-    // Acquire a connection - and resolve the deferred
-    // once a resource becomes available. If the connection
-    // is from the pool, release the connection back to the pool
-    // once the query completes.
-    if (connection) {
-      connection.query(data.sql, (data.bindings || []), function(err, res) {
-        if (err) return dfd.reject(err);
-        res || (res = {});
-        if (res.command === 'INSERT' || res.command === 'UPDATE') {
-          _.extend(res, {insertId: res.oid});
-          dfd.resolve(res);
-        } else {
-          dfd.resolve(res.rows);
-        }
-      });
-    } else {
-      var instance = this;
-      this.pool.acquire(function(err, client) {
-        if (err) return dfd.reject(err);
-        client.query(data.sql, (data.bindings || []), function (err, res) {
-          instance.pool.release(client);
-          if (err) return dfd.reject(err);
-          res || (res = {});
-          if (res.command === 'INSERT' || res.command === 'UPDATE') {
-            _.extend(res, {insertId: res.oid});
-            dfd.resolve(res);
-          } else {
-            dfd.resolve(res.rows);
-          }
-        });
-      });
+  prepResp: function(resp) {
+    if (resp.command === 'INSERT' || resp.command === 'UPDATE') {
+      return _.extend(resp, {insertId: resp.oid});
     }
-
-    return dfd.promise;
+    return resp.rows;
   }
 });
 
@@ -95,7 +44,7 @@ PostgresClient.grammar = {
     return (value !== '*' ? util.format('"%s"', value) : "*");
   },
 
-  compileTruncate: function (qb) {
+  compileTruncate: function(qb) {
     var query = {};
     query['truncate ' + this.wrapTable(qb.from) + ' restart identity'] = [];
     return query;
