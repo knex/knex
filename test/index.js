@@ -78,6 +78,12 @@ describe('Knex.Builder', function() {
     // require('./lib/aggregate')(Postgres, 'postgres', handler('postgres', 'aggregate'));
   });
 
+  describe('Deletes', function() {
+    require('./lib/unions')(MySql, 'mysql', handler('mysql', 'unions'));
+    require('./lib/unions')(Sqlite3, 'sqlite3', handler('sqlite3', 'unions'));
+    require('./lib/unions')(Postgres, 'postgres', handler('postgres', 'unions'));
+  });
+
   after(function() {
     require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(obj));
   });

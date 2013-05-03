@@ -36,7 +36,7 @@
   var components = [
     'aggregate', 'columns', 'from',
     'joins', 'wheres', 'groups', 'havings',
-    'orders', 'limit', 'offset'
+    'orders', 'limit', 'offset', 'unions'
   ];
 
   Grammar.prototype = {
@@ -109,6 +109,16 @@
       return (sql.length > 0 ? 'where ' + sql.join(' ').replace(/and |or /, '') : '');
     },
 
+    // Compile the "union" queries attached to the main query.
+    compileUnions: function(qb) {
+      var sql = '';
+      for (var i = 0, l = qb.unions.length; i < l; i++) {
+        var union = qb.unions[i];
+        sql += (union.all ? 'union all ' : 'union ') + this.compileSelect(union.query);
+      }
+      return sql;
+    },
+
     // Compiles a nested where clause.
     whereNested: function(qb, where) {
       return '(' + this.compileWheres(where.query).slice(6) + ')';
@@ -179,8 +189,11 @@
     // Compiles the `having` statements.
     compileHavings: function(qb, havings) {
       return 'having ' + havings.map(function(having) {
+        if (having.type === 'raw') {
+          return having.bool + ' ' + having.sql;
+        }
         return '' + this.wrap(having.column) + ' ' + having.operator + ' ' + this.parameter(having['value']);
-      }, this).join(' and').replace(/and /, '');
+      }, this).join('and ').replace(/and /, '');
     },
 
     // Compiles the `order by` statements.
@@ -264,7 +277,7 @@
 
     wrap: function(value) {
       var segments;
-      if (value instanceof Knex.Raw) return value.value;
+      if (value instanceof Raw) return value.value;
       if (_.isNumber(value)) return value;
       if (value.toLowerCase().indexOf(' as ') !== -1) {
         segments = value.split(' ');
@@ -288,7 +301,7 @@
     },
 
     wrapTable: function(table) {
-      if (table instanceof Knex.Raw) return table.value;
+      if (table instanceof Raw) return table.value;
       return this.wrapValue(table);
     },
 
@@ -301,7 +314,7 @@
     },
 
     parameter: function(value) {
-      return (value instanceof Knex.Raw ? value.value : '?');
+      return (value instanceof Raw ? value.value : '?');
     }
   };
 
@@ -346,7 +359,7 @@
       var item = new Builder(this.table);
       var items = [
         'isDistinct', 'joins', 'wheres', 'orders',
-        'columns', 'bindings', 'grammar', 'transaction'
+        'columns', 'bindings', 'grammar', 'transaction', 'unions'
       ];
       for (var i = 0, l = items.length; i < l; i++) {
         var k = items[i];
@@ -362,6 +375,7 @@
       this.orders = [];
       this.columns = [];
       this.bindings = [];
+      this.unions = [];
       this.isDistinct = false;
     },
 
@@ -557,10 +571,42 @@
       return this;
     },
 
+    // Add a union statement to the query.
+    union: function(callback) {
+      this._union(callback, false);
+      return this;
+    },
+
+    // Adds a union all statement to the query.
+    unionAll: function(callback) {
+      this._union(callback, true);
+      return this;
+    },
+
+    _union: function(callback, bool) {
+      var query = new Builder();
+      query.isSubQuery = true;
+      callback.call(query, query);
+      this.unions.push({query: query, all: bool});
+      push.apply(this.bindings, query.bindings);
+    },
+
     // Adds a `having` clause to the query.
     having: function(column, operator, value) {
       this.havings.push({column: column, operator: (operator || ''), value: (value || '')});
       this.bindings.push(value);
+      return this;
+    },
+
+    havingRaw: function(sql, bindings) {
+      this.havings.push({type: 'raw', sql: sql, bool: 'and'});
+      this.bindings.push(bindings);
+      return this;
+    },
+
+    orHavingRaw: function(sql, bindings) {
+      this.havings.push({type: 'raw', sql: sql, bool: 'or'});
+      this.bindings.push(bindings);
       return this;
     },
 
@@ -715,14 +761,14 @@
 
     _counter: function(column, amount, symbol) {
       var sql = {};
-      sql[column] = new Knex.Raw('' + this.grammar.wrap(column) + ' ' + (symbol || '+') + ' ' + amount);
+      sql[column] = new Raw('' + this.grammar.wrap(column) + ' ' + (symbol || '+') + ' ' + amount);
       return this.update(sql, callback);
     },
 
     // Returns all bindings excluding the `Knex.Raw` types.
     _cleanBindings: function() {
       return _.map(this.bindings, function(binding) {
-        return (binding instanceof Knex.Raw ? void 0 : binding);
+        return (binding instanceof Raw ? void 0 : binding);
       });
     }
 
@@ -946,6 +992,7 @@
 
     // Format a value so that it can be used in "default" clauses.
     getDefaultValue: function(value) {
+      if (value instanceof Raw) return value.value;
       if (value === true || value === false) {
         return parseInt(value, 10);
       }
@@ -1305,18 +1352,27 @@
       return this;
     },
 
+    // Adds an index on the specified column.
     index: function(name) {
       this.isIndex = name || true;
       return this;
     },
 
+    // Sets this column as the primary key.
     primary: function(name) {
       this.isPrimary = name || true;
       return this;
     },
 
+    // Sets this column as unique.
     unique: function(name) {
       this.isUnique = name || true;
+      return this;
+    },
+
+    // Sets the column to be inserted after another.
+    after: function(name) {
+      this.isAfter = name;
       return this;
     }
 
@@ -1335,6 +1391,10 @@
   // Knex.Raw
   // -------
   Knex.Raw = function(value) {
+    return new Raw(value);
+  };
+
+  var Raw = function(value) {
     this.value = value;
   };
 

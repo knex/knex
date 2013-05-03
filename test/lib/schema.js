@@ -4,7 +4,8 @@ module.exports = function(Knex, item, handler) {
   describe(item, function() {
 
     it('creates tables with `table` - ' + item, function(ok) {
-      Knex.Schema.createTable('accounts', function(table) {
+      
+      Knex.Schema.createTable('test_table', function(table) {
         table.increments('id');
         table.string('first_name');
         table.string('last_name');
@@ -14,6 +15,12 @@ module.exports = function(Knex, item, handler) {
         table.timestamps();
       })
       .then(handler(ok), ok);
+
+      // Knex.Schema.createTable('other_table', function(table) {
+      //   table.integer('main').primary();
+      //   table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
+      // });
+
     });
 
     it('drops tables with `dropTable` - ' + item, function(ok) {

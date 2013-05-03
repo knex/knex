@@ -15,25 +15,8 @@ _.extend(MysqlClient.prototype, base.protoProps, {
     var conn = mysql.createConnection(this.connectionSettings);
         conn.connect();
     return conn;
-  },
-
-  // Execute a query on the database.
-  // If a `connection` is specified, use it, otherwise
-  // acquire a connection, and then dispose of it when we're done.
-  query: function (data, connection) {
-    data = this.prepData(data);
-    var emptyConnection = !connection;
-    var debug = this.debug;
-    return Q((connection || this.getConnection()))
-      .then(function(conn) {
-        if (debug) console.log(_.extend(data, {__cid: conn.__cid}));
-        return Q.nfinvoke(connection.query, data.sql, (data.bindings || []));
-      })
-      .then(this.prepResp)
-      .fin(function() {
-        if (emptyConnection) instance.pool.release(client);
-      });
   }
+
 });
 
 // Extends the standard sql grammar.
@@ -204,9 +187,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
 
   // Get the SQL for an unsigned column modifier.
   modifyUnsigned: function(blueprint, column) {
-    if (column.type == 'integer' && column.isUnsigned) {
-      return ' unsigned';
-    }
+    if (column.isUnsigned) return ' unsigned';
   },
 
   // Get the SQL for a nullable column modifier.
@@ -227,5 +208,13 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     if (column.type == 'integer' && column.autoIncrement) {
       return ' auto_increment primary key';
     }
+  },
+
+  // Get the SQL for an "after" column modifier.
+  modifyAfter: function(blueprint, column) {
+    if (column.isAfter) {
+      return ' after ' + this.wrap(column.isAfter);
+    }
   }
+
 });

@@ -255,7 +255,7 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
   
   // Get the SQL for a nullable column modifier.
   modifyNullable: function(blueprint, column) {
-    return column.isNullable ? ' null' : ' not null';
+    return ' null';
   },
   
   // Get the SQL for a default column modifier.

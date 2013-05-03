@@ -1,19 +1,19 @@
 module.exports = {
   'schema.1': {
     mysql: [{
-      sql: 'create table `accounts` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null, `created_at` timestamp default 0 not null, `updated_at` timestamp default 0 not null)'
+      sql: 'create table `test_table` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null, `created_at` timestamp default 0 not null, `updated_at` timestamp default 0 not null)'
     },{
-      sql: 'alter table `accounts` add index accounts_logins_index(`logins`)'
+      sql: 'alter table `test_table` add index test_table_logins_index(`logins`)'
     }],
     sqlite3: [{
-      sql: 'create table "accounts" ("id" integer not null primary key autoincrement, "first_name" varchar not null, "last_name" varchar not null, "email" varchar null, "logins" integer not null default \'1\', "about" text not null, "created_at" datetime not null, "updated_at" datetime not null)'
+      sql: 'create table "test_table" ("id" integer null primary key autoincrement, "first_name" varchar null, "last_name" varchar null, "email" varchar null, "logins" integer null default \'1\', "about" text null, "created_at" datetime null, "updated_at" datetime null)'
     },{
-      sql: 'create index accounts_logins_index on "accounts" ("logins")'
+      sql: 'create index test_table_logins_index on "test_table" ("logins")'
     }],
     postgres: [{
-      sql: 'create table "accounts" ("id" serial primary key not null, "first_name" varchar(255) not null, "last_name" varchar(255) not null, "email" varchar(255) null, "logins" integer not null default \'1\', "about" text not null, "created_at" timestamp not null, "updated_at" timestamp not null)'
+      sql: 'create table "test_table" ("id" serial primary key not null, "first_name" varchar(255) not null, "last_name" varchar(255) not null, "email" varchar(255) null, "logins" integer not null default \'1\', "about" text not null, "created_at" timestamp not null, "updated_at" timestamp not null)'
     },{
-      sql: 'create index accounts_logins_index on "accounts" ("logins")'
+      sql: 'create index test_table_logins_index on "test_table" ("logins")'
     }]
   },
   'schema.2': {
@@ -387,6 +387,20 @@ module.exports = {
     postgres: {
       sql: 'delete from "users" where "email" = ?',
       bindings: ['new_email@gmail.com']
+    }
+  },
+  'unions.1': {
+    mysql: {
+      sql: 'select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+      bindings: [1,2]
+    },
+    sqlite3: {
+      sql: 'select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+      bindings: [1,2]
+    },
+    postgres: {
+      sql: 'select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+      bindings: [1,2]
     }
   }
 }

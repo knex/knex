@@ -166,7 +166,7 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
 
   // Create the column definition for an enum type.
   typeEnum: function(column) {
-    return 'varchar(255)';
+    return "enum('" + column.allowed.join("', '")  + "')";
   },
 
   // Create the column definition for a date type.

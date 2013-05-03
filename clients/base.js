@@ -32,6 +32,24 @@ exports.setup = function(Client, name, options) {
 
 exports.protoProps = {
 
+  // Execute a query on the database.
+  // If a `connection` is specified, use it, otherwise
+  // acquire a connection, and then dispose of it when we're done.
+  query: function (data) {
+    data = this.prepData(data);
+    var emptyConnection = !data.connection;
+    var debug = this.debug;
+    return Q((connection || this.getConnection()))
+      .then(function(conn) {
+        if (debug) console.log(_.extend(data, {__cid: conn.__cid}));
+        return Q.nfinvoke(connection.query, data.sql, (data.bindings || []));
+      })
+      .then(this.prepResp)
+      .fin(function() {
+        if (emptyConnection) instance.pool.release(client);
+      });
+  },
+
   prepData: function(data) {
     return data;
   },
