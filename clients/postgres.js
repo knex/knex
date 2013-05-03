@@ -52,7 +52,7 @@ PostgresClient.grammar = {
 };
 
 // Grammar for the schema builder.
-PostgresClient.schemaGrammar = _.extend({}, PostgresClient.grammar, {
+PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.grammar, {
 
   // The possible column modifiers.
   modifiers: ['Increment', 'Nullable', 'Default'],
@@ -92,16 +92,6 @@ PostgresClient.schemaGrammar = _.extend({}, PostgresClient.grammar, {
   compileIndex: function(blueprint, command) {
     var columns = this.columnize(command.columns);
     return "create index " + command.index + " on " + this.wrapTable(blueprint) + ' (' + columns + ')';
-  },
-
-  // Compile a drop table command.
-  compileDropTable: function(blueprint, command) {
-    return 'drop table ' + this.wrapTable(blueprint);
-  },
-
-  // Compile a drop table (if exists) command.
-  compileDropTableIfExists: function(blueprint, command) {
-    return 'drop table if exists ' + this.wrapTable(blueprint);
   },
 
   // Compile a drop column command.

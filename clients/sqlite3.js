@@ -88,7 +88,7 @@ Sqlite3Client.grammar = {
 };
 
 // Grammar for the schema builder.
-Sqlite3Client.schemaGrammar = _.extend({}, Sqlite3Client.grammar, {
+Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.grammar, {
   
   // The possible column modifiers.
   modifiers: ['Nullable', 'Default', 'Increment'],
@@ -166,16 +166,6 @@ Sqlite3Client.schemaGrammar = _.extend({}, Sqlite3Client.grammar, {
   // Compile a foreign key command.
   compileForeign: function(blueprint, command) {
     // Handled on table creation...
-  },
-  
-  // Compile a drop table command.
-  compileDropTable: function(blueprint, command) {
-    return 'drop table ' + this.wrapTable(blueprint);
-  },
-
-  // Compile a drop table (if exists) command.
-  compileDropTableIfExists: function(blueprint, command) {
-    return 'drop table if exists ' + this.wrapTable(blueprint);
   },
   
   // Compile a drop column command.

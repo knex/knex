@@ -47,7 +47,7 @@ MysqlClient.grammar = {
 };
 
 // Grammar for the schema builder.
-MysqlClient.schemaGrammar = _.extend({}, MysqlClient.grammar, {
+MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar, {
 
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After'],
@@ -90,16 +90,6 @@ MysqlClient.schemaGrammar = _.extend({}, MysqlClient.grammar, {
     var columns = this.columnize(command.columns);
     var table = this.wrapTable(blueprint);
     return 'alter table ' + table + " add " + type + " " + command.index + "(" + columns + ")";
-  },
-
-  // Compile a drop table command.
-  compileDropTable: function(blueprint, command) {
-    return 'drop table ' + this.wrapTable(blueprint);
-  },
-
-  // Compile a drop table (if exists) command.
-  compileDropTableIfExists: function(blueprint, command) {
-    return 'drop table if exists ' + this.wrapTable(blueprint);
   },
   
   // Compile a drop column command.
@@ -226,6 +216,7 @@ MysqlClient.schemaGrammar = _.extend({}, MysqlClient.grammar, {
 
   // Get the SQL for a default column modifier.
   modifyDefault: function(blueprint, column) {
+    // TODO - no default on blob/text
     if (column.defaultValue) {
       return " default '" + this.getDefaultValue(column.defaultValue) + "'";
     }

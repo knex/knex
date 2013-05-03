@@ -73,3 +73,21 @@ exports.protoProps = {
   }
 
 };
+
+exports.grammar = {
+
+};
+
+exports.schemaGrammar = {
+  
+  // Compile a drop table command.
+  compileDropTable: function(blueprint, command) {
+    return 'drop table ' + this.wrapTable(blueprint);
+  },
+
+  // Compile a drop table (if exists) command.
+  compileDropTableIfExists: function(blueprint, command) {
+    return 'drop table if exists ' + this.wrapTable(blueprint);
+  }
+
+};
