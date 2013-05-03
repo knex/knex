@@ -27,7 +27,7 @@ module.exports = function(Knex, item, handler) {
 
     it('does "andWhere" cases', function(ok) {
       Q.all([
-        Knex('table').where('id', 1).andWhere('email', 'test@example.com').select('first_name', 'last_name', 'about')
+        Knex('table').select('first_name', 'last_name', 'about').where('id', 1).andWhere('email', 'test@example.com')
       ]).then(handler(ok), ok);
     });
 

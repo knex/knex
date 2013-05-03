@@ -32,21 +32,39 @@ exports.setup = function(Client, name, options) {
 
 exports.protoProps = {
 
-  // Execute a query on the database.
-  // If a `connection` is specified, use it, otherwise
+  // Execute a query on the specified Builder or QueryBuilder
+  // interface. If a `connection` is specified, use it, otherwise
   // acquire a connection, and then dispose of it when we're done.
-  query: function (data) {
-    data = this.prepData(data);
-    var emptyConnection = !data.connection;
-    var debug = this.debug;
-    return Q((connection || this.getConnection()))
+  query: function(builder) {
+    var emptyConnection = !builder.connection;
+    var debug = this.debug || builder.debug;
+    
+    return Q((builder.connection || this.getConnection()))
       .then(function(conn) {
-        if (debug) console.log(_.extend(data, {__cid: conn.__cid}));
-        return Q.nfinvoke(connection.query, data.sql, (data.bindings || []));
-      })
-      .then(this.prepResp)
-      .fin(function() {
-        if (emptyConnection) instance.pool.release(client);
+        var promise;
+
+        // Prep the SQL associated with the builder.
+        builder.sql = builder.toSql();
+        builder = this.prepData(builder);
+        
+        // If we have a debug flag set, console.log the query.
+        if (debug) console.log(_.extend(builder, {__cid: conn.__cid}));
+
+        // If it's an array (in the case of schema builders), resolve with
+        // all of the queries, called with the same connection, otherwise
+        if (_.isArray(builder.sql)) {
+          promise = Q.all(_.map(builder.sql, function(sql) {
+            return Q.nfinvoke(conn.query, sql, (builder.bindings || [])); 
+          }));
+        } else {
+          promise = Q.nfinvoke(conn.query, builder.sql, (builder.bindings || []));
+        }
+
+        // Empty the connection after we run the query, unless one was specifically
+        // set (in the case of transactions, etc).
+        return promise.fin(function() {
+          if (emptyConnection) instance.pool.release(conn);
+        });
       });
   },
 

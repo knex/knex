@@ -18,12 +18,6 @@ var Postgres = Knex.Initialize('postgres', {
   connection: conn.postgres
 });
 
-var runQuery = MySql.runQuery;
-Knex.runQuery = function(builder, data) {
-  builder._asSql = true;
-  return runQuery.call(this, builder, data);
-};
-
 var obj = {};
 var counter = {};
 var handler = function(instance, section) {
