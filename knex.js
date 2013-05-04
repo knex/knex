@@ -423,8 +423,15 @@
       return this;
     },
 
+    // Select a `column` rather than
+    column: function(value) {
+      this.columns.push(value);
+      return this;
+    },
+
     // Adds a `distinct` clause to the query.
-    distinct: function() {
+    distinct: function(column) {
+      this.column(column);
       this.isDistinct = true;
       return this;
     },
@@ -728,7 +735,9 @@
 
     // Performs a `select` query, returning a promise.
     select: function(columns) {
-      this.columns = this.columns.concat(columns ? (_.isArray(columns) ? columns : _.toArray(arguments)) : '*');
+      if (columns) {
+        this.columns = this.columns.concat(_.isArray(columns) ? columns : _.toArray(arguments)); 
+      }
       return this._setType('select');
     },
 

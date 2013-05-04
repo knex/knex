@@ -18,6 +18,13 @@ module.exports = function(Knex, dbName, handler, type) {
       ]).then(handler(ok, true), ok);
     });
 
+    it('has a "distinct" clause', function(ok) {
+      Q.all([
+        Knex('accounts').select().distinct('email').where('logins', 2),
+        Knex('accounts').distinct('email').select()
+      ]).then(handler(ok, true), ok);
+    });
+
     it('does "orWhere" cases', function(ok) {
       Q.all([
         Knex('accounts').where('id', 1).orWhere('id', '>', 2).select('first_name', 'last_name')
