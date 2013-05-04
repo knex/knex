@@ -28,21 +28,19 @@
 
     // For those who dislike promise interfaces.
     exec: function(callback) {
-      return Knex.runQuery(this).nodeify(callback);
+      var run = Knex.runQuery(this);
+      if (this._resolver) {
+        run.then(this._resolver);
+      }
+      return run.nodeify(callback);
     },
 
     // Specifies to resolve the statement with the `data` rather 
     // than a promise... useful in testing/debugging.
     toString: function() {
       if (!this.type) {
-        debugger;
         throw new Error('Cannot be converted to string');
       }
-
-      if (!this.toSql) {
-        debugger;  
-      }
-      
       var data = this.toSql();
       var builder = this;
       if (!_.isArray(data)) data = [data];
@@ -63,7 +61,11 @@
 
     // The promise interface for the query builder.
     then: function(onFulfilled, onRejected) {
-      return Knex.runQuery(this).then(onFulfilled, onRejected);
+      var run = Knex.runQuery(this);
+      if (this._resolver) {
+        run.then(this._resolver);
+      }
+      return run.then(onFulfilled, onRejected);
     },
 
     // The connection the current query is being run on, optionally
@@ -940,17 +942,15 @@
     },
 
     // Determine if the given table exists.
-    // TODO: Bindings here need to be fixed for mysql, including `table`.
     hasTable: function() {
       this.bindings.push(this.table);
+      this._addCommand('tableExists');
       var then = this.then;
       var builder = this;
-      this.then = function(success, error) {
-        return then.call(builder, function(resp) {
-          return (resp.length > 0 ? resp : Q.reject('Table ' + builder.table + ' does not exist'));
-        }).then(success, error);
+      this._resolver = function(resp) {
+        return (resp.length > 0 ? resp : Q.reject('Table ' + builder.table + ' does not exist'));
       };
-      return this.setType('hasTable');
+      return this.setType('tableExists');
     }
   };
 
@@ -968,7 +968,7 @@
 
     // A callback from the table building `Knex.schemaBuilder` calls.
     callback: function(callback) {
-      callback.call(this, this);
+      if (callback) callback.call(this, this);
       return this;
     },
 

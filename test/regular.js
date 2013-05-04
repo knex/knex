@@ -1,23 +1,63 @@
 var Q      = require('q');
 var _      = require('underscore');
+var objectdump = require('objectdump');
+var out    = require('./index').output;
 
 var handler = function(instance, section) {
   var item = 1;
-  return function(resolver) {
-    return function(data) {
-      // if (_.isArray(data)) console.log(data);
+  return function(resolver, isAll) {
+    var fn = function(data) {
+      if (instance === 'mysql') {
+        if (section === 'inserts') {
+          data = data[0].affectedRows;
+        } else if (section === 'updates') {
+          data = data[0].affectedRows;
+        } else if (section === 'selects') {
+          data = skim(data[0]);
+        } else {
+          data = '';
+        }
+      } else {
+        data = '';
+      }
       var label = '' + section + '.' + item;
-      obj[label] = obj[label] || {};
-      obj[label][instance] = data;
+      out['db'] = out['db'] || {};
+      out['db'][label] = out['db'][label] || {};
+      out['db'][label][instance] = data;
       item++;
-      resolver();
+      if (!isAll) resolver();
     };
+    if (isAll) {
+      return function(data) {
+        _.map(data, fn);
+        resolver();
+      };
+    } else {
+      return fn;
+    }
   };
+};
+
+var skim = function(data) {
+  return _.map(data, function(obj) {
+    return _.pick(obj, _.keys(obj));
+  });
 };
 
 module.exports = function(Knex, type) {
 
   describe('DB Tests - ' + type, function() {
+
+    before(function(ok) {
+      Q.all([
+        Knex.Schema.dropTableIfExists('test_table_one'),
+        Knex.Schema.dropTableIfExists('test_table_two'),
+        Knex.Schema.dropTableIfExists('test_table_three'),
+        Knex.Schema.dropTableIfExists('accounts')
+      ]).done(function() {
+        ok();
+      }, ok);
+    });
 
     describe('Knex.SchemaBuilder', function() {
       require('./lib/schema')(Knex, type, handler(type, 'schema'), 'DB');
@@ -47,6 +87,11 @@ module.exports = function(Knex, type) {
 
       describe('Deletes', function() {
         require('./lib/unions')(Knex, type, handler(type, 'unions'), 'DB');
+      });
+
+      after(function(ok) {
+        require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(out));
+        ok();
       });
 
     });

@@ -20,12 +20,21 @@ _.extend(PostgresClient.prototype, base.protoProps, {
 
   prepData: function(data) {
     // Bind all of the ? to numbered vars.
-    var questionCount = 0;
-    data.sql = data.sql.replace(/\?/g, function() {
-      questionCount++;
-      return '$' + questionCount;
-    });
+    this.questionCount = 0;
+    if (_.isArray(data.sql)) {
+      data.sql = _.map(data.sql, this.prepSql, this);
+    } else {
+      data.sql = this.prepSql(data.sql);
+    }
     return data;
+  },
+
+  prepSql: function(sql) {
+    var that = this;
+    return sql.replace(/\?/g, function() {
+      that.questionCount++;
+      return '$' + that.questionCount;
+    });
   },
 
   prepResp: function(resp) {

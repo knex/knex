@@ -36,7 +36,8 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After'],
   
   // Compile the query to determine if a table exists.
-  compileTableExists: function() {
+  compileTableExists: function(blueprint) {
+    blueprint.bindings.unshift(blueprint.client.connectionSettings.database);
     return 'select * from information_schema.tables where table_schema = ? and table_name = ?';
   },
 
@@ -192,7 +193,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   // Get the SQL for a default column modifier.
   modifyDefault: function(blueprint, column) {
     // TODO - no default on blob/text
-    if (column.defaultValue) {
+    if (column.defaultValue && column.type != 'blob' && column.type.indexOf('text') === -1) {
       return " default '" + this.getDefaultValue(column.defaultValue) + "'";
     }
   },

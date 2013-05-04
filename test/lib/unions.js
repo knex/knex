@@ -5,11 +5,11 @@ module.exports = function(Knex, item, handler, type) {
 
     it('handles unions', function(ok) {
 
-      Knex('users')
+      Knex('accounts')
         .select('*')
         .where('id', '=', 1)
         .union(function() {
-          this.select('*').from('users').where('id', 2);
+          this.select('*').from('accounts').where('id', 2);
         })
         .then(handler(ok), ok);
 

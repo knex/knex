@@ -1,21 +1,22 @@
 var Q      = require('q');
 var _      = require('underscore');
 var objectdump = require('objectdump');
+var out = require('./index').output;
 
-var obj = {};
-var counter = {};
 var handler = function(instance, section) {
   var item = 1;
   return function(resolver) {
     return function(data) {
       var label = '' + section + '.' + item;
-      obj[label] = obj[label] || {};
-      obj[label][instance] = data;
+      out['string'] = out['string'] || {};
+      out['string'][label] = out['string'][label] || {};
+      out['string'][label][instance] = data;
       item++;
       resolver();
     };
   };
 };
+
 module.exports = function(Knex, type) {
 
   var dfd = Q.defer();
@@ -53,7 +54,7 @@ module.exports = function(Knex, type) {
       });
 
       after(function(ok) {
-        require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(obj));
+        require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(out));
         dfd.resolve();
         ok();
       });

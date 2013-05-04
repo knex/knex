@@ -53,11 +53,11 @@ exports.protoProps = {
 
         // If it's an array (in the case of schema builders), resolve with
         // all of the queries, called with the same connection, otherwise
-        conn.query = _.bind(conn.query, conn);
+        conn.query = _.bind(conn[instance.prepConn(builder)], conn);
         if (_.isArray(builder.sql)) {
-          promise = Q.all(_.map(builder.sql, function(sql) {
-            return Q.nfcall(conn.query, sql, (builder.bindings || [])); 
-          }));
+          promise = _.reduce(builder.sql, function(memo, sql) {
+            return memo.then(function() { return Q.nfcall(conn.query, sql, (builder.bindings || [])); });
+          }, Q.resolve());
         } else {
           promise = Q.nfcall(conn.query, builder.sql, (builder.bindings || []));
         }
@@ -68,6 +68,10 @@ exports.protoProps = {
           if (emptyConnection) instance.pool.release(conn);
         });
       });
+  },
+
+  prepConn: function(builder) {
+    return 'query';
   },
 
   prepData: function(data) {

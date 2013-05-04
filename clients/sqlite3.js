@@ -21,6 +21,10 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
     return new sqlite3.Database(this.connectionSettings.filename);
   },
 
+  prepConn: function(builder) {
+    return (builder.type === 'insert' || builder.type === 'update') ? 'run' : 'all';
+  },
+
   prepResp: function(resp) {
     if (_.has(this, 'lastID')) resp = {insertId: this.lastID, changes: this.changes};
     return resp;
