@@ -29,8 +29,8 @@
     // For those who dislike promise interfaces.
     exec: function(callback) {
       var run = Knex.runQuery(this);
-      if (this._resolver) {
-        run.then(this._resolver);
+      if (ResponseHandlers[this.type]) {
+        run.then(_.bind(ResponseHandlers[this.type], this));
       }
       return run.nodeify(callback);
     },
@@ -52,18 +52,11 @@
       }).join('; ');
     },
 
-    // Returns all bindings excluding the `Knex.Raw` types.
-    _cleanBindings: function() {
-      return _.map(this.bindings, function(binding) {
-        return (binding instanceof Raw ? void 0 : binding);
-      });
-    },
-
     // The promise interface for the query builder.
     then: function(onFulfilled, onRejected) {
       var run = Knex.runQuery(this);
-      if (this._resolver) {
-        run.then(this._resolver);
+      if (ResponseHandlers[this.type]) {
+        run.then(_.bind(ResponseHandlers[this.type], this));
       }
       return run.then(onFulfilled, onRejected);
     },
@@ -81,12 +74,41 @@
     // Sets the "type" of the current query, so we can potentially place
     // `select`, `update`, `del`, etc. anywhere in the query statement
     // and have it come out fine.
-    setType: function(type) {
+    _setType: function(type) {
       if (this.type) {
         throw new Error('The query type has already been set to ' + this.type);
       }
       this.type = type;
       return this;
+    },
+
+    // Returns all bindings excluding the `Knex.Raw` types.
+    _cleanBindings: function() {
+      return _.reduce(this.bindings, function(memo, binding) {
+        if (!(binding instanceof Raw)) memo.push(binding);
+        return memo;
+      }, []);
+    }
+  };
+
+  // Response handlers are used in the case of a two part query, such as
+  // `hasTable`, or `exists`, where the result of the first query is used
+  // to generate a boolean response, that will resolve or reject the promise.
+  var ResponseHandlers = {
+    
+    // Handles tableExists.
+    tableExists: function(resp) {
+      return resp;
+    },
+
+    // Handles existence.
+    exists: function(resp) {
+      return resp;
+    },
+
+    // Handles insert.
+    insert: function(resp) {
+      return resp;
     }
 
   };
@@ -104,6 +126,16 @@
   Knex.Grammar = {
 
     dateFormat: 'Y-m-d H:i:s',
+
+    idAttr: 'id',
+
+    // Sets the `returning` for the query - only necessary
+    // to set the "returning" value for the postgres insert,
+    // defaults to `id`.
+    returning: function(val) {
+      this.idAttr = val;
+      return this;
+    },
 
     // Compiles the `select` statement, or nested sub-selects
     // by calling each of the component compilers, trimming out
@@ -427,7 +459,7 @@
       item.client = this.client;
       item.grammar = this.grammar;
       var items = [
-        'isDistinct', 'joins', 'wheres', 'orders',
+        'idAttr', 'isDistinct', 'joins', 'wheres', 'orders',
         'columns', 'bindings', 'grammar', 'transaction', 'unions'
       ];
       for (var i = 0, l = items.length; i < l; i++) {
@@ -680,8 +712,7 @@
     // Determine if any rows exist for the current query.
     exists: function() {
       this.count();
-      this.type = 'exists';
-      return this;
+      return this.setType('exists');
     },
 
     // Retrieve the "count" result of the query.
@@ -717,13 +748,13 @@
     // Performs a `select` query, returning a promise.
     select: function(columns) {
       this.columns = this.columns.concat(columns ? (_.isArray(columns) ? columns : _.toArray(arguments)) : '*');
-      return this.setType('select');
+      return this._setType('select');
     },
 
     // Performs an `insert` query, returning a promise.
     insert: function(values) {
       this.values = this._prepValues(values);
-      return this.setType('insert');
+      return this._setType('insert');
     },
 
     // Performs an `update` query, returning a promise.
@@ -735,22 +766,22 @@
       }
       this.bindings = bindings.concat(this.bindings);
       this.values = obj;
-      return this.setType('update');
+      return this._setType('update');
     },
 
     // Alias to del
     "delete": function() {
-      return this.setType('delete');
+      return this._setType('delete');
     },
 
     // Executes a delete statement on the query;    
     del: function() {
-      return this.setType('delete');
+      return this._setType('delete');
     },
 
     // Truncate
     truncate: function() {
-      return this.setType('truncate');
+      return this._setType('truncate');
     },
 
     // Set by `transacting` - contains the object with the connection
@@ -913,44 +944,39 @@
     // Modify a table on the schema.
     table: function(callback) {
       this.callback(callback);
-      return this.setType('table');
+      return this._setType('table');
     },
 
     // Create a new table on the schema.
     createTable: function(callback) {
       this._addCommand('createTable');
       this.callback(callback);
-      return this.setType('createTable');
+      return this._setType('createTable');
     },
 
     // Drop a table from the schema.
     dropTable: function() {
       this._addCommand('dropTable');
-      return this.setType('dropTable');
+      return this._setType('dropTable');
     },
 
     // Drop a table from the schema if it exists.
     dropTableIfExists: function() {
       this._addCommand('dropTableIfExists');
-      return this.setType('dropTableIfExists');
+      return this._setType('dropTableIfExists');
     },
 
     // Rename a table on the schema.
     renameTable: function(to) {
       this._addCommand('renameTable', {to: to});
-      return this.setType('renameTable');
+      return this._setType('renameTable');
     },
 
     // Determine if the given table exists.
     hasTable: function() {
       this.bindings.push(this.table);
       this._addCommand('tableExists');
-      var then = this.then;
-      var builder = this;
-      this._resolver = function(resp) {
-        return (resp.length > 0 ? resp : Q.reject('Table ' + builder.table + ' does not exist'));
-      };
-      return this.setType('tableExists');
+      return this._setType('tableExists');
     }
   };
 
@@ -1419,6 +1445,25 @@
       if (!builder.transaction.connection) return Q.reject(new Error('The transaction has already completed.'));
       builder._connection = builder.transaction.connection;
     }
+
+    // Prep the SQL associated with the builder.
+    builder.sql = builder.toSql();
+    builder.bindings = builder._cleanBindings();
+
+    // Used to handle the schema builder cases, where there is an array of 
+    // sql statements used in the table creation. These need to be processed
+    // on the same connection.
+    if (_.isArray(builder.sql)) {
+      return builder.client.getConnection().then(function(conn) {
+        builder._connection = conn;
+        return Q.all(_.map(builder.sql, function(sql) {
+          return builder.client.query(_.extend({}, builder, {sql: sql}));
+        })).fin(function() {
+          builder.client.pool.release(conn);
+        });
+      });
+    }
+
     // Query on the query builder, which should resolve with a promise.
     return builder.client.query(builder);
   };

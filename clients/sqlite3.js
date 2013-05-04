@@ -11,6 +11,36 @@ var Sqlite3Client = module.exports = function(name, options) {
 
 _.extend(Sqlite3Client.prototype, base.protoProps, {
 
+  // Execute a query on the specified Builder or QueryBuilder
+  // interface. If a `connection` is specified, use it, otherwise
+  // acquire a connection, and then dispose of it when we're done.
+  query: function(builder) {
+    var emptyConnection = !builder._connection;
+    var debug = this.debug || builder.debug;
+    var instance = this;
+    return Q((builder._connection || this.getConnection()))
+      .then(function(conn) {
+        var dfd = Q.defer();
+        var method = (builder.type === 'insert' || builder.type === 'update') ? 'run' : 'all';
+
+        // If we have a debug flag set, console.log the query.
+        if (debug) console.log(_.extend(builder, {__cid: conn.__cid}));
+        
+        // Call the querystring and then release the client
+        conn[method](builder.sql, builder.bindings, function (err, resp) {
+          if (err) return dfd.reject(err);
+          if (_.has(this, 'lastID')) resp = _.extend({}, this, {insertId: this.lastID, changes: this.changes});
+          dfd.resolve(resp);
+        });
+
+        // Empty the connection after we run the query, unless one was specifically
+        // set (in the case of transactions, etc).
+        return dfd.promise.fin(function() {
+          if (emptyConnection) instance.pool.release(conn);
+        });
+      });
+  },
+
   poolDefaults: {
     max: 1,
     min: 1,
@@ -19,16 +49,8 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
 
   getRawConnection: function() {
     return new sqlite3.Database(this.connectionSettings.filename);
-  },
-
-  prepConn: function(builder) {
-    return (builder.type === 'insert' || builder.type === 'update') ? 'run' : 'all';
-  },
-
-  prepResp: function(resp) {
-    if (_.has(this, 'lastID')) resp = {insertId: this.lastID, changes: this.changes};
-    return resp;
   }
+
 });
 
 // Extends the standard sql grammar.
@@ -59,7 +81,7 @@ Sqlite3Client.grammar = {
     // grammar insert builder because no special syntax is needed for the single
     // row inserts in SQLite. However, if there are multiples, we'll continue.
     if (values.length === 1) {
-      return require('../knex').Grammar.compileInsert.call(this, qb, values);
+      return require('../knex').Grammar.compileInsert.call(this, qb);
     }
     
     var keys = _.keys(values[0]);

@@ -32,44 +32,6 @@ exports.setup = function(Client, name, options) {
 
 exports.protoProps = {
 
-  // Execute a query on the specified Builder or QueryBuilder
-  // interface. If a `connection` is specified, use it, otherwise
-  // acquire a connection, and then dispose of it when we're done.
-  query: function(builder) {
-    var emptyConnection = !builder._connection;
-    var debug = this.debug || builder.debug;
-    var instance = this;
-    return Q((builder._connection || this.getConnection()))
-      .then(function(conn) {
-        var promise;
-
-        // Prep the SQL associated with the builder.
-        builder.sql = builder.toSql();
-        builder.bindings = builder._cleanBindings();
-        builder = instance.prepData(builder);
-        
-        // If we have a debug flag set, console.log the query.
-        if (debug) console.log(_.extend(builder, {__cid: conn.__cid}));
-
-        // If it's an array (in the case of schema builders), resolve with
-        // all of the queries, called with the same connection, otherwise
-        conn.query = _.bind(conn[instance.prepConn(builder)], conn);
-        if (_.isArray(builder.sql)) {
-          promise = _.reduce(builder.sql, function(memo, sql) {
-            return memo.then(function() { return Q.nfcall(conn.query, sql, (builder.bindings || [])); });
-          }, Q.resolve());
-        } else {
-          promise = Q.nfcall(conn.query, builder.sql, (builder.bindings || []));
-        }
-
-        // Empty the connection after we run the query, unless one was specifically
-        // set (in the case of transactions, etc).
-        return promise.fin(function() {
-          if (emptyConnection) instance.pool.release(conn);
-        });
-      });
-  },
-
   prepConn: function(builder) {
     return 'query';
   },

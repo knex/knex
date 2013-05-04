@@ -7,19 +7,32 @@ var handler = function(instance, section) {
   var item = 1;
   return function(resolver, isAll) {
     var fn = function(data) {
+      
       if (instance === 'mysql') {
         if (section === 'inserts') {
-          data = data[0].affectedRows;
+          data = data.affectedRows;
         } else if (section === 'updates') {
-          data = data[0].affectedRows;
+          data = data.affectedRows;
         } else if (section === 'selects') {
-          data = skim(data[0]);
+          data = skim(data);
+        } else {
+          data = '';
+        }
+      } else if (instance === 'postgres') {
+        if (section === 'inserts') {
+          debugger;
+        } else if (section === 'updates') {
+          data = data.affectedRows;
+        } else if (section === 'selects') {
+          data = skim(data);
         } else {
           data = '';
         }
       } else {
-        data = '';
+
       }
+
+
       var label = '' + section + '.' + item;
       out['db'] = out['db'] || {};
       out['db'][label] = out['db'][label] || {};
