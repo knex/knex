@@ -1,7 +1,7 @@
 var Q = require('q');
-module.exports = function(Knex, item, handler) {
+module.exports = function(Knex, dbName, handler, type) {
 
-  describe(item, function() {
+  describe(dbName, function() {
 
     it('should handle updates', function(ok) {
       
