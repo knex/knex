@@ -1,5 +1,5 @@
 var Q = require('q');
-module.exports = function(Knex, item, handler) {
+module.exports = function(Knex, item, handler, type) {
 
   describe(item, function() {
   
@@ -60,7 +60,7 @@ module.exports = function(Knex, item, handler) {
           this.select('column1').from('table2').where({id: 1, otherItem: 2});
         })
         .select()
-        .done(handler(ok), ok);
+        .then(handler(ok), ok);
     });
 
     it('handles "where between"', function(ok) {

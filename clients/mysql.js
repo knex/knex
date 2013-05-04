@@ -40,12 +40,6 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     return 'select * from information_schema.tables where table_schema = ? and table_name = ?';
   },
 
-  // Compile a create table command.
-  compileCreateTable: function(blueprint, command) {
-    var columns = this.getColumns(blueprint).join(', ');
-    return 'create table ' + this.wrapTable(blueprint) + ' (' + columns + ')';
-  },
-
   // Compile an add command.
   compileAdd: function(blueprint, command) {
     var columns = this.prefixArray('add', this.getColumns(blueprint));
@@ -54,7 +48,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
 
   // Compile a primary key command.
   compilePrimary: function(blueprint, command) {
-    command.name(null);
+    command.name = null;
     return this.compileKey(blueprint, command, 'primary key');
   },
   

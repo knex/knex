@@ -36,28 +36,30 @@ exports.protoProps = {
   // interface. If a `connection` is specified, use it, otherwise
   // acquire a connection, and then dispose of it when we're done.
   query: function(builder) {
-    var emptyConnection = !builder.connection;
+    var emptyConnection = !builder._connection;
     var debug = this.debug || builder.debug;
-    
-    return Q((builder.connection || this.getConnection()))
+    var instance = this;
+    return Q((builder._connection || this.getConnection()))
       .then(function(conn) {
         var promise;
 
         // Prep the SQL associated with the builder.
         builder.sql = builder.toSql();
-        builder = this.prepData(builder);
+        builder.bindings = builder._cleanBindings();
+        builder = instance.prepData(builder);
         
         // If we have a debug flag set, console.log the query.
         if (debug) console.log(_.extend(builder, {__cid: conn.__cid}));
 
         // If it's an array (in the case of schema builders), resolve with
         // all of the queries, called with the same connection, otherwise
+        conn.query = _.bind(conn.query, conn);
         if (_.isArray(builder.sql)) {
           promise = Q.all(_.map(builder.sql, function(sql) {
-            return Q.nfinvoke(conn.query, sql, (builder.bindings || [])); 
+            return Q.nfcall(conn.query, sql, (builder.bindings || [])); 
           }));
         } else {
-          promise = Q.nfinvoke(conn.query, builder.sql, (builder.bindings || []));
+          promise = Q.nfcall(conn.query, builder.sql, (builder.bindings || []));
         }
 
         // Empty the connection after we run the query, unless one was specifically
@@ -116,6 +118,12 @@ exports.grammar = {
 
 exports.schemaGrammar = {
   
+  // Compile a create table command.
+  compileCreateTable: function(blueprint, command) {
+    var columns = this.getColumns(blueprint).join(', ');
+    return 'create table ' + this.wrapTable(blueprint) + ' (' + columns + ')';
+  },
+
   // Compile a drop table command.
   compileDropTable: function(blueprint, command) {
     return 'drop table ' + this.wrapTable(blueprint);

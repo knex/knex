@@ -1,5 +1,5 @@
 var Q = require('q');
-module.exports = function(Knex, item, handler) {
+module.exports = function(Knex, item, handler, type) {
   
   describe(item, function() {
 

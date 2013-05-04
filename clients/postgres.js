@@ -63,12 +63,6 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   },
 
   // Compile a create table command.
-  compileCreateTable: function(blueprint, command) {
-    var columns = this.getColumns(blueprint).join(', ');
-    return 'create table ' + this.wrapTable(blueprint) + " (" + columns + ")";
-  },
-
-  // Compile a create table command.
   compileAdd: function(blueprint, command) {
     var table = this.wrapTable(blueprint);
     var columns = this.prefixArray('add column', this.getColumns(blueprint));
