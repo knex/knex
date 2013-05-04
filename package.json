@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "mocha": "1.7.x",
-    "objectdump": ">=0.2.0",
+    "objectdump": ">=0.3.0",
     "mysql": "~2.0.0-alpha7",
     "pg": "~1.1.0",
     "sqlite3": "~2.1.7"
