@@ -28,6 +28,7 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
         
         // Call the querystring and then release the client
         conn[method](builder.sql, builder.bindings, function (err, resp) {
+        
           if (err) return dfd.reject(err);
 
           if (builder._source === 'SchemaBuilder') {
@@ -43,7 +44,7 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
             resp = base.skim(resp);
           }
           if (builder.type === 'insert') {
-            resp = [this.lastId];
+            resp = [this.lastID];
           }
           if (builder.type === 'delete' || builder.type === 'update') {
             resp = this.changes;
@@ -92,7 +93,6 @@ Sqlite3Client.grammar = {
   // Compile an insert statement into SQL.
   compileInsert: function(qb) {
     var values = qb.values;
-    if (!_.isArray(values)) values = [values];
     var table = this.wrapTable(qb.table);
     var parameters = this.parameterize(values[0]);
     var paramBlocks = [];
@@ -104,7 +104,7 @@ Sqlite3Client.grammar = {
       return require('../knex').Grammar.compileInsert.call(this, qb);
     }
     
-    var keys = _.keys(values[0]);
+    var keys = _.keys(values[0]).sort();
     var names = this.columnize(keys);
     var columns = [];
 

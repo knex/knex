@@ -1,7 +1,7 @@
 var Q = require('q');
-module.exports = function(Knex, item, handler, type) {
+module.exports = function(Knex, dbName, handler, type) {
 
-  describe(item, function() {
+  describe(dbName, function() {
   
     it('runs with no conditions', function(ok) {
       Knex('accounts').select().then(handler(ok), ok);

@@ -1,7 +1,9 @@
-var Q      = require('q');
-var _      = require('underscore');
+var Q = require('q');
+var _ = require('underscore');
 var objectdump = require('objectdump');
-var out    = require('./index').output;
+var dev = parseInt(process.env.KNEX_DEV, 10);
+var out = (dev ? require('./index').output : require('./shared/output'));
+var assert = require('assert');
 
 var handler = function(instance, section) {
   var item = 1;
@@ -11,9 +13,22 @@ var handler = function(instance, section) {
         data = '';
       }
       var label = '' + section + '.' + item;
-      out['db'] = out['db'] || {};
-      out['db'][label] = out['db'][label] || {};
-      out['db'][label][instance] = data;
+      if (dev) {
+        out['db'] = out['db'] || {};
+        out['db'][label] = out['db'][label] || {};
+        out['db'][label][instance] = data;  
+      } else {
+        var checkData = out['db'][label][instance];
+        if (_.isArray(data)) {
+          data = _.map(data, dateStripper);
+          checkData = _.map(checkData, dateStripper);
+        }
+        try {
+          assert.deepEqual(checkData, data);
+        } catch (e) {
+          console.log([checkData, data]);
+        }
+      }
       item++;
       if (!isAll) resolver();
     };
@@ -28,6 +43,15 @@ var handler = function(instance, section) {
   };
 };
 
+var dateStripper = function(item) {
+  if (_.isObject(item)) {
+    return _.reduce(item, function(memo, val, key) {
+      return (_.isDate(val) ? 'newDate' : val);
+    }, item);
+  }
+  return item;
+};
+
 module.exports = function(Knex, type) {
 
   describe('DB Tests - ' + type, function() {
@@ -37,7 +61,7 @@ module.exports = function(Knex, type) {
       before(function(ok) {
         var val = handler(type, 'schema');
         require('./lib/schema')(Knex, function() { 
-          setTimeout(function() { ok(); }, 10);
+          setTimeout(function() { ok(); }, 100);
         }, function(err) {
           throw new Error(err);
         }, type);
@@ -68,7 +92,7 @@ module.exports = function(Knex, type) {
       });
 
       after(function(ok) {
-        require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(out));
+        if (dev) require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(out));
         ok();
       });
 

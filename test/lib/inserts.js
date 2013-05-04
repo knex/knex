@@ -1,7 +1,7 @@
 var Q = require('q');
-module.exports = function(Knex, item, handler, type) {
+module.exports = function(Knex, dbName, handler, type) {
 
-  describe(item, function() {
+  describe(dbName, function() {
 
     it("should handle simple inserts", function(ok) {
       

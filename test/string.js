@@ -1,16 +1,30 @@
-var Q      = require('q');
-var _      = require('underscore');
+var Q = require('q');
+var _ = require('underscore');
 var objectdump = require('objectdump');
-var out = require('./index').output;
+var dev = parseInt(process.env.KNEX_DEV, 10);
+var out = (dev ? require('./index').output : require('./shared/output'));
+var assert = require('assert');
 
 var handler = function(instance, section) {
   var item = 1;
   return function(resolver, isAll) {
     var fn = function(data) {
       var label = '' + section + '.' + item;
-      out['string'] = out['string'] || {};
-      out['string'][label] = out['string'][label] || {};
-      out['string'][label][instance] = data;
+      if (dev) {
+        out['string'] = out['string'] || {};
+        out['string'][label] = out['string'][label] || {};
+        out['string'][label][instance] = data;        
+      } else {
+        var checkData = out['string'][label][instance];
+        assert.deepEqual(checkData.sql, data.sql);
+        var a = _.map(checkData.bindings, function(val) {  return (_.isDate(val) ? 'newDate' : val); });
+        var b = _.map(data.bindings, function(val) {  return (_.isDate(val) ? 'newDate' : val); });
+        try {
+          assert.deepEqual(a, b);
+        } catch (e) {
+          console.log([a, b]);
+        }
+      }
       item++;
       if (!isAll) resolver();
     };
@@ -65,7 +79,7 @@ module.exports = function(Knex, type) {
       });
 
       after(function(ok) {
-        require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(out));
+        if (dev) require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(out));
         dfd.resolve();
         ok();
       });

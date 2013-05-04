@@ -28,7 +28,7 @@ Knex.runQuery = function(builder) {
   // Query on the query builder, which should resolve with a promise.
   return Q({
     sql: builder.toSql(),
-    bindings: builder.bindings
+    bindings: builder._cleanBindings()
   });
 };
 
