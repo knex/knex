@@ -5,15 +5,23 @@ var out = require('./index').output;
 
 var handler = function(instance, section) {
   var item = 1;
-  return function(resolver) {
-    return function(data) {
+  return function(resolver, isAll) {
+    var fn = function(data) {
       var label = '' + section + '.' + item;
       out['string'] = out['string'] || {};
       out['string'][label] = out['string'][label] || {};
       out['string'][label][instance] = data;
       item++;
-      resolver();
+      if (!isAll) resolver();
     };
+    if (isAll) {
+      return function(data) {
+        _.map(data, fn);
+        resolver();
+      };
+    } else {
+      return fn;
+    }
   };
 };
 
@@ -23,8 +31,11 @@ module.exports = function(Knex, type) {
 
   describe('String Tests', function() {
 
-    describe('Knex.SchemaBuilder', function() {
-      require('./lib/schema')(Knex, type, handler(type, 'schema'), 'String');
+    before(function(ok) {
+      var val = handler(type, 'schema');
+      require('./lib/schema')(Knex, val(ok, true), function(err) {
+        throw new Error(err);
+      });
     });
 
     describe('Knex.Builder', function() {

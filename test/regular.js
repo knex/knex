@@ -32,22 +32,16 @@ module.exports = function(Knex, type) {
 
   describe('DB Tests - ' + type, function() {
 
-    before(function(ok) {
-      Q.all([
-        Knex.Schema.dropTableIfExists('test_table_one'),
-        Knex.Schema.dropTableIfExists('test_table_two'),
-        Knex.Schema.dropTableIfExists('test_table_three'),
-        Knex.Schema.dropTableIfExists('accounts')
-      ]).done(function() {
-        ok();
-      }, ok);
-    });
-
-    describe('Knex.SchemaBuilder', function() {
-      require('./lib/schema')(Knex, type, handler(type, 'schema'), 'DB');
-    });
-
     describe('Knex.Builder', function() {
+
+      before(function(ok) {
+        var val = handler(type, 'schema');
+        require('./lib/schema')(Knex, function() { 
+          setTimeout(function() { ok(); }, 10);
+        }, function(err) {
+          throw new Error(err);
+        }, type);
+      });
 
       describe('Inserts', function() {
         require('./lib/inserts')(Knex, type, handler(type, 'inserts'), 'DB');

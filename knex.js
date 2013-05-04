@@ -1437,12 +1437,13 @@
     // sql statements used in the table creation. These need to be processed
     // on the same connection.
     if (_.isArray(builder.sql)) {
-      return builder.client.getConnection().then(function(conn) {
+      var emptyConnection = !builder._connection;
+      return Q.resolve(builder._connection || builder.client.getConnection()).then(function(conn) {
         builder._connection = conn;
         return _.reduce(builder.sql, function(memo, sql) {
           return memo.then(function () { builder.client.query(_.extend({}, builder, {sql: sql})); });
         }, Q.resolve()).fin(function() {
-          builder.client.pool.release(conn);
+          if (emptyConnection) builder.client.pool.release(conn);
         });
       });
     }
