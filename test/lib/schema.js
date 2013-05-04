@@ -1,11 +1,16 @@
 var Q = require('q');
-module.exports = function(Knex, item, handler) {
-  
-  describe(item, function() {
+module.exports = function(Knex, handler, error) {
 
-    it('creates tables with `table` - ' + item, function(ok) {
-      
-      Knex.Schema.createTable('test_table', function(table) {
+  var res = null;
+  return Q.all([
+    Knex.Schema.dropTableIfExists('test_table_one'),
+    Knex.Schema.dropTableIfExists('test_table_two'),
+    Knex.Schema.dropTableIfExists('test_table_three'),
+    Knex.Schema.dropTableIfExists('accounts')
+  ]).then(function(resp) {
+    res = resp;
+    return Q.all([
+      Knex.Schema.createTable('test_table_one', function(table) {
         table.increments('id');
         table.string('first_name');
         table.string('last_name');
@@ -13,32 +18,46 @@ module.exports = function(Knex, item, handler) {
         table.integer('logins').defaultTo(1).index();
         table.text('about');
         table.timestamps();
+      }),
+      Knex.Schema.createTable('test_table_two', function(t) {
+        t.increments();
+        t.integer('account_id');
+        t.text('details');
+      }),
+      Knex.Schema.createTable('test_table_three', function(table) {
+        table.integer('main').primary();
+        table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
       })
-      .then(handler(ok), ok);
-
-      // Knex.Schema.createTable('other_table', function(table) {
-      //   table.integer('main').primary();
-      //   table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
-      // });
-
+    ]);
+  })
+  .then(function(resp) {
+    // Edit test table one
+    res = res.concat(resp);
+    return Knex.Schema.table('test_table_one', function(t) {
+      t.string('phone').nullable();
     });
 
-    it('drops tables with `dropTable` - ' + item, function(ok) {
-      Knex.Schema.dropTable('accounts').then(handler(ok), ok);
-    });
-
-    it('conditionally drops tables with `dropTableIfExists` - ' + item, function(ok) {
-      Knex.Schema.dropTableIfExists('other_accounts').then(handler(ok), ok);
-    });
-
-    it('checks for table existence with `hasTable` - ' + item, function(ok) {
-      Knex.Schema.hasTable('users').then(handler(ok), ok);
-    });
-
-    it('renames tables with `renameTable` - ' + item, function(ok) {
-      Knex.Schema.renameTable('accounts', 'new_accounts').then(handler(ok), ok);
-    });
-
-  });
+  }).then(function(resp) {
+    // conditionally drops tables with `dropTableIfExists`
+    res.push(resp);
+    return Knex.Schema.dropTableIfExists('items');
+  })
+  .then(function(resp) {
+    res.push(resp);
+    return Knex.Schema.hasTable('test_table_two');
+  })
+  .then(function(resp) {
+    res.push(resp);
+    return Knex.Schema.renameTable('test_table_one', 'accounts');
+  })
+  .then(function(resp) {
+    res.push(resp);
+    return Knex.Schema.dropTable('test_table_three');
+  })
+  .then(function(resp) {
+    res.push(resp);
+    return res;
+  })
+  .then(handler, error);
 
 };

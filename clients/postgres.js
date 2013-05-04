@@ -11,29 +11,68 @@ var PostgresClient = module.exports = function(name, options) {
 
 _.extend(PostgresClient.prototype, base.protoProps, {
 
+  // Execute a query on the specified Builder or QueryBuilder
+  // interface. If a `connection` is specified, use it, otherwise
+  // acquire a connection, and then dispose of it when we're done.
+  query: function(builder) {
+    var emptyConnection = !builder._connection;
+    var debug = this.debug || builder._debug;
+    var instance = this;
+    return Q((builder._connection || this.getConnection()))
+      .then(function(conn) {
+        var dfd = Q.defer();
+
+        // Bind all of the ? to numbered vars.
+        var questionCount = 0;
+        builder.sql = builder.sql.replace(/\?/g, function() {
+          questionCount++;
+          return '$' + questionCount;
+        });
+        
+        // If we have a debug flag set, console.log the query.
+        if (debug) base.debug(builder, conn);
+
+        // Call the querystring and then release the client
+        conn.query(builder.sql, builder.bindings, function (err, resp) {
+          if (err) return dfd.reject(err);
+          resp || (resp = {});
+
+          if (builder._source === 'SchemaBuilder') {
+            if (builder.type === 'tableExists') {
+              if (resp.rows.length > 0) return dfd.resolve(resp.rows[0]);
+              return dfd.reject(new Error('Table does not exist:' + builder.sql));
+            } else {
+              return dfd.resolve(null);
+            }
+          }
+
+          if (resp.command === 'SELECT') {
+            resp = resp.rows;
+          }
+          if (resp.command === 'INSERT') {
+            resp = _.map(resp.rows, function(row) { return row[builder.idAttr]; });
+          }
+          if (resp.command === 'UPDATE' || resp.command === 'DELETE') {
+            resp = resp.rowCount;
+          }
+          dfd.resolve(resp);
+        });
+
+        // Empty the connection after we run the query, unless one was specifically
+        // set (in the case of transactions, etc).
+        return dfd.promise.fin(function() {
+          if (emptyConnection) instance.pool.release(conn);
+        });
+      });
+  },
+
   // Returns a connection from the `pg` lib.
   getRawConnection: function() {
     var conn = new pg.Client(this.connectionSettings);
         conn.connect();
     return conn;
-  },
-
-  prepData: function(data) {
-    // Bind all of the ? to numbered vars.
-    var questionCount = 0;
-    data.sql = data.sql.replace(/\?/g, function() {
-      questionCount++;
-      return '$' + questionCount;
-    });
-    return data;
-  },
-
-  prepResp: function(resp) {
-    if (resp.command === 'INSERT' || resp.command === 'UPDATE') {
-      return _.extend(resp, {insertId: resp.oid});
-    }
-    return resp.rows;
   }
+
 });
 
 // Extends the standard sql grammar.
@@ -48,7 +87,18 @@ PostgresClient.grammar = {
     var query = {};
     query['truncate ' + this.wrapTable(qb.from) + ' restart identity'] = [];
     return query;
+  },
+
+  // Compiles an `insert` query, allowing for multiple
+  // inserts using a single query statement.
+  compileInsert: function(qb) {
+    var sql = require('../knex').Grammar.compileInsert.call(this, qb);
+    if (qb.idAttr) {
+      sql += ' returning "' + qb.idAttr + '"';
+    }
+    return sql;
   }
+
 };
 
 // Grammar for the schema builder.
@@ -60,12 +110,6 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   // Compile the query to determine if a table exists.
   compileTableExists: function() {
     return 'select * from information_schema.tables where table_name = ?';
-  },
-
-  // Compile a create table command.
-  compileCreateTable: function(blueprint, command) {
-    var columns = this.getColumns(blueprint).join(', ');
-    return 'create table ' + this.wrapTable(blueprint) + " (" + columns + ")";
   },
 
   // Compile a create table command.

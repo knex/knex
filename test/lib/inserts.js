@@ -1,7 +1,7 @@
 var Q = require('q');
-module.exports = function(Knex, item, handler) {
-  
-  describe(item, function() {
+module.exports = function(Knex, dbName, handler, type) {
+
+  describe(dbName, function() {
 
     it("should handle simple inserts", function(ok) {
       
@@ -13,7 +13,14 @@ module.exports = function(Knex, item, handler) {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         created_at: new Date(),
         updated_at: new Date()
-      }).then(handler(ok), ok);
+      }).then(handler(ok), ok).then(function() {
+
+        Knex('test_table_two').insert({
+          account_id: 1,
+          details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+        }).exec();
+
+      });
     
     });
 
@@ -63,7 +70,7 @@ module.exports = function(Knex, item, handler) {
 
     });
 
-    it('should drop any where clauses', function(ok) {
+    it('should drop any where clause bindings', function(ok) {
 
       Knex('accounts')
         .where('id', '>', 1)

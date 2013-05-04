@@ -11,6 +11,57 @@ var Sqlite3Client = module.exports = function(name, options) {
 
 _.extend(Sqlite3Client.prototype, base.protoProps, {
 
+  // Execute a query on the specified Builder or QueryBuilder
+  // interface. If a `connection` is specified, use it, otherwise
+  // acquire a connection, and then dispose of it when we're done.
+  query: function(builder) {
+    var emptyConnection = !builder._connection;
+    var debug = this.debug || builder._debug;
+    var instance = this;
+    return Q((builder._connection || this.getConnection()))
+      .then(function(conn) {
+        var dfd = Q.defer();
+        var method = (builder.type === 'insert' || builder.type === 'update') ? 'run' : 'all';
+
+        // If we have a debug flag set, console.log the query.
+        if (debug) base.debug(builder, conn);
+        
+        // Call the querystring and then release the client
+        conn[method](builder.sql, builder.bindings, function (err, resp) {
+        
+          if (err) return dfd.reject(err);
+
+          if (builder._source === 'SchemaBuilder') {
+            if (builder.type === 'tableExists') {
+              if (resp.length > 0) return dfd.resolve(_.pick(resp, _.keys(resp)));
+              return dfd.reject(new Error('Table does not exist:' + builder.sql));
+            } else {
+              return dfd.resolve(null);
+            }
+          }
+
+          if (builder.type === 'select') {
+            resp = base.skim(resp);
+          }
+          if (builder.type === 'insert') {
+            resp = [this.lastID];
+          }
+          if (builder.type === 'delete' || builder.type === 'update') {
+            resp = this.changes;
+          }
+
+          dfd.resolve(resp);
+        });
+
+        // Empty the connection after we run the query, unless one was specifically
+        // set (in the case of transactions, etc).
+        return dfd.promise.then(function(resp) {
+          if (emptyConnection) instance.pool.release(conn);
+          return resp;
+        });
+      });
+  },
+
   poolDefaults: {
     max: 1,
     min: 1,
@@ -19,12 +70,8 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
 
   getRawConnection: function() {
     return new sqlite3.Database(this.connectionSettings.filename);
-  },
-
-  prepResp: function(resp) {
-    if (_.has(this, 'lastID')) resp = {insertId: this.lastID, changes: this.changes};
-    return resp;
   }
+
 });
 
 // Extends the standard sql grammar.
@@ -44,8 +91,8 @@ Sqlite3Client.grammar = {
   },
 
   // Compile an insert statement into SQL.
-  compileInsert: function(qb, values) {
-    if (!_.isArray(values)) values = [values];
+  compileInsert: function(qb) {
+    var values = qb.values;
     var table = this.wrapTable(qb.table);
     var parameters = this.parameterize(values[0]);
     var paramBlocks = [];
@@ -54,10 +101,10 @@ Sqlite3Client.grammar = {
     // grammar insert builder because no special syntax is needed for the single
     // row inserts in SQLite. However, if there are multiples, we'll continue.
     if (values.length === 1) {
-      return require('../knex').Grammar.prototype.compileInsert.call(this, qb, values);
+      return require('../knex').Grammar.compileInsert.call(this, qb);
     }
     
-    var keys = _.keys(values[0]);
+    var keys = _.keys(values[0]).sort();
     var names = this.columnize(keys);
     var columns = [];
 
@@ -109,6 +156,7 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
     sql += this.addForeignKeys(blueprint);
     sql += this.addPrimaryKeys(blueprint) || '';
     sql +=')';
+
     return sql;
   },
 
