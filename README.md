@@ -1,13 +1,13 @@
 # Knex Query Builder
 
 Insert: 
-  Returns - insertId (if applicable),
+  Returns - (array) insertIds (if applicable),
 
 Update:
-  Returns - affected rows
+  Returns - affected row count
 
 Select:
   Returns - [rows]
 
 Delete:
-  Returns - affected rows
+  Returns - affected row count

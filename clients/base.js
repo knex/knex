@@ -30,6 +30,16 @@ exports.setup = function(Client, name, options) {
   }, this.poolDefaults, options.pool));
 };
 
+exports.skim = function(data) {
+  return _.map(data, function(obj) {
+    return _.pick(obj, _.keys(obj));
+  });
+};
+
+exports.debug = function(builder, conn) {
+  console.log({sql: builder.sql, bindings: builder.bindings, __cid: conn.__cid});
+};
+
 exports.protoProps = {
 
   prepConn: function(builder) {
@@ -78,9 +88,7 @@ exports.protoProps = {
 
 };
 
-exports.grammar = {
-
-};
+exports.grammar = {};
 
 exports.schemaGrammar = {
   

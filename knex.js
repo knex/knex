@@ -26,12 +26,16 @@
   // that is used to generate the sql in one form or another.
   var Common = {
 
+    _debug: false,
+
+    debug: function(val) {
+      this._debug = val;
+      return this;
+    },
+
     // For those who dislike promise interfaces.
     exec: function(callback) {
       var run = Knex.runQuery(this);
-      if (ResponseHandlers[this.type]) {
-        run.then(_.bind(ResponseHandlers[this.type], this));
-      }
       return run.nodeify(callback);
     },
 
@@ -55,9 +59,6 @@
     // The promise interface for the query builder.
     then: function(onFulfilled, onRejected) {
       var run = Knex.runQuery(this);
-      if (ResponseHandlers[this.type]) {
-        run.then(_.bind(ResponseHandlers[this.type], this));
-      }
       return run.then(onFulfilled, onRejected);
     },
 
@@ -91,28 +92,6 @@
     }
   };
 
-  // Response handlers are used in the case of a two part query, such as
-  // `hasTable`, or `exists`, where the result of the first query is used
-  // to generate a boolean response, that will resolve or reject the promise.
-  var ResponseHandlers = {
-    
-    // Handles tableExists.
-    tableExists: function(resp) {
-      return resp;
-    },
-
-    // Handles existence.
-    exists: function(resp) {
-      return resp;
-    },
-
-    // Handles insert.
-    insert: function(resp) {
-      return resp;
-    }
-
-  };
-
   // Grammar
   // -------
 
@@ -126,16 +105,6 @@
   Knex.Grammar = {
 
     dateFormat: 'Y-m-d H:i:s',
-
-    idAttr: 'id',
-
-    // Sets the `returning` for the query - only necessary
-    // to set the "returning" value for the postgres insert,
-    // defaults to `id`.
-    returning: function(val) {
-      this.idAttr = val;
-      return this;
-    },
 
     // Compiles the `select` statement, or nested sub-selects
     // by calling each of the component compilers, trimming out
@@ -434,6 +403,18 @@
   var operators = ['=', '<', '>', '<=', '>=', 'like', 'not like', 'between', 'ilike'];
 
   _.extend(Builder.prototype, Common, {
+
+    _source: 'Builder',
+
+    idAttr: 'id',
+
+    // Sets the `returning` for the query - only necessary
+    // to set the "returning" value for the postgres insert,
+    // defaults to `id`.
+    returning: function(val) {
+      this.idAttr = val;
+      return this;
+    },
 
     // Sets the `tableName` on the query.
     from: function(tableName) {
@@ -992,6 +973,8 @@
 
   _.extend(SchemaBuilder.prototype, Common, {
 
+    _source: 'SchemaBuilder',
+
     // A callback from the table building `Knex.schemaBuilder` calls.
     callback: function(callback) {
       if (callback) callback.call(this, this);
@@ -1043,7 +1026,7 @@
         var method = 'compile' + capitalize(command.name);
         if (_.has(this.grammar, method)) {
           var sql = this.grammar[method](this, command);
-          statements.push(sql);
+          statements = statements.concat(sql);
         }
       }
 
@@ -1456,9 +1439,9 @@
     if (_.isArray(builder.sql)) {
       return builder.client.getConnection().then(function(conn) {
         builder._connection = conn;
-        return Q.all(_.map(builder.sql, function(sql) {
-          return builder.client.query(_.extend({}, builder, {sql: sql}));
-        })).fin(function() {
+        return _.reduce(builder.sql, function(memo, sql) {
+          return memo.then(function () { builder.client.query(_.extend({}, builder, {sql: sql})); });
+        }, Q.resolve()).fin(function() {
           builder.client.pool.release(conn);
         });
       });

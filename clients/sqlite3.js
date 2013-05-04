@@ -16,7 +16,7 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
   // acquire a connection, and then dispose of it when we're done.
   query: function(builder) {
     var emptyConnection = !builder._connection;
-    var debug = this.debug || builder.debug;
+    var debug = this.debug || builder._debug;
     var instance = this;
     return Q((builder._connection || this.getConnection()))
       .then(function(conn) {
@@ -24,12 +24,31 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
         var method = (builder.type === 'insert' || builder.type === 'update') ? 'run' : 'all';
 
         // If we have a debug flag set, console.log the query.
-        if (debug) console.log(_.extend(builder, {__cid: conn.__cid}));
+        if (debug) base.debug(builder, conn);
         
         // Call the querystring and then release the client
         conn[method](builder.sql, builder.bindings, function (err, resp) {
           if (err) return dfd.reject(err);
-          if (_.has(this, 'lastID')) resp = _.extend({}, this, {insertId: this.lastID, changes: this.changes});
+
+          if (builder._source === 'SchemaBuilder') {
+            if (builder.type === 'tableExists') {
+              if (resp.length > 0) return dfd.resolve(_.pick(resp, _.keys(resp)));
+              return dfd.reject(new Error('Table does not exist:' + builder.sql));
+            } else {
+              return dfd.resolve(null);
+            }
+          }
+
+          if (builder.type === 'select') {
+            resp = base.skim(resp);
+          }
+          if (builder.type === 'insert') {
+            resp = [this.lastId];
+          }
+          if (builder.type === 'delete' || builder.type === 'update') {
+            resp = this.changes;
+          }
+
           dfd.resolve(resp);
         });
 
@@ -136,6 +155,7 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
     sql += this.addForeignKeys(blueprint);
     sql += this.addPrimaryKeys(blueprint) || '';
     sql +=')';
+
     return sql;
   },
 

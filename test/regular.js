@@ -7,32 +7,9 @@ var handler = function(instance, section) {
   var item = 1;
   return function(resolver, isAll) {
     var fn = function(data) {
-      
-      if (instance === 'mysql') {
-        if (section === 'inserts') {
-          data = data.affectedRows;
-        } else if (section === 'updates') {
-          data = data.affectedRows;
-        } else if (section === 'selects') {
-          data = skim(data);
-        } else {
-          data = '';
-        }
-      } else if (instance === 'postgres') {
-        if (section === 'inserts') {
-          debugger;
-        } else if (section === 'updates') {
-          data = data.affectedRows;
-        } else if (section === 'selects') {
-          data = skim(data);
-        } else {
-          data = '';
-        }
-      } else {
-
+      if (instance === 'sqlite') {
+        data = '';
       }
-
-
       var label = '' + section + '.' + item;
       out['db'] = out['db'] || {};
       out['db'][label] = out['db'][label] || {};
@@ -49,12 +26,6 @@ var handler = function(instance, section) {
       return fn;
     }
   };
-};
-
-var skim = function(data) {
-  return _.map(data, function(obj) {
-    return _.pick(obj, _.keys(obj));
-  });
 };
 
 module.exports = function(Knex, type) {
