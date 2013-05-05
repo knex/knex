@@ -49,7 +49,7 @@ _.extend(PostgresClient.prototype, base.protoProps, {
           if (resp.command === 'SELECT') {
             resp = resp.rows;
           } else if (resp.command === 'INSERT') {
-            resp = _.map(resp.rows, function(row) { return row[builder.idAttr]; });
+            resp = _.map(resp.rows, function(row) { return row[builder._idAttribute]; });
           } else if (resp.command === 'UPDATE' || resp.command === 'DELETE') {
             resp = resp.rowCount;
           } else {
@@ -91,8 +91,8 @@ PostgresClient.grammar = {
   // inserts using a single query statement.
   compileInsert: function(qb) {
     var sql = require('../knex').Grammar.compileInsert.call(this, qb);
-    if (qb.idAttr) {
-      sql += ' returning "' + qb.idAttr + '"';
+    if (qb._idAttribute) {
+      sql += ' returning "' + qb._idAttribute + '"';
     }
     return sql;
   }

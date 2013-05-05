@@ -8,7 +8,7 @@ module.exports = function(Knex, handler, error) {
     Knex.Schema.dropTableIfExists('test_table_three'),
     Knex.Schema.dropTableIfExists('accounts')
   ]).then(function(resp) {
-    res = resp;
+    res = [resp[0]]; // only really need one of these for the test output.
     return Q.all([
       Knex.Schema.createTable('test_table_one', function(table) {
         table.increments('id');

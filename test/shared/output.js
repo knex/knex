@@ -16,48 +16,6 @@ module.exports = {
     },
     'schema.2': {
       mysql: {
-        sql: ['drop table if exists `test_table_two`'],
-        bindings: []
-      },
-      postgres: {
-        sql: ['drop table if exists "test_table_two"'],
-        bindings: []
-      },
-      sqlite3: {
-        sql: ['drop table if exists "test_table_two"'],
-        bindings: []
-      }
-    },
-    'schema.3': {
-      mysql: {
-        sql: ['drop table if exists `test_table_three`'],
-        bindings: []
-      },
-      postgres: {
-        sql: ['drop table if exists "test_table_three"'],
-        bindings: []
-      },
-      sqlite3: {
-        sql: ['drop table if exists "test_table_three"'],
-        bindings: []
-      }
-    },
-    'schema.4': {
-      mysql: {
-        sql: ['drop table if exists `accounts`'],
-        bindings: []
-      },
-      postgres: {
-        sql: ['drop table if exists "accounts"'],
-        bindings: []
-      },
-      sqlite3: {
-        sql: ['drop table if exists "accounts"'],
-        bindings: []
-      }
-    },
-    'schema.5': {
-      mysql: {
         sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null, `created_at` timestamp default 0 not null, `updated_at` timestamp default 0 not null)','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
         bindings: []
       },
@@ -70,7 +28,7 @@ module.exports = {
         bindings: []
       }
     },
-    'schema.6': {
+    'schema.3': {
       mysql: {
         sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null)'],
         bindings: []
@@ -84,7 +42,7 @@ module.exports = {
         bindings: []
       }
     },
-    'schema.7': {
+    'schema.4': {
       mysql: {
         sql: ['create table `test_table_three` (`main` int(11) not null, `paragraph` text not null)','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)'],
         bindings: []
@@ -98,7 +56,7 @@ module.exports = {
         bindings: []
       }
     },
-    'schema.8': {
+    'schema.5': {
       mysql: {
         sql: ['alter table `test_table_one` add `phone` varchar(255) null'],
         bindings: []
@@ -112,7 +70,7 @@ module.exports = {
         bindings: []
       }
     },
-    'schema.9': {
+    'schema.6': {
       mysql: {
         sql: ['drop table if exists `items`'],
         bindings: []
@@ -126,7 +84,7 @@ module.exports = {
         bindings: []
       }
     },
-    'schema.10': {
+    'schema.7': {
       mysql: {
         sql: ['select * from information_schema.tables where table_schema = ? and table_name = ?'],
         bindings: ['knex_test','test_table_two']
@@ -140,7 +98,7 @@ module.exports = {
         bindings: ['test_table_two']
       }
     },
-    'schema.11': {
+    'schema.8': {
       mysql: {
         sql: ['rename table `test_table_one` to `accounts`'],
         bindings: []
@@ -154,7 +112,7 @@ module.exports = {
         bindings: []
       }
     },
-    'schema.12': {
+    'schema.9': {
       mysql: {
         sql: ['drop table `test_table_three`'],
         bindings: []
@@ -488,6 +446,20 @@ module.exports = {
       sqlite3: {
         sql: 'select * from "accounts" where "id" between ? and ? or "id" between ? and ?',
         bindings: [1,100,200,300]
+      }
+    },
+    'aggregate.1': {
+      mysql: {
+        sql: 'select sum(`logins`) as aggregate from `accounts`',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select sum("logins") as aggregate from "accounts"',
+        bindings: []
+      },
+      sqlite3: {
+        sql: 'select sum("logins") as aggregate from "accounts"',
+        bindings: []
       }
     },
     'joins.1': {
@@ -1784,6 +1756,17 @@ module.exports = {
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
+      }]
+    },
+    'aggregate.1': {
+      mysql: [{
+        aggregate: 10
+      }],
+      postgres: [{
+        aggregate: 10
+      }],
+      sqlite3: [{
+        aggregate: 10
       }]
     },
     'joins.1': {

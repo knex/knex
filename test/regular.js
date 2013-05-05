@@ -32,6 +32,10 @@ module.exports = function(Knex, type) {
         require('./lib/selects')(Knex, type, handler(type, 'selects'), 'DB');
       });
 
+      describe('Aggregate', function() {
+        require('./lib/aggregate')(Knex, type, handler(type, 'aggregate'), 'DB');
+      });
+
       describe('Joins', function() {
         require('./lib/joins')(Knex, type, handler(type, 'joins'), 'DB');
       });

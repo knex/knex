@@ -39,6 +39,12 @@
       return run.nodeify(callback);
     },
 
+    // The promise interface for the query builder.
+    then: function(onFulfilled, onRejected) {
+      var run = Knex.runQuery(this);
+      return run.then(onFulfilled, onRejected);
+    },
+
     // Specifies to resolve the statement with the `data` rather 
     // than a promise... useful in testing/debugging.
     toString: function() {
@@ -56,21 +62,15 @@
       }).join('; ');
     },
 
-    // The promise interface for the query builder.
-    then: function(onFulfilled, onRejected) {
-      var run = Knex.runQuery(this);
-      return run.then(onFulfilled, onRejected);
-    },
-
-    // The connection the current query is being run on, optionally
-    // specified by the connection method.
-    _connection: false,
-
     // Sets the connection
     connection: function(connection) {
       this._connection = connection;
       return this;
     },
+
+    // The connection the current query is being run on, optionally
+    // specified by the `connection` method.
+    _connection: false,
 
     // Sets the "type" of the current query, so we can potentially place
     // `select`, `update`, `del`, etc. anywhere in the query statement
@@ -85,10 +85,12 @@
 
     // Returns all bindings excluding the `Knex.Raw` types.
     _cleanBindings: function() {
-      return _.reduce(this.bindings, function(memo, binding) {
-        if (!(binding instanceof Raw)) memo.push(binding);
-        return memo;
-      }, []);
+      var bindings = this.bindings;
+      var cleaned = [];
+      for (var i = 0, l = bindings.length; i < l; i++) {
+        if (!(bindings[i] instanceof Raw)) cleaned.push(bindings[i]);
+      }
+      return cleaned;
     }
   };
 
@@ -114,20 +116,21 @@
       if (_.isEmpty(qb.columns)) qb.columns = ['*'];
       for (var i = 0, l = components.length; i < l; i++) {
         var component = components[i];
-        if (_.result(qb, component) != null) {
-          sql[component] = this['compile' + capitalize(component)](qb, _.result(qb, component));
+        var result = _.result(qb, component);
+        if (result != null) {
+          sql[component] = this['compile' + capitalize(component)](qb, result);
         }
       }
       return _.compact(sql).join(' ');
     },
 
     // Compiles an aggregate query.
-    compileAggregate: function(qb, aggregate) {
-      var column = this.columnize(aggregate.columns);
+    compileAggregate: function(qb) {
+      var column = this.columnize(qb.aggregate.columns);
       if (qb.isDistinct && column !== '*') {
         column = 'distinct ' + column;
       }
-      return 'select ' + aggregate.type + '(' + column + ') as aggregate';
+      return 'select ' + qb.aggregate.type + '(' + column + ') as aggregate';
     },
 
     // Compiles the columns in the query, specifying if an item was distinct.
@@ -406,13 +409,13 @@
 
     _source: 'Builder',
 
-    idAttr: 'id',
+    _idAttribute: 'id',
 
     // Sets the `returning` for the query - only necessary
     // to set the "returning" value for the postgres insert,
     // defaults to `id`.
-    returning: function(val) {
-      this.idAttr = val;
+    idAttribute: function(val) {
+      this._idAttribute = val;
       return this;
     },
 
@@ -447,7 +450,7 @@
       item.client = this.client;
       item.grammar = this.grammar;
       var items = [
-        'idAttr', 'isDistinct', 'joins', 'wheres', 'orders',
+        '_idAttribute', 'isDistinct', 'joins', 'wheres', 'orders',
         'columns', 'bindings', 'grammar', 'transaction', 'unions'
       ];
       for (var i = 0, l = items.length; i < l; i++) {
@@ -733,7 +736,7 @@
       return this._counter(column, amount, '-');
     },
 
-    // Performs a `select` query, returning a promise.
+    // Sets the values for a `select` query.
     select: function(columns) {
       if (columns) {
         this.columns = this.columns.concat(_.isArray(columns) ? columns : _.toArray(arguments)); 
@@ -741,25 +744,25 @@
       return this._setType('select');
     },
 
-    // Performs an `insert` query, returning a promise.
+    // Sets the values for an `insert` query.
     insert: function(values) {
       this.values = this._prepValues(values);
       return this._setType('insert');
     },
 
-    // Performs an `update` query, returning a promise.
+    // Sets the values for an `update` query.
     update: function(values) {
       var obj = sortObject(values);
       var bindings = [];
       for (var i = 0, l = obj.length; i < l; i++) {
-        bindings[i] = (obj[i][1]);
+        bindings[i] = obj[i][1];
       }
-      this.bindings = bindings.concat(this.bindings);
+      this.bindings = bindings.concat(this.bindings || []);
       this.values = obj;
       return this._setType('update');
     },
 
-    // Alias to del
+    // Alias to del.
     "delete": function() {
       return this._setType('delete');
     },
@@ -834,8 +837,9 @@
     },
 
     _aggregate: function(type, columns) {
+      if (!_.isArray(columns)) columns = [columns];
       this.aggregate = {type: type, columns: columns};
-      return this.select();
+      return this._setType('select');
     },
 
     _counter: function(column, amount, symbol) {

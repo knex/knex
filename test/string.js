@@ -32,6 +32,10 @@ module.exports = function(Knex, type) {
         require('./lib/selects')(Knex, type, handler(type, 'selects'), 'String');
       });
 
+      describe('Aggregate', function() {
+        require('./lib/aggregate')(Knex, type, handler(type, 'aggregate'), 'String');
+      });
+
       describe('Joins', function() {
         require('./lib/joins')(Knex, type, handler(type, 'joins'), 'String');
       });
@@ -40,7 +44,7 @@ module.exports = function(Knex, type) {
         require('./lib/deletes')(Knex, type, handler(type, 'deletes'), 'String');
       });
 
-      describe('Aggregates, Truncate', function() {
+      describe('Additional', function() {
         require('./lib/additional')(Knex, type, handler(type, 'additional'), 'String');
       });
 
