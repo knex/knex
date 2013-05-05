@@ -537,7 +537,7 @@ Knex('users')
     </p>
 
 <pre>
-  // generates: "INSERT INTO `books`
+  // generates: "insert into `books`
   Knex('books').insert({title: 'Slaughterhouse Five'})
   
   // generates "select * from `books`;"
@@ -552,15 +552,20 @@ Knex('users')
       <br />
       Creates an <tt>update</tt> query, taking either a hash of properties to be updated into the row, or
       an array of updates, to be executed as a single update command.
+    </p>
 
 <pre>
   // generates: "select `title`, `author`, `year` from `books`;"
-  Knex('books').select('title', 'author', 'year')
+  Knex('books').update({
+    title: '',
+    author: '',
+    year: 
+  })
   
-  // generates "select * from `books`;"
-  Knex('books').select()
+  Knex('users').update({
+
+  });
 </pre>
-    </p>
 
     <p id="Builder-del">
       <b class="header">del / delete</b><code>.del()</code>
@@ -836,7 +841,7 @@ Knex.Schema.table('users', function (table) {
 Knex.createTable('accounts', function() {
   t.increments().primary();
   t.string('email').unique();
-  
+
 });
 </pre>
 

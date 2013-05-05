@@ -1,13 +1,21 @@
-# Knex Query Builder
+```
+._____.                                                                        ______
+|     |                                                                       /     /
+|     |                                                                      /     /
+|     |     _____   ._____      ._____.                                     /     /
+|     |    /    /   |     \     |     |     ,_____________.    ______      /     /
+|     |   /    /    |      \    |     |    /               \   \     \    /     /
+|     |  /    /     |       \   |     |   /     ,______.    \   \     \  /     /
+|     | /    /      |        \  |     |  /     /       \     \   \     \/     /
+|     |/    \       |         \ |     |  |     |    ____\    |    \          /
+|     |\     \      |          \|     |  |     |   /         |     \         \
+|     | \     \     |     |\          |  |     |  /__________|     /          \
+|     |  \     \    |     | \         |  \     \                  /     /\     \
+|     |   \     \   |     |  \        |   \     \__________/\    /     /  \     \
+|     |    \     \  |     |   \       |    \                 \  /     /    \     \
+|_____|     \_____\ |_____|    \______|     \_______________/  /_____/      \_____\
+```
 
-Insert: 
-  Returns - (array) insertIds (if applicable),
+Knex.js is a multi-dialect query builder for Node.js and other environments.
 
-Update:
-  Returns - affected row count
-
-Select:
-  Returns - [rows]
-
-Delete:
-  Returns - affected row count
+[http://knexjs.org](knexjs.org)

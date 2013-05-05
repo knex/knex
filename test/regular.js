@@ -5,6 +5,61 @@ var dev = parseInt(process.env.KNEX_DEV, 10);
 var out = (dev ? require('./index').output : require('./shared/output'));
 var assert = require('assert');
 
+module.exports = function(Knex, type) {
+
+  describe('DB Tests - ' + type, function() {
+
+    describe('Knex.Builder', function() {
+
+      before(function(ok) {
+        var val = handler(type, 'schema');
+        require('./lib/schema')(Knex, function() { 
+          setTimeout(function() { ok(); }, 100);
+        }, function(err) {
+          throw new Error(err);
+        }, type);
+      });
+
+      describe('Inserts', function() {
+        require('./lib/inserts')(Knex, type, handler(type, 'inserts'), 'DB');
+      });
+
+      describe('Updates', function() {
+        require('./lib/updates')(Knex, type, handler(type, 'updates'), 'DB');
+      });
+
+      describe('Selects', function() {
+        require('./lib/selects')(Knex, type, handler(type, 'selects'), 'DB');
+      });
+
+      describe('Joins', function() {
+        require('./lib/joins')(Knex, type, handler(type, 'joins'), 'DB');
+      });
+
+      describe('Deletes', function() {
+        require('./lib/deletes')(Knex, type, handler(type, 'deletes'), 'DB');
+      });
+
+      describe('Aggregates, Truncate', function() {
+        require('./lib/additional')(Knex, type, handler(type, 'additional'), 'DB');
+      });
+
+      describe('Deletes', function() {
+        require('./lib/unions')(Knex, type, handler(type, 'unions'), 'DB');
+      });
+
+      after(function(ok) {
+        if (dev) require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(out));
+        ok();
+      });
+
+    });
+
+  });
+
+};
+
+
 var handler = function(instance, section) {
   var item = 1;
   return function(resolver, isAll) {
@@ -48,52 +103,3 @@ var omitDates = function(item) {
   return item;
 };
 
-module.exports = function(Knex, type) {
-
-  describe('DB Tests - ' + type, function() {
-
-    describe('Knex.Builder', function() {
-
-      before(function(ok) {
-        var val = handler(type, 'schema');
-        require('./lib/schema')(Knex, function() { 
-          setTimeout(function() { ok(); }, 100);
-        }, function(err) {
-          throw new Error(err);
-        }, type);
-      });
-
-      describe('Inserts', function() {
-        require('./lib/inserts')(Knex, type, handler(type, 'inserts'), 'DB');
-      });
-
-      describe('Updates', function() {
-        require('./lib/updates')(Knex, type, handler(type, 'updates'), 'DB');
-      });
-
-      describe('Selects', function() {
-        require('./lib/selects')(Knex, type, handler(type, 'selects'), 'DB');
-      });
-
-      describe('Deletes', function() {
-        require('./lib/deletes')(Knex, type, handler(type, 'deletes'), 'DB');
-      });
-
-      describe('Aggregates, Truncate', function() {
-        require('./lib/additional')(Knex, type, handler(type, 'additional'), 'DB');
-      });
-
-      describe('Deletes', function() {
-        require('./lib/unions')(Knex, type, handler(type, 'unions'), 'DB');
-      });
-
-      after(function(ok) {
-        if (dev) require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(out));
-        ok();
-      });
-
-    });
-
-  });
-
-};

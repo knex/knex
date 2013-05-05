@@ -870,6 +870,11 @@
       return this;
     },
 
+    andOn: function() {
+      this.on.apply(this, arguments);
+      return this;
+    },
+
     orOn: function(first, operator, second) {
       this.clauses.push({first: first, operator: operator, second: second, bool: 'or'});
       return this;

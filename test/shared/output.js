@@ -490,7 +490,7 @@ module.exports = {
         bindings: [1,100,200,300]
       }
     },
-    'selects.19': {
+    'joins.1': {
       mysql: {
         sql: 'select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`',
         bindings: []
@@ -504,7 +504,7 @@ module.exports = {
         bindings: []
       }
     },
-    'selects.20': {
+    'joins.2': {
       mysql: {
         sql: 'select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`',
         bindings: []
@@ -518,7 +518,7 @@ module.exports = {
         bindings: []
       }
     },
-    'selects.21': {
+    'joins.3': {
       mysql: {
         sql: 'select * from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` or `accounts`.`email` = `test_table_two`.`details`',
         bindings: []
@@ -1786,7 +1786,7 @@ module.exports = {
         phone: null
       }]
     },
-    'selects.19': {
+    'joins.1': {
       mysql: [{
         id: 1,
         first_name: 'User',
@@ -1818,7 +1818,7 @@ module.exports = {
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       }]
     },
-    'selects.20': {
+    'joins.2': {
       mysql: [{
         id: 1,
         first_name: 'User',
@@ -1985,7 +1985,7 @@ module.exports = {
         details: null
       }]
     },
-    'selects.21': {
+    'joins.3': {
       mysql: [{
         id: 1,
         first_name: 'User',
