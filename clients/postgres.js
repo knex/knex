@@ -127,7 +127,7 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   compileUnique: function(blueprint, command) {
     var table = this.wrapTable(blueprint);
     var columns = this.columnize(command.columns);
-    return 'alter table table add constraint ' + command.index + ' unique (' + columns + ')';
+    return 'alter table ' + table + ' add constraint ' + command.index + ' unique (' + columns + ')';
   },
 
   // Compile a plain index key command.

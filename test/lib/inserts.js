@@ -30,7 +30,7 @@ module.exports = function(Knex, dbName, handler, type) {
         .insert([{
           first_name: 'Test',
           last_name: 'User',
-          email:'test@example.com',
+          email:'test2@example.com',
           logins: 1,
           about: 'Lorem ipsum Dolore labore incididunt enim.',
           created_at: new Date(),
@@ -38,7 +38,7 @@ module.exports = function(Knex, dbName, handler, type) {
         }, {
           first_name: 'Test',
           last_name: 'User',
-          email:'test2@example.com',
+          email:'test3@example.com',
           about: 'Lorem ipsum Dolore labore incididunt enim.',
           logins: 2,
           created_at: new Date(),
@@ -52,7 +52,7 @@ module.exports = function(Knex, dbName, handler, type) {
       Knex('accounts').insert([{
         first_name: 'Test',
         last_name: 'User',
-        email:'test2@example.com',
+        email:'test4@example.com',
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         logins: 2,
         created_at: new Date(),
@@ -64,9 +64,31 @@ module.exports = function(Knex, dbName, handler, type) {
         created_at: new Date(),
         updated_at: new Date(),
         last_name: 'User',
-        email:'test2@example.com'
+        email:'test5@example.com'
       }])
       .then(handler(ok), ok);
+
+    });
+
+    it('will fail when multple inserts are made into a unique column', function(ok) {
+
+      if (type === 'String') return ok();
+
+      Knex('accounts')
+        .where('id', '>', 1)
+        .orWhere('x', 2)
+        .insert({
+          first_name: 'Test',
+          last_name: 'User',
+          email:'test5@example.com',
+          about: 'Lorem ipsum Dolore labore incididunt enim.',
+          logins: 2,
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+        .then(ok, function() {
+          ok();
+        });
 
     });
 
@@ -78,7 +100,7 @@ module.exports = function(Knex, dbName, handler, type) {
         .insert({
           first_name: 'Test',
           last_name: 'User',
-          email:'test2@example.com',
+          email:'test6@example.com',
           about: 'Lorem ipsum Dolore labore incididunt enim.',
           logins: 2,
           created_at: new Date(),

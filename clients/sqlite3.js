@@ -55,7 +55,7 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
 
         // Empty the connection after we run the query, unless one was specifically
         // set (in the case of transactions, etc).
-        return dfd.promise.then(function(resp) {
+        return dfd.promise.fin(function(resp) {
           if (emptyConnection) instance.pool.release(conn);
           return resp;
         });

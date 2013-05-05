@@ -1443,8 +1443,8 @@
     builder.bindings = builder._cleanBindings();
 
     // Used to handle the schema builder cases, where there is an array of 
-    // sql statements used in the table creation. These need to be processed
-    // on the same connection.
+    // sql statements used in the table creation. These definitely need
+    // to be processed on the same connection.
     if (_.isArray(builder.sql)) {
       var emptyConnection = !builder._connection;
       return Q.resolve(builder._connection || builder.client.getConnection()).then(function(conn) {

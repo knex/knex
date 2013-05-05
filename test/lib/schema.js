@@ -14,7 +14,7 @@ module.exports = function(Knex, handler, error) {
         table.increments('id');
         table.string('first_name');
         table.string('last_name');
-        table.string('email').nullable();
+        table.string('email').unique().nullable();
         table.integer('logins').defaultTo(1).index();
         table.text('about');
         table.timestamps();

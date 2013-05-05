@@ -75,12 +75,6 @@
       font: bold 11px Arial;
       color: #770000;
     }
-    div.doc-switch {
-      position: fixed;
-      top: 20px;
-      right: 0px;
-      width: 200px;
-    }
     p {
       margin: 20px 0;
       width: 550px;
@@ -170,9 +164,6 @@
         margin: 0;
         width: 100%;
       }
-      div.doc-switch {
-        display: none;
-      }
       p, div.container ul {
         max-width: 98%;
         overflow-x: scroll;
@@ -194,21 +185,6 @@
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
       <li>&raquo; <a href="http://knexjs.org/docs/knex.html">Annotated Source</a></li>
     </ul>
-
-    <div class="doc-switch">
-      <ul>
-        <li>
-          <a href="#" class="js-promise-toggle">
-            Promise Interface
-          </a>
-        </li>
-        <li>
-          <a href="#" class="js-promise-toggle">
-            Callback Interface
-          </a>
-        </li>
-      </ul>
-    </div>
 
     <a class="toc_title" href="#installation">
       Installation
@@ -279,10 +255,10 @@
       <li>– <a href="#Schema-timestamp">timestamp</a></li>
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
-      <li><a href="#Schema-chainable"><b>Chainable:</b></li>
-      <li>– <a href="#Schema-chainable-defaultTo">defaultTo</a></li>
-      <li>– <a href="#Schema-chainable-unsigned">unsigned</a></li>
-      <li>– <a href="#Schema-chainable-nullable">nullable</a></li>
+      <li><a href="#Chainable"><b>Chainable:</b></li>
+      <li>– <a href="#Chainable-defaultTo">defaultTo</a></li>
+      <li>– <a href="#Chainable-unsigned">unsigned</a></li>
+      <li>– <a href="#Chainable-nullable">nullable</a></li>
     </ul>
 
 
@@ -313,10 +289,12 @@
     <p>
       The project is <a href="http://github.com/tgriesser/knex">hosted on GitHub</a>,
       and the <a href="docs/knex.html">annotated source code</a> is available,
-      and has a comprehensive <a href="">test suite</a>.
+      and has a comprehensive <a href="https://travis-ci.org/tgriesser/knex">test suite</a>.
     </p>
 
-    <img src="https://travis-ci.org/tgriesser/knex.png?branch=master" alt="Travis Badge">
+    <a href="https://travis-ci.org/tgriesser/knex">
+      <img src="https://travis-ci.org/tgriesser/knex.png?branch=master" alt="Travis Badge">
+    </a>
 
     <p>
       Knex is available for use under the <a href="http://github.com/tgriesser/knex/blob/master/LICENSE">MIT software license</a>.
@@ -444,7 +422,12 @@ Knex.Initialize({
 
 .where('title', 'like', 'test').orWhere('title', 'like', 'fail');
 
+.where({email: 'test@example.com'}).and('other_key', 2)
+
 </pre>
+
+
+
 
 <h3>Additional Where Methods:</h3>
 
@@ -813,29 +796,50 @@ Knex.Schema.table('users', function (table) {
       Adds a enum column, (aliased to <tt>enu</tt>, as enum is a reserved word in javascript).
     </p>
 
-    <h3 id="Schema-chainable">Chainable Methods:</h3>
+    <h3 id="Chainable">Chainable Methods:</h3>
 
     <p>
       The following three methods may be chained on the schema building methods, as modifiers to the column.
     </p>
 
-    <p id="Schema-chainable-defaultTo">
+    <p id="Chainable-defaultTo">
       <b class="header">defaultTo</b><code>.defaultTo(value)</code>
       <br />
       Sets the default value for the column on an insert.
     </p>
 
-    <p id="Schema-chainable-unsigned">
+    <p id="Chainable-unsigned">
       <b class="header">unsigned</b><code>.unsigned()</code>
       <br />
       Specifies an integer as unsigned. No-op if this is chained off of a non-integer field.
     </p>
 
-    <p id="Schema-chainable-nullable">
+    <p id="Chainable-nullable">
       <b class="header">nullable</b><code>.nullable()</code>
       <br />
       Allows a field to be nullable. No-op if chained off of a non-nullable field.
-    </p>    
+    </p>
+
+    <p id="Chainable-nullable">
+      <b class="header">nullable</b><code>.nullable()</code>
+      <br />
+      Allows a field to be nullable. No-op if chained off of a non-nullable field.
+    </p>
+
+    <p id="Chainable-primary">
+      <b class="header">primary</b><code>.primary()</code>
+      <br />
+      Sets the field as the primary key for the table.
+    </p>
+
+<pre>
+Knex.createTable('accounts', function() {
+  t.increments().primary();
+  t.string('email').unique();
+  
+});
+</pre>
+
 
     <h2 id="Knex-client">Knex.client</h2>
 

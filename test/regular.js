@@ -11,14 +11,15 @@ var handler = function(instance, section) {
     var fn = function(data) {
       var label = '' + section + '.' + item;
       if (dev) {
+        if (_.isArray(data)) data = _.map(data, omitDates);
         out['db'] = out['db'] || {};
         out['db'][label] = out['db'][label] || {};
-        out['db'][label][instance] = data;  
+        out['db'][label][instance] = data;
       } else {
         var checkData = out['db'][label][instance];
         if (_.isArray(data)) {
-          data = _.map(data, dateStripper);
-          checkData = _.map(checkData, dateStripper);
+          data = _.map(data, omitDates);
+          checkData = _.map(checkData, omitDates);
         }
         try {
           assert.deepEqual(checkData, data);
@@ -40,11 +41,9 @@ var handler = function(instance, section) {
   };
 };
 
-var dateStripper = function(item) {
+var omitDates = function(item) {
   if (_.isObject(item)) {
-    return _.reduce(item, function(memo, val, key) {
-      return (_.isDate(val) ? 'newDate' : val);
-    }, item);
+    return _.omit(item, 'created_at', 'updated_at');
   }
   return item;
 };
