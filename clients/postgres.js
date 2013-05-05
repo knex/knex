@@ -48,12 +48,12 @@ _.extend(PostgresClient.prototype, base.protoProps, {
 
           if (resp.command === 'SELECT') {
             resp = resp.rows;
-          }
-          if (resp.command === 'INSERT') {
+          } else if (resp.command === 'INSERT') {
             resp = _.map(resp.rows, function(row) { return row[builder.idAttr]; });
-          }
-          if (resp.command === 'UPDATE' || resp.command === 'DELETE') {
+          } else if (resp.command === 'UPDATE' || resp.command === 'DELETE') {
             resp = resp.rowCount;
+          } else {
+            resp = '';
           }
           dfd.resolve(resp);
         });
@@ -84,9 +84,7 @@ PostgresClient.grammar = {
   },
 
   compileTruncate: function(qb) {
-    var query = {};
-    query['truncate ' + this.wrapTable(qb.from) + ' restart identity'] = [];
-    return query;
+    return 'truncate ' + this.wrapTable(qb.table) + ' restart identity';
   },
 
   // Compiles an `insert` query, allowing for multiple

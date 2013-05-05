@@ -532,6 +532,20 @@ module.exports = {
         bindings: ['test2@example.com']
       }
     },
+    'additional.1': {
+      mysql: {
+        sql: 'truncate `test_table_two`',
+        bindings: []
+      },
+      postgres: {
+        sql: 'truncate "test_table_two" restart identity',
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['delete from sqlite_sequence where name = "test_table_two"','delete from "test_table_two"'],
+        bindings: []
+      }
+    },
     'unions.1': {
       mysql: {
         sql: 'select * from `accounts` where `id` = ? union select * from `accounts` where `id` = ?',
@@ -703,8 +717,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null
       },{
         id: 2,
@@ -713,8 +727,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 3,
@@ -723,8 +737,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 4,
@@ -733,8 +747,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784281,
-        updated_at: 1367709784281,
+        created_at: 1367712619645,
+        updated_at: 1367712619645,
         phone: null
       },{
         id: 5,
@@ -743,8 +757,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784285,
-        updated_at: 1367709784285,
+        created_at: 1367712619649,
+        updated_at: 1367712619649,
         phone: null
       }]
     },
@@ -839,8 +853,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null
       }]
     },
@@ -995,8 +1009,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 3,
@@ -1005,8 +1019,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       }]
     },
@@ -1080,8 +1094,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null
       },{
         id: 2,
@@ -1090,8 +1104,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 3,
@@ -1100,8 +1114,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       }]
     },
@@ -1175,8 +1189,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 3,
@@ -1185,8 +1199,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 4,
@@ -1195,8 +1209,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784281,
-        updated_at: 1367709784281,
+        created_at: 1367712619645,
+        updated_at: 1367712619645,
         phone: null
       }]
     },
@@ -1330,8 +1344,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null
       },{
         id: 2,
@@ -1340,8 +1354,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 3,
@@ -1350,8 +1364,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 4,
@@ -1360,8 +1374,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784281,
-        updated_at: 1367709784281,
+        created_at: 1367712619645,
+        updated_at: 1367712619645,
         phone: null
       },{
         id: 5,
@@ -1370,8 +1384,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784285,
-        updated_at: 1367709784285,
+        created_at: 1367712619649,
+        updated_at: 1367712619649,
         phone: null
       }]
     },
@@ -1505,8 +1519,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null
       },{
         id: 2,
@@ -1515,8 +1529,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 3,
@@ -1525,8 +1539,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 4,
@@ -1535,8 +1549,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784281,
-        updated_at: 1367709784281,
+        created_at: 1367712619645,
+        updated_at: 1367712619645,
         phone: null
       },{
         id: 5,
@@ -1545,8 +1559,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784285,
-        updated_at: 1367709784285,
+        created_at: 1367712619649,
+        updated_at: 1367712619649,
         phone: null
       }]
     },
@@ -1680,8 +1694,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null
       },{
         id: 2,
@@ -1690,8 +1704,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 3,
@@ -1700,8 +1714,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null
       },{
         id: 4,
@@ -1710,8 +1724,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784281,
-        updated_at: 1367709784281,
+        created_at: 1367712619645,
+        updated_at: 1367712619645,
         phone: null
       },{
         id: 5,
@@ -1720,8 +1734,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784285,
-        updated_at: 1367709784285,
+        created_at: 1367712619649,
+        updated_at: 1367712619649,
         phone: null
       }]
     },
@@ -1757,8 +1771,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       }]
@@ -1905,8 +1919,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
@@ -1916,8 +1930,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null,
         details: null
       },{
@@ -1927,8 +1941,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null,
         details: null
       },{
@@ -1938,8 +1952,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784281,
-        updated_at: 1367709784281,
+        created_at: 1367712619645,
+        updated_at: 1367712619645,
         phone: null,
         details: null
       },{
@@ -1949,8 +1963,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784285,
-        updated_at: 1367709784285,
+        created_at: 1367712619649,
+        updated_at: 1367712619649,
         phone: null,
         details: null
       }]
@@ -2109,8 +2123,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null,
         account_id: 1,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
@@ -2121,8 +2135,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null,
         account_id: null,
         details: null
@@ -2133,8 +2147,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784278,
-        updated_at: 1367709784278,
+        created_at: 1367712619641,
+        updated_at: 1367712619641,
         phone: null,
         account_id: null,
         details: null
@@ -2145,8 +2159,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784281,
-        updated_at: 1367709784281,
+        created_at: 1367712619645,
+        updated_at: 1367712619645,
         phone: null,
         account_id: null,
         details: null
@@ -2157,8 +2171,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784285,
-        updated_at: 1367709784285,
+        created_at: 1367712619649,
+        updated_at: 1367712619649,
         phone: null,
         account_id: null,
         details: null
@@ -2167,6 +2181,11 @@ module.exports = {
     'deletes.1': {
       mysql: 4,
       postgres: 4,
+      sqlite3: undefined
+    },
+    'additional.1': {
+      mysql: '',
+      postgres: '',
       sqlite3: undefined
     },
     'unions.1': {
@@ -2219,8 +2238,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367709784267,
-        updated_at: 1367709784267,
+        created_at: 1367712619632,
+        updated_at: 1367712619632,
         phone: null
       }]
     }

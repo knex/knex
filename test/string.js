@@ -71,7 +71,7 @@ module.exports = function(Knex, type) {
       });
 
       describe('Aggregates, Truncate', function() {
-        // require('./lib/aggregate')(Knex, type, handler(type, 'aggregate'), 'String');
+        require('./lib/additional')(Knex, type, handler(type, 'additional'), 'String');
       });
 
       describe('Deletes', function() {

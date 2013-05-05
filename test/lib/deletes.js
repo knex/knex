@@ -7,7 +7,7 @@ module.exports = function(Knex, dbName, handler, type) {
       .where({'email':'test2@example.com'})
       .del()
       .then(handler(ok), ok);
-  
+
   });
 
 };

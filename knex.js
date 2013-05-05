@@ -337,7 +337,7 @@
 
     // Compiles a `truncate` query.
     compileTruncate: function(qb) {
-      return 'truncate ' + this.wrapTable(qb.from);
+      return 'truncate ' + this.wrapTable(qb.table);
     },
 
     wrap: function(value) {

@@ -9,9 +9,6 @@ var handler = function(instance, section) {
   var item = 1;
   return function(resolver, isAll) {
     var fn = function(data) {
-      if (instance === 'sqlite') {
-        data = '';
-      }
       var label = '' + section + '.' + item;
       if (dev) {
         out['db'] = out['db'] || {};
@@ -84,7 +81,7 @@ module.exports = function(Knex, type) {
       });
 
       describe('Aggregates, Truncate', function() {
-        // require('./lib/aggregate')(Knex, type, handler(type, 'aggregate'), 'DB');
+        require('./lib/additional')(Knex, type, handler(type, 'additional'), 'DB');
       });
 
       describe('Deletes', function() {

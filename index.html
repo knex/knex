@@ -75,6 +75,12 @@
       font: bold 11px Arial;
       color: #770000;
     }
+    div.doc-switch {
+      position: fixed;
+      top: 20px;
+      right: 0px;
+      width: 200px;
+    }
     p {
       margin: 20px 0;
       width: 550px;
@@ -164,6 +170,9 @@
         margin: 0;
         width: 100%;
       }
+      div.doc-switch {
+        display: none;
+      }
       p, div.container ul {
         max-width: 98%;
         overflow-x: scroll;
@@ -185,6 +194,21 @@
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
       <li>&raquo; <a href="http://knexjs.org/docs/knex.html">Annotated Source</a></li>
     </ul>
+
+    <div class="doc-switch">
+      <ul>
+        <li>
+          <a href="#" class="js-promise-toggle">
+            Promise Interface
+          </a>
+        </li>
+        <li>
+          <a href="#" class="js-promise-toggle">
+            Callback Interface
+          </a>
+        </li>
+      </ul>
+    </div>
 
     <a class="toc_title" href="#installation">
       Installation
@@ -280,8 +304,10 @@
 
     <p>
       <b>Knex.js</b> is a multi-dialect sql builder, designed to be flexible, portable, and fun to use.
-      It features <a href="http://documentup.com/kriskowal/q/">promises</a> for async flow control, full featured
-      query and schema builders, transaction support, and node.js adapters for postgres, mysql, and sqlite.
+      It features both traditional node style <a href="#Builder-exec">callbacks</a> as well 
+      as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured 
+      query and schema builders, transaction support, connection pooling and node.js adapters for 
+      postgres, mysql, and sqlite3 - standardizing the responses between the three.
     </p>
 
     <p>
@@ -289,6 +315,8 @@
       and the <a href="docs/knex.html">annotated source code</a> is available,
       and has a comprehensive <a href="">test suite</a>.
     </p>
+
+    <img src="https://travis-ci.org/tgriesser/knex.png?branch=master" alt="Travis Badge">
 
     <p>
       Knex is available for use under the <a href="http://github.com/tgriesser/knex/blob/master/LICENSE">MIT software license</a>.
@@ -302,10 +330,9 @@
     </p>
 
     <p>
-      Special thanks to Taylor Otwell
-      and his work on the <a href="http://four.laravel.com/docs/queries">Laravel Query Builder</a>,
-      from which much of the code and syntax is derived, and to Jeremy Ashkenas for the documentation
-      template, underscore.js, and docco.
+      Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work 
+      on the <a href="http://four.laravel.com/docs/queries">Laravel Query Builder</a>,
+      from which much of the code and syntax is derived.
     </p>
 
     <h2 id="installation">
@@ -313,9 +340,8 @@
     </h2>
 
     <p>
-      The only hard dependencies of Knex are <tt>underscore.js</tt> and <tt>q.js</tt>, which are 
-      specified in <tt>package.json</tt>. The <tt>generic-pool</tt> library is also included, 
-      as it is used by the included database adapters. You will need to install 
+      All dependencies are specified in <tt>package.json</tt> file but include <tt>underscore.js</tt>,
+      <tt>q.js</tt>, and the <tt>generic-pool</tt> library. You then need to install 
       either <tt>mysql</tt>, <tt>pg</tt>, or <tt>sqlite3</tt> from <tt>npm</tt> if you wish 
       to use one of these databases with node.js, or create your own client 
       adapter and specify it in <a href="#Initialize">Knex.Initialize</a>.
@@ -431,7 +457,7 @@ Knex.Initialize({
 // SELECT DISTINCT 'first_name' FROM customers
 Knex('customers')
   .distinct()
-  .select('first_name').then(...
+  .select('first_name')
 </pre>
 
     <p id="Builder-join">
@@ -444,7 +470,7 @@ Knex('customers')
 Knex('customers')
   .where('order_date', '>', Knex.raw('NOW()'))
   .distinct()
-  .select('id', 'name').then(...
+  .select('id', 'name')
 </pre>
 
 <pre>
@@ -452,7 +478,7 @@ Knex('customers')
 Knex('customers')
   .where('order_date', '>', Knex.raw('NOW()'))
   .distinct()
-  .select('id', 'name').then(...
+  .select('id', 'name')
 </pre>      
       
     </p>
@@ -480,7 +506,7 @@ Knex('users')
   .orderBy('name', 'desc')
   .having('count', '>', 100)
   .select()
-  .then(...
+  
 </pre>
     </p>
 
@@ -500,7 +526,7 @@ Knex('users')
   .limit(10)
   .offset(30)
   .select()
-  .then(...
+  
 </pre>
 
     </p>
@@ -513,97 +539,97 @@ Knex('users')
     </p>
 
     <p id="Builder-select">
-      <b class="header">select</b><code>.select([*columns]).then(...</code>
+      <b class="header">select</b><code>.select([*columns])</code>
       <br />
       Creates a <tt>select</tt> query, taking an optional array of columns for the query, defaulting
       to <tt>*</tt> if none are specified. Returns a promise, passing the Rows returned from the database query.
 
 <pre>
   // generates: "INSERT INTO `books`
-  Knex('books').insert({title: 'Slaughterhouse Five'}).then(...
+  Knex('books').insert({title: 'Slaughterhouse Five'})
   
   // generates "select * from `books`;"
   Knex('books')
     .insert([{title: 'Great Gatsby'}, {title: ''}])
-    .then(...
+    
 </pre>
     </p>
 
     <p id="Builder-insert">
-      <b class="header">insert</b><code>.insert(data).then(...</code>
+      <b class="header">insert</b><code>.insert(data)</code>
       <br />
       Creates an <tt>insert</tt> query, taking either a hash of properties to be inserted into the row, or
       an array of inserts, to be executed as a single insert command.
 
 <pre>
   // generates: "select `title`, `author`, `year` from `books`;"
-  Knex('books').select('title', 'author', 'year').then(...
+  Knex('books').select('title', 'author', 'year')
   
   // generates "select * from `books`;"
-  Knex('books').select().then(...
+  Knex('books').select()
 </pre>
     </p>
 
     <p id="Builder-update">
-      <b class="header">update</b><code>.update(data).then(...</code>
+      <b class="header">update</b><code>.update(data)</code>
       <br />
       Creates an <tt>update</tt> query, taking either a hash of properties to be updated into the row, or
       an array of updates, to be executed as a single update command.
 
 <pre>
   // generates: "select `title`, `author`, `year` from `books`;"
-  Knex('books').select(['title', 'author', 'year']).then(...
+  Knex('books').select('title', 'author', 'year')
   
   // generates "select * from `books`;"
-  Knex('books').select().then(...
+  Knex('books').select()
 </pre>
     </p>
 
     <p id="Builder-del">
-      <b class="header">del / delete</b><code>.del().then(...</code>
+      <b class="header">del / delete</b><code>.del()</code>
       <br />
       Aliased to <tt>del</tt> as <tt>delete</tt> is a reserved word in javascript, this method deletes
       one or more rows, based on the conditions specified in the query.
     </p>
 
     <p id="Builder-count">
-      <b class="header">count</b><code>.count(column).then(...</code>
+      <b class="header">count</b><code>.count(column)</code>
       <br />
       Performs a count on the specified column.
     </p>
 
     <p id="Builder-min">
-      <b class="header">min</b><code>.min(column).then(...</code>
+      <b class="header">min</b><code>.min(column)</code>
       <br />
       Gets the minimum value for the specified column.
     </p>
 
     <p id="Builder-max">
-      <b class="header">max</b><code>.max(column).then(...</code>
+      <b class="header">max</b><code>.max(column)</code>
       <br />
       Gets the maximum value for the specified column.
     </p>
 
     <p id="Builder-sum">
-      <b class="header">sum</b><code>.sum(column).then(...</code>
+      <b class="header">sum</b><code>.sum(column)</code>
       <br />
       Retrieve the sum of the values of a given column.
     </p>
 
     <p id="Builder-increment">
-      <b class="header">increment</b><code>.increment(column, value).then(...</code>
+      <b class="header">increment</b><code>.increment(column, value)</code>
       <br />
       Increments a column's value by the specified amount.
     </p>
 
     <p id="Builder-decrement">
-      <b class="header">decrement</b><code>.decrement(column, value).then(...</code>
+      <b class="header">decrement</b><code>.decrement(column, value)</code>
       <br />
       Decrements a column's value by the specified amount.
     </p>
 
     <p id="Builder-exists">
-      <b class="header">exists</b><code>.exists(column, value).then(...</code>
+      <b class="header">exists</b><code>.exists(column, value)</code>
       <br />
       Decrements a column's value by the specified amount.
     </p>
@@ -646,37 +672,12 @@ Knex.Transaction(function(t) {
 }, function() {
   console.log('Error saving the books.');
 });
-
-
-Knex.Transaction(function (t) {
-  
-  Knex('pieces')
-    .transacting(t)
-    .insert([
-      {name: 'Rods'},
-      {name: 'Connectors'}
-    ]).then(function (rows) {
-      
-      Knex('piece_descriptions')
-        .transacting(t)
-        .insert([{
-          description: 
-        }, {
-
-        }])
-        .then(function () {
-          t.resolve();
-        });
-    
-    });
-
-});
 </pre>
     
     <h2 id="Schema">Knex.Schema</h2>
 
     <p id="Schema-createTable">
-      <b class="header">createTable</b><code>Knex.Schema.createTable(tableName, callback).then(...</code>
+      <b class="header">createTable</b><code>Knex.Schema.createTable(tableName, callback)</code>
       <br />
       Creates a new table on the database, with a callback function to modify the table's 
       structure, using the <a href="#Schema-Building">schema-building</a> commands.
@@ -692,19 +693,19 @@ Knex.Schema.create('users', function (table) {
 </pre>
 
     <p id="Schema-dropTable">
-      <b class="header">dropTable</b><code>Knex.Schema.dropTable(tableName).then(...</code>
+      <b class="header">dropTable</b><code>Knex.Schema.dropTable(tableName)</code>
       <br />
       Drops a table, specified by <tt>tableName</tt>.
     </p>
 
     <p id="Schema-dropTableIfExists">
-      <b class="header">dropTableIfExists</b><code>Knex.Schema.dropTableIfExists(tableName).then(...</code>
+      <b class="header">dropTableIfExists</b><code>Knex.Schema.dropTableIfExists(tableName)</code>
       <br />
       Drops a table conditionally if the table exists, specified by <tt>tableName</tt>.
     </p>
 
     <p id="Schema-table">
-      <b class="header">table</b><code>Knex.Schema.table(tableName, callback).then(...</code>
+      <b class="header">table</b><code>Knex.Schema.table(tableName, callback)</code>
       <br />
       Chooses a database table, and then modifies the table, using the <a href="#Schema-Building">Schema Building</a>
       functions inside of the callback, returning a promise to indicate when the queries are complete.
@@ -843,12 +844,6 @@ Knex.Schema.table('users', function (table) {
     </p>    
 
     <h2 id="Knex-client">Knex.client</h2>
-
-    <p id="Knex-client-getConnection">
-      <b class="header">getConnection</b><code>Knex.client.getConnection()</code>
-      <br />
-      Typically not needed, unless you need a direct 
-    </p>    
 
 
     <h2 id="faq">F.A.Q.</h2>

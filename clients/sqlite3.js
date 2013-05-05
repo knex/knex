@@ -42,12 +42,12 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
 
           if (builder.type === 'select') {
             resp = base.skim(resp);
-          }
-          if (builder.type === 'insert') {
+          } else if (builder.type === 'insert') {
             resp = [this.lastID];
-          }
-          if (builder.type === 'delete' || builder.type === 'update') {
+          } else if (builder.type === 'delete' || builder.type === 'update') {
             resp = this.changes;
+          } else {
+            resp = '';
           }
 
           dfd.resolve(resp);
@@ -127,9 +127,10 @@ Sqlite3Client.grammar = {
 
   // Compile a truncate table statement into SQL.
   compileTruncate: function (qb) {
-    var sql = {};
-    sql['delete from sqlite_sequence where name = ?'] = [qb.from];
-    sql['delete from ' + this.wrapTable(query.from)] = [];
+    var sql = [];
+    var table = this.wrapTable(qb.table);
+    sql.push('delete from sqlite_sequence where name = ' + table);
+    sql.push('delete from ' + table);
     return sql;
   }
 };

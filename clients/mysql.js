@@ -39,12 +39,12 @@ _.extend(MysqlClient.prototype, base.protoProps, {
 
           if (builder.type === 'select') {
             resp = base.skim(resp);
-          }
-          if (builder.type === 'insert') {
+          } else if (builder.type === 'insert') {
             resp = [resp.insertId];
-          }
-          if (builder.type === 'delete' || builder.type === 'update') {
+          } else if (builder.type === 'delete' || builder.type === 'update') {
             resp = resp.affectedRows;
+          } else {
+            resp = '';
           }
 
           dfd.resolve(resp);
