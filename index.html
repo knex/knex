@@ -223,6 +223,7 @@
     </a>
     <ul class="toc_section">
       <li>– <a href="#Builder-main"><b>constructor</b></a></li>
+      <li>– <a href="#Builder-select">select</a></li>
       <li>– <a href="#Builder-from">from</a></li>
       <li>– <a href="#Builder-where">where <b>16 methods</b></a></li>
       <li>– <a href="#Builder-distinct">distinct</a></li>
@@ -232,7 +233,6 @@
       <li>– <a href="#Builder-having">having</a></li>
       <li>– <a href="#Builder-offset">offset</a></li>
       <li>– <a href="#Builder-limit">limit</a></li>
-      <li>– <a href="#Builder-select">select</a></li>
       <li>– <a href="#Builder-insert">insert *</a></li>
       <li>– <a href="#Builder-update">update *</a></li>
       <li>– <a href="#Builder-del">del / delete *</a></li>
@@ -394,14 +394,31 @@ Knex.Initialize({
     </p>
 
     <p id="Builder-main">
-      <b class="header">Knex / Knex.Builder</b><code>Knex('tableName')...</code>
+      <b class="header">Knex</b><code>Knex(tableName)...</code>
       <br />
-      To begin working with the Knex query builder, you specify a table name by calling either 
-      <tt>new Knex.Builder().table('tableName')</tt>, <tt>new Knex.Builder('tableName')</tt> or the 
-      shorthand <tt>Knex('tableName')</tt>. This returns a chainable interface, similar to a jQuery chain, 
-      allowing you to specify additional query parameters, eventually calling one of the promise 
-      yielding methods <a href="#Builder-promises">listed below</a>.
+      The Knex query builder starts off by specifying a <b>tableName</b> you wish to query against,
+      which returns a chainable interface, similar to a jQuery chain. You can then call any additional 
+      query builder methods needed to construct the query, eventually calling either 
+      <a href="#Builder-then">then</a> or <a href="#Builder-exec">exec</a>, to execute the query with a
+      promise or a callback, respectively.
     </p>
+
+    <p id="Builder-select">
+      <b class="header">select</b><code>.select([*columns])</code>
+      <br />
+      Creates a <tt>select</tt> query, taking an optional array of <b>columns</b> for the query, eventually
+      defaulting to <tt>*</tt> if none are specified when the query is built. The response of a select call will
+      return with the 
+    </p>
+
+<pre>
+  // generates: "select `title`, `author`, `year` from `books`;"
+  Knex('books').select('title', 'author', 'year')
+  
+  // generates "select * from `books`;"
+  Knex('books').select()
+</pre>
+
 
     <p id="Builder-from">
       <b class="header">from</b><code>.from([tableName])</code>
@@ -412,7 +429,7 @@ Knex.Initialize({
     </p>
 
     <p id="Builder-where">
-      <b class="header">where</b><code>.where(~mixed~)</code>
+      <b class="header">where</b><code>.where(~dynamic~)</code>
       <br />
       One of the most flexible and imporant pieces of Knex, is the <tt>where</tt> clause generation.
       <br />
@@ -520,29 +537,21 @@ Knex('users')
       <b class="header">limit</b><code>.limit(value)</code>
       <br />
       Adds a <tt>limit</tt> clause to the query.
+    </p>
 
 <pre>
 Knex('users')
   .limit(10)
   .offset(30)
-  .select()
-  
+  .select()  
 </pre>
 
-    </p>
-
-    <h3 id="Builder-promises">Promise Methods:</h3>
-
-    <p>The promise methods finish up the query, assembling the database query string and
-      parameters, passes them to the <a href="#Knex.runQuery">Knex.runQuery</a> method, 
-      and returns a promise - resolving with the result of the query.
-    </p>
-
-    <p id="Builder-select">
-      <b class="header">select</b><code>.select([*columns])</code>
+    <p id="Builder-insert">
+      <b class="header">insert</b><code>.insert(data)</code>
       <br />
-      Creates a <tt>select</tt> query, taking an optional array of columns for the query, defaulting
-      to <tt>*</tt> if none are specified. Returns a promise, passing the Rows returned from the database query.
+      Creates an <tt>insert</tt> query, taking either a hash of properties to be inserted into the row, or
+      an array of inserts, to be executed as a single insert command.
+    </p>
 
 <pre>
   // generates: "INSERT INTO `books`
@@ -553,22 +562,7 @@ Knex('users')
     .insert([{title: 'Great Gatsby'}, {title: ''}])
     
 </pre>
-    </p>
 
-    <p id="Builder-insert">
-      <b class="header">insert</b><code>.insert(data)</code>
-      <br />
-      Creates an <tt>insert</tt> query, taking either a hash of properties to be inserted into the row, or
-      an array of inserts, to be executed as a single insert command.
-
-<pre>
-  // generates: "select `title`, `author`, `year` from `books`;"
-  Knex('books').select('title', 'author', 'year')
-  
-  // generates "select * from `books`;"
-  Knex('books').select()
-</pre>
-    </p>
 
     <p id="Builder-update">
       <b class="header">update</b><code>.update(data)</code>

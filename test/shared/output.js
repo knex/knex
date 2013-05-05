@@ -192,7 +192,7 @@ module.exports = {
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test@example.com','Test','User',1,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',2,new Date()]
       },
       sqlite3: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"',
+        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union all select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"',
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test@example.com','Test','User',1,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',2,new Date()]
       }
     },
@@ -206,7 +206,7 @@ module.exports = {
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',2,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',2,new Date()]
       },
       sqlite3: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"',
+        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union all select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"',
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',2,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',2,new Date()]
       }
     },
@@ -254,6 +254,20 @@ module.exports = {
     },
     'selects.2': {
       mysql: {
+        sql: 'select * from `accounts` order by `id` asc',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "accounts" order by "id" asc',
+        bindings: []
+      },
+      sqlite3: {
+        sql: 'select * from "accounts" order by "id" collate nocase asc',
+        bindings: []
+      }
+    },
+    'selects.3': {
+      mysql: {
         sql: 'select `first_name`, `last_name` from `accounts` where `id` = ?',
         bindings: [1]
       },
@@ -266,7 +280,7 @@ module.exports = {
         bindings: [1]
       }
     },
-    'selects.3': {
+    'selects.4': {
       mysql: {
         sql: 'select `email`, `logins` from `accounts` where `id` > ?',
         bindings: [1]
@@ -280,23 +294,23 @@ module.exports = {
         bindings: [1]
       }
     },
-    'selects.4': {
-      mysql: {
-        sql: 'select * from `accounts` where `id` = ?',
-        bindings: [1]
-      },
-      postgres: {
-        sql: 'select * from "accounts" where "id" = ?',
-        bindings: [1]
-      },
-      sqlite3: {
-        sql: 'select * from "accounts" where "id" = ?',
-        bindings: [1]
-      }
-    },
     'selects.5': {
       mysql: {
         sql: 'select * from `accounts` where `id` = ?',
+        bindings: [1]
+      },
+      postgres: {
+        sql: 'select * from "accounts" where "id" = ?',
+        bindings: [1]
+      },
+      sqlite3: {
+        sql: 'select * from "accounts" where "id" = ?',
+        bindings: [1]
+      }
+    },
+    'selects.6': {
+      mysql: {
+        sql: 'select * from `accounts` where `id` = ?',
         bindings: [undefined]
       },
       postgres: {
@@ -308,7 +322,7 @@ module.exports = {
         bindings: [undefined]
       }
     },
-    'selects.6': {
+    'selects.7': {
       mysql: {
         sql: 'select `first_name`, `email` from `accounts` where `id` = ?',
         bindings: [null]
@@ -322,7 +336,7 @@ module.exports = {
         bindings: [null]
       }
     },
-    'selects.7': {
+    'selects.8': {
       mysql: {
         sql: 'select * from `accounts` where `id` = ?',
         bindings: [0]
@@ -336,7 +350,7 @@ module.exports = {
         bindings: [0]
       }
     },
-    'selects.8': {
+    'selects.9': {
       mysql: {
         sql: 'select distinct `email` from `accounts` where `logins` = ?',
         bindings: [2]
@@ -350,7 +364,7 @@ module.exports = {
         bindings: [2]
       }
     },
-    'selects.9': {
+    'selects.10': {
       mysql: {
         sql: 'select distinct `email` from `accounts`',
         bindings: []
@@ -364,7 +378,7 @@ module.exports = {
         bindings: []
       }
     },
-    'selects.10': {
+    'selects.11': {
       mysql: {
         sql: 'select `first_name`, `last_name` from `accounts` where `id` = ? or `id` > ?',
         bindings: [1,2]
@@ -378,7 +392,7 @@ module.exports = {
         bindings: [1,2]
       }
     },
-    'selects.11': {
+    'selects.12': {
       mysql: {
         sql: 'select `first_name`, `last_name`, `about` from `accounts` where `id` = ? and `email` = ?',
         bindings: [1,'test@example.com']
@@ -392,7 +406,7 @@ module.exports = {
         bindings: [1,'test@example.com']
       }
     },
-    'selects.12': {
+    'selects.13': {
       mysql: {
         sql: 'select * from `accounts` where (`id` = ? or `id` = ?)',
         bindings: [2,3]
@@ -406,7 +420,7 @@ module.exports = {
         bindings: [2,3]
       }
     },
-    'selects.13': {
+    'selects.14': {
       mysql: {
         sql: 'select * from `accounts` where `id` in (?, ?, ?)',
         bindings: [1,2,3]
@@ -420,7 +434,7 @@ module.exports = {
         bindings: [1,2,3]
       }
     },
-    'selects.14': {
+    'selects.15': {
       mysql: {
         sql: 'select * from `accounts` where `email` = ? or `id` in (?, ?, ?)',
         bindings: ['test@example.com',2,3,4]
@@ -434,7 +448,7 @@ module.exports = {
         bindings: ['test@example.com',2,3,4]
       }
     },
-    'selects.15': {
+    'selects.16': {
       mysql: {
         sql: 'select * from `accounts` where exists (select `id` from `test_table_two` where `id` = ?)',
         bindings: [1]
@@ -448,7 +462,7 @@ module.exports = {
         bindings: [1]
       }
     },
-    'selects.16': {
+    'selects.17': {
       mysql: {
         sql: 'select * from `accounts` where `id` between ? and ?',
         bindings: [1,100]
@@ -462,7 +476,7 @@ module.exports = {
         bindings: [1,100]
       }
     },
-    'selects.17': {
+    'selects.18': {
       mysql: {
         sql: 'select * from `accounts` where `id` between ? and ? or `id` between ? and ?',
         bindings: [1,100,200,300]
@@ -476,7 +490,7 @@ module.exports = {
         bindings: [1,100,200,300]
       }
     },
-    'selects.18': {
+    'selects.19': {
       mysql: {
         sql: 'select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`',
         bindings: []
@@ -490,7 +504,7 @@ module.exports = {
         bindings: []
       }
     },
-    'selects.19': {
+    'selects.20': {
       mysql: {
         sql: 'select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`',
         bindings: []
@@ -504,7 +518,7 @@ module.exports = {
         bindings: []
       }
     },
-    'selects.20': {
+    'selects.21': {
       mysql: {
         sql: 'select * from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` or `accounts`.`email` = `test_table_two`.`details`',
         bindings: []
@@ -575,12 +589,12 @@ module.exports = {
     'inserts.3': {
       mysql: [4],
       postgres: [4,5],
-      sqlite3: [4]
+      sqlite3: [5]
     },
     'inserts.4': {
       mysql: [6],
       postgres: [6],
-      sqlite3: [5]
+      sqlite3: [6]
     },
     'updates.1': {
       mysql: 1,
@@ -717,28 +731,28 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
         phone: null
       },{
         id: 2,
         first_name: 'Test',
         last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
+        email: 'test@example.com',
+        logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       },{
         id: 3,
         first_name: 'Test',
         last_name: 'User',
-        email: 'test@example.com',
-        logins: 1,
+        email: 'test2@example.com',
+        logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       },{
         id: 4,
@@ -747,8 +761,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619645,
-        updated_at: 1367712619645,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
         phone: null
       },{
         id: 5,
@@ -757,27 +771,222 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619649,
-        updated_at: 1367712619649,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
+        phone: null
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950034,
+        updated_at: 1367713950034,
         phone: null
       }]
     },
     'selects.2': {
       mysql: [{
+        id: 1,
         first_name: 'User',
-        last_name: 'Test'
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 4,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 5,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
       }],
       postgres: [{
+        id: 1,
         first_name: 'User',
-        last_name: 'Test'
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 4,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 5,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
       }],
       sqlite3: [{
+        id: 1,
         first_name: 'User',
-        last_name: 'Test'
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
+        phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
+        phone: null
+      },{
+        id: 4,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
+        phone: null
+      },{
+        id: 5,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
+        phone: null
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950034,
+        updated_at: 1367713950034,
+        phone: null
       }]
     },
     'selects.3': {
       mysql: [{
+        first_name: 'User',
+        last_name: 'Test'
+      }],
+      postgres: [{
+        first_name: 'User',
+        last_name: 'Test'
+      }],
+      sqlite3: [{
+        first_name: 'User',
+        last_name: 'Test'
+      }]
+    },
+    'selects.4': {
+      mysql: [{
         email: 'test@example.com',
         logins: 1
       },{
@@ -810,9 +1019,6 @@ module.exports = {
         logins: 2
       }],
       sqlite3: [{
-        email: 'test2@example.com',
-        logins: 2
-      },{
         email: 'test@example.com',
         logins: 1
       },{
@@ -821,9 +1027,15 @@ module.exports = {
       },{
         email: 'test2@example.com',
         logins: 2
+      },{
+        email: 'test2@example.com',
+        logins: 2
+      },{
+        email: 'test2@example.com',
+        logins: 2
       }]
     },
-    'selects.4': {
+    'selects.5': {
       mysql: [{
         id: 1,
         first_name: 'User',
@@ -853,15 +1065,10 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
         phone: null
       }]
-    },
-    'selects.5': {
-      mysql: [],
-      postgres: [],
-      sqlite3: []
     },
     'selects.6': {
       mysql: [],
@@ -874,168 +1081,101 @@ module.exports = {
       sqlite3: []
     },
     'selects.8': {
-      mysql: [{
-        email: 'test2@example.com'
-      }],
-      postgres: [{
-        email: 'test2@example.com'
-      }],
-      sqlite3: [{
-        email: 'test2@example.com'
-      }]
-    },
-    'selects.9': {
-      mysql: [{
-        email: 'test-updated@example.com'
-      },{
-        email: 'test@example.com'
-      },{
-        email: 'test2@example.com'
-      }],
-      postgres: [{
-        email: 'test-updated@example.com'
-      },{
-        email: 'test2@example.com'
-      },{
-        email: 'test@example.com'
-      }],
-      sqlite3: [{
-        email: 'test-updated@example.com'
-      },{
-        email: 'test2@example.com'
-      },{
-        email: 'test@example.com'
-      }]
-    },
-    'selects.10': {
-      mysql: [{
-        first_name: 'User',
-        last_name: 'Test'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      }],
-      postgres: [{
-        first_name: 'Test',
-        last_name: 'User'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      },{
-        first_name: 'User',
-        last_name: 'Test'
-      }],
-      sqlite3: [{
-        first_name: 'User',
-        last_name: 'Test'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      },{
-        first_name: 'Test',
-        last_name: 'User'
-      }]
-    },
-    'selects.11': {
       mysql: [],
       postgres: [],
       sqlite3: []
     },
-    'selects.12': {
+    'selects.9': {
       mysql: [{
-        id: 2,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
-        id: 3,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
+        email: 'test2@example.com'
       }],
       postgres: [{
-        id: 2,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
-        id: 3,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
+        email: 'test2@example.com'
       }],
       sqlite3: [{
-        id: 2,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
-        phone: null
-      },{
-        id: 3,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
-        phone: null
+        email: 'test2@example.com'
       }]
+    },
+    'selects.10': {
+      mysql: [{
+        email: 'test-updated@example.com'
+      },{
+        email: 'test@example.com'
+      },{
+        email: 'test2@example.com'
+      }],
+      postgres: [{
+        email: 'test-updated@example.com'
+      },{
+        email: 'test2@example.com'
+      },{
+        email: 'test@example.com'
+      }],
+      sqlite3: [{
+        email: 'test-updated@example.com'
+      },{
+        email: 'test@example.com'
+      },{
+        email: 'test2@example.com'
+      }]
+    },
+    'selects.11': {
+      mysql: [{
+        first_name: 'User',
+        last_name: 'Test'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      }],
+      postgres: [{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'User',
+        last_name: 'Test'
+      }],
+      sqlite3: [{
+        first_name: 'User',
+        last_name: 'Test'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      }]
+    },
+    'selects.12': {
+      mysql: [],
+      postgres: [],
+      sqlite3: []
     },
     'selects.13': {
       mysql: [{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
         id: 2,
         first_name: 'Test',
         last_name: 'User',
@@ -1076,51 +1216,41 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
         phone: null
-      },{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
       }],
       sqlite3: [{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
-        phone: null
-      },{
         id: 2,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
-        phone: null
-      },{
-        id: 3,
         first_name: 'Test',
         last_name: 'User',
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       }]
     },
     'selects.14': {
       mysql: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
         id: 2,
         first_name: 'Test',
         last_name: 'User',
@@ -1132,16 +1262,6 @@ module.exports = {
         phone: null
       },{
         id: 3,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
-        id: 4,
         first_name: 'Test',
         last_name: 'User',
         email: 'test2@example.com',
@@ -1172,60 +1292,50 @@ module.exports = {
         updated_at: new Date(),
         phone: null
       },{
-        id: 4,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         created_at: new Date(),
         updated_at: new Date(),
         phone: null
       }],
       sqlite3: [{
-        id: 2,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
         phone: null
       },{
-        id: 3,
+        id: 2,
         first_name: 'Test',
         last_name: 'User',
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       },{
-        id: 4,
+        id: 3,
         first_name: 'Test',
         last_name: 'User',
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619645,
-        updated_at: 1367712619645,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       }]
     },
     'selects.15': {
       mysql: [{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
         id: 2,
         first_name: 'Test',
         last_name: 'User',
@@ -1247,26 +1357,6 @@ module.exports = {
         phone: null
       },{
         id: 4,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
-        id: 5,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
-        id: 6,
         first_name: 'Test',
         last_name: 'User',
         email: 'test2@example.com',
@@ -1306,66 +1396,26 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
         phone: null
-      },{
-        id: 5,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
-        id: 6,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
       }],
       sqlite3: [{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
-        phone: null
-      },{
         id: 2,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
-        phone: null
-      },{
-        id: 3,
         first_name: 'Test',
         last_name: 'User',
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       },{
         id: 4,
@@ -1374,18 +1424,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619645,
-        updated_at: 1367712619645,
-        phone: null
-      },{
-        id: 5,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619649,
-        updated_at: 1367712619649,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
         phone: null
       }]
     },
@@ -1452,16 +1492,6 @@ module.exports = {
         phone: null
       }],
       postgres: [{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null
-      },{
         id: 2,
         first_name: 'Test',
         last_name: 'User',
@@ -1511,6 +1541,16 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
         phone: null
+      },{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
       }],
       sqlite3: [{
         id: 1,
@@ -1519,28 +1559,28 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
         phone: null
       },{
         id: 2,
         first_name: 'Test',
         last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
+        email: 'test@example.com',
+        logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       },{
         id: 3,
         first_name: 'Test',
         last_name: 'User',
-        email: 'test@example.com',
-        logins: 1,
+        email: 'test2@example.com',
+        logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       },{
         id: 4,
@@ -1549,8 +1589,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619645,
-        updated_at: 1367712619645,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
         phone: null
       },{
         id: 5,
@@ -1559,8 +1599,18 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619649,
-        updated_at: 1367712619649,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
+        phone: null
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950034,
+        updated_at: 1367713950034,
         phone: null
       }]
     },
@@ -1627,6 +1677,191 @@ module.exports = {
         phone: null
       }],
       postgres: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 4,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 5,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      }],
+      sqlite3: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
+        phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
+        phone: null
+      },{
+        id: 4,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
+        phone: null
+      },{
+        id: 5,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
+        phone: null
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950034,
+        updated_at: 1367713950034,
+        phone: null
+      }]
+    },
+    'selects.18': {
+      mysql: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 4,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 5,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null
+      }],
+      postgres: [{
         id: 2,
         first_name: 'Test',
         last_name: 'User',
@@ -1694,28 +1929,28 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
         phone: null
       },{
         id: 2,
         first_name: 'Test',
         last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
+        email: 'test@example.com',
+        logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       },{
         id: 3,
         first_name: 'Test',
         last_name: 'User',
-        email: 'test@example.com',
-        logins: 1,
+        email: 'test2@example.com',
+        logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       },{
         id: 4,
@@ -1724,8 +1959,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619645,
-        updated_at: 1367712619645,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
         phone: null
       },{
         id: 5,
@@ -1734,47 +1969,19 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619649,
-        updated_at: 1367712619649,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
         phone: null
-      }]
-    },
-    'selects.18': {
-      mysql: [{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null,
-        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
-      }],
-      postgres: [{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: new Date(),
-        updated_at: new Date(),
-        phone: null,
-        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
-      }],
-      sqlite3: [{
-        id: 1,
-        first_name: 'User',
-        last_name: 'Test',
-        email: 'test-updated@example.com',
-        logins: 1,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
-        phone: null,
-        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+        created_at: 1367713950034,
+        updated_at: 1367713950034,
+        phone: null
       }]
     },
     'selects.19': {
@@ -1789,6 +1996,44 @@ module.exports = {
         updated_at: new Date(),
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      }],
+      postgres: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      }],
+      sqlite3: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
+        phone: null,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      }]
+    },
+    'selects.20': {
+      mysql: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test-updated@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+        phone: null,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
         id: 2,
         first_name: 'Test',
@@ -1919,30 +2164,30 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
         id: 2,
         first_name: 'Test',
         last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
+        email: 'test@example.com',
+        logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null,
         details: null
       },{
         id: 3,
         first_name: 'Test',
         last_name: 'User',
-        email: 'test@example.com',
-        logins: 1,
+        email: 'test2@example.com',
+        logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null,
         details: null
       },{
@@ -1952,8 +2197,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619645,
-        updated_at: 1367712619645,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
         phone: null,
         details: null
       },{
@@ -1963,13 +2208,24 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619649,
-        updated_at: 1367712619649,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
+        phone: null,
+        details: null
+      },{
+        id: 6,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950034,
+        updated_at: 1367713950034,
         phone: null,
         details: null
       }]
     },
-    'selects.20': {
+    'selects.21': {
       mysql: [{
         id: 1,
         first_name: 'User',
@@ -2123,8 +2379,8 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
         phone: null,
         account_id: 1,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
@@ -2132,23 +2388,11 @@ module.exports = {
         id: null,
         first_name: 'Test',
         last_name: 'User',
-        email: 'test2@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
-        phone: null,
-        account_id: null,
-        details: null
-      },{
-        id: null,
-        first_name: 'Test',
-        last_name: 'User',
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619641,
-        updated_at: 1367712619641,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null,
         account_id: null,
         details: null
@@ -2159,8 +2403,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619645,
-        updated_at: 1367712619645,
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null,
         account_id: null,
         details: null
@@ -2171,8 +2415,32 @@ module.exports = {
         email: 'test2@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619649,
-        updated_at: 1367712619649,
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
+        phone: null,
+        account_id: null,
+        details: null
+      },{
+        id: null,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950030,
+        updated_at: 1367713950030,
+        phone: null,
+        account_id: null,
+        details: null
+      },{
+        id: null,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950034,
+        updated_at: 1367713950034,
         phone: null,
         account_id: null,
         details: null
@@ -2238,8 +2506,18 @@ module.exports = {
         email: 'test-updated@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1367712619632,
-        updated_at: 1367712619632,
+        created_at: 1367713950019,
+        updated_at: 1367713950019,
+        phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: 1367713950027,
+        updated_at: 1367713950027,
         phone: null
       }]
     }

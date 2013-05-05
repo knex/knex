@@ -6,6 +6,12 @@ module.exports = function(Knex, dbName, handler, type) {
     it('runs with no conditions', function(ok) {
       Knex('accounts').select().then(handler(ok), ok);
     });
+
+    it('uses `orderBy`', function(ok) {
+      Knex('accounts')
+        .select()
+        .orderBy('id', 'asc').then(handler(ok), ok);
+    }),
     
     it('does simple "where" cases', function(ok) {
       Q.all([

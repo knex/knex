@@ -122,7 +122,7 @@ Sqlite3Client.grammar = {
       columns.push(joinedColumns);
     }
 
-    return "insert into " + table + " (" + names + ") select " + columns.join(' union select ');
+    return "insert into " + table + " (" + names + ") select " + columns.join(' union all select ');
   },
 
   // Compile a truncate table statement into SQL.
