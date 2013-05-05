@@ -337,9 +337,9 @@ $ npm install sqlite3
     <h2 id="Initialize">Knex.Initialize</h2>
 
     <p>
-      <tt>Knex.Initialize</tt> is the initializing function that must be called before using Knex,
-      with multiple parameters. The <tt>client</tt> parameter is required and determines which
-      client adapter will be used with the library.
+      <tt>Knex.Initialize</tt> is the initializing function that must be called prior to using
+      <b>Knex</b>, accepting a few parameters. The <tt>client</tt> parameter is required 
+      and determines which client adapter will be used with the library.
     </p>
 
 <pre>
@@ -353,13 +353,42 @@ Knex.Initialize({
     charset  : 'utf8'
   }
 });
+</pre>
 
-Knex.Initialize({
+  <p>
+    It is also possible to use <b>Knex</b> with multiple database connection instances if you'd like, 
+    by creating named instances with <tt>Knex.Initialize</tt>. To do this, pass the name of the
+    connection as the first parameter into <b>Knex</b> and it will return that instance, which may
+    also be referenced by name under <tt>Knex.Instances</tt>.
+  </p>
+
+<pre>
+var SqliteDB = Knex.Initialize('sqlitedb', {
   client: 'sqlite',
   connection: {
     database : './testdb'
   }
 });
+
+var MySql2 = Knex.Initialize('mysql2', {
+  client: 'mysql',
+  connection: { ... }
+});
+
+// Knex.Instances['mysql2'] === MySql2;
+// Knex.Instances['sqlitedb'] === SqliteDB;
+
+MySql2('accounts')
+  .select()
+  .then(function(resp) {
+    // ...
+  });
+
+SqliteDB('users')
+  .insert({email: 'test@email.com'})
+  .exec(function(err, resp) {
+    // ...
+  });
 </pre>
 
     <h2 id="Builder">Knex.Builder</h2>
@@ -374,7 +403,7 @@ Knex.Initialize({
     <p id="Builder-main">
       <b class="header">Knex</b><code>Knex(tableName)...</code>
       <br />
-      The Knex query builder starts off by specifying a <b>tableName</b> you wish to query against,
+      The <b>Knex</b> query builder starts off by specifying a <b>tableName</b> you wish to query against,
       which returns a chainable interface, similar to a jQuery chain. You can then call any additional 
       query builder methods needed to construct the query, eventually calling either 
       <a href="#Builder-then">then</a> or <a href="#Builder-exec">exec</a>, to execute the query with a
@@ -391,10 +420,10 @@ Knex.Initialize({
 
 <pre>
   // generates: "select `title`, `author`, `year` from `books`;"
-  Knex('books').select('title', 'author', 'year')
+  Knex('books').select('title', 'author', 'year');
   
   // generates "select * from `books`;"
-  Knex('books').select()
+  Knex('books').select();
 </pre>
 
 
@@ -402,8 +431,8 @@ Knex.Initialize({
       <b class="header">from</b><code>.from([tableName])</code>
       <br />
       Specifies the table used in the current query, replacing the current table name if
-      one has already been specified. If no parameters are specified, it returns the table
-      name specified on the current query.
+      one has already been specified. This is typically used in the sub-queries performed
+      in the ______ methods.
     </p>
 
     <p id="Builder-where">
@@ -425,7 +454,6 @@ Knex.Initialize({
 .where({email: 'test@example.com'}).and('other_key', 2)
 
 </pre>
-
 
 
 
@@ -454,10 +482,10 @@ Knex.Initialize({
     </p>
 
 <pre>
-// SELECT DISTINCT 'first_name' FROM customers
+// select distinct 'first_name' from customers
 Knex('customers')
-  .distinct()
-  .select('first_name')
+  .distinct('first_name', 'last_name')
+  .select()
 </pre>
 
     <p id="Builder-join">
@@ -466,7 +494,7 @@ Knex('customers')
       The <tt>join</tt> builder can be used several different ways
 
 <pre>
-// SELECT DISTINCT 'name' FROM customers WHERE `order_date` > NOW()
+// select distinct 'name' FROM customers WHERE `order_date` > NOW()
 Knex('customers')
   .where('order_date', '>', Knex.raw('NOW()'))
   .distinct()
@@ -474,7 +502,7 @@ Knex('customers')
 </pre>
 
 <pre>
-// SELECT DISTINCT 'name' FROM customers WHERE `order_date` > NOW()
+// select distinct 'name' FROM customers WHERE `order_date` > NOW()
 Knex('customers')
   .where('order_date', '>', Knex.raw('NOW()'))
   .distinct()
@@ -690,7 +718,7 @@ Knex.Schema.create('users', function (table) {
       <b class="header">table</b><code>Knex.Schema.table(tableName, callback)</code>
       <br />
       Chooses a database table, and then modifies the table, using the <a href="#Schema-Building">Schema Building</a>
-      functions inside of the callback, returning a promise to indicate when the queries are complete.
+      functions inside of the callback.
     </p>
 
 <pre>
@@ -841,13 +869,10 @@ Knex.Schema.table('users', function (table) {
 Knex.createTable('accounts', function() {
   t.increments().primary();
   t.string('email').unique();
-
 });
 </pre>
 
-
     <h2 id="Knex-client">Knex.client</h2>
-
 
     <h2 id="faq">F.A.Q.</h2>
 
