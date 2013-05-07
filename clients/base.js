@@ -42,18 +42,6 @@ exports.debug = function(builder, conn) {
 
 exports.protoProps = {
 
-  prepConn: function(builder) {
-    return 'query';
-  },
-
-  prepData: function(data) {
-    return data;
-  },
-
-  prepResp: function(resp) {
-    return resp;
-  },
-
   // Retrieves a connection from the connection pool,
   // returning a promise.
   getConnection: function() {

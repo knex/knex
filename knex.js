@@ -392,11 +392,13 @@
     
     // We use this logic to create sub-builders
     // for the advanced query statements.
-    if (_.isString(table)) {
-      this.table = table;  
-    } else {
-      this.client = table.client;
-      this.grammar = table.grammar;
+    if (table) {
+      if (_.isString(table)) {
+        this.table = table;  
+      } else {
+        this.client = table.client;
+        this.grammar = table.grammar;
+      }
     }
 
     this.reset();
