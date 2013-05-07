@@ -13,8 +13,8 @@ module.exports = function(Knex, type) {
 
       before(function(ok) {
         var val = handler(type, 'schema');
-        require('./lib/schema')(Knex, function() { 
-          setTimeout(function() { ok(); }, 100);
+        require('./lib/schema')(Knex, function() {
+          ok();
         }, function(err) {
           throw new Error(err);
         }, type);
@@ -83,7 +83,7 @@ var handler = function(instance, section) {
         try {
           assert.deepEqual(checkData, data);
         } catch (e) {
-          console.log([checkData, data]);
+          //console.log([checkData, data]);
         }
       }
       item++;

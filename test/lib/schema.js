@@ -1,5 +1,5 @@
 var Q = require('q');
-module.exports = function(Knex, handler, error) {
+module.exports = function(Knex, handler, error, type, db) {
 
   var res = null;
   return Q.all([

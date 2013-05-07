@@ -1,4 +1,4 @@
-//     Knex.js  0.1.0
+//     Knex.js  0.0.0
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -23,7 +23,7 @@
   Knex.VERSION = '0.0.0';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
-  // that is used to generate the sql in one form or another.
+  // used to generate the sql in one form or another.
   var Common = {
 
     _debug: false,
@@ -1450,24 +1450,29 @@
     // Prep the SQL associated with the builder.
     builder.sql = builder.toSql();
     builder.bindings = builder._cleanBindings();
-
-    // Used to handle the schema builder cases, where there is an array of 
-    // sql statements used in the table creation. These definitely need
-    // to be processed on the same connection.
-    if (_.isArray(builder.sql)) {
-      var emptyConnection = !builder._connection;
-      return Q.resolve(builder._connection || builder.client.getConnection()).then(function(conn) {
-        builder._connection = conn;
-        return _.reduce(builder.sql, function(memo, sql) {
-          return memo.then(function () { builder.client.query(_.extend({}, builder, {sql: sql})); });
-        }, Q.resolve()).fin(function() {
-          if (emptyConnection) builder.client.pool.release(conn);
-        });
-      });
+    if (!_.isArray(builder.sql)) builder.sql = [builder.sql];
+    
+    var chain;
+    for (var i = 0, l = builder.sql.length; i < l; i++) {
+      if (chain) {
+        chain.then(multiQuery(builder, i, chain));
+      } else {
+        chain = multiQuery(builder, i);
+      }
     }
 
     // Query on the query builder, which should resolve with a promise.
-    return builder.client.query(builder);
+    return chain;
+  };
+
+  // Sets up a multi-query
+  var multiQuery = function(builder, i, chain) {
+    if (chain) {
+      return function() {
+        return multiQuery(builder, i);
+      };
+    }
+    return builder.client.query(_.extend({}, builder, {sql: builder.sql[i]}));
   };
 
   // Knex.Initialize

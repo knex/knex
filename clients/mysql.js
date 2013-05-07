@@ -28,6 +28,7 @@ _.extend(MysqlClient.prototype, base.protoProps, {
         // Call the querystring and then release the client
         conn.query(builder.sql, builder.bindings, function (err, resp) {
           if (err) { return dfd.reject(err); }
+          
           if (builder._source === 'SchemaBuilder') {
             if (builder.type === 'tableExists') {
               if (resp.length > 0) return dfd.resolve(_.pick(resp, _.keys(resp)));

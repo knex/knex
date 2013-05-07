@@ -15,7 +15,7 @@ module.exports = function(Knex, type) {
       var val = handler(type, 'schema');
       require('./lib/schema')(Knex, val(ok, true), function(err) {
         throw new Error(err);
-      });
+      }, 'String');
     });
 
     describe('Knex.Builder', function() {
@@ -82,7 +82,7 @@ var handler = function(instance, section) {
         try {
           assert.deepEqual(a, b);
         } catch (e) {
-          console.log([a, b]);
+          //console.log([a, b]);
         }
       }
       item++;

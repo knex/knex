@@ -19,7 +19,7 @@
     "generic-pool": "~2.0.3"
   },
   "scripts": {
-    "test": "mocha -b -R spec test/index.js"
+    "test": "mocha -R spec test/index.js"
   },
   "repository": "https://github.com/tgriesser/knex",
   "keywords": [
