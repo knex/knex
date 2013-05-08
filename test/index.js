@@ -6,7 +6,7 @@ var conn   = require(process.env.KNEX_TEST || './shared/config');
 // The output goes here.
 exports.output = {};
 
-var MySql  = Knex.Initialize('mysql', {
+Knex.Initialize({
   client: 'mysql',
   connection: conn.mysql
 });
@@ -37,13 +37,13 @@ describe('Knex', function() {
   var allDone;
 
   Q.all([
-    require('./string')(MySql, 'mysql'),
+    require('./string')(Knex, 'mysql'),
     require('./string')(Postgres, 'postgres'),
     require('./string')(Sqlite3, 'sqlite3')
   ]).then(function() {
     Knex.runQuery = runQuery;
     return Q.all([
-      require('./regular')(MySql, 'mysql'),
+      require('./regular')(Knex, 'mysql'),
       require('./regular')(Postgres, 'postgres'),
       require('./regular')(Sqlite3, 'sqlite3')
     ]);

@@ -16,7 +16,10 @@
 
   // `Knex` is the root namespace and a chainable function: `Knex('tableName')`
   var Knex = function(table) {
-    return new Knex.Builder(table);
+    if (!Knex.Instances['main']) {
+      throw new Error('The Knex instance has not been initialized yet.');
+    }
+    return Knex.Instances['main'](table);
   };
 
   // Keep in sync with package.json
@@ -1429,7 +1432,10 @@
   // `Knex` block... in most cases, we'll check if the value
   // is an instanceof Raw, and if it is, use the supplied value.
   Knex.Raw = function(value) {
-    return new Raw(value);
+    if (!Knex.Instances['main']) {
+      throw new Error('The Knex instance has not been initialized yet.');
+    }
+    return Knex.Instances['main'].Raw(value);
   };
 
   var Raw = function(value) {
@@ -1507,7 +1513,7 @@
     // cases where there is only a single connection.
     if (_.isObject(name)) {
       options = name;
-      name    = 'default';
+      name    = 'main';
     }
     
     // Don't try to initialize the same `name` twice... If necessary,
@@ -1539,23 +1545,23 @@
     client.schemaGrammar = _.extend({}, client.grammar, Knex.SchemaGrammar, client.schemaGrammar);
 
     // If this is named "default" then we're setting this on the Knex
-    if (name === 'default') {
-      Target = Knex;
-    } else {
-      Target = function(table) {
-        var builder = new Target.Builder(table);
-            builder.client = client;
-            builder.grammar = client.grammar;
-        return builder;
-      };
+    Target = function(table) {
+      var builder = new Knex.Builder(table);
+          builder.client = client;
+          builder.grammar = client.grammar;
+      return builder;
+    };
       
-      // Inherit static properties, without any that don't apply except
-      // on the "root" `Knex`.
-      _.extend(Target, _.omit(Knex, 'Initialize', 'Instances', 'VERSION'));
-    }
+    // Inherit static properties, without any that don't apply except
+    // on the "root" `Knex`.
+    _.extend(Target, _.omit(Knex, 'Initialize', 'Instances', 'VERSION'));
 
     // Initialize the schema builder methods.
-    initSchema(Target, client);
+    if (name === 'main') {
+      initSchema(Knex, client);
+    } else {
+      initSchema(Target, client);      
+    }
 
     // Specifically set the client on the current target.
     Target.client = client;
@@ -1583,7 +1589,7 @@
   };
 
   // Named instances of Knex, presumably with different database
-  // connections, the main instance being named "default"...
+  // connections, the main instance being named "main"...
   Knex.Instances = {};
 
   // Export the Knex module
