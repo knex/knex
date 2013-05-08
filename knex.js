@@ -741,7 +741,7 @@
     // Sets the values for a `select` query.
     select: function(columns) {
       if (columns) {
-        this.columns = this.columns.concat(_.isArray(columns) ? columns : _.toArray(arguments)); 
+        push.apply(this.columns, _.isArray(columns) ? columns : _.toArray(arguments)); 
       }
       return this._setType('select');
     },
@@ -1436,6 +1436,21 @@
     this.value = value;
   };
 
+  _.extend(Raw.prototype, Common, {
+
+    _source: 'Raw',
+
+    // Returns the raw sql for the query.
+    toSql: function() {
+      return this.value;
+    },
+
+    // Returns the bindings for a raw query.
+    _cleanBindings: function() {
+      return [];
+    }
+  });
+
   // Knex.runQuery
   // -------
 
@@ -1545,6 +1560,13 @@
     // Specifically set the client on the current target.
     Target.client = client;
     Target.instanceName = name;
+
+    // Executes a Raw query.
+    Target.Raw = function(value) {
+      var raw = new Raw(value);
+          raw.client = client;
+      return raw;
+    };
 
     // Add this instance to the global `Knex` instances, and return.
     Knex.Instances[name] = Target;

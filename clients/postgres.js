@@ -37,6 +37,8 @@ _.extend(PostgresClient.prototype, base.protoProps, {
           if (err) return dfd.reject(err);
           resp || (resp = {});
 
+          if (builder._source === 'Raw') return dfd.resolve(resp);
+
           if (builder._source === 'SchemaBuilder') {
             if (builder.type === 'tableExists') {
               if (resp.rows.length > 0) return dfd.resolve(resp.rows[0]);

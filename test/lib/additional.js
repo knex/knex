@@ -1,4 +1,6 @@
 var Q = require('q');
+var _ = require('underscore');
+
 module.exports = function(Knex, dbName, handler, type) {
 
   it('should truncate a table with truncate', function(ok) {
@@ -15,6 +17,20 @@ module.exports = function(Knex, dbName, handler, type) {
             ok(resp);
           });
       });
+
+  });
+
+  it('should allow raw queries directly with `Knex.Raw`', function(ok) {
+
+    var tables = {
+      mysql: 'SHOW TABLES',
+      postgres: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+      sqlite3: "SELECT name FROM sqlite_master WHERE type='table';"
+    };
+
+    Knex.Raw(tables[dbName]).then(function() {
+      ok();
+    });
 
   });
 
