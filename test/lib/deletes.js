@@ -1,12 +1,12 @@
 
-module.exports = function(Knex, dbName, handler, type) {
+module.exports = function(Knex, dbName, resolver) {
 
   it('should delete an item', function(ok) {
     
     Knex('accounts')
       .where({'email':'test2@example.com'})
       .del()
-      .then(handler(ok), ok);
+      .then(resolver(ok), ok);
 
   });
 

@@ -1,5 +1,5 @@
 
-module.exports = function(Knex, dbName, handler, type) {
+module.exports = function(Knex, dbName, resolver) {
 
   describe(dbName, function() {
 
@@ -7,14 +7,14 @@ module.exports = function(Knex, dbName, handler, type) {
       Knex('accounts')
         .join('test_table_two', 'accounts.id', '=', 'test_table_two.account_id')
         .select('accounts.*', 'test_table_two.details')
-        .then(handler(ok), ok);
+        .then(resolver(ok), ok);
     });
 
     it('takes a fifth parameter to specify the join type', function(ok) {
       Knex('accounts')
         .join('test_table_two', 'accounts.id', '=', 'test_table_two.account_id', 'left')
         .select('accounts.*', 'test_table_two.details')
-        .then(handler(ok), ok);
+        .then(resolver(ok), ok);
     });
 
     it('accepts a callback as the second argument for advanced joins', function(ok) {
@@ -23,7 +23,7 @@ module.exports = function(Knex, dbName, handler, type) {
         join.orOn('accounts.email', '=', 'test_table_two.details');
       }, 'left')
       .select()
-      .then(handler(ok), ok);
+      .then(resolver(ok), ok);
     });
 
   });

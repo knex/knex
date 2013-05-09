@@ -19,34 +19,32 @@ var Postgres = Knex.Initialize('postgres', {
   connection: conn.postgres
 });
 
-var runQuery = Knex.runQuery;
-Knex.runQuery = function(builder) {
-  if (builder.transaction) {
-    if (!builder.transaction.connection) return When.reject(new Error('The transaction has already completed.'));
-    builder._connection = builder.transaction.connection;
-  }
-  // Query on the query builder, which should resolve with a promise.
-  return When({
-    sql: builder.toSql(),
-    bindings: builder._cleanBindings()
+var regularThen = Knex.Builder.prototype.then;
+var then = function(success, error) {
+  var ctx = this;
+  var bindings = ctx._cleanBindings();
+  var chain = regularThen.call(this, function(resp) {
+    return {
+      object: resp,
+      string: {
+        sql: ctx.sql,
+        bindings: bindings        
+      }
+    };
   });
+  return chain.then(success, error);
 };
 
 describe('Knex', function() {
 
-  var allDone;
-
-  When.all([
-    require('./string')(Knex, 'mysql'),
-    require('./string')(Postgres, 'postgres'),
-    require('./string')(Sqlite3, 'sqlite3')
-  ]).then(function() {
-    Knex.runQuery = runQuery;
-    return When.all([
-      require('./regular')(Knex, 'mysql'),
-      require('./regular')(Postgres, 'postgres'),
-      require('./regular')(Sqlite3, 'sqlite3')
-    ]);
+  _.each(['Builder', 'SchemaBuilder', 'Raw'], function(item) {
+    Knex[item].prototype.then = then;
+    Postgres[item].prototype.then = then;
+    Sqlite3[item].prototype.then = then;
   });
+
+  require('./regular')(Knex, 'mysql');
+  require('./regular')(Postgres, 'postgres');
+  require('./regular')(Sqlite3, 'sqlite3');
 
 });
