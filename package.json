@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "a fun sql query builder",
   "main": "knex.js",
   "directories": {
@@ -14,7 +14,7 @@
     "sqlite3": "~2.1.7"
   },
   "dependencies": {
-    "q": "~0.9.3",
+    "when": ">=2.0.1",
     "underscore": "~1.4.4",
     "generic-pool": "~2.0.3"
   },

@@ -1,4 +1,5 @@
-var Q = require('q');
+var When = require('when');
+var nodefn = require('when/node/function');
 var _ = require('underscore');
 
 // Setup is called with the context of the current client.
@@ -45,30 +46,30 @@ exports.protoProps = {
   // Retrieves a connection from the connection pool,
   // returning a promise.
   getConnection: function() {
-    return Q.ninvoke(this.pool, 'acquire');
+    return nodefn.call(this.pool.acquire);
   },
 
   // Releases a connection from the connection pool,
   // returning a promise.
   releaseConnection: function(conn) {
-    return Q.ninvoke(this.pool, 'release', conn);
+    return nodefn.call(this.pool.release, conn);
   },
 
   // Begins a transaction statement on the instance,
   // resolving with the connection of the current transaction.
   startTransaction: function() {
     return this.getConnection().then(function(connection) {
-      return Q.ninvoke(connection, 'query', 'begin;', []).then(function() {
+      return nodefn.call(connection.query, 'begin;', []).then(function() {
         return connection;
       });
     });
   },
 
   finishTransaction: function(type, trans, dfd) {
-    Q.ninvoke(trans.connection, 'query', type + ';', []).then(function() {
+    nodefn.call(trans.connection.query, type + ';', []).then(function() {
       if (type === 'commit') dfd.resolve(resp);
       if (type === 'rollback') dfd.reject(resp);
-    }).fin(function() {
+    }).ensure(function() {
       trans.connection.end();
       trans.connection = null;
     });

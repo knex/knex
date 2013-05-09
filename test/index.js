@@ -1,4 +1,4 @@
-var Q      = require('q');
+var When   = require('when');
 var _      = require('underscore');
 var Knex   = require('../knex');
 var conn   = require(process.env.KNEX_TEST || './shared/config');
@@ -22,11 +22,11 @@ var Postgres = Knex.Initialize('postgres', {
 var runQuery = Knex.runQuery;
 Knex.runQuery = function(builder) {
   if (builder.transaction) {
-    if (!builder.transaction.connection) return Q.reject(new Error('The transaction has already completed.'));
+    if (!builder.transaction.connection) return When.reject(new Error('The transaction has already completed.'));
     builder._connection = builder.transaction.connection;
   }
   // Query on the query builder, which should resolve with a promise.
-  return Q({
+  return When({
     sql: builder.toSql(),
     bindings: builder._cleanBindings()
   });
@@ -36,23 +36,17 @@ describe('Knex', function() {
 
   var allDone;
 
-  Q.all([
+  When.all([
     require('./string')(Knex, 'mysql'),
     require('./string')(Postgres, 'postgres'),
     require('./string')(Sqlite3, 'sqlite3')
   ]).then(function() {
     Knex.runQuery = runQuery;
-    return Q.all([
+    return When.all([
       require('./regular')(Knex, 'mysql'),
       require('./regular')(Postgres, 'postgres'),
       require('./regular')(Sqlite3, 'sqlite3')
     ]);
-  }).then(function() {
-    allDone();
-  }, allDone);
-
-  after(function(ok) {
-    allDone = ok;
   });
 
 });

@@ -1,4 +1,4 @@
-var Q = require('q');
+
 module.exports = function(Knex, dbName, handler, type) {
 
   describe(dbName, function() {

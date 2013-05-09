@@ -1,4 +1,4 @@
-var Q           = require('q');
+var When        = require('when');
 var _           = require('underscore');
 var util        = require('util');
 var base        = require('./base');
@@ -18,9 +18,9 @@ _.extend(MysqlClient.prototype, base.protoProps, {
     var emptyConnection = !builder._connection;
     var debug = this.debug || builder._debug;
     var instance = this;
-    return Q((builder._connection || this.getConnection()))
+    return When((builder._connection || this.getConnection()))
       .then(function(conn) {
-        var dfd = Q.defer();
+        var dfd = When.defer();
 
         // If we have a debug flag set, console.log the query.
         if (debug) base.debug(builder, conn);
@@ -55,7 +55,7 @@ _.extend(MysqlClient.prototype, base.protoProps, {
 
         // Empty the connection after we run the query, unless one was specifically
         // set (in the case of transactions, etc).
-        return dfd.promise.fin(function() {
+        return dfd.promise.ensure(function() {
           if (emptyConnection) instance.pool.release(conn);
         });
       });

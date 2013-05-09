@@ -10,7 +10,7 @@
   
   // Required dependencies.
   var _ = require('underscore');
-  var Q = require('q');
+  var When = require('when');
 
   var push = Array.prototype.push;
 
@@ -705,12 +705,6 @@
     
     // ----------------------------------------------------------------------
 
-    // Determine if any rows exist for the current query.
-    exists: function() {
-      this.count();
-      return this.setType('exists');
-    },
-
     // Retrieve the "count" result of the query.
     count: function(column) {
       return this._aggregate('count', column);
@@ -899,7 +893,7 @@
 
       // Initiate a deferred object, so we know when the
       // transaction completes or fails, we know what to do.
-      var dfd = Q.defer();
+      var dfd = When.defer();
     
       // Call the container with the transaction
       // commit & rollback objects
@@ -1372,17 +1366,6 @@
       return sql;
     },
 
-    // Get the primary key command if it exists on the blueprint.
-    getCommandByName: function(blueprint, name) {
-      var commands = this.getCommandsByName(blueprint, name);
-      if (commands.length > 0) return commands[0];
-    },
-    
-    // Get all of the commands with a given name.
-    getCommandsByName: function(blueprint, name) {
-      return _.where(blueprint.commands, function(value) { return value.name == name; });
-    },
-
     // Get the SQL for the column data type.
     getType: function(column) {
       return this["type" + capitalize(column.type)](column);
@@ -1466,7 +1449,7 @@
   // and returns a deferred promise.
   Knex.runQuery = function(builder) {
     if (builder.transaction) {
-      if (!builder.transaction.connection) return Q.reject(new Error('The transaction has already completed.'));
+      if (!builder.transaction.connection) return When.reject(new Error('The transaction has already completed.'));
       builder._connection = builder.transaction.connection;
     }
 

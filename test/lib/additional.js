@@ -1,4 +1,4 @@
-var Q = require('q');
+
 var _ = require('underscore');
 
 module.exports = function(Knex, dbName, handler, type) {

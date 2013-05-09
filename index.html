@@ -216,12 +216,12 @@
       <li>– <a href="#Builder-min">min</a></li>
       <li>– <a href="#Builder-max">max</a></li>
       <li>– <a href="#Builder-sum">sum</a></li>
-      <li>– <a href="#Builder-then">then</a></li>
-      <li>– <a href="#Builder-exec">exec</a></li>
       <li>– <a href="#Builder-increment">increment</a></li>
       <li>– <a href="#Builder-decrement">decrement</a></li>
-      <li>– <a href="#Builder-exists">exists</a></li>
       <li>– <a href="#Builder-truncate">truncate *</a></li>
+      <li><b><a href="#Schema-Building">Interface:</a></b></li>
+      <li>– <a href="#Builder-then">then</a></li>
+      <li>– <a href="#Builder-exec">exec</a></li>
     </ul>
 
     <a class="toc_title" href="#Transaction">
@@ -232,13 +232,12 @@
       Schema
     </a>
     <ul class="toc_section">
-      <li>– <a href="#Schema-connection">connection</a></li>
       <li>– <a href="#Schema-createTable">createTable</a></li>
-      <li>– <a href="#Schema-renameTable">createTable</a></li>
+      <li>– <a href="#Schema-renameTable">renameTable</a></li>
       <li>– <a href="#Schema-dropTable">dropTable</a></li>
+      <li>– <a href="#Schema-hasTable">hasTable</a></li>
       <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
       <li>– <a href="#Schema-table">table</a></li>
-      <li>– <a href="#Schema-transacting">transacting *</a></li>
       <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
       <li>– <a href="#Schema-dropColumn">dropColumn</a></li>
       <li>– <a href="#Schema-dropColumns">dropColumns</a></li>
@@ -319,7 +318,7 @@
 
     <p>
       All dependencies are specified in <tt>package.json</tt> file but include <tt>underscore.js</tt>,
-      <tt>q.js</tt>, and the <tt>generic-pool</tt> library. You then need to install 
+      <tt>when.js</tt>, and the <tt>generic-pool</tt> library. You then need to install 
       either <tt>mysql</tt>, <tt>pg</tt>, or <tt>sqlite3</tt> from <tt>npm</tt> if you wish 
       to use one of these databases with node.js, or create your own client 
       adapter and specify it in <a href="#Initialize">Knex.Initialize</a>.
@@ -338,7 +337,7 @@ $ npm install sqlite3
 
     <p>
       <tt>Knex.Initialize</tt> is the initializing function that must be called prior to using
-      <b>Knex</b>, accepting a few parameters. The <tt>client</tt> parameter is required 
+      Knex, accepting a few parameters. The <tt>client</tt> parameter is required 
       and determines which client adapter will be used with the library.
     </p>
 
@@ -356,9 +355,9 @@ Knex.Initialize({
 </pre>
 
   <p>
-    It is also possible to use <b>Knex</b> with multiple database connection instances if you'd like, 
-    by creating named instances with <tt>Knex.Initialize</tt>. To do this, pass the name of the
-    connection as the first parameter into <b>Knex</b> and it will return that instance, which may
+    It is also possible to use Knex with multiple database connection instances if you'd like, 
+    by creating named instances. To do this, pass the name of the connection as the first 
+    parameter into <tt>Knex.Initialize</tt> and it will return that instance, which may
     also be referenced by name under <tt>Knex.Instances</tt>.
   </p>
 
@@ -396,8 +395,8 @@ SqliteDB('users')
     <p>
       The <tt>Knex.Builder</tt> is the interface used for building and executing standard SQL queries,
       such as <tt>select</tt>, <tt>insert</tt>, <tt>update</tt>, <tt>delete</tt>. The query is run
-      by specifying a <a href="#Builder-table">tableName</a>, adding additional query parameters, and calling
-      one of the <a href="#Builder-promises">promise methods</a>.
+      by specifying a <a href="#Builder-table">tableName</a>, adding additional query parameters, and 
+      executing the query with one of the public interface methods.
     </p>
 
     <p id="Builder-main">
@@ -419,10 +418,10 @@ SqliteDB('users')
     </p>
 
 <pre>
-  // generates: "select `title`, `author`, `year` from `books`;"
+  // select "title", "author", "year" from "books"
   Knex('books').select('title', 'author', 'year');
   
-  // generates "select * from `books`;"
+  // select * from "books"
   Knex('books').select();
 </pre>
 
@@ -581,24 +580,25 @@ Knex('users')
     </p>
 
 <pre>
-  // generates: "select `title`, `author`, `year` from `books`;"
-  Knex('books').update({
-    title: '',
-    author: '',
-    year: 
-  })
-  
-  Knex('users').update({
-
-  });
+Knex('books').update({
+  title: '',
+  author: '',
+  year: 2014
+})
 </pre>
 
     <p id="Builder-del">
       <b class="header">del / delete</b><code>.del()</code>
       <br />
       Aliased to <tt>del</tt> as <tt>delete</tt> is a reserved word in javascript, this method deletes
-      one or more rows, based on the other conditions specified in the query.
+      one or more rows, based on other conditions specified in the query.
     </p>
+
+<pre>
+Knex('accounts')
+  .where('activated', false)
+  .del()
+</pre>
 
     <p id="Builder-count">
       <b class="header">count</b><code>.count(column)</code>
@@ -632,12 +632,6 @@ Knex('users')
 
     <p id="Builder-decrement">
       <b class="header">decrement</b><code>.decrement(column, value)</code>
-      <br />
-      Decrements a column's value by the specified amount.
-    </p>
-
-    <p id="Builder-exists">
-      <b class="header">exists</b><code>.exists(column, value)</code>
       <br />
       Decrements a column's value by the specified amount.
     </p>

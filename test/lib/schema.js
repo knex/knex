@@ -1,15 +1,18 @@
-var Q = require('q');
+var When = require('when');
 module.exports = function(Knex, handler, error, type, db) {
 
   var res = null;
-  return Q.all([
+
+  return When.all([
     Knex.Schema.dropTableIfExists('test_table_one'),
     Knex.Schema.dropTableIfExists('test_table_two'),
     Knex.Schema.dropTableIfExists('test_table_three'),
     Knex.Schema.dropTableIfExists('accounts')
   ]).then(function(resp) {
+    
     res = [resp[0]]; // only really need one of these for the test output.
-    return Q.all([
+    
+    return When.all([
       Knex.Schema.createTable('test_table_one', function(table) {
         table.increments('id');
         table.string('first_name');
@@ -29,6 +32,8 @@ module.exports = function(Knex, handler, error, type, db) {
         table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
       })
     ]);
+  }, function(err) {
+    console.log(err.stack);
   })
   .then(function(resp) {
     // Edit test table one

@@ -1,4 +1,4 @@
-var Q           = require('q');
+var When        = require('when');
 var _           = require('underscore');
 var util        = require('util');
 var base        = require('./base');
@@ -18,9 +18,9 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
     var emptyConnection = !builder._connection;
     var debug = this.debug || builder._debug;
     var instance = this;
-    return Q((builder._connection || this.getConnection()))
+    return When((builder._connection || this.getConnection()))
       .then(function(conn) {
-        var dfd = Q.defer();
+        var dfd = When.defer();
         var method = (builder.type === 'insert' || builder.type === 'update') ? 'run' : 'all';
 
         // If we have a debug flag set, console.log the query.
@@ -57,7 +57,7 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
 
         // Empty the connection after we run the query, unless one was specifically
         // set (in the case of transactions, etc).
-        return dfd.promise.fin(function(resp) {
+        return dfd.promise.ensure(function(resp) {
           if (emptyConnection) instance.pool.release(conn);
           return resp;
         });
@@ -179,7 +179,18 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
     }
     return sql;
   },
+ 
+  // Get the primary key command if it exists on the blueprint.
+  getCommandByName: function(blueprint, name) {
+    var commands = this.getCommandsByName(blueprint, name);
+    if (commands.length > 0) return commands[0];
+  },
   
+  // Get all of the commands with a given name.
+  getCommandsByName: function(blueprint, name) {
+    return _.where(blueprint.commands, function(value) { return value.name == name; });
+  },
+
   // Get the primary key syntax for a table creation statement.
   addPrimaryKeys: function(blueprint) {
     var primary = this.getCommandByName(blueprint, 'primary');

@@ -1,4 +1,4 @@
-var Q = require('q');
+var When = require('when');
 var _ = require('underscore');
 var objectdump = require('objectdump');
 var dev = parseInt(process.env.KNEX_DEV, 10);
@@ -6,6 +6,8 @@ var out = (dev ? require('./index').output : require('./shared/output'));
 var assert = require('assert');
 
 module.exports = function(Knex, type) {
+
+  var dfd = When.defer();
 
   describe('DB Tests - ' + type, function() {
 
@@ -54,12 +56,15 @@ module.exports = function(Knex, type) {
 
       after(function(ok) {
         if (dev) require('fs').writeFileSync('./test/shared/output.js', 'module.exports = ' + objectdump(out));
+        dfd.resolve();
         ok();
       });
 
     });
 
   });
+
+  return dfd.promise;
 
 };
 

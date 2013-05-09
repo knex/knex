@@ -1,4 +1,4 @@
-var Q = require('q');
+var When = require('when');
 var _ = require('underscore');
 var objectdump = require('objectdump');
 var dev = parseInt(process.env.KNEX_DEV, 10);
@@ -7,7 +7,7 @@ var assert = require('assert');
 
 module.exports = function(Knex, type) {
 
-  var dfd = Q.defer();
+  var dfd = When.defer();
 
   describe('String Tests', function() {
 

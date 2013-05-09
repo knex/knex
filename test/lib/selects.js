@@ -1,4 +1,4 @@
-var Q = require('q');
+var When = require('when');
 module.exports = function(Knex, dbName, handler, type) {
 
   describe(dbName, function() {
@@ -14,7 +14,7 @@ module.exports = function(Knex, dbName, handler, type) {
     }),
     
     it('does simple "where" cases', function(ok) {
-      Q.all([
+      When.all([
         Knex('accounts').where('id', 1).select('first_name', 'last_name'),
         Knex('accounts').where('id', '>', 1).select(['email', 'logins']),
         Knex('accounts').where({'id': 1}).select('*'),
@@ -25,27 +25,27 @@ module.exports = function(Knex, dbName, handler, type) {
     });
 
     it('has a "distinct" clause', function(ok) {
-      Q.all([
+      When.all([
         Knex('accounts').select().distinct('email').where('logins', 2),
         Knex('accounts').distinct('email').select()
       ]).then(handler(ok, true), ok);
     });
 
     it('does "orWhere" cases', function(ok) {
-      Q.all([
+      When.all([
         Knex('accounts').where('id', 1).orWhere('id', '>', 2).select('first_name', 'last_name')
         // More tests can be added here.
       ]).then(handler(ok, true), ok);
     });
 
     it('does "andWhere" cases', function(ok) {
-      Q.all([
+      When.all([
         Knex('accounts').select('first_name', 'last_name', 'about').where('id', 1).andWhere('email', 'test@example.com')
       ]).then(handler(ok, true), ok);
     });
 
     it('takes a function to wrap nested where statements', function(ok) {
-      Q.all([
+      When.all([
         Knex('accounts').where(function() {
           this.where('id', 2);
           this.orWhere('id', 3);
@@ -54,7 +54,7 @@ module.exports = function(Knex, dbName, handler, type) {
     });
 
     it('handles "where in" cases', function(ok) {
-      Q.all([
+      When.all([
         Knex('accounts').whereIn('id', [1, 2, 3]).select()
       ]).then(handler(ok, true), ok);
     });
