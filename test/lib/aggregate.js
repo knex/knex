@@ -1,11 +1,11 @@
 
-module.exports = function(Knex, dbName, handler, type) {
+module.exports = function(Knex, dbName, resolver) {
 
   it('has a sum', function(ok) {
 
     Knex('accounts')
       .sum('logins')
-      .then(handler(ok), ok);
+      .then(resolver(ok), ok);
 
   });
 

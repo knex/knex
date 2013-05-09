@@ -1,5 +1,5 @@
 
-module.exports = function(Knex, dbName, handler, type) {
+module.exports = function(Knex, dbName, resolver) {
 
   describe(dbName, function() {
 
@@ -11,7 +11,7 @@ module.exports = function(Knex, dbName, handler, type) {
         .union(function() {
           this.select('*').from('accounts').where('id', 2);
         })
-        .then(handler(ok), ok);
+        .then(resolver(ok), ok);
 
     });
 

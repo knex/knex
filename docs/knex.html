@@ -54,7 +54,7 @@ http://knexjs.org</code></pre>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> _ = require(<span class="string">'underscore'</span>);
-  <span class="keyword">var</span> Q = require(<span class="string">'q'</span>);
+  <span class="keyword">var</span> When = require(<span class="string">'when'</span>);
 
   <span class="keyword">var</span> push = Array.prototype.push;</pre></div></div>
             
@@ -130,8 +130,12 @@ used to generate the sql in one form or another.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    exec: <span class="keyword">function</span>(callback) {
-      <span class="keyword">var</span> run = Knex.runQuery(<span class="keyword">this</span>);
-      <span class="keyword">return</span> run.nodeify(callback);
+      <span class="keyword">var</span> run = <span class="keyword">this</span>.runQuery();
+      <span class="keyword">return</span> run.then(<span class="keyword">function</span>(resp) {
+        callback(<span class="literal">null</span>, resp);
+      }, <span class="keyword">function</span>(err) {
+        callback(err, <span class="literal">null</span>);
+      });
     },</pre></div></div>
             
         </li>
@@ -148,7 +152,7 @@ used to generate the sql in one form or another.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    then: <span class="keyword">function</span>(onFulfilled, onRejected) {
-      <span class="keyword">var</span> run = Knex.runQuery(<span class="keyword">this</span>);
+      <span class="keyword">var</span> run = <span class="keyword">this</span>.runQuery();
       <span class="keyword">return</span> run.then(onFulfilled, onRejected);
     },</pre></div></div>
             
@@ -258,8 +262,7 @@ and have it come out fine.</p>
         <span class="keyword">if</span> (!(bindings[i] <span class="keyword">instanceof</span> Raw)) cleaned.push(bindings[i]);
       }
       <span class="keyword">return</span> cleaned;
-    }
-  };</pre></div></div>
+    },</pre></div></div>
             
         </li>
         
@@ -267,12 +270,18 @@ and have it come out fine.</p>
         <li id="section-13">
             <div class="annotation">
               
-              <div class="pilwrap for-h2">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <h2>Grammar</h2>
+              <p>Runs the query on the current builder instance and returns a promise.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>    runQuery: <span class="keyword">function</span>() {
+      <span class="keyword">if</span> (<span class="keyword">this</span>.transaction) {
+        <span class="keyword">if</span> (!<span class="keyword">this</span>.transaction.connection) <span class="keyword">return</span> When.reject(<span class="keyword">new</span> Error(<span class="string">'The transaction has already completed.'</span>));
+        <span class="keyword">this</span>._connection = <span class="keyword">this</span>.transaction.connection;
+      }</pre></div></div>
             
         </li>
         
@@ -282,6 +291,49 @@ and have it come out fine.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Prep the SQL associated with the this.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">this</span>.sql = <span class="keyword">this</span>.toSql();
+      <span class="keyword">this</span>.bindings = <span class="keyword">this</span>._cleanBindings();
+      <span class="keyword">if</span> (!_.isArray(<span class="keyword">this</span>.sql)) <span class="keyword">this</span>.sql = [<span class="keyword">this</span>.sql];
+      
+      <span class="keyword">var</span> chain;
+      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = <span class="keyword">this</span>.sql.length; i &lt; l; i++) {
+        <span class="keyword">if</span> (chain) {
+          chain.then(multiQuery(<span class="keyword">this</span>, i, chain));
+        } <span class="keyword">else</span> {
+          chain = multiQuery(<span class="keyword">this</span>, i);
+        }
+      }
+      <span class="keyword">return</span> chain;
+    }
+
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <h2>Grammar</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>The list of different components</p>
 
@@ -300,11 +352,11 @@ and have it come out fine.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Compiles the <code>select</code> statement, or nested sub-selects
 by calling each of the component compilers, trimming out
@@ -328,11 +380,11 @@ the empties, and returning a generated query string.</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Compiles an aggregate query.</p>
 
@@ -349,11 +401,11 @@ the empties, and returning a generated query string.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Compiles the columns in the query, specifying if an item was distinct.</p>
 
@@ -367,11 +419,11 @@ the empties, and returning a generated query string.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Compiles the <code>from</code> tableName portion of the query.</p>
 
@@ -384,11 +436,11 @@ the empties, and returning a generated query string.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Compiles all each of the <code>join</code> clauses on the query, 
 including any nested join queries.</p>
@@ -415,11 +467,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Compiles all <code>where</code> statements on the query.</p>
 
@@ -439,11 +491,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Compile the &quot;union&quot; queries attached to the main query.</p>
 
@@ -461,11 +513,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Compiles a nested where clause.</p>
 
@@ -478,11 +530,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Compiles a nested where clause.</p>
 
@@ -495,11 +547,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Compiles a basic where clause.</p>
 
@@ -512,11 +564,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Compiles a basic exists clause.</p>
 
@@ -529,11 +581,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Compiles a basic not exists clause.</p>
 
@@ -546,11 +598,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Compiles a where in clause.</p>
 
@@ -563,11 +615,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Compiles a where not in clause.</p>
 
@@ -580,11 +632,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Compiles a sub-where in clause.</p>
 
@@ -597,11 +649,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Compiles a sub-where not in clause.</p>
 
@@ -614,11 +666,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Where between.</p>
 
@@ -643,11 +695,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Compiles the <code>group by</code> columns.</p>
 
@@ -660,11 +712,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Compiles the <code>having</code> statements.</p>
 
@@ -682,11 +734,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Compiles the <code>order by</code> statements.</p>
 
@@ -703,11 +755,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Compiles the <code>limit</code> statements.</p>
 
@@ -720,11 +772,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Compiles an <code>offset</code> statement on the query.</p>
 
@@ -737,11 +789,11 @@ including any nested join queries.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Compiles an <code>insert</code> query, allowing for multiple
 inserts using a single query statement.</p>
@@ -758,11 +810,11 @@ inserts using a single query statement.</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>If there are any &quot;where&quot; clauses, we need to omit 
 any bindings that may have been associated with them.</p>
@@ -781,11 +833,11 @@ any bindings that may have been associated with them.</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>Depending on the type of <code>where</code> clause, this will appropriately
 remove any binding caused by &quot;where&quot; constraints, allowing the same
@@ -812,11 +864,11 @@ query to be used for <code>insert</code> and <code>update</code> without issue.<
         </li>
         
         
-        <li id="section-40">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>Compiles an <code>update</code> query.</p>
 
@@ -835,11 +887,11 @@ query to be used for <code>insert</code> and <code>update</code> without issue.<
         </li>
         
         
-        <li id="section-41">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p>Compiles a <code>delete</code> query.</p>
 
@@ -854,11 +906,11 @@ query to be used for <code>insert</code> and <code>update</code> without issue.<
         </li>
         
         
-        <li id="section-42">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>Compiles a <code>truncate</code> query.</p>
 
@@ -914,11 +966,11 @@ query to be used for <code>insert</code> and <code>update</code> without issue.<
         </li>
         
         
-        <li id="section-43">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <h2>Knex.Builder</h2>
 
@@ -927,11 +979,11 @@ query to be used for <code>insert</code> and <code>update</code> without issue.<
         </li>
         
         
-        <li id="section-44">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               
             </div>
@@ -941,11 +993,11 @@ query to be used for <code>insert</code> and <code>update</code> without issue.<
         </li>
         
         
-        <li id="section-45">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>We use this logic to create sub-builders
 for the advanced query statements.</p>
@@ -967,11 +1019,11 @@ for the advanced query statements.</p>
         </li>
         
         
-        <li id="section-46">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
               <p>All operators used in the <code>where</code> clause generation.</p>
 
@@ -988,11 +1040,11 @@ for the advanced query statements.</p>
         </li>
         
         
-        <li id="section-47">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
               <p>Sets the <code>returning</code> for the query - only necessary
 to set the &quot;returning&quot; value for the postgres insert,
@@ -1008,11 +1060,11 @@ defaults to <code>id</code>.</p>
         </li>
         
         
-        <li id="section-48">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
+                <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
               <p>Sets the <code>tableName</code> on the query.</p>
 
@@ -1027,11 +1079,11 @@ defaults to <code>id</code>.</p>
         </li>
         
         
-        <li id="section-49">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
+                <a class="pilcrow" href="#section-51">&#182;</a>
               </div>
               <p>Select a <code>column</code> rather than</p>
 
@@ -1045,11 +1097,11 @@ defaults to <code>id</code>.</p>
         </li>
         
         
-        <li id="section-50">
+        <li id="section-52">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-50">&#182;</a>
+                <a class="pilcrow" href="#section-52">&#182;</a>
               </div>
               <p>Adds a <code>distinct</code> clause to the query.</p>
 
@@ -1068,11 +1120,11 @@ defaults to <code>id</code>.</p>
         </li>
         
         
-        <li id="section-51">
+        <li id="section-53">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-51">&#182;</a>
+                <a class="pilcrow" href="#section-53">&#182;</a>
               </div>
               <p>Clones the current query builder, including any
 pieces that have been set thus far.</p>
@@ -1097,11 +1149,11 @@ pieces that have been set thus far.</p>
         </li>
         
         
-        <li id="section-52">
+        <li id="section-54">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-52">&#182;</a>
+                <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
               <p>Resets all attributes on the query builder.</p>
 
@@ -1121,11 +1173,11 @@ pieces that have been set thus far.</p>
         </li>
         
         
-        <li id="section-53">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-53">&#182;</a>
+                <a class="pilcrow" href="#section-55">&#182;</a>
               </div>
               <p>Adds a join clause to the query, allowing for advanced joins
 with an anonymous function as the second argument.</p>
@@ -1149,11 +1201,11 @@ with an anonymous function as the second argument.</p>
         </li>
         
         
-        <li id="section-54">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-54">&#182;</a>
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>The where function can be used in several ways:
 The most basic is <code>where(key, value)</code>, which expands to
@@ -1195,11 +1247,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-55">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-55">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <p>Alias to <code>where</code>, for internal builder consistency.</p>
 
@@ -1224,11 +1276,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-56">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-56">&#182;</a>
+                <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>Adds an <code>or where</code> clause to the query.</p>
 
@@ -1241,11 +1293,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-57">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-57">&#182;</a>
+                <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
               <p>Adds a <code>where exists</code> clause to the query.</p>
 
@@ -1267,11 +1319,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-58">
+        <li id="section-60">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-58">&#182;</a>
+                <a class="pilcrow" href="#section-60">&#182;</a>
               </div>
               <p>Adds an <code>or where exists</code> clause to the query.</p>
 
@@ -1284,11 +1336,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-59">
+        <li id="section-61">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-59">&#182;</a>
+                <a class="pilcrow" href="#section-61">&#182;</a>
               </div>
               <p>Adds a <code>where not exists</code> clause to the query.</p>
 
@@ -1301,11 +1353,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-60">
+        <li id="section-62">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-60">&#182;</a>
+                <a class="pilcrow" href="#section-62">&#182;</a>
               </div>
               <p>Adds a <code>or where not exists</code> clause to the query.</p>
 
@@ -1318,11 +1370,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-61">
+        <li id="section-63">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-61">&#182;</a>
+                <a class="pilcrow" href="#section-63">&#182;</a>
               </div>
               <p>Adds a <code>where in</code> clause to the query.</p>
 
@@ -1346,11 +1398,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-62">
+        <li id="section-64">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-62">&#182;</a>
+                <a class="pilcrow" href="#section-64">&#182;</a>
               </div>
               <p>Adds a <code>or where in</code> clause to the query.</p>
 
@@ -1363,11 +1415,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-63">
+        <li id="section-65">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-63">&#182;</a>
+                <a class="pilcrow" href="#section-65">&#182;</a>
               </div>
               <p>Adds a <code>where not in</code> clause to the query.</p>
 
@@ -1380,11 +1432,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-64">
+        <li id="section-66">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-64">&#182;</a>
+                <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
               <p>Adds a <code>or where not in</code> clause to the query.</p>
 
@@ -1397,11 +1449,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-65">
+        <li id="section-67">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-65">&#182;</a>
+                <a class="pilcrow" href="#section-67">&#182;</a>
               </div>
               <p>Adds a <code>where null</code> clause to the query.</p>
 
@@ -1415,11 +1467,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-66">
+        <li id="section-68">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-66">&#182;</a>
+                <a class="pilcrow" href="#section-68">&#182;</a>
               </div>
               <p>Adds a <code>or where null</code> clause to the query.</p>
 
@@ -1432,11 +1484,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-67">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-67">&#182;</a>
+                <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
               <p>Adds a <code>where not null</code> clause to the query.</p>
 
@@ -1449,11 +1501,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-68">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-68">&#182;</a>
+                <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
               <p>Adds a <code>or where not null</code> clause to the query.</p>
 
@@ -1466,11 +1518,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-69">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-69">&#182;</a>
+                <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
               <p>Adds a <code>where between</code> clause to the query.</p>
 
@@ -1485,11 +1537,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-70">
+        <li id="section-72">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-70">&#182;</a>
+                <a class="pilcrow" href="#section-72">&#182;</a>
               </div>
               <p>Adds a <code>or where between</code> clause to the query.</p>
 
@@ -1504,11 +1556,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-71">
+        <li id="section-73">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-71">&#182;</a>
+                <a class="pilcrow" href="#section-73">&#182;</a>
               </div>
               <hr>
 
@@ -1517,11 +1569,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-72">
+        <li id="section-74">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-72">&#182;</a>
+                <a class="pilcrow" href="#section-74">&#182;</a>
               </div>
               <p>Adds a <code>group by</code> clause to the query.</p>
 
@@ -1535,11 +1587,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-73">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-73">&#182;</a>
+                <a class="pilcrow" href="#section-75">&#182;</a>
               </div>
               <p>Adds a <code>order by</code> clause to the query.</p>
 
@@ -1553,11 +1605,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-74">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-74">&#182;</a>
+                <a class="pilcrow" href="#section-76">&#182;</a>
               </div>
               <p>Add a union statement to the query.</p>
 
@@ -1571,11 +1623,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-75">
+        <li id="section-77">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-75">&#182;</a>
+                <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
               <p>Adds a union all statement to the query.</p>
 
@@ -1589,11 +1641,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-76">
+        <li id="section-78">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-76">&#182;</a>
+                <a class="pilcrow" href="#section-78">&#182;</a>
               </div>
               <p>Adds a <code>having</code> clause to the query.</p>
 
@@ -1620,43 +1672,6 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-77">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-77">&#182;</a>
-              </div>
-              <hr>
-
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-78">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-78">&#182;</a>
-              </div>
-              
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    offset: <span class="keyword">function</span>(value) {
-      <span class="keyword">if</span> (value == <span class="literal">null</span>) <span class="keyword">return</span> <span class="keyword">this</span>.isOffset;
-      <span class="keyword">this</span>.isOffset = value;
-      <span class="keyword">return</span> <span class="keyword">this</span>;
-    },
-
-    limit: <span class="keyword">function</span>(value) {
-      <span class="keyword">if</span> (value == <span class="literal">null</span>) <span class="keyword">return</span> <span class="keyword">this</span>.isLimit;
-      <span class="keyword">this</span>.isLimit = value;
-      <span class="keyword">return</span> <span class="keyword">this</span>;
-    },</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-79">
             <div class="annotation">
               
@@ -1676,13 +1691,19 @@ where key = value. </p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-80">&#182;</a>
               </div>
-              <p>Determine if any rows exist for the current query.</p>
-
+              
             </div>
             
-            <div class="content"><div class='highlight'><pre>    exists: <span class="keyword">function</span>() {
-      <span class="keyword">this</span>.count();
-      <span class="keyword">return</span> <span class="keyword">this</span>.setType(<span class="string">'exists'</span>);
+            <div class="content"><div class='highlight'><pre>    offset: <span class="keyword">function</span>(value) {
+      <span class="keyword">if</span> (value == <span class="literal">null</span>) <span class="keyword">return</span> <span class="keyword">this</span>.isOffset;
+      <span class="keyword">this</span>.isOffset = value;
+      <span class="keyword">return</span> <span class="keyword">this</span>;
+    },
+
+    limit: <span class="keyword">function</span>(value) {
+      <span class="keyword">if</span> (value == <span class="literal">null</span>) <span class="keyword">return</span> <span class="keyword">this</span>.isLimit;
+      <span class="keyword">this</span>.isLimit = value;
+      <span class="keyword">return</span> <span class="keyword">this</span>;
     },</pre></div></div>
             
         </li>
@@ -1693,6 +1714,19 @@ where key = value. </p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-81">&#182;</a>
+              </div>
+              <hr>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-82">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-82">&#182;</a>
               </div>
               <p>Retrieve the &quot;count&quot; result of the query.</p>
 
@@ -1705,11 +1739,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-82">
+        <li id="section-83">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-82">&#182;</a>
+                <a class="pilcrow" href="#section-83">&#182;</a>
               </div>
               <p>Retrieve the minimum value of a given column.</p>
 
@@ -1722,11 +1756,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-83">
+        <li id="section-84">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-83">&#182;</a>
+                <a class="pilcrow" href="#section-84">&#182;</a>
               </div>
               <p>Retrieve the maximum value of a given column.</p>
 
@@ -1739,11 +1773,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-84">
+        <li id="section-85">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-84">&#182;</a>
+                <a class="pilcrow" href="#section-85">&#182;</a>
               </div>
               <p>Retrieve the sum of the values of a given column.</p>
 
@@ -1756,11 +1790,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-85">
+        <li id="section-86">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-85">&#182;</a>
+                <a class="pilcrow" href="#section-86">&#182;</a>
               </div>
               <p>Increments a column&#39;s value by the specified amount.</p>
 
@@ -1773,11 +1807,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-86">
+        <li id="section-87">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-86">&#182;</a>
+                <a class="pilcrow" href="#section-87">&#182;</a>
               </div>
               <p>Decrements a column&#39;s value by the specified amount.</p>
 
@@ -1790,11 +1824,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-87">
+        <li id="section-88">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-87">&#182;</a>
+                <a class="pilcrow" href="#section-88">&#182;</a>
               </div>
               <p>Sets the values for a <code>select</code> query.</p>
 
@@ -1810,11 +1844,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-88">
+        <li id="section-89">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-88">&#182;</a>
+                <a class="pilcrow" href="#section-89">&#182;</a>
               </div>
               <p>Sets the values for an <code>insert</code> query.</p>
 
@@ -1828,11 +1862,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-89">
+        <li id="section-90">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-89">&#182;</a>
+                <a class="pilcrow" href="#section-90">&#182;</a>
               </div>
               <p>Sets the values for an <code>update</code> query.</p>
 
@@ -1852,11 +1886,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-90">
+        <li id="section-91">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-90">&#182;</a>
+                <a class="pilcrow" href="#section-91">&#182;</a>
               </div>
               <p>Alias to del.</p>
 
@@ -1869,11 +1903,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-91">
+        <li id="section-92">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-91">&#182;</a>
+                <a class="pilcrow" href="#section-92">&#182;</a>
               </div>
               <p>Executes a delete statement on the query;    </p>
 
@@ -1886,11 +1920,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-92">
+        <li id="section-93">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-92">&#182;</a>
+                <a class="pilcrow" href="#section-93">&#182;</a>
               </div>
               <p>Truncate</p>
 
@@ -1903,11 +1937,11 @@ where key = value. </p>
         </li>
         
         
-        <li id="section-93">
+        <li id="section-94">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-93">&#182;</a>
+                <a class="pilcrow" href="#section-94">&#182;</a>
               </div>
               <p>Set by <code>transacting</code> - contains the object with the connection
 needed to execute a transaction</p>
@@ -1919,11 +1953,11 @@ needed to execute a transaction</p>
         </li>
         
         
-        <li id="section-94">
+        <li id="section-95">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-94">&#182;</a>
+                <a class="pilcrow" href="#section-95">&#182;</a>
               </div>
               <p>Sets the current Builder connection to that of the
 the currently running transaction</p>
@@ -1938,11 +1972,11 @@ the currently running transaction</p>
         </li>
         
         
-        <li id="section-95">
+        <li id="section-96">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-95">&#182;</a>
+                <a class="pilcrow" href="#section-96">&#182;</a>
               </div>
               <hr>
 
@@ -1951,11 +1985,11 @@ the currently running transaction</p>
         </li>
         
         
-        <li id="section-96">
+        <li id="section-97">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-96">&#182;</a>
+                <a class="pilcrow" href="#section-97">&#182;</a>
               </div>
               
             </div>
@@ -2031,11 +2065,11 @@ the currently running transaction</p>
         </li>
         
         
-        <li id="section-97">
+        <li id="section-98">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-97">&#182;</a>
+                <a class="pilcrow" href="#section-98">&#182;</a>
               </div>
               <h2>Knex.JoinClause</h2>
 
@@ -2044,11 +2078,11 @@ the currently running transaction</p>
         </li>
         
         
-        <li id="section-98">
+        <li id="section-99">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-98">&#182;</a>
+                <a class="pilcrow" href="#section-99">&#182;</a>
               </div>
               
             </div>
@@ -2080,11 +2114,11 @@ the currently running transaction</p>
         </li>
         
         
-        <li id="section-99">
+        <li id="section-100">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-99">&#182;</a>
+                <a class="pilcrow" href="#section-100">&#182;</a>
               </div>
               <h2>Knex.Transaction</h2>
 
@@ -2093,11 +2127,11 @@ the currently running transaction</p>
         </li>
         
         
-        <li id="section-100">
+        <li id="section-101">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-100">&#182;</a>
+                <a class="pilcrow" href="#section-101">&#182;</a>
               </div>
               
             </div>
@@ -2109,27 +2143,27 @@ the currently running transaction</p>
         </li>
         
         
-        <li id="section-101">
+        <li id="section-102">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-101">&#182;</a>
+                <a class="pilcrow" href="#section-102">&#182;</a>
               </div>
               <p>Initiate a deferred object, so we know when the
 transaction completes or fails, we know what to do.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="keyword">var</span> dfd = Q.defer();</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">var</span> dfd = When.defer();</pre></div></div>
             
         </li>
         
         
-        <li id="section-102">
+        <li id="section-103">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-102">&#182;</a>
+                <a class="pilcrow" href="#section-103">&#182;</a>
               </div>
               <p>Call the container with the transaction
 commit &amp; rollback objects</p>
@@ -2147,11 +2181,11 @@ commit &amp; rollback objects</p>
         </li>
         
         
-        <li id="section-103">
+        <li id="section-104">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-103">&#182;</a>
+                <a class="pilcrow" href="#section-104">&#182;</a>
               </div>
               <p>&quot;rollback to&quot;?</p>
 
@@ -2167,29 +2201,15 @@ commit &amp; rollback objects</p>
         </li>
         
         
-        <li id="section-104">
+        <li id="section-105">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-104">&#182;</a>
+                <a class="pilcrow" href="#section-105">&#182;</a>
               </div>
               <h2>Knex.Schema</h2>
 
             </div>
-            
-        </li>
-        
-        
-        <li id="section-105">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-105">&#182;</a>
-              </div>
-              
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> initSchema = <span class="keyword">function</span>(Target, client) {</pre></div></div>
             
         </li>
         
@@ -2200,11 +2220,10 @@ commit &amp; rollback objects</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-106">&#182;</a>
               </div>
-              <p>Top level object for Schema related functions</p>
-
+              
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">var</span> Schema = Target.Schema = {};</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> initSchema = <span class="keyword">function</span>(Target, client) {</pre></div></div>
             
         </li>
         
@@ -2214,6 +2233,21 @@ commit &amp; rollback objects</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-107">&#182;</a>
+              </div>
+              <p>Top level object for Schema related functions</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">var</span> Schema = Target.Schema = {};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-108">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-108">&#182;</a>
               </div>
               <p>Attach main static methods, which passthrough to the
 SchemaBuilder instance methods</p>
@@ -2236,11 +2270,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-108">
+        <li id="section-109">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-108">&#182;</a>
+                <a class="pilcrow" href="#section-109">&#182;</a>
               </div>
               <p>All of the Schame methods that should be called with a
 <code>SchemaBuilder</code> context, to disallow calling more than one method at once.</p>
@@ -2252,11 +2286,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-109">
+        <li id="section-110">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-109">&#182;</a>
+                <a class="pilcrow" href="#section-110">&#182;</a>
               </div>
               <p>Modify a table on the schema.</p>
 
@@ -2270,11 +2304,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-110">
+        <li id="section-111">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-110">&#182;</a>
+                <a class="pilcrow" href="#section-111">&#182;</a>
               </div>
               <p>Create a new table on the schema.</p>
 
@@ -2289,11 +2323,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-111">
+        <li id="section-112">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-111">&#182;</a>
+                <a class="pilcrow" href="#section-112">&#182;</a>
               </div>
               <p>Drop a table from the schema.</p>
 
@@ -2307,11 +2341,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-112">
+        <li id="section-113">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-112">&#182;</a>
+                <a class="pilcrow" href="#section-113">&#182;</a>
               </div>
               <p>Drop a table from the schema if it exists.</p>
 
@@ -2325,11 +2359,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-113">
+        <li id="section-114">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-113">&#182;</a>
+                <a class="pilcrow" href="#section-114">&#182;</a>
               </div>
               <p>Rename a table on the schema.</p>
 
@@ -2343,11 +2377,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-114">
+        <li id="section-115">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-114">&#182;</a>
+                <a class="pilcrow" href="#section-115">&#182;</a>
               </div>
               <p>Determine if the given table exists.</p>
 
@@ -2363,11 +2397,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-115">
+        <li id="section-116">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-115">&#182;</a>
+                <a class="pilcrow" href="#section-116">&#182;</a>
               </div>
               <h2>Knex.SchemaBuilder</h2>
 
@@ -2376,11 +2410,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-116">
+        <li id="section-117">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-116">&#182;</a>
+                <a class="pilcrow" href="#section-117">&#182;</a>
               </div>
               
             </div>
@@ -2399,11 +2433,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-117">
+        <li id="section-118">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-117">&#182;</a>
+                <a class="pilcrow" href="#section-118">&#182;</a>
               </div>
               <p>A callback from the table building <code>Knex.schemaBuilder</code> calls.</p>
 
@@ -2417,11 +2451,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-118">
+        <li id="section-119">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-118">&#182;</a>
+                <a class="pilcrow" href="#section-119">&#182;</a>
               </div>
               <p>Get the raw sql statements for the blueprint.</p>
 
@@ -2432,11 +2466,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-119">
+        <li id="section-120">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-119">&#182;</a>
+                <a class="pilcrow" href="#section-120">&#182;</a>
               </div>
               <p>Add the commands that are implied by the blueprint.</p>
 
@@ -2449,11 +2483,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-120">
+        <li id="section-121">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-120">&#182;</a>
+                <a class="pilcrow" href="#section-121">&#182;</a>
               </div>
               <p>Add indicies</p>
 
@@ -2471,11 +2505,11 @@ SchemaBuilder instance methods</p>
         </li>
         
         
-        <li id="section-121">
+        <li id="section-122">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-121">&#182;</a>
+                <a class="pilcrow" href="#section-122">&#182;</a>
               </div>
               <p>If the index has been specified on the given column, but is simply
 equal to &quot;true&quot; (boolean), no name has been specified for this
@@ -2490,11 +2524,11 @@ index, so we will simply call the index methods without one.</p>
         </li>
         
         
-        <li id="section-122">
+        <li id="section-123">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-122">&#182;</a>
+                <a class="pilcrow" href="#section-123">&#182;</a>
               </div>
               <p>If the index has been specified on the column and it is something
 other than boolean true, we will assume a name was provided on
@@ -2514,11 +2548,11 @@ the index specification, and pass in the name to the method.</p>
         </li>
         
         
-        <li id="section-123">
+        <li id="section-124">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-123">&#182;</a>
+                <a class="pilcrow" href="#section-124">&#182;</a>
               </div>
               <p>Each type of command has a corresponding compiler function on the schema
 grammar which is used to build the necessary SQL statements to build
@@ -2541,11 +2575,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-124">
+        <li id="section-125">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-124">&#182;</a>
+                <a class="pilcrow" href="#section-125">&#182;</a>
               </div>
               <p>Determine if the blueprint has a create command.</p>
 
@@ -2563,11 +2597,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-125">
+        <li id="section-126">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-125">&#182;</a>
+                <a class="pilcrow" href="#section-126">&#182;</a>
               </div>
               <p>Indicate that the given columns should be dropped.</p>
 
@@ -2581,11 +2615,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-126">
+        <li id="section-127">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-126">&#182;</a>
+                <a class="pilcrow" href="#section-127">&#182;</a>
               </div>
               <p>Indicate that the given columns should be dropped.</p>
 
@@ -2598,11 +2632,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-127">
+        <li id="section-128">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-127">&#182;</a>
+                <a class="pilcrow" href="#section-128">&#182;</a>
               </div>
               <p>Indicate that the given primary key should be dropped.</p>
 
@@ -2615,11 +2649,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-128">
+        <li id="section-129">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-128">&#182;</a>
+                <a class="pilcrow" href="#section-129">&#182;</a>
               </div>
               <p>Indicate that the given unique key should be dropped.</p>
 
@@ -2632,11 +2666,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-129">
+        <li id="section-130">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-129">&#182;</a>
+                <a class="pilcrow" href="#section-130">&#182;</a>
               </div>
               <p>Indicate that the given index should be dropped.</p>
 
@@ -2649,11 +2683,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-130">
+        <li id="section-131">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-130">&#182;</a>
+                <a class="pilcrow" href="#section-131">&#182;</a>
               </div>
               <p>Indicate that the given foreign key should be dropped.</p>
 
@@ -2666,11 +2700,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-131">
+        <li id="section-132">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-131">&#182;</a>
+                <a class="pilcrow" href="#section-132">&#182;</a>
               </div>
               <p>Specify the primary key(s) for the table.</p>
 
@@ -2683,11 +2717,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-132">
+        <li id="section-133">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-132">&#182;</a>
+                <a class="pilcrow" href="#section-133">&#182;</a>
               </div>
               <p>Specify a unique index for the table.</p>
 
@@ -2700,11 +2734,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-133">
+        <li id="section-134">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-133">&#182;</a>
+                <a class="pilcrow" href="#section-134">&#182;</a>
               </div>
               <p>Specify an index for the table.</p>
 
@@ -2717,11 +2751,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-134">
+        <li id="section-135">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-134">&#182;</a>
+                <a class="pilcrow" href="#section-135">&#182;</a>
               </div>
               <p>Specify a foreign key for the table.</p>
 
@@ -2734,11 +2768,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-135">
+        <li id="section-136">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-135">&#182;</a>
+                <a class="pilcrow" href="#section-136">&#182;</a>
               </div>
               <p>Create a new auto-incrementing column on the table.</p>
 
@@ -2751,11 +2785,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-136">
+        <li id="section-137">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-136">&#182;</a>
+                <a class="pilcrow" href="#section-137">&#182;</a>
               </div>
               <p>Create a new string column on the table.</p>
 
@@ -2768,11 +2802,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-137">
+        <li id="section-138">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-137">&#182;</a>
+                <a class="pilcrow" href="#section-138">&#182;</a>
               </div>
               <p>Alias varchar to string</p>
 
@@ -2785,11 +2819,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-138">
+        <li id="section-139">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-138">&#182;</a>
+                <a class="pilcrow" href="#section-139">&#182;</a>
               </div>
               <p>Create a new text column on the table.</p>
 
@@ -2802,11 +2836,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-139">
+        <li id="section-140">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-139">&#182;</a>
+                <a class="pilcrow" href="#section-140">&#182;</a>
               </div>
               <p>Create a new integer column on the table.</p>
 
@@ -2819,11 +2853,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-140">
+        <li id="section-141">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-140">&#182;</a>
+                <a class="pilcrow" href="#section-141">&#182;</a>
               </div>
               <p>Create a new tinyinteger column on the table.</p>
 
@@ -2836,11 +2870,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-141">
+        <li id="section-142">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-141">&#182;</a>
+                <a class="pilcrow" href="#section-142">&#182;</a>
               </div>
               <p>Alias for tinyinteger column.</p>
 
@@ -2853,11 +2887,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-142">
+        <li id="section-143">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-142">&#182;</a>
+                <a class="pilcrow" href="#section-143">&#182;</a>
               </div>
               <p>Create a new float column on the table.</p>
 
@@ -2873,11 +2907,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-143">
+        <li id="section-144">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-143">&#182;</a>
+                <a class="pilcrow" href="#section-144">&#182;</a>
               </div>
               <p>Create a new decimal column on the table.</p>
 
@@ -2893,11 +2927,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-144">
+        <li id="section-145">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-144">&#182;</a>
+                <a class="pilcrow" href="#section-145">&#182;</a>
               </div>
               <p>Alias to &quot;bool&quot;</p>
 
@@ -2910,11 +2944,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-145">
+        <li id="section-146">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-145">&#182;</a>
+                <a class="pilcrow" href="#section-146">&#182;</a>
               </div>
               <p>Create a new boolean column on the table</p>
 
@@ -2927,11 +2961,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-146">
+        <li id="section-147">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-146">&#182;</a>
+                <a class="pilcrow" href="#section-147">&#182;</a>
               </div>
               <p>Create a new date column on the table.</p>
 
@@ -2944,11 +2978,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-147">
+        <li id="section-148">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-147">&#182;</a>
+                <a class="pilcrow" href="#section-148">&#182;</a>
               </div>
               <p>Create a new date-time column on the table.</p>
 
@@ -2961,11 +2995,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-148">
+        <li id="section-149">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-148">&#182;</a>
+                <a class="pilcrow" href="#section-149">&#182;</a>
               </div>
               <p>Create a new time column on the table.</p>
 
@@ -2978,11 +3012,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-149">
+        <li id="section-150">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-149">&#182;</a>
+                <a class="pilcrow" href="#section-150">&#182;</a>
               </div>
               <p>Create a new timestamp column on the table.</p>
 
@@ -2995,11 +3029,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-150">
+        <li id="section-151">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-150">&#182;</a>
+                <a class="pilcrow" href="#section-151">&#182;</a>
               </div>
               <p>Add creation and update timestamps to the table.</p>
 
@@ -3013,11 +3047,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-151">
+        <li id="section-152">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-151">&#182;</a>
+                <a class="pilcrow" href="#section-152">&#182;</a>
               </div>
               <p>Alias to enum.</p>
 
@@ -3030,11 +3064,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-152">
+        <li id="section-153">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-152">&#182;</a>
+                <a class="pilcrow" href="#section-153">&#182;</a>
               </div>
               <p>Create a new enum column on the table.</p>
 
@@ -3047,11 +3081,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-153">
+        <li id="section-154">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-153">&#182;</a>
+                <a class="pilcrow" href="#section-154">&#182;</a>
               </div>
               <p>Create a new bit column on the table.</p>
 
@@ -3064,11 +3098,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-154">
+        <li id="section-155">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-154">&#182;</a>
+                <a class="pilcrow" href="#section-155">&#182;</a>
               </div>
               <p>Create a new binary column on the table.</p>
 
@@ -3081,11 +3115,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-155">
+        <li id="section-156">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-155">&#182;</a>
+                <a class="pilcrow" href="#section-156">&#182;</a>
               </div>
               <hr>
 
@@ -3094,11 +3128,11 @@ the blueprint element, so we&#39;ll just call that compilers function.</p>
         </li>
         
         
-        <li id="section-156">
+        <li id="section-157">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-156">&#182;</a>
+                <a class="pilcrow" href="#section-157">&#182;</a>
               </div>
               <p>Create a new drop index command on the blueprint.
 If the index is an array of columns, the developer means
@@ -3118,11 +3152,11 @@ to drop an index merely by specifying the columns involved.</p>
         </li>
         
         
-        <li id="section-157">
+        <li id="section-158">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-157">&#182;</a>
+                <a class="pilcrow" href="#section-158">&#182;</a>
               </div>
               <p>Add a new index command to the blueprint.
 If no name was specified for this index, we will create one using a basic
@@ -3144,11 +3178,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-158">
+        <li id="section-159">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-158">&#182;</a>
+                <a class="pilcrow" href="#section-159">&#182;</a>
               </div>
               <p>Add a new column to the blueprint.</p>
 
@@ -3165,11 +3199,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-159">
+        <li id="section-160">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-159">&#182;</a>
+                <a class="pilcrow" href="#section-160">&#182;</a>
               </div>
               <p>Add a new command to the blueprint.</p>
 
@@ -3185,11 +3219,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-160">
+        <li id="section-161">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-160">&#182;</a>
+                <a class="pilcrow" href="#section-161">&#182;</a>
               </div>
               <p>Chainable object used in creating SchemaBuilder commands.</p>
 
@@ -3204,11 +3238,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-161">
+        <li id="section-162">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-161">&#182;</a>
+                <a class="pilcrow" href="#section-162">&#182;</a>
               </div>
               <p>Sets the default value for a column.</p>
 
@@ -3222,11 +3256,11 @@ index type, such as primary or index, which makes the index unique.</p>
         </li>
         
         
-        <li id="section-162">
+        <li id="section-163">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-162">&#182;</a>
+                <a class="pilcrow" href="#section-163">&#182;</a>
               </div>
               <p>Sets an integer as unsigned, is a no-op
 if the column type is not an integer.</p>
@@ -3241,11 +3275,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-163">
+        <li id="section-164">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-163">&#182;</a>
+                <a class="pilcrow" href="#section-164">&#182;</a>
               </div>
               <p>Allows the column to contain null values.</p>
 
@@ -3259,11 +3293,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-164">
+        <li id="section-165">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-164">&#182;</a>
+                <a class="pilcrow" href="#section-165">&#182;</a>
               </div>
               <p>Adds an index on the specified column.</p>
 
@@ -3277,11 +3311,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-165">
+        <li id="section-166">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-165">&#182;</a>
+                <a class="pilcrow" href="#section-166">&#182;</a>
               </div>
               <p>Sets this column as the primary key.</p>
 
@@ -3295,11 +3329,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-166">
+        <li id="section-167">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-166">&#182;</a>
+                <a class="pilcrow" href="#section-167">&#182;</a>
               </div>
               <p>Sets this column as unique.</p>
 
@@ -3313,11 +3347,11 @@ if the column type is not an integer.</p>
         </li>
         
         
-        <li id="section-167">
+        <li id="section-168">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-167">&#182;</a>
+                <a class="pilcrow" href="#section-168">&#182;</a>
               </div>
               <p>Sets the column to be inserted after another,
 used in MySql alter tables.</p>
@@ -3336,11 +3370,11 @@ used in MySql alter tables.</p>
         </li>
         
         
-        <li id="section-168">
+        <li id="section-169">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-168">&#182;</a>
+                <a class="pilcrow" href="#section-169">&#182;</a>
               </div>
               <p>Compile a foreign key command.</p>
 
@@ -3353,11 +3387,11 @@ used in MySql alter tables.</p>
         </li>
         
         
-        <li id="section-169">
+        <li id="section-170">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-169">&#182;</a>
+                <a class="pilcrow" href="#section-170">&#182;</a>
               </div>
               <p>We need to prepare several of the elements of the foreign key definition
 before we can create the SQL, such as wrapping the tables and convert
@@ -3374,11 +3408,11 @@ an array of columns to comma-delimited strings for the SQL queries.</p>
         </li>
         
         
-        <li id="section-170">
+        <li id="section-171">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-170">&#182;</a>
+                <a class="pilcrow" href="#section-171">&#182;</a>
               </div>
               <p>Once we have the basic foreign key creation statement constructed we can
 build out the syntax for what should happen on an update or delete of
@@ -3395,11 +3429,11 @@ the affected columns, which will get something like &quot;cascade&quot;, etc.</p
         </li>
         
         
-        <li id="section-171">
+        <li id="section-172">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-171">&#182;</a>
+                <a class="pilcrow" href="#section-172">&#182;</a>
               </div>
               <p>Each of the column types have their own compiler functions which are
 responsible for turning the column definition into its SQL format
@@ -3420,11 +3454,11 @@ for the platform. Then column modifiers are compiled and added.</p>
         </li>
         
         
-        <li id="section-172">
+        <li id="section-173">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-172">&#182;</a>
+                <a class="pilcrow" href="#section-173">&#182;</a>
               </div>
               <p>Add the column modifiers to the definition.</p>
 
@@ -3444,46 +3478,11 @@ for the platform. Then column modifiers are compiled and added.</p>
         </li>
         
         
-        <li id="section-173">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-173">&#182;</a>
-              </div>
-              <p>Get the primary key command if it exists on the blueprint.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    getCommandByName: <span class="keyword">function</span>(blueprint, name) {
-      <span class="keyword">var</span> commands = <span class="keyword">this</span>.getCommandsByName(blueprint, name);
-      <span class="keyword">if</span> (commands.length &gt; <span class="number">0</span>) <span class="keyword">return</span> commands[<span class="number">0</span>];
-    },</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-174">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-174">&#182;</a>
-              </div>
-              <p>Get all of the commands with a given name.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    getCommandsByName: <span class="keyword">function</span>(blueprint, name) {
-      <span class="keyword">return</span> _.where(blueprint.commands, <span class="keyword">function</span>(value) { <span class="keyword">return</span> value.name == name; });
-    },</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-175">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-175">&#182;</a>
               </div>
               <p>Get the SQL for the column data type.</p>
 
@@ -3496,11 +3495,11 @@ for the platform. Then column modifiers are compiled and added.</p>
         </li>
         
         
-        <li id="section-176">
+        <li id="section-175">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-176">&#182;</a>
+                <a class="pilcrow" href="#section-175">&#182;</a>
               </div>
               <p>Add a prefix to an array of values, utilized in the client libs.</p>
 
@@ -3513,11 +3512,11 @@ for the platform. Then column modifiers are compiled and added.</p>
         </li>
         
         
-        <li id="section-177">
+        <li id="section-176">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-177">&#182;</a>
+                <a class="pilcrow" href="#section-176">&#182;</a>
               </div>
               <p>Wrap a table in keyword identifiers.</p>
 
@@ -3531,11 +3530,11 @@ for the platform. Then column modifiers are compiled and added.</p>
         </li>
         
         
-        <li id="section-178">
+        <li id="section-177">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-178">&#182;</a>
+                <a class="pilcrow" href="#section-177">&#182;</a>
               </div>
               <p>Wrap a value in keyword identifiers.</p>
 
@@ -3549,11 +3548,11 @@ for the platform. Then column modifiers are compiled and added.</p>
         </li>
         
         
-        <li id="section-179">
+        <li id="section-178">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-179">&#182;</a>
+                <a class="pilcrow" href="#section-178">&#182;</a>
               </div>
               <p>Format a value so that it can be used in &quot;default&quot; clauses.</p>
 
@@ -3566,26 +3565,16 @@ for the platform. Then column modifiers are compiled and added.</p>
       }
       <span class="keyword">return</span> <span class="string">''</span> + value;
     }
-  };
-
-  <span class="keyword">var</span> capitalize = <span class="keyword">function</span>(word) {
-    <span class="keyword">return</span> word.charAt(<span class="number">0</span>).toUpperCase() + word.slice(<span class="number">1</span>);
-  };
-
-  <span class="keyword">var</span> sortObject = <span class="keyword">function</span>(obj) {
-    <span class="keyword">return</span> _.sortBy(_.pairs(obj), <span class="keyword">function</span>(a) { 
-      <span class="keyword">return</span> a[<span class="number">0</span>]; 
-    });
   };</pre></div></div>
             
         </li>
         
         
-        <li id="section-180">
+        <li id="section-179">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-180">&#182;</a>
+                <a class="pilcrow" href="#section-179">&#182;</a>
               </div>
               <h2>Knex.Raw</h2>
 
@@ -3594,11 +3583,11 @@ for the platform. Then column modifiers are compiled and added.</p>
         </li>
         
         
-        <li id="section-181">
+        <li id="section-180">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-181">&#182;</a>
+                <a class="pilcrow" href="#section-180">&#182;</a>
               </div>
               <p>Helpful for injecting a snippet of raw SQL into a
 <code>Knex</code> block... in most cases, we&#39;ll check if the value
@@ -3624,11 +3613,11 @@ is an instanceof Raw, and if it is, use the supplied value.</p>
         </li>
         
         
-        <li id="section-182">
+        <li id="section-181">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-182">&#182;</a>
+                <a class="pilcrow" href="#section-181">&#182;</a>
               </div>
               <p>Returns the raw sql for the query.</p>
 
@@ -3641,11 +3630,11 @@ is an instanceof Raw, and if it is, use the supplied value.</p>
         </li>
         
         
-        <li id="section-183">
+        <li id="section-182">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-183">&#182;</a>
+                <a class="pilcrow" href="#section-182">&#182;</a>
               </div>
               <p>Returns the bindings for a raw query.</p>
 
@@ -3659,15 +3648,38 @@ is an instanceof Raw, and if it is, use the supplied value.</p>
         </li>
         
         
+        <li id="section-183">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-183">&#182;</a>
+              </div>
+              <p>Simple capitalization of a word.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> capitalize = <span class="keyword">function</span>(word) {
+    <span class="keyword">return</span> word.charAt(<span class="number">0</span>).toUpperCase() + word.slice(<span class="number">1</span>);
+  };</pre></div></div>
+            
+        </li>
+        
+        
         <li id="section-184">
             <div class="annotation">
               
-              <div class="pilwrap for-h2">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-184">&#182;</a>
               </div>
-              <h2>Knex.runQuery</h2>
+              <p>Sorts an object based on the names.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> sortObject = <span class="keyword">function</span>(obj) {
+    <span class="keyword">return</span> _.sortBy(_.pairs(obj), <span class="keyword">function</span>(a) { 
+      <span class="keyword">return</span> a[<span class="number">0</span>]; 
+    });
+  };</pre></div></div>
             
         </li>
         
@@ -3678,71 +3690,7 @@ is an instanceof Raw, and if it is, use the supplied value.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-185">&#182;</a>
               </div>
-              <p>Query runner, the context of this function is set to the caller,
-(either Builder or SchemaBuilder). Checks and fails on an already
-resolved transaction, otherwise calls the query on the specified client 
-and returns a deferred promise.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  Knex.runQuery = <span class="keyword">function</span>(builder) {
-    <span class="keyword">if</span> (builder.transaction) {
-      <span class="keyword">if</span> (!builder.transaction.connection) <span class="keyword">return</span> Q.reject(<span class="keyword">new</span> Error(<span class="string">'The transaction has already completed.'</span>));
-      builder._connection = builder.transaction.connection;
-    }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-186">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-186">&#182;</a>
-              </div>
-              <p>Prep the SQL associated with the builder.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    builder.sql = builder.toSql();
-    builder.bindings = builder._cleanBindings();
-    <span class="keyword">if</span> (!_.isArray(builder.sql)) builder.sql = [builder.sql];
-    
-    <span class="keyword">var</span> chain;
-    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = builder.sql.length; i &lt; l; i++) {
-      <span class="keyword">if</span> (chain) {
-        chain.then(multiQuery(builder, i, chain));
-      } <span class="keyword">else</span> {
-        chain = multiQuery(builder, i);
-      }
-    }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-187">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-187">&#182;</a>
-              </div>
-              <p>Query on the query builder, which should resolve with a promise.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">return</span> chain;
-  };</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-188">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-188">&#182;</a>
-              </div>
-              <p>Sets up a multi-query</p>
+              <p>Sets up a multi-query to be executed with serial promises.</p>
 
             </div>
             
@@ -3758,11 +3706,11 @@ and returns a deferred promise.</p>
         </li>
         
         
-        <li id="section-189">
+        <li id="section-186">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-189">&#182;</a>
+                <a class="pilcrow" href="#section-186">&#182;</a>
               </div>
               <h2>Knex.Initialize</h2>
 
@@ -3771,11 +3719,11 @@ and returns a deferred promise.</p>
         </li>
         
         
-        <li id="section-190">
+        <li id="section-187">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-190">&#182;</a>
+                <a class="pilcrow" href="#section-187">&#182;</a>
               </div>
               
             </div>
@@ -3783,11 +3731,11 @@ and returns a deferred promise.</p>
         </li>
         
         
-        <li id="section-191">
+        <li id="section-188">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-191">&#182;</a>
+                <a class="pilcrow" href="#section-188">&#182;</a>
               </div>
               <p>Takes a hash of options to initialize the database
 connection. The <code>client</code> is required to choose which client
@@ -3803,11 +3751,11 @@ into <code>client.initialize</code>.</p>
         </li>
         
         
-        <li id="section-192">
+        <li id="section-189">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-192">&#182;</a>
+                <a class="pilcrow" href="#section-189">&#182;</a>
               </div>
               <p>A name for the connection isn&#39;t required in
 cases where there is only a single connection.</p>
@@ -3822,11 +3770,11 @@ cases where there is only a single connection.</p>
         </li>
         
         
-        <li id="section-193">
+        <li id="section-190">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-193">&#182;</a>
+                <a class="pilcrow" href="#section-190">&#182;</a>
               </div>
               <p>Don&#39;t try to initialize the same <code>name</code> twice... If necessary,
 delete the instance from <code>Knex.Instances</code>.</p>
@@ -3844,11 +3792,11 @@ delete the instance from <code>Knex.Instances</code>.</p>
         </li>
         
         
-        <li id="section-194">
+        <li id="section-191">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-194">&#182;</a>
+                <a class="pilcrow" href="#section-191">&#182;</a>
               </div>
               <p>Checks if this is a default client. If it&#39;s not,
 require it as the path to the client if it&#39;s a string,
@@ -3867,11 +3815,11 @@ and otherwise, set the object to the client.</p>
         </li>
         
         
-        <li id="section-195">
+        <li id="section-192">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-195">&#182;</a>
+                <a class="pilcrow" href="#section-192">&#182;</a>
               </div>
               <p>Creates a new instance of the db client, passing the name and options.</p>
 
@@ -3882,11 +3830,11 @@ and otherwise, set the object to the client.</p>
         </li>
         
         
-        <li id="section-196">
+        <li id="section-193">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-196">&#182;</a>
+                <a class="pilcrow" href="#section-193">&#182;</a>
               </div>
               <p>Setup the grammars specific to the client.</p>
 
@@ -3898,11 +3846,11 @@ and otherwise, set the object to the client.</p>
         </li>
         
         
-        <li id="section-197">
+        <li id="section-194">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-197">&#182;</a>
+                <a class="pilcrow" href="#section-194">&#182;</a>
               </div>
               <p>If this is named &quot;default&quot; then we&#39;re setting this on the Knex</p>
 
@@ -3918,11 +3866,11 @@ and otherwise, set the object to the client.</p>
         </li>
         
         
-        <li id="section-198">
+        <li id="section-195">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-198">&#182;</a>
+                <a class="pilcrow" href="#section-195">&#182;</a>
               </div>
               <p>Inherit static properties, without any that don&#39;t apply except
 on the &quot;root&quot; <code>Knex</code>.</p>
@@ -3934,11 +3882,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-199">
+        <li id="section-196">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-199">&#182;</a>
+                <a class="pilcrow" href="#section-196">&#182;</a>
               </div>
               <p>Initialize the schema builder methods.</p>
 
@@ -3953,11 +3901,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-200">
+        <li id="section-197">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-200">&#182;</a>
+                <a class="pilcrow" href="#section-197">&#182;</a>
               </div>
               <p>Specifically set the client on the current target.</p>
 
@@ -3969,11 +3917,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-201">
+        <li id="section-198">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-201">&#182;</a>
+                <a class="pilcrow" href="#section-198">&#182;</a>
               </div>
               <p>Executes a Raw query.</p>
 
@@ -3988,11 +3936,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-202">
+        <li id="section-199">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-202">&#182;</a>
+                <a class="pilcrow" href="#section-199">&#182;</a>
               </div>
               <p>Add this instance to the global <code>Knex</code> instances, and return.</p>
 
@@ -4006,11 +3954,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-203">
+        <li id="section-200">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-203">&#182;</a>
+                <a class="pilcrow" href="#section-200">&#182;</a>
               </div>
               <p>Default client paths, located in the <code>./clients</code> directory.</p>
 
@@ -4026,11 +3974,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-204">
+        <li id="section-201">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-204">&#182;</a>
+                <a class="pilcrow" href="#section-201">&#182;</a>
               </div>
               <p>Named instances of Knex, presumably with different database
 connections, the main instance being named &quot;main&quot;...</p>
@@ -4042,11 +3990,11 @@ connections, the main instance being named &quot;main&quot;...</p>
         </li>
         
         
-        <li id="section-205">
+        <li id="section-202">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-205">&#182;</a>
+                <a class="pilcrow" href="#section-202">&#182;</a>
               </div>
               <p>Export the Knex module</p>
 

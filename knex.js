@@ -38,13 +38,17 @@
 
     // For those who dislike promise interfaces.
     exec: function(callback) {
-      var run = Knex.runQuery(this);
-      return run.nodeify(callback);
+      var run = this.runQuery();
+      return run.then(function(resp) {
+        callback(null, resp);
+      }, function(err) {
+        callback(err, null);
+      });
     },
 
     // The promise interface for the query builder.
     then: function(onFulfilled, onRejected) {
-      var run = Knex.runQuery(this);
+      var run = this.runQuery();
       return run.then(onFulfilled, onRejected);
     },
 
@@ -94,7 +98,31 @@
         if (!(bindings[i] instanceof Raw)) cleaned.push(bindings[i]);
       }
       return cleaned;
+    },
+
+    // Runs the query on the current builder instance and returns a promise.
+    runQuery: function() {
+      if (this.transaction) {
+        if (!this.transaction.connection) return When.reject(new Error('The transaction has already completed.'));
+        this._connection = this.transaction.connection;
+      }
+
+      // Prep the SQL associated with the this.
+      this.sql = this.toSql();
+      this.bindings = this._cleanBindings();
+      if (!_.isArray(this.sql)) this.sql = [this.sql];
+      
+      var chain;
+      for (var i = 0, l = this.sql.length; i < l; i++) {
+        if (chain) {
+          chain.then(multiQuery(this, i, chain));
+        } else {
+          chain = multiQuery(this, i);
+        }
+      }
+      return chain;
     }
+
   };
 
   // Grammar
@@ -1398,16 +1426,6 @@
     }
   };
 
-  var capitalize = function(word) {
-    return word.charAt(0).toUpperCase() + word.slice(1);
-  };
-
-  var sortObject = function(obj) {
-    return _.sortBy(_.pairs(obj), function(a) { 
-      return a[0]; 
-    });
-  };
-
   // Knex.Raw
   // -------
 
@@ -1440,38 +1458,19 @@
     }
   });
 
-  // Knex.runQuery
-  // -------
-
-  // Query runner, the context of this function is set to the caller,
-  // (either Builder or SchemaBuilder). Checks and fails on an already
-  // resolved transaction, otherwise calls the query on the specified client 
-  // and returns a deferred promise.
-  Knex.runQuery = function(builder) {
-    if (builder.transaction) {
-      if (!builder.transaction.connection) return When.reject(new Error('The transaction has already completed.'));
-      builder._connection = builder.transaction.connection;
-    }
-
-    // Prep the SQL associated with the builder.
-    builder.sql = builder.toSql();
-    builder.bindings = builder._cleanBindings();
-    if (!_.isArray(builder.sql)) builder.sql = [builder.sql];
-    
-    var chain;
-    for (var i = 0, l = builder.sql.length; i < l; i++) {
-      if (chain) {
-        chain.then(multiQuery(builder, i, chain));
-      } else {
-        chain = multiQuery(builder, i);
-      }
-    }
-
-    // Query on the query builder, which should resolve with a promise.
-    return chain;
+  // Simple capitalization of a word.
+  var capitalize = function(word) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
   };
 
-  // Sets up a multi-query
+  // Sorts an object based on the names.
+  var sortObject = function(obj) {
+    return _.sortBy(_.pairs(obj), function(a) { 
+      return a[0]; 
+    });
+  };
+
+  // Sets up a multi-query to be executed with serial promises.
   var multiQuery = function(builder, i, chain) {
     if (chain) {
       return function() {

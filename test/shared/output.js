@@ -87,7 +87,7 @@ module.exports = {
     'schema.7': {
       mysql: {
         sql: ['select * from information_schema.tables where table_schema = ? and table_name = ?'],
-        bindings: ['knex_test','test_table_two']
+        bindings: ['test_table_two']
       },
       postgres: {
         sql: ['select * from information_schema.tables where table_name = ?'],
@@ -128,403 +128,403 @@ module.exports = {
     },
     'inserts.1': {
       mysql: {
-        sql: 'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
+        sql: ['insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)'],
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test@example.com','Test','User',1,new Date()]
       },
       postgres: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
+        sql: ['insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"'],
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test@example.com','Test','User',1,new Date()]
       },
       sqlite3: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
+        sql: ['insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)'],
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test@example.com','Test','User',1,new Date()]
       }
     },
     'inserts.2': {
       mysql: {
-        sql: 'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
+        sql: ['insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)'],
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',1,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test3@example.com','Test','User',2,new Date()]
       },
       postgres: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
+        sql: ['insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"'],
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',1,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test3@example.com','Test','User',2,new Date()]
       },
       sqlite3: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union all select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"',
+        sql: ['insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union all select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"'],
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',1,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test3@example.com','Test','User',2,new Date()]
       }
     },
     'inserts.3': {
       mysql: {
-        sql: 'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
+        sql: ['insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)'],
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test4@example.com','Test','User',2,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test5@example.com','Test','User',2,new Date()]
       },
       postgres: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
+        sql: ['insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"'],
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test4@example.com','Test','User',2,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test5@example.com','Test','User',2,new Date()]
       },
       sqlite3: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union all select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"',
+        sql: ['insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union all select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"'],
         bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test4@example.com','Test','User',2,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test5@example.com','Test','User',2,new Date()]
       }
     },
     'inserts.4': {
       mysql: {
-        sql: 'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
-        bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test6@example.com','Test','User',2,new Date()]
+        sql: ['insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)'],
+        bindings: [1,2,'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test6@example.com','Test','User',2,new Date()]
       },
       postgres: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
-        bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test6@example.com','Test','User',2,new Date()]
+        sql: ['insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"'],
+        bindings: [1,2,'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test6@example.com','Test','User',2,new Date()]
       },
       sqlite3: {
-        sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
-        bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test6@example.com','Test','User',2,new Date()]
+        sql: ['insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)'],
+        bindings: [1,2,'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test6@example.com','Test','User',2,new Date()]
       }
     },
     'updates.1': {
       mysql: {
-        sql: 'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
-        bindings: ['test-updated@example.com','User','Test',1]
+        sql: ['update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?'],
+        bindings: ['test100@example.com','User','Test',1]
       },
       postgres: {
-        sql: 'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
-        bindings: ['test-updated@example.com','User','Test',1]
+        sql: ['update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?'],
+        bindings: ['test100@example.com','User','Test',1]
       },
       sqlite3: {
-        sql: 'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
-        bindings: ['test-updated@example.com','User','Test',1]
+        sql: ['update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?'],
+        bindings: ['test100@example.com','User','Test',1]
       }
     },
     'selects.1': {
       mysql: {
-        sql: 'select * from `accounts`',
+        sql: ['select * from `accounts`'],
         bindings: []
       },
       postgres: {
-        sql: 'select * from "accounts"',
+        sql: ['select * from "accounts"'],
         bindings: []
       },
       sqlite3: {
-        sql: 'select * from "accounts"',
+        sql: ['select * from "accounts"'],
         bindings: []
       }
     },
     'selects.2': {
       mysql: {
-        sql: 'select * from `accounts` order by `id` asc',
+        sql: ['select * from `accounts` order by `id` asc'],
         bindings: []
       },
       postgres: {
-        sql: 'select * from "accounts" order by "id" asc',
+        sql: ['select * from "accounts" order by "id" asc'],
         bindings: []
       },
       sqlite3: {
-        sql: 'select * from "accounts" order by "id" collate nocase asc',
+        sql: ['select * from "accounts" order by "id" collate nocase asc'],
         bindings: []
       }
     },
     'selects.3': {
       mysql: {
-        sql: 'select `first_name`, `last_name` from `accounts` where `id` = ?',
+        sql: ['select `first_name`, `last_name` from `accounts` where `id` = ?'],
         bindings: [1]
       },
       postgres: {
-        sql: 'select "first_name", "last_name" from "accounts" where "id" = ?',
+        sql: ['select "first_name", "last_name" from "accounts" where "id" = ?'],
         bindings: [1]
       },
       sqlite3: {
-        sql: 'select "first_name", "last_name" from "accounts" where "id" = ?',
+        sql: ['select "first_name", "last_name" from "accounts" where "id" = ?'],
         bindings: [1]
       }
     },
     'selects.4': {
       mysql: {
-        sql: 'select `email`, `logins` from `accounts` where `id` > ?',
+        sql: ['select `email`, `logins` from `accounts` where `id` > ?'],
         bindings: [1]
       },
       postgres: {
-        sql: 'select "email", "logins" from "accounts" where "id" > ?',
+        sql: ['select "email", "logins" from "accounts" where "id" > ?'],
         bindings: [1]
       },
       sqlite3: {
-        sql: 'select "email", "logins" from "accounts" where "id" > ?',
+        sql: ['select "email", "logins" from "accounts" where "id" > ?'],
         bindings: [1]
       }
     },
     'selects.5': {
       mysql: {
-        sql: 'select * from `accounts` where `id` = ?',
+        sql: ['select * from `accounts` where `id` = ?'],
         bindings: [1]
       },
       postgres: {
-        sql: 'select * from "accounts" where "id" = ?',
+        sql: ['select * from "accounts" where "id" = ?'],
         bindings: [1]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where "id" = ?',
+        sql: ['select * from "accounts" where "id" = ?'],
         bindings: [1]
       }
     },
     'selects.6': {
       mysql: {
-        sql: 'select * from `accounts` where `id` = ?',
+        sql: ['select * from `accounts` where `id` = ?'],
         bindings: [undefined]
       },
       postgres: {
-        sql: 'select * from "accounts" where "id" = ?',
+        sql: ['select * from "accounts" where "id" = ?'],
         bindings: [undefined]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where "id" = ?',
+        sql: ['select * from "accounts" where "id" = ?'],
         bindings: [undefined]
       }
     },
     'selects.7': {
       mysql: {
-        sql: 'select `first_name`, `email` from `accounts` where `id` = ?',
+        sql: ['select `first_name`, `email` from `accounts` where `id` = ?'],
         bindings: [null]
       },
       postgres: {
-        sql: 'select "first_name", "email" from "accounts" where "id" = ?',
+        sql: ['select "first_name", "email" from "accounts" where "id" = ?'],
         bindings: [null]
       },
       sqlite3: {
-        sql: 'select "first_name", "email" from "accounts" where "id" = ?',
+        sql: ['select "first_name", "email" from "accounts" where "id" = ?'],
         bindings: [null]
       }
     },
     'selects.8': {
       mysql: {
-        sql: 'select * from `accounts` where `id` = ?',
+        sql: ['select * from `accounts` where `id` = ?'],
         bindings: [0]
       },
       postgres: {
-        sql: 'select * from "accounts" where "id" = ?',
+        sql: ['select * from "accounts" where "id" = ?'],
         bindings: [0]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where "id" = ?',
+        sql: ['select * from "accounts" where "id" = ?'],
         bindings: [0]
       }
     },
     'selects.9': {
       mysql: {
-        sql: 'select distinct `email` from `accounts` where `logins` = ?',
+        sql: ['select distinct `email` from `accounts` where `logins` = ? order by `email` asc'],
         bindings: [2]
       },
       postgres: {
-        sql: 'select distinct "email" from "accounts" where "logins" = ?',
+        sql: ['select distinct "email" from "accounts" where "logins" = ? order by "email" asc'],
         bindings: [2]
       },
       sqlite3: {
-        sql: 'select distinct "email" from "accounts" where "logins" = ?',
+        sql: ['select distinct "email" from "accounts" where "logins" = ? order by "email" collate nocase asc'],
         bindings: [2]
       }
     },
     'selects.10': {
       mysql: {
-        sql: 'select distinct `email` from `accounts`',
+        sql: ['select distinct `email` from `accounts` order by `email` asc'],
         bindings: []
       },
       postgres: {
-        sql: 'select distinct "email" from "accounts"',
+        sql: ['select distinct "email" from "accounts" order by "email" asc'],
         bindings: []
       },
       sqlite3: {
-        sql: 'select distinct "email" from "accounts"',
+        sql: ['select distinct "email" from "accounts" order by "email" collate nocase asc'],
         bindings: []
       }
     },
     'selects.11': {
       mysql: {
-        sql: 'select `first_name`, `last_name` from `accounts` where `id` = ? or `id` > ?',
+        sql: ['select `first_name`, `last_name` from `accounts` where `id` = ? or `id` > ?'],
         bindings: [1,2]
       },
       postgres: {
-        sql: 'select "first_name", "last_name" from "accounts" where "id" = ? or "id" > ?',
+        sql: ['select "first_name", "last_name" from "accounts" where "id" = ? or "id" > ?'],
         bindings: [1,2]
       },
       sqlite3: {
-        sql: 'select "first_name", "last_name" from "accounts" where "id" = ? or "id" > ?',
+        sql: ['select "first_name", "last_name" from "accounts" where "id" = ? or "id" > ?'],
         bindings: [1,2]
       }
     },
     'selects.12': {
       mysql: {
-        sql: 'select `first_name`, `last_name`, `about` from `accounts` where `id` = ? and `email` = ?',
+        sql: ['select `first_name`, `last_name`, `about` from `accounts` where `id` = ? and `email` = ?'],
         bindings: [1,'test@example.com']
       },
       postgres: {
-        sql: 'select "first_name", "last_name", "about" from "accounts" where "id" = ? and "email" = ?',
+        sql: ['select "first_name", "last_name", "about" from "accounts" where "id" = ? and "email" = ?'],
         bindings: [1,'test@example.com']
       },
       sqlite3: {
-        sql: 'select "first_name", "last_name", "about" from "accounts" where "id" = ? and "email" = ?',
+        sql: ['select "first_name", "last_name", "about" from "accounts" where "id" = ? and "email" = ?'],
         bindings: [1,'test@example.com']
       }
     },
     'selects.13': {
       mysql: {
-        sql: 'select * from `accounts` where (`id` = ? or `id` = ?)',
+        sql: ['select * from `accounts` where (`id` = ? or `id` = ?)'],
         bindings: [2,3]
       },
       postgres: {
-        sql: 'select * from "accounts" where ("id" = ? or "id" = ?)',
+        sql: ['select * from "accounts" where ("id" = ? or "id" = ?)'],
         bindings: [2,3]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where ("id" = ? or "id" = ?)',
+        sql: ['select * from "accounts" where ("id" = ? or "id" = ?)'],
         bindings: [2,3]
       }
     },
     'selects.14': {
       mysql: {
-        sql: 'select * from `accounts` where `id` in (?, ?, ?)',
+        sql: ['select * from `accounts` where `id` in (?, ?, ?)'],
         bindings: [1,2,3]
       },
       postgres: {
-        sql: 'select * from "accounts" where "id" in (?, ?, ?)',
+        sql: ['select * from "accounts" where "id" in (?, ?, ?)'],
         bindings: [1,2,3]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where "id" in (?, ?, ?)',
+        sql: ['select * from "accounts" where "id" in (?, ?, ?)'],
         bindings: [1,2,3]
       }
     },
     'selects.15': {
       mysql: {
-        sql: 'select * from `accounts` where `email` = ? or `id` in (?, ?, ?)',
+        sql: ['select * from `accounts` where `email` = ? or `id` in (?, ?, ?)'],
         bindings: ['test@example.com',2,3,4]
       },
       postgres: {
-        sql: 'select * from "accounts" where "email" = ? or "id" in (?, ?, ?)',
+        sql: ['select * from "accounts" where "email" = ? or "id" in (?, ?, ?)'],
         bindings: ['test@example.com',2,3,4]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where "email" = ? or "id" in (?, ?, ?)',
+        sql: ['select * from "accounts" where "email" = ? or "id" in (?, ?, ?)'],
         bindings: ['test@example.com',2,3,4]
       }
     },
     'selects.16': {
       mysql: {
-        sql: 'select * from `accounts` where exists (select `id` from `test_table_two` where `id` = ?)',
+        sql: ['select * from `accounts` where exists (select `id` from `test_table_two` where `id` = ?)'],
         bindings: [1]
       },
       postgres: {
-        sql: 'select * from "accounts" where exists (select "id" from "test_table_two" where "id" = ?)',
+        sql: ['select * from "accounts" where exists (select "id" from "test_table_two" where "id" = ?)'],
         bindings: [1]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where exists (select "id" from "test_table_two" where "id" = ?)',
+        sql: ['select * from "accounts" where exists (select "id" from "test_table_two" where "id" = ?)'],
         bindings: [1]
       }
     },
     'selects.17': {
       mysql: {
-        sql: 'select * from `accounts` where `id` between ? and ?',
+        sql: ['select * from `accounts` where `id` between ? and ?'],
         bindings: [1,100]
       },
       postgres: {
-        sql: 'select * from "accounts" where "id" between ? and ?',
+        sql: ['select * from "accounts" where "id" between ? and ?'],
         bindings: [1,100]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where "id" between ? and ?',
+        sql: ['select * from "accounts" where "id" between ? and ?'],
         bindings: [1,100]
       }
     },
     'selects.18': {
       mysql: {
-        sql: 'select * from `accounts` where `id` between ? and ? or `id` between ? and ?',
+        sql: ['select * from `accounts` where `id` between ? and ? or `id` between ? and ?'],
         bindings: [1,100,200,300]
       },
       postgres: {
-        sql: 'select * from "accounts" where "id" between ? and ? or "id" between ? and ?',
+        sql: ['select * from "accounts" where "id" between ? and ? or "id" between ? and ?'],
         bindings: [1,100,200,300]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where "id" between ? and ? or "id" between ? and ?',
+        sql: ['select * from "accounts" where "id" between ? and ? or "id" between ? and ?'],
         bindings: [1,100,200,300]
       }
     },
     'aggregate.1': {
       mysql: {
-        sql: 'select sum(`logins`) as aggregate from `accounts`',
+        sql: ['select sum(`logins`) as aggregate from `accounts`'],
         bindings: []
       },
       postgres: {
-        sql: 'select sum("logins") as aggregate from "accounts"',
+        sql: ['select sum("logins") as aggregate from "accounts"'],
         bindings: []
       },
       sqlite3: {
-        sql: 'select sum("logins") as aggregate from "accounts"',
+        sql: ['select sum("logins") as aggregate from "accounts"'],
         bindings: []
       }
     },
     'joins.1': {
       mysql: {
-        sql: 'select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`',
+        sql: ['select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`'],
         bindings: []
       },
       postgres: {
-        sql: 'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"',
+        sql: ['select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"'],
         bindings: []
       },
       sqlite3: {
-        sql: 'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"',
+        sql: ['select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"'],
         bindings: []
       }
     },
     'joins.2': {
       mysql: {
-        sql: 'select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`',
+        sql: ['select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`'],
         bindings: []
       },
       postgres: {
-        sql: 'select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"',
+        sql: ['select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"'],
         bindings: []
       },
       sqlite3: {
-        sql: 'select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"',
+        sql: ['select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"'],
         bindings: []
       }
     },
     'joins.3': {
       mysql: {
-        sql: 'select * from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` or `accounts`.`email` = `test_table_two`.`details`',
+        sql: ['select * from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` or `accounts`.`email` = `test_table_two`.`details`'],
         bindings: []
       },
       postgres: {
-        sql: 'select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details"',
+        sql: ['select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details"'],
         bindings: []
       },
       sqlite3: {
-        sql: 'select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details"',
+        sql: ['select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details"'],
         bindings: []
       }
     },
     'deletes.1': {
       mysql: {
-        sql: 'delete from `accounts` where `email` = ?',
+        sql: ['delete from `accounts` where `email` = ?'],
         bindings: ['test2@example.com']
       },
       postgres: {
-        sql: 'delete from "accounts" where "email" = ?',
+        sql: ['delete from "accounts" where "email" = ?'],
         bindings: ['test2@example.com']
       },
       sqlite3: {
-        sql: 'delete from "accounts" where "email" = ?',
+        sql: ['delete from "accounts" where "email" = ?'],
         bindings: ['test2@example.com']
       }
     },
     'additional.1': {
       mysql: {
-        sql: 'truncate `test_table_two`',
+        sql: ['truncate `test_table_two`'],
         bindings: []
       },
       postgres: {
-        sql: 'truncate "test_table_two" restart identity',
+        sql: ['truncate "test_table_two" restart identity'],
         bindings: []
       },
       sqlite3: {
@@ -534,20 +534,20 @@ module.exports = {
     },
     'unions.1': {
       mysql: {
-        sql: 'select * from `accounts` where `id` = ? union select * from `accounts` where `id` = ?',
+        sql: ['select * from `accounts` where `id` = ? union select * from `accounts` where `id` = ?'],
         bindings: [1,2]
       },
       postgres: {
-        sql: 'select * from "accounts" where "id" = ? union select * from "accounts" where "id" = ?',
+        sql: ['select * from "accounts" where "id" = ? union select * from "accounts" where "id" = ?'],
         bindings: [1,2]
       },
       sqlite3: {
-        sql: 'select * from "accounts" where "id" = ? union select * from "accounts" where "id" = ?',
+        sql: ['select * from "accounts" where "id" = ? union select * from "accounts" where "id" = ?'],
         bindings: [1,2]
       }
     }
   },
-  db: {
+  object: {
     'inserts.1': {
       mysql: [1],
       postgres: [1],
@@ -578,7 +578,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -667,7 +667,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -676,7 +676,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -727,7 +727,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -776,7 +776,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -825,7 +825,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -940,7 +940,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -949,7 +949,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -958,7 +958,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -990,13 +990,13 @@ module.exports = {
         email: 'test6@example.com'
       }],
       postgres: [{
-        email: 'test4@example.com'
-      },{
         email: 'test3@example.com'
       },{
-        email: 'test6@example.com'
+        email: 'test4@example.com'
       },{
         email: 'test5@example.com'
+      },{
+        email: 'test6@example.com'
       }],
       sqlite3: [{
         email: 'test3@example.com'
@@ -1010,7 +1010,7 @@ module.exports = {
     },
     'selects.10': {
       mysql: [{
-        email: 'test-updated@example.com'
+        email: 'test100@example.com'
       },{
         email: 'test2@example.com'
       },{
@@ -1023,20 +1023,20 @@ module.exports = {
         email: 'test6@example.com'
       }],
       postgres: [{
-        email: 'test-updated@example.com'
+        email: 'test100@example.com'
       },{
         email: 'test2@example.com'
       },{
-        email: 'test5@example.com'
+        email: 'test3@example.com'
       },{
         email: 'test4@example.com'
       },{
-        email: 'test3@example.com'
+        email: 'test5@example.com'
       },{
         email: 'test6@example.com'
       }],
       sqlite3: [{
-        email: 'test-updated@example.com'
+        email: 'test100@example.com'
       },{
         email: 'test2@example.com'
       },{
@@ -1162,7 +1162,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1203,7 +1203,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1212,7 +1212,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1316,7 +1316,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1405,7 +1405,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1414,7 +1414,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1465,7 +1465,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1514,7 +1514,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1563,7 +1563,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1614,7 +1614,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1703,7 +1703,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1712,7 +1712,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1774,7 +1774,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1784,7 +1784,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1794,7 +1794,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1806,7 +1806,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1861,7 +1861,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1916,7 +1916,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1973,7 +1973,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -2084,7 +2084,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -2095,7 +2095,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -2155,20 +2155,19 @@ module.exports = {
     },
     'deletes.1': {
       mysql: 1,
-      postgres: 1,
-      sqlite3: undefined
+      postgres: 1
     },
     'additional.1': {
       mysql: '',
       postgres: '',
-      sqlite3: undefined
+      sqlite3: ''
     },
     'unions.1': {
       mysql: [{
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -2177,7 +2176,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -2186,7 +2185,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null

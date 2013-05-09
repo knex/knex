@@ -1,5 +1,5 @@
 var When = require('when');
-module.exports = function(Knex, handler, error, type, db) {
+module.exports = function(Knex, resolver, error) {
 
   var res = null;
 
@@ -32,8 +32,6 @@ module.exports = function(Knex, handler, error, type, db) {
         table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
       })
     ]);
-  }, function(err) {
-    console.log(err.stack);
   })
   .then(function(resp) {
     // Edit test table one
@@ -63,6 +61,6 @@ module.exports = function(Knex, handler, error, type, db) {
     res.push(resp);
     return res;
   })
-  .then(handler, error);
+  .then(resolver, error);
 
 };

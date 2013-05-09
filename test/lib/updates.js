@@ -1,5 +1,5 @@
 
-module.exports = function(Knex, dbName, handler, type) {
+module.exports = function(Knex, dbName, resolver) {
 
   describe(dbName, function() {
 
@@ -10,9 +10,9 @@ module.exports = function(Knex, dbName, handler, type) {
         .update({
           first_name: 'User',
           last_name: 'Test',
-          email:'test-updated@example.com'
+          email:'test100@example.com'
         })
-        .then(handler(ok), ok);
+        .then(resolver(ok), ok);
       
     });
 

@@ -7,7 +7,7 @@
     "test": "test"
   },
   "devDependencies": {
-    "mocha": "1.7.x",
+    "mocha": "1.9.x",
     "objectdump": ">=0.3.0",
     "mysql": "~2.0.0-alpha7",
     "pg": "~1.1.0",

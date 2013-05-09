@@ -1,5 +1,5 @@
 
-module.exports = function(Knex, dbName, handler, type) {
+module.exports = function(Knex, dbName, resolver) {
 
   describe(dbName, function() {
 
@@ -13,13 +13,18 @@ module.exports = function(Knex, dbName, handler, type) {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         created_at: new Date(),
         updated_at: new Date()
-      }).then(handler(ok), ok).then(function() {
+      }).then(resolver(ok), ok);
+    
+    });
 
-        Knex('test_table_two').insert({
-          account_id: 1,
-          details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
-        }).exec();
-
+    it('should allow for using the `exec` interface', function(ok) {
+      
+      Knex('test_table_two').insert({
+        account_id: 1,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      }).exec(function(err, resp) {
+        if (err) return ok(err);
+        ok();
       });
     
     });
@@ -43,7 +48,7 @@ module.exports = function(Knex, dbName, handler, type) {
           logins: 2,
           created_at: new Date(),
           updated_at: new Date()
-        }]).then(handler(ok), ok);
+        }]).then(resolver(ok), ok);
 
     });
 
@@ -66,13 +71,11 @@ module.exports = function(Knex, dbName, handler, type) {
         last_name: 'User',
         email:'test5@example.com'
       }])
-      .then(handler(ok), ok);
+      .then(resolver(ok), ok);
 
     });
 
     it('will fail when multple inserts are made into a unique column', function(ok) {
-
-      if (type === 'String') return ok();
 
       Knex('accounts')
         .where('id', '>', 1)
@@ -106,7 +109,7 @@ module.exports = function(Knex, dbName, handler, type) {
           created_at: new Date(),
           updated_at: new Date()
         })
-        .then(handler(ok), ok);
+        .then(resolver(ok), ok);
 
     });
   
