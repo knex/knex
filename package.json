@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "a fun sql query builder",
   "main": "knex.js",
   "directories": {
