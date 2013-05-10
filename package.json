@@ -14,7 +14,7 @@
     "sqlite3": "~2.1.7"
   },
   "dependencies": {
-    "when": ">=2.0.1",
+    "when": ">=2.1.0",
     "underscore": "~1.4.4",
     "generic-pool": "~2.0.3"
   },
