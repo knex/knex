@@ -10,7 +10,7 @@ module.exports = function(Knex, dbName, resolver) {
         .update({
           first_name: 'User',
           last_name: 'Test',
-          email:'test-updated@example.com'
+          email:'test100@example.com'
         })
         .then(resolver(ok), ok);
       

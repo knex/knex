@@ -7,19 +7,19 @@
     "test": "test"
   },
   "devDependencies": {
-    "mocha": "1.7.x",
+    "mocha": "1.9.x",
     "objectdump": ">=0.3.0",
     "mysql": "~2.0.0-alpha7",
     "pg": "~1.1.0",
     "sqlite3": "~2.1.7"
   },
   "dependencies": {
-    "when": ">=2.0.1",
+    "when": ">=2.1.0",
     "underscore": "~1.4.4",
     "generic-pool": "~2.0.3"
   },
   "scripts": {
-    "test": "mocha -b -R spec test/index.js"
+    "test": "mocha -R spec test/index.js"
   },
   "repository": "https://github.com/tgriesser/knex",
   "keywords": [

@@ -185,15 +185,15 @@ module.exports = {
     'updates.1': {
       mysql: {
         sql: ['update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?'],
-        bindings: ['test-updated@example.com','User','Test',1]
+        bindings: ['test100@example.com','User','Test',1]
       },
       postgres: {
         sql: ['update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?'],
-        bindings: ['test-updated@example.com','User','Test',1]
+        bindings: ['test100@example.com','User','Test',1]
       },
       sqlite3: {
         sql: ['update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?'],
-        bindings: ['test-updated@example.com','User','Test',1]
+        bindings: ['test100@example.com','User','Test',1]
       }
     },
     'selects.1': {
@@ -310,29 +310,29 @@ module.exports = {
     },
     'selects.9': {
       mysql: {
-        sql: ['select distinct `email` from `accounts` where `logins` = ?'],
+        sql: ['select distinct `email` from `accounts` where `logins` = ? order by `email` asc'],
         bindings: [2]
       },
       postgres: {
-        sql: ['select distinct "email" from "accounts" where "logins" = ?'],
+        sql: ['select distinct "email" from "accounts" where "logins" = ? order by "email" asc'],
         bindings: [2]
       },
       sqlite3: {
-        sql: ['select distinct "email" from "accounts" where "logins" = ?'],
+        sql: ['select distinct "email" from "accounts" where "logins" = ? order by "email" collate nocase asc'],
         bindings: [2]
       }
     },
     'selects.10': {
       mysql: {
-        sql: ['select distinct `email` from `accounts`'],
+        sql: ['select distinct `email` from `accounts` order by `email` asc'],
         bindings: []
       },
       postgres: {
-        sql: ['select distinct "email" from "accounts"'],
+        sql: ['select distinct "email" from "accounts" order by "email" asc'],
         bindings: []
       },
       sqlite3: {
-        sql: ['select distinct "email" from "accounts"'],
+        sql: ['select distinct "email" from "accounts" order by "email" collate nocase asc'],
         bindings: []
       }
     },
@@ -578,7 +578,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -667,7 +667,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -676,7 +676,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -727,7 +727,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -776,7 +776,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -825,7 +825,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -940,7 +940,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -949,7 +949,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -958,7 +958,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -990,13 +990,13 @@ module.exports = {
         email: 'test6@example.com'
       }],
       postgres: [{
-        email: 'test4@example.com'
-      },{
         email: 'test3@example.com'
       },{
-        email: 'test6@example.com'
+        email: 'test4@example.com'
       },{
         email: 'test5@example.com'
+      },{
+        email: 'test6@example.com'
       }],
       sqlite3: [{
         email: 'test3@example.com'
@@ -1010,7 +1010,7 @@ module.exports = {
     },
     'selects.10': {
       mysql: [{
-        email: 'test-updated@example.com'
+        email: 'test100@example.com'
       },{
         email: 'test2@example.com'
       },{
@@ -1023,20 +1023,20 @@ module.exports = {
         email: 'test6@example.com'
       }],
       postgres: [{
-        email: 'test-updated@example.com'
+        email: 'test100@example.com'
       },{
         email: 'test2@example.com'
       },{
-        email: 'test5@example.com'
+        email: 'test3@example.com'
       },{
         email: 'test4@example.com'
       },{
-        email: 'test3@example.com'
+        email: 'test5@example.com'
       },{
         email: 'test6@example.com'
       }],
       sqlite3: [{
-        email: 'test-updated@example.com'
+        email: 'test100@example.com'
       },{
         email: 'test2@example.com'
       },{
@@ -1162,7 +1162,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1203,7 +1203,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1212,7 +1212,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1316,7 +1316,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1405,7 +1405,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1414,7 +1414,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1465,7 +1465,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1514,7 +1514,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1563,7 +1563,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1614,7 +1614,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1703,7 +1703,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1712,7 +1712,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1774,7 +1774,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1784,7 +1784,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1794,7 +1794,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1806,7 +1806,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1861,7 +1861,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1916,7 +1916,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1973,7 +1973,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -2084,7 +2084,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -2095,7 +2095,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -2167,7 +2167,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -2176,7 +2176,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -2185,7 +2185,7 @@ module.exports = {
         id: 1,
         first_name: 'User',
         last_name: 'Test',
-        email: 'test-updated@example.com',
+        email: 'test100@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null

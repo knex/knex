@@ -118,10 +118,11 @@ var handler = function(instance, section) {
               }
               assert.deepEqual(checkData, typeData);
             } else {
-              assert.equal(checkData.sql, typeData.sql);
+              assert.deepEqual(checkData.sql, typeData.sql);
               assert.deepEqual(_.map(checkData.bindings, omitDates), _.map(typeData.bindings, omitDates));
             }
           } catch (e) {
+            console.log(e.stack);
             resolver(e);
           }
         }

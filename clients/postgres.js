@@ -157,11 +157,6 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
     return "alter table " + table + " drop constraint " + command.index;
   },
 
-  // Compile a drop index command.
-  compileDropIndex: function(blueprint, command) {
-    return "drop index " + command.index;
-  },
-
   // Compile a drop foreign key command.
   compileDropForeign: function(blueprint, command) {
     var table = this.wrapTable(blueprint);
@@ -213,19 +208,9 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
     return "enum('" + column.allowed.join("', '")  + "')";
   },
 
-  // Create the column definition for a date type.
-  typeDate: function(column) {
-    return 'date';
-  },
-
   // Create the column definition for a date-time type.
   typeDateTime: function(column) {
     return 'timestamp';
-  },
-
-  // Create the column definition for a time type.
-  typeTime: function(column) {
-    return 'time';
   },
 
   // Create the column definition for a timestamp type.
@@ -241,11 +226,6 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   // Create the column definition for a binary type.
   typeBinary: function(column) {
     return 'bytea';
-  },
-
-  // Get the SQL for a nullable column modifier.
-  modifyNullable: function(blueprint, column) {
-    return column.isNullable ? ' null' : ' not null';
   },
 
   // Get the SQL for a default column modifier.

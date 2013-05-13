@@ -26,8 +26,8 @@ module.exports = function(Knex, dbName, resolver) {
 
     it('has a "distinct" clause', function(ok) {
       When.all([
-        Knex('accounts').select().distinct('email').where('logins', 2),
-        Knex('accounts').distinct('email').select()
+        Knex('accounts').select().distinct('email').where('logins', 2).orderBy('email'),
+        Knex('accounts').distinct('email').select().orderBy('email')
       ]).then(resolver(ok, true), ok);
     });
 

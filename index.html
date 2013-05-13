@@ -67,8 +67,7 @@
       margin: 40px 0 50px 260px;
     }
     img#logo {
-      width: 396px;
-      height: 69px;
+      width: 450px;
     }
     div.warning {
       margin-top: 15px;
@@ -219,6 +218,7 @@
       <li>– <a href="#Builder-increment">increment</a></li>
       <li>– <a href="#Builder-decrement">decrement</a></li>
       <li>– <a href="#Builder-truncate">truncate *</a></li>
+      <li>– <a href="#Builder-debug">debug</a></li>
       <li><b><a href="#Schema-Building">Interface:</a></b></li>
       <li>– <a href="#Builder-then">then</a></li>
       <li>– <a href="#Builder-exec">exec</a></li>
@@ -274,7 +274,7 @@
   <div class="container">
 
     <p>
-      <h1>Knex.js</h1>
+      <img id="logo" src="docs/images/knex.png" alt="Knex.js">
     </p>
 
     <p>
@@ -636,6 +636,24 @@ Knex('accounts')
       Decrements a column's value by the specified amount.
     </p>
 
+    <p id="Builder-increment">
+      <b class="header">increment</b><code>.increment(column, value)</code>
+      <br />
+      Increments a column's value by the specified amount.
+    </p>
+
+    <p id="Builder-truncate">
+      <b class="header">truncate</b><code>.truncate()</code>
+      <br />
+      Truncates the current table.
+    </p>
+
+    <p id="Builder-debug">
+      <b class="header">debug</b><code>.debug()</code>
+      <br />
+      Turns on debugging for the current query chain.
+    </p>
+
     <h2 id="Transaction">Knex.Transaction</h2>
 
     <p>
@@ -868,9 +886,31 @@ Knex.createTable('accounts', function() {
 
     <h2 id="faq">F.A.Q.</h2>
 
-    <p>
-      Once some questions show up, I'll put them here.
+    <p id="faq-debug">
+      <b class="header">How do I debug?</b><br />
+      If you pass <tt>{debug: true}</tt> as one of the options in your initialize settings, you can see
+      all of the query calls being made. Sometimes you need to dive a bit further into
+      the various calls and see what all is going on behind the scenes. I'd recommend 
+      <a href="https://github.com/dannycoates/node-inspector">node-inspector</a>, which allows you to debug
+      code with <tt>debugger</tt> statements like you would in the browser.
     </p>
+
+    <p id="faq-tests">
+      <b class="header">How do I run the test suite?</b><br />
+      If you pass <tt>{debug: true}</tt> as one of the options in your initialize settings, you can see
+      all of the query calls being made. Sometimes you need to dive a bit further into
+      the various calls and see what all is going on behind the scenes. I'd recommend 
+      <a href="https://github.com/dannycoates/node-inspector">node-inspector</a>, which allows you to debug
+      code with <tt>debugger</tt> statements like you would in the browser.
+    </p>
+
+    <p id="faq-nonode">
+      <b class="header">Can I use Knex outside of Node.js</b><br />
+      While there isn't a client adapter yet, it should be possible to run
+      it could be adapted to work with other javascript environments supporting a <tt>sqlite3</tt> 
+      database, by providing a custom <a href="http://knexjs.org/#Adapters">Knex adapter</a>.
+    </p>
+
 
     <h2 id="changelog">Change Log</h2>
 

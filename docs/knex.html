@@ -111,8 +111,10 @@ used to generate the sql in one form or another.</p>
 
     _debug: <span class="literal">false</span>,
 
-    debug: <span class="keyword">function</span>(val) {
-      <span class="keyword">this</span>._debug = val;
+    _promise: <span class="literal">null</span>,
+
+    debug: <span class="keyword">function</span>() {
+      <span class="keyword">this</span>._debug = <span class="literal">true</span>;
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },</pre></div></div>
             
@@ -125,13 +127,15 @@ used to generate the sql in one form or another.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>For those who dislike promise interfaces.</p>
+              <p>For those who dislike promise interfaces.
+Multiple calls to <code>exec</code> will resolve with the same value
+if called more than once.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    exec: <span class="keyword">function</span>(callback) {
-      <span class="keyword">var</span> run = <span class="keyword">this</span>.runQuery();
-      <span class="keyword">return</span> run.then(<span class="keyword">function</span>(resp) {
+      <span class="keyword">this</span>._promise || (<span class="keyword">this</span>._promise = <span class="keyword">this</span>.runQuery());
+      <span class="keyword">return</span> <span class="keyword">this</span>._promise.then(<span class="keyword">function</span>(resp) {
         callback(<span class="literal">null</span>, resp);
       }, <span class="keyword">function</span>(err) {
         callback(err, <span class="literal">null</span>);
@@ -152,8 +156,8 @@ used to generate the sql in one form or another.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    then: <span class="keyword">function</span>(onFulfilled, onRejected) {
-      <span class="keyword">var</span> run = <span class="keyword">this</span>.runQuery();
-      <span class="keyword">return</span> run.then(onFulfilled, onRejected);
+      <span class="keyword">this</span>._promise || (<span class="keyword">this</span>._promise = <span class="keyword">this</span>.runQuery());
+      <span class="keyword">return</span> <span class="keyword">this</span>._promise.then(onFulfilled, onRejected);
     },</pre></div></div>
             
         </li>
@@ -345,9 +349,7 @@ and have it come out fine.</p>
     <span class="string">'orders'</span>, <span class="string">'limit'</span>, <span class="string">'offset'</span>, <span class="string">'unions'</span>
   ];
 
-  Knex.Grammar = {
-
-    dateFormat: <span class="string">'Y-m-d H:i:s'</span>,</pre></div></div>
+  Knex.Grammar = {</pre></div></div>
             
         </li>
         
@@ -1214,13 +1216,12 @@ where key = value. </p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    where: <span class="keyword">function</span>(column, operator, value, bool) {
-      <span class="keyword">var</span> key;
       bool || (bool = <span class="string">'and'</span>);
       <span class="keyword">if</span> (_.isFunction(column)) {
         <span class="keyword">return</span> <span class="keyword">this</span>._whereNested(column, bool);
       }
       <span class="keyword">if</span> (_.isObject(column)) {
-        <span class="keyword">for</span> (key <span class="keyword">in</span> column) {
+        <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> column) {
           value = column[key];
           <span class="keyword">this</span>[bool + <span class="string">'Where'</span>](key, <span class="string">'='</span>, value);
         }

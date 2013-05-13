@@ -175,11 +175,6 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     return 'int(' + column.length + ')';
   },
 
-  // Create the column definition for a tiny integer type.
-  typeTinyInteger: function() {
-    return 'tinyint';
-  },
-
   // Create the column definition for a float type.
   typeFloat: function(column) {
     return 'float(' + column.total + ',' + column.places + ')';
@@ -200,19 +195,9 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     return "enum('" + column.allowed.join("', '")  + "')";
   },
 
-  // Create the column definition for a date type.
-  typeDate: function(column) {
-    return 'date';
-  },
-
   // Create the column definition for a date-time type.
   typeDateTime: function(column) {
     return 'datetime';
-  },
-
-  // Create the column definition for a time type.
-  typeTime: function(column) {
-    return 'time';
   },
 
   // Create the column definition for a timestamp type.
@@ -225,19 +210,9 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     return column.length !== false ? 'bit(' + column.length + ')' : 'bit';
   },
 
-  // Create the column definition for a binary type.
-  typeBinary: function(column) {
-    return 'blob';
-  },
-
   // Get the SQL for an unsigned column modifier.
   modifyUnsigned: function(blueprint, column) {
     if (column.isUnsigned) return ' unsigned';
-  },
-
-  // Get the SQL for a nullable column modifier.
-  modifyNullable: function(blueprint, column) {
-    return column.isNullable ? ' null' : ' not null';
   },
 
   // Get the SQL for a default column modifier.

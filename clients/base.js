@@ -95,6 +95,36 @@ exports.schemaGrammar = {
   // Compile a drop table (if exists) command.
   compileDropTableIfExists: function(blueprint, command) {
     return 'drop table if exists ' + this.wrapTable(blueprint);
+  },
+
+  // Compile a drop index command.
+  compileDropIndex: function(blueprint, command) {
+    return 'drop index ' + command.index;
+  },
+
+  // Create the column definition for a tiny integer type.
+  typeTinyInteger: function() {
+    return 'tinyint';
+  },
+
+  // Create the column definition for a time type.
+  typeTime: function(column) {
+    return 'time';
+  },
+
+  // Create the column definition for a date type.
+  typeDate: function(column) {
+    return 'date';
+  },
+
+  // Create the column definition for a binary type.
+  typeBinary: function(column) {
+    return 'blob';
+  },
+
+  // Get the SQL for a nullable column modifier.
+  modifyNullable: function(blueprint, column) {
+    return column.isNullable ? ' null' : ' not null';
   }
 
 };

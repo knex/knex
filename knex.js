@@ -31,15 +31,19 @@
 
     _debug: false,
 
-    debug: function(val) {
-      this._debug = val;
+    _promise: null,
+
+    debug: function() {
+      this._debug = true;
       return this;
     },
 
     // For those who dislike promise interfaces.
+    // Multiple calls to `exec` will resolve with the same value
+    // if called more than once.
     exec: function(callback) {
-      var run = this.runQuery();
-      return run.then(function(resp) {
+      this._promise || (this._promise = this.runQuery());
+      return this._promise.then(function(resp) {
         callback(null, resp);
       }, function(err) {
         callback(err, null);
@@ -48,8 +52,8 @@
 
     // The promise interface for the query builder.
     then: function(onFulfilled, onRejected) {
-      var run = this.runQuery();
-      return run.then(onFulfilled, onRejected);
+      this._promise || (this._promise = this.runQuery());
+      return this._promise.then(onFulfilled, onRejected);
     },
 
     // Specifies to resolve the statement with the `data` rather 
@@ -136,8 +140,6 @@
   ];
 
   Knex.Grammar = {
-
-    dateFormat: 'Y-m-d H:i:s',
 
     // Compiles the `select` statement, or nested sub-selects
     // by calling each of the component compilers, trimming out
@@ -525,13 +527,12 @@
     // The most basic is `where(key, value)`, which expands to
     // where key = value. 
     where: function(column, operator, value, bool) {
-      var key;
       bool || (bool = 'and');
       if (_.isFunction(column)) {
         return this._whereNested(column, bool);
       }
       if (_.isObject(column)) {
-        for (key in column) {
+        for (var key in column) {
           value = column[key];
           this[bool + 'Where'](key, '=', value);
         }
