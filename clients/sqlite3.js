@@ -240,11 +240,6 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
     return 'drop index ' + command.index;
   },
   
-  // Compile a drop index command.
-  compileDropIndex: function(blueprint, command) {
-    return 'drop index ' + command.index;
-  },
-
   // Compile a rename table command.
   compileRenameTable: function(blueprint, command) {
     return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
@@ -280,43 +275,23 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
     return 'tinyint';
   },
 
-  // Create the column definition for a tinyint type.
-  typeTinyInteger: function() {
-    return 'tinyint';
-  },
-  
   // Create the column definition for a enum type.
   typeEnum: function(column) {
     return 'varchar';
-  },
-  
-  // Create the column definition for a date type.
-  typeDate: function(column) {
-    return 'date';
   },
   
   // Create the column definition for a date-time type.
   typeDateTime: function(column) {
     return 'datetime';
   },
-  
-  // Create the column definition for a time type.
-  typeTime: function(column) {
-    return 'time';
-  },
-  
+    
   // Create the column definition for a timestamp type.
   typeTimestamp: function(column) {
     return 'datetime';
   },
-  
-  // Create the column definition for a binary type.
-  typeBinary: function(column) {
-    return 'blob';
-  },
-  
+    
   // Get the SQL for a nullable column modifier.
-  modifyNullable: function(blueprint, column) {
+  modifyNullable: function(blueprint) {
     return ' null';
   },
   
