@@ -56,12 +56,10 @@
       return this._promise.then(onFulfilled, onRejected);
     },
 
-    // Specifies to resolve the statement with the `data` rather 
-    // than a promise... useful in testing/debugging.
+    // Returns an array of query strings filled out with the 
+    // correct values based on bindings, etc. Useful for debugging.
     toString: function() {
-      if (!this.type) {
-        throw new Error('Cannot be converted to string');
-      }
+      this.type || (this.type = 'select');
       var data = this.toSql();
       var builder = this;
       if (!_.isArray(data)) data = [data];
@@ -73,7 +71,7 @@
       }).join('; ');
     },
 
-    // Sets the connection
+    // Explicitly sets the connection.
     connection: function(connection) {
       this._connection = connection;
       return this;
@@ -461,7 +459,8 @@
       return this;
     },
 
-    // Select a `column` rather than
+    // Adds a column to the list of "columns" being selected
+    // on the query.
     column: function(value) {
       this.columns.push(value);
       return this;
@@ -474,7 +473,9 @@
       return this;
     },
 
+    // Compiles the current query builder.
     toSql: function() {
+      this.type || (this.type = 'select');
       return this.grammar['compile' + capitalize(this.type)](this);
     },
 
@@ -561,27 +562,28 @@
       return this.where.apply(this, arguments);
     },
 
-    whereRaw: function(sql, bindings, bool) {
-      bindings || (bindings = []);
-      bool || (bool = 'and');
-      this.wheres.push({type:'raw', sql:sql, bool:bool});
-      push.apply(this.bindings, bindings);
-      return this;
-    },
-
-    orWhereRaw: function(sql, bindings) {
-      return this.whereRaw(sql, bindings, 'or');
-    },
-
     // Adds an `or where` clause to the query.
     orWhere: function(column, operator, value) {
       return this.where(column, operator, value, 'or');
     },
 
+    // Adds a raw `where` clause to the query.
+    whereRaw: function(sql, bindings, bool) {
+      bindings || (bindings = []);
+      bool || (bool = 'and');
+      this.wheres.push({type: 'Raw', sql:sql, bool:bool});
+      push.apply(this.bindings, bindings);
+      return this;
+    },
+
+    // Adds a raw `or where` clause to the query.
+    orWhereRaw: function(sql, bindings) {
+      return this.whereRaw(sql, bindings, 'or');
+    },
+
     // Adds a `where exists` clause to the query.
     whereExists: function(callback, bool, type) {
       var query = new Builder(this);
-      query.isSubQuery = true;
       callback.call(query, query);
       this.wheres.push({
         type: (type || 'Exists'),
@@ -707,13 +709,13 @@
     },
 
     havingRaw: function(sql, bindings) {
-      this.havings.push({type: 'raw', sql: sql, bool: 'and'});
+      this.havings.push({type: 'Raw', sql: sql, bool: 'and'});
       this.bindings.push(bindings);
       return this;
     },
 
     orHavingRaw: function(sql, bindings) {
-      this.havings.push({type: 'raw', sql: sql, bool: 'or'});
+      this.havings.push({type: 'Raw', sql: sql, bool: 'or'});
       this.bindings.push(bindings);
       return this;
     },
@@ -829,19 +831,19 @@
       return values;
     },
 
+    // Helper for compiling any advanced `where in` queries.
     _whereInSub: function(column, callback, bool, condition) {
       var type = condition ? 'NotInSub' : 'InSub';
       var query = new Builder(this);
-      query.isSubQuery = true;
       callback.call(query, query);
       this.wheres.push({type: type, column: column, query: query, bool: bool});
       push.apply(this.bindings, query.bindings);
       return this;
     },
 
+    // Helper for compiling any advanced `where` queries.
     _whereNested: function(callback, bool) {
       var query = new Builder(this);
-      query.isSubQuery = true;
       query.table = this.table;
       callback.call(query, query);
       this.wheres.push({type: 'Nested', query: query, bool: bool});
@@ -849,9 +851,9 @@
       return this;
     },
 
+    // Helper for compiling any of the `where` advanced queries.
     _whereSub: function(column, operator, callback, bool) {
       var query = new Builder(this);
-      query.isSubQuery = true;
       callback.call(query, query);
       this.wheres.push({
         type: 'Sub',
@@ -864,21 +866,23 @@
       return this;
     },
 
+    // Helper for compiling any aggregate queries.
     _aggregate: function(type, columns) {
       if (!_.isArray(columns)) columns = [columns];
       this.aggregate = {type: type, columns: columns};
       return this._setType('select');
     },
 
+    // Helper for the incrementing/decrementing queries.
     _counter: function(column, amount, symbol) {
       var sql = {};
       sql[column] = new Raw('' + this.grammar.wrap(column) + ' ' + (symbol || '+') + ' ' + amount);
       return this.update(sql);
     },
     
+    // Helper for compiling any `union` queries.
     _union: function(callback, bool) {
       var query = new Builder(this);
-      query.isSubQuery = true;
       callback.call(query, query);
       this.unions.push({query: query, all: bool});
       push.apply(this.bindings, query.bindings);

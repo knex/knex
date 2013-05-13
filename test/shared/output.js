@@ -448,6 +448,20 @@ module.exports = {
         bindings: [1,100,200,300]
       }
     },
+    'selects.19': {
+      mysql: {
+        sql: ['select * from `accounts` where exists (select 1 from `test_table_two` where test_table_two.account_id = accounts.id)'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select * from "accounts" where exists (select 1 from "test_table_two" where test_table_two.account_id = accounts.id)'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select * from "accounts" where exists (select 1 from "test_table_two" where test_table_two.account_id = accounts.id)'],
+        bindings: []
+      }
+    },
     'aggregate.1': {
       mysql: {
         sql: ['select sum(`logins`) as aggregate from `accounts`'],
@@ -1754,6 +1768,35 @@ module.exports = {
         last_name: 'User',
         email: 'test6@example.com',
         logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null
+      }]
+    },
+    'selects.19': {
+      mysql: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test100@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null
+      }],
+      postgres: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test100@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null
+      }],
+      sqlite3: [{
+        id: 1,
+        first_name: 'User',
+        last_name: 'Test',
+        email: 'test100@example.com',
+        logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
       }]

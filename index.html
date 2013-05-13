@@ -66,6 +66,9 @@
       width: 550px;
       margin: 40px 0 50px 260px;
     }
+      div.container ul.small {
+        font-size: 12px;
+      }
     img#logo {
       width: 450px;
     }
@@ -192,6 +195,9 @@
     <a class="toc_title" href="#Initialize">
       Initialize
     </a>
+    <ul class="toc_section">
+      <li>– <a href="#Init-multi-instance">multi-instance</a></li>
+    </ul>
 
     <a class="toc_title" href="#Builder">
       Builder
@@ -200,7 +206,7 @@
       <li>– <a href="#Builder-main"><b>constructor</b></a></li>
       <li>– <a href="#Builder-select">select</a></li>
       <li>– <a href="#Builder-from">from</a></li>
-      <li>– <a href="#Builder-where">where <b>16 methods</b></a></li>
+      <li>– <a href="#Builder-where">where <b>+18 methods</b></a></li>
       <li>– <a href="#Builder-distinct">distinct</a></li>
       <li>– <a href="#Builder-join">join</a></li>
       <li>– <a href="#Builder-groupBy">groupBy</a></li>
@@ -208,20 +214,23 @@
       <li>– <a href="#Builder-having">having</a></li>
       <li>– <a href="#Builder-offset">offset</a></li>
       <li>– <a href="#Builder-limit">limit</a></li>
-      <li>– <a href="#Builder-insert">insert *</a></li>
-      <li>– <a href="#Builder-update">update *</a></li>
-      <li>– <a href="#Builder-del">del / delete *</a></li>
+      <li>– <a href="#Builder-union">union</a></li>
+      <li>– <a href="#Builder-unionAll">unionAll</a></li>
+      <li>– <a href="#Builder-insert">insert</a></li>
+      <li>– <a href="#Builder-update">update</a></li>
+      <li>– <a href="#Builder-del">del / delete</a></li>
       <li>– <a href="#Builder-count">count</a></li>
       <li>– <a href="#Builder-min">min</a></li>
       <li>– <a href="#Builder-max">max</a></li>
       <li>– <a href="#Builder-sum">sum</a></li>
       <li>– <a href="#Builder-increment">increment</a></li>
       <li>– <a href="#Builder-decrement">decrement</a></li>
-      <li>– <a href="#Builder-truncate">truncate *</a></li>
+      <li>– <a href="#Builder-truncate">truncate</a></li>
       <li>– <a href="#Builder-debug">debug</a></li>
-      <li><b><a href="#Schema-Building">Interface:</a></b></li>
+      <li><b><a href="#Builder-Interface">Interface:</a></b></li>
       <li>– <a href="#Builder-then">then</a></li>
       <li>– <a href="#Builder-exec">exec</a></li>
+      <li>– <a href="#Builder-then">toString</a></li>
     </ul>
 
     <a class="toc_title" href="#Transaction">
@@ -255,11 +264,17 @@
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
+      <li>– <a href="#Chainable-index">index</a></li>
+      <li>– <a href="#Chainable-primary">primary</a></li>
+      <li>– <a href="#Chainable-unique">unique</a></li>
       <li>– <a href="#Chainable-defaultTo">defaultTo</a></li>
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
       <li>– <a href="#Chainable-nullable">nullable</a></li>
     </ul>
 
+    <a class="toc_title" href="#Raw">
+      Raw
+    </a>
 
     <a class="toc_title" href="#faq">
       F.A.Q.
@@ -278,11 +293,11 @@
     </p>
 
     <p>
-      <b>Knex.js</b> is a multi-dialect sql builder, designed to be flexible, portable, and fun to use.
-      It features both traditional node style <a href="#Builder-exec">callbacks</a> as well 
-      as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured 
+      Knex.js is a query builder for <b>Postgres</b>, <b>MySql</b> and <b>SQLite3</b>, designed to be flexible, 
+      portable, and fun to use. It features both traditional node style <a href="#Builder-exec">callbacks</a> 
+      as well as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured 
       query and schema builders, transaction support, connection pooling and node.js adapters for 
-      postgres, mysql, and sqlite3 - standardizing the responses between the three.
+      postgres, mysql, and sqlite3 - standardizing responses between the three.
     </p>
 
     <p>
@@ -291,10 +306,6 @@
       and has a comprehensive <a href="https://travis-ci.org/tgriesser/knex">test suite</a>.
     </p>
 
-    <a href="https://travis-ci.org/tgriesser/knex">
-      <img src="https://travis-ci.org/tgriesser/knex.png?branch=master" alt="Travis Badge">
-    </a>
-
     <p>
       Knex is available for use under the <a href="http://github.com/tgriesser/knex/blob/master/LICENSE">MIT software license</a>.
     </p>
@@ -302,9 +313,20 @@
     <p>
       You can report bugs and discuss features on the
       <a href="http://github.com/tgriesser/knex/issues">GitHub issues page</a>,
+      post questions to the <a href="https://groups.google.com/forum/?fromgroups#!forum/bookshelfjs">Google Group</a>,
       add pages to the <a href="https://github.com/tgriesser/knex/wiki">wiki</a>
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
+
+    <h2>Latest Release: 0.1.0</h2>
+
+    <p>
+      Current Develop &mdash;
+      <a href="https://travis-ci.org/tgriesser/knex">
+        <img src="https://travis-ci.org/tgriesser/knex.png?branch=master" alt="Travis Badge">
+      </a>
+    </p>
+
 
     <p>
       Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work 
@@ -324,7 +346,7 @@
       adapter and specify it in <a href="#Initialize">Knex.Initialize</a>.
     </p>
 
-    <pre>
+<pre>
 $ npm install knex
 
 # Then add one of the following:
@@ -354,7 +376,7 @@ Knex.Initialize({
 });
 </pre>
 
-  <p>
+  <p id="Init-multi-instance">
     It is also possible to use Knex with multiple database connection instances if you'd like, 
     by creating named instances. To do this, pass the name of the connection as the first 
     parameter into <tt>Knex.Initialize</tt> and it will return that instance, which may
@@ -431,46 +453,87 @@ SqliteDB('users')
       <br />
       Specifies the table used in the current query, replacing the current table name if
       one has already been specified. This is typically used in the sub-queries performed
-      in the ______ methods.
+      in the advanced <a href="#Builder-where">where</a> or <a href="#Builder-union">union</a> methods.
     </p>
 
     <p id="Builder-where">
       <b class="header">where</b><code>.where(~dynamic~)</code>
       <br />
-      One of the most flexible and imporant pieces of Knex, is the <tt>where</tt> clause generation.
-      <br />
-      There are several different types of arguments where may take, and several helper methods to simplify
-      or, and, whereIn, etc.
-    </p>
+      There are several helpers for creating dynamic <tt>where</tt> clauses on queries.
 
 <pre>
 // Basic Uses:
 
-.where('id', '=', 1).where('used_count', '>', 10);
+Knex('users').where('votes', '>', 100).exec(function(err, resp) { ... });
 
-.where('title', 'like', 'test').orWhere('title', 'like', 'fail');
+Knex('users').where('votes', '>', 100)
+             .orWhere('name', 'John')
+             .then(function(resp) { ... })
 
-.where({email: 'test@example.com'}).and('other_key', 2)
+Knex('users').whereBetween('votes', [1, 100]).exec(...
+
+Knex('users').whereIn('id', [1, 2, 3]).then(...
+
+Knex('users').whereNotIn('id', [1, 2, 3]).then(...
+
+Knex('users').whereNull('updated_at').exec(...
 
 </pre>
 
-<h3>Additional Where Methods:</h3>
+<p>
+  <b>Grouped Where Clauses:</b>
+</p>
 
-<ul class="small">
-  <li><b>andWhere(column, operator, value)</b> &mdash; alias to standard "where" clause.</li>
-  <li><b>orWhere(column, operator, value)</b> &mdash; adds an <tt>or where</tt> clause.</li>
-  <li><b>whereExists(callback)</b> &mdash; </li>
-  <li><b>whereNotExists(callback)</b> &mdash; </li>
-</ul>
+<pre>
+// select * from users where name = 'John' or (votes > 100 and title <> 'Admin')
+Knex('users')
+  .where('name', '=', 'John')
+  .orWhere(function() {
+    this.where('votes', '>', 100).andWhere('title', '<>', 'Admin');
+  })
+  .then(function() {...
+</pre>
 
-<h3>Advanced Where Methods:</h3>
+<p>
+  <b>Exists Statements:</b>
+</p>
 
-<ul class="small">
-  <li><b>andWhere(column, operator, value)</b> &mdash; Alias to default where.</li>
-  <li><b>orWhere(column, operator, value)</b> &mdash; adds an <tt>or where</tt> clause.</li>
-  <li><b>whereExists(callback)</b> &mdash; </li>
-  <li><b>whereNotExists(callback)</b> &mdash; </li>
-</ul>
+<pre>
+Knex('users')
+  .whereExists(function() {
+      this.select(Knex.raw(1))
+        .from('orders')
+        .whereRaw('orders.user_id = users.id');
+  })
+  .then(...
+</pre>
+
+    <p>
+      These different where clauses may be joined together in any number of ways to make valid SQL statements.
+    </p>
+
+      <ul class="small">
+        <li><a href="docs/knex.html#section-57">where</a></li>
+        <li><a href="docs/knex.html#section-58">andWhere</a></li>
+        <li><a href="docs/knex.html#section-59">orWhere</a></li>
+        <li><a href="docs/knex.html#section-60">whereRaw</a></li>
+        <li><a href="docs/knex.html#section-61">orWhereRaw</a></li>
+        <li><a href="docs/knex.html#section-62">whereExists</a></li>
+        <li><a href="docs/knex.html#section-63">orWhereExists</a></li>
+        <li><a href="docs/knex.html#section-64">whereNotExists</a></li>
+        <li><a href="docs/knex.html#section-65">orWhereNotExists</a></li>
+        <li><a href="docs/knex.html#section-66">whereIn</a></li>
+        <li><a href="docs/knex.html#section-67">orWhereIn</a></li>
+        <li><a href="docs/knex.html#section-68">whereNotIn</a></li>
+        <li><a href="docs/knex.html#section-69">orWhereNotIn</a></li>
+        <li><a href="docs/knex.html#section-70">whereNull</a></li>
+        <li><a href="docs/knex.html#section-71">orWhereNull</a></li>
+        <li><a href="docs/knex.html#section-72">whereNotNull</a></li>
+        <li><a href="docs/knex.html#section-73">orWhereNotNull</a></li>
+        <li><a href="docs/knex.html#section-74">whereBetween</a></li>
+        <li><a href="docs/knex.html#section-75">orWhereBetween</a></li> 
+      </ul>
+    </p>
 
     <p id="Builder-distinct">
       <b class="header">distinct</b><code>.distinct()</code>
@@ -486,25 +549,35 @@ Knex('customers')
 </pre>
 
     <p id="Builder-join">
-      <b class="header">join</b><code>.join(~mixed~)</code>
+      <b class="header">join</b><code>.join(table, first, operator, second, [type])</code>
       <br />
-      The <tt>join</tt> builder can be used several different ways
+      The <tt>join</tt> builder can be used to specify joins between tables,
+      with the first argument being the joining <b>table</b>, the next three arguments
+      being the <b>first</b> join column, the join <b>operator</b> and the <b>second</b>
+      join column, respectively. The last argument is optional and spefies the type of join.
+    </p>
 
 <pre>
-// select distinct 'name' FROM customers WHERE `order_date` > NOW()
-Knex('customers')
-  .where('order_date', '>', Knex.raw('NOW()'))
-  .distinct()
-  .select('id', 'name')
+Knex('users')
+  .join('contacts', 'users.id', '=', 'contacts.user_id')
+  .join('orders', 'users.id', '=', 'orders.user_id', 'outer')
+  .select('users.id', 'contacts.phone', 'orders.price')
+  .then(function() { ... });
 </pre>
 
+    <p>
+      For grouped joins, specify a function as the second argument for the
+      join query, and use <tt>on</tt> and <tt>orOn</tt> to create joins that are
+      grouped with parentheses.
+    </p>
+
 <pre>
-// select distinct 'name' FROM customers WHERE `order_date` > NOW()
-Knex('customers')
-  .where('order_date', '>', Knex.raw('NOW()'))
-  .distinct()
-  .select('id', 'name')
-</pre>      
+Knex('users')
+  .join('contacts', function() {
+      this.on('users.id', '=', 'contacts.user_id').orOn(...);
+  })
+  .exec(function(err, resp) { ... });
+</pre>
       
     </p>
 
@@ -554,44 +627,69 @@ Knex('users')
   .select()  
 </pre>
 
+    <p id="Builder-union">
+      <b class="header">union</b><code>.union(query)</code>
+      <br />
+      Creates a <tt>union</tt> query, taking a callback to build the union statement.
+    </p>
+
+    <p id="Builder-unionAll">
+      <b class="header">unionAll</b><code>.unionAll(query)</code>
+      <br />
+      Creates a <tt>union all</tt> query, with the same method signature as 
+      the <a href="#Builder-union">union</a> method.
+    </p>
+
+<pre>
+Knex('users').whereNull('last_name').union(function() {
+  
+  this.select('*').from('users').whereNull('first_name');
+
+}).select().then(function() { ... });
+</pre>
+
     <p id="Builder-insert">
       <b class="header">insert</b><code>.insert(data)</code>
       <br />
       Creates an <tt>insert</tt> query, taking either a hash of properties to be inserted into the row, or
-      an array of inserts, to be executed as a single insert command.
+      an array of inserts, to be executed as a single insert command. Resolves the promise / fulfills the callback 
+      with an array containing the first insert id of the inserted model, or an array containing all inserted <tt>ids</tt>
+      for postgresql.
     </p>
 
 <pre>
-  // generates: "insert into `books`
+  // Returns [1]
   Knex('books').insert({title: 'Slaughterhouse Five'})
   
-  // generates "select * from `books`;"
+  // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
   Knex('books')
-    .insert([{title: 'Great Gatsby'}, {title: ''}])
-    
+    .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])  
 </pre>
 
 
     <p id="Builder-update">
       <b class="header">update</b><code>.update(data)</code>
       <br />
-      Creates an <tt>update</tt> query, taking either a hash of properties to be updated into the row, or
-      an array of updates, to be executed as a single update command.
+      Creates an <tt>update</tt> query, taking a hash of properties to be updated based on the
+      other query constraints. Resolves the promise / fulfills the callback with the number 
+      of affected rows for the query.
     </p>
 
 <pre>
-Knex('books').update({
-  title: '',
-  author: '',
-  year: 2014
-})
+Knex('books')
+  .where('published_date', '<', 2000)
+  .update({
+    status: 'archived'
+  })
+  .then(...
 </pre>
 
     <p id="Builder-del">
       <b class="header">del / delete</b><code>.del()</code>
       <br />
       Aliased to <tt>del</tt> as <tt>delete</tt> is a reserved word in javascript, this method deletes
-      one or more rows, based on other conditions specified in the query.
+      one or more rows, based on other conditions specified in the query. Resolves the promise / fulfills the 
+      callback with the number of affected rows for the query.
     </p>
 
 <pre>
@@ -603,43 +701,37 @@ Knex('accounts')
     <p id="Builder-count">
       <b class="header">count</b><code>.count(column)</code>
       <br />
-      Performs a count on the specified column.
+      Performs a count on the specified <b>column</b>.
     </p>
 
     <p id="Builder-min">
       <b class="header">min</b><code>.min(column)</code>
       <br />
-      Gets the minimum value for the specified column.
+      Gets the minimum value for the specified <b>column</b>.
     </p>
 
     <p id="Builder-max">
       <b class="header">max</b><code>.max(column)</code>
       <br />
-      Gets the maximum value for the specified column.
+      Gets the maximum value for the specified <b>column</b>.
     </p>
 
     <p id="Builder-sum">
       <b class="header">sum</b><code>.sum(column)</code>
       <br />
-      Retrieve the sum of the values of a given column.
+      Retrieve the sum of the values of a given <b>column</b>.
     </p>
 
     <p id="Builder-increment">
-      <b class="header">increment</b><code>.increment(column, value)</code>
+      <b class="header">increment</b><code>.increment(column, amount)</code>
       <br />
-      Increments a column's value by the specified amount.
+      Increments a <b>column</b> value by the specified <b>amount</b>.
     </p>
 
     <p id="Builder-decrement">
-      <b class="header">decrement</b><code>.decrement(column, value)</code>
+      <b class="header">decrement</b><code>.decrement(column, amount)</code>
       <br />
-      Decrements a column's value by the specified amount.
-    </p>
-
-    <p id="Builder-increment">
-      <b class="header">increment</b><code>.increment(column, value)</code>
-      <br />
-      Increments a column's value by the specified amount.
+      Decrements a <b>column</b> value by the specified <b>amount</b>.
     </p>
 
     <p id="Builder-truncate">
@@ -652,6 +744,33 @@ Knex('accounts')
       <b class="header">debug</b><code>.debug()</code>
       <br />
       Turns on debugging for the current query chain.
+    </p>
+
+    <h3 id="Builder-Interface">Builder Interface Methods:</h3>
+
+    <p id="Builder-then">
+      <b class="header">then</b><code>.then(onFulfilled, onRejected)</code>
+      <br />
+      Coerces the current query builder chain into a promise state, accepting the resolve
+      and reject handlers as specified by the <a href="http//promises-aplus.github.com/promises-spec">Promises/A+ spec</a>.
+      As stated in the spec, more than one call to the <tt>then</tt> method for the current query chain will resolve
+      with the same value, in the order they were called; the query will not be executed multiple times.
+    </p>
+
+    <p id="Builder-exec">
+      <b class="header">exec</b><code>.exec(callback)</code>
+      <br />
+      If you'd prefer a callback interface over promises, the <b>exec</b> function
+      accepts a standard node style callback for executing the query chain. Note that as
+      with the <a href="#Builder-then">then</a> method, subsequent calls to the same
+      query chain will return the same result.
+    </p>
+
+    <p id="Builder-toString">
+      <b class="header">toString</b><code>.toString()</code>
+      <br />
+      Returns an array of query strings filled out with the 
+      correct values based on bindings, etc. Useful for debugging.
     </p>
 
     <h2 id="Transaction">Knex.Transaction</h2>
@@ -671,7 +790,7 @@ Knex.Transaction(function(t) {
     .insert({name: 'Old Books'})
     .then(function(row) {
       
-      return Q.all(_.map([
+      return When.all(_.map([
         {title: 'Canterbury Tales'},
         {title: 'Moby Dick'},
         {title: 'Hamlet'}
@@ -683,7 +802,6 @@ Knex.Transaction(function(t) {
         return Knex('book').transacting(t).insert(info);
       
       }));
-
     })
     .then(t.commit, t.rollback);
 
@@ -712,11 +830,35 @@ Knex.Schema.create('users', function (table) {
 });
 </pre>
 
+    <p id="Schema-renameTable">
+      <b class="header">renameTable</b><code>Knex.Schema.renameTable(from, to)</code>
+      <br />
+      Renames a table <b>from</b> a current tableName <b>to</b> another.
+    </p>
+
     <p id="Schema-dropTable">
       <b class="header">dropTable</b><code>Knex.Schema.dropTable(tableName)</code>
       <br />
-      Drops a table, specified by <tt>tableName</tt>.
+      Drops a table, specified by <b>tableName</b>.
     </p>
+
+    <p id="Schema-hasTable">
+      <b class="header">hasTable</b><code>Knex.Schema.hasTable(tableName)</code>
+      <br />
+      Checks for a table's existence by <b>tableName</b>, with an error or failed promise if 
+      the requested table does not exist.
+    </p>
+
+<pre>
+Knex.Schema.hasTable('users').then(null, function() {
+  return Knex.Schema.createTable('users', function(t) {
+    t.increments('id').primary();
+    t.string('first_name', 100);
+    t.string('last_name', 100);
+    t.text('bio');
+  });
+});
+</pre>
 
     <p id="Schema-dropTableIfExists">
       <b class="header">dropTableIfExists</b><code>Knex.Schema.dropTableIfExists(tableName)</code>
@@ -741,24 +883,19 @@ Knex.Schema.table('users', function (table) {
 });
 </pre>
 
-    <p id="Schema-connection">
-      <b class="header">connection</b><code>Knex.Schema.connection()</code>
-      <br />
-      Optional method to explicitly specifiy the 
-    </p>
 
     <h3 id="Schema-Building">Schema Building:</h3>
 
     <p id="Schema-dropColumn">
       <b class="header">dropColumn</b><code>table.dropColumn(name)</code>
       <br />
-      Drops a column.
+      Drops a column, specified by the column's <b>name</b>
     </p>
 
     <p id="Schema-dropColumns">
       <b class="header">dropColumns</b><code>table.dropColumns(*columns)</code>
       <br />
-      Takes a variable number of column names, and drops them.
+      Drops multiple columns, taking a variable number of column names.
     </p>
 
     <p id="Schema-increments">
@@ -845,32 +982,38 @@ Knex.Schema.table('users', function (table) {
       The following three methods may be chained on the schema building methods, as modifiers to the column.
     </p>
 
+    <p id="Chainable-index">
+      <b class="header">index</b><code>column.index()</code>
+      <br />
+      Specifies an integer as index. No-op if this is chained off of a non-integer field.
+    </p>
+
     <p id="Chainable-defaultTo">
-      <b class="header">defaultTo</b><code>.defaultTo(value)</code>
+      <b class="header">defaultTo</b><code>column.defaultTo(value)</code>
       <br />
       Sets the default value for the column on an insert.
     </p>
 
     <p id="Chainable-unsigned">
-      <b class="header">unsigned</b><code>.unsigned()</code>
+      <b class="header">unsigned</b><code>column.unsigned()</code>
       <br />
       Specifies an integer as unsigned. No-op if this is chained off of a non-integer field.
     </p>
 
     <p id="Chainable-nullable">
-      <b class="header">nullable</b><code>.nullable()</code>
+      <b class="header">nullable</b><code>column.nullable()</code>
       <br />
       Allows a field to be nullable. No-op if chained off of a non-nullable field.
     </p>
 
     <p id="Chainable-nullable">
-      <b class="header">nullable</b><code>.nullable()</code>
+      <b class="header">nullable</b><code>column.nullable()</code>
       <br />
       Allows a field to be nullable. No-op if chained off of a non-nullable field.
     </p>
 
     <p id="Chainable-primary">
-      <b class="header">primary</b><code>.primary()</code>
+      <b class="header">primary</b><code>column.primary()</code>
       <br />
       Sets the field as the primary key for the table.
     </p>
@@ -882,7 +1025,39 @@ Knex.createTable('accounts', function() {
 });
 </pre>
 
-    <h2 id="Knex-client">Knex.client</h2>
+    <h2 id="Raw">Knex.Raw</h2>
+
+    <h3 id="Raw-Expression">Raw Expressions:</h3>
+
+    <p>
+      Sometimes you may need to use a raw expression in a query. These expressions will be injected 
+      into the query as strings, so be careful not to create any SQL injection points! 
+      To create a raw expression, you may use the <tt>Knex.Raw</tt> function.
+    </p>
+
+<pre>
+Knex('users')
+  .select(Knex.Raw('count(*) as user_count, status'))
+  .where('status', '<>', 1)
+  .groupBy('status')
+  .get();
+</pre>
+
+    <h3 id="Raw-Queries">Raw Queries:</h3>
+
+    <p>
+      The <tt>Knex.Raw</tt> may also be used to build a full query and execute it, as a
+      standard query builder query would be executed. The benefit of this is that it uses the connection 
+      pool and provides a standard interface for the different client libraries.
+      Note that the response will be whatever the underlying sql library would typically return on a
+      normal query, so you may need to
+    </p>    
+
+<pre>
+Knex.Raw('select * from users where id = 1').then(function(resp) {
+  ...
+});
+</pre>
 
     <h2 id="faq">F.A.Q.</h2>
 
@@ -897,11 +1072,12 @@ Knex.createTable('accounts', function() {
 
     <p id="faq-tests">
       <b class="header">How do I run the test suite?</b><br />
-      If you pass <tt>{debug: true}</tt> as one of the options in your initialize settings, you can see
-      all of the query calls being made. Sometimes you need to dive a bit further into
-      the various calls and see what all is going on behind the scenes. I'd recommend 
-      <a href="https://github.com/dannycoates/node-inspector">node-inspector</a>, which allows you to debug
-      code with <tt>debugger</tt> statements like you would in the browser.
+      The test suite looks for an environment variable called <tt>KNEX_TEST</tt> for the path to the database
+      configuration. If you run the following command:
+      <tt>$ export KNEX_TEST='/path/to/your/knex_config.js'</tt>, replacing with the path to your config file,
+      and the config file is valid, the test suite should run with <tt>npm test</tt>. If you're going to 
+      add a test, you may want to follow similar patterns, used in the test suite, 
+      setting <tt>$ export KNEX_DEV=1</tt> to save the outputs data from the tests into the <tt>shared/output.js</tt> file.
     </p>
 
     <p id="faq-nonode">
@@ -911,11 +1087,10 @@ Knex.createTable('accounts', function() {
       database, by providing a custom <a href="http://knexjs.org/#Adapters">Knex adapter</a>.
     </p>
 
-
     <h2 id="changelog">Change Log</h2>
 
     <p>
-      <b class="header">0.1.0</b> &mdash; <small><i>TBD</i></small><br />
+      <b class="header">0.1.0</b> &mdash; <small><i>May 13, 2013</i></small><br />
       Initial Knex release.
     </p>
 
