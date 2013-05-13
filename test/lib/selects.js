@@ -90,6 +90,17 @@ module.exports = function(Knex, dbName, resolver) {
         .then(resolver(ok), ok);
     });
 
+    it('does whereRaw', function(ok) {
+      Knex('accounts')
+        .whereExists(function() {
+          this.select(Knex.Raw(1))
+            .from('test_table_two')
+            .whereRaw('test_table_two.account_id = accounts.id');
+        })
+        .select()
+        .then(resolver(ok), ok);
+    });
+
   });
 
 };

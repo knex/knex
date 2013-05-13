@@ -1,7 +1,7 @@
 {
   "name": "knex",
-  "version": "0.0.5",
-  "description": "a fun sql query builder",
+  "version": "0.1.0",
+  "description": "A fun, multi-dialect SQL query builder.",
   "main": "knex.js",
   "directories": {
     "test": "test"
@@ -25,7 +25,12 @@
   "keywords": [
     "sql",
     "query",
-    "builder"
+    "builder",
+    "postgresql",
+    "postgres",
+    "mysql",
+    "sqlite3",
+    "sqlite"
   ],
   "author": "Tim Griesser",
   "license": "MIT"
