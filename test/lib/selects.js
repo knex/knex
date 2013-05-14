@@ -101,6 +101,15 @@ module.exports = function(Knex, dbName, resolver) {
         .then(resolver(ok), ok);
     });
 
+    it('does sub-selects', function(ok) {
+    
+      Knex('accounts').whereIn('id', function() {
+        this.select('account_id').from('test_table_two').where('status', 1);
+      }).select('first_name', 'last_name').then(resolver(ok), ok);
+    
+    });
+
+
   });
 
 };

@@ -30,15 +30,15 @@ module.exports = {
     },
     'schema.3': {
       mysql: {
-        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null)'],
+        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null)'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_table_two" ("id" serial primary key not null, "account_id" integer not null, "details" text not null)'],
+        sql: ['create table "test_table_two" ("id" serial primary key not null, "account_id" integer not null, "details" text not null, "status" smallint not null)'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_table_two" ("id" integer null primary key autoincrement, "account_id" integer null, "details" text null)'],
+        sql: ['create table "test_table_two" ("id" integer null primary key autoincrement, "account_id" integer null, "details" text null, "status" tinyint null)'],
         bindings: []
       }
     },
@@ -460,6 +460,20 @@ module.exports = {
       sqlite3: {
         sql: ['select * from "accounts" where exists (select 1 from "test_table_two" where test_table_two.account_id = accounts.id)'],
         bindings: []
+      }
+    },
+    'selects.20': {
+      mysql: {
+        sql: ['select `first_name`, `last_name` from `accounts` where `id` in (select `account_id` from `test_table_two` where `status` = ?)'],
+        bindings: [1]
+      },
+      postgres: {
+        sql: ['select "first_name", "last_name" from "accounts" where "id" in (select "account_id" from "test_table_two" where "status" = ?)'],
+        bindings: [1]
+      },
+      sqlite3: {
+        sql: ['select "first_name", "last_name" from "accounts" where "id" in (select "account_id" from "test_table_two" where "status" = ?)'],
+        bindings: [1]
       }
     },
     'aggregate.1': {
@@ -1781,12 +1795,44 @@ module.exports = {
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test3@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null
       }],
       postgres: [{
         id: 1,
         first_name: 'User',
         last_name: 'Test',
         email: 'test100@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test3@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
@@ -1799,6 +1845,45 @@ module.exports = {
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test3@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null
+      }]
+    },
+    'selects.20': {
+      mysql: [{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      }],
+      postgres: [{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
+      }],
+      sqlite3: [{
+        first_name: 'Test',
+        last_name: 'User'
+      },{
+        first_name: 'Test',
+        last_name: 'User'
       }]
     },
     'aggregate.1': {
@@ -1822,6 +1907,24 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test3@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null,
+        details: ''
       }],
       postgres: [{
         id: 1,
@@ -1832,6 +1935,24 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test3@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null,
+        details: ''
       }],
       sqlite3: [{
         id: 1,
@@ -1842,6 +1963,24 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      },{
+        id: 2,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test2@example.com',
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test3@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null,
+        details: ''
       }]
     },
     'joins.2': {
@@ -1862,7 +2001,7 @@ module.exports = {
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        details: null
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
         id: 3,
         first_name: 'Test',
@@ -1871,7 +2010,7 @@ module.exports = {
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        details: null
+        details: ''
       },{
         id: 4,
         first_name: 'Test',
@@ -1917,7 +2056,16 @@ module.exports = {
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        details: null
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      },{
+        id: 3,
+        first_name: 'Test',
+        last_name: 'User',
+        email: 'test3@example.com',
+        logins: 2,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        phone: null,
+        details: ''
       },{
         id: 5,
         first_name: 'Test',
@@ -1932,15 +2080,6 @@ module.exports = {
         first_name: 'Test',
         last_name: 'User',
         email: 'test4@example.com',
-        logins: 2,
-        about: 'Lorem ipsum Dolore labore incididunt enim.',
-        phone: null,
-        details: null
-      },{
-        id: 3,
-        first_name: 'Test',
-        last_name: 'User',
-        email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
@@ -1972,7 +2111,7 @@ module.exports = {
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        details: null
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
         id: 3,
         first_name: 'Test',
@@ -1981,7 +2120,7 @@ module.exports = {
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        details: null
+        details: ''
       },{
         id: 4,
         first_name: 'Test',
@@ -2021,27 +2160,30 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: 1,
-        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 0
       },{
-        id: null,
+        id: 2,
         first_name: 'Test',
         last_name: 'User',
         email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        account_id: null,
-        details: null
+        account_id: 2,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 1
       },{
-        id: null,
+        id: 3,
         first_name: 'Test',
         last_name: 'User',
         email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        account_id: null,
-        details: null
+        account_id: 3,
+        details: '',
+        status: 1
       },{
         id: null,
         first_name: 'Test',
@@ -2051,7 +2193,8 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: null,
-        details: null
+        details: null,
+        status: null
       },{
         id: null,
         first_name: 'Test',
@@ -2061,7 +2204,8 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: null,
-        details: null
+        details: null,
+        status: null
       },{
         id: null,
         first_name: 'Test',
@@ -2071,28 +2215,31 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: null,
-        details: null
+        details: null,
+        status: null
       }],
       postgres: [{
-        id: null,
+        id: 2,
         first_name: 'Test',
         last_name: 'User',
         email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        account_id: null,
-        details: null
+        account_id: 2,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 1
       },{
-        id: null,
+        id: 3,
         first_name: 'Test',
         last_name: 'User',
         email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        account_id: null,
-        details: null
+        account_id: 3,
+        details: '',
+        status: 1
       },{
         id: null,
         first_name: 'Test',
@@ -2102,7 +2249,8 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: null,
-        details: null
+        details: null,
+        status: null
       },{
         id: null,
         first_name: 'Test',
@@ -2112,7 +2260,8 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: null,
-        details: null
+        details: null,
+        status: null
       },{
         id: null,
         first_name: 'Test',
@@ -2122,7 +2271,8 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: null,
-        details: null
+        details: null,
+        status: null
       },{
         id: 1,
         first_name: 'User',
@@ -2132,7 +2282,8 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: 1,
-        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 0
       }],
       sqlite3: [{
         id: 1,
@@ -2143,27 +2294,30 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: 1,
-        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 0
       },{
-        id: null,
+        id: 2,
         first_name: 'Test',
         last_name: 'User',
         email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        account_id: null,
-        details: null
+        account_id: 2,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 1
       },{
-        id: null,
+        id: 3,
         first_name: 'Test',
         last_name: 'User',
         email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
-        account_id: null,
-        details: null
+        account_id: 3,
+        details: '',
+        status: 1
       },{
         id: null,
         first_name: 'Test',
@@ -2173,7 +2327,8 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: null,
-        details: null
+        details: null,
+        status: null
       },{
         id: null,
         first_name: 'Test',
@@ -2183,7 +2338,8 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: null,
-        details: null
+        details: null,
+        status: null
       },{
         id: null,
         first_name: 'Test',
@@ -2193,7 +2349,8 @@ module.exports = {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         phone: null,
         account_id: null,
-        details: null
+        details: null,
+        status: null
       }]
     },
     'deletes.1': {

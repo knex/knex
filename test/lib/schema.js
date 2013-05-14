@@ -26,6 +26,7 @@ module.exports = function(Knex, resolver, error) {
         t.increments();
         t.integer('account_id');
         t.text('details');
+        t.tinyint('status');
       }),
       Knex.Schema.createTable('test_table_three', function(table) {
         table.integer('main').primary();

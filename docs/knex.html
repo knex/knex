@@ -27,7 +27,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <pre><code>Knex.js  0.0.0
+              <pre><code>Knex.js  0.1.1
 
 (c) 2013 Tim Griesser
 Knex may be freely distributed under the MIT license.
@@ -91,7 +91,7 @@ http://knexjs.org</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.0.0'</span>;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.1.1'</span>;</pre></div></div>
             
         </li>
         
@@ -1422,7 +1422,7 @@ where key = value. </p>
             <div class="content"><div class='highlight'><pre>    whereIn: <span class="keyword">function</span>(column, values, bool, condition) {
       bool || (bool = <span class="string">'and'</span>);
       <span class="keyword">if</span> (_.isFunction(values)) {
-        <span class="keyword">return</span> <span class="keyword">this</span>._whereInSub(column, values, bool, <span class="string">'not'</span>);
+        <span class="keyword">return</span> <span class="keyword">this</span>._whereInSub(column, values, bool, (condition || <span class="string">'In'</span>));
       }
       <span class="keyword">this</span>.wheres.push({
         type: (condition || <span class="string">'In'</span>),
@@ -2058,10 +2058,10 @@ the currently running transaction</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    _whereInSub: <span class="keyword">function</span>(column, callback, bool, condition) {
-      <span class="keyword">var</span> type = condition ? <span class="string">'NotInSub'</span> : <span class="string">'InSub'</span>;
+      condition += <span class="string">'Sub'</span>;
       <span class="keyword">var</span> query = <span class="keyword">new</span> Builder(<span class="keyword">this</span>);
       callback.call(query, query);
-      <span class="keyword">this</span>.wheres.push({type: type, column: column, query: query, bool: bool});
+      <span class="keyword">this</span>.wheres.push({type: condition, column: column, query: query, bool: bool});
       push.apply(<span class="keyword">this</span>.bindings, query.bindings);
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },</pre></div></div>
@@ -3912,15 +3912,13 @@ delete the instance from <code>Knex.Instances</code>.</p>
                 <a class="pilcrow" href="#section-200">&#182;</a>
               </div>
               <p>Checks if this is a default client. If it&#39;s not,
-require it as the path to the client if it&#39;s a string,
-and otherwise, set the object to the client.</p>
+that means it&#39;s a custom lib, set the object to the client.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (Clients[client]) {
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (_.isString(client)) {
+      client = client.toLowerCase();
       ClientCtor = require(Clients[client]);
-    } <span class="keyword">else</span> <span class="keyword">if</span> (_.isString(client)) {
-      ClientCtor = require(client);
     } <span class="keyword">else</span> {
       ClientCtor = client;
     }</pre></div></div>
@@ -4007,9 +4005,9 @@ on the &quot;root&quot; <code>Knex</code>.</p>
             
             <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (name === <span class="string">'main'</span>) {
       initSchema(Knex, client);
-    } <span class="keyword">else</span> {
-      initSchema(Target, client);      
-    }</pre></div></div>
+    }
+    
+    initSchema(Target, client);</pre></div></div>
             
         </li>
         
@@ -4079,6 +4077,7 @@ on the &quot;root&quot; <code>Knex</code>.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> Clients = {
     <span class="string">'mysql'</span>    : <span class="string">'./clients/mysql.js'</span>,
+    <span class="string">'pg'</span>       : <span class="string">'./clients/postgres.js'</span>,
     <span class="string">'postgres'</span> : <span class="string">'./clients/postgres.js'</span>,
     <span class="string">'sqlite'</span>   : <span class="string">'./clients/sqlite3.js'</span>,
     <span class="string">'sqlite3'</span>  : <span class="string">'./clients/sqlite3.js'</span>

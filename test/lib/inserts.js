@@ -19,10 +19,19 @@ module.exports = function(Knex, dbName, resolver) {
 
     it('should allow for using the `exec` interface', function(ok) {
       
-      Knex('test_table_two').insert({
+      Knex('test_table_two').insert([{
         account_id: 1,
-        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
-      }).exec(function(err, resp) {
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 0
+      }, {
+        account_id: 2,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 1
+      }, {
+        account_id: 3,
+        details: '',
+        status: 1
+      }]).exec(function(err, resp) {
         if (err) return ok(err);
         ok();
       });

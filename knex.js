@@ -1,4 +1,4 @@
-//     Knex.js  0.0.0
+//     Knex.js  0.1.1
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -23,7 +23,7 @@
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.0.0';
+  Knex.VERSION = '0.1.1';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
@@ -613,7 +613,7 @@
     whereIn: function(column, values, bool, condition) {
       bool || (bool = 'and');
       if (_.isFunction(values)) {
-        return this._whereInSub(column, values, bool, 'not');
+        return this._whereInSub(column, values, bool, (condition || 'In'));
       }
       this.wheres.push({
         type: (condition || 'In'),
@@ -833,10 +833,10 @@
 
     // Helper for compiling any advanced `where in` queries.
     _whereInSub: function(column, callback, bool, condition) {
-      var type = condition ? 'NotInSub' : 'InSub';
+      condition += 'Sub';
       var query = new Builder(this);
       callback.call(query, query);
-      this.wheres.push({type: type, column: column, query: query, bool: bool});
+      this.wheres.push({type: condition, column: column, query: query, bool: bool});
       push.apply(this.bindings, query.bindings);
       return this;
     },
