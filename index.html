@@ -181,7 +181,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.1.0)</span>
+      Knex.js <span class="version">(0.1.1)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -318,7 +318,7 @@
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
 
-    <h2>Latest Release: 0.1.0</h2>
+    <h2>Latest Release: 0.1.1</h2>
 
     <p>
       Current Develop &mdash;
@@ -368,8 +368,8 @@ Knex.Initialize({
   client: 'mysql',
   connection: {
     host     : '127.0.0.1',
-    user     : 'root',
-    password : '',
+    user     : 'your_database_user',
+    password : 'your_database_password',
     database : 'myapp_test',
     charset  : 'utf8'
   }
@@ -459,16 +459,33 @@ SqliteDB('users')
     <p id="Builder-where">
       <b class="header">where</b><code>.where(~dynamic~)</code>
       <br />
-      There are several helpers for creating dynamic <tt>where</tt> clauses on queries.
+      There are several helpers for creating dynamic <tt>where</tt> clauses on queries. Take a look at a few
+      examples to see how these may be mixed and matched to create fluent constraints on the query.
+    </p>
 
 <pre>
+
 // Basic Uses:
 
+// objects
+Knex('users').where({
+  first_name: 'Test', 
+  last_name:  'User'
+}).select('id').then(...
+
+// key, value
+Knex('users').where('id', 1).select('first_name', 'last_name').then(...
+
+// operators: '=', '<', '>', '<=', '>=', 'like', 'not like', 'between', 'ilike'
 Knex('users').where('votes', '>', 100).exec(function(err, resp) { ... });
 
+// chained with "andWhere" / "orWhere"
 Knex('users').where('votes', '>', 100)
+             .andWhere('status', 'active')
              .orWhere('name', 'John')
              .then(function(resp) { ... })
+
+// Even more where types (see list below):
 
 Knex('users').whereBetween('votes', [1, 100]).exec(...
 
@@ -480,9 +497,9 @@ Knex('users').whereNull('updated_at').exec(...
 
 </pre>
 
-<p>
-  <b>Grouped Where Clauses:</b>
-</p>
+  <p>
+    <b>Grouped Where Clauses:</b>
+  </p>
 
 <pre>
 // select * from users where name = 'John' or (votes > 100 and title <> 'Admin')
@@ -508,9 +525,24 @@ Knex('users')
   .then(...
 </pre>
 
-    <p>
-      These different where clauses may be joined together in any number of ways to make valid SQL statements.
-    </p>
+  <p>
+    Most of the where clauses may also accept a function as the second argument, to generate a sub-select
+    on the query:
+  </p>
+
+<pre>
+
+// select author_id, content from comments where author_id in (select id from accounts where type = 'admin')
+Knex('comments').whereIn('author_id', function() {
+  
+  this.select('id').from('accounts').where('type', 'admin');
+
+}).select('author_id', 'content').then(...
+</pre>
+
+  <p>
+    These different where clauses may be joined together in any number of ways to make valid SQL statements.
+  </p>
 
       <ul class="small">
         <li><a href="docs/knex.html#section-57">where</a></li>
@@ -1040,7 +1072,7 @@ Knex('users')
   .select(Knex.Raw('count(*) as user_count, status'))
   .where('status', '<>', 1)
   .groupBy('status')
-  .get();
+  .then(...
 </pre>
 
     <h3 id="Raw-Queries">Raw Queries:</h3>
@@ -1088,6 +1120,12 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.1.1</b> &mdash; <small><i>May 14, 2013</i></small><br />
+      Bug fixes for sub-queries, minor changes to initializing "main" instance, adding "pg" as 
+      a valid parameter for the client name in the connection settings.
+    </p>
 
     <p>
       <b class="header">0.1.0</b> &mdash; <small><i>May 13, 2013</i></small><br />
