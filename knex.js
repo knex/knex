@@ -1514,12 +1514,10 @@
     if (!client) throw new Error('The client is required to use Knex.');
 
     // Checks if this is a default client. If it's not,
-    // require it as the path to the client if it's a string,
-    // and otherwise, set the object to the client.
-    if (Clients[client]) {
+    // that means it's a custom lib, set the object to the client.
+    if (_.isString(client)) {
+      client = client.toLowerCase();
       ClientCtor = require(Clients[client]);
-    } else if (_.isString(client)) {
-      ClientCtor = require(client);
     } else {
       ClientCtor = client;
     }
@@ -1546,10 +1544,10 @@
     // Initialize the schema builder methods.
     if (name === 'main') {
       initSchema(Knex, client);
-    } else {
-      initSchema(Target, client);      
     }
-
+    
+    initSchema(Target, client);
+    
     // Specifically set the client on the current target.
     Target.client = client;
     Target.instanceName = name;
@@ -1570,6 +1568,7 @@
   // Default client paths, located in the `./clients` directory.
   var Clients = {
     'mysql'    : './clients/mysql.js',
+    'pg'       : './clients/postgres.js',
     'postgres' : './clients/postgres.js',
     'sqlite'   : './clients/sqlite3.js',
     'sqlite3'  : './clients/sqlite3.js'
