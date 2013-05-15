@@ -532,6 +532,20 @@ module.exports = {
         bindings: []
       }
     },
+    'aggregate.4': {
+      mysql: {
+        sql: ['select count(`id`) as aggregate from `accounts` group by `first_name`'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select count("id") as aggregate from "accounts" group by "first_name"'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select count("id") as aggregate from "accounts" group by "first_name"'],
+        bindings: []
+      }
+    },
     'joins.1': {
       mysql: {
         sql: ['select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`'],
@@ -2015,6 +2029,23 @@ module.exports = {
         aggregate: 2
       }, {
         aggregate: 4
+      }]
+    },
+    'aggregate.4': {
+      mysql: [{
+        aggregate: 5
+      }, {
+        aggregate: 1
+      }],
+      postgres: [{
+        aggregate: 1
+      }, {
+        aggregate: 5
+      }],
+      sqlite3: [{
+        aggregate: 5
+      }, {
+        aggregate: 1
       }]
     },
     'joins.1': {
