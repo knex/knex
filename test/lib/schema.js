@@ -14,6 +14,7 @@ module.exports = function(Knex, resolver, error) {
     
     return When.all([
       Knex.Schema.createTable('test_table_one', function(table) {
+        table.engine('InnoDB');
         table.increments('id');
         table.string('first_name');
         table.string('last_name');
@@ -23,12 +24,14 @@ module.exports = function(Knex, resolver, error) {
         table.timestamps();
       }),
       Knex.Schema.createTable('test_table_two', function(t) {
+        t.engine('InnoDB');
         t.increments();
         t.integer('account_id');
         t.text('details');
         t.tinyint('status');
       }),
       Knex.Schema.createTable('test_table_three', function(table) {
+        table.engine('InnoDB');
         table.integer('main').primary();
         table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
       })
