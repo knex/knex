@@ -93,8 +93,8 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     if (conn.charset) sql += ' default character set ' + conn.charset;
     if (conn.collation) sql += ' collate ' + conn.collation;
 
-    if (blueprint.useEngine) {
-      sql += ' engine = ' + blueprint.useEngine;
+    if (blueprint.isEngine) {
+      sql += ' engine = ' + blueprint.isEngine;
     }
 
     return sql;

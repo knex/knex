@@ -1085,13 +1085,19 @@
 
     // Determine if the blueprint has a create command.
     creating: function() {
-      var command;
       for (var i = 0, l = this.commands.length; i < l; i++) {
-        command = this.commands[i];
-        if (command.name == 'createTable') return true;
+        if (this.commands[i].name == 'createTable') return true;
       }
       return false;
     },
+
+    // Sets the engine to use when creating the table in MySql
+    engine: function(name) {
+      if (!this.creating()) throw new Error('The `engine` modifier may only be used while creating a table.');
+      this.isEngine = name;
+      return this;
+    },
+
 
     // Indicate that the given columns should be dropped.
     dropColumn: function(columns) {
@@ -1114,7 +1120,7 @@
       return this._dropIndexCommand('dropUnique', index);
     },
 
-      // Indicate that the given index should be dropped.
+    // Indicate that the given index should be dropped.
     dropIndex: function(index) {
       return this._dropIndexCommand('dropIndex', index);
     },
@@ -1344,12 +1350,6 @@
     // used in MySql alter tables.
     after: function(name) {
       this.isAfter = name;
-      return this;
-    },
-
-    // Sets the engine to use when creating the table in MySql
-    engine: function(name) {
-      this.useEngine = name;
       return this;
     }
 
