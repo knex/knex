@@ -1,4 +1,4 @@
-var When = require("When");
+var When = require("when");
 
 module.exports = function(Knex, dbName, resolver) {
 

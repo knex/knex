@@ -679,7 +679,7 @@
 
     // Adds a `group by` clause to the query.
     groupBy: function() {
-      this.groups = (this.groups||[]).concat(_.toArray(arguments));
+      this.groups = (this.groups || []).concat(_.toArray(arguments));
       return this;
     },
 
