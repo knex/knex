@@ -1,4 +1,4 @@
-//     Knex.js  0.1.1
+//     Knex.js  0.1.2
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -23,7 +23,7 @@
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.1.1';
+  Knex.VERSION = '0.1.2';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
@@ -1097,7 +1097,6 @@
       this.isEngine = name;
       return this;
     },
-
 
     // Indicate that the given columns should be dropped.
     dropColumn: function(columns) {

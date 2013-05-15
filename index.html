@@ -181,7 +181,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.1.1)</span>
+      Knex.js <span class="version">(0.1.2)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -319,7 +319,7 @@
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
 
-    <h2>Latest Release: 0.1.1</h2>
+    <h2>Latest Release: 0.1.2</h2>
 
     <p>
       Current Develop &mdash;
@@ -1009,6 +1009,13 @@ Knex.Schema.table('users', function (table) {
       Adds a enum column, (aliased to <tt>enu</tt>, as enum is a reserved word in javascript).
     </p>
 
+    <p id="Schema-engine">
+      <b class="header">engine</b><code>table.engine(val)</code>
+      <br />
+      Sets the engine for the database, only available within a <tt>createTable</tt> call, and only
+      applicable to MySql.
+    </p>
+
     <h3 id="Chainable">Chainable Methods:</h3>
 
     <p>
@@ -1128,6 +1135,12 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.1.2</b> &mdash; <small><i>May 15, 2013</i></small><br />
+      Bug fixes for groupBy (#7). Mysql using collation, charset config settings in <tt>createTable</tt>. 
+      Added engine on schemaBuilder specifier (#6). Other doc fixes, tests.
+    </p>
 
     <p>
       <b class="header">0.1.1</b> &mdash; <small><i>May 14, 2013</i></small><br />
