@@ -4,7 +4,7 @@ module.exports = {
   mysql: {
     database: 'knex_test',
     user: 'root',
-    encoding: 'utf8'
+    charset: 'utf8'
   },
 
   postgres: {

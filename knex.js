@@ -1,4 +1,4 @@
-//     Knex.js  0.1.1
+//     Knex.js  0.1.2
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -23,7 +23,7 @@
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.1.1';
+  Knex.VERSION = '0.1.2';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
@@ -436,7 +436,7 @@
   };
 
   // All operators used in the `where` clause generation.
-  var operators = ['=', '<', '>', '<=', '>=', 'like', 'not like', 'between', 'ilike'];
+  var operators = ['=', '<', '>', '<=', '>=', '<>', 'like', 'not like', 'between', 'ilike'];
 
   _.extend(Builder.prototype, Common, {
 
@@ -679,7 +679,7 @@
 
     // Adds a `group by` clause to the query.
     groupBy: function() {
-      this.groups = this.groups.concat(_.toArray(arguments));
+      this.groups = (this.groups || []).concat(_.toArray(arguments));
       return this;
     },
 
@@ -1085,12 +1085,17 @@
 
     // Determine if the blueprint has a create command.
     creating: function() {
-      var command;
       for (var i = 0, l = this.commands.length; i < l; i++) {
-        command = this.commands[i];
-        if (command.name == 'createTable') return true;
+        if (this.commands[i].name == 'createTable') return true;
       }
       return false;
+    },
+
+    // Sets the engine to use when creating the table in MySql
+    engine: function(name) {
+      if (!this.creating()) throw new Error('The `engine` modifier may only be used while creating a table.');
+      this.isEngine = name;
+      return this;
     },
 
     // Indicate that the given columns should be dropped.
@@ -1114,7 +1119,7 @@
       return this._dropIndexCommand('dropUnique', index);
     },
 
-      // Indicate that the given index should be dropped.
+    // Indicate that the given index should be dropped.
     dropIndex: function(index) {
       return this._dropIndexCommand('dropIndex', index);
     },

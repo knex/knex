@@ -24,11 +24,11 @@ _.extend(MysqlClient.prototype, base.protoProps, {
 
         // If we have a debug flag set, console.log the query.
         if (debug) base.debug(builder, conn);
-        
+
         // Call the querystring and then release the client
         conn.query(builder.sql, builder.bindings, function (err, resp) {
           if (err) { return dfd.reject(err); }
-          
+
           if (builder._source === 'Raw') return dfd.resolve(resp);
 
           if (builder._source === 'SchemaBuilder') {
@@ -84,7 +84,22 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
 
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After'],
-  
+
+  // Compile a create table command.
+  compileCreateTable: function(blueprint, command) {
+    var sql = base.schemaGrammar.compileCreateTable.call(this, blueprint, command);
+    var conn = blueprint.client.connectionSettings;
+
+    if (conn.charset) sql += ' default character set ' + conn.charset;
+    if (conn.collation) sql += ' collate ' + conn.collation;
+
+    if (blueprint.isEngine) {
+      sql += ' engine = ' + blueprint.isEngine;
+    }
+
+    return sql;
+  },
+
   // Compile the query to determine if a table exists.
   compileTableExists: function(blueprint) {
     blueprint.bindings.unshift(blueprint.client.connectionSettings.database);
@@ -102,7 +117,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     command.name = null;
     return this.compileKey(blueprint, command, 'primary key');
   },
-  
+
   // Compile a unique key command.
   compileUnique: function(blueprint, command) {
     return this.compileKey(blueprint, command, 'unique');
@@ -119,13 +134,13 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     var table = this.wrapTable(blueprint);
     return 'alter table ' + table + " add " + type + " " + command.index + "(" + columns + ")";
   },
-  
+
   // Compile a drop column command.
   compileDropColumn: function(blueprint, command) {
     var columns = this.prefixArray('drop', this.wrapArray(command.columns));
     return 'alter table ' + this.wrapTable(blueprint) + ' ' + columns.join(', ');
   },
-  
+
   // Compile a drop primary key command.
   compileDropPrimary: function(blueprint, command) {
     return 'alter table ' + this.wrapTable(blueprint) + ' drop primary key';
@@ -140,7 +155,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   compileDropIndex: function(blueprint, command) {
     return 'alter table ' + this.wrapTable(blueprint) + ' drop index ' + command.index;
   },
-  
+
   // Compile a drop foreign key command.
   compileDropForeign: function(blueprint, command) {
     return 'alter table ' + this.wrapTable(blueprint) + " drop foreign key " + command.index;
@@ -150,7 +165,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   compileRenameTable: function(blueprint, command) {
     return 'rename table ' + this.wrapTable(blueprint) + ' to ' + this.wrapTable(command.to);
   },
-  
+
   // Create the column definition for a string type.
   typeString: function(column) {
     return "varchar(" + column.length + ")";
@@ -179,7 +194,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   typeFloat: function(column) {
     return 'float(' + column.total + ',' + column.places + ')';
   },
-  
+
   // Create the column definition for a decimal type.
   typeDecimal: function(column) {
     return 'decimal(' + column.precision + ', ' + column.scale + ')';

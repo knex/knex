@@ -181,7 +181,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.1.1)</span>
+      Knex.js <span class="version">(0.1.2)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -270,6 +270,7 @@
       <li>– <a href="#Chainable-defaultTo">defaultTo</a></li>
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
       <li>– <a href="#Chainable-nullable">nullable</a></li>
+      <li>– <a href="#Chainable-after">after</a></li>
     </ul>
 
     <a class="toc_title" href="#Raw">
@@ -318,7 +319,7 @@
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
 
-    <h2>Latest Release: 0.1.1</h2>
+    <h2>Latest Release: 0.1.2</h2>
 
     <p>
       Current Develop &mdash;
@@ -854,7 +855,7 @@ Knex.Transaction(function(t) {
     </p>
 
 <pre>
-Knex.Schema.create('users', function (table) {
+Knex.Schema.createTable('users', function (table) {
   table.string('name');
   table.timestamps();
 }).then(function () {
@@ -1008,6 +1009,13 @@ Knex.Schema.table('users', function (table) {
       Adds a enum column, (aliased to <tt>enu</tt>, as enum is a reserved word in javascript).
     </p>
 
+    <p id="Schema-engine">
+      <b class="header">engine</b><code>table.engine(val)</code>
+      <br />
+      Sets the engine for the database, only available within a <tt>createTable</tt> call, and only
+      applicable to MySql.
+    </p>
+
     <h3 id="Chainable">Chainable Methods:</h3>
 
     <p>
@@ -1018,6 +1026,18 @@ Knex.Schema.table('users', function (table) {
       <b class="header">index</b><code>column.index()</code>
       <br />
       Specifies an integer as index. No-op if this is chained off of a non-integer field.
+    </p>
+
+    <p id="Chainable-primary">
+      <b class="header">primary</b><code>column.primary()</code>
+      <br />
+      Sets the field as the primary key for the table.
+    </p>
+
+    <p id="Chainable-unique">
+      <b class="header">unique</b><code>column.unique()</code>
+      <br />
+      Sets the column as unique.
     </p>
 
     <p id="Chainable-defaultTo">
@@ -1038,17 +1058,12 @@ Knex.Schema.table('users', function (table) {
       Allows a field to be nullable. No-op if chained off of a non-nullable field.
     </p>
 
-    <p id="Chainable-nullable">
-      <b class="header">nullable</b><code>column.nullable()</code>
+    <p id="Chainable-after">
+      <b class="header">after</b><code>column.after(field)</code>
       <br />
-      Allows a field to be nullable. No-op if chained off of a non-nullable field.
+      Sets the column to be inserted after another, only used in MySql alter tables.
     </p>
 
-    <p id="Chainable-primary">
-      <b class="header">primary</b><code>column.primary()</code>
-      <br />
-      Sets the field as the primary key for the table.
-    </p>
 
 <pre>
 Knex.createTable('accounts', function() {
@@ -1120,6 +1135,12 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.1.2</b> &mdash; <small><i>May 15, 2013</i></small><br />
+      Bug fixes for groupBy (#7). Mysql using collation, charset config settings in <tt>createTable</tt>. 
+      Added engine on schemaBuilder specifier (#6). Other doc fixes, tests.
+    </p>
 
     <p>
       <b class="header">0.1.1</b> &mdash; <small><i>May 14, 2013</i></small><br />

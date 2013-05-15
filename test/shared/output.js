@@ -16,7 +16,7 @@ module.exports = {
     },
     'schema.2': {
       mysql: {
-        sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null, `created_at` timestamp default 0 not null, `updated_at` timestamp default 0 not null)','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
+        sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null, `created_at` timestamp default 0 not null, `updated_at` timestamp default 0 not null) default character set utf8','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
         bindings: []
       },
       postgres: {
@@ -30,7 +30,7 @@ module.exports = {
     },
     'schema.3': {
       mysql: {
-        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null)'],
+        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null) default character set utf8'],
         bindings: []
       },
       postgres: {
@@ -44,7 +44,7 @@ module.exports = {
     },
     'schema.4': {
       mysql: {
-        sql: ['create table `test_table_three` (`main` int(11) not null, `paragraph` text not null)','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)'],
+        sql: ['create table `test_table_three` (`main` int(11) not null, `paragraph` text not null) default character set utf8','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)'],
         bindings: []
       },
       postgres: {
@@ -476,6 +476,20 @@ module.exports = {
         bindings: [1]
       }
     },
+    'selects.21': {
+      mysql: {
+        sql: ['select `email`, `logins` from `accounts` where `id` <> ?'],
+        bindings: [2]
+      },
+      postgres: {
+        sql: ['select "email", "logins" from "accounts" where "id" <> ?'],
+        bindings: [2]
+      },
+      sqlite3: {
+        sql: ['select "email", "logins" from "accounts" where "id" <> ?'],
+        bindings: [2]
+      }
+    },
     'aggregate.1': {
       mysql: {
         sql: ['select sum(`logins`) as aggregate from `accounts`'],
@@ -487,6 +501,48 @@ module.exports = {
       },
       sqlite3: {
         sql: ['select sum("logins") as aggregate from "accounts"'],
+        bindings: []
+      }
+    },
+    'aggregate.2': {
+      mysql: {
+        sql: ['select count(`id`) as aggregate from `accounts`'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select count("id") as aggregate from "accounts"'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select count("id") as aggregate from "accounts"'],
+        bindings: []
+      }
+    },
+    'aggregate.3': {
+      mysql: {
+        sql: ['select count(`id`) as aggregate from `accounts` group by `logins`'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select count("id") as aggregate from "accounts" group by "logins"'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select count("id") as aggregate from "accounts" group by "logins"'],
+        bindings: []
+      }
+    },
+    'aggregate.4': {
+      mysql: {
+        sql: ['select count(`id`) as aggregate from `accounts` group by `first_name`'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select count("id") as aggregate from "accounts" group by "first_name"'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select count("id") as aggregate from "accounts" group by "first_name"'],
         bindings: []
       }
     },
@@ -1886,6 +1942,56 @@ module.exports = {
         last_name: 'User'
       }]
     },
+    'selects.21': {
+      mysql: [{
+        email: 'test100@example.com',
+        logins: 1
+      },{
+        email: 'test3@example.com',
+        logins: 2
+      },{
+        email: 'test4@example.com',
+        logins: 2
+      },{
+        email: 'test5@example.com',
+        logins: 2
+      },{
+        email: 'test6@example.com',
+        logins: 2
+      }],
+      postgres: [{
+        email: 'test3@example.com',
+        logins: 2
+      },{
+        email: 'test4@example.com',
+        logins: 2
+      },{
+        email: 'test5@example.com',
+        logins: 2
+      },{
+        email: 'test6@example.com',
+        logins: 2
+      },{
+        email: 'test100@example.com',
+        logins: 1
+      }],
+      sqlite3: [{
+        email: 'test100@example.com',
+        logins: 1
+      },{
+        email: 'test3@example.com',
+        logins: 2
+      },{
+        email: 'test4@example.com',
+        logins: 2
+      },{
+        email: 'test5@example.com',
+        logins: 2
+      },{
+        email: 'test6@example.com',
+        logins: 2
+      }]
+    },
     'aggregate.1': {
       mysql: [{
         aggregate: 10
@@ -1895,6 +2001,51 @@ module.exports = {
       }],
       sqlite3: [{
         aggregate: 10
+      }]
+    },
+    'aggregate.2': {
+      mysql: [{
+        aggregate: 6
+      }],
+      postgres: [{
+        aggregate: 6
+      }],
+      sqlite3: [{
+        aggregate: 6
+      }]
+    },
+    'aggregate.3': {
+      mysql: [{
+        aggregate: 2
+      },{
+        aggregate: 4
+      }],
+      postgres: [{
+        aggregate: 2
+      },{
+        aggregate: 4
+      }],
+      sqlite3: [{
+        aggregate: 2
+      },{
+        aggregate: 4
+      }]
+    },
+    'aggregate.4': {
+      mysql: [{
+        aggregate: 5
+      },{
+        aggregate: 1
+      }],
+      postgres: [{
+        aggregate: 1
+      },{
+        aggregate: 5
+      }],
+      sqlite3: [{
+        aggregate: 5
+      },{
+        aggregate: 1
       }]
     },
     'joins.1': {
