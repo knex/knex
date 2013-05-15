@@ -436,7 +436,7 @@
   };
 
   // All operators used in the `where` clause generation.
-  var operators = ['=', '<', '>', '<=', '>=', 'like', 'not like', 'between', 'ilike'];
+  var operators = ['=', '<', '>', '<=', '>=', '<>', 'like', 'not like', 'between', 'ilike'];
 
   _.extend(Builder.prototype, Common, {
 

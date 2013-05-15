@@ -476,6 +476,20 @@ module.exports = {
         bindings: [1]
       }
     },
+    'selects.21': {
+      mysql: {
+        sql: ['select `email`, `logins` from `accounts` where `id` <> ?'],
+        bindings: [2]
+      },
+      postgres: {
+        sql: ['select "email", "logins" from "accounts" where "id" <> ?'],
+        bindings: [2]
+      },
+      sqlite3: {
+        sql: ['select "email", "logins" from "accounts" where "id" <> ?'],
+        bindings: [2]
+      }
+    },
     'aggregate.1': {
       mysql: {
         sql: ['select sum(`logins`) as aggregate from `accounts`'],
@@ -1884,6 +1898,56 @@ module.exports = {
       },{
         first_name: 'Test',
         last_name: 'User'
+      }]
+    },
+    'selects.21': {
+      mysql: [{
+        email: 'test100@example.com',
+        logins: 1
+      },{
+        email: 'test3@example.com',
+        logins: 2
+      },{
+        email: 'test4@example.com',
+        logins: 2
+      },{
+        email: 'test5@example.com',
+        logins: 2
+      },{
+        email: 'test6@example.com',
+        logins: 2
+      }],
+      postgres: [{
+        email: 'test3@example.com',
+        logins: 2
+      },{
+        email: 'test4@example.com',
+        logins: 2
+      },{
+        email: 'test5@example.com',
+        logins: 2
+      },{
+        email: 'test6@example.com',
+        logins: 2
+      }, {
+        email: 'test100@example.com',
+        logins: 1
+      }],
+      sqlite3: [{
+        email: 'test100@example.com',
+        logins: 1
+      },{
+        email: 'test3@example.com',
+        logins: 2
+      },{
+        email: 'test4@example.com',
+        logins: 2
+      },{
+        email: 'test5@example.com',
+        logins: 2
+      },{
+        email: 'test6@example.com',
+        logins: 2
       }]
     },
     'aggregate.1': {
