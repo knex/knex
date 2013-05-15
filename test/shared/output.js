@@ -16,7 +16,7 @@ module.exports = {
     },
     'schema.2': {
       mysql: {
-        sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null, `created_at` timestamp default 0 not null, `updated_at` timestamp default 0 not null)','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
+        sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null, `created_at` timestamp default 0 not null, `updated_at` timestamp default 0 not null) default character set utf8','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
         bindings: []
       },
       postgres: {
@@ -30,7 +30,7 @@ module.exports = {
     },
     'schema.3': {
       mysql: {
-        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null)'],
+        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null) default character set utf8'],
         bindings: []
       },
       postgres: {
@@ -44,7 +44,7 @@ module.exports = {
     },
     'schema.4': {
       mysql: {
-        sql: ['create table `test_table_three` (`main` int(11) not null, `paragraph` text not null)','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)'],
+        sql: ['create table `test_table_three` (`main` int(11) not null, `paragraph` text not null) default character set utf8','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)'],
         bindings: []
       },
       postgres: {
@@ -1971,7 +1971,7 @@ module.exports = {
       },{
         email: 'test6@example.com',
         logins: 2
-      }, {
+      },{
         email: 'test100@example.com',
         logins: 1
       }],
@@ -2017,34 +2017,34 @@ module.exports = {
     'aggregate.3': {
       mysql: [{
         aggregate: 2
-      }, {
+      },{
         aggregate: 4
       }],
       postgres: [{
         aggregate: 2
-      }, {
+      },{
         aggregate: 4
       }],
       sqlite3: [{
         aggregate: 2
-      }, {
+      },{
         aggregate: 4
       }]
     },
     'aggregate.4': {
       mysql: [{
         aggregate: 5
-      }, {
+      },{
         aggregate: 1
       }],
       postgres: [{
         aggregate: 1
-      }, {
+      },{
         aggregate: 5
       }],
       sqlite3: [{
         aggregate: 5
-      }, {
+      },{
         aggregate: 1
       }]
     },

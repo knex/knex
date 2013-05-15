@@ -1345,6 +1345,12 @@
     after: function(name) {
       this.isAfter = name;
       return this;
+    },
+
+    // Sets the engine to use when creating the table in MySql
+    engine: function(name) {
+      this.useEngine = name;
+      return this;
     }
 
   };
