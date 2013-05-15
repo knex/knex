@@ -504,6 +504,48 @@ module.exports = {
         bindings: []
       }
     },
+    'aggregate.2': {
+      mysql: {
+        sql: ['select count(`id`) as aggregate from `accounts`'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select count("id") as aggregate from "accounts"'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select count("id") as aggregate from "accounts"'],
+        bindings: []
+      }
+    },
+    'aggregate.3': {
+      mysql: {
+        sql: ['select count(`id`) as aggregate from `accounts` group by `logins`'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select count("id") as aggregate from "accounts" group by "logins"'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select count("id") as aggregate from "accounts" group by "logins"'],
+        bindings: []
+      }
+    },
+    'aggregate.4': {
+      mysql: {
+        sql: ['select count(`id`) as aggregate from `accounts` group by `first_name`'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select count("id") as aggregate from "accounts" group by "first_name"'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select count("id") as aggregate from "accounts" group by "first_name"'],
+        bindings: []
+      }
+    },
     'joins.1': {
       mysql: {
         sql: ['select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`'],
@@ -1959,6 +2001,51 @@ module.exports = {
       }],
       sqlite3: [{
         aggregate: 10
+      }]
+    },
+    'aggregate.2': {
+      mysql: [{
+        aggregate: 6
+      }],
+      postgres: [{
+        aggregate: 6
+      }],
+      sqlite3: [{
+        aggregate: 6
+      }]
+    },
+    'aggregate.3': {
+      mysql: [{
+        aggregate: 2
+      }, {
+        aggregate: 4
+      }],
+      postgres: [{
+        aggregate: 2
+      }, {
+        aggregate: 4
+      }],
+      sqlite3: [{
+        aggregate: 2
+      }, {
+        aggregate: 4
+      }]
+    },
+    'aggregate.4': {
+      mysql: [{
+        aggregate: 5
+      }, {
+        aggregate: 1
+      }],
+      postgres: [{
+        aggregate: 1
+      }, {
+        aggregate: 5
+      }],
+      sqlite3: [{
+        aggregate: 5
+      }, {
+        aggregate: 1
       }]
     },
     'joins.1': {
