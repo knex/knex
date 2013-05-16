@@ -26,6 +26,23 @@ module.exports = function(Knex, dbName, resolver) {
       .then(resolver(ok), ok);
     });
 
+    it('supports join aliases', function(ok) {
+        //Expected output: all pairs of account emails, excluding pairs where the emails are the same.
+        Knex('accounts')
+            .joinAs('accounts', 'a2', 'a2.email', '<>', 'accounts.email')
+            .select(['accounts.email as e1', 'a2.email as e2'])
+            .then(resolver(ok), ok);
+    });
+    it('supports join aliases with advanced joins', function(ok) {
+        //Expected output: all pairs of account emails, excluding pairs where the emails are the same.
+        //But also include the case where the emails are the same, for account 2.
+        Knex('accounts')
+            .joinAs('accounts', 'a2', function() {
+                this.on('accounts.email', '<>', 'a2.email').orOn('accounts.id','=',2);
+            })
+            .select(['accounts.email as e1', 'a2.email as e2'])
+            .then(resolver(ok), ok);
+    });
   });
 
 };

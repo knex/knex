@@ -189,7 +189,8 @@
           );
         }
         clauses[0] = clauses[0].replace(/and |or /, '');
-        sql.push(join.type + ' join ' + this.wrapTable(join.table) + ' on ' + clauses.join(' '));
+        var table_ref = this.wrapTable(join.table) + (join.alias ? ' '+this.wrapTable(join.alias) : '');
+        sql.push(join.type + ' join ' + table_ref + ' on ' + clauses.join(' '));
       }
       return sql.join(' ');
     },
@@ -511,13 +512,17 @@
     // Adds a join clause to the query, allowing for advanced joins
     // with an anonymous function as the second argument.
     join: function(table, first, operator, second, type) {
+        return this.joinAs(table, undefined, first, operator, second, type);
+    },
+
+    joinAs: function(table, alias, first, operator, second, type) {
       var join;
       if (_.isFunction(first)) {
         type = operator;
-        join = new JoinClause(type || 'inner', table);
+        join = new JoinClause(type || 'inner', table, alias);
         first.call(join, join);
       } else {
-        join = new JoinClause(type || 'inner', table);
+        join = new JoinClause(type || 'inner', table, alias);
         join.on(first, operator, second);
       }
       this.joins.push(join);
@@ -893,10 +898,11 @@
   // Knex.JoinClause
   // ---------
 
-  var JoinClause = Knex.JoinClause = function(type, table) {
+  var JoinClause = Knex.JoinClause = function(type, table, alias) {
     this.clauses = [];
     this.type = type;
     this.table = table;
+    this.alias = alias;
   };
 
   JoinClause.prototype = {
