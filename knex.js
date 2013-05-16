@@ -401,7 +401,7 @@
 
     wrapTable: function(table) {
       if (table instanceof Raw) return table.value;
-      return this.wrapValue(table);
+      return this.wrap(table);
     },
 
     columnize: function(columns) {
