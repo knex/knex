@@ -588,6 +588,34 @@ module.exports = {
         bindings: []
       }
     },
+    'joins.4': {
+      mysql: {
+        sql: ['select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email`'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email"'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email"'],
+        bindings: []
+      }
+    },
+    'joins.5': {
+      mysql: {
+        sql: ['select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `accounts`.`email` <> `a2`.`email` or `accounts`.`id` = 2'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2'],
+        bindings: []
+      }
+    },
     'deletes.1': {
       mysql: {
         sql: ['delete from `accounts` where `email` = ?'],
@@ -2502,6 +2530,565 @@ module.exports = {
         account_id: null,
         details: null,
         status: null
+      }]
+    },
+    'joins.4': {
+      mysql: [{
+        e1: 'test2@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test6@example.com'
+      }],
+      postgres: [{
+        e1: 'test2@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test6@example.com'
+      }],
+      sqlite3: [{
+        e1: 'test100@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test5@example.com'
+      }]
+    },
+    'joins.5': {
+      mysql: [{
+        e1: 'test2@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test6@example.com'
+      }],
+      postgres: [{
+        e1: 'test2@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test6@example.com'
+      }],
+      sqlite3: [{
+        e1: 'test100@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test100@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test2@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test3@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test5@example.com'
+      },{
+        e1: 'test4@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test5@example.com',
+        e2: 'test6@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test100@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test2@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test3@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test4@example.com'
+      },{
+        e1: 'test6@example.com',
+        e2: 'test5@example.com'
       }]
     },
     'deletes.1': {
