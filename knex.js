@@ -189,7 +189,7 @@
           );
         }
         clauses[0] = clauses[0].replace(/and |or /, '');
-        sql.push(join.type + ' join ' + this.wrapTable(join.table) + ' on ' + clauses.join(' '));
+        sql.push(join.type + ' join ' + this.wrap(join.table) + ' on ' + clauses.join(' '));
       }
       return sql.join(' ');
     },
