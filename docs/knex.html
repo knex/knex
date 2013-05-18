@@ -27,7 +27,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <pre><code>Knex.js  0.1.2
+              <pre><code>Knex.js  0.1.3
 
 (c) 2013 Tim Griesser
 Knex may be freely distributed under the MIT license.
@@ -91,7 +91,7 @@ http://knexjs.org</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.1.2'</span>;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.1.3'</span>;</pre></div></div>
             
         </li>
         
@@ -301,7 +301,7 @@ and have it come out fine.</p>
             <div class="content"><div class='highlight'><pre>      <span class="keyword">this</span>.sql = <span class="keyword">this</span>.toSql();
       <span class="keyword">this</span>.bindings = <span class="keyword">this</span>._cleanBindings();
       <span class="keyword">if</span> (!_.isArray(<span class="keyword">this</span>.sql)) <span class="keyword">this</span>.sql = [<span class="keyword">this</span>.sql];
-      
+
       <span class="keyword">var</span> chain;
       <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = <span class="keyword">this</span>.sql.length; i &lt; l; i++) {
         <span class="keyword">if</span> (chain) {
@@ -2004,6 +2004,7 @@ the currently running transaction</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    transacting: <span class="keyword">function</span>(t) {
+      <span class="keyword">if</span> (!t) <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'A transaction object must be passed to "transacting".'</span>);
       <span class="keyword">this</span>.transaction = t;
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },</pre></div></div>
@@ -2250,8 +2251,15 @@ the currently running transaction</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  Knex.Transaction = <span class="keyword">function</span>(container) {
+    <span class="keyword">if</span> (!Knex.Instances[<span class="string">'main'</span>]) {
+      <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'The Knex instance has not been initialized yet.'</span>);
+    }
+    <span class="keyword">return</span> transaction.call(Knex.Instances[<span class="string">'main'</span>], container);
+  };
+
+  <span class="keyword">var</span> transaction = <span class="keyword">function</span>(container) {
     <span class="keyword">var</span> client = <span class="keyword">this</span>.client;
-    <span class="keyword">return</span> client.initTransaction().then(<span class="keyword">function</span>(connection) {</pre></div></div>
+    <span class="keyword">return</span> client.startTransaction().then(<span class="keyword">function</span>(connection) {</pre></div></div>
             
         </li>
         
@@ -4023,7 +4031,7 @@ on the &quot;root&quot; <code>Knex</code>.</p>
             <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (name === <span class="string">'main'</span>) {
       initSchema(Knex, client);
     }
-    
+
     initSchema(Target, client);</pre></div></div>
             
         </li>
@@ -4051,6 +4059,23 @@ on the &quot;root&quot; <code>Knex</code>.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-208">&#182;</a>
               </div>
+              <p>Setup the transacting function properly for this connection.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    Target.Transaction = <span class="keyword">function</span>(handler) {
+      <span class="keyword">return</span> transaction.call(<span class="keyword">this</span>, handler);
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-209">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-209">&#182;</a>
+              </div>
               <p>Executes a Raw query.</p>
 
             </div>
@@ -4064,11 +4089,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-209">
+        <li id="section-210">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-209">&#182;</a>
+                <a class="pilcrow" href="#section-210">&#182;</a>
               </div>
               <p>Add this instance to the global <code>Knex</code> instances, and return.</p>
 
@@ -4082,11 +4107,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-210">
+        <li id="section-211">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-210">&#182;</a>
+                <a class="pilcrow" href="#section-211">&#182;</a>
               </div>
               <p>Default client paths, located in the <code>./clients</code> directory.</p>
 
@@ -4103,11 +4128,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-211">
+        <li id="section-212">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-211">&#182;</a>
+                <a class="pilcrow" href="#section-212">&#182;</a>
               </div>
               <p>Named instances of Knex, presumably with different database
 connections, the main instance being named &quot;main&quot;...</p>
@@ -4119,11 +4144,11 @@ connections, the main instance being named &quot;main&quot;...</p>
         </li>
         
         
-        <li id="section-212">
+        <li id="section-213">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-212">&#182;</a>
+                <a class="pilcrow" href="#section-213">&#182;</a>
               </div>
               <p>Export the Knex module</p>
 

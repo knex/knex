@@ -46,6 +46,10 @@ module.exports = function(Knex, dbType) {
         require('./lib/joins')(Knex, dbType, handler(dbType, 'joins'));
       });
 
+      describe('Transaction', function() {
+        require('./lib/transaction')(Knex, dbType, handler(dbType, 'transaction'));
+      });
+
       describe('Deletes', function() {
         require('./lib/deletes')(Knex, dbType, handler(dbType, 'deletes'));
       });
@@ -54,7 +58,7 @@ module.exports = function(Knex, dbType) {
         require('./lib/additional')(Knex, dbType, handler(dbType, 'additional'));
       });
 
-      describe('Deletes', function() {
+      describe('Unions', function() {
         require('./lib/unions')(Knex, dbType, handler(dbType, 'unions'));
       });
 
