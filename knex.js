@@ -1,4 +1,4 @@
-//     Knex.js  0.1.2
+//     Knex.js  0.1.3
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -23,7 +23,7 @@
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.1.2';
+  Knex.VERSION = '0.1.3';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
@@ -113,7 +113,7 @@
       this.sql = this.toSql();
       this.bindings = this._cleanBindings();
       if (!_.isArray(this.sql)) this.sql = [this.sql];
-      
+
       var chain;
       for (var i = 0, l = this.sql.length; i < l; i++) {
         if (chain) {
@@ -814,6 +814,7 @@
     // Sets the current Builder connection to that of the
     // the currently running transaction
     transacting: function(t) {
+      if (!t) throw new Error('A transaction object must be passed to "transacting".');
       this.transaction = t;
       return this;
     },
@@ -921,13 +922,20 @@
   // ---------
 
   Knex.Transaction = function(container) {
+    if (!Knex.Instances['main']) {
+      throw new Error('The Knex instance has not been initialized yet.');
+    }
+    return transaction.call(Knex.Instances['main'], container);
+  };
+
+  var transaction = function(container) {
     var client = this.client;
-    return client.initTransaction().then(function(connection) {
+    return client.startTransaction().then(function(connection) {
 
       // Initiate a deferred object, so we know when the
       // transaction completes or fails, we know what to do.
       var dfd = When.defer();
-    
+
       // Call the container with the transaction
       // commit & rollback objects
       container({
@@ -1541,7 +1549,7 @@
           builder.grammar = client.grammar;
       return builder;
     };
-      
+
     // Inherit static properties, without any that don't apply except
     // on the "root" `Knex`.
     _.extend(Target, _.omit(Knex, 'Initialize', 'Instances', 'VERSION'));
@@ -1550,12 +1558,17 @@
     if (name === 'main') {
       initSchema(Knex, client);
     }
-    
+
     initSchema(Target, client);
-    
+
     // Specifically set the client on the current target.
     Target.client = client;
     Target.instanceName = name;
+
+    // Setup the transacting function properly for this connection.
+    Target.Transaction = function(handler) {
+      return transaction.call(this, handler);
+    };
 
     // Executes a Raw query.
     Target.Raw = function(value) {

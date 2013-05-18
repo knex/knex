@@ -1,4 +1,5 @@
 var When        = require('when');
+var nodefn      = require('when/node/function');
 var _           = require('underscore');
 var util        = require('util');
 var base        = require('./base');
@@ -25,10 +26,10 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
 
         // If we have a debug flag set, console.log the query.
         if (debug) base.debug(builder, conn);
-        
+
         // Call the querystring and then release the client
         conn[method](builder.sql, builder.bindings, function (err, resp) {
-        
+
           if (err) return dfd.reject(err);
 
           if (builder._source === 'Raw') return dfd.resolve(resp);
@@ -72,6 +73,27 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
 
   getRawConnection: function() {
     return new sqlite3.Database(this.connectionSettings.filename);
+  },
+
+  // Begins a transaction statement on the instance,
+  // resolving with the connection of the current transaction.
+  startTransaction: function() {
+    return this.getConnection().then(function(connection) {
+      return nodefn.call(connection.run.bind(connection), 'begin;', []).then(function() {
+        return connection;
+      });
+    });
+  },
+
+  finishTransaction: function(type, trans, dfd) {
+    var ctx = this;
+    nodefn.call(trans.connection.run.bind(trans.connection), type + ';', []).then(function(resp) {
+      if (type === 'commit') dfd.resolve(resp);
+      if (type === 'rollback') dfd.reject(resp);
+    }).ensure(function() {
+      ctx.releaseConnection(trans.connection);
+      trans.connection = null;
+    });
   }
 
 });

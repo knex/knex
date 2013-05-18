@@ -59,18 +59,19 @@ exports.protoProps = {
   // resolving with the connection of the current transaction.
   startTransaction: function() {
     return this.getConnection().then(function(connection) {
-      return nodefn.call(connection.query, 'begin;', []).then(function() {
+      return nodefn.call(connection.query.bind(connection), 'begin;', []).then(function() {
         return connection;
       });
     });
   },
 
   finishTransaction: function(type, trans, dfd) {
-    nodefn.call(trans.connection.query, type + ';', []).then(function() {
+    var ctx = this;
+    nodefn.call(trans.connection.query.bind(trans.connection), type + ';', []).then(function(resp) {
       if (type === 'commit') dfd.resolve(resp);
       if (type === 'rollback') dfd.reject(resp);
     }).ensure(function() {
-      trans.connection.end();
+      ctx.releaseConnection(trans.connection);
       trans.connection = null;
     });
   }
