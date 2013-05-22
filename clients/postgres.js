@@ -28,7 +28,7 @@ _.extend(PostgresClient.prototype, base.protoProps, {
           questionCount++;
           return '$' + questionCount;
         });
-        
+
         // If we have a debug flag set, console.log the query.
         if (debug) base.debug(builder, conn);
 
@@ -113,7 +113,7 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   },
 
   // Compile a create table command.
-  compileAdd: function(blueprint, command) {
+  compileAdd: function(blueprint) {
     var table = this.wrapTable(blueprint);
     var columns = this.prefixArray('add column', this.getColumns(blueprint));
     return 'alter table ' + table + ' ' + columns.join(', ');
@@ -141,12 +141,12 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   // Compile a drop column command.
   compileDropColumn: function(blueprint, command) {
     var columns = this.prefixArray('drop column', this.wrapArray(command.columns));
-    table = this.wrapTable(blueprint);
+    var table   = this.wrapTable(blueprint);
     return 'alter table ' + table + ' ' + columns.join(', ');
   },
 
   // Compile a drop primary key command.
-  compileDropPrimary: function(blueprint, command) {
+  compileDropPrimary: function(blueprint) {
     var table = blueprint.getTable();
     return 'alter table ' + this.wrapTable(blueprint) + " drop constraint " + table + "_pkey";
   },
@@ -174,7 +174,7 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   },
 
   // Create the column definition for a text type.
-  typeText: function(column) {
+  typeText: function() {
     return 'text';
   },
 
@@ -184,12 +184,12 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   },
 
   // Create the column definition for a tiny integer type.
-  typeTinyInteger: function(column) {
+  typeTinyInteger: function() {
     return 'smallint';
   },
 
   // Create the column definition for a float type.
-  typeFloat: function(column) {
+  typeFloat: function() {
     return 'real';
   },
 
@@ -199,7 +199,7 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   },
 
   // Create the column definition for a boolean type.
-  typeBoolean: function(column) {
+  typeBoolean: function() {
     return 'boolean';
   },
 
@@ -209,12 +209,12 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   },
 
   // Create the column definition for a date-time type.
-  typeDateTime: function(column) {
+  typeDateTime: function() {
     return 'timestamp';
   },
 
   // Create the column definition for a timestamp type.
-  typeTimestamp: function(column) {
+  typeTimestamp: function() {
     return 'timestamp';
   },
 
@@ -224,7 +224,7 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   },
 
   // Create the column definition for a binary type.
-  typeBinary: function(column) {
+  typeBinary: function() {
     return 'bytea';
   },
 

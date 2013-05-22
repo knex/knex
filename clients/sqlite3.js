@@ -118,8 +118,6 @@ Sqlite3Client.grammar = {
   compileInsert: function(qb) {
     var values = qb.values;
     var table = this.wrapTable(qb.table);
-    var parameters = this.parameterize(values[0]);
-    var paramBlocks = [];
 
     // If there is only one record being inserted, we will just use the usual query
     // grammar insert builder because no special syntax is needed for the single
@@ -127,7 +125,7 @@ Sqlite3Client.grammar = {
     if (values.length === 1) {
       return require('../knex').Grammar.compileInsert.call(this, qb);
     }
-    
+
     var keys = _.keys(values[0]).sort();
     var names = this.columnize(keys);
     var columns = [];
@@ -161,20 +159,20 @@ Sqlite3Client.grammar = {
 
 // Grammar for the schema builder.
 Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.grammar, {
-  
+
   // The possible column modifiers.
   modifiers: ['Nullable', 'Default', 'Increment'],
-  
+
   // Compile the query to determine if a table exists.
   compileTableExists: function() {
     return "select * from sqlite_master where type = 'table' and name = ?";
   },
 
   // Compile a create table command.
-  compileCreateTable: function(blueprint, command) {
+  compileCreateTable: function(blueprint) {
     var columns = this.getColumns(blueprint).join(', ');
     var sql = 'create table ' + this.wrapTable(blueprint) + ' (' + columns;
-    
+
     // SQLite forces primary keys to be added when the table is initially created
     // so we will need to check for a primary key commands and add the columns
     // to the table's declaration here so they can be created on the tables.
@@ -201,13 +199,13 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
     }
     return sql;
   },
- 
+
   // Get the primary key command if it exists on the blueprint.
   getCommandByName: function(blueprint, name) {
     var commands = this.getCommandsByName(blueprint, name);
     if (commands.length > 0) return commands[0];
   },
-  
+
   // Get all of the commands with a given name.
   getCommandsByName: function(blueprint, name) {
     return _.where(blueprint.commands, function(value) { return value.name == name; });
@@ -223,7 +221,7 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
   },
 
   // Compile alter table commands for adding columns
-  compileAdd: function(blueprint, command) {
+  compileAdd: function(blueprint) {
     var table = this.wrapTable(blueprint);
     var columns = this.prefixArray('add column', this.getColumns(blueprint));
     var statements = [];
@@ -239,84 +237,84 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
     var table = this.wrapTable(blueprint);
     return 'create unique index ' + command.index + ' on ' + table + ' (' + columns + ')';
   },
-  
+
   // Compile a plain index key command.
   compileIndex: function(blueprint, command) {
     var columns = this.columnize(command.columns);
     var table = this.wrapTable(blueprint);
     return 'create index ' + command.index + ' on ' + table + ' (' + columns + ')';
   },
-  
+
   // Compile a foreign key command.
-  compileForeign: function(blueprint, command) {
+  compileForeign: function() {
     // Handled on table creation...
   },
-  
+
   // Compile a drop column command.
-  compileDropColumn: function(blueprint, command) {
+  compileDropColumn: function() {
     throw new Error("Drop column not supported for SQLite.");
   },
-  
+
   // Compile a drop unique key command.
   compileDropUnique: function(blueprint, command) {
     return 'drop index ' + command.index;
   },
-  
+
   // Compile a rename table command.
   compileRenameTable: function(blueprint, command) {
     return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
   },
-  
+
   // Create the column definition for a string type.
-  typeString: function(column) {
+  typeString: function() {
     return 'varchar';
   },
-  
+
   // Create the column definition for a text type.
-  typeText: function(column) {
+  typeText: function() {
     return 'text';
   },
-  
+
   // Create the column definition for a integer type.
-  typeInteger: function(column) {
+  typeInteger: function() {
     return 'integer';
   },
-  
+
   // Create the column definition for a float type.
-  typeFloat: function(column) {
+  typeFloat: function() {
     return 'float';
   },
-  
+
   // Create the column definition for a decimal type.
-  typeDecimal: function(column) {
+  typeDecimal: function() {
     return 'float';
   },
-  
+
   // Create the column definition for a boolean type.
-  typeBoolean: function(column) {
+  typeBoolean: function() {
     return 'tinyint';
   },
 
   // Create the column definition for a enum type.
-  typeEnum: function(column) {
+  typeEnum: function() {
     return 'varchar';
   },
-  
+
   // Create the column definition for a date-time type.
-  typeDateTime: function(column) {
+  typeDateTime: function() {
     return 'datetime';
   },
-    
+
   // Create the column definition for a timestamp type.
-  typeTimestamp: function(column) {
+  typeTimestamp: function() {
     return 'datetime';
   },
-    
+
   // Get the SQL for a nullable column modifier.
-  modifyNullable: function(blueprint) {
+  modifyNullable: function() {
     return ' null';
   },
-  
+
   // Get the SQL for an auto-increment column modifier.
   modifyIncrement: function(blueprint, column) {
     if (column.type == 'integer' && column.autoIncrement) {
