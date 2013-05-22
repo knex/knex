@@ -1,4 +1,3 @@
-var When = require('when');
 var nodefn = require('when/node/function');
 var _ = require('underscore');
 
@@ -81,20 +80,20 @@ exports.protoProps = {
 exports.grammar = {};
 
 exports.schemaGrammar = {
-  
+
   // Compile a create table command.
-  compileCreateTable: function(blueprint, command) {
+  compileCreateTable: function(blueprint) {
     var columns = this.getColumns(blueprint).join(', ');
     return 'create table ' + this.wrapTable(blueprint) + ' (' + columns + ')';
   },
 
   // Compile a drop table command.
-  compileDropTable: function(blueprint, command) {
+  compileDropTable: function(blueprint) {
     return 'drop table ' + this.wrapTable(blueprint);
   },
 
   // Compile a drop table (if exists) command.
-  compileDropTableIfExists: function(blueprint, command) {
+  compileDropTableIfExists: function(blueprint) {
     return 'drop table if exists ' + this.wrapTable(blueprint);
   },
 
@@ -109,23 +108,30 @@ exports.schemaGrammar = {
   },
 
   // Create the column definition for a time type.
-  typeTime: function(column) {
+  typeTime: function() {
     return 'time';
   },
 
   // Create the column definition for a date type.
-  typeDate: function(column) {
+  typeDate: function() {
     return 'date';
   },
 
   // Create the column definition for a binary type.
-  typeBinary: function(column) {
+  typeBinary: function() {
     return 'blob';
   },
 
   // Get the SQL for a nullable column modifier.
   modifyNullable: function(blueprint, column) {
     return column.isNullable ? ' null' : ' not null';
+  },
+
+  // Get the SQL for a default column modifier.
+  modifyDefault: function(blueprint, column) {
+    if (column.defaultValue != void 0) {
+      return " default '" + this.getDefaultValue(column.defaultValue) + "'";
+    }
   }
 
 };

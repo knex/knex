@@ -1,4 +1,4 @@
-//     Knex.js  0.1.3
+//     Knex.js  0.1.4
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -7,7 +7,7 @@
 (function() {
 
   "use strict";
-  
+
   // Required dependencies.
   var _ = require('underscore');
   var When = require('when');
@@ -23,7 +23,7 @@
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.1.3';
+  Knex.VERSION = '0.1.4';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
@@ -56,7 +56,7 @@
       return this._promise.then(onFulfilled, onRejected);
     },
 
-    // Returns an array of query strings filled out with the 
+    // Returns an array of query strings filled out with the
     // correct values based on bindings, etc. Useful for debugging.
     toString: function() {
       this.type || (this.type = 'select');
@@ -175,7 +175,7 @@
       return 'from ' + this.wrapTable(table);
     },
 
-    // Compiles all each of the `join` clauses on the query, 
+    // Compiles all each of the `join` clauses on the query,
     // including any nested join queries.
     compileJoins: function(qb, joins) {
       var sql = [];
@@ -321,7 +321,7 @@
       var parameters = this.parameterize(_.values(values[0]));
       var paramBlocks = [];
 
-      // If there are any "where" clauses, we need to omit 
+      // If there are any "where" clauses, we need to omit
       // any bindings that may have been associated with them.
       if (qb.wheres.length > 0) this._clearWhereBindings(qb);
 
@@ -420,12 +420,12 @@
   // Knex.Builder
   // -------
   var Builder = Knex.Builder = function(table) {
-    
+
     // We use this logic to create sub-builders
     // for the advanced query statements.
     if (table) {
       if (_.isString(table)) {
-        this.table = table;  
+        this.table = table;
       } else {
         this.client = table.client;
         this.grammar = table.grammar;
@@ -526,7 +526,7 @@
 
     // The where function can be used in several ways:
     // The most basic is `where(key, value)`, which expands to
-    // where key = value. 
+    // where key = value.
     where: function(column, operator, value, bool) {
       bool || (bool = 'and');
       if (_.isFunction(column)) {
@@ -733,7 +733,7 @@
       this.isLimit = value;
       return this;
     },
-    
+
     // ----------------------------------------------------------------------
 
     // Retrieve the "count" result of the query.
@@ -769,7 +769,7 @@
     // Sets the values for a `select` query.
     select: function(columns) {
       if (columns) {
-        push.apply(this.columns, _.isArray(columns) ? columns : _.toArray(arguments)); 
+        push.apply(this.columns, _.isArray(columns) ? columns : _.toArray(arguments));
       }
       return this._setType('select');
     },
@@ -797,7 +797,7 @@
       return this._setType('delete');
     },
 
-    // Executes a delete statement on the query;    
+    // Executes a delete statement on the query;
     del: function() {
       return this._setType('delete');
     },
@@ -880,7 +880,7 @@
       sql[column] = new Raw('' + this.grammar.wrap(column) + ' ' + (symbol || '+') + ' ' + amount);
       return this.update(sql);
     },
-    
+
     // Helper for compiling any `union` queries.
     _union: function(callback, bool) {
       var query = new Builder(this);
@@ -975,11 +975,11 @@
     });
 
   };
-  
+
   // All of the Schame methods that should be called with a
   // `SchemaBuilder` context, to disallow calling more than one method at once.
   var SchemaInterface = {
-    
+
     // Modify a table on the schema.
     table: function(callback) {
       this.callback(callback);
@@ -1051,7 +1051,7 @@
       for (var i = 0, l = this.columns.length; i < l; i++) {
         var column = this.columns[i];
         var indices = ['primary', 'unique', 'index'];
-        
+
         continueIndex:
         for (var i2 = 0, l2 = indices.length; i2 < l2; i2++) {
           var index = indices[i2];
@@ -1063,7 +1063,7 @@
           if (column[indexVar] === true) {
             this[index](column);
             continue continueIndex;
-          
+
           // If the index has been specified on the column and it is something
           // other than boolean true, we will assume a name was provided on
           // the index specification, and pass in the name to the method.
@@ -1317,7 +1317,13 @@
   Chainable.prototype = {
 
     // Sets the default value for a column.
+    // For `boolean` columns, we'll permit 'false'
+    // to be used as default values.
     defaultTo: function(value) {
+      if (this.type === 'boolean') {
+        if (value === 'false') value = 0;
+        value = (value ? 1 : 0);
+      }
       this.defaultValue = value;
       return this;
     },
@@ -1328,7 +1334,7 @@
       this.isUnsigned = true;
       return this;
     },
-    
+
     // Allows the column to contain null values.
     nullable: function() {
       this.isNullable = true;
@@ -1363,7 +1369,7 @@
   };
 
   Knex.SchemaGrammar = {
-    
+
     // Compile a foreign key command.
     compileForeign: function(blueprint, command) {
       var table = this.wrapTable(blueprint);
@@ -1399,7 +1405,7 @@
       }
       return columns;
     },
-    
+
     // Add the column modifiers to the definition.
     addModifiers: function(sql, blueprint, column) {
       for (var i = 0, l = this.modifiers.length; i < l; i++) {
@@ -1483,8 +1489,8 @@
 
   // Sorts an object based on the names.
   var sortObject = function(obj) {
-    return _.sortBy(_.pairs(obj), function(a) { 
-      return a[0]; 
+    return _.sortBy(_.pairs(obj), function(a) {
+      return a[0];
     });
   };
 
@@ -1500,11 +1506,11 @@
 
   // Knex.Initialize
   // -------
-  
+
   // Takes a hash of options to initialize the database
   // connection. The `client` is required to choose which client
   // path above is loaded, or to specify a custom path to a client.
-  // Other options, such as `connection` or `pool` are passed 
+  // Other options, such as `connection` or `pool` are passed
   // into `client.initialize`.
   Knex.Initialize = function(name, options) {
     var Target, ClientCtor, client;
@@ -1515,7 +1521,7 @@
       options = name;
       name    = 'main';
     }
-    
+
     // Don't try to initialize the same `name` twice... If necessary,
     // delete the instance from `Knex.Instances`.
     if (Knex.Instances[name]) {
@@ -1523,7 +1529,7 @@
     }
 
     client = options.client;
-    
+
     if (!client) throw new Error('The client is required to use Knex.');
 
     // Checks if this is a default client. If it's not,

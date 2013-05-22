@@ -107,7 +107,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   },
 
   // Compile an add command.
-  compileAdd: function(blueprint, command) {
+  compileAdd: function(blueprint) {
     var columns = this.prefixArray('add', this.getColumns(blueprint));
     return 'alter table ' + this.wrapTable(blueprint) + ' ' + columns.join(', ');
   },
@@ -142,7 +142,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   },
 
   // Compile a drop primary key command.
-  compileDropPrimary: function(blueprint, command) {
+  compileDropPrimary: function(blueprint) {
     return 'alter table ' + this.wrapTable(blueprint) + ' drop primary key';
   },
 
@@ -201,7 +201,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   },
 
   // Create the column definition for a boolean type.
-  typeBoolean: function(column) {
+  typeBoolean: function() {
     return 'tinyint(1)';
   },
 
@@ -211,12 +211,12 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   },
 
   // Create the column definition for a date-time type.
-  typeDateTime: function(column) {
+  typeDateTime: function() {
     return 'datetime';
   },
 
   // Create the column definition for a timestamp type.
-  typeTimestamp: function(column) {
+  typeTimestamp: function() {
     return 'timestamp default 0';
   },
 
@@ -233,7 +233,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   // Get the SQL for a default column modifier.
   modifyDefault: function(blueprint, column) {
     // TODO - no default on blob/text
-    if (column.defaultValue && column.type != 'blob' && column.type.indexOf('text') === -1) {
+    if (column.defaultValue != void 0 && column.type != 'blob' && column.type.indexOf('text') === -1) {
       return " default '" + this.getDefaultValue(column.defaultValue) + "'";
     }
   },

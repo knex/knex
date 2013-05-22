@@ -27,7 +27,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <pre><code>Knex.js  0.1.3
+              <pre><code>Knex.js  0.1.4
 
 (c) 2013 Tim Griesser
 Knex may be freely distributed under the MIT license.
@@ -91,7 +91,7 @@ http://knexjs.org</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.1.3'</span>;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.1.4'</span>;</pre></div></div>
             
         </li>
         
@@ -169,7 +169,7 @@ if called more than once.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Returns an array of query strings filled out with the 
+              <p>Returns an array of query strings filled out with the
 correct values based on bindings, etc. Useful for debugging.</p>
 
             </div>
@@ -442,7 +442,7 @@ the empties, and returning a generated query string.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
-              <p>Compiles all each of the <code>join</code> clauses on the query, 
+              <p>Compiles all each of the <code>join</code> clauses on the query,
 including any nested join queries.</p>
 
             </div>
@@ -816,7 +816,7 @@ inserts using a single query statement.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
-              <p>If there are any &quot;where&quot; clauses, we need to omit 
+              <p>If there are any &quot;where&quot; clauses, we need to omit
 any bindings that may have been associated with them.</p>
 
             </div>
@@ -947,7 +947,7 @@ query to be used for <code>insert</code> and <code>update</code> without issue.<
 
     wrapTable: <span class="keyword">function</span>(table) {
       <span class="keyword">if</span> (table <span class="keyword">instanceof</span> Raw) <span class="keyword">return</span> table.value;
-      <span class="keyword">return</span> <span class="keyword">this</span>.wrapValue(table);
+      <span class="keyword">return</span> <span class="keyword">this</span>.wrap(table);
     },
 
     columnize: <span class="keyword">function</span>(columns) {
@@ -1006,7 +1006,7 @@ for the advanced query statements.</p>
             
             <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (table) {
       <span class="keyword">if</span> (_.isString(table)) {
-        <span class="keyword">this</span>.table = table;  
+        <span class="keyword">this</span>.table = table;
       } <span class="keyword">else</span> {
         <span class="keyword">this</span>.client = table.client;
         <span class="keyword">this</span>.grammar = table.grammar;
@@ -1224,7 +1224,7 @@ with an anonymous function as the second argument.</p>
               </div>
               <p>The where function can be used in several ways:
 The most basic is <code>where(key, value)</code>, which expands to
-where key = value. </p>
+where key = value.</p>
 
             </div>
             
@@ -1875,7 +1875,7 @@ where key = value. </p>
             
             <div class="content"><div class='highlight'><pre>    select: <span class="keyword">function</span>(columns) {
       <span class="keyword">if</span> (columns) {
-        push.apply(<span class="keyword">this</span>.columns, _.isArray(columns) ? columns : _.toArray(arguments)); 
+        push.apply(<span class="keyword">this</span>.columns, _.isArray(columns) ? columns : _.toArray(arguments));
       }
       <span class="keyword">return</span> <span class="keyword">this</span>._setType(<span class="string">'select'</span>);
     },</pre></div></div>
@@ -1948,7 +1948,7 @@ where key = value. </p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-95">&#182;</a>
               </div>
-              <p>Executes a delete statement on the query;    </p>
+              <p>Executes a delete statement on the query;</p>
 
             </div>
             
@@ -2617,7 +2617,7 @@ SchemaBuilder instance methods</p>
             <div class="content"><div class='highlight'><pre>      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = <span class="keyword">this</span>.columns.length; i &lt; l; i++) {
         <span class="keyword">var</span> column = <span class="keyword">this</span>.columns[i];
         <span class="keyword">var</span> indices = [<span class="string">'primary'</span>, <span class="string">'unique'</span>, <span class="string">'index'</span>];
-        
+
         continueIndex:
         <span class="keyword">for</span> (<span class="keyword">var</span> i2 = <span class="number">0</span>, l2 = indices.length; i2 &lt; l2; i2++) {
           <span class="keyword">var</span> index = indices[i2];
@@ -3382,11 +3382,17 @@ index type, such as primary or index, which makes the index unique.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-172">&#182;</a>
               </div>
-              <p>Sets the default value for a column.</p>
+              <p>Sets the default value for a column.
+For <code>boolean</code> columns, we&#39;ll permit &#39;false&#39;
+to be used as default values.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    defaultTo: <span class="keyword">function</span>(value) {
+      <span class="keyword">if</span> (<span class="keyword">this</span>.type === <span class="string">'boolean'</span>) {
+        <span class="keyword">if</span> (value === <span class="string">'false'</span>) value = <span class="number">0</span>;
+        value = (value ? <span class="number">1</span> : <span class="number">0</span>);
+      }
       <span class="keyword">this</span>.defaultValue = value;
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },</pre></div></div>
@@ -3814,8 +3820,8 @@ is an instanceof Raw, and if it is, use the supplied value.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> sortObject = <span class="keyword">function</span>(obj) {
-    <span class="keyword">return</span> _.sortBy(_.pairs(obj), <span class="keyword">function</span>(a) { 
-      <span class="keyword">return</span> a[<span class="number">0</span>]; 
+    <span class="keyword">return</span> _.sortBy(_.pairs(obj), <span class="keyword">function</span>(a) {
+      <span class="keyword">return</span> a[<span class="number">0</span>];
     });
   };</pre></div></div>
             
@@ -3863,22 +3869,10 @@ is an instanceof Raw, and if it is, use the supplied value.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-197">&#182;</a>
               </div>
-              
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-198">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-198">&#182;</a>
-              </div>
               <p>Takes a hash of options to initialize the database
 connection. The <code>client</code> is required to choose which client
 path above is loaded, or to specify a custom path to a client.
-Other options, such as <code>connection</code> or <code>pool</code> are passed 
+Other options, such as <code>connection</code> or <code>pool</code> are passed
 into <code>client.initialize</code>.</p>
 
             </div>
@@ -3889,11 +3883,11 @@ into <code>client.initialize</code>.</p>
         </li>
         
         
-        <li id="section-199">
+        <li id="section-198">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-199">&#182;</a>
+                <a class="pilcrow" href="#section-198">&#182;</a>
               </div>
               <p>A name for the connection isn&#39;t required in
 cases where there is only a single connection.</p>
@@ -3908,11 +3902,11 @@ cases where there is only a single connection.</p>
         </li>
         
         
-        <li id="section-200">
+        <li id="section-199">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-200">&#182;</a>
+                <a class="pilcrow" href="#section-199">&#182;</a>
               </div>
               <p>Don&#39;t try to initialize the same <code>name</code> twice... If necessary,
 delete the instance from <code>Knex.Instances</code>.</p>
@@ -3924,17 +3918,17 @@ delete the instance from <code>Knex.Instances</code>.</p>
     }
 
     client = options.client;
-    
+
     <span class="keyword">if</span> (!client) <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'The client is required to use Knex.'</span>);</pre></div></div>
             
         </li>
         
         
-        <li id="section-201">
+        <li id="section-200">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-201">&#182;</a>
+                <a class="pilcrow" href="#section-200">&#182;</a>
               </div>
               <p>Checks if this is a default client. If it&#39;s not,
 that means it&#39;s a custom lib, set the object to the client.</p>
@@ -3951,11 +3945,11 @@ that means it&#39;s a custom lib, set the object to the client.</p>
         </li>
         
         
-        <li id="section-202">
+        <li id="section-201">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-202">&#182;</a>
+                <a class="pilcrow" href="#section-201">&#182;</a>
               </div>
               <p>Creates a new instance of the db client, passing the name and options.</p>
 
@@ -3966,11 +3960,11 @@ that means it&#39;s a custom lib, set the object to the client.</p>
         </li>
         
         
-        <li id="section-203">
+        <li id="section-202">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-203">&#182;</a>
+                <a class="pilcrow" href="#section-202">&#182;</a>
               </div>
               <p>Setup the grammars specific to the client.</p>
 
@@ -3982,11 +3976,11 @@ that means it&#39;s a custom lib, set the object to the client.</p>
         </li>
         
         
-        <li id="section-204">
+        <li id="section-203">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-204">&#182;</a>
+                <a class="pilcrow" href="#section-203">&#182;</a>
               </div>
               <p>If this is named &quot;default&quot; then we&#39;re setting this on the Knex</p>
 
@@ -4002,11 +3996,11 @@ that means it&#39;s a custom lib, set the object to the client.</p>
         </li>
         
         
-        <li id="section-205">
+        <li id="section-204">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-205">&#182;</a>
+                <a class="pilcrow" href="#section-204">&#182;</a>
               </div>
               <p>Inherit static properties, without any that don&#39;t apply except
 on the &quot;root&quot; <code>Knex</code>.</p>
@@ -4018,11 +4012,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-206">
+        <li id="section-205">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-206">&#182;</a>
+                <a class="pilcrow" href="#section-205">&#182;</a>
               </div>
               <p>Initialize the schema builder methods.</p>
 
@@ -4037,11 +4031,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-207">
+        <li id="section-206">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-207">&#182;</a>
+                <a class="pilcrow" href="#section-206">&#182;</a>
               </div>
               <p>Specifically set the client on the current target.</p>
 
@@ -4053,11 +4047,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-208">
+        <li id="section-207">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-208">&#182;</a>
+                <a class="pilcrow" href="#section-207">&#182;</a>
               </div>
               <p>Setup the transacting function properly for this connection.</p>
 
@@ -4070,11 +4064,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-209">
+        <li id="section-208">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-209">&#182;</a>
+                <a class="pilcrow" href="#section-208">&#182;</a>
               </div>
               <p>Executes a Raw query.</p>
 
@@ -4089,11 +4083,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-210">
+        <li id="section-209">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-210">&#182;</a>
+                <a class="pilcrow" href="#section-209">&#182;</a>
               </div>
               <p>Add this instance to the global <code>Knex</code> instances, and return.</p>
 
@@ -4107,11 +4101,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-211">
+        <li id="section-210">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-211">&#182;</a>
+                <a class="pilcrow" href="#section-210">&#182;</a>
               </div>
               <p>Default client paths, located in the <code>./clients</code> directory.</p>
 
@@ -4128,11 +4122,11 @@ on the &quot;root&quot; <code>Knex</code>.</p>
         </li>
         
         
-        <li id="section-212">
+        <li id="section-211">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-212">&#182;</a>
+                <a class="pilcrow" href="#section-211">&#182;</a>
               </div>
               <p>Named instances of Knex, presumably with different database
 connections, the main instance being named &quot;main&quot;...</p>
@@ -4144,11 +4138,11 @@ connections, the main instance being named &quot;main&quot;...</p>
         </li>
         
         
-        <li id="section-213">
+        <li id="section-212">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-213">&#182;</a>
+                <a class="pilcrow" href="#section-212">&#182;</a>
               </div>
               <p>Export the Knex module</p>
 
