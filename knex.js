@@ -1317,7 +1317,13 @@
   Chainable.prototype = {
 
     // Sets the default value for a column.
+    // For `boolean` columns, we'll permit 'false'
+    // to be used as default values.
     defaultTo: function(value) {
+      if (this.type === 'boolean') {
+        if (value === 'false') value = 0;
+        value = (value ? 1 : 0);
+      }
       this.defaultValue = value;
       return this;
     },
@@ -1328,7 +1334,7 @@
       this.isUnsigned = true;
       return this;
     },
-    
+
     // Allows the column to contain null values.
     nullable: function() {
       this.isNullable = true;

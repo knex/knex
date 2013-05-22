@@ -228,13 +228,6 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
     return 'bytea';
   },
 
-  // Get the SQL for a default column modifier.
-  modifyDefault: function(blueprint, column) {
-    if (column.defaultValue) {
-      return " default '" + this.getDefaultValue(column.defaultValue) + "'";
-    }
-  },
-
   // Get the SQL for an auto-increment column modifier.
   modifyIncrement: function(blueprint, column) {
     if (column.type == 'integer' && column.autoIncrement) {

@@ -233,7 +233,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   // Get the SQL for a default column modifier.
   modifyDefault: function(blueprint, column) {
     // TODO - no default on blob/text
-    if (column.defaultValue && column.type != 'blob' && column.type.indexOf('text') === -1) {
+    if (column.defaultValue != void 0 && column.type != 'blob' && column.type.indexOf('text') === -1) {
       return " default '" + this.getDefaultValue(column.defaultValue) + "'";
     }
   },

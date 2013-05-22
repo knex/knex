@@ -126,6 +126,13 @@ exports.schemaGrammar = {
   // Get the SQL for a nullable column modifier.
   modifyNullable: function(blueprint, column) {
     return column.isNullable ? ' null' : ' not null';
+  },
+
+  // Get the SQL for a default column modifier.
+  modifyDefault: function(blueprint, column) {
+    if (column.defaultValue != void 0) {
+      return " default '" + this.getDefaultValue(column.defaultValue) + "'";
+    }
   }
 
 };
