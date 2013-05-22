@@ -181,7 +181,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.1.3)</span>
+      Knex.js <span class="version">(0.1.4)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -294,10 +294,10 @@
     </p>
 
     <p>
-      Knex.js is a query builder for <b>Postgres</b>, <b>MySql</b> and <b>SQLite3</b>, designed to be flexible, 
-      portable, and fun to use. It features both traditional node style <a href="#Builder-exec">callbacks</a> 
-      as well as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured 
-      query and schema builders, transaction support, connection pooling and node.js adapters for 
+      Knex.js is a query builder for <b>Postgres</b>, <b>MySql</b> and <b>SQLite3</b>, designed to be flexible,
+      portable, and fun to use. It features both traditional node style <a href="#Builder-exec">callbacks</a>
+      as well as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured
+      query and schema builders, transaction support, connection pooling and node.js adapters for
       postgres, mysql, and sqlite3 - standardizing responses between the three.
     </p>
 
@@ -319,7 +319,7 @@
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
 
-    <h2>Latest Release: 0.1.3</h2>
+    <h2>Latest Release: 0.1.4</h2>
 
     <p>
       Current Develop &mdash;
@@ -330,7 +330,7 @@
 
 
     <p>
-      Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work 
+      Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work
       on the <a href="http://four.laravel.com/docs/queries">Laravel Query Builder</a>,
       from which much of the code and syntax is derived.
     </p>
@@ -341,9 +341,9 @@
 
     <p>
       All dependencies are specified in <tt>package.json</tt> file but include <tt>underscore.js</tt>,
-      <tt>when.js</tt>, and the <tt>generic-pool</tt> library. You then need to install 
-      either <tt>mysql</tt>, <tt>pg</tt>, or <tt>sqlite3</tt> from <tt>npm</tt> if you wish 
-      to use one of these databases with node.js, or create your own client 
+      <tt>when.js</tt>, and the <tt>generic-pool</tt> library. You then need to install
+      either <tt>mysql</tt>, <tt>pg</tt>, or <tt>sqlite3</tt> from <tt>npm</tt> if you wish
+      to use one of these databases with node.js, or create your own client
       adapter and specify it in <a href="#Initialize">Knex.Initialize</a>.
     </p>
 
@@ -360,7 +360,7 @@ $ npm install sqlite3
 
     <p>
       <tt>Knex.Initialize</tt> is the initializing function that must be called prior to using
-      Knex, accepting a few parameters. The <tt>client</tt> parameter is required 
+      Knex, accepting a few parameters. The <tt>client</tt> parameter is required
       and determines which client adapter will be used with the library.
     </p>
 
@@ -378,8 +378,8 @@ Knex.Initialize({
 </pre>
 
   <p id="Init-multi-instance">
-    It is also possible to use Knex with multiple database connection instances if you'd like, 
-    by creating named instances. To do this, pass the name of the connection as the first 
+    It is also possible to use Knex with multiple database connection instances if you'd like,
+    by creating named instances. To do this, pass the name of the connection as the first
     parameter into <tt>Knex.Initialize</tt> and it will return that instance, which may
     also be referenced by name under <tt>Knex.Instances</tt>.
   </p>
@@ -418,7 +418,7 @@ SqliteDB('users')
     <p>
       The <tt>Knex.Builder</tt> is the interface used for building and executing standard SQL queries,
       such as <tt>select</tt>, <tt>insert</tt>, <tt>update</tt>, <tt>delete</tt>. The query is run
-      by specifying a <a href="#Builder-table">tableName</a>, adding additional query parameters, and 
+      by specifying a <a href="#Builder-table">tableName</a>, adding additional query parameters, and
       executing the query with one of the public interface methods.
     </p>
 
@@ -426,8 +426,8 @@ SqliteDB('users')
       <b class="header">Knex</b><code>Knex(tableName)...</code>
       <br />
       The <b>Knex</b> query builder starts off by specifying a <b>tableName</b> you wish to query against,
-      which returns a chainable interface, similar to a jQuery chain. You can then call any additional 
-      query builder methods needed to construct the query, eventually calling either 
+      which returns a chainable interface, similar to a jQuery chain. You can then call any additional
+      query builder methods needed to construct the query, eventually calling either
       <a href="#Builder-then">then</a> or <a href="#Builder-exec">exec</a>, to execute the query with a
       promise or a callback, respectively.
     </p>
@@ -437,13 +437,13 @@ SqliteDB('users')
       <br />
       Creates a <tt>select</tt> query, taking an optional array of <b>columns</b> for the query, eventually
       defaulting to <tt>*</tt> if none are specified when the query is built. The response of a select call will
-      return with the 
+      return with the
     </p>
 
 <pre>
   // select "title", "author", "year" from "books"
   Knex('books').select('title', 'author', 'year');
-  
+
   // select * from "books"
   Knex('books').select();
 </pre>
@@ -470,7 +470,7 @@ SqliteDB('users')
 
 // objects
 Knex('users').where({
-  first_name: 'Test', 
+  first_name: 'Test',
   last_name:  'User'
 }).select('id').then(...
 
@@ -535,7 +535,7 @@ Knex('users')
 
 // select author_id, content from comments where author_id in (select id from accounts where type = 'admin')
 Knex('comments').whereIn('author_id', function() {
-  
+
   this.select('id').from('accounts').where('type', 'admin');
 
 }).select('author_id', 'content').then(...
@@ -564,7 +564,7 @@ Knex('comments').whereIn('author_id', function() {
         <li><a href="docs/knex.html#section-72">whereNotNull</a></li>
         <li><a href="docs/knex.html#section-73">orWhereNotNull</a></li>
         <li><a href="docs/knex.html#section-74">whereBetween</a></li>
-        <li><a href="docs/knex.html#section-75">orWhereBetween</a></li> 
+        <li><a href="docs/knex.html#section-75">orWhereBetween</a></li>
       </ul>
     </p>
 
@@ -611,7 +611,7 @@ Knex('users')
   })
   .exec(function(err, resp) { ... });
 </pre>
-      
+
     </p>
 
     <p id="Builder-groupBy">
@@ -637,7 +637,7 @@ Knex('users')
   .orderBy('name', 'desc')
   .having('count', '>', 100)
   .select()
-  
+
 </pre>
     </p>
 
@@ -657,7 +657,7 @@ Knex('users')
 Knex('users')
   .limit(10)
   .offset(30)
-  .select()  
+  .select()
 </pre>
 
     <p id="Builder-union">
@@ -669,13 +669,13 @@ Knex('users')
     <p id="Builder-unionAll">
       <b class="header">unionAll</b><code>.unionAll(query)</code>
       <br />
-      Creates a <tt>union all</tt> query, with the same method signature as 
+      Creates a <tt>union all</tt> query, with the same method signature as
       the <a href="#Builder-union">union</a> method.
     </p>
 
 <pre>
 Knex('users').whereNull('last_name').union(function() {
-  
+
   this.select('*').from('users').whereNull('first_name');
 
 }).select().then(function() { ... });
@@ -685,7 +685,7 @@ Knex('users').whereNull('last_name').union(function() {
       <b class="header">insert</b><code>.insert(data)</code>
       <br />
       Creates an <tt>insert</tt> query, taking either a hash of properties to be inserted into the row, or
-      an array of inserts, to be executed as a single insert command. Resolves the promise / fulfills the callback 
+      an array of inserts, to be executed as a single insert command. Resolves the promise / fulfills the callback
       with an array containing the first insert id of the inserted model, or an array containing all inserted <tt>ids</tt>
       for postgresql.
     </p>
@@ -693,10 +693,10 @@ Knex('users').whereNull('last_name').union(function() {
 <pre>
   // Returns [1]
   Knex('books').insert({title: 'Slaughterhouse Five'})
-  
+
   // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
   Knex('books')
-    .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])  
+    .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
 </pre>
 
 
@@ -704,7 +704,7 @@ Knex('users').whereNull('last_name').union(function() {
       <b class="header">update</b><code>.update(data)</code>
       <br />
       Creates an <tt>update</tt> query, taking a hash of properties to be updated based on the
-      other query constraints. Resolves the promise / fulfills the callback with the number 
+      other query constraints. Resolves the promise / fulfills the callback with the number
       of affected rows for the query.
     </p>
 
@@ -721,7 +721,7 @@ Knex('books')
       <b class="header">del / delete</b><code>.del()</code>
       <br />
       Aliased to <tt>del</tt> as <tt>delete</tt> is a reserved word in javascript, this method deletes
-      one or more rows, based on other conditions specified in the query. Resolves the promise / fulfills the 
+      one or more rows, based on other conditions specified in the query. Resolves the promise / fulfills the
       callback with the number of affected rows for the query.
     </p>
 
@@ -802,7 +802,7 @@ Knex('accounts')
     <p id="Builder-toString">
       <b class="header">toString</b><code>.toString()</code>
       <br />
-      Returns an array of query strings filled out with the 
+      Returns an array of query strings filled out with the
       correct values based on bindings, etc. Useful for debugging.
     </p>
 
@@ -817,12 +817,12 @@ Knex('accounts')
 
 <pre>
 Knex.Transaction(function(t) {
-  
+
   Knex('books')
     .transacting(t)
     .insert({name: 'Old Books'})
     .then(function(row) {
-      
+
       return When.all(_.map([
         {title: 'Canterbury Tales'},
         {title: 'Moby Dick'},
@@ -833,7 +833,7 @@ Knex.Transaction(function(t) {
 
         // Some validation could take place here.
         return Knex('book').transacting(t).insert(info);
-      
+
       }));
     })
     .then(t.commit, t.rollback);
@@ -844,13 +844,13 @@ Knex.Transaction(function(t) {
   console.log('Error saving the books.');
 });
 </pre>
-    
+
     <h2 id="Schema">Knex.Schema</h2>
 
     <p id="Schema-createTable">
       <b class="header">createTable</b><code>Knex.Schema.createTable(tableName, callback)</code>
       <br />
-      Creates a new table on the database, with a callback function to modify the table's 
+      Creates a new table on the database, with a callback function to modify the table's
       structure, using the <a href="#Schema-Building">schema-building</a> commands.
     </p>
 
@@ -878,7 +878,7 @@ Knex.Schema.createTable('users', function (table) {
     <p id="Schema-hasTable">
       <b class="header">hasTable</b><code>Knex.Schema.hasTable(tableName)</code>
       <br />
-      Checks for a table's existence by <b>tableName</b>, with an error or failed promise if 
+      Checks for a table's existence by <b>tableName</b>, with an error or failed promise if
       the requested table does not exist.
     </p>
 
@@ -948,61 +948,61 @@ Knex.Schema.table('users', function (table) {
       <br />
       Adds a text column.
     </p>
-    
+
     <p id="Schema-string">
       <b class="header">string</b><code>table.string(name)</code>
       <br />
       Adds a string column.
     </p>
-    
+
     <p id="Schema-float">
       <b class="header">float</b><code>table.float(column, [precision], [scale])</code>
       <br />
       Adds a float column, with optional precision and scale.
     </p>
-    
+
     <p id="Schema-decimal">
       <b class="header">decimal</b><code>table.decimal(column, [precision], [scale])</code>
       <br />
       Adds a decimal column, with optional precision and scale.
     </p>
-    
+
     <p id="Schema-boolean">
       <b class="header">boolean</b><code>table.boolean(name)</code>
       <br />
       Adds a boolean column.
     </p>
-    
+
     <p id="Schema-date">
       <b class="header">date</b><code>table.date(name)</code>
       <br />
       Adds a date column.
     </p>
-    
+
     <p id="Schema-dateTime">
       <b class="header">dateTime</b><code>table.dateTime(name)</code>
       <br />
       Adds a dateTime column.
     </p>
-    
+
     <p id="Schema-time">
       <b class="header">time</b><code>table.time(name)</code>
       <br />
       Adds a time column.
     </p>
-    
+
     <p id="Schema-timestamp">
       <b class="header">timestamp</b><code>table.timestamp(name)</code>
       <br />
       Adds a timestamp column.
     </p>
-    
+
     <p id="Schema-binary">
       <b class="header">binary</b><code>table.binary(name)</code>
       <br />
       Adds a binary column.
     </p>
-    
+
     <p id="Schema-enum">
       <b class="header">enum / enu</b><code>table.enu(col, values)</code>
       <br />
@@ -1077,8 +1077,8 @@ Knex.createTable('accounts', function() {
     <h3 id="Raw-Expression">Raw Expressions:</h3>
 
     <p>
-      Sometimes you may need to use a raw expression in a query. These expressions will be injected 
-      into the query as strings, so be careful not to create any SQL injection points! 
+      Sometimes you may need to use a raw expression in a query. These expressions will be injected
+      into the query as strings, so be careful not to create any SQL injection points!
       To create a raw expression, you may use the <tt>Knex.Raw</tt> function.
     </p>
 
@@ -1094,11 +1094,11 @@ Knex('users')
 
     <p>
       The <tt>Knex.Raw</tt> may also be used to build a full query and execute it, as a
-      standard query builder query would be executed. The benefit of this is that it uses the connection 
+      standard query builder query would be executed. The benefit of this is that it uses the connection
       pool and provides a standard interface for the different client libraries.
       Note that the response will be whatever the underlying sql library would typically return on a
       normal query, so you may need to
-    </p>    
+    </p>
 
 <pre>
 Knex.Raw('select * from users where id = 1').then(function(resp) {
@@ -1112,7 +1112,7 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
       <b class="header">How do I debug?</b><br />
       If you pass <tt>{debug: true}</tt> as one of the options in your initialize settings, you can see
       all of the query calls being made. Sometimes you need to dive a bit further into
-      the various calls and see what all is going on behind the scenes. I'd recommend 
+      the various calls and see what all is going on behind the scenes. I'd recommend
       <a href="https://github.com/dannycoates/node-inspector">node-inspector</a>, which allows you to debug
       code with <tt>debugger</tt> statements like you would in the browser.
     </p>
@@ -1122,19 +1122,24 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
       The test suite looks for an environment variable called <tt>KNEX_TEST</tt> for the path to the database
       configuration. If you run the following command:
       <tt>$ export KNEX_TEST='/path/to/your/knex_config.js'</tt>, replacing with the path to your config file,
-      and the config file is valid, the test suite should run with <tt>npm test</tt>. If you're going to 
-      add a test, you may want to follow similar patterns, used in the test suite, 
+      and the config file is valid, the test suite should run with <tt>npm test</tt>. If you're going to
+      add a test, you may want to follow similar patterns, used in the test suite,
       setting <tt>$ export KNEX_DEV=1</tt> to save the outputs data from the tests into the <tt>shared/output.js</tt> file.
     </p>
 
     <p id="faq-nonode">
       <b class="header">Can I use Knex outside of Node.js</b><br />
       While there isn't a client adapter yet, it should be possible to run
-      it could be adapted to work with other javascript environments supporting a <tt>sqlite3</tt> 
+      it could be adapted to work with other javascript environments supporting a <tt>sqlite3</tt>
       database, by providing a custom <a href="http://knexjs.org/#Adapters">Knex adapter</a>.
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.1.4</b> &mdash; <small><i>May 22, 2013</i></small><br />
+      <tt>defaultTo</tt> now accepts <tt>"false"</tt> for boolean columns, allows for empty strings as default values.
+    </p>
 
     <p>
       <b class="header">0.1.3</b> &mdash; <small><i>May 18, 2013</i></small><br />
@@ -1143,13 +1148,13 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
 
     <p>
       <b class="header">0.1.2</b> &mdash; <small><i>May 15, 2013</i></small><br />
-      Bug fixes for <tt>groupBy</tt> (#7). Mysql using collation, charset config settings in <tt>createTable</tt>. 
+      Bug fixes for <tt>groupBy</tt> (#7). Mysql using collation, charset config settings in <tt>createTable</tt>.
       Added engine on <tt>schemaBuilder</tt> specifier (#6). Other doc fixes, tests.
     </p>
 
     <p>
       <b class="header">0.1.1</b> &mdash; <small><i>May 14, 2013</i></small><br />
-      Bug fixes for sub-queries, minor changes to initializing "main" instance, adding "pg" as 
+      Bug fixes for sub-queries, minor changes to initializing "main" instance, adding "pg" as
       a valid parameter for the client name in the connection settings.
     </p>
 
