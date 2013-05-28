@@ -1064,9 +1064,8 @@ Knex.Schema.table('users', function (table) {
       Sets the column to be inserted after another, only used in MySql alter tables.
     </p>
 
-
 <pre>
-Knex.createTable('accounts', function() {
+Knex.Schema.createTable('accounts', function() {
   t.increments().primary();
   t.string('email').unique();
 });
