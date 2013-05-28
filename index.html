@@ -1096,7 +1096,8 @@ Knex('users')
       standard query builder query would be executed. The benefit of this is that it uses the connection
       pool and provides a standard interface for the different client libraries.
       Note that the response will be whatever the underlying sql library would typically return on a
-      normal query, so you may need to
+      normal query, so you may need to look at the documentation for the base library the queries are
+      executing against to determine how to handle the response.
     </p>
 
 <pre>
