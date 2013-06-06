@@ -908,8 +908,7 @@
     },
 
     andOn: function() {
-      this.on.apply(this, arguments);
-      return this;
+      return this.on.apply(this, arguments);
     },
 
     orOn: function(first, operator, second) {
