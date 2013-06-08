@@ -568,17 +568,14 @@
     },
 
     // Adds a raw `where` clause to the query.
-    whereRaw: function(sql, bindings, bool) {
-      bindings || (bindings = []);
-      bool || (bool = 'and');
-      this.wheres.push({type: 'Raw', sql:sql, bool:bool});
-      push.apply(this.bindings, bindings);
+    whereRaw: function(sql, bool) {
+      this.wheres.push({type: 'Raw', sql: sql, bool: bool || 'and'});
       return this;
     },
 
     // Adds a raw `or where` clause to the query.
-    orWhereRaw: function(sql, bindings) {
-      return this.whereRaw(sql, bindings, 'or');
+    orWhereRaw: function(sql) {
+      return this.whereRaw(sql, 'or');
     },
 
     // Adds a `where exists` clause to the query.
@@ -708,15 +705,13 @@
       return this;
     },
 
-    havingRaw: function(sql, bindings) {
-      this.havings.push({type: 'Raw', sql: sql, bool: 'and'});
-      this.bindings.push(bindings);
+    havingRaw: function(sql, cond) {
+      this.havings.push({type: 'Raw', sql: sql, bool: cond || 'and'});
       return this;
     },
 
-    orHavingRaw: function(sql, bindings) {
+    orHavingRaw: function(sql) {
       this.havings.push({type: 'Raw', sql: sql, bool: 'or'});
-      this.bindings.push(bindings);
       return this;
     },
 
