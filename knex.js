@@ -286,11 +286,11 @@
     // Compiles the `having` statements.
     compileHavings: function(qb, havings) {
       return 'having ' + havings.map(function(having) {
-        if (having.type === 'raw') {
+        if (having.type === 'Raw') {
           return having.bool + ' ' + having.sql;
         }
-        return '' + this.wrap(having.column) + ' ' + having.operator + ' ' + this.parameter(having['value']);
-      }, this).join('and ').replace(/and /, '');
+        return having.bool + ' ' + this.wrap(having.column) + ' ' + having.operator + ' ' + this.parameter(having['value']);
+      }, this).replace(/and |or /, '');
     },
 
     // Compiles the `order by` statements.
@@ -532,6 +532,9 @@
       if (_.isFunction(column)) {
         return this._whereNested(column, bool);
       }
+      if (column instanceof Raw) {
+        return this.whereRaw(column.value, bool);
+      }
       if (_.isObject(column)) {
         for (var key in column) {
           value = column[key];
@@ -699,20 +702,29 @@
     },
 
     // Adds a `having` clause to the query.
-    having: function(column, operator, value) {
-      this.havings.push({column: column, operator: (operator || ''), value: (value || '')});
+    having: function(column, operator, value, bool) {
+      if (column instanceof Raw) {
+        return this.havingRaw(column.value, bool);
+      }
+      this.havings.push({column: column, operator: (operator || ''), value: (value || ''), bool: bool || 'and'});
       this.bindings.push(value);
       return this;
     },
 
-    havingRaw: function(sql, cond) {
-      this.havings.push({type: 'Raw', sql: sql, bool: cond || 'and'});
+    // Adds an `or having` clause to the query.
+    orHaving: function(column, operator, value) {
+      return this.having(column, operator, value, 'or');
+    },
+
+    // Adds a raw `having` clause to the query.
+    havingRaw: function(sql, bool) {
+      this.havings.push({type: 'Raw', sql: sql, bool: bool || 'and'});
       return this;
     },
 
+    // Adds a raw `or having` clause to the query.
     orHavingRaw: function(sql) {
-      this.havings.push({type: 'Raw', sql: sql, bool: 'or'});
-      return this;
+      return this.havingRaw(sql, 'or');
     },
 
     // ----------------------------------------------------------------------

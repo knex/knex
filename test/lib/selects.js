@@ -2,7 +2,7 @@ var When = require('when');
 module.exports = function(Knex, dbName, resolver) {
 
   describe(dbName, function() {
-  
+
     it('runs with no conditions', function(ok) {
       Knex('accounts').select().then(resolver(ok), ok);
     });
@@ -12,7 +12,7 @@ module.exports = function(Knex, dbName, resolver) {
         .select()
         .orderBy('id', 'asc').then(resolver(ok), ok);
     }),
-    
+
     it('does simple "where" cases', function(ok) {
       When.all([
         Knex('accounts').where('id', 1).select('first_name', 'last_name'),
@@ -102,15 +102,19 @@ module.exports = function(Knex, dbName, resolver) {
     });
 
     it('does sub-selects', function(ok) {
-    
+
       Knex('accounts').whereIn('id', function() {
         this.select('account_id').from('test_table_two').where('status', 1);
       }).select('first_name', 'last_name').then(resolver(ok), ok);
-    
+
     });
 
     it("supports the <> operator", function(ok) {
-        Knex('accounts').where('id', '<>', 2).select('email', 'logins').then(resolver(ok), ok);
+      Knex('accounts').where('id', '<>', 2).select('email', 'logins').then(resolver(ok), ok);
+    });
+
+    it("Allows for Knex.Raw passed to the `where` clause", function(ok) {
+      Knex('accounts').where(Knex.Raw('id = 2')).select('email', 'logins').then(resolver(ok), ok);
     });
 
   });
