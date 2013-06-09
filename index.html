@@ -181,7 +181,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.1.4)</span>
+      Knex.js <span class="version">(0.1.5)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -319,7 +319,7 @@
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
 
-    <h2>Latest Release: 0.1.4</h2>
+    <h2>Latest Release: 0.1.5</h2>
 
     <p>
       Current Develop &mdash;
@@ -1135,6 +1135,14 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.1.5</b> &mdash; <small><i>June 9, 2013</i></small><br />
+      Added the ability to specify <tt>beforeCreate</tt> and <tt>beforeDestroy</tt> hooks on the initialize's <tt>options.pool</tt>
+      to perform any necessary database setup/teardown on connections before use (#14). <tt>where</tt> and <tt>having</tt>
+      may now accept <tt>Knex.Raw</tt> instances, for consistency (#15). Added an <tt>orHaving</tt> method to the builder.
+      The ability to specify bindings on Raw queries has been removed.
+    </p>
 
     <p>
       <b class="header">0.1.4</b> &mdash; <small><i>May 22, 2013</i></small><br />

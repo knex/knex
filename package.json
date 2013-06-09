@@ -1,7 +1,7 @@
 {
   "name": "knex",
-  "version": "0.1.4",
-  "description": "A fun, multi-dialect SQL query builder.",
+  "version": "0.1.5",
+  "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
     "test": "test"
@@ -21,7 +21,10 @@
   "scripts": {
     "test": "mocha -R spec test/index.js"
   },
-  "repository": "https://github.com/tgriesser/knex",
+  "repository":{
+    "type": "git",
+    "url": "https://github.com/tgriesser/knex.git"
+  },
   "keywords": [
     "sql",
     "query",
@@ -32,6 +35,9 @@
     "sqlite3",
     "sqlite"
   ],
-  "author": "Tim Griesser",
+  "author": {
+    "name": "Tim Griesser",
+    "web":  "https://github.com/tgriesser"
+  },
   "license": "MIT"
 }
