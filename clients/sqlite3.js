@@ -71,8 +71,10 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
     destroy: function(client) { client.close(); }
   },
 
-  getRawConnection: function() {
-    return new sqlite3.Database(this.connectionSettings.filename);
+  getRawConnection: function(callback) {
+    var client = new sqlite3.Database(this.connectionSettings.filename, function(err) {
+      callback(err, client);
+    });
   },
 
   // Begins a transaction statement on the instance,

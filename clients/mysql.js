@@ -61,10 +61,11 @@ _.extend(MysqlClient.prototype, base.protoProps, {
       });
   },
 
-  getRawConnection: function() {
+  getRawConnection: function(callback) {
     var conn = mysql.createConnection(this.connectionSettings);
-        conn.connect();
-    return conn;
+    conn.connect(function(err) {
+      callback(err, conn);
+    });
   }
 
 });

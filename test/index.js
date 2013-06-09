@@ -8,7 +8,7 @@ var conn   = require(process.env.KNEX_TEST || './shared/config');
 exports.output = {};
 
 var pool = {
-  beforeCreate: function(conn, done) {
+  afterCreate: function(conn, done) {
     equal(_.has(conn, '__cid'), true);
     done();
   },
