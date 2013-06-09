@@ -1,3 +1,4 @@
+var equal  = require('assert').equal;
 var When   = require('when');
 var _      = require('underscore');
 var Knex   = require('../knex');
@@ -6,17 +7,31 @@ var conn   = require(process.env.KNEX_TEST || './shared/config');
 // The output goes here.
 exports.output = {};
 
+var pool = {
+  beforeCreate: function(conn, done) {
+    equal(_.has(conn, '__cid'), true);
+    done();
+  },
+  beforeDestroy: function(conn, done) {
+    equal(_.has(conn, '__cid'), true);
+    done();
+  }
+};
+
 Knex.Initialize({
   client: 'mysql',
-  connection: conn.mysql
+  connection: conn.mysql,
+  pool: pool
 });
 var Sqlite3 = Knex.Initialize('sqlite3', {
   client: 'sqlite3',
-  connection: conn.sqlite3
+  connection: conn.sqlite3,
+  pool: pool
 });
 var Postgres = Knex.Initialize('postgres', {
   client: 'postgres',
-  connection: conn.postgres
+  connection: conn.postgres,
+  pool: pool
 });
 
 var regularThen = Knex.Builder.prototype.then;
@@ -28,7 +43,7 @@ var then = function(success, error) {
       object: resp,
       string: {
         sql: ctx.sql,
-        bindings: bindings        
+        bindings: bindings
       }
     };
   });
