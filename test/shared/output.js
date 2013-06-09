@@ -490,6 +490,20 @@ module.exports = {
         bindings: [2]
       }
     },
+    'selects.22': {
+      mysql: {
+        sql: ['select `email`, `logins` from `accounts` where id = 2'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select "email", "logins" from "accounts" where id = 2'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select "email", "logins" from "accounts" where id = 2'],
+        bindings: []
+      }
+    },
     'aggregate.1': {
       mysql: {
         sql: ['select sum(`logins`) as aggregate from `accounts`'],
@@ -2018,6 +2032,20 @@ module.exports = {
       },{
         email: 'test6@example.com',
         logins: 2
+      }]
+    },
+    'selects.22': {
+      mysql: [{
+        email: 'test2@example.com',
+        logins: 1
+      }],
+      postgres: [{
+        email: 'test2@example.com',
+        logins: 1
+      }],
+      sqlite3: [{
+        email: 'test2@example.com',
+        logins: 1
       }]
     },
     'aggregate.1': {

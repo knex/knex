@@ -24,9 +24,23 @@ exports.setup = function(Client, name, options) {
     create: function(callback) {
       var conn = instance.getRawConnection();
       conn.__cid = _.uniqueId('__cid');
-      callback(null, conn);
+      if (this.beforeCreate) {
+        this.beforeCreate(conn, function() {
+          callback(null, conn);
+        });
+      } else {
+        callback(null, conn);
+      }
     },
-    destroy: function(client) { client.end(); }
+    destroy: function(conn) {
+      if (this.beforeDestroy) {
+        this.beforeDestroy(conn, function() {
+          conn.end();
+        });
+      } else {
+        conn.end();
+      }
+    }
   }, this.poolDefaults, options.pool));
 };
 
