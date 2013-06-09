@@ -22,15 +22,18 @@ exports.setup = function(Client, name, options) {
     log: false,
     idleTimeoutMillis: 30000,
     create: function(callback) {
-      var conn = instance.getRawConnection();
-      conn.__cid = _.uniqueId('__cid');
-      if (this.beforeCreate) {
-        this.beforeCreate(conn, function() {
+      var pool = this;
+      instance.getRawConnection(function(err, conn) {
+        if (err) return callback(err);
+        conn.__cid = _.uniqueId('__cid');
+        if (pool.afterCreate) {
+          pool.afterCreate(conn, function(err) {
+            callback(err, conn);
+          });
+        } else {
           callback(null, conn);
-        });
-      } else {
-        callback(null, conn);
-      }
+        }
+      });
     },
     destroy: function(conn) {
       if (this.beforeDestroy) {

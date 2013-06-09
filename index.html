@@ -181,7 +181,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.1.5)</span>
+      Knex.js <span class="version">(0.1.6)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -319,7 +319,7 @@
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
 
-    <h2>Latest Release: 0.1.5</h2>
+    <h2>Latest Release: 0.1.6</h2>
 
     <p>
       Current Develop &mdash;
@@ -327,7 +327,6 @@
         <img src="https://travis-ci.org/tgriesser/knex.png?branch=master" alt="Travis Badge">
       </a>
     </p>
-
 
     <p>
       Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work
@@ -1135,6 +1134,11 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.1.6</b> &mdash; <small><i>June 9, 2013</i></small><br />
+      Renaming <tt>beforeCreate</tt> to <tt>afterCreate</tt>. Better handling of errors in the connection pooling.
+    </p>
 
     <p>
       <b class="header">0.1.5</b> &mdash; <small><i>June 9, 2013</i></small><br />

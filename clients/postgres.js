@@ -69,10 +69,11 @@ _.extend(PostgresClient.prototype, base.protoProps, {
   },
 
   // Returns a connection from the `pg` lib.
-  getRawConnection: function() {
+  getRawConnection: function(callback) {
     var conn = new pg.Client(this.connectionSettings);
-        conn.connect();
-    return conn;
+    conn.connect(function(err) {
+      callback(err, conn);
+    });
   }
 
 });
