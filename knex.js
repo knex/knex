@@ -25,10 +25,6 @@
   // Keep in sync with package.json
   Knex.VERSION = '0.1.7';
 
-  var rethrower = function(err) {
-    throw err;
-  };
-
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
   var Common = {
