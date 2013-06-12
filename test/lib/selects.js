@@ -1,10 +1,31 @@
-var When = require('when');
+var When   = require('when');
+var assert = require('assert');
+
 module.exports = function(Knex, dbName, resolver) {
 
   describe(dbName, function() {
 
     it('runs with no conditions', function(ok) {
       Knex('accounts').select().then(resolver(ok), ok);
+    });
+
+    it('throws errors on the exec if uncaught in the last block', function(ok) {
+
+      var listeners = process.listeners('uncaughtException');
+
+      process.removeAllListeners('uncaughtException');
+
+      process.on('uncaughtException', function(err) {
+        process.removeAllListeners('uncaughtException');
+        for (var i = 0, l = listeners.length; i < l; i++) {
+          process.on('uncaughtException', listeners[i]);
+        }
+        ok();
+      });
+
+      Knex('accounts').select().exec(function(err, resp) {
+        console.log(undefinedVar);
+      });
     });
 
     it('uses `orderBy`', function(ok) {
