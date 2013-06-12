@@ -25,6 +25,10 @@
   // Keep in sync with package.json
   Knex.VERSION = '0.1.6';
 
+  var rethrower = function(err) {
+    throw err;
+  };
+
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
   var Common = {
@@ -40,13 +44,16 @@
 
     // For those who dislike promise interfaces.
     // Multiple calls to `exec` will resolve with the same value
-    // if called more than once.
+    // if called more than once. Any unhandled errors will be thrown
+    // after the last block.
     exec: function(callback) {
       this._promise || (this._promise = this.runQuery());
       return this._promise.then(function(resp) {
         callback(null, resp);
       }, function(err) {
         callback(err, null);
+      }).then(null, function(err) {
+        setTimeout(function() { throw err; }, 0);
       });
     },
 
