@@ -27,7 +27,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <pre><code>Knex.js  0.1.6
+              <pre><code>Knex.js  0.1.7
 
 (c) 2013 Tim Griesser
 Knex may be freely distributed under the MIT license.
@@ -91,7 +91,11 @@ http://knexjs.org</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.1.6'</span>;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.1.7'</span>;
+
+  <span class="keyword">var</span> rethrower = <span class="keyword">function</span>(err) {
+    <span class="keyword">throw</span> err;
+  };</pre></div></div>
             
         </li>
         
@@ -129,7 +133,8 @@ used to generate the sql in one form or another.</p>
               </div>
               <p>For those who dislike promise interfaces.
 Multiple calls to <code>exec</code> will resolve with the same value
-if called more than once.</p>
+if called more than once. Any unhandled errors will be thrown
+after the last block.</p>
 
             </div>
             
@@ -139,6 +144,8 @@ if called more than once.</p>
         callback(<span class="literal">null</span>, resp);
       }, <span class="keyword">function</span>(err) {
         callback(err, <span class="literal">null</span>);
+      }).then(<span class="literal">null</span>, <span class="keyword">function</span>(err) {
+        setTimeout(<span class="keyword">function</span>() { <span class="keyword">throw</span> err; }, <span class="number">0</span>);
       });
     },</pre></div></div>
             

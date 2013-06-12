@@ -1,4 +1,4 @@
-//     Knex.js  0.1.6
+//     Knex.js  0.1.7
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -23,7 +23,7 @@
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.1.6';
+  Knex.VERSION = '0.1.7';
 
   var rethrower = function(err) {
     throw err;
