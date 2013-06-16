@@ -84,7 +84,7 @@ MysqlClient.grammar = {
 MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar, {
 
   // The possible column modifiers.
-  modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After'],
+  modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After', 'Comment'],
 
   // Compile a create table command.
   compileCreateTable: function(blueprint, command) {
@@ -96,6 +96,11 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
 
     if (blueprint.isEngine) {
       sql += ' engine = ' + blueprint.isEngine;
+    }
+
+    if (blueprint.tableComment) {
+      var maxTableCommentLength = 60;
+      sql += " comment = '" + blueprint.tableComment + "'"
     }
 
     return sql;
@@ -250,6 +255,14 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   modifyAfter: function(blueprint, column) {
     if (column.isAfter) {
       return ' after ' + this.wrap(column.isAfter);
+    }
+  },
+
+  // Get the SQL for a comment column modifier. (MySQL)
+  modifyComment: function(blueprint, column) {
+    var maxColumnCommentLength = 255;
+    if (_.isString(column.comment)) {
+      return " comment '" + column.comment + "'";
     }
   }
 
