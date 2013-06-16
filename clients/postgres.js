@@ -229,6 +229,11 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
     return 'bytea';
   },
 
+  // Create the column definition for a json type.
+  typeJson: function() {
+    return 'json';
+  },
+
   // Get the SQL for an auto-increment column modifier.
   modifyIncrement: function(blueprint, column) {
     if (column.type == 'integer' && column.autoIncrement) {
