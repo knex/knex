@@ -169,6 +169,25 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
     return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
   },
 
+  // Compile a comment command.
+  compileComment: function(blueprint, command) {
+    var table = this.wrapTable(blueprint);
+    var comment;
+    if (command.comment == void 0) {
+      comment = 'NULL'
+    } else {
+      comment = "'" + command.comment + "'";
+    }
+    var identifier;
+    if (command.isTable) {
+      identifier = 'table ' + table;
+    } else {
+      var column = this.wrap(command.columnName);
+      identifier = 'column ' + table + '.' + column;
+    }
+    return 'comment on ' + identifier + ' is ' + comment;
+  },
+
   // Create the column definition for a string type.
   typeString: function(column) {
     return "varchar(" + column.length + ")";

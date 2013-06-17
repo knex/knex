@@ -264,6 +264,7 @@
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
       <li>– <a href="#Schema-json">json</a></li>
+      <li>– <a href="#Schema-comment">comment</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -272,6 +273,7 @@
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
       <li>– <a href="#Chainable-nullable">nullable</a></li>
       <li>– <a href="#Chainable-after">after</a></li>
+      <li>– <a href="#Chainable-comment">comment</a></li>
     </ul>
 
     <a class="toc_title" href="#Raw">
@@ -1022,6 +1024,12 @@ Knex.Schema.table('users', function (table) {
       applicable to MySql.
     </p>
 
+    <p id="Schema-comment">
+      <b class="header">comment</b><code>table.comment(value)</code>
+      <br />
+      Sets the comment for a table.
+    </p>
+
     <h3 id="Chainable">Chainable Methods:</h3>
 
     <p>
@@ -1068,6 +1076,12 @@ Knex.Schema.table('users', function (table) {
       <b class="header">after</b><code>column.after(field)</code>
       <br />
       Sets the column to be inserted after another, only used in MySql alter tables.
+    </p>
+
+    <p id="Chainable-comment">
+      <b class="header">comment</b><code>column.comment(value)</code>
+      <br />
+      Sets the comment for a column.
     </p>
 
 <pre>

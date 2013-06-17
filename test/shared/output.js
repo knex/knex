@@ -16,11 +16,11 @@ module.exports = {
     },
     'schema.2': {
       mysql: {
-        sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null, `created_at` timestamp default 0 not null, `updated_at` timestamp default 0 not null) default character set utf8 engine = InnoDB','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
+        sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null comment \'A comment.\', `created_at` timestamp default 0 not null, `updated_at` timestamp default 0 not null) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_table_one" ("id" serial primary key not null, "first_name" varchar(255) not null, "last_name" varchar(255) not null, "email" varchar(255) null, "logins" integer not null default \'1\', "about" text not null, "created_at" timestamp not null, "updated_at" timestamp not null)','alter table "test_table_one" add constraint test_table_one_email_unique unique ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")'],
+        sql: ['create table "test_table_one" ("id" serial primary key not null, "first_name" varchar(255) not null, "last_name" varchar(255) not null, "email" varchar(255) null, "logins" integer not null default \'1\', "about" text not null, "created_at" timestamp not null, "updated_at" timestamp not null)','alter table "test_table_one" add constraint test_table_one_email_unique unique ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")','comment on table "test_table_one" is \'A table comment.\'','comment on column "test_table_one"."logins" is NULL','comment on column "test_table_one"."about" is \'A comment.\''],
         bindings: []
       },
       sqlite3: {
