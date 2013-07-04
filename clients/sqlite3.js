@@ -87,11 +87,11 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
     });
   },
 
-  finishTransaction: function(type, trans, dfd) {
+  finishTransaction: function(type, trans, dfd, msg) {
     var ctx = this;
     nodefn.call(trans.connection.run.bind(trans.connection), type + ';', []).then(function(resp) {
-      if (type === 'commit') dfd.resolve(resp);
-      if (type === 'rollback') dfd.reject(resp);
+      if (type === 'commit') dfd.resolve(msg || resp);
+      if (type === 'rollback') dfd.reject(msg || resp);
     }).ensure(function() {
       ctx.releaseConnection(trans.connection);
       trans.connection = null;

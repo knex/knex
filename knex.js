@@ -945,18 +945,22 @@
       // transaction completes or fails, we know what to do.
       var dfd = When.defer();
 
-      // Call the container with the transaction
-      // commit & rollback objects
-      container({
-        commit: function() {
-          client.finishTransaction('commit', this, dfd);
+      // Ensure the transacting object methods are bound with the correct context.
+      var containerObj = {
+        commit: function(msg) {
+          client.finishTransaction('commit', this, dfd, msg);
         },
-        rollback: function() {
-          client.finishTransaction('rollback', this, dfd);
+        rollback: function(msg) {
+          client.finishTransaction('rollback', this, dfd, msg);
         },
         // "rollback to"?
         connection: connection
-      });
+      };
+      _.bindAll(containerObj, 'commit', 'rollback');
+
+      // Call the container with the transaction
+      // commit & rollback objects.
+      container(containerObj);
 
       return dfd.promise;
     });
