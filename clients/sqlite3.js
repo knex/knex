@@ -210,7 +210,7 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
 
   // Get all of the commands with a given name.
   getCommandsByName: function(blueprint, name) {
-    return _.where(blueprint.commands, function(value) { return value.name == name; });
+    return _.find(blueprint.commands, function(value) { return value.name == name; }) || [];
   },
 
   // Get the primary key syntax for a table creation statement.

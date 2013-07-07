@@ -1,4 +1,4 @@
-//     Knex.js  0.1.7
+//     Knex.js  0.1.8
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -23,7 +23,7 @@
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.1.7';
+  Knex.VERSION = '0.1.8';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
@@ -439,7 +439,7 @@
   };
 
   // All operators used in the `where` clause generation.
-  var operators = ['=', '<', '>', '<=', '>=', '<>', 'like', 'not like', 'between', 'ilike'];
+  var operators = ['=', '<', '>', '<=', '>=', '<>', '!=', 'like', 'not like', 'between', 'ilike'];
 
   _.extend(Builder.prototype, Common, {
 
