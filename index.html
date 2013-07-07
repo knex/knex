@@ -181,7 +181,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.1.7)</span>
+      Knex.js <span class="version">(0.1.8)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -263,6 +263,7 @@
       <li>– <a href="#Schema-timestamp">timestamp</a></li>
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
+      <li>– <a href="#Schema-comment">comment</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -271,6 +272,7 @@
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
       <li>– <a href="#Chainable-nullable">nullable</a></li>
       <li>– <a href="#Chainable-after">after</a></li>
+      <li>– <a href="#Chainable-comment">comment</a></li>
     </ul>
 
     <a class="toc_title" href="#Raw">
@@ -319,7 +321,7 @@
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
 
-    <h2>Latest Release: 0.1.7</h2>
+    <h2>Latest Release: 0.1.8</h2>
 
     <p>
       Current Develop &mdash;
@@ -330,7 +332,7 @@
 
     <p>
       Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work
-      on the <a href="http://four.laravel.com/docs/queries">Laravel Query Builder</a>,
+      on the <a href="http://laravel.com/docs/queries">Laravel Query Builder</a>,
       from which much of the code and syntax is derived.
     </p>
 
@@ -1015,6 +1017,12 @@ Knex.Schema.table('users', function (table) {
       applicable to MySql.
     </p>
 
+    <p id="Schema-comment">
+      <b class="header">comment</b><code>table.comment(value)</code>
+      <br />
+      Sets the comment for a table.
+    </p>
+
     <h3 id="Chainable">Chainable Methods:</h3>
 
     <p>
@@ -1061,6 +1069,12 @@ Knex.Schema.table('users', function (table) {
       <b class="header">after</b><code>column.after(field)</code>
       <br />
       Sets the column to be inserted after another, only used in MySql alter tables.
+    </p>
+
+    <p id="Chainable-comment">
+      <b class="header">comment</b><code>column.comment(value)</code>
+      <br />
+      Sets the comment for a column.
     </p>
 
 <pre>
@@ -1134,6 +1148,11 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.1.8</b> &mdash; <small><i>July 7, 2013</i></small><br />
+      Somehow missing the <tt>!=</tt> operator. Using <tt>_.find</tt> rather than <tt>_.where</tt> in <tt>getCommandsByName</tt>(#22).
+    </p>
 
     <p>
       <b class="header">0.1.7</b> &mdash; <small><i>June 12, 2013</i></small><br />

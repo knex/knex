@@ -87,11 +87,11 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
     });
   },
 
-  finishTransaction: function(type, trans, dfd) {
+  finishTransaction: function(type, trans, dfd, msg) {
     var ctx = this;
     nodefn.call(trans.connection.run.bind(trans.connection), type + ';', []).then(function(resp) {
-      if (type === 'commit') dfd.resolve(resp);
-      if (type === 'rollback') dfd.reject(resp);
+      if (type === 'commit') dfd.resolve(msg || resp);
+      if (type === 'rollback') dfd.reject(msg || resp);
     }).ensure(function() {
       ctx.releaseConnection(trans.connection);
       trans.connection = null;
@@ -210,7 +210,7 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
 
   // Get all of the commands with a given name.
   getCommandsByName: function(blueprint, name) {
-    return _.where(blueprint.commands, function(value) { return value.name == name; });
+    return _.find(blueprint.commands, function(value) { return value.name == name; }) || [];
   },
 
   // Get the primary key syntax for a table creation statement.

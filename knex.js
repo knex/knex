@@ -1,4 +1,4 @@
-//     Knex.js  0.1.7
+//     Knex.js  0.1.8
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -23,11 +23,7 @@
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.1.7';
-
-  var rethrower = function(err) {
-    throw err;
-  };
+  Knex.VERSION = '0.1.8';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
@@ -443,7 +439,7 @@
   };
 
   // All operators used in the `where` clause generation.
-  var operators = ['=', '<', '>', '<=', '>=', '<>', 'like', 'not like', 'between', 'ilike'];
+  var operators = ['=', '<', '>', '<=', '>=', '<>', '!=', 'like', 'not like', 'between', 'ilike'];
 
   _.extend(Builder.prototype, Common, {
 
@@ -949,18 +945,22 @@
       // transaction completes or fails, we know what to do.
       var dfd = When.defer();
 
-      // Call the container with the transaction
-      // commit & rollback objects
-      container({
-        commit: function() {
-          client.finishTransaction('commit', this, dfd);
+      // Ensure the transacting object methods are bound with the correct context.
+      var containerObj = {
+        commit: function(msg) {
+          client.finishTransaction('commit', this, dfd, msg);
         },
-        rollback: function() {
-          client.finishTransaction('rollback', this, dfd);
+        rollback: function(msg) {
+          client.finishTransaction('rollback', this, dfd, msg);
         },
         // "rollback to"?
         connection: connection
-      });
+      };
+      _.bindAll(containerObj, 'commit', 'rollback');
+
+      // Call the container with the transaction
+      // commit & rollback objects.
+      container(containerObj);
 
       return dfd.promise;
     });
@@ -1087,6 +1087,26 @@
         }
       }
 
+       // Add table comments. (Postgres)
+      if (this.tableComment) {
+        this._addCommand('comment', {
+          comment: this.tableComment,
+          isTable: true
+        });
+      }
+
+      // Add column comments. (Postgres)
+      for (var i = 0, l = this.columns.length; i < l; i++) {
+        var column = this.columns[i];
+        if (_.has(column, 'comment')) {
+          this._addCommand('comment', {
+            comment: column.comment,
+            columnName: column.name,
+            isTable: false
+          });
+        }
+      }
+
       var statements = [];
 
       // Each type of command has a corresponding compiler function on the schema
@@ -1168,6 +1188,10 @@
     // Specify a foreign key for the table.
     foreign: function(columns, name) {
       return this._indexCommand('foreign', columns, name);
+    },
+
+    comment: function(comment) {
+      this.tableComment = comment || null;
     },
 
     // Create a new auto-incrementing column on the table.
@@ -1376,6 +1400,12 @@
     // used in MySql alter tables.
     after: function(name) {
       this.isAfter = name;
+      return this;
+    },
+
+    // Adds a comment to this column.
+    comment: function(comment) {
+      this.comment = comment || null;
       return this;
     }
 
