@@ -1087,7 +1087,7 @@
         }
       }
 
-       // Add table comments. (Postgres)
+      // Add table comments. (Postgres)
       if (this.tableComment) {
         this._addCommand('comment', {
           comment: this.tableComment,
@@ -1096,7 +1096,7 @@
       }
 
       // Add column comments. (Postgres)
-      for (var i = 0, l = this.columns.length; i < l; i++) {
+      for (i = 0, l = this.columns.length; i < l; i++) {
         var column = this.columns[i];
         if (_.has(column, 'comment')) {
           this._addCommand('comment', {
@@ -1137,6 +1137,11 @@
       if (!this.creating()) throw new Error('The `engine` modifier may only be used while creating a table.');
       this.isEngine = name;
       return this;
+    },
+
+    // Adds a comment to the current table being created.
+    comment: function(comment) {
+      this.tableComment = comment || null;
     },
 
     // Indicate that the given columns should be dropped.
@@ -1187,11 +1192,8 @@
 
     // Specify a foreign key for the table.
     foreign: function(columns, name) {
-      return this._indexCommand('foreign', columns, name);
-    },
-
-    comment: function(comment) {
-      this.tableComment = comment || null;
+      var chainable = this._indexCommand('foreign', columns, name);
+      return _.extend(chainable, ForeignChainable);
     },
 
     // Create a new auto-incrementing column on the table.
@@ -1411,27 +1413,47 @@
 
   };
 
+  var ForeignChainable = {
+
+    referencesColumn: function(column) {
+      this.foreignColumn = column || null;
+      return this;
+    },
+
+    inTable: function(table) {
+      this.foreignTable = table || null;
+      return this;
+    },
+
+    onDelete: function(command) {
+      this.commandOnDelete = command || null;
+      return this;
+    },
+
+    onUpdate: function(command) {
+      this.commandOnUpdate = command || null;
+      return this;
+    }
+
+  };
+
   Knex.SchemaGrammar = {
 
     // Compile a foreign key command.
     compileForeign: function(blueprint, command) {
       var table = this.wrapTable(blueprint);
-      var on    = this.wrapTable(command.on);
-
-      // We need to prepare several of the elements of the foreign key definition
-      // before we can create the SQL, such as wrapping the tables and convert
-      // an array of columns to comma-delimited strings for the SQL queries.
-      var columns = this.columnize(command.columns);
-      var onColumns = this.columnize(command.references);
+      var column = this.columnize(command.columns);
+      var foreignTable = this.wrapTable(command.foreignTable);
+      var foreignColumn = this.columnize(command.foreignColumn);
 
       var sql = "alter table " + table + " add constraint " + command.index + " ";
-          sql += "foreign key (" + columns + ") references " + on + " (" + onColumns + ")";
+          sql += "foreign key (" + column + ") references " + foreignTable + " (" + foreignColumn + ")";
 
       // Once we have the basic foreign key creation statement constructed we can
       // build out the syntax for what should happen on an update or delete of
       // the affected columns, which will get something like "cascade", etc.
-      if (command.onDelete) sql += " on delete " + command.onDelete;
-      if (command.onUpdate) sql += " on update " + command.onUpdate;
+      if (command.commandOnDelete) sql += " on delete " + command.commandOnDelete;
+      if (command.commandOnUpdate) sql += " on update " + command.commandOnUpdate;
 
       return sql;
     },
