@@ -174,7 +174,7 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
     var table = this.wrapTable(blueprint);
     var comment;
     if (command.comment == void 0) {
-      comment = 'NULL'
+      comment = 'NULL';
     } else {
       comment = "'" + command.comment + "'";
     }
