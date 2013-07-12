@@ -824,8 +824,10 @@
     // Sets the current Builder connection to that of the
     // the currently running transaction
     transacting: function(t) {
-      if (!t) throw new Error('A transaction object must be passed to "transacting".');
-      this.transaction = t;
+      if (t) {
+        if (this.transaction) throw new Error('A transaction has already been set for the current query chain');
+        this.transaction = t;
+      }
       return this;
     },
 
