@@ -4,18 +4,19 @@ module.exports = function(Knex, resolver, error) {
   var res = null;
 
   return When.all([
+    Knex.Schema.dropTableIfExists('test_foreign_table_two'),
     Knex.Schema.dropTableIfExists('test_table_one'),
     Knex.Schema.dropTableIfExists('test_table_two'),
     Knex.Schema.dropTableIfExists('test_table_three'),
     Knex.Schema.dropTableIfExists('accounts')
   ]).then(function(resp) {
-    
+
     res = [resp[0]]; // only really need one of these for the test output.
-    
+
     return When.all([
       Knex.Schema.createTable('test_table_one', function(table) {
         table.engine('InnoDB');
-        table.comment('A table comment.')
+        table.comment('A table comment.');
         table.increments('id');
         table.string('first_name');
         table.string('last_name');
@@ -35,6 +36,13 @@ module.exports = function(Knex, resolver, error) {
         table.engine('InnoDB');
         table.integer('main').primary();
         table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
+      }),
+      Knex.Schema.createTable('test_foreign_table_two', function(t) {
+        t.increments();
+        t.integer('foreign_table_two').unsigned();
+        t.foreign('foreign_table_two')
+          .references('id')
+          .inTable('test_table_two');
       })
     ]);
   })
@@ -64,6 +72,10 @@ module.exports = function(Knex, resolver, error) {
   })
   .then(function(resp) {
     res.push(resp);
+    // Drop this here so we don't have foreign key constraints...
+    return Knex.Schema.dropTable('test_foreign_table_two');
+  })
+  .then(function() {
     return res;
   })
   .then(resolver, error);

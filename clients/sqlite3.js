@@ -191,13 +191,13 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
   // are building, since SQLite needs foreign keys on the tables creation.
   addForeignKeys: function(blueprint) {
     var sql = '';
-    var foreigns = this.getCommandsByName(blueprint, 'foreign');
-    for (var i = 0, l = foreigns.length; i < l; i++) {
-      var foreign = foreigns[i];
-      var on = this.wrapTable(foreign.on);
-      var columns = this.columnize(foreign.columns);
-      var onColumns = this.columnize(foreign.references);
-      sql += ', foreign key(' + columns + ') references ' + on + '(' + onColumns + ')';
+    var commands = this.getCommandsByName(blueprint, 'foreign');
+    for (var i = 0, l = commands.length; i < l; i++) {
+      var command = commands[i];
+      var column = this.columnize(command.columns);
+      var foreignTable = this.wrapTable(command.foreignTable);
+      var foreignColumn = this.columnize([command.foreignColumn]);
+      sql += ', foreign key(' + column + ') references ' + foreignTable + '(' + foreignColumn + ')';
     }
     return sql;
   },
@@ -210,7 +210,7 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
 
   // Get all of the commands with a given name.
   getCommandsByName: function(blueprint, name) {
-    return _.find(blueprint.commands, function(value) { return value.name == name; }) || [];
+    return _.filter(blueprint.commands, function(value) { return value.name == name; }) || [];
   },
 
   // Get the primary key syntax for a table creation statement.

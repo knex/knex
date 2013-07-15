@@ -16,8 +16,8 @@ module.exports = function(Knex, dbType) {
       before(function(ok) {
         var val = handler(dbType, 'schema');
         require('./lib/schema')(Knex, function(output) {
-          output = _.map(output, function(item) { 
-            delete item['object']; 
+          output = _.map(output, function(item) {
+            delete item['object'];
             return item;
           });
           val(ok, true)(output);
@@ -85,7 +85,7 @@ module.exports = function(Knex, dbType) {
 // and then spot check that the output being generated looks good to go...
 var handler = function(instance, section) {
   var item = 1;
-  
+
   // The `isAll` allows us to run a bunch of queries in a `When.all`
   // and then split those out into individual items.
   return function(resolver, isAll) {
@@ -96,7 +96,7 @@ var handler = function(instance, section) {
 
       // Process the "string" and "object" outputs.
       _.each(['string', 'object'], function(type) {
-        
+
         var typeData = data[type];
 
         // If we explicity deleted the type, don't do anything;
@@ -114,7 +114,7 @@ var handler = function(instance, section) {
         } else {
           var checkData = out[type][label][instance];
           try {
-            // If we're on the object, 
+            // If we're on the object,
             if (type === 'object') {
               if (_.isArray(typeData)) {
                 typeData = _.map(typeData, omitDates);
@@ -134,7 +134,7 @@ var handler = function(instance, section) {
       item++;
       if (!isAll) resolver();
     };
-    
+
     // Process the `data` on the function.
     return function(data) {
       if (isAll) {

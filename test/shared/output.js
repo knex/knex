@@ -2,15 +2,15 @@ module.exports = {
   string: {
     'schema.1': {
       mysql: {
-        sql: ['drop table if exists `test_table_one`'],
+        sql: ['drop table if exists `test_foreign_table_two`'],
         bindings: []
       },
       postgres: {
-        sql: ['drop table if exists "test_table_one"'],
+        sql: ['drop table if exists "test_foreign_table_two"'],
         bindings: []
       },
       sqlite3: {
-        sql: ['drop table if exists "test_table_one"'],
+        sql: ['drop table if exists "test_foreign_table_two"'],
         bindings: []
       }
     },
@@ -52,11 +52,25 @@ module.exports = {
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_table_three" ("main" integer null, "paragraph" text null default \'Lorem ipsum Qui quis qui in.\')'],
+        sql: ['create table "test_table_three" ("main" integer null, "paragraph" text null default \'Lorem ipsum Qui quis qui in.\', primary key ("main"))'],
         bindings: []
       }
     },
     'schema.5': {
+      mysql: {
+        sql: ['create table `test_foreign_table_two` (`id` int(11) not null auto_increment primary key, `foreign_table_two` int(11) unsigned not null) default character set utf8','alter table `test_foreign_table_two` add constraint test_foreign_table_two__foreign foreign key (`foreign_table_two`) references `test_table_two` (`id`)'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['create table "test_foreign_table_two" ("id" serial primary key not null, "foreign_table_two" integer not null)','alter table "test_foreign_table_two" add constraint test_foreign_table_two__foreign foreign key ("foreign_table_two") references "test_table_two" ("id")'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['create table "test_foreign_table_two" ("id" integer null primary key autoincrement, "foreign_table_two" integer null, foreign key("foreign_table_two") references "test_table_two"("id"))'],
+        bindings: []
+      }
+    },
+    'schema.6': {
       mysql: {
         sql: ['alter table `test_table_one` add `phone` varchar(255) null'],
         bindings: []
@@ -70,7 +84,7 @@ module.exports = {
         bindings: []
       }
     },
-    'schema.6': {
+    'schema.7': {
       mysql: {
         sql: ['drop table if exists `items`'],
         bindings: []
@@ -84,7 +98,7 @@ module.exports = {
         bindings: []
       }
     },
-    'schema.7': {
+    'schema.8': {
       mysql: {
         sql: ['select * from information_schema.tables where table_schema = ? and table_name = ?'],
         bindings: ['test_table_two']
@@ -98,7 +112,7 @@ module.exports = {
         bindings: ['test_table_two']
       }
     },
-    'schema.8': {
+    'schema.9': {
       mysql: {
         sql: ['rename table `test_table_one` to `accounts`'],
         bindings: []
@@ -112,7 +126,7 @@ module.exports = {
         bindings: []
       }
     },
-    'schema.9': {
+    'schema.10': {
       mysql: {
         sql: ['drop table `test_table_three`'],
         bindings: []

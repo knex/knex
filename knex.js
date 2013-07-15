@@ -1119,7 +1119,7 @@
         var method = 'compile' + capitalize(command.name);
         if (_.has(this.grammar, method)) {
           var sql = this.grammar[method](this, command);
-          statements = statements.concat(sql);
+          if (sql) statements = statements.concat(sql);
         }
       }
 
@@ -1417,7 +1417,7 @@
 
   var ForeignChainable = {
 
-    referencesColumn: function(column) {
+    references: function(column) {
       this.foreignColumn = column || null;
       return this;
     },
@@ -1443,20 +1443,22 @@
 
     // Compile a foreign key command.
     compileForeign: function(blueprint, command) {
-      var table = this.wrapTable(blueprint);
-      var column = this.columnize(command.columns);
-      var foreignTable = this.wrapTable(command.foreignTable);
-      var foreignColumn = this.columnize(command.foreignColumn);
+      var sql;
+      if (command.foreignTable && command.foreignColumn) {
+        var table = this.wrapTable(blueprint);
+        var column = this.columnize(command.columns);
+        var foreignTable = this.wrapTable(command.foreignTable);
+        var foreignColumn = this.columnize([command.foreignColumn]);
 
-      var sql = "alter table " + table + " add constraint " + command.index + " ";
-          sql += "foreign key (" + column + ") references " + foreignTable + " (" + foreignColumn + ")";
+        sql = "alter table " + table + " add constraint " + command.index + " ";
+        sql += "foreign key (" + column + ") references " + foreignTable + " (" + foreignColumn + ")";
 
-      // Once we have the basic foreign key creation statement constructed we can
-      // build out the syntax for what should happen on an update or delete of
-      // the affected columns, which will get something like "cascade", etc.
-      if (command.commandOnDelete) sql += " on delete " + command.commandOnDelete;
-      if (command.commandOnUpdate) sql += " on update " + command.commandOnUpdate;
-
+        // Once we have the basic foreign key creation statement constructed we can
+        // build out the syntax for what should happen on an update or delete of
+        // the affected columns, which will get something like "cascade", etc.
+        if (command.commandOnDelete) sql += " on delete " + command.commandOnDelete;
+        if (command.commandOnUpdate) sql += " on update " + command.commandOnUpdate;
+      }
       return sql;
     },
 
