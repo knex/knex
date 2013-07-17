@@ -1,5 +1,5 @@
 var nodefn = require('when/node/function');
-var _ = require('underscore');
+var _      = require('underscore');
 
 // Setup is called with the context of the current client.
 exports.setup = function(Client, name, options) {
@@ -15,7 +15,7 @@ exports.setup = function(Client, name, options) {
   // Extend the genericPool with the options
   // passed into the init under the "pool" option.
   var instance = this;
-  this.pool = require('generic-pool').Pool(_.extend({
+  var pool = this.pool = require('generic-pool').Pool(_.extend({
     name: 'pool-' + name,
     min: 2,
     max: 10,
@@ -45,6 +45,15 @@ exports.setup = function(Client, name, options) {
       }
     }
   }, this.poolDefaults, options.pool));
+
+  // Default to draining on exit.
+  if (pool.drainOnExit !== false && typeof process === 'object') {
+    process.on('exit', function() {
+      pool.drain(function() {
+          pool.destroyAllNow();
+      });
+    });
+  }
 };
 
 exports.skim = function(data) {
