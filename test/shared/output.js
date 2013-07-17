@@ -24,7 +24,7 @@ module.exports = {
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_table_one" ("id" integer null primary key autoincrement, "first_name" varchar null, "last_name" varchar null, "email" varchar null, "logins" integer null default \'1\', "about" text null, "created_at" datetime null, "updated_at" datetime null)','create unique index test_table_one_email_unique on "test_table_one" ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")'],
+        sql: ['create table "test_table_one" ("id" integer null primary key autoincrement, "first_name" varchar(255) null, "last_name" varchar(255) null, "email" varchar(255) null, "logins" integer null default \'1\', "about" text null, "created_at" datetime null, "updated_at" datetime null)','create unique index test_table_one_email_unique on "test_table_one" ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")'],
         bindings: []
       }
     },
@@ -58,15 +58,15 @@ module.exports = {
     },
     'schema.5': {
       mysql: {
-        sql: ['create table `enum_test` (`id` int(11) not null auto_increment primary key, `enum_value` enum(\'a\', \'b\', \'c\') not null) default character set utf8'],
+        sql: ['create table `datatype_test` (`id` int(11) not null auto_increment primary key, `enum_value` enum(\'a\', \'b\', \'c\') not null, `uuid` char(36) not null) default character set utf8'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "enum_test" ("id" serial primary key not null, "enum_value" text check("enum_value" in(\'a\', \'b\', \'c\')) not null)'],
+        sql: ['create table "datatype_test" ("id" serial primary key not null, "enum_value" text check("enum_value" in(\'a\', \'b\', \'c\')) not null, "uuid" uuid not null)'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "enum_test" ("id" integer null primary key autoincrement, "enum_value" varchar null)'],
+        sql: ['create table "datatype_test" ("id" integer null primary key autoincrement, "enum_value" varchar null, "uuid" char(36) null)'],
         bindings: []
       }
     },
@@ -94,7 +94,7 @@ module.exports = {
         bindings: []
       },
       sqlite3: {
-        sql: ['alter table "test_table_one" add column "phone" varchar null'],
+        sql: ['alter table "test_table_one" add column "phone" varchar(255) null'],
         bindings: []
       }
     },

@@ -181,11 +181,6 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     // Handled on create table...
   },
 
-  // Create the column definition for a string type.
-  typeString: function(column) {
-    return "varchar(" + column.length + ")";
-  },
-
   // Create the column definition for a text type.
   typeText: function(column) {
     switch (column.length) {

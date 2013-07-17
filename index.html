@@ -264,6 +264,7 @@
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
       <li>– <a href="#Schema-json">json</a></li>
+      <li>– <a href="#Schema-uuid">uuid</a></li>
       <li>– <a href="#Schema-comment">comment</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
@@ -999,16 +1000,17 @@ Knex.Schema.table('users', function (table) {
       Adds a timestamp column.
     </p>
 
+    <p id="Schema-timestamps">
+      <b class="header">timestamps</b><code>table.timestamps()</code>
+      <br />
+      Adds a <tt>created_at</tt> and <tt>updated_at</tt> column on the database,
+      setting these each to <a href="#Schema-dateTime">dateTime</a> types.
+    </p>
+
     <p id="Schema-binary">
       <b class="header">binary</b><code>table.binary(name)</code>
       <br />
       Adds a binary column.
-    </p>
-
-    <p id="Schema-json">
-      <b class="header">json</b><code>table.json(name)</code>
-      <br />
-      Adds a json column.
     </p>
 
     <p id="Schema-enum">
@@ -1016,6 +1018,21 @@ Knex.Schema.table('users', function (table) {
       <br />
       Adds a enum column, (aliased to <tt>enu</tt>, as enum is a reserved word in javascript).
     </p>
+
+    <p id="Schema-json">
+      <b class="header">json</b><code>table.json(name)</code>
+      <br />
+      Adds a json column, using the built-in json type in postgresql, defaulting to a text column
+      in older versions of postgresql or in unsupported databases.
+    </p>
+
+    <p id="Schema-uuid">
+      <b class="header">uuid</b><code>table.uuid(name)</code>
+      <br />
+      Adds a uuid column - this uses the built-in uuid type in postgresql, and falling back to a
+      <tt>char(36)</tt> in other databases.
+    </p>
+
 
     <p id="Schema-engine">
       <b class="header">engine</b><code>table.engine(val)</code>

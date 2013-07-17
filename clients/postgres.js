@@ -202,16 +202,6 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
     }, this));
   },
 
-  // Create the column definition for a string type.
-  typeString: function(column) {
-    return "varchar(" + column.length + ")";
-  },
-
-  // Create the column definition for a text type.
-  typeText: function() {
-    return 'text';
-  },
-
   // Create the column definition for a integer type.
   typeInteger: function(column) {
     return column.autoIncrement ? 'serial' : 'integer';
@@ -261,6 +251,11 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   // Create the column definition for a binary type.
   typeBinary: function() {
     return 'bytea';
+  },
+
+  // Create the column definition for a uuid type.
+  typeUuid: function() {
+    return 'uuid';
   },
 
   // Create the column definition for a json type,

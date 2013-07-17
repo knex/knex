@@ -1,4 +1,6 @@
 
+var uuid = require('node-uuid');
+
 module.exports = function(Knex, dbName, resolver) {
 
   describe(dbName, function() {
@@ -124,7 +126,7 @@ module.exports = function(Knex, dbName, resolver) {
 
     it('should not allow inserting invalid values into enum fields', function(ok) {
 
-      Knex('enum_test')
+      Knex('datatype_test')
         .insert({'enum_value': 'd'})
         .then(function() {
           // No errors happen in sqlite3, which doesn't have native support
@@ -132,6 +134,24 @@ module.exports = function(Knex, dbName, resolver) {
           if (Knex.client.dialect === 'sqlite3') ok();
         }, function() {
           ok();
+        });
+
+    });
+
+    it('should not allow invalid uuids in postgresql', function(ok) {
+
+      Knex('datatype_test')
+        .insert({
+          enum_value: 'c',
+          uuid: uuid.v4()})
+        .then(function() {
+          return Knex('datatype_test').insert({enum_value: 'c', uuid: 'test'});
+        }).then(function() {
+          // No errors happen in sqlite3 or mysql, which dont have native support
+          // for the enum type.
+          if (Knex.client.dialect !== 'postgresql') ok();
+        }, function() {
+          if (Knex.client.dialect === 'postgresql') ok();
         });
 
     });

@@ -256,16 +256,6 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
     return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
   },
 
-  // Create the column definition for a string type.
-  typeString: function() {
-    return 'varchar';
-  },
-
-  // Create the column definition for a text type.
-  typeText: function() {
-    return 'text';
-  },
-
   // Create the column definition for a integer type.
   typeInteger: function() {
     return 'integer';

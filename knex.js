@@ -1304,6 +1304,11 @@
       return this._addColumn('json', column);
     },
 
+    // Create a new uuid column on the table.
+    uuid: function(column) {
+      return this._addColumn('uuid', column);
+    },
+
     // ----------------------------------------------------------------------
 
     // Create a new drop index command on the blueprint.
@@ -1633,6 +1638,7 @@
     // Initialize the schema builder methods.
     if (name === 'main') {
       initSchema(Knex, client);
+      Knex.client = client;
     }
 
     initSchema(Target, client);

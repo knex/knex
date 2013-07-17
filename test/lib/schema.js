@@ -8,7 +8,7 @@ module.exports = function(Knex, resolver, error) {
     Knex.Schema.dropTableIfExists('test_table_one'),
     Knex.Schema.dropTableIfExists('test_table_two'),
     Knex.Schema.dropTableIfExists('test_table_three'),
-    Knex.Schema.dropTableIfExists('enum_test'),
+    Knex.Schema.dropTableIfExists('datatype_test'),
     Knex.Schema.dropTableIfExists('accounts')
   ]).then(function(resp) {
 
@@ -39,9 +39,10 @@ module.exports = function(Knex, resolver, error) {
         table.integer('main').primary();
         table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
       }),
-      Knex.Schema.createTable('enum_test', function(table) {
+      Knex.Schema.createTable('datatype_test', function(table) {
         table.increments();
         table.enum('enum_value', ['a', 'b', 'c']);
+        table.uuid('uuid');
       }),
       Knex.Schema.createTable('test_foreign_table_two', function(table) {
         table.increments();

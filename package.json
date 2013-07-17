@@ -11,7 +11,8 @@
     "objectdump": ">=0.3.0",
     "mysql": "~2.0.0-alpha7",
     "pg": "~1.1.0",
-    "sqlite3": "~2.1.7"
+    "sqlite3": "~2.1.7",
+    "node-uuid": "~1.4.0"
   },
   "dependencies": {
     "when": ">=2.1.0",
@@ -21,7 +22,7 @@
   "scripts": {
     "test": "mocha -R spec test/index.js"
   },
-  "repository":{
+  "repository": {
     "type": "git",
     "url": "https://github.com/tgriesser/knex.git"
   },
@@ -34,7 +35,7 @@
   ],
   "author": {
     "name": "Tim Griesser",
-    "web":  "https://github.com/tgriesser"
+    "web": "https://github.com/tgriesser"
   },
   "license": "MIT"
 }

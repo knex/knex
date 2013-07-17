@@ -142,6 +142,16 @@ exports.schemaGrammar = {
     return 'drop index ' + command.index;
   },
 
+  // Create the column definition for a string type.
+  typeString: function(column) {
+    return "varchar(" + column.length + ")";
+  },
+
+  // Create the column definition for a text type.
+  typeText: function() {
+    return 'text';
+  },
+
   // Create the column definition for a tiny integer type.
   typeTinyInteger: function() {
     return 'tinyint';
@@ -165,6 +175,11 @@ exports.schemaGrammar = {
   // Create the column definition for a json type.
   typeJson: function() {
     return 'text';
+  },
+
+  // Create the column definition for a uuid type.
+  typeUuid: function() {
+    return 'char(36)';
   },
 
   // Get the SQL for a nullable column modifier.
