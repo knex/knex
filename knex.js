@@ -1299,6 +1299,11 @@
       return this._addColumn('binary', column);
     },
 
+    // Create a new json column on the table.
+    json: function(column) {
+      return this._addColumn('json', column);
+    },
+
     // ----------------------------------------------------------------------
 
     // Create a new drop index command on the blueprint.

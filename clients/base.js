@@ -162,6 +162,11 @@ exports.schemaGrammar = {
     return 'blob';
   },
 
+  // Create the column definition for a json type.
+  typeJson: function() {
+    return 'text';
+  },
+
   // Get the SQL for a nullable column modifier.
   modifyNullable: function(blueprint, column) {
     return column.isNullable ? ' null' : ' not null';

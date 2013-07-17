@@ -32,6 +32,7 @@ module.exports = function(Knex, resolver, error) {
         table.integer('account_id');
         table.text('details');
         table.tinyint('status');
+        table.json('json_data').nullable();
       }),
       Knex.Schema.createTable('test_table_three', function(table) {
         table.engine('InnoDB');
