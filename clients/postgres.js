@@ -71,9 +71,23 @@ _.extend(PostgresClient.prototype, base.protoProps, {
 
   // Returns a connection from the `pg` lib.
   getRawConnection: function(callback) {
-    var conn = new pg.Client(this.connectionSettings);
-    conn.connect(function(err) {
-      callback(err, conn);
+    var instance = this;
+    var connection = new pg.Client(this.connectionSettings);
+    connection.connect(function(err) {
+      if (!instance.version && !err) {
+        return instance.checkVersion.call(instance, connection, callback);
+      }
+      callback(err, connection);
+    });
+  },
+
+  // Check Version
+  checkVersion: function(connection, callback) {
+    var instance = this;
+    connection.query('select version();', function(err, resp) {
+      if (err) return callback(err);
+      instance.version = /^PostgreSQL (.*?) /.exec(resp.rows[0].version)[1];
+      callback(null, connection);
     });
   }
 
@@ -249,9 +263,14 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
     return 'bytea';
   },
 
-  // Create the column definition for a json type.
-  typeJson: function() {
-    return 'json';
+  // Create the column definition for a json type,
+  // checking whether the json type is supported - falling
+  // back to "text" if it's not.
+  typeJson: function(column, blueprint) {
+    if (parseFloat(blueprint.client.version) >= 9.2) {
+      return 'json';
+    }
+    return 'text';
   },
 
   // Get the SQL for an auto-increment column modifier.

@@ -1469,7 +1469,7 @@
       var columns = [];
       for (var i = 0, l = blueprint.columns.length; i < l; i++) {
         var column = blueprint.columns[i];
-        var sql = this.wrap(column) + ' ' + this.getType(column);
+        var sql = this.wrap(column) + ' ' + this.getType(column, blueprint);
         columns.push(this.addModifiers(sql, blueprint, column));
       }
       return columns;
@@ -1488,8 +1488,8 @@
     },
 
     // Get the SQL for the column data type.
-    getType: function(column) {
-      return this["type" + capitalize(column.type)](column);
+    getType: function(column, blueprint) {
+      return this['type' + capitalize(column.type)](column, blueprint);
     },
 
     // Add a prefix to an array of values, utilized in the client libs.
