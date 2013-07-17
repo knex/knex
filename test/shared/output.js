@@ -30,15 +30,15 @@ module.exports = {
     },
     'schema.3': {
       mysql: {
-        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null) default character set utf8 engine = InnoDB'],
+        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null, `json_data` text null) default character set utf8 engine = InnoDB'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_table_two" ("id" serial primary key not null, "account_id" integer not null, "details" text not null, "status" smallint not null)'],
+        sql: ['create table "test_table_two" ("id" serial primary key not null, "account_id" integer not null, "details" text not null, "status" smallint not null, "json_data" json null)'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_table_two" ("id" integer null primary key autoincrement, "account_id" integer null, "details" text null, "status" tinyint null)'],
+        sql: ['create table "test_table_two" ("id" integer null primary key autoincrement, "account_id" integer null, "details" text null, "status" tinyint null, "json_data" text null)'],
         bindings: []
       }
     },
@@ -2382,7 +2382,8 @@ module.exports = {
         phone: null,
         account_id: 1,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-        status: 0
+        status: 0,
+        json_data: null
       },{
         id: 2,
         first_name: 'Test',
@@ -2393,7 +2394,8 @@ module.exports = {
         phone: null,
         account_id: 2,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-        status: 1
+        status: 1,
+        json_data: null
       },{
         id: 3,
         first_name: 'Test',
@@ -2404,7 +2406,8 @@ module.exports = {
         phone: null,
         account_id: 3,
         details: '',
-        status: 1
+        status: 1,
+        json_data: null
       },{
         id: null,
         first_name: 'Test',
@@ -2415,7 +2418,8 @@ module.exports = {
         phone: null,
         account_id: null,
         details: null,
-        status: null
+        status: null,
+        json_data: null
       },{
         id: null,
         first_name: 'Test',
@@ -2426,7 +2430,8 @@ module.exports = {
         phone: null,
         account_id: null,
         details: null,
-        status: null
+        status: null,
+        json_data: null
       },{
         id: null,
         first_name: 'Test',
@@ -2437,7 +2442,8 @@ module.exports = {
         phone: null,
         account_id: null,
         details: null,
-        status: null
+        status: null,
+        json_data: null
       }],
       postgres: [{
         id: 2,
@@ -2449,7 +2455,8 @@ module.exports = {
         phone: null,
         account_id: 2,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-        status: 1
+        status: 1,
+        json_data: null
       },{
         id: 3,
         first_name: 'Test',
@@ -2460,7 +2467,8 @@ module.exports = {
         phone: null,
         account_id: 3,
         details: '',
-        status: 1
+        status: 1,
+        json_data: null
       },{
         id: null,
         first_name: 'Test',
@@ -2471,7 +2479,8 @@ module.exports = {
         phone: null,
         account_id: null,
         details: null,
-        status: null
+        status: null,
+        json_data: null
       },{
         id: null,
         first_name: 'Test',
@@ -2482,7 +2491,8 @@ module.exports = {
         phone: null,
         account_id: null,
         details: null,
-        status: null
+        status: null,
+        json_data: null
       },{
         id: null,
         first_name: 'Test',
@@ -2493,7 +2503,8 @@ module.exports = {
         phone: null,
         account_id: null,
         details: null,
-        status: null
+        status: null,
+        json_data: null
       },{
         id: 1,
         first_name: 'User',
@@ -2504,7 +2515,8 @@ module.exports = {
         phone: null,
         account_id: 1,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-        status: 0
+        status: 0,
+        json_data: null
       }],
       sqlite3: [{
         id: 1,
@@ -2516,7 +2528,8 @@ module.exports = {
         phone: null,
         account_id: 1,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-        status: 0
+        status: 0,
+        json_data: null
       },{
         id: 2,
         first_name: 'Test',
@@ -2527,7 +2540,8 @@ module.exports = {
         phone: null,
         account_id: 2,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-        status: 1
+        status: 1,
+        json_data: null
       },{
         id: 3,
         first_name: 'Test',
@@ -2538,7 +2552,8 @@ module.exports = {
         phone: null,
         account_id: 3,
         details: '',
-        status: 1
+        status: 1,
+        json_data: null
       },{
         id: null,
         first_name: 'Test',
@@ -2549,7 +2564,8 @@ module.exports = {
         phone: null,
         account_id: null,
         details: null,
-        status: null
+        status: null,
+        json_data: null
       },{
         id: null,
         first_name: 'Test',
@@ -2560,7 +2576,8 @@ module.exports = {
         phone: null,
         account_id: null,
         details: null,
-        status: null
+        status: null,
+        json_data: null
       },{
         id: null,
         first_name: 'Test',
@@ -2571,7 +2588,8 @@ module.exports = {
         phone: null,
         account_id: null,
         details: null,
-        status: null
+        status: null,
+        json_data: null
       }]
     },
     'joins.4': {
