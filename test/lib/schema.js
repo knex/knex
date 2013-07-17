@@ -8,6 +8,7 @@ module.exports = function(Knex, resolver, error) {
     Knex.Schema.dropTableIfExists('test_table_one'),
     Knex.Schema.dropTableIfExists('test_table_two'),
     Knex.Schema.dropTableIfExists('test_table_three'),
+    Knex.Schema.dropTableIfExists('enum_test'),
     Knex.Schema.dropTableIfExists('accounts')
   ]).then(function(resp) {
 
@@ -25,21 +26,25 @@ module.exports = function(Knex, resolver, error) {
         table.text('about').comment('A comment.');
         table.timestamps();
       }),
-      Knex.Schema.createTable('test_table_two', function(t) {
-        t.engine('InnoDB');
-        t.increments();
-        t.integer('account_id');
-        t.text('details');
-        t.tinyint('status');
+      Knex.Schema.createTable('test_table_two', function(table) {
+        table.engine('InnoDB');
+        table.increments();
+        table.integer('account_id');
+        table.text('details');
+        table.tinyint('status');
       }),
       Knex.Schema.createTable('test_table_three', function(table) {
         table.engine('InnoDB');
         table.integer('main').primary();
         table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
       }),
-      Knex.Schema.createTable('test_foreign_table_two', function(t) {
-        t.increments();
-        t.integer('fkey_two')
+      Knex.Schema.createTable('enum_test', function(table) {
+        table.increments();
+        table.enum('enum_value', ['a', 'b', 'c']);
+      }),
+      Knex.Schema.createTable('test_foreign_table_two', function(table) {
+        table.increments();
+        table.integer('fkey_two')
           .unsigned()
           .references('id')
           .inTable('test_table_two');

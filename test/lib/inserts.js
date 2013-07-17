@@ -4,7 +4,7 @@ module.exports = function(Knex, dbName, resolver) {
   describe(dbName, function() {
 
     it("should handle simple inserts", function(ok) {
-      
+
       Knex('accounts').insert({
         first_name: 'Test',
         last_name: 'User',
@@ -14,11 +14,11 @@ module.exports = function(Knex, dbName, resolver) {
         created_at: new Date(),
         updated_at: new Date()
       }).then(resolver(ok), ok);
-    
+
     });
 
     it('should allow for using the `exec` interface', function(ok) {
-      
+
       Knex('test_table_two').insert([{
         account_id: 1,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -35,11 +35,11 @@ module.exports = function(Knex, dbName, resolver) {
         if (err) return ok(err);
         ok();
       });
-    
+
     });
 
     it('should handle multi inserts', function (ok) {
-    
+
       Knex('accounts')
         .insert([{
           first_name: 'Test',
@@ -121,7 +121,21 @@ module.exports = function(Knex, dbName, resolver) {
         .then(resolver(ok), ok);
 
     });
-  
+
+    it('should not allow inserting invalid values into enum fields', function(ok) {
+
+      Knex('enum_test')
+        .insert({'enum_value': 'd'})
+        .then(function() {
+          // No errors happen in sqlite3, which doesn't have native support
+          // for the enum type.
+          if (Knex.client.dialect === 'sqlite3') ok();
+        }, function() {
+          ok();
+        });
+
+    });
+
   });
 
 };

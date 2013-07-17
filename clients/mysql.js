@@ -7,6 +7,7 @@ var mysql       = require('mysql');
 // Constructor for the MysqlClient
 var MysqlClient = module.exports = function(name, options) {
   base.setup.call(this, MysqlClient, name, options);
+  this.dialect = 'mysql';
 };
 
 _.extend(MysqlClient.prototype, base.protoProps, {
@@ -231,7 +232,7 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
 
   // Create the column definition for a timestamp type.
   typeTimestamp: function() {
-    return 'timestamp default 0';
+    return 'timestamp';
   },
 
   // Create the column definition for a bit type.

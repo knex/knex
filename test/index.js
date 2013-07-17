@@ -21,7 +21,13 @@ var pool = {
 Knex.Initialize({
   client: 'mysql',
   connection: conn.mysql,
-  pool: pool
+  pool: _.extend({}, pool, {
+    afterCreate: function(conn, done) {
+      conn.query("SET sql_mode='TRADITIONAL';", [], function(err) {
+        done(err);
+      });
+    }
+  })
 });
 var Sqlite3 = Knex.Initialize('sqlite3', {
   client: 'sqlite3',

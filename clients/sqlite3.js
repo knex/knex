@@ -8,6 +8,7 @@ var sqlite3     = require('sqlite3');
 // Constructor for the Sqlite3Client
 var Sqlite3Client = module.exports = function(name, options) {
   base.setup.call(this, Sqlite3Client, name, options);
+  this.dialect = 'sqlite3';
 };
 
 _.extend(Sqlite3Client.prototype, base.protoProps, {

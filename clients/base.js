@@ -15,7 +15,7 @@ exports.setup = function(Client, name, options) {
   // Extend the genericPool with the options
   // passed into the init under the "pool" option.
   var instance = this;
-  var pool = this.pool = require('generic-pool').Pool(_.extend({
+  var poolInstance = this.pool = require('generic-pool').Pool(_.extend({
     name: 'pool-' + name,
     min: 2,
     max: 10,
@@ -47,10 +47,10 @@ exports.setup = function(Client, name, options) {
   }, this.poolDefaults, options.pool));
 
   // Default to draining on exit.
-  if (pool.drainOnExit !== false && typeof process === 'object') {
+  if (poolInstance.drainOnExit !== false && typeof process === 'object') {
     process.on('exit', function() {
-      pool.drain(function() {
-          pool.destroyAllNow();
+      poolInstance.drain(function() {
+          poolInstance.destroyAllNow();
       });
     });
   }

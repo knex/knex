@@ -7,6 +7,7 @@ var pg          = require('pg');
 // Constructor for the PostgresClient
 var PostgresClient = module.exports = function(name, options) {
   base.setup.call(this, PostgresClient, name, options);
+  this.dialect = 'postgresql';
 };
 
 _.extend(PostgresClient.prototype, base.protoProps, {
@@ -223,8 +224,9 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
   },
 
   // Create the column definition for an enum type.
+  // Using method 2 here: http://stackoverflow.com/questions/10923213/postgres-enum-data-type-or-check-constraint
   typeEnum: function(column) {
-    return "enum('" + column.allowed.join("', '")  + "')";
+    return 'text check(' + this.wrap(column.name) + " in('" + column.allowed.join("', '")  + "'))";
   },
 
   // Create the column definition for a date-time type.
