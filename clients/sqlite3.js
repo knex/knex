@@ -202,17 +202,6 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
     return sql;
   },
 
-  // Get the primary key command if it exists on the blueprint.
-  getCommandByName: function(blueprint, name) {
-    var commands = this.getCommandsByName(blueprint, name);
-    if (commands.length > 0) return commands[0];
-  },
-
-  // Get all of the commands with a given name.
-  getCommandsByName: function(blueprint, name) {
-    return _.filter(blueprint.commands, function(value) { return value.name == name; }) || [];
-  },
-
   // Get the primary key syntax for a table creation statement.
   addPrimaryKeys: function(blueprint) {
     var primary = this.getCommandByName(blueprint, 'primary');

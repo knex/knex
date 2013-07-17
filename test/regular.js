@@ -126,7 +126,9 @@ var handler = function(instance, section) {
               assert.deepEqual(_.map(checkData.bindings, omitDates), _.map(typeData.bindings, omitDates));
             }
           } catch (e) {
-            console.log(e.stack);
+            console.log(typeData.sql);
+            console.log(checkData.sql);
+            // console.log(e.stack);
             resolver(e);
           }
         }

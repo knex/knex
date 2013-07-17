@@ -20,7 +20,7 @@ module.exports = {
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_table_one" ("id" serial primary key not null, "first_name" varchar(255) not null, "last_name" varchar(255) not null, "email" varchar(255) null, "logins" integer not null default \'1\', "about" text not null, "created_at" timestamp not null, "updated_at" timestamp not null)','alter table "test_table_one" add constraint test_table_one_email_unique unique ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")','comment on table "test_table_one" is \'A table comment.\'','comment on column "test_table_one"."logins" is NULL','comment on column "test_table_one"."about" is \'A comment.\''],
+        sql: ['create table "test_table_one" ("id" serial primary key not null, "first_name" varchar(255) not null, "last_name" varchar(255) not null, "email" varchar(255) null, "logins" integer not null default \'1\', "about" text not null, "created_at" timestamp not null, "updated_at" timestamp not null)','comment on table "test_table_one" is \'A table comment.\'','comment on column "test_table_one"."about" is \'A comment.\'','alter table "test_table_one" add constraint test_table_one_email_unique unique ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")'],
         bindings: []
       },
       sqlite3: {

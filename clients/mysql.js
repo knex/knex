@@ -27,7 +27,8 @@ _.extend(MysqlClient.prototype, base.protoProps, {
 
         // Call the querystring and then release the client
         conn.query(builder.sql, builder.bindings, function (err, resp) {
-          if (err) { return dfd.reject(err); }
+
+          if (err) return dfd.reject(err);
 
           if (builder._source === 'Raw') return dfd.resolve(resp);
 
@@ -93,14 +94,17 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
 
     if (conn.charset) sql += ' default character set ' + conn.charset;
     if (conn.collation) sql += ' collate ' + conn.collation;
-
     if (blueprint.isEngine) {
       sql += ' engine = ' + blueprint.isEngine;
     }
 
-    if (blueprint.tableComment) {
-      var maxTableCommentLength = 60;
-      sql += " comment = '" + blueprint.tableComment + "'"
+    // Checks if the table is commented
+    var isCommented = this.getCommandByName(blueprint, 'comment');
+
+    // TODO: Handle max comment length.
+    var maxTableCommentLength = 60;
+    if (isCommented) {
+      sql += " comment = '" + isCommented.comment + "'";
     }
 
     return sql;
@@ -170,6 +174,11 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
   // Compile a rename table command.
   compileRenameTable: function(blueprint, command) {
     return 'rename table ' + this.wrapTable(blueprint) + ' to ' + this.wrapTable(command.to);
+  },
+
+  // Compiles the comment on the table.
+  compileComment: function(blueprint, command) {
+    // Handled on create table...
   },
 
   // Create the column definition for a string type.
@@ -258,11 +267,12 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     }
   },
 
-  // Get the SQL for a comment column modifier. (MySQL)
+  // Get the SQL for a comment column modifier.
   modifyComment: function(blueprint, column) {
+    // TODO: Look into limiting this length.
     var maxColumnCommentLength = 255;
-    if (_.isString(column.comment)) {
-      return " comment '" + column.comment + "'";
+    if (column.isCommented && _.isString(column.isCommented)) {
+      return " comment '" + column.isCommented + "'";
     }
   }
 

@@ -107,6 +107,20 @@ exports.grammar = {};
 
 exports.schemaGrammar = {
 
+  // Get the primary key command if it exists on the blueprint.
+  getCommandByName: function(blueprint, name) {
+    var commands = this.getCommandsByName(blueprint, name);
+    if (commands.length > 0) return commands[0];
+  },
+
+  // Get all of the commands with a given name.
+  getCommandsByName: function(blueprint, name) {
+    return _.filter(blueprint.commands, function(value) { return value.name == name; }) || [];
+  },
+
+  // Used to compile any dialect specific items.
+  compileAdditional: function() {},
+
   // Compile a create table command.
   compileCreateTable: function(blueprint) {
     var columns = this.getColumns(blueprint).join(', ');

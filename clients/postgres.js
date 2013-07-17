@@ -18,6 +18,7 @@ _.extend(PostgresClient.prototype, base.protoProps, {
     var emptyConnection = !builder._connection;
     var debug = this.debug || builder._debug;
     var instance = this;
+
     return When((builder._connection || this.getConnection()))
       .then(function(conn) {
         var dfd = When.defer();
@@ -171,21 +172,20 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
 
   // Compile a comment command.
   compileComment: function(blueprint, command) {
-    var table = this.wrapTable(blueprint);
-    var comment;
-    if (command.comment == void 0) {
-      comment = 'NULL';
-    } else {
-      comment = "'" + command.comment + "'";
+    var sql = '';
+    if (command.comment) {
+      sql += 'comment on table ' + this.wrapTable(blueprint) + ' is ' + "'" + command.comment + "'";
     }
-    var identifier;
-    if (command.isTable) {
-      identifier = 'table ' + table;
-    } else {
-      var column = this.wrap(command.columnName);
-      identifier = 'column ' + table + '.' + column;
-    }
-    return 'comment on ' + identifier + ' is ' + comment;
+    return sql;
+  },
+
+  // Compile any additional postgres specific items.
+  compileAdditional: function(blueprint, command) {
+    return _.compact(_.map(blueprint.columns, function(column) {
+      if (column.isCommented && _.isString(column.isCommented)) {
+        return 'comment on column ' + this.wrapTable(blueprint) + '.' + this.wrap(column.name) + " is '" + column.isCommented + "'";
+      }
+    }, this));
   },
 
   // Create the column definition for a string type.
@@ -254,4 +254,5 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
       return ' primary key';
     }
   }
+
 });

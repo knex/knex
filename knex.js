@@ -940,24 +940,28 @@
   };
 
   var transaction = function(container) {
+
     var client = this.client;
+
     return client.startTransaction().then(function(connection) {
 
       // Initiate a deferred object, so we know when the
       // transaction completes or fails, we know what to do.
       var dfd = When.defer();
 
-      // Ensure the transacting object methods are bound with the correct context.
+      // The object passed around inside the transaction container.
       var containerObj = {
-        commit: function(msg) {
-          client.finishTransaction('commit', this, dfd, msg);
+        commit: function(val) {
+          client.finishTransaction('commit', this, dfd, val);
         },
-        rollback: function(msg) {
-          client.finishTransaction('rollback', this, dfd, msg);
+        rollback: function(err) {
+          client.finishTransaction('rollback', this, dfd, err);
         },
         // "rollback to"?
         connection: connection
       };
+
+      // Ensure the transacting object methods are bound with the correct context.
       _.bindAll(containerObj, 'commit', 'rollback');
 
       // Call the container with the transaction
@@ -1059,8 +1063,11 @@
 
       // Add the commands that are implied by the blueprint.
       if (this.columns.length > 0 && !this.creating()) {
-        this.commands.unshift(new Chainable({name: 'add'}));
+        this.commands.unshift({name: 'add'});
       }
+
+      // Add an "additional" command, for any extra dialect-specific logic.
+      this.commands.push({name: 'additional'});
 
       // Add indicies
       for (var i = 0, l = this.columns.length; i < l; i++) {
@@ -1086,26 +1093,6 @@
             this[index](column.name, column[indexVar]);
             continue continueIndex;
           }
-        }
-      }
-
-      // Add table comments. (Postgres)
-      if (this.tableComment) {
-        this._addCommand('comment', {
-          comment: this.tableComment,
-          isTable: true
-        });
-      }
-
-      // Add column comments. (Postgres)
-      for (i = 0, l = this.columns.length; i < l; i++) {
-        var column = this.columns[i];
-        if (_.has(column, 'comment')) {
-          this._addCommand('comment', {
-            comment: column.comment,
-            columnName: column.name,
-            isTable: false
-          });
         }
       }
 
@@ -1143,7 +1130,7 @@
 
     // Adds a comment to the current table being created.
     comment: function(comment) {
-      this.tableComment = comment || null;
+      return this._addCommand('comment', {comment: comment});
     },
 
     // Indicate that the given columns should be dropped.
@@ -1409,7 +1396,7 @@
 
     // Adds a comment to this column.
     comment: function(comment) {
-      this.comment = comment || null;
+      this.isCommented = comment || null;
       return this;
     }
 
