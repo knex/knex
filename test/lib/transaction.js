@@ -7,6 +7,7 @@ module.exports = function(Knex, dbName, resolver) {
     Knex.Transaction(function(t) {
       Knex('accounts')
         .transacting(t)
+        .returning('id')
         .insert({
           first_name: 'Transacting',
           last_name: 'User',
@@ -45,6 +46,7 @@ module.exports = function(Knex, dbName, resolver) {
 
       Knex('accounts')
         .transacting(t)
+        .returning('id')
         .insert({
           first_name: 'Transacting',
           last_name: 'User2',

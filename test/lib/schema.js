@@ -39,7 +39,6 @@ module.exports = function(Knex, resolver, error) {
         table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
       }),
       Knex.Schema.createTable('datatype_test', function(table) {
-        table.increments();
         table.enum('enum_value', ['a', 'b', 'c']);
         table.uuid('uuid');
       }),

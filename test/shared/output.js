@@ -58,15 +58,15 @@ module.exports = {
     },
     'schema.5': {
       mysql: {
-        sql: ['create table `datatype_test` (`id` int(11) not null auto_increment primary key, `enum_value` enum(\'a\', \'b\', \'c\') not null, `uuid` char(36) not null) default character set utf8'],
+        sql: ['create table `datatype_test` (`enum_value` enum(\'a\', \'b\', \'c\') not null, `uuid` char(36) not null) default character set utf8'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "datatype_test" ("id" serial primary key not null, "enum_value" text check("enum_value" in(\'a\', \'b\', \'c\')) not null, "uuid" uuid not null)'],
+        sql: ['create table "datatype_test" ("enum_value" text check("enum_value" in(\'a\', \'b\', \'c\')) not null, "uuid" uuid not null)'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "datatype_test" ("id" integer null primary key autoincrement, "enum_value" varchar null, "uuid" char(36) null)'],
+        sql: ['create table "datatype_test" ("enum_value" varchar null, "uuid" char(36) null)'],
         bindings: []
       }
     },

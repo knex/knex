@@ -447,16 +447,6 @@
 
     _source: 'Builder',
 
-    _idAttribute: 'id',
-
-    // Sets the `returning` for the query - only necessary
-    // to set the "returning" value for the postgres insert,
-    // defaults to `id`.
-    idAttribute: function(val) {
-      this._idAttribute = val;
-      return this;
-    },
-
     // Sets the `tableName` on the query.
     from: function(tableName) {
       if (!tableName) return this.table;
@@ -491,7 +481,7 @@
       item.client = this.client;
       item.grammar = this.grammar;
       var items = [
-        '_idAttribute', 'isDistinct', 'joins', 'wheres', 'orders',
+        'isDistinct', 'joins', 'wheres', 'orders',
         'columns', 'bindings', 'grammar', 'transaction', 'unions'
       ];
       for (var i = 0, l = items.length; i < l; i++) {
@@ -510,7 +500,8 @@
       this.orders   = [];
       this.columns  = [];
       this.bindings = [];
-      this.isDistinct = false;
+      this.isDistinct  = false;
+      this.isReturning = false;
     },
 
     // Adds a join clause to the query, allowing for advanced joins
@@ -787,9 +778,16 @@
     },
 
     // Sets the values for an `insert` query.
-    insert: function(values) {
+    insert: function(values, returning) {
+      if (returning) this.returning(returning);
       this.values = this._prepValues(values);
       return this._setType('insert');
+    },
+
+    // Sets the returning value for the query.
+    returning: function(returning) {
+      this.isReturning = returning;
+      return this;
     },
 
     // Sets the values for an `update` query.

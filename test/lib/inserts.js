@@ -15,7 +15,7 @@ module.exports = function(Knex, dbName, resolver) {
         about: 'Lorem ipsum Dolore labore incididunt enim.',
         created_at: new Date(),
         updated_at: new Date()
-      }).then(resolver(ok), ok);
+      }, 'id').then(resolver(ok), ok);
 
     });
 
@@ -33,7 +33,7 @@ module.exports = function(Knex, dbName, resolver) {
         account_id: 3,
         details: '',
         status: 1
-      }]).exec(function(err, resp) {
+      }], 'id').exec(function(err, resp) {
         if (err) return ok(err);
         ok();
       });
@@ -59,7 +59,7 @@ module.exports = function(Knex, dbName, resolver) {
           logins: 2,
           created_at: new Date(),
           updated_at: new Date()
-        }]).then(resolver(ok), ok);
+        }], 'id').then(resolver(ok), ok);
 
     });
 
@@ -81,7 +81,7 @@ module.exports = function(Knex, dbName, resolver) {
         updated_at: new Date(),
         last_name: 'User',
         email:'test5@example.com'
-      }])
+      }], 'id')
       .then(resolver(ok), ok);
 
     });
@@ -99,7 +99,7 @@ module.exports = function(Knex, dbName, resolver) {
           logins: 2,
           created_at: new Date(),
           updated_at: new Date()
-        })
+        }, 'id')
         .then(ok, function() {
           ok();
         });
@@ -119,7 +119,7 @@ module.exports = function(Knex, dbName, resolver) {
           logins: 2,
           created_at: new Date(),
           updated_at: new Date()
-        })
+        }, 'id')
         .then(resolver(ok), ok);
 
     });

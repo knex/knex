@@ -217,8 +217,10 @@
       <li>– <a href="#Builder-union">union</a></li>
       <li>– <a href="#Builder-unionAll">unionAll</a></li>
       <li>– <a href="#Builder-insert">insert</a></li>
+      <li>– <a href="#Builder-returning">returning</a></li>
       <li>– <a href="#Builder-update">update</a></li>
       <li>– <a href="#Builder-del">del / delete</a></li>
+      <li>– <a href="#Builder-transacting">transacting</a></li>
       <li>– <a href="#Builder-count">count</a></li>
       <li>– <a href="#Builder-min">min</a></li>
       <li>– <a href="#Builder-max">max</a></li>
@@ -685,7 +687,7 @@ Knex('users').whereNull('last_name').union(function() {
 </pre>
 
     <p id="Builder-insert">
-      <b class="header">insert</b><code>.insert(data)</code>
+      <b class="header">insert</b><code>.insert(data, [returning])</code>
       <br />
       Creates an <tt>insert</tt> query, taking either a hash of properties to be inserted into the row, or
       an array of inserts, to be executed as a single insert command. Resolves the promise / fulfills the callback
@@ -694,11 +696,30 @@ Knex('users').whereNull('last_name').union(function() {
     </p>
 
 <pre>
-  // Returns [1]
+  // Returns [1] in "mysql", "sqlite"; [] in "postgresql" unless the 'returning' parameter is set.
   Knex('books').insert({title: 'Slaughterhouse Five'})
 
   // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
   Knex('books')
+    .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], 'id')
+</pre>
+
+    <p id="Builder-returning">
+      <b class="header">returning</b><code>.returning(column)</code>
+      <br />
+      Only utilitzed by PostgreSQL databases, the returning method specifies which column should be returned
+      by the <a href="#Builder-insert">insert</a> method.
+    </p>
+
+<pre>
+  // Returns [1]
+  Knex('books')
+    .returning('id')
+    .insert({title: 'Slaughterhouse Five'})
+
+  // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
+  Knex('books')
+    .returning('id')
     .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
 </pre>
 
@@ -733,6 +754,46 @@ Knex('accounts')
   .where('activated', false)
   .del()
 </pre>
+
+    <p id="Builder-transacting">
+      <b class="header">transacting</b><code>.transacting(transactionObj)</code>
+      <br />
+      Used by <a href="#Transaction">Knex.Transaction</a>, the transacting method may be chained to any
+      query and passed the object you wish to join the query as part of the transaction for.
+    </p>
+
+<pre>
+Knex.Transaction(function(t) {
+
+  Knex('books')
+    .transacting(t)
+    .insert({name: 'Old Books'})
+    .then(function(row) {
+
+      return When.all(_.map([
+        {title: 'Canterbury Tales'},
+        {title: 'Moby Dick'},
+        {title: 'Hamlet'}
+      ], function(info) {
+
+        info.row_id = row.id;
+
+        // Some validation could take place here.
+        return Knex('book').transacting(t).insert(info);
+
+      }));
+    })
+    .then(function() {
+      t.commit('You saved 3 books');
+    }, t.rollback);
+
+}).then(function(resp) {
+  console.log(resp);
+}, function(err) {
+  console.log(err.message);
+});
+</pre>
+
 
     <p id="Builder-count">
       <b class="header">count</b><code>.count(column)</code>
