@@ -1272,10 +1272,10 @@
       return this._addColumn('timestamp', column);
     },
 
-    // Add creation and update timestamps to the table.
+    // Add creation and update dateTime's to the table.
     timestamps: function() {
-      this.timestamp('created_at');
-      this.timestamp('updated_at');
+      this.dateTime('created_at');
+      this.dateTime('updated_at');
     },
 
     // Alias to enum.
@@ -1285,6 +1285,7 @@
 
     // Create a new enum column on the table.
     enu: function(column, allowed) {
+      if (!_.isArray(allowed)) allowed = [allowed];
       return this._addColumn('enum', column, {allowed: allowed});
     },
 
