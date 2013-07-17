@@ -26,6 +26,10 @@ module.exports = function(Knex, dbType) {
         }, dbType);
       });
 
+      describe('Schema Tests', function() {
+        require('./lib/schema-tests')(Knex, dbType, handler(dbType, 'schema-tests'));
+      });
+
       describe('Inserts', function() {
         require('./lib/inserts')(Knex, dbType, handler(dbType, 'inserts'));
       });

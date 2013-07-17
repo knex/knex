@@ -42,8 +42,7 @@ _.extend(PostgresClient.prototype, base.protoProps, {
 
           if (builder._source === 'SchemaBuilder') {
             if (builder.type === 'tableExists') {
-              if (resp.rows.length > 0) return dfd.resolve(resp.rows[0]);
-              return dfd.reject(new Error('Table does not exist:' + builder.sql));
+              return dfd.resolve(resp.rows.length > 0);
             } else {
               return dfd.resolve(null);
             }

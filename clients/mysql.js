@@ -34,8 +34,7 @@ _.extend(MysqlClient.prototype, base.protoProps, {
 
           if (builder._source === 'SchemaBuilder') {
             if (builder.type === 'tableExists') {
-              if (resp.length > 0) return dfd.resolve(_.pick(resp, _.keys(resp)));
-              return dfd.reject(new Error('Table does not exist:' + builder.sql));
+              return dfd.resolve(resp.length > 0);
             } else {
               return dfd.resolve(null);
             }
