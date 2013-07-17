@@ -58,15 +58,15 @@ module.exports = {
     },
     'schema.5': {
       mysql: {
-        sql: ['create table `test_foreign_table_two` (`id` int(11) not null auto_increment primary key, `foreign_table_two` int(11) unsigned not null) default character set utf8','alter table `test_foreign_table_two` add constraint test_foreign_table_two__foreign foreign key (`foreign_table_two`) references `test_table_two` (`id`)'],
+        sql: ['create table `test_foreign_table_two` (`id` int(11) not null auto_increment primary key, `fkey_two` int(11) unsigned not null) default character set utf8','alter table `test_foreign_table_two` add constraint test_foreign_table_two_fkey_two_foreign foreign key (`fkey_two`) references `test_table_two` (`id`)'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_foreign_table_two" ("id" serial primary key not null, "foreign_table_two" integer not null)','alter table "test_foreign_table_two" add constraint test_foreign_table_two__foreign foreign key ("foreign_table_two") references "test_table_two" ("id")'],
+        sql: ['create table "test_foreign_table_two" ("id" serial primary key not null, "fkey_two" integer not null)','alter table "test_foreign_table_two" add constraint test_foreign_table_two_fkey_two_foreign foreign key ("fkey_two") references "test_table_two" ("id")'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_foreign_table_two" ("id" integer null primary key autoincrement, "foreign_table_two" integer null, foreign key("foreign_table_two") references "test_table_two"("id"))'],
+        sql: ['create table "test_foreign_table_two" ("id" integer null primary key autoincrement, "fkey_two" integer null, foreign key("fkey_two") references "test_table_two"("id"))'],
         bindings: []
       }
     },

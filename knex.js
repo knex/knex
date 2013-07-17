@@ -408,10 +408,12 @@
     },
 
     columnize: function(columns) {
+      if (!_.isArray(columns)) columns = [columns];
       return _.map(columns, this.wrap, this).join(', ');
     },
 
     parameterize: function(values) {
+      if (!_.isArray(values)) values = [values];
       return _.map(values, this.parameter, this).join(', ');
     },
 
@@ -1072,7 +1074,7 @@
       // Add indicies
       for (var i = 0, l = this.columns.length; i < l; i++) {
         var column = this.columns[i];
-        var indices = ['primary', 'unique', 'index'];
+        var indices = ['primary', 'unique', 'index', 'foreign'];
 
         continueIndex:
         for (var i2 = 0, l2 = indices.length; i2 < l2; i2++) {
@@ -1083,14 +1085,14 @@
           // equal to "true" (boolean), no name has been specified for this
           // index, so we will simply call the index methods without one.
           if (column[indexVar] === true) {
-            this[index](column);
+            this[index](column, null);
             continue continueIndex;
 
           // If the index has been specified on the column and it is something
           // other than boolean true, we will assume a name was provided on
           // the index specification, and pass in the name to the method.
           } else if (_.has(column, indexVar)) {
-            this[index](column.name, column[indexVar]);
+            this[index](column.name, column[indexVar], column);
             continue continueIndex;
           }
         }
@@ -1180,9 +1182,9 @@
     },
 
     // Specify a foreign key for the table.
-    foreign: function(columns, name) {
-      var chainable = this._indexCommand('foreign', columns, name);
-      return _.extend(chainable, ForeignChainable);
+    foreign: function(column, name) {
+      var chainable = this._indexCommand('foreign', column, name);
+      return _.extend(chainable, ForeignChainable, _.pick(column, 'foreignColumn', 'foreignTable', 'commandOnDelete', 'commandOnUpdate'));
     },
 
     // Create a new auto-incrementing column on the table.
@@ -1323,26 +1325,50 @@
     // Add a new column to the blueprint.
     _addColumn: function(type, name, parameters) {
       if (!name) throw new Error('A `name` must be defined to add a column');
-      var attrs = _.extend({type: type, name: name}, parameters);
-      var column = new Chainable(attrs);
+      var column = _.extend({type: type, name: name}, ChainableColumn, parameters);
       this.columns.push(column);
       return column;
     },
 
     // Add a new command to the blueprint.
     _addCommand: function(name, parameters) {
-      var command = new Chainable(_.extend({name: name}, parameters));
+      var command = _.extend({name: name}, parameters);
       this.commands.push(command);
       return command;
     }
   });
 
-  // Chainable object used in creating SchemaBuilder commands.
-  var Chainable = function(obj) {
-    _.extend(this, obj);
+  var ForeignChainable = {
+
+    // Sets the "column" that the current column references
+    // as the a foreign key
+    references: function(column) {
+      this.isForeign = true;
+      this.foreignColumn = column || null;
+      return this;
+    },
+
+    // Sets the "table" where the foreign key column is located.
+    inTable: function(table) {
+      this.foreignTable = table || null;
+      return this;
+    },
+
+    // SQL command to run "onDelete"
+    onDelete: function(command) {
+      this.commandOnDelete = command || null;
+      return this;
+    },
+
+    // SQL command to run "onUpdate"
+    onUpdate: function(command) {
+      this.commandOnUpdate = command || null;
+      return this;
+    }
+
   };
 
-  Chainable.prototype = {
+  var ChainableColumn = _.extend({
 
     // Sets the default value for a column.
     // For `boolean` columns, we'll permit 'false'
@@ -1400,31 +1426,8 @@
       return this;
     }
 
-  };
+  }, ForeignChainable);
 
-  var ForeignChainable = {
-
-    references: function(column) {
-      this.foreignColumn = column || null;
-      return this;
-    },
-
-    inTable: function(table) {
-      this.foreignTable = table || null;
-      return this;
-    },
-
-    onDelete: function(command) {
-      this.commandOnDelete = command || null;
-      return this;
-    },
-
-    onUpdate: function(command) {
-      this.commandOnUpdate = command || null;
-      return this;
-    }
-
-  };
 
   Knex.SchemaGrammar = {
 
@@ -1435,7 +1438,7 @@
         var table = this.wrapTable(blueprint);
         var column = this.columnize(command.columns);
         var foreignTable = this.wrapTable(command.foreignTable);
-        var foreignColumn = this.columnize([command.foreignColumn]);
+        var foreignColumn = this.columnize(command.foreignColumn);
 
         sql = "alter table " + table + " add constraint " + command.index + " ";
         sql += "foreign key (" + column + ") references " + foreignTable + " (" + foreignColumn + ")";
@@ -1492,7 +1495,7 @@
 
     // Wrap a value in keyword identifiers.
     wrap: function(value) {
-      if (value instanceof Chainable) value = value.name;
+      if (value && value.name) value = value.name;
       return Knex.Grammar.wrap.call(this, value);
     },
 
@@ -1536,6 +1539,7 @@
     _cleanBindings: function() {
       return [];
     }
+
   });
 
   // Simple capitalization of a word.

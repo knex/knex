@@ -128,7 +128,6 @@ var handler = function(instance, section) {
           } catch (e) {
             console.log(typeData.sql);
             console.log(checkData.sql);
-            // console.log(e.stack);
             resolver(e);
           }
         }

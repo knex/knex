@@ -118,7 +118,7 @@ exports.schemaGrammar = {
     return _.filter(blueprint.commands, function(value) { return value.name == name; }) || [];
   },
 
-  // Used to compile any dialect specific items.
+  // Used to compile any database specific items.
   compileAdditional: function() {},
 
   // Compile a create table command.

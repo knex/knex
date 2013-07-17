@@ -39,8 +39,8 @@ module.exports = function(Knex, resolver, error) {
       }),
       Knex.Schema.createTable('test_foreign_table_two', function(t) {
         t.increments();
-        t.integer('foreign_table_two').unsigned();
-        t.foreign('foreign_table_two')
+        t.integer('fkey_two')
+          .unsigned()
           .references('id')
           .inTable('test_table_two');
       })
