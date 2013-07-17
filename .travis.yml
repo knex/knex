@@ -8,3 +8,6 @@ node_js:
 before_script:
   - psql -c 'create database knex_test;' -U postgres
   - mysql -e 'create database knex_test;'
+
+notifications:
+  email: false
