@@ -32,7 +32,6 @@ module.exports = function(Knex, resolver, error) {
         table.integer('account_id');
         table.text('details');
         table.tinyint('status');
-        table.json('json_data').nullable();
       }),
       Knex.Schema.createTable('test_table_three', function(table) {
         table.engine('InnoDB');
@@ -56,10 +55,13 @@ module.exports = function(Knex, resolver, error) {
   .then(function(resp) {
     // Edit test table one
     res = res.concat(resp);
-    return Knex.Schema.table('test_table_one', function(t) {
-      t.string('phone').nullable();
+    return Knex.Schema.table('test_table_two', function(t) {
+      t.json('json_data').nullable();
+    }).then(function() {
+      return Knex.Schema.table('test_table_one', function(t) {
+        t.string('phone').nullable();
+      });
     });
-
   }).then(function(resp) {
     // conditionally drops tables with `dropTableIfExists`
     res.push(resp);

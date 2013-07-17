@@ -30,15 +30,15 @@ module.exports = {
     },
     'schema.3': {
       mysql: {
-        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null, `json_data` text null) default character set utf8 engine = InnoDB'],
+        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null) default character set utf8 engine = InnoDB'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_table_two" ("id" serial primary key not null, "account_id" integer not null, "details" text not null, "status" smallint not null, "json_data" json null)'],
+        sql: ['create table "test_table_two" ("id" serial primary key not null, "account_id" integer not null, "details" text not null, "status" smallint not null)'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_table_two" ("id" integer null primary key autoincrement, "account_id" integer null, "details" text null, "status" tinyint null, "json_data" text null)'],
+        sql: ['create table "test_table_two" ("id" integer null primary key autoincrement, "account_id" integer null, "details" text null, "status" tinyint null)'],
         bindings: []
       }
     },
