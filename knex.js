@@ -1181,10 +1181,14 @@
       return this._indexCommand('index', columns, name);
     },
 
-    // Specify a foreign key for the table.
+    // Specify a foreign key for the table, also getting any
+    // relevant info from the chain during column.
     foreign: function(column, name) {
-      var chainable = this._indexCommand('foreign', column, name);
-      return _.extend(chainable, ForeignChainable, _.pick(column, 'foreignColumn', 'foreignTable', 'commandOnDelete', 'commandOnUpdate'));
+      var chained, chainable  = this._indexCommand('foreign', column, name);
+      if (_.isObject(column)) {
+        chained = _.pick(column, 'foreignColumn', 'foreignTable', 'commandOnDelete', 'commandOnUpdate');
+      }
+      return _.extend(chainable, ForeignChainable, chained);
     },
 
     // Create a new auto-incrementing column on the table.
@@ -1317,7 +1321,7 @@
       if (!_.isArray(columns)) columns = columns ? [columns] : [];
       if (index === null) {
         var table = this.table.replace(/\.|-/g, '_');
-        index = (table + '_' + _.map(columns, function(col) { return col.name; }).join('_') + '_' + type).toLowerCase();
+        index = (table + '_' + _.map(columns, function(col) { return col.name || col; }).join('_') + '_' + type).toLowerCase();
       }
       return this._addCommand(type, {index: index, columns: columns});
     },
