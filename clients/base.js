@@ -96,8 +96,9 @@ exports.protoProps = {
       if (type === 'commit') dfd.resolve(msg || resp);
       if (type === 'rollback') dfd.reject(msg || resp);
     }).ensure(function() {
-      ctx.releaseConnection(trans.connection);
-      trans.connection = null;
+      return ctx.releaseConnection(trans.connection).then(function() {
+        trans.connection = null;
+      });
     });
   }
 
