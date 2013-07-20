@@ -1600,7 +1600,7 @@
     // Don't try to initialize the same `name` twice... If necessary,
     // delete the instance from `Knex.Instances`.
     if (Knex.Instances[name]) {
-      throw new Error('An instance named ' + name + ' already exists');
+      throw new Error('An instance named ' + name + ' already exists.');
     }
 
     client = options.client;
@@ -1611,7 +1611,11 @@
     // that means it's a custom lib, set the object to the client.
     if (_.isString(client)) {
       client = client.toLowerCase();
-      ClientCtor = require(Clients[client]);
+      try {
+        ClientCtor = require(Clients[client]);
+      } catch (e) {
+        throw new Error(client + ' is not a valid client, did you misspell it?');
+      }
     } else {
       ClientCtor = client;
     }
