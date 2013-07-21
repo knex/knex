@@ -1612,7 +1612,7 @@
       try {
         ClientCtor = require(Clients[client]);
       } catch (e) {
-        throw new Error(client + ' is not a valid client, did you misspell it?');
+        throw new Error(client + ' is not a valid Knex client, did you misspell it?');
       }
     } else {
       ClientCtor = client;
