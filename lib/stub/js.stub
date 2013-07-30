@@ -1,0 +1,8 @@
+
+exports.up = function(Knex, when) {
+
+};
+
+exports.down = function(Knex, when) {
+
+};

@@ -283,6 +283,16 @@
       Raw
     </a>
 
+    <a class="toc_title" href="#Migrate">
+      Migrate
+    </a>
+    <ul class="toc_section">
+      <li>– <a href="#Migrate-up">up</a></li>
+      <li>– <a href="#Migrate-down">down</a></li>
+      <li>– <a href="#Migrate-create">create</a></li>
+      <li>– <a href="#Migrate-currentVersion">currentVersion</a></li>
+    </ul>
+
     <a class="toc_title" href="#faq">
       F.A.Q.
     </a>
@@ -725,11 +735,11 @@ Knex('users').whereNull('last_name').union(function() {
 
 
     <p id="Builder-update">
-      <b class="header">update</b><code>.update(data)</code>
+      <b class="header">update</b><code>.update(data) / .update(key, value)</code>
       <br />
-      Creates an <tt>update</tt> query, taking a hash of properties to be updated based on the
-      other query constraints. Resolves the promise / fulfills the callback with the number
-      of affected rows for the query.
+      Creates an <tt>update</tt> query, taking either a single property / value, or a hash of properties
+      to be updated based on the other query constraints. Resolves the promise / fulfills the
+      callback with the number of affected rows for the query.
     </p>
 
 <pre>
@@ -1203,6 +1213,48 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
 });
 </pre>
 
+    <h2 id="Migrate">Knex.Migrate</h2>
+
+    <p>
+      <tt>Knex.Migrate</tt> is the class utilized by the knex migrations cli.
+    </p>
+
+    <p id="Migrate-up">
+      <b class="header">up</b><code>Knex.Migrate.up([to], [config])</code>
+      <br />
+      Migrate <tt>up</tt> <b>to</b> a specified migration, or the latest if no version number is specified.
+      A <b>config</b> object may be specified, to determine which directory and package to use for
+      the migration.
+    </p>
+
+    <p id="Migrate-down">
+      <b class="header">down</b><code>Knex.Migrate.down(name)</code>
+      <br />
+      Migrate <tt>up</tt> <b>to</b> a specified migration, or the latest if no version number is specified.
+      A <b>config</b> object may be specified, to determine which directory and package to use for
+      the migration.
+    </p>
+
+    <p id="Migrate-create">
+      <b class="header">binary</b><code>Knex.Migrate.create(name)</code>
+      <br />
+      Adds a binary column.
+    </p>
+
+    <p id="Migrate-currentVersion">
+      <b class="header">binary</b><code>Knex.Migrate.currentVersion(name)</code>
+      <br />
+      Adds a binary column.
+    </p>
+
+    <p id="Migrate-run">
+      <b class="header">run</b><code>Knex.Migrate.run([version], [config])</code>
+      <br />
+      Runs a specific migration, Migrate `up` <b>to</b> a specified migration, or the latest if no version number is specified.
+      A <b>config</b> object may be specified, to determine which directory and package to use for
+      the migration.
+    </p>
+
     <h2 id="faq">F.A.Q.</h2>
 
     <p id="faq-debug">
@@ -1232,6 +1284,12 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.2.0</b> &mdash; <small><i>July 28, 2013</i></small><br />
+      Added basic migration capabilities (programatically, no CLI yet). The <tt>hasTable</tt> method now
+      returns a boolean rather than a rejected promise. To return values from inserts, a second property is now
+    </p>
 
     <p>
       <b class="header">0.1.8</b> &mdash; <small><i>July 7, 2013</i></small><br />

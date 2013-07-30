@@ -1,9 +1,10 @@
-var When = require('when');
-var _ = require('underscore');
+var When       = require('when');
+var _          = require('underscore');
 var objectdump = require('objectdump');
-var dev = parseInt(process.env.KNEX_DEV, 10);
-var out = (dev ? require('./index').output : require('./shared/output'));
-var assert = require('assert');
+var assert     = require('assert');
+
+var dev        = parseInt(process.env.KNEX_DEV, 10);
+var out        = (dev ? require('./index').output : require('./shared/output'));
 
 module.exports = function(Knex, dbType) {
 

@@ -1577,6 +1577,25 @@
     return builder.client.query(_.extend({}, builder, {sql: builder.sql[i]}));
   };
 
+  // Knex.Migrate
+  // -------
+  var initMigrate = function(Target) {
+
+    // Attach the top level namespace housing migration related functions
+    var Migrate = Target.Migrate = {};
+
+    _.each(['create', 'currentVersion', 'listAll', 'up', 'down', 'to'], function(method) {
+
+      Migrate[method] = function() {
+        var Migration = require('./lib/migration');
+        var migration = new Migration(Target);
+        return migration[method].apply(migration, arguments);
+      };
+
+    });
+
+  };
+
   // Knex.Initialize
   // -------
 
@@ -1640,10 +1659,12 @@
     // Initialize the schema builder methods.
     if (name === 'main') {
       initSchema(Knex, client);
+      initMigrate(Knex);
       Knex.client = client;
     }
 
     initSchema(Target, client);
+    initMigrate(Target);
 
     // Specifically set the client on the current target.
     Target.client = client;

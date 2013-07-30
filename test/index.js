@@ -58,14 +58,22 @@ var then = function(success, error) {
 
 describe('Knex', function() {
 
-  _.each(['Builder', 'SchemaBuilder', 'Raw'], function(item) {
-    Knex[item].prototype.then = then;
-    Postgres[item].prototype.then = then;
-    Sqlite3[item].prototype.then = then;
-  });
+  When.all([
+    require('./migration')(Knex, 'mysql'),
+    require('./migration')(Postgres, 'postgres'),
+    require('./migration')(Sqlite3, 'sqlite3')
+  ]).then(function() {
 
-  require('./regular')(Knex, 'mysql');
-  require('./regular')(Postgres, 'postgres');
-  require('./regular')(Sqlite3, 'sqlite3');
+    _.each(['Builder', 'SchemaBuilder', 'Raw'], function(item) {
+      Knex[item].prototype.then     = then;
+      Postgres[item].prototype.then = then;
+      Sqlite3[item].prototype.then  = then;
+    });
+
+    require('./regular')(Knex, 'mysql');
+    require('./regular')(Postgres, 'postgres');
+    require('./regular')(Sqlite3, 'sqlite3');
+
+  });
 
 });

@@ -1,0 +1,6 @@
+
+exports.up = (Knex, When) ->
+
+
+exports.down = (Knex, When) ->
+
