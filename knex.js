@@ -10,7 +10,7 @@
 
   // Required dependencies.
   var _ = require('underscore');
-  var When = require('when');
+  var when = require('when');
 
   var push = Array.prototype.push;
 
@@ -108,7 +108,7 @@
     // Runs the query on the current builder instance and returns a promise.
     runQuery: function() {
       if (this.transaction) {
-        if (!this.transaction.connection) return When.reject(new Error('The transaction has already completed.'));
+        if (!this.transaction.connection) return when.reject(new Error('The transaction has already completed.'));
         this._connection = this.transaction.connection;
       }
 
@@ -947,7 +947,7 @@
 
       // Initiate a deferred object, so we know when the
       // transaction completes or fails, we know what to do.
-      var dfd = When.defer();
+      var dfd = when.defer();
 
       // The object passed around inside the transaction container.
       var containerObj = {
