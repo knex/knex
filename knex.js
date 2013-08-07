@@ -10,7 +10,7 @@
 
   // Required dependencies.
   var _ = require('underscore');
-  var When = require('when');
+  var when = require('when');
 
   var push = Array.prototype.push;
 
@@ -100,7 +100,11 @@
       var bindings = this.bindings;
       var cleaned = [];
       for (var i = 0, l = bindings.length; i < l; i++) {
-        if (!(bindings[i] instanceof Raw)) cleaned.push(bindings[i]);
+        if (!(bindings[i] instanceof Raw)) {
+          cleaned.push(bindings[i]);
+        } else {
+          cleaned.push(bindings[i].bindings);
+        }
       }
       return cleaned;
     },
@@ -108,7 +112,7 @@
     // Runs the query on the current builder instance and returns a promise.
     runQuery: function() {
       if (this.transaction) {
-        if (!this.transaction.connection) return When.reject(new Error('The transaction has already completed.'));
+        if (!this.transaction.connection) return when.reject(new Error('The transaction has already completed.'));
         this._connection = this.transaction.connection;
       }
 
@@ -379,7 +383,7 @@
 
     wrap: function(value) {
       var segments;
-      if (value instanceof Raw) return value.value;
+      if (value instanceof Raw) return value.sql;
       if (_.isNumber(value)) return value;
       if (value.toLowerCase().indexOf(' as ') !== -1) {
         segments = value.split(' ');
@@ -418,7 +422,7 @@
     },
 
     parameter: function(value) {
-      return (value instanceof Raw ? value.value : '?');
+      return (value instanceof Raw ? value.sql : '?');
     }
   };
 
@@ -529,7 +533,7 @@
         return this._whereNested(column, bool);
       }
       if (column instanceof Raw) {
-        return this.whereRaw(column.value, bool);
+        return this.whereRaw(column.sql, column.bindings, bool);
       }
       if (_.isObject(column)) {
         for (var key in column) {
@@ -567,14 +571,16 @@
     },
 
     // Adds a raw `where` clause to the query.
-    whereRaw: function(sql, bool) {
+    whereRaw: function(sql, bindings, bool) {
+      bindings = _.isArray(bindings) ? bindings : (bindings ? [bindings] : []);
       this.wheres.push({type: 'Raw', sql: sql, bool: bool || 'and'});
+      push.apply(this.bindings, bindings);
       return this;
     },
 
     // Adds a raw `or where` clause to the query.
-    orWhereRaw: function(sql) {
-      return this.whereRaw(sql, 'or');
+    orWhereRaw: function(sql, bindings) {
+      return this.whereRaw(sql, bindings, 'or');
     },
 
     // Adds a `where exists` clause to the query.
@@ -947,7 +953,7 @@
 
       // Initiate a deferred object, so we know when the
       // transaction completes or fails, we know what to do.
-      var dfd = When.defer();
+      var dfd = when.defer();
 
       // The object passed around inside the transaction container.
       var containerObj = {
@@ -1514,7 +1520,7 @@
 
     // Format a value so that it can be used in "default" clauses.
     getDefaultValue: function(value) {
-      if (value instanceof Raw) return value.value;
+      if (value instanceof Raw) return value.sql;
       if (value === true || value === false) {
         return parseInt(value, 10);
       }
@@ -1528,15 +1534,16 @@
   // Helpful for injecting a snippet of raw SQL into a
   // `Knex` block... in most cases, we'll check if the value
   // is an instanceof Raw, and if it is, use the supplied value.
-  Knex.Raw = function(value) {
+  Knex.Raw = function(sql, bindings) {
     if (!Knex.Instances['main']) {
       throw new Error('The Knex instance has not been initialized yet.');
     }
-    return Knex.Instances['main'].Raw(value);
+    return Knex.Instances['main'].Raw(sql, bindings);
   };
 
-  var Raw = function(value) {
-    this.value = value;
+  var Raw = function(sql, bindings) {
+    this.bindings = (!_.isArray(bindings) ? (bindings ? [bindings] : []) : bindings);
+    this.sql = sql;
   };
 
   _.extend(Raw.prototype, Common, {
@@ -1545,12 +1552,7 @@
 
     // Returns the raw sql for the query.
     toSql: function() {
-      return this.value;
-    },
-
-    // Returns the bindings for a raw query.
-    _cleanBindings: function() {
-      return [];
+      return this.sql;
     }
 
   });
@@ -1676,8 +1678,8 @@
     };
 
     // Executes a Raw query.
-    Target.Raw = function(value) {
-      var raw = new Raw(value);
+    Target.Raw = function(value, bindings) {
+      var raw = new Raw(value, bindings);
           raw.client = client;
       return raw;
     };

@@ -1,3 +1,4 @@
+var whenfn = require('when/function');
 var nodefn = require('when/node/function');
 var _      = require('underscore');
 
@@ -77,7 +78,7 @@ exports.protoProps = {
   // Releases a connection from the connection pool,
   // returning a promise.
   releaseConnection: function(conn) {
-    return nodefn.call(this.pool.release, conn);
+    return whenfn.call(this.pool.release, conn);
   },
 
   // Begins a transaction statement on the instance,
