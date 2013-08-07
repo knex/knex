@@ -181,7 +181,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.1.8)</span>
+      Knex.js <span class="version">(0.2.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -320,12 +320,15 @@
     <p>
       You can report bugs and discuss features on the
       <a href="http://github.com/tgriesser/knex/issues">GitHub issues page</a>,
-      post questions to the <a href="https://groups.google.com/forum/?fromgroups#!forum/bookshelfjs">Google Group</a>,
       add pages to the <a href="https://github.com/tgriesser/knex/wiki">wiki</a>
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
 
-    <h2>Latest Release: 0.1.8</h2>
+    <p>
+      Big thanks to all of the great <a href="https://github.com/tgriesser/knex/graphs/contributors">contributions</a> to the project.
+    </a>
+
+    <h2>Latest Release: 0.2.0</h2>
 
     <p>
       Current Develop &mdash;
@@ -551,25 +554,25 @@ Knex('comments').whereIn('author_id', function() {
   </p>
 
       <ul class="small">
-        <li><a href="docs/knex.html#section-57">where</a></li>
-        <li><a href="docs/knex.html#section-58">andWhere</a></li>
-        <li><a href="docs/knex.html#section-59">orWhere</a></li>
-        <li><a href="docs/knex.html#section-60">whereRaw</a></li>
-        <li><a href="docs/knex.html#section-61">orWhereRaw</a></li>
-        <li><a href="docs/knex.html#section-62">whereExists</a></li>
-        <li><a href="docs/knex.html#section-63">orWhereExists</a></li>
-        <li><a href="docs/knex.html#section-64">whereNotExists</a></li>
-        <li><a href="docs/knex.html#section-65">orWhereNotExists</a></li>
-        <li><a href="docs/knex.html#section-66">whereIn</a></li>
-        <li><a href="docs/knex.html#section-67">orWhereIn</a></li>
-        <li><a href="docs/knex.html#section-68">whereNotIn</a></li>
-        <li><a href="docs/knex.html#section-69">orWhereNotIn</a></li>
-        <li><a href="docs/knex.html#section-70">whereNull</a></li>
-        <li><a href="docs/knex.html#section-71">orWhereNull</a></li>
-        <li><a href="docs/knex.html#section-72">whereNotNull</a></li>
-        <li><a href="docs/knex.html#section-73">orWhereNotNull</a></li>
-        <li><a href="docs/knex.html#section-74">whereBetween</a></li>
-        <li><a href="docs/knex.html#section-75">orWhereBetween</a></li>
+        <li><a href="docs/knex.html#section-56">where</a></li>
+        <li><a href="docs/knex.html#section-57">andWhere</a></li>
+        <li><a href="docs/knex.html#section-58">orWhere</a></li>
+        <li><a href="docs/knex.html#section-59">whereRaw</a></li>
+        <li><a href="docs/knex.html#section-60">orWhereRaw</a></li>
+        <li><a href="docs/knex.html#section-61">whereExists</a></li>
+        <li><a href="docs/knex.html#section-62">orWhereExists</a></li>
+        <li><a href="docs/knex.html#section-63">whereNotExists</a></li>
+        <li><a href="docs/knex.html#section-64">orWhereNotExists</a></li>
+        <li><a href="docs/knex.html#section-65">whereIn</a></li>
+        <li><a href="docs/knex.html#section-66">orWhereIn</a></li>
+        <li><a href="docs/knex.html#section-67">whereNotIn</a></li>
+        <li><a href="docs/knex.html#section-68">orWhereNotIn</a></li>
+        <li><a href="docs/knex.html#section-69">whereNull</a></li>
+        <li><a href="docs/knex.html#section-70">orWhereNull</a></li>
+        <li><a href="docs/knex.html#section-71">whereNotNull</a></li>
+        <li><a href="docs/knex.html#section-72">orWhereNotNull</a></li>
+        <li><a href="docs/knex.html#section-73">whereBetween</a></li>
+        <li><a href="docs/knex.html#section-74">orWhereBetween</a></li>
       </ul>
     </p>
 
@@ -942,18 +945,20 @@ Knex.Schema.createTable('users', function (table) {
     <p id="Schema-hasTable">
       <b class="header">hasTable</b><code>Knex.Schema.hasTable(tableName)</code>
       <br />
-      Checks for a table's existence by <b>tableName</b>, with an error or failed promise if
-      the requested table does not exist.
+      Checks for a table's existence by <b>tableName</b>, resolving with a boolean to
+      signal if the table exists.
     </p>
 
 <pre>
-Knex.Schema.hasTable('users').then(null, function() {
-  return Knex.Schema.createTable('users', function(t) {
-    t.increments('id').primary();
-    t.string('first_name', 100);
-    t.string('last_name', 100);
-    t.text('bio');
-  });
+Knex.Schema.hasTable('users').then(function(exists) {
+  if (!exists) {
+    return Knex.Schema.createTable('users', function(t) {
+      t.increments('id').primary();
+      t.string('first_name', 100);
+      t.string('last_name', 100);
+      t.text('bio');
+    });
+  }
 });
 </pre>
 
@@ -1232,6 +1237,29 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.2.0</b> &mdash; <small><i>Aug 7, 2013</i></small><br />
+      <b>Breaking changes:</b>
+      <ul>
+        <li>
+          <a href="#Schema-hasTable">hasTable</a> now returns a boolean rather than a failed promise.
+        </li>
+        <li>
+          Changed syntax for insert in postgresql, where the <tt>id</tt> is not assumed on inserts (#18).
+          The second parameter of <a href="#Builder-insert">insert</a> is now required to return an array of insert id's for the last insert.
+        </li>
+        <li>
+          The <a href="#Schema-timestamp">timestamp</a> method on the schema builder now uses a <tt>dateTime</tt> rather than a <tt>timestamp</tt>.
+        </li>
+      </ul>
+      Restored basic binding support on <tt>Raw</tt> queries (#19).
+      Added support for the JSON and UUID datatypes in postgres (#20).
+      Fix enabling enum in postgresql (#21).
+      Added foreign key support (#24).
+      Bugfix for column ordering on insert (#31).
+      Other minor bugfixes, documentation cleanup, &amp; tweaks.
+    </p>
 
     <p>
       <b class="header">0.1.8</b> &mdash; <small><i>July 7, 2013</i></small><br />
