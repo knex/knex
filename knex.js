@@ -103,7 +103,7 @@
         if (!(bindings[i] instanceof Raw)) {
           cleaned.push(bindings[i]);
         } else {
-          cleaned.push(bindings[i].bindings);
+          push.apply(cleaned, bindings[i].bindings);
         }
       }
       return cleaned;
@@ -322,10 +322,9 @@
     // Compiles an `insert` query, allowing for multiple
     // inserts using a single query statement.
     compileInsert: function(qb) {
-      var values = qb.values;
-      var table = this.wrapTable(qb.table);
-      var columns = this.columnize(_.keys(values[0]).sort());
-      var parameters = this.parameterize(_.values(values[0]));
+      var values      = qb.values;
+      var table       = this.wrapTable(qb.table);
+      var columns     = _.pluck(values[0], 0);
       var paramBlocks = [];
 
       // If there are any "where" clauses, we need to omit
@@ -333,10 +332,10 @@
       if (qb.wheres.length > 0) this._clearWhereBindings(qb);
 
       for (var i = 0, l = values.length; i < l; ++i) {
-        paramBlocks.push("(" + parameters + ")");
+        paramBlocks.push("(" + this.parameterize(_.pluck(values[i], 1)) + ")");
       }
 
-      return "insert into " + table + " (" + columns + ") values " + paramBlocks.join(', ');
+      return "insert into " + table + " (" + this.columnize(columns) + ") values " + paramBlocks.join(', ');
     },
 
     // Depending on the type of `where` clause, this will appropriately
@@ -804,7 +803,7 @@
         bindings[i] = obj[i][1];
       }
       this.bindings = bindings.concat(this.bindings || []);
-      this.values = obj;
+      this.values   = obj;
       return this._setType('update');
     },
 
@@ -842,7 +841,7 @@
     _prepValues: function(values) {
       if (!_.isArray(values)) values = values ? [values] : [];
       for (var i = 0, l = values.length; i<l; i++) {
-        var obj = sortObject(values[i]);
+        var obj = values[i] = sortObject(values[i]);
         for (var i2 = 0, l2 = obj.length; i2 < l2; i2++) {
           this.bindings.push(obj[i2][1]);
         }
@@ -1657,8 +1656,8 @@
     };
 
     // Executes a Raw query.
-    Target.Raw = function(value, bindings) {
-      var raw = new Raw(value, bindings);
+    Target.Raw = function(sql, bindings) {
+      var raw = new Raw(sql, bindings);
           raw.client = client;
       return raw;
     };

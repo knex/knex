@@ -128,25 +128,23 @@ Sqlite3Client.grammar = {
       return require('../knex').Grammar.compileInsert.call(this, qb);
     }
 
-    var keys = _.keys(values[0]).sort();
-    var names = this.columnize(keys);
-    var columns = [];
+    var columns = _.pluck(values[0], 0);
+    var blocks = [];
 
     // SQLite requires us to build the multi-row insert as a listing of select with
     // unions joining them together. So we'll build out this list of columns and
     // then join them all together with select unions to complete the queries.
-    for (var i = 0, l = keys.length; i < l; i++) {
-      var column = keys[i];
-      columns.push('? as ' + this.wrap(column));
+    for (var i = 0, l = columns.length; i < l; i++) {
+      blocks.push('? as ' + this.wrap(columns[i]));
     }
 
-    var joinedColumns = columns.join(', ');
-    columns = [];
+    var joinedColumns = blocks.join(', ');
+    blocks = [];
     for (i = 0, l = values.length; i < l; i++) {
-      columns.push(joinedColumns);
+      blocks.push(joinedColumns);
     }
 
-    return "insert into " + table + " (" + names + ") select " + columns.join(' union all select ');
+    return "insert into " + table + " (" + this.columnize(columns) + ") select " + blocks.join(' union all select ');
   },
 
   // Compile a truncate table statement into SQL.
