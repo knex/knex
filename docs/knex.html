@@ -1927,7 +1927,7 @@ where key = value.</p>
             
             <div class="content"><div class='highlight'><pre>    insert: <span class="keyword">function</span>(values, returning) {
       <span class="keyword">if</span> (returning) <span class="keyword">this</span>.returning(returning);
-      <span class="keyword">this</span>.values = <span class="keyword">this</span>._prepValues(values);
+      <span class="keyword">this</span>.values = <span class="keyword">this</span>._prepValues(_.clone(values));
       <span class="keyword">return</span> <span class="keyword">this</span>._setType(<span class="string">'insert'</span>);
     },</pre></div></div>
             
