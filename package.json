@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
@@ -12,10 +12,12 @@
     "mysql": "~2.0.0-alpha7",
     "pg": "~2.3.1",
     "sqlite3": "~2.1.7",
-    "node-uuid": "~1.4.0"
+    "node-uuid": "~1.4.0",
+    "grunt": "~0.4.1",
+    "grunt-release": "~0.5.1"
   },
   "dependencies": {
-    "when": "~2.2.1",
+    "when": "~2.3.0",
     "underscore": "~1.5.1",
     "generic-pool": "~2.0.3"
   },
