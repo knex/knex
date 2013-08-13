@@ -1195,8 +1195,8 @@
     },
 
     // Create a new auto-incrementing column on the table.
-    increments: function(column) {
-      return this._addColumn('integer', (column || 'id'), {autoIncrement: true, length: 11});
+    increments: function(column, length) {
+      return this._addColumn('integer', (column || 'id'), {autoIncrement: true, length: length || 11});
     },
 
     // Create a new string column on the table.
