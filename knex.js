@@ -785,7 +785,7 @@
     // Sets the values for an `insert` query.
     insert: function(values, returning) {
       if (returning) this.returning(returning);
-      this.values = this._prepValues(values);
+      this.values = this._prepValues(_.clone(values));
       return this._setType('insert');
     },
 

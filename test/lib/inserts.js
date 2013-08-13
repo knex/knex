@@ -1,5 +1,6 @@
 
 var uuid = require('node-uuid');
+var deepEqual = require('assert').deepEqual;
 
 module.exports = function(Knex, dbName, resolver) {
 
@@ -154,6 +155,21 @@ module.exports = function(Knex, dbName, resolver) {
           if (Knex.client.dialect === 'postgresql') ok();
         });
 
+    });
+
+    it('should not mutate the array passed in', function(ok) {
+
+      var a = {enum_value: 'a', uuid: uuid.v4()};
+      var b = {enum_value: 'c', uuid: uuid.v4()};
+      var x = [a, b];
+
+      Knex('datatype_test')
+        .insert(x)
+        .then(function() {
+          deepEqual(x, [a, b]);
+          ok();
+        })
+        .then(null, ok);
     });
 
   });
