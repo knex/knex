@@ -27,7 +27,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <pre><code>Knex.js  0.2.0
+              <pre><code>Knex.js  0.2.2
 
 (c) 2013 Tim Griesser
 Knex may be freely distributed under the MIT license.
@@ -91,7 +91,7 @@ http://knexjs.org</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.2.0'</span>;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.2.2'</span>;</pre></div></div>
             
         </li>
         
@@ -952,7 +952,7 @@ query to be used for <code>insert</code> and <code>update</code> without issue.<
     },
 
     wrapTable: <span class="keyword">function</span>(table) {
-      <span class="keyword">if</span> (table <span class="keyword">instanceof</span> Raw) <span class="keyword">return</span> table.value;
+      <span class="keyword">if</span> (table <span class="keyword">instanceof</span> Raw) <span class="keyword">return</span> table.sql;
       <span class="keyword">return</span> <span class="keyword">this</span>.wrap(table);
     },
 
@@ -1013,7 +1013,7 @@ for the advanced query statements.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (table) {
-      <span class="keyword">if</span> (_.isString(table)) {
+      <span class="keyword">if</span> (_.isString(table) || table <span class="keyword">instanceof</span> Raw) {
         <span class="keyword">this</span>.table = table;
       } <span class="keyword">else</span> {
         <span class="keyword">this</span>.client = table.client;
