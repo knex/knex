@@ -432,7 +432,7 @@
     // We use this logic to create sub-builders
     // for the advanced query statements.
     if (table) {
-      if (_.isString(table)) {
+      if (_.isString(table) || table instanceof Raw) {
         this.table = table;
       } else {
         this.client = table.client;
