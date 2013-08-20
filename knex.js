@@ -432,7 +432,7 @@
     // We use this logic to create sub-builders
     // for the advanced query statements.
     if (table) {
-      if (_.isString(table)) {
+      if (_.isString(table) || table instanceof Raw) {
         this.table = table;
       } else {
         this.client = table.client;
@@ -1508,6 +1508,7 @@
     // Wrap a table in keyword identifiers.
     wrapTable: function(table) {
       if (table instanceof SchemaBuilder) table = table.table;
+      else if(table instanceof Raw) table = table.sql;
       return Knex.Grammar.wrapTable.call(this, table);
     },
 
