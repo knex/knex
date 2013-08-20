@@ -406,7 +406,7 @@
     },
 
     wrapTable: function(table) {
-      if (table instanceof Raw) return table.value;
+      if (table instanceof Raw) return table.sql;
       return this.wrap(table);
     },
 
@@ -1508,7 +1508,6 @@
     // Wrap a table in keyword identifiers.
     wrapTable: function(table) {
       if (table instanceof SchemaBuilder) table = table.table;
-      else if(table instanceof Raw) table = table.sql;
       return Knex.Grammar.wrapTable.call(this, table);
     },
 

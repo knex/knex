@@ -1,10 +1,11 @@
 
 var _ = require('underscore');
+var equal = require('assert').equal;
 
 module.exports = function(Knex, dbName, resolver) {
 
   it('should truncate a table with truncate', function(ok) {
-    
+
     Knex('test_table_two')
       .truncate()
       .then(resolver(function() {}), ok)
@@ -31,6 +32,10 @@ module.exports = function(Knex, dbName, resolver) {
       ok();
     });
 
+  });
+
+  it('should allow using the primary table as a raw statement', function() {
+    equal(Knex(Knex.Raw("raw_table_name")).toString(), 'select * from raw_table_name');
   });
 
 };
