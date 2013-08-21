@@ -4,12 +4,12 @@
 //     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
 //     http://knexjs.org
-(function() {
+(function(define) { "use strict";
 
-  "use strict";
+define(function(require, exports, module) {
 
   // Required dependencies.
-  var _ = require('underscore');
+  var _    = require('underscore');
   var when = require('when');
 
   var push = Array.prototype.push;
@@ -1684,4 +1684,8 @@
   // Export the Knex module
   module.exports = Knex;
 
-}).call(this);
+});
+
+})(
+  typeof define === 'function' && define.amd ? define : function (factory) { factory(require, exports, module); }
+);
