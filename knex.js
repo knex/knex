@@ -4,15 +4,15 @@
 //     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
 //     http://knexjs.org
-(function(define) { "use strict";
+(function(define) {
+
+"use strict";
 
 define(function(require, exports, module) {
 
   // Required dependencies.
   var _    = require('underscore');
   var when = require('when');
-
-  var push = Array.prototype.push;
 
   // `Knex` is the root namespace and a chainable function: `Knex('tableName')`
   var Knex = function(table) {
@@ -1667,6 +1667,9 @@ define(function(require, exports, module) {
 
     return Target;
   };
+
+  var array = [];
+  var push  = array.push;
 
   // Default client paths, located in the `./clients` directory.
   var Clients = {
