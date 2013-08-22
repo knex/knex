@@ -172,6 +172,10 @@ module.exports = function(Knex, dbName, resolver) {
         .then(null, ok);
     });
 
+    it('should handle empty inserts', function(ok) {
+      Knex('test_default_table').insert({}, 'id').then(resolver(ok), ok);
+    });
+
   });
 
 };

@@ -120,15 +120,25 @@ Sqlite3Client.grammar = {
   compileInsert: function(qb) {
     var values = qb.values;
     var table = this.wrapTable(qb.table);
+    var columns = _.pluck(values[0], 0);
+
+    // If there are any "where" clauses, we need to omit
+    // any bindings that may have been associated with them.
+    if (qb.wheres.length > 0) this._clearWhereBindings(qb);
 
     // If there is only one record being inserted, we will just use the usual query
     // grammar insert builder because no special syntax is needed for the single
     // row inserts in SQLite. However, if there are multiples, we'll continue.
     if (values.length === 1) {
-      return require('../knex').Grammar.compileInsert.call(this, qb);
+      var sql = 'insert into ' + table + ' ';
+      if (columns.length === 0) {
+        sql += 'default values';
+      } else {
+        sql += "(" + this.columnize(columns) + ") values " + "(" + this.parameterize(_.pluck(values[0], 1)) + ")";
+      }
+      return sql;
     }
 
-    var columns = _.pluck(values[0], 0);
     var blocks = [];
 
     // SQLite requires us to build the multi-row insert as a listing of select with
@@ -204,8 +214,16 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
   addPrimaryKeys: function(blueprint) {
     var primary = this.getCommandByName(blueprint, 'primary');
     if (primary) {
-      var columns = this.columnize(primary.columns);
-      return ', primary key (' + columns + ')';
+      // Ensure that autoincrement columns aren't handled here, this is handled
+      // alongside the autoincrement clause.
+      primary.columns = _.reduce(primary.columns, function(memo, column) {
+        if (column.autoIncrement !== true) memo.push(column);
+        return memo;
+      }, []);
+      if (primary.columns.length > 0) {
+        var columns = this.columnize(primary.columns);
+        return ', primary key (' + columns + ')';
+      }
     }
   },
 

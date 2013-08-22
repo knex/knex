@@ -27,7 +27,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <pre><code>Knex.js  0.2.2
+              <pre><code>Knex.js  0.2.3
 
 (c) 2013 Tim Griesser
 Knex may be freely distributed under the MIT license.
@@ -36,9 +36,11 @@ http://knexjs.org</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>(<span class="keyword">function</span>() {
+            <div class="content"><div class='highlight'><pre>(<span class="keyword">function</span>(define) {
 
-  <span class="string">"use strict"</span>;</pre></div></div>
+<span class="string">"use strict"</span>;
+
+define(<span class="keyword">function</span>(require, exports, module) {</pre></div></div>
             
         </li>
         
@@ -53,10 +55,8 @@ http://knexjs.org</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> _ = require(<span class="string">'underscore'</span>);
-  <span class="keyword">var</span> when = require(<span class="string">'when'</span>);
-
-  <span class="keyword">var</span> push = Array.prototype.push;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> _    = require(<span class="string">'underscore'</span>);
+  <span class="keyword">var</span> when = require(<span class="string">'when'</span>);</pre></div></div>
             
         </li>
         
@@ -91,7 +91,7 @@ http://knexjs.org</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.2.2'</span>;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  Knex.VERSION = <span class="string">'0.2.3'</span>;</pre></div></div>
             
         </li>
         
@@ -4307,7 +4307,10 @@ on the &quot;root&quot; <code>Knex</code>.</p>
             <div class="content"><div class='highlight'><pre>    Knex.Instances[name] = Target;
 
     <span class="keyword">return</span> Target;
-  };</pre></div></div>
+  };
+
+  <span class="keyword">var</span> array = [];
+  <span class="keyword">var</span> push  = array.push;</pre></div></div>
             
         </li>
         
@@ -4361,7 +4364,11 @@ connections, the main instance being named &quot;main&quot;...</p>
             
             <div class="content"><div class='highlight'><pre>  module.exports = Knex;
 
-}).call(<span class="keyword">this</span>);</pre></div></div>
+});
+
+})(
+  <span class="keyword">typeof</span> define === <span class="string">'function'</span> &amp;&amp; define.amd ? define : <span class="function"><span class="keyword">function</span> <span class="params">(factory)</span> {</span> factory(require, exports, module); }
+);</pre></div></div>
             
         </li>
         

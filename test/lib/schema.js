@@ -9,7 +9,8 @@ module.exports = function(Knex, resolver, error) {
     Knex.Schema.dropTableIfExists('test_table_two'),
     Knex.Schema.dropTableIfExists('test_table_three'),
     Knex.Schema.dropTableIfExists('datatype_test'),
-    Knex.Schema.dropTableIfExists('accounts')
+    Knex.Schema.dropTableIfExists('accounts'),
+    Knex.Schema.dropTableIfExists('test_default_table')
   ]).then(function(resp) {
 
     res = [resp[0]]; // only really need one of these for the test output.
@@ -82,6 +83,14 @@ module.exports = function(Knex, resolver, error) {
     res.push(resp);
     // Drop this here so we don't have foreign key constraints...
     return Knex.Schema.dropTable('test_foreign_table_two');
+  })
+  .then(function() {
+    return Knex.Schema.createTable('test_default_table', function(qb) {
+      qb.increments().primary();
+      qb.string('string').defaultTo('hello');
+      qb.tinyint('tinyint').defaultTo(0);
+      qb.text('text').nullable();
+    });
   })
   .then(function() {
     return res;
