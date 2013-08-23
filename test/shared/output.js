@@ -3186,7 +3186,8 @@ module.exports = {
     },
     'deletes.1': {
       mysql: 1,
-      postgres: 1
+      postgres: 1,
+      sqlite3: 1
     },
     'additional.1': {
       mysql: '',

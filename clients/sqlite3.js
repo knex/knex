@@ -23,7 +23,8 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
     return When((builder._connection || this.getConnection()))
       .then(function(conn) {
         var dfd = When.defer();
-        var method = (builder.type === 'insert' || builder.type === 'update') ? 'run' : 'all';
+        var method = (builder.type === 'insert' ||
+          builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
 
         // If we have a debug flag set, console.log the query.
         if (debug) base.debug(builder, conn);
