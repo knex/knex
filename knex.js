@@ -1,18 +1,18 @@
-//     Knex.js  0.1.8
+//     Knex.js  0.2.4
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
 //     http://knexjs.org
-(function() {
+(function(define) {
 
-  "use strict";
+"use strict";
+
+define(function(require, exports, module) {
 
   // Required dependencies.
-  var _ = require('underscore');
+  var _    = require('underscore');
   var when = require('when');
-
-  var push = Array.prototype.push;
 
   // `Knex` is the root namespace and a chainable function: `Knex('tableName')`
   var Knex = function(table) {
@@ -23,7 +23,7 @@
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.1.8';
+  Knex.VERSION = '0.2.4';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
@@ -103,7 +103,7 @@
         if (!(bindings[i] instanceof Raw)) {
           cleaned.push(bindings[i]);
         } else {
-          cleaned.push(bindings[i].bindings);
+          push.apply(cleaned, bindings[i].bindings);
         }
       }
       return cleaned;
@@ -322,10 +322,9 @@
     // Compiles an `insert` query, allowing for multiple
     // inserts using a single query statement.
     compileInsert: function(qb) {
-      var values = qb.values;
-      var table = this.wrapTable(qb.table);
-      var columns = this.columnize(_.keys(values[0]).sort());
-      var parameters = this.parameterize(_.values(values[0]));
+      var values      = qb.values;
+      var table       = this.wrapTable(qb.table);
+      var columns     = _.pluck(values[0], 0);
       var paramBlocks = [];
 
       // If there are any "where" clauses, we need to omit
@@ -333,10 +332,10 @@
       if (qb.wheres.length > 0) this._clearWhereBindings(qb);
 
       for (var i = 0, l = values.length; i < l; ++i) {
-        paramBlocks.push("(" + parameters + ")");
+        paramBlocks.push("(" + this.parameterize(_.pluck(values[i], 1)) + ")");
       }
 
-      return "insert into " + table + " (" + columns + ") values " + paramBlocks.join(', ');
+      return "insert into " + table + " (" + this.columnize(columns) + ") values " + paramBlocks.join(', ');
     },
 
     // Depending on the type of `where` clause, this will appropriately
@@ -407,7 +406,7 @@
     },
 
     wrapTable: function(table) {
-      if (table instanceof Raw) return table.value;
+      if (table instanceof Raw) return table.sql;
       return this.wrap(table);
     },
 
@@ -433,7 +432,7 @@
     // We use this logic to create sub-builders
     // for the advanced query statements.
     if (table) {
-      if (_.isString(table)) {
+      if (_.isString(table) || table instanceof Raw) {
         this.table = table;
       } else {
         this.client = table.client;
@@ -786,7 +785,7 @@
     // Sets the values for an `insert` query.
     insert: function(values, returning) {
       if (returning) this.returning(returning);
-      this.values = this._prepValues(values);
+      this.values = this._prepValues(_.clone(values));
       return this._setType('insert');
     },
 
@@ -804,7 +803,7 @@
         bindings[i] = obj[i][1];
       }
       this.bindings = bindings.concat(this.bindings || []);
-      this.values = obj;
+      this.values   = obj;
       return this._setType('update');
     },
 
@@ -842,7 +841,7 @@
     _prepValues: function(values) {
       if (!_.isArray(values)) values = values ? [values] : [];
       for (var i = 0, l = values.length; i<l; i++) {
-        var obj = sortObject(values[i]);
+        var obj = values[i] = sortObject(values[i]);
         for (var i2 = 0, l2 = obj.length; i2 < l2; i2++) {
           this.bindings.push(obj[i2][1]);
         }
@@ -1678,8 +1677,8 @@
     };
 
     // Executes a Raw query.
-    Target.Raw = function(value, bindings) {
-      var raw = new Raw(value, bindings);
+    Target.Raw = function(sql, bindings) {
+      var raw = new Raw(sql, bindings);
           raw.client = client;
       return raw;
     };
@@ -1689,6 +1688,9 @@
 
     return Target;
   };
+
+  var array = [];
+  var push  = array.push;
 
   // Default client paths, located in the `./clients` directory.
   var Clients = {
@@ -1706,4 +1708,8 @@
   // Export the Knex module
   module.exports = Knex;
 
-}).call(this);
+});
+
+})(
+  typeof define === 'function' && define.amd ? define : function (factory) { factory(require, exports, module); }
+);

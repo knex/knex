@@ -1,23 +1,25 @@
 {
   "name": "knex",
-  "version": "0.1.8",
+  "version": "0.2.4",
   "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
     "test": "test"
   },
   "devDependencies": {
-    "mocha": "1.9.x",
-    "objectdump": ">=0.3.0",
+    "mocha": "~1.12.0",
+    "objectdump": "~0.3.0",
     "mysql": "~2.0.0-alpha7",
-    "pg": "~1.1.0",
+    "pg": "~2.3.1",
     "sqlite3": "~2.1.7",
     "node-uuid": "~1.4.0",
     "chai": "~1.7.2",
-    "rimraf": "~2.2.2"
+    "rimraf": "~2.2.2",
+    "grunt": "~0.4.1",
+    "grunt-release": "~0.5.1"
   },
   "dependencies": {
-    "when": "~2.2.1",
+    "when": "~2.3.0",
     "underscore": "~1.5.1",
     "generic-pool": "~2.0.3",
     "optimist": "~0.6.0",

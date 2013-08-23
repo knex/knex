@@ -97,6 +97,10 @@
       font-size: 16px;
       line-height: 30px;
     }
+    span.small {
+      font-size: 12px;
+      font-style: italic;
+    }
     span.alias {
       font-size: 14px;
       font-style: italic;
@@ -181,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.1.8)</span>
+      Knex.js <span class="version">(0.2.4)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -232,7 +236,7 @@
       <li><b><a href="#Builder-Interface">Interface:</a></b></li>
       <li>– <a href="#Builder-then">then</a></li>
       <li>– <a href="#Builder-exec">exec</a></li>
-      <li>– <a href="#Builder-then">toString</a></li>
+      <li>– <a href="#Builder-toString">toString</a></li>
     </ul>
 
     <a class="toc_title" href="#Transaction">
@@ -310,7 +314,7 @@
     </p>
 
     <p>
-      Knex.js is a query builder for <b>Postgres</b>, <b>MySql</b> and <b>SQLite3</b>, designed to be flexible,
+      Knex.js is a query builder for <b>Postgres</b>, <b>MySQL</b> and <b>SQLite3</b>, designed to be flexible,
       portable, and fun to use. It features both traditional node style <a href="#Builder-exec">callbacks</a>
       as well as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured
       query and schema builders, transaction support, connection pooling and node.js adapters for
@@ -330,12 +334,15 @@
     <p>
       You can report bugs and discuss features on the
       <a href="http://github.com/tgriesser/knex/issues">GitHub issues page</a>,
-      post questions to the <a href="https://groups.google.com/forum/?fromgroups#!forum/bookshelfjs">Google Group</a>,
       add pages to the <a href="https://github.com/tgriesser/knex/wiki">wiki</a>
       or send tweets to <a href="http://twitter.com/tgriesser">@tgriesser</a>.
     </p>
 
-    <h2>Latest Release: 0.1.8</h2>
+    <p>
+      Big thanks to all of the great <a href="https://github.com/tgriesser/knex/graphs/contributors">contributions</a> to the project.
+    </a>
+
+    <h2>Latest Release: 0.2.4 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -407,15 +414,15 @@ var SqliteDB = Knex.Initialize('sqlitedb', {
   }
 });
 
-var MySql2 = Knex.Initialize('mysql2', {
+var MySQL2 = Knex.Initialize('mysql2', {
   client: 'mysql',
   connection: { ... }
 });
 
-// Knex.Instances['mysql2'] === MySql2;
+// Knex.Instances['mysql2'] === MySQL2;
 // Knex.Instances['sqlitedb'] === SqliteDB;
 
-MySql2('accounts')
+MySQL2('accounts')
   .select()
   .then(function(resp) {
     // ...
@@ -561,25 +568,25 @@ Knex('comments').whereIn('author_id', function() {
   </p>
 
       <ul class="small">
-        <li><a href="docs/knex.html#section-57">where</a></li>
-        <li><a href="docs/knex.html#section-58">andWhere</a></li>
-        <li><a href="docs/knex.html#section-59">orWhere</a></li>
-        <li><a href="docs/knex.html#section-60">whereRaw</a></li>
-        <li><a href="docs/knex.html#section-61">orWhereRaw</a></li>
-        <li><a href="docs/knex.html#section-62">whereExists</a></li>
-        <li><a href="docs/knex.html#section-63">orWhereExists</a></li>
-        <li><a href="docs/knex.html#section-64">whereNotExists</a></li>
-        <li><a href="docs/knex.html#section-65">orWhereNotExists</a></li>
-        <li><a href="docs/knex.html#section-66">whereIn</a></li>
-        <li><a href="docs/knex.html#section-67">orWhereIn</a></li>
-        <li><a href="docs/knex.html#section-68">whereNotIn</a></li>
-        <li><a href="docs/knex.html#section-69">orWhereNotIn</a></li>
-        <li><a href="docs/knex.html#section-70">whereNull</a></li>
-        <li><a href="docs/knex.html#section-71">orWhereNull</a></li>
-        <li><a href="docs/knex.html#section-72">whereNotNull</a></li>
-        <li><a href="docs/knex.html#section-73">orWhereNotNull</a></li>
-        <li><a href="docs/knex.html#section-74">whereBetween</a></li>
-        <li><a href="docs/knex.html#section-75">orWhereBetween</a></li>
+        <li><a href="docs/knex.html#section-56">where</a></li>
+        <li><a href="docs/knex.html#section-57">andWhere</a></li>
+        <li><a href="docs/knex.html#section-58">orWhere</a></li>
+        <li><a href="docs/knex.html#section-59">whereRaw</a></li>
+        <li><a href="docs/knex.html#section-60">orWhereRaw</a></li>
+        <li><a href="docs/knex.html#section-61">whereExists</a></li>
+        <li><a href="docs/knex.html#section-62">orWhereExists</a></li>
+        <li><a href="docs/knex.html#section-63">whereNotExists</a></li>
+        <li><a href="docs/knex.html#section-64">orWhereNotExists</a></li>
+        <li><a href="docs/knex.html#section-65">whereIn</a></li>
+        <li><a href="docs/knex.html#section-66">orWhereIn</a></li>
+        <li><a href="docs/knex.html#section-67">whereNotIn</a></li>
+        <li><a href="docs/knex.html#section-68">orWhereNotIn</a></li>
+        <li><a href="docs/knex.html#section-69">whereNull</a></li>
+        <li><a href="docs/knex.html#section-70">orWhereNull</a></li>
+        <li><a href="docs/knex.html#section-71">whereNotNull</a></li>
+        <li><a href="docs/knex.html#section-72">orWhereNotNull</a></li>
+        <li><a href="docs/knex.html#section-73">whereBetween</a></li>
+        <li><a href="docs/knex.html#section-74">orWhereBetween</a></li>
       </ul>
     </p>
 
@@ -952,18 +959,20 @@ Knex.Schema.createTable('users', function (table) {
     <p id="Schema-hasTable">
       <b class="header">hasTable</b><code>Knex.Schema.hasTable(tableName)</code>
       <br />
-      Checks for a table's existence by <b>tableName</b>, with an error or failed promise if
-      the requested table does not exist.
+      Checks for a table's existence by <b>tableName</b>, resolving with a boolean to
+      signal if the table exists.
     </p>
 
 <pre>
-Knex.Schema.hasTable('users').then(null, function() {
-  return Knex.Schema.createTable('users', function(t) {
-    t.increments('id').primary();
-    t.string('first_name', 100);
-    t.string('last_name', 100);
-    t.text('bio');
-  });
+Knex.Schema.hasTable('users').then(function(exists) {
+  if (!exists) {
+    return Knex.Schema.createTable('users', function(t) {
+      t.increments('id').primary();
+      t.string('first_name', 100);
+      t.string('last_name', 100);
+      t.text('bio');
+    });
+  }
 });
 </pre>
 
@@ -1108,7 +1117,7 @@ Knex.Schema.table('users', function (table) {
       <b class="header">engine</b><code>table.engine(val)</code>
       <br />
       Sets the engine for the database, only available within a <tt>createTable</tt> call, and only
-      applicable to MySql.
+      applicable to MySQL.
     </p>
 
     <p id="Schema-comment">
@@ -1162,7 +1171,7 @@ Knex.Schema.table('users', function (table) {
     <p id="Chainable-after">
       <b class="header">after</b><code>column.after(field)</code>
       <br />
-      Sets the column to be inserted after another, only used in MySql alter tables.
+      Sets the column to be inserted after another, only used in MySQL alter tables.
     </p>
 
     <p id="Chainable-comment">
@@ -1286,9 +1295,46 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
-      <b class="header">0.2.0</b> &mdash; <small><i>July 28, 2013</i></small><br />
-      Added basic migration capabilities (programatically, no CLI yet). The <tt>hasTable</tt> method now
-      returns a boolean rather than a rejected promise. To return values from inserts, a second property is now
+      <b class="header">0.2.4</b> &mdash; <small><i>Aug 22, 2013</i></small><br />
+      Fix SQLite3 delete not returning affected row count (#45).
+    </p>
+
+    <p>
+      <b class="header">0.2.3</b> &mdash; <small><i>Aug 22, 2013</i></small><br />
+      Fix insert with default values in PostgreSQL and SQLite3, (#44).
+    </p>
+
+    <p>
+      <b class="header">0.2.2</b> &mdash; <small><i>Aug 20, 2013</i></small><br />
+      Allowing <tt>Raw</tt> queries to be passed as the primary table names.
+    </p>
+
+    <p>
+      <b class="header">0.2.1</b> &mdash; <small><i>Aug 13, 2013</i></small><br />
+      Fix for an array passed to <tt>insert</tt> being mutated.
+    </p>
+
+    <p>
+      <b class="header">0.2.0</b> &mdash; <small><i>Aug 7, 2013</i></small><br />
+      <b>Breaking changes:</b>
+      <ul>
+        <li>
+          <a href="#Schema-hasTable">hasTable</a> now returns a boolean rather than a failed promise.
+        </li>
+        <li>
+          Changed syntax for insert in postgresql, where the <tt>id</tt> is not assumed on inserts (#18).
+          The second parameter of <a href="#Builder-insert">insert</a> is now required to return an array of insert id's for the last insert.
+        </li>
+        <li>
+          The <a href="#Schema-timestamp">timestamp</a> method on the schema builder now uses a <tt>dateTime</tt> rather than a <tt>timestamp</tt>.
+        </li>
+      </ul>
+      Restored basic binding support on <tt>Raw</tt> queries (#19).
+      Added support for the JSON and UUID datatypes in postgres (#20).
+      Fix enabling enum in postgresql (#21).
+      Added foreign key support (#24).
+      Bugfix for column ordering on insert (#31).
+      Other minor bugfixes, documentation cleanup, &amp; tweaks.
     </p>
 
     <p>

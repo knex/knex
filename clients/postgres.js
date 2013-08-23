@@ -108,7 +108,25 @@ PostgresClient.grammar = {
   // Compiles an `insert` query, allowing for multiple
   // inserts using a single query statement.
   compileInsert: function(qb) {
-    var sql = require('../knex').Grammar.compileInsert.call(this, qb);
+    var values      = qb.values;
+    var columns     = _.pluck(values[0], 0);
+    var paramBlocks = [];
+
+    // If there are any "where" clauses, we need to omit
+    // any bindings that may have been associated with them.
+    if (qb.wheres.length > 0) this._clearWhereBindings(qb);
+
+    var sql = 'insert into ' + this.wrapTable(qb.table) + ' ';
+
+    if (columns.length === 0) {
+      sql += 'default values';
+    } else {
+      for (var i = 0, l = values.length; i < l; ++i) {
+        paramBlocks.push("(" + this.parameterize(_.pluck(values[i], 1)) + ")");
+      }
+      sql += "(" + this.columnize(columns) + ") values " + paramBlocks.join(', ');
+    }
+
     if (qb.isReturning) {
       sql += ' returning "' + qb.isReturning + '"';
     }

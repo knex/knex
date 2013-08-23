@@ -210,6 +210,20 @@ module.exports = {
         bindings: [1,2,'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test6@example.com','Test','User',2,new Date()]
       }
     },
+    'inserts.5': {
+      mysql: {
+        sql: ['insert into `test_default_table` () values ()'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['insert into "test_default_table" default values returning "id"'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['insert into "test_default_table" default values'],
+        bindings: []
+      }
+    },
     'updates.1': {
       mysql: {
         sql: ['update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?'],
@@ -721,6 +735,11 @@ module.exports = {
       mysql: [7],
       postgres: [7],
       sqlite3: [6]
+    },
+    'inserts.5': {
+      mysql: [1],
+      postgres: [1],
+      sqlite3: [1]
     },
     'updates.1': {
       mysql: 1,
@@ -2081,7 +2100,7 @@ module.exports = {
         aggregate: 10
       }],
       postgres: [{
-        aggregate: 10
+        aggregate: '10'
       }],
       sqlite3: [{
         aggregate: 10
@@ -2092,7 +2111,7 @@ module.exports = {
         aggregate: 6
       }],
       postgres: [{
-        aggregate: 6
+        aggregate: '6'
       }],
       sqlite3: [{
         aggregate: 6
@@ -2105,9 +2124,9 @@ module.exports = {
         aggregate: 4
       }],
       postgres: [{
-        aggregate: 2
+        aggregate: '2'
       },{
-        aggregate: 4
+        aggregate: '4'
       }],
       sqlite3: [{
         aggregate: 2
@@ -2122,9 +2141,9 @@ module.exports = {
         aggregate: 1
       }],
       postgres: [{
-        aggregate: 1
+        aggregate: '1'
       },{
-        aggregate: 5
+        aggregate: '5'
       }],
       sqlite3: [{
         aggregate: 5
@@ -3167,7 +3186,8 @@ module.exports = {
     },
     'deletes.1': {
       mysql: 1,
-      postgres: 1
+      postgres: 1,
+      sqlite3: 1
     },
     'additional.1': {
       mysql: '',

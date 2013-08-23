@@ -23,7 +23,8 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
     return When((builder._connection || this.getConnection()))
       .then(function(conn) {
         var dfd = When.defer();
-        var method = (builder.type === 'insert' || builder.type === 'update') ? 'run' : 'all';
+        var method = (builder.type === 'insert' ||
+          builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
 
         // If we have a debug flag set, console.log the query.
         if (debug) base.debug(builder, conn);
@@ -120,33 +121,41 @@ Sqlite3Client.grammar = {
   compileInsert: function(qb) {
     var values = qb.values;
     var table = this.wrapTable(qb.table);
+    var columns = _.pluck(values[0], 0);
+
+    // If there are any "where" clauses, we need to omit
+    // any bindings that may have been associated with them.
+    if (qb.wheres.length > 0) this._clearWhereBindings(qb);
 
     // If there is only one record being inserted, we will just use the usual query
     // grammar insert builder because no special syntax is needed for the single
     // row inserts in SQLite. However, if there are multiples, we'll continue.
     if (values.length === 1) {
-      return require('../knex').Grammar.compileInsert.call(this, qb);
+      var sql = 'insert into ' + table + ' ';
+      if (columns.length === 0) {
+        sql += 'default values';
+      } else {
+        sql += "(" + this.columnize(columns) + ") values " + "(" + this.parameterize(_.pluck(values[0], 1)) + ")";
+      }
+      return sql;
     }
 
-    var keys = _.keys(values[0]).sort();
-    var names = this.columnize(keys);
-    var columns = [];
+    var blocks = [];
 
     // SQLite requires us to build the multi-row insert as a listing of select with
     // unions joining them together. So we'll build out this list of columns and
     // then join them all together with select unions to complete the queries.
-    for (var i = 0, l = keys.length; i < l; i++) {
-      var column = keys[i];
-      columns.push('? as ' + this.wrap(column));
+    for (var i = 0, l = columns.length; i < l; i++) {
+      blocks.push('? as ' + this.wrap(columns[i]));
     }
 
-    var joinedColumns = columns.join(', ');
-    columns = [];
+    var joinedColumns = blocks.join(', ');
+    blocks = [];
     for (i = 0, l = values.length; i < l; i++) {
-      columns.push(joinedColumns);
+      blocks.push(joinedColumns);
     }
 
-    return "insert into " + table + " (" + names + ") select " + columns.join(' union all select ');
+    return "insert into " + table + " (" + this.columnize(columns) + ") select " + blocks.join(' union all select ');
   },
 
   // Compile a truncate table statement into SQL.
@@ -206,8 +215,16 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
   addPrimaryKeys: function(blueprint) {
     var primary = this.getCommandByName(blueprint, 'primary');
     if (primary) {
-      var columns = this.columnize(primary.columns);
-      return ', primary key (' + columns + ')';
+      // Ensure that autoincrement columns aren't handled here, this is handled
+      // alongside the autoincrement clause.
+      primary.columns = _.reduce(primary.columns, function(memo, column) {
+        if (column.autoIncrement !== true) memo.push(column);
+        return memo;
+      }, []);
+      if (primary.columns.length > 0) {
+        var columns = this.columnize(primary.columns);
+        return ', primary key (' + columns + ')';
+      }
     }
   },
 
