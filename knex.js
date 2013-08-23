@@ -1,4 +1,4 @@
-//     Knex.js  0.2.3
+//     Knex.js  0.2.4
 //
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -23,7 +23,7 @@ define(function(require, exports, module) {
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.2.3';
+  Knex.VERSION = '0.2.4';
 
   // Methods common to both the `Grammar` and `SchemaGrammar` interfaces,
   // used to generate the sql in one form or another.
