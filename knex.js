@@ -292,6 +292,9 @@ define(function(require, exports, module) {
 
     // Compiles the `having` statements.
     compileHavings: function(qb, havings) {
+      if (havings.length == 0) {
+        return;
+      }
       var h = 'having ' + havings.map(function(having) {
         if (having.type === 'Raw') {
           return having.bool + ' ' + having.sql;
