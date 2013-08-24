@@ -292,12 +292,14 @@ define(function(require, exports, module) {
 
     // Compiles the `having` statements.
     compileHavings: function(qb, havings) {
-      return 'having ' + havings.map(function(having) {
+      var h = 'having ' + havings.map(function(having) {
         if (having.type === 'Raw') {
           return having.bool + ' ' + having.sql;
         }
         return having.bool + ' ' + this.wrap(having.column) + ' ' + having.operator + ' ' + this.parameter(having['value']);
-      }, this).replace(/and |or /, '');
+      }, this);
+
+      return h.replace(/and |or /, '');
     },
 
     // Compiles the `order by` statements.
@@ -501,6 +503,7 @@ define(function(require, exports, module) {
       this.unions   = [];
       this.wheres   = [];
       this.orders   = [];
+      this.havings  = [];
       this.columns  = [];
       this.bindings = [];
       this.isDistinct  = false;
