@@ -96,6 +96,8 @@ exports.protoProps = {
     nodefn.call(trans.connection.query.bind(trans.connection), type + ';', []).then(function(resp) {
       if (type === 'commit') dfd.resolve(msg || resp);
       if (type === 'rollback') dfd.reject(msg || resp);
+    }, function (err) {
+      dfd.reject(err);
     }).ensure(function() {
       return ctx.releaseConnection(trans.connection).then(function() {
         trans.connection = null;
