@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.2.4)</span>
+      Knex.js <span class="version">(0.2.6)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -342,7 +342,7 @@
       Big thanks to all of the great <a href="https://github.com/tgriesser/knex/graphs/contributors">contributions</a> to the project.
     </a>
 
-    <h2>Latest Release: 0.2.4 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.2.6 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1295,8 +1295,18 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.2.6</b> &mdash; <small><i>Aug 29, 2013</i></small><br />
+      Reject the transaction promise if the transaction "commit" fails, (#50).
+    </p>
+
+    <p>
+      <b class="header">0.2.5</b> &mdash; <small><i>Aug 25, 2013</i></small><br />
+      Fix error if a callback isn't specified for <tt>exec</tt>, (#49).
+    </p>
+
+    <p>
       <b class="header">0.2.4</b> &mdash; <small><i>Aug 22, 2013</i></small><br />
-      Fix SQLite3 delete not returning affected row count (#45).
+      Fix SQLite3 delete not returning affected row count, (#45).
     </p>
 
     <p>
