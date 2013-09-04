@@ -203,10 +203,8 @@ define(function(require, exports, module) {
 
     // If this is named "default" then we're setting this on the Knex
     Target = function(table) {
-      var builder = new Knex.Builder(table);
-          builder.client = client;
-          builder.grammar = client.grammar;
-      return builder;
+      var builder = new Knex.Builder(client);
+      return table ? builder.from(table) : builder;
     };
 
     // Inherit static properties, without any that don't apply except
