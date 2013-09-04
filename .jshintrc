@@ -1,0 +1,13 @@
+{
+  "boss": true,
+  "browser": true,
+  "expr": true,
+  "eqnull": true,
+  "latedef": true,
+  "newcap": false,
+  "node": true,
+  "strict": false,
+  "supernew": true,
+  "sub": true,
+  "trailing": true
+}

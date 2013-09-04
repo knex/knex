@@ -4,6 +4,9 @@ var util        = require('util');
 var base        = require('./base');
 var pg          = require('pg');
 
+var Grammar = require('./base/grammar').Grammar;
+var SchemaGrammar = require('./base/schemagrammar').SchemaGrammar;
+
 // Constructor for the PostgresClient
 var PostgresClient = module.exports = function(name, options) {
   base.setup.call(this, PostgresClient, name, options);
@@ -94,7 +97,7 @@ _.extend(PostgresClient.prototype, base.protoProps, {
 });
 
 // Extends the standard sql grammar.
-PostgresClient.grammar = {
+PostgresClient.grammar = _.defaults({
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
@@ -133,10 +136,10 @@ PostgresClient.grammar = {
     return sql;
   }
 
-};
+}, Grammar);
 
 // Grammar for the schema builder.
-PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.grammar, {
+PostgresClient.schemaGrammar = _.defaults({
 
   // The possible column modifiers.
   modifiers: ['Increment', 'Nullable', 'Default'],
@@ -293,4 +296,4 @@ PostgresClient.schemaGrammar = _.extend({}, base.schemaGrammar, PostgresClient.g
     }
   }
 
-});
+}, SchemaGrammar, PostgresClient.grammar);

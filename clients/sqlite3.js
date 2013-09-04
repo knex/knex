@@ -5,6 +5,9 @@ var util        = require('util');
 var base        = require('./base');
 var sqlite3     = require('sqlite3');
 
+var Grammar       = require('./base/grammar').Grammar;
+var SchemaGrammar = require('./base/schemagrammar').SchemaGrammar;
+
 // Constructor for the Sqlite3Client
 var Sqlite3Client = module.exports = function(name, options) {
   base.setup.call(this, Sqlite3Client, name, options);
@@ -102,7 +105,7 @@ _.extend(Sqlite3Client.prototype, base.protoProps, {
 });
 
 // Extends the standard sql grammar.
-Sqlite3Client.grammar = {
+Sqlite3Client.grammar = _.defaults({
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
@@ -166,10 +169,11 @@ Sqlite3Client.grammar = {
     sql.push('delete from ' + table);
     return sql;
   }
-};
+
+}, Grammar);
 
 // Grammar for the schema builder.
-Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.grammar, {
+Sqlite3Client.schemaGrammar = _.defaults({
 
   // The possible column modifiers.
   modifiers: ['Nullable', 'Default', 'Increment'],
@@ -319,4 +323,4 @@ Sqlite3Client.schemaGrammar = _.extend({}, base.schemaGrammar, Sqlite3Client.gra
       return ' primary key autoincrement';
     }
   }
-});
+}, SchemaGrammar, Sqlite3Client.grammar);

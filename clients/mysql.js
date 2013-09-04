@@ -1,8 +1,11 @@
-var When        = require('when');
-var _           = require('underscore');
-var util        = require('util');
-var base        = require('./base');
-var mysql       = require('mysql');
+var When  = require('when');
+var _     = require('underscore');
+var util  = require('util');
+var base  = require('./base');
+var mysql = require('mysql');
+
+var Grammar = require('./base/grammar').Grammar;
+var SchemaGrammar = require('./base/schemagrammar').SchemaGrammar;
 
 // Constructor for the MysqlClient
 var MysqlClient = module.exports = function(name, options) {
@@ -72,24 +75,24 @@ _.extend(MysqlClient.prototype, base.protoProps, {
 });
 
 // Extends the standard sql grammar.
-MysqlClient.grammar = {
+MysqlClient.grammar = _.defaults({
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
     return (value !== '*' ? util.format('`%s`', value) : "*");
   }
 
-};
+}, Grammar);
 
 // Grammar for the schema builder.
-MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar, {
+MysqlClient.schemaGrammar = _.defaults({
 
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After', 'Comment'],
 
   // Compile a create table command.
   compileCreateTable: function(blueprint, command) {
-    var sql = base.schemaGrammar.compileCreateTable.call(this, blueprint, command);
+    var sql = SchemaGrammar.compileCreateTable.call(this, blueprint, command);
     var conn = blueprint.client.connectionSettings;
 
     if (conn.charset) sql += ' default character set ' + conn.charset;
@@ -271,4 +274,4 @@ MysqlClient.schemaGrammar = _.extend({}, base.schemaGrammar, MysqlClient.grammar
     }
   }
 
-});
+}, SchemaGrammar, MysqlClient.grammar);
