@@ -205,6 +205,11 @@ PostgresClient.schemaGrammar = _.defaults({
     return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
   },
 
+  // Compile a rename column command.
+  compileRenameColumn: function(blueprint, command) {
+    return 'alter table ' + this.wrapTable(blueprint) + ' rename '+ this.wrapTable(command.from) + ' to ' + this.wrapTable(command.to);
+  },
+
   // Compile a comment command.
   compileComment: function(blueprint, command) {
     var sql = '';

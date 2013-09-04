@@ -1,8 +1,9 @@
-var when  = require('when');
-var _     = require('underscore');
-var util  = require('util');
-var base  = require('./base');
-var mysql = require('mysql');
+var when   = require('when');
+var nodefn = require('when/node/function');
+var _      = require('underscore');
+var util   = require('util');
+var base   = require('./base');
+var mysql  = require('mysql');
 
 var Grammar = require('../base/grammar').Grammar;
 var SchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
@@ -23,6 +24,7 @@ _.extend(MysqlClient.prototype, base.protoProps, {
     var debug = this.debug || builder._debug;
     var instance = this;
     return when((builder._connection || this.getConnection()))
+      .tap(this.checkSchema(builder))
       .then(function(conn) {
         var dfd = when.defer();
 
@@ -62,7 +64,24 @@ _.extend(MysqlClient.prototype, base.protoProps, {
         return dfd.promise.ensure(function() {
           if (emptyConnection) instance.pool.release(conn);
         });
+      }).otherwise(function(err) {
+        throw new Error(err.toString() + ': ' + builder.sql);
       });
+  },
+
+  // Used to check if there is a conditional query needed to complete the next one.
+  checkSchema: function(builder) {
+    return function(conn) {
+      var sql = builder.sql;
+      if (sql.indexOf('alter table') === 0 && sql.indexOf('__datatype__') === (sql.length - 12)) {
+        var newSql = sql.replace('alter table', 'show fields from').split('change')[0] + ' where field = ?';
+        return nodefn.call(conn.query.bind(conn), newSql, [builder.commands[builder.currentIndex].from]).then(function(resp) {
+          var column = resp[0];
+          // Set to the datatype we're looking to change it to...
+          builder.sql = builder.sql.replace('__datatype__', column[0].Type);
+        });
+      }
+    };
   },
 
   getRawConnection: function(callback) {
@@ -177,6 +196,12 @@ MysqlClient.schemaGrammar = _.defaults({
   // Compile a rename table command.
   compileRenameTable: function(blueprint, command) {
     return 'rename table ' + this.wrapTable(blueprint) + ' to ' + this.wrapTable(command.to);
+  },
+
+  // Compile a rename column command.
+  compileRenameColumn: function(blueprint, command) {
+    return 'alter table ' + this.wrapTable(blueprint) + ' change ' +
+      this.wrapTable(command.from) + ' ' + this.wrapTable(command.to) + ' __datatype__';
   },
 
   // Compiles the comment on the table.

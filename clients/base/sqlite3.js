@@ -13,7 +13,9 @@ define(function(require, exports) {
   var Client  = require('./client').Client;
   var Helpers = require('../../lib/helpers').Helpers;
 
-  var Sqlite3 = Client.extend({});
+  var Sqlite3 = Client.extend({
+
+  });
 
   // Extends the standard sql grammar.
   Sqlite3.grammar = _.defaults({
@@ -186,6 +188,11 @@ define(function(require, exports) {
     // Compile a rename table command.
     compileRenameTable: function(blueprint, command) {
       return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
+    },
+
+    // Compile a rename column command.
+    compileRenameColumn: function(blueprint, command) {
+      return '__rename_column__';
     },
 
     // Create the column definition for a integer type.

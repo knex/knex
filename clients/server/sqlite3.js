@@ -7,7 +7,10 @@ var util        = require('util');
 var base        = require('./base');
 var sqlite3     = require('sqlite3');
 
+var Builder     = require('../../lib/builder').Builder;
 var ClientBase  = require('../base/sqlite3').Sqlite3;
+var transaction = require('../../lib/transaction').transaction;
+var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
 
 // Constructor for the Sqlite3Client
 var Sqlite3Client = ClientBase.extend({
@@ -36,6 +39,13 @@ var Sqlite3Client = ClientBase.extend({
     var emptyConnection = !builder._connection;
     var debug = this.debug || builder._debug;
     var instance = this;
+
+    if (builder.sql === '__rename_column__') {
+      return transaction.call(builder, function(trx) {
+        instance.alterSchema.call(instance, builder, trx);
+      });
+    }
+
     return when((builder._connection || this.getConnection()))
       .then(function(conn) {
         var dfd = when.defer();
@@ -98,7 +108,7 @@ var Sqlite3Client = ClientBase.extend({
   // resolving with the connection of the current transaction.
   startTransaction: function() {
     return this.getConnection().then(function(connection) {
-      return nodefn.call(connection.run.bind(connection), 'begin;', []).then(function() {
+      return nodefn.call(connection.run.bind(connection), 'begin transaction;', []).then(function() {
         return connection;
       });
     });
@@ -113,6 +123,48 @@ var Sqlite3Client = ClientBase.extend({
       ctx.releaseConnection(trans.connection);
       trans.connection = null;
     });
+  },
+
+  // This needs to be refactored... badly.
+  alterSchema: function(builder, trx) {
+    var instance = this;
+    var connection = trx.connection;
+    var currentCol, command;
+
+    return when.all([
+      nodefn.call(connection.all.bind(connection), 'PRAGMA table_info(' + builder.table + ')', []),
+      nodefn.call(connection.all.bind(connection), 'SELECT name, sql FROM sqlite_master WHERE type="table" AND name="' + builder.table + '"', [])
+    ])
+    .tap(function(resp) {
+      var pragma = resp[0];
+      var sql    = resp[1][0];
+      command = builder.commands[builder.currentIndex];
+      if (!(currentCol = _.findWhere(pragma, {name: command.from}))) {
+        throw new Error('The column ' + command.from + ' is not in the current table');
+      }
+      return nodefn.call(connection.all.bind(connection), 'ALTER TABLE ' + sql.name + ' RENAME TO __migrate__' + sql.name);
+    }).spread(function(pragma, sql) {
+      sql = sql[0];
+      var currentColumn = '"' + command.from + '" ' + currentCol.type;
+      var newColumn     = '"' + command.to   + '" ' + currentCol.type;
+      if (sql.sql.indexOf(currentColumn) === -1) {
+        return trx.reject('Unable to find the column to change');
+      }
+      return when.all([
+        nodefn.call(connection.all.bind(connection), sql.sql.replace(currentColumn, newColumn)),
+        nodefn.call(connection.all.bind(connection), 'SELECT * FROM "__migrate__' + sql.name + '"'),
+      ]);
+    }).spread(function(createTable, selected) {
+      var qb = new Builder(instance).transacting(trx);
+          qb.table = builder.table;
+      return when.all([
+        qb.insert(_.map(selected, function(row) {
+          row[command.to] = row[command.from];
+          return _.omit(row, command.from);
+        })),
+        nodefn.call(connection.all.bind(connection), 'DROP TABLE "__migrate__' + builder.table + '"')
+      ]);
+    }).then(trx.commit, trx.rollback);
   }
 
 });

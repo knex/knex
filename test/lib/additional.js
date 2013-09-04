@@ -38,4 +38,20 @@ module.exports = function(Knex, dbName, resolver) {
     equal(Knex(Knex.Raw("raw_table_name")).toString(), 'select * from raw_table_name');
   });
 
+  it('should allow renaming a column', function(done) {
+
+    Knex.Schema.table('accounts', function(t) {
+      t.renameColumn('about', 'about_col');
+    }).then(function() {
+      return Knex('accounts').select('about_col');
+    }).then(function(resp) {
+      return Knex.Schema.table('accounts', function(t) {
+        t.renameColumn('about_col', 'about');
+      });
+    }).then(function() {
+      done();
+    });
+
+  });
+
 };

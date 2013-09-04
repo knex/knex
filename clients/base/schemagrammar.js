@@ -165,6 +165,11 @@ define(function(require, exports) {
       return 'char(36)';
     },
 
+    // Create a specific type
+    typeSpecificType: function(column) {
+      return column.specific;
+    },
+
     // Get the SQL for a nullable column modifier.
     modifyNullable: function(blueprint, column) {
       return column.isNullable ? ' null' : ' not null';
