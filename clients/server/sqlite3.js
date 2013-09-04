@@ -65,6 +65,8 @@ var Sqlite3Client = ClientBase.extend({
           if (builder._source === 'SchemaBuilder') {
             if (builder.type === 'tableExists') {
               return dfd.resolve(resp.length > 0);
+            } else if (builder.type === 'columnExists') {
+              return dfd.resolve(_.findWhere(resp, {name: builder.bindings[1]}) != null);
             } else {
               return dfd.resolve(null);
             }

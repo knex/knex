@@ -92,6 +92,9 @@ module.exports = function(Knex, resolver, error) {
       qb.text('text').nullable();
     });
   })
+  .tap(function() {
+    return Knex.Schema.hasColumn('accounts', 'first_name');
+  })
   .then(function() {
     return res;
   })

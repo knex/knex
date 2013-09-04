@@ -45,7 +45,7 @@ _.extend(PostgresClient.prototype, base.protoProps, {
           if (builder._source === 'Raw') return dfd.resolve(resp);
 
           if (builder._source === 'SchemaBuilder') {
-            if (builder.type === 'tableExists') {
+            if (builder.type === 'tableExists' || builder.type === 'columnExists') {
               return dfd.resolve(resp.rows.length > 0);
             } else {
               return dfd.resolve(null);
@@ -147,6 +147,11 @@ PostgresClient.schemaGrammar = _.defaults({
   // Compile the query to determine if a table exists.
   compileTableExists: function() {
     return 'select * from information_schema.tables where table_name = ?';
+  },
+
+  // Compile the query to determine if a column exists in a table.
+  compileColumnExists: function() {
+    return 'select * from information_schema.columns where table_name = ? and column_name = ?';
   },
 
   // Compile a create table command.

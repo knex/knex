@@ -50,7 +50,7 @@ define(function(require, exports, module) {
 
     // Attach main static methods, which passthrough to the
     // SchemaBuilder instance methods
-    _.each(['hasTable', 'createTable', 'table', 'dropTable', 'renameTable', 'dropTableIfExists'], function(method) {
+    _.each(['hasTable', 'hasColumn', 'createTable', 'table', 'dropTable', 'renameTable', 'dropTableIfExists'], function(method) {
 
       Schema[method] = function() {
         var args = _.toArray(arguments);

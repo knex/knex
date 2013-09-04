@@ -41,6 +41,8 @@ _.extend(MysqlClient.prototype, base.protoProps, {
           if (builder._source === 'SchemaBuilder') {
             if (builder.type === 'tableExists') {
               return dfd.resolve(resp.length > 0);
+            } else if (builder.type === 'columnExists') {
+              return dfd.resolve(resp.length > 0);
             } else {
               return dfd.resolve(null);
             }
@@ -136,6 +138,11 @@ MysqlClient.schemaGrammar = _.defaults({
   compileTableExists: function(blueprint) {
     blueprint.bindings.unshift(blueprint.client.connectionSettings.database);
     return 'select * from information_schema.tables where table_schema = ? and table_name = ?';
+  },
+
+  // Compile a query to determine if a column exists.
+  compileColumnExists: function(blueprint) {
+    return 'show columns from ' + this.wrapTable(blueprint) + ' like ?';
   },
 
   // Compile an add command.

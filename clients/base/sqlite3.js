@@ -96,6 +96,12 @@ define(function(require, exports) {
       return "select * from sqlite_master where type = 'table' and name = ?";
     },
 
+    // Compile the query to determine if a column exists.
+    compileColumnExists: function(blueprint) {
+      blueprint.bindings = [];
+      return "PRAGMA table_info(" + this.wrapTable(blueprint) + ")";
+    },
+
     // Compile a create table command.
     compileCreateTable: function(blueprint) {
       var columns = this.getColumns(blueprint).join(', ');
