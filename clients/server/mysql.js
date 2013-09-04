@@ -279,7 +279,7 @@ MysqlClient.schemaGrammar = _.defaults({
   // Get the SQL for an auto-increment column modifier.
   modifyIncrement: function(blueprint, column) {
     if (column.type == 'integer' && column.autoIncrement) {
-      return ' auto_increment primary key';
+      return ' not null auto_increment primary key';
     }
   },
 

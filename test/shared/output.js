@@ -16,85 +16,85 @@ module.exports = {
     },
     'schema.2': {
       mysql: {
-        sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255) not null, `last_name` varchar(255) not null, `email` varchar(255) null, `logins` int(11) not null default \'1\', `about` text not null comment \'A comment.\', `created_at` datetime not null, `updated_at` datetime not null) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
+        sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `logins` int(11) default \'1\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_table_one" ("id" serial primary key not null, "first_name" varchar(255) not null, "last_name" varchar(255) not null, "email" varchar(255) null, "logins" integer not null default \'1\', "about" text not null, "created_at" timestamp not null, "updated_at" timestamp not null)','comment on table "test_table_one" is \'A table comment.\'','comment on column "test_table_one"."about" is \'A comment.\'','alter table "test_table_one" add constraint test_table_one_email_unique unique ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")'],
+        sql: ['create table "test_table_one" ("id" serial primary key not null, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255), "logins" integer default \'1\', "about" text, "created_at" timestamp, "updated_at" timestamp)','comment on table "test_table_one" is \'A table comment.\'','comment on column "test_table_one"."about" is \'A comment.\'','alter table "test_table_one" add constraint test_table_one_email_unique unique ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_table_one" ("id" integer null primary key autoincrement, "first_name" varchar(255) null, "last_name" varchar(255) null, "email" varchar(255) null, "logins" integer null default \'1\', "about" text null, "created_at" datetime null, "updated_at" datetime null)','create unique index test_table_one_email_unique on "test_table_one" ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")'],
+        sql: ['create table "test_table_one" ("id" integer primary key autoincrement not null, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255), "logins" integer default \'1\', "about" text, "created_at" datetime, "updated_at" datetime)','create unique index test_table_one_email_unique on "test_table_one" ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")'],
         bindings: []
       }
     },
     'schema.3': {
       mysql: {
-        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11) not null, `details` text not null, `status` tinyint not null) default character set utf8 engine = InnoDB'],
+        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11), `details` text, `status` tinyint) default character set utf8 engine = InnoDB'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_table_two" ("id" serial primary key not null, "account_id" integer not null, "details" text not null, "status" smallint not null)'],
+        sql: ['create table "test_table_two" ("id" serial primary key not null, "account_id" integer, "details" text, "status" smallint)'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_table_two" ("id" integer null primary key autoincrement, "account_id" integer null, "details" text null, "status" tinyint null)'],
+        sql: ['create table "test_table_two" ("id" integer primary key autoincrement not null, "account_id" integer, "details" text, "status" tinyint)'],
         bindings: []
       }
     },
     'schema.4': {
       mysql: {
-        sql: ['create table `test_table_three` (`main` int(11) not null, `paragraph` text not null) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)'],
+        sql: ['create table `test_table_three` (`main` int(11), `paragraph` text) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_table_three" ("main" integer not null, "paragraph" text not null default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")'],
+        sql: ['create table "test_table_three" ("main" integer, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_table_three" ("main" integer null, "paragraph" text null default \'Lorem ipsum Qui quis qui in.\', primary key ("main"))'],
+        sql: ['create table "test_table_three" ("main" integer, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', primary key ("main"))'],
         bindings: []
       }
     },
     'schema.5': {
       mysql: {
-        sql: ['create table `datatype_test` (`enum_value` enum(\'a\', \'b\', \'c\') not null, `uuid` char(36) not null) default character set utf8'],
+        sql: ['create table `datatype_test` (`enum_value` enum(\'a\', \'b\', \'c\'), `uuid` char(36)) default character set utf8'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "datatype_test" ("enum_value" text check("enum_value" in(\'a\', \'b\', \'c\')) not null, "uuid" uuid not null)'],
+        sql: ['create table "datatype_test" ("enum_value" text check("enum_value" in(\'a\', \'b\', \'c\')), "uuid" uuid)'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "datatype_test" ("enum_value" varchar null, "uuid" char(36) null)'],
+        sql: ['create table "datatype_test" ("enum_value" varchar, "uuid" char(36))'],
         bindings: []
       }
     },
     'schema.6': {
       mysql: {
-        sql: ['create table `test_foreign_table_two` (`id` int(11) not null auto_increment primary key, `fkey_two` int(11) unsigned not null) default character set utf8','alter table `test_foreign_table_two` add constraint test_foreign_table_two_fkey_two_foreign foreign key (`fkey_two`) references `test_table_two` (`id`)'],
+        sql: ['create table `test_foreign_table_two` (`id` int(11) not null auto_increment primary key, `fkey_two` int(11) unsigned) default character set utf8','alter table `test_foreign_table_two` add constraint test_foreign_table_two_fkey_two_foreign foreign key (`fkey_two`) references `test_table_two` (`id`)'],
         bindings: []
       },
       postgres: {
-        sql: ['create table "test_foreign_table_two" ("id" serial primary key not null, "fkey_two" integer not null)','alter table "test_foreign_table_two" add constraint test_foreign_table_two_fkey_two_foreign foreign key ("fkey_two") references "test_table_two" ("id")'],
+        sql: ['create table "test_foreign_table_two" ("id" serial primary key not null, "fkey_two" integer)','alter table "test_foreign_table_two" add constraint test_foreign_table_two_fkey_two_foreign foreign key ("fkey_two") references "test_table_two" ("id")'],
         bindings: []
       },
       sqlite3: {
-        sql: ['create table "test_foreign_table_two" ("id" integer null primary key autoincrement, "fkey_two" integer null, foreign key("fkey_two") references "test_table_two"("id"))'],
+        sql: ['create table "test_foreign_table_two" ("id" integer primary key autoincrement not null, "fkey_two" integer, foreign key("fkey_two") references "test_table_two"("id"))'],
         bindings: []
       }
     },
     'schema.7': {
       mysql: {
-        sql: ['alter table `test_table_one` add `phone` varchar(255) null'],
+        sql: ['alter table `test_table_one` add `phone` varchar(255)'],
         bindings: []
       },
       postgres: {
-        sql: ['alter table "test_table_one" add column "phone" varchar(255) null'],
+        sql: ['alter table "test_table_one" add column "phone" varchar(255)'],
         bindings: []
       },
       sqlite3: {
-        sql: ['alter table "test_table_one" add column "phone" varchar(255) null'],
+        sql: ['alter table "test_table_one" add column "phone" varchar(255)'],
         bindings: []
       }
     },

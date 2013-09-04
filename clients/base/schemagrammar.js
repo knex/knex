@@ -172,7 +172,9 @@ define(function(require, exports) {
 
     // Get the SQL for a nullable column modifier.
     modifyNullable: function(blueprint, column) {
-      return column.isNullable ? ' null' : ' not null';
+      if (column.isNullable === false) {
+        return ' not null';
+      }
     },
 
     // Get the SQL for a default column modifier.
