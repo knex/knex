@@ -5,7 +5,6 @@
 define(function(require, exports) {
 
   var _           = require('underscore');
-  var util        = require('util');
   var sqlite3     = require('sqlite3');
 
   var Grammar       = require('./grammar').Grammar;
@@ -14,16 +13,14 @@ define(function(require, exports) {
   var Client  = require('./client').Client;
   var Helpers = require('../../lib/helpers').Helpers;
 
-  var Sqlite3 = Client.extend({
-
-  });
+  var Sqlite3 = Client.extend({});
 
   // Extends the standard sql grammar.
   Sqlite3.grammar = _.defaults({
 
     // The keyword identifier wrapper format.
     wrapValue: function(value) {
-      return (value !== '*' ? util.format('"%s"', value) : "*");
+      return (value !== '*' ? Helpers.format('"%s"', value) : "*");
     },
 
     // Compile the "order by" portions of the query.

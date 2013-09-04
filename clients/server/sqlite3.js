@@ -7,7 +7,7 @@ var util        = require('util');
 var base        = require('./base');
 var sqlite3     = require('sqlite3');
 
-var ClientBase    = require('../base/sqlite3').Sqlite3;
+var ClientBase  = require('../base/sqlite3').Sqlite3;
 
 // Constructor for the Sqlite3Client
 var Sqlite3Client = ClientBase.extend({

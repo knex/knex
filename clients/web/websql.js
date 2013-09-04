@@ -4,14 +4,13 @@
 
 define(function(require, exports) {
 
-  var Helpers = require('../../lib/helpers').Helpers;
+  var Sqlite3 = require('../base/sqlite3');
 
-  var Client = function(name, options) {};
+  var WebSQL = Sqlite3.extend({
 
-  Client.prototype = {};
-  Client.extend = Helpers.extend;
+  });
 
-  exports.Client = Client;
+  exports.WebSQL = WebSQL;
 
 });
 
