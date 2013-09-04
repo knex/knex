@@ -1,11 +1,11 @@
-var When        = require('when');
-var _           = require('underscore');
-var util        = require('util');
-var base        = require('./base');
-var pg          = require('pg');
+var when = require('when');
+var _    = require('underscore');
+var util = require('util');
+var base = require('./base');
+var pg   = require('pg');
 
-var Grammar = require('./base/grammar').Grammar;
-var SchemaGrammar = require('./base/schemagrammar').SchemaGrammar;
+var Grammar = require('../base/grammar').Grammar;
+var SchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
 
 // Constructor for the PostgresClient
 var PostgresClient = module.exports = function(name, options) {
@@ -23,9 +23,9 @@ _.extend(PostgresClient.prototype, base.protoProps, {
     var debug = this.debug || builder._debug;
     var instance = this;
 
-    return When((builder._connection || this.getConnection()))
+    return when((builder._connection || this.getConnection()))
       .then(function(conn) {
-        var dfd = When.defer();
+        var dfd = when.defer();
 
         // Bind all of the ? to numbered vars.
         var questionCount = 0;

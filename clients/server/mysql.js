@@ -4,8 +4,8 @@ var util  = require('util');
 var base  = require('./base');
 var mysql = require('mysql');
 
-var Grammar = require('./base/grammar').Grammar;
-var SchemaGrammar = require('./base/schemagrammar').SchemaGrammar;
+var Grammar = require('../base/grammar').Grammar;
+var SchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
 
 // Constructor for the MysqlClient
 var MysqlClient = module.exports = function(name, options) {

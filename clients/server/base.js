@@ -1,6 +1,6 @@
+var _      = require('underscore');
 var whenfn = require('when/function');
 var nodefn = require('when/node/function');
-var _      = require('underscore');
 
 // Setup is called with the context of the current client.
 exports.setup = function(Client, name, options) {

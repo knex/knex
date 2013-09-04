@@ -25,8 +25,8 @@ define(function(require, exports, module) {
   };
 
   // Keep in sync with package.json
-  Knex.VERSION = '0.2.6';
-  Knex.Builder = require('./lib/builder').Builder;
+  Knex.VERSION    = '0.2.6';
+  Knex.Builder    = require('./lib/builder').Builder;
   Knex.JoinClause = require('./lib/joinclause').JoinClause;
 
   // Knex.Transaction
@@ -192,7 +192,8 @@ define(function(require, exports, module) {
       try {
         ClientCtor = require(Clients[client]);
       } catch (e) {
-        throw new Error(client + ' is not a valid Knex client, did you misspell it?');
+        throw e
+        // throw new Error(client + ' is not a valid Knex client, did you misspell it?');
       }
     } else {
       ClientCtor = client;
@@ -245,11 +246,11 @@ define(function(require, exports, module) {
 
   // Default client paths, located in the `./clients` directory.
   var Clients = {
-    'mysql'    : './clients/mysql.js',
-    'pg'       : './clients/postgres.js',
-    'postgres' : './clients/postgres.js',
-    'sqlite'   : './clients/sqlite3.js',
-    'sqlite3'  : './clients/sqlite3.js'
+    'mysql'    : './clients/server/mysql.js',
+    'pg'       : './clients/server/postgres.js',
+    'postgres' : './clients/server/postgres.js',
+    'sqlite'   : './clients/server/sqlite3.js',
+    'sqlite3'  : './clients/server/sqlite3.js'
   };
 
   // Named instances of Knex, presumably with different database
