@@ -1,12 +1,269 @@
-module.exports = function(client) {
+module.exports = function() {
 
-  var Builder = require('../../lib/builder');
+  var when    = require('when');
+  var Builder = require('../../lib/builder').Builder;
+  var Common  = require('../../lib/common').Common;
+  var Raw     = require('../../lib/raw').Raw;
 
   describe('Builder', function () {
 
-    it('should be a constructor, accepting the current Knex client');
+    var builder;
+    beforeEach(function() {
+      builder = new Builder({
+        query: function(obj) {
+          return when.resolve(obj);
+        },
+        grammar: require('../../clients/server/mysql').grammar
+      });
+    });
 
+    describe('constructor', function () {
 
+      it('accepts the current Knex instance, attaching the client, and grammar', function() {
+        var grammar = {some: 'grammar'};
+        var client  = {some: 'db'};
+        var knex    = {client: client, grammar: grammar};
+        var reset   = sinon.stub(Builder.prototype, 'reset');
+        var builder = new Builder(knex);
+
+        expect(builder.knex).to.eql(knex);
+        expect(builder.client).to.eql(client);
+        expect(builder.grammar).to.eql(grammar);
+        reset.should.have.been.calledOnce;
+        reset.restore();
+      });
+
+      it('has the Common methods mixed-in to the Builder.prototype', function() {
+        _.each(Common, function(val, key) {
+          expect(Builder.prototype[key]).to.equal(val);
+        });
+      });
+
+    });
+
+    describe('from', function() {
+
+      it('sets the tableName', function() {
+        expect(builder.table).not.to.exist;
+        var result = builder.from('myTable');
+        expect(builder.table).to.equal('myTable');
+        expect(result).to.equal(builder);
+      });
+
+      it('returns the tableName when no arguments are passed', function() {
+        expect(builder.table).not.to.exist;
+        var result = builder.from('myTable');
+        expect(builder.from()).to.equal('myTable');
+      });
+
+    });
+
+    describe('column', function() {
+
+      it('adds a value to the columns array', function() {
+        expect(builder.columns).to.have.length(0);
+        builder.column('myColumn');
+        expect(builder.columns).to.have.length(1);
+      });
+
+    });
+
+    describe('distinct', function() {
+
+      it('sets the isDistinct flag to true', function() {
+        builder.distinct('distinctCol');
+        expect(builder.columns[0]).to.equal('distinctCol');
+      });
+
+      it('adds the column to the columns array', function() {
+        builder.distinct('distinctCol');
+        expect(builder.isDistinct).to.be.true;
+      });
+
+    });
+
+    describe('toSql', function() {
+
+      it('sets the type to "select" if not otherwise set', function() {
+        expect(builder.type).not.to.exist;
+        builder.toSql();
+        expect(builder.type).to.equal('select');
+      });
+
+      it('compiles based on the type, passing the current context', function(done) {
+        var compileSelect = builder.grammar.compileSelect;
+        builder.grammar.compileSelect = function(ctx) {
+          expect(ctx).to.eql(builder);
+          builder.grammar.compileSelect = compileSelect;
+          done();
+        };
+        builder.toSql();
+      });
+
+    });
+
+    describe('clone', function() {
+
+    });
+
+    describe('reset', function() {
+
+    });
+
+    describe('join', function() {
+
+      var JoinClause = require('../../lib/builder/joinclause').JoinClause;
+
+      it('accepts the joining table, the first column, operator, second column, and (optional) type', function() {
+        expect(builder.joins).to.have.length(0);
+        builder.from('users');
+        builder.join('accounts', 'users.id', '=', 'accounts.id');
+        expect(builder.joins).to.have.length(1);
+        expect(builder.joins[0]).to.be.an.instanceOf(JoinClause);
+        expect(builder.toString()).to.equal("select * from `users` inner join `accounts` on `users`.`id` = `accounts`.`id`");
+      });
+
+      it('accepts a different join type as the fifth parameter', function() {
+        builder.from('users');
+        builder.join('accounts', 'users.id', '=', 'accounts.id', 'left outer');
+        expect(builder.toString()).to.equal("select * from `users` left outer join `accounts` on `users`.`id` = `accounts`.`id`");
+      });
+
+      it('may take a function as the second argument, for a grouped join', function() {
+
+        builder.join('accounts', function(join) {
+          expect(builder.joins).to.have.length(0);
+          expect(this).to.be.an.instanceOf(JoinClause);
+          expect(join).to.be.an.instanceOf(JoinClause);
+        });
+
+      });
+
+    });
+
+    describe('where', function() {
+
+      describe('where', function() {
+
+        it('should allow a function as the first argument, for a grouped where clause', function() {
+          builder.where('id', '=', 1);
+          expect(builder.wheres).to.have.length(1);
+          expect(builder.bindings).to.have.length(1);
+          var subWhere = function(qb) {
+            expect(this).to.equal(qb);
+            expect(this).to.be.an.instanceOf(Builder);
+            this.where({id: 3}).orWhere('id', 4);
+          };
+          builder.where(subWhere);
+          expect(builder.bindings).to.have.length(3);
+          expect(builder.wheres).to.have.length(2);
+          expect(builder.from('test').toString()).to.equal("select * from `test` where `id` = 1 and (`id` = 3 or `id` = 4)");
+        });
+
+        it('should allow a raw instance as the first argument, which will add a whereRaw clause', function() {
+          builder.where(new Raw({}).query('id > ?', 2));
+          expect(builder.wheres).to.have.length(1);
+          expect(builder.bindings).to.have.length(1);
+          expect(builder.bindings[0]).to.equal(2);
+        });
+
+        it('should allow an object as the first argument, which will assume to be a k/v pair of where "="', function() {
+          builder.where({id: 2, name: 'Test'});
+          expect(builder.wheres).to.have.length(2);
+          expect(builder.bindings).to.have.length(2);
+        });
+
+        it('should assume that if the second argument is not an operator, it should be an "="', function() {
+          builder.where('id', 2);
+          expect(builder.wheres).to.have.length(1);
+          expect(builder.bindings[0]).to.equal(2);
+        });
+
+        it('should accept a function as the "value", for a sub select', function() {
+          builder.where('id', '=', function(qb) {
+            expect(this).to.equal(qb);
+            expect(this).to.be.an.instanceOf(Builder);
+            this.select('account_id').from('names').where('names.id', '>', 1).orWhere(function() {
+              this.where('names.first_name', 'like', 'Tim%').andWhere('names.id', '>', 10);
+            });
+          });
+          expect(builder.bindings).to.have.length(3);
+          expect(builder.toString()).to.equal("select * where `id` = (select `account_id` from `names` where `names`.`id` > 1 or (`names`.`first_name` like Tim% and `names`.`id` > 10))");
+        });
+
+        var arg1 = {}, arg2 = {}, arg3 = {}, arg4 = {};
+
+        it('is called by andWhere, passing the first three arguments and an "and"', function() {
+          sinon.mock(builder).expects('where').withExactArgs(arg1, arg2, arg3, 'and');
+          builder.andWhere(arg1, arg2, arg3, 'error');
+        });
+
+        it('is called by orWhere, passing the first three arguments and an "or"', function() {
+          sinon.mock(builder).expects('where').withExactArgs(arg1, arg2, arg3, 'or');
+          builder.orWhere(arg1, arg2, arg3, 'error');
+        });
+
+      });
+
+      describe('whereRaw', function() {
+
+        it('is called by orWhereRaw, passing the sql, bindings, and "or"', function() {
+
+        });
+
+      });
+
+      describe('whereExists', function() {
+
+      });
+
+    });
+
+    describe('groupBy', function() {
+
+    });
+
+    describe('orderBy', function() {
+
+    });
+
+    describe('union', function() {
+
+    });
+
+    describe('having', function() {
+
+    });
+
+    describe('offset / limit', function() {
+
+    });
+
+    describe('aggregate', function() {
+
+    });
+
+    describe('select', function() {
+
+      it('should throw if a table has not been specified when compiling');
+
+    });
+
+    describe('insert', function() {
+
+    });
+
+    describe('update', function() {
+
+    });
+
+    describe('delete', function() {
+
+    });
+
+    describe('truncate', function() {
+
+    });
 
   });
 

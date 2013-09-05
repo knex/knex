@@ -16,9 +16,11 @@ define(function(require, exports, module) {
   var Raw         = require('./lib/raw').Raw;
   var Transaction = require('./lib/transaction').Transaction;
   var Builder     = require('./lib/builder').Builder;
-  var Interface   = require('./lib/builder/interface').Interface;
-  var Schema      = require('./lib/schema').Schema;
-  var ClientBase  = require('./clients/clientbase').ClientBase;
+
+  // var Interface   = require('./lib/builder/interface').Interface;
+  var Schema          = require('./lib/schemabuilder').SchemaBuilder;
+  var SchemaInterface = require('./lib/schemainterface').SchemaInterface;
+  var ClientBase      = require('./clients/base').ClientBase;
 
   // The `Knex` module, taking either a fully initialized
   // database client, or a configuration to initialize one. This is something
@@ -61,12 +63,12 @@ define(function(require, exports, module) {
     // `Knex.select('*').from('tableName').then(...`
     // `Knex.insert(values).into('tableName').then(...`
     // `Knex.update(values).then(...`
-    _.each(Interface, function(val, key) {
-      instance[key] = function() {
-        var builder = new Builder(instance);
-        return builder[key].apply(builder, arguments);
-      };
-    });
+    // _.each(Interface, function(val, key) {
+    //   instance[key] = function() {
+    //     var builder = new Builder(instance);
+    //     return builder[key].apply(builder, arguments);
+    //   };
+    // });
 
     // Attach each of the `Schema` "interface" methods directly onto to `Knex.Schema` namespace:
     // `Knex.Schema.table('tableName', function() {...`
@@ -76,22 +78,21 @@ define(function(require, exports, module) {
       instance.schema[key] = function() {
         var schemaBuilder = new SchemaBuilder(instance);
         schemaBuilder.table = _.first(arguments);
-        return schemaBuilder[key].apply(schemaBuilder, _.rest(arguments));
+        return SchemaInterface[key].apply(schemaBuilder, _.rest(arguments));
       };
     });
 
     // Attach each of the `Migrate` "interface" methods directly on to
-    _.each(MigrateInterface, function(val, key) {
-      instance.migrate[key] = function() {
-        var migrateBuilder = new MigrateBuilder(instance);
-        return MigrateBuilder[key].apply(migrateBuilder, arguments);
-      };
-    });
+    // _.each(MigrateInterface, function(val, key) {
+    //   instance.migrate[key] = function() {
+    //     var migrateBuilder = new MigrateBuilder(instance);
+    //     return MigrateBuilder[key].apply(migrateBuilder, arguments);
+    //   };
+    // });
 
     // Method to run a new `Raw` query on the current client.
-    instance.raw = function() {
-      var raw = new Raw(instance);
-      return raw.query.apply(raw, arguments);
+    instance.raw = function(sql, bindings) {
+      return new Raw(instance).query(sql, bindings);
     };
 
     // Keep a reference to the current client.
@@ -102,8 +103,7 @@ define(function(require, exports, module) {
 
     // Runs a new transaction, taking a container and
     instance.transaction = function(container) {
-      var transaction = new Transaction(instance);
-      return transaction.run(container);
+      return new Transaction(instance).run(container);
     };
 
     // Return the new Knex instance.
@@ -124,6 +124,10 @@ define(function(require, exports, module) {
 
   // finally, export the `Knex` object for node and the browser.
   module.exports = Knex;
+
+  Knex.initialize = function(config) {
+    return Knex(config);
+  };
 
 });
 

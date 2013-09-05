@@ -91,8 +91,9 @@ exports.protoProps = {
     });
   },
 
-  finishTransaction: function(type, trans, dfd, msg) {
+  finishTransaction: function(type, transaction, msg) {
     var ctx = this;
+    var dfd = transaction.dfd;
     nodefn.call(trans.connection.query.bind(trans.connection), type + ';', []).then(function(resp) {
       if (type === 'commit') dfd.resolve(msg || resp);
       if (type === 'rollback') dfd.reject(msg || resp);

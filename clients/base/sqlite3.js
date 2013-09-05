@@ -10,12 +10,10 @@ define(function(require, exports) {
   var Grammar       = require('./grammar').Grammar;
   var SchemaGrammar = require('./schemagrammar').SchemaGrammar;
 
-  var Client  = require('./client').Client;
-  var Helpers = require('../../lib/helpers').Helpers;
+  var ClientBase = require('../base').ClientBase;
+  var Helpers    = require('../../lib/helpers').Helpers;
 
-  var Sqlite3 = Client.extend({
-
-  });
+  var Sqlite3 = ClientBase.extend({});
 
   // Extends the standard sql grammar.
   Sqlite3.grammar = _.defaults({

@@ -21,8 +21,8 @@ _.extend(MysqlClient.prototype, base.protoProps, {
   // acquire a connection, and then dispose of it when we're done.
   query: function(builder) {
     var emptyConnection = !builder._connection;
-    var debug = this.debug || builder._debug;
-    var instance = this;
+    var debug  = this.debug || builder._debug;
+    var client = this;
     return when((builder._connection || this.getConnection()))
       .tap(this.checkSchema(builder))
       .then(function(conn) {
@@ -64,7 +64,7 @@ _.extend(MysqlClient.prototype, base.protoProps, {
         // Empty the connection after we run the query, unless one was specifically
         // set (in the case of transactions, etc).
         return dfd.promise.ensure(function() {
-          if (emptyConnection) instance.pool.release(conn);
+          if (emptyConnection) client.pool.release(conn);
         });
       }).otherwise(function(err) {
         throw new Error(err.toString() + ': ' + builder.sql);
