@@ -301,7 +301,7 @@ PostgresClient.schemaGrammar = _.defaults({
 
   // Get the SQL for an auto-increment column modifier.
   modifyIncrement: function(blueprint, column) {
-    if (column.type == 'integer' && column.autoIncrement) {
+    if ((column.type == 'integer' || column.type == 'bigInteger') && column.autoIncrement) {
       return ' primary key not null';
     }
   }

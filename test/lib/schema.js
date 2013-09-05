@@ -19,7 +19,7 @@ module.exports = function(Knex, resolver, error) {
       Knex.Schema.createTable('test_table_one', function(table) {
         table.engine('InnoDB');
         table.comment('A table comment.');
-        table.increments('id');
+        table.bigIncrements('id');
         table.string('first_name');
         table.string('last_name');
         table.string('email').unique().nullable();

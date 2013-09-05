@@ -230,6 +230,11 @@ MysqlClient.schemaGrammar = _.defaults({
     }
   },
 
+  // Create the column type definition for a bigint type.
+  typeBigInteger: function() {
+    return 'bigint';
+  },
+
   // Create the column definition for a integer type.
   typeInteger: function(column) {
     return 'int(' + column.length + ')';
@@ -285,7 +290,7 @@ MysqlClient.schemaGrammar = _.defaults({
 
   // Get the SQL for an auto-increment column modifier.
   modifyIncrement: function(blueprint, column) {
-    if (column.type == 'integer' && column.autoIncrement) {
+    if ((column.type == 'integer' || column.type == 'bigInteger') && column.autoIncrement) {
       return ' not null auto_increment primary key';
     }
   },

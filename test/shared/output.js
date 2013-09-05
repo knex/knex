@@ -16,7 +16,7 @@ module.exports = {
     },
     'schema.2': {
       mysql: {
-        sql: ['create table `test_table_one` (`id` int(11) not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `logins` int(11) default \'1\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
+        sql: ['create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `logins` int(11) default \'1\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)'],
         bindings: []
       },
       postgres: {
@@ -30,7 +30,7 @@ module.exports = {
     },
     'schema.3': {
       mysql: {
-        sql: ['create table `test_table_two` (`id` int(11) not null auto_increment primary key, `account_id` int(11), `details` text, `status` tinyint) default character set utf8 engine = InnoDB'],
+        sql: ['create table `test_table_two` (`id` int(11) unsigned not null auto_increment primary key, `account_id` int(11), `details` text, `status` tinyint) default character set utf8 engine = InnoDB'],
         bindings: []
       },
       postgres: {
@@ -72,7 +72,7 @@ module.exports = {
     },
     'schema.6': {
       mysql: {
-        sql: ['create table `test_foreign_table_two` (`id` int(11) not null auto_increment primary key, `fkey_two` int(11) unsigned) default character set utf8','alter table `test_foreign_table_two` add constraint test_foreign_table_two_fkey_two_foreign foreign key (`fkey_two`) references `test_table_two` (`id`)'],
+        sql: ['create table `test_foreign_table_two` (`id` int(11) unsigned not null auto_increment primary key, `fkey_two` int(11) unsigned) default character set utf8','alter table `test_foreign_table_two` add constraint test_foreign_table_two_fkey_two_foreign foreign key (`fkey_two`) references `test_table_two` (`id`)'],
         bindings: []
       },
       postgres: {

@@ -125,6 +125,11 @@ define(function(require, exports) {
       return 'drop index ' + command.index;
     },
 
+    // Default for a biginteger type in database in other databases.
+    typeBigInteger: function(column) {
+      return this.typeInteger(column);
+    },
+
     // Create the column definition for a string type.
     typeString: function(column) {
       return "varchar(" + column.length + ")";
