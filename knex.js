@@ -71,6 +71,10 @@ define(function(require, exports, module) {
   // --------
   Knex.SchemaBuilder = require('./lib/schemabuilder').SchemaBuilder;
 
+  // Knex.Migrate
+  // --------
+  Knex.Migrate = require('./lib/migrate').Migrate;
+
   // Knex.Raw
   // -------
 

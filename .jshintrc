@@ -3,7 +3,7 @@
   "browser": true,
   "expr": true,
   "eqnull": true,
-  "latedef": true,
+  "latedef": false,
   "newcap": false,
   "node": true,
   "strict": false,
