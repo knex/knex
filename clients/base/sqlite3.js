@@ -1,22 +1,30 @@
+// SQLite3
+// -------
 (function(define) {
 
 "use strict";
 
 define(function(require, exports) {
 
-  var _           = require('underscore');
-  var sqlite3     = require('sqlite3');
+  var _             = require('underscore');
 
-  var Grammar       = require('./grammar').Grammar;
-  var SchemaGrammar = require('./schemagrammar').SchemaGrammar;
+  var baseGrammar       = require('./grammar').Grammar;
+  var baseSchemaGrammar = require('./schemagrammar').SchemaGrammar;
 
-  var ClientBase = require('../base').ClientBase;
-  var Helpers    = require('../../lib/helpers').Helpers;
+  var ClientBase        = require('../base').ClientBase;
+  var Helpers           = require('../../lib/helpers').Helpers;
 
-  var Sqlite3 = ClientBase.extend({});
+  // Extent the "base" client, just specifying the dialect,
+  // since the actual implementations will differ on the client
+  // and server, we'll leave everything else to be handled in
+  // sub-classes of this object.
+  var SQLite3 = module.exports = ClientBase.extend({
+    dialect: 'sqlite3'
+  });
 
-  // Extends the standard sql grammar.
-  Sqlite3.grammar = _.defaults({
+  // Extends the standard sql grammar, with any SQLite specific
+  // dialect oddities.
+  var grammar = SQLite3.grammar = _.defaults({
 
     // The keyword identifier wrapper format.
     wrapValue: function(value) {
@@ -81,10 +89,10 @@ define(function(require, exports) {
       return sql;
     }
 
-  }, Grammar);
+  }, baseGrammar);
 
   // Grammar for the schema builder.
-  Sqlite3.schemaGrammar = _.defaults({
+  var schemaGrammar = SQLite3.schemaGrammar = _.defaults({
 
     // The possible column modifiers.
     modifiers: ['Nullable', 'Default', 'Increment'],
@@ -247,9 +255,9 @@ define(function(require, exports) {
         return ' primary key autoincrement not null';
       }
     }
-  }, SchemaGrammar, Sqlite3.grammar);
+  }, baseSchemaGrammar, grammar);
 
-  exports.Sqlite3 = Sqlite3;
+  exports.SQLite3 = SQLite3;
 
 });
 

@@ -1,3 +1,5 @@
+// SchemaGrammar
+// -------
 (function(define) {
 
 "use strict";
@@ -5,6 +7,7 @@
 define(function(require, exports) {
 
   var _             = require('underscore');
+
   var BaseGrammar   = require('./grammar').Grammar;
   var SchemaBuilder = require('../../lib/schemabuilder').SchemaBuilder;
 
@@ -12,6 +15,61 @@ define(function(require, exports) {
   var Raw     = require('../../lib/raw').Raw;
 
   exports.SchemaGrammar = {
+
+    // Get the raw sql statements for the blueprint.
+    toSql: function(builder) {
+
+      // Add the commands that are implied by the blueprint.
+      if (builder.columns.length > 0 && !builder.creating()) {
+        builder.commands.unshift({name: 'add'});
+      }
+
+      // Add an "additional" command, for any extra dialect-specific logic.
+      builder.commands.push({name: 'additional'});
+
+      // Add indicies
+      for (var i = 0, l = builder.columns.length; i < l; i++) {
+        var column = builder.columns[i];
+        var indices = ['primary', 'unique', 'index', 'foreign'];
+
+        continueIndex:
+        for (var i2 = 0, l2 = indices.length; i2 < l2; i2++) {
+          var index = indices[i2];
+          var indexVar = 'is' + Helpers.capitalize(index);
+
+          // If the index has been specified on the given column, but is simply
+          // equal to "true" (boolean), no name has been specified for this
+          // index, so we will simply call the index methods without one.
+          if (column[indexVar] === true) {
+            this[index](column, null);
+            continue continueIndex;
+
+          // If the index has been specified on the column and it is something
+          // other than boolean true, we will assume a name was provided on
+          // the index specification, and pass in the name to the method.
+          } else if (_.has(column, indexVar)) {
+            this[index](column.name, column[indexVar], column);
+            continue continueIndex;
+          }
+        }
+      }
+
+      var statements = [];
+
+      // Each type of command has a corresponding compiler function on the schema
+      // grammar which is used to build the necessary SQL statements to build
+      // the blueprint element, so we'll just call that compilers function.
+      for (i = 0, l = builder.commands.length; i < l; i++) {
+        var command = builder.commands[i];
+        var method = 'compile' + Helpers.capitalize(command.name);
+        if (_.has(this, method)) {
+          var sql = this[method](this, command);
+          if (sql) statements = statements.concat(sql);
+        }
+      }
+
+      return statements;
+    },
 
     // Compile a foreign key command.
     compileForeign: function(blueprint, command) {

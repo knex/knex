@@ -1,74 +1,38 @@
-var when   = require('when');
-var nodefn = require('when/node/function');
-var _      = require('underscore');
-var util   = require('util');
-var base   = require('./base');
-var mysql  = require('mysql');
+// mysql
+// -------
 
-var Grammar = require('../base/grammar').Grammar;
-var SchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
+// All of the "when.js" promise components needed in this module.
+var when     = require('when');
+var nodefn   = require('when/node/function');
+var sequence = require('when/sequence');
 
-// Constructor for the MysqlClient
-var MysqlClient = module.exports = function(name, options) {
-  base.setup.call(this, MysqlClient, name, options);
-  this.dialect = 'mysql';
-};
+// Other dependencies, including the `mysql` library,
+// which needs to be added as a dependency to the project
+// using this database.
+var _     = require('underscore');
+var mysql = require('mysql');
 
-_.extend(MysqlClient.prototype, base.protoProps, {
+// All other local project modules needed in this scope.
+var ServerBase        = require('./base').ServerBase;
+var BaseQuery         = require('../query').Query;
+var baseGrammar       = require('../base/grammar').Grammar;
+var baseSchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
+var Helpers           = require('../../lib/helpers').Helpers;
 
-  // Execute a query on the specified Builder or QueryBuilder
-  // interface. If a `connection` is specified, use it, otherwise
-  // acquire a connection, and then dispose of it when we're done.
-  query: function(builder) {
-    var emptyConnection = !builder._connection;
-    var debug  = this.debug || builder._debug;
-    var client = this;
-    return when((builder._connection || this.getConnection()))
-      .tap(this.checkSchema(builder))
-      .then(function(conn) {
-        var dfd = when.defer();
+// Constructor for the MySQLClient.
+exports.Client = ServerBase.extend({
 
-        // If we have a debug flag set, console.log the query.
-        if (debug) base.debug(builder, conn);
+  dialect: 'mysql',
 
-        // Call the querystring and then release the client
-        conn.query(builder.sql, builder.bindings, function (err, resp) {
+  initialize: function(config) {
+    _.bindAll(this, 'runQuery');
+  },
 
-          if (err) return dfd.reject(err);
-
-          if (builder._source === 'Raw') return dfd.resolve(resp);
-
-          if (builder._source === 'SchemaBuilder') {
-            if (builder.type === 'tableExists') {
-              return dfd.resolve(resp.length > 0);
-            } else if (builder.type === 'columnExists') {
-              return dfd.resolve(resp.length > 0);
-            } else {
-              return dfd.resolve(null);
-            }
-          }
-
-          if (builder.type === 'select') {
-            resp = base.skim(resp);
-          } else if (builder.type === 'insert') {
-            resp = [resp.insertId];
-          } else if (builder.type === 'delete' || builder.type === 'update') {
-            resp = resp.affectedRows;
-          } else {
-            resp = '';
-          }
-
-          dfd.resolve(resp);
-        });
-
-        // Empty the connection after we run the query, unless one was specifically
-        // set (in the case of transactions, etc).
-        return dfd.promise.ensure(function() {
-          if (emptyConnection) client.pool.release(conn);
-        });
-      }).otherwise(function(err) {
-        throw new Error(err.toString() + ': ' + builder.sql);
-      });
+  // Get a raw connection, called by the `pool` whenever a new
+  // connection needs to be added to the pool.
+  getRawConnection: function(callback) {
+    var connection = mysql.createConnection(this.connectionSettings);
+    return nodefn.call(connection.connect.bind(connection));
   },
 
   // Used to check if there is a conditional query needed to complete the next one.
@@ -84,29 +48,53 @@ _.extend(MysqlClient.prototype, base.protoProps, {
         });
       }
     };
+  }
+
+});
+
+var Query = exports.Query = BaseQuery.extend({
+
+  prepareQuery: function() {
+    var sql = this.builder.toSql();
+    var bindings = this.builder.cleanBindings();
+
+    if (_.isArray(sql)) {
+      queryChain = queryChain.then(function() {
+        return sequence(sql.map(function(query) {
+          return function() { return client.runQuery(connection, builder, query, bindings); };
+        }));
+      });
+    } else {
+      queryChain = queryChain.then(function() {
+        return client.runQuery(connection, builder, sql, bindings);
+      });
+    }
   },
 
-  getRawConnection: function(callback) {
-    var conn = mysql.createConnection(this.connectionSettings);
-    conn.connect(function(err) {
-      callback(err, conn);
-    });
+  // Gets a connection, if one doesn't already exist to run the current query.
+  getConnection: function() {
+    return this.connection ? when(this.connection) : this.client.getConnection();
+  },
+
+  // Call the querystring and then release the client.
+  runQuery: function(sql, bindings) {
+    return nodefn.call(connection.query.bind(connection), sql, bindings);
   }
 
 });
 
 // Extends the standard sql grammar.
-MysqlClient.grammar = _.defaults({
+var grammar = exports.grammar = _.defaults({
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
-    return (value !== '*' ? util.format('`%s`', value) : "*");
+    return (value !== '*' ? Helpers.format('`%s`', value) : "*");
   }
 
-}, Grammar);
+}, baseGrammar);
 
 // Grammar for the schema builder.
-MysqlClient.schemaGrammar = _.defaults({
+var schemaGrammar = exports.schemaGrammar = _.defaults({
 
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After', 'Comment'],
@@ -311,4 +299,4 @@ MysqlClient.schemaGrammar = _.defaults({
     }
   }
 
-}, SchemaGrammar, MysqlClient.grammar);
+}, baseSchemaGrammar, grammar);

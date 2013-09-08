@@ -4,7 +4,7 @@ var equal = require('assert').equal;
 
 module.exports = function(Knex, dbName, resolver) {
 
-  it('should truncate a table with truncate', function(ok) {
+  it('should truncate a table with truncate', function() {
 
     Knex('test_table_two')
       .truncate()
@@ -20,7 +20,7 @@ module.exports = function(Knex, dbName, resolver) {
 
   });
 
-  it('should allow raw queries directly with `Knex.Raw`', function(ok) {
+  it('should allow raw queries directly with `Knex.Raw`', function() {
 
     var tables = {
       mysql: 'SHOW TABLES',

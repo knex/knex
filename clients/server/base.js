@@ -1,109 +1,87 @@
-var _      = require('underscore');
-var whenfn = require('when/function');
-var nodefn = require('when/node/function');
+var _          = require('underscore');
+var nodefn     = require('when/node/function');
 
-// Setup is called with the context of the current client.
-exports.setup = function(Client, name, options) {
-  if (!options.connection) {
-    throw new Error('The database connection properties must be specified.');
-  }
-  this.name = name;
-  this.debug = options.debug;
-  this.connectionSettings = options.connection;
-  this.grammar = Client.grammar;
-  this.schemaGrammar = Client.schemaGrammar;
+var Pool       = require('generic-pool').Pool;
+var ClientBase = require('../base').ClientBase;
 
-  // Extend the genericPool with the options
-  // passed into the init under the "pool" option.
-  var instance = this;
-  var poolInstance = this.pool = require('generic-pool').Pool(_.extend({
-    name: 'pool-' + name,
-    min: 2,
-    max: 10,
-    log: false,
-    idleTimeoutMillis: 30000,
-    create: function(callback) {
-      var pool = this;
-      instance.getRawConnection(function(err, conn) {
-        if (err) return callback(err);
-        conn.__cid = _.uniqueId('__cid');
-        if (pool.afterCreate) {
-          pool.afterCreate(conn, function(err) {
-            callback(err, conn);
-          });
-        } else {
-          callback(null, conn);
-        }
-      });
-    },
-    destroy: function(conn) {
-      if (this.beforeDestroy) {
-        this.beforeDestroy(conn, function() {
-          conn.end();
-        });
-      } else {
-        conn.end();
-      }
-    }
-  }, this.poolDefaults, options.pool));
+var ServerBase = ClientBase.extend({
 
-  // Default to draining on exit.
-  if (poolInstance.drainOnExit !== false && typeof process === 'object') {
-    process.on('exit', function() {
-      poolInstance.drain(function() {
-          poolInstance.destroyAllNow();
-      });
-    });
-  }
-};
+  // Pass a config object into the constructor,
+  // which then initializes the pool and
+  constructor: function(config) {
+    this.connectionSettings = config.connection;
+    this.initPool(config.pool);
+    this.initialize(config);
+    _.bindAll(this, 'getRawConnection');
+  },
 
-exports.skim = function(data) {
-  return _.map(data, function(obj) {
-    return _.pick(obj, _.keys(obj));
-  });
-};
+  // Initialize a pool with the apporpriate configuration and
+  // bind the pool to the current client object.
+  initPool: function() {
+    this.pool = new Pool(_.defaults(poolConfig, _.result(this, 'poolDefaults')));
+  },
 
-exports.debug = function(builder, conn) {
-  console.log({sql: builder.sql, bindings: builder.bindings, __cid: conn.__cid});
-};
+  // Execute a query on the specified Builder or QueryBuilder
+  // interface. If a `connection` is specified, use it, otherwise
+  // acquire a connection, and then dispose of it when we're done.
+  query: function(builder) {
+    return new Query(this, builder, builder.usingConnection).run();
+  },
 
-exports.protoProps = {
+  // Debug a query.
+  debug: function() {
+    console.log({sql: builder.sql, bindings: builder.bindings, __cid: conn.__cid});
+  },
 
   // Retrieves a connection from the connection pool,
   // returning a promise.
-  getConnection: function() {
+  getConnection: function(builder) {
     return nodefn.call(this.pool.acquire);
   },
 
   // Releases a connection from the connection pool,
   // returning a promise.
   releaseConnection: function(conn) {
-    return whenfn.call(this.pool.release, conn);
+    return nodefn.call(this.pool.release, conn);
   },
 
   // Begins a transaction statement on the instance,
   // resolving with the connection of the current transaction.
   startTransaction: function() {
-    return this.getConnection().then(function(connection) {
-      return nodefn.call(connection.query.bind(connection), 'begin;', []).then(function() {
-        return connection;
+    return this.getConnection()
+      .tap(function(connection) {
+        return nodefn.call(connection.query.bind(connection), 'begin;', []);
       });
-    });
   },
 
+  // Finishes the transaction statement on the instance.
   finishTransaction: function(type, transaction, msg) {
-    var ctx = this;
-    var dfd = transaction.dfd;
+    var client = this;
+    var dfd    = transaction.dfd;
     nodefn.call(trans.connection.query.bind(trans.connection), type + ';', []).then(function(resp) {
       if (type === 'commit') dfd.resolve(msg || resp);
       if (type === 'rollback') dfd.reject(msg || resp);
     }, function (err) {
       dfd.reject(err);
     }).ensure(function() {
-      return ctx.releaseConnection(trans.connection).then(function() {
+      return client.releaseConnection(trans.connection).then(function() {
         trans.connection = null;
       });
     });
   }
 
+});
+
+// Setup is called with the context of the current client.
+exports.setup = function(Client, name, options) {
+  this.debug = options.debug;
+
+  // Default to draining on exit.
+  if (poolInstance.drainOnExit !== false && typeof process === 'object') {
+    process.on('exit', function() {
+
+    });
+  }
 };
+
+exports.ServerBase = ServerBase;

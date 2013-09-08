@@ -1,76 +1,27 @@
-var when = require('when');
+// postgresql
+// -------
+
+// All of the "when.js" promise components needed in this module.
+var when    = require('when');
+var nodefn  = require('when/node/function');
+
+// Other dependencies, including the `pg` library,
+// which needs to be added as a dependency to the project
+// using this database.
 var _    = require('underscore');
-var util = require('util');
-var base = require('./base');
 var pg   = require('pg');
 
-var Grammar = require('../base/grammar').Grammar;
-var SchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
+// All other local project modules needed in this scope.
+var ServerBase        = require('./base').ServerBase;
+var BaseQuery         = require('../query').Query;
+var baseGrammar       = require('../base/grammar').Grammar;
+var baseSchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
+var Helpers           = require('../../lib/helpers').Helpers;
 
-// Constructor for the PostgresClient
-var PostgresClient = module.exports = function(name, options) {
-  base.setup.call(this, PostgresClient, name, options);
-  this.dialect = 'postgresql';
-};
+// Constructor for the PostgreSQL Client
+exports.Client = ServerBase.extend({
 
-_.extend(PostgresClient.prototype, base.protoProps, {
-
-  // Execute a query on the specified Builder or QueryBuilder
-  // interface. If a `connection` is specified, use it, otherwise
-  // acquire a connection, and then dispose of it when we're done.
-  query: function(builder) {
-    var emptyConnection = !builder._connection;
-    var debug = this.debug || builder._debug;
-    var instance = this;
-
-    return when((builder._connection || this.getConnection()))
-      .then(function(conn) {
-        var dfd = when.defer();
-
-        // Bind all of the ? to numbered vars.
-        var questionCount = 0;
-        builder.sql = builder.sql.replace(/\?/g, function() {
-          questionCount++;
-          return '$' + questionCount;
-        });
-
-        // If we have a debug flag set, console.log the query.
-        if (debug) base.debug(builder, conn);
-
-        // Call the querystring and then release the client
-        conn.query(builder.sql, builder.bindings, function (err, resp) {
-          if (err) return dfd.reject(err);
-          resp || (resp = {});
-
-          if (builder._source === 'Raw') return dfd.resolve(resp);
-
-          if (builder._source === 'SchemaBuilder') {
-            if (builder.type === 'tableExists' || builder.type === 'columnExists') {
-              return dfd.resolve(resp.rows.length > 0);
-            } else {
-              return dfd.resolve(null);
-            }
-          }
-
-          if (resp.command === 'SELECT') {
-            resp = resp.rows;
-          } else if (resp.command === 'INSERT') {
-            resp = _.map(resp.rows, function(row) { return row[builder.isReturning]; });
-          } else if (resp.command === 'UPDATE' || resp.command === 'DELETE') {
-            resp = resp.rowCount;
-          } else {
-            resp = '';
-          }
-          dfd.resolve(resp);
-        });
-
-        // Empty the connection after we run the query, unless one was specifically
-        // set (in the case of transactions, etc).
-        return dfd.promise.ensure(function() {
-          if (emptyConnection) instance.pool.release(conn);
-        });
-      });
-  },
+  dialect: 'postgresql',
 
   // Returns a connection from the `pg` lib.
   getRawConnection: function(callback) {
@@ -96,14 +47,63 @@ _.extend(PostgresClient.prototype, base.protoProps, {
 
 });
 
+exports.Query = Query.extend({
+
+  // Call the querystring and then release the client
+  runQuery: function(sql, bindings, connection) {
+
+
+    conn.query(builder.sql, builder.bindings, function (err, resp) {
+      if (err) return dfd.reject(err);
+      resp || (resp = {});
+
+      if (builder._source === 'Raw') return dfd.resolve(resp);
+
+      if (builder._source === 'SchemaBuilder') {
+        if (builder.type === 'tableExists' || builder.type === 'columnExists') {
+          return dfd.resolve(resp.rows.length > 0);
+        } else {
+          return dfd.resolve(null);
+        }
+      }
+
+      if (resp.command === 'SELECT') {
+        resp = resp.rows;
+      } else if (resp.command === 'INSERT') {
+        resp = _.map(resp.rows, function(row) { return row[builder.isReturning]; });
+      } else if (resp.command === 'UPDATE' || resp.command === 'DELETE') {
+        resp = resp.rowCount;
+      } else {
+        resp = '';
+      }
+
+      dfd.resolve(resp);
+
+    });
+  }
+
+});
+
 // Extends the standard sql grammar.
-PostgresClient.grammar = _.defaults({
+exports.grammar = _.defaults({
+
+  // Bind all of the ? to numbered vars, so they
+  // may be passed to the "pg" client correctly.
+  toSql: function(builder) {
+    var sql = Grammar.toSql.call(this, builder);
+    var questionCount = 0;
+    return sql.replace(/\?/g, function() {
+      questionCount++;
+      return '$' + questionCount;
+    });
+  },
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
-    return (value !== '*' ? util.format('"%s"', value) : "*");
+    return (value !== '*' ? Helpers.format('"%s"', value) : "*");
   },
 
+  // Compiles a truncate query.
   compileTruncate: function(qb) {
     return 'truncate ' + this.wrapTable(qb.table) + ' restart identity';
   },
@@ -293,9 +293,7 @@ PostgresClient.schemaGrammar = _.defaults({
   // checking whether the json type is supported - falling
   // back to "text" if it's not.
   typeJson: function(column, blueprint) {
-    if (parseFloat(blueprint.client.version) >= 9.2) {
-      return 'json';
-    }
+    if (parseFloat(blueprint.client.version) >= 9.2) return 'json';
     return 'text';
   },
 

@@ -15,7 +15,12 @@ define(function(require, exports) {
   // The methods assumed when building a client.
   ClientBase.prototype = {
 
-    // The biggest method of the client, the `query` is used to
+    // Gets the raw connection for the current client.
+    getRawConnection: function() {},
+
+    // Execute a query on the specified `Builder` or `SchemaBuilder`
+    // interface. If a `connection` is specified, use it, otherwise
+    // acquire a connection, and then dispose of it when we're done.
     query: function() {},
 
     // Retrieves a connection from the connection pool,
