@@ -15,7 +15,7 @@ var sqlite3         = require('sqlite3');
 var SQLite3Base     = require('../base/sqlite3');
 var ServerBase      = require('./base').ServerBase;
 var Builder         = require('../../lib/builder').Builder;
-var transaction     = require('../../lib/transaction').transaction;
+var Transaction     = require('../../lib/transaction').Transaction;
 var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
 var Helpers           = require('../../lib/helpers').Helpers;
 
@@ -29,6 +29,9 @@ var SQLite3Client = exports.Client = ServerBase.extend({
   initialize: function() {},
 
   runQuery: function(connection, sql, bindings, builder) {
+    if (sql === '__rename_column__') {
+      return this.ddl(connection, sql, bindings, builder);
+    }
     var method = (builder.type === 'insert' ||
       builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
     // Call the querystring and then release the client
@@ -41,20 +44,21 @@ var SQLite3Client = exports.Client = ServerBase.extend({
     return dfd.promise;
   },
 
-  // Prepare the query...
-  prepareQuery: function(connection, sql) {
-    return sql;
-    if (sql === '__rename_column__') {
-      return transaction.call(builder, function(trx) {
-        instance.alterSchema.call(instance, builder, trx);
-      });
-    }
-  },
-
   poolDefaults: {
     max: 1,
     min: 1,
     destroy: function(client) { client.close(); }
+  },
+
+  ddl: function(connection, sql, bindings, builder) {
+    var client = this;
+    return nodefn.call(connection.run.bind(connection), 'begin transaction;').then(function() {
+      var transaction  = new Transaction({client: client});
+      var containerObj = transaction.getContainerObject(connection);
+      return transaction.initiateDeferred(function(trx) {
+        client.alterSchema.call(client, builder, trx);
+      })(containerObj);
+    });
   },
 
   getRawConnection: function() {
@@ -92,7 +96,6 @@ var SQLite3Client = exports.Client = ServerBase.extend({
 
   // This needs to be refactored... badly.
   alterSchema: function(builder, trx) {
-    var instance = this;
     var connection = trx.connection;
     var currentCol, command;
 
@@ -120,7 +123,7 @@ var SQLite3Client = exports.Client = ServerBase.extend({
         nodefn.call(connection.all.bind(connection), 'SELECT * FROM "__migrate__' + sql.name + '"'),
       ]);
     }).spread(function(createTable, selected) {
-      var qb = new Builder(instance).transacting(trx);
+      var qb = new Builder(builder.knex).transacting(trx);
           qb.table = builder.table;
       return when.all([
         qb.insert(_.map(selected, function(row) {

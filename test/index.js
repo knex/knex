@@ -43,19 +43,19 @@ describe('Integration Tests', function() {
 
   before(function() {
     var context = this;
+
     SchemaBuilder.prototype.logMe = Builder.prototype.logMe = function(logWhat) {
       this.isLogging = logWhat || true;
       return this;
     };
+
     SchemaBuilder.prototype.then = Builder.prototype.then = function() {
 
       if (this.isLogging) {
 
         // If we're not only logging the sql for this query...
         if (this.isLogging !== 'result') {
-
           console.log(this.toString());
-
         }
 
       }
