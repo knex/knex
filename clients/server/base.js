@@ -48,7 +48,8 @@ var ServerBase = ClientBase.extend({
 
       conn = connection;
       if (_.isArray(sql)) {
-        return sequence(sql.map(function(query) {
+        return sequence(sql.map(function(query, i) {
+          builder.currentIndex = i;
           return function() { return client.runQuery(connection, query, bindings, builder); };
         }));
       }

@@ -1,0 +1,62 @@
+
+module.exports = function(knex) {
+
+  describe('misc', function () {
+
+    it('should truncate a table with truncate', function() {
+
+      return knex('test_table_two')
+        .truncate()
+        .then(function() {
+
+          return knex('test_table_two')
+            .select('*')
+            .then(function(resp) {
+              expect(resp).to.have.length(0);
+            });
+
+        });
+
+    });
+
+    it('should allow raw queries directly with `knex.raw`', function() {
+
+      var tables = {
+        mysql: 'SHOW TABLES',
+        postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+        sqlite3: "SELECT name FROM sqlite_master WHERE type='table';"
+      };
+
+      return knex.raw(tables[knex.client.dialect]);
+
+    });
+
+    it('should allow using the primary table as a raw statement', function() {
+
+      expect(knex(knex.raw("raw_table_name")).toString()).to.equal('select * from raw_table_name');
+
+    });
+
+    it('should allow renaming a column', function(done) {
+
+      return knex.schema.table('accounts', function(t) {
+
+        t.renameColumn('about', 'about_col');
+
+      }).then(function() {
+
+        return knex('accounts').select('about_col');
+
+      }).then(function(resp) {
+
+        return knex.schema.table('accounts', function(t) {
+          t.renameColumn('about_col', 'about');
+        });
+
+      });
+
+    });
+
+  });
+
+};

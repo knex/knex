@@ -4,25 +4,26 @@ module.exports = function(knex) {
 
   describe('aggregate', function() {
 
-    it('has a sum', function(ok) {
+    it('has a sum', function() {
 
-      return Knex('accounts').sum('logins');
-
-    });
-
-    it('has a count', function(ok) {
-
-      return Knex('accounts').count('id');
+      return knex('accounts').sum('logins');
 
     });
 
-    it("support the groupBy function", function(ok) {
-        when.all([
-          Knex('accounts').count('id').groupBy('logins'),
-          Knex('accounts').count('id').groupBy('first_name')
-        ]).then(resolver(ok, true), ok);
+    it('has a count', function() {
+
+      return knex('accounts').count('id');
+
     });
 
+    it("support the groupBy function", function() {
+
+      return when.all([
+        knex('accounts').count('id').groupBy('logins'),
+        knex('accounts').count('id').groupBy('first_name')
+      ]);
+
+    });
 
 
   });

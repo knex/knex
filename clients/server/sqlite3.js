@@ -42,8 +42,9 @@ var SQLite3Client = exports.Client = ServerBase.extend({
   },
 
   // Prepare the query...
-  prepareQuery: function(connection) {
-    if (builder.sql === '__rename_column__') {
+  prepareQuery: function(connection, sql) {
+    return sql;
+    if (sql === '__rename_column__') {
       return transaction.call(builder, function(trx) {
         instance.alterSchema.call(instance, builder, trx);
       });

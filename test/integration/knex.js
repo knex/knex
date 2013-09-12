@@ -43,12 +43,13 @@ _.each([MySQL, PostgreSQL, SQLite3], function(knex) {
     require('./builder/schema')(knex);
     require('./builder/inserts')(knex);
     require('./builder/selects')(knex);
-    // require('./builder/joins')(knex);
-    // require('./builder/aggregate')(knex);
+    require('./builder/unions')(knex);
+    require('./builder/joins')(knex);
+    require('./builder/aggregate')(knex);
     require('./builder/updates')(knex);
     require('./builder/transaction')(knex);
     require('./builder/deletes')(knex);
-    // require('./builder/additional')(knex);
+    require('./builder/additional')(knex);
 
   });
 

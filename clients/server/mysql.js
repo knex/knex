@@ -23,8 +23,13 @@ exports.Client = ServerBase.extend({
 
   dialect: 'mysql',
 
-  runQuery: function(connection, sql, bindings) {
-    return nodefn.call(connection.query.bind(connection), sql, bindings);
+  runQuery: function(connection, sql, bindings, builder) {
+    if (builder._source === 'SchemaBuilder') {
+      sql = this.advancedQuery(connection, sql, bindings, builder);
+    }
+    return when(sql).then(function(sql) {
+      return nodefn.call(connection.query.bind(connection), sql, bindings);
+    });
   },
 
   // Get a raw connection, called by the `pool` whenever a new
@@ -35,18 +40,16 @@ exports.Client = ServerBase.extend({
   },
 
   // Used to check if there is a conditional query needed to complete the next one.
-  checkSchema: function(builder) {
-    return function(conn) {
-      var sql = builder.sql;
-      if (sql.indexOf('alter table') === 0 && sql.indexOf('__datatype__') === (sql.length - 12)) {
-        var newSql = sql.replace('alter table', 'show fields from').split('change')[0] + ' where field = ?';
-        return nodefn.call(conn.query.bind(conn), newSql, [builder.commands[builder.currentIndex].from]).then(function(resp) {
-          var column = resp[0];
-          // Set to the datatype we're looking to change it to...
-          builder.sql = builder.sql.replace('__datatype__', column[0].Type);
-        });
-      }
-    };
+  advancedQuery: function(connection, sql, bindings, builder) {
+    if (sql.indexOf('alter table') === 0 && sql.indexOf('__datatype__') === (sql.length - 12)) {
+      var newSql = sql.replace('alter table', 'show fields from').split('change')[0] + ' where field = ?';
+      return nodefn.call(connection.query.bind(connection), newSql, [builder.commands[builder.currentIndex].from]).then(function(resp) {
+        var column = resp[0];
+        // Set to the datatype we're looking to change it to...
+        return sql.replace('__datatype__', column[0].Type);
+      });
+    }
+    return sql;
   }
 
 });
