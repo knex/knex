@@ -29,7 +29,7 @@ describe('MysqlClient', function () {
 
     it('runs the query on the connection, with the sql and bindings');
 
-    it('resolves with the builder._handleResponse method');
+    it('resolves with the builder.handleResponse method');
 
   });
 

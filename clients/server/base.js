@@ -1,7 +1,12 @@
-var _          = require('underscore');
+// ServerBase
+// -------
+var when       = require('when');
 var nodefn     = require('when/node/function');
+var sequence   = require('when/sequence');
 
-var Pool       = require('generic-pool').Pool;
+var _          = require('underscore');
+
+var Pool       = require('../pool').Pool;
 var ClientBase = require('../base').ClientBase;
 
 var ServerBase = ClientBase.extend({
@@ -15,27 +20,59 @@ var ServerBase = ClientBase.extend({
     _.bindAll(this, 'getRawConnection');
   },
 
+  initialize: function() {},
+
   // Initialize a pool with the apporpriate configuration and
   // bind the pool to the current client object.
-  initPool: function() {
-    this.pool = new Pool(_.defaults(poolConfig, _.result(this, 'poolDefaults')));
+  initPool: function(poolConfig) {
+    this.pool = new Pool(_.defaults(poolConfig, _.result(this, 'poolDefaults')), this);
+  },
+
+  runQuery: function(connection, sql, bindings) {
+    return nodefn.call(connection.query.bind(connection), sql, bindings);
   },
 
   // Execute a query on the specified Builder or QueryBuilder
   // interface. If a `connection` is specified, use it, otherwise
   // acquire a connection, and then dispose of it when we're done.
   query: function(builder) {
-    return new Query(this, builder, builder.usingConnection).run();
+    var conn, client = this;
+    var sql        = builder.toSql(builder);
+    var bindings   = builder.cleanBindings();
+
+    var chain = this.getConnection(builder).then(function(connection) {
+
+      if (client.isDebugging || builder.isDebugging) {
+        client.debug(sql, bindings, connection, builder);
+      }
+
+      conn = connection;
+      if (_.isArray(sql)) {
+        return sequence(sql.map(function(query) {
+          return function() { return client.runQuery(connection, query, bindings); };
+        }));
+      }
+      return client.runQuery(connection, sql, bindings);
+    });
+
+    if (!builder.usingConnection) {
+      chain = chain.ensure(function() {
+        client.pool.release(conn);
+      });
+    }
+
+    return chain.then(builder.handleResponse);
   },
 
   // Debug a query.
-  debug: function() {
-    console.log({sql: builder.sql, bindings: builder.bindings, __cid: conn.__cid});
+  debug: function(sql, bindings, connection, builder) {
+    console.log({sql: sql, bindings: bindings, __cid: connection.__cid});
   },
 
   // Retrieves a connection from the connection pool,
   // returning a promise.
   getConnection: function(builder) {
+    if (builder && builder.usingConnection) return when(builder.usingConnection);
     return nodefn.call(this.pool.acquire);
   },
 
@@ -58,30 +95,18 @@ var ServerBase = ClientBase.extend({
   finishTransaction: function(type, transaction, msg) {
     var client = this;
     var dfd    = transaction.dfd;
-    nodefn.call(trans.connection.query.bind(trans.connection), type + ';', []).then(function(resp) {
+    nodefn.call(transaction.connection.query.bind(transaction.connection), type + ';', []).then(function(resp) {
       if (type === 'commit') dfd.resolve(msg || resp);
       if (type === 'rollback') dfd.reject(msg || resp);
     }, function (err) {
       dfd.reject(err);
     }).ensure(function() {
-      return client.releaseConnection(trans.connection).then(function() {
-        trans.connection = null;
+      return client.releaseConnection(transaction.connection).tap(function() {
+        transaction.connection = null;
       });
     });
   }
 
 });
-
-// Setup is called with the context of the current client.
-exports.setup = function(Client, name, options) {
-  this.debug = options.debug;
-
-  // Default to draining on exit.
-  if (poolInstance.drainOnExit !== false && typeof process === 'object') {
-    process.on('exit', function() {
-
-    });
-  }
-};
 
 exports.ServerBase = ServerBase;

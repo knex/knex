@@ -4,7 +4,7 @@ module.exports = function(Knex, dbName, resolver) {
   describe(dbName, function() {
 
     it('should handle updates', function(ok) {
-      
+
       Knex('accounts')
         .where('id', 1)
         .update({
@@ -13,7 +13,7 @@ module.exports = function(Knex, dbName, resolver) {
           email:'test100@example.com'
         })
         .then(resolver(ok), ok);
-      
+
     });
 
   });

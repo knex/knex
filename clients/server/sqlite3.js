@@ -13,24 +13,53 @@ var sqlite3         = require('sqlite3');
 
 // All other local project modules needed in this scope.
 var SQLite3Base     = require('../base/sqlite3');
+var ServerBase      = require('./base').ServerBase;
 var Builder         = require('../../lib/builder').Builder;
 var transaction     = require('../../lib/transaction').transaction;
 var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
 
 // Constructor for the SQLite3Client.
-var SQLite3Client = exports.Client = SQLite3Base.extend({
+var SQLite3Client = exports.Client = ServerBase.extend({
 
-  // Retrieves a connection from the connection pool,
-  // returning a promise.
-  getConnection: function() {
-    return nodefn.call(this.pool.acquire);
+  dialect: 'sqlite3',
+
+  initialize: function() {
   },
 
-  // Releases a connection from the connection pool,
-  // returning a promise.
-  releaseConnection: function(conn) {
-    return nodefn.call(this.pool.release, conn);
-  },
+  // runQuery: function() {
+    // var method = (builder.type === 'insert' ||
+    //   builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
+
+    // // Call the querystring and then release the client
+    // conn[method](builder.sql, builder.bindings, function (err, resp) {
+
+    //   if (err) return dfd.reject(err);
+
+    //   if (builder._source === 'Raw') return dfd.resolve(resp);
+
+    //   if (builder._source === 'SchemaBuilder') {
+    //     if (builder.type === 'tableExists') {
+    //       return dfd.resolve(resp.length > 0);
+    //     } else if (builder.type === 'columnExists') {
+    //       return dfd.resolve(_.findWhere(resp, {name: builder.bindings[1]}) != null);
+    //     } else {
+    //       return dfd.resolve(null);
+    //     }
+    //   }
+
+    //   if (builder.type === 'select') {
+    //     resp = base.skim(resp);
+    //   } else if (builder.type === 'insert') {
+    //     resp = [this.lastID];
+    //   } else if (builder.type === 'delete' || builder.type === 'update') {
+    //     resp = this.changes;
+    //   } else {
+    //     resp = '';
+    //   }
+
+    //   dfd.resolve(resp);
+    // });
+  // },
 
   // Prepare the query...
   prepareQuery: function(connection) {
@@ -47,10 +76,13 @@ var SQLite3Client = exports.Client = SQLite3Base.extend({
     destroy: function(client) { client.close(); }
   },
 
-  getRawConnection: function(callback) {
-    var client = new sqlite3.Database(this.connectionSettings.filename, function(err) {
-      callback(err, client);
+  getRawConnection: function() {
+    var dfd = when.defer();
+    var db = new sqlite3.Database(this.connectionSettings.filename, function(err) {
+      if (err) return dfd.reject(err);
+      dfd.resolve(db);
     });
+    return dfd.promise;
   },
 
   // Begins a transaction statement on the instance,
@@ -112,45 +144,6 @@ var SQLite3Client = exports.Client = SQLite3Base.extend({
         nodefn.call(connection.all.bind(connection), 'DROP TABLE "__migrate__' + builder.table + '"')
       ]);
     }).then(trx.commit, trx.rollback);
-  }
-
-});
-
-var Query = exports.Query = BaseQuery.extend({
-
-  runQuery: function() {
-    // var method = (builder.type === 'insert' ||
-    //   builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
-
-    // // Call the querystring and then release the client
-    // conn[method](builder.sql, builder.bindings, function (err, resp) {
-
-    //   if (err) return dfd.reject(err);
-
-    //   if (builder._source === 'Raw') return dfd.resolve(resp);
-
-    //   if (builder._source === 'SchemaBuilder') {
-    //     if (builder.type === 'tableExists') {
-    //       return dfd.resolve(resp.length > 0);
-    //     } else if (builder.type === 'columnExists') {
-    //       return dfd.resolve(_.findWhere(resp, {name: builder.bindings[1]}) != null);
-    //     } else {
-    //       return dfd.resolve(null);
-    //     }
-    //   }
-
-    //   if (builder.type === 'select') {
-    //     resp = base.skim(resp);
-    //   } else if (builder.type === 'insert') {
-    //     resp = [this.lastID];
-    //   } else if (builder.type === 'delete' || builder.type === 'update') {
-    //     resp = this.changes;
-    //   } else {
-    //     resp = '';
-    //   }
-
-    //   dfd.resolve(resp);
-    // });
   }
 
 });

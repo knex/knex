@@ -31,7 +31,7 @@ define(function(require, exports, module) {
   // you'll typically only want to call once per application cycle.
   var Knex = function(config) {
 
-    var Client, client;
+    var Dialect, client;
 
     // If the client isn't actually a client, we need to configure it into one.
     // On the client, this isn't acceptable, since we need to return immediately
@@ -46,8 +46,8 @@ define(function(require, exports, module) {
         if (!Clients[clientName]) {
           throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
         }
-        Client = require(Clients[clientName]);
-        client = new Client.Ctor(_.omit(config, 'client'));
+        Dialect = require(Clients[clientName]);
+        client = new Dialect.Client(_.omit(config, 'client'));
       }
     }
 
@@ -56,7 +56,8 @@ define(function(require, exports, module) {
       return knex.builder(tableName);
     };
 
-    knex.grammar = Client.grammar;
+    knex.grammar = Dialect.grammar;
+    knex.schemaGrammar = Dialect.schemaGrammar;
 
     // Main namespaces for key library components.
     knex.schema  = {};
@@ -65,7 +66,7 @@ define(function(require, exports, module) {
     // Enable the `Builder('tableName')` syntax, as is used in the main `knex('tableName')`.
     knex.builder = function(tableName) {
       var builder = new Builder(knex);
-      return tableName ? builder.table(tableName) : builder;
+      return tableName ? builder.from(tableName) : builder;
     };
 
     // Attach each of the `Builder` "interface" methods direcly onto

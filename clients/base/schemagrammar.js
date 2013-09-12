@@ -4,19 +4,28 @@
 
 "use strict";
 
+// The "SchemaGrammar" is a layer which helps in compiling
+// valid data definition language (DDL) statements in
+// to create, alter, or destroy the various tables, columns,
+// and metadata in our database schema. These functions
+// are combined with dialect specific "SchemaGrammar"
+// functions to keep the interface database agnostic.
 define(function(require, exports) {
 
   var _             = require('underscore');
 
-  var BaseGrammar   = require('./grammar').Grammar;
+  var BaseGrammar   = require('./grammar').BaseGrammar;
   var SchemaBuilder = require('../../lib/schemabuilder').SchemaBuilder;
 
   var Helpers = require('../../lib/helpers').Helpers;
   var Raw     = require('../../lib/raw').Raw;
 
-  exports.SchemaGrammar = {
+  exports.BaseSchemaGrammar = {
 
-    // Get the raw sql statements for the blueprint.
+    // The toSql on the "schema" is different than that on the "builder",
+    // it produces an array of sql statements to be used in the creation
+    // or modification of the query, which are each run in sequence
+    // on the same connection.
     toSql: function(builder) {
 
       // Add the commands that are implied by the blueprint.
@@ -41,14 +50,14 @@ define(function(require, exports) {
           // equal to "true" (boolean), no name has been specified for this
           // index, so we will simply call the index methods without one.
           if (column[indexVar] === true) {
-            this[index](column, null);
+            builder[index](column, null);
             continue continueIndex;
 
           // If the index has been specified on the column and it is something
           // other than boolean true, we will assume a name was provided on
           // the index specification, and pass in the name to the method.
           } else if (_.has(column, indexVar)) {
-            this[index](column.name, column[indexVar], column);
+            builder[index](column.name, column[indexVar], column);
             continue continueIndex;
           }
         }
@@ -63,7 +72,7 @@ define(function(require, exports) {
         var command = builder.commands[i];
         var method = 'compile' + Helpers.capitalize(command.name);
         if (_.has(this, method)) {
-          var sql = this[method](this, command);
+          var sql = this[method](builder, command);
           if (sql) statements = statements.concat(sql);
         }
       }

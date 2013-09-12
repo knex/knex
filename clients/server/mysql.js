@@ -14,9 +14,8 @@ var mysql = require('mysql');
 
 // All other local project modules needed in this scope.
 var ServerBase        = require('./base').ServerBase;
-var BaseQuery         = require('../query').Query;
-var baseGrammar       = require('../base/grammar').Grammar;
-var baseSchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
+var baseGrammar       = require('../base/grammar').BaseGrammar;
+var baseSchemaGrammar = require('../base/schemagrammar').BaseSchemaGrammar;
 var Helpers           = require('../../lib/helpers').Helpers;
 
 // Constructor for the MySQLClient.
@@ -24,15 +23,15 @@ exports.Client = ServerBase.extend({
 
   dialect: 'mysql',
 
-  initialize: function(config) {
-    _.bindAll(this, 'runQuery');
+  runQuery: function(connection, sql, bindings) {
+    return nodefn.call(connection.query.bind(connection), sql, bindings);
   },
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
-  getRawConnection: function(callback) {
+  getRawConnection: function() {
     var connection = mysql.createConnection(this.connectionSettings);
-    return nodefn.call(connection.connect.bind(connection));
+    return nodefn.call(connection.connect.bind(connection)).yield(connection);
   },
 
   // Used to check if there is a conditional query needed to complete the next one.
@@ -52,43 +51,20 @@ exports.Client = ServerBase.extend({
 
 });
 
-var Query = exports.Query = BaseQuery.extend({
-
-  prepareQuery: function() {
-    var sql = this.builder.toSql();
-    var bindings = this.builder.cleanBindings();
-
-    if (_.isArray(sql)) {
-      queryChain = queryChain.then(function() {
-        return sequence(sql.map(function(query) {
-          return function() { return client.runQuery(connection, builder, query, bindings); };
-        }));
-      });
-    } else {
-      queryChain = queryChain.then(function() {
-        return client.runQuery(connection, builder, sql, bindings);
-      });
-    }
-  },
-
-  // Gets a connection, if one doesn't already exist to run the current query.
-  getConnection: function() {
-    return this.connection ? when(this.connection) : this.client.getConnection();
-  },
-
-  // Call the querystring and then release the client.
-  runQuery: function(sql, bindings) {
-    return nodefn.call(connection.query.bind(connection), sql, bindings);
-  }
-
-});
-
 // Extends the standard sql grammar.
 var grammar = exports.grammar = _.defaults({
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
     return (value !== '*' ? Helpers.format('`%s`', value) : "*");
+  },
+
+  // Parses the response, according to the way mySQL works...
+  handleResponse: function(builder, response) {
+    if (builder.type === 'select') response = Helpers.skim(response[0]);
+    if (builder.type === 'insert') response = [response[0].insertId];
+    if (builder.type === 'delete' || builder.type === 'update') response = response.affectedRows;
+    return response;
   }
 
 }, baseGrammar);
@@ -99,9 +75,16 @@ var schemaGrammar = exports.schemaGrammar = _.defaults({
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After', 'Comment'],
 
+  // Handle response for the schema.
+  handleResponse: function(builder, resp) {
+    if (builder.type === 'tableExists') return resp.length > 0;
+    if (builder.type === 'columnExists') return resp.length > 0;
+    return null;
+  },
+
   // Compile a create table command.
   compileCreateTable: function(blueprint, command) {
-    var sql = SchemaGrammar.compileCreateTable.call(this, blueprint, command);
+    var sql  = baseSchemaGrammar.compileCreateTable.call(this, blueprint, command);
     var conn = blueprint.client.connectionSettings;
 
     if (conn.charset) sql += ' default character set ' + conn.charset;
@@ -278,7 +261,7 @@ var schemaGrammar = exports.schemaGrammar = _.defaults({
 
   // Get the SQL for an auto-increment column modifier.
   modifyIncrement: function(blueprint, column) {
-    if ((column.type == 'integer' || column.type == 'bigInteger') && column.autoIncrement) {
+    if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
       return ' not null auto_increment primary key';
     }
   },

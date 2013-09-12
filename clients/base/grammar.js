@@ -6,7 +6,9 @@
 
 // The "Grammar" is a collection of functions
 // which help to reliably compile the various pieces
-// of an SQL query into a valid escaped query.
+// of SQL into a valid, escaped query. These functions
+// are combined with dialect specific "Grammar" functions
+// to keep the interface database agnostic.
 define(function(require, exports) {
 
   var _       = require('underscore');
@@ -21,7 +23,7 @@ define(function(require, exports) {
     'orders', 'limit', 'offset', 'unions'
   ];
 
-  exports.Grammar = {
+  exports.BaseGrammar = {
 
     // Compiles the current query builder.
     toSql: function(builder) {

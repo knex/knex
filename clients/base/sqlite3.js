@@ -4,12 +4,15 @@
 
 "use strict";
 
+// The SQLite3 base is a bit different than the other clients,
+// in that it may be run on both the client and server. So add another
+// layer to the prototype chain.
 define(function(require, exports) {
 
   var _             = require('underscore');
 
-  var baseGrammar       = require('./grammar').Grammar;
-  var baseSchemaGrammar = require('./schemagrammar').SchemaGrammar;
+  var baseGrammar       = require('./grammar').BaseGrammar;
+  var baseSchemaGrammar = require('./schemagrammar').BaseSchemaGrammar;
 
   var ClientBase        = require('../base').ClientBase;
   var Helpers           = require('../../lib/helpers').Helpers;
@@ -47,7 +50,7 @@ define(function(require, exports) {
 
       // If there are any "where" clauses, we need to omit
       // any bindings that may have been associated with them.
-      if (qb.wheres.length > 0) this._clearWhereBindings(qb);
+      if (qb.wheres.length > 0) this.clearWhereBindings(qb);
 
       // If there is only one record being inserted, we will just use the usual query
       // grammar insert builder because no special syntax is needed for the single
@@ -251,7 +254,7 @@ define(function(require, exports) {
 
     // Get the SQL for an auto-increment column modifier.
     modifyIncrement: function(blueprint, column) {
-      if ((column.type == 'integer' || column.type == 'bigInteger') && column.autoIncrement) {
+      if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
         return ' primary key autoincrement not null';
       }
     }

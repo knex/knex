@@ -17,20 +17,20 @@ global.assert         = chai.assert;
 
 // Unit tests
 describe('Unit Tests', function() {
-  require('./unit/knex');
-  require('./unit/common');
-  require('./unit/builder');
-  require('./unit/builder/joinclause');
-  require('./unit/raw');
-  require('./unit/transaction');
-  require('./unit/clients/base');
-  require('./unit/clients/query');
-  require('./unit/clients/base/grammar');
-  require('./unit/clients/base/schemagrammar');
-  require('./unit/clients/server/base');
-  require('./unit/clients/server/mysql');
-  require('./unit/clients/server/postgres');
-  require('./unit/clients/server/sqlite3');
+  // require('./unit/knex');
+  // require('./unit/common');
+  // require('./unit/builder');
+  // require('./unit/builder/joinclause');
+  // require('./unit/raw');
+  // require('./unit/transaction');
+  // require('./unit/clients/base');
+  // require('./unit/clients/query');
+  // require('./unit/clients/base/grammar');
+  // require('./unit/clients/base/schemagrammar');
+  // require('./unit/clients/server/base');
+  // require('./unit/clients/server/mysql');
+  // require('./unit/clients/server/postgres');
+  // require('./unit/clients/server/sqlite3');
 });
 
 // Integration Tests
@@ -44,12 +44,31 @@ describe('Integration Tests', function() {
 
   before(function() {
     var context = this;
-    SchemaBuilder.prototype.then = Builder.prototype.then = function() {
-      return Common.then.apply(this, arguments);
+    SchemaBuilder.prototype.logMe = Builder.prototype.logMe = function(logWhat) {
+      this.isLogging = logWhat || true;
+      return this;
     };
+    SchemaBuilder.prototype.then = Builder.prototype.then = function() {
+
+      if (this.isLogging) {
+
+        // If we're not only logging the sql for this query...
+        if (this.isLogging !== 'result') {
+
+          console.log(this.toString());
+
+        }
+
+      }
+
+      return Common.then.apply(this, arguments).tap(function() {
+
+      });
+    };
+
   });
 
-  // require('./integration/knex');
+  require('./integration/knex');
 });
 
 // Benchmarks

@@ -1,20 +1,34 @@
+// Pool
+// -------
 (function(define) {
 
 "use strict";
 
 define(function(require, exports) {
 
-  var _           = require('underscore');
+  // All of the "when.js" promise components needed in this module.
+  var when        = require('when');
   var nodefn      = require('when/node/function');
+
+  var _           = require('underscore');
   var GenericPool = require('generic-pool-redux').Pool;
 
   // The "Pool" object is a thin wrapper around the
-  // generic-pool-redux library, exposing a `destroy`
+  // "generic-pool-redux" library, exposing a `destroy`
   // method for explicitly draining the pool. The
   // `init` method is called internally and initializes
   // the pool if it doesn't already exist.
-  var Pool = function(config) {
-    this.config = config;
+  var Pool = function(config, client) {
+    if (config.afterCreate) {
+      this.afterCreate = config.afterCreate;
+    }
+    _.bindAll(this, 'acquire', 'create', 'afterCreate', 'beforeDestroy');
+    this.config = _.defaults(config, {
+      create:  this.create,
+      destroy: this.beforeDestroy
+    });
+    this.client = client;
+    this.init();
   };
 
   Pool.prototype = {
@@ -24,27 +38,37 @@ define(function(require, exports) {
     // messing around with them, so it should be alright.
     defaults: {
       min: 2,
-      max: 10,
-      create: function(callback) {
-        return nodefn.bindCallback(nodefn.call(instance.getRawConnection).tap(function(connection) {
-          connection.__cid = _.uniqueId('__cid');
-          if (pool.afterCreate) return nodefn.call(pool.afterCreate, connection);
-        }), callback);
-      },
-      destroy: function(connection, callback) {
-        // if (this.beforeDestroy) { this.beforeDestroy(conn)
-        return nodefn.bindCallback(when(function() {
-          // if (this.beforeDestroy) return nodefn.call()
-        }()), callback);
-      }
+      max: 10
     },
 
     // Typically only called internally, this initializes
     // a new `GenericPool` instance, based on the `config`
     // options passed into the constructor.
     init: function() {
-      this.instance = this.instance || new GenericPool(this.config);
-      return this;
+      this.instance = this.instance || new GenericPool(_.defaults(this.config, this.defaults));
+      return this.instance;
+    },
+
+    // Extend these if you want to have some action taking place just after
+    // the connection is created, or just before the connection is destroyed.
+    afterCreate:   function() {},
+    beforeDestroy: function() {},
+
+    // Create a new connection on the pool.
+    create: function(callback) {
+      var promise = this.client.getRawConnection()
+        .tap(function(connection) { connection.__cid = _.uniqueId('__cid'); })
+        .tap(this.afterCreate);
+      return nodefn.bindCallback(promise, callback);
+    },
+
+    acquire: function(callback, priority) {
+      return (this.instance || (this.init())).acquire(callback, priority);
+    },
+
+    // Release a connection back to the connection pool.
+    release: function(connection, callback) {
+      this.instance.release(connection);
     },
 
     // Tear down the pool, only necessary if you need to
@@ -59,6 +83,7 @@ define(function(require, exports) {
 
   };
 
+  exports.Pool = Pool;
 
 });
 
