@@ -249,7 +249,7 @@ describe('Builder', function () {
     });
 
     it('sets the values to be insert', function() {
-      var spy = sinon.spy(builder, '_prepValues');
+      var spy = sinon.spy(builder, 'prepValues');
       builder.insert({key: 1, key2: 2});
       spy.should.have.been.calledOnce;
     });

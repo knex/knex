@@ -5,7 +5,7 @@ describe('Raw', function () {
 
   var raw;
   beforeEach(function() {
-    raw = new Raw();
+    raw = new Raw({});
   });
 
   it('binds the instance to the current query', function() {
