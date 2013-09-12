@@ -45,7 +45,7 @@ module.exports = function(Knex, dbName, resolver) {
     });
 
     it('supports joins with overlapping column names', function(ok) {
-      var blah = Knex('accounts as a1')
+      Knex('accounts as a1')
         .join('accounts as a2', function() {
           this.on('a1.email', '<>', 'a2.email');
         }, 'left')
