@@ -20,7 +20,8 @@
     "when": "~2.3.0",
     "underscore": "~1.5.1",
     "generic-pool": "~2.0.3",
-    "underscore.string": "~2.3.3"
+    "underscore.string": "~2.3.3",
+    "rimraf": "~2.2.2"
   },
   "scripts": {
     "test": "mocha -R spec test/index.js"
