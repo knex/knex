@@ -49,11 +49,13 @@ exports.setup = function(Client, name, options) {
 
   // Default to draining on exit.
   if (poolInstance.drainOnExit !== false && typeof process === 'object') {
-    process.on('exit', function() {
+    function drainPool() {
       poolInstance.drain(function() {
-          poolInstance.destroyAllNow();
+        poolInstance.destroyAllNow();
       });
-    });
+    }
+    process.on('exit', drainPool);
+    process.on('SIGINT', drainPool);
   }
 };
 
