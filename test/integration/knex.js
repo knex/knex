@@ -9,6 +9,7 @@ var pool = {
     expect(connection).to.have.property('__cid');
   },
   beforeDestroy: function(connection) {
+    console.log('here');
     expect(connection).to.have.property('__cid');
   }
 };
@@ -16,7 +17,6 @@ var pool = {
 var MySQL = Knex.initialize({
   client: 'mysql',
   connection: config.mysql,
-  debug: true,
   pool: _.extend({}, pool, {
     afterCreate: function(connection) {
       return nodefn.call(connection.query.bind(connection), "SET sql_mode='TRADITIONAL';", []);
@@ -39,6 +39,8 @@ var SQLite3 = Knex.initialize({
 _.each([MySQL, PostgreSQL, SQLite3], function(knex) {
 
   describe('Dialect: ' + knex.client.dialect, function() {
+
+    this.dialect = knex.client.dialect;
 
     require('./builder/schema')(knex);
     require('./builder/inserts')(knex);

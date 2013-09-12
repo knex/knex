@@ -14,6 +14,7 @@ var ServerBase = ClientBase.extend({
   // Pass a config object into the constructor,
   // which then initializes the pool and
   constructor: function(config) {
+    if (config.debug) this.isDebugging = true;
     this.connectionSettings = config.connection;
     this.initPool(config.pool);
     this.initialize(config);

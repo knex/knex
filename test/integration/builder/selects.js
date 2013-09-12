@@ -2,7 +2,7 @@ var when = require('when');
 
 module.exports = function(knex) {
 
-  describe('selects', function() {
+  describe('Selects', function() {
 
     it('runs with no conditions', function() {
 
@@ -35,16 +35,46 @@ module.exports = function(knex) {
         .orderBy('id', 'asc');
     });
 
-    it('does simple "where" cases', function() {
+    describe('simple "where" cases', function() {
 
-      return when.all([
-        knex('accounts').where('id', 1).select('first_name', 'last_name'),
-        knex('accounts').where('id', '>', 1).select(['email', 'logins']),
-        knex('accounts').where({'id': 1}).select('*'),
-        knex('accounts').where({'id': void 0}).select('*'),
-        knex('accounts').where({'id': null}).select('first_name', 'email'),
-        knex('accounts').where({'id': 0}).select()
-      ]);
+      it('allows key, value', function() {
+
+        return knex('accounts').logMe('sql').where('id', 1).select('first_name', 'last_name');
+
+      });
+
+      it('allows key, operator, value', function() {
+
+        return knex('accounts').logMe('sql').where('id', 1).select('first_name', 'last_name');
+
+      });
+
+      it('allows selecting columns with an array', function() {
+
+        return knex('accounts').logMe('sql').where('id', '>', 1).select(['email', 'logins']);
+
+      });
+
+      it('allows a hash of where attrs', function() {
+
+        return knex('accounts').logMe('sql').where({'id': 1}).select('*');
+
+      });
+
+      it('allows where id: undefined or id: null as a where null clause', function() {
+
+        return when.all([
+          knex('accounts').logMe('sql').where({'id': void 0}).select('*'),
+          knex('accounts').logMe('sql').where({'id': null}).select('first_name', 'email')
+        ]);
+
+      });
+
+      it('allows where id = 0', function() {
+
+        return knex('accounts').logMe('sql').where({'id': 0}).select();
+
+      });
 
     });
 

@@ -2,11 +2,11 @@ var uuid = require('node-uuid');
 
 module.exports = function(knex) {
 
-  describe('inserts', function() {
+  describe('Inserts', function() {
 
     it("should handle simple inserts", function() {
 
-      return knex('accounts').insert({
+      return knex('accounts').logMe().insert({
         first_name: 'Test',
         last_name: 'User',
         email:'test@example.com',
@@ -21,6 +21,7 @@ module.exports = function(knex) {
     it('should handle multi inserts', function() {
 
       return knex('accounts')
+        .logMe()
         .insert([{
           first_name: 'Test',
           last_name: 'User',
@@ -64,7 +65,7 @@ module.exports = function(knex) {
 
     it('should take hashes passed into insert and keep them in the correct order', function() {
 
-      return knex('accounts').insert([{
+      return knex('accounts').logMe().insert([{
         first_name: 'Test',
         last_name: 'User',
         email:'test4@example.com',
@@ -87,6 +88,7 @@ module.exports = function(knex) {
     it('will fail when multple inserts are made into a unique column', function(ok) {
 
       knex('accounts')
+        .logMe()
         .where('id', '>', 1)
         .orWhere('x', 2)
         .insert({
@@ -106,6 +108,7 @@ module.exports = function(knex) {
     it('should drop any where clause bindings', function() {
 
       return knex('accounts')
+        .logMe()
         .where('id', '>', 1)
         .orWhere('x', 2)
         .insert({
@@ -123,13 +126,14 @@ module.exports = function(knex) {
     it('should not allow inserting invalid values into enum fields', function(ok) {
 
       knex('datatype_test')
+        .logMe()
         .insert({'enum_value': 'd'})
         .then(function() {
           // No errors happen in sqlite3, which doesn't have native support
           // for the enum type.
           if (knex.client.dialect === 'sqlite3') ok();
         }, function() {
-          ok();
+          if (knex.client.dialect !== 'sqlite3') ok();
         });
 
     });
@@ -166,7 +170,18 @@ module.exports = function(knex) {
     });
 
     it('should handle empty inserts', function() {
-      knex('test_default_table').insert({}, 'id');
+
+      return knex.schema.createTable('test_default_table', function(qb) {
+        qb.increments().primary();
+        qb.string('string').defaultTo('hello');
+        qb.tinyint('tinyint').defaultTo(0);
+        qb.text('text').nullable();
+      }).then(function() {
+
+        return knex('test_default_table').logMe().insert({}, 'id');
+
+      });
+
     });
 
   });

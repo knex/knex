@@ -3,7 +3,8 @@ require("mocha-as-promised")();
 
 global.sinon = require("sinon");
 
-var chai = global.chai = require("chai");
+var chai       = global.chai = require("chai");
+
 chai.use(require("chai-as-promised"));
 chai.use(require("sinon-chai"));
 chai.should();
@@ -34,40 +35,19 @@ describe('Unit Tests', function() {
 
 // Integration Tests
 describe('Integration Tests', function() {
-  var Common        = require('../lib/common').Common;
-  var Builder       = require('../lib/builder').Builder;
-  var SchemaBuilder = require('../lib/schemabuilder').SchemaBuilder;
 
-  // This is where all of the info from the query calls goes...
-  var output = {};
+  var helper = require('./integration/helper');
 
   before(function() {
-    var context = this;
-
-    SchemaBuilder.prototype.logMe = Builder.prototype.logMe = function(logWhat) {
-      this.isLogging = logWhat || true;
-      return this;
-    };
-
-    SchemaBuilder.prototype.then = Builder.prototype.then = function() {
-
-      if (this.isLogging) {
-
-        // If we're not only logging the sql for this query...
-        if (this.isLogging !== 'result') {
-          console.log(this.toString());
-        }
-
-      }
-
-      return Common.then.apply(this, arguments).tap(function() {
-
-      });
-    };
-
+    helper.setLib(this);
   });
 
   require('./integration/knex');
+
+  after(function() {
+    helper.writeResult();
+  });
+
 });
 
 // Benchmarks

@@ -133,12 +133,12 @@ exports.schemaGrammar = _.defaults({
     return _.map(baseSchemaGrammar.toSql.call(this, builder), this._questions);
   },
 
-  handleResponse: function(builder, response) {
-    response = response[0];
+  handleResponse: function(builder, resp) {
+    resp = resp[0];
     if (builder.type === 'tableExists' || builder.type === 'columnExists') {
-      return response.rows.length > 0;
+      return resp.rows.length > 0;
     }
-    return null;
+    return resp;
   },
 
   // Compile the query to determine if a table exists.

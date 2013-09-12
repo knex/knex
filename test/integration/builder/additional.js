@@ -1,11 +1,12 @@
 
 module.exports = function(knex) {
 
-  describe('misc', function () {
+  describe('Additional', function () {
 
     it('should truncate a table with truncate', function() {
 
       return knex('test_table_two')
+        .logMe('sql')
         .truncate()
         .then(function() {
 
@@ -27,7 +28,7 @@ module.exports = function(knex) {
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';"
       };
 
-      return knex.raw(tables[knex.client.dialect]);
+      return knex.raw(tables[knex.client.dialect]).logMe('sql');
 
     });
 

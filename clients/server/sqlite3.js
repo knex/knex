@@ -24,8 +24,6 @@ var SQLite3Client = exports.Client = ServerBase.extend({
 
   dialect: 'sqlite3',
 
-  // isDebugging: true,
-
   initialize: function() {},
 
   runQuery: function(connection, sql, bindings, builder) {
@@ -156,6 +154,9 @@ exports.grammar = _.defaults({
 exports.schemaGrammar = _.defaults({
 
   handleResponse: function(builder, resp) {
+    // This is an array, so we'll assume that the relevant info is on the first statement...
+    resp = resp[0];
+    var ctx = resp[1]; resp = resp[0];
     if (builder.type === 'tableExists') {
       return resp.length > 0;
     } else if (builder.type === 'columnExists') {

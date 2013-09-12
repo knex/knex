@@ -1,9 +1,10 @@
 module.exports = function(knex) {
 
-  describe('updates', function () {
+  describe('Updates', function () {
 
     it('should handle updates', function(ok) {
       return knex('accounts')
+        .logMe()
         .where('id', 1)
         .update({
           first_name: 'User',

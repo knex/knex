@@ -64,8 +64,9 @@ var grammar = exports.grammar = _.defaults({
 
   // Parses the response, according to the way mySQL works...
   handleResponse: function(builder, response) {
-    if (builder.type === 'select') response = Helpers.skim(response[0]);
-    if (builder.type === 'insert') response = [response[0].insertId];
+    response = response[0];
+    if (builder.type === 'select') response = Helpers.skim(response);
+    if (builder.type === 'insert') response = [response.insertId];
     if (builder.type === 'delete' || builder.type === 'update') response = response.affectedRows;
     return response;
   }
@@ -82,7 +83,7 @@ var schemaGrammar = exports.schemaGrammar = _.defaults({
   handleResponse: function(builder, resp) {
     if (builder.type === 'tableExists') return resp.length > 0;
     if (builder.type === 'columnExists') return resp.length > 0;
-    return null;
+    return resp;
   },
 
   // Compile a create table command.
@@ -127,7 +128,6 @@ var schemaGrammar = exports.schemaGrammar = _.defaults({
 
   // Compile a primary key command.
   compilePrimary: function(blueprint, command) {
-    command.name = null;
     return this.compileKey(blueprint, command, 'primary key');
   },
 

@@ -2,25 +2,25 @@ var when = require("when");
 
 module.exports = function(knex) {
 
-  describe('aggregate', function() {
+  describe('Aggregate', function() {
 
     it('has a sum', function() {
 
-      return knex('accounts').sum('logins');
+      return knex('accounts').logMe().sum('logins');
 
     });
 
     it('has a count', function() {
 
-      return knex('accounts').count('id');
+      return knex('accounts').logMe().count('id');
 
     });
 
     it("support the groupBy function", function() {
 
       return when.all([
-        knex('accounts').count('id').groupBy('logins'),
-        knex('accounts').count('id').groupBy('first_name')
+        knex('accounts').logMe().count('id').groupBy('logins'),
+        knex('accounts').logMe().count('id').groupBy('first_name')
       ]);
 
     });

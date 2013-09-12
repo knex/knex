@@ -1,7 +1,7 @@
 
 module.exports = function(knex) {
 
-  describe('transactions', function() {
+  describe('Transactions', function() {
 
     it('should be able to commit transactions', function(ok) {
 
