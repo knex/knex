@@ -46,6 +46,10 @@ module.exports = function(knex) {
 
         expect(resp).to.have.length(1);
 
+      }).otherwise(function(err) {
+
+        console.log(err);
+
       });
 
     });

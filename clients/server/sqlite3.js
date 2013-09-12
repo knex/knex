@@ -17,49 +17,29 @@ var ServerBase      = require('./base').ServerBase;
 var Builder         = require('../../lib/builder').Builder;
 var transaction     = require('../../lib/transaction').transaction;
 var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
+var Helpers           = require('../../lib/helpers').Helpers;
 
 // Constructor for the SQLite3Client.
 var SQLite3Client = exports.Client = ServerBase.extend({
 
   dialect: 'sqlite3',
 
-  initialize: function() {
+  // isDebugging: true,
+
+  initialize: function() {},
+
+  runQuery: function(connection, sql, bindings, builder) {
+    var method = (builder.type === 'insert' ||
+      builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
+    // Call the querystring and then release the client
+    var dfd = when.defer();
+    connection[method](sql, bindings, function(err, resp) {
+      if (err) return dfd.reject(err);
+      // We need the context here, because it has the "this.lastID" or "this.changes"
+      return dfd.resolve([resp, this]);
+    });
+    return dfd.promise;
   },
-
-  // runQuery: function() {
-    // var method = (builder.type === 'insert' ||
-    //   builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
-
-    // // Call the querystring and then release the client
-    // conn[method](builder.sql, builder.bindings, function (err, resp) {
-
-    //   if (err) return dfd.reject(err);
-
-    //   if (builder._source === 'Raw') return dfd.resolve(resp);
-
-    //   if (builder._source === 'SchemaBuilder') {
-    //     if (builder.type === 'tableExists') {
-    //       return dfd.resolve(resp.length > 0);
-    //     } else if (builder.type === 'columnExists') {
-    //       return dfd.resolve(_.findWhere(resp, {name: builder.bindings[1]}) != null);
-    //     } else {
-    //       return dfd.resolve(null);
-    //     }
-    //   }
-
-    //   if (builder.type === 'select') {
-    //     resp = base.skim(resp);
-    //   } else if (builder.type === 'insert') {
-    //     resp = [this.lastID];
-    //   } else if (builder.type === 'delete' || builder.type === 'update') {
-    //     resp = this.changes;
-    //   } else {
-    //     resp = '';
-    //   }
-
-    //   dfd.resolve(resp);
-    // });
-  // },
 
   // Prepare the query...
   prepareQuery: function(connection) {
@@ -93,14 +73,19 @@ var SQLite3Client = exports.Client = ServerBase.extend({
     });
   },
 
-  finishTransaction: function(type, trans, dfd, msg) {
-    var ctx = this;
-    nodefn.call(trans.connection.run.bind(trans.connection), type + ';', []).then(function(resp) {
+  // Finishes the transaction statement on the instance.
+  finishTransaction: function(type, transaction, msg) {
+    var client = this;
+    var dfd    = transaction.dfd;
+    nodefn.call(transaction.connection.run.bind(transaction.connection), type + ';', []).then(function(resp) {
       if (type === 'commit') dfd.resolve(msg || resp);
       if (type === 'rollback') dfd.reject(msg || resp);
+    }, function (err) {
+      dfd.reject(err);
     }).ensure(function() {
-      ctx.releaseConnection(trans.connection);
-      trans.connection = null;
+      return client.releaseConnection(transaction.connection).tap(function() {
+        transaction.connection = null;
+      });
     });
   },
 
@@ -147,3 +132,32 @@ var SQLite3Client = exports.Client = ServerBase.extend({
   }
 
 });
+
+exports.grammar = _.defaults({
+
+  handleResponse: function(builder, resp) {
+    var ctx = resp[1]; resp = resp[0];
+    if (builder.type === 'select') {
+      resp = Helpers.skim(resp);
+    } else if (builder.type === 'insert') {
+      resp = [ctx.lastID];
+    } else if (builder.type === 'delete' || builder.type === 'update') {
+      resp = ctx.changes;
+    }
+    return resp;
+  }
+
+}, SQLite3Base.grammar);
+
+exports.schemaGrammar = _.defaults({
+
+  handleResponse: function(builder, resp) {
+    if (builder.type === 'tableExists') {
+      return resp.length > 0;
+    } else if (builder.type === 'columnExists') {
+      return _.findWhere(resp, {name: builder.bindings[1]}) != null;
+    }
+    return resp;
+  }
+
+}, SQLite3Base.schemaGrammar);

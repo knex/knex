@@ -21,13 +21,13 @@ define(function(require, exports) {
   // since the actual implementations will differ on the client
   // and server, we'll leave everything else to be handled in
   // sub-classes of this object.
-  var SQLite3 = module.exports = ClientBase.extend({
+  exports.Client = ClientBase.extend({
     dialect: 'sqlite3'
   });
 
   // Extends the standard sql grammar, with any SQLite specific
   // dialect oddities.
-  var grammar = SQLite3.grammar = _.defaults({
+  var grammar = exports.grammar = _.defaults({
 
     // The keyword identifier wrapper format.
     wrapValue: function(value) {
@@ -95,7 +95,7 @@ define(function(require, exports) {
   }, baseGrammar);
 
   // Grammar for the schema builder.
-  var schemaGrammar = SQLite3.schemaGrammar = _.defaults({
+  var schemaGrammar = exports.schemaGrammar = _.defaults({
 
     // The possible column modifiers.
     modifiers: ['Nullable', 'Default', 'Increment'],
@@ -259,8 +259,6 @@ define(function(require, exports) {
       }
     }
   }, baseSchemaGrammar, grammar);
-
-  exports.SQLite3 = SQLite3;
 
 });
 

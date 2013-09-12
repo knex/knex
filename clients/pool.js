@@ -22,8 +22,8 @@ define(function(require, exports) {
     if (config.afterCreate) {
       this.afterCreate = config.afterCreate;
     }
-    _.bindAll(this, 'acquire', 'create', 'afterCreate', 'beforeDestroy');
-    this.config = _.defaults(config, {
+    _.bindAll(this, 'acquire', 'create', 'release', 'afterCreate', 'beforeDestroy');
+    this.config = _.extend({}, config, {
       create:  this.create,
       destroy: this.beforeDestroy
     });

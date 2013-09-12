@@ -25,7 +25,7 @@ var ServerBase = ClientBase.extend({
   // Initialize a pool with the apporpriate configuration and
   // bind the pool to the current client object.
   initPool: function(poolConfig) {
-    this.pool = new Pool(_.defaults(poolConfig, _.result(this, 'poolDefaults')), this);
+    this.pool = new Pool(_.extend({}, poolConfig, _.result(this, 'poolDefaults')), this);
   },
 
   runQuery: function(connection, sql, bindings) {
@@ -49,10 +49,10 @@ var ServerBase = ClientBase.extend({
       conn = connection;
       if (_.isArray(sql)) {
         return sequence(sql.map(function(query) {
-          return function() { return client.runQuery(connection, query, bindings); };
+          return function() { return client.runQuery(connection, query, bindings, builder); };
         }));
       }
-      return client.runQuery(connection, sql, bindings);
+      return client.runQuery(connection, sql, bindings, builder);
     });
 
     if (!builder.usingConnection) {
