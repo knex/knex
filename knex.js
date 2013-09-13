@@ -70,18 +70,6 @@ define(function(require, exports, module) {
       return tableName ? builder.from(tableName) : builder;
     };
 
-    // Attach each of the `Builder` "interface" methods direcly onto
-    // the `knex` object, for ease of use when creating a new query builder chain, e.g.:
-    // `knex.select('*').from('tableName').then(...`
-    // `knex.insert(values).into('tableName').then(...`
-    // `knex.update(values).then(...`
-    // _.each(Interface, function(val, key) {
-    //   knex[key] = function() {
-    //     var builder = new Builder(knex);
-    //     return builder[key].apply(builder, arguments);
-    //   };
-    // });
-
     // Attach each of the `Schema` "interface" methods directly onto to `knex.schema` namespace, e.g.:
     // `knex.schema.table('tableName', function() {...`
     // `knex.schema.createTable('tableName', function() {...`
@@ -93,14 +81,6 @@ define(function(require, exports, module) {
         return SchemaInterface[key].apply(schemaBuilder, _.rest(arguments));
       };
     });
-
-    // Attach each of the `Migrate` "interface" methods directly on to the `knex.
-    // _.each(MigrateInterface, function(val, key) {
-    //   knex.migrate[key] = function() {
-    //     var migrateBuilder = new MigrateBuilder(knex);
-    //     return MigrateBuilder[key].apply(migrateBuilder, arguments);
-    //   };
-    // });
 
     // Method to run a new `Raw` query on the current client.
     knex.raw = function(sql, bindings) {

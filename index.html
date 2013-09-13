@@ -72,10 +72,10 @@
     img#logo {
       width: 450px;
     }
-    div.warning {
-      margin-top: 15px;
-      font: bold 11px Arial;
-      color: #770000;
+    .warning {
+      font-size: 12px;
+      line-height: 18px;
+      font-style: italic;
     }
     p {
       margin: 20px 0;
@@ -320,7 +320,8 @@
       Knex.js is a query builder for <b>Postgres</b>, <b>MySQL</b> and <b>SQLite3</b>, designed to be flexible,
       portable, and fun to use. It features both traditional node style <a href="#Builder-exec">callbacks</a>
       as well as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured
-      query and schema builders, <b>transaction support</b>, connection pooling and standardized responses.
+      query and schema builders, <b>transaction support</b>, connection pooling and standardized responses between
+      different query clients and dialects.
     </p>
 
     <p>
@@ -344,19 +345,20 @@
       Thanks to all of the great <a href="https://github.com/tgriesser/knex/graphs/contributors">contributions</a> to the project.
     </a>
 
-    <h2>Latest Release: 0.2.6 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <p class="warning">
+      Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work
+      on the <a href="http://laravel.com/docs/queries">Laravel Query Builder</a>,
+      from which much of the code and syntax is derived.
+    </p>
+
+
+    <h2>Latest Release: 0.4.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
       <a href="https://travis-ci.org/tgriesser/knex">
         <img src="https://travis-ci.org/tgriesser/knex.png?branch=master" alt="Travis Badge">
       </a>
-    </p>
-
-    <p>
-      Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work
-      on the <a href="http://laravel.com/docs/queries">Laravel Query Builder</a>,
-      from which much of the code and syntax is derived.
     </p>
 
     <h2 id="Installation">
@@ -398,6 +400,10 @@ $ npm install sqlite3
         </li>
         <li>
           Keys created with <tt>increments</tt> are now assumed to be unsigned (MySQL) by default.
+        </li>
+        <li>
+          The <tt>destroyAllNow</tt> is no longer called by the library on <tt>process.exit</tt> event. If you need to call
+          it explicitly yourself, you may use <tt>knex.client.destroyPool</tt>
         </li>
       </ul>
     </p>
@@ -614,7 +620,7 @@ Knex('comments').whereIn('author_id', function() {
 
 <pre>
 // select distinct 'first_name' from customers
-Knex('customers')
+knex('customers')
   .distinct('first_name', 'last_name')
   .select()
 </pre>
@@ -629,7 +635,7 @@ Knex('customers')
     </p>
 
 <pre>
-Knex('users')
+knex('users')
   .join('contacts', 'users.id', '=', 'contacts.user_id')
   .join('orders', 'users.id', '=', 'orders.user_id', 'outer')
   .select('users.id', 'contacts.phone', 'orders.price')
@@ -643,7 +649,7 @@ Knex('users')
     </p>
 
 <pre>
-Knex('users')
+knex('users')
   .join('contacts', function() {
       this.on('users.id', '=', 'contacts.user_id').orOn(...);
   })
@@ -670,7 +676,7 @@ Knex('users')
       Adds a <tt>having</tt> clause to the query.
 
 <pre>
-Knex('users')
+knex('users')
   .groupBy('count')
   .orderBy('name', 'desc')
   .having('count', '>', 100)
@@ -692,7 +698,7 @@ Knex('users')
     </p>
 
 <pre>
-Knex('users')
+knex('users')
   .limit(10)
   .offset(30)
   .select()
@@ -712,7 +718,7 @@ Knex('users')
     </p>
 
 <pre>
-Knex('users').whereNull('last_name').union(function() {
+knex('users').whereNull('last_name').union(function() {
 
   this.select('*').from('users').whereNull('first_name');
 
@@ -730,10 +736,10 @@ Knex('users').whereNull('last_name').union(function() {
 
 <pre>
   // Returns [1] in "mysql", "sqlite"; [] in "postgresql" unless the 'returning' parameter is set.
-  Knex('books').insert({title: 'Slaughterhouse Five'})
+  knex('books').insert({title: 'Slaughterhouse Five'})
 
   // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
-  Knex('books')
+  knex('books')
     .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], 'id')
 </pre>
 
@@ -746,12 +752,12 @@ Knex('users').whereNull('last_name').union(function() {
 
 <pre>
   // Returns [1]
-  Knex('books')
+  knex('books')
     .returning('id')
     .insert({title: 'Slaughterhouse Five'})
 
   // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
-  Knex('books')
+  knex('books')
     .returning('id')
     .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
 </pre>
@@ -766,7 +772,7 @@ Knex('users').whereNull('last_name').union(function() {
     </p>
 
 <pre>
-Knex('books')
+knex('books')
   .where('published_date', '<', 2000)
   .update({
     status: 'archived'
@@ -783,7 +789,7 @@ Knex('books')
     </p>
 
 <pre>
-Knex('accounts')
+knex('accounts')
   .where('activated', false)
   .del()
 </pre>
@@ -791,7 +797,7 @@ Knex('accounts')
     <p id="Builder-transacting">
       <b class="header">transacting</b><code>.transacting(transactionObj)</code>
       <br />
-      Used by <a href="#Transaction">Knex.Transaction</a>, the transacting method may be chained to any
+      Used by <a href="#Transaction">knex.transaction</a>, the transacting method may be chained to any
       query and passed the object you wish to join the query as part of the transaction for.
     </p>
 
@@ -803,7 +809,7 @@ knex.transaction(function(t) {
     .insert({name: 'Old Books'})
     .then(function(row) {
 
-      return When.all(_.map([
+      return when.all(_.map([
         {title: 'Canterbury Tales'},
         {title: 'Moby Dick'},
         {title: 'Hamlet'}
@@ -932,21 +938,21 @@ knex.transaction(function(t) {
     <h2 id="Transaction">Knex.Transaction</h2>
 
     <p>
-      Transactions are handled by passing a handler function into <tt>Knex.Transaction</tt>.
+      Transactions are handled by passing a handler function into <tt>knex.transaction</tt>.
       The handler function accepts a single argument, the promise for committing or rolling back
       the transaction. This argument is then passed into any queries which are involved in the current
       transcaction, working by explicitly passing the .
     </p>
 
 <pre>
-Knex.Transaction(function(t) {
+knex.transaction(function(t) {
 
-  Knex('books')
+  knex('books')
     .transacting(t)
     .insert({name: 'Old Books'})
     .then(function(row) {
 
-      return When.all(_.map([
+      return when.all(_.map([
         {title: 'Canterbury Tales'},
         {title: 'Moby Dick'},
         {title: 'Hamlet'}
@@ -955,7 +961,7 @@ Knex.Transaction(function(t) {
         info.row_id = row.id;
 
         // Some validation could take place here.
-        return Knex('book').transacting(t).insert(info);
+        return knex('book').transacting(t).insert(info);
 
       }));
     })
@@ -1335,7 +1341,7 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
-      <b class="header">0.4.0</b> &mdash; <small><i>Sep 13, 2013</i></small><br />
+      <b class="header">0.4.0</b> &mdash; <small><i>Sep 13, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.0...0.2.6">Diff</a><br />
       <b>Breaking Changes:</b>
       <ul>
         <li>
@@ -1355,20 +1361,16 @@ knex.raw('select * from users where id = 1').then(function(resp) {
           The <tt>destroyAllNow</tt> is no longer called by the library on <tt>process.exit</tt> event. If you need to call
           it explicitly yourself, you may use <tt>knex.client.destroyPool</tt>
         </li>
-        <li>
-          The <tt>afterCreate</tt> and <tt>beforeDestroy</tt> pool options no longer accept a callback, but instead assume a promise
-          will be returned if one is needed
-        </li>
       </ul>
       Schema: Added <a href="#Schema-hasColumn">hasColumn</a>, <a href="#Schema-renameColumn">renameColumn</a>, <a href="Schema-bigInteger">bigInteger</a>,
       <a href="Schema-specificType">specificType</a>.
-      General: Refactoring the library to support UMD and eventual use on the client. Added <tt>options</tt> method for adding additional
+      General: Refactoring the library to support UMD and eventual use on the client. Added <a href="#Builder-options">options</a> method for adding additional
       parameters specific to individual database libraries, #64.
       Bugfixes: Case insensitive where operators (e.g.) <tt>LIKE, BETWEEN, NOT LIKE</tt> are now supported.
     </p>
 
     <p>
-      <b class="header">0.2.6</b> &mdash; <small><i>Aug 29, 2013</i></small><br />
+      <b class="header">0.2.6</b> &mdash; <small><i>Aug 29, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.2.5...0.2.6">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.2.5/index.html">Docs</a><br />
       Reject the transaction promise if the transaction "commit" fails, (#50).
     </p>
 
