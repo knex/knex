@@ -29,10 +29,6 @@ var ServerBase = ClientBase.extend({
     this.pool = new Pool(_.extend({}, poolConfig, _.result(this, 'poolDefaults')), this);
   },
 
-  runQuery: function(connection, sql, bindings) {
-    return nodefn.call(connection.query.bind(connection), sql, bindings);
-  },
-
   // Execute a query on the specified Builder or QueryBuilder
   // interface. If a `connection` is specified, use it, otherwise
   // acquire a connection, and then dispose of it when we're done.

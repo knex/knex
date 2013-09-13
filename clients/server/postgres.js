@@ -25,6 +25,7 @@ exports.Client = ServerBase.extend({
   initialize: function() {},
 
   runQuery: function(connection, sql, bindings, builder) {
+    if (!connection) throw new Error('No database connection exists for the query');
     var questionCount = 0;
     sql = sql.replace(/\?/g, function() {
       questionCount++;

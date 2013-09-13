@@ -24,6 +24,7 @@ exports.Client = ServerBase.extend({
   dialect: 'mysql',
 
   runQuery: function(connection, sql, bindings, builder) {
+    if (!connection) throw new Error('No database connection exists for the query');
     if (builder.flags.options) sql = _.extend({sql: sql}, builder.flags.options);
     if (builder._source === 'SchemaBuilder') {
       sql = this.advancedQuery(connection, sql, bindings, builder);
