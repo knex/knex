@@ -31,6 +31,7 @@ module.exports = function(knex) {
           .logMe()
           .join('accounts as a2', 'a2.email', '<>', 'accounts.email')
           .select(['accounts.email as e1', 'a2.email as e2'])
+          .where('a2.email', 'test2@example.com')
           .limit(5);
     });
 
@@ -42,6 +43,7 @@ module.exports = function(knex) {
           .join('accounts as a2', function() {
               this.on('accounts.email', '<>', 'a2.email').orOn('accounts.id','=',2);
           })
+          .where('a2.email', 'test2@example.com')
           .select(['accounts.email as e1', 'a2.email as e2'])
           .limit(5);
     });

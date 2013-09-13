@@ -86,8 +86,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549602,
-        updated_at: 1379108549602,
+        created_at: 1379110284039,
+        updated_at: 1379110284039,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
@@ -97,8 +97,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549604,
-        updated_at: 1379108549604,
+        created_at: 1379110284041,
+        updated_at: 1379110284041,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
@@ -108,8 +108,8 @@ module.exports = {
         email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549604,
-        updated_at: 1379108549604,
+        created_at: 1379110284041,
+        updated_at: 1379110284041,
         phone: null,
         details: ''
       }]
@@ -268,8 +268,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549602,
-        updated_at: 1379108549602,
+        created_at: 1379110284039,
+        updated_at: 1379110284039,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
@@ -279,8 +279,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549604,
-        updated_at: 1379108549604,
+        created_at: 1379110284041,
+        updated_at: 1379110284041,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
@@ -290,8 +290,8 @@ module.exports = {
         email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549604,
-        updated_at: 1379108549604,
+        created_at: 1379110284041,
+        updated_at: 1379110284041,
         phone: null,
         details: ''
       },{
@@ -301,8 +301,8 @@ module.exports = {
         email: 'test4@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549606,
-        updated_at: 1379108549606,
+        created_at: 1379110284044,
+        updated_at: 1379110284044,
         phone: null,
         details: null
       },{
@@ -312,8 +312,8 @@ module.exports = {
         email: 'test5@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549606,
-        updated_at: 1379108549606,
+        created_at: 1379110284044,
+        updated_at: 1379110284044,
         phone: null,
         details: null
       },{
@@ -323,8 +323,8 @@ module.exports = {
         email: 'test6@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549608,
-        updated_at: 1379108549608,
+        created_at: 1379110284046,
+        updated_at: 1379110284046,
         phone: null,
         details: null
       }]
@@ -519,8 +519,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549602,
-        updated_at: 1379108549602,
+        created_at: 1379110284039,
+        updated_at: 1379110284039,
         phone: null,
         account_id: 1,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -533,8 +533,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549604,
-        updated_at: 1379108549604,
+        created_at: 1379110284041,
+        updated_at: 1379110284041,
         phone: null,
         account_id: 2,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -547,8 +547,8 @@ module.exports = {
         email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549604,
-        updated_at: 1379108549604,
+        created_at: 1379110284041,
+        updated_at: 1379110284041,
         phone: null,
         account_id: 3,
         details: '',
@@ -561,8 +561,8 @@ module.exports = {
         email: 'test4@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549606,
-        updated_at: 1379108549606,
+        created_at: 1379110284044,
+        updated_at: 1379110284044,
         phone: null,
         account_id: null,
         details: null,
@@ -575,8 +575,8 @@ module.exports = {
         email: 'test5@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549606,
-        updated_at: 1379108549606,
+        created_at: 1379110284044,
+        updated_at: 1379110284044,
         phone: null,
         account_id: null,
         details: null,
@@ -589,8 +589,8 @@ module.exports = {
         email: 'test6@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379108549608,
-        updated_at: 1379108549608,
+        created_at: 1379110284046,
+        updated_at: 1379110284046,
         phone: null,
         account_id: null,
         details: null,
@@ -601,8 +601,8 @@ module.exports = {
   },
   'supports join aliases': {
     mysql: {
-      bindings: [],
-      sql: 'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email` limit 5',
+      bindings: ['test2@example.com'],
+      sql: 'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email` where `a2`.`email` = ? limit 5',
       result: [{
         e1: 'test3@example.com',
         e2: 'test2@example.com'
@@ -621,50 +621,50 @@ module.exports = {
       }]
     },
     postgresql: {
-      bindings: [],
-      sql: 'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" limit 5',
+      bindings: ['test2@example.com'],
+      sql: 'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? limit 5',
       result: [{
         e1: 'test@example.com',
         e2: 'test2@example.com'
       },{
-        e1: 'test@example.com',
-        e2: 'test3@example.com'
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test@example.com',
-        e2: 'test4@example.com'
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test@example.com',
-        e2: 'test5@example.com'
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test@example.com',
-        e2: 'test6@example.com'
+        e1: 'test6@example.com',
+        e2: 'test2@example.com'
       }]
     },
     sqlite3: {
-      bindings: [],
-      sql: 'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" limit 5',
+      bindings: ['test2@example.com'],
+      sql: 'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? limit 5',
       result: [{
-        e1: 'test2@example.com',
-        e2: 'test3@example.com'
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test2@example.com',
-        e2: 'test4@example.com'
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test2@example.com',
-        e2: 'test5@example.com'
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test2@example.com',
-        e2: 'test6@example.com'
+        e1: 'test6@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test2@example.com',
-        e2: 'test@example.com'
+        e1: 'test@example.com',
+        e2: 'test2@example.com'
       }]
     }
   },
   'supports join aliases with advanced joins': {
     mysql: {
-      bindings: [],
-      sql: 'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `accounts`.`email` <> `a2`.`email` or `accounts`.`id` = 2 limit 5',
+      bindings: ['test2@example.com'],
+      sql: 'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `accounts`.`email` <> `a2`.`email` or `accounts`.`id` = 2 where `a2`.`email` = ? limit 5',
       result: [{
         e1: 'test2@example.com',
         e2: 'test2@example.com'
@@ -683,43 +683,43 @@ module.exports = {
       }]
     },
     postgresql: {
-      bindings: [],
-      sql: 'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 limit 5',
+      bindings: ['test2@example.com'],
+      sql: 'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 where "a2"."email" = ? limit 5',
       result: [{
         e1: 'test@example.com',
         e2: 'test2@example.com'
       },{
-        e1: 'test@example.com',
-        e2: 'test3@example.com'
+        e1: 'test2@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test@example.com',
-        e2: 'test4@example.com'
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test@example.com',
-        e2: 'test5@example.com'
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test@example.com',
-        e2: 'test6@example.com'
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
       }]
     },
     sqlite3: {
-      bindings: [],
-      sql: 'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 limit 5',
+      bindings: ['test2@example.com'],
+      sql: 'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 where "a2"."email" = ? limit 5',
       result: [{
         e1: 'test2@example.com',
         e2: 'test2@example.com'
       },{
-        e1: 'test2@example.com',
-        e2: 'test3@example.com'
+        e1: 'test3@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test2@example.com',
-        e2: 'test4@example.com'
+        e1: 'test4@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test2@example.com',
-        e2: 'test5@example.com'
+        e1: 'test5@example.com',
+        e2: 'test2@example.com'
       },{
-        e1: 'test2@example.com',
-        e2: 'test6@example.com'
+        e1: 'test6@example.com',
+        e2: 'test2@example.com'
       }]
     }
   }
