@@ -1,3 +1,5 @@
+// ClientBase
+// ----------
 (function(define) {
 
 "use strict";
@@ -9,7 +11,7 @@ define(function(require, exports) {
   // The `ClientBase` is assumed as the object that all database `clients`
   // inherit from, and is used in an `instanceof` check when initializing the
   // library. If you wish to write or customize an adapter, just inherit from
-  // this base, with ClientBase.extend, and you're good to go.
+  // this base, with `ClientBase.extend`, and you're good to go.
   var ClientBase = function() {};
 
   // The methods assumed when building a client.
@@ -36,13 +38,14 @@ define(function(require, exports) {
     startTransaction: function() {},
 
     // Finishes a transaction, taking the `type`
-    finishTransaction: function(type, trans, dfd, msg) {},
+    finishTransaction: function(type, transaction, msg) {},
 
     // The pool defaults.
     poolDefaults: function() {}
 
   };
 
+  // Grab the standard `Object.extend` as popularized by Backbone.js.
   ClientBase.extend = Helpers.extend;
 
   exports.ClientBase = ClientBase;

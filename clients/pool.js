@@ -13,6 +13,8 @@ define(function(require, exports) {
   var _           = require('underscore');
   var GenericPool = require('generic-pool-redux').Pool;
 
+  var Helpers     = require('../lib/helpers').Helpers;
+
   // The "Pool" object is a thin wrapper around the
   // "generic-pool-redux" library, exposing a `destroy`
   // method for explicitly draining the pool. The
@@ -82,6 +84,9 @@ define(function(require, exports) {
     }
 
   };
+
+  // Grab the standard `Object.extend` as popularized by Backbone.js.
+  Pool.extend = Helpers.extend;
 
   exports.Pool = Pool;
 

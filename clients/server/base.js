@@ -1,5 +1,7 @@
 // ServerBase
 // -------
+
+// All of the "when.js" promise components needed in this module.
 var when       = require('when');
 var nodefn     = require('when/node/function');
 var sequence   = require('when/sequence');

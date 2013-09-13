@@ -1,3 +1,5 @@
+// SQLite3 - Cordova (PhoneGap)
+// ----------
 (function(define) {
 
 "use strict";

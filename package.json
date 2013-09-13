@@ -27,7 +27,8 @@
     "generic-pool-redux": "git+ssh://git@github.com/bookshelf/generic-pool-redux.git"
   },
   "scripts": {
-    "test": "mocha -R spec test/index.js"
+    "test": "mocha -R spec test/index.js",
+    "doc":  "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js knex.js"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,5 @@
-//     Knex.js  0.4.0
+// Knex.js  0.4.0
+// --------------
 
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -122,12 +123,14 @@ define(function(require, exports, module) {
     return knex;
   };
 
+  // The client names we'll allow in the `{name: lib}` pairing.
   var Clients = Knex.Clients = {
-    'mysql'    : './clients/server/mysql.js',
-    'pg'       : './clients/server/postgres.js',
-    'postgres' : './clients/server/postgres.js',
-    'sqlite'   : './clients/server/sqlite3.js',
-    'sqlite3'  : './clients/server/sqlite3.js'
+    'mysql'      : './clients/server/mysql.js',
+    'pg'         : './clients/server/postgres.js',
+    'postgres'   : './clients/server/postgres.js',
+    'postgresql' : './clients/server/postgres.js',
+    'sqlite'     : './clients/server/sqlite3.js',
+    'sqlite3'    : './clients/server/sqlite3.js'
   };
 
   // Used primarily to type-check a potential `Knex` client in `Bookshelf.js`,

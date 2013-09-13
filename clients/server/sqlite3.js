@@ -1,15 +1,15 @@
-// sqlite3
+// SQLite3
 // -------
 
 // All of the "when.js" promise components needed in this module.
-var when            = require('when');
-var nodefn          = require('when/node/function');
+var when   = require('when');
+var nodefn = require('when/node/function');
 
 // Other dependencies, including the `sqlite3` library,
 // which needs to be added as a dependency to the project
 // using this database.
-var _               = require('underscore');
-var sqlite3         = require('sqlite3');
+var _       = require('underscore');
+var sqlite3 = require('sqlite3');
 
 // All other local project modules needed in this scope.
 var SQLite3Base     = require('../base/sqlite3');
@@ -17,7 +17,7 @@ var ServerBase      = require('./base').ServerBase;
 var Builder         = require('../../lib/builder').Builder;
 var Transaction     = require('../../lib/transaction').Transaction;
 var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
-var Helpers           = require('../../lib/helpers').Helpers;
+var Helpers         = require('../../lib/helpers').Helpers;
 
 // Constructor for the SQLite3Client.
 var SQLite3Client = exports.Client = ServerBase.extend({

@@ -1,4 +1,4 @@
-// postgresql
+// PostgreSQL
 // -------
 
 // All of the "when.js" promise components needed in this module.
