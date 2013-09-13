@@ -112,7 +112,8 @@ define(function(require, exports, module) {
     // Keep in sync with package.json
     knex.VERSION = '0.4.0';
 
-    // Runs a new transaction, taking a container and
+    // Runs a new transaction, taking a container and returning a promise
+    // for when the transaction is resolved.
     knex.transaction = function(container) {
       return new Transaction(knex).run(container);
     };

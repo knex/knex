@@ -50,7 +50,7 @@ define(function(require, exports) {
     // Compiles an aggregate query.
     compileAggregate: function(qb) {
       var column = this.columnize(qb.aggregate.columns);
-      if (qb.isDistinct && column !== '*') {
+      if (qb.flags.distinct && column !== '*') {
         column = 'distinct ' + column;
       }
       return 'select ' + qb.aggregate.type + '(' + column + ') as aggregate';
@@ -59,7 +59,7 @@ define(function(require, exports) {
     // Compiles the columns in the query, specifying if an item was distinct.
     compileColumns: function(qb, columns) {
       if (qb.aggregate != null) return;
-      return (qb.isDistinct ? 'select distinct ' : 'select ') + this.columnize(columns);
+      return (qb.flags.distinct ? 'select distinct ' : 'select ') + this.columnize(columns);
     },
 
     // Compiles the `from` tableName portion of the query.
@@ -81,7 +81,7 @@ define(function(require, exports) {
           );
         }
         clauses[0] = clauses[0].replace(/and |or /, '');
-        sql.push(join.type + ' join ' + this.wrapTable(join.table) + ' on ' + clauses.join(' '));
+        sql.push(join.joinType + ' join ' + this.wrapTable(join.table) + ' on ' + clauses.join(' '));
       }
       return sql.join(' ');
     },
@@ -265,7 +265,8 @@ define(function(require, exports) {
       return 'truncate ' + this.wrapTable(qb.table);
     },
 
-    // Wraps a value,
+    // Puts the appropriate wrapper around a value depending on the database
+    // engine, unless it's a knex.raw value, in which case it's left alone.
     wrap: function(value) {
       var segments;
       if (value instanceof Raw) return value.sql;

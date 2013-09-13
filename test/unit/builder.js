@@ -69,7 +69,7 @@ describe('Builder', function () {
 
     it('adds the column to the columns array', function() {
       builder.distinct('distinctCol');
-      expect(builder.isDistinct).to.be.true;
+      expect(builder.flags.distinct).to.be.true;
     });
 
   });
@@ -269,9 +269,9 @@ describe('Builder', function () {
     });
 
     it('takes a second argument to set the isReturning, using the returning method', function() {
-      expect(builder.isReturning).to.be.empty;
+      expect(builder.flags.returning).to.be.empty;
       builder.insert('insert', 'user_id');
-      expect(builder.isReturning).to.equal('user_id');
+      expect(builder.flags.returning).to.equal('user_id');
     });
 
   });

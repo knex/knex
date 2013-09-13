@@ -10,7 +10,7 @@ describe('JoinClause', function () {
   describe('constructor', function() {
 
     it('taking the type of join, and the table name being joined', function() {
-      expect(joinclause.type).to.equal('outer');
+      expect(joinclause.joinType).to.equal('outer');
       expect(joinclause.table).to.equal('users');
     });
 

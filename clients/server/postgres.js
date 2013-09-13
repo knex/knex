@@ -90,8 +90,8 @@ var grammar = exports.grammar = _.defaults({
       sql += "(" + this.columnize(columns) + ") values " + paramBlocks.join(', ');
     }
 
-    if (qb.isReturning) {
-      sql += ' returning "' + qb.isReturning + '"';
+    if (qb.flags.returning) {
+      sql += ' returning "' + qb.flags.returning + '"';
     }
     return sql;
   },
@@ -101,7 +101,7 @@ var grammar = exports.grammar = _.defaults({
     if (response.command === 'SELECT') return response.rows;
     if (response.command === 'INSERT') {
       return _.map(response.rows, function(row) {
-        return row[builder.isReturning];
+        return row[builder.flags.returning];
       });
     }
     if (response.command === 'UPDATE' || response.command === 'DELETE') {
