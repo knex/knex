@@ -43,6 +43,18 @@ module.exports = function(Knex, dbName, resolver) {
             .select(['accounts.email as e1', 'a2.email as e2'])
             .then(resolver(ok), ok);
     });
+
+    it('supports joins with overlapping column names', function(ok) {
+      Knex('accounts as a1')
+        .join('accounts as a2', function() {
+          this.on('a1.email', '<>', 'a2.email');
+        }, 'left')
+        .select(['a1.email', 'a2.email'])
+        .where(Knex.Raw('a1.id = 1'))
+        .option({ nestTables: true, rowMode: 'array' })
+        .limit(2)
+        .then(resolver(ok), ok);
+    });
   });
 
 };
