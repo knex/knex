@@ -1,5 +1,6 @@
+var mocha = require('mocha');
 
-require("mocha-as-promised")();
+require("mocha-as-promised")(mocha);
 
 global.sinon = require("sinon");
 
