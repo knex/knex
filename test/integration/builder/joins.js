@@ -46,6 +46,18 @@ module.exports = function(knex) {
           .limit(5);
     });
 
+    it('supports joins with overlapping column names', function() {
+      var blah = knex('accounts as a1')
+        .logMe()
+        .join('accounts as a2', function() {
+          this.on('a1.email', '<>', 'a2.email');
+        }, 'left')
+        .select(['a1.email', 'a2.email'])
+        .where(knex.raw('a1.id = 1'))
+        .options({ nestTables: true, rowMode: 'array' })
+        .limit(2);
+    });
+
   });
 
 };

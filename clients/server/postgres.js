@@ -24,7 +24,8 @@ exports.Client = ServerBase.extend({
 
   initialize: function() {},
 
-  runQuery: function(connection, sql, bindings) {
+  runQuery: function(connection, sql, bindings, builder) {
+    if (builder && builder.flags.options) sql = _.extend({text: sql}, builder.flags.options);
     return nodefn.call(connection.query.bind(connection), sql, bindings);
   },
 

@@ -24,6 +24,7 @@ exports.Client = ServerBase.extend({
   dialect: 'mysql',
 
   runQuery: function(connection, sql, bindings, builder) {
+    if (builder.flags.options) sql = _.extend({sql: sql}, builder.flags.options);
     if (builder._source === 'SchemaBuilder') {
       sql = this.advancedQuery(connection, sql, bindings, builder);
     }
@@ -93,8 +94,8 @@ var schemaGrammar = exports.schemaGrammar = _.defaults({
 
     if (conn.charset) sql += ' default character set ' + conn.charset;
     if (conn.collation) sql += ' collate ' + conn.collation;
-    if (blueprint.isEngine) {
-      sql += ' engine = ' + blueprint.isEngine;
+    if (blueprint.flags.engine) {
+      sql += ' engine = ' + blueprint.flags.engine;
     }
 
     // Checks if the table is commented
