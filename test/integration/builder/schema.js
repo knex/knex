@@ -74,7 +74,7 @@ module.exports = function(knex) {
       it('allows adding a field', function (done) {
         return knex.schema.table('test_table_two', function(t) {
           t.json('json_data').nullable();
-        }).logMe('sql');
+        });
       });
 
       it('allows changing a field', function() {
@@ -89,7 +89,7 @@ module.exports = function(knex) {
     describe('hasTable', function() {
 
       it('checks whether a table exists', function() {
-        return knex.schema.hasTable('test_table_two').logMe().then(function(resp) {
+        return knex.schema.hasTable('test_table_two').then(function(resp) {
           expect(resp).to.be.true;
         });
       });

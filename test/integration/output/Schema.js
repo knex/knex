@@ -82,36 +82,5 @@ module.exports = {
       bindings: [],
       sql: ['create table "test_foreign_table_two" ("id" integer primary key autoincrement not null, "fkey_two" integer, foreign key("fkey_two") references "test_table_two"("id"), foreign key("fkey_two") references "test_table_two"("id"))']
     }
-  },
-  'allows adding a field': {
-    mysql: {
-      bindings: [],
-      sql: ['alter table `test_table_two` add `json_data` text','alter table `test_table_two` add `json_data` text']
-    },
-    postgresql: {
-      bindings: [],
-      sql: ['alter table "test_table_two" add column "json_data" json','alter table "test_table_two" add column "json_data" json']
-    },
-    sqlite3: {
-      bindings: [],
-      sql: ['alter table "test_table_two" add column "json_data" text','alter table "test_table_two" add column "json_data" text']
-    }
-  },
-  'checks whether a table exists': {
-    mysql: {
-      bindings: ['db_test','db_test','test_table_two'],
-      sql: ['select * from information_schema.tables where table_schema = ? and table_name = ?'],
-      result: true
-    },
-    postgresql: {
-      bindings: ['test_table_two'],
-      sql: ['select * from information_schema.tables where table_name = ?'],
-      result: true
-    },
-    sqlite3: {
-      bindings: ['test_table_two'],
-      sql: ['select * from sqlite_master where type = \'table\' and name = ?'],
-      result: true
-    }
   }
 };
