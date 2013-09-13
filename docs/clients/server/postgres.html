@@ -9,8 +9,6 @@ using this database.</p></div></div><div class="code"><div class="wrapper"><span
 
   <span class="nx">dialect</span><span class="o">:</span> <span class="s1">&#39;postgresql&#39;</span><span class="p">,</span>
 
-  <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{},</span>
-
   <span class="nx">runQuery</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">connection</span><span class="p">,</span> <span class="nx">sql</span><span class="p">,</span> <span class="nx">bindings</span><span class="p">,</span> <span class="nx">builder</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">connection</span><span class="p">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;No database connection exists for the query&#39;</span><span class="p">);</span>
     <span class="kd">var</span> <span class="nx">questionCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -27,6 +25,9 @@ connection needs to be added to the pool.</p></div></div><div class="code"><div 
     <span class="k">return</span> <span class="nx">nodefn</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">connection</span><span class="p">.</span><span class="nx">connect</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">connection</span><span class="p">)).</span><span class="nx">tap</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
       <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">instance</span><span class="p">.</span><span class="nx">version</span><span class="p">)</span> <span class="k">return</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">checkVersion</span><span class="p">(</span><span class="nx">connection</span><span class="p">);</span>
     <span class="p">}).</span><span class="nx">yield</span><span class="p">(</span><span class="nx">connection</span><span class="p">);</span>
+  <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Used to explicitly close a connection, called internally by the pool
+when a connection times out or the pool is shutdown.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">destroyRawConnection</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">connection</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">connection</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
   <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>In PostgreSQL, we need to do a version check to do some feature
 checking on the database.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">checkVersion</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">connection</span><span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">instance</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>

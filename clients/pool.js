@@ -74,7 +74,7 @@ define(function(require, exports) {
 
     // Release a connection back to the connection pool.
     release: function(connection, callback) {
-      return this.poolInstance.release(connection, callback);
+      this.poolInstance.release(connection, callback);
     },
 
     // Tear down the pool, only necessary if you need it.

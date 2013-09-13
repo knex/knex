@@ -235,6 +235,7 @@
       <li>– <a href="#Builder-decrement">decrement</a></li>
       <li>– <a href="#Builder-truncate">truncate</a></li>
       <li>– <a href="#Builder-debug">debug</a></li>
+      <li>– <a href="#Builder-options">options</a></li>
       <li><b><a href="#Builder-Interface">Interface:</a></b></li>
       <li>– <a href="#Builder-tap">tap</a></li>
       <li>– <a href="#Builder-then">then</a></li>
@@ -875,6 +876,23 @@ knex.transaction(function(t) {
       Turns on debugging for the current query chain.
     </p>
 
+    <p id="Builder-options">
+      <b class="header">options</b><code>.options()</code>
+      <br />
+      Allows for mixing in additional options as defined by database client specific libraries:
+    </p>
+
+<pre>
+  knex('accounts as a1')
+    .join('accounts as a2', function() {
+      this.on('a1.email', '<>', 'a2.email');
+    }, 'left')
+    .select(['a1.email', 'a2.email'])
+    .where(Knex.Raw('a1.id = 1'))
+    .option({ nestTables: true, rowMode: 'array' })
+    .limit(2);
+</pre>
+
     <h3 id="Builder-Interface">Builder Interface Methods:</h3>
 
     <p id="Builder-then">
@@ -1344,7 +1362,9 @@ knex.raw('select * from users where id = 1').then(function(resp) {
       </ul>
       Schema: Added <a href="#Schema-hasColumn">hasColumn</a>, <a href="#Schema-renameColumn">renameColumn</a>, <a href="Schema-bigInteger">bigInteger</a>,
       <a href="Schema-specificType">specificType</a>.
-      General: Refactoring the library to support UMD and eventual use on the client.
+      General: Refactoring the library to support UMD and eventual use on the client. Added <tt>options</tt> method for adding additional
+      parameters specific to individual database libraries, #64.
+      Bugfixes: Case insensitive where operators (e.g.) <tt>LIKE, BETWEEN, NOT LIKE</tt> are now supported.
     </p>
 
     <p>
