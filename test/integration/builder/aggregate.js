@@ -18,10 +18,9 @@ module.exports = function(knex) {
 
     it("support the groupBy function", function() {
 
-      return when.all([
-        knex('accounts').logMe().count('id').groupBy('logins'),
-        knex('accounts').logMe().count('id').groupBy('first_name')
-      ]);
+      return knex('accounts').logMe().count('id').groupBy('logins').then(function() {
+        return knex('accounts').logMe().count('id').groupBy('first_name');
+      });
 
     });
 
