@@ -1,3 +1,5 @@
+// SQLite3 - WebSQL
+// ----------
 (function(define) {
 
 "use strict";

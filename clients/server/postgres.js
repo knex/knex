@@ -1,109 +1,76 @@
-var when = require('when');
+// PostgreSQL
+// -------
+
+// All of the "when.js" promise components needed in this module.
+var when   = require('when');
+var nodefn = require('when/node/function');
+
+// Other dependencies, including the `pg` library,
+// which needs to be added as a dependency to the project
+// using this database.
 var _    = require('underscore');
-var util = require('util');
-var base = require('./base');
 var pg   = require('pg');
 
-var Grammar = require('../base/grammar').Grammar;
-var SchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
+// All other local project modules needed in this scope.
+var ServerBase        = require('./base').ServerBase;
+var baseGrammar       = require('../base/grammar').BaseGrammar;
+var baseSchemaGrammar = require('../base/schemagrammar').BaseSchemaGrammar;
+var Helpers           = require('../../lib/helpers').Helpers;
 
-// Constructor for the PostgresClient
-var PostgresClient = module.exports = function(name, options) {
-  base.setup.call(this, PostgresClient, name, options);
-  this.dialect = 'postgresql';
-};
+// Constructor for the PostgreSQL Client
+exports.Client = ServerBase.extend({
 
-_.extend(PostgresClient.prototype, base.protoProps, {
+  dialect: 'postgresql',
 
-  // Execute a query on the specified Builder or QueryBuilder
-  // interface. If a `connection` is specified, use it, otherwise
-  // acquire a connection, and then dispose of it when we're done.
-  query: function(builder) {
-    var emptyConnection = !builder._connection;
-    var debug = this.debug || builder._debug;
-    var instance = this;
-
-    return when((builder._connection || this.getConnection()))
-      .then(function(conn) {
-        var dfd = when.defer();
-
-        // Bind all of the ? to numbered vars.
-        var questionCount = 0;
-        builder.sql = builder.sql.replace(/\?/g, function() {
-          questionCount++;
-          return '$' + questionCount;
-        });
-
-        // If we have a debug flag set, console.log the query.
-        if (debug) base.debug(builder, conn);
-
-        // Call the querystring and then release the client
-        conn.query(_.extend({text: builder.sql}, builder.opts), builder.bindings, function (err, resp) {
-          if (err) return dfd.reject(err);
-          resp || (resp = {});
-
-          if (builder._source === 'Raw') return dfd.resolve(resp);
-
-          if (builder._source === 'SchemaBuilder') {
-            if (builder.type === 'tableExists' || builder.type === 'columnExists') {
-              return dfd.resolve(resp.rows.length > 0);
-            } else {
-              return dfd.resolve(null);
-            }
-          }
-
-          if (resp.command === 'SELECT') {
-            resp = resp.rows;
-          } else if (resp.command === 'INSERT') {
-            resp = _.map(resp.rows, function(row) { return row[builder.isReturning]; });
-          } else if (resp.command === 'UPDATE' || resp.command === 'DELETE') {
-            resp = resp.rowCount;
-          } else {
-            resp = '';
-          }
-          dfd.resolve(resp);
-        });
-
-        // Empty the connection after we run the query, unless one was specifically
-        // set (in the case of transactions, etc).
-        return dfd.promise.ensure(function() {
-          if (emptyConnection) instance.pool.release(conn);
-        });
-      });
+  // Runs the query on the specified connection, providing the bindings
+  // and any other necessary prep work.
+  runQuery: function(connection, sql, bindings, builder) {
+    if (!connection) throw new Error('No database connection exists for the query');
+    var questionCount = 0;
+    sql = sql.replace(/\?/g, function() {
+      questionCount++;
+      return '$' + questionCount;
+    });
+    if (builder && builder.flags.options) sql = _.extend({text: sql}, builder.flags.options);
+    return nodefn.call(connection.query.bind(connection), sql, bindings);
   },
 
-  // Returns a connection from the `pg` lib.
+  // Get a raw connection, called by the `pool` whenever a new
+  // connection needs to be added to the pool.
   getRawConnection: function(callback) {
     var instance = this;
     var connection = new pg.Client(this.connectionSettings);
-    connection.connect(function(err) {
-      if (!instance.version && !err) {
-        return instance.checkVersion.call(instance, connection, callback);
-      }
-      callback(err, connection);
-    });
+    return nodefn.call(connection.connect.bind(connection)).tap(function() {
+      if (!instance.version) return instance.checkVersion(connection);
+    }).yield(connection);
   },
 
-  // Check Version
-  checkVersion: function(connection, callback) {
+  // Used to explicitly close a connection, called internally by the pool
+  // when a connection times out or the pool is shutdown.
+  destroyRawConnection: function(connection) {
+    connection.end();
+  },
+
+  // In PostgreSQL, we need to do a version check to do some feature
+  // checking on the database.
+  checkVersion: function(connection) {
     var instance = this;
-    connection.query('select version();', function(err, resp) {
-      if (err) return callback(err);
+    this.runQuery(connection, 'select version();').then(function(resp) {
       instance.version = /^PostgreSQL (.*?) /.exec(resp.rows[0].version)[1];
-      callback(null, connection);
     });
   }
 
 });
 
 // Extends the standard sql grammar.
-PostgresClient.grammar = _.defaults({
+var grammar = exports.grammar = _.defaults({
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
-    return (value !== '*' ? util.format('"%s"', value) : "*");
+    return (value !== '*' ? Helpers.format('"%s"', value) : "*");
   },
 
+  // Compiles a truncate query.
   compileTruncate: function(qb) {
     return 'truncate ' + this.wrapTable(qb.table) + ' restart identity';
   },
@@ -117,7 +84,7 @@ PostgresClient.grammar = _.defaults({
 
     // If there are any "where" clauses, we need to omit
     // any bindings that may have been associated with them.
-    if (qb.wheres.length > 0) this._clearWhereBindings(qb);
+    if (qb.wheres.length > 0) this.clearWhereBindings(qb);
 
     var sql = 'insert into ' + this.wrapTable(qb.table) + ' ';
 
@@ -130,19 +97,41 @@ PostgresClient.grammar = _.defaults({
       sql += "(" + this.columnize(columns) + ") values " + paramBlocks.join(', ');
     }
 
-    if (qb.isReturning) {
-      sql += ' returning "' + qb.isReturning + '"';
+    if (qb.flags.returning) {
+      sql += ' returning "' + qb.flags.returning + '"';
     }
     return sql;
+  },
+
+  // Handles the response
+  handleResponse: function(builder, response) {
+    if (response.command === 'SELECT') return response.rows;
+    if (response.command === 'INSERT') {
+      return _.map(response.rows, function(row) {
+        return row[builder.flags.returning];
+      });
+    }
+    if (response.command === 'UPDATE' || response.command === 'DELETE') {
+      return response.rowCount;
+    }
+    return '';
   }
 
-}, Grammar);
+}, baseGrammar);
 
 // Grammar for the schema builder.
-PostgresClient.schemaGrammar = _.defaults({
+exports.schemaGrammar = _.defaults({
 
   // The possible column modifiers.
   modifiers: ['Increment', 'Nullable', 'Default'],
+
+  handleResponse: function(builder, resp) {
+    resp = resp[0];
+    if (builder.type === 'tableExists' || builder.type === 'columnExists') {
+      return resp.rows.length > 0;
+    }
+    return resp;
+  },
 
   // Compile the query to determine if a table exists.
   compileTableExists: function() {
@@ -293,17 +282,15 @@ PostgresClient.schemaGrammar = _.defaults({
   // checking whether the json type is supported - falling
   // back to "text" if it's not.
   typeJson: function(column, blueprint) {
-    if (parseFloat(blueprint.client.version) >= 9.2) {
-      return 'json';
-    }
+    if (parseFloat(blueprint.client.version) >= 9.2) return 'json';
     return 'text';
   },
 
   // Get the SQL for an auto-increment column modifier.
   modifyIncrement: function(blueprint, column) {
-    if ((column.type == 'integer' || column.type == 'bigInteger') && column.autoIncrement) {
+    if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
       return ' primary key not null';
     }
   }
 
-}, SchemaGrammar, PostgresClient.grammar);
+}, baseSchemaGrammar, grammar);

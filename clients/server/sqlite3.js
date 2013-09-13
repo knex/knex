@@ -1,97 +1,46 @@
-var when        = require('when');
-var nodefn      = require('when/node/function');
-var whenfn      = require('when/function');
+// SQLite3
+// -------
 
-var _           = require('underscore');
-var util        = require('util');
-var base        = require('./base');
-var sqlite3     = require('sqlite3');
+// All of the "when.js" promise components needed in this module.
+var when   = require('when');
+var nodefn = require('when/node/function');
 
-var Builder     = require('../../lib/builder').Builder;
-var ClientBase  = require('../base/sqlite3').Sqlite3;
-var transaction = require('../../lib/transaction').transaction;
+// Other dependencies, including the `sqlite3` library,
+// which needs to be added as a dependency to the project
+// using this database.
+var _       = require('underscore');
+var sqlite3 = require('sqlite3');
+
+// All other local project modules needed in this scope.
+var SQLite3Base     = require('../base/sqlite3');
+var ServerBase      = require('./base').ServerBase;
+var Builder         = require('../../lib/builder').Builder;
+var Transaction     = require('../../lib/transaction').Transaction;
 var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
+var Helpers         = require('../../lib/helpers').Helpers;
 
-// Constructor for the Sqlite3Client
-var Sqlite3Client = ClientBase.extend({
+// Constructor for the SQLite3Client.
+var SQLite3Client = exports.Client = ServerBase.extend({
 
-  constructor: function(name, options) {
-    base.setup.call(this, Sqlite3Client, name, options);
-    this.dialect = 'sqlite3';
-  },
+  dialect: 'sqlite3',
 
-  // Retrieves a connection from the connection pool,
-  // returning a promise.
-  getConnection: function() {
-    return nodefn.call(this.pool.acquire);
-  },
-
-  // Releases a connection from the connection pool,
-  // returning a promise.
-  releaseConnection: function(conn) {
-    return whenfn.call(this.pool.release, conn);
-  },
-
-  // Execute a query on the specified Builder or QueryBuilder
-  // interface. If a `connection` is specified, use it, otherwise
-  // acquire a connection, and then dispose of it when we're done.
-  query: function(builder) {
-    var emptyConnection = !builder._connection;
-    var debug = this.debug || builder._debug;
-    var instance = this;
-
-    if (builder.sql === '__rename_column__') {
-      return transaction.call(builder, function(trx) {
-        instance.alterSchema.call(instance, builder, trx);
-      });
+  // Runs the query on the specified connection, providing the bindings
+  // and any other necessary prep work.
+  runQuery: function(connection, sql, bindings, builder) {
+    if (!connection) throw new Error('No database connection exists for the query');
+    if (sql === '__rename_column__') {
+      return this.ddl(connection, sql, bindings, builder);
     }
-
-    return when((builder._connection || this.getConnection()))
-      .then(function(conn) {
-        var dfd = when.defer();
-        var method = (builder.type === 'insert' ||
-          builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
-
-        // If we have a debug flag set, console.log the query.
-        if (debug) base.debug(builder, conn);
-
-        // Call the querystring and then release the client
-        conn[method](builder.sql, builder.bindings, function (err, resp) {
-
-          if (err) return dfd.reject(err);
-
-          if (builder._source === 'Raw') return dfd.resolve(resp);
-
-          if (builder._source === 'SchemaBuilder') {
-            if (builder.type === 'tableExists') {
-              return dfd.resolve(resp.length > 0);
-            } else if (builder.type === 'columnExists') {
-              return dfd.resolve(_.findWhere(resp, {name: builder.bindings[1]}) != null);
-            } else {
-              return dfd.resolve(null);
-            }
-          }
-
-          if (builder.type === 'select') {
-            resp = base.skim(resp);
-          } else if (builder.type === 'insert') {
-            resp = [this.lastID];
-          } else if (builder.type === 'delete' || builder.type === 'update') {
-            resp = this.changes;
-          } else {
-            resp = '';
-          }
-
-          dfd.resolve(resp);
-        });
-
-        // Empty the connection after we run the query, unless one was specifically
-        // set (in the case of transactions, etc).
-        return dfd.promise.ensure(function(resp) {
-          if (emptyConnection) instance.pool.release(conn);
-          return resp;
-        });
-      });
+    var method = (builder.type === 'insert' ||
+      builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
+    // Call the querystring and then release the client
+    var dfd = when.defer();
+    connection[method](sql, bindings, function(err, resp) {
+      if (err) return dfd.reject(err);
+      // We need the context here, because it has the "this.lastID" or "this.changes"
+      return dfd.resolve([resp, this]);
+    });
+    return dfd.promise;
   },
 
   poolDefaults: {
@@ -100,36 +49,58 @@ var Sqlite3Client = ClientBase.extend({
     destroy: function(client) { client.close(); }
   },
 
-  getRawConnection: function(callback) {
-    var client = new sqlite3.Database(this.connectionSettings.filename, function(err) {
-      callback(err, client);
+  ddl: function(connection, sql, bindings, builder) {
+    var client = this;
+    return nodefn.call(connection.run.bind(connection), 'begin transaction;').then(function() {
+      var transaction  = new Transaction({client: client});
+      var containerObj = transaction.getContainerObject(connection);
+      return transaction.initiateDeferred(function(trx) {
+        client.alterSchema.call(client, builder, trx);
+      })(containerObj);
     });
+  },
+
+  getRawConnection: function() {
+    var dfd = when.defer();
+    var db = new sqlite3.Database(this.connectionSettings.filename, function(err) {
+      if (err) return dfd.reject(err);
+      dfd.resolve(db);
+    });
+    return dfd.promise;
+  },
+
+  // Used to explicitly close a connection, called internally by the pool
+  // when a connection times out or the pool is shutdown.
+  destroyRawConnection: function(connection) {
+    connection.close();
   },
 
   // Begins a transaction statement on the instance,
   // resolving with the connection of the current transaction.
-  startTransaction: function() {
-    return this.getConnection().then(function(connection) {
-      return nodefn.call(connection.run.bind(connection), 'begin transaction;', []).then(function() {
-        return connection;
-      });
+  startTransaction: function(connection) {
+    return this.getConnection().tap(function(connection) {
+      return nodefn.call(connection.run.bind(connection), 'begin transaction;', []);
     });
   },
 
-  finishTransaction: function(type, trans, dfd, msg) {
-    var ctx = this;
-    nodefn.call(trans.connection.run.bind(trans.connection), type + ';', []).then(function(resp) {
+  // Finishes the transaction statement on the instance.
+  finishTransaction: function(type, transaction, msg) {
+    var client = this;
+    var dfd    = transaction.dfd;
+    nodefn.call(transaction.connection.run.bind(transaction.connection), type + ';', []).then(function(resp) {
       if (type === 'commit') dfd.resolve(msg || resp);
       if (type === 'rollback') dfd.reject(msg || resp);
+    }, function (err) {
+      dfd.reject(err);
     }).ensure(function() {
-      ctx.releaseConnection(trans.connection);
-      trans.connection = null;
+      return client.releaseConnection(transaction.connection).tap(function() {
+        transaction.connection = null;
+      });
     });
   },
 
   // This needs to be refactored... badly.
   alterSchema: function(builder, trx) {
-    var instance = this;
     var connection = trx.connection;
     var currentCol, command;
 
@@ -157,7 +128,7 @@ var Sqlite3Client = ClientBase.extend({
         nodefn.call(connection.all.bind(connection), 'SELECT * FROM "__migrate__' + sql.name + '"'),
       ]);
     }).spread(function(createTable, selected) {
-      var qb = new Builder(instance).transacting(trx);
+      var qb = new Builder(builder.knex).transacting(trx);
           qb.table = builder.table;
       return when.all([
         qb.insert(_.map(selected, function(row) {
@@ -171,4 +142,34 @@ var Sqlite3Client = ClientBase.extend({
 
 });
 
-module.exports = Sqlite3Client;
+exports.grammar = _.defaults({
+
+  handleResponse: function(builder, resp) {
+    var ctx = resp[1]; resp = resp[0];
+    if (builder.type === 'select') {
+      resp = Helpers.skim(resp);
+    } else if (builder.type === 'insert') {
+      resp = [ctx.lastID];
+    } else if (builder.type === 'delete' || builder.type === 'update') {
+      resp = ctx.changes;
+    }
+    return resp;
+  }
+
+}, SQLite3Base.grammar);
+
+exports.schemaGrammar = _.defaults({
+
+  handleResponse: function(builder, resp) {
+    // This is an array, so we'll assume that the relevant info is on the first statement...
+    resp = resp[0];
+    var ctx = resp[1]; resp = resp[0];
+    if (builder.type === 'tableExists') {
+      return resp.length > 0;
+    } else if (builder.type === 'columnExists') {
+      return _.findWhere(resp, {name: builder.bindings[1]}) != null;
+    }
+    return resp;
+  }
+
+}, SQLite3Base.schemaGrammar);

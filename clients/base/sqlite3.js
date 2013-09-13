@@ -1,24 +1,33 @@
+// SQLite3
+// -------
 (function(define) {
 
 "use strict";
 
+// The SQLite3 base is a bit different than the other clients,
+// in that it may be run on both the client and server. So add another
+// layer to the prototype chain.
 define(function(require, exports) {
 
-  var _           = require('underscore');
-  var sqlite3     = require('sqlite3');
+  var _             = require('underscore');
 
-  var Grammar       = require('./grammar').Grammar;
-  var SchemaGrammar = require('./schemagrammar').SchemaGrammar;
+  var baseGrammar       = require('./grammar').BaseGrammar;
+  var baseSchemaGrammar = require('./schemagrammar').BaseSchemaGrammar;
 
-  var Client  = require('./client').Client;
-  var Helpers = require('../../lib/helpers').Helpers;
+  var ClientBase        = require('../base').ClientBase;
+  var Helpers           = require('../../lib/helpers').Helpers;
 
-  var Sqlite3 = Client.extend({
-
+  // Extent the "base" client, just specifying the dialect,
+  // since the actual implementations will differ on the client
+  // and server, we'll leave everything else to be handled in
+  // sub-classes of this object.
+  exports.Client = ClientBase.extend({
+    dialect: 'sqlite3'
   });
 
-  // Extends the standard sql grammar.
-  Sqlite3.grammar = _.defaults({
+  // Extends the standard sql grammar, with any SQLite specific
+  // dialect oddities.
+  var grammar = exports.grammar = _.defaults({
 
     // The keyword identifier wrapper format.
     wrapValue: function(value) {
@@ -41,7 +50,7 @@ define(function(require, exports) {
 
       // If there are any "where" clauses, we need to omit
       // any bindings that may have been associated with them.
-      if (qb.wheres.length > 0) this._clearWhereBindings(qb);
+      if (qb.wheres.length > 0) this.clearWhereBindings(qb);
 
       // If there is only one record being inserted, we will just use the usual query
       // grammar insert builder because no special syntax is needed for the single
@@ -83,10 +92,10 @@ define(function(require, exports) {
       return sql;
     }
 
-  }, Grammar);
+  }, baseGrammar);
 
   // Grammar for the schema builder.
-  Sqlite3.schemaGrammar = _.defaults({
+  var schemaGrammar = exports.schemaGrammar = _.defaults({
 
     // The possible column modifiers.
     modifiers: ['Nullable', 'Default', 'Increment'],
@@ -238,13 +247,11 @@ define(function(require, exports) {
 
     // Get the SQL for an auto-increment column modifier.
     modifyIncrement: function(blueprint, column) {
-      if ((column.type == 'integer' || column.type == 'bigInteger') && column.autoIncrement) {
+      if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
         return ' primary key autoincrement not null';
       }
     }
-  }, SchemaGrammar, Sqlite3.grammar);
-
-  exports.Sqlite3 = Sqlite3;
+  }, baseSchemaGrammar, grammar);
 
 });
 

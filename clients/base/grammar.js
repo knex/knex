@@ -1,16 +1,20 @@
+// Grammar
+// -------
 (function(define) {
 
 "use strict";
 
+// The "Grammar" is a collection of functions
+// which help to reliably compile the various pieces
+// of SQL into a valid, escaped query. These functions
+// are combined with dialect specific "Grammar" functions
+// to keep the interface database agnostic.
 define(function(require, exports) {
 
   var _       = require('underscore');
 
   var Raw     = require('../../lib/raw').Raw;
   var Helpers = require('../../lib/helpers').Helpers;
-
-  // Grammar
-  // -------
 
   // The list of different components
   var components = [
@@ -19,7 +23,13 @@ define(function(require, exports) {
     'orders', 'limit', 'offset', 'unions'
   ];
 
-  exports.Grammar = {
+  exports.BaseGrammar = {
+
+    // Compiles the current query builder.
+    toSql: function(builder) {
+      builder.type = builder.type || 'select';
+      return builder.grammar['compile' + Helpers.capitalize(builder.type)](builder);
+    },
 
     // Compiles the `select` statement, or nested sub-selects
     // by calling each of the component compilers, trimming out
@@ -40,7 +50,7 @@ define(function(require, exports) {
     // Compiles an aggregate query.
     compileAggregate: function(qb) {
       var column = this.columnize(qb.aggregate.columns);
-      if (qb.isDistinct && column !== '*') {
+      if (qb.flags.distinct && column !== '*') {
         column = 'distinct ' + column;
       }
       return 'select ' + qb.aggregate.type + '(' + column + ') as aggregate';
@@ -49,7 +59,7 @@ define(function(require, exports) {
     // Compiles the columns in the query, specifying if an item was distinct.
     compileColumns: function(qb, columns) {
       if (qb.aggregate != null) return;
-      return (qb.isDistinct ? 'select distinct ' : 'select ') + this.columnize(columns);
+      return (qb.flags.distinct ? 'select distinct ' : 'select ') + this.columnize(columns);
     },
 
     // Compiles the `from` tableName portion of the query.
@@ -71,7 +81,7 @@ define(function(require, exports) {
           );
         }
         clauses[0] = clauses[0].replace(/and |or /, '');
-        sql.push(join.type + ' join ' + this.wrapTable(join.table) + ' on ' + clauses.join(' '));
+        sql.push(join.joinType + ' join ' + this.wrapTable(join.table) + ' on ' + clauses.join(' '));
       }
       return sql.join(' ');
     },
@@ -204,7 +214,7 @@ define(function(require, exports) {
 
       // If there are any "where" clauses, we need to omit
       // any bindings that may have been associated with them.
-      if (qb.wheres.length > 0) this._clearWhereBindings(qb);
+      if (qb.wheres.length > 0) this.clearWhereBindings(qb);
 
       for (var i = 0, l = values.length; i < l; ++i) {
         paramBlocks.push("(" + this.parameterize(_.pluck(values[i], 1)) + ")");
@@ -216,7 +226,7 @@ define(function(require, exports) {
     // Depending on the type of `where` clause, this will appropriately
     // remove any binding caused by "where" constraints, allowing the same
     // query to be used for `insert` and `update` without issue.
-    _clearWhereBindings: function(qb) {
+    clearWhereBindings: function(qb) {
       var wheres = qb.wheres;
       var bindingCount = 0;
       for (var i = 0, l = wheres.length; i<l; i++) {
@@ -255,6 +265,8 @@ define(function(require, exports) {
       return 'truncate ' + this.wrapTable(qb.table);
     },
 
+    // Puts the appropriate wrapper around a value depending on the database
+    // engine, unless it's a knex.raw value, in which case it's left alone.
     wrap: function(value) {
       var segments;
       if (value instanceof Raw) return value.sql;

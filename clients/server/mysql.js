@@ -1,125 +1,109 @@
-var when   = require('when');
-var nodefn = require('when/node/function');
-var _      = require('underscore');
-var util   = require('util');
-var base   = require('./base');
-var mysql  = require('mysql');
+// MySQL
+// -------
 
-var Grammar = require('../base/grammar').Grammar;
-var SchemaGrammar = require('../base/schemagrammar').SchemaGrammar;
+// All of the "when.js" promise components needed in this module.
+var when     = require('when');
+var nodefn   = require('when/node/function');
 
-// Constructor for the MysqlClient
-var MysqlClient = module.exports = function(name, options) {
-  base.setup.call(this, MysqlClient, name, options);
-  this.dialect = 'mysql';
-};
+// Other dependencies, including the `mysql` library,
+// which needs to be added as a dependency to the project
+// using this database.
+var _     = require('underscore');
+var mysql = require('mysql');
 
-_.extend(MysqlClient.prototype, base.protoProps, {
+// All other local project modules needed in this scope.
+var ServerBase        = require('./base').ServerBase;
+var baseGrammar       = require('../base/grammar').BaseGrammar;
+var baseSchemaGrammar = require('../base/schemagrammar').BaseSchemaGrammar;
+var Helpers           = require('../../lib/helpers').Helpers;
 
-  // Execute a query on the specified Builder or QueryBuilder
-  // interface. If a `connection` is specified, use it, otherwise
-  // acquire a connection, and then dispose of it when we're done.
-  query: function(builder) {
-    var emptyConnection = !builder._connection;
-    var debug = this.debug || builder._debug;
-    var instance = this;
-    return when((builder._connection || this.getConnection()))
-      .tap(this.checkSchema(builder))
-      .then(function(conn) {
-        var dfd = when.defer();
+// Constructor for the MySQLClient.
+exports.Client = ServerBase.extend({
 
-        // If we have a debug flag set, console.log the query.
-        if (debug) base.debug(builder, conn);
+  dialect: 'mysql',
 
-        // Call the querystring and then release the client
-        conn.query(_.extend({sql: builder.sql}, builder.opts), builder.bindings, function (err, resp) {
+  // Runs the query on the specified connection, providing the bindings
+  // and any other necessary prep work.
+  runQuery: function(connection, sql, bindings, builder) {
+    if (!connection) throw new Error('No database connection exists for the query');
+    if (builder.flags.options) sql = _.extend({sql: sql}, builder.flags.options);
+    if (builder._source === 'SchemaBuilder') {
+      sql = this.advancedQuery(connection, sql, bindings, builder);
+    }
+    return when(sql).then(function(sql) {
+      return nodefn.call(connection.query.bind(connection), sql, bindings);
+    });
+  },
 
-          if (err) return dfd.reject(err);
+  // Get a raw connection, called by the `pool` whenever a new
+  // connection needs to be added to the pool.
+  getRawConnection: function() {
+    var connection = mysql.createConnection(this.connectionSettings);
+    return nodefn.call(connection.connect.bind(connection)).yield(connection);
+  },
 
-          if (builder._source === 'Raw') return dfd.resolve(resp);
-
-          if (builder._source === 'SchemaBuilder') {
-            if (builder.type === 'tableExists') {
-              return dfd.resolve(resp.length > 0);
-            } else if (builder.type === 'columnExists') {
-              return dfd.resolve(resp.length > 0);
-            } else {
-              return dfd.resolve(null);
-            }
-          }
-
-          if (builder.type === 'select') {
-            resp = base.skim(resp);
-          } else if (builder.type === 'insert') {
-            resp = [resp.insertId];
-          } else if (builder.type === 'delete' || builder.type === 'update') {
-            resp = resp.affectedRows;
-          } else {
-            resp = '';
-          }
-
-          dfd.resolve(resp);
-        });
-
-        // Empty the connection after we run the query, unless one was specifically
-        // set (in the case of transactions, etc).
-        return dfd.promise.ensure(function() {
-          if (emptyConnection) instance.pool.release(conn);
-        });
-      }).otherwise(function(err) {
-        throw new Error(err.toString() + ': ' + builder.sql);
-      });
+  // Used to explicitly close a connection, called internally by the pool
+  // when a connection times out or the pool is shutdown.
+  destroyRawConnection: function(connection) {
+    connection.end();
   },
 
   // Used to check if there is a conditional query needed to complete the next one.
-  checkSchema: function(builder) {
-    return function(conn) {
-      var sql = builder.sql;
-      if (sql.indexOf('alter table') === 0 && sql.indexOf('__datatype__') === (sql.length - 12)) {
-        var newSql = sql.replace('alter table', 'show fields from').split('change')[0] + ' where field = ?';
-        return nodefn.call(conn.query.bind(conn), newSql, [builder.commands[builder.currentIndex].from]).then(function(resp) {
-          var column = resp[0];
-          // Set to the datatype we're looking to change it to...
-          builder.sql = builder.sql.replace('__datatype__', column[0].Type);
-        });
-      }
-    };
-  },
-
-  getRawConnection: function(callback) {
-    var conn = mysql.createConnection(this.connectionSettings);
-    conn.connect(function(err) {
-      callback(err, conn);
-    });
+  advancedQuery: function(connection, sql, bindings, builder) {
+    if (sql.indexOf('alter table') === 0 && sql.indexOf('__datatype__') === (sql.length - 12)) {
+      var newSql = sql.replace('alter table', 'show fields from').split('change')[0] + ' where field = ?';
+      return nodefn.call(connection.query.bind(connection), newSql, [builder.commands[builder.currentIndex].from]).then(function(resp) {
+        var column = resp[0];
+        // Set to the datatype we're looking to change it to...
+        return sql.replace('__datatype__', column[0].Type);
+      });
+    }
+    return sql;
   }
 
 });
 
 // Extends the standard sql grammar.
-MysqlClient.grammar = _.defaults({
+var grammar = exports.grammar = _.defaults({
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
-    return (value !== '*' ? util.format('`%s`', value) : "*");
+    return (value !== '*' ? Helpers.format('`%s`', value) : "*");
+  },
+
+  // Parses the response, according to the way mySQL works...
+  handleResponse: function(builder, response) {
+    response = response[0];
+    if (builder.type === 'select') response = Helpers.skim(response);
+    if (builder.type === 'insert') response = [response.insertId];
+    if (builder.type === 'delete' || builder.type === 'update') response = response.affectedRows;
+    return response;
   }
 
-}, Grammar);
+}, baseGrammar);
 
 // Grammar for the schema builder.
-MysqlClient.schemaGrammar = _.defaults({
+var schemaGrammar = exports.schemaGrammar = _.defaults({
 
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After', 'Comment'],
 
+  // Handle response for the schema.
+  handleResponse: function(builder, resp) {
+    if (builder.type === 'tableExists') return resp.length > 0;
+    if (builder.type === 'columnExists') return resp.length > 0;
+    return resp;
+  },
+
   // Compile a create table command.
   compileCreateTable: function(blueprint, command) {
-    var sql = SchemaGrammar.compileCreateTable.call(this, blueprint, command);
+    var sql  = baseSchemaGrammar.compileCreateTable.call(this, blueprint, command);
     var conn = blueprint.client.connectionSettings;
 
     if (conn.charset) sql += ' default character set ' + conn.charset;
     if (conn.collation) sql += ' collate ' + conn.collation;
-    if (blueprint.isEngine) {
-      sql += ' engine = ' + blueprint.isEngine;
+    if (blueprint.flags.engine) {
+      sql += ' engine = ' + blueprint.flags.engine;
     }
 
     // Checks if the table is commented
@@ -153,7 +137,6 @@ MysqlClient.schemaGrammar = _.defaults({
 
   // Compile a primary key command.
   compilePrimary: function(blueprint, command) {
-    command.name = null;
     return this.compileKey(blueprint, command, 'primary key');
   },
 
@@ -290,7 +273,7 @@ MysqlClient.schemaGrammar = _.defaults({
 
   // Get the SQL for an auto-increment column modifier.
   modifyIncrement: function(blueprint, column) {
-    if ((column.type == 'integer' || column.type == 'bigInteger') && column.autoIncrement) {
+    if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
       return ' not null auto_increment primary key';
     }
   },
@@ -311,4 +294,4 @@ MysqlClient.schemaGrammar = _.defaults({
     }
   }
 
-}, SchemaGrammar, MysqlClient.grammar);
+}, baseSchemaGrammar, grammar);

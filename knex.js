@@ -1,5 +1,6 @@
-//     Knex.js  0.2.6
-//
+// Knex.js  0.4.0
+// --------------
+
 //     (c) 2013 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
@@ -10,186 +11,118 @@
 
 define(function(require, exports, module) {
 
-  // Required dependencies.
-  var _       = require('underscore');
-  var when    = require('when');
-  var Common  = require('./lib/common').Common;
-  var Helpers = require('./lib/helpers').Helpers;
+  // Base library dependencies of the app.
+  var _    = require('underscore');
+  var when = require('when');
 
-  // `Knex` is the root namespace and a chainable function: `Knex('tableName')`
-  var Knex = function(table) {
-    if (!Knex.Instances['main']) {
-      throw new Error('The Knex instance has not been initialized yet.');
+  // Require the main constructors necessary for a `Knex` instance,
+  // each of which are injected with the current instance, so they maintain
+  // the correct client reference & grammar.
+  var Raw         = require('./lib/raw').Raw;
+  var Transaction = require('./lib/transaction').Transaction;
+  var Builder     = require('./lib/builder').Builder;
+
+  // var Interface   = require('./lib/builder/interface').Interface;
+  var ClientBase      = require('./clients/base').ClientBase;
+  var SchemaBuilder   = require('./lib/schemabuilder').SchemaBuilder;
+  var SchemaInterface = require('./lib/schemainterface').SchemaInterface;
+
+  // The `Knex` module, taking either a fully initialized
+  // database client, or a configuration to initialize one. This is something
+  // you'll typically only want to call once per application cycle.
+  var Knex = function(config) {
+
+    var Dialect, client;
+
+    // If the client isn't actually a client, we need to configure it into one.
+    // On the client, this isn't acceptable, since we need to return immediately
+    // rather than wait on an async load of a client library.
+    if (config instanceof ClientBase) {
+      client = config;
+    } else {
+      if (typeof define === 'function' && define.amd) {
+        throw new Error('A valid `Knex` client must be passed into the Knex constructor.');
+      } else  {
+        var clientName = config.client;
+        if (!Clients[clientName]) {
+          throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
+        }
+        Dialect = require(Clients[clientName]);
+        client = new Dialect.Client(_.omit(config, 'client'));
+      }
     }
-    return Knex.Instances['main'](table);
-  };
 
-  // Keep in sync with package.json
-  Knex.VERSION    = '0.2.6';
-  Knex.Builder    = require('./lib/builder').Builder;
-  Knex.JoinClause = require('./lib/joinclause').JoinClause;
+    // Enables the `knex('tableName')` shorthand syntax.
+    var knex = function(tableName) {
+      return knex.builder(tableName);
+    };
 
-  // Knex.Transaction
-  // ---------
-  Knex.Transaction = function(container) {
-    if (!Knex.Instances['main']) {
-      throw new Error('The Knex instance has not been initialized yet.');
-    }
-    return transaction.call(Knex.Instances['main'], container);
-  };
+    knex.grammar = Dialect.grammar;
+    knex.schemaGrammar = Dialect.schemaGrammar;
 
-  var transaction = require('./lib/transaction').transaction;
+    // Main namespaces for key library components.
+    knex.schema  = {};
+    knex.migrate = {};
 
-  // Knex.Schema
-  // ---------
+    // Enable the `Builder('tableName')` syntax, as is used in the main `knex('tableName')`.
+    knex.builder = function(tableName) {
+      var builder = new Builder(knex);
+      return tableName ? builder.from(tableName) : builder;
+    };
 
-  var initSchema = function(Target, client) {
-
-    // Top level object for Schema related functions
-    var Schema = Target.Schema = {};
-
-    // Attach main static methods, which passthrough to the
-    // SchemaBuilder instance methods
-    _.each(['hasTable', 'hasColumn', 'createTable', 'table', 'dropTable', 'renameTable', 'dropTableIfExists'], function(method) {
-
-      Schema[method] = function() {
-        var args = _.toArray(arguments);
-        var builder = new Knex.SchemaBuilder(args[0]);
-            builder.client = client;
-            builder.grammar = client.schemaGrammar;
-        return SchemaInterface[method].apply(builder, args.slice(1));
+    // Attach each of the `Schema` "interface" methods directly onto to `knex.schema` namespace, e.g.:
+    // `knex.schema.table('tableName', function() {...`
+    // `knex.schema.createTable('tableName', function() {...`
+    // `knex.schema.dropTableIfExists('tableName');`
+    _.each(SchemaInterface, function(val, key) {
+      knex.schema[key] = function() {
+        var schemaBuilder = new SchemaBuilder(knex);
+        schemaBuilder.table = _.first(arguments);
+        return SchemaInterface[key].apply(schemaBuilder, _.rest(arguments));
       };
     });
 
-  };
-
-  // All of the Schame methods that should be called with a
-  // `SchemaBuilder` context, to disallow calling more than one method at once.
-  var SchemaInterface = require('./lib/schemainterface').SchemaInterface;
-
-  // Knex.SchemaBuilder
-  // --------
-  Knex.SchemaBuilder = require('./lib/schemabuilder').SchemaBuilder;
-
-  // Knex.Migrate
-  // --------
-  Knex.Migrate = require('./lib/migrate').Migrate;
-
-  // Knex.Raw
-  // -------
-
-  // Helpful for injecting a snippet of raw SQL into a
-  // `Knex` block... in most cases, we'll check if the value
-  // is an instanceof Raw, and if it is, use the supplied value.
-  Knex.Raw = function(sql, bindings) {
-    if (!Knex.Instances['main']) {
-      throw new Error('The Knex instance has not been initialized yet.');
-    }
-    return Knex.Instances['main'].Raw(sql, bindings);
-  };
-
-  var Raw = require('./lib/raw').Raw;
-  _.extend(Raw.prototype, Common);
-
-  // Knex.Initialize
-  // -------
-
-  // Takes a hash of options to initialize the database
-  // connection. The `client` is required to choose which client
-  // path above is loaded, or to specify a custom path to a client.
-  // Other options, such as `connection` or `pool` are passed
-  // into `client.initialize`.
-  Knex.Initialize = function(name, options) {
-    var Target, ClientCtor, client;
-
-    // A name for the connection isn't required in
-    // cases where there is only a single connection.
-    if (_.isObject(name)) {
-      options = name;
-      name    = 'main';
-    }
-
-    // Don't try to initialize the same `name` twice... If necessary,
-    // delete the instance from `Knex.Instances`.
-    if (Knex.Instances[name]) {
-      throw new Error('An instance named ' + name + ' already exists.');
-    }
-
-    client = options.client;
-
-    if (!client) throw new Error('The client is required to use Knex.');
-
-    // Checks if this is a default client. If it's not,
-    // that means it's a custom lib, set the object to the client.
-    if (_.isString(client)) {
-      client = client.toLowerCase();
-      try {
-        ClientCtor = require(Clients[client]);
-      } catch (e) {
-        throw new Error(client + ' is not a valid Knex client, did you misspell it?');
-      }
-    } else {
-      ClientCtor = client;
-    }
-
-    // Creates a new instance of the db client, passing the name and options.
-    client = new ClientCtor(name, _.omit(options, 'client'));
-
-    // If this is named "default" then we're setting this on the Knex
-    Target = function(table) {
-      var builder = new Knex.Builder(client);
-      return table ? builder.from(table) : builder;
+    // Method to run a new `Raw` query on the current client.
+    knex.raw = function(sql, bindings) {
+      return new Raw(knex).query(sql, bindings);
     };
 
-    // Inherit static properties, without any that don't apply except
-    // on the "root" `Knex`.
-    _.extend(Target, _.omit(Knex, 'Initialize', 'Instances', 'VERSION'));
+    // Keep a reference to the current client.
+    knex.client = client;
 
-    // Initialize the schema builder methods.
-    if (name === 'main') {
-      initSchema(Knex, client);
-      Knex.client = client;
-    }
+    // Keep in sync with package.json
+    knex.VERSION = '0.4.0';
 
-    initSchema(Target, client);
-
-    // Specifically set the client on the current target.
-    Target.client = client;
-    Target.instanceName = name;
-
-    // Setup the transacting function properly for this connection.
-    Target.Transaction = function(handler) {
-      return transaction.call(this, handler);
+    // Runs a new transaction, taking a container and returning a promise
+    // for when the transaction is resolved.
+    knex.transaction = function(container) {
+      return new Transaction(knex).run(container);
     };
 
-    // Executes a Raw query.
-    Target.Raw = function(sql, bindings) {
-      var raw = new Raw(sql, bindings);
-          raw.client = client;
-      return raw;
-    };
-
-    // Add this instance to the global `Knex` instances, and return.
-    Knex.Instances[name] = Target;
-
-    return Target;
+    // Return the new `Knex` instance.
+    return knex;
   };
 
-  // Default client paths, located in the `./clients` directory.
-  var Clients = {
-    'mysql'    : './clients/server/mysql.js',
-    'pg'       : './clients/server/postgres.js',
-    'postgres' : './clients/server/postgres.js',
-    'sqlite'   : './clients/server/sqlite3.js',
-    'sqlite3'  : './clients/server/sqlite3.js'
+  // The client names we'll allow in the `{name: lib}` pairing.
+  var Clients = Knex.Clients = {
+    'mysql'      : './clients/server/mysql.js',
+    'pg'         : './clients/server/postgres.js',
+    'postgres'   : './clients/server/postgres.js',
+    'postgresql' : './clients/server/postgres.js',
+    'sqlite'     : './clients/server/sqlite3.js',
+    'sqlite3'    : './clients/server/sqlite3.js'
   };
 
-  // Named instances of Knex, presumably with different database
-  // connections, the main instance being named "main"...
-  Knex.Instances = {};
+  // Used primarily to type-check a potential `Knex` client in `Bookshelf.js`,
+  // by examining whether the object's `client` is an `instanceof Knex.ClientBase`.
+  Knex.ClientBase = ClientBase;
 
-  // Export the Knex module
+  // finally, export the `Knex` object for node and the browser.
   module.exports = Knex;
+
+  Knex.initialize = function(config) {
+    return Knex(config);
+  };
 
 });
 

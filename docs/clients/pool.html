@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="en"><head><title>clients/pool</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../"><meta name="groc-document-path" content="clients/pool"><meta name="groc-project-path" content="clients/pool.js"><link rel="stylesheet" type="text/css" media="all" href="../assets/style.css"><script type="text/javascript" src="../assets/behavior.js"></script><body><div id="meta"><div class="file-path">clients/pool.js</div></div><div id="document"><div class="segment"><div class="comments"><div class="wrapper"><h2 id="pool">Pool</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">define</span><span class="p">)</span> <span class="p">{</span>
+
+<span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+
+<span class="nx">define</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">require</span><span class="p">,</span> <span class="nx">exports</span><span class="p">)</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>All of the "when.js" promise components needed in this module.</p></div></div><div class="code"><div class="wrapper">  <span class="kd">var</span> <span class="nx">when</span>        <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;when&#39;</span><span class="p">);</span>
+  <span class="kd">var</span> <span class="nx">nodefn</span>      <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;when/node/function&#39;</span><span class="p">);</span>
+
+  <span class="kd">var</span> <span class="nx">_</span>           <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;underscore&#39;</span><span class="p">);</span>
+  <span class="kd">var</span> <span class="nx">GenericPool</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;generic-pool-redux&#39;</span><span class="p">).</span><span class="nx">Pool</span><span class="p">;</span>
+
+  <span class="kd">var</span> <span class="nx">Helpers</span>     <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../lib/helpers&#39;</span><span class="p">).</span><span class="nx">Helpers</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>The "Pool" object is a thin wrapper around the
+"generic-pool-redux" library, exposing a <code>destroy</code>
+method for explicitly draining the pool. The
+<code>init</code> method is called internally and initializes
+the pool if it doesn't already exist.</p></div></div><div class="code"><div class="wrapper">  <span class="kd">var</span> <span class="nx">Pool</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">client</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">_</span><span class="p">.</span><span class="nx">bindAll</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;acquire&#39;</span><span class="p">,</span> <span class="s1">&#39;release&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">config</span> <span class="o">=</span> <span class="nx">config</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">client</span> <span class="o">=</span> <span class="nx">client</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">init</span><span class="p">();</span>
+  <span class="p">};</span>
+
+  <span class="nx">Pool</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Some basic defaults for the pool... generally you don't really want to keep
+mutable objects on the prototype, but in this case we're not supposed to be
+messing around with them, so it should be alright.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">defaults</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">poolInstance</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+      <span class="k">return</span> <span class="p">{</span>
+        <span class="nx">min</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="nx">max</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="nx">create</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+          <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">poolInstance</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">getRawConnection</span><span class="p">()</span>
+            <span class="p">.</span><span class="nx">tap</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">connection</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">connection</span><span class="p">.</span><span class="nx">__cid</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">uniqueId</span><span class="p">(</span><span class="s1">&#39;__cid&#39;</span><span class="p">);</span>
+              <span class="k">if</span> <span class="p">(</span><span class="nx">poolInstance</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">afterCreate</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nx">nodefn</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">poolInstance</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">afterCreate</span><span class="p">,</span> <span class="nx">connection</span><span class="p">);</span>
+              <span class="p">}</span>
+            <span class="p">});</span>
+          <span class="k">return</span> <span class="nx">nodefn</span><span class="p">.</span><span class="nx">bindCallback</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">callback</span><span class="p">);</span>
+        <span class="p">},</span>
+        <span class="nx">destroy</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">connection</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">poolInstance</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">beforeDestroy</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">poolInstance</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">beforeDestroy</span><span class="p">(</span><span class="nx">connection</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+              <span class="nx">poolInstance</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">getRawConnection</span><span class="p">(</span><span class="nx">connection</span><span class="p">);</span>
+            <span class="p">});</span>
+          <span class="p">}</span>
+          <span class="nx">poolInstance</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">getRawConnection</span><span class="p">(</span><span class="nx">connection</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">};</span>
+    <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Typically only called internally, this initializes
+a new <code>GenericPool</code> instance, based on the <code>config</code>
+options passed into the constructor.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">init</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">config</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">config</span><span class="p">,</span> <span class="nx">config</span><span class="p">);</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">poolInstance</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">poolInstance</span> <span class="o">||</span> <span class="k">new</span> <span class="nx">GenericPool</span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">defaults</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">config</span><span class="p">,</span> <span class="nx">_</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;defaults&#39;</span><span class="p">)));</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">poolInstance</span><span class="p">;</span>
+    <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Acquires a connection from the pool.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">acquire</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">priority</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">poolInstance</span> <span class="o">||</span> <span class="k">this</span><span class="p">.</span><span class="nx">init</span><span class="p">()).</span><span class="nx">acquire</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">priority</span><span class="p">);</span>
+    <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Release a connection back to the connection pool.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">release</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">connection</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">poolInstance</span><span class="p">.</span><span class="nx">release</span><span class="p">(</span><span class="nx">connection</span><span class="p">,</span> <span class="nx">callback</span><span class="p">);</span>
+    <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Tear down the pool, only necessary if you need it.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">destroy</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">poolInstance</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">poolInstance</span><span class="p">;</span>
+      <span class="nx">poolInstance</span><span class="p">.</span><span class="nx">drain</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">poolInstance</span><span class="p">.</span><span class="nx">destroyAllNow</span><span class="p">();</span>
+      <span class="p">});</span>
+      <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">poolInstance</span><span class="p">;</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Grab the standard <code>Object.extend</code> as popularized by Backbone.js.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">Pool</span><span class="p">.</span><span class="nx">extend</span> <span class="o">=</span> <span class="nx">Helpers</span><span class="p">.</span><span class="nx">extend</span><span class="p">;</span>
+
+  <span class="nx">exports</span><span class="p">.</span><span class="nx">Pool</span> <span class="o">=</span> <span class="nx">Pool</span><span class="p">;</span>
+
+<span class="p">});</span>
+
+<span class="p">})(</span>
+  <span class="k">typeof</span> <span class="nx">define</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">define</span><span class="p">.</span><span class="nx">amd</span> <span class="o">?</span> <span class="nx">define</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">factory</span><span class="p">)</span> <span class="p">{</span> <span class="nx">factory</span><span class="p">(</span><span class="nx">require</span><span class="p">,</span> <span class="nx">exports</span><span class="p">);</span> <span class="p">}</span>
+<span class="p">);</span></div></div></div></div></body></html>

@@ -11,7 +11,7 @@
     body {
       font-size: 14px;
       line-height: 22px;
-      background: #f4f4f4;
+      background: #FEFFFC;
       color: #000;
       font-family: Helvetica Neue, Helvetica, Arial;
     }
@@ -72,10 +72,10 @@
     img#logo {
       width: 450px;
     }
-    div.warning {
-      margin-top: 15px;
-      font: bold 11px Arial;
-      color: #770000;
+    .warning {
+      font-size: 12px;
+      line-height: 18px;
+      font-style: italic;
     }
     p {
       margin: 20px 0;
@@ -185,26 +185,28 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.2.6)</span>
+      Knex.js <span class="version">(0.4.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
-      <li>&raquo; <a href="http://knexjs.org/docs/knex.html">Annotated Source</a></li>
+      <li>&raquo; <a href="docs/knex.html">Annotated Source</a></li>
+      <li>&raquo; <a href="#changelog">Change Log</a></li>
     </ul>
 
-    <a class="toc_title" href="#installation">
+    <a class="toc_title" href="#Installation">
       Installation
+    </a>
+
+    <a class="toc_title" href="#Upgrading">
+      Upgrading
     </a>
 
     <a class="toc_title" href="#Initialize">
       Initialize
     </a>
-    <ul class="toc_section">
-      <li>– <a href="#Init-multi-instance">multi-instance</a></li>
-    </ul>
 
     <a class="toc_title" href="#Builder">
-      Builder
+      Query Builder
     </a>
     <ul class="toc_section">
       <li>– <a href="#Builder-main"><b>constructor</b></a></li>
@@ -233,7 +235,9 @@
       <li>– <a href="#Builder-decrement">decrement</a></li>
       <li>– <a href="#Builder-truncate">truncate</a></li>
       <li>– <a href="#Builder-debug">debug</a></li>
+      <li>– <a href="#Builder-options">options</a></li>
       <li><b><a href="#Builder-Interface">Interface:</a></b></li>
+      <li>– <a href="#Builder-tap">tap</a></li>
       <li>– <a href="#Builder-then">then</a></li>
       <li>– <a href="#Builder-exec">exec</a></li>
       <li>– <a href="#Builder-toString">toString</a></li>
@@ -254,10 +258,13 @@
       <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
       <li>– <a href="#Schema-table">table</a></li>
       <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
+      <li>– <a href="#Schema-hasColumn">hasColumn</a></li>
       <li>– <a href="#Schema-dropColumn">dropColumn</a></li>
       <li>– <a href="#Schema-dropColumns">dropColumns</a></li>
+      <li>– <a href="#Schema-renameColumn">renameColumn</a></li>
       <li>– <a href="#Schema-increments">increments</a></li>
       <li>– <a href="#Schema-integer">integer</a></li>
+      <li>– <a href="#Schema-bigInteger">bigInteger</a></li>
       <li>– <a href="#Schema-text">text</a></li>
       <li>– <a href="#Schema-string">string</a></li>
       <li>– <a href="#Schema-float">float</a></li>
@@ -272,12 +279,14 @@
       <li>– <a href="#Schema-json">json</a></li>
       <li>– <a href="#Schema-uuid">uuid</a></li>
       <li>– <a href="#Schema-comment">comment</a></li>
+      <li>– <a href="#Schema-specificType">specificType</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
       <li>– <a href="#Chainable-unique">unique</a></li>
       <li>– <a href="#Chainable-defaultTo">defaultTo</a></li>
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
+      <li>– <a href="#Chainable-notNullable">notNullable</a></li>
       <li>– <a href="#Chainable-nullable">nullable</a></li>
       <li>– <a href="#Chainable-after">after</a></li>
       <li>– <a href="#Chainable-comment">comment</a></li>
@@ -286,6 +295,10 @@
     <a class="toc_title" href="#Raw">
       Raw
     </a>
+    <ul class="toc_section">
+      <li>– <a href="#Raw-Expressions">Raw Expressions</a></li>
+      <li>– <a href="#Raw-Queries">Raw Queries</a></li>
+    </ul>
 
     <a class="toc_title" href="#faq">
       F.A.Q.
@@ -307,8 +320,8 @@
       Knex.js is a query builder for <b>Postgres</b>, <b>MySQL</b> and <b>SQLite3</b>, designed to be flexible,
       portable, and fun to use. It features both traditional node style <a href="#Builder-exec">callbacks</a>
       as well as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured
-      query and schema builders, transaction support, connection pooling and node.js adapters for
-      postgres, mysql, and sqlite3 - standardizing responses between the three.
+      query and schema builders, <b>transaction support</b>, connection pooling and standardized responses between
+      different query clients and dialects.
     </p>
 
     <p>
@@ -329,10 +342,17 @@
     </p>
 
     <p>
-      Big thanks to all of the great <a href="https://github.com/tgriesser/knex/graphs/contributors">contributions</a> to the project.
+      Thanks to all of the great <a href="https://github.com/tgriesser/knex/graphs/contributors">contributions</a> to the project.
     </a>
 
-    <h2>Latest Release: 0.2.6 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <p class="warning">
+      Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work
+      on the <a href="http://laravel.com/docs/queries">Laravel Query Builder</a>,
+      from which much of the code and syntax is derived.
+    </p>
+
+
+    <h2>Latest Release: 0.4.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -341,22 +361,16 @@
       </a>
     </p>
 
-    <p>
-      Special thanks to <a href="https://twitter.com/taylorotwell">Taylor Otwell</a> and his work
-      on the <a href="http://laravel.com/docs/queries">Laravel Query Builder</a>,
-      from which much of the code and syntax is derived.
-    </p>
-
-    <h2 id="installation">
+    <h2 id="Installation">
       Installation
     </h2>
 
     <p>
       All dependencies are specified in <tt>package.json</tt> file but include <tt>underscore.js</tt>,
-      <tt>when.js</tt>, and the <tt>generic-pool</tt> library. You then need to install
+      <tt>when.js</tt>, and the <tt>generic-pool-redux</tt> library. You then need to install
       either <tt>mysql</tt>, <tt>pg</tt>, or <tt>sqlite3</tt> from <tt>npm</tt> if you wish
       to use one of these databases with node.js, or create your own client
-      adapter and specify it in <a href="#Initialize">Knex.Initialize</a>.
+      adapter and specify it in <a href="#Initialize">knex.initialize</a>.
     </p>
 
 <pre>
@@ -368,16 +382,42 @@ $ npm install pg
 $ npm install sqlite3
 </pre>
 
-    <h2 id="Initialize">Knex.Initialize</h2>
+    <h2 id="Upgrading">Upgrading from 0.2.x</h2>
 
     <p>
-      <tt>Knex.Initialize</tt> is the initializing function that must be called prior to using
+      If you are upgrading Knex from 0.2.x to 0.4.x, you'll notice that some things have broken.
+      Luckily, with a few quick fixes to your code, you should be up and runnning in no-time.
+      <ul>
+        <li>
+          Global state is no longer stored in the library, an instance is returned from <tt>Knex.initialize</tt>,
+          so you will need to call this once and then reference this <tt>knex</tt> client elsewhere in your application.
+        </li>
+        <li>
+          Lowercasing of <tt>knex.raw</tt>, <tt>knex.transaction</tt>, and <tt>knex.schema</tt>.
+        </li>
+        <li>
+          Created columns are now nullable by default, unless <tt>notNullable</tt> is chained as an option.
+        </li>
+        <li>
+          Keys created with <tt>increments</tt> are now assumed to be unsigned (MySQL) by default.
+        </li>
+        <li>
+          The <tt>destroyAllNow</tt> is no longer called by the library on <tt>process.exit</tt> event. If you need to call
+          it explicitly yourself, you may use <tt>knex.client.destroyPool</tt>
+        </li>
+      </ul>
+    </p>
+
+    <h2 id="Initialize">Initialize</h2>
+
+    <p>
+      <tt>Knex.initialize</tt> is the initializing function that must be called prior to using
       Knex, accepting a few parameters. The <tt>client</tt> parameter is required
       and determines which client adapter will be used with the library.
     </p>
 
 <pre>
-Knex.Initialize({
+var knex = Knex.initialize({
   client: 'mysql',
   connection: {
     host     : '127.0.0.1',
@@ -389,53 +429,45 @@ Knex.Initialize({
 });
 </pre>
 
-  <p id="Init-multi-instance">
-    It is also possible to use Knex with multiple database connection instances if you'd like,
-    by creating named instances. To do this, pass the name of the connection as the first
-    parameter into <tt>Knex.Initialize</tt> and it will return that instance, which may
-    also be referenced by name under <tt>Knex.Instances</tt>.
-  </p>
+    <p class="warning">
+      An initialize should only ever happen once in your application, as it creates a connection pool
+      for the current database, you should use the instance returned from the initialize call throughout
+      your library.
+    </p>
+
+    <p>
+      You'll need to store this instance created by the <tt>initialize</tt> somewhere in the application
+      you can reference it. A common pattern to follow is to set the client as a property on the <tt>Knex</tt>
+      library when your application starts, so you can easily reference it later:
+    </p>
 
 <pre>
-var SqliteDB = Knex.Initialize('sqlitedb', {
-  client: 'sqlite',
+// When the app starts
+var Knex  = require('knex');
+Knex.knex = Knex.initialize({
+  client: 'pg',
   connection: {
-    database : './testdb'
+    // your connection config
   }
 });
 
-var MySQL2 = Knex.Initialize('mysql2', {
-  client: 'mysql',
-  connection: { ... }
-});
+// elsewhere, to use the client:
+var knex = require('knex').knex;
 
-// Knex.Instances['mysql2'] === MySQL2;
-// Knex.Instances['sqlitedb'] === SqliteDB;
-
-MySQL2('accounts')
-  .select()
-  .then(function(resp) {
-    // ...
-  });
-
-SqliteDB('users')
-  .insert({email: 'test@email.com'})
-  .exec(function(err, resp) {
-    // ...
-  });
+knex('table').where('id', 1).select().then(...
 </pre>
 
-    <h2 id="Builder">Knex.Builder</h2>
+    <h2 id="Builder">knex.builder</h2>
 
     <p>
-      The <tt>Knex.Builder</tt> is the interface used for building and executing standard SQL queries,
+      The <tt>knex.builder</tt> is the interface used for building and executing standard SQL queries,
       such as <tt>select</tt>, <tt>insert</tt>, <tt>update</tt>, <tt>delete</tt>. The query is run
       by specifying a <a href="#Builder-table">tableName</a>, adding additional query parameters, and
       executing the query with one of the public interface methods.
     </p>
 
     <p id="Builder-main">
-      <b class="header">Knex</b><code>Knex(tableName)...</code>
+      <b class="header">knex</b><code>knex(tableName)...</code>
       <br />
       The <b>Knex</b> query builder starts off by specifying a <b>tableName</b> you wish to query against,
       which returns a chainable interface, similar to a jQuery chain. You can then call any additional
@@ -588,7 +620,7 @@ Knex('comments').whereIn('author_id', function() {
 
 <pre>
 // select distinct 'first_name' from customers
-Knex('customers')
+knex('customers')
   .distinct('first_name', 'last_name')
   .select()
 </pre>
@@ -603,7 +635,7 @@ Knex('customers')
     </p>
 
 <pre>
-Knex('users')
+knex('users')
   .join('contacts', 'users.id', '=', 'contacts.user_id')
   .join('orders', 'users.id', '=', 'orders.user_id', 'outer')
   .select('users.id', 'contacts.phone', 'orders.price')
@@ -617,7 +649,7 @@ Knex('users')
     </p>
 
 <pre>
-Knex('users')
+knex('users')
   .join('contacts', function() {
       this.on('users.id', '=', 'contacts.user_id').orOn(...);
   })
@@ -644,7 +676,7 @@ Knex('users')
       Adds a <tt>having</tt> clause to the query.
 
 <pre>
-Knex('users')
+knex('users')
   .groupBy('count')
   .orderBy('name', 'desc')
   .having('count', '>', 100)
@@ -666,7 +698,7 @@ Knex('users')
     </p>
 
 <pre>
-Knex('users')
+knex('users')
   .limit(10)
   .offset(30)
   .select()
@@ -686,7 +718,7 @@ Knex('users')
     </p>
 
 <pre>
-Knex('users').whereNull('last_name').union(function() {
+knex('users').whereNull('last_name').union(function() {
 
   this.select('*').from('users').whereNull('first_name');
 
@@ -704,10 +736,10 @@ Knex('users').whereNull('last_name').union(function() {
 
 <pre>
   // Returns [1] in "mysql", "sqlite"; [] in "postgresql" unless the 'returning' parameter is set.
-  Knex('books').insert({title: 'Slaughterhouse Five'})
+  knex('books').insert({title: 'Slaughterhouse Five'})
 
   // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
-  Knex('books')
+  knex('books')
     .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], 'id')
 </pre>
 
@@ -720,12 +752,12 @@ Knex('users').whereNull('last_name').union(function() {
 
 <pre>
   // Returns [1]
-  Knex('books')
+  knex('books')
     .returning('id')
     .insert({title: 'Slaughterhouse Five'})
 
   // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
-  Knex('books')
+  knex('books')
     .returning('id')
     .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
 </pre>
@@ -740,7 +772,7 @@ Knex('users').whereNull('last_name').union(function() {
     </p>
 
 <pre>
-Knex('books')
+knex('books')
   .where('published_date', '<', 2000)
   .update({
     status: 'archived'
@@ -757,7 +789,7 @@ Knex('books')
     </p>
 
 <pre>
-Knex('accounts')
+knex('accounts')
   .where('activated', false)
   .del()
 </pre>
@@ -765,19 +797,19 @@ Knex('accounts')
     <p id="Builder-transacting">
       <b class="header">transacting</b><code>.transacting(transactionObj)</code>
       <br />
-      Used by <a href="#Transaction">Knex.Transaction</a>, the transacting method may be chained to any
+      Used by <a href="#Transaction">knex.transaction</a>, the transacting method may be chained to any
       query and passed the object you wish to join the query as part of the transaction for.
     </p>
 
 <pre>
-Knex.Transaction(function(t) {
+knex.transaction(function(t) {
 
-  Knex('books')
+  knex('books')
     .transacting(t)
     .insert({name: 'Old Books'})
     .then(function(row) {
 
-      return When.all(_.map([
+      return when.all(_.map([
         {title: 'Canterbury Tales'},
         {title: 'Moby Dick'},
         {title: 'Hamlet'}
@@ -786,7 +818,7 @@ Knex.Transaction(function(t) {
         info.row_id = row.id;
 
         // Some validation could take place here.
-        return Knex('book').transacting(t).insert(info);
+        return knex('book').transacting(t).insert(info);
 
       }));
     })
@@ -850,6 +882,23 @@ Knex.Transaction(function(t) {
       Turns on debugging for the current query chain.
     </p>
 
+    <p id="Builder-options">
+      <b class="header">options</b><code>.options()</code>
+      <br />
+      Allows for mixing in additional options as defined by database client specific libraries:
+    </p>
+
+<pre>
+  knex('accounts as a1')
+    .join('accounts as a2', function() {
+      this.on('a1.email', '<>', 'a2.email');
+    }, 'left')
+    .select(['a1.email', 'a2.email'])
+    .where(Knex.Raw('a1.id = 1'))
+    .option({ nestTables: true, rowMode: 'array' })
+    .limit(2);
+</pre>
+
     <h3 id="Builder-Interface">Builder Interface Methods:</h3>
 
     <p id="Builder-then">
@@ -870,6 +919,15 @@ Knex.Transaction(function(t) {
       query chain will return the same result.
     </p>
 
+    <p id="Builder-tap">
+      <b class="header">then</b><code>.then(onFulfilled, onRejected)</code>
+      <br />
+      Coerces the current query builder chain into a promise state, accepting the resolve
+      and reject handlers as specified by the <a href="http://promises-aplus.github.com/promises-spec">Promises/A+ spec</a>.
+      As stated in the spec, more than one call to the <tt>then</tt> method for the current query chain will resolve
+      with the same value, in the order they were called; the query will not be executed multiple times.
+    </p>
+
     <p id="Builder-toString">
       <b class="header">toString</b><code>.toString()</code>
       <br />
@@ -880,21 +938,21 @@ Knex.Transaction(function(t) {
     <h2 id="Transaction">Knex.Transaction</h2>
 
     <p>
-      Transactions are handled by passing a handler function into <tt>Knex.Transaction</tt>.
+      Transactions are handled by passing a handler function into <tt>knex.transaction</tt>.
       The handler function accepts a single argument, the promise for committing or rolling back
       the transaction. This argument is then passed into any queries which are involved in the current
       transcaction, working by explicitly passing the .
     </p>
 
 <pre>
-Knex.Transaction(function(t) {
+knex.transaction(function(t) {
 
-  Knex('books')
+  knex('books')
     .transacting(t)
     .insert({name: 'Old Books'})
     .then(function(row) {
 
-      return When.all(_.map([
+      return when.all(_.map([
         {title: 'Canterbury Tales'},
         {title: 'Moby Dick'},
         {title: 'Hamlet'}
@@ -903,7 +961,7 @@ Knex.Transaction(function(t) {
         info.row_id = row.id;
 
         // Some validation could take place here.
-        return Knex('book').transacting(t).insert(info);
+        return knex('book').transacting(t).insert(info);
 
       }));
     })
@@ -916,17 +974,17 @@ Knex.Transaction(function(t) {
 });
 </pre>
 
-    <h2 id="Schema">Knex.Schema</h2>
+    <h2 id="Schema">knex.schema</h2>
 
     <p id="Schema-createTable">
-      <b class="header">createTable</b><code>Knex.Schema.createTable(tableName, callback)</code>
+      <b class="header">createTable</b><code>knex.schema.createTable(tableName, callback)</code>
       <br />
       Creates a new table on the database, with a callback function to modify the table's
       structure, using the <a href="#Schema-Building">schema-building</a> commands.
     </p>
 
 <pre>
-Knex.Schema.createTable('users', function (table) {
+knex.schema.createTable('users', function (table) {
   table.string('name');
   table.timestamps();
 }).then(function () {
@@ -935,28 +993,28 @@ Knex.Schema.createTable('users', function (table) {
 </pre>
 
     <p id="Schema-renameTable">
-      <b class="header">renameTable</b><code>Knex.Schema.renameTable(from, to)</code>
+      <b class="header">renameTable</b><code>knex.schema.renameTable(from, to)</code>
       <br />
       Renames a table <b>from</b> a current tableName <b>to</b> another.
     </p>
 
     <p id="Schema-dropTable">
-      <b class="header">dropTable</b><code>Knex.Schema.dropTable(tableName)</code>
+      <b class="header">dropTable</b><code>knex.schema.dropTable(tableName)</code>
       <br />
       Drops a table, specified by <b>tableName</b>.
     </p>
 
     <p id="Schema-hasTable">
-      <b class="header">hasTable</b><code>Knex.Schema.hasTable(tableName)</code>
+      <b class="header">hasTable</b><code>knex.schema.hasTable(tableName)</code>
       <br />
       Checks for a table's existence by <b>tableName</b>, resolving with a boolean to
       signal if the table exists.
     </p>
 
 <pre>
-Knex.Schema.hasTable('users').then(function(exists) {
+knex.schema.hasTable('users').then(function(exists) {
   if (!exists) {
-    return Knex.Schema.createTable('users', function(t) {
+    return knex.schema.createTable('users', function(t) {
       t.increments('id').primary();
       t.string('first_name', 100);
       t.string('last_name', 100);
@@ -967,20 +1025,20 @@ Knex.Schema.hasTable('users').then(function(exists) {
 </pre>
 
     <p id="Schema-dropTableIfExists">
-      <b class="header">dropTableIfExists</b><code>Knex.Schema.dropTableIfExists(tableName)</code>
+      <b class="header">dropTableIfExists</b><code>knex.schema.dropTableIfExists(tableName)</code>
       <br />
       Drops a table conditionally if the table exists, specified by <tt>tableName</tt>.
     </p>
 
     <p id="Schema-table">
-      <b class="header">table</b><code>Knex.Schema.table(tableName, callback)</code>
+      <b class="header">table</b><code>knex.schema.table(tableName, callback)</code>
       <br />
       Chooses a database table, and then modifies the table, using the <a href="#Schema-Building">Schema Building</a>
       functions inside of the callback.
     </p>
 
 <pre>
-Knex.Schema.table('users', function (table) {
+knex.schema.table('users', function (table) {
   table.dropColumn('name');
   table.string('first_name');
   table.string('last_name');
@@ -989,8 +1047,14 @@ Knex.Schema.table('users', function (table) {
 });
 </pre>
 
-
     <h3 id="Schema-Building">Schema Building:</h3>
+
+    <p id="Schema-hasColumn">
+      <b class="header">hasColumn</b><code>table.hasColumn(name)</code>
+      <br />
+      Checks if a column exists in the current table, resolves the promise with a boolean, <tt>true</tt>
+      if the column exists, <tt>false</tt> otherwise.
+    </p>
 
     <p id="Schema-dropColumn">
       <b class="header">dropColumn</b><code>table.dropColumn(name)</code>
@@ -1001,19 +1065,32 @@ Knex.Schema.table('users', function (table) {
     <p id="Schema-dropColumns">
       <b class="header">dropColumns</b><code>table.dropColumns(*columns)</code>
       <br />
-      Drops multiple columns, taking a variable number of column names.
+      Drops multiple <b>columns</b>, taking a variable number of column names.
+    </p>
+
+    <p id="Schema-renameColumn">
+      <b class="header">renameColumn</b><code>table.renameColumn(from, to)</code>
+      <br />
+      Renames a column <b>from</b> one name <b>to</b> another.
     </p>
 
     <p id="Schema-increments">
       <b class="header">increments</b><code>table.increments(name)</code>
       <br />
-      Adds an auto incrementing column. This will be used as the primary key for the column.
+      Adds an auto incrementing column, . This will be used as the primary key for the column.
+      Also available is a <tt>bigIncrements</tt> if you
     </p>
 
     <p id="Schema-integer">
       <b class="header">integer</b><code>table.integer(name)</code>
       <br />
       Adds an integer column.
+    </p>
+
+    <p id="Schema-integer">
+      <b class="header">integer</b><code>table.integer(name)</code>
+      <br />
+      In MySQL, adds a <tt>bigint</tt> column, otherwise adds a normal integer.
     </p>
 
     <p id="Schema-text">
@@ -1116,6 +1193,12 @@ Knex.Schema.table('users', function (table) {
       Sets the comment for a table.
     </p>
 
+    <p id="Schema-specificType">
+      <b class="header">specificType</b><code>table.specificType(column, value)</code>
+      <br />
+      Sets a specific type for the column creation, if you'd like to add a column type that isn't supported here.
+    </p>
+
     <h3 id="Chainable">Chainable Methods:</h3>
 
     <p>
@@ -1152,10 +1235,16 @@ Knex.Schema.table('users', function (table) {
       Specifies an integer as unsigned. No-op if this is chained off of a non-integer field.
     </p>
 
+    <p id="Chainable-notNullable">
+      <b class="header">notNullable</b><code>column.notNullable()</code>
+      <br />
+      Adds a <tt>not null</tt> on the current column being created.
+    </p>
+
     <p id="Chainable-nullable">
       <b class="header">nullable</b><code>column.nullable()</code>
       <br />
-      Allows a field to be nullable. No-op if chained off of a non-nullable field.
+      Default on column creation, this explicitly sets a field to be nullable.
     </p>
 
     <p id="Chainable-after">
@@ -1171,25 +1260,25 @@ Knex.Schema.table('users', function (table) {
     </p>
 
 <pre>
-Knex.Schema.createTable('accounts', function() {
+knex.schema.createTable('accounts', function() {
   t.increments().primary();
   t.string('email').unique();
 });
 </pre>
 
-    <h2 id="Raw">Knex.Raw</h2>
+    <h2 id="Raw">knex.raw</h2>
 
-    <h3 id="Raw-Expression">Raw Expressions:</h3>
+    <h3 id="Raw-Expressions">Raw Expressions:</h3>
 
     <p>
       Sometimes you may need to use a raw expression in a query. These expressions will be injected
       into the query as strings, so be careful not to create any SQL injection points!
-      To create a raw expression, you may use the <tt>Knex.Raw</tt> function.
+      To create a raw expression, you may use the <tt>knex.raw</tt> function.
     </p>
 
 <pre>
-Knex('users')
-  .select(Knex.Raw('count(*) as user_count, status'))
+knex('users')
+  .select(knex.raw('count(*) as user_count, status'))
   .where('status', '<>', 1)
   .groupBy('status')
   .then(...
@@ -1198,7 +1287,7 @@ Knex('users')
     <h3 id="Raw-Queries">Raw Queries:</h3>
 
     <p>
-      The <tt>Knex.Raw</tt> may also be used to build a full query and execute it, as a
+      The <tt>knex.raw</tt> may also be used to build a full query and execute it, as a
       standard query builder query would be executed. The benefit of this is that it uses the connection
       pool and provides a standard interface for the different client libraries.
       Note that the response will be whatever the underlying sql library would typically return on a
@@ -1207,12 +1296,21 @@ Knex('users')
     </p>
 
 <pre>
-Knex.Raw('select * from users where id = 1').then(function(resp) {
+knex.raw('select * from users where id = 1').then(function(resp) {
   ...
 });
 </pre>
 
     <h2 id="faq">F.A.Q.</h2>
+
+    <p id="faq-contribute">
+      <b class="header">How do I help contribute?</b><br />
+      Glad you ask! Pull requests, or feature requests, though not always implemented, are a great way
+      to help make Knex even better than it is now. If you're looking for something specific to help out with,
+      there's a number of unit tests that aren't implemented yet, the library could never have too many of those.
+      If you want to submit a fix or feature, take a look at the <a href="https://github.com/tgriesser/knex/blob/master/CONTRIBUTING.md">
+      Contributing</a> readme in the Github and go ahead and open a ticket.
+    </p>
 
     <p id="faq-debug">
       <b class="header">How do I debug?</b><br />
@@ -1243,7 +1341,36 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
-      <b class="header">0.2.6</b> &mdash; <small><i>Aug 29, 2013</i></small><br />
+      <b class="header">0.4.0</b> &mdash; <small><i>Sep 13, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.0...0.2.6">Diff</a><br />
+      <b>Breaking Changes:</b>
+      <ul>
+        <li>
+          Global state is no longer stored in the library, an instance is returned from <tt>Knex.initialize</tt>,
+          so you will need to call this once and then reference this <tt>knex</tt> client elsewhere in your application.
+        </li>
+        <li>
+          Lowercasing of <tt>knex.raw</tt>, <tt>knex.transaction</tt>, and <tt>knex.schema</tt>.
+        </li>
+        <li>
+          Created columns are now nullable by default, unless <tt>notNullable</tt> is chained as an option.
+        </li>
+        <li>
+          Keys created with <tt>increments</tt> are now assumed to be unsigned (MySQL) by default.
+        </li>
+        <li>
+          The <tt>destroyAllNow</tt> is no longer called by the library on <tt>process.exit</tt> event. If you need to call
+          it explicitly yourself, you may use <tt>knex.client.destroyPool</tt>
+        </li>
+      </ul>
+      Schema: Added <a href="#Schema-hasColumn">hasColumn</a>, <a href="#Schema-renameColumn">renameColumn</a>, <a href="Schema-bigInteger">bigInteger</a>,
+      <a href="Schema-specificType">specificType</a>.
+      General: Refactoring the library to support UMD and eventual use on the client. Added <a href="#Builder-options">options</a> method for adding additional
+      parameters specific to individual database libraries, #64.
+      Bugfixes: Case insensitive where operators (e.g.) <tt>LIKE, BETWEEN, NOT LIKE</tt> are now supported.
+    </p>
+
+    <p>
+      <b class="header">0.2.6</b> &mdash; <small><i>Aug 29, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.2.5...0.2.6">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.2.5/index.html">Docs</a><br />
       Reject the transaction promise if the transaction "commit" fails, (#50).
     </p>
 
@@ -1346,6 +1473,6 @@ Knex.Raw('select * from users where id = 1').then(function(resp) {
     </p>
 
   </div>
-  <script src="docs/public/scripts/ga.js" type="text/javascript" charset="utf-8"></script>
+  <script src="docs/assets/ga.js" type="text/javascript" charset="utf-8"></script>
 </body>
 </html>
