@@ -22,8 +22,7 @@ exports.Client = ServerBase.extend({
 
   dialect: 'postgresql',
 
-  initialize: function() {
-  },
+  initialize: function() {},
 
   runQuery: function(connection, sql, bindings) {
     return nodefn.call(connection.query.bind(connection), sql, bindings);

@@ -2,7 +2,7 @@ module.exports = function(knex) {
 
   describe('Updates', function () {
 
-    it('should handle updates', function(ok) {
+    it('should handle updates', function() {
       return knex('accounts')
         .logMe()
         .where('id', 1)
