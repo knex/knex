@@ -14,12 +14,17 @@
     "sqlite3": "~2.1.7",
     "node-uuid": "~1.4.0",
     "grunt": "~0.4.1",
-    "grunt-release": "~0.5.1"
+    "grunt-release": "~0.5.1",
+    "mocha-as-promised": "~1.4.0",
+    "chai": "~1.7.2",
+    "chai-as-promised": "~3.3.1",
+    "sinon": "~1.7.3",
+    "sinon-chai": "~2.4.0"
   },
   "dependencies": {
     "when": "~2.3.0",
     "underscore": "~1.5.1",
-    "generic-pool": "~2.0.3"
+    "generic-pool-redux": "~0.1.0"
   },
   "scripts": {
     "test": "mocha -R spec test/index.js"

@@ -289,7 +289,7 @@ describe('Builder', function () {
 
     it('takes a second argument to set the isReturning, using the returning method', function() {
       expect(builder.flags.returning).to.be.empty;
-      builder.insert('insert', 'user_id');
+      builder.insert({'insert': 'val'}, 'user_id');
       expect(builder.flags.returning).to.equal('user_id');
     });
 

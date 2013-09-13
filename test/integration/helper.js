@@ -128,9 +128,11 @@ exports.setLib = function(context) {
 
   var parseResultDates = function(newData, localData) {
     _.each([newData, localData], function(item) {
-      _.each(item, function(row, i) {
-        item[i] = _.omit(row, 'created_at', 'updated_at');
-      });
+      if (_.isObject(item)) {
+        _.each(item, function(row, i) {
+          item[i] = _.omit(row, 'created_at', 'updated_at');
+        });
+      }
     });
   };
 
