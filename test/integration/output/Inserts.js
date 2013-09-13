@@ -7,7 +7,7 @@ module.exports = {
     },
     postgresql: {
       bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test@example.com','Test','User',1,new Date()],
-      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values ($1, $2, $3, $4, $5, $6, $7) returning "id"',
+      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
       result: [1]
     },
     sqlite3: {
@@ -24,7 +24,7 @@ module.exports = {
     },
     postgresql: {
       bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test2@example.com','Test','User',1,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test3@example.com','Test','User',2,new Date()],
-      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values ($1, $2, $3, $4, $5, $6, $7), ($8, $9, $10, $11, $12, $13, $14) returning "id"',
+      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
       result: [2,3]
     },
     sqlite3: {
@@ -41,7 +41,7 @@ module.exports = {
     },
     postgresql: {
       bindings: ['Lorem ipsum Dolore labore incididunt enim.',new Date(),'test4@example.com','Test','User',2,new Date(),'Lorem ipsum Dolore labore incididunt enim.',new Date(),'test5@example.com','Test','User',2,new Date()],
-      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values ($1, $2, $3, $4, $5, $6, $7), ($8, $9, $10, $11, $12, $13, $14) returning "id"',
+      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
       result: [4,5]
     },
     sqlite3: {
@@ -57,7 +57,7 @@ module.exports = {
     },
     postgresql: {
       bindings: ['test5@example.com','Test','User',2,new Date()],
-      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values ($1, $2, $3, $4, $5, $6, $7) returning "id"'
+      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"'
     },
     sqlite3: {
       bindings: ['test5@example.com','Test','User',2,new Date()],
@@ -72,7 +72,7 @@ module.exports = {
     },
     postgresql: {
       bindings: ['test6@example.com','Test','User',2,new Date()],
-      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values ($1, $2, $3, $4, $5, $6, $7) returning "id"',
+      sql: 'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
       result: [7]
     },
     sqlite3: {
@@ -88,7 +88,7 @@ module.exports = {
     },
     postgresql: {
       bindings: ['d'],
-      sql: 'insert into "datatype_test" ("enum_value") values ($1)'
+      sql: 'insert into "datatype_test" ("enum_value") values (?)'
     },
     sqlite3: {
       bindings: ['d'],

@@ -94,6 +94,25 @@ describe('Builder', function () {
 
   });
 
+  describe('toString', function() {
+
+    it('should properly escape the query string', function() {
+
+      var output = "select * from `items` outer join `users` on `items`.`id` = `users`.`id` where `id` = 'User' or `id` = (SELECT id from otheritems)";
+
+      expect(builder
+        .from('items')
+        .join('users', function() {
+          this.on('items.id', '=', 'users.id');
+          this.type('outer');
+        })
+        .where('id', '=', 'User')
+        .orWhere('id', '=', new Raw({}).query('(SELECT id from otheritems)')).toString()).to.equal(output);
+
+    });
+
+  });
+
   describe('clone', function() {
 
   });
@@ -180,7 +199,7 @@ describe('Builder', function () {
           });
         });
         expect(builder.bindings).to.have.length(3);
-        expect(builder.toString()).to.equal("select * where `id` = (select `account_id` from `names` where `names`.`id` > 1 or (`names`.`first_name` like Tim% and `names`.`id` > 10))");
+        expect(builder.toString()).to.equal("select * where `id` = (select `account_id` from `names` where `names`.`id` > 1 or (`names`.`first_name` like 'Tim%' and `names`.`id` > 10))");
       });
 
       var arg1 = {}, arg2 = {}, arg3 = {}, arg4 = {};

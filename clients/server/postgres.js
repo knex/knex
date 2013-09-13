@@ -25,6 +25,11 @@ exports.Client = ServerBase.extend({
   initialize: function() {},
 
   runQuery: function(connection, sql, bindings, builder) {
+    var questionCount = 0;
+    sql = sql.replace(/\?/g, function() {
+      questionCount++;
+      return '$' + questionCount;
+    });
     if (builder && builder.flags.options) sql = _.extend({text: sql}, builder.flags.options);
     return nodefn.call(connection.query.bind(connection), sql, bindings);
   },
@@ -52,12 +57,6 @@ exports.Client = ServerBase.extend({
 
 // Extends the standard sql grammar.
 var grammar = exports.grammar = _.defaults({
-
-  // Bind all of the ? to numbered vars, so they
-  // may be passed to the "pg" client correctly.
-  toSql: function(builder) {
-    return this._questions(baseGrammar.toSql.call(this, builder));
-  },
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
@@ -109,14 +108,6 @@ var grammar = exports.grammar = _.defaults({
       return response.rowCount;
     }
     return '';
-  },
-
-  _questions: function(sql) {
-    var questionCount = 0;
-    return sql.replace(/\?/g, function() {
-      questionCount++;
-      return '$' + questionCount;
-    });
   }
 
 }, baseGrammar);
@@ -126,12 +117,6 @@ exports.schemaGrammar = _.defaults({
 
   // The possible column modifiers.
   modifiers: ['Increment', 'Nullable', 'Default'],
-
-  // Bind all of the ? to numbered vars, so they
-  // may be passed to the "pg" client correctly.
-  toSql: function(builder) {
-    return _.map(baseSchemaGrammar.toSql.call(this, builder), this._questions);
-  },
 
   handleResponse: function(builder, resp) {
     resp = resp[0];
@@ -299,14 +284,6 @@ exports.schemaGrammar = _.defaults({
     if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
       return ' primary key not null';
     }
-  },
-
-  _questions: function(sql) {
-    var questionCount = 0;
-    return sql.replace(/\?/g, function() {
-      questionCount++;
-      return '$' + questionCount;
-    });
   }
 
 }, baseSchemaGrammar, grammar);

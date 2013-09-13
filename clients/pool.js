@@ -71,7 +71,7 @@ define(function(require, exports) {
       this.instance.release(connection);
     },
 
-    // Tear down the pool, only necessary if you need to
+    // Tear down the pool, only necessary if you need it.
     destroy: function() {
       var poolInstance = this.instance;
       poolInstance.drain(function() {

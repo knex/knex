@@ -6,7 +6,7 @@ module.exports = {
     },
     postgresql: {
       bindings: [1],
-      sql: 'select "first_name", "last_name" from "accounts" where "id" = $1'
+      sql: 'select "first_name", "last_name" from "accounts" where "id" = ?'
     },
     sqlite3: {
       bindings: [1],
@@ -20,7 +20,7 @@ module.exports = {
     },
     postgresql: {
       bindings: [1],
-      sql: 'select "first_name", "last_name" from "accounts" where "id" = $1'
+      sql: 'select "first_name", "last_name" from "accounts" where "id" = ?'
     },
     sqlite3: {
       bindings: [1],
@@ -34,7 +34,7 @@ module.exports = {
     },
     postgresql: {
       bindings: [1],
-      sql: 'select "email", "logins" from "accounts" where "id" > $1'
+      sql: 'select "email", "logins" from "accounts" where "id" > ?'
     },
     sqlite3: {
       bindings: [1],
@@ -48,7 +48,7 @@ module.exports = {
     },
     postgresql: {
       bindings: [1],
-      sql: 'select * from "accounts" where "id" = $1'
+      sql: 'select * from "accounts" where "id" = ?'
     },
     sqlite3: {
       bindings: [1],
@@ -76,7 +76,7 @@ module.exports = {
     },
     postgresql: {
       bindings: [0],
-      sql: 'select * from "accounts" where "id" = $1'
+      sql: 'select * from "accounts" where "id" = ?'
     },
     sqlite3: {
       bindings: [0],

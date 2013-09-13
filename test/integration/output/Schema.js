@@ -105,7 +105,7 @@ module.exports = {
     },
     postgresql: {
       bindings: ['test_table_two'],
-      sql: ['select * from information_schema.tables where table_name = $1'],
+      sql: ['select * from information_schema.tables where table_name = ?'],
       result: true
     },
     sqlite3: {
