@@ -672,6 +672,20 @@ module.exports = {
         bindings: []
       }
     },
+    'joins.6': {
+      mysql: {
+        sql: ['select `a1`.`email`, `a2`.`email` from `accounts` as `a1` left join `accounts` as `a2` on `a1`.`email` <> `a2`.`email` where a1.id = 1 limit 2'],
+        bindings: []
+      },
+      postgres: {
+        sql: ['select "a1"."email", "a2"."email" from "accounts" as "a1" left join "accounts" as "a2" on "a1"."email" <> "a2"."email" where a1.id = 1 limit 2'],
+        bindings: []
+      },
+      sqlite3: {
+        sql: ['select "a1"."email", "a2"."email" from "accounts" as "a1" left join "accounts" as "a2" on "a1"."email" <> "a2"."email" where a1.id = 1 limit 2'],
+        bindings: []
+      }
+    },
     'deletes.1': {
       mysql: {
         sql: ['delete from `accounts` where `email` = ?'],
@@ -3182,6 +3196,35 @@ module.exports = {
       },{
         e1: 'test6@example.com',
         e2: 'test5@example.com'
+      }]
+    },
+    'joins.6': {
+      mysql: [{
+        a1: {
+          email: 'test100@example.com'
+        },
+        a2: {
+          email: 'test2@example.com'
+        }
+      },{
+        a1: {
+          email: 'test100@example.com'
+        },
+        a2: {
+          email: 'test3@example.com'
+        }
+      }],
+      postgres: [{
+        0: 'test100@example.com',
+        1: 'test2@example.com'
+      },{
+        0: 'test100@example.com',
+        1: 'test3@example.com'
+      }],
+      sqlite3: [{
+        email: 'test2@example.com'
+      },{
+        email: 'test3@example.com'
       }]
     },
     'deletes.1': {

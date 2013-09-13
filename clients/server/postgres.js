@@ -38,7 +38,7 @@ _.extend(PostgresClient.prototype, base.protoProps, {
         if (debug) base.debug(builder, conn);
 
         // Call the querystring and then release the client
-        conn.query(builder.sql, builder.bindings, function (err, resp) {
+        conn.query(_.extend({text: builder.sql}, builder.opts), builder.bindings, function (err, resp) {
           if (err) return dfd.reject(err);
           resp || (resp = {});
 
