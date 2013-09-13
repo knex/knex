@@ -245,13 +245,6 @@ define(function(require, exports) {
       return 'datetime';
     },
 
-    // Get the SQL for a nullable column modifier.
-    modifyNullable: function(column) {
-      if (column.isNullable === false) {
-        return ' not null';
-      }
-    },
-
     // Get the SQL for an auto-increment column modifier.
     modifyIncrement: function(blueprint, column) {
       if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
