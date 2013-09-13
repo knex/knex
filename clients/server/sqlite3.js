@@ -24,8 +24,6 @@ var SQLite3Client = exports.Client = ServerBase.extend({
 
   dialect: 'sqlite3',
 
-  initialize: function() {},
-
   runQuery: function(connection, sql, bindings, builder) {
     if (!connection) throw new Error('No database connection exists for the query');
     if (sql === '__rename_column__') {

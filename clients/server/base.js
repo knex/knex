@@ -19,11 +19,8 @@ var ServerBase = ClientBase.extend({
     if (config.debug) this.isDebugging = true;
     this.connectionSettings = config.connection;
     this.initPool(config.pool);
-    this.initialize(config);
     _.bindAll(this, 'getRawConnection');
   },
-
-  initialize: function() {},
 
   // Initialize a pool with the apporpriate configuration and
   // bind the pool to the current client object.
@@ -37,7 +34,7 @@ var ServerBase = ClientBase.extend({
   query: function(builder) {
     var conn, client = this;
     var sql        = builder.toSql(builder);
-    var bindings   = builder.cleanBindings();
+    var bindings   = builder.getBindings();
 
     var chain = this.getConnection(builder).then(function(connection) {
 

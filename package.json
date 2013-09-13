@@ -24,7 +24,7 @@
   "dependencies": {
     "when": "~2.3.0",
     "underscore": "~1.5.1",
-    "generic-pool-redux": "git+ssh://git@github.com/bookshelf/generic-pool-redux.git"
+    "generic-pool-redux": "~0.1.0"
   },
   "scripts": {
     "test": "mocha -R spec test/index.js",

@@ -39,8 +39,8 @@ exports.setLib = function(context) {
 
       // If we're not only logging the result for this query...
       if (this.isLogging !== 'result') {
-        var bindings = this.cleanBindings();
-        checkIt('sql', title, parent, dialect, {sql: this.toSql(), bindings: this.cleanBindings()});
+        var bindings = this.getBindings();
+        checkIt('sql', title, parent, dialect, {sql: this.toSql(), bindings: this.getBindings()});
       }
     }
 

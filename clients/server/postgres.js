@@ -22,8 +22,6 @@ exports.Client = ServerBase.extend({
 
   dialect: 'postgresql',
 
-  initialize: function() {},
-
   runQuery: function(connection, sql, bindings, builder) {
     if (!connection) throw new Error('No database connection exists for the query');
     var questionCount = 0;

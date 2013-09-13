@@ -65,7 +65,7 @@ define(function(require, exports) {
     },
 
     acquire: function(callback, priority) {
-      return (this.instance || (this.init())).acquire(callback, priority);
+      return (this.instance || this.init()).acquire(callback, priority);
     },
 
     // Release a connection back to the connection pool.
