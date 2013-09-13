@@ -43,6 +43,12 @@ exports.Client = ServerBase.extend({
     }).yield(connection);
   },
 
+  // Used to explicitly close a connection, called internally by the pool
+  // when a connection times out or the pool is shutdown.
+  destroyRawConnection: function(connection) {
+    connection.end();
+  },
+
   // In PostgreSQL, we need to do a version check to do some feature
   // checking on the database.
   checkVersion: function(connection) {

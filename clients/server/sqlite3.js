@@ -67,6 +67,12 @@ var SQLite3Client = exports.Client = ServerBase.extend({
     return dfd.promise;
   },
 
+  // Used to explicitly close a connection, called internally by the pool
+  // when a connection times out or the pool is shutdown.
+  destroyRawConnection: function(connection) {
+    connection.close();
+  },
+
   // Begins a transaction statement on the instance,
   // resolving with the connection of the current transaction.
   startTransaction: function(connection) {

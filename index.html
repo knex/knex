@@ -285,6 +285,7 @@
       <li>– <a href="#Chainable-unique">unique</a></li>
       <li>– <a href="#Chainable-defaultTo">defaultTo</a></li>
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
+      <li>– <a href="#Chainable-notNullable">notNullable</a></li>
       <li>– <a href="#Chainable-nullable">nullable</a></li>
       <li>– <a href="#Chainable-after">after</a></li>
       <li>– <a href="#Chainable-comment">comment</a></li>
@@ -1022,7 +1023,6 @@ knex.schema.table('users', function (table) {
 });
 </pre>
 
-
     <h3 id="Schema-Building">Schema Building:</h3>
 
     <p id="Schema-hasColumn">
@@ -1041,7 +1041,13 @@ knex.schema.table('users', function (table) {
     <p id="Schema-dropColumns">
       <b class="header">dropColumns</b><code>table.dropColumns(*columns)</code>
       <br />
-      Drops multiple columns, taking a variable number of column names.
+      Drops multiple <b>columns</b>, taking a variable number of column names.
+    </p>
+
+    <p id="Schema-renameColumn">
+      <b class="header">renameColumn</b><code>table.renameColumn(from, to)</code>
+      <br />
+      Renames a column <b>from</b> one name <b>to</b> another.
     </p>
 
     <p id="Schema-increments">
@@ -1336,7 +1342,9 @@ knex.raw('select * from users where id = 1').then(function(resp) {
           will be returned if one is needed
         </li>
       </ul>
-      Schema: Added <a href="#hasColumn">hasColumn</a>,
+      Schema: Added <a href="#Schema-hasColumn">hasColumn</a>, <a href="#Schema-renameColumn">renameColumn</a>, <a href="Schema-bigInteger">bigInteger</a>,
+      <a href="Schema-specificType">specificType</a>.
+      General: Refactoring the library to support UMD and eventual use on the client.
     </p>
 
     <p>

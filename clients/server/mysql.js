@@ -40,6 +40,12 @@ exports.Client = ServerBase.extend({
     return nodefn.call(connection.connect.bind(connection)).yield(connection);
   },
 
+  // Used to explicitly close a connection, called internally by the pool
+  // when a connection times out or the pool is shutdown.
+  destroyRawConnection: function(connection) {
+    connection.end();
+  },
+
   // Used to check if there is a conditional query needed to complete the next one.
   advancedQuery: function(connection, sql, bindings, builder) {
     if (sql.indexOf('alter table') === 0 && sql.indexOf('__datatype__') === (sql.length - 12)) {

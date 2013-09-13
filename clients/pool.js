@@ -21,14 +21,8 @@ define(function(require, exports) {
   // `init` method is called internally and initializes
   // the pool if it doesn't already exist.
   var Pool = function(config, client) {
-    if (config.afterCreate) {
-      this.afterCreate = config.afterCreate;
-    }
-    _.bindAll(this, 'acquire', 'create', 'release', 'afterCreate', 'beforeDestroy');
-    this.config = _.extend({}, config, {
-      create:  this.create,
-      destroy: this.beforeDestroy
-    });
+    _.bindAll(this, 'acquire', 'release');
+    this.config = config;
     this.client = client;
     this.init();
   };
@@ -38,48 +32,58 @@ define(function(require, exports) {
     // Some basic defaults for the pool... generally you don't really want to keep
     // mutable objects on the prototype, but in this case we're not supposed to be
     // messing around with them, so it should be alright.
-    defaults: {
-      min: 2,
-      max: 10
+    defaults: function() {
+      var poolInstance = this;
+      return {
+        min: 2,
+        max: 10,
+        create: function(callback) {
+          var promise = poolInstance.client.getRawConnection()
+            .tap(function(connection) {
+              connection.__cid = _.uniqueId('__cid');
+              if (poolInstance.config.afterCreate) {
+                return nodefn.call(poolInstance.config.afterCreate, connection);
+              }
+            });
+          return nodefn.bindCallback(promise, callback);
+        },
+        destroy: function(connection) {
+          if (poolInstance.config.beforeDestroy) {
+            return poolInstance.config.beforeDestroy(connection, function() {
+              poolInstance.client.getRawConnection(connection);
+            });
+          }
+          poolInstance.client.getRawConnection(connection);
+        }
+      };
     },
 
     // Typically only called internally, this initializes
     // a new `GenericPool` instance, based on the `config`
     // options passed into the constructor.
-    init: function() {
-      this.instance = this.instance || new GenericPool(_.defaults(this.config, this.defaults));
-      return this.instance;
+    init: function(config) {
+      if (config) this.config = _.extend(this.config, config);
+      this.poolInstance = this.poolInstance || new GenericPool(_.defaults(this.config, _.result(this, 'defaults')));
+      return this.poolInstance;
     },
 
-    // Extend these if you want to have some action taking place just after
-    // the connection is created, or just before the connection is destroyed.
-    afterCreate:   function() {},
-    beforeDestroy: function() {},
-
-    // Create a new connection on the pool.
-    create: function(callback) {
-      var promise = this.client.getRawConnection()
-        .tap(function(connection) { connection.__cid = _.uniqueId('__cid'); })
-        .tap(this.afterCreate);
-      return nodefn.bindCallback(promise, callback);
-    },
-
+    // Acquires a connection from the pool.
     acquire: function(callback, priority) {
-      return (this.instance || this.init()).acquire(callback, priority);
+      return (this.poolInstance || this.init()).acquire(callback, priority);
     },
 
     // Release a connection back to the connection pool.
     release: function(connection, callback) {
-      this.instance.release(connection);
+      return this.poolInstance.release(connection, callback);
     },
 
     // Tear down the pool, only necessary if you need it.
     destroy: function() {
-      var poolInstance = this.instance;
+      var poolInstance = this.poolInstance;
       poolInstance.drain(function() {
         poolInstance.destroyAllNow();
       });
-      delete this.instance;
+      delete this.poolInstance;
       return this;
     }
 

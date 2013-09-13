@@ -5,11 +5,11 @@ var nodefn = require('when/node/function');
 var config = require(process.env.KNEX_TEST || './config');
 
 var pool = {
-  afterCreate: function(connection) {
+  afterCreate: function(connection, callback) {
     expect(connection).to.have.property('__cid');
+    callback(null, connection);
   },
   beforeDestroy: function(connection) {
-    console.log('here');
     expect(connection).to.have.property('__cid');
   }
 };
@@ -18,8 +18,10 @@ var MySQL = Knex.initialize({
   client: 'mysql',
   connection: config.mysql,
   pool: _.extend({}, pool, {
-    afterCreate: function(connection) {
-      return nodefn.call(connection.query.bind(connection), "SET sql_mode='TRADITIONAL';", []);
+    afterCreate: function(connection, callback) {
+      nodefn.call(connection.query.bind(connection), "SET sql_mode='TRADITIONAL';", []).then(function() {
+        callback(null, connection);
+      });
     }
   })
 });
