@@ -1,12 +1,13 @@
 {
   "name": "knex",
-  "version": "0.2.6",
+  "version": "0.4.0",
   "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
     "test": "test"
   },
   "devDependencies": {
+    "mocha": "~1.12.0",
     "objectdump": "~0.3.0",
     "mysql": "~2.0.0-alpha7",
     "pg": "~2.3.1",
@@ -14,12 +15,11 @@
     "node-uuid": "~1.4.0",
     "grunt": "~0.4.1",
     "grunt-release": "~0.5.1",
-    "sinon": "~1.7.3",
-    "chai": "~1.7.2",
     "mocha-as-promised": "~1.4.0",
-    "sinon-chai": "~2.4.0",
-    "mocha": "~1.12.1",
-    "chai-as-promised": "~3.3.1"
+    "chai": "~1.7.2",
+    "chai-as-promised": "~3.3.1",
+    "sinon": "~1.7.3",
+    "sinon-chai": "~2.4.0"
   },
   "dependencies": {
     "when": "~2.3.0",
@@ -27,8 +27,7 @@
     "generic-pool-redux": "~0.1.0"
   },
   "scripts": {
-    "test": "mocha -R spec test/index.js",
-    "doc": "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js knex.js"
+    "test": "mocha -R spec test/index.js"
   },
   "repository": {
     "type": "git",
