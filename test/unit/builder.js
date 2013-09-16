@@ -202,16 +202,14 @@ describe('Builder', function () {
         expect(builder.toString()).to.equal("select * where `id` = (select `account_id` from `names` where `names`.`id` > 1 or (`names`.`first_name` like 'Tim%' and `names`.`id` > 10))");
       });
 
-      var arg1 = {}, arg2 = {}, arg3 = {}, arg4 = {};
-
-      it('is called by andWhere, passing the first three arguments and an "and"', function() {
-        sinon.mock(builder).expects('where').withExactArgs(arg1, arg2, arg3, 'and');
-        builder.andWhere(arg1, arg2, arg3, 'error');
+      it('should not do whereNull on where("foo", "<>", null) #76', function() {
+        var query = builder.where('foo', '<>', null);
+        expect(query.toString()).to.equal('select * where `foo` <> NULL');
       });
 
-      it('is called by orWhere, passing the first three arguments and an "or"', function() {
-        sinon.mock(builder).expects('where').withExactArgs(arg1, arg2, arg3, 'or');
-        builder.orWhere(arg1, arg2, arg3, 'error');
+      it('should expand where("foo", "!=") to - where id = "!="', function() {
+        var query = builder.where('foo', '!=');
+        expect(query.toString()).to.equal("select * where `foo` = '!='");
       });
 
     });

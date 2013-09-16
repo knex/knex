@@ -39,10 +39,10 @@ messing around with them, so it should be alright.</p></div></div><div class="co
         <span class="nx">destroy</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">connection</span><span class="p">)</span> <span class="p">{</span>
           <span class="k">if</span> <span class="p">(</span><span class="nx">poolInstance</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">beforeDestroy</span><span class="p">)</span> <span class="p">{</span>
             <span class="k">return</span> <span class="nx">poolInstance</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">beforeDestroy</span><span class="p">(</span><span class="nx">connection</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-              <span class="nx">poolInstance</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">getRawConnection</span><span class="p">(</span><span class="nx">connection</span><span class="p">);</span>
+              <span class="nx">connection</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
             <span class="p">});</span>
           <span class="p">}</span>
-          <span class="nx">poolInstance</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">getRawConnection</span><span class="p">(</span><span class="nx">connection</span><span class="p">);</span>
+          <span class="nx">connection</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
         <span class="p">}</span>
       <span class="p">};</span>
     <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Typically only called internally, this initializes

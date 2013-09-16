@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.4.0)</span>
+      Knex.js <span class="version">(0.4.1)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -352,7 +352,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.4.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.4.1 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -922,11 +922,20 @@ knex.transaction(function(t) {
     <p id="Builder-tap">
       <b class="header">then</b><code>.then(onFulfilled, onRejected)</code>
       <br />
-      Coerces the current query builder chain into a promise state, accepting the resolve
-      and reject handlers as specified by the <a href="http://promises-aplus.github.com/promises-spec">Promises/A+ spec</a>.
-      As stated in the spec, more than one call to the <tt>then</tt> method for the current query chain will resolve
-      with the same value, in the order they were called; the query will not be executed multiple times.
+      Similar to the <a href="https://github.com/cujojs/when/blob/master/docs/api.md#tap">tap</a> functionality in when.js,
+      this will execute side effects on the resolved response, ultimately returning a promise that fulfills with the original
+      value. A thrown error or rejected promise will cause the promise to transition into a rejected state.
     </p>
+<pre>
+// Using only .then()
+query.then(function(x) {
+    doSideEffectsHere(x);
+    return x;
+});
+
+// Using .tap()
+promise.tap(doSideEffectsHere);
+</pre>
 
     <p id="Builder-toString">
       <b class="header">toString</b><code>.toString()</code>
@@ -1341,7 +1350,13 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
-      <b class="header">0.4.0</b> &mdash; <small><i>Sep 13, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.2.6...0.4.0">Diff</a><br />
+      <b class="header">0.4.1</b> &mdash; <small><i>Sep 16, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.0...0.4.1">Diff</a><br />
+      Cleanup from the 0.4.0 release, fix a potential exploit in "where" clauses pointed out by @moll, fix for clients
+      not being properly released from the pool #70, fix for <tt>where("foo", "<>", null)</tt> doing an "IS NULL" statement.
+    </p>
+
+    <p>
+      <b class="header">0.4.0</b> &mdash; <small><i>Sep 13, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.2.6...0.4.0">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.4.0/index.html">Docs</a><br />
       <b>Breaking Changes:</b>
       <ul>
         <li>
