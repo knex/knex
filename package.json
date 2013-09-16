@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
