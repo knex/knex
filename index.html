@@ -1351,7 +1351,7 @@ knex.raw('select * from users where id = 1').then(function(resp) {
 
     <p>
       <b class="header">0.4.1</b> &mdash; <small><i>Sep 16, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.0...0.4.1">Diff</a><br />
-      Cleanup from the 0.4.0 release, fix a potential exploit in "where" clauses pointed out by @moll, fix for clients
+      Cleanup from the 0.4.0 release, fix a potential exploit in "where" clauses pointed out by <a href="http://themoll.com">Andri Möll</a>, fix for clients
       not being properly released from the pool #70, fix for <tt>where("foo", "<>", null)</tt> doing an "IS NULL" statement.
     </p>
 
