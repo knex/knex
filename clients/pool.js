@@ -50,10 +50,10 @@ define(function(require, exports) {
         destroy: function(connection) {
           if (poolInstance.config.beforeDestroy) {
             return poolInstance.config.beforeDestroy(connection, function() {
-              poolInstance.client.getRawConnection(connection);
+              connection.end();
             });
           }
-          poolInstance.client.getRawConnection(connection);
+          connection.end();
         }
       };
     },
