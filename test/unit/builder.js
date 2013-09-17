@@ -11,7 +11,7 @@ describe('Builder', function () {
       query: function(obj) {
         return when.resolve(obj);
       },
-      grammar: require('../../clients/server/mysql').grammar
+      grammar: require('../../clients/server/mysql/grammar').grammar
     });
   });
 

@@ -57,8 +57,8 @@ define(function(require, exports, module) {
       return knex.builder(tableName);
     };
 
-    knex.grammar = Dialect.grammar;
-    knex.schemaGrammar = Dialect.schemaGrammar;
+    knex.grammar       = client.grammar;
+    knex.schemaGrammar = client.schemaGrammar;
 
     // Main namespaces for key library components.
     knex.schema  = {};

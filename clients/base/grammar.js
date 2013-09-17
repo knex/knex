@@ -23,7 +23,7 @@ define(function(require, exports) {
     'orders', 'limit', 'offset', 'unions'
   ];
 
-  exports.BaseGrammar = {
+  exports.baseGrammar = {
 
     // Compiles the current query builder.
     toSql: function(builder) {

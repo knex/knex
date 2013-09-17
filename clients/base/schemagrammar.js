@@ -14,13 +14,13 @@ define(function(require, exports) {
 
   var _             = require('underscore');
 
-  var BaseGrammar   = require('./grammar').BaseGrammar;
+  var baseGrammar   = require('./grammar').baseGrammar;
   var SchemaBuilder = require('../../lib/schemabuilder').SchemaBuilder;
 
   var Helpers = require('../../lib/helpers').Helpers;
   var Raw     = require('../../lib/raw').Raw;
 
-  exports.BaseSchemaGrammar = {
+  exports.baseSchemaGrammar = {
 
     // The toSql on the "schema" is different than that on the "builder",
     // it produces an array of sql statements to be used in the creation
@@ -139,13 +139,13 @@ define(function(require, exports) {
     // Wrap a table in keyword identifiers.
     wrapTable: function(table) {
       if (table instanceof SchemaBuilder) table = table.table;
-      return BaseGrammar.wrapTable.call(this, table);
+      return baseGrammar.wrapTable.call(this, table);
     },
 
     // Wrap a value in keyword identifiers.
     wrap: function(value) {
       if (value && value.name) value = value.name;
-      return BaseGrammar.wrap.call(this, value);
+      return baseGrammar.wrap.call(this, value);
     },
 
     // Format a value so that it can be used in "default" clauses.
