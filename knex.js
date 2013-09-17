@@ -1,4 +1,4 @@
-// Knex.js  0.4.0
+// Knex.js  0.4.2
 // --------------
 
 //     (c) 2013 Tim Griesser
@@ -57,8 +57,8 @@ define(function(require, exports, module) {
       return knex.builder(tableName);
     };
 
-    knex.grammar = Dialect.grammar;
-    knex.schemaGrammar = Dialect.schemaGrammar;
+    knex.grammar       = client.grammar;
+    knex.schemaGrammar = client.schemaGrammar;
 
     // Main namespaces for key library components.
     knex.schema  = {};
@@ -91,7 +91,7 @@ define(function(require, exports, module) {
     knex.client = client;
 
     // Keep in sync with package.json
-    knex.VERSION = '0.4.1';
+    knex.VERSION = '0.4.2';
 
     // Runs a new transaction, taking a container and returning a promise
     // for when the transaction is resolved.

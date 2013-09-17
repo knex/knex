@@ -2,31 +2,22 @@
 
 <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
 
-<span class="nx">define</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">require</span><span class="p">,</span> <span class="nx">exports</span><span class="p">)</span> <span class="p">{</span>
-
-  <span class="kd">var</span> <span class="nx">JoinClause</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">type</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span> <span class="p">{</span>
+<span class="nx">define</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">require</span><span class="p">,</span> <span class="nx">exports</span><span class="p">)</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>The "JoinClause" is an object holding any necessary info about a join,
+including the type, and any associated tables &amp; columns being joined.</p></div></div><div class="code"><div class="wrapper">  <span class="kd">var</span> <span class="nx">JoinClause</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">type</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">this</span><span class="p">.</span><span class="nx">joinType</span> <span class="o">=</span> <span class="nx">type</span><span class="p">;</span>
     <span class="k">this</span><span class="p">.</span><span class="nx">table</span>    <span class="o">=</span> <span class="nx">table</span><span class="p">;</span>
     <span class="k">this</span><span class="p">.</span><span class="nx">clauses</span>  <span class="o">=</span> <span class="p">[];</span>
   <span class="p">};</span>
 
-  <span class="nx">JoinClause</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="p">{</span>
-
-    <span class="nx">on</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">first</span><span class="p">,</span> <span class="nx">operator</span><span class="p">,</span> <span class="nx">second</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">JoinClause</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Adds an "on" clause to the current join object.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">on</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">first</span><span class="p">,</span> <span class="nx">operator</span><span class="p">,</span> <span class="nx">second</span><span class="p">)</span> <span class="p">{</span>
       <span class="k">this</span><span class="p">.</span><span class="nx">clauses</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span><span class="nx">first</span><span class="o">:</span> <span class="nx">first</span><span class="p">,</span> <span class="nx">operator</span><span class="o">:</span> <span class="nx">operator</span><span class="p">,</span> <span class="nx">second</span><span class="o">:</span> <span class="nx">second</span><span class="p">,</span> <span class="nx">bool</span><span class="o">:</span> <span class="s1">&#39;and&#39;</span><span class="p">});</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-    <span class="p">},</span>
-
-    <span class="nx">andOn</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Adds an "and on" clause to the current join object.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">andOn</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">on</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
-    <span class="p">},</span>
-
-    <span class="nx">orOn</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">first</span><span class="p">,</span> <span class="nx">operator</span><span class="p">,</span> <span class="nx">second</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Adds an "or on" clause to the current join object.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">orOn</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">first</span><span class="p">,</span> <span class="nx">operator</span><span class="p">,</span> <span class="nx">second</span><span class="p">)</span> <span class="p">{</span>
       <span class="k">this</span><span class="p">.</span><span class="nx">clauses</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span><span class="nx">first</span><span class="o">:</span> <span class="nx">first</span><span class="p">,</span> <span class="nx">operator</span><span class="o">:</span> <span class="nx">operator</span><span class="p">,</span> <span class="nx">second</span><span class="o">:</span> <span class="nx">second</span><span class="p">,</span> <span class="nx">bool</span><span class="o">:</span> <span class="s1">&#39;or&#39;</span><span class="p">});</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-    <span class="p">},</span>
-
-    <span class="nx">type</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Explicitly set the type of join, useful within a function when creating a grouped join.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">type</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
       <span class="k">this</span><span class="p">.</span><span class="nx">joinType</span> <span class="o">=</span> <span class="nx">type</span><span class="p">;</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
     <span class="p">}</span>

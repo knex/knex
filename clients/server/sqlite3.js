@@ -12,17 +12,25 @@ var _       = require('underscore');
 var sqlite3 = require('sqlite3');
 
 // All other local project modules needed in this scope.
-var SQLite3Base     = require('../base/sqlite3');
 var ServerBase      = require('./base').ServerBase;
 var Builder         = require('../../lib/builder').Builder;
 var Transaction     = require('../../lib/transaction').Transaction;
 var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
 var Helpers         = require('../../lib/helpers').Helpers;
 
+var grammar         = require('./sqlite3/grammar').grammar;
+var schemaGrammar   = require('./sqlite3/schemagrammar').schemaGrammar;
+
 // Constructor for the SQLite3Client.
 var SQLite3Client = exports.Client = ServerBase.extend({
 
   dialect: 'sqlite3',
+
+  // Attach the appropriate grammar definitions onto the current client.
+  attachGrammars: function() {
+    this.grammar = grammar;
+    this.schemaGrammar = schemaGrammar;
+  },
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
@@ -141,35 +149,3 @@ var SQLite3Client = exports.Client = ServerBase.extend({
   }
 
 });
-
-exports.grammar = _.defaults({
-
-  handleResponse: function(builder, resp) {
-    var ctx = resp[1]; resp = resp[0];
-    if (builder.type === 'select') {
-      resp = Helpers.skim(resp);
-    } else if (builder.type === 'insert') {
-      resp = [ctx.lastID];
-    } else if (builder.type === 'delete' || builder.type === 'update') {
-      resp = ctx.changes;
-    }
-    return resp;
-  }
-
-}, SQLite3Base.grammar);
-
-exports.schemaGrammar = _.defaults({
-
-  handleResponse: function(builder, resp) {
-    // This is an array, so we'll assume that the relevant info is on the first statement...
-    resp = resp[0];
-    var ctx = resp[1]; resp = resp[0];
-    if (builder.type === 'tableExists') {
-      return resp.length > 0;
-    } else if (builder.type === 'columnExists') {
-      return _.findWhere(resp, {name: builder.bindings[1]}) != null;
-    }
-    return resp;
-  }
-
-}, SQLite3Base.schemaGrammar);

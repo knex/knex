@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
@@ -28,7 +28,7 @@
   },
   "scripts": {
     "test": "mocha -R spec test/index.js",
-    "doc": "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js knex.js"
+    "doc": "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js clients/**/**/*.js knex.js"
   },
   "repository": {
     "type": "git",

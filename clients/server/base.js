@@ -17,6 +17,7 @@ var ServerBase = ClientBase.extend({
   // which then initializes the pool and
   constructor: function(config) {
     if (config.debug) this.isDebugging = true;
+    this.attachGrammars();
     this.connectionSettings = config.connection;
     this.initPool(config.pool);
     _.bindAll(this, 'getRawConnection');

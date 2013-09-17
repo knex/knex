@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width">
   <link rel="canonical" href="http://knexjs.org" />
   <link rel="icon" href="docs/images/favicon.ico" />
-  <title>Knex.js</title>
+  <title>Knex.js - A Query Builder for Javascript</title>
   <style>
     body {
       font-size: 14px;
@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.4.1)</span>
+      Knex.js <span class="version">(0.4.2)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -352,7 +352,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.4.1 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.4.2 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1350,8 +1350,13 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.4.2</b> &mdash; <small><i>Sep 17, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.1...0.4.2">Diff</a><br />
+      Fix for an error being thrown when an initialized <tt>ClientBase</tt> instance was passed into <tt>Knex.initialize</tt>. <tt>pool.destroy</tt> now optionally accepts a callback to notify when it has completed draining and destroying all connections.
+    </p>
+
+    <p>
       <b class="header">0.4.1</b> &mdash; <small><i>Sep 16, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.0...0.4.1">Diff</a><br />
-      Cleanup from the 0.4.0 release, fix a potential exploit in "where" clauses pointed out by @moll, fix for clients
+      Cleanup from the 0.4.0 release, fix a potential exploit in "where" clauses pointed out by <a href="http://themoll.com">Andri Möll</a>, fix for clients
       not being properly released from the pool #70, fix for <tt>where("foo", "<>", null)</tt> doing an "IS NULL" statement.
     </p>
 
