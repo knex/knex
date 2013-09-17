@@ -1,3 +1,6 @@
+// PostgreSQL SchemaGrammar
+// -------
+
 var grammar           = require('./grammar').grammar;
 var baseSchemaGrammar = require('../../base/schemagrammar').baseSchemaGrammar;
 
@@ -7,6 +10,7 @@ exports.schemaGrammar = _.defaults({
   // The possible column modifiers.
   modifiers: ['Increment', 'Nullable', 'Default'],
 
+  // Ensures the response is returned in the same format as other clients.
   handleResponse: function(builder, resp) {
     resp = resp[0];
     if (builder.type === 'tableExists' || builder.type === 'columnExists') {

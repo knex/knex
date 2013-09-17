@@ -12,7 +12,7 @@ exports.grammar = _.defaults({
     return (value !== '*' ? Helpers.format('`%s`', value) : "*");
   },
 
-  // Parses the response, according to the way mySQL works...
+  // Ensures the response is returned in the same format as other clients.
   handleResponse: function(builder, response) {
     response = response[0];
     if (builder.type === 'select') response = Helpers.skim(response);

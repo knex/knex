@@ -1,3 +1,6 @@
+// MySQL SchemaGrammar
+// -------
+
 var grammar           = require('./grammar').grammar;
 var baseSchemaGrammar = require('../../base/schemagrammar').baseSchemaGrammar;
 
@@ -7,7 +10,7 @@ exports.schemaGrammar = _.defaults({
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After', 'Comment'],
 
-  // Handle response for the schema.
+  // Ensures the response is returned in the same format as other clients.
   handleResponse: function(builder, resp) {
     if (builder.type === 'tableExists') return resp.length > 0;
     if (builder.type === 'columnExists') return resp.length > 0;

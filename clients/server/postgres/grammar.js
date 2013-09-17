@@ -1,3 +1,6 @@
+// PostgreSQL Grammar
+// -------
+
 var Helpers     = require('../../../lib/helpers').Helpers;
 var baseGrammar = require('../../base/grammar').baseGrammar;
 
@@ -42,7 +45,7 @@ exports.grammar = _.defaults({
     return sql;
   },
 
-  // Handles the response
+  // Ensures the response is returned in the same format as other clients.
   handleResponse: function(builder, response) {
     if (response.command === 'SELECT') return response.rows;
     if (response.command === 'INSERT') {

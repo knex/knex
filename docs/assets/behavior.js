@@ -93,29 +93,65 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 }
               ]
             }, {
-              "type": "file",
+              "type": "folder",
               "data": {
-                "language": {
-                  "nameMatchers": [".js"],
-                  "pygmentsLexer": "javascript",
-                  "singleLineComment": ["//"],
-                  "name": "JavaScript"
-                },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/base/sqlite3.js",
-                "projectPath": "clients/base/sqlite3.js",
-                "targetPath": "clients/base/sqlite3",
+                "path": "clients/base/sqlite3",
                 "title": "sqlite3"
               },
               "depth": 3,
-              "outline": [
+              "children": [
                 {
-                  "type": "heading",
+                  "type": "file",
                   "data": {
-                    "level": 2,
-                    "title": "SQLite3",
-                    "slug": "sqlite3"
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "singleLineComment": ["//"],
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/base/sqlite3/grammar.js",
+                    "projectPath": "clients/base/sqlite3/grammar.js",
+                    "targetPath": "clients/base/sqlite3/grammar",
+                    "title": "grammar"
                   },
-                  "depth": 2
+                  "depth": 4,
+                  "outline": [
+                    {
+                      "type": "heading",
+                      "data": {
+                        "level": 2,
+                        "title": "SQLite3 Grammar",
+                        "slug": "sqlite3-grammar"
+                      },
+                      "depth": 2
+                    }
+                  ]
+                }, {
+                  "type": "file",
+                  "data": {
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "singleLineComment": ["//"],
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/base/sqlite3/schemagrammar.js",
+                    "projectPath": "clients/base/sqlite3/schemagrammar.js",
+                    "targetPath": "clients/base/sqlite3/schemagrammar",
+                    "title": "schemagrammar"
+                  },
+                  "depth": 4,
+                  "outline": [
+                    {
+                      "type": "heading",
+                      "data": {
+                        "level": 2,
+                        "title": "SQLite3 SchemaGrammar",
+                        "slug": "sqlite3-schemagrammar"
+                      },
+                      "depth": 2
+                    }
+                  ]
                 }
               ]
             }
@@ -205,6 +241,61 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   },
                   "depth": 2
                 }
+              ],
+              "children": [
+                {
+                  "type": "file",
+                  "data": {
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "singleLineComment": ["//"],
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/mysql/grammar.js",
+                    "projectPath": "clients/server/mysql/grammar.js",
+                    "targetPath": "clients/server/mysql/grammar",
+                    "title": "grammar"
+                  },
+                  "depth": 4,
+                  "outline": [
+                    {
+                      "type": "heading",
+                      "data": {
+                        "level": 2,
+                        "title": "MySQL Grammar",
+                        "slug": "mysql-grammar"
+                      },
+                      "depth": 2
+                    }
+                  ]
+                }, {
+                  "type": "file",
+                  "data": {
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "singleLineComment": ["//"],
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/mysql/schemagrammar.js",
+                    "projectPath": "clients/server/mysql/schemagrammar.js",
+                    "targetPath": "clients/server/mysql/schemagrammar",
+                    "title": "schemagrammar"
+                  },
+                  "depth": 4,
+                  "outline": [
+                    {
+                      "type": "heading",
+                      "data": {
+                        "level": 2,
+                        "title": "MySQL SchemaGrammar",
+                        "slug": "mysql-schemagrammar"
+                      },
+                      "depth": 2
+                    }
+                  ]
+                }
               ]
             }, {
               "type": "file",
@@ -231,6 +322,61 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   },
                   "depth": 2
                 }
+              ],
+              "children": [
+                {
+                  "type": "file",
+                  "data": {
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "singleLineComment": ["//"],
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/postgres/grammar.js",
+                    "projectPath": "clients/server/postgres/grammar.js",
+                    "targetPath": "clients/server/postgres/grammar",
+                    "title": "grammar"
+                  },
+                  "depth": 4,
+                  "outline": [
+                    {
+                      "type": "heading",
+                      "data": {
+                        "level": 2,
+                        "title": "PostgreSQL Grammar",
+                        "slug": "postgresql-grammar"
+                      },
+                      "depth": 2
+                    }
+                  ]
+                }, {
+                  "type": "file",
+                  "data": {
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "singleLineComment": ["//"],
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/postgres/schemagrammar.js",
+                    "projectPath": "clients/server/postgres/schemagrammar.js",
+                    "targetPath": "clients/server/postgres/schemagrammar",
+                    "title": "schemagrammar"
+                  },
+                  "depth": 4,
+                  "outline": [
+                    {
+                      "type": "heading",
+                      "data": {
+                        "level": 2,
+                        "title": "PostgreSQL SchemaGrammar",
+                        "slug": "postgresql-schemagrammar"
+                      },
+                      "depth": 2
+                    }
+                  ]
+                }
               ]
             }, {
               "type": "file",
@@ -256,6 +402,61 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                     "slug": "sqlite3"
                   },
                   "depth": 2
+                }
+              ],
+              "children": [
+                {
+                  "type": "file",
+                  "data": {
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "singleLineComment": ["//"],
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/sqlite3/grammar.js",
+                    "projectPath": "clients/server/sqlite3/grammar.js",
+                    "targetPath": "clients/server/sqlite3/grammar",
+                    "title": "grammar"
+                  },
+                  "depth": 4,
+                  "outline": [
+                    {
+                      "type": "heading",
+                      "data": {
+                        "level": 2,
+                        "title": "SQLite3 Grammar",
+                        "slug": "sqlite3-grammar"
+                      },
+                      "depth": 2
+                    }
+                  ]
+                }, {
+                  "type": "file",
+                  "data": {
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "singleLineComment": ["//"],
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/sqlite3/schemagrammar.js",
+                    "projectPath": "clients/server/sqlite3/schemagrammar.js",
+                    "targetPath": "clients/server/sqlite3/schemagrammar",
+                    "title": "schemagrammar"
+                  },
+                  "depth": 4,
+                  "outline": [
+                    {
+                      "type": "heading",
+                      "data": {
+                        "level": 2,
+                        "title": "SQLite3 SchemaGrammar",
+                        "slug": "sqlite3-schemagrammar"
+                      },
+                      "depth": 2
+                    }
+                  ]
                 }
               ]
             }
@@ -344,8 +545,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 2,
-            "title": "Knex.js  0.4.0",
-            "slug": "knexjs-040"
+            "title": "Knex.js  0.4.2",
+            "slug": "knexjs-042"
           },
           "depth": 2
         }

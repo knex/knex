@@ -2,9 +2,11 @@
 
 <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
 
-<span class="nx">define</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">require</span><span class="p">,</span> <span class="nx">exports</span><span class="p">)</span> <span class="p">{</span>
-
-  <span class="kd">var</span> <span class="nx">SchemaInterface</span> <span class="o">=</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Modify a table on the schema.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">table</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+<span class="nx">define</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">require</span><span class="p">,</span> <span class="nx">exports</span><span class="p">)</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>The SchemaInterface are the publically accessible methods
+when creating or modifying an existing schema, Each of
+these methods are mixed into the <code>knex.schema</code> object,
+and pass-through to creating a <code>SchemaBuilder</code> instance,
+which is used as the context of the <code>this</code> value below.</p></div></div><div class="code"><div class="wrapper">  <span class="kd">var</span> <span class="nx">SchemaInterface</span> <span class="o">=</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Modify a table on the schema.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">table</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
       <span class="k">this</span><span class="p">.</span><span class="nx">callback</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_setType</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">);</span>
     <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Create a new table on the schema.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">createTable</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>

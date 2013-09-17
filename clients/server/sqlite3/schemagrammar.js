@@ -1,7 +1,11 @@
+// SQLite3 SchemaGrammar
+// -------
+
 var baseSchemaGrammar = require('../../base/sqlite3/schemagrammar').schemaGrammar;
 
 exports.schemaGrammar = _.defaults({
 
+  // Ensures the response is returned in the same format as other clients.
   handleResponse: function(builder, resp) {
     // This is an array, so we'll assume that the relevant info is on the first statement...
     resp = resp[0];
