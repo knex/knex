@@ -6,6 +6,7 @@
 
 define(function(require, exports) {
 
+  var _                 = require('underscore');
   var grammar           = require('./grammar').grammar;
   var baseSchemaGrammar = require('../schemagrammar').baseSchemaGrammar;
 

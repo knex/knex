@@ -10,7 +10,6 @@ chai.use(require("chai-as-promised"));
 chai.use(require("sinon-chai"));
 chai.should();
 
-global._              = require('underscore');
 global.whenResolve    = require('when').resolve;
 global.expect         = chai.expect;
 global.AssertionError = chai.AssertionError;
