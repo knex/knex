@@ -1,3 +1,4 @@
+var _       = require('underscore');
 var when    = require('when');
 var Builder = require('../../lib/builder').Builder;
 var Common  = require('../../lib/common').Common;
