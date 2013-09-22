@@ -545,8 +545,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 2,
-            "title": "Knex.js  0.4.3",
-            "slug": "knexjs-043"
+            "title": "Knex.js  0.4.4",
+            "slug": "knexjs-044"
           },
           "depth": 2
         }

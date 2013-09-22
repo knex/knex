@@ -38,7 +38,7 @@ var ServerBase = ClientBase.extend({
     var bindings   = builder.getBindings();
 
     var chain = this.getConnection(builder).then(function(connection) {
-      if (client.isDebugging || builder.isDebugging) {
+      if (client.isDebugging || builder.flags.debug) {
         client.debug(sql, bindings, connection, builder);
       }
       conn = connection;
