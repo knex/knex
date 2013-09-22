@@ -26,7 +26,7 @@ var ServerBase = ClientBase.extend({
   // Initialize a pool with the apporpriate configuration and
   // bind the pool to the current client object.
   initPool: function(poolConfig) {
-    this.pool = new Pool(_.extend({}, poolConfig, _.result(this, 'poolDefaults')), this);
+    this.pool = new Pool(_.extend({}, _.result(this, 'poolDefaults'), poolConfig), this);
   },
 
   // Execute a query on the specified Builder or QueryBuilder
