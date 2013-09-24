@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.4.4)</span>
+      Knex.js <span class="version">(0.4.5)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -352,7 +352,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.4.4 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.4.5 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1350,8 +1350,14 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.4.5</b> &mdash; <small><i>Sep 24, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.4...0.4.5">Diff</a><br />
+      Fix for <tt>hasTable</tt> always returning true in MySQL (#82), fix where sql queries were duplicated with multiple calls on <tt>toSql</tt> with the
+      schema builder.
+    </p>
+
+    <p>
       <b class="header">0.4.4</b> &mdash; <small><i>Sep 22, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.3...0.4.4">Diff</a><br />
-      Fix for debug method not properly debugging individual queries.
+      Fix for <tt>debug</tt> method not properly debugging individual queries.
     </p>
 
     <p>
