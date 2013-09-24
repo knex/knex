@@ -17,8 +17,8 @@ define(function(require, exports) {
   var baseGrammar   = require('./grammar').baseGrammar;
   var SchemaBuilder = require('../../lib/schemabuilder').SchemaBuilder;
 
-  var Helpers = require('../../lib/helpers').Helpers;
-  var Raw     = require('../../lib/raw').Raw;
+  var Helpers       = require('../../lib/helpers').Helpers;
+  var Raw           = require('../../lib/raw').Raw;
 
   exports.baseSchemaGrammar = {
 
@@ -27,6 +27,10 @@ define(function(require, exports) {
     // or modification of the query, which are each run in sequence
     // on the same connection.
     toSql: function(builder) {
+
+      // Clone the builder, before we go about working with the columns & commands.
+      // TODO: Clean this up.
+      builder = builder.clone();
 
       // Add the commands that are implied by the blueprint.
       if (builder.columns.length > 0 && !builder.creating()) {

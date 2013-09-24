@@ -26,7 +26,7 @@ var ServerBase = ClientBase.extend({
   // Initialize a pool with the apporpriate configuration and
   // bind the pool to the current client object.
   initPool: function(poolConfig) {
-    this.pool = new Pool(_.extend({}, poolConfig, _.result(this, 'poolDefaults')), this);
+    this.pool = new Pool(_.extend({}, _.result(this, 'poolDefaults'), poolConfig), this);
   },
 
   // Execute a query on the specified Builder or QueryBuilder
@@ -57,7 +57,11 @@ var ServerBase = ClientBase.extend({
       });
     }
 
-    return chain.then(builder.handleResponse);
+    return chain.then(builder.handleResponse).otherwise(function(e) {
+      var err = new Error(e.toString() + ' - ' + '{sql: ' + sql + ', bindings: ' + bindings + '}');
+          err.originalStack = e.stack;
+      throw err;
+    });
   },
 
   // Debug a query.

@@ -16,27 +16,32 @@ define(function(require, exports) {
     // The possible column modifiers.
     modifiers: ['Nullable', 'Default', 'Increment'],
 
+    // Returns the cleaned bindings for the current query.
+    getBindings: function(builder) {
+      if (builder.type === 'columnExists') return [];
+      return grammar.getBindings(builder);
+    },
+
     // Compile the query to determine if a table exists.
     compileTableExists: function() {
       return "select * from sqlite_master where type = 'table' and name = ?";
     },
 
     // Compile the query to determine if a column exists.
-    compileColumnExists: function(blueprint) {
-      blueprint.bindings = [];
-      return "PRAGMA table_info(" + this.wrapTable(blueprint) + ")";
+    compileColumnExists: function(builder) {
+      return "PRAGMA table_info(" + this.wrapTable(builder) + ")";
     },
 
     // Compile a create table command.
-    compileCreateTable: function(blueprint) {
-      var columns = this.getColumns(blueprint).join(', ');
-      var sql = 'create table ' + this.wrapTable(blueprint) + ' (' + columns;
+    compileCreateTable: function(builder) {
+      var columns = this.getColumns(builder).join(', ');
+      var sql = 'create table ' + this.wrapTable(builder) + ' (' + columns;
 
       // SQLite forces primary keys to be added when the table is initially created
       // so we will need to check for a primary key commands and add the columns
       // to the table's declaration here so they can be created on the tables.
-      sql += this.addForeignKeys(blueprint);
-      sql += this.addPrimaryKeys(blueprint) || '';
+      sql += this.addForeignKeys(builder);
+      sql += this.addPrimaryKeys(builder) || '';
       sql +=')';
 
       return sql;
@@ -46,9 +51,9 @@ define(function(require, exports) {
     // Once we have all the foreign key commands for the table creation statement
     // we'll loop through each of them and add them to the create table SQL we
     // are building, since SQLite needs foreign keys on the tables creation.
-    addForeignKeys: function(blueprint) {
+    addForeignKeys: function(builder) {
       var sql = '';
-      var commands = this.getCommandsByName(blueprint, 'foreign');
+      var commands = this.getCommandsByName(builder, 'foreign');
       for (var i = 0, l = commands.length; i < l; i++) {
         var command = commands[i];
         var column = this.columnize(command.columns);
@@ -60,8 +65,8 @@ define(function(require, exports) {
     },
 
     // Get the primary key syntax for a table creation statement.
-    addPrimaryKeys: function(blueprint) {
-      var primary = this.getCommandByName(blueprint, 'primary');
+    addPrimaryKeys: function(builder) {
+      var primary = this.getCommandByName(builder, 'primary');
       if (primary) {
         // Ensure that autoincrement columns aren't handled here, this is handled
         // alongside the autoincrement clause.
@@ -77,9 +82,9 @@ define(function(require, exports) {
     },
 
     // Compile alter table commands for adding columns
-    compileAdd: function(blueprint) {
-      var table = this.wrapTable(blueprint);
-      var columns = this.prefixArray('add column', this.getColumns(blueprint));
+    compileAdd: function(builder) {
+      var table = this.wrapTable(builder);
+      var columns = this.prefixArray('add column', this.getColumns(builder));
       var statements = [];
       for (var i = 0, l = columns.length; i < l; i++) {
         statements.push('alter table ' + table + ' ' + columns[i]);
@@ -88,16 +93,16 @@ define(function(require, exports) {
     },
 
     // Compile a unique key command.
-    compileUnique: function(blueprint, command) {
+    compileUnique: function(builder, command) {
       var columns = this.columnize(command.columns);
-      var table = this.wrapTable(blueprint);
+      var table = this.wrapTable(builder);
       return 'create unique index ' + command.index + ' on ' + table + ' (' + columns + ')';
     },
 
     // Compile a plain index key command.
-    compileIndex: function(blueprint, command) {
+    compileIndex: function(builder, command) {
       var columns = this.columnize(command.columns);
-      var table = this.wrapTable(blueprint);
+      var table = this.wrapTable(builder);
       return 'create index ' + command.index + ' on ' + table + ' (' + columns + ')';
     },
 
@@ -112,17 +117,17 @@ define(function(require, exports) {
     },
 
     // Compile a drop unique key command.
-    compileDropUnique: function(blueprint, command) {
+    compileDropUnique: function(builder, command) {
       return 'drop index ' + command.index;
     },
 
     // Compile a rename table command.
-    compileRenameTable: function(blueprint, command) {
-      return 'alter table ' + this.wrapTable(blueprint) + ' rename to ' + this.wrapTable(command.to);
+    compileRenameTable: function(builder, command) {
+      return 'alter table ' + this.wrapTable(builder) + ' rename to ' + this.wrapTable(command.to);
     },
 
     // Compile a rename column command.
-    compileRenameColumn: function(blueprint, command) {
+    compileRenameColumn: function(builder, command) {
       return '__rename_column__';
     },
 
@@ -162,7 +167,7 @@ define(function(require, exports) {
     },
 
     // Get the SQL for an auto-increment column modifier.
-    modifyIncrement: function(blueprint, column) {
+    modifyIncrement: function(builder, column) {
       if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
         return ' primary key autoincrement not null';
       }
