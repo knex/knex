@@ -10,6 +10,15 @@ exports.schemaGrammar = _.defaults({
   // The possible column modifiers.
   modifiers: ['Unsigned', 'Nullable', 'Default', 'Increment', 'After', 'Comment'],
 
+  // Dialect specific `getBindings`.
+  getBindings: function(builder) {
+    var bindings = grammar.getBindings(builder);
+    if (builder.type === 'tableExists') {
+      bindings.unshift(builder.client.connectionSettings.database);
+    }
+    return bindings;
+  },
+
   // Ensures the response is returned in the same format as other clients.
   handleResponse: function(builder, resp) {
     resp = resp[0];
@@ -19,18 +28,18 @@ exports.schemaGrammar = _.defaults({
   },
 
   // Compile a create table command.
-  compileCreateTable: function(blueprint, command) {
-    var sql  = baseSchemaGrammar.compileCreateTable.call(this, blueprint, command);
-    var conn = blueprint.client.connectionSettings;
+  compileCreateTable: function(builder, command) {
+    var sql  = baseSchemaGrammar.compileCreateTable.call(this, builder, command);
+    var conn = builder.client.connectionSettings;
 
     if (conn.charset) sql += ' default character set ' + conn.charset;
     if (conn.collation) sql += ' collate ' + conn.collation;
-    if (blueprint.flags.engine) {
-      sql += ' engine = ' + blueprint.flags.engine;
+    if (builder.flags.engine) {
+      sql += ' engine = ' + builder.flags.engine;
     }
 
     // Checks if the table is commented
-    var isCommented = this.getCommandByName(blueprint, 'comment');
+    var isCommented = this.getCommandByName(builder, 'comment');
 
     // TODO: Handle max comment length.
     var maxTableCommentLength = 60;
@@ -42,83 +51,82 @@ exports.schemaGrammar = _.defaults({
   },
 
   // Compile the query to determine if a table exists.
-  compileTableExists: function(blueprint) {
-    blueprint.bindings.unshift(blueprint.client.connectionSettings.database);
+  compileTableExists: function(builder) {
     return 'select * from information_schema.tables where table_schema = ? and table_name = ?';
   },
 
   // Compile a query to determine if a column exists.
-  compileColumnExists: function(blueprint) {
-    return 'show columns from ' + this.wrapTable(blueprint) + ' like ?';
+  compileColumnExists: function(builder) {
+    return 'show columns from ' + this.wrapTable(builder) + ' like ?';
   },
 
   // Compile an add command.
-  compileAdd: function(blueprint) {
-    var columns = this.prefixArray('add', this.getColumns(blueprint));
-    return 'alter table ' + this.wrapTable(blueprint) + ' ' + columns.join(', ');
+  compileAdd: function(builder) {
+    var columns = this.prefixArray('add', this.getColumns(builder));
+    return 'alter table ' + this.wrapTable(builder) + ' ' + columns.join(', ');
   },
 
   // Compile a primary key command.
-  compilePrimary: function(blueprint, command) {
-    return this.compileKey(blueprint, command, 'primary key');
+  compilePrimary: function(builder, command) {
+    return this.compileKey(builder, command, 'primary key');
   },
 
   // Compile a unique key command.
-  compileUnique: function(blueprint, command) {
-    return this.compileKey(blueprint, command, 'unique');
+  compileUnique: function(builder, command) {
+    return this.compileKey(builder, command, 'unique');
   },
 
   // Compile a plain index key command.
-  compileIndex: function(blueprint, command) {
-    return this.compileKey(blueprint, command, 'index');
+  compileIndex: function(builder, command) {
+    return this.compileKey(builder, command, 'index');
   },
 
   // Compile an index creation command.
-  compileKey: function(blueprint, command, type) {
+  compileKey: function(builder, command, type) {
     var columns = this.columnize(command.columns);
-    var table = this.wrapTable(blueprint);
+    var table = this.wrapTable(builder);
     return 'alter table ' + table + " add " + type + " " + command.index + "(" + columns + ")";
   },
 
   // Compile a drop column command.
-  compileDropColumn: function(blueprint, command) {
+  compileDropColumn: function(builder, command) {
     var columns = this.prefixArray('drop', this.wrapArray(command.columns));
-    return 'alter table ' + this.wrapTable(blueprint) + ' ' + columns.join(', ');
+    return 'alter table ' + this.wrapTable(builder) + ' ' + columns.join(', ');
   },
 
   // Compile a drop primary key command.
-  compileDropPrimary: function(blueprint) {
-    return 'alter table ' + this.wrapTable(blueprint) + ' drop primary key';
+  compileDropPrimary: function(builder) {
+    return 'alter table ' + this.wrapTable(builder) + ' drop primary key';
   },
 
   // Compile a drop unique key command.
-  compileDropUnique: function(blueprint, command) {
-    return this.compileDropIndex(blueprint, command);
+  compileDropUnique: function(builder, command) {
+    return this.compileDropIndex(builder, command);
   },
 
   // Compile a drop index command.
-  compileDropIndex: function(blueprint, command) {
-    return 'alter table ' + this.wrapTable(blueprint) + ' drop index ' + command.index;
+  compileDropIndex: function(builder, command) {
+    return 'alter table ' + this.wrapTable(builder) + ' drop index ' + command.index;
   },
 
   // Compile a drop foreign key command.
-  compileDropForeign: function(blueprint, command) {
-    return 'alter table ' + this.wrapTable(blueprint) + " drop foreign key " + command.index;
+  compileDropForeign: function(builder, command) {
+    return 'alter table ' + this.wrapTable(builder) + " drop foreign key " + command.index;
   },
 
   // Compile a rename table command.
-  compileRenameTable: function(blueprint, command) {
-    return 'rename table ' + this.wrapTable(blueprint) + ' to ' + this.wrapTable(command.to);
+  compileRenameTable: function(builder, command) {
+    return 'rename table ' + this.wrapTable(builder) + ' to ' + this.wrapTable(command.to);
   },
 
   // Compile a rename column command.
-  compileRenameColumn: function(blueprint, command) {
-    return 'alter table ' + this.wrapTable(blueprint) + ' change ' +
+  compileRenameColumn: function(builder, command) {
+    return 'alter table ' + this.wrapTable(builder) + ' change ' +
       this.wrapTable(command.from) + ' ' + this.wrapTable(command.to) + ' __datatype__';
   },
 
   // Compiles the comment on the table.
-  compileComment: function(blueprint, command) {
+  compileComment: function(builder, command) {
     // Handled on create table...
   },
 
@@ -182,12 +190,12 @@ exports.schemaGrammar = _.defaults({
   },
 
   // Get the SQL for an unsigned column modifier.
-  modifyUnsigned: function(blueprint, column) {
+  modifyUnsigned: function(builder, column) {
     if (column.isUnsigned) return ' unsigned';
   },
 
   // Get the SQL for a default column modifier.
-  modifyDefault: function(blueprint, column) {
+  modifyDefault: function(builder, column) {
     // TODO - no default on blob/text
     if (column.defaultValue != void 0 && column.type != 'blob' && column.type.indexOf('text') === -1) {
       return " default '" + this.getDefaultValue(column.defaultValue) + "'";
@@ -195,21 +203,21 @@ exports.schemaGrammar = _.defaults({
   },
 
   // Get the SQL for an auto-increment column modifier.
-  modifyIncrement: function(blueprint, column) {
+  modifyIncrement: function(builder, column) {
     if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
       return ' not null auto_increment primary key';
     }
   },
 
   // Get the SQL for an "after" column modifier.
-  modifyAfter: function(blueprint, column) {
+  modifyAfter: function(builder, column) {
     if (column.isAfter) {
       return ' after ' + this.wrap(column.isAfter);
     }
   },
 
   // Get the SQL for a comment column modifier.
-  modifyComment: function(blueprint, column) {
+  modifyComment: function(builder, column) {
     // TODO: Look into limiting this length.
     var maxColumnCommentLength = 255;
     if (column.isCommented && _.isString(column.isCommented)) {

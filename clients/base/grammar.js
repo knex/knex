@@ -16,6 +16,8 @@ define(function(require, exports) {
   var Raw     = require('../../lib/raw').Raw;
   var Helpers = require('../../lib/helpers').Helpers;
 
+  var push    = [].push;
+
   // The list of different components
   var components = [
     'aggregate', 'columns', 'from',
@@ -29,6 +31,21 @@ define(function(require, exports) {
     toSql: function(builder) {
       builder.type = builder.type || 'select';
       return builder.grammar['compile' + Helpers.capitalize(builder.type)](builder);
+    },
+
+    // Gets the cleaned bindings.
+    getBindings: function(builder) {
+      var bindings = builder.bindings;
+      var cleaned = [];
+      for (var i = 0, l = bindings.length; i < l; i++) {
+        // if (bindings[i] == void 0) continue;
+        if (!bindings[i] || bindings[i]._source !== 'Raw') {
+          cleaned.push(bindings[i]);
+        } else {
+          push.apply(cleaned, bindings[i].bindings);
+        }
+      }
+      return cleaned;
     },
 
     // Compiles the `select` statement, or nested sub-selects

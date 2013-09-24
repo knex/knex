@@ -57,7 +57,11 @@ var ServerBase = ClientBase.extend({
       });
     }
 
-    return chain.then(builder.handleResponse);
+    return chain.then(builder.handleResponse).otherwise(function(e) {
+      var err = new Error(e.toString() + ' - ' + '{sql: ' + sql + ', bindings: ' + bindings + '}');
+          err.originalStack = e.stack;
+      throw err;
+    });
   },
 
   // Debug a query.

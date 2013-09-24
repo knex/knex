@@ -23,13 +23,13 @@ module.exports = function(knex) {
           table.engine('InnoDB');
           table.comment('A table comment.');
           table.bigIncrements('id');
-          table.string('first_name');
+          table.string('first_name').index();
           table.string('last_name');
           table.string('email').unique().nullable();
           table.integer('logins').defaultTo(1).index().comment();
           table.text('about').comment('A comment.');
           table.timestamps();
-        }).logMe('sql');
+        }).logMe('sql').then(null);
       });
 
       it('is possible to set the db engine with the table.engine', function() {
@@ -95,7 +95,7 @@ module.exports = function(knex) {
       });
 
       it('should be false if a table does not exists', function() {
-        return knex.schema.hasTable('this_table_is_fake').debug().then(function(resp) {
+        return knex.schema.hasTable('this_table_is_fake').then(function(resp) {
           expect(resp).to.be.false;
         });
       });
