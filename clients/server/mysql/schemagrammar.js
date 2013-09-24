@@ -12,8 +12,9 @@ exports.schemaGrammar = _.defaults({
 
   // Ensures the response is returned in the same format as other clients.
   handleResponse: function(builder, resp) {
-    if (builder.type === 'tableExists') return resp.length > 0;
-    if (builder.type === 'columnExists') return resp.length > 0;
+    resp = resp[0];
+    if (builder.type === 'tableExists') return resp[0].length > 0;
+    if (builder.type === 'columnExists') return resp[0].length > 0;
     return resp;
   },
 

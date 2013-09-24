@@ -94,6 +94,12 @@ module.exports = function(knex) {
         });
       });
 
+      it('should be false if a table does not exists', function() {
+        return knex.schema.hasTable('this_table_is_fake').debug().then(function(resp) {
+          expect(resp).to.be.false;
+        });
+      });
+
     });
 
     describe('renameTable', function() {
