@@ -920,7 +920,7 @@ knex.transaction(function(t) {
     </p>
 
     <p id="Builder-tap">
-      <b class="header">then</b><code>.then(onFulfilled, onRejected)</code>
+      <b class="header">tap</b><code>.tap(onFulfilled, onRejected)</code>
       <br />
       Similar to the <a href="https://github.com/cujojs/when/blob/master/docs/api.md#tap">tap</a> functionality in when.js,
       this will execute side effects on the resolved response, ultimately returning a promise that fulfills with the original
