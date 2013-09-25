@@ -51,12 +51,19 @@ var ServerBase = ClientBase.extend({
       return client.runQuery(connection, sql, bindings, builder);
     });
 
+    // If the builder came with a supplied connection, then we won't do
+    // anything to it (most commonly in the case of transactions)... otherwise,
+    // ensure the connection gets dumped back into the client pool.
     if (!builder.usingConnection) {
       chain = chain.ensure(function() {
         client.pool.release(conn);
       });
     }
 
+    // Since we usually only need the `sql` and `bindings` to help us debug the query, output them along with the
+    // `error.message` value into a new error... this way, it `console.log`'s nicely for debugging, but you can also
+    // parse them out with a `JSON.parse(error.message)`. Also, attach the original error from the
+    // database client as a property on the `newError`, so you can refer to that for any additional info.
     return chain.then(builder.handleResponse).otherwise(function(error) {
       var newError = new Error('{message: ' + error.message + ', sql: ' + sql + ', bindings: ' + bindings + '}');
           newError.clientError = error;
