@@ -58,6 +58,25 @@ module.exports = function(knex) {
 
     });
 
+    it('should reject with a custom error, with the sql, bindings, and message, along with a clientError property', function() {
+
+      return knex('nonexistent_table').insert([{item: 1}, {item: 2}]).then(null, function(err) {
+
+        var obj = JSON.parse(err.message);
+
+        expect(obj).to.have.property('sql');
+
+        expect(obj).to.have.property('bindings');
+
+        expect(err).to.have.property('clientError');
+
+        expect(err).to.be.an.instanceOf(Error);
+
+      });
+
+    });
+
+
   });
 
 };

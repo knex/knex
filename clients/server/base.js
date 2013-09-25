@@ -60,12 +60,12 @@ var ServerBase = ClientBase.extend({
       });
     }
 
-    // Since we usually only need the `sql` and `bindings` to help us debug the query, output them along with the
-    // `error.message` value into a new error... this way, it `console.log`'s nicely for debugging, but you can also
-    // parse them out with a `JSON.parse(error.message)`. Also, attach the original error from the
-    // database client as a property on the `newError`, so you can refer to that for any additional info.
+    // Since we usually only need the `sql` and `bindings` to help us debug the query, output them
+    // into a new error... this way, it `console.log`'s nicely for debugging, but you can also
+    // parse them out with a `JSON.parse(error.message)`. Also, use the original `clientError` from the
+    // database client is retained as a property on the `newError`, for any additional info.
     return chain.then(builder.handleResponse).otherwise(function(error) {
-      var newError = new Error('{message: ' + error.message + ', sql: ' + sql + ', bindings: ' + bindings + '}');
+      var newError = new Error(JSON.stringify({sql: sql, bindings: bindings}));
           newError.clientError = error;
       throw newError;
     });
