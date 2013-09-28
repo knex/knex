@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.4.6)</span>
+      Knex.js <span class="version">(0.4.7)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -211,6 +211,7 @@
     <ul class="toc_section">
       <li>– <a href="#Builder-main"><b>constructor</b></a></li>
       <li>– <a href="#Builder-select">select</a></li>
+      <li>– <a href="#Builder-column">column</a></li>
       <li>– <a href="#Builder-from">from</a></li>
       <li>– <a href="#Builder-where">where <b>+18 methods</b></a></li>
       <li>– <a href="#Builder-distinct">distinct</a></li>
@@ -352,7 +353,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.4.6 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.4.7 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -481,7 +482,7 @@ knex('table').where('id', 1).select().then(...
       <br />
       Creates a <tt>select</tt> query, taking an optional array of <b>columns</b> for the query, eventually
       defaulting to <tt>*</tt> if none are specified when the query is built. The response of a select call will
-      return with the
+      resolve with an array of objects selected from the database.
     </p>
 
 <pre>
@@ -492,6 +493,19 @@ knex('table').where('id', 1).select().then(...
   Knex('books').select();
 </pre>
 
+    <p id="Builder-column">
+      <b class="header">column</b><code>.column(columns)</code>
+      <br />
+      Specifically set the <b>columns</b> to be selected on a select query, taking an array or a list of of column names.
+    </p>
+
+<pre>
+  // select "title", "author", "year" from "books"
+  Knex('books').columns('title', 'author', 'year').select();
+
+  // or:
+  Knex('books').columns(['title', 'author', 'year']).select();
+</pre>
 
     <p id="Builder-from">
       <b class="header">from</b><code>.from([tableName])</code>
@@ -761,7 +775,6 @@ knex('users').whereNull('last_name').union(function() {
     .returning('id')
     .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
 </pre>
-
 
     <p id="Builder-update">
       <b class="header">update</b><code>.update(data)</code>
@@ -1348,6 +1361,12 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.4.7</b> &mdash; <small><i>Sep 27, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.6...0.4.7">Diff</a><br />
+      The <a href="#Builder-column">column</tt> is now a documented method on the builder api, and takes either an individual column or an array of columns to select.
+    </p>
+
 
     <p>
       <b class="header">0.4.6</b> &mdash; <small><i>Sep 25, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.5...0.4.6">Diff</a><br />
