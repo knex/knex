@@ -501,10 +501,10 @@ knex('table').where('id', 1).select().then(...
 
 <pre>
   // select "title", "author", "year" from "books"
-  Knex('books').columns('title', 'author', 'year').select();
+  Knex('books').column('title', 'author', 'year').select();
 
   // or:
-  Knex('books').columns(['title', 'author', 'year']).select();
+  Knex('books').column(['title', 'author', 'year']).select();
 </pre>
 
     <p id="Builder-from">
