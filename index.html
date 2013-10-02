@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.4.7)</span>
+      Knex.js <span class="version">(0.4.8)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -353,7 +353,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.4.7 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.4.8 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1363,10 +1363,14 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.4.8</b> &mdash; <small><i>Oct 2, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.7...0.4.8">Diff</a><br />
+      Connections are no longer pushed back into the pool if they never existed to begin with (#85).
+    </p>
+
+    <p>
       <b class="header">0.4.7</b> &mdash; <small><i>Sep 27, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.6...0.4.7">Diff</a><br />
       The <a href="#Builder-column">column</a> is now a documented method on the builder api, and takes either an individual column or an array of columns to select.
     </p>
-
 
     <p>
       <b class="header">0.4.6</b> &mdash; <small><i>Sep 25, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.5...0.4.6">Diff</a><br />

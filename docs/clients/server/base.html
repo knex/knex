@@ -40,6 +40,9 @@ acquire a connection, and then dispose of it when we're done.</p></div></div><di
 anything to it (most commonly in the case of transactions)... otherwise,
 ensure the connection gets dumped back into the client pool.</p></div></div><div class="code"><div class="wrapper">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">builder</span><span class="p">.</span><span class="nx">usingConnection</span><span class="p">)</span> <span class="p">{</span>
       <span class="nx">chain</span> <span class="o">=</span> <span class="nx">chain</span><span class="p">.</span><span class="nx">ensure</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">conn</span><span class="p">)</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>The connection must have failed to initialize. Avoid pushing undefined
+into the connection pool.</p></div></div><div class="code"><div class="wrapper">          <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
         <span class="nx">client</span><span class="p">.</span><span class="nx">pool</span><span class="p">.</span><span class="nx">release</span><span class="p">(</span><span class="nx">conn</span><span class="p">);</span>
       <span class="p">});</span>
     <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Since we usually only need the <code>sql</code> and <code>bindings</code> to help us debug the query, output them
