@@ -56,6 +56,11 @@ var ServerBase = ClientBase.extend({
     // ensure the connection gets dumped back into the client pool.
     if (!builder.usingConnection) {
       chain = chain.ensure(function() {
+        if (!conn) {
+          // The connection must have failed to initialize. Avoid pushing undefined
+          // into the connection pool.
+          return;
+        }
         client.pool.release(conn);
       });
     }
