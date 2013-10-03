@@ -70,7 +70,7 @@ var ServerBase = ClientBase.extend({
     // parse them out with a `JSON.parse(error.message)`. Also, use the original `clientError` from the
     // database client is retained as a property on the `newError`, for any additional info.
     return chain.then(builder.handleResponse).otherwise(function(error) {
-      var newError = new Error(JSON.stringify({sql: sql, bindings: bindings}));
+      var newError = new Error(JSON.stringify({sql: sql, bindings: bindings, message: error.message}));
           newError.clientError = error;
       throw newError;
     });
