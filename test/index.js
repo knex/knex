@@ -1,3 +1,6 @@
+// Helps with error handling on errors swallowed by promises.
+require('when/monitor/console');
+
 var mocha = require('mocha');
 
 require("mocha-as-promised")(mocha);
