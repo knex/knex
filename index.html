@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.4.8)</span>
+      Knex.js <span class="version">(0.4.9)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -353,7 +353,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.4.8 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.4.9 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1361,6 +1361,14 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.4.9</b> &mdash; <small><i>Oct 7, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.8...0.4.9">Diff</a><br />
+      <ul>
+        <li>Fix for documentation of <a href="#Schema-hasColumn">hasColumn</a>, ensure that <tt>hasColumn</tt> works with MySQL (#87).</li>
+        <li>More cleanup of error messages, showing the original error message concatenated with the sql and bindings.</li>
+      </ul>
+    </p>
 
     <p>
       <b class="header">0.4.8</b> &mdash; <small><i>Oct 2, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.7...0.4.8">Diff</a><br />
