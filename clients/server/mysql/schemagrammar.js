@@ -16,6 +16,7 @@ exports.schemaGrammar = _.defaults({
     if (builder.type === 'tableExists') {
       bindings.unshift(builder.client.connectionSettings.database);
     }
+    if (builder.type === 'columnExists') bindings.shift();
     return bindings;
   },
 

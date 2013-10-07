@@ -129,7 +129,11 @@ module.exports = function(knex) {
 
       it('checks whether a column exists, resolving with a boolean', function() {
 
-        return knex.schema.hasColumn('accounts', 'first_name');
+        return knex.schema.hasColumn('accounts', 'first_name').then(function(exists) {
+
+          expect(exists).to.be.true;
+
+        });
 
       });
 

@@ -255,11 +255,11 @@
       <li>– <a href="#Schema-createTable">createTable</a></li>
       <li>– <a href="#Schema-renameTable">renameTable</a></li>
       <li>– <a href="#Schema-dropTable">dropTable</a></li>
+      <li>– <a href="#Schema-hasColumn">hasColumn</a></li>
       <li>– <a href="#Schema-hasTable">hasTable</a></li>
       <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
       <li>– <a href="#Schema-table">table</a></li>
       <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
-      <li>– <a href="#Schema-hasColumn">hasColumn</a></li>
       <li>– <a href="#Schema-dropColumn">dropColumn</a></li>
       <li>– <a href="#Schema-dropColumns">dropColumns</a></li>
       <li>– <a href="#Schema-renameColumn">renameColumn</a></li>
@@ -1046,6 +1046,13 @@ knex.schema.hasTable('users').then(function(exists) {
 });
 </pre>
 
+    <p id="Schema-hasColumn">
+      <b class="header">hasColumn</b><code>knex.schema.hasColumn(tableName, columnName)</code>
+      <br />
+      Checks if a column exists in the current table, resolves the promise with a boolean, <tt>true</tt>
+      if the column exists, <tt>false</tt> otherwise.
+    </p>
+
     <p id="Schema-dropTableIfExists">
       <b class="header">dropTableIfExists</b><code>knex.schema.dropTableIfExists(tableName)</code>
       <br />
@@ -1070,13 +1077,6 @@ knex.schema.table('users', function (table) {
 </pre>
 
     <h3 id="Schema-Building">Schema Building:</h3>
-
-    <p id="Schema-hasColumn">
-      <b class="header">hasColumn</b><code>table.hasColumn(name)</code>
-      <br />
-      Checks if a column exists in the current table, resolves the promise with a boolean, <tt>true</tt>
-      if the column exists, <tt>false</tt> otherwise.
-    </p>
 
     <p id="Schema-dropColumn">
       <b class="header">dropColumn</b><code>table.dropColumn(name)</code>
