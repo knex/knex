@@ -62,11 +62,9 @@ module.exports = function(knex) {
 
       return knex('nonexistent_table').insert([{item: 1}, {item: 2}]).then(null, function(err) {
 
-        var obj = JSON.parse(err.message);
+        expect(err).to.have.property('sql');
 
-        expect(obj).to.have.property('sql');
-
-        expect(obj).to.have.property('bindings');
+        expect(err).to.have.property('bindings');
 
         expect(err).to.have.property('clientError');
 
