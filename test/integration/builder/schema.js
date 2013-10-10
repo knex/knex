@@ -12,7 +12,8 @@ module.exports = function(knex) {
         knex.schema.dropTableIfExists('test_table_three'),
         knex.schema.dropTableIfExists('datatype_test'),
         knex.schema.dropTableIfExists('accounts'),
-        knex.schema.dropTableIfExists('test_default_table')
+        knex.schema.dropTableIfExists('test_default_table'),
+        knex.schema.dropTableIfExists('composite_key_test')
       ]);
     });
 
@@ -69,10 +70,9 @@ module.exports = function(knex) {
 
       it('allows for composite keys', function() {
         return knex.schema.createTable('composite_key_test', function(table) {
-          table.increments('id');
           table.integer('column_a');
           table.integer('column_b');
-          table.unique(['id', 'column_a', 'column_b']);
+          table.unique(['column_a', 'column_b']);
         }).logMe('sql');
       });
 
