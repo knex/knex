@@ -82,5 +82,19 @@ module.exports = {
       bindings: [],
       sql: ['create table "test_foreign_table_two" ("id" integer primary key autoincrement not null, "fkey_two" integer, foreign key("fkey_two") references "test_table_two"("id"))']
     }
+  },
+  'allows for composite keys': {
+    mysql: {
+      bindings: [],
+      sql: ['create table `composite_key_test` (`id` int(11) unsigned not null auto_increment primary key, `column_a` int(11), `column_b` int(11)) default character set utf8','alter table `composite_key_test` add unique composite_key_test_id_column_a_column_b_unique(`id`, `column_a`, `column_b`)']
+    },
+    postgresql: {
+      bindings: [],
+      sql: ['create table "composite_key_test" ("id" serial primary key not null, "column_a" integer, "column_b" integer)','alter table "composite_key_test" add constraint composite_key_test_id_column_a_column_b_unique unique ("id", "column_a", "column_b")']
+    },
+    sqlite3: {
+      bindings: [],
+      sql: ['create table "composite_key_test" ("id" integer primary key autoincrement not null, "column_a" integer, "column_b" integer)','create unique index composite_key_test_id_column_a_column_b_unique on "composite_key_test" ("id", "column_a", "column_b")']
+    }
   }
 };

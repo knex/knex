@@ -67,6 +67,15 @@ module.exports = function(knex) {
         }).logMe('sql');
       });
 
+      it('allows for composite keys', function() {
+        return knex.schema.createTable('composite_key_test', function(table) {
+          table.increments('id');
+          table.integer('column_a');
+          table.integer('column_b');
+          table.unique(['id', 'column_a', 'column_b']);
+        }).logMe('sql');
+      });
+
     });
 
     describe('table', function() {
