@@ -13,7 +13,8 @@ module.exports = function(knex) {
         knex.schema.dropTableIfExists('datatype_test'),
         knex.schema.dropTableIfExists('accounts'),
         knex.schema.dropTableIfExists('test_default_table'),
-        knex.schema.dropTableIfExists('composite_key_test')
+        knex.schema.dropTableIfExists('composite_key_test'),
+        knex.schema.dropTableIfExists('charset_collate_test')
       ]);
     });
 
@@ -73,6 +74,18 @@ module.exports = function(knex) {
           table.integer('column_a');
           table.integer('column_b');
           table.unique(['column_a', 'column_b']);
+        }).logMe('sql');
+      });
+
+      it('is possible to set the table collation with table.charset and table.collate', function() {
+        return knex.schema.createTable('charset_collate_test', function(table) {
+          table.charset('latin1');
+          table.collate('latin1_general_ci');
+          table.engine('InnoDB');
+          table.increments();
+          table.integer('account_id');
+          table.text('details');
+          table.tinyint('status');
         }).logMe('sql');
       });
 
