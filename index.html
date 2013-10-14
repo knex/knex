@@ -485,7 +485,7 @@ knex('table').where('id', 1).select().then(...
     </p>
 
     <p id="Builder-select">
-      <b class="header">select</b><code>.select([*columns])</code> <span class="alias">Alias: <b>into</b></span>
+      <b class="header">select</b><code>.select([*columns])</code>
       <br />
       Creates a <tt>select</tt> query, taking an optional array of <b>columns</b> for the query, eventually
       defaulting to <tt>*</tt> if none are specified when the query is built. The response of a select call will
@@ -515,7 +515,7 @@ knex('table').where('id', 1).select().then(...
 </pre>
 
     <p id="Builder-from">
-      <b class="header">from</b><code>.from([tableName])</code>
+      <b class="header">from</b><code>.from([tableName])</code> <span class="alias">Alias: <b>into</b></span>
       <br />
       Specifies the table used in the current query, replacing the current table name if
       one has already been specified. This is typically used in the sub-queries performed
@@ -1409,6 +1409,7 @@ knex.raw('select * from users where id = 1').then(function(resp) {
         <li>Added <a href="#Builder-forUpdate">forUpdate</a> and <a href="#Builder-forShare">forShare</a> for select modes in transactions. (#84)</li>
         <li>Fix bug where current query chain type is not copied on <a href="#Builder-clone">clone</a>. (#90)</li>
         <li>Charset and collate are now added as methods on the schema builder. (#89)</li>
+        <li>Added <tt>into</tt> as an alias of <a href="#Builder-from">from</a>, for builder syntax of: <tt>insert(value).into(tableName)</tt></li>
         <li>Internal pool fixes. (#90)</li>
       </ul>
     </p>
