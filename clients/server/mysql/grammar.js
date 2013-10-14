@@ -19,6 +19,11 @@ exports.grammar = _.defaults({
     if (builder.type === 'insert') response = [response.insertId];
     if (builder.type === 'delete' || builder.type === 'update') response = response.affectedRows;
     return response;
+  },
+
+  // Adds a `for share` clause to the query, relevant with transactions.
+  compileForShare: function() {
+    return 'lock in share mode';
   }
 
 }, baseGrammar);

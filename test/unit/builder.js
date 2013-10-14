@@ -220,6 +220,54 @@ describe('Builder', function () {
 
     });
 
+    describe('transacting', function() {
+
+      it('accepts an object once - otherwise throws an error', function() {
+
+        var trx = {};
+
+        builder.transacting(trx);
+
+        expect(builder.transaction).to.eql(trx);
+
+        try {
+          builder.transacting(trx);
+        } catch (e) {
+          expect(e.message).to.equal('A transaction has already been set for the current query chain');
+        }
+
+      });
+
+      it('attaches two methods, forUpdate and forShare', function() {
+
+        expect(builder.forUpdate).to.not.exist;
+
+        expect(builder.forShare).to.not.exist;
+
+        builder.transacting({});
+
+        expect(builder.forUpdate).to.be.a('function');
+
+        expect(builder.forShare).to.be.a('function');
+
+      });
+
+      it('adds a forUpdate or forShare clause to the query, but not both', function() {
+
+        var qb = builder.select('*').from('users').transacting({}).where('id', '>', 10);
+
+        qb.forShare();
+
+        expect(qb.toString()).to.equal('select * from `users` where `id` > 10 lock in share mode');
+
+        qb.forUpdate();
+
+        expect(qb.toString()).to.equal('select * from `users` where `id` > 10 for update');
+
+      });
+
+    });
+
     describe('whereRaw', function() {
 
       it('is called by orWhereRaw, passing the sql, bindings, and "or"', function() {

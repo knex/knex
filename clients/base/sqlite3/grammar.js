@@ -78,7 +78,11 @@ define(function(require, exports) {
       sql.push('delete from sqlite_sequence where name = ' + table);
       sql.push('delete from ' + table);
       return sql;
-    }
+    },
+
+    // For share and for update are not available in sqlite3.
+    compileForUpdate: function() {},
+    compileForShare:  function() {}
 
   }, baseGrammar);
 

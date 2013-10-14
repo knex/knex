@@ -52,14 +52,19 @@ define(function(require, exports) {
     // by calling each of the component compilers, trimming out
     // the empties, and returning a generated query string.
     compileSelect: function(qb) {
-      var sql = {};
+      var sql = [];
       if (_.isEmpty(qb.columns)) qb.columns = ['*'];
       for (var i = 0, l = components.length; i < l; i++) {
         var component = components[i];
         var result = _.result(qb, component);
         if (result != null) {
-          sql[component] = this['compile' + Helpers.capitalize(component)](qb, result);
+          sql.push(this['compile' + Helpers.capitalize(component)](qb, result));
         }
+      }
+      // If there is a transaction, and we have either `forUpdate` or `forShare` specified,
+      // call the appropriate additions to the select statement.
+      if (qb.transaction && qb.flags.selectMode) {
+        sql.push(this['compile' + qb.flags.selectMode](qb));
       }
       return _.compact(sql).join(' ');
     },
@@ -280,6 +285,16 @@ define(function(require, exports) {
     // Compiles a `truncate` query.
     compileTruncate: function(qb) {
       return 'truncate ' + this.wrapTable(qb.table);
+    },
+
+    // Adds a `for update` clause to the query, relevant with transactions.
+    compileForUpdate: function() {
+      return 'for update';
+    },
+
+    // Adds a `for share` clause to the query, relevant with transactions.
+    compileForShare: function() {
+      return 'for share';
     },
 
     // Puts the appropriate wrapper around a value depending on the database
