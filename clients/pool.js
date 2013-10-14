@@ -24,32 +24,33 @@ define(function(require, exports) {
     _.bindAll(this, 'acquire', 'release');
     this.config = config;
     this.client = client;
+    if (!config || !client) {
+      throw new Error('The config and client are required to use the pool module.');
+    }
     this.init();
   };
 
   Pool.prototype = {
 
-    // Some basic defaults for the pool... generally you don't really want to keep
-    // mutable objects on the prototype, but in this case we're not supposed to be
-    // messing around with them, so it should be alright.
+    // Some basic defaults for the pool...
     defaults: function() {
-      var poolInstance = this;
+      var pool = this;
       return {
         min: 2,
         max: 10,
         create: function(callback) {
-          var promise = poolInstance.client.getRawConnection()
+          var promise = pool.client.getRawConnection()
             .tap(function(connection) {
               connection.__cid = _.uniqueId('__cid');
-              if (poolInstance.config.afterCreate) {
-                return nodefn.call(poolInstance.config.afterCreate, connection);
+              if (pool.config.afterCreate) {
+                return nodefn.call(pool.config.afterCreate, connection);
               }
             });
           return nodefn.bindCallback(promise, callback);
         },
         destroy: function(connection) {
-          if (poolInstance.config.beforeDestroy) {
-            return poolInstance.config.beforeDestroy(connection, function() {
+          if (pool.config.beforeDestroy) {
+            return pool.config.beforeDestroy(connection, function() {
               connection.end();
             });
           }

@@ -27,6 +27,7 @@ describe('Unit Tests', function() {
   require('./unit/builder/joinclause');
   require('./unit/raw');
   require('./unit/transaction');
+  require('./unit/clients/pool');
   require('./unit/clients/base');
   require('./unit/clients/base/grammar');
   require('./unit/clients/base/schemagrammar');
