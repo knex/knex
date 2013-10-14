@@ -80,10 +80,14 @@ define(function(require, exports) {
     // Tear down the pool, only necessary if you need it.
     destroy: function(callback) {
       var poolInstance = this.poolInstance;
-      poolInstance.drain(function() {
-        poolInstance.destroyAllNow(callback);
-      });
-      delete this.poolInstance;
+      if (poolInstance) {
+        poolInstance.drain(function() {
+          poolInstance.destroyAllNow(callback);
+        });
+        delete this.poolInstance;
+      } else {
+        callback();
+      }
       return this;
     }
 
