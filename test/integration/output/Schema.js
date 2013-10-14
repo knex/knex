@@ -96,5 +96,19 @@ module.exports = {
       bindings: [],
       sql: ['create table "composite_key_test" ("column_a" integer, "column_b" integer)','create unique index composite_key_test_column_a_column_b_unique on "composite_key_test" ("column_a", "column_b")']
     }
+  },
+  'is possible to set the table collation with table.charset and table.collate': {
+    mysql: {
+      bindings: [],
+      sql: ['create table `charset_collate_test` (`id` int(11) unsigned not null auto_increment primary key, `account_id` int(11), `details` text, `status` tinyint) default character set latin1 collate latin1_general_ci engine = InnoDB']
+    },
+    postgresql: {
+      bindings: [],
+      sql: ['create table "charset_collate_test" ("id" serial primary key not null, "account_id" integer, "details" text, "status" smallint)']
+    },
+    sqlite3: {
+      bindings: [],
+      sql: ['create table "charset_collate_test" ("id" integer primary key autoincrement not null, "account_id" integer, "details" text, "status" tinyint)']
+    }
   }
 };

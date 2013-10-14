@@ -33,8 +33,8 @@ exports.schemaGrammar = _.defaults({
     var sql  = baseSchemaGrammar.compileCreateTable.call(this, builder, command);
     var conn = builder.client.connectionSettings;
 
-    if (conn.charset) sql += ' default character set ' + conn.charset;
-    if (conn.collation) sql += ' collate ' + conn.collation;
+    if (builder.flags.charset || conn.charset) sql += ' default character set ' + (builder.flags.charset || conn.charset);
+    if (builder.flags.collation || conn.collation) sql += ' collate ' + (builder.flags.collation || conn.collation);
     if (builder.flags.engine) {
       sql += ' engine = ' + builder.flags.engine;
     }
