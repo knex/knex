@@ -116,6 +116,11 @@ describe('Builder', function () {
 
   describe('clone', function() {
 
+    it('should keep the correct type when cloning the instance', function() {
+      var cloned = builder.insert({a: 'value'}).into('tableName').clone();
+      expect(cloned.type).to.equal('insert');
+    });
+
   });
 
   describe('reset', function() {
