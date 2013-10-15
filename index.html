@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.4.10)</span>
+      Knex.js <span class="version">(0.4.11)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -360,7 +360,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.4.10 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.4.11 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1404,7 +1404,14 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
-      <b class="header">0.4.10</b> &mdash; <small><i>Oct 14, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.9...0.5.0">Diff</a><br />
+      <b class="header">0.4.11</b> &mdash; <small><i>Oct 15, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.10...0.4.11">Diff</a><br />
+      <ul>
+        <li>Fix potential sql injection vulnerability in <tt>orderBy</tt>, thanks to @sebgie.</li>
+      </ul>
+    </p>
+
+    <p>
+      <b class="header">0.4.10</b> &mdash; <small><i>Oct 14, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.9...0.4.10">Diff</a><br />
       <ul>
         <li>Added <a href="#Builder-forUpdate">forUpdate</a> and <a href="#Builder-forShare">forShare</a> for select modes in transactions. (#84)</li>
         <li>Fix bug where current query chain type is not copied on <a href="#Builder-clone">clone</a>. (#90)</li>
