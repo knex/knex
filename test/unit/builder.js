@@ -288,6 +288,40 @@ describe('Builder', function () {
 
   describe('orderBy', function() {
 
+    it('should default to "asc" if no value is provided', function() {
+
+      builder.orderBy('columnName');
+
+      expect(builder.orders[0].column).to.equal('columnName');
+
+      expect(builder.orders[0].direction).to.equal('asc');
+
+    });
+
+    it('should not allow any values other than "asc" or "desc"', function() {
+
+      builder.orderBy('columnName', 'desc, select * from items');
+
+      expect(builder.orders[0].column).to.equal('columnName');
+
+      expect(builder.orders[0].direction).to.equal('asc');
+
+    });
+
+    it('should not allow capitalized "desc"', function() {
+
+      builder.orderBy('columnName', 'DESC');
+
+      expect(builder.toString()).to.equal("select * order by `columnName` DESC");
+
+      builder.reset();
+
+      builder.orderBy('columnName', 'ASC');
+
+      expect(builder.toString()).to.equal("select * order by `columnName` ASC");
+
+    });
+
   });
 
   describe('union', function() {
