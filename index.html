@@ -1143,9 +1143,11 @@ knex.schema.table('users', function (table) {
     </p>
 
     <p id="Schema-text">
-      <b class="header">text</b><code>table.text(name)</code>
+      <b class="header">text</b><code>table.text(name, [textType])</code>
       <br />
-      Adds a text column.
+      Adds a text column, with optional textType for MySql text datatype preference.
+      <br />
+      textType may be <tt>mediumtext</tt> or <tt>longtext</tt>, otherwise defaults to text.
     </p>
 
     <p id="Schema-string">
