@@ -22,10 +22,9 @@ define(function(require, exports, module) {
   var Transaction = require('./lib/transaction').Transaction;
   var Builder     = require('./lib/builder').Builder;
 
-  // var Interface   = require('./lib/builder/interface').Interface;
-  var ClientBase      = require('./clients/base').ClientBase;
-  var SchemaBuilder   = require('./lib/schemabuilder').SchemaBuilder;
-  var SchemaInterface = require('./lib/schemainterface').SchemaInterface;
+  var ClientBase       = require('./clients/base').ClientBase;
+  var SchemaBuilder    = require('./lib/schemabuilder').SchemaBuilder;
+  var SchemaInterface  = require('./lib/schemainterface').SchemaInterface;
 
   // The `Knex` module, taking either a fully initialized
   // database client, or a configuration to initialize one. This is something
@@ -98,6 +97,18 @@ define(function(require, exports, module) {
     knex.transaction = function(container) {
       return new Transaction(knex).run(container);
     };
+
+    // Attach each of the `Migrate` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
+    // knex.migrate.up().then(...
+    // knex.migrate.to().then(...
+    // knex.migrate.currentVersion(...
+    _.each(['generate', 'currentVersion', 'listAll', 'up', 'down', 'to'], function(method) {
+      knex.migrate[method] = function() {
+        var Migrate   = require('./lib/migrate');
+        var migration = new Migrate(knex);
+        return migration[method].apply(migration, arguments);
+      };
+    });
 
     // Return the new `Knex` instance.
     return knex;

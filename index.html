@@ -308,6 +308,16 @@
       <li>– <a href="#Raw-Queries">Raw Queries</a></li>
     </ul>
 
+    <a class="toc_title" href="#Migrate">
+      Migrate
+    </a>
+    <ul class="toc_section">
+      <li>– <a href="#Migrate-up">up</a></li>
+      <li>– <a href="#Migrate-down">down</a></li>
+      <li>– <a href="#Migrate-generate">generate</a></li>
+      <li>– <a href="#Migrate-currentVersion">currentVersion</a></li>
+    </ul>
+
     <a class="toc_title" href="#faq">
       F.A.Q.
     </a>
@@ -784,11 +794,11 @@ knex('users').whereNull('last_name').union(function() {
 </pre>
 
     <p id="Builder-update">
-      <b class="header">update</b><code>.update(data)</code>
+      <b class="header">update</b><code>.update(data) / .update(key, value)</code>
       <br />
-      Creates an <tt>update</tt> query, taking a hash of properties to be updated based on the
-      other query constraints. Resolves the promise / fulfills the callback with the number
-      of affected rows for the query.
+      Creates an <tt>update</tt> query, taking either a single property / value, or a hash of properties
+      to be updated based on the other query constraints. Resolves the promise / fulfills the
+      callback with the number of affected rows for the query.
     </p>
 
 <pre>
@@ -1364,6 +1374,61 @@ knex.raw('select * from users where id = 1').then(function(resp) {
 });
 </pre>
 
+    <h2 id="Migrate">knex.migrate</h2>
+
+    <p>
+      <tt>knex.migrate</tt> is the class utilized by the knex migrations cli.
+    </p>
+
+    <p id="Migrate-up">
+      <b class="header">up</b><code>knex.migrate.up([to], [config])</code>
+      <br />
+      Migrate <tt>up</tt> <b>to</b> a specified migration, or the latest if no version number is specified.
+      A <b>config</b> object may be specified, to determine which directory and package to use for
+      the migration.
+    </p>
+
+    <p id="Migrate-down">
+      <b class="header">down</b><code>knex.migrate.down(name)</code>
+      <br />
+      Migrate <tt>up</tt> <b>to</b> a specified migration, or the latest if no version number is specified.
+      A <b>config</b> object may be specified, to determine which directory and package to use for
+      the migration.
+    </p>
+
+    <p id="Migrate-generate">
+      <b class="header">generate</b><code>knex.migrate.generate(name, [config])</code>
+      <br />
+      Creates a new migration, with the <b>name</b> of the migration being added.
+    </p>
+
+    <p id="Migrate-currentVersion">
+      <b class="header">currentVersion</b><code>knex.migrate.currentVersion()</code>
+      <br />
+      Retrieves and returns the current migration version we're on, as a promise.
+      If there aren't any migrations run yet, returns "none" as the value for the currentVersion.
+    </p>
+
+    <p id="Migrate-listAll">
+      <b class="header">listAll</b><code>knex.migrate.listAll([config])</code>
+      <br />
+      Lists all available migrations, accepting an optional <b>config</b> parameter.
+    </p>
+
+    <p id="Migrate-listCompleted">
+      <b class="header">listCompleted</b><code>knex.migrate.listCompleted([config])</code>
+      <br />
+      Lists all of the completed migrations, , accepting an optional <b>config</b> parameter.
+    </p>
+
+    <p id="Migrate-run">
+      <b class="header">run</b><code>knex.migrate.run([version], [config])</code>
+      <br />
+      Runs a specific migration, Migrate `up` <b>to</b> a specified migration, or the latest if no version number is specified.
+      A <b>config</b> object may be specified, to determine which directory and package to use for
+      the migration.
+    </p>
+
     <h2 id="faq">F.A.Q.</h2>
 
     <p id="faq-contribute">
@@ -1605,5 +1670,7 @@ knex.raw('select * from users where id = 1').then(function(resp) {
 
   </div>
   <script src="docs/assets/ga.js" type="text/javascript" charset="utf-8"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.8/require.js"></script>
+  <script src="knex-built.js"></script>
 </body>
 </html>

@@ -4,15 +4,16 @@
 
 "use strict";
 
-define(function(require, exports) {
+define(function(require, exports, module) {
 
-  var Sqlite3 = require('../base/sqlite3');
+  var SQLite3 = require('./sqlite3');
 
-  var WebSQL = Sqlite3.extend({
+  // Constructor for the WebSQL client.
+  var WebSQL = SQLite3.extend({
 
   });
 
-  exports.WebSQL = WebSQL;
+  module.exports = WebSQL;
 
 });
 

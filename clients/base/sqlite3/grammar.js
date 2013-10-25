@@ -32,8 +32,8 @@ define(function(require, exports) {
 
     // Compile an insert statement into SQL.
     compileInsert: function(qb) {
-      var values = qb.values;
-      var table = this.wrapTable(qb.table);
+      var values  = qb.values;
+      var table   = this.wrapTable(qb.table);
       var columns = _.pluck(values[0], 0);
 
       // If there are any "where" clauses, we need to omit

@@ -4,7 +4,7 @@
 
 "use strict";
 
-define(function(require, exports) {
+define(function(require, exports, module) {
 
   var Sqlite3 = require('../base/sqlite3');
 
@@ -20,7 +20,7 @@ define(function(require, exports) {
 
   });
 
-  exports.Cordova = Cordova;
+  module.exports = Cordova;
 
 });
 

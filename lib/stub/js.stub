@@ -1,0 +1,15 @@
+
+exports.up = function(knex, when) {
+  <% if (d.tableName) { %>
+    knex.schema.createTable("<%= d.tableName %>", function(t) {
+      t.increments();
+      t.timestamp();
+    });
+  <% } %>
+};
+
+exports.down = function(knex, when) {
+  <% if (d.tableName) { %>
+  knex.schema.dropTable("<%= d.tableName %>");
+  <% } %>
+};

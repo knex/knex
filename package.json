@@ -13,6 +13,8 @@
     "pg": "~2.6.2",
     "sqlite3": "~2.1.7",
     "node-uuid": "~1.4.0",
+    "chai": "~1.7.2",
+    "rimraf": "~2.2.2",
     "grunt": "~0.4.1",
     "grunt-release": "~0.5.1",
     "mocha-as-promised": "~1.4.0",
@@ -24,7 +26,9 @@
   "dependencies": {
     "when": "~2.4.0",
     "underscore": "~1.5.1",
-    "generic-pool-redux": "~0.1.0"
+    "generic-pool-redux": "~0.1.0",
+    "optimist": "~0.6.0",
+    "mkdirp": "~0.3.5"
   },
   "scripts": {
     "test": "mocha -R spec test/index.js",

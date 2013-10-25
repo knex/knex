@@ -1,0 +1,8 @@
+
+exports.up = (Knex, When) ->
+  <% if (d.tableName) { %>
+  knex.schema.createTable "<%= d.tableName %>", (t) ->
+
+
+exports.down = (Knex, When) ->
+  knex.schema.dropTable "<%= d.tableName %>"
