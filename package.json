@@ -22,9 +22,9 @@
     "sinon-chai": "~2.4.0"
   },
   "dependencies": {
-    "when": "~2.4.0",
     "underscore": "~1.5.1",
-    "generic-pool-redux": "~0.1.0"
+    "generic-pool-redux": "~0.1.0",
+    "bluebird": "~0.9.5-0"
   },
   "scripts": {
     "test": "mocha -R spec test/index.js",

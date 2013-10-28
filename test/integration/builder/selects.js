@@ -1,4 +1,4 @@
-var when = require('when');
+var Promise = testPromise;
 
 module.exports = function(knex) {
 
@@ -63,7 +63,7 @@ module.exports = function(knex) {
 
       it('allows where id: undefined or id: null as a where null clause', function() {
 
-        return when.all([
+        return Promise.all([
           knex('accounts').logMe('sql').where({'id': void 0}).select('*'),
           knex('accounts').logMe('sql').where({'id': null}).select('first_name', 'email')
         ]);
@@ -80,7 +80,7 @@ module.exports = function(knex) {
 
     it('has a "distinct" clause', function() {
 
-      return when.all([
+      return Promise.all([
         knex('accounts').select().distinct('email').where('logins', 2).orderBy('email'),
         knex('accounts').distinct('email').select().orderBy('email')
       ]);
@@ -89,7 +89,7 @@ module.exports = function(knex) {
 
     it('does "orWhere" cases', function() {
 
-      return when.all([
+      return Promise.all([
         knex('accounts').where('id', 1).orWhere('id', '>', 2).select('first_name', 'last_name')
         // More tests can be added here.
       ]);
@@ -98,7 +98,7 @@ module.exports = function(knex) {
 
     it('does "andWhere" cases', function() {
 
-      return when.all([
+      return Promise.all([
         knex('accounts').select('first_name', 'last_name', 'about').where('id', 1).andWhere('email', 'test@example.com')
       ]);
 
@@ -106,7 +106,7 @@ module.exports = function(knex) {
 
     it('takes a function to wrap nested where statements', function() {
 
-      return when.all([
+      return Promise.all([
         knex('accounts').where(function() {
           this.where('id', 2);
           this.orWhere('id', 3);
@@ -117,7 +117,7 @@ module.exports = function(knex) {
 
     it('handles "where in" cases', function() {
 
-      return when.all([
+      return Promise.all([
         knex('accounts').whereIn('id', [1, 2, 3]).select()
       ]);
 

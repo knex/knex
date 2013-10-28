@@ -1,11 +1,11 @@
-var when = require('when');
+var Promise = testPromise;
 
 module.exports = function(knex) {
 
   describe('Schema', function() {
 
     it('has a dropTableIfExists method', function() {
-      return when.all([
+      return Promise.all([
         knex.schema.dropTableIfExists('test_foreign_table_two').logMe('sql'),
         knex.schema.dropTableIfExists('test_table_one').logMe('sql'),
         knex.schema.dropTableIfExists('test_table_two'),

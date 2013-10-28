@@ -1,12 +1,12 @@
 var _           = require('underscore');
-var when        = require('when');
+var Promise     = testPromise;
 var Pool        = require('../../../clients/pool').Pool;
 var GenericPool = require('generic-pool-redux').Pool;
 
 describe('Pool', function () {
 
   var connStub = function() {
-    return when.resolve({end: function() {}});
+    return Promise.fulfilled({end: function() {}});
   };
 
   describe('constructor', function() {

@@ -1,6 +1,4 @@
 // Helps with error handling on errors swallowed by promises.
-require('when/monitor/console');
-
 var mocha = require('mocha');
 
 require("mocha-as-promised")(mocha);
@@ -13,11 +11,14 @@ chai.use(require("chai-as-promised"));
 chai.use(require("sinon-chai"));
 chai.should();
 
-global.whenResolve    = require('when').resolve;
+
+var Promise = global.testPromise    = require('../lib/promise').Promise;
 global.expect         = chai.expect;
 global.AssertionError = chai.AssertionError;
 global.Assertion      = chai.Assertion;
 global.assert         = chai.assert;
+
+Promise.longStackTraces();
 
 // Unit tests
 describe('Unit Tests', function() {

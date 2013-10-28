@@ -1,5 +1,3 @@
-var when = require("when");
-
 module.exports = function(knex) {
 
   describe('Aggregate', function() {
