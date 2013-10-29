@@ -157,7 +157,7 @@ exports.schemaGrammar = _.defaults({
 
   // Create the column definition for a float type.
   typeFloat: function(column) {
-    return 'float(' + column.total + ',' + column.places + ')';
+    return 'float(' + column.precision + ',' + column.scale + ')';
   },
 
   // Create the column definition for a decimal type.
