@@ -125,7 +125,7 @@ exports.schemaGrammar = _.defaults({
 
   // Create the column definition for a decimal type.
   typeDecimal: function(column) {
-    return "decimal(" + column.total + ", " + column.places + ")";
+    return "decimal(" + column.precision + ", " + column.scale + ")";
   },
 
   // Create the column definition for a boolean type.
