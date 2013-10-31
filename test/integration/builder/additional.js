@@ -74,7 +74,6 @@ module.exports = function(knex) {
 
     });
 
-
   });
 
 };
