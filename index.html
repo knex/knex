@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.4.11)</span>
+      Knex.js <span class="version">(0.4.13)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -370,7 +370,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.4.11 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.4.13 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1471,10 +1471,19 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.4.13</b> &mdash; <small><i>Oct 31, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.12...0.4.13">Diff</a><br />
+      Fix for aggregate methods on <tt>toString</tt> and <tt>clone</tt>, (#98).
+    </p>
+
+    <p>
+      <b class="header">0.4.12</b> &mdash; <small><i>Oct 29, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.11...0.4.12">Diff</a><br />
+      Fix incorrect values passed to <tt>float</tt> in MySQL and <tt>decimal</tt>
+      in PostgreSQL.
+    </p>
+
+    <p>
       <b class="header">0.4.11</b> &mdash; <small><i>Oct 15, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.10...0.4.11">Diff</a><br />
-      <ul>
-        <li>Fix potential sql injection vulnerability in <tt>orderBy</tt>, thanks to @sebgie.</li>
-      </ul>
+      Fix potential sql injection vulnerability in <tt>orderBy</tt>, thanks to @sebgie.
     </p>
 
     <p>
