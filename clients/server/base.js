@@ -1,15 +1,11 @@
 // ServerBase
 // -------
 
-// All of the "when.js" promise components needed in this module.
-var when       = require('when');
-var nodefn     = require('when/node/function');
-var sequence   = require('when/sequence');
-
 var _          = require('underscore');
 
 var Pool       = require('../pool').Pool;
 var ClientBase = require('../base').ClientBase;
+var Promise    = require('../../lib/promise').Promise;
 
 var ServerBase = ClientBase.extend({
 
@@ -43,10 +39,14 @@ var ServerBase = ClientBase.extend({
       }
       conn = connection;
       if (_.isArray(sql)) {
-        return sequence(sql.map(function(query, i) {
-          builder.currentIndex = i;
-          return function() { return client.runQuery(connection, query, bindings, builder); };
-        }));
+        var current = Promise.fulfilled();
+        return Promise.map(sql, function(query, i) {
+          current = current.then(function () {
+            builder.currentIndex = i;
+            return client.runQuery(connection, query, bindings, builder);
+          });
+          return current;
+        });
       }
       return client.runQuery(connection, sql, bindings, builder);
     });
@@ -69,7 +69,7 @@ var ServerBase = ClientBase.extend({
     // into a new error... this way, it `console.log`'s nicely for debugging, but you can also
     // parse them out with a `JSON.parse(error.message)`. Also, use the original `clientError` from the
     // database client is retained as a property on the `newError`, for any additional info.
-    return chain.then(builder.handleResponse).otherwise(function(error) {
+    return chain.then(builder.handleResponse).caught(function(error) {
       var newError = new Error(error.message + ', sql: ' + sql + ', bindings: ' + bindings);
           newError.sql = sql;
           newError.bindings = bindings;
@@ -86,14 +86,14 @@ var ServerBase = ClientBase.extend({
   // Retrieves a connection from the connection pool,
   // returning a promise.
   getConnection: function(builder) {
-    if (builder && builder.usingConnection) return when(builder.usingConnection);
-    return nodefn.call(this.pool.acquire);
+    if (builder && builder.usingConnection) return Promise.fulfilled(builder.usingConnection);
+    return Promise.promisify(this.pool.acquire, this.pool)();
   },
 
   // Releases a connection from the connection pool,
   // returning a promise.
   releaseConnection: function(conn) {
-    return nodefn.call(this.pool.release, conn);
+    return Promise.promisify(this.pool.release)(conn);
   },
 
   // Begins a transaction statement on the instance,
@@ -101,7 +101,7 @@ var ServerBase = ClientBase.extend({
   startTransaction: function() {
     return this.getConnection()
       .tap(function(connection) {
-        return nodefn.call(connection.query.bind(connection), 'begin;', []);
+        return Promise.promisify(connection.query, connection)('begin;', []);
       });
   },
 
@@ -109,8 +109,8 @@ var ServerBase = ClientBase.extend({
   finishTransaction: function(type, transaction, msg) {
     var client = this;
     var dfd    = transaction.dfd;
-    nodefn.call(transaction.connection.query.bind(transaction.connection), type + ';', []).then(function(resp) {
-      if (type === 'commit') dfd.resolve(msg || resp);
+    Promise.promisify(transaction.connection.query, transaction.connection)(type + ';', []).then(function(resp) {
+      if (type === 'commit') dfd.fulfill(msg || resp);
       if (type === 'rollback') dfd.reject(msg || resp);
     }, function (err) {
       dfd.reject(err);

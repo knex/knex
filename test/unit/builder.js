@@ -1,5 +1,5 @@
 var _       = require('underscore');
-var when    = require('when');
+var Promise = testPromise;
 var Builder = require('../../lib/builder').Builder;
 var Common  = require('../../lib/common').Common;
 var Raw     = require('../../lib/raw').Raw;
@@ -10,7 +10,7 @@ describe('Builder', function () {
   beforeEach(function() {
     builder = new Builder({
       query: function(obj) {
-        return when.resolve(obj);
+        return Promise.fulfilled(obj);
       },
       grammar: require('../../clients/server/mysql/grammar').grammar
     });

@@ -13,7 +13,6 @@ define(function(require, exports, module) {
 
   // Base library dependencies of the app.
   var _    = require('underscore');
-  var when = require('when');
 
   // Require the main constructors necessary for a `Knex` instance,
   // each of which are injected with the current instance, so they maintain

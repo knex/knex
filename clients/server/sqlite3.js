@@ -1,10 +1,6 @@
 // SQLite3
 // -------
 
-// All of the "when.js" promise components needed in this module.
-var when   = require('when');
-var nodefn = require('when/node/function');
-
 // Other dependencies, including the `sqlite3` library,
 // which needs to be added as a dependency to the project
 // using this database.
@@ -17,6 +13,7 @@ var Builder         = require('../../lib/builder').Builder;
 var Transaction     = require('../../lib/transaction').Transaction;
 var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
 var Helpers         = require('../../lib/helpers').Helpers;
+var Promise         = require('../../lib/promise').Promise;
 
 var grammar         = require('./sqlite3/grammar').grammar;
 var schemaGrammar   = require('./sqlite3/schemagrammar').schemaGrammar;
@@ -42,11 +39,11 @@ var SQLite3Client = exports.Client = ServerBase.extend({
     var method = (builder.type === 'insert' ||
       builder.type === 'update' || builder.type === 'delete') ? 'run' : 'all';
     // Call the querystring and then release the client
-    var dfd = when.defer();
+    var dfd = Promise.pending();
     connection[method](sql, bindings, function(err, resp) {
       if (err) return dfd.reject(err);
       // We need the context here, because it has the "this.lastID" or "this.changes"
-      return dfd.resolve([resp, this]);
+      return dfd.fulfill([resp, this]);
     });
     return dfd.promise;
   },
@@ -59,7 +56,7 @@ var SQLite3Client = exports.Client = ServerBase.extend({
 
   ddl: function(connection, sql, bindings, builder) {
     var client = this;
-    return nodefn.call(connection.run.bind(connection), 'begin transaction;').then(function() {
+    return Promise.promisify(connection.run, connection)('begin transaction;').then(function() {
       var transaction  = new Transaction({client: client});
       var containerObj = transaction.getContainerObject(connection);
       return transaction.initiateDeferred(function(trx) {
@@ -69,10 +66,10 @@ var SQLite3Client = exports.Client = ServerBase.extend({
   },
 
   getRawConnection: function() {
-    var dfd = when.defer();
+    var dfd = Promise.pending();
     var db = new sqlite3.Database(this.connectionSettings.filename, function(err) {
       if (err) return dfd.reject(err);
-      dfd.resolve(db);
+      dfd.fulfill(db);
     });
     return dfd.promise;
   },
@@ -87,7 +84,7 @@ var SQLite3Client = exports.Client = ServerBase.extend({
   // resolving with the connection of the current transaction.
   startTransaction: function(connection) {
     return this.getConnection().tap(function(connection) {
-      return nodefn.call(connection.run.bind(connection), 'begin transaction;', []);
+      return Promise.promisify(connection.run, connection)('begin transaction;');
     });
   },
 
@@ -95,26 +92,29 @@ var SQLite3Client = exports.Client = ServerBase.extend({
   finishTransaction: function(type, transaction, msg) {
     var client = this;
     var dfd    = transaction.dfd;
-    nodefn.call(transaction.connection.run.bind(transaction.connection), type + ';', []).then(function(resp) {
-      if (type === 'commit') dfd.resolve(msg || resp);
-      if (type === 'rollback') dfd.reject(msg || resp);
-    }, function (err) {
-      dfd.reject(err);
-    }).ensure(function() {
-      return client.releaseConnection(transaction.connection).tap(function() {
-        transaction.connection = null;
+    return Promise
+      .promisify(transaction.connection.run, transaction.connection)(type + ';')
+      .then(function(resp) {
+        if (type === 'commit') dfd.fulfill(msg || resp);
+        if (type === 'rollback') dfd.reject(msg || resp);
+      }, function (err) {
+        dfd.reject(err);
+      }).ensure(function() {
+        return client.releaseConnection(transaction.connection).tap(function() {
+          transaction.connection = null;
+        });
       });
-    });
   },
 
   // This needs to be refactored... badly.
   alterSchema: function(builder, trx) {
-    var connection = trx.connection;
     var currentCol, command;
+    var connection = trx.connection;
+    var query = Promise.promisify(connection.all, connection);
 
-    return when.all([
-      nodefn.call(connection.all.bind(connection), 'PRAGMA table_info(' + builder.table + ')', []),
-      nodefn.call(connection.all.bind(connection), 'SELECT name, sql FROM sqlite_master WHERE type="table" AND name="' + builder.table + '"', [])
+    return Promise.all([
+      query('PRAGMA table_info(' + builder.table + ')', []),
+      query('SELECT name, sql FROM sqlite_master WHERE type="table" AND name="' + builder.table + '"', [])
     ])
     .tap(function(resp) {
       var pragma = resp[0];
@@ -123,7 +123,7 @@ var SQLite3Client = exports.Client = ServerBase.extend({
       if (!(currentCol = _.findWhere(pragma, {name: command.from}))) {
         throw new Error('The column ' + command.from + ' is not in the current table');
       }
-      return nodefn.call(connection.all.bind(connection), 'ALTER TABLE ' + sql.name + ' RENAME TO __migrate__' + sql.name);
+      return query('ALTER TABLE ' + sql.name + ' RENAME TO __migrate__' + sql.name);
     }).spread(function(pragma, sql) {
       sql = sql[0];
       var currentColumn = '"' + command.from + '" ' + currentCol.type;
@@ -131,19 +131,19 @@ var SQLite3Client = exports.Client = ServerBase.extend({
       if (sql.sql.indexOf(currentColumn) === -1) {
         return trx.reject('Unable to find the column to change');
       }
-      return when.all([
-        nodefn.call(connection.all.bind(connection), sql.sql.replace(currentColumn, newColumn)),
-        nodefn.call(connection.all.bind(connection), 'SELECT * FROM "__migrate__' + sql.name + '"'),
+      return Promise.all([
+        query(sql.sql.replace(currentColumn, newColumn)),
+        query('SELECT * FROM "__migrate__' + sql.name + '"'),
       ]);
     }).spread(function(createTable, selected) {
       var qb = new Builder(builder.knex).transacting(trx);
           qb.table = builder.table;
-      return when.all([
+      return Promise.all([
         qb.insert(_.map(selected, function(row) {
           row[command.to] = row[command.from];
           return _.omit(row, command.from);
         })),
-        nodefn.call(connection.all.bind(connection), 'DROP TABLE "__migrate__' + builder.table + '"')
+        query('DROP TABLE "__migrate__' + builder.table + '"')
       ]);
     }).then(trx.commit, trx.rollback);
   }
