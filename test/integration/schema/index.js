@@ -14,7 +14,11 @@ module.exports = function(knex) {
         knex.schema.dropTableIfExists('accounts'),
         knex.schema.dropTableIfExists('test_default_table'),
         knex.schema.dropTableIfExists('composite_key_test'),
-        knex.schema.dropTableIfExists('charset_collate_test')
+        knex.schema.dropTableIfExists('charset_collate_test'),
+        knex.schema.dropTableIfExists('knex_migrations'),
+        knex.schema.dropTableIfExists('migration_test_1'),
+        knex.schema.dropTableIfExists('migration_test_2'),
+        knex.schema.dropTableIfExists('migration_test_2_1')
       ]);
     });
 

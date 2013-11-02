@@ -1,5 +1,4 @@
 var equal      = require('assert').equal;
-var when       = require('when');
 var path       = require('path');
 var rimraf     = require('rimraf');
 
@@ -31,9 +30,35 @@ module.exports = function(knex) {
       });
     });
 
-    it('should migrate up to the latest migration with knex.migrate.up()');
+    it('should migrate up to the latest migration with knex.migrate.latest()', function() {
+      return knex.migrate.latest({directory: __dirname + '/test'}).then(function() {
+        return knex('knex_migrations').select('*').then(function(data) {
+          expect(data.length).to.equal(2);
+        });
+      });
+    });
 
-    it('should migrate up to the latest migration with knex.migrate.down()');
+    // it('should create a new migration', function() {
+    //   return knex.migrate.generate('test', {directory: __dirname + '/test'}).then(function() {
+
+    //   });
+    // });
+
+    // it('should migrate up to the latest migration with knex.migrate.latest()', function() {
+    //   return knex.migrate.latest({directory: __dirname + '/test'}).then(function() {
+    //     return knex('knex_migrations').select('*').then(function() {
+    //       console.log(arguments);
+    //     });
+    //   });
+    // });
+
+    it('should migrate down from the latest migration group with knex.migrate.down()', function() {
+      return knex.migrate.down({directory: __dirname + '/test'}).then(function() {
+        return knex('knex_migrations').select('*').then(function(data) {
+          expect(data.length).to.equal(0);
+        });
+      });
+    });
 
     after(function() {
       rimraf.sync(path.join(__dirname, './migration'));

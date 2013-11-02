@@ -1,8 +1,8 @@
 
-exports.up = (Knex, When) ->
+exports.up = (knex, promise) ->
   <% if (d.tableName) { %>
   knex.schema.createTable "<%= d.tableName %>", (t) ->
 
 
-exports.down = (Knex, When) ->
+exports.down = (knex, promise) ->
   knex.schema.dropTable "<%= d.tableName %>"

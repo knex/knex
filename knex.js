@@ -98,14 +98,14 @@ define(function(require, exports, module) {
     };
 
     // Attach each of the `Migrate` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
-    // knex.migrate.up().then(...
-    // knex.migrate.to().then(...
+    // knex.migrate.latest().then(...
+    // knex.migrate.to(version).then(...
     // knex.migrate.currentVersion(...
-    _.each(['generate', 'currentVersion', 'listAll', 'up', 'down', 'to'], function(method) {
+    _.each(['generate', 'currentVersion', 'listAll', 'latest', 'down', 'to'], function(method) {
       knex.migrate[method] = function() {
         var Migrate   = require('./lib/migrate');
         var migration = new Migrate(knex);
-        return migration[method].apply(migration, arguments).bind();
+        return migration[method].apply(migration, arguments);
       };
     });
 
