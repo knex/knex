@@ -38,7 +38,7 @@ var SQLite3 = Knex.initialize({
   pool: pool
 });
 
-_.each([MySQL, PostgreSQL, SQLite3], function(knex) {
+_.each([SQLite3], function(knex) {
 
   describe('Dialect: ' + knex.client.dialect, function() {
 

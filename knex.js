@@ -105,7 +105,7 @@ define(function(require, exports, module) {
       knex.migrate[method] = function() {
         var Migrate   = require('./lib/migrate');
         var migration = new Migrate(knex);
-        return migration[method].apply(migration, arguments);
+        return migration[method].apply(migration, arguments).bind();
       };
     });
 

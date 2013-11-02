@@ -93,7 +93,7 @@ module.exports = function(knex) {
 
     describe('table', function() {
 
-      it('allows adding a field', function (done) {
+      it('allows adding a field', function () {
         return knex.schema.table('test_table_two', function(t) {
           t.json('json_data').nullable();
         });
