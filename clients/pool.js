@@ -6,9 +6,7 @@
 
 define(function(require, exports) {
 
-  // All of the "when.js" promise components needed in this module.
-  var when        = require('when');
-  var nodefn      = require('when/node/function');
+  var Promise     = require('../lib/promise').Promise;
 
   var _           = require('underscore');
   var GenericPool = require('generic-pool-redux').Pool;
@@ -43,10 +41,10 @@ define(function(require, exports) {
             .tap(function(connection) {
               connection.__cid = _.uniqueId('__cid');
               if (pool.config.afterCreate) {
-                return nodefn.call(pool.config.afterCreate, connection);
+                return Promise.promisify(pool.config.afterCreate)(connection);
               }
             });
-          return nodefn.bindCallback(promise, callback);
+          return promise.nodeify(callback);
         },
         destroy: function(connection) {
           if (pool.config.beforeDestroy) {

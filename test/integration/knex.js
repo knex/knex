@@ -1,6 +1,6 @@
-var _      = require('underscore');
-var Knex   = require('../../knex');
-var nodefn = require('when/node/function');
+var _       = require('underscore');
+var Knex    = require('../../knex');
+var Promise = testPromise;
 
 var config = require(process.env.KNEX_TEST || './config');
 
@@ -19,7 +19,7 @@ var MySQL = Knex.initialize({
   connection: config.mysql,
   pool: _.extend({}, pool, {
     afterCreate: function(connection, callback) {
-      nodefn.call(connection.query.bind(connection), "SET sql_mode='TRADITIONAL';", []).then(function() {
+      Promise.promisify(connection.query, connection)("SET sql_mode='TRADITIONAL';", []).then(function() {
         callback(null, connection);
       });
     }

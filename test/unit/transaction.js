@@ -1,5 +1,5 @@
-var Transaction  = require('../../lib/transaction').Transaction;
-var when = require('when');
+var Transaction = require('../../lib/transaction').Transaction;
+var Promise     = testPromise;
 
 var conn = {
   conn_obj: true
@@ -9,7 +9,7 @@ var knex = {
   client: {
     name: 'mysql',
     startTransaction: function() {
-      return when(conn);
+      return Promise.fulfilled(conn);
     }
   }
 };
