@@ -13,6 +13,43 @@ module.exports = function(knex) {
         });
     });
 
+    it('should increment a value', function() {
+
+      return knex('accounts').select('logins').where('id', 1).tap(function() {
+
+        return knex('accounts').where('id', 1).increment('logins');
+
+      }).then(function(attrs1) {
+
+        return knex('accounts').select('logins').where('id', 1).then(function(attrs2) {
+
+          expect(attrs1[0].logins).to.equal(attrs2[0].logins - 1);
+
+        });
+
+      });
+
+    });
+
+
+    it('should decrement a value', function() {
+
+      return knex('accounts').select('logins').where('id', 1).tap(function() {
+
+        return knex('accounts').where('id', 1).decrement('logins');
+
+      }).then(function(attrs1) {
+
+        return knex('accounts').select('logins').where('id', 1).then(function(attrs2) {
+
+          expect(attrs1[0].logins).to.equal(attrs2[0].logins + 1);
+
+        });
+
+      });
+
+    });
+
   });
 
 };
