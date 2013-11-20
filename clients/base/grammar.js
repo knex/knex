@@ -199,12 +199,14 @@ define(function(require, exports) {
 
     // Compiles the `having` statements.
     compileHavings: function(qb, havings) {
-      return 'having ' + havings.map(function(having) {
+      if (!havings.length) return;
+      var h = 'having ' + havings.map(function(having) {
         if (having.type === 'Raw') {
           return having.bool + ' ' + having.sql;
         }
         return having.bool + ' ' + this.wrap(having.column) + ' ' + having.operator + ' ' + this.parameter(having['value']);
-      }, this).replace(/and |or /, '');
+      }, this)
+      return h.replace(/and |or /, '');
     },
 
     // Compiles the `order by` statements.
