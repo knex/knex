@@ -57,7 +57,7 @@ define(function(require, exports) {
       for (var i = 0, l = components.length; i < l; i++) {
         var component = components[i];
         var result = _.result(qb, component);
-        if (result != null) {
+        if (!_.isNull(result) && !_.isUndefined(result) && !_.isEmpty(result) ) {
           sql.push(this['compile' + Helpers.capitalize(component)](qb, result));
         }
       }
