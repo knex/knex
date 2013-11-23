@@ -115,7 +115,7 @@ describe('Builder', function () {
 
     it('should call toString correctly on count()', function() {
 
-      var output = "select count(`id`) as aggregate from `users`";
+      var output = "select count(`id`) from `users`";
 
       expect(builder.from('users').count('id').toString()).to.equal(output);
 

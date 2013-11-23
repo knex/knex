@@ -75,7 +75,7 @@ define(function(require, exports) {
       if (qb.flags.distinct && column !== '*') {
         column = 'distinct ' + column;
       }
-      return 'select ' + qb.aggregate.type + '(' + column + ') as aggregate';
+      return 'select ' + qb.aggregate.type + '(' + column + ')';
     },
 
     // Compiles the columns in the query, specifying if an item was distinct.
