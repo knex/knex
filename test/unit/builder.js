@@ -121,6 +121,15 @@ describe('Builder', function () {
 
     });
 
+
+    it('should call toString correctly on count() with output name', function() {
+
+      var output = "select count(`id`) as `count` from `users`";
+
+      expect(builder.from('users').count('id as count').toString()).to.equal(output);
+        
+    });
+
   });
 
   describe('clone', function() {
