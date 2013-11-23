@@ -20,7 +20,7 @@ define(function(require, exports) {
 
   // The list of different components
   var components = [
-    'aggregate', 'columns', 'from',
+    'columns', 'aggregates', 'from',
     'joins', 'wheres', 'groups', 'havings',
     'orders', 'limit', 'offset', 'unions'
   ];
@@ -53,7 +53,7 @@ define(function(require, exports) {
     // the empties, and returning a generated query string.
     compileSelect: function(qb) {
       var sql = [];
-      if (_.isEmpty(qb.columns)) qb.columns = ['*'];
+      if (_.isEmpty(qb.columns) && _.isEmpty(qb.aggregates)) qb.columns = ['*'];
       for (var i = 0, l = components.length; i < l; i++) {
         var component = components[i];
         var result = _.result(qb, component);
@@ -69,19 +69,25 @@ define(function(require, exports) {
       return _.compact(sql).join(' ');
     },
 
-    // Compiles an aggregate query.
-    compileAggregate: function(qb) {
-      var column = this.columnize(qb.aggregate.columns);
-      if (qb.flags.distinct && column !== '*') {
-        column = 'distinct ' + column;
+    // Compiles the columns with aggregate functions.
+    compileAggregates: function(qb) {
+      var sql = [], segments, column;
+      for (var i = 0, l = qb.aggregates.length; i < l; i++) {
+        var aggregate = qb.aggregates[i];
+        if (aggregate.columns.toLowerCase().indexOf(' as ') !== -1) {
+          segments = aggregate.columns.split(' ');
+          column = segments[0];
+        } else {
+          column = aggregate.columns;
+        }
+        sql.push(aggregate.type + '(' + this.wrap(column) + ')' + (segments ? ' as ' + this.wrap(segments[2]) : ''));
       }
-      return 'select ' + qb.aggregate.type + '(' + column + ')';
-    },
+      return sql.join(', ');
+     },
 
     // Compiles the columns in the query, specifying if an item was distinct.
     compileColumns: function(qb, columns) {
-      if (qb.aggregate != null) return;
-      return (qb.flags.distinct ? 'select distinct ' : 'select ') + this.columnize(columns);
+      return (qb.flags.distinct ? 'select distinct' : 'select') + ((_.isArray(columns) && _.isEmpty(columns)) ? '' : ' '+this.columnize(columns));
     },
 
     // Compiles the `from` tableName portion of the query.
