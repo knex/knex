@@ -45,6 +45,35 @@ module.exports = {
       }]
     }
   },
+  'supports multiple aggregate functions': {
+    mysql: {
+      bindings: [],
+      sql: 'select count(`id`), max(`logins`), min(`logins`) from `accounts`',
+      result: [{
+        'count(`id`)': 6,
+        'max(`logins`)': 2,
+        'min(`logins`)': 1
+      }]
+    },
+    postgresql: {
+      bindings: [],
+      sql: 'select count("id"), max("logins"), min("logins") from "accounts"',
+      result: [{
+        'count': '6',
+        'max': 2,
+        'min': 1
+      }]
+    },
+    sqlite3: {
+      bindings: [],
+      sql: 'select count("id"), max("logins"), min("logins") from "accounts"',
+      result: [{
+        'count("id")': 6,
+        'max("logins")': 2,
+        'min("logins")': 1
+      }]
+    }
+  },
   'support the groupBy function': {
     mysql: {
       bindings: [[],[]],
