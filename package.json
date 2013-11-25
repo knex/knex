@@ -33,6 +33,7 @@
     "test": "mocha -R spec test/index.js",
     "doc": "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js clients/**/**/*.js knex.js"
   },
+  "bin": "bin/knex",
   "repository": {
     "type": "git",
     "url": "https://github.com/tgriesser/knex.git"

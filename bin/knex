@@ -1,2 +1,47 @@
 #!/usr/bin/env node
-var argv = require('optimist').argv;
+
+"use strict";
+
+var optimist = require('optimist');
+
+var commands = {};
+require('../lib/cli/migrate.js')(commands);
+
+var usage = [
+  'Usage: $0 <command>[:<subcommand>] [<args>]',
+  '',
+  'Available commands:'
+]
+Array.prototype.push.apply(usage, generateCommandList(commands));
+
+var argv = optimist
+  .usage(usage.join('\n'))
+  .demand(1)
+  .alias('v', 'verbose')
+  .describe('v', 'enable verbose output')
+  .boolean('v')
+  .argv;
+
+var commandName = argv._[0];
+var command = commands[commandName];
+
+if (!command) {
+  optimist.showHelp();
+  console.error('Invalid command: ' + commandName);
+  process.exit(1);
+}
+
+command(argv);
+
+// Auto-generate a pretty-printed list of available commands and their
+// associated help messages
+function generateCommandList(commands) {
+  var lengths = Object.keys(commands).map(function (x) { return x.length });
+  var longest = Math.max.apply(null, lengths);
+
+  return Object.keys(commands).map(function (name) {
+    var command = commands[name];
+    var padding = new Array(longest - name.length + 3).join(' ');
+    return '  ' + name + padding + (command.help || '');
+  });
+}
