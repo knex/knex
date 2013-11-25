@@ -2,7 +2,7 @@
 
 <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
 
-<span class="nx">define</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">require</span><span class="p">,</span> <span class="nx">exports</span><span class="p">)</span> <span class="p">{</span>
+<span class="nx">define</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">require</span><span class="p">,</span> <span class="nx">exports</span><span class="p">,</span> <span class="nx">module</span><span class="p">)</span> <span class="p">{</span>
 
   <span class="kd">var</span> <span class="nx">Sqlite3</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../base/sqlite3&#39;</span><span class="p">);</span>
 
@@ -18,7 +18,7 @@
 
   <span class="p">});</span>
 
-  <span class="nx">exports</span><span class="p">.</span><span class="nx">Cordova</span> <span class="o">=</span> <span class="nx">Cordova</span><span class="p">;</span>
+  <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">Cordova</span><span class="p">;</span>
 
 <span class="p">});</span>
 

@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.4.13)</span>
+      Knex.js <span class="version">(0.5.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -370,7 +370,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.4.13 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.5.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -384,8 +384,8 @@
     </h2>
 
     <p>
-      All dependencies are specified in <tt>package.json</tt> file but include <tt>underscore.js</tt>,
-      <tt>when.js</tt>, and the <tt>generic-pool-redux</tt> library. You then need to install
+      All dependencies are specified in <tt>package.json</tt> file but include <tt>lodash</tt>,
+      <tt>bluebird</tt>, and the <tt>generic-pool-redux</tt> libraries. You then need to install
       either <tt>mysql</tt>, <tt>pg</tt>, or <tt>sqlite3</tt> from <tt>npm</tt> if you wish
       to use one of these databases with node.js, or create your own client
       adapter and specify it in <a href="#Initialize">knex.initialize</a>.
@@ -400,7 +400,13 @@ $ npm install pg
 $ npm install sqlite3
 </pre>
 
-    <h2 id="Upgrading">Upgrading from 0.2.x</h2>
+    <h2 id="Upgrading">Upgrading from 0.4.x</h2>
+
+    <p>
+      Minor changes from the 0.4.x series, include the fact that aggregate functions are
+      no longer aliased as "aggregate", but rather left as-is, unless explicitly aliased.
+      See <a href="https://github.com/tgriesser/knex/pull/110">this ticket</a> for more info.
+    </p>
 
     <p>
       If you are upgrading Knex from 0.2.x to 0.4.x, you'll notice that some things have broken.
@@ -832,6 +838,8 @@ knex('accounts')
     </p>
 
 <pre>
+var Promise = require('bluebird');
+
 knex.transaction(function(t) {
 
   knex('books')
@@ -839,7 +847,7 @@ knex.transaction(function(t) {
     .insert({name: 'Old Books'})
     .then(function(row) {
 
-      return when.all(_.map([
+      return Promise.all(_.map([
         {title: 'Canterbury Tales'},
         {title: 'Moby Dick'},
         {title: 'Hamlet'}
@@ -998,6 +1006,8 @@ promise.tap(doSideEffectsHere);
     </p>
 
 <pre>
+var Promise = require('bluebird');
+
 knex.transaction(function(t) {
 
   knex('books')
@@ -1005,7 +1015,7 @@ knex.transaction(function(t) {
     .insert({name: 'Old Books'})
     .then(function(row) {
 
-      return when.all(_.map([
+      return Promise.all(_.map([
         {title: 'Canterbury Tales'},
         {title: 'Moby Dick'},
         {title: 'Hamlet'}
@@ -1393,7 +1403,7 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     <p id="Migrate-latest">
       <b class="header">latest</b><code>knex.migrate.latest([config])</code>
       <br />
-      Migrates to the <b>latest</b> migration.
+      Runs all migrations that have not yet been run.
     </p>
 
     <p id="Migrate-rollback">
@@ -1405,7 +1415,7 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     <p id="Migrate-currentVersion">
       <b class="header">currentVersion</b><code>knex.migrate.currentVersion()</code>
       <br />
-      Retrieves and returns the current migration version we're on, as a promise.
+      Retrieves and returns the current migration version, as a promise.
       If there aren't any migrations run yet, returns "none" as the value for the currentVersion.
     </p>
 
@@ -1422,20 +1432,19 @@ knex.raw('select * from users where id = 1').then(function(resp) {
 
     <p id="faq-debug">
       <b class="header">How do I debug?</b><br />
-      If you pass <tt>{debug: true}</tt> as one of the options in your initialize settings, you can see
-      all of the query calls being made. Sometimes you need to dive a bit further into
+      If you pass <tt>{debug: true}</tt> as one of the options in your initialize settings, you can see all of the query calls being made. Sometimes you need to dive a bit further into
       the various calls and see what all is going on behind the scenes. I'd recommend
-      <a href="https://github.com/dannycoates/node-inspector">node-inspector</a>, which allows you to debug
-      code with <tt>debugger</tt> statements like you would in the browser.
+      <a href="https://github.com/dannycoates/node-inspector">node-inspector</a>, which allows you to debug code with <tt>debugger</tt> statements like you would in the browser.
+    </p>
+    <p>
+      As knex uses it's own copy of the "bluebird" promise library, you can read up <a href="https://github.com/petkaantonov/bluebird#error-handling">here</a> for more on debugging these promises.
     </p>
 
     <p id="faq-tests">
       <b class="header">How do I run the test suite?</b><br />
       The test suite looks for an environment variable called <tt>KNEX_TEST</tt> for the path to the database
       configuration. If you run the following command:
-      <tt>$ export KNEX_TEST='/path/to/your/knex_config.js'</tt>, replacing with the path to your config file,
-      and the config file is valid, the test suite should run with <tt>npm test</tt>. If you're going to
-      add a test, you may want to follow similar patterns, used in the test suite,
+      <tt>$ export KNEX_TEST='/path/to/your/knex_config.js'</tt>, replacing with the path to your config file, and the config file is valid, the test suite should run with <tt>npm test</tt>. If you're going to add a test, you may want to follow similar patterns, used in the test suite,
       setting <tt>$ export KNEX_DEV=1</tt> to save the outputs data from the tests into the <tt>shared/output.js</tt> file.
     </p>
 
@@ -1447,6 +1456,20 @@ knex.raw('select * from users where id = 1').then(function(resp) {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.5.0</b> &mdash; <small><i>Nov 25, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.13...0.5.0">Diff</a><br />
+      <ul>
+        <li>Initial pass at a <a href="#Migrate">migration</a> api.</li>
+        <li>Aggregate methods are no longer aliased as "aggregate",
+          but may now be aliased and have more than one aggregate in a query (#108, #110).</li>
+        <li>Bugfix on increment/decrement values (#100).</li>
+        <li>Bugfix with having method (#107).</li>
+        <li>Switched from when.js to <a href="https://github.com/petkaantonov/bluebird">bluebird</a> for promise implementation, with shim for backward compatibility.</li>
+        <li>Switched from underscore to lodash, for semver reliability.</li>
+      </ul>
+      Fix for group methods on <tt>toString</tt> and <tt>clone</tt>, (#98).
+    </p>
 
     <p>
       <b class="header">0.4.13</b> &mdash; <small><i>Oct 31, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.12...0.4.13">Diff</a><br />

@@ -7,7 +7,7 @@ and metadata in our database schema. These functions
 are combined with dialect specific "SchemaGrammar"
 functions to keep the interface database agnostic.</p></div></div><div class="code"><div class="wrapper"><span class="nx">define</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">require</span><span class="p">,</span> <span class="nx">exports</span><span class="p">)</span> <span class="p">{</span>
 
-  <span class="kd">var</span> <span class="nx">_</span>             <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;underscore&#39;</span><span class="p">);</span>
+  <span class="kd">var</span> <span class="nx">_</span>             <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lodash&#39;</span><span class="p">);</span>
 
   <span class="kd">var</span> <span class="nx">baseGrammar</span>   <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./grammar&#39;</span><span class="p">).</span><span class="nx">baseGrammar</span><span class="p">;</span>
   <span class="kd">var</span> <span class="nx">SchemaBuilder</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../../lib/schemabuilder&#39;</span><span class="p">).</span><span class="nx">SchemaBuilder</span><span class="p">;</span>

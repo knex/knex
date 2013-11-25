@@ -545,8 +545,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 2,
-            "title": "Knex.js  0.4.13",
-            "slug": "knexjs-0413"
+            "title": "Knex.js  0.5.0",
+            "slug": "knexjs-050"
           },
           "depth": 2
         }
@@ -596,6 +596,32 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             }
           ]
         }, {
+          "type": "folder",
+          "data": {
+            "path": "lib/cli",
+            "title": "cli"
+          },
+          "depth": 2,
+          "children": [
+            {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "singleLineComment": ["//"],
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/cli/migrate.js",
+                "projectPath": "lib/cli/migrate.js",
+                "targetPath": "lib/cli/migrate",
+                "title": "migrate"
+              },
+              "depth": 3,
+              "outline": []
+            }
+          ]
+        }, {
           "type": "file",
           "data": {
             "language": {
@@ -617,32 +643,6 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 2,
                 "title": "Common",
                 "slug": "common"
-              },
-              "depth": 2
-            }
-          ]
-        }, {
-          "type": "file",
-          "data": {
-            "language": {
-              "nameMatchers": [".js"],
-              "pygmentsLexer": "javascript",
-              "singleLineComment": ["//"],
-              "name": "JavaScript"
-            },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/error.js",
-            "projectPath": "lib/error.js",
-            "targetPath": "lib/error",
-            "title": "error"
-          },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "Error",
-                "slug": "error"
               },
               "depth": 2
             }
@@ -693,12 +693,28 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "Migrate (WIP)",
-                "slug": "migrate-wip"
+                "title": "Migrate",
+                "slug": "migrate"
               },
               "depth": 2
             }
           ]
+        }, {
+          "type": "file",
+          "data": {
+            "language": {
+              "nameMatchers": [".js"],
+              "pygmentsLexer": "javascript",
+              "singleLineComment": ["//"],
+              "name": "JavaScript"
+            },
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/promise.js",
+            "projectPath": "lib/promise.js",
+            "targetPath": "lib/promise",
+            "title": "promise"
+          },
+          "depth": 2,
+          "outline": []
         }, {
           "type": "file",
           "data": {

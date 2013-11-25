@@ -1,4 +1,4 @@
-// Knex.js  0.4.13
+// Knex.js  0.5.0
 // --------------
 
 //     (c) 2013 Tim Griesser
@@ -12,7 +12,7 @@
 define(function(require, exports, module) {
 
   // Base library dependencies of the app.
-  var _    = require('lodash');
+  var _           = require('lodash');
 
   // Require the main constructors necessary for a `Knex` instance,
   // each of which are injected with the current instance, so they maintain
@@ -89,7 +89,7 @@ define(function(require, exports, module) {
     knex.client = client;
 
     // Keep in sync with package.json
-    knex.VERSION = '0.4.13';
+    knex.VERSION = '0.5.0';
 
     // Runs a new transaction, taking a container and returning a promise
     // for when the transaction is resolved.
