@@ -18,12 +18,6 @@ module.exports = function(knex) {
       });
     });
 
-    it('should list all available migrations with the listAll method', function() {
-      return knex.migrate.listAll(migrationConfig).then(function(versions) {
-        equal(versions.length, 1);
-      });
-    });
-
     it('should list the current migration state with the currentVersion method', function() {
       return knex.migrate.currentVersion(migrationConfig).then(function(version) {
         equal(version, 'none');
@@ -37,21 +31,6 @@ module.exports = function(knex) {
         });
       });
     });
-
-    // it('should create a new migration', function() {
-    //   return knex.migrate.make('test', {directory: __dirname + '/test'}).then(function() {
-
-    //   });
-    // });
-
-    // it('should migrate up to the latest migration with knex.migrate.latest()', function() {
-    //   return knex.migrate.latest({directory: __dirname + '/test'}).then(function() {
-    //     return knex('knex_migrations').select('*').then(function() {
-    //       console.log(arguments);
-    //     });
-    //   });
-    // });
-
     it('should revert the latest migration group with knex.migrate.rollback()', function() {
       return knex.migrate.rollback({directory: __dirname + '/test'}).then(function() {
         return knex('knex_migrations').select('*').then(function(data) {
