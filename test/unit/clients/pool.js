@@ -1,4 +1,4 @@
-var _           = require('underscore');
+var _           = require('lodash');
 var Promise     = testPromise;
 var Pool        = require('../../../clients/pool').Pool;
 var GenericPool = require('generic-pool-redux').Pool;

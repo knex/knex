@@ -1,7 +1,7 @@
 // ServerBase
 // -------
 
-var _          = require('underscore');
+var _          = require('lodash');
 
 var Pool       = require('../pool').Pool;
 var ClientBase = require('../base').ClientBase;

@@ -11,7 +11,7 @@
 // to keep the interface database agnostic.
 define(function(require, exports) {
 
-  var _       = require('underscore');
+  var _       = require('lodash');
 
   var Raw     = require('../../lib/raw').Raw;
   var Helpers = require('../../lib/helpers').Helpers;

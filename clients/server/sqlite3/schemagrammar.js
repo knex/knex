@@ -1,6 +1,6 @@
 // SQLite3 SchemaGrammar
 // -------
-var _                 = require('underscore');
+var _                 = require('lodash');
 var baseSchemaGrammar = require('../../base/sqlite3/schemagrammar').schemaGrammar;
 
 exports.schemaGrammar = _.defaults({

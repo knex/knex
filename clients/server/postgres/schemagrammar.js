@@ -1,6 +1,6 @@
 // PostgreSQL SchemaGrammar
 // -------
-var _                 = require('underscore');
+var _                 = require('lodash');
 var grammar           = require('./grammar').grammar;
 var baseSchemaGrammar = require('../../base/schemagrammar').baseSchemaGrammar;
 

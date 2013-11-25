@@ -12,7 +12,7 @@
 // functions to keep the interface database agnostic.
 define(function(require, exports) {
 
-  var _             = require('underscore');
+  var _             = require('lodash');
 
   var baseGrammar   = require('./grammar').baseGrammar;
   var SchemaBuilder = require('../../lib/schemabuilder').SchemaBuilder;

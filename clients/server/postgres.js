@@ -4,7 +4,7 @@
 // Other dependencies, including the `pg` library,
 // which needs to be added as a dependency to the project
 // using this database.
-var _    = require('underscore');
+var _    = require('lodash');
 var pg   = require('pg');
 
 // All other local project modules needed in this scope.

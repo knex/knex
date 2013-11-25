@@ -1,6 +1,6 @@
 // SQLite3 Grammar
 // -------
-var _           = require('underscore');
+var _           = require('lodash');
 var Helpers     = require('../../../lib/helpers').Helpers;
 var baseGrammar = require('../../base/sqlite3/grammar').grammar;
 

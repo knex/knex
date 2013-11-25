@@ -9,7 +9,7 @@
 // layer to the prototype chain.
 define(function(require, exports) {
 
-  var _           = require('underscore');
+  var _           = require('lodash');
   var Helpers     = require('../../../lib/helpers').Helpers;
   var baseGrammar = require('../grammar').baseGrammar;
 

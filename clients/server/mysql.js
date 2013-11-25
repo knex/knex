@@ -4,7 +4,7 @@
 // Other dependencies, including the `mysql` library,
 // which needs to be added as a dependency to the project
 // using this database.
-var _     = require('underscore');
+var _     = require('lodash');
 var mysql = require('mysql');
 
 // All other local project modules needed in this scope.

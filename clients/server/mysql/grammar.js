@@ -1,6 +1,6 @@
 // MySQL Grammar
 // -------
-var _           = require('underscore');
+var _           = require('lodash');
 var Helpers     = require('../../../lib/helpers').Helpers;
 var baseGrammar = require('../../base/grammar').baseGrammar;
 

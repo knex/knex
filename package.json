@@ -23,12 +23,12 @@
     "sinon-chai": "~2.4.0"
   },
   "dependencies": {
-    "underscore": "~1.5.1",
     "generic-pool-redux": "~0.1.0",
     "optimist": "~0.6.0",
     "mkdirp": "~0.3.5",
     "bluebird": "~0.10.5-0",
-    "colors": "~0.6.2"
+    "colors": "~0.6.2",
+    "lodash": "~2.3.0"
   },
   "scripts": {
     "test": "mocha -R spec test/index.js",

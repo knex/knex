@@ -8,7 +8,7 @@ define(function(require, exports) {
 
   var Promise     = require('../lib/promise').Promise;
 
-  var _           = require('underscore');
+  var _           = require('lodash');
   var GenericPool = require('generic-pool-redux').Pool;
 
   var Helpers     = require('../lib/helpers').Helpers;

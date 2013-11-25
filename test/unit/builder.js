@@ -1,4 +1,4 @@
-var _       = require('underscore');
+var _       = require('lodash');
 var Promise = testPromise;
 var Builder = require('../../lib/builder').Builder;
 var Common  = require('../../lib/common').Common;
@@ -127,7 +127,7 @@ describe('Builder', function () {
       var output = "select count(`id`) as `count` from `users`";
 
       expect(builder.from('users').count('id as count').toString()).to.equal(output);
-        
+
     });
 
   });
@@ -347,7 +347,7 @@ describe('Builder', function () {
   });
 
   describe('having', function() {
-    
+
     it('should add a having clause to the query', function() {
       builder.having('columnName', '=', 3);
       expect(builder.havings).to.have.length(1);
@@ -355,14 +355,14 @@ describe('Builder', function () {
 	  expect(builder.bindings[0]).to.equal(3);
       expect(builder.toString()).to.equal("select * having `columnName` = 3");
     });
-    
+
     it('should allow a raw instance as the first argument, which will add a havingRaw clause', function() {
 	  builder.having(new Raw({}).query('id > ?', 2));
 	  expect(builder.havings).to.have.length(1);
 	  expect(builder.bindings).to.have.length(1);
 	  expect(builder.bindings[0]).to.equal(2);
     });
-    
+
   });
 
   describe('offset / limit', function() {
