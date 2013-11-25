@@ -1146,8 +1146,7 @@ knex.schema.table('users', function (table) {
     <p id="Schema-increments">
       <b class="header">increments</b><code>table.increments(name)</code>
       <br />
-      Adds an auto incrementing column, . This will be used as the primary key for the column.
-      Also available is a <tt>bigIncrements</tt> if you
+      Adds an auto incrementing column, in PostgreSQL this is a <tt>serial</tt>. This will be used as the primary key for the column. Also available is a <tt>bigIncrements</tt> if you wish to add a bigint incrementing number (in PostgreSQL <tt>bigserial</tt>).
     </p>
 
     <p id="Schema-integer">
@@ -1156,10 +1155,11 @@ knex.schema.table('users', function (table) {
       Adds an integer column.
     </p>
 
-    <p id="Schema-integer">
+    <p id="Schema-bigInteger">
       <b class="header">integer</b><code>table.integer(name)</code>
       <br />
-      In MySQL, adds a <tt>bigint</tt> column, otherwise adds a normal integer.
+      In MySQL or PostgreSQL, adds a <tt>bigint</tt> column,
+      otherwise adds a normal integer.
     </p>
 
     <p id="Schema-text">
@@ -1473,6 +1473,7 @@ process.stderr.on('data', function() {
         <li>Initial pass at a <a href="#Migrate">migration</a> api.</li>
         <li>Aggregate methods are no longer aliased as "aggregate",
           but may now be aliased and have more than one aggregate in a query (#108, #110).</li>
+        <li>Adding bigint and bigserial to PostgreSQL (#111).</li>
         <li>Bugfix on increment/decrement values (#100).</li>
         <li>Bugfix with having method (#107).</li>
         <li>Switched from when.js to <a href="https://github.com/petkaantonov/bluebird">bluebird</a> for promise implementation, with shim for backward compatibility.</li>
