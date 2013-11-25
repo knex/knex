@@ -89,7 +89,7 @@ define(function(require, exports, module) {
     knex.client = client;
 
     // Keep in sync with package.json
-    knex.VERSION = '0.4.11';
+    knex.VERSION = '0.4.13';
 
     // Runs a new transaction, taking a container and returning a promise
     // for when the transaction is resolved.
@@ -99,9 +99,8 @@ define(function(require, exports, module) {
 
     // Attach each of the `Migrate` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
     // knex.migrate.latest().then(...
-    // knex.migrate.to(version).then(...
     // knex.migrate.currentVersion(...
-    _.each(['generate', 'currentVersion', 'listAll', 'latest', 'down', 'to'], function(method) {
+    _.each(['make', 'latest', 'rollback', 'currentVersion', 'listAll'], function(method) {
       knex.migrate[method] = function() {
         var Migrate   = require('./lib/migrate');
         var migration = new Migrate(knex);

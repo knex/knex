@@ -2,3 +2,7 @@ raw
 *.sw?
 .DS_Store
 node_modules
+
+# Testing for the knex cli:
+bin/migrations-folder
+bin/db.sqlite3

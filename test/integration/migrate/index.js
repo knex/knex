@@ -13,7 +13,7 @@ module.exports = function(knex) {
   describe('knex.migrate', function () {
 
     it('should create a new migration file with the create method', function() {
-      return knex.migrate.generate('test', migrationConfig).then(function(name) {
+      return knex.migrate.make('test', migrationConfig).then(function(name) {
         expect(name.split('_')[0]).to.have.length(14);
       });
     });
@@ -39,7 +39,7 @@ module.exports = function(knex) {
     });
 
     // it('should create a new migration', function() {
-    //   return knex.migrate.generate('test', {directory: __dirname + '/test'}).then(function() {
+    //   return knex.migrate.make('test', {directory: __dirname + '/test'}).then(function() {
 
     //   });
     // });
@@ -52,8 +52,8 @@ module.exports = function(knex) {
     //   });
     // });
 
-    it('should migrate down from the latest migration group with knex.migrate.down()', function() {
-      return knex.migrate.down({directory: __dirname + '/test'}).then(function() {
+    it('should revert the latest migration group with knex.migrate.rollback()', function() {
+      return knex.migrate.rollback({directory: __dirname + '/test'}).then(function() {
         return knex('knex_migrations').select('*').then(function(data) {
           expect(data.length).to.equal(0);
         });
