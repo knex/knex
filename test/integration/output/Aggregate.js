@@ -2,81 +2,110 @@ module.exports = {
   'has a sum': {
     mysql: {
       bindings: [],
-      sql: 'select sum(`logins`) as aggregate from `accounts`',
+      sql: 'select sum(`logins`) from `accounts`',
       result: [{
-        aggregate: 10
+        'sum(`logins`)': 10
       }]
     },
     postgresql: {
       bindings: [],
-      sql: 'select sum("logins") as aggregate from "accounts"',
+      sql: 'select sum("logins") from "accounts"',
       result: [{
-        aggregate: '10'
+        'sum': '10'
       }]
     },
     sqlite3: {
       bindings: [],
-      sql: 'select sum("logins") as aggregate from "accounts"',
+      sql: 'select sum("logins") from "accounts"',
       result: [{
-        aggregate: 10
+        'sum("logins")': 10
       }]
     }
   },
   'has a count': {
     mysql: {
       bindings: [],
-      sql: 'select count(`id`) as aggregate from `accounts`',
+      sql: 'select count(`id`) from `accounts`',
       result: [{
-        aggregate: 6
+        'count(`id`)': 6
       }]
     },
     postgresql: {
       bindings: [],
-      sql: 'select count("id") as aggregate from "accounts"',
+      sql: 'select count("id") from "accounts"',
       result: [{
-        aggregate: '6'
+        'count': '6'
       }]
     },
     sqlite3: {
       bindings: [],
-      sql: 'select count("id") as aggregate from "accounts"',
+      sql: 'select count("id") from "accounts"',
       result: [{
-        aggregate: 6
+        'count("id")': 6
+      }]
+    }
+  },
+  'supports multiple aggregate functions': {
+    mysql: {
+      bindings: [],
+      sql: 'select count(`id`), max(`logins`), min(`logins`) from `accounts`',
+      result: [{
+        'count(`id`)': 6,
+        'max(`logins`)': 2,
+        'min(`logins`)': 1
+      }]
+    },
+    postgresql: {
+      bindings: [],
+      sql: 'select count("id"), max("logins"), min("logins") from "accounts"',
+      result: [{
+        'count': '6',
+        'max': 2,
+        'min': 1
+      }]
+    },
+    sqlite3: {
+      bindings: [],
+      sql: 'select count("id"), max("logins"), min("logins") from "accounts"',
+      result: [{
+        'count("id")': 6,
+        'max("logins")': 2,
+        'min("logins")': 1
       }]
     }
   },
   'support the groupBy function': {
     mysql: {
       bindings: [[],[]],
-      sql: ['select count(`id`) as aggregate from `accounts` group by `logins`','select count(`id`) as aggregate from `accounts` group by `first_name`'],
+      sql: ['select count(`id`) from `accounts` group by `logins`','select count(`id`) from `accounts` group by `first_name`'],
       result: [[{
-        aggregate: 2
+        'count(`id`)': 2
       },{
-        aggregate: 4
+        'count(`id`)': 4
       }],[{
-        aggregate: 6
+        'count(`id`)': 6
       }]]
     },
     postgresql: {
       bindings: [[],[]],
-      sql: ['select count("id") as aggregate from "accounts" group by "logins"','select count("id") as aggregate from "accounts" group by "first_name"'],
+      sql: ['select count("id") from "accounts" group by "logins"','select count("id") from "accounts" group by "first_name"'],
       result: [[{
-        aggregate: '2'
+        'count': '2'
       },{
-        aggregate: '4'
+        'count': '4'
       }],[{
-        aggregate: '6'
+        'count': '6'
       }]]
     },
     sqlite3: {
       bindings: [[],[]],
-      sql: ['select count("id") as aggregate from "accounts" group by "logins"','select count("id") as aggregate from "accounts" group by "first_name"'],
+      sql: ['select count("id") from "accounts" group by "logins"','select count("id") from "accounts" group by "first_name"'],
       result: [[{
-        aggregate: 2
+        'count("id")': 2
       },{
-        aggregate: 4
+        'count("id")': 4
       }],[{
-        aggregate: 6
+        'count("id")': 6
       }]]
     }
   }

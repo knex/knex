@@ -14,6 +14,12 @@ module.exports = function(knex) {
 
     });
 
+    it('supports multiple aggregate functions', function() {
+
+      return knex('accounts').logMe().count('id').max('logins').min('logins');
+
+    });
+
     it("support the groupBy function", function() {
 
       return knex('accounts').logMe().count('id').groupBy('logins').then(function() {
