@@ -113,6 +113,11 @@ exports.schemaGrammar = _.defaults({
     return column.autoIncrement ? 'serial' : 'integer';
   },
 
+  // Create the column definition for a bigint type.
+  typeBigInteger: function(column) {
+    return column.autoIncrement ? 'bigserial' : 'bigint';
+  },
+
   // Create the column definition for a tiny integer type.
   typeTinyInteger: function() {
     return 'smallint';
