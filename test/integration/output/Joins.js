@@ -42,7 +42,7 @@ module.exports = {
       bindings: [],
       sql: 'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"',
       result: [{
-        id: 1,
+        id: '1',
         first_name: 'Test',
         last_name: 'User',
         email: 'test@example.com',
@@ -53,7 +53,7 @@ module.exports = {
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
-        id: 2,
+        id: '2',
         first_name: 'Test',
         last_name: 'User',
         email: 'test2@example.com',
@@ -64,7 +64,7 @@ module.exports = {
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
-        id: 3,
+        id: '3',
         first_name: 'Test',
         last_name: 'User',
         email: 'test3@example.com',
@@ -86,8 +86,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284039,
-        updated_at: 1379110284039,
+        created_at: 1385400239318,
+        updated_at: 1385400239318,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
@@ -97,8 +97,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284041,
-        updated_at: 1379110284041,
+        created_at: 1385400239319,
+        updated_at: 1385400239319,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
@@ -108,8 +108,8 @@ module.exports = {
         email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284041,
-        updated_at: 1379110284041,
+        created_at: 1385400239319,
+        updated_at: 1385400239319,
         phone: null,
         details: ''
       }]
@@ -191,7 +191,7 @@ module.exports = {
       bindings: [],
       sql: 'select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"',
       result: [{
-        id: 1,
+        id: '1',
         first_name: 'Test',
         last_name: 'User',
         email: 'test@example.com',
@@ -202,7 +202,7 @@ module.exports = {
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
-        id: 2,
+        id: '2',
         first_name: 'Test',
         last_name: 'User',
         email: 'test2@example.com',
@@ -213,7 +213,7 @@ module.exports = {
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
-        id: 3,
+        id: '3',
         first_name: 'Test',
         last_name: 'User',
         email: 'test3@example.com',
@@ -224,7 +224,7 @@ module.exports = {
         phone: null,
         details: ''
       },{
-        id: 5,
+        id: '5',
         first_name: 'Test',
         last_name: 'User',
         email: 'test5@example.com',
@@ -235,7 +235,7 @@ module.exports = {
         phone: null,
         details: null
       },{
-        id: 4,
+        id: '4',
         first_name: 'Test',
         last_name: 'User',
         email: 'test4@example.com',
@@ -246,7 +246,7 @@ module.exports = {
         phone: null,
         details: null
       },{
-        id: 7,
+        id: '7',
         first_name: 'Test',
         last_name: 'User',
         email: 'test6@example.com',
@@ -268,8 +268,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284039,
-        updated_at: 1379110284039,
+        created_at: 1385400239318,
+        updated_at: 1385400239318,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
@@ -279,8 +279,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284041,
-        updated_at: 1379110284041,
+        created_at: 1385400239319,
+        updated_at: 1385400239319,
         phone: null,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
       },{
@@ -290,8 +290,8 @@ module.exports = {
         email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284041,
-        updated_at: 1379110284041,
+        created_at: 1385400239319,
+        updated_at: 1385400239319,
         phone: null,
         details: ''
       },{
@@ -301,8 +301,8 @@ module.exports = {
         email: 'test4@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284044,
-        updated_at: 1379110284044,
+        created_at: 1385400239321,
+        updated_at: 1385400239321,
         phone: null,
         details: null
       },{
@@ -312,8 +312,8 @@ module.exports = {
         email: 'test5@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284044,
-        updated_at: 1379110284044,
+        created_at: 1385400239321,
+        updated_at: 1385400239321,
         phone: null,
         details: null
       },{
@@ -323,8 +323,8 @@ module.exports = {
         email: 'test6@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284046,
-        updated_at: 1379110284046,
+        created_at: 1385400239326,
+        updated_at: 1385400239326,
         phone: null,
         details: null
       }]
@@ -519,8 +519,8 @@ module.exports = {
         email: 'test@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284039,
-        updated_at: 1379110284039,
+        created_at: 1385400239318,
+        updated_at: 1385400239318,
         phone: null,
         account_id: 1,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -533,8 +533,8 @@ module.exports = {
         email: 'test2@example.com',
         logins: 1,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284041,
-        updated_at: 1379110284041,
+        created_at: 1385400239319,
+        updated_at: 1385400239319,
         phone: null,
         account_id: 2,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -547,8 +547,8 @@ module.exports = {
         email: 'test3@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284041,
-        updated_at: 1379110284041,
+        created_at: 1385400239319,
+        updated_at: 1385400239319,
         phone: null,
         account_id: 3,
         details: '',
@@ -561,8 +561,8 @@ module.exports = {
         email: 'test4@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284044,
-        updated_at: 1379110284044,
+        created_at: 1385400239321,
+        updated_at: 1385400239321,
         phone: null,
         account_id: null,
         details: null,
@@ -575,8 +575,8 @@ module.exports = {
         email: 'test5@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284044,
-        updated_at: 1379110284044,
+        created_at: 1385400239321,
+        updated_at: 1385400239321,
         phone: null,
         account_id: null,
         details: null,
@@ -589,8 +589,8 @@ module.exports = {
         email: 'test6@example.com',
         logins: 2,
         about: 'Lorem ipsum Dolore labore incididunt enim.',
-        created_at: 1379110284046,
-        updated_at: 1379110284046,
+        created_at: 1385400239326,
+        updated_at: 1385400239326,
         phone: null,
         account_id: null,
         details: null,

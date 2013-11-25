@@ -85,9 +85,9 @@ module.exports = function(knex) {
 
     });
 
-    it('will fail when multple inserts are made into a unique column', function(ok) {
+    it('will fail when multple inserts are made into a unique column', function() {
 
-      knex('accounts')
+      return knex('accounts')
         .logMe()
         .where('id', '>', 1)
         .orWhere('x', 2)
@@ -99,9 +99,9 @@ module.exports = function(knex) {
           logins: 2,
           created_at: new Date(),
           updated_at: new Date()
-        }, 'id').then(ok, function() {
-          ok();
-        });
+        }, 'id').then(function() {
+          throw new Error('There should be a fail when multi-insert are made in unique col.');
+        }, function() {});
 
     });
 
@@ -123,36 +123,36 @@ module.exports = function(knex) {
 
     });
 
-    it('should not allow inserting invalid values into enum fields', function(ok) {
+    it('should not allow inserting invalid values into enum fields', function() {
 
-      knex('datatype_test')
+      return knex('datatype_test')
         .logMe()
         .insert({'enum_value': 'd'})
         .then(function() {
           // No errors happen in sqlite3, which doesn't have native support
           // for the enum type.
-          if (knex.client.dialect === 'sqlite3') ok();
-        }, function() {
-          if (knex.client.dialect !== 'sqlite3') ok();
-        });
+          if (knex.client.dialect !== 'sqlite3') {
+            throw new Error('There should be an error for invalid enum inserts');
+          }
+        }, function() {});
 
     });
 
-    it('should not allow invalid uuids in postgresql', function(ok) {
+    it('should not allow invalid uuids in postgresql', function() {
 
-      knex('datatype_test')
+      return knex('datatype_test')
         .insert({
           enum_value: 'c',
-          uuid: uuid.v4()})
-        .then(function() {
+          uuid: uuid.v4()
+        }).then(function() {
           return knex('datatype_test').insert({enum_value: 'c', uuid: 'test'});
         }).then(function() {
           // No errors happen in sqlite3 or mysql, which dont have native support
           // for the uuid type.
-          if (knex.client.dialect !== 'postgresql') ok();
-        }, function() {
-          if (knex.client.dialect === 'postgresql') ok();
-        });
+          if (knex.client.dialect === 'postgresql') {
+            throw new Error('There should be an error in postgresql for uuids');
+          }
+        }, function() {});
 
     });
 
@@ -177,9 +177,7 @@ module.exports = function(knex) {
         qb.tinyint('tinyint').defaultTo(0);
         qb.text('text').nullable();
       }).then(function() {
-
         return knex('test_default_table').logMe().insert({}, 'id');
-
       });
 
     });
