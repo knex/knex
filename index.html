@@ -1436,8 +1436,18 @@ knex.raw('select * from users where id = 1').then(function(resp) {
       the various calls and see what all is going on behind the scenes. I'd recommend
       <a href="https://github.com/dannycoates/node-inspector">node-inspector</a>, which allows you to debug code with <tt>debugger</tt> statements like you would in the browser.
     </p>
+
     <p>
-      As knex uses it's own copy of the "bluebird" promise library, you can read up <a href="https://github.com/petkaantonov/bluebird#error-handling">here</a> for more on debugging these promises.
+      Knex uses it's own copy of the "bluebird" promise library, you can read up <a href="https://github.com/petkaantonov/bluebird#error-handling">here</a> for more on debugging these promises... but in short, adding:
+    </p>
+
+<pre>
+process.stderr.on('data', function() {
+  console.log(arguments);
+});
+</pre>
+
+    <p>At the start of your application code will catch any errors not otherwise caught in the normal promise chain handlers, which is very helpful in debugging.
     </p>
 
     <p id="faq-tests">

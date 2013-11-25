@@ -20,6 +20,7 @@ define(function(require, exports, module) {
   var Raw         = require('./lib/raw').Raw;
   var Transaction = require('./lib/transaction').Transaction;
   var Builder     = require('./lib/builder').Builder;
+  var Promise     = require('./lib/promise').Promise;
 
   var ClientBase       = require('./clients/base').ClientBase;
   var SchemaBuilder    = require('./lib/schemabuilder').SchemaBuilder;
@@ -75,7 +76,10 @@ define(function(require, exports, module) {
     _.each(SchemaInterface, function(val, key) {
       knex.schema[key] = function() {
         var schemaBuilder = new SchemaBuilder(knex);
-        schemaBuilder.table = _.first(arguments);
+        var table = schemaBuilder.table = _.first(arguments);
+        if (!table) {
+          return Promise.reject(new Error('The table must be defined for the ' + key + ' method.'));
+        }
         return SchemaInterface[key].apply(schemaBuilder, _.rest(arguments));
       };
     });
