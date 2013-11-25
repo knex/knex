@@ -100,7 +100,7 @@ define(function(require, exports, module) {
     // Attach each of the `Migrate` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
     // knex.migrate.latest().then(...
     // knex.migrate.currentVersion(...
-    _.each(['make', 'latest', 'rollback', 'currentVersion', 'listAll'], function(method) {
+    _.each(['make', 'latest', 'rollback', 'currentVersion'], function(method) {
       knex.migrate[method] = function() {
         var Migrate   = require('./lib/migrate');
         var migration = new Migrate(knex);
