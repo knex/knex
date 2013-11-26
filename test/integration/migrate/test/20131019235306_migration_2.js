@@ -13,5 +13,5 @@ exports.up = function(knex, promise) {
 };
 
 exports.down = function(knex, promise) {
-  return promise.all([knex.schema.dropTable('migration_test_2'), knex.schema.dropTable('migration_test_2.1')]);
+  return promise.all([knex.schema.dropTable('migration_test_2'), knex.schema.dropTable('migration_test_2_1')]);
 };
