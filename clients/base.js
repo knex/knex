@@ -1,57 +1,45 @@
 // ClientBase
 // ----------
-(function(define) {
+var Helpers = require('../lib/helpers').Helpers;
 
-"use strict";
+// The `ClientBase` is assumed as the object that all database `clients`
+// inherit from, and is used in an `instanceof` check when initializing the
+// library. If you wish to write or customize an adapter, just inherit from
+// this base, with `ClientBase.extend`, and you're good to go.
+var ClientBase = function() {};
 
-define(function(require, exports) {
+// The methods assumed when building a client.
+ClientBase.prototype = {
 
-  var Helpers = require('../lib/helpers').Helpers;
+  // Gets the raw connection for the current client.
+  getRawConnection: function() {},
 
-  // The `ClientBase` is assumed as the object that all database `clients`
-  // inherit from, and is used in an `instanceof` check when initializing the
-  // library. If you wish to write or customize an adapter, just inherit from
-  // this base, with `ClientBase.extend`, and you're good to go.
-  var ClientBase = function() {};
+  // Execute a query on the specified `Builder` or `SchemaBuilder`
+  // interface. If a `connection` is specified, use it, otherwise
+  // acquire a connection, and then dispose of it when we're done.
+  query: function() {},
 
-  // The methods assumed when building a client.
-  ClientBase.prototype = {
+  // Retrieves a connection from the connection pool,
+  // returning a promise.
+  getConnection: function() {},
 
-    // Gets the raw connection for the current client.
-    getRawConnection: function() {},
+  // Releases a connection from the connection pool,
+  // returning a promise.
+  releaseConnection: function(conn) {},
 
-    // Execute a query on the specified `Builder` or `SchemaBuilder`
-    // interface. If a `connection` is specified, use it, otherwise
-    // acquire a connection, and then dispose of it when we're done.
-    query: function() {},
+  // Begins a transaction statement on the instance,
+  // resolving with the connection of the current transaction.
+  startTransaction: function() {},
 
-    // Retrieves a connection from the connection pool,
-    // returning a promise.
-    getConnection: function() {},
+  // Finishes a transaction, taking the `type`
+  finishTransaction: function(type, transaction, msg) {},
 
-    // Releases a connection from the connection pool,
-    // returning a promise.
-    releaseConnection: function(conn) {},
+  // The pool defaults.
+  poolDefaults: function() {}
 
-    // Begins a transaction statement on the instance,
-    // resolving with the connection of the current transaction.
-    startTransaction: function() {},
+};
 
-    // Finishes a transaction, taking the `type`
-    finishTransaction: function(type, transaction, msg) {},
+// Grab the standard `Object.extend` as popularized by Backbone.js.
+ClientBase.extend = Helpers.extend;
 
-    // The pool defaults.
-    poolDefaults: function() {}
-
-  };
-
-  // Grab the standard `Object.extend` as popularized by Backbone.js.
-  ClientBase.extend = Helpers.extend;
-
-  exports.ClientBase = ClientBase;
-
-});
-
-})(
-  typeof define === 'function' && define.amd ? define : function(factory) { factory(require, exports);
-});
+exports.ClientBase = ClientBase;
