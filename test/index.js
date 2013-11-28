@@ -1,7 +1,5 @@
 // Helps with error handling on errors swallowed by promises.
-var mocha = require('mocha');
-
-require("mocha-as-promised")(mocha);
+require("mocha-as-promised")();
 
 global.sinon = require("sinon");
 
