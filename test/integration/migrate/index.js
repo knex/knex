@@ -40,7 +40,7 @@ module.exports = function(knex) {
       });
 
       it('should run the migrations from oldest to newest', function() {
-        return knex('knex_migrations').select('*').then(function(data) {
+        return knex('knex_migrations').orderBy('id', 'asc').select('*').then(function(data) {
           expect(data[0].name).to.equal('20131019235242_migration_1.js');
           expect(data[1].name).to.equal('20131019235306_migration_2.js');
         });
