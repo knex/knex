@@ -28,7 +28,7 @@ var ServerBase = ClientBase.extend({
   // Execute a query on the specified Builder or QueryBuilder
   // interface. If a `connection` is specified, use it, otherwise
   // acquire a connection, and then dispose of it when we're done.
-  query: function(builder) {
+  query: Promise.method(function(builder) {
     var conn, client = this;
     var sql        = builder.toSql(builder);
     var bindings   = builder.getBindings();
@@ -76,7 +76,7 @@ var ServerBase = ClientBase.extend({
           newError.clientError = error;
       throw newError;
     });
-  },
+  }),
 
   // Debug a query.
   debug: function(sql, bindings, connection, builder) {
