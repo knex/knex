@@ -481,6 +481,18 @@ var knex = require('knex').knex;
 knex('table').where('id', 1).select().then(...
 </pre>
 
+Note: When you use the SQLite3 adapter, there is a filename required, not a network connection. For example:
+
+<pre>
+var knex = Knex.initialize({
+  client: 'sqlite3',
+  connection: {
+    filename: "./mydb.sqlite"
+  }
+});
+</pre>
+
+
     <h2 id="Builder">knex.builder</h2>
 
     <p>
