@@ -2,6 +2,8 @@
 
 ----
 
+Installing the CLI globally (`npm install -g knex`) will cause dependency issues. You should use the locally installed executable by running `./node_modules/.bin/knex migrate:[command]`.
+
 ### knex migrate:make [name]
 
 Creates a new migration, specifying the name for the migration.
