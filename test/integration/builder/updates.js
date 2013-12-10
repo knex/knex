@@ -50,6 +50,16 @@ module.exports = function(knex) {
 
     });
 
+    it('should allow returning for updates in postgresql', function() {
+
+      return knex('accounts').logMe().where('id', 1).update({
+        first_name: 'UpdatedUser',
+        last_name: 'UpdatedTest',
+        email:'test100@example.com'
+      }, '*');
+
+    });
+
   });
 
 };

@@ -38,7 +38,20 @@ exports.grammar = _.defaults({
       }
       sql += "(" + this.columnize(columns) + ") values " + paramBlocks.join(', ');
     }
+    sql += this.compileReturning(qb);
+    return sql;
+  },
 
+  // Compiles an `update` query, allowing for a return value.
+  compileUpdate: function(qb) {
+    var sql = baseGrammar.compileUpdate.apply(this, arguments);
+    sql += this.compileReturning(qb);
+    return sql;
+  },
+
+  // Adds the returning value to the statement.
+  compileReturning: function(qb) {
+    var sql = '';
     if (qb.flags.returning) {
       if (_.isArray(qb.flags.returning)) {
         sql += ' returning ' + this.wrapArray(qb.flags.returning);
@@ -51,9 +64,9 @@ exports.grammar = _.defaults({
 
   // Ensures the response is returned in the same format as other clients.
   handleResponse: function(builder, response) {
+    var returning = builder.flags.returning;
     if (response.command === 'SELECT') return response.rows;
-    if (response.command === 'INSERT') {
-      var returning = builder.flags.returning;
+    if (response.command === 'INSERT' || (response.command === 'UPDATE' && returning)) {
       return _.map(response.rows, function(row) {
         if (returning === '*' || _.isArray(returning)) return row;
         return row[returning];
