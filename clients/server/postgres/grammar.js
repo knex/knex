@@ -40,7 +40,11 @@ exports.grammar = _.defaults({
     }
 
     if (qb.flags.returning) {
-      sql += ' returning "' + qb.flags.returning + '"';
+      if (_.isArray(qb.flags.returning)) {
+        sql += ' returning ' + this.wrapArray(qb.flags.returning);
+      } else {
+        sql += ' returning ' + this.wrapValue(qb.flags.returning);
+      }
     }
     return sql;
   },
@@ -49,8 +53,10 @@ exports.grammar = _.defaults({
   handleResponse: function(builder, response) {
     if (response.command === 'SELECT') return response.rows;
     if (response.command === 'INSERT') {
+      var returning = builder.flags.returning;
       return _.map(response.rows, function(row) {
-        return row[builder.flags.returning];
+        if (returning === '*' || _.isArray(returning)) return row;
+        return row[returning];
       });
     }
     if (response.command === 'UPDATE' || response.command === 'DELETE') {

@@ -11,7 +11,7 @@ module.exports = {
       bindings: [],
       sql: 'select sum("logins") from "accounts"',
       result: [{
-        'sum': '10'
+        sum: '10'
       }]
     },
     sqlite3: {
@@ -34,7 +34,7 @@ module.exports = {
       bindings: [],
       sql: 'select count("id") from "accounts"',
       result: [{
-        'count': '6'
+        count: '6'
       }]
     },
     sqlite3: {
@@ -59,9 +59,9 @@ module.exports = {
       bindings: [],
       sql: 'select count("id"), max("logins"), min("logins") from "accounts"',
       result: [{
-        'count': '6',
-        'max': 2,
-        'min': 1
+        count: '6',
+        max: 2,
+        min: 1
       }]
     },
     sqlite3: {
@@ -90,11 +90,11 @@ module.exports = {
       bindings: [[],[]],
       sql: ['select count("id") from "accounts" group by "logins"','select count("id") from "accounts" group by "first_name"'],
       result: [[{
-        'count': '2'
+        count: '2'
       },{
-        'count': '4'
+        count: '4'
       }],[{
-        'count': '6'
+        count: '6'
       }]]
     },
     sqlite3: {

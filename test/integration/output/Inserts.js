@@ -112,5 +112,48 @@ module.exports = {
       sql: 'insert into "test_default_table" default values',
       result: [1]
     }
+  },
+  'should take an array of columns to return in postgres': {
+    mysql: {
+      bindings: [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
+      sql: 'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?)',
+      result: [4]
+    },
+    postgresql: {
+      bindings: [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
+      sql: 'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning "account_id","details"',
+      result: [{
+        account_id: 10,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+      }]
+    },
+    sqlite3: {
+      bindings: [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
+      sql: 'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?)',
+      result: [4]
+    }
+  },
+  'should allow a * for returning in postgres': {
+    mysql: {
+      bindings: [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
+      sql: 'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?)',
+      result: [5]
+    },
+    postgresql: {
+      bindings: [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
+      sql: 'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning *',
+      result: [{
+        id: 5,
+        account_id: 10,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 0,
+        json_data: null
+      }]
+    },
+    sqlite3: {
+      bindings: [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
+      sql: 'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?)',
+      result: [5]
+    }
   }
 };

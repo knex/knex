@@ -1,4 +1,5 @@
 var uuid = require('node-uuid');
+var _    = require('lodash');
 
 module.exports = function(knex) {
 
@@ -179,7 +180,41 @@ module.exports = function(knex) {
       }).then(function() {
         return knex('test_default_table').logMe().insert({}, 'id');
       });
+    });
 
+    it('should take an array of columns to return in postgres', function() {
+      var insertData = {
+        account_id: 10,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 0
+      };
+      var returning = ['account_id', 'details'];
+      return knex('test_table_two').logMe().insert(insertData, returning).then(function(rows) {
+        expect(rows.length).to.equal(1);
+        if (knex.client.dialect === 'postgresql') {
+          expect(_.keys(rows[0]).length).to.equal(2);
+          expect(rows[0].account_id).to.equal(insertData.account_id);
+          expect(rows[0].details).to.equal(insertData.details);
+        }
+      });
+    });
+
+    it('should allow a * for returning in postgres', function() {
+      var insertData = {
+        account_id: 10,
+        details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+        status: 0
+      };
+      return knex('test_table_two').logMe().insert(insertData, '*').then(function(rows) {
+        expect(rows.length).to.equal(1);
+        if (knex.client.dialect === 'postgresql') {
+          expect(_.keys(rows[0]).length).to.equal(5);
+          expect(rows[0].account_id).to.equal(insertData.account_id);
+          expect(rows[0].details).to.equal(insertData.details);
+          expect(rows[0].status).to.equal(insertData.status);
+          expect(rows[0].json_data).to.equal(null);
+        }
+      });
     });
 
   });
