@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.5.0)</span>
+      Knex.js <span class="version">(0.5.1)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -204,6 +204,7 @@
     <a class="toc_title" href="#Initialize">
       Initialize
     </a>
+    <li>
 
     <a class="toc_title" href="#Builder">
       Query Builder
@@ -370,7 +371,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.5.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.5.1 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -406,30 +407,6 @@ $ npm install sqlite3
       Minor changes from the 0.4.x series, include the fact that aggregate functions are
       no longer aliased as "aggregate", but rather left as-is, unless explicitly aliased.
       See <a href="https://github.com/tgriesser/knex/pull/110">this ticket</a> for more info.
-    </p>
-
-    <p>
-      If you are upgrading Knex from 0.2.x to 0.4.x, you'll notice that some things have broken.
-      Luckily, with a few quick fixes to your code, you should be up and runnning in no-time.
-      <ul>
-        <li>
-          Global state is no longer stored in the library, an instance is returned from <tt>Knex.initialize</tt>,
-          so you will need to call this once and then reference this <tt>knex</tt> client elsewhere in your application.
-        </li>
-        <li>
-          Lowercasing of <tt>knex.raw</tt>, <tt>knex.transaction</tt>, and <tt>knex.schema</tt>.
-        </li>
-        <li>
-          Created columns are now nullable by default, unless <tt>notNullable</tt> is chained as an option.
-        </li>
-        <li>
-          Keys created with <tt>increments</tt> are now assumed to be unsigned (MySQL) by default.
-        </li>
-        <li>
-          The <tt>destroyAllNow</tt> is no longer called by the library on <tt>process.exit</tt> event. If you need to call
-          it explicitly yourself, you may use <tt>knex.client.destroyPool</tt>
-        </li>
-      </ul>
     </p>
 
     <h2 id="Initialize">Initialize</h2>
@@ -1480,7 +1457,19 @@ process.stderr.on('data', function() {
     <h2 id="changelog">Change Log</h2>
 
     <p>
-      <b class="header">0.5.0</b> &mdash; <small><i>Nov 25, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.13...0.5.0">Diff</a><br />
+      <b class="header">0.5.1</b> &mdash; <small><i>Dec 12, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.0...0.5.1">Diff</a><br />
+      <ul>
+        <li>The <a href="#Builder-returning">returning</a> in PostgreSQL may now accept * or an array of columns to return. If either of these are passed, the response will be an array of objects rather than an array of values. Updates may also now use a <tt>returning</tt> value. (#132)</li>
+        <li>Added <tt>bigint</tt> and <tt>bigserial</tt> type to PostgreSQL. (#111)</li>
+        <li>Fix for the <a href="#Schema-specificType">specificType</a> schema call (#118)</li>
+        <li>Several fixes for migrations, including migration file path fixes, passing a
+          Promise constructor to the migration <tt>up</tt> and <tt>down</tt> methods, allowing
+          the "knex" module to be used globally, file ordering on migrations, and other small improvements. (#112-115, #125, #135)</li>
+      </ul>
+    </p>
+
+    <p>
+      <b class="header">0.5.0</b> &mdash; <small><i>Nov 25, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.13...0.5.0">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.5.0/index.html">Docs</a><br />
       <ul>
         <li>Initial pass at a <a href="#Migrate">migration</a> api.</li>
         <li>Aggregate methods are no longer aliased as "aggregate",
@@ -1592,8 +1581,8 @@ process.stderr.on('data', function() {
           it explicitly yourself, you may use <tt>knex.client.destroyPool</tt>
         </li>
       </ul>
-      Schema: Added <a href="#Schema-hasColumn">hasColumn</a>, <a href="#Schema-renameColumn">renameColumn</a>, <a href="Schema-bigInteger">bigInteger</a>,
-      <a href="Schema-specificType">specificType</a>.
+      Schema: Added <a href="#Schema-hasColumn">hasColumn</a>, <a href="#Schema-renameColumn">renameColumn</a>, <a href="#Schema-bigInteger">bigInteger</a>,
+      <a href="#Schema-specificType">specificType</a>.
       General: Refactoring the library to support UMD and eventual use on the client. Added <a href="#Builder-options">options</a> method for adding additional
       parameters specific to individual database libraries, #64.
       Bugfixes: Case insensitive where operators (e.g.) <tt>LIKE, BETWEEN, NOT LIKE</tt> are now supported.

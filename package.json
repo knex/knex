@@ -7,9 +7,9 @@
     "test": "test"
   },
   "devDependencies": {
-    "mocha": "~1.14.0",
+    "mocha": "~1.15.1",
     "objectdump": "~0.3.0",
-    "mysql": "~2.0.0-alpha7",
+    "mysql": "~2.0.0-rc2",
     "pg": "~2.8.2",
     "sqlite3": "~2.1.7",
     "node-uuid": "~1.4.0",
@@ -26,9 +26,9 @@
     "generic-pool-redux": "~0.1.0",
     "optimist": "~0.6.0",
     "mkdirp": "~0.3.5",
-    "bluebird": "~0.10.11-0",
+    "bluebird": "~0.11.5-0",
     "colors": "~0.6.2",
-    "lodash": "~2.3.0"
+    "lodash": ">=2.4.0"
   },
   "scripts": {
     "test": "mocha -R spec test/index.js",
