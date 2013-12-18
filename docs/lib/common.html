@@ -22,13 +22,7 @@ client adapter, we know to <code>log</code> the query.</p></div></div><div class
 Multiple calls to <code>exec</code> will resolve with the same value
 if called more than once. Any unhandled errors will be thrown
 after the last block.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">exec</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span> <span class="p">{</span>
-      <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">resp</span><span class="p">);</span>
-    <span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
-      <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="kc">null</span><span class="p">);</span>
-    <span class="p">}).</span><span class="nx">caught</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
-      <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="k">throw</span> <span class="nx">err</span><span class="p">;</span> <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
-    <span class="p">});</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">().</span><span class="nx">nodeify</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
   <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>The promise interface for the query builder.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">then</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_promise</span><span class="p">)</span> <span class="p">{</span>
       <span class="k">this</span><span class="p">.</span><span class="nx">_promise</span> <span class="o">=</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
@@ -37,7 +31,27 @@ after the last block.</p></div></div><div class="code"><div class="wrapper">  <s
       <span class="p">}).</span><span class="nx">bind</span><span class="p">();</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">);</span>
-  <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Passthrough to the convenient <code>tap</code> mechanism of when.js</p></div></div><div class="code"><div class="wrapper">  <span class="nx">tap</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">handler</span><span class="p">)</span> <span class="p">{</span>
+  <span class="p">},</span>
+
+  <span class="k">catch</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">caught</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+  <span class="p">},</span>
+
+  <span class="nx">caught</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">();</span>
+    <span class="k">return</span> <span class="nx">promise</span><span class="p">.</span><span class="nx">caught</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+  <span class="p">},</span>
+
+  <span class="nx">lastly</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">();</span>
+    <span class="k">return</span> <span class="nx">promise</span><span class="p">.</span><span class="nx">lastly</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+  <span class="p">},</span>
+
+  <span class="k">finally</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">lastly</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+  <span class="p">},</span>
+
+  <span class="nx">tap</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">handler</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">().</span><span class="nx">tap</span><span class="p">(</span><span class="nx">handler</span><span class="p">);</span>
   <span class="p">},</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Returns an array of query strings filled out with the
 correct values based on bindings, etc. Useful for debugging.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">toString</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>TODO: get rid of the need to clone the object here...</p></div></div><div class="code"><div class="wrapper">    <span class="kd">var</span> <span class="nx">builder</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span> <span class="nx">data</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">clone</span><span class="p">().</span><span class="nx">toSql</span><span class="p">();</span>
