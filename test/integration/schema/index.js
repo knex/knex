@@ -18,11 +18,20 @@ module.exports = function(knex) {
         knex.schema.dropTableIfExists('knex_migrations'),
         knex.schema.dropTableIfExists('migration_test_1'),
         knex.schema.dropTableIfExists('migration_test_2'),
-        knex.schema.dropTableIfExists('migration_test_2_1')
+        knex.schema.dropTableIfExists('migration_test_2_1'),
+        knex.schema.dropTableIfExists('catch_test')
       ]);
     });
 
     describe('createTable', function() {
+
+      it('is possible to chain .catch', function() {
+        return knex.schema.createTable('catch_test', function(t) {
+          t.increments();
+        }).catch(function(e) {
+          throw e;
+        });
+      });
 
       it('accepts the table name, and a "container" function', function() {
         return knex.schema.createTable('test_table_one', function(table) {
