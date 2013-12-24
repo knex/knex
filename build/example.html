@@ -22,11 +22,15 @@
 
   require(['knex', 'bluebird'], function(knex, Promise) {
 
-    var KNEX = require('knex')
+    var Knex = require('knex')
 
     var x = 0;
 
-    var knex = window.knex = KNEX.knex(new KNEX.client({name: 'knex_demo', debug: true}));
+    var knex = window.knex = Knex({
+      client: 'sqlite',
+      name: 'knex_demo',
+      debug: true
+    });
 
     knex.schema.hasTable('items')
       .tap(function(exists) {

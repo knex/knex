@@ -1066,7 +1066,9 @@ exports.schemaGrammar = _.defaults({
 
 }, baseSchemaGrammar);
 
-},{"../../base/sqlite3/schemagrammar":5,"lodash":false}],9:[function(require,module,exports){
+},{"../../base/sqlite3/schemagrammar":5,"lodash":false}],"./clients/browser/websql.js":[function(require,module,exports){
+module.exports=require('rP8T6B');
+},{}],"rP8T6B":[function(require,module,exports){
 // SQLite3 - WebSQL
 // ----------
 var _       = require('lodash');
@@ -1079,7 +1081,7 @@ var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
 var Promise         = require('../../lib/promise').Promise;
 
 // Constructor for the SQLite3Client.
-module.exports = ClientBase.extend({
+var WebSQL = ClientBase.extend({
 
   dialect: 'sqlite3',
 
@@ -1155,7 +1157,9 @@ module.exports = ClientBase.extend({
   }
 
 });
-},{"../../lib/builder":12,"../../lib/promise":18,"../../lib/schemainterface":21,"../../lib/transaction":23,"./base":6,"lodash":false}],10:[function(require,module,exports){
+
+exports.Client = WebSQL;
+},{"../../lib/builder":12,"../../lib/promise":18,"../../lib/schemainterface":21,"../../lib/transaction":23,"./base":6,"lodash":false}],11:[function(require,module,exports){
 // Knex.js  0.5.2
 // --------------
 
@@ -1275,8 +1279,8 @@ var Clients = Knex.Clients = {
   'pg'         : './clients/server/postgres.js',
   'postgres'   : './clients/server/postgres.js',
   'postgresql' : './clients/server/postgres.js',
-  'sqlite'     : './clients/server/sqlite3.js',
-  'sqlite3'    : './clients/server/sqlite3.js'
+  'sqlite'     : './clients/browser/websql.js',
+  'sqlite3'    : './clients/browser/websql.js'
 };
 
 // Used primarily to type-check a potential `Knex` client in `Bookshelf.js`,
@@ -1289,12 +1293,7 @@ module.exports = Knex;
 Knex.initialize = function(config) {
   return Knex(config);
 };
-},{"./clients/base":1,"./lib/builder":12,"./lib/migrate":"IXAOIc","./lib/promise":18,"./lib/raw":19,"./lib/schemabuilder":20,"./lib/schemainterface":21,"./lib/transaction":23,"lodash":false}],11:[function(require,module,exports){
-module.exports = {
-  knex: require('../knex'),
-  client: require('../clients/browser/websql')
-};
-},{"../clients/browser/websql":9,"../knex":10}],12:[function(require,module,exports){
+},{"./clients/base":1,"./lib/builder":12,"./lib/migrate":"IXAOIc","./lib/promise":18,"./lib/raw":19,"./lib/schemabuilder":20,"./lib/schemainterface":21,"./lib/transaction":23,"lodash":false}],12:[function(require,module,exports){
 // Builder
 // -------
 var _          = require('lodash');

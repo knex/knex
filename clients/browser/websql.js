@@ -10,7 +10,7 @@ var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
 var Promise         = require('../../lib/promise').Promise;
 
 // Constructor for the SQLite3Client.
-module.exports = ClientBase.extend({
+var WebSQL = ClientBase.extend({
 
   dialect: 'sqlite3',
 
@@ -86,3 +86,5 @@ module.exports = ClientBase.extend({
   }
 
 });
+
+exports.Client = WebSQL;
