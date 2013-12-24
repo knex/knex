@@ -12,7 +12,6 @@ var ServerBase      = require('./base').ServerBase;
 var Builder         = require('../../lib/builder').Builder;
 var Transaction     = require('../../lib/transaction').Transaction;
 var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
-var Helpers         = require('../../lib/helpers').Helpers;
 var Promise         = require('../../lib/promise').Promise;
 
 var grammar         = require('./sqlite3/grammar').grammar;

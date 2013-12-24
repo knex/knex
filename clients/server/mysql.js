@@ -9,7 +9,6 @@ var mysql = require('mysql');
 
 // All other local project modules needed in this scope.
 var ServerBase        = require('./base').ServerBase;
-var Helpers           = require('../../lib/helpers').Helpers;
 var Promise           = require('../../lib/promise').Promise;
 
 var grammar           = require('./mysql/grammar').grammar;

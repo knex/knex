@@ -9,7 +9,6 @@ var pg   = require('pg');
 
 // All other local project modules needed in this scope.
 var ServerBase        = require('./base').ServerBase;
-var Helpers           = require('../../lib/helpers').Helpers;
 var Promise           = require('../../lib/promise').Promise;
 
 var grammar           = require('./postgres/grammar').grammar;
