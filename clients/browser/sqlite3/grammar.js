@@ -13,7 +13,7 @@ exports.grammar = _.defaults({
     if (builder.type === 'select') {
       var obj = [];
       for (var i = 0, l = resp.rows.length; i < l; i++) {
-        obj[i] = resp.rows.item(i);
+        obj[i] = _.clone(resp.rows.item(i));
       }
       return obj;
     } else if (builder.type === 'insert') {
