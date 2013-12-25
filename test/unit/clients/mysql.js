@@ -1,5 +1,5 @@
 
-var MysqlClient = require('../../../../clients/server/mysql');
+var MysqlClient = require('../../../clients/mysql');
 
 describe('MysqlClient', function () {
 

@@ -1,8 +1,8 @@
 // PostgreSQL Grammar
 // -------
 var _           = require('lodash');
-var Helpers     = require('../../../lib/helpers').Helpers;
-var baseGrammar = require('../../base/grammar').baseGrammar;
+var Helpers     = require('../../lib/helpers').Helpers;
+var baseGrammar = require('../../lib/grammar').baseGrammar;
 
 // Extends the standard sql grammar.
 exports.grammar = _.defaults({

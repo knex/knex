@@ -113,12 +113,13 @@ var Knex = function(config) {
 
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
-  'mysql'      : './clients/server/mysql.js',
-  'pg'         : './clients/server/postgres.js',
-  'postgres'   : './clients/server/postgres.js',
-  'postgresql' : './clients/server/postgres.js',
-  'sqlite'     : './clients/server/sqlite3.js',
-  'sqlite3'    : './clients/server/sqlite3.js'
+  'mysql'      : './clients/mysql.js',
+  'pg'         : './clients/postgres.js',
+  'postgres'   : './clients/postgres.js',
+  'postgresql' : './clients/postgres.js',
+  'sqlite'     : './clients/sqlite3.js',
+  'sqlite3'    : './clients/sqlite3.js',
+  'websql'     : './clients/websql.js'
 };
 
 // Used primarily to type-check a potential `Knex` client in `Bookshelf.js`,

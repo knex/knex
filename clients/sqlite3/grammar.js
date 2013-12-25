@@ -5,8 +5,8 @@
 // in that it may be run on both the client and server. So add another
 // layer to the prototype chain.
 var _           = require('lodash');
-var Helpers     = require('../../../lib/helpers').Helpers;
-var baseGrammar = require('../grammar').baseGrammar;
+var Helpers     = require('../../lib/helpers').Helpers;
+var baseGrammar = require('../../lib/grammar').baseGrammar;
 
 // Extends the standard sql grammar, with any SQLite specific
 // dialect oddities.
@@ -77,6 +77,19 @@ exports.grammar = _.defaults({
 
   // For share and for update are not available in sqlite3.
   compileForUpdate: function() {},
-  compileForShare:  function() {}
+  compileForShare:  function() {},
+
+  // Ensures the response is returned in the same format as other clients.
+  handleResponse: function(builder, resp) {
+    var ctx = resp[1]; resp = resp[0];
+    if (builder.type === 'select') {
+      resp = Helpers.skim(resp);
+    } else if (builder.type === 'insert') {
+      resp = [ctx.lastID];
+    } else if (builder.type === 'delete' || builder.type === 'update') {
+      resp = ctx.changes;
+    }
+    return resp;
+  }
 
 }, baseGrammar);

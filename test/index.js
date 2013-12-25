@@ -27,12 +27,9 @@ describe('Unit Tests', function() {
   require('./unit/transaction');
   require('./unit/clients/pool');
   require('./unit/clients/base');
-  require('./unit/clients/base/grammar');
-  require('./unit/clients/base/schemagrammar');
-  require('./unit/clients/server/base');
-  require('./unit/clients/server/mysql');
-  require('./unit/clients/server/postgres');
-  require('./unit/clients/server/sqlite3');
+  require('./unit/clients/mysql');
+  require('./unit/clients/postgres');
+  require('./unit/clients/sqlite3');
 });
 
 // Integration Tests

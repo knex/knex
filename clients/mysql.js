@@ -8,8 +8,8 @@ var _     = require('lodash');
 var mysql = require('mysql');
 
 // All other local project modules needed in this scope.
-var ServerBase        = require('./base').ServerBase;
-var Promise           = require('../../lib/promise').Promise;
+var ServerBase        = require('./server').ServerBase;
+var Promise           = require('../lib/promise').Promise;
 
 var grammar           = require('./mysql/grammar').grammar;
 var schemaGrammar     = require('./mysql/schemagrammar').schemaGrammar;

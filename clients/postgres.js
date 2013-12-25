@@ -8,8 +8,8 @@ var _    = require('lodash');
 var pg   = require('pg');
 
 // All other local project modules needed in this scope.
-var ServerBase        = require('./base').ServerBase;
-var Promise           = require('../../lib/promise').Promise;
+var ServerBase        = require('./server').ServerBase;
+var Promise           = require('../lib/promise').Promise;
 
 var grammar           = require('./postgres/grammar').grammar;
 var schemaGrammar     = require('./postgres/schemagrammar').schemaGrammar;

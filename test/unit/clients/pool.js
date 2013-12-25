@@ -1,6 +1,6 @@
 var _           = require('lodash');
 var Promise     = testPromise;
-var Pool        = require('../../../clients/pool').Pool;
+var Pool        = require('../../../lib/pool').Pool;
 var GenericPool = require('generic-pool-redux').Pool;
 
 describe('Pool', function () {

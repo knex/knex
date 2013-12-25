@@ -19,14 +19,13 @@ module.exports = function(grunt) {
           detectGlobals: false,
           standalone: 'knex',
           preBundleCB: function(b) {
-            b.require('./clients/browser/websql.js');
+            b.require('./clients/websql.js');
           },
           postBundleCB: function(err, src, next) {
             next(err, src
               .replace('define(e):"undefined"', 'define(["bluebird", "lodash"], e):"undefined"')
               .replace('bluebird/js/main/promise\')()', 'bluebird\')')
               .replace('bluebird/js/main/promise', 'bluebird')
-              .replace(/clients\/server\/sqlite3.js/g, 'clients/browser/websql.js')
             );
           }
         }

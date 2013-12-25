@@ -8,11 +8,11 @@ var _       = require('lodash');
 var sqlite3 = require('sqlite3');
 
 // All other local project modules needed in this scope.
-var ServerBase      = require('./base').ServerBase;
-var Builder         = require('../../lib/builder').Builder;
-var Transaction     = require('../../lib/transaction').Transaction;
-var SchemaInterface = require('../../lib/schemainterface').SchemaInterface;
-var Promise         = require('../../lib/promise').Promise;
+var ServerBase      = require('./server').ServerBase;
+var Builder         = require('../lib/builder').Builder;
+var Transaction     = require('../lib/transaction').Transaction;
+var SchemaInterface = require('../lib/schemainterface').SchemaInterface;
+var Promise         = require('../lib/promise').Promise;
 
 var grammar         = require('./sqlite3/grammar').grammar;
 var schemaGrammar   = require('./sqlite3/schemagrammar').schemaGrammar;

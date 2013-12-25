@@ -12,7 +12,7 @@ describe('Builder', function () {
       query: function(obj) {
         return Promise.fulfilled(obj);
       },
-      grammar: require('../../clients/server/mysql/grammar').grammar
+      grammar: require('../../clients/mysql/grammar').grammar
     });
   });
 

@@ -3,7 +3,7 @@
 
 var _                 = require('lodash');
 var grammar           = require('./grammar').grammar;
-var baseSchemaGrammar = require('../schemagrammar').baseSchemaGrammar;
+var baseSchemaGrammar = require('../../lib/schemagrammar').baseSchemaGrammar;
 
 // Grammar for the schema builder.
 exports.schemaGrammar = _.defaults({
@@ -166,5 +166,19 @@ exports.schemaGrammar = _.defaults({
     if (column.autoIncrement && (column.type == 'integer' || column.type == 'bigInteger')) {
       return ' primary key autoincrement not null';
     }
+  },
+
+  // Ensures the response is returned in the same format as other clients.
+  handleResponse: function(builder, resp) {
+    // This is an array, so we'll assume that the relevant info is on the first statement...
+    resp = resp[0];
+    var ctx = resp[1]; resp = resp[0];
+    if (builder.type === 'tableExists') {
+      return resp.length > 0;
+    } else if (builder.type === 'columnExists') {
+      return _.findWhere(resp, {name: builder.bindings[1]}) != null;
+    }
+    return resp;
   }
+
 }, baseSchemaGrammar, grammar);

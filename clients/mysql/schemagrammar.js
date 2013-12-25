@@ -2,7 +2,7 @@
 // -------
 var _                 = require('lodash');
 var grammar           = require('./grammar').grammar;
-var baseSchemaGrammar = require('../../base/schemagrammar').baseSchemaGrammar;
+var baseSchemaGrammar = require('../../lib/schemagrammar').baseSchemaGrammar;
 
 // Grammar for the schema builder.
 exports.schemaGrammar = _.defaults({
