@@ -63,10 +63,7 @@ module.exports = function(knex) {
 
       it('allows where id: undefined or id: null as a where null clause', function() {
 
-        return Promise.all([
-          knex('accounts').logMe('sql').where({'id': void 0}).select('*'),
-          knex('accounts').logMe('sql').where({'id': null}).select('first_name', 'email')
-        ]);
+        return knex('accounts').logMe('sql').where({'id': null}).select('first_name', 'email');
 
       });
 

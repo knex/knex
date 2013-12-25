@@ -57,16 +57,16 @@ module.exports = {
   },
   'allows where id: undefined or id: null as a where null clause': {
     mysql: {
-      bindings: [[],[]],
-      sql: ['select * from `accounts` where `id` is null','select `first_name`, `email` from `accounts` where `id` is null']
+      bindings: [],
+      sql: 'select `first_name`, `email` from `accounts` where `id` is null'
     },
     postgresql: {
-      bindings: [[],[]],
-      sql: ['select * from "accounts" where "id" is null','select "first_name", "email" from "accounts" where "id" is null']
+      bindings: [],
+      sql: 'select "first_name", "email" from "accounts" where "id" is null'
     },
     sqlite3: {
-      bindings: [[],[]],
-      sql: ['select * from "accounts" where "id" is null','select "first_name", "email" from "accounts" where "id" is null']
+      bindings: [],
+      sql: 'select "first_name", "email" from "accounts" where "id" is null'
     }
   },
   'allows where id = 0': {
