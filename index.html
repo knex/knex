@@ -292,6 +292,10 @@
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
       <li>– <a href="#Chainable-unique">unique</a></li>
+      <li>– <a href="#Chainable-references">references</a></li>
+      <li>– <a href="#Chainable-inTable">inTable</a></li>
+      <li>– <a href="#Chainable-onDelete">onDelete</a></li>
+      <li>– <a href="#Chainable-onUpdate">onUpdate</a></li>
       <li>– <a href="#Chainable-defaultTo">defaultTo</a></li>
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
       <li>– <a href="#Chainable-notNullable">notNullable</a></li>
@@ -1294,6 +1298,30 @@ knex.schema.table('users', function (table) {
       <b class="header">unique</b><code>column.unique()</code>
       <br />
       Sets the column as unique.
+    </p>
+
+    <p id="Chainable-references">
+      <b class="header">references</b><code>column.references(column)</code>
+      <br />
+      Sets the "column" that the current column references as a foreign key.
+    </p>
+
+    <p id="Chainable-inTable">
+      <b class="header">inTable</b><code>column.inTable(table)</code>
+      <br />
+      Sets the "table" where the foreign key column is located.
+    </p>
+
+    <p id="Chainable-onDelete">
+      <b class="header">onDelete</b><code>column.onDelete(command)</code>
+      <br />
+      Sets the SQL command to be run "onDelete".
+    </p>
+
+    <p id="Chainable-onUpdate">
+      <b class="header">onUpdate</b><code>column.onUpdate(command)</code>
+      <br />
+      Sets the SQL command to be run "onUpdate".
     </p>
 
     <p id="Chainable-defaultTo">
