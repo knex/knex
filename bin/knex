@@ -5,7 +5,7 @@
 var optimist = require('optimist');
 
 var commands = {};
-require('../lib/cli/migrate.js')(commands);
+require('../lib/migrate/cli.js')(commands);
 
 var usage = [
   'Usage: $0 <command>[:<subcommand>] [<args>]',

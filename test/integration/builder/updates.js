@@ -4,12 +4,30 @@ module.exports = function(knex) {
 
     it('should handle updates', function() {
       return knex('accounts')
-        .logMe()
         .where('id', 1)
         .update({
           first_name: 'User',
           last_name: 'Test',
           email:'test100@example.com'
+        }).testSql(function(tester) {
+          tester(
+            'mysql',
+            'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
+            ['test100@example.com','User','Test',1],
+            1
+          );
+          tester(
+            'postgresql',
+            'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+            ['test100@example.com','User','Test',1],
+            1
+          );
+          tester(
+            'sqlite3',
+            'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+            ['test100@example.com','User','Test',1],
+            1
+          );
         });
     });
 
@@ -52,11 +70,40 @@ module.exports = function(knex) {
 
     it('should allow returning for updates in postgresql', function() {
 
-      return knex('accounts').logMe().where('id', 1).update({
+      return knex('accounts').where('id', 1).update({
         first_name: 'UpdatedUser',
         last_name: 'UpdatedTest',
         email:'test100@example.com'
-      }, '*');
+      }, '*').testSql(function(tester) {
+        tester(
+          'mysql',
+          'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
+          ['test100@example.com','UpdatedUser','UpdatedTest',1],
+          1
+        );
+        tester(
+          'postgresql',
+          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning *',
+          ['test100@example.com','UpdatedUser','UpdatedTest',1],
+          [{
+            id: '1',
+            first_name: 'UpdatedUser',
+            last_name: 'UpdatedTest',
+            email: 'test100@example.com',
+            logins: 1,
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            created_at: d,
+            updated_at: d,
+            phone: null
+          }]
+        );
+        tester(
+          'sqlite3',
+          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+          ['test100@example.com','UpdatedUser','UpdatedTest',1],
+          1
+        );
+      });
 
     });
 

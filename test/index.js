@@ -9,48 +9,27 @@ chai.use(require("chai-as-promised"));
 chai.use(require("sinon-chai"));
 chai.should();
 
-var Promise = global.testPromise    = require('../lib/promise').Promise;
+var Promise = global.testPromise    = require('../lib/promise');
 global.expect         = chai.expect;
 global.AssertionError = chai.AssertionError;
 global.Assertion      = chai.Assertion;
 global.assert         = chai.assert;
+global.d = new Date;
 
 Promise.longStackTraces();
 
-// Unit tests
-describe('Unit Tests', function() {
-  require('./unit/knex');
-  require('./unit/common');
-  require('./unit/builder');
-  require('./unit/builder/joinclause');
-  require('./unit/raw');
-  require('./unit/transaction');
-  require('./unit/clients/pool');
-  require('./unit/clients/base');
-  require('./unit/clients/mysql');
-  require('./unit/clients/postgres');
-  require('./unit/clients/sqlite3');
-});
+var knex = require('../knex');
+
+var mysql    = knex({client: 'mysql'});
+var sqlite3  = knex({client: 'sqlite3'});
+var postgres = knex({client: 'postgres'});
+
+require('./unit/schema/postgresql')(postgres.client);
+require('./unit/schema/sqlite3')(sqlite3.client);
+require('./unit/schema/mysql')(mysql.client);
+require('./unit/query/builder')(postgres.client, mysql.client, sqlite3.client);
 
 // Integration Tests
 describe('Integration Tests', function() {
-
-  var helper = require('./integration/helper');
-
-  before(function() {
-    helper.setLib(this);
-  });
-
-  require('./integration/knex');
-
-  after(function() {
-    helper.writeResult();
-  });
-
-});
-
-// Benchmarks
-describe('Benchmarks', function() {
-
-
+  var runner = require('./integration')(this);
 });

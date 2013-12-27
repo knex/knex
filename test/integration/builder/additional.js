@@ -6,8 +6,12 @@ module.exports = function(knex) {
     it('should truncate a table with truncate', function() {
 
       return knex('test_table_two')
-        .logMe('sql')
         .truncate()
+        .testSql(function(tester) {
+          tester('mysql', 'truncate `test_table_two`');
+          tester('postgresql', 'truncate "test_table_two" restart identity');
+          tester('sqlite3', 'delete from sqlite_sequence where name = "test_table_two"');
+        })
         .then(function() {
 
           return knex('test_table_two')
@@ -28,7 +32,9 @@ module.exports = function(knex) {
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';"
       };
 
-      return knex.raw(tables[knex.client.dialect]).logMe('sql');
+      return knex.raw(tables[knex.client.dialect]).testSql(function(tester) {
+        tester(knex.client.dialect, tables[knex.client.dialect]);
+      });
 
     });
 
@@ -44,6 +50,12 @@ module.exports = function(knex) {
 
         t.renameColumn('about', 'about_col');
 
+      }).testSql(function(tester) {
+
+        tester('mysql', ["show fields from `accounts` where field = ?"]);
+        tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
+        tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+
       }).then(function() {
 
         return knex('accounts').select('about_col');
@@ -58,21 +70,16 @@ module.exports = function(knex) {
 
     });
 
-    it('should reject with a custom error, with the sql, bindings, and message, along with a clientError property', function() {
+    // it('should reject with a custom error, with the sql, bindings, and message, along with a clientError property', function() {
 
-      return knex('nonexistent_table').insert([{item: 1}, {item: 2}]).then(null, function(err) {
+    //   return knex('nonexistent_table').insert([{item: 1}, {item: 2}]).then(null, function(err) {
+    //     expect(err).to.have.property('sql');
+    //     expect(err).to.have.property('bindings');
+    //     expect(err).to.have.property('clientError');
+    //     expect(err).to.be.an.instanceOf(Error);
+    //   });
 
-        expect(err).to.have.property('sql');
-
-        expect(err).to.have.property('bindings');
-
-        expect(err).to.have.property('clientError');
-
-        expect(err).to.be.an.instanceOf(Error);
-
-      });
-
-    });
+    // });
 
   });
 

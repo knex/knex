@@ -39,38 +39,158 @@ module.exports = function(knex) {
 
       it('allows key, value', function() {
 
-        return knex('accounts').logMe('sql').where('id', 1).select('first_name', 'last_name');
-
+        return knex('accounts')
+          .where('id', 1)
+          .select('first_name', 'last_name')
+          .testSql(function(tester) {
+            tester(
+              'mysql',
+              'select `first_name`, `last_name` from `accounts` where `id` = ?',
+              [1]
+            );
+            tester(
+              'postgresql',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1]
+            );
+            tester(
+              'sqlite3',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1]
+            );
+          });
       });
 
       it('allows key, operator, value', function() {
 
-        return knex('accounts').logMe('sql').where('id', 1).select('first_name', 'last_name');
-
+        return knex('accounts')
+          .where('id', 1)
+          .select('first_name', 'last_name')
+          .testSql(function(tester) {
+            tester(
+              'mysql',
+              'select `first_name`, `last_name` from `accounts` where `id` = ?',
+              [1]
+            );
+            tester(
+              'postgresql',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1]
+            );
+            tester(
+              'sqlite3',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1]
+            );
+          });
       });
 
       it('allows selecting columns with an array', function() {
 
-        return knex('accounts').logMe('sql').where('id', '>', 1).select(['email', 'logins']);
-
+        return knex('accounts')
+          .where('id', '>', 1)
+          .select(['email', 'logins'])
+          .testSql(function(tester) {
+            tester(
+              'mysql',
+              'select `email`, `logins` from `accounts` where `id` > ?',
+              [1]
+            );
+            tester(
+              'postgresql',
+              'select "email", "logins" from "accounts" where "id" > ?',
+              [1]
+            );
+            tester(
+              'sqlite3',
+              'select "email", "logins" from "accounts" where "id" > ?',
+              [1]
+            );
+          });
       });
 
       it('allows a hash of where attrs', function() {
 
-        return knex('accounts').logMe('sql').where({'id': 1}).select('*');
-
+        return knex('accounts')
+          .where({'id': 1})
+          .select('*')
+          .testSql(function(tester) {
+            tester(
+              'mysql',
+              'select * from `accounts` where `id` = ?',
+              [1],
+              [{
+                id: 1,
+                first_name: "Test",
+                last_name: "User",
+                email: "test@example.com",
+                logins: 1,
+                about: "Lorem ipsum Dolore labore incididunt enim.",
+                created_at: d,
+                updated_at: d,
+                phone: null
+              }]
+            );
+            tester(
+              'postgresql',
+              'select * from "accounts" where "id" = ?',
+              [1]
+            );
+            tester(
+              'sqlite3',
+              'select * from "accounts" where "id" = ?',
+              [1]
+            );
+          });
       });
 
       it('allows where id: undefined or id: null as a where null clause', function() {
 
-        return knex('accounts').logMe('sql').where({'id': null}).select('first_name', 'email');
+        return knex('accounts')
+          .where({'id': null})
+          .select('first_name', 'email')
+          .testSql(function(tester) {
+            tester(
+              'mysql',
+              'select `first_name`, `email` from `accounts` where `id` is null',
+              []
+            );
+            tester(
+              'postgresql',
+              'select "first_name", "email" from "accounts" where "id" is null',
+              []
+            );
+            tester(
+              'sqlite3',
+              'select "first_name", "email" from "accounts" where "id" is null',
+              []
+            );
+          });
 
       });
 
       it('allows where id = 0', function() {
 
-        return knex('accounts').logMe('sql').where({'id': 0}).select();
-
+        return knex('accounts')
+          .where({'id': 0})
+          .select()
+          .testSql(function(tester) {
+            tester(
+              'mysql',
+              'select * from `accounts` where `id` = ?',
+              [0]
+            );
+            tester(
+              'postgresql',
+              'select * from "accounts" where "id" = ?',
+              [0]
+            );
+            tester(
+              'sqlite3',
+              'select * from "accounts" where "id" = ?',
+              [0]
+            );
+          });
       });
 
     });
@@ -173,7 +293,6 @@ module.exports = function(knex) {
       }).select('first_name', 'last_name');
 
     });
-
 
     it("supports the <> operator", function() {
 

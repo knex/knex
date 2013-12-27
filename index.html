@@ -265,8 +265,6 @@
       <li>– <a href="#Schema-hasTable">hasTable</a></li>
       <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
       <li>– <a href="#Schema-table">table</a></li>
-      <li>– <a href="#Schema-charset">charset</a></li>
-      <li>– <a href="#Schema-collate">collate</a></li>
       <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
       <li>– <a href="#Schema-dropColumn">dropColumn</a></li>
       <li>– <a href="#Schema-dropColumns">dropColumns</a></li>
@@ -1271,7 +1269,7 @@ knex.schema.table('users', function (table) {
     </p>
 
     <p id="Schema-specificType">
-      <b class="header">specificType</b><code>table.specificType(column, value)</code>
+      <b class="header">specificType</b><code>table.specificType(name, value)</code>
       <br />
       Sets a specific type for the column creation, if you'd like to add a column type that isn't supported here.
     </p>
@@ -1446,8 +1444,7 @@ process.stderr.on('data', function() {
       <b class="header">How do I run the test suite?</b><br />
       The test suite looks for an environment variable called <tt>KNEX_TEST</tt> for the path to the database
       configuration. If you run the following command:
-      <tt>$ export KNEX_TEST='/path/to/your/knex_config.js'</tt>, replacing with the path to your config file, and the config file is valid, the test suite should run with <tt>npm test</tt>. If you're going to add a test, you may want to follow similar patterns, used in the test suite,
-      setting <tt>$ export KNEX_DEV=1</tt> to save the outputs data from the tests into the <tt>shared/output.js</tt> file.
+      <tt>$ export KNEX_TEST='/path/to/your/knex_config.js'</tt>, replacing with the path to your config file, and the config file is valid, the test suite should run with <tt>npm test</tt>.
     </p>
 
     <p id="faq-nonode">
