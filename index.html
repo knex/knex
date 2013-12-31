@@ -1292,6 +1292,7 @@ knex.schema.table('users', function (table) {
       <b class="header">primary</b><code>column.primary()</code>
       <br />
       Sets the field as the primary key for the table.
+      To create a compound primary key, pass an array of column names: <code>table.primary(['column1', 'column2'])</code>.
     </p>
 
     <p id="Chainable-unique">
