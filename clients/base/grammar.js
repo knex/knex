@@ -82,7 +82,9 @@ exports.baseGrammar = {
 
   // Compiles the columns in the query, specifying if an item was distinct.
   compileColumns: function(qb, columns) {
-    return (qb.flags.distinct ? 'select distinct' : 'select') + ((_.isArray(columns) && _.isEmpty(columns)) ? '' : ' '+this.columnize(columns));
+    var sql = (qb.flags.distinct ? 'select distinct' : 'select') + ((_.isArray(columns) && _.isEmpty(columns)) ? '' : ' '+this.columnize(columns));
+    sql = qb.aggregates.length ? sql + ',' : sql;
+    return sql;    
   },
 
   // Compiles the `from` tableName portion of the query.
