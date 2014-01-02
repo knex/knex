@@ -1,4 +1,4 @@
-// Knex.js  0.5.2
+// Knex.js  0.5.3
 // --------------
 
 //     (c) 2013 Tim Griesser
@@ -88,7 +88,7 @@ var Knex = function(config) {
   knex.client = client;
 
   // Keep in sync with package.json
-  knex.VERSION = '0.5.2';
+  knex.VERSION = '0.5.3';
 
   // Runs a new transaction, taking a container and returning a promise
   // for when the transaction is resolved.
