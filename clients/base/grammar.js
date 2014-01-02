@@ -78,13 +78,15 @@ exports.baseGrammar = {
       sql.push(aggregate.type + '(' + this.wrap(column) + ')' + (segments ? ' as ' + this.wrap(segments[2]) : ''));
     }
     return sql.join(', ');
-   },
+  },
 
   // Compiles the columns in the query, specifying if an item was distinct.
   compileColumns: function(qb, columns) {
-    var sql = (qb.flags.distinct ? 'select distinct' : 'select') + ((_.isArray(columns) && _.isEmpty(columns)) ? '' : ' '+this.columnize(columns));
-    sql = qb.aggregates.length ? sql + ',' : sql;
-    return sql;    
+    var columnsIsArray = _.isArray(columns);
+    var columnsEmpty = _.isEmpty(columns);
+    var sql = (qb.flags.distinct ? 'select distinct' : 'select') + ((columnsIsArray && columnsEmpty) ? '' : ' '+this.columnize(columns));
+    sql = qb.aggregates.length && !columnsEmpty ? sql + ',' : sql;
+    return sql;
   },
 
   // Compiles the `from` tableName portion of the query.
