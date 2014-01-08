@@ -13,6 +13,20 @@ module.exports = {
       sql: [['drop table if exists "test_foreign_table_two"'],['drop table if exists "test_table_one"']]
     }
   },
+  'is possible to set raw statements in defaultTo': {
+    mysql: {
+      bindings: [],
+      sql: ['create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP) default character set utf8']
+    },
+    postgresql: {
+      bindings: [],
+      sql: ['create table "default_raw_test" ("created_at" timestamp default CURRENT_TIMESTAMP)']
+    },
+    sqlite3: {
+      bindings: [],
+      sql: ['create table "default_raw_test" ("created_at" datetime default CURRENT_TIMESTAMP)']
+    }
+  },
   'accepts the table name, and a "container" function': {
     mysql: {
       bindings: [],
