@@ -28,7 +28,7 @@ module.exports = function(knex) {
 
       it('is possible to set raw statements in defaultTo', function() {
         return knex.schema.createTable('default_raw_test', function(t) {
-          t.dateTime('created_at').defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+          t.timestamp('created_at').defaultTo(knex.raw('CURRENT_TIMESTAMP'));
         }).logMe('sql').then(null);
       });
 

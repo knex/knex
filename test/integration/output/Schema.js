@@ -16,7 +16,7 @@ module.exports = {
   'is possible to set raw statements in defaultTo': {
     mysql: {
       bindings: [],
-      sql: ['create table `default_raw_test` (`created_at` datetime default CURRENT_TIMESTAMP) default character set utf8']
+      sql: ['create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP) default character set utf8']
     },
     postgresql: {
       bindings: [],
