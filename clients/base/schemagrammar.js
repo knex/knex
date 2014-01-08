@@ -149,11 +149,11 @@ exports.baseSchemaGrammar = {
 
   // Format a value so that it can be used in "default" clauses.
   getDefaultValue: function(value) {
-    if (value instanceof Raw) return value.sql;
+    if (_.isObject(value) && value.sql) return value.sql;
     if (value === true || value === false) {
-      return parseInt(value, 10);
+      value = parseInt(value, 10);
     }
-    return '' + value;
+    return "\'" + value + "\'";
   },
 
   // Get the primary key command if it exists on the blueprint.
@@ -251,7 +251,7 @@ exports.baseSchemaGrammar = {
   // Get the SQL for a default column modifier.
   modifyDefault: function(blueprint, column) {
     if (column.defaultValue != void 0) {
-      return " default '" + this.getDefaultValue(column.defaultValue) + "'";
+      return " default " + this.getDefaultValue(column.defaultValue);
     }
   }
 

@@ -19,11 +19,18 @@ module.exports = function(knex) {
         knex.schema.dropTableIfExists('migration_test_1'),
         knex.schema.dropTableIfExists('migration_test_2'),
         knex.schema.dropTableIfExists('migration_test_2_1'),
-        knex.schema.dropTableIfExists('catch_test')
+        knex.schema.dropTableIfExists('catch_test'),
+        knex.schema.dropTableIfExists('default_raw_test')
       ]);
     });
 
     describe('createTable', function() {
+
+      it('is possible to set raw statements in defaultTo', function() {
+        return knex.schema.createTable('default_raw_test', function(t) {
+          t.dateTime('created_at').defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+        }).logMe('sql').then(null);
+      });
 
       it('is possible to chain .catch', function() {
         return knex.schema.createTable('catch_test', function(t) {

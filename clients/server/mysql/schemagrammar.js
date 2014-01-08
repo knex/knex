@@ -199,7 +199,7 @@ exports.schemaGrammar = _.defaults({
   modifyDefault: function(builder, column) {
     // TODO - no default on blob/text
     if (column.defaultValue != void 0 && column.type != 'blob' && column.type.indexOf('text') === -1) {
-      return " default '" + this.getDefaultValue(column.defaultValue) + "'";
+      return " default " + this.getDefaultValue(column.defaultValue);
     }
   },
 
