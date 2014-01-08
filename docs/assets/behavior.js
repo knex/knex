@@ -22,7 +22,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/base.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/base.js",
             "projectPath": "clients/base.js",
             "targetPath": "clients/base",
             "title": "base"
@@ -49,7 +49,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/base/grammar.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/base/grammar.js",
                 "projectPath": "clients/base/grammar.js",
                 "targetPath": "clients/base/grammar",
                 "title": "grammar"
@@ -75,7 +75,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/base/schemagrammar.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/base/schemagrammar.js",
                 "projectPath": "clients/base/schemagrammar.js",
                 "targetPath": "clients/base/schemagrammar",
                 "title": "schemagrammar"
@@ -109,7 +109,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "singleLineComment": ["//"],
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/base/sqlite3/grammar.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/base/sqlite3/grammar.js",
                     "projectPath": "clients/base/sqlite3/grammar.js",
                     "targetPath": "clients/base/sqlite3/grammar",
                     "title": "grammar"
@@ -135,7 +135,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "singleLineComment": ["//"],
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/base/sqlite3/schemagrammar.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/base/sqlite3/schemagrammar.js",
                     "projectPath": "clients/base/sqlite3/schemagrammar.js",
                     "targetPath": "clients/base/sqlite3/schemagrammar",
                     "title": "schemagrammar"
@@ -165,7 +165,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/pool.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/pool.js",
             "projectPath": "clients/pool.js",
             "targetPath": "clients/pool",
             "title": "pool"
@@ -199,7 +199,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/base.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/base.js",
                 "projectPath": "clients/server/base.js",
                 "targetPath": "clients/server/base",
                 "title": "base"
@@ -225,7 +225,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/mysql.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/mysql.js",
                 "projectPath": "clients/server/mysql.js",
                 "targetPath": "clients/server/mysql",
                 "title": "mysql"
@@ -252,7 +252,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "singleLineComment": ["//"],
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/mysql/grammar.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/mysql/grammar.js",
                     "projectPath": "clients/server/mysql/grammar.js",
                     "targetPath": "clients/server/mysql/grammar",
                     "title": "grammar"
@@ -278,7 +278,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "singleLineComment": ["//"],
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/mysql/schemagrammar.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/mysql/schemagrammar.js",
                     "projectPath": "clients/server/mysql/schemagrammar.js",
                     "targetPath": "clients/server/mysql/schemagrammar",
                     "title": "schemagrammar"
@@ -306,7 +306,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/postgres.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/postgres.js",
                 "projectPath": "clients/server/postgres.js",
                 "targetPath": "clients/server/postgres",
                 "title": "postgres"
@@ -333,7 +333,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "singleLineComment": ["//"],
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/postgres/grammar.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/postgres/grammar.js",
                     "projectPath": "clients/server/postgres/grammar.js",
                     "targetPath": "clients/server/postgres/grammar",
                     "title": "grammar"
@@ -359,7 +359,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "singleLineComment": ["//"],
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/postgres/schemagrammar.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/postgres/schemagrammar.js",
                     "projectPath": "clients/server/postgres/schemagrammar.js",
                     "targetPath": "clients/server/postgres/schemagrammar",
                     "title": "schemagrammar"
@@ -387,7 +387,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/sqlite3.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/sqlite3.js",
                 "projectPath": "clients/server/sqlite3.js",
                 "targetPath": "clients/server/sqlite3",
                 "title": "sqlite3"
@@ -414,7 +414,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "singleLineComment": ["//"],
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/sqlite3/grammar.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/sqlite3/grammar.js",
                     "projectPath": "clients/server/sqlite3/grammar.js",
                     "targetPath": "clients/server/sqlite3/grammar",
                     "title": "grammar"
@@ -440,7 +440,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "singleLineComment": ["//"],
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/server/sqlite3/schemagrammar.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/server/sqlite3/schemagrammar.js",
                     "projectPath": "clients/server/sqlite3/schemagrammar.js",
                     "targetPath": "clients/server/sqlite3/schemagrammar",
                     "title": "schemagrammar"
@@ -478,7 +478,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/web/cordova.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/web/cordova.js",
                 "projectPath": "clients/web/cordova.js",
                 "targetPath": "clients/web/cordova",
                 "title": "cordova"
@@ -504,7 +504,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/clients/web/websql.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/clients/web/websql.js",
                 "projectPath": "clients/web/websql.js",
                 "targetPath": "clients/web/websql",
                 "title": "websql"
@@ -534,7 +534,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "singleLineComment": ["//"],
           "name": "JavaScript"
         },
-        "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/knex.js",
+        "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/knex.js",
         "projectPath": "knex.js",
         "targetPath": "knex",
         "title": "knex"
@@ -545,8 +545,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 2,
-            "title": "Knex.js  0.5.3",
-            "slug": "knexjs-053"
+            "title": "Knex.js  0.5.4",
+            "slug": "knexjs-054"
           },
           "depth": 2
         }
@@ -576,7 +576,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/builder/joinclause.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/builder/joinclause.js",
                 "projectPath": "lib/builder/joinclause.js",
                 "targetPath": "lib/builder/joinclause",
                 "title": "joinclause"
@@ -612,7 +612,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "singleLineComment": ["//"],
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/cli/migrate.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/cli/migrate.js",
                 "projectPath": "lib/cli/migrate.js",
                 "targetPath": "lib/cli/migrate",
                 "title": "migrate"
@@ -630,7 +630,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/common.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/common.js",
             "projectPath": "lib/common.js",
             "targetPath": "lib/common",
             "title": "common"
@@ -656,7 +656,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/helpers.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/helpers.js",
             "projectPath": "lib/helpers.js",
             "targetPath": "lib/helpers",
             "title": "helpers"
@@ -682,7 +682,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/migrate.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/migrate.js",
             "projectPath": "lib/migrate.js",
             "targetPath": "lib/migrate",
             "title": "migrate"
@@ -708,7 +708,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/promise.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/promise.js",
             "projectPath": "lib/promise.js",
             "targetPath": "lib/promise",
             "title": "promise"
@@ -724,7 +724,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/raw.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/raw.js",
             "projectPath": "lib/raw.js",
             "targetPath": "lib/raw",
             "title": "raw"
@@ -750,7 +750,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schemabuilder.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/schemabuilder.js",
             "projectPath": "lib/schemabuilder.js",
             "targetPath": "lib/schemabuilder",
             "title": "schemabuilder"
@@ -776,7 +776,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schemainterface.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/schemainterface.js",
             "projectPath": "lib/schemainterface.js",
             "targetPath": "lib/schemainterface",
             "title": "schemainterface"
@@ -802,7 +802,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/sqlstring.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/sqlstring.js",
             "projectPath": "lib/sqlstring.js",
             "targetPath": "lib/sqlstring",
             "title": "sqlstring"
@@ -828,7 +828,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "singleLineComment": ["//"],
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/transaction.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex2/lib/transaction.js",
             "projectPath": "lib/transaction.js",
             "targetPath": "lib/transaction",
             "title": "transaction"
