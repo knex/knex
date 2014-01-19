@@ -1,0 +1,19 @@
+{
+
+  "mysql": {
+    "database": "knex_test",
+    "user": "root",
+    "charset": "utf8"
+  },
+
+  "postgres": {
+    "adapter":  "postgresql",
+    "database": "knex_test",
+    "user": "postgres"
+  },
+
+  "sqlite3": {
+    "filename": ":memory:"
+  }
+
+}
