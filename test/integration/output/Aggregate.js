@@ -22,6 +22,29 @@ module.exports = {
       }]
     }
   },
+  'has an avg': {
+    mysql: {
+      bindings: [],
+      sql: 'select avg(`logins`) from `accounts`',
+      result: [{
+        'avg(`logins`)': 1.6667
+      }]
+    },
+    postgresql: {
+      bindings: [],
+      sql: 'select avg("logins") from "accounts"',
+      result: [{
+        avg: '1.6666666666666667'
+      }]
+    },
+    sqlite3: {
+      bindings: [],
+      sql: 'select avg("logins") from "accounts"',
+      result: [{
+        'avg("logins")': 1.6666666666666667
+      }]
+    }
+  },
   'has a count': {
     mysql: {
       bindings: [],
