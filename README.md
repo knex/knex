@@ -15,7 +15,6 @@
 |     |    \     \  |     |   \       |    \                 \  /     /    \     \
 |_____|     \_____\ |_____|    \______|     \_______________/  /_____/      \_____\
 ```
-[![Build Status](https://travis-ci.org/tgriesser/knex.png?branch=master)](https://travis-ci.org/tgriesser/knex)
 
 Knex.js is a multi-dialect query builder for Node.js.
 
