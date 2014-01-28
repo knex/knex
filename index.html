@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.5.4)</span>
+      Knex.js <span class="version">(0.5.5)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -374,7 +374,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.5.4 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.5.5 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1483,6 +1483,14 @@ process.stderr.on('data', function() {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.5.5</b> &mdash; <small><i>Jan 28, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.4...0.5.5">Diff</a><br />
+      <ul>
+        <li>Fix for the exit code on the migrations cli (#151).</li>
+        <li>The <tt>init</tt> method in <tt>knex.migrate</tt> now uses <tt>this.config</tt> if one isn't passed in (#156).</li>
+      </ul>
+    </p>
 
     <p>
       <b class="header">0.5.4</b> &mdash; <small><i>Jan 7, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.3...0.5.4">Diff</a><br />
