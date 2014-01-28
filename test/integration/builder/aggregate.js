@@ -8,6 +8,12 @@ module.exports = function(knex) {
 
     });
 
+    it('has an avg', function() {
+
+      return knex('accounts').logMe().avg('logins');
+
+    });
+
     it('has a count', function() {
 
       return knex('accounts').logMe().count('id');
