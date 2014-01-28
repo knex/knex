@@ -242,6 +242,7 @@
       <li><b><a href="#Builder-Interface">Interface:</a></b></li>
       <li>– <a href="#Builder-tap">tap</a></li>
       <li>– <a href="#Builder-then">then</a></li>
+      <li>– <a href="#Builder-pluck">pluck</a></li>
       <li>– <a href="#Builder-exec">exec</a></li>
       <li>– <a href="#Builder-toString">toString</a></li>
     </ul>
@@ -954,6 +955,13 @@ knex.transaction(function(t) {
       with the same value, in the order they were called; the query will not be executed multiple times.
     </p>
 
+    <p id="Builder-pluck">
+      <b class="header">tap</b><code>.pluck(id)</code>
+      <br />
+      This will pluck the specified column from each row in your results, yielding a promise which resolves
+      to the array of values selected.
+    </p>
+
     <p id="Builder-exec">
       <b class="header">exec</b><code>.exec(callback)</code>
       <br />
@@ -970,6 +978,7 @@ knex.transaction(function(t) {
       this will execute side effects on the resolved response, ultimately returning a promise that fulfills with the original
       value. A thrown error or rejected promise will cause the promise to transition into a rejected state.
     </p>
+
 <pre>
 // Using only .then()
 query.then(function(x) {

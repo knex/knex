@@ -432,4 +432,10 @@ describe('Builder', function () {
 
   });
 
+  describe('pluck', function() {
+
+    it('should pluck a defined key from the result set');
+
+  });
+
 });
