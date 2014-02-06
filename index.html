@@ -439,6 +439,10 @@ var knex = Knex.initialize({
     </p>
 
     <p>
+      The options are passed directly to the appropriate database client to create the connection. Acceptable <tt>charset</tt> values may vary between clients. MySQL requires a key from its <a href="https://github.com/felixge/node-mysql/blob/master/lib/protocol/constants/charsets.js">predefined list</a> (e.g. <tt>UTF8_GENERAL_CI</tt>) to be passed as the <tt>charset</tt> in Knex. 
+    </p>
+
+    <p>
       You'll need to store this instance created by the <tt>initialize</tt> somewhere in the application
       you can reference it. A common pattern to follow is to set the client as a property on the <tt>Knex</tt>
       library when your application starts, so you can easily reference it later:
