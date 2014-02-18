@@ -424,6 +424,15 @@ describe('Builder', function () {
 
   });
 
+  describe('limit / offset', function() {
+
+    it('should not break with null call', function() {
+      var sql = builder.from('test').limit(null).offset(null).toString();
+      expect(sql).to.eql('select * from `test`');
+    });
+
+  });
+
   describe('delete', function() {
 
   });
