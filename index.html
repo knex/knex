@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.5.6)</span>
+      Knex.js <span class="version">(0.5.7)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -373,7 +373,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.5.6 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.5.7 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -439,7 +439,7 @@ var knex = Knex.initialize({
     </p>
 
     <p>
-      The options are passed directly to the appropriate database client to create the connection. Acceptable <tt>charset</tt> values may vary between clients. MySQL requires a key from its <a href="https://github.com/felixge/node-mysql/blob/master/lib/protocol/constants/charsets.js">predefined list</a> (e.g. <tt>UTF8_GENERAL_CI</tt>) to be passed as the <tt>charset</tt> in Knex. 
+      The options are passed directly to the appropriate database client to create the connection. Acceptable <tt>charset</tt> values may vary between clients. MySQL requires a key from its <a href="https://github.com/felixge/node-mysql/blob/master/lib/protocol/constants/charsets.js">predefined list</a> (e.g. <tt>UTF8_GENERAL_CI</tt>) to be passed as the <tt>charset</tt> in Knex.
     </p>
 
     <p>
@@ -1500,6 +1500,11 @@ process.stderr.on('data', function() {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.5.7</b> &mdash; <small><i>Feb 18, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.6...0.5.7">Diff</a><br />
+      Fix for a <tt>null</tt> limit / offset breaking query chain (#182).
+    </p>
 
     <p>
       <b class="header">0.5.6</b> &mdash; <small><i>Feb 5, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.5...0.5.6">Diff</a><br />
