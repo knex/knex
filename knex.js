@@ -46,7 +46,7 @@ Knex.initialize = function(config) {
   // constructor, so we have no reference to 'this' just
   // in case it's called with `new`.
   function knex(tableName) {
-    return tableName ? knex.table(tableName) : knex;
+    return tableName ? knex.table(tableName) : new client.Query;
   }
 
   // The `__knex__` is used if you need to duck-type check whether this
