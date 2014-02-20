@@ -91,7 +91,7 @@ Knex.initialize = function(config) {
   // `knex.schema.table('tableName', function() {...`
   // `knex.schema.createTable('tableName', function() {...`
   // `knex.schema.dropTableIfExists('tableName');`
-  _.each(['table', 'createTable', 'editTable', 'dropTable',
+  _.each(['table', 'createTable', 'editTable', 'dropTable', 'columns',
     'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn'], function(key) {
     schema[key] = function(tableName) {
       if (!client.SchemaBuilder) client.initSchema();
