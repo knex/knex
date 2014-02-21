@@ -138,12 +138,12 @@ module.exports = function(postgresclient, mysqlclient, sqlite3client) {
       expect(chain.bindings).to.eql([1, 2]);
 
       // TODO:
-      // chain = mysql.union(
-      //   mysql.raw(mysql.select('*').from('users').where('id', '=', 1)),
-      //   mysql.raw(mysql.select('*').from('users').where('id', '=', 2))
-      // ).toSql();
-      // expect(chain.sql).to.equal('(select * from `users` where `id` = ?) union (select * from `users` where `id` = ?)');
-      expect(chain.bindings).to.eql([1, 2]);
+      chain = mysql.union(
+        mysql.raw(mysql.select('*').from('users').where('id', '=', 1)).wrap('(', ')'),
+        mysql.raw(mysql.select('*').from('users').where('id', '=', 2)).wrap('(', ')')
+      ).orderBy('id').limit(10).toSql();
+      expect(chain.sql).to.equal('(select * from `users` where `id` = ?) union (select * from `users` where `id` = ?) order by `id` asc limit ?');
+      expect(chain.bindings).to.eql([1, 2, 10]);
     });
 
     it("union alls", function() {
@@ -460,8 +460,6 @@ module.exports = function(postgresclient, mysqlclient, sqlite3client) {
     });
 
     it("MySQL locks", function (){
-
-      debugger
       chain = mysql.transacting({}).select('*').from('foo').where('bar', '=', 'baz').forUpdate().toSql();
       expect(chain.sql).to.equal('select * from `foo` where `bar` = ? for update');
       expect(chain.bindings).to.eql(['baz']);
