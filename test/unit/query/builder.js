@@ -520,6 +520,14 @@ module.exports = function(postgresclient, mysqlclient, sqlite3client) {
       expect(chain.sql).to.eql('select * from "test"');
     });
 
+    it('allows passing builder into where clause, #162', function() {
+      chain = sql.from('chapter').select('id').where('book', 1);
+      var page = sql.from('page').select('id').whereIn('chapter_id', chain).toSql();
+      var word = sql.from('word').select('id').whereIn('page_id', chain).toSql();
+      expect(page.sql).to.eql('select "id" from "page" where "chapter_id" in (select "id" from "chapter" where "book" = ?)');
+      expect(page.bindings).to.eql([1]);
+    });
+
   });
 
 };
