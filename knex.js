@@ -46,7 +46,8 @@ Knex.initialize = function(config) {
   // constructor, so we have no reference to 'this' just
   // in case it's called with `new`.
   function knex(tableName) {
-    return tableName ? knex.table(tableName) : new client.Query;
+    var qb = new client.Query;
+    return tableName ? qb.table(tableName) : qb;
   }
 
   // The `__knex__` is used if you need to duck-type check whether this
@@ -57,6 +58,19 @@ Knex.initialize = function(config) {
     raw.__client = client;
     return raw;
   };
+
+  // Return a version of knex which doesn't mutate the chain each time
+  // you call a new method. Useful for creating partial query chains.
+  knex.stateless = _.once(function() {
+    client.initStateless();
+     _.each(_.keys(client.StatelessQuery.prototype), function(method) {
+      knex[method] = function() {
+        var builder = (this instanceof client.StatelessQuery) ? this : new client.StatelessQuery();
+        return builder[method].apply(builder, arguments);
+      };
+    });
+    return client.StatelessQuery;
+  });
 
   // Runs a new transaction, taking a container and returning a promise
   // for when the transaction is resolved.
@@ -76,6 +90,7 @@ Knex.initialize = function(config) {
   // Allow chaining methods from the root object, before
   // any other information is specified.
   _.each(_.keys(client.Query.prototype), function(method) {
+    if (method.charAt(0) === '_') return;
     knex[method] = function() {
       var builder = (this instanceof client.Query) ? this : new client.Query();
       return builder[method].apply(builder, arguments);

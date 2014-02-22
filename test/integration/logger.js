@@ -9,6 +9,7 @@ module.exports = function(testSuite) {
       var Raw = require('../../lib/raw');
       var client = knex.client;
       client.initSchema();
+      client.initStateless();
 
       var aliases = {
         'pg': 'postgresql',
@@ -66,9 +67,9 @@ module.exports = function(testSuite) {
         });
       }
 
-
       Raw.prototype.testSql =
       client.Query.prototype.testSql =
+      client.StatelessQuery.prototype.testSql =
       client.SchemaBuilder.prototype.testSql = function Logger$testSql(handler) {
         handler(_.bind(testSqlTester, this));
         return this;
