@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.5.2)</span>
+      Knex.js <span class="version">(0.5.7)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -196,10 +196,6 @@
     <a class="toc_title" href="#Installation">
       Installation
     </a>
-    <ul class="toc_section">
-      <li>– <a href="#Installation-nodejs"><b>node.js</b></a></li>
-      <li>– <a href="#Installation-websql">webSQL</a></li>
-    </ul>
 
     <a class="toc_title" href="#Upgrading">
       Upgrading
@@ -246,6 +242,7 @@
       <li><b><a href="#Builder-Interface">Interface:</a></b></li>
       <li>– <a href="#Builder-tap">tap</a></li>
       <li>– <a href="#Builder-then">then</a></li>
+      <li>– <a href="#Builder-pluck">pluck</a></li>
       <li>– <a href="#Builder-exec">exec</a></li>
       <li>– <a href="#Builder-toString">toString</a></li>
     </ul>
@@ -294,6 +291,10 @@
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
       <li>– <a href="#Chainable-unique">unique</a></li>
+      <li>– <a href="#Chainable-references">references</a></li>
+      <li>– <a href="#Chainable-inTable">inTable</a></li>
+      <li>– <a href="#Chainable-onDelete">onDelete</a></li>
+      <li>– <a href="#Chainable-onUpdate">onUpdate</a></li>
       <li>– <a href="#Chainable-defaultTo">defaultTo</a></li>
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
       <li>– <a href="#Chainable-notNullable">notNullable</a></li>
@@ -372,7 +373,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.5.2 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.5.7 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -435,6 +436,10 @@ var knex = Knex.initialize({
       An initialize should only ever happen once in your application, as it creates a connection pool
       for the current database, you should use the instance returned from the initialize call throughout
       your library.
+    </p>
+
+    <p>
+      The options are passed directly to the appropriate database client to create the connection. Acceptable <tt>charset</tt> values may vary between clients. MySQL requires a key from its <a href="https://github.com/felixge/node-mysql/blob/master/lib/protocol/constants/charsets.js">predefined list</a> (e.g. <tt>UTF8_GENERAL_CI</tt>) to be passed as the <tt>charset</tt> in Knex.
     </p>
 
     <p>
@@ -900,6 +905,12 @@ knex.transaction(function(t) {
       Retrieve the sum of the values of a given <b>column</b>.
     </p>
 
+    <p id="Builder-avg">
+      <b class="header">avg</b><code>.avg(column)</code>
+      <br />
+      Retrieve the average of the values of a given <b>column</b>.
+    </p>
+
     <p id="Builder-increment">
       <b class="header">increment</b><code>.increment(column, amount)</code>
       <br />
@@ -952,6 +963,13 @@ knex.transaction(function(t) {
       with the same value, in the order they were called; the query will not be executed multiple times.
     </p>
 
+    <p id="Builder-pluck">
+      <b class="header">tap</b><code>.pluck(id)</code>
+      <br />
+      This will pluck the specified column from each row in your results, yielding a promise which resolves
+      to the array of values selected.
+    </p>
+
     <p id="Builder-exec">
       <b class="header">exec</b><code>.exec(callback)</code>
       <br />
@@ -968,6 +986,7 @@ knex.transaction(function(t) {
       this will execute side effects on the resolved response, ultimately returning a promise that fulfills with the original
       value. A thrown error or rejected promise will cause the promise to transition into a rejected state.
     </p>
+
 <pre>
 // Using only .then()
 query.then(function(x) {
@@ -1269,7 +1288,7 @@ knex.schema.table('users', function (table) {
     </p>
 
     <p id="Schema-specificType">
-      <b class="header">specificType</b><code>table.specificType(name, value)</code>
+      <b class="header">specificType</b><code>table.specificType(column, value)</code>
       <br />
       Sets a specific type for the column creation, if you'd like to add a column type that isn't supported here.
     </p>
@@ -1290,12 +1309,37 @@ knex.schema.table('users', function (table) {
       <b class="header">primary</b><code>column.primary()</code>
       <br />
       Sets the field as the primary key for the table.
+      To create a compound primary key, pass an array of column names: <code>table.primary(['column1', 'column2'])</code>.
     </p>
 
     <p id="Chainable-unique">
       <b class="header">unique</b><code>column.unique()</code>
       <br />
       Sets the column as unique.
+    </p>
+
+    <p id="Chainable-references">
+      <b class="header">references</b><code>column.references(column)</code>
+      <br />
+      Sets the "column" that the current column references as a foreign key.
+    </p>
+
+    <p id="Chainable-inTable">
+      <b class="header">inTable</b><code>column.inTable(table)</code>
+      <br />
+      Sets the "table" where the foreign key column is located.
+    </p>
+
+    <p id="Chainable-onDelete">
+      <b class="header">onDelete</b><code>column.onDelete(command)</code>
+      <br />
+      Sets the SQL command to be run "onDelete".
+    </p>
+
+    <p id="Chainable-onUpdate">
+      <b class="header">onUpdate</b><code>column.onUpdate(command)</code>
+      <br />
+      Sets the SQL command to be run "onUpdate".
     </p>
 
     <p id="Chainable-defaultTo">
@@ -1444,7 +1488,8 @@ process.stderr.on('data', function() {
       <b class="header">How do I run the test suite?</b><br />
       The test suite looks for an environment variable called <tt>KNEX_TEST</tt> for the path to the database
       configuration. If you run the following command:
-      <tt>$ export KNEX_TEST='/path/to/your/knex_config.js'</tt>, replacing with the path to your config file, and the config file is valid, the test suite should run with <tt>npm test</tt>.
+      <tt>$ export KNEX_TEST='/path/to/your/knex_config.js'</tt>, replacing with the path to your config file, and the config file is valid, the test suite should run with <tt>npm test</tt>. If you're going to add a test, you may want to follow similar patterns, used in the test suite,
+      setting <tt>$ export KNEX_DEV=1</tt> to save the outputs data from the tests into the <tt>shared/output.js</tt> file.
     </p>
 
     <p id="faq-nonode">
@@ -1455,6 +1500,34 @@ process.stderr.on('data', function() {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.5.7</b> &mdash; <small><i>Feb 18, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.6...0.5.7">Diff</a><br />
+      Fix for a <tt>null</tt> limit / offset breaking query chain (#182).
+    </p>
+
+    <p>
+      <b class="header">0.5.6</b> &mdash; <small><i>Feb 5, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.5...0.5.6">Diff</a><br />
+      Bump bluebird dependency to ~1.0.0, fixing regression in Bluebird 1.0.2 (#176).
+    </p>
+
+    <p>
+      <b class="header">0.5.5</b> &mdash; <small><i>Jan 28, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.4...0.5.5">Diff</a><br />
+      <ul>
+        <li>Fix for the exit code on the migrations cli (#151).</li>
+        <li>The <tt>init</tt> method in <tt>knex.migrate</tt> now uses <tt>this.config</tt> if one isn't passed in (#156).</li>
+      </ul>
+    </p>
+
+    <p>
+      <b class="header">0.5.4</b> &mdash; <small><i>Jan 7, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.3...0.5.4">Diff</a><br />
+      Fix for using raw statements in <tt>defaultTo</tt> schema builder methods (#146).
+    </p>
+
+    <p>
+      <b class="header">0.5.3</b> &mdash; <small><i>Jan 2, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.2...0.5.3">Diff</a><br />
+      Fix for incorrectly formed sql when aggregates are used with columns (#144).
+    </p>
 
     <p>
       <b class="header">0.5.2</b> &mdash; <small><i>Dec 18, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.1...0.5.2">Diff</a><br />

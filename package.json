@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.5.2",
+  "version": "0.5.7",
   "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
@@ -17,27 +17,26 @@
     "rimraf": "~2.2.2",
     "grunt": "~0.4.1",
     "grunt-release": "~0.6.0",
-    "mocha-as-promised": "~2.0.0",
+    "mocha-as-promised": "~1.4.0",
     "chai-as-promised": "~4.1.0",
     "sinon": "~1.7.3",
-    "sinon-chai": "~2.4.0",
-    "browserify": "~3.14.1",
-    "grunt-browserify": "~1.3.0",
-    "grunt-contrib-uglify": "~0.2.7"
+    "sinon-chai": "~2.4.0"
   },
   "dependencies": {
     "generic-pool-redux": "~0.1.0",
     "optimist": "~0.6.0",
     "mkdirp": "~0.3.5",
-    "bluebird": "~0.11.5-0",
+    "bluebird": "~1.0.0",
     "colors": "~0.6.2",
-    "lodash": ">=2.4.0",
-    "fluent-chain": "0.0.0",
+    "lodash": "^2.4.0",
+    "fluent-chain": "~0.1.0",
     "simple-extend": "~0.1.0"
   },
   "scripts": {
-    "test": "mocha -b -R spec test/index.js",
-    "doc": "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js clients/**/**/*.js knex.js"
+    "test": "mocha -R spec test/index.js",
+    "doc": "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js clients/**/**/*.js knex.js",
+    "release:patch": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:patch",
+    "release:minor": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:minor"
   },
   "bin": "bin/knex",
   "repository": {
