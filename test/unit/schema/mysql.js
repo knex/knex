@@ -396,6 +396,15 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` blob');
     });
 
-  });
 
+    it('is possible to set raw statements in defaultTo, #146', function() {
+      tableSql = new SchemaBuilder().createTable('default_raw_test', function(t) {
+        t.timestamp('created_at').defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+      }).toSql();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)');
+    });
+
+  });
 };

@@ -515,6 +515,11 @@ module.exports = function(postgresclient, mysqlclient, sqlite3client) {
       expect(chain.sql).to.equal('select * from "student" left outer join "student_languages" on "student"."id" = "student_languages"."student_id" and "student_languages"."code" = ?');
     });
 
+    it('should not break with null call #182', function() {
+      chain = sql.from('test').limit(null).offset(null).toSql();
+      expect(chain.sql).to.eql('select * from "test"');
+    });
+
   });
 
 };
