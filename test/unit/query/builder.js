@@ -417,6 +417,12 @@ module.exports = function(pgclient, mysqlclient, sqlite3client, stateless) {
       expect(chain.bindings).to.eql(['foo', 'bar', 1]);
     });
 
+    it("should allow for 'null' updates", function() {
+      chain = sql().update({email: null, 'name': 'bar'}).table('users').where('id', 1).toSql();
+      expect(chain.sql).to.equal('update "users" set "email" = ?, "name" = ? where "id" = ?');
+      expect(chain.bindings).to.eql([null, 'bar', 1]);
+    });
+
     it("order by, limit", function() {
       chain = mysql().from('users').where('id', '=', 1).orderBy('foo', 'desc').limit(5).update({email: 'foo', name: 'bar'}).toSql();
       expect(chain.sql).to.equal('update `users` set `email` = ?, `name` = ? where `id` = ? order by `foo` desc limit ?');
@@ -460,8 +466,8 @@ module.exports = function(pgclient, mysqlclient, sqlite3client, stateless) {
       chain = sql().table('users').truncate().toSql();
       expect(chain.sql).to.equal('truncate "users" restart identity');
       chain = sqlite3().table('users').truncate().toSql();
-      expect(chain.sql).to.equal('delete from sqlite_sequence where name = "users"');
-      expect(chain.output).to.be.a.function;
+      expect(chain.sql).to.equal("delete from sqlite_sequence where name = \"users\"");
+      expect(typeof chain.output).to.equal('function');
     });
 
     it("postgres insert get id", function() {

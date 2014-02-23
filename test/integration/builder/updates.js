@@ -31,6 +31,23 @@ module.exports = function(knex) {
         });
     });
 
+    it('should allow for null updates', function() {
+      return knex('accounts')
+        .where('id', 1000)
+        .update({
+          first_name: null,
+          last_name: 'Test',
+          email:'test100@example.com'
+        }).testSql(function(tester) {
+          tester(
+            'mysql',
+            'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
+            ['test100@example.com', null, 'Test', 1000],
+            0
+          );
+        });
+    });
+
     it('should increment a value', function() {
 
       return knex('accounts').select('logins').where('id', 1).tap(function() {
