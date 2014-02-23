@@ -917,11 +917,23 @@ knex.transaction(function(t) {
       Increments a <b>column</b> value by the specified <b>amount</b>.
     </p>
 
+<pre>
+knex('accounts')
+  .where('userid', '=', userid)
+  .increment('balance', 10);
+</pre>
+
     <p id="Builder-decrement">
       <b class="header">decrement</b><code>.decrement(column, amount)</code>
       <br />
       Decrements a <b>column</b> value by the specified <b>amount</b>.
     </p>
+
+  <pre>
+knex('accounts')
+  .where('userid', '=', userid)
+  .decrement('balance', 5);
+</pre>
 
     <p id="Builder-truncate">
       <b class="header">truncate</b><code>.truncate()</code>
