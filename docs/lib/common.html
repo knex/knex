@@ -33,6 +33,16 @@ after the last block.</p></div></div><div class="code"><div class="wrapper">  <s
     <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">);</span>
   <span class="p">},</span>
 
+  <span class="nx">map</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">();</span>
+    <span class="k">return</span> <span class="nx">promise</span><span class="p">.</span><span class="nx">map</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+  <span class="p">},</span>
+
+  <span class="nx">reduce</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">();</span>
+    <span class="k">return</span> <span class="nx">promise</span><span class="p">.</span><span class="nx">reduce</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+  <span class="p">},</span>
+
   <span class="k">catch</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
     <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">caught</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
   <span class="p">},</span>
@@ -89,9 +99,11 @@ the currently running transaction</p></div></div><div class="code"><div class="w
       <span class="k">this</span><span class="p">.</span><span class="nx">usingConnection</span> <span class="o">=</span> <span class="nx">t</span><span class="p">.</span><span class="nx">connection</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Add "forUpdate" and "forShare" here, since these are only relevant
 within the context of a transaction.</p></div></div><div class="code"><div class="wrapper">      <span class="k">this</span><span class="p">.</span><span class="nx">forUpdate</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
         <span class="nx">flags</span><span class="p">.</span><span class="nx">selectMode</span> <span class="o">=</span> <span class="s1">&#39;ForUpdate&#39;</span><span class="p">;</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
       <span class="p">};</span>
       <span class="k">this</span><span class="p">.</span><span class="nx">forShare</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
         <span class="nx">flags</span><span class="p">.</span><span class="nx">selectMode</span> <span class="o">=</span> <span class="s1">&#39;ForShare&#39;</span><span class="p">;</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
       <span class="p">};</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>

@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.5.7)</span>
+      Knex.js <span class="version">(0.5.8)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -242,6 +242,8 @@
       <li><b><a href="#Builder-Interface">Interface:</a></b></li>
       <li>– <a href="#Builder-tap">tap</a></li>
       <li>– <a href="#Builder-then">then</a></li>
+      <li>– <a href="#Builder-map">map</a></li>
+      <li>– <a href="#Builder-reduce">reduce</a></li>
       <li>– <a href="#Builder-pluck">pluck</a></li>
       <li>– <a href="#Builder-exec">exec</a></li>
       <li>– <a href="#Builder-toString">toString</a></li>
@@ -373,7 +375,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.5.7 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.5.8 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -975,13 +977,6 @@ knex('accounts')
       with the same value, in the order they were called; the query will not be executed multiple times.
     </p>
 
-    <p id="Builder-pluck">
-      <b class="header">tap</b><code>.pluck(id)</code>
-      <br />
-      This will pluck the specified column from each row in your results, yielding a promise which resolves
-      to the array of values selected.
-    </p>
-
     <p id="Builder-exec">
       <b class="header">exec</b><code>.exec(callback)</code>
       <br />
@@ -989,6 +984,18 @@ knex('accounts')
       accepts a standard node style callback for executing the query chain. Note that as
       with the <a href="#Builder-then">then</a> method, subsequent calls to the same
       query chain will return the same result.
+    </p>
+
+    <p id="Builder-map">
+      <b class="header">map</b><code>.map(mapper)</code>
+      <br />
+      A passthrough to <a href="https://github.com/petkaantonov/bluebird/blob/master/API.md#mapfunction-mapper---promise">Bluebird's map implementation</a> with the result set.
+    </p>
+
+    <p id="Builder-reduce">
+      <b class="header">reduce</b><code>.reduce(reducer, [initialValue])</code>
+      <br />
+      A passthrough to <a href="https://github.com/petkaantonov/bluebird/blob/master/API.md#reducefunction-reducer--dynamic-initialvalue---promise">Bluebird's reduce implementation</a> with the result set.
     </p>
 
     <p id="Builder-tap">
@@ -1009,6 +1016,13 @@ query.then(function(x) {
 // Using .tap()
 promise.tap(doSideEffectsHere);
 </pre>
+
+    <p id="Builder-pluck">
+      <b class="header">pluck</b><code>.pluck(id)</code>
+      <br />
+      This will pluck the specified column from each row in your results, yielding a promise which resolves
+      to the array of values selected.
+    </p>
 
     <p id="Builder-toString">
       <b class="header">toString</b><code>.toString()</code>
@@ -1514,6 +1528,11 @@ process.stderr.on('data', function() {
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.5.8</b> &mdash; <small><i>Feb 27, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.7...0.5.8">Diff</a><br />
+      Fix for chaining on <tt>forUpdate</tt> / <tt>forShare</tt>, adding <a href="#Builder-map">map</a> &amp; <a href="#Builder-reduce">reduce</a> from bluebird.
+    </p>
+
+    <p>
       <b class="header">0.5.7</b> &mdash; <small><i>Feb 18, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.6...0.5.7">Diff</a><br />
       Fix for a <tt>null</tt> limit / offset breaking query chain (#182).
     </p>
@@ -1785,6 +1804,5 @@ process.stderr.on('data', function() {
   </div>
   <script src="docs/assets/ga.js" type="text/javascript" charset="utf-8"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.8/require.js"></script>
-  <script src="knex-built.js"></script>
 </body>
 </html>
