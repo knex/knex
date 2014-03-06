@@ -45,6 +45,13 @@ exports.Client = ServerBase.extend({
   // connection needs to be added to the pool.
   getRawConnection: function() {
     var connection = mysql.createConnection(this.connectionSettings);
+    // handle connection termination so the process does not crash
+    connection.on('close', function (err) {
+      console.log('MySQL connection closed.');
+    });
+    connection.on('error', function (err) {
+      console.log('MySQL connection error: ' + err);
+    });
     return Promise.promisify(connection.connect, connection)().yield(connection);
   },
 
