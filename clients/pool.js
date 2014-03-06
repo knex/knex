@@ -1,5 +1,7 @@
 // Pool
 // -------
+var domain      = require('domain');
+
 var Promise     = require('../lib/promise').Promise;
 
 var _           = require('lodash');
@@ -60,13 +62,42 @@ Pool.prototype = {
     return this.poolInstance;
   },
 
-  // Acquires a connection from the pool.
+  // Acquires a connection from the pool and
+  // adds it to the active domain.
   acquire: function(callback, priority) {
+    var activeDomain = domain.active;
+
+    if (activeDomain) {
+      // create a closure for callback and its wrapper to run
+      // code within active domain which is the domain at the time
+      // when `acquire` has been called, not `callback` which is
+      // very important otherwise `callback` might end up somewhere else
+      callback = (function (callback) {
+        return function callbackWithinDomain(error, connection) {
+          activeDomain.run(function () {
+            if (error) {
+              return callback(error);
+            }
+
+            activeDomain.add(connection);
+
+            callback(null, callback);
+          });
+        };
+      })(callback);
+    }
+
     return (this.poolInstance || this.init()).acquire(callback, priority);
   },
 
-  // Release a connection back to the connection pool.
+  // Releases a connection back to the connection pool
+  // and removes it from the domain it's assigned to.
   release: function(connection, callback) {
+    var activeDomain = connection.domain;
+    if (activeDomain) {
+      activeDomain.remove(connection);
+    }
+
     this.poolInstance.release(connection, callback);
   },
 
