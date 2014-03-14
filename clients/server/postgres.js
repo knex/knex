@@ -1,11 +1,17 @@
 // PostgreSQL
 // -------
 
-// Other dependencies, including the `pg` library,
+// Other dependencies, including the `pg` or `pg.js` libraries,
 // which needs to be added as a dependency to the project
 // using this database.
 var _    = require('lodash');
-var pg   = require('pg');
+var pg   = null;
+
+try {
+  pg = require('pg');
+} catch (e) {
+  pg = require('pg.js');
+}
 
 // All other local project modules needed in this scope.
 var ServerBase        = require('./base').ServerBase;
