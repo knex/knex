@@ -10,7 +10,7 @@
 function Knex() {
   return Knex.initialize.apply(null, arguments);
 }
-Knex.raw = function Knex$raw(sql, bindings) {
+Knex.raw = function(sql, bindings) {
   return new Raw(sql, bindings);
 };
 

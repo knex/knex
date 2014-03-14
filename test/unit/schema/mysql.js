@@ -29,7 +29,7 @@ module.exports = function(client) {
 
       equal(1, tableSql.toSql().length);
       expect(tableSql.toSql()[0].sql).to.equal('create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255)) default character set utf8 collate utf8_unicode_ci');
-      expect(tableSql.toString()).to.equal('create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255)) default character set utf8 collate utf8_unicode_ci;');
+      expect(tableSql.toQuery()).to.equal('create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255)) default character set utf8 collate utf8_unicode_ci;');
     });
 
     it('basic create table without charset or collate', function() {

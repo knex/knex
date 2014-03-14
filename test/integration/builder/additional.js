@@ -40,7 +40,7 @@ module.exports = function(knex) {
 
     it('should allow using the primary table as a raw statement', function() {
 
-      expect(knex(knex.raw("raw_table_name")).toString()).to.equal('select * from raw_table_name');
+      expect(knex(knex.raw("raw_table_name")).toQuery()).to.equal('select * from raw_table_name');
 
     });
 
