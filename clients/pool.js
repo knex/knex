@@ -33,6 +33,13 @@ Pool.prototype = {
       create: function(callback) {
         var promise = pool.client.getRawConnection()
           .tap(function(connection) {
+
+            // remove connection from the pool if the connection disconnects
+            connection.on('error', function (err) {
+              //console.log('connection error: ' + err);
+              pool.poolInstance.destroy(connection);
+            });
+
             connection.__cid = _.uniqueId('__cid');
             if (pool.config.afterCreate) {
               return Promise.promisify(pool.config.afterCreate)(connection);
