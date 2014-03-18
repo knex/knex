@@ -30,7 +30,9 @@ exports.baseGrammar = {
 
   // Gets the cleaned bindings.
   getBindings: function(builder) {
-    var bindings = builder.bindings;
+    //CHANGED flaten nested arrays
+    var bindings = _.flatten(builder.bindings);
+    
     var cleaned = [];
     for (var i = 0, l = bindings.length; i < l; i++) {
       // if (bindings[i] == void 0) continue;
@@ -161,8 +163,18 @@ exports.baseGrammar = {
   },
 
   // Compiles a where in clause.
+  //CHANGED support compound where in clause ex:"(col1,col2) in ((1,1),(1,2),(2,1),(2,2))  
   whereIn: function(qb, where) {
-    return this.wrap(where.column) + ' in (' + this.parameterize(where.value) + ')';
+    if (_.isArray(where.column)) {
+      return '(' + _.map(where.column, function(col) {
+        return this.wrap(col)
+      },this) + ') in ('
+      + _.map(where.value, function(val) {
+        return '(' + this.parameterize(val) + ')'
+      },this) + ')';
+    } else {
+      return this.wrap(where.column) + ' in (' + this.parameterize(where.value) + ')';
+    }
   },
 
   // Compiles a where not in clause.
@@ -350,3 +362,4 @@ exports.baseGrammar = {
     return (value instanceof Raw ? value.sql : '?');
   }
 };
+
