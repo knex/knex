@@ -3,7 +3,15 @@ module.exports = function(knex) {
 
   describe('Transactions', function() {
 
-    it('should be able to commit transactions', function(ok) {
+    it('can run with exec', function(ok) {
+
+      knex.transaction(function(t) {
+        t.commit();
+      }).exec(ok);
+
+    });
+
+    it('should be able to commit transactions', function() {
 
       var id = null;
 
@@ -54,7 +62,7 @@ module.exports = function(knex) {
 
     });
 
-    it('should be able to rollback transactions', function(ok) {
+    it('should be able to rollback transactions', function() {
 
       var id = null;
 
