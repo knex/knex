@@ -237,8 +237,8 @@ describe('Builder', function () {
       });
 
       it('should allow case insensitive operators', function() {
-        var query = builder.where('foo', 'LIKE', 'bar');
-        expect(query.toString()).to.equal("select * where `foo` LIKE 'bar'");
+        var query = builder.where('foo', 'like', 'bar').where('foo', 'LIKE', 'bar');
+        expect(query.toString()).to.equal("select * where `foo` like 'bar' and `foo` LIKE 'bar'");
       });
 
     });
