@@ -236,6 +236,11 @@ describe('Builder', function () {
         expect(query.toString()).to.equal("select * where `foo` = '!='");
       });
 
+      it('should allow case insensitive operators', function() {
+        var query = builder.where('foo', 'like', 'bar').where('foo', 'LIKE', 'bar');
+        expect(query.toString()).to.equal("select * where `foo` like 'bar' and `foo` LIKE 'bar'");
+      });
+
     });
 
     describe('transacting', function() {
