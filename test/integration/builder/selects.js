@@ -132,6 +132,30 @@ module.exports = function(knex) {
 
     });
 
+    it('handles multi-column "where in" cases', function() {
+      if (knex.client.dialect != 'sqlite3') {
+        return knex('composite_key_test')
+          .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
+          .select();
+      } else {
+        return true
+      }
+
+    });
+    
+    it('handles multi-column "or where in" cases', function() {
+      if (knex.client.dialect != 'sqlite3') {
+        return knex('composite_key_test')
+          .where('status', 1)
+          .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
+          .select();
+      } else {
+        return true;
+      }
+
+
+    });
+    
     it('handles "where exists"', function() {
 
       return knex('accounts')
