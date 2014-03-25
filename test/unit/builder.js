@@ -238,7 +238,13 @@ describe('Builder', function () {
 
       it('should allow case insensitive operators', function() {
         var query = builder.where('foo', 'like', 'bar').where('foo', 'LIKE', 'bar');
-        expect(query.toString()).to.equal("select * where `foo` like 'bar' and `foo` LIKE 'bar'");
+        expect(query.toString()).to.equal("select * where `foo` like 'bar' and `foo` like 'bar'");
+      });
+
+      it('should allow where is null or where is not null', function() {
+        var query = builder.where('foo', 'is', null).orWhere('foo', 'is not', null)
+          .orWhere('foo', 'is', 'null').orWhere('foo', 'is not', 'null');
+        expect(query.toString()).to.equal("select * where `foo` is null or `foo` is not null or `foo` is null or `foo` is not null");
       });
 
     });
