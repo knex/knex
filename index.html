@@ -185,7 +185,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.5.10)</span>
+      Knex.js <span class="version">(0.5.11)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -375,7 +375,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.5.10 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.5.11 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1526,6 +1526,17 @@ process.stderr.on('data', function() {
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.5.11</b> &mdash; <small><i>Mar 25, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.10...0.5.11">Diff</a><br />
+      <ul>
+        <li><tt>.where(col, 'is', null)</tt> or <tt>.where(col, 'is not', null)</tt> are not supported (#221).</li>
+        <li>Case insensitive <tt>where</tt> operators now allowed (#212).</li>
+        <li>Fix bug in increment/decrement truncating to an integer (#210).</li>
+        <li>Disconnected connections are now properly handled &amp; removed from the pool (#206).</li>
+        <li>Internal tweaks to binding concatenations for performance (#207).</li>
+      </ul>
+    </p>
 
     <p>
       <b class="header">0.5.10</b> &mdash; <small><i>Mar 19, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.9...0.5.10">Diff</a><br />
