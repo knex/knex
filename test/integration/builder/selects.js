@@ -136,17 +136,19 @@ module.exports = function(knex) {
       if (knex.client.dialect != 'sqlite3') {
         return knex('composite_key_test')
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
+          .logMe()
           .select();
       } else {
-        return true
+        return true;
       }
 
     });
-    
+
     it('handles multi-column "or where in" cases', function() {
       if (knex.client.dialect != 'sqlite3') {
         return knex('composite_key_test')
           .where('status', 1)
+          .logMe()
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
           .select();
       } else {
@@ -155,11 +157,11 @@ module.exports = function(knex) {
 
 
     });
-    
+
     it('handles "where exists"', function() {
 
       return knex('accounts')
-        .whereExists(function(qb) {
+        .whereExists(function() {
           this.select('id').from('test_table_two').where({id: 1});
         })
         .select();

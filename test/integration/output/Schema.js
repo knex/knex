@@ -104,7 +104,7 @@ module.exports = {
     },
     postgresql: {
       bindings: [],
-      sql: ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint composite_key_test_column_a_column_b_unique unique ("column_a", "column_b")']      
+      sql: ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint composite_key_test_column_a_column_b_unique unique ("column_a", "column_b")']
     },
     sqlite3: {
       bindings: [],

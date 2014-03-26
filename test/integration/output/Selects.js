@@ -1,4 +1,58 @@
 module.exports = {
+  'handles multi-column "where in" cases': {
+    mysql: {
+      bindings: [1,1,1,2],
+      sql: 'select * from `composite_key_test` where (`column_a`,`column_b`) in ((?, ?),(?, ?))',
+      result: [{
+        column_a: 1,
+        column_b: 1,
+        details: 'One, One, One',
+        status: 1
+      },{
+        column_a: 1,
+        column_b: 2,
+        details: 'One, Two, Zero',
+        status: 0
+      }]
+    },
+    postgresql: {
+      bindings: [1,1,1,2],
+      sql: 'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?))',
+      result: [{
+        column_a: 1,
+        column_b: 1,
+        details: 'One, One, One',
+        status: 1
+      },{
+        column_a: 1,
+        column_b: 2,
+        details: 'One, Two, Zero',
+        status: 0
+      }]
+    }
+  },
+  'handles multi-column "or where in" cases': {
+    mysql: {
+      bindings: [1,1,1,1,2],
+      sql: 'select * from `composite_key_test` where `status` = ? and (`column_a`,`column_b`) in ((?, ?),(?, ?))',
+      result: [{
+        column_a: 1,
+        column_b: 1,
+        details: 'One, One, One',
+        status: 1
+      }]
+    },
+    postgresql: {
+      bindings: [1,1,1,1,2],
+      sql: 'select * from "composite_key_test" where "status" = ? and ("column_a","column_b") in ((?, ?),(?, ?))',
+      result: [{
+        column_a: 1,
+        column_b: 1,
+        details: 'One, One, One',
+        status: 1
+      }]
+    }
+  },
   'allows key, value': {
     mysql: {
       bindings: [1],
