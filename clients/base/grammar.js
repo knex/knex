@@ -30,7 +30,6 @@ exports.baseGrammar = {
 
   // Gets the cleaned bindings.
   getBindings: function(builder) {
-    //CHANGED flaten nested arrays
     var bindings = _.flatten(builder.bindings);
     
     var cleaned = [];
@@ -163,7 +162,6 @@ exports.baseGrammar = {
   },
 
   // Compiles a where in clause.
-  //CHANGED support compound where in clause ex:"(col1,col2) in ((1,1),(1,2),(2,1),(2,2))  
   whereIn: function(qb, where) {
     if (_.isArray(where.column)) {
       return '(' + _.map(where.column, function(col) {
@@ -362,4 +360,3 @@ exports.baseGrammar = {
     return (value instanceof Raw ? value.sql : '?');
   }
 };
-
