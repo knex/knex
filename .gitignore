@@ -8,3 +8,4 @@ npm-debug.log
 # Testing for the knex cli:
 bin/migrations-folder
 bin/db.sqlite3
+/nbproject/

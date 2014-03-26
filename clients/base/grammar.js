@@ -30,7 +30,8 @@ exports.baseGrammar = {
 
   // Gets the cleaned bindings.
   getBindings: function(builder) {
-    var bindings = builder.bindings;
+    var bindings = _.flatten(builder.bindings);
+    
     var cleaned = [];
     for (var i = 0, l = bindings.length; i < l; i++) {
       // if (bindings[i] == void 0) continue;
@@ -162,7 +163,16 @@ exports.baseGrammar = {
 
   // Compiles a where in clause.
   whereIn: function(qb, where) {
-    return this.wrap(where.column) + ' in (' + this.parameterize(where.value) + ')';
+    if (_.isArray(where.column)) {
+      return '(' + _.map(where.column, function(col) {
+        return this.wrap(col)
+      },this) + ') in ('
+      + _.map(where.value, function(val) {
+        return '(' + this.parameterize(val) + ')'
+      },this) + ')';
+    } else {
+      return this.wrap(where.column) + ' in (' + this.parameterize(where.value) + ')';
+    }
   },
 
   // Compiles a where not in clause.

@@ -93,6 +93,8 @@ module.exports = function(knex) {
         return knex.schema.createTable('composite_key_test', function(table) {
           table.integer('column_a');
           table.integer('column_b');
+          table.text('details');
+          table.tinyint('status');
           table.unique(['column_a', 'column_b']);
         }).logMe('sql');
       });

@@ -100,15 +100,15 @@ module.exports = {
   'allows for composite keys': {
     mysql: {
       bindings: [],
-      sql: ['create table `composite_key_test` (`column_a` int(11), `column_b` int(11)) default character set utf8','alter table `composite_key_test` add unique composite_key_test_column_a_column_b_unique(`column_a`, `column_b`)']
+      sql: ['create table `composite_key_test` (`column_a` int(11), `column_b` int(11), `details` text, `status` tinyint) default character set utf8','alter table `composite_key_test` add unique composite_key_test_column_a_column_b_unique(`column_a`, `column_b`)']
     },
     postgresql: {
       bindings: [],
-      sql: ['create table "composite_key_test" ("column_a" integer, "column_b" integer)','alter table "composite_key_test" add constraint composite_key_test_column_a_column_b_unique unique ("column_a", "column_b")']
+      sql: ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint composite_key_test_column_a_column_b_unique unique ("column_a", "column_b")']      
     },
     sqlite3: {
       bindings: [],
-      sql: ['create table "composite_key_test" ("column_a" integer, "column_b" integer)','create unique index composite_key_test_column_a_column_b_unique on "composite_key_test" ("column_a", "column_b")']
+      sql: ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" tinyint)','create unique index composite_key_test_column_a_column_b_unique on "composite_key_test" ("column_a", "column_b")']
     }
   },
   'is possible to set the table collation with table.charset and table.collate': {
