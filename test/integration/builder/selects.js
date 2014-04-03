@@ -216,6 +216,13 @@ module.exports = function(knex) {
 
     });
 
+    it('Retains array bindings', function() {
+      var raw = knex.raw('select * from table t where t.id = ANY( $1::int[] )', [[1, 2, 3]]);
+      var raw2 = knex.raw('select "stored_procedure"(?, ?, ?)', [1, 2, ['a', 'b', 'c']]);
+      expect(raw.getBindings()).to.eql([[1, 2, 3]]);
+      expect(raw2.getBindings()).to.eql([1, 2, ['a', 'b', 'c']]);
+    });
+
 
   });
 

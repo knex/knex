@@ -30,11 +30,9 @@ exports.baseGrammar = {
 
   // Gets the cleaned bindings.
   getBindings: function(builder) {
-    var bindings = _.flatten(builder.bindings);
-    
+    var bindings = builder.bindings;
     var cleaned = [];
     for (var i = 0, l = bindings.length; i < l; i++) {
-      // if (bindings[i] == void 0) continue;
       if (!bindings[i] || bindings[i]._source !== 'Raw') {
         cleaned.push(bindings[i]);
       } else {
@@ -165,11 +163,10 @@ exports.baseGrammar = {
   whereIn: function(qb, where) {
     if (_.isArray(where.column)) {
       return '(' + _.map(where.column, function(col) {
-        return this.wrap(col)
-      },this) + ') in ('
-      + _.map(where.value, function(val) {
-        return '(' + this.parameterize(val) + ')'
-      },this) + ')';
+        return this.wrap(col);
+      }, this) + ') in (' + _.map(where.value, function(val) {
+        return '(' + this.parameterize(val) + ')';
+      }, this) + ')';
     } else {
       return this.wrap(where.column) + ' in (' + this.parameterize(where.value) + ')';
     }
