@@ -29,11 +29,6 @@ require('./unit/schema/sqlite3')(sqlite3.client);
 require('./unit/schema/mysql')(mysql.client);
 require('./unit/query/builder')(postgres.client, mysql.client, sqlite3.client);
 
-var mysqlStateless   = mysql.stateless();
-var pgStateless      = postgres.stateless();
-var sqlite3Stateless = sqlite3.stateless();
-require('./unit/query/builder')(pgStateless, mysqlStateless, sqlite3Stateless, true);
-
 // Integration Tests
 describe('Integration Tests', function() {
   var runner = require('./integration')(this);

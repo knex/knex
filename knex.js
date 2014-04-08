@@ -1,7 +1,7 @@
 // Knex.js  0.6.0
 // --------------
 
-//     (c) 2013 Tim Griesser
+//     (c) 2014 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
 //     http://knexjs.org
@@ -10,18 +10,17 @@
 function Knex() {
   return Knex.initialize.apply(null, arguments);
 }
+
+// Run a "raw" query, though we can't do anything with it other than put
+// it in a query statement.
 Knex.raw = function(sql, bindings) {
   return new Raw(sql, bindings);
 };
 
-// Base library dependencies of the app.
-var _ = require('lodash');
-
 // Require the main constructors necessary for a `Knex` instance,
 // each of which are injected with the current instance, so they maintain
 // the correct client reference & grammar.
-var Raw        = require('./lib/raw');
-var Helpers    = require('./lib/helpers');
+var Raw = require('./lib/raw');
 
 // Lazy-loaded modules.
 var Transaction, Migrate;
@@ -37,6 +36,9 @@ var Clients = Knex.Clients = {
   'websql'     : './lib/clients/websql'
 };
 
+// Require lodash.
+var _ = require('lodash');
+
 // Create a new "knex" instance with the appropriate configured client.
 Knex.initialize = function(config) {
   var Dialect, client;
@@ -46,37 +48,21 @@ Knex.initialize = function(config) {
   // constructor, so we have no reference to 'this' just
   // in case it's called with `new`.
   function knex(tableName) {
-    var qb = new client.Query;
+    var qb = new client.QueryBuilder;
     return tableName ? qb.table(tableName) : qb;
   }
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
   knex.VERSION = knex.__knex__  = '0.6.0';
-  knex.raw = function knex$raw(sql, bindings) {
-    var raw = new Raw(sql, bindings);
-    raw.__client = client;
-    return raw;
+  knex.raw = function(sql, bindings) {
+    return new client.Raw(sql, bindings);
   };
-
-  // Return a version of knex which doesn't mutate the chain each time
-  // you call a new method. Useful for creating partial query chains.
-  knex.stateless = _.once(function() {
-    client.initStateless();
-     _.each(_.keys(client.StatelessQuery.prototype), function(method) {
-      knex[method] = function() {
-        var builder = (this instanceof client.StatelessQuery) ? this : new client.StatelessQuery();
-        return builder[method].apply(builder, arguments);
-      };
-    });
-    return client.StatelessQuery;
-  });
 
   // Runs a new transaction, taking a container and returning a promise
   // for when the transaction is resolved.
-  knex.transaction = function knex$transaction(container) {
-    Transaction = Transaction || require('./lib/transaction');
-    return new Transaction(client).run(container);
+  knex.transaction = function(container) {
+    return new client.Transaction(container).run();
   };
 
   // Build the "client"
@@ -89,10 +75,10 @@ Knex.initialize = function(config) {
 
   // Allow chaining methods from the root object, before
   // any other information is specified.
-  _.each(_.keys(client.Query.prototype), function(method) {
+  _.each(_.keys(client.QueryBuilder.prototype), function(method) {
     if (method.charAt(0) === '_') return;
     knex[method] = function() {
-      var builder = (this instanceof client.Query) ? this : new client.Query();
+      var builder = (this instanceof client.QueryBuilder) ? this : new client.QueryBuilder();
       return builder[method].apply(builder, arguments);
     };
   });
@@ -115,18 +101,21 @@ Knex.initialize = function(config) {
     };
   });
 
-  // Attach each of the `Migrate` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
+  // Attach each of the `Migrator` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
   // knex.migrate.latest().then(...
   // knex.migrate.currentVersion(...
   _.each(['make', 'latest', 'rollback', 'currentVersion'], function(method) {
-    migrate[method] = function() {
-      Migrate = Migrate || require('./lib/migrate');
-      var migration = new Migrate(knex);
-      return migration[method].apply(migration, arguments);
+    migrate[method] = function(config) {
+      if (!client.Migrator) client.initMigrator();
+      var migrator = new client.Migrator(config);
+      return migrator[method].apply(migrator, arguments);
     };
   });
 
   return knex;
 };
+
+// Convenience for checking whether `obj instanceof Knex.Client`.
+Knex.Client = require('./lib/client');
 
 module.exports = Knex;

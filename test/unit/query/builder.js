@@ -1,23 +1,15 @@
-module.exports = function(pgclient, mysqlclient, sqlite3client, stateless) {
+module.exports = function(pgclient, mysqlclient, sqlite3client) {
 
-  var Raw     = require('../../../lib/raw');
-  var title = stateless ? "Stateless QueryBuilder" : "QueryBuilder";
+  var Raw = require('../../../lib/raw');
 
-  describe(title, function() {
+  describe("QueryBuilder", function() {
 
-    var sql, mysql, sqlite3, chain, raw;
+    var chain;
 
-    if (stateless) {
-      sql = function () { return pgclient; };
-      mysql = function () { return mysqlclient; };
-      sqlite3 = function () { return sqlite3client; };
-      raw = function(sql, bindings) { return pgclient.raw(sql, bindings); };
-    } else {
-      sql = function () { return new pgclient.Query(); };
-      mysql = function () { return new mysqlclient.Query(); };
-      sqlite3 = function () { return new sqlite3client.Query(); };
-      raw = function(sql, bindings) { return new Raw(sql, bindings); };
-    }
+    var sql = function () { return new pgclient.Query(); };
+    var mysql = function () { return new mysqlclient.Query(); };
+    var sqlite3 = function () { return new sqlite3client.Query(); };
+    var raw = function(sql, bindings) { return new Raw(sql, bindings); };
 
     it("basic select", function() {
       chain = sql().select('*').from('users').toSql();

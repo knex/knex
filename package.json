@@ -23,14 +23,14 @@
     "sinon-chai": "~2.4.0"
   },
   "dependencies": {
-    "generic-pool-redux": "~0.1.0",
-    "optimist": "~0.6.0",
-    "mkdirp": "~0.3.5",
-    "bluebird": "~1.0.0",
+    "bluebird": "1.2.x",
     "colors": "~0.6.2",
-    "lodash": "~2.4.0",
     "fluent-chain": "~0.1.0",
-    "simple-extend": "~0.1.0"
+    "generic-pool-redux": "~0.1.0",
+    "inherits": "^2.0.1",
+    "lodash": "~2.4.0",
+    "mkdirp": "~0.3.5",
+    "optimist": "~0.6.0"
   },
   "scripts": {
     "test": "mocha -b --check-leaks -R spec test/index.js",

@@ -1,4 +1,3 @@
-
 module.exports = function(knex) {
 
   describe('Additional', function () {
