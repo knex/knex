@@ -9,5 +9,6 @@
   "strict": false,
   "supernew": true,
   "sub": true,
-  "trailing": true
+  "trailing": true,
+  "maxcomplexity": 6
 }
