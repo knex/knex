@@ -101,11 +101,13 @@ exports.setLib = function(context) {
         // Mutate the bindings arrays to not check dates.
         if (item === 'bindings') {
           parseBindingDates(newData, localData);
-        } if (item === 'result') {
+        }
+
+        if (item === 'result') {
           parseResultDates(newData, localData);
         }
 
-        expect(localData).to.eql(newData);
+        expect(newData).to.eql(localData);
       });
 
 
