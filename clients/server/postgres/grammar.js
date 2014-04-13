@@ -49,6 +49,13 @@ exports.grammar = _.defaults({
     return sql;
   },
 
+  // Compiles a `delete` query, allowing for a return value.
+  compileDelete: function(qb) {
+    var sql = baseGrammar.compileDelete.apply(this, arguments);
+    sql += this.compileReturning(qb);
+    return sql;
+  },
+
   // Adds the returning value to the statement.
   compileReturning: function(qb) {
     var sql = '';
@@ -66,16 +73,14 @@ exports.grammar = _.defaults({
   handleResponse: function(builder, response) {
     var returning = builder.flags.returning;
     if (response.command === 'SELECT') return response.rows;
-    if (response.command === 'INSERT' || (response.command === 'UPDATE' && returning)) {
+    if (response.command === 'INSERT' || returning) {
       return _.map(response.rows, function(row) {
         if (returning === '*' || _.isArray(returning)) return row;
         return row[returning];
       });
     }
-    if (response.command === 'UPDATE' || response.command === 'DELETE') {
-      return response.rowCount;
-    }
-    return '';
+
+    return response.rowCount;
   }
 
 }, baseGrammar);
