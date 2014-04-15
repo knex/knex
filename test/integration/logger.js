@@ -9,7 +9,6 @@ module.exports = function(testSuite) {
       var Raw = require('../../lib/raw');
       var client = knex.client;
       client.initSchema();
-      client.initStateless();
 
       var aliases = {
         'pg': 'postgresql',
@@ -24,7 +23,7 @@ module.exports = function(testSuite) {
             testSqlTester.call(this, val, statement, bindings, returnval);
           }, this);
         } else if (client.dialect === dialect || aliases[dialect] === client.dialect) {
-          var sql = this.toSql();
+          var sql = this.toSQL();
 
           if (statement != null) {
             if (_.isArray(sql)) {
@@ -68,8 +67,7 @@ module.exports = function(testSuite) {
       }
 
       Raw.prototype.testSql =
-      client.Query.prototype.testSql =
-      client.StatelessQuery.prototype.testSql =
+      client.QueryBuilder.prototype.testSql =
       client.SchemaBuilder.prototype.testSql = function Logger$testSql(handler) {
         handler(_.bind(testSqlTester, this));
         return this;

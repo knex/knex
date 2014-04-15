@@ -27,17 +27,20 @@ var Transaction, Migrate;
 
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
-  'mysql'      : './lib/clients/mysql',
-  'pg'         : './lib/clients/postgres',
-  'postgres'   : './lib/clients/postgres',
-  'postgresql' : './lib/clients/postgres',
-  'sqlite'     : './lib/clients/sqlite3',
-  'sqlite3'    : './lib/clients/sqlite3',
-  'websql'     : './lib/clients/websql'
+  'mysql'      : './lib/dialects/mysql',
+  'pg'         : './lib/dialects/postgres',
+  'postgres'   : './lib/dialects/postgres',
+  'postgresql' : './lib/dialects/postgres',
+  'sqlite'     : './lib/dialects/sqlite3',
+  'sqlite3'    : './lib/dialects/sqlite3',
+  'websql'     : './lib/dialects/websql'
 };
 
 // Require lodash.
 var _ = require('lodash');
+
+// Each of the methods which may be statically chained from knex.
+var QueryInterface = require('./lib/query/interface');
 
 // Create a new "knex" instance with the appropriate configured client.
 Knex.initialize = function(config) {
@@ -75,7 +78,7 @@ Knex.initialize = function(config) {
 
   // Allow chaining methods from the root object, before
   // any other information is specified.
-  _.each(_.keys(client.QueryBuilder.prototype), function(method) {
+  _.each(QueryInterface, function(method) {
     if (method.charAt(0) === '_') return;
     knex[method] = function() {
       var builder = (this instanceof client.QueryBuilder) ? this : new client.QueryBuilder();
