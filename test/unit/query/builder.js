@@ -568,11 +568,11 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
     it('allows specifying the columns and the query for insert, #211', function() {
       var id = 1;
       var email = 'foo@bar.com';
-      chain = sql().into('recipients').insert(
-        '(recipient_id, email)', select(raw('?, ?', [id, email])).whereNotExists(function() {
-        this.select(1).from('recipients').where('recipient_id', id);
-      })).toSQL();
-      expect(chain.sql).to.equal('insert into recipients (recipient_id, email) select ?, ? where not exists (select 1 from recipients where recipient_id = ?)');
+      chain = sql().into(raw('recipients (recipient_id, email)')).insert(
+        sql().select(raw('?, ?', [id, email])).whereNotExists(function() {
+          this.select(1).from('recipients').where('recipient_id', id);
+        })).toSQL();
+      expect(chain.sql).to.equal('insert into recipients (recipient_id, email) select ?, ? where not exists (select 1 from "recipients" where "recipient_id" = ?)');
     });
 
   });
