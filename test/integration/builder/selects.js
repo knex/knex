@@ -287,23 +287,17 @@ module.exports = function(knex) {
 
 
     it('does sub-selects', function() {
-
       return knex('accounts').whereIn('id', function() {
         this.select('account_id').from('test_table_two').where('status', 1);
       }).select('first_name', 'last_name');
-
     });
 
     it("supports the <> operator", function() {
-
       return knex('accounts').where('id', '<>', 2).select('email', 'logins');
-
     });
 
     it("Allows for knex.Raw passed to the `where` clause", function() {
-
       return knex('accounts').where(knex.raw('id = 2')).select('email', 'logins');
-
     });
 
 

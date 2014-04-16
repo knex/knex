@@ -1,9 +1,6 @@
-// Helps with error handling on errors swallowed by promises.
-require("mocha-as-promised")();
-
 global.sinon = require("sinon");
 
-var chai       = global.chai = require("chai");
+var chai = global.chai = require("chai");
 
 chai.use(require("chai-as-promised"));
 chai.use(require("sinon-chai"));

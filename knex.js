@@ -40,7 +40,7 @@ var Clients = Knex.Clients = {
 var _ = require('lodash');
 
 // Each of the methods which may be statically chained from knex.
-var QueryInterface = require('./lib/query/interface');
+var QueryInterface = require('./lib/query/methods');
 
 // Create a new "knex" instance with the appropriate configured client.
 Knex.initialize = function(config) {
@@ -65,7 +65,7 @@ Knex.initialize = function(config) {
   // Runs a new transaction, taking a container and returning a promise
   // for when the transaction is resolved.
   knex.transaction = function(container) {
-    return new client.Transaction(container).run();
+    return new client.Transaction(container);
   };
 
   // Build the "client"
