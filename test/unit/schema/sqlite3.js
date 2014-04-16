@@ -359,5 +359,18 @@ module.exports = function(client) {
       equal(tableSql[0].sql, 'alter table "users" add column "foo" blob');
     });
 
+    it('allows for on delete cascade with foreign keys, #166', function() {
+      tableSql = new SchemaBuilder().createTable('users', function(table) {
+        table.string('user_id', 36)
+          .index()
+          .references('id')
+          .inTable('user')
+          .onDelete('CASCADE');
+      }).toSQL();
+
+      equal(2, tableSql.length);
+      equal(tableSql[0].sql, 'create table "users" ("user_id" varchar(36), foreign key("user_id") references "user"("id") on delete CASCADE)');
+    });
+
   });
 };
