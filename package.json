@@ -7,7 +7,7 @@
     "test": "test"
   },
   "devDependencies": {
-    "mocha": "^1.18.2",
+    "mocha": "~1.18.2",
     "mysql": "~2.0.0-rc2",
     "pg": "~2.8.2",
     "sqlite3": "~2.1.7",
@@ -17,19 +17,19 @@
     "chai-as-promised": "~4.1.0",
     "sinon": "~1.7.3",
     "sinon-chai": "~2.4.0",
-    "jshint": "^2.5.0",
-    "browserify": "^3.42.0"
+    "jshint": "~2.5.0",
+    "browserify": "~3.42.0"
   },
   "dependencies": {
     "bluebird": "1.2.x",
     "colors": "~0.6.2",
     "generic-pool-redux": "~0.1.0",
-    "inherits": "^2.0.1",
+    "inherits": "~2.0.1",
     "lodash": "~2.4.0",
     "mkdirp": "~0.3.5",
     "optimist": "~0.6.0",
-    "mysql": "^2.0.1",
-    "pg": "^2.8.5"
+    "mysql": "~2.0.1",
+    "pg": "~2.8.5"
   },
   "scripts": {
     "test": "mocha -b --check-leaks -R spec test/index.js",
