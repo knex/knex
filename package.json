@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.5.13",
+  "version": "0.6.0-alpha1",
   "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
@@ -15,12 +15,11 @@
     "node-uuid": "~1.4.0",
     "chai": "~1.8.1",
     "rimraf": "~2.2.2",
-    "grunt": "~0.4.1",
-    "grunt-release": "~0.6.0",
     "chai-as-promised": "~4.1.0",
     "sinon": "~1.7.3",
     "sinon-chai": "~2.4.0",
-    "jshint": "^2.5.0"
+    "jshint": "^2.5.0",
+    "browserify": "^3.42.0"
   },
   "dependencies": {
     "bluebird": "1.2.x",
@@ -54,5 +53,13 @@
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"
   },
+  "files": [
+    "bin",
+    "lib",
+    "test",
+    "index.html",
+    "README.md",
+    "LICENSE"
+  ],
   "license": "MIT"
 }
