@@ -112,10 +112,10 @@ Knex.initialize = function(config) {
     };
   });
 
+  // Add a few additional misc utils.
+  knex.utils = _.extend({}, require('./lib/utils'));
+
   return knex;
 };
-
-// Convenience for checking whether `obj instanceof Knex.Client`.
-Knex.Client = require('./lib/client');
 
 module.exports = Knex;
