@@ -232,7 +232,6 @@ module.exports = function(knex) {
         .select();
     });
 
-    it('flag');
     it('handles multi-column "where in" cases', function() {
       if (knex.client.dialect != 'sqlite3') {
         return knex('composite_key_test')
@@ -271,7 +270,6 @@ module.exports = function(knex) {
       }
     });
 
-    it('flag');
     it('handles multi-column "where in" cases with where', function() {
       if (knex.client.dialect != 'sqlite3') {
         return knex('composite_key_test')
@@ -344,13 +342,12 @@ module.exports = function(knex) {
       return knex('accounts').where(knex.raw('id = 2')).select('email', 'logins');
     });
 
-    it('Retains array bindings', function() {
-      var raw = knex.raw('select * from table t where t.id = ANY( $1::int[] )', [[1, 2, 3]]);
+    it('Retains array bindings, #228', function() {
+      var raw  = knex.raw('select * from table t where t.id = ANY( $1::int[] )', [[1, 2, 3]]);
       var raw2 = knex.raw('select "stored_procedure"(?, ?, ?)', [1, 2, ['a', 'b', 'c']]);
       expect(raw.toSQL().bindings).to.eql([[1, 2, 3]]);
       expect(raw2.toSQL().bindings).to.eql([1, 2, ['a', 'b', 'c']]);
     });
-
 
   });
 

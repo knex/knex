@@ -22,9 +22,6 @@ Knex.raw = function(sql, bindings) {
 // the correct client reference & grammar.
 var Raw = require('./lib/raw');
 
-// Lazy-loaded modules.
-var Transaction, Migrate;
-
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
   'mysql'      : './lib/dialects/mysql',
