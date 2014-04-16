@@ -24,7 +24,6 @@
   "dependencies": {
     "bluebird": "1.2.x",
     "colors": "~0.6.2",
-    "fluent-chain": "~0.1.0",
     "generic-pool-redux": "~0.1.0",
     "inherits": "^2.0.1",
     "lodash": "~2.4.0",
