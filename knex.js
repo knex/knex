@@ -1,4 +1,4 @@
-// Knex.js  0.6.0
+// Knex.js  0.5.13
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -97,7 +97,7 @@ Knex.initialize = function(config) {
   // `knex.schema.dropTableIfExists('tableName');`
   _.each(['table', 'createTable', 'editTable', 'dropTable',
     'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn'], function(key) {
-    schema[key] = function(tableName) {
+    schema[key] = function() {
       if (!client.SchemaBuilder) client.initSchema();
       var builder = new client.SchemaBuilder();
       return builder[key].apply(builder, arguments);

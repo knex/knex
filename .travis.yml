@@ -1,8 +1,8 @@
 # .travis.yml
 language: node_js
 node_js:
-  - 0.10
-  - 0.8
+  - "0.10"
+  - "0.8"
 
 before_script:
   - psql -c 'create database knex_test;' -U postgres

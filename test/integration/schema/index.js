@@ -1,13 +1,4 @@
 var Promise = testPromise;
-var _ = require('lodash');
-
-function stacked(stack, compare) {
-  expect(_.pluck(stack, 'sql')).to.eql(compare);
-}
-
-function compare(sql, data) {
-
-}
 
 module.exports = function(knex) {
 
@@ -50,6 +41,7 @@ module.exports = function(knex) {
           });
       });
 
+      it('flag');
       it('accepts the table name, and a "container" function', function() {
         return knex.schema
           .createTable('test_table_one', function(table) {
@@ -126,11 +118,30 @@ module.exports = function(knex) {
           .createTable('composite_key_test', function(table) {
             table.integer('column_a');
             table.integer('column_b');
+            table.text('details');
+            table.tinyint('status');
             table.unique(['column_a', 'column_b']);
           }).testSql(function(tester) {
-            tester('mysql', ['create table `composite_key_test` (`column_a` int, `column_b` int) default character set utf8','alter table `composite_key_test` add unique composite_key_test_column_a_column_b_unique(`column_a`, `column_b`)']);
-            tester('postgresql', ['create table "composite_key_test" ("column_a" integer, "column_b" integer)','alter table "composite_key_test" add constraint composite_key_test_column_a_column_b_unique unique ("column_a", "column_b")']);
-            tester('sqlite3', ['create table "composite_key_test" ("column_a" integer, "column_b" integer)','create unique index composite_key_test_column_a_column_b_unique on "composite_key_test" ("column_a", "column_b")']);
+            tester('mysql', ['create table `composite_key_test` (`column_a` int, `column_b` int, `details` text, `status` tinyint) default character set utf8','alter table `composite_key_test` add unique composite_key_test_column_a_column_b_unique(`column_a`, `column_b`)']);
+            tester('postgresql', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint composite_key_test_column_a_column_b_unique unique ("column_a", "column_b")']);
+            tester('sqlite3', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" tinyint)','create unique index composite_key_test_column_a_column_b_unique on "composite_key_test" ("column_a", "column_b")']);
+          }).then(function() {
+            return knex('composite_key_test').insert([{
+              column_a: 1,
+              column_b: 1,
+              details: 'One, One, One',
+              status: 1
+            }, {
+              column_a: 1,
+              column_b: 2,
+              details: 'One, Two, Zero',
+              status: 0
+            }, {
+              column_a: 1,
+              column_b: 3,
+              details: 'One, Three, Zero',
+              status: 0
+            }]);
           });
       });
 

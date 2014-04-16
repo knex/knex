@@ -16,7 +16,7 @@ module.exports = function(knex) {
 
       process.removeAllListeners('uncaughtException');
 
-      process.on('uncaughtException', function(err) {
+      process.on('uncaughtException', function() {
         process.removeAllListeners('uncaughtException');
         for (var i = 0, l = listeners.length; i < l; i++) {
           process.on('uncaughtException', listeners[i]);
@@ -24,7 +24,7 @@ module.exports = function(knex) {
         ok();
       });
 
-      knex('accounts').select().exec(function(err, resp) {
+      knex('accounts').select().exec(function() {
         console.log(undefinedVar);
       });
     });
@@ -196,84 +196,129 @@ module.exports = function(knex) {
     });
 
     it('has a "distinct" clause', function() {
-
       return Promise.all([
         knex('accounts').select().distinct('email').where('logins', 2).orderBy('email'),
         knex('accounts').distinct('email').select().orderBy('email')
       ]);
-
     });
 
     it('does "orWhere" cases', function() {
-
-      return Promise.all([
-        knex('accounts').where('id', 1).orWhere('id', '>', 2).select('first_name', 'last_name')
-        // More tests can be added here.
-      ]);
-
+      return knex('accounts').where('id', 1).orWhere('id', '>', 2).select('first_name', 'last_name');
     });
 
     it('does "andWhere" cases', function() {
-
-      return Promise.all([
-        knex('accounts').select('first_name', 'last_name', 'about').where('id', 1).andWhere('email', 'test@example.com')
-      ]);
-
+      return knex('accounts').select('first_name', 'last_name', 'about').where('id', 1).andWhere('email', 'test@example.com');
     });
 
     it('takes a function to wrap nested where statements', function() {
-
       return Promise.all([
         knex('accounts').where(function() {
           this.where('id', 2);
           this.orWhere('id', 3);
         }).select('*')
       ]);
-
     });
 
     it('handles "where in" cases', function() {
-
       return Promise.all([
         knex('accounts').whereIn('id', [1, 2, 3]).select()
       ]);
-
     });
 
     it('handles "or where in" cases', function() {
-
       return knex('accounts')
         .where('email', 'test@example.com')
         .orWhereIn('id', [2, 3, 4])
         .select();
+    });
 
+    it('flag');
+    it('handles multi-column "where in" cases', function() {
+      if (knex.client.dialect != 'sqlite3') {
+        return knex('composite_key_test')
+          .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
+          .select()
+          .testSql(function(tester) {
+            tester('mysql',
+              'select * from `composite_key_test` where (`column_a`,`column_b`) in ((?, ?),(?, ?))',
+              [1,1,1,2],
+              [{
+                column_a: 1,
+                column_b: 1,
+                details: 'One, One, One',
+                status: 1
+              },{
+                column_a: 1,
+                column_b: 2,
+                details: 'One, Two, Zero',
+                status: 0
+            }]);
+            tester('postgresql',
+              'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?))',
+              [1,1,1,2],
+              [{
+                column_a: 1,
+                column_b: 1,
+                details: 'One, One, One',
+                status: 1
+              },{
+                column_a: 1,
+                column_b: 2,
+                details: 'One, Two, Zero',
+                status: 0
+              }]);
+          });
+      }
+    });
+
+    it('flag');
+    it('handles multi-column "where in" cases with where', function() {
+      if (knex.client.dialect != 'sqlite3') {
+        return knex('composite_key_test')
+          .where('status', 1)
+          .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
+          .select()
+          .testSql(function(tester) {
+            tester('mysql',
+              'select * from `composite_key_test` where `status` = ? and (`column_a`,`column_b`) in ((?, ?),(?, ?))',
+              [1,1,1,1,2],
+              [{
+                column_a: 1,
+                column_b: 1,
+                details: 'One, One, One',
+                status: 1
+              }]);
+            tester('postgresql',
+              'select * from "composite_key_test" where "status" = ? and ("column_a","column_b") in ((?, ?),(?, ?))',
+              [1,1,1,1,2],
+              [{
+                column_a: 1,
+                column_b: 1,
+                details: 'One, One, One',
+                status: 1
+              }]);
+          });
+      }
     });
 
     it('handles "where exists"', function() {
-
       return knex('accounts')
-        .whereExists(function(qb) {
+        .whereExists(function() {
           this.select('id').from('test_table_two').where({id: 1});
         })
         .select();
-
     });
 
     it('handles "where between"', function() {
-
       return knex('accounts').whereBetween('id', [1, 100]).select();
-
     });
 
     it('handles "or where between"', function() {
-
       return knex('accounts')
         .whereBetween('id', [1, 100])
         .orWhereBetween('id', [200, 300])
         .select();
-
     });
-
 
     it('does whereRaw', function() {
       return knex('accounts')
@@ -284,7 +329,6 @@ module.exports = function(knex) {
         })
         .select();
     });
-
 
     it('does sub-selects', function() {
       return knex('accounts').whereIn('id', function() {
@@ -298,6 +342,13 @@ module.exports = function(knex) {
 
     it("Allows for knex.Raw passed to the `where` clause", function() {
       return knex('accounts').where(knex.raw('id = 2')).select('email', 'logins');
+    });
+
+    it('Retains array bindings', function() {
+      var raw = knex.raw('select * from table t where t.id = ANY( $1::int[] )', [[1, 2, 3]]);
+      var raw2 = knex.raw('select "stored_procedure"(?, ?, ?)', [1, 2, ['a', 'b', 'c']]);
+      expect(raw.toSQL().bindings).to.eql([[1, 2, 3]]);
+      expect(raw2.toSQL().bindings).to.eql([1, 2, ['a', 'b', 'c']]);
     });
 
 

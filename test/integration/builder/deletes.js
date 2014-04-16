@@ -1,13 +1,23 @@
 module.exports = function(knex) {
 
-  describe('deletes', function () {
+  describe('Deletes', function () {
 
-    it('should delete an item', function() {
-
+    it('should handle deletes', function() {
       return knex('accounts')
-        .where({'email':'test2@example.com'})
-        .del();
+        .where('id', 1)
+        .del()
+        .testSql(function(tester) {
+          tester('postgresql');
+        });
+    });
 
+    it('should allow returning for deletes in postgresql', function() {
+      return knex('accounts')
+        .where('id', 2)
+        .del('*')
+        .testSql(function(tester) {
+          tester('postgresql');
+        });
     });
 
   });

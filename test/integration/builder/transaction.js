@@ -3,7 +3,16 @@ module.exports = function(knex) {
 
   describe('Transactions', function() {
 
+    it('can run with exec', function(ok) {
+
+      knex.transaction(function(t) {
+        t.commit();
+      }).exec(ok);
+
+    });
+
     it('should be able to commit transactions', function() {
+
       var id = null;
       return knex.transaction(function(t) {
 
