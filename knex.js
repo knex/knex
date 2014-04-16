@@ -1,4 +1,4 @@
-// Knex.js  0.5.13
+// Knex.js  0.6.0-alpha
 // --------------
 
 //     (c) 2014 Tim Griesser
