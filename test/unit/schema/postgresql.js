@@ -14,7 +14,7 @@ module.exports = function(client) {
       tableSql = new SchemaBuilder().createTable('users', function(table) {
         table.increments('id');
         table.string('email');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('create table "users" ("id" serial primary key, "email" varchar(255))');
     });
@@ -23,19 +23,19 @@ module.exports = function(client) {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.increments('id');
         table.string('email');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "id" serial primary key, add column "email" varchar(255)');
     });
 
     it("drop table", function() {
-      tableSql = new SchemaBuilder().dropTable('users').toSql();
+      tableSql = new SchemaBuilder().dropTable('users').toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('drop table "users"');
     });
 
     it("drop table if exists", function() {
-      tableSql = new SchemaBuilder().dropTableIfExists('users').toSql();
+      tableSql = new SchemaBuilder().dropTableIfExists('users').toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('drop table if exists "users"');
     });
@@ -43,7 +43,7 @@ module.exports = function(client) {
     it("drop column", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropColumn('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" drop column "foo"');
     });
@@ -51,7 +51,7 @@ module.exports = function(client) {
     it("drop multiple columns", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropColumn(['foo', 'bar']);
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" drop column "foo", drop column "bar"');
     });
@@ -59,7 +59,7 @@ module.exports = function(client) {
     it("drop multiple columns with arguments", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropColumn('foo', 'bar');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" drop column "foo", drop column "bar"');
     });
@@ -67,7 +67,7 @@ module.exports = function(client) {
     it("drop primary", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropPrimary();
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" drop constraint users_pkey');
     });
@@ -75,7 +75,7 @@ module.exports = function(client) {
     it("drop unique", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropUnique('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" drop constraint foo');
     });
@@ -83,7 +83,7 @@ module.exports = function(client) {
     it("drop index", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropIndex('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('drop index foo');
     });
@@ -91,7 +91,7 @@ module.exports = function(client) {
     it("drop foreign", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropForeign('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" drop constraint foo');
     });
@@ -99,13 +99,13 @@ module.exports = function(client) {
     it("drop timestamps", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropTimestamps();
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" drop column "created_at", drop column "updated_at"');
     });
 
     it("rename table", function() {
-      tableSql = new SchemaBuilder().renameTable('users', 'foo').toSql();
+      tableSql = new SchemaBuilder().renameTable('users', 'foo').toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" rename to "foo"');
     });
@@ -113,9 +113,18 @@ module.exports = function(client) {
     it("adding primary key", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.primary('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add primary key ("foo")');
+    });
+
+    it("adding primary key fluently", function() {
+      tableSql = new SchemaBuilder().createTable('users', function(table) {
+        table.string('name').primary();
+      }).toSQL();
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal('create table "users" ("name" varchar(255))');
+      expect(tableSql[1].sql).to.equal('alter table "users" add primary key ("name")');
     });
 
     it("adding foreign key");
@@ -123,23 +132,49 @@ module.exports = function(client) {
     it("adding unique key", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.unique('foo', 'bar');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add constraint bar unique ("foo")');
+    });
+
+    it("adding unique key fluently", function() {
+      tableSql = new SchemaBuilder().createTable('users', function(table) {
+        table.string('email').unique();
+      }).toSQL();
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal('create table "users" ("email" varchar(255))');
+      expect(tableSql[1].sql).to.equal('alter table "users" add constraint users_email_unique unique ("email")');
+    });
+
+    it("adding index without value", function() {
+      tableSql = new SchemaBuilder().table('users', function(table) {
+        table.index(['foo', 'bar']);
+      }).toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('create index users_foo_bar_index on "users" ("foo", "bar")');
     });
 
     it("adding index", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.index(['foo', 'bar'], 'baz');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('create index baz on "users" ("foo", "bar")');
+    });
+
+    it("adding index fluently", function() {
+      tableSql = new SchemaBuilder().table('users', function(table) {
+        table.string('name').index();
+      }).toSQL();
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table "users" add column "name" varchar(255)');
+      expect(tableSql[1].sql).to.equal('create index users_name_index on "users" ("name")');
     });
 
     it("adding incrementing id", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.increments('id');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "id" serial primary key');
     });
@@ -147,7 +182,7 @@ module.exports = function(client) {
     it("adding big incrementing id", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.bigIncrements('id');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "id" bigserial primary key');
     });
@@ -155,7 +190,7 @@ module.exports = function(client) {
     it("adding string", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.string('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" varchar(255)');
     });
@@ -163,7 +198,7 @@ module.exports = function(client) {
     it("adding varchar with length", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.string('foo', 100);
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" varchar(100)');
     });
@@ -171,7 +206,7 @@ module.exports = function(client) {
     it("adding a string with a default", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.string('foo', 100).defaultTo('bar');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" varchar(100) default \'bar\'');
     });
@@ -179,7 +214,7 @@ module.exports = function(client) {
     it("adding text", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.text('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" text');
     });
@@ -187,7 +222,7 @@ module.exports = function(client) {
     it("adding big integer", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.bigInteger('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" bigint');
     });
@@ -195,7 +230,7 @@ module.exports = function(client) {
     it("tests a big integer as the primary autoincrement key", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.bigIncrements('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" bigserial primary key');
     });
@@ -203,7 +238,7 @@ module.exports = function(client) {
     it("adding integer", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.integer('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" integer');
     });
@@ -211,7 +246,7 @@ module.exports = function(client) {
     it("adding autoincrement integer", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.increments('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" serial primary key');
     });
@@ -219,7 +254,7 @@ module.exports = function(client) {
     it("adding medium integer", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.mediumint('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" integer');
     });
@@ -227,7 +262,7 @@ module.exports = function(client) {
     it("adding tiny integer", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.tinyint('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" smallint');
     });
@@ -235,7 +270,7 @@ module.exports = function(client) {
     it("adding small integer", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.smallint('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" smallint');
     });
@@ -243,7 +278,7 @@ module.exports = function(client) {
     it("adding float", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.float('foo', 5, 2);
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" real');
     });
@@ -251,7 +286,7 @@ module.exports = function(client) {
     it("adding double", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.double('foo', 15, 8);
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" double precision');
     });
@@ -259,7 +294,7 @@ module.exports = function(client) {
     it("adding decimal", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.decimal('foo', 5, 2);
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" decimal(5, 2)');
     });
@@ -267,7 +302,7 @@ module.exports = function(client) {
     it("adding boolean", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.boolean('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" boolean');
     });
@@ -275,7 +310,7 @@ module.exports = function(client) {
     it("adding enum", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.enum('foo', ['bar', 'baz']);
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" text check (foo in (\'bar\', \'baz\'))');
     });
@@ -283,7 +318,7 @@ module.exports = function(client) {
     it("adding date", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.date('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" date');
     });
@@ -291,7 +326,7 @@ module.exports = function(client) {
     it("adding date time", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dateTime('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamp');
     });
@@ -299,7 +334,7 @@ module.exports = function(client) {
     it("adding time", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.time('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" time');
     });
@@ -307,7 +342,7 @@ module.exports = function(client) {
     it("adding timestamp", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.timestamp('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamp');
     });
@@ -315,7 +350,7 @@ module.exports = function(client) {
     it("adding timestamps", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.timestamps();
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamp, add column "updated_at" timestamp');
     });
@@ -323,7 +358,7 @@ module.exports = function(client) {
     it("adding binary", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.binary('foo');
-      }).toSql();
+      }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" bytea');
     });

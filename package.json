@@ -1,13 +1,13 @@
 {
   "name": "knex",
-  "version": "0.6.0-alpha1",
+  "version": "0.5.13",
   "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
     "test": "test"
   },
   "devDependencies": {
-    "mocha": "~1.15.1",
+    "mocha": "^1.18.2",
     "objectdump": "~0.3.0",
     "mysql": "~2.0.0-rc2",
     "pg": "~2.8.2",
@@ -17,23 +17,23 @@
     "rimraf": "~2.2.2",
     "grunt": "~0.4.1",
     "grunt-release": "~0.6.0",
-    "mocha-as-promised": "~1.4.0",
     "chai-as-promised": "~4.1.0",
     "sinon": "~1.7.3",
-    "sinon-chai": "~2.4.0"
+    "sinon-chai": "~2.4.0",
+    "jshint": "^2.5.0"
   },
   "dependencies": {
-    "generic-pool-redux": "~0.1.0",
-    "optimist": "~0.6.0",
-    "mkdirp": "~0.3.5",
-    "bluebird": "~1.0.0",
+    "bluebird": "1.2.x",
     "colors": "~0.6.2",
-    "lodash": "~2.4.0",
     "fluent-chain": "~0.1.0",
-    "simple-extend": "~0.1.0"
+    "generic-pool-redux": "~0.1.0",
+    "inherits": "^2.0.1",
+    "lodash": "~2.4.0",
+    "mkdirp": "~0.3.5",
+    "optimist": "~0.6.0"
   },
   "scripts": {
-    "test": "mocha -b --check-leaks -R spec test/index.js",
+    "test": "mocha -b --check-leaks -R spec test/index.js && jshint knex.js ./lib",
     "doc": "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js clients/**/**/*.js knex.js",
     "release:patch": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:patch",
     "release:minor": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:minor"

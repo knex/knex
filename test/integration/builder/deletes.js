@@ -1,13 +1,67 @@
 module.exports = function(knex) {
 
-  describe('deletes', function () {
+  describe('Deletes', function () {
 
-    it('should delete an item', function() {
-
+    it('should handle deletes', function() {
       return knex('accounts')
-        .where({'email':'test2@example.com'})
-        .del();
+        .where('id', 1)
+        .del()
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'delete from `accounts` where `id` = ?',
+            [1],
+            1
+          );
+          tester(
+            'postgresql',
+            'delete from "accounts" where "id" = ?',
+            [1],
+            1
+          );
+          tester(
+            'sqlite3',
+            'delete from "accounts" where "id" = ?',
+            [1],
+            1
+          );
+        });
+    });
 
+    it('should allow returning for deletes in postgresql', function() {
+      return knex('accounts')
+        .where('id', 2)
+        .del('*')
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'delete from `accounts` where `id` = ?',
+            [2],
+            1
+          );
+          tester(
+            'postgresql',
+            'delete from "accounts" where "id" = ? returning *',
+            [2],
+            [{
+              id: '2',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test2@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null
+            }]
+          );
+          tester(
+            'sqlite3',
+            'delete from "accounts" where "id" = ?',
+            [2],
+            1
+          );
+        });
     });
 
   });

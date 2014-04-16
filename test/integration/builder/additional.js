@@ -1,5 +1,6 @@
-
 module.exports = function(knex) {
+
+  var _ = require('lodash');
 
   describe('Additional', function () {
 
@@ -40,47 +41,42 @@ module.exports = function(knex) {
 
     it('should allow using the primary table as a raw statement', function() {
 
-      expect(knex(knex.raw("raw_table_name")).toString()).to.equal('select * from raw_table_name');
+      expect(knex(knex.raw("raw_table_name")).toQuery()).to.equal('select * from raw_table_name');
 
     });
 
-    it('should allow renaming a column', function(done) {
-
-      return knex.schema.table('accounts', function(t) {
-
-        t.renameColumn('about', 'about_col');
-
-      }).testSql(function(tester) {
-
-        tester('mysql', ["show fields from `accounts` where field = ?"]);
-        tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
-        tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
-
-      }).then(function() {
-
-        return knex('accounts').select('about_col');
-
+    it('should allow renaming a column', function() {
+      var count, inserts = [];
+      _.times(40, function() {
+        inserts.push({first_name: 'Test', last_name: 'Data'});
+      });
+      return knex('accounts').insert(inserts).then(function() {
+        return knex.count('*').from('accounts');
       }).then(function(resp) {
-
+        count = resp['count(*)'];
+        return knex.schema.table('accounts', function(t) {
+          t.renameColumn('about', 'about_col');
+        }).testSql(function(tester) {
+          tester('mysql', ["show fields from `accounts` where field = ?"]);
+          tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
+          tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+        });
+      }).then(function() {
+        return knex.count('*').from('accounts');
+      }).then(function(resp) {
+        expect(resp['count(*)']).to.equal(count);
+      }).then(function() {
+        return knex('accounts').select('about_col');
+      }).then(function() {
         return knex.schema.table('accounts', function(t) {
           t.renameColumn('about_col', 'about');
         });
-
+      }).then(function() {
+        return knex.count('*').from('accounts');
+      }).then(function(resp) {
+        expect(resp['count(*)']).to.equal(count);
       });
-
     });
-
-    // it('should reject with a custom error, with the sql, bindings, and message, along with a clientError property', function() {
-
-    //   return knex('nonexistent_table').insert([{item: 1}, {item: 2}]).then(null, function(err) {
-    //     expect(err).to.have.property('sql');
-    //     expect(err).to.have.property('bindings');
-    //     expect(err).to.have.property('clientError');
-    //     expect(err).to.be.an.instanceOf(Error);
-    //   });
-
-    // });
-
   });
 
 };

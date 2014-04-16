@@ -1,7 +1,10 @@
 raw
 *.sw?
+.idea
 .DS_Store
+.vagrant
 node_modules
+npm-debug.log
 
 # Testing for the knex cli:
 bin/migrations-folder

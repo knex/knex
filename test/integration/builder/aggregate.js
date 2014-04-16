@@ -33,6 +33,22 @@ module.exports = function(knex) {
 
     });
 
+    it('has an avg', function() {
+
+      return knex('accounts').avg('logins').testSql(function(tester) {
+        tester('mysql', 'select avg(`logins`) from `accounts`', [], [{
+          'avg(`logins`)': 1.6667
+        }]);
+        tester('sqlite3', 'select avg("logins") from "accounts"', [], [{
+          'avg("logins")': 1.6666666666666667
+        }]);
+        tester('postgresql', 'select avg("logins") from "accounts"', [], [{
+          avg: '1.6666666666666667'
+        }]);
+      });
+
+    });
+
     it('has a count', function() {
 
       return knex('accounts').count('id').testSql(function(tester) {
