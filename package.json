@@ -8,7 +8,6 @@
   },
   "devDependencies": {
     "mocha": "^1.18.2",
-    "objectdump": "~0.3.0",
     "mysql": "~2.0.0-rc2",
     "pg": "~2.8.2",
     "sqlite3": "~2.1.7",
@@ -28,10 +27,12 @@
     "inherits": "^2.0.1",
     "lodash": "~2.4.0",
     "mkdirp": "~0.3.5",
-    "optimist": "~0.6.0"
+    "optimist": "~0.6.0",
+    "mysql": "^2.0.1",
+    "pg": "^2.8.5"
   },
   "scripts": {
-    "test": "mocha -b --check-leaks -R spec test/index.js && jshint knex.js ./lib",
+    "test": "mocha -b --check-leaks -R spec test/index.js",
     "doc": "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js clients/**/**/*.js knex.js",
     "release:patch": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:patch",
     "release:minor": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:minor"

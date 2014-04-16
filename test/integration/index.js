@@ -2,8 +2,6 @@ module.exports = function(testSuite) {
   var config        = require(process.env.KNEX_TEST || './config');
 
   var _             = require('lodash');
-  var fs            = require('fs');
-  var objectdump    = require('objectdump');
   var Knex          = require('../../knex');
   var logger        = require('./logger')(testSuite);
   var Promise       = testPromise;
