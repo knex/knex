@@ -13,12 +13,14 @@
     "sqlite3": "~2.1.7",
     "node-uuid": "~1.4.0",
     "chai": "~1.8.1",
-    "rimraf": "~2.2.2",
+    "rimraf": "^2.2.6",
     "chai-as-promised": "~4.1.0",
     "sinon": "~1.7.3",
     "sinon-chai": "~2.4.0",
     "jshint": "~2.5.0",
-    "browserify": "~3.42.0"
+    "browserify": "~3.42.0",
+    "benchmark": "^1.0.0",
+    "shelljs": "^0.2.6"
   },
   "dependencies": {
     "bluebird": "1.2.x",

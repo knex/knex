@@ -564,13 +564,13 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
     });
 
     it('allows passing builder into where clause, #162', function() {
-      chain = sql().from('chapter').select('id').where('book', 1);
+      chain    = sql().from('chapter').select('id').where('book', 1);
       var page = sql().from('page').select('id').whereIn('chapter_id', chain);
       var word = sql().from('word').select('id').whereIn('page_id', page);
 
-      var one = word.clone().del().toSQL();
-      var two = page.clone().del().toSQL();
       var three = chain.clone().del().toSQL();
+      var two   = page.clone().del().toSQL();
+      var one   = word.clone().del().toSQL();
 
       expect(one.sql).to.eql('delete from "word" where "page_id" in (select "id" from "page" where "chapter_id" in (select "id" from "chapter" where "book" = ?))');
       expect(one.bindings).to.eql([1]);
