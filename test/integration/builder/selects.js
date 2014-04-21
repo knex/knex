@@ -318,12 +318,12 @@ module.exports = function(knex) {
         .select();
     });
 
-    it('does whereRaw', function() {
+    it('does where(raw)', function() {
       return knex('accounts')
         .whereExists(function() {
           this.select(knex.raw(1))
             .from('test_table_two')
-            .whereRaw('test_table_two.account_id = accounts.id');
+            .where(knex.raw('test_table_two.account_id = accounts.id'));
         })
         .select();
     });

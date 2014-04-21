@@ -595,11 +595,11 @@ Knex('users')
 </p>
 
 <pre>
-Knex('users')
+knex('users')
   .whereExists(function() {
       this.select(Knex.raw(1))
         .from('orders')
-        .whereRaw('orders.user_id = users.id');
+        .where(knex.raw('orders.user_id = users.id'));
   })
   .then(...
 </pre>
@@ -624,25 +624,23 @@ Knex('comments').whereIn('author_id', function() {
   </p>
 
       <ul class="small">
-        <li><a href="docs/knex.html#section-56">where</a></li>
-        <li><a href="docs/knex.html#section-57">andWhere</a></li>
-        <li><a href="docs/knex.html#section-58">orWhere</a></li>
-        <li><a href="docs/knex.html#section-59">whereRaw</a></li>
-        <li><a href="docs/knex.html#section-60">orWhereRaw</a></li>
-        <li><a href="docs/knex.html#section-61">whereExists</a></li>
-        <li><a href="docs/knex.html#section-62">orWhereExists</a></li>
-        <li><a href="docs/knex.html#section-63">whereNotExists</a></li>
-        <li><a href="docs/knex.html#section-64">orWhereNotExists</a></li>
-        <li><a href="docs/knex.html#section-65">whereIn</a></li>
-        <li><a href="docs/knex.html#section-66">orWhereIn</a></li>
-        <li><a href="docs/knex.html#section-67">whereNotIn</a></li>
-        <li><a href="docs/knex.html#section-68">orWhereNotIn</a></li>
-        <li><a href="docs/knex.html#section-69">whereNull</a></li>
-        <li><a href="docs/knex.html#section-70">orWhereNull</a></li>
-        <li><a href="docs/knex.html#section-71">whereNotNull</a></li>
-        <li><a href="docs/knex.html#section-72">orWhereNotNull</a></li>
-        <li><a href="docs/knex.html#section-73">whereBetween</a></li>
-        <li><a href="docs/knex.html#section-74">orWhereBetween</a></li>
+        <li>where</li>
+        <li>andWhere</li>
+        <li>orWhere</li>
+        <li>whereExists</li>
+        <li>orWhereExists</li>
+        <li>whereNotExists</li>
+        <li>orWhereNotExists</li>
+        <li>whereIn</li>
+        <li>orWhereIn</li>
+        <li>whereNotIn</li>
+        <li>orWhereNotIn</li>
+        <li>whereNull</li>
+        <li>orWhereNull</li>
+        <li>whereNotNull</li>
+        <li>orWhereNotNull</li>
+        <li>whereBetween</li>
+        <li>orWhereBetween</li>
       </ul>
     </p>
 
