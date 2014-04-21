@@ -458,7 +458,7 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       chain = sql().table('users').truncate().toSQL();
       expect(chain.sql).to.equal('truncate "users" restart identity');
       chain = sqlite3().table('users').truncate().toSQL();
-      expect(chain.sql).to.equal("delete from sqlite_sequence where name = \"users\"");
+      expect(chain.sql).to.equal('delete from sqlite_sequence where name = "users"');
       expect(typeof chain.output).to.equal('function');
     });
 
@@ -565,10 +565,19 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
 
     it('allows passing builder into where clause, #162', function() {
       chain = sql().from('chapter').select('id').where('book', 1);
-      var page = sql().from('page').select('id').whereIn('chapter_id', chain).toSQL();
-      var word = sql().from('word').select('id').whereIn('page_id', chain).toSQL();
-      expect(page.sql).to.eql('select "id" from "page" where "chapter_id" in (select "id" from "chapter" where "book" = ?)');
-      expect(page.bindings).to.eql([1]);
+      var page = sql().from('page').select('id').whereIn('chapter_id', chain);
+      var word = sql().from('word').select('id').whereIn('page_id', page);
+
+      var one = word.clone().del().toSQL();
+      var two = page.clone().del().toSQL();
+      var three = chain.clone().del().toSQL();
+
+      expect(one.sql).to.eql('delete from "word" where "page_id" in (select "id" from "page" where "chapter_id" in (select "id" from "chapter" where "book" = ?))');
+      expect(one.bindings).to.eql([1]);
+      expect(two.sql).to.eql('delete from "page" where "chapter_id" in (select "id" from "chapter" where "book" = ?)');
+      expect(two.bindings).to.eql([1]);
+      expect(three.sql).to.eql('delete from "chapter" where "book" = ?');
+      expect(three.bindings).to.eql([1]);
     });
 
     it('allows specifying the columns and the query for insert, #211', function() {
