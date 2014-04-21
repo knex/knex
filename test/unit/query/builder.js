@@ -242,12 +242,12 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
     });
 
     it("raw havings", function() {
-      chain = sql().select('*').from('users').havingRaw('user_foo < user_bar').toSQL();
+      chain = sql().select('*').from('users').having(raw('user_foo < user_bar')).toSQL();
       expect(chain.sql).to.equal('select * from "users" having user_foo < user_bar');
     });
 
     it("raw or havings", function() {
-      chain = sql().select('*').from('users').having('baz', '=', 1).orHavingRaw('user_foo < user_bar').toSQL();
+      chain = sql().select('*').from('users').having('baz', '=', 1).orHaving(raw('user_foo < user_bar')).toSQL();
       expect(chain.sql).to.equal('select * from "users" having "baz" = ? or user_foo < user_bar');
     });
 
