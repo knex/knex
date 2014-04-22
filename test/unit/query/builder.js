@@ -590,6 +590,17 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.sql).to.equal('insert into recipients (recipient_id, email) select ?, ? where not exists (select 1 from "recipients" where "recipient_id" = ?)');
     });
 
+    it('does an update with join, #191', function() {
+      var setObj = {'tblPerson.City': 'Boonesville'};
+      var query = mysql().table('tblPerson').update(setObj)
+        .join('tblPersonData', 'tblPersonData.PersonId', '=', 'tblPerson.PersonId')
+        .where('tblPersonData.DataId', 1)
+        .where('tblPerson.PersonId', 5 );
+
+      expect(query.toQuery()).to.equal("update `tblPerson` inner join `tblPersonData` on `tblPersonData`.`PersonId` = `tblPerson`.`PersonId` set `tblPerson`.`City`" +
+        " = 'Boonesville' where `tblPersonData`.`DataId` = 1 and `tblPerson`.`PersonId` = 5");
+    });
+
   });
 
 };
