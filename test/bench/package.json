@@ -11,6 +11,7 @@
   "devDependencies": {
     "shelljs": "^0.2.6",
     "rimraf": "^2.2.6",
-    "bluebird": "^1.2.3"
+    "bluebird": "^1.2.3",
+    "benchmark": "^1.0.0"
   }
 }
