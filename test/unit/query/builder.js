@@ -601,6 +601,14 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
         " = 'Boonesville' where `tblPersonData`.`DataId` = 1 and `tblPerson`.`PersonId` = 5");
     });
 
+    it('does crazy advanced inserts with clever raw use, #211', function() {
+      var q1 = sql().select(raw("'user'"), raw("'user@foo.com'")).whereNotExists(function() {
+        this.select(1).from('recipients').where('recipient_id', 1);
+      }).toSQL();
+      var q2 = sql().table('recipients').insert(raw('(recipient_id, email) ' + q1.sql, q1.bindings));
+      expect(q2.toSQL().sql).to.equal('insert into "recipients" (recipient_id, email) select \'user\', \'user@foo.com\' where not exists (select 1 from "recipients" where "recipient_id" = ?)');
+    });
+
   });
 
 };
