@@ -26,23 +26,57 @@ module.exports = function(knex) {
     });
 
     it('should allow raw queries directly with `knex.raw`', function() {
-
       var tables = {
         mysql: 'SHOW TABLES',
         postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';"
       };
-
       return knex.raw(tables[knex.client.dialect]).testSql(function(tester) {
         tester(knex.client.dialect, tables[knex.client.dialect]);
       });
-
     });
 
     it('should allow using the primary table as a raw statement', function() {
-
       expect(knex(knex.raw("raw_table_name")).toQuery()).to.equal('select * from raw_table_name');
+    });
 
+    it('gets the columnInfo', function() {
+      return knex('datatype_test').columnInfo().testSql(function(tester) {
+        tester('mysql',
+          'select column_name, data_type, character_maximum_length from information_schema.columns where table_name = ? and table_schema = ?',
+          [ 'datatype_test', 'db_test' ], {
+            "enum_value": {
+              "length": 1,
+              "type": "enum"
+            },
+            "uuid": {
+              "length": 36,
+              "type": "char"
+            }
+          });
+        tester('postgresql', 'select column_name, data_type, character_maximum_length from information_schema.columns where table_name = ? and table_catalog = ?',
+        [ 'datatype_test', 'db_test' ],
+        {
+          "enum_value": {
+            "length": null,
+            "type": "text"
+          },
+          "uuid": {
+            "length": null,
+            "type": "uuid"
+          }
+        });
+        tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
+          "enum_value": {
+            "length": null,
+            "type": "varchar"
+          },
+          "uuid": {
+            "length": "36",
+            "type": "char"
+          }
+        });
+      });
     });
 
     it('should allow renaming a column', function() {

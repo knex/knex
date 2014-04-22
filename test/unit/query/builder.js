@@ -62,13 +62,13 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
     });
 
     it("raw wheres", function() {
-      chain = sql().select('*').from('users').whereRaw('id = ? or email = ?', [1, 'foo']).toSQL();
+      chain = sql().select('*').from('users').where(raw('id = ? or email = ?', [1, 'foo'])).toSQL();
       expect(chain.sql).to.equal('select * from "users" where id = ? or email = ?');
       expect(chain.bindings).to.eql([1, 'foo']);
     });
 
     it("raw or wheres", function() {
-      chain = sql().select('*').from('users').where('id', '=', 1).orWhereRaw('email = ?', ['foo']).toSQL();
+      chain = sql().select('*').from('users').where('id', '=', 1).orWhere(raw('email = ?', ['foo'])).toSQL();
       expect(chain.sql).to.equal('select * from "users" where "id" = ? or email = ?');
       expect(chain.bindings).to.eql([1, 'foo']);
     });
