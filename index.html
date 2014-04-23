@@ -215,7 +215,7 @@
       <li>– <a href="#Builder-from">from</a></li>
       <li>– <a href="#Builder-where">where <b>+18 methods</b></a></li>
       <li>– <a href="#Builder-distinct">distinct</a></li>
-      <li>– <a href="#Builder-join">join</a></li>
+      <li>– <a href="#Builder-joins">joins</a></li>
       <li>– <a href="#Builder-groupBy">groupBy</a></li>
       <li>– <a href="#Builder-orderBy">orderBy</a></li>
       <li>– <a href="#Builder-having">having</a></li>
@@ -657,22 +657,40 @@ knex('customers')
   .select()
 </pre>
 
-    <p id="Builder-join">
-      <b class="header">join</b><code>.join(table, first, operator, second, [type])</code>
+    <p id="Builder-joins">
+      <b class="header">joins</b><code>.join(table, first, [operator], second)</code>
       <br />
       The <tt>join</tt> builder can be used to specify joins between tables,
       with the first argument being the joining <b>table</b>, the next three arguments
       being the <b>first</b> join column, the join <b>operator</b> and the <b>second</b>
-      join column, respectively. The last argument is optional and specifies the type of join.
+      join column, respectively.
     </p>
 
 <pre>
 knex('users')
   .join('contacts', 'users.id', '=', 'contacts.user_id')
-  .join('orders', 'users.id', '=', 'orders.user_id', 'outer')
+  .outerJoin('orders', 'users.id', '=', 'orders.user_id')
   .select('users.id', 'contacts.phone', 'orders.price')
   .then(function() { ... });
 </pre>
+
+    <p>
+      There are additional methods for types that may be used:
+      <ul>
+	<li>.leftJoin(...)</li>
+	<li>.leftOuterJoin(...)</li>
+	<li>.innerJoin(...) (default)</li>
+	<li>.fullJoin(...)</li>
+	<li>.innerJoin(...)</li>
+	<li>.leftJoin(...)</li>
+	<li>.leftOuterJoin(...)</li>
+	<li>.rightJoin(...)</li>
+	<li>.rightOuterJoin(...)</li>
+	<li>.outerJoin(...)</li>
+	<li>.fullOuterJoin(...)</li>
+	<li>.crossJoin(...)</li>
+      </ul>
+    </p>
 
     <p>
       For grouped joins, specify a function as the second argument for the
@@ -955,9 +973,9 @@ knex('accounts')
 
 <pre>
   knex('accounts as a1')
-    .join('accounts as a2', function() {
+    .leftJoin('accounts as a2', function() {
       this.on('a1.email', '<>', 'a2.email');
-    }, 'left')
+    })
     .select(['a1.email', 'a2.email'])
     .where(Knex.Raw('a1.id = 1'))
     .option({ nestTables: true, rowMode: 'array' })
