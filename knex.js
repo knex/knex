@@ -42,6 +42,7 @@ var QueryInterface = require('./lib/query/methods');
 // Create a new "knex" instance with the appropriate configured client.
 Knex.initialize = function(config) {
   var Dialect, client;
+  var EventEmitter = require('events').EventEmitter;
 
   // The object we're potentially using to kick off an
   // initial chain. It is assumed that `knex` isn't a
@@ -49,7 +50,18 @@ Knex.initialize = function(config) {
   // in case it's called with `new`.
   function knex(tableName) {
     var qb = new client.QueryBuilder;
+
+    // Passthrough all "query" events to the knex object.
+    qb.on('query', function(data) {
+      knex.emit('query', data);
+    });
     return tableName ? qb.table(tableName) : qb;
+  }
+
+  // Hook up the "knex" object as an EventEmitter.
+  var ee = new EventEmitter();
+  for (var key in ee) {
+    knex[key] = ee[key];
   }
 
   // The `__knex__` is used if you need to duck-type check whether this
