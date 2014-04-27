@@ -107,6 +107,7 @@ Knex.initialize = function(config) {
   _.each(['make', 'latest', 'rollback', 'currentVersion'], function(method) {
     migrate[method] = function(config) {
       if (!client.Migrator) client.initMigrator();
+      config.knex = knex;
       var migrator = new client.Migrator(config);
       return migrator[method].apply(migrator, arguments);
     };

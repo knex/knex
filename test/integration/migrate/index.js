@@ -6,7 +6,8 @@ var Promise  = require('../../../lib/promise');
 module.exports = function(knex) {
 
   var migrationConfig = {
-    directory: path.join(__dirname, './migration/')
+    directory: path.join(__dirname, './migration/'),
+    name: 'test'
   };
 
   require('rimraf').sync(path.join(__dirname, './migration'));
@@ -14,7 +15,7 @@ module.exports = function(knex) {
   describe('knex.migrate', function () {
 
     it('should create a new migration file with the create method', function() {
-      return knex.migrate.make('test', migrationConfig).then(function(name) {
+      return knex.migrate.make(migrationConfig).then(function(name) {
         expect(name.split('_')[0]).to.have.length(14);
         expect(name.split('_')[1].split('.')[0]).to.equal('test');
       });

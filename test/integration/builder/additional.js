@@ -44,7 +44,7 @@ module.exports = function(knex) {
       return knex('datatype_test').columnInfo().testSql(function(tester) {
         tester('mysql',
           'select column_name, data_type, character_maximum_length from information_schema.columns where table_name = ? and table_schema = ?',
-          ['datatype_test','db_test'], {
+          ['datatype_test','knex_test'], {
             "enum_value": {
               "length": 1,
               "type": "enum"
@@ -55,7 +55,7 @@ module.exports = function(knex) {
             }
           });
         tester('postgresql', 'select column_name, data_type, character_maximum_length from information_schema.columns where table_name = ? and table_catalog = ?',
-        ['datatype_test','db_test'], {
+        ['datatype_test','knex_test'], {
           "enum_value": {
             "length": null,
             "type": "text"

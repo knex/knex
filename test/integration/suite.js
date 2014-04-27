@@ -5,7 +5,7 @@ module.exports = function(knex) {
     this.dialect = knex.client.dialect;
 
     require('./schema')(knex);
-    // require('./migrate')(knex);
+    require('./migrate')(knex);
     require('./builder/inserts')(knex);
     require('./builder/selects')(knex);
     require('./builder/unions')(knex);
