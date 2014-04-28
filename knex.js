@@ -68,13 +68,21 @@ Knex.initialize = function(config) {
   // is a knex builder, without a full on `instanceof` check.
   knex.VERSION = knex.__knex__  = '0.6.0';
   knex.raw = function(sql, bindings) {
-    return new client.Raw(sql, bindings);
+    var raw = new client.Raw(sql, bindings);
+    raw.on('query', function(data) {
+      knex.emit('query', data);
+    });
+    return raw;
   };
 
   // Runs a new transaction, taking a container and returning a promise
   // for when the transaction is resolved.
   knex.transaction = function(container) {
-    return new client.Transaction(container);
+    var trx = new client.Transaction(container);
+    trx.on('query', function(data) {
+      knex.emit('query', data);
+    });
+    return trx;
   };
 
   // Build the "client"
@@ -88,9 +96,8 @@ Knex.initialize = function(config) {
   // Allow chaining methods from the root object, before
   // any other information is specified.
   _.each(QueryInterface, function(method) {
-    if (method.charAt(0) === '_') return;
     knex[method] = function() {
-      var builder = (this instanceof client.QueryBuilder) ? this : new client.QueryBuilder();
+      var builder = knex();
       return builder[method].apply(builder, arguments);
     };
   });
@@ -109,6 +116,11 @@ Knex.initialize = function(config) {
     schema[key] = function() {
       if (!client.SchemaBuilder) client.initSchema();
       var builder = new client.SchemaBuilder();
+
+      // Passthrough all "query" events to the knex object.
+      builder.on('query', function(data) {
+        knex.emit('query', data);
+      });
       return builder[key].apply(builder, arguments);
     };
   });
