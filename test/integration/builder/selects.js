@@ -10,6 +10,17 @@ module.exports = function(knex) {
 
     });
 
+    it('allows you to stream', function() {
+      var count = 0;
+      return knex('accounts').stream(function(rowStream) {
+	rowStream.on('data', function(chunk) {
+	  count++;
+	});
+      }).then(function() {
+	assert(count === 6, 'Six rows should have been streamed');
+      });
+    });
+
     it('throws errors on the exec if uncaught in the last block', function(ok) {
 
       var listeners = process.listeners('uncaughtException');

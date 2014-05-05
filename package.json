@@ -29,7 +29,8 @@
     "mkdirp": "~0.3.5",
     "optimist": "~0.6.0",
     "mysql": "~2.0.1",
-    "pg": "~2.8.5"
+    "pg": "~2.8.5",
+    "pg-query-stream": "^0.4.2"
   },
   "scripts": {
     "test": "jshint knex.js lib/* && mocha -b --check-leaks -R spec test/index.js",
