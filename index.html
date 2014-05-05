@@ -797,9 +797,9 @@ knex('users').whereNull('last_name').union(function() {
 </pre>
 
     <p id="Builder-update">
-      <b class="header">update</b><code>.update(data) / .update(key, value)</code>
+      <b class="header">update</b><code>.update(data, [returning])</code>
       <br />
-      Creates an <tt>update</tt> query, taking either a single property / value, or a hash of properties
+      Creates an <tt>update</tt> query, taking a hash of properties
       to be updated based on the other query constraints. Resolves the promise / fulfills the
       callback with the number of affected rows for the query.
     </p>
