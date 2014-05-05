@@ -43,35 +43,47 @@ module.exports = function(knex) {
     it('gets the columnInfo', function() {
       return knex('datatype_test').columnInfo().testSql(function(tester) {
         tester('mysql',
-          'select column_name, data_type, character_maximum_length from information_schema.columns where table_name = ? and table_schema = ?',
+          'select * from information_schema.columns where table_name = ? and table_schema = ?',
           null, {
             "enum_value": {
-              "length": 1,
+              "defaultValue": null,
+              "maxLength": 1,
+              "nullable": true,
               "type": "enum"
             },
             "uuid": {
-              "length": 36,
+              "defaultValue": null,
+              "maxLength": 36,
+              "nullable": false,
               "type": "char"
             }
           });
-        tester('postgresql', 'select column_name, data_type, character_maximum_length from information_schema.columns where table_name = ? and table_catalog = ?',
+        tester('postgresql', 'select * from information_schema.columns where table_name = ? and table_catalog = ?',
         null, {
           "enum_value": {
-            "length": null,
+            "defaultValue": null,
+            "maxLength": null,
+            "nullable": true,
             "type": "text"
           },
           "uuid": {
-            "length": null,
+            "defaultValue": null,
+            "maxLength": null,
+            "nullable": false,
             "type": "uuid"
           }
         });
         tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
           "enum_value": {
-            "length": null,
+            "defaultValue": null,
+            "maxLength": null,
+            "nullable": true,
             "type": "varchar"
           },
           "uuid": {
-            "length": "36",
+            "defaultValue": null,
+            "maxLength": "36",
+            "nullable": false,
             "type": "char"
           }
         });
