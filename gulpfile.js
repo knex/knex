@@ -8,7 +8,7 @@ var fs = Promise.promisifyAll(require('fs'));
 var excluded = {
   sqlite3: ['sqlite3'],
   mysql: ['mysql'],
-  pg: ['pg', 'pg.js', 'pg-though-stream'],
+  pg: ['pg', 'pg.js', 'pg-query-stream'],
   websql: ['sqlite3']
 };
 
@@ -22,7 +22,7 @@ var bases = {
 var all = ['mysql', 'pg', 'sqlite3', 'websql'];
 
 var externals = ['lodash', 'bluebird'];
-var alwaysExcluded = ['generic-pool-redux', 'stream', './lib/migrate/index.js'];
+var alwaysExcluded = ['generic-pool-redux', 'node-pg-stream', 'readable-stream', './lib/migrate/index.js'];
 
 gulp.task('build', function() {
   var targets = argv.t || 'all';

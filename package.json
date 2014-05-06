@@ -33,7 +33,8 @@
     "inherits": "~2.0.1",
     "lodash": "~2.4.0",
     "mkdirp": "~0.3.5",
-    "optimist": "~0.6.0"
+    "optimist": "~0.6.0",
+    "readable-stream": "1.0.27-1"
   },
   "scripts": {
     "test": "jshint knex.js lib/* && mocha -b --check-leaks -R spec test/index.js",
