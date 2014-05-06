@@ -9,7 +9,14 @@ var excluded = {
   sqlite3: ['sqlite3'],
   mysql: ['mysql'],
   pg: ['pg', 'pg.js', 'pg-though-stream'],
-  websql: []
+  websql: ['sqlite3']
+};
+
+var bases = {
+  mysql: './lib/dialects/mysql',
+  postgres: './lib/dialects/postgres',
+  sqlite3: './lib/dialects/sqlite3',
+  websql: './lib/dialects/websql'
 };
 
 var all = ['mysql', 'pg', 'sqlite3', 'websql'];
@@ -19,18 +26,26 @@ var alwaysExcluded = ['generic-pool-redux', 'stream', './lib/migrate/index.js'];
 
 gulp.task('build', function() {
   var targets = argv.t || 'all';
+  var outfile = argv.o || 'knex.js';
   if (targets === 'all') targets = all;
   if (!Array.isArray(targets)) targets = [targets];
+
   var b = browserify();
 
+  for (var key in bases) {
+    if (targets.indexOf(key) === -1) {
+      b.exclude(bases[key]);
+    }
+  }
+
   b.transform(function() {
-      var data = '';
-      function write (buf) { data += buf; }
-      function end () {
-	this.queue(data.replace("require('bluebird/js/main/promise')()", "require('bluebird')"));
-	this.queue(null);
-      }
-      return through(write, end);
+    var data = '';
+    function write (buf) { data += buf; }
+    function end () {
+      this.queue(data.replace("require('bluebird/js/main/promise')()", "require('bluebird')"));
+      this.queue(null);
+    }
+    return through(write, end);
   });
 
   targets.forEach(function(target) {
@@ -56,7 +71,7 @@ gulp.task('build', function() {
   var igv = ['__filename','__dirname','process','global'];
 
   fs.mkdirAsync('./browser').catch(function(){}).finally(function() {
-    var outStream = fs.createWriteStream('./browser/knex.js');
+    var outStream = fs.createWriteStream('./browser/' + outfile);
     var depStream = fs.createWriteStream('./browser/deps.js');
     b.bundle({
       insertGlobalVars: igv

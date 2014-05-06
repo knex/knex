@@ -1,17 +1,17 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, Promise$_CreatePromiseArray, PromiseArray) {
@@ -27,15 +27,15 @@ module.exports = function(Promise, Promise$_CreatePromiseArray, PromiseArray) {
 var SomePromiseArray = require("./some_promise_array.js")(PromiseArray);
 function Promise$_Any(promises, useBound) {
     var ret = Promise$_CreatePromiseArray(
-	promises,
-	SomePromiseArray,
-	useBound === true && promises._isBound()
-	    ? promises._boundTo
-	    : void 0
+        promises,
+        SomePromiseArray,
+        useBound === true && promises._isBound()
+            ? promises._boundTo
+            : void 0
    );
     var promise = ret.promise();
     if (promise.isRejected()) {
-	return promise;
+        return promise;
     }
     ret.setHowMany(1);
     ret.setUnwrap();
@@ -56,17 +56,17 @@ Promise.prototype.any = function Promise$any() {
 },{"./some_promise_array.js":34}],2:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -74,7 +74,7 @@ Promise.prototype.any = function Promise$any() {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 var schedule = require("./schedule.js");
@@ -90,7 +90,7 @@ function Async() {
     this._functionBuffer = new Queue(25000 * 3);
     var self = this;
     this.consumeFunctionBuffer = function Async$consumeFunctionBuffer() {
-	self._consumeFunctionBuffer();
+        self._consumeFunctionBuffer();
     };
 }
 
@@ -100,9 +100,9 @@ Async.prototype.haveItemsQueued = function Async$haveItemsQueued() {
 
 Async.prototype.invokeLater = function Async$invokeLater(fn, receiver, arg) {
     if (process !== void 0 &&
-	process.domain != null &&
-	!fn.domain) {
-	fn = process.domain.bind(fn);
+        process.domain != null &&
+        !fn.domain) {
+        fn = process.domain.bind(fn);
     }
     this._lateBuffer.push(fn, receiver, arg);
     this._queueTick();
@@ -110,9 +110,9 @@ Async.prototype.invokeLater = function Async$invokeLater(fn, receiver, arg) {
 
 Async.prototype.invoke = function Async$invoke(fn, receiver, arg) {
     if (process !== void 0 &&
-	process.domain != null &&
-	!fn.domain) {
-	fn = process.domain.bind(fn);
+        process.domain != null &&
+        !fn.domain) {
+        fn = process.domain.bind(fn);
     }
     var functionBuffer = this._functionBuffer;
     functionBuffer.push(fn, receiver, arg);
@@ -124,10 +124,10 @@ Async.prototype._consumeFunctionBuffer =
 function Async$_consumeFunctionBuffer() {
     var functionBuffer = this._functionBuffer;
     while(functionBuffer.length() > 0) {
-	var fn = functionBuffer.shift();
-	var receiver = functionBuffer.shift();
-	var arg = functionBuffer.shift();
-	fn.call(receiver, arg);
+        var fn = functionBuffer.shift();
+        var receiver = functionBuffer.shift();
+        var arg = functionBuffer.shift();
+        fn.call(receiver, arg);
     }
     this._reset();
     this._consumeLateBuffer();
@@ -136,26 +136,26 @@ function Async$_consumeFunctionBuffer() {
 Async.prototype._consumeLateBuffer = function Async$_consumeLateBuffer() {
     var buffer = this._lateBuffer;
     while(buffer.length() > 0) {
-	var fn = buffer.shift();
-	var receiver = buffer.shift();
-	var arg = buffer.shift();
-	var res = tryCatch1(fn, receiver, arg);
-	if (res === errorObj) {
-	    this._queueTick();
-	    if (fn.domain != null) {
-		fn.domain.emit("error", res.e);
-	    }
-	    else {
-		throw res.e;
-	    }
-	}
+        var fn = buffer.shift();
+        var receiver = buffer.shift();
+        var arg = buffer.shift();
+        var res = tryCatch1(fn, receiver, arg);
+        if (res === errorObj) {
+            this._queueTick();
+            if (fn.domain != null) {
+                fn.domain.emit("error", res.e);
+            }
+            else {
+                throw res.e;
+            }
+        }
     }
 };
 
 Async.prototype._queueTick = function Async$_queue() {
     if (!this._isTickUsed) {
-	schedule(this.consumeFunctionBuffer);
-	this._isTickUsed = true;
+        schedule(this.consumeFunctionBuffer);
+        this._isTickUsed = true;
     }
 };
 
@@ -171,17 +171,17 @@ module.exports=require('EjIH/G');
 },{}],"EjIH/G":[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -189,7 +189,7 @@ module.exports=require('EjIH/G');
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 var Promise = require("./promise.js")();
@@ -197,17 +197,17 @@ module.exports = Promise;
 },{"./promise.js":20}],5:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -215,7 +215,7 @@ module.exports = Promise;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise) {
@@ -223,28 +223,28 @@ Promise.prototype.call = function Promise$call(propertyName) {
     var $_len = arguments.length;var args = new Array($_len - 1); for(var $_i = 1; $_i < $_len; ++$_i) {args[$_i - 1] = arguments[$_i];}
 
     return this._then(function(obj) {
-	    return obj[propertyName].apply(obj, args);
-	},
-	void 0,
-	void 0,
-	void 0,
-	void 0
+            return obj[propertyName].apply(obj, args);
+        },
+        void 0,
+        void 0,
+        void 0,
+        void 0
    );
 };
 
 function Promise$getter(obj) {
     var prop = typeof this === "string"
-	? this
-	: ("" + this);
+        ? this
+        : ("" + this);
     return obj[prop];
 }
 Promise.prototype.get = function Promise$get(propertyName) {
     return this._then(
-	Promise$getter,
-	void 0,
-	void 0,
-	propertyName,
-	void 0
+        Promise$getter,
+        void 0,
+        void 0,
+        propertyName,
+        void 0
    );
 };
 };
@@ -252,17 +252,17 @@ Promise.prototype.get = function Promise$get(propertyName) {
 },{}],6:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -270,7 +270,7 @@ Promise.prototype.get = function Promise$get(propertyName) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, INTERNAL) {
@@ -283,8 +283,8 @@ Promise.prototype._cancel = function Promise$_cancel() {
     var parent;
     var promiseToReject = this;
     while ((parent = promiseToReject._cancellationParent) !== void 0 &&
-	parent.isCancellable()) {
-	promiseToReject = parent;
+        parent.isCancellable()) {
+        promiseToReject = parent;
     }
     var err = new CancellationError();
     promiseToReject._attachExtraTrace(err);
@@ -316,7 +316,7 @@ Promise.prototype.uncancellable = function Promise$uncancellable() {
 Promise.prototype.fork =
 function Promise$fork(didFulfill, didReject, didProgress) {
     var ret = this._then(didFulfill, didReject, didProgress,
-			 void 0, void 0);
+                         void 0, void 0);
 
     ret._setCancellable();
     ret._cancellationParent = void 0;
@@ -327,17 +327,17 @@ function Promise$fork(didFulfill, didReject, didProgress) {
 },{"./async.js":2,"./errors.js":10}],7:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -345,7 +345,7 @@ function Promise$fork(didFulfill, didReject, didProgress) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function() {
@@ -366,25 +366,25 @@ var formatStack = null;
 function formatNonError(obj) {
     var str;
     if (typeof obj === "function") {
-	str = "[function " +
-	    (obj.name || "anonymous") +
-	    "]";
+        str = "[function " +
+            (obj.name || "anonymous") +
+            "]";
     }
     else {
-	str = obj.toString();
-	var ruselessToString = /\[object [a-zA-Z0-9$_]+\]/;
-	if (ruselessToString.test(str)) {
-	    try {
-		var newStr = JSON.stringify(obj);
-		str = newStr;
-	    }
-	    catch(e) {
+        str = obj.toString();
+        var ruselessToString = /\[object [a-zA-Z0-9$_]+\]/;
+        if (ruselessToString.test(str)) {
+            try {
+                var newStr = JSON.stringify(obj);
+                str = newStr;
+            }
+            catch(e) {
 
-	    }
-	}
-	if (str.length === 0) {
-	    str = "(empty array)";
-	}
+            }
+        }
+        if (str.length === 0) {
+            str = "(empty array)";
+        }
     }
     return ("(<" + snip(str) + ">, no stack trace)");
 }
@@ -392,7 +392,7 @@ function formatNonError(obj) {
 function snip(str) {
     var maxChars = 41;
     if (str.length < maxChars) {
-	return str;
+        return str;
     }
     return str.substr(0, maxChars - 3) + "...";
 }
@@ -411,36 +411,36 @@ function CapturedTrace$captureStackTrace(ignoreUntil, isTopLevel) {
 CapturedTrace.possiblyUnhandledRejection =
 function CapturedTrace$PossiblyUnhandledRejection(reason) {
     if (typeof console === "object") {
-	var message;
-	if (typeof reason === "object" || typeof reason === "function") {
-	    var stack = reason.stack;
-	    message = "Possibly unhandled " + formatStack(stack, reason);
-	}
-	else {
-	    message = "Possibly unhandled " + String(reason);
-	}
-	if (typeof console.error === "function" ||
-	    typeof console.error === "object") {
-	    console.error(message);
-	}
-	else if (typeof console.log === "function" ||
-	    typeof console.log === "object") {
-	    console.log(message);
-	}
+        var message;
+        if (typeof reason === "object" || typeof reason === "function") {
+            var stack = reason.stack;
+            message = "Possibly unhandled " + formatStack(stack, reason);
+        }
+        else {
+            message = "Possibly unhandled " + String(reason);
+        }
+        if (typeof console.error === "function" ||
+            typeof console.error === "object") {
+            console.error(message);
+        }
+        else if (typeof console.log === "function" ||
+            typeof console.log === "object") {
+            console.log(message);
+        }
     }
 };
 
 CapturedTrace.combine = function CapturedTrace$Combine(current, prev) {
     var curLast = current.length - 1;
     for (var i = prev.length - 1; i >= 0; --i) {
-	var line = prev[i];
-	if (current[curLast] === line) {
-	    current.pop();
-	    curLast--;
-	}
-	else {
-	    break;
-	}
+        var line = prev[i];
+        if (current[curLast] === line) {
+            current.pop();
+            curLast--;
+        }
+        else {
+            break;
+        }
     }
 
     current.push("From previous event:");
@@ -450,13 +450,13 @@ CapturedTrace.combine = function CapturedTrace$Combine(current, prev) {
 
     for (var i = 0, len = lines.length; i < len; ++i) {
 
-	if ((rignore.test(lines[i]) ||
-	    (i > 0 && !rtraceline.test(lines[i])) &&
-	    lines[i] !== "From previous event:")
+        if ((rignore.test(lines[i]) ||
+            (i > 0 && !rtraceline.test(lines[i])) &&
+            lines[i] !== "From previous event:")
        ) {
-	    continue;
-	}
-	ret.push(lines[i]);
+            continue;
+        }
+        ret.push(lines[i]);
     }
     return ret;
 };
@@ -467,81 +467,81 @@ CapturedTrace.isSupported = function CapturedTrace$IsSupported() {
 
 var captureStackTrace = (function stackDetection() {
     if (typeof Error.stackTraceLimit === "number" &&
-	typeof Error.captureStackTrace === "function") {
-	rtraceline = /^\s*at\s*/;
-	formatStack = function(stack, error) {
-	    if (typeof stack === "string") return stack;
+        typeof Error.captureStackTrace === "function") {
+        rtraceline = /^\s*at\s*/;
+        formatStack = function(stack, error) {
+            if (typeof stack === "string") return stack;
 
-	    if (error.name !== void 0 &&
-		error.message !== void 0) {
-		return error.name + ". " + error.message;
-	    }
-	    return formatNonError(error);
+            if (error.name !== void 0 &&
+                error.message !== void 0) {
+                return error.name + ". " + error.message;
+            }
+            return formatNonError(error);
 
 
-	};
-	var captureStackTrace = Error.captureStackTrace;
-	return function CapturedTrace$_captureStackTrace(
-	    receiver, ignoreUntil) {
-	    captureStackTrace(receiver, ignoreUntil);
-	};
+        };
+        var captureStackTrace = Error.captureStackTrace;
+        return function CapturedTrace$_captureStackTrace(
+            receiver, ignoreUntil) {
+            captureStackTrace(receiver, ignoreUntil);
+        };
     }
     var err = new Error();
 
     if (typeof err.stack === "string" &&
-	typeof "".startsWith === "function" &&
-	(err.stack.startsWith("stackDetection@")) &&
-	stackDetection.name === "stackDetection") {
+        typeof "".startsWith === "function" &&
+        (err.stack.startsWith("stackDetection@")) &&
+        stackDetection.name === "stackDetection") {
 
-	defineProperty(Error, "stackTraceLimit", {
-	    writable: true,
-	    enumerable: false,
-	    configurable: false,
-	    value: 25
-	});
-	rtraceline = /@/;
-	var rline = /[@\n]/;
+        defineProperty(Error, "stackTraceLimit", {
+            writable: true,
+            enumerable: false,
+            configurable: false,
+            value: 25
+        });
+        rtraceline = /@/;
+        var rline = /[@\n]/;
 
-	formatStack = function(stack, error) {
-	    if (typeof stack === "string") {
-		return (error.name + ". " + error.message + "\n" + stack);
-	    }
+        formatStack = function(stack, error) {
+            if (typeof stack === "string") {
+                return (error.name + ". " + error.message + "\n" + stack);
+            }
 
-	    if (error.name !== void 0 &&
-		error.message !== void 0) {
-		return error.name + ". " + error.message;
-	    }
-	    return formatNonError(error);
-	};
+            if (error.name !== void 0 &&
+                error.message !== void 0) {
+                return error.name + ". " + error.message;
+            }
+            return formatNonError(error);
+        };
 
-	return function captureStackTrace(o) {
-	    var stack = new Error().stack;
-	    var split = stack.split(rline);
-	    var len = split.length;
-	    var ret = "";
-	    for (var i = 0; i < len; i += 2) {
-		ret += split[i];
-		ret += "@";
-		ret += split[i + 1];
-		ret += "\n";
-	    }
-	    o.stack = ret;
-	};
+        return function captureStackTrace(o) {
+            var stack = new Error().stack;
+            var split = stack.split(rline);
+            var len = split.length;
+            var ret = "";
+            for (var i = 0; i < len; i += 2) {
+                ret += split[i];
+                ret += "@";
+                ret += split[i + 1];
+                ret += "\n";
+            }
+            o.stack = ret;
+        };
     }
     else {
-	formatStack = function(stack, error) {
-	    if (typeof stack === "string") return stack;
+        formatStack = function(stack, error) {
+            if (typeof stack === "string") return stack;
 
-	    if ((typeof error === "object" ||
-		typeof error === "function") &&
-		error.name !== void 0 &&
-		error.message !== void 0) {
-		return error.name + ". " + error.message;
-	    }
-	    return formatNonError(error);
-	};
+            if ((typeof error === "object" ||
+                typeof error === "function") &&
+                error.name !== void 0 &&
+                error.message !== void 0) {
+                return error.name + ". " + error.message;
+            }
+            return formatNonError(error);
+        };
 
-	return null;
+        return null;
     }
 })();
 
@@ -551,17 +551,17 @@ return CapturedTrace;
 },{"./es5.js":12,"./util.js":38}],8:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -569,7 +569,7 @@ return CapturedTrace;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(NEXT_FILTER) {
@@ -594,10 +594,10 @@ function CatchFilter$_safePredicate(predicate, e) {
 
     var safeKeys = keys(safeObject);
     if (safeKeys.length) {
-	errorObj.e = new TypeError(
-	    "Catch filter must inherit from Error "
-	  + "or be a simple predicate function");
-	return errorObj;
+        errorObj.e = new TypeError(
+            "Catch filter must inherit from Error "
+          + "or be a simple predicate function");
+        return errorObj;
     }
     return retfilter;
 }
@@ -607,35 +607,35 @@ CatchFilter.prototype.doFilter = function CatchFilter$_doFilter(e) {
     var promise = this._promise;
     var boundTo = promise._isBound() ? promise._boundTo : void 0;
     for (var i = 0, len = this._instances.length; i < len; ++i) {
-	var item = this._instances[i];
-	var itemIsErrorType = item === Error ||
-	    (item != null && item.prototype instanceof Error);
+        var item = this._instances[i];
+        var itemIsErrorType = item === Error ||
+            (item != null && item.prototype instanceof Error);
 
-	if (itemIsErrorType && e instanceof item) {
-	    var ret = tryCatch1(cb, boundTo, e);
-	    if (ret === errorObj) {
-		NEXT_FILTER.e = ret.e;
-		return NEXT_FILTER;
-	    }
-	    return ret;
-	} else if (typeof item === "function" && !itemIsErrorType) {
-	    var shouldHandle = CatchFilter$_safePredicate(item, e);
-	    if (shouldHandle === errorObj) {
-		var trace = errors.canAttach(errorObj.e)
-		    ? errorObj.e
-		    : new Error(errorObj.e + "");
-		this._promise._attachExtraTrace(trace);
-		e = errorObj.e;
-		break;
-	    } else if (shouldHandle) {
-		var ret = tryCatch1(cb, boundTo, e);
-		if (ret === errorObj) {
-		    NEXT_FILTER.e = ret.e;
-		    return NEXT_FILTER;
-		}
-		return ret;
-	    }
-	}
+        if (itemIsErrorType && e instanceof item) {
+            var ret = tryCatch1(cb, boundTo, e);
+            if (ret === errorObj) {
+                NEXT_FILTER.e = ret.e;
+                return NEXT_FILTER;
+            }
+            return ret;
+        } else if (typeof item === "function" && !itemIsErrorType) {
+            var shouldHandle = CatchFilter$_safePredicate(item, e);
+            if (shouldHandle === errorObj) {
+                var trace = errors.canAttach(errorObj.e)
+                    ? errorObj.e
+                    : new Error(errorObj.e + "");
+                this._promise._attachExtraTrace(trace);
+                e = errorObj.e;
+                break;
+            } else if (shouldHandle) {
+                var ret = tryCatch1(cb, boundTo, e);
+                if (ret === errorObj) {
+                    NEXT_FILTER.e = ret.e;
+                    return NEXT_FILTER;
+                }
+                return ret;
+            }
+        }
     }
     NEXT_FILTER.e = e;
     return NEXT_FILTER;
@@ -647,17 +647,17 @@ return CatchFilter;
 },{"./errors.js":10,"./es5.js":12,"./util.js":38}],9:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -665,7 +665,7 @@ return CatchFilter;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 var util = require("./util.js");
@@ -682,14 +682,14 @@ var thrower = function Promise$_thrower() {
 
 var wrapper = function Promise$_wrapper(value, action) {
     if (action === 1) {
-	return function Promise$_thrower() {
-	    throw value;
-	};
+        return function Promise$_thrower() {
+            throw value;
+        };
     }
     else if (action === 2) {
-	return function Promise$_returner() {
-	    return value;
-	};
+        return function Promise$_returner() {
+            return value;
+        };
     }
 };
 
@@ -698,12 +698,12 @@ Promise.prototype["return"] =
 Promise.prototype.thenReturn =
 function Promise$thenReturn(value) {
     if (wrapsPrimitiveReceiver && isPrimitive(value)) {
-	return this._then(
-	    wrapper(value, 2),
-	    void 0,
-	    void 0,
-	    void 0,
-	    void 0
+        return this._then(
+            wrapper(value, 2),
+            void 0,
+            void 0,
+            void 0,
+            void 0
        );
     }
     return this._then(returner, void 0, void 0, value, void 0);
@@ -713,12 +713,12 @@ Promise.prototype["throw"] =
 Promise.prototype.thenThrow =
 function Promise$thenThrow(reason) {
     if (wrapsPrimitiveReceiver && isPrimitive(reason)) {
-	return this._then(
-	    wrapper(reason, 1),
-	    void 0,
-	    void 0,
-	    void 0,
-	    void 0
+        return this._then(
+            wrapper(reason, 1),
+            void 0,
+            void 0,
+            void 0,
+            void 0
        );
     }
     return this._then(thrower, void 0, void 0, reason, void 0);
@@ -728,17 +728,17 @@ function Promise$thenThrow(reason) {
 },{"./util.js":38}],10:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -746,7 +746,7 @@ function Promise$thenThrow(reason) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 var global = require("./global.js");
@@ -758,7 +758,7 @@ var Error = global.Error;
 
 function markAsOriginatingFromRejection(e) {
     try {
-	notEnumerableProp(e, "isAsync", true);
+        notEnumerableProp(e, "isAsync", true);
     }
     catch(ignore) {}
 }
@@ -766,7 +766,7 @@ function markAsOriginatingFromRejection(e) {
 function originatesFromRejection(e) {
     if (e == null) return false;
     return ((e instanceof RejectionError) ||
-	e["isAsync"] === true);
+        e["isAsync"] === true);
 }
 
 function isError(obj) {
@@ -779,12 +779,12 @@ function canAttach(obj) {
 
 function subError(nameProperty, defaultMessage) {
     function SubError(message) {
-	if (!(this instanceof SubError)) return new SubError(message);
-	this.message = typeof message === "string" ? message : defaultMessage;
-	this.name = nameProperty;
-	if (Error.captureStackTrace) {
-	    Error.captureStackTrace(this, this.constructor);
-	}
+        if (!(this instanceof SubError)) return new SubError(message);
+        this.message = typeof message === "string" ? message : defaultMessage;
+        this.name = nameProperty;
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, this.constructor);
+        }
     }
     inherits(SubError, Error);
     return SubError;
@@ -808,11 +808,11 @@ function RejectionError(message) {
     this.isAsync = true;
 
     if (message instanceof Error) {
-	this.message = message.message;
-	this.stack = message.stack;
+        this.message = message.message;
+        this.stack = message.stack;
     }
     else if (Error.captureStackTrace) {
-	Error.captureStackTrace(this, this.constructor);
+        Error.captureStackTrace(this, this.constructor);
     }
 
 }
@@ -822,9 +822,9 @@ var key = "__BluebirdErrorTypes__";
 var errorTypes = global[key];
 if (!errorTypes) {
     errorTypes = Objectfreeze({
-	CancellationError: CancellationError,
-	TimeoutError: TimeoutError,
-	RejectionError: RejectionError
+        CancellationError: CancellationError,
+        TimeoutError: TimeoutError,
+        RejectionError: RejectionError
     });
     notEnumerableProp(global, key, errorTypes);
 }
@@ -844,17 +844,17 @@ module.exports = {
 },{"./es5.js":12,"./global.js":16,"./util.js":38}],11:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -862,7 +862,7 @@ module.exports = {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise) {
@@ -873,7 +873,7 @@ function apiRejection(msg) {
     var ret = Promise.rejected(error);
     var parent = ret._peekContext();
     if (parent != null) {
-	parent._attachExtraTrace(error);
+        parent._attachExtraTrace(error);
     }
     return ret;
 }
@@ -884,17 +884,17 @@ return apiRejection;
 },{"./errors.js":10}],12:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -902,7 +902,7 @@ return apiRejection;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 var isES5 = (function(){
     "use strict";
@@ -911,12 +911,12 @@ var isES5 = (function(){
 
 if (isES5) {
     module.exports = {
-	freeze: Object.freeze,
-	defineProperty: Object.defineProperty,
-	keys: Object.keys,
-	getPrototypeOf: Object.getPrototypeOf,
-	isArray: Array.isArray,
-	isES5: isES5
+        freeze: Object.freeze,
+        defineProperty: Object.defineProperty,
+        keys: Object.keys,
+        getPrototypeOf: Object.getPrototypeOf,
+        isArray: Array.isArray,
+        isES5: isES5
     };
 }
 
@@ -926,66 +926,66 @@ else {
     var proto = {}.constructor.prototype;
 
     var ObjectKeys = function ObjectKeys(o) {
-	var ret = [];
-	for (var key in o) {
-	    if (has.call(o, key)) {
-		ret.push(key);
-	    }
-	}
-	return ret;
+        var ret = [];
+        for (var key in o) {
+            if (has.call(o, key)) {
+                ret.push(key);
+            }
+        }
+        return ret;
     }
 
     var ObjectDefineProperty = function ObjectDefineProperty(o, key, desc) {
-	o[key] = desc.value;
-	return o;
+        o[key] = desc.value;
+        return o;
     }
 
     var ObjectFreeze = function ObjectFreeze(obj) {
-	return obj;
+        return obj;
     }
 
     var ObjectGetPrototypeOf = function ObjectGetPrototypeOf(obj) {
-	try {
-	    return Object(obj).constructor.prototype;
-	}
-	catch (e) {
-	    return proto;
-	}
+        try {
+            return Object(obj).constructor.prototype;
+        }
+        catch (e) {
+            return proto;
+        }
     }
 
     var ArrayIsArray = function ArrayIsArray(obj) {
-	try {
-	    return str.call(obj) === "[object Array]";
-	}
-	catch(e) {
-	    return false;
-	}
+        try {
+            return str.call(obj) === "[object Array]";
+        }
+        catch(e) {
+            return false;
+        }
     }
 
     module.exports = {
-	isArray: ArrayIsArray,
-	keys: ObjectKeys,
-	defineProperty: ObjectDefineProperty,
-	freeze: ObjectFreeze,
-	getPrototypeOf: ObjectGetPrototypeOf,
-	isES5: isES5
+        isArray: ArrayIsArray,
+        keys: ObjectKeys,
+        defineProperty: ObjectDefineProperty,
+        freeze: ObjectFreeze,
+        getPrototypeOf: ObjectGetPrototypeOf,
+        isES5: isES5
     };
 }
 
 },{}],13:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -993,7 +993,7 @@ else {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise) {
@@ -1006,7 +1006,7 @@ function Promise$_filter(booleans) {
     var j = 0;
 
     for (var i = 0; i < len; ++i) {
-	if (booleans[i]) ret[j++] = values[i];
+        if (booleans[i]) ret[j++] = values[i];
 
     }
     ret.length = j;
@@ -1016,29 +1016,29 @@ function Promise$_filter(booleans) {
 var ref = {ref: null};
 Promise.filter = function Promise$Filter(promises, fn) {
     return Promise.map(promises, fn, ref)
-		  ._then(Promise$_filter, void 0, void 0, ref.ref, void 0);
+                  ._then(Promise$_filter, void 0, void 0, ref.ref, void 0);
 };
 
 Promise.prototype.filter = function Promise$filter(fn) {
     return this.map(fn, ref)
-	       ._then(Promise$_filter, void 0, void 0, ref.ref, void 0);
+               ._then(Promise$_filter, void 0, void 0, ref.ref, void 0);
 };
 };
 
 },{"./util.js":38}],14:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -1046,7 +1046,7 @@ Promise.prototype.filter = function Promise$filter(fn) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, NEXT_FILTER) {
@@ -1064,21 +1064,21 @@ function throwThis() {
 }
 function return$(r) {
     return function Promise$_returner() {
-	return r;
+        return r;
     };
 }
 function throw$(r) {
     return function Promise$_thrower() {
-	throw r;
+        throw r;
     };
 }
 function promisedFinally(ret, reasonOrValue, isFulfilled) {
     var then;
     if (wrapsPrimitiveReceiver && isPrimitive(reasonOrValue)) {
-	then = isFulfilled ? return$(reasonOrValue) : throw$(reasonOrValue);
+        then = isFulfilled ? return$(reasonOrValue) : throw$(reasonOrValue);
     }
     else {
-	then = isFulfilled ? returnThis : throwThis;
+        then = isFulfilled ? returnThis : throwThis;
     }
     return ret._then(then, thrower, void 0, reasonOrValue, void 0);
 }
@@ -1088,23 +1088,23 @@ function finallyHandler(reasonOrValue) {
     var handler = this.handler;
 
     var ret = promise._isBound()
-		    ? handler.call(promise._boundTo)
-		    : handler();
+                    ? handler.call(promise._boundTo)
+                    : handler();
 
     if (ret !== void 0) {
-	var maybePromise = Promise._cast(ret, void 0);
-	if (maybePromise instanceof Promise) {
-	    return promisedFinally(maybePromise, reasonOrValue,
-				    promise.isFulfilled());
-	}
+        var maybePromise = Promise._cast(ret, void 0);
+        if (maybePromise instanceof Promise) {
+            return promisedFinally(maybePromise, reasonOrValue,
+                                    promise.isFulfilled());
+        }
     }
 
     if (promise.isRejected()) {
-	NEXT_FILTER.e = reasonOrValue;
-	return NEXT_FILTER;
+        NEXT_FILTER.e = reasonOrValue;
+        return NEXT_FILTER;
     }
     else {
-	return reasonOrValue;
+        return reasonOrValue;
     }
 }
 
@@ -1113,14 +1113,14 @@ function tapHandler(value) {
     var handler = this.handler;
 
     var ret = promise._isBound()
-		    ? handler.call(promise._boundTo, value)
-		    : handler(value);
+                    ? handler.call(promise._boundTo, value)
+                    : handler(value);
 
     if (ret !== void 0) {
-	var maybePromise = Promise._cast(ret, void 0);
-	if (maybePromise instanceof Promise) {
-	    return promisedFinally(maybePromise, value, true);
-	}
+        var maybePromise = Promise._cast(ret, void 0);
+        if (maybePromise instanceof Promise) {
+            return promisedFinally(maybePromise, value, true);
+        }
     }
     return value;
 }
@@ -1130,14 +1130,14 @@ function Promise$_passThroughHandler(handler, isFinally) {
     if (typeof handler !== "function") return this.then();
 
     var promiseAndHandler = {
-	promise: this,
-	handler: handler
+        promise: this,
+        handler: handler
     };
 
     return this._then(
-	    isFinally ? finallyHandler : tapHandler,
-	    isFinally ? finallyHandler : void 0, void 0,
-	    promiseAndHandler, void 0);
+            isFinally ? finallyHandler : tapHandler,
+            isFinally ? finallyHandler : void 0, void 0,
+            promiseAndHandler, void 0);
 };
 
 Promise.prototype.lastly =
@@ -1153,17 +1153,17 @@ Promise.prototype.tap = function Promise$tap(handler) {
 },{"./util.js":38}],15:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -1171,7 +1171,7 @@ Promise.prototype.tap = function Promise$tap(handler) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, apiRejection, INTERNAL) {
@@ -1182,15 +1182,15 @@ var deprecated = require("./util.js").deprecated;
 
 Promise.coroutine = function Promise$Coroutine(generatorFunction) {
     if (typeof generatorFunction !== "function") {
-	throw new TypeError("generatorFunction must be a function");
+        throw new TypeError("generatorFunction must be a function");
     }
     var PromiseSpawn$ = PromiseSpawn;
     return function () {
-	var generator = generatorFunction.apply(this, arguments);
-	var spawn = new PromiseSpawn$(void 0, void 0);
-	spawn._generator = generator;
-	spawn._next(void 0);
-	return spawn.promise();
+        var generator = generatorFunction.apply(this, arguments);
+        var spawn = new PromiseSpawn$(void 0, void 0);
+        spawn._generator = generator;
+        spawn._next(void 0);
+        return spawn.promise();
     };
 };
 
@@ -1199,7 +1199,7 @@ Promise.coroutine.addYieldHandler = PromiseSpawn.addYieldHandler;
 Promise.spawn = function Promise$Spawn(generatorFunction) {
     deprecated("Promise.spawn is deprecated. Use Promise.coroutine instead.");
     if (typeof generatorFunction !== "function") {
-	return apiRejection("generatorFunction must be a function");
+        return apiRejection("generatorFunction must be a function");
     }
     var spawn = new PromiseSpawn(generatorFunction, this);
     var ret = spawn.promise();
@@ -1211,17 +1211,17 @@ Promise.spawn = function Promise$Spawn(generatorFunction) {
 },{"./errors.js":10,"./promise_spawn.js":23,"./util.js":38}],16:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -1229,7 +1229,7 @@ Promise.spawn = function Promise$Spawn(generatorFunction) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 module.exports = (function() {
     if (this !== void 0) return this;
@@ -1244,17 +1244,17 @@ module.exports = (function() {
 },{}],17:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -1262,7 +1262,7 @@ module.exports = (function() {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, PromiseArray, INTERNAL, apiRejection) {
@@ -1279,28 +1279,28 @@ function unpack(values) {
 
 function Promise$_Map(promises, fn, useBound, ref) {
     if (typeof fn !== "function") {
-	return apiRejection("fn must be a function");
+        return apiRejection("fn must be a function");
     }
 
     var receiver = void 0;
     if (useBound === true) {
-	if (promises._isBound()) {
-	    receiver = promises._boundTo;
-	}
+        if (promises._isBound()) {
+            receiver = promises._boundTo;
+        }
     }
     else if (useBound !== false) {
-	receiver = useBound;
+        receiver = useBound;
     }
 
     var shouldUnwrapItems = ref !== void 0;
     if (shouldUnwrapItems) ref.ref = promises;
 
     if (promises instanceof Promise) {
-	var pack = [fn, receiver, ref];
-	return promises._then(unpack, void 0, void 0, pack, void 0);
+        var pack = [fn, receiver, ref];
+        return promises._then(unpack, void 0, void 0, pack, void 0);
     }
     else if (!isArray(promises)) {
-	return apiRejection("expecting an array, a promise or a thenable");
+        return apiRejection("expecting an array, a promise or a thenable");
     }
 
     var promise = new Promise(INTERNAL);
@@ -1308,10 +1308,10 @@ function Promise$_Map(promises, fn, useBound, ref) {
     promise._setTrace(void 0);
 
     var mapping = new Mapping(promise,
-				fn,
-				promises,
-				receiver,
-				shouldUnwrapItems);
+                                fn,
+                                promises,
+                                receiver,
+                                shouldUnwrapItems);
     mapping.init();
     return promise;
 }
@@ -1334,26 +1334,26 @@ Mapping.prototype.init = function Mapping$init() {
     var result = this.result;
     var isRejected = false;
     for (var i = 0; i < len; ++i) {
-	var maybePromise = _cast(items[i], void 0);
-	if (maybePromise instanceof Promise) {
-	    if (maybePromise.isPending()) {
-		result[i] = pending;
-		maybePromise._proxyPromiseArray(this, i);
-	    }
-	    else if (maybePromise.isFulfilled()) {
-		result[i] = maybePromise.value();
-	    }
-	    else {
-		maybePromise._unsetRejectionIsUnhandled();
-		if (!isRejected) {
-		    this.reject(maybePromise.reason());
-		    isRejected = true;
-		}
-	    }
-	}
-	else {
-	    result[i] = maybePromise;
-	}
+        var maybePromise = _cast(items[i], void 0);
+        if (maybePromise instanceof Promise) {
+            if (maybePromise.isPending()) {
+                result[i] = pending;
+                maybePromise._proxyPromiseArray(this, i);
+            }
+            else if (maybePromise.isFulfilled()) {
+                result[i] = maybePromise.value();
+            }
+            else {
+                maybePromise._unsetRejectionIsUnhandled();
+                if (!isRejected) {
+                    this.reject(maybePromise.reason());
+                    isRejected = true;
+                }
+            }
+        }
+        else {
+            result[i] = maybePromise;
+        }
     }
     if (!isRejected) this.iterate();
 };
@@ -1398,13 +1398,13 @@ Mapping.prototype.iterate = function Mapping$iterate() {
     var callback = this.callback;
 
     for (; i < len; ++i) {
-	var value = result[i];
-	if (value === pending) {
-	    this.index = i;
-	    return;
-	}
-	try { result[i] = callback.call(receiver, value, i, len); }
-	catch (e) { return this.reject(e); }
+        var value = result[i];
+        if (value === pending) {
+            this.index = i;
+            return;
+        }
+        try { result[i] = callback.call(receiver, value, i, len); }
+        catch (e) { return this.reject(e); }
     }
     this.promise._follow(all(result));
     this.items = this.result = this.callback = this.promise = null;
@@ -1422,17 +1422,17 @@ Promise.map = function Promise$Map(promises, fn, ref) {
 },{"./errors.js":10,"./util.js":38}],18:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -1440,7 +1440,7 @@ Promise.map = function Promise$Map(promises, fn, ref) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise) {
@@ -1457,29 +1457,29 @@ function thrower(r) {
 function Promise$_successAdapter(val, receiver) {
     var nodeback = this;
     var ret = val === void 0
-	? tryCatch1(nodeback, receiver, null)
-	: tryCatch2(nodeback, receiver, null, val);
+        ? tryCatch1(nodeback, receiver, null)
+        : tryCatch2(nodeback, receiver, null, val);
     if (ret === errorObj) {
-	async.invokeLater(thrower, void 0, ret.e);
+        async.invokeLater(thrower, void 0, ret.e);
     }
 }
 function Promise$_errorAdapter(reason, receiver) {
     var nodeback = this;
     var ret = tryCatch1(nodeback, receiver, reason);
     if (ret === errorObj) {
-	async.invokeLater(thrower, void 0, ret.e);
+        async.invokeLater(thrower, void 0, ret.e);
     }
 }
 
 Promise.prototype.nodeify = function Promise$nodeify(nodeback) {
     if (typeof nodeback == "function") {
-	this._then(
-	    Promise$_successAdapter,
-	    Promise$_errorAdapter,
-	    void 0,
-	    nodeback,
-	    this._isBound() ? this._boundTo : null
-	);
+        this._then(
+            Promise$_successAdapter,
+            Promise$_errorAdapter,
+            void 0,
+            nodeback,
+            this._isBound() ? this._boundTo : null
+        );
     }
     return this;
 };
@@ -1488,17 +1488,17 @@ Promise.prototype.nodeify = function Promise$nodeify(nodeback) {
 },{"./async.js":2,"./util.js":38}],19:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -1506,7 +1506,7 @@ Promise.prototype.nodeify = function Promise$nodeify(nodeback) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, isPromiseArrayProxy) {
@@ -1544,19 +1544,19 @@ function Promise$_doProgressWith(progression) {
     this._popContext();
 
     if (ret === errorObj) {
-	if (ret.e != null &&
-	    ret.e.name !== "StopProgressPropagation") {
-	    var trace = errors.canAttach(ret.e)
-		? ret.e : new Error(ret.e + "");
-	    promise._attachExtraTrace(trace);
-	    promise._progress(ret.e);
-	}
+        if (ret.e != null &&
+            ret.e.name !== "StopProgressPropagation") {
+            var trace = errors.canAttach(ret.e)
+                ? ret.e : new Error(ret.e + "");
+            promise._attachExtraTrace(trace);
+            promise._progress(ret.e);
+        }
     }
     else if (ret instanceof Promise) {
-	ret._then(promise._progress, null, null, promise, void 0);
+        ret._then(promise._progress, null, null, promise, void 0);
     }
     else {
-	promise._progress(ret);
+        promise._progress(ret);
     }
 };
 
@@ -1567,33 +1567,33 @@ function Promise$_progressUnchecked(progressValue) {
     var len = this._length();
     var progress = this._progress;
     for (var i = 0; i < len; i += 5) {
-	var handler = this._progressHandlerAt(i);
-	var promise = this._promiseAt(i);
-	if (!(promise instanceof Promise)) {
-	    var receiver = this._receiverAt(i);
-	    if (typeof handler === "function") {
-		handler.call(receiver, progressValue, promise);
-	    }
-	    else if (receiver instanceof Promise && receiver._isProxied()) {
-		receiver._progressUnchecked(progressValue);
-	    }
-	    else if (isPromiseArrayProxy(receiver, promise)) {
-		receiver._promiseProgressed(progressValue, promise);
-	    }
-	    continue;
-	}
+        var handler = this._progressHandlerAt(i);
+        var promise = this._promiseAt(i);
+        if (!(promise instanceof Promise)) {
+            var receiver = this._receiverAt(i);
+            if (typeof handler === "function") {
+                handler.call(receiver, progressValue, promise);
+            }
+            else if (receiver instanceof Promise && receiver._isProxied()) {
+                receiver._progressUnchecked(progressValue);
+            }
+            else if (isPromiseArrayProxy(receiver, promise)) {
+                receiver._promiseProgressed(progressValue, promise);
+            }
+            continue;
+        }
 
-	if (typeof handler === "function") {
-	    async.invoke(this._doProgressWith, this, {
-		handler: handler,
-		promise: promise,
-		receiver: this._receiverAt(i),
-		value: progressValue
-	    });
-	}
-	else {
-	    async.invoke(progress, promise, progressValue);
-	}
+        if (typeof handler === "function") {
+            async.invoke(this._doProgressWith, this, {
+                handler: handler,
+                promise: promise,
+                receiver: this._receiverAt(i),
+                value: progressValue
+            });
+        }
+        else {
+            async.invoke(progress, promise, progressValue);
+        }
     }
 };
 };
@@ -1601,17 +1601,17 @@ function Promise$_progressUnchecked(progressValue) {
 },{"./async.js":2,"./errors.js":10,"./util.js":38}],20:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -1619,7 +1619,7 @@ function Promise$_progressUnchecked(progressValue) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function() {
@@ -1666,17 +1666,17 @@ function isPromise(obj) {
 
 function isPromiseArrayProxy(receiver, promiseSlotValue) {
     if (receiver instanceof PromiseArray) {
-	return promiseSlotValue >= 0;
+        return promiseSlotValue >= 0;
     }
     return false;
 }
 
 function Promise(resolver) {
     if (typeof resolver !== "function") {
-	throw new TypeError("the promise constructor requires a resolver function");
+        throw new TypeError("the promise constructor requires a resolver function");
     }
     if (this.constructor !== Promise) {
-	throw new TypeError("the promise constructor cannot be invoked directly");
+        throw new TypeError("the promise constructor cannot be invoked directly");
     }
     this._bitField = 0;
     this._fulfillmentHandler0 = void 0;
@@ -1694,8 +1694,8 @@ Promise.prototype.bind = function Promise$bind(thisArg) {
     ret._follow(this);
     ret._setBoundTo(thisArg);
     if (this._cancellable()) {
-	ret._setCancellable();
-	ret._cancellationParent = this;
+        ret._setCancellable();
+        ret._cancellationParent = this;
     }
     return ret;
 };
@@ -1708,31 +1708,31 @@ Promise.prototype.caught = Promise.prototype["catch"] =
 function Promise$catch(fn) {
     var len = arguments.length;
     if (len > 1) {
-	var catchInstances = new Array(len - 1),
-	    j = 0, i;
-	for (i = 0; i < len - 1; ++i) {
-	    var item = arguments[i];
-	    if (typeof item === "function") {
-		catchInstances[j++] = item;
-	    }
-	    else {
-		var catchFilterTypeError =
-		    new TypeError(
-			"A catch filter must be an error constructor "
-			+ "or a filter function");
+        var catchInstances = new Array(len - 1),
+            j = 0, i;
+        for (i = 0; i < len - 1; ++i) {
+            var item = arguments[i];
+            if (typeof item === "function") {
+                catchInstances[j++] = item;
+            }
+            else {
+                var catchFilterTypeError =
+                    new TypeError(
+                        "A catch filter must be an error constructor "
+                        + "or a filter function");
 
-		this._attachExtraTrace(catchFilterTypeError);
-		async.invoke(this._reject, this, catchFilterTypeError);
-		return;
-	    }
-	}
-	catchInstances.length = j;
-	fn = arguments[i];
+                this._attachExtraTrace(catchFilterTypeError);
+                async.invoke(this._reject, this, catchFilterTypeError);
+                return;
+            }
+        }
+        catchInstances.length = j;
+        fn = arguments[i];
 
-	this._resetTrace();
-	var catchFilter = new CatchFilter(catchInstances, fn, this);
-	return this._then(void 0, catchFilter.doFilter, void 0,
-	    catchFilter, void 0);
+        this._resetTrace();
+        var catchFilter = new CatchFilter(catchInstances, fn, this);
+        return this._then(void 0, catchFilter.doFilter, void 0,
+            catchFilter, void 0);
     }
     return this._then(void 0, fn, void 0, void 0, void 0);
 };
@@ -1740,41 +1740,41 @@ function Promise$catch(fn) {
 Promise.prototype.then =
 function Promise$then(didFulfill, didReject, didProgress) {
     return this._then(didFulfill, didReject, didProgress,
-	void 0, void 0);
+        void 0, void 0);
 };
 
 
 Promise.prototype.done =
 function Promise$done(didFulfill, didReject, didProgress) {
     var promise = this._then(didFulfill, didReject, didProgress,
-	void 0, void 0);
+        void 0, void 0);
     promise._setIsFinal();
 };
 
 Promise.prototype.spread = function Promise$spread(didFulfill, didReject) {
     return this._then(didFulfill, didReject, void 0,
-	APPLY, void 0);
+        APPLY, void 0);
 };
 
 Promise.prototype.isCancellable = function Promise$isCancellable() {
     return !this.isResolved() &&
-	this._cancellable();
+        this._cancellable();
 };
 
 Promise.prototype.toJSON = function Promise$toJSON() {
     var ret = {
-	isFulfilled: false,
-	isRejected: false,
-	fulfillmentValue: void 0,
-	rejectionReason: void 0
+        isFulfilled: false,
+        isRejected: false,
+        fulfillmentValue: void 0,
+        rejectionReason: void 0
     };
     if (this.isFulfilled()) {
-	ret.fulfillmentValue = this._settledValue;
-	ret.isFulfilled = true;
+        ret.fulfillmentValue = this._settledValue;
+        ret.isFulfilled = true;
     }
     else if (this.isRejected()) {
-	ret.rejectionReason = this._settledValue;
-	ret.isRejected = true;
+        ret.rejectionReason = this._settledValue;
+        ret.isRejected = true;
     }
     return ret;
 };
@@ -1788,11 +1788,11 @@ Promise.is = isPromise;
 
 function Promise$_all(promises, useBound) {
     return Promise$_CreatePromiseArray(
-	promises,
-	PromiseArray,
-	useBound === true && promises._isBound()
-	    ? promises._boundTo
-	    : void 0
+        promises,
+        PromiseArray,
+        useBound === true && promises._isBound()
+            ? promises._boundTo
+            : void 0
    ).promise();
 }
 Promise.all = function Promise$All(promises) {
@@ -1809,7 +1809,7 @@ function Promise$Resolve(value) {
     var ret = new Promise(INTERNAL);
     ret._setTrace(void 0);
     if (ret._tryFollow(value)) {
-	return ret;
+        return ret;
     }
     ret._cleanValues();
     ret._setFulfilled();
@@ -1825,8 +1825,8 @@ Promise.reject = Promise.rejected = function Promise$Reject(reason) {
     ret._setRejected();
     ret._settledValue = reason;
     if (!canAttach(reason)) {
-	var trace = new Error(reason + "");
-	ret._setCarriedStackTrace(trace);
+        var trace = new Error(reason + "");
+        ret._setCarriedStackTrace(trace);
     }
     ret._ensurePossibleRejectionHandled();
     return ret;
@@ -1839,52 +1839,52 @@ Promise.prototype.error = function Promise$_error(fn) {
 Promise.prototype._resolveFromSyncValue =
 function Promise$_resolveFromSyncValue(value) {
     if (value === errorObj) {
-	this._cleanValues();
-	this._setRejected();
-	this._settledValue = value.e;
-	this._ensurePossibleRejectionHandled();
+        this._cleanValues();
+        this._setRejected();
+        this._settledValue = value.e;
+        this._ensurePossibleRejectionHandled();
     }
     else {
-	var maybePromise = Promise._cast(value, void 0);
-	if (maybePromise instanceof Promise) {
-	    this._follow(maybePromise);
-	}
-	else {
-	    this._cleanValues();
-	    this._setFulfilled();
-	    this._settledValue = value;
-	}
+        var maybePromise = Promise._cast(value, void 0);
+        if (maybePromise instanceof Promise) {
+            this._follow(maybePromise);
+        }
+        else {
+            this._cleanValues();
+            this._setFulfilled();
+            this._settledValue = value;
+        }
     }
 };
 
 Promise.method = function Promise$_Method(fn) {
     if (typeof fn !== "function") {
-	throw new TypeError("fn must be a function");
+        throw new TypeError("fn must be a function");
     }
     return function Promise$_method() {
-	var value;
-	switch(arguments.length) {
-	case 0: value = tryCatch1(fn, this, void 0); break;
-	case 1: value = tryCatch1(fn, this, arguments[0]); break;
-	case 2: value = tryCatch2(fn, this, arguments[0], arguments[1]); break;
-	default:
-	    var $_len = arguments.length;var args = new Array($_len); for(var $_i = 0; $_i < $_len; ++$_i) {args[$_i] = arguments[$_i];}
-	    value = tryCatchApply(fn, args, this); break;
-	}
-	var ret = new Promise(INTERNAL);
-	ret._setTrace(void 0);
-	ret._resolveFromSyncValue(value);
-	return ret;
+        var value;
+        switch(arguments.length) {
+        case 0: value = tryCatch1(fn, this, void 0); break;
+        case 1: value = tryCatch1(fn, this, arguments[0]); break;
+        case 2: value = tryCatch2(fn, this, arguments[0], arguments[1]); break;
+        default:
+            var $_len = arguments.length;var args = new Array($_len); for(var $_i = 0; $_i < $_len; ++$_i) {args[$_i] = arguments[$_i];}
+            value = tryCatchApply(fn, args, this); break;
+        }
+        var ret = new Promise(INTERNAL);
+        ret._setTrace(void 0);
+        ret._resolveFromSyncValue(value);
+        return ret;
     };
 };
 
 Promise.attempt = Promise["try"] = function Promise$_Try(fn, args, ctx) {
     if (typeof fn !== "function") {
-	return apiRejection("fn must be a function");
+        return apiRejection("fn must be a function");
     }
     var value = isArray(args)
-	? tryCatchApply(fn, args, ctx)
-	: tryCatch1(fn, ctx, args);
+        ? tryCatchApply(fn, args, ctx)
+        : tryCatch1(fn, ctx, args);
 
     var ret = new Promise(INTERNAL);
     ret._setTrace(void 0);
@@ -1909,15 +1909,15 @@ Promise.bind = function Promise$Bind(thisArg) {
 Promise.cast = function Promise$_Cast(obj) {
     var ret = Promise._cast(obj, void 0);
     if (!(ret instanceof Promise)) {
-	return Promise.resolve(ret);
+        return Promise.resolve(ret);
     }
     return ret;
 };
 
 Promise.onPossiblyUnhandledRejection =
 function Promise$OnPossiblyUnhandledRejection(fn) {
-	CapturedTrace.possiblyUnhandledRejection = typeof fn === "function"
-						    ? fn : void 0;
+        CapturedTrace.possiblyUnhandledRejection = typeof fn === "function"
+                                                    ? fn : void 0;
 };
 
 var unhandledRejectionHandled;
@@ -1931,15 +1931,15 @@ var debugging = false || !!(
     typeof process.execPath === "string" &&
     typeof process.env === "object" &&
     (process.env["BLUEBIRD_DEBUG"] ||
-	process.env["NODE_ENV"] === "development")
+        process.env["NODE_ENV"] === "development")
 );
 
 
 Promise.longStackTraces = function Promise$LongStackTraces() {
     if (async.haveItemsQueued() &&
-	debugging === false
+        debugging === false
    ) {
-	throw new Error("cannot enable long stack traces after promises have been created");
+        throw new Error("cannot enable long stack traces after promises have been created");
     }
     debugging = CapturedTrace.isSupported();
 };
@@ -1953,20 +1953,20 @@ function Promise$_setProxyHandlers(receiver, promiseSlotValue) {
     var index = this._length();
 
     if (index >= 524287 - 5) {
-	index = 0;
-	this._setLength(0);
+        index = 0;
+        this._setLength(0);
     }
     if (index === 0) {
-	this._promise0 = promiseSlotValue;
-	this._receiver0 = receiver;
+        this._promise0 = promiseSlotValue;
+        this._receiver0 = receiver;
     }
     else {
-	var i = index - 5;
-	this[i + 3] = promiseSlotValue;
-	this[i + 4] = receiver;
-	this[i + 0] =
-	this[i + 1] =
-	this[i + 2] = void 0;
+        var i = index - 5;
+        this[i + 3] = promiseSlotValue;
+        this[i + 4] = receiver;
+        this[i + 0] =
+        this[i + 1] =
+        this[i + 2] = void 0;
     }
     this._setLength(index + 5);
 };
@@ -1993,25 +1993,25 @@ function Promise$_then(
     var ret = haveInternalData ? internalData : new Promise(INTERNAL);
 
     if (debugging && !haveInternalData) {
-	var haveSameContext = this._peekContext() === this._traceParent;
-	ret._traceParent = haveSameContext ? this._traceParent : this;
-	ret._setTrace(this);
+        var haveSameContext = this._peekContext() === this._traceParent;
+        ret._traceParent = haveSameContext ? this._traceParent : this;
+        ret._setTrace(this);
     }
 
     if (!haveInternalData && this._isBound()) {
-	ret._setBoundTo(this._boundTo);
+        ret._setBoundTo(this._boundTo);
     }
 
     var callbackIndex =
-	this._addCallbacks(didFulfill, didReject, didProgress, ret, receiver);
+        this._addCallbacks(didFulfill, didReject, didProgress, ret, receiver);
 
     if (!haveInternalData && this._cancellable()) {
-	ret._setCancellable();
-	ret._cancellationParent = this;
+        ret._setCancellable();
+        ret._cancellationParent = this;
     }
 
     if (this.isResolved()) {
-	async.invoke(this._queueSettleAt, this, callbackIndex);
+        async.invoke(this._queueSettleAt, this, callbackIndex);
     }
 
     return ret;
@@ -2032,7 +2032,7 @@ Promise.prototype._isFollowing = function Promise$_isFollowing() {
 
 Promise.prototype._setLength = function Promise$_setLength(len) {
     this._bitField = (this._bitField & -524288) |
-	(len & 524287);
+        (len & 524287);
 };
 
 Promise.prototype._setFulfilled = function Promise$_setFulfilled() {
@@ -2076,8 +2076,8 @@ Promise.prototype._unsetRejectionIsUnhandled =
 function Promise$_unsetRejectionIsUnhandled() {
     this._bitField = this._bitField & (~2097152);
     if (this._isUnhandledRejectionNotified()) {
-	this._unsetUnhandledRejectionIsNotified();
-	this._notifyUnhandledRejectionIsHandled();
+        this._unsetUnhandledRejectionIsNotified();
+        this._notifyUnhandledRejectionIsHandled();
     }
 };
 
@@ -2121,20 +2121,20 @@ function Promise$_isCarryingStackTrace() {
 Promise.prototype._getCarriedStackTrace =
 function Promise$_getCarriedStackTrace() {
     return this._isCarryingStackTrace()
-	? this._fulfillmentHandler0
-	: void 0;
+        ? this._fulfillmentHandler0
+        : void 0;
 };
 
 Promise.prototype._receiverAt = function Promise$_receiverAt(index) {
     var ret;
     if (index === 0) {
-	ret = this._receiver0;
+        ret = this._receiver0;
     }
     else {
-	ret = this[index + 4 - 5];
+        ret = this[index + 4 - 5];
     }
     if (this._isBound() && ret === void 0) {
-	return this._boundTo;
+        return this._boundTo;
     }
     return ret;
 };
@@ -2158,20 +2158,20 @@ function Promise$_rejectionHandlerAt(index) {
 
 Promise.prototype._unsetAt = function Promise$_unsetAt(index) {
      if (index === 0) {
-	this._rejectionHandler0 =
-	this._progressHandler0 =
-	this._promise0 =
-	this._receiver0 = void 0;
-	if (!this._isCarryingStackTrace()) {
-	    this._fulfillmentHandler0 = void 0;
-	}
+        this._rejectionHandler0 =
+        this._progressHandler0 =
+        this._promise0 =
+        this._receiver0 = void 0;
+        if (!this._isCarryingStackTrace()) {
+            this._fulfillmentHandler0 = void 0;
+        }
     }
     else {
-	this[index - 5 + 0] =
-	this[index - 5 + 1] =
-	this[index - 5 + 2] =
-	this[index - 5 + 3] =
-	this[index - 5 + 4] = void 0;
+        this[index - 5 + 0] =
+        this[index - 5 + 1] =
+        this[index - 5 + 2] =
+        this[index - 5 + 3] =
+        this[index - 5 + 4] = void 0;
     }
 };
 
@@ -2182,24 +2182,24 @@ function Promise$_resolveFromResolver(resolver) {
     this._pushContext();
 
     function Promise$_resolver(val) {
-	if (promise._tryFollow(val)) {
-	    return;
-	}
-	promise._fulfill(val);
+        if (promise._tryFollow(val)) {
+            return;
+        }
+        promise._fulfill(val);
     }
     function Promise$_rejecter(val) {
-	var trace = canAttach(val) ? val : new Error(val + "");
-	promise._attachExtraTrace(trace);
-	markAsOriginatingFromRejection(val);
-	promise._reject(val, trace === val ? void 0 : trace);
+        var trace = canAttach(val) ? val : new Error(val + "");
+        promise._attachExtraTrace(trace);
+        markAsOriginatingFromRejection(val);
+        promise._reject(val, trace === val ? void 0 : trace);
     }
     var r = tryCatch2(resolver, void 0, Promise$_resolver, Promise$_rejecter);
     this._popContext();
 
     if (r !== void 0 && r === errorObj) {
-	var e = r.e;
-	var trace = canAttach(e) ? e : new Error(e + "");
-	promise._reject(e, trace);
+        var e = r.e;
+        var trace = canAttach(e) ? e : new Error(e + "");
+        promise._reject(e, trace);
     }
 };
 
@@ -2213,28 +2213,28 @@ Promise.prototype._addCallbacks = function Promise$_addCallbacks(
     var index = this._length();
 
     if (index >= 524287 - 5) {
-	index = 0;
-	this._setLength(0);
+        index = 0;
+        this._setLength(0);
     }
 
     if (index === 0) {
-	this._promise0 = promise;
-	if (receiver !== void 0) this._receiver0 = receiver;
-	if (typeof fulfill === "function" && !this._isCarryingStackTrace())
-	    this._fulfillmentHandler0 = fulfill;
-	if (typeof reject === "function") this._rejectionHandler0 = reject;
-	if (typeof progress === "function") this._progressHandler0 = progress;
+        this._promise0 = promise;
+        if (receiver !== void 0) this._receiver0 = receiver;
+        if (typeof fulfill === "function" && !this._isCarryingStackTrace())
+            this._fulfillmentHandler0 = fulfill;
+        if (typeof reject === "function") this._rejectionHandler0 = reject;
+        if (typeof progress === "function") this._progressHandler0 = progress;
     }
     else {
-	var i = index - 5;
-	this[i + 3] = promise;
-	this[i + 4] = receiver;
-	this[i + 0] = typeof fulfill === "function"
-					    ? fulfill : void 0;
-	this[i + 1] = typeof reject === "function"
-					    ? reject : void 0;
-	this[i + 2] = typeof progress === "function"
-					    ? progress : void 0;
+        var i = index - 5;
+        this[i + 3] = promise;
+        this[i + 4] = receiver;
+        this[i + 0] = typeof fulfill === "function"
+                                            ? fulfill : void 0;
+        this[i + 1] = typeof reject === "function"
+                                            ? reject : void 0;
+        this[i + 2] = typeof progress === "function"
+                                            ? progress : void 0;
     }
     this._setLength(index + 5);
     return index;
@@ -2244,11 +2244,11 @@ Promise.prototype._addCallbacks = function Promise$_addCallbacks(
 
 Promise.prototype._setBoundTo = function Promise$_setBoundTo(obj) {
     if (obj !== void 0) {
-	this._bitField = this._bitField | 8388608;
-	this._boundTo = obj;
+        this._bitField = this._bitField | 8388608;
+        this._boundTo = obj;
     }
     else {
-	this._bitField = this._bitField & (~8388608);
+        this._bitField = this._bitField & (~8388608);
     }
 };
 
@@ -2259,12 +2259,12 @@ Promise.prototype._isBound = function Promise$_isBound() {
 Promise.prototype._spreadSlowCase =
 function Promise$_spreadSlowCase(targetFn, promise, values, boundTo) {
     var promiseForAll =
-	    Promise$_CreatePromiseArray
-		(values, PromiseArray, boundTo)
-	    .promise()
-	    ._then(function() {
-		return targetFn.apply(boundTo, arguments);
-	    }, void 0, void 0, APPLY, void 0);
+            Promise$_CreatePromiseArray
+                (values, PromiseArray, boundTo)
+            .promise()
+            ._then(function() {
+                return targetFn.apply(boundTo, arguments);
+            }, void 0, void 0, APPLY, void 0);
 
     promise._follow(promiseForAll);
 };
@@ -2273,12 +2273,12 @@ Promise.prototype._callSpread =
 function Promise$_callSpread(handler, promise, value, localDebugging) {
     var boundTo = this._isBound() ? this._boundTo : void 0;
     if (isArray(value)) {
-	for (var i = 0, len = value.length; i < len; ++i) {
-	    if (isPromise(Promise._cast(value[i], void 0))) {
-		this._spreadSlowCase(handler, promise, value, boundTo);
-		return;
-	    }
-	}
+        for (var i = 0, len = value.length; i < len; ++i) {
+            if (isPromise(Promise._cast(value[i], void 0))) {
+                this._spreadSlowCase(handler, promise, value, boundTo);
+                return;
+            }
+        }
     }
     if (localDebugging) promise._pushContext();
     return tryCatchApply(handler, value, boundTo);
@@ -2289,11 +2289,11 @@ function Promise$_callHandler(
     handler, receiver, promise, value, localDebugging) {
     var x;
     if (receiver === APPLY && !this.isRejected()) {
-	x = this._callSpread(handler, promise, value, localDebugging);
+        x = this._callSpread(handler, promise, value, localDebugging);
     }
     else {
-	if (localDebugging) promise._pushContext();
-	x = tryCatch1(handler, receiver, value);
+        if (localDebugging) promise._pushContext();
+        x = tryCatch1(handler, receiver, value);
     }
     if (localDebugging) promise._popContext();
     return x;
@@ -2304,43 +2304,43 @@ function Promise$_settlePromiseFromHandler(
     handler, receiver, value, promise
 ) {
     if (!isPromise(promise)) {
-	handler.call(receiver, value, promise);
-	return;
+        handler.call(receiver, value, promise);
+        return;
     }
 
     var localDebugging = debugging;
     var x = this._callHandler(handler, receiver,
-				promise, value, localDebugging);
+                                promise, value, localDebugging);
 
     if (promise._isFollowing()) return;
 
     if (x === errorObj || x === promise || x === NEXT_FILTER) {
-	var err = x === promise
-		    ? makeSelfResolutionError()
-		    : x.e;
-	var trace = canAttach(err) ? err : new Error(err + "");
-	if (x !== NEXT_FILTER) promise._attachExtraTrace(trace);
-	promise._rejectUnchecked(err, trace);
+        var err = x === promise
+                    ? makeSelfResolutionError()
+                    : x.e;
+        var trace = canAttach(err) ? err : new Error(err + "");
+        if (x !== NEXT_FILTER) promise._attachExtraTrace(trace);
+        promise._rejectUnchecked(err, trace);
     }
     else {
-	var castValue = Promise._cast(x, promise);
-	if (isPromise(castValue)) {
-	    if (castValue.isRejected() &&
-		!castValue._isCarryingStackTrace() &&
-		!canAttach(castValue._settledValue)) {
-		var trace = new Error(castValue._settledValue + "");
-		promise._attachExtraTrace(trace);
-		castValue._setCarriedStackTrace(trace);
-	    }
-	    promise._follow(castValue);
-	    if (castValue._cancellable()) {
-		promise._cancellationParent = castValue;
-		promise._setCancellable();
-	    }
-	}
-	else {
-	    promise._fulfillUnchecked(x);
-	}
+        var castValue = Promise._cast(x, promise);
+        if (isPromise(castValue)) {
+            if (castValue.isRejected() &&
+                !castValue._isCarryingStackTrace() &&
+                !canAttach(castValue._settledValue)) {
+                var trace = new Error(castValue._settledValue + "");
+                promise._attachExtraTrace(trace);
+                castValue._setCarriedStackTrace(trace);
+            }
+            promise._follow(castValue);
+            if (castValue._cancellable()) {
+                promise._cancellationParent = castValue;
+                promise._setCancellable();
+            }
+        }
+        else {
+            promise._fulfillUnchecked(x);
+        }
     }
 };
 
@@ -2349,37 +2349,37 @@ function Promise$_follow(promise) {
     this._setFollowing();
 
     if (promise.isPending()) {
-	if (promise._cancellable() ) {
-	    this._cancellationParent = promise;
-	    this._setCancellable();
-	}
-	promise._proxyPromise(this);
+        if (promise._cancellable() ) {
+            this._cancellationParent = promise;
+            this._setCancellable();
+        }
+        promise._proxyPromise(this);
     }
     else if (promise.isFulfilled()) {
-	this._fulfillUnchecked(promise._settledValue);
+        this._fulfillUnchecked(promise._settledValue);
     }
     else {
-	this._rejectUnchecked(promise._settledValue,
-	    promise._getCarriedStackTrace());
+        this._rejectUnchecked(promise._settledValue,
+            promise._getCarriedStackTrace());
     }
 
     if (promise._isRejectionUnhandled()) promise._unsetRejectionIsUnhandled();
 
     if (debugging &&
-	promise._traceParent == null) {
-	promise._traceParent = this;
+        promise._traceParent == null) {
+        promise._traceParent = this;
     }
 };
 
 Promise.prototype._tryFollow =
 function Promise$_tryFollow(value) {
     if (this._isFollowingOrFulfilledOrRejected() ||
-	value === this) {
-	return false;
+        value === this) {
+        return false;
     }
     var maybePromise = Promise._cast(value, void 0);
     if (!isPromise(maybePromise)) {
-	return false;
+        return false;
     }
     this._follow(maybePromise);
     return true;
@@ -2387,22 +2387,22 @@ function Promise$_tryFollow(value) {
 
 Promise.prototype._resetTrace = function Promise$_resetTrace() {
     if (debugging) {
-	this._trace = new CapturedTrace(this._peekContext() === void 0);
+        this._trace = new CapturedTrace(this._peekContext() === void 0);
     }
 };
 
 Promise.prototype._setTrace = function Promise$_setTrace(parent) {
     if (debugging) {
-	var context = this._peekContext();
-	this._traceParent = context;
-	var isTopLevel = context === void 0;
-	if (parent !== void 0 &&
-	    parent._traceParent === context) {
-	    this._trace = parent._trace;
-	}
-	else {
-	    this._trace = new CapturedTrace(isTopLevel);
-	}
+        var context = this._peekContext();
+        this._traceParent = context;
+        var isTopLevel = context === void 0;
+        if (parent !== void 0 &&
+            parent._traceParent === context) {
+            this._trace = parent._trace;
+        }
+        else {
+            this._trace = new CapturedTrace(isTopLevel);
+        }
     }
     return this;
 };
@@ -2410,38 +2410,38 @@ Promise.prototype._setTrace = function Promise$_setTrace(parent) {
 Promise.prototype._attachExtraTrace =
 function Promise$_attachExtraTrace(error) {
     if (debugging) {
-	var promise = this;
-	var stack = error.stack;
-	stack = typeof stack === "string"
-	    ? stack.split("\n") : [];
-	var headerLineCount = 1;
+        var promise = this;
+        var stack = error.stack;
+        stack = typeof stack === "string"
+            ? stack.split("\n") : [];
+        var headerLineCount = 1;
 
-	while(promise != null &&
-	    promise._trace != null) {
-	    stack = CapturedTrace.combine(
-		stack,
-		promise._trace.stack.split("\n")
-	   );
-	    promise = promise._traceParent;
-	}
+        while(promise != null &&
+            promise._trace != null) {
+            stack = CapturedTrace.combine(
+                stack,
+                promise._trace.stack.split("\n")
+           );
+            promise = promise._traceParent;
+        }
 
-	var max = Error.stackTraceLimit + headerLineCount;
-	var len = stack.length;
-	if (len  > max) {
-	    stack.length = max;
-	}
-	if (stack.length <= headerLineCount) {
-	    error.stack = "(No stack trace)";
-	}
-	else {
-	    error.stack = stack.join("\n");
-	}
+        var max = Error.stackTraceLimit + headerLineCount;
+        var len = stack.length;
+        if (len  > max) {
+            stack.length = max;
+        }
+        if (stack.length <= headerLineCount) {
+            error.stack = "(No stack trace)";
+        }
+        else {
+            error.stack = stack.join("\n");
+        }
     }
 };
 
 Promise.prototype._cleanValues = function Promise$_cleanValues() {
     if (this._cancellable()) {
-	this._cancellationParent = void 0;
+        this._cancellationParent = void 0;
     }
 };
 
@@ -2458,44 +2458,44 @@ function Promise$_reject(reason, carriedStackTrace) {
 
 Promise.prototype._settlePromiseAt = function Promise$_settlePromiseAt(index) {
     var handler = this.isFulfilled()
-	? this._fulfillmentHandlerAt(index)
-	: this._rejectionHandlerAt(index);
+        ? this._fulfillmentHandlerAt(index)
+        : this._rejectionHandlerAt(index);
 
     var value = this._settledValue;
     var receiver = this._receiverAt(index);
     var promise = this._promiseAt(index);
 
     if (typeof handler === "function") {
-	this._settlePromiseFromHandler(handler, receiver, value, promise);
+        this._settlePromiseFromHandler(handler, receiver, value, promise);
     }
     else {
-	var done = false;
-	var isFulfilled = this.isFulfilled();
-	if (receiver !== void 0) {
-	    if (receiver instanceof Promise &&
-		receiver._isProxied()) {
-		receiver._unsetProxied();
+        var done = false;
+        var isFulfilled = this.isFulfilled();
+        if (receiver !== void 0) {
+            if (receiver instanceof Promise &&
+                receiver._isProxied()) {
+                receiver._unsetProxied();
 
-		if (isFulfilled) receiver._fulfillUnchecked(value);
-		else receiver._rejectUnchecked(value,
-		    this._getCarriedStackTrace());
-		done = true;
-	    }
-	    else if (isPromiseArrayProxy(receiver, promise)) {
-		if (isFulfilled) receiver._promiseFulfilled(value, promise);
-		else receiver._promiseRejected(value, promise);
-		done = true;
-	    }
-	}
+                if (isFulfilled) receiver._fulfillUnchecked(value);
+                else receiver._rejectUnchecked(value,
+                    this._getCarriedStackTrace());
+                done = true;
+            }
+            else if (isPromiseArrayProxy(receiver, promise)) {
+                if (isFulfilled) receiver._promiseFulfilled(value, promise);
+                else receiver._promiseRejected(value, promise);
+                done = true;
+            }
+        }
 
-	if (!done) {
-	    if (isFulfilled) promise._fulfill(value);
-	    else promise._reject(value, this._getCarriedStackTrace());
-	}
+        if (!done) {
+            if (isFulfilled) promise._fulfill(value);
+            else promise._reject(value, this._getCarriedStackTrace());
+        }
     }
 
     if (index >= 256) {
-	this._queueGC();
+        this._queueGC();
     }
 };
 
@@ -2533,7 +2533,7 @@ Promise.prototype._gc = function Promise$gc() {
     var len = this._length();
     this._unsetAt(0);
     for (var i = 0; i < len; i++) {
-	delete this[i];
+        delete this[i];
     }
     this._setLength(0);
     this._unsetGcQueued();
@@ -2548,9 +2548,9 @@ Promise.prototype._fulfillUnchecked =
 function Promise$_fulfillUnchecked(value) {
     if (!this.isPending()) return;
     if (value === this) {
-	var err = makeSelfResolutionError();
-	this._attachExtraTrace(err);
-	return this._rejectUnchecked(err, void 0);
+        var err = makeSelfResolutionError();
+        this._attachExtraTrace(err);
+        return this._rejectUnchecked(err, void 0);
     }
     this._cleanValues();
     this._setFulfilled();
@@ -2558,7 +2558,7 @@ function Promise$_fulfillUnchecked(value) {
     var len = this._length();
 
     if (len > 0) {
-	async.invoke(this._settlePromises, this, len);
+        async.invoke(this._settlePromises, this, len);
     }
 };
 
@@ -2572,27 +2572,27 @@ Promise.prototype._rejectUnchecked =
 function Promise$_rejectUnchecked(reason, trace) {
     if (!this.isPending()) return;
     if (reason === this) {
-	var err = makeSelfResolutionError();
-	this._attachExtraTrace(err);
-	return this._rejectUnchecked(err);
+        var err = makeSelfResolutionError();
+        this._attachExtraTrace(err);
+        return this._rejectUnchecked(err);
     }
     this._cleanValues();
     this._setRejected();
     this._settledValue = reason;
 
     if (this._isFinal()) {
-	async.invokeLater(thrower, void 0, trace === void 0 ? reason : trace);
-	return;
+        async.invokeLater(thrower, void 0, trace === void 0 ? reason : trace);
+        return;
     }
     var len = this._length();
 
     if (trace !== void 0) this._setCarriedStackTrace(trace);
 
     if (len > 0) {
-	async.invoke(this._rejectPromises, this, null);
+        async.invoke(this._rejectPromises, this, null);
     }
     else {
-	this._ensurePossibleRejectionHandled();
+        this._ensurePossibleRejectionHandled();
     }
 };
 
@@ -2604,7 +2604,7 @@ Promise.prototype._rejectPromises = function Promise$_rejectPromises() {
 Promise.prototype._settlePromises = function Promise$_settlePromises() {
     var len = this._length();
     for (var i = 0; i < len; i+= 5) {
-	this._settlePromiseAt(i);
+        this._settlePromiseAt(i);
     }
 };
 
@@ -2612,32 +2612,32 @@ Promise.prototype._ensurePossibleRejectionHandled =
 function Promise$_ensurePossibleRejectionHandled() {
     this._setRejectionIsUnhandled();
     if (CapturedTrace.possiblyUnhandledRejection !== void 0) {
-	async.invokeLater(this._notifyUnhandledRejection, this, void 0);
+        async.invokeLater(this._notifyUnhandledRejection, this, void 0);
     }
 };
 
 Promise.prototype._notifyUnhandledRejectionIsHandled =
 function Promise$_notifyUnhandledRejectionIsHandled() {
     if (typeof unhandledRejectionHandled === "function") {
-	async.invokeLater(unhandledRejectionHandled, void 0, this);
+        async.invokeLater(unhandledRejectionHandled, void 0, this);
     }
 };
 
 Promise.prototype._notifyUnhandledRejection =
 function Promise$_notifyUnhandledRejection() {
     if (this._isRejectionUnhandled()) {
-	var reason = this._settledValue;
-	var trace = this._getCarriedStackTrace();
+        var reason = this._settledValue;
+        var trace = this._getCarriedStackTrace();
 
-	this._setUnhandledRejectionIsNotified();
+        this._setUnhandledRejectionIsNotified();
 
-	if (trace !== void 0) {
-	    this._unsetCarriedStackTrace();
-	    reason = trace;
-	}
-	if (typeof CapturedTrace.possiblyUnhandledRejection === "function") {
-	    CapturedTrace.possiblyUnhandledRejection(reason, this);
-	}
+        if (trace !== void 0) {
+            this._unsetCarriedStackTrace();
+            reason = trace;
+        }
+        if (typeof CapturedTrace.possiblyUnhandledRejection === "function") {
+            CapturedTrace.possiblyUnhandledRejection(reason, this);
+        }
     }
 };
 
@@ -2645,7 +2645,7 @@ var contextStack = [];
 Promise.prototype._peekContext = function Promise$_peekContext() {
     var lastIndex = contextStack.length - 1;
     if (lastIndex >= 0) {
-	return contextStack[lastIndex];
+        return contextStack[lastIndex];
     }
     return void 0;
 
@@ -2666,29 +2666,29 @@ function Promise$_CreatePromiseArray(
 
     var list = null;
     if (isArray(promises)) {
-	list = promises;
+        list = promises;
     }
     else {
-	list = Promise._cast(promises, void 0);
-	if (list !== promises) {
-	    list._setBoundTo(boundTo);
-	}
-	else if (!isPromise(list)) {
-	    list = null;
-	}
+        list = Promise._cast(promises, void 0);
+        if (list !== promises) {
+            list._setBoundTo(boundTo);
+        }
+        else if (!isPromise(list)) {
+            list = null;
+        }
     }
     if (list !== null) {
-	return new PromiseArrayConstructor(list, boundTo);
+        return new PromiseArrayConstructor(list, boundTo);
     }
     return {
-	promise: function() {return apiRejection("expecting an array, a promise or a thenable");}
+        promise: function() {return apiRejection("expecting an array, a promise or a thenable");}
     };
 }
 
 var old = global.Promise;
 Promise.noConflict = function() {
     if (global.Promise === Promise) {
-	global.Promise = old;
+        global.Promise = old;
     }
     return Promise;
 };
@@ -2735,17 +2735,17 @@ return Promise;
 },{"./any.js":1,"./async.js":2,"./call_get.js":5,"./cancel.js":6,"./captured_trace.js":7,"./catch_filter.js":8,"./direct_resolve.js":9,"./errors.js":10,"./errors_api_rejection":11,"./filter.js":13,"./finally.js":14,"./generators.js":15,"./global.js":16,"./map.js":17,"./nodeify.js":18,"./progress.js":19,"./promise_array.js":21,"./promise_resolver.js":22,"./promisify.js":24,"./props.js":26,"./race.js":28,"./reduce.js":29,"./settle.js":31,"./some.js":33,"./synchronous_inspection.js":35,"./thenables.js":36,"./timers.js":37,"./util.js":38}],21:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -2753,7 +2753,7 @@ return Promise;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, INTERNAL) {
@@ -2775,14 +2775,14 @@ function PromiseArray(values, boundTo) {
     var promise = this._promise = new Promise(INTERNAL);
     var parent = void 0;
     if (values instanceof Promise) {
-	parent = values;
-	if (values._cancellable()) {
-	    promise._setCancellable();
-	    promise._cancellationParent = values;
-	}
-	if (values._isBound()) {
-	    promise._setBoundTo(boundTo);
-	}
+        parent = values;
+        if (values._cancellable()) {
+            promise._setCancellable();
+            promise._cancellationParent = values;
+        }
+        if (values._isBound()) {
+            promise._setBoundTo(boundTo);
+        }
     }
     promise._setTrace(parent);
     this._values = values;
@@ -2804,83 +2804,83 @@ PromiseArray.prototype._init =
 function PromiseArray$_init(_, resolveValueIfEmpty) {
     var values = this._values;
     if (values instanceof Promise) {
-	if (values.isFulfilled()) {
-	    values = values._settledValue;
-	    if (!isArray(values)) {
-		var err = new Promise.TypeError("expecting an array, a promise or a thenable");
-		this.__hardReject__(err);
-		return;
-	    }
-	    this._values = values;
-	}
-	else if (values.isPending()) {
-	    values._then(
-		this._init,
-		this._reject,
-		void 0,
-		this,
-		resolveValueIfEmpty
-	   );
-	    return;
-	}
-	else {
-	    values._unsetRejectionIsUnhandled();
-	    this._reject(values._settledValue);
-	    return;
-	}
+        if (values.isFulfilled()) {
+            values = values._settledValue;
+            if (!isArray(values)) {
+                var err = new Promise.TypeError("expecting an array, a promise or a thenable");
+                this.__hardReject__(err);
+                return;
+            }
+            this._values = values;
+        }
+        else if (values.isPending()) {
+            values._then(
+                this._init,
+                this._reject,
+                void 0,
+                this,
+                resolveValueIfEmpty
+           );
+            return;
+        }
+        else {
+            values._unsetRejectionIsUnhandled();
+            this._reject(values._settledValue);
+            return;
+        }
     }
 
     if (values.length === 0) {
-	this._resolve(toResolutionValue(resolveValueIfEmpty));
-	return;
+        this._resolve(toResolutionValue(resolveValueIfEmpty));
+        return;
     }
     var len = values.length;
     var newLen = len;
     var newValues;
     if (this instanceof PromiseArray.PropertiesPromiseArray) {
-	newValues = this._values;
+        newValues = this._values;
     }
     else {
-	newValues = new Array(len);
+        newValues = new Array(len);
     }
     var isDirectScanNeeded = false;
     for (var i = 0; i < len; ++i) {
-	var promise = values[i];
-	if (promise === void 0 && !hasOwn.call(values, i)) {
-	    newLen--;
-	    continue;
-	}
-	var maybePromise = Promise._cast(promise, void 0);
-	if (maybePromise instanceof Promise) {
-	    if (maybePromise.isPending()) {
-		maybePromise._proxyPromiseArray(this, i);
-	    }
-	    else {
-		maybePromise._unsetRejectionIsUnhandled();
-		isDirectScanNeeded = true;
-	    }
-	}
-	else {
-	    isDirectScanNeeded = true;
-	}
-	newValues[i] = maybePromise;
+        var promise = values[i];
+        if (promise === void 0 && !hasOwn.call(values, i)) {
+            newLen--;
+            continue;
+        }
+        var maybePromise = Promise._cast(promise, void 0);
+        if (maybePromise instanceof Promise) {
+            if (maybePromise.isPending()) {
+                maybePromise._proxyPromiseArray(this, i);
+            }
+            else {
+                maybePromise._unsetRejectionIsUnhandled();
+                isDirectScanNeeded = true;
+            }
+        }
+        else {
+            isDirectScanNeeded = true;
+        }
+        newValues[i] = maybePromise;
     }
     if (newLen === 0) {
-	if (resolveValueIfEmpty === -2) {
-	    this._resolve(newValues);
-	}
-	else {
-	    this._resolve(toResolutionValue(resolveValueIfEmpty));
-	}
-	return;
+        if (resolveValueIfEmpty === -2) {
+            this._resolve(newValues);
+        }
+        else {
+            this._resolve(toResolutionValue(resolveValueIfEmpty));
+        }
+        return;
     }
     this._values = newValues;
     this._length = newLen;
     if (isDirectScanNeeded) {
-	var scanMethod = newLen === len
-	    ? this._scanDirectValues
-	    : this._scanDirectValuesHoled;
-	async.invoke(scanMethod, this, len);
+        var scanMethod = newLen === len
+            ? this._scanDirectValues
+            : this._scanDirectValuesHoled;
+        async.invoke(scanMethod, this, len);
     }
 };
 
@@ -2888,35 +2888,35 @@ PromiseArray.prototype._settlePromiseAt =
 function PromiseArray$_settlePromiseAt(index) {
     var value = this._values[index];
     if (!(value instanceof Promise)) {
-	this._promiseFulfilled(value, index);
+        this._promiseFulfilled(value, index);
     }
     else if (value.isFulfilled()) {
-	this._promiseFulfilled(value._settledValue, index);
+        this._promiseFulfilled(value._settledValue, index);
     }
     else if (value.isRejected()) {
-	this._promiseRejected(value._settledValue, index);
+        this._promiseRejected(value._settledValue, index);
     }
 };
 
 PromiseArray.prototype._scanDirectValuesHoled =
 function PromiseArray$_scanDirectValuesHoled(len) {
     for (var i = 0; i < len; ++i) {
-	if (this._isResolved()) {
-	    break;
-	}
-	if (hasOwn.call(this._values, i)) {
-	    this._settlePromiseAt(i);
-	}
+        if (this._isResolved()) {
+            break;
+        }
+        if (hasOwn.call(this._values, i)) {
+            this._settlePromiseAt(i);
+        }
     }
 };
 
 PromiseArray.prototype._scanDirectValues =
 function PromiseArray$_scanDirectValues(len) {
     for (var i = 0; i < len; ++i) {
-	if (this._isResolved()) {
-	    break;
-	}
-	this._settlePromiseAt(i);
+        if (this._isResolved()) {
+            break;
+        }
+        this._settlePromiseAt(i);
     }
 };
 
@@ -2941,8 +2941,8 @@ PromiseArray.prototype._promiseProgressed =
 function PromiseArray$_promiseProgressed(progressValue, index) {
     if (this._isResolved()) return;
     this._promise._progress({
-	index: index,
-	value: progressValue
+        index: index,
+        value: progressValue
     });
 };
 
@@ -2953,7 +2953,7 @@ function PromiseArray$_promiseFulfilled(value, index) {
     this._values[index] = value;
     var totalResolved = ++this._totalResolved;
     if (totalResolved >= this._length) {
-	this._resolve(this._values);
+        this._resolve(this._values);
     }
 };
 
@@ -2970,17 +2970,17 @@ return PromiseArray;
 },{"./async.js":2,"./errors.js":10,"./util.js":38}],22:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -2988,7 +2988,7 @@ return PromiseArray;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 var util = require("./util.js");
@@ -3002,16 +3002,16 @@ var es5 = require("./es5.js");
 
 function isUntypedError(obj) {
     return obj instanceof Error &&
-	es5.getPrototypeOf(obj) === Error.prototype;
+        es5.getPrototypeOf(obj) === Error.prototype;
 }
 
 function wrapAsRejectionError(obj) {
     var ret;
     if (isUntypedError(obj)) {
-	ret = new RejectionError(obj);
+        ret = new RejectionError(obj);
     }
     else {
-	ret = obj;
+        ret = obj;
     }
     errors.markAsOriginatingFromRejection(ret);
     return ret;
@@ -3019,24 +3019,24 @@ function wrapAsRejectionError(obj) {
 
 function nodebackForPromise(promise) {
     function PromiseResolver$_callback(err, value) {
-	if (promise === null) return;
+        if (promise === null) return;
 
-	if (err) {
-	    var wrapped = wrapAsRejectionError(maybeWrapAsError(err));
-	    promise._attachExtraTrace(wrapped);
-	    promise._reject(wrapped);
-	}
-	else {
-	    if (arguments.length > 2) {
-		var $_len = arguments.length;var args = new Array($_len - 1); for(var $_i = 1; $_i < $_len; ++$_i) {args[$_i - 1] = arguments[$_i];}
-		promise._fulfill(args);
-	    }
-	    else {
-		promise._fulfill(value);
-	    }
-	}
+        if (err) {
+            var wrapped = wrapAsRejectionError(maybeWrapAsError(err));
+            promise._attachExtraTrace(wrapped);
+            promise._reject(wrapped);
+        }
+        else {
+            if (arguments.length > 2) {
+                var $_len = arguments.length;var args = new Array($_len - 1); for(var $_i = 1; $_i < $_len; ++$_i) {args[$_i - 1] = arguments[$_i];}
+                promise._fulfill(args);
+            }
+            else {
+                promise._fulfill(value);
+            }
+        }
 
-	promise = null;
+        promise = null;
     }
     return PromiseResolver$_callback;
 }
@@ -3045,21 +3045,21 @@ function nodebackForPromise(promise) {
 var PromiseResolver;
 if (!haveGetters) {
     PromiseResolver = function PromiseResolver(promise) {
-	this.promise = promise;
-	this.asCallback = nodebackForPromise(promise);
-	this.callback = this.asCallback;
+        this.promise = promise;
+        this.asCallback = nodebackForPromise(promise);
+        this.callback = this.asCallback;
     };
 }
 else {
     PromiseResolver = function PromiseResolver(promise) {
-	this.promise = promise;
+        this.promise = promise;
     };
 }
 if (haveGetters) {
     var prop = {
-	get: function() {
-	    return nodebackForPromise(this.promise);
-	}
+        get: function() {
+            return nodebackForPromise(this.promise);
+        }
     };
     es5.defineProperty(PromiseResolver.prototype, "asCallback", prop);
     es5.defineProperty(PromiseResolver.prototype, "callback", prop);
@@ -3075,10 +3075,10 @@ PromiseResolver.prototype.resolve =
 PromiseResolver.prototype.fulfill = function PromiseResolver$resolve(value) {
     var promise = this.promise;
     if ((promise === void 0) || (promise._tryFollow === void 0)) {
-	throw new TypeError("Illegal invocation, resolver resolve/reject must be called within a resolver context. Consider using the promise constructor instead.");
+        throw new TypeError("Illegal invocation, resolver resolve/reject must be called within a resolver context. Consider using the promise constructor instead.");
     }
     if (promise._tryFollow(value)) {
-	return;
+        return;
     }
     async.invoke(promise._fulfill, promise, value);
 };
@@ -3086,14 +3086,14 @@ PromiseResolver.prototype.fulfill = function PromiseResolver$resolve(value) {
 PromiseResolver.prototype.reject = function PromiseResolver$reject(reason) {
     var promise = this.promise;
     if ((promise === void 0) || (promise._attachExtraTrace === void 0)) {
-	throw new TypeError("Illegal invocation, resolver resolve/reject must be called within a resolver context. Consider using the promise constructor instead.");
+        throw new TypeError("Illegal invocation, resolver resolve/reject must be called within a resolver context. Consider using the promise constructor instead.");
     }
     errors.markAsOriginatingFromRejection(reason);
     var trace = errors.canAttach(reason) ? reason : new Error(reason + "");
     promise._attachExtraTrace(trace);
     async.invoke(promise._reject, promise, reason);
     if (trace !== reason) {
-	async.invoke(this._setCarriedStackTrace, this, trace);
+        async.invoke(this._setCarriedStackTrace, this, trace);
     }
 };
 
@@ -3121,7 +3121,7 @@ PromiseResolver.prototype.toJSON = function PromiseResolver$toJSON() {
 PromiseResolver.prototype._setCarriedStackTrace =
 function PromiseResolver$_setCarriedStackTrace(trace) {
     if (this.promise.isRejected()) {
-	this.promise._setCarriedStackTrace(trace);
+        this.promise._setCarriedStackTrace(trace);
     }
 };
 
@@ -3130,17 +3130,17 @@ module.exports = PromiseResolver;
 },{"./async.js":2,"./errors.js":10,"./es5.js":12,"./util.js":38}],23:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -3148,7 +3148,7 @@ module.exports = PromiseResolver;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, INTERNAL) {
@@ -3166,13 +3166,13 @@ function promiseFromYieldHandler(value) {
     var _Promise = Promise;
     var len = _yieldHandlers.length;
     for (var i = 0; i < len; ++i) {
-	var result = tryCatch1(_yieldHandlers[i], void 0, value);
-	if (result === _errorObj) {
-	    return _Promise.reject(_errorObj.e);
-	}
-	var maybePromise = _Promise._cast(result,
-	    promiseFromYieldHandler, void 0);
-	if (maybePromise instanceof _Promise) return maybePromise;
+        var result = tryCatch1(_yieldHandlers[i], void 0, value);
+        if (result === _errorObj) {
+            return _Promise.reject(_errorObj.e);
+        }
+        var maybePromise = _Promise._cast(result,
+            promiseFromYieldHandler, void 0);
+        if (maybePromise instanceof _Promise) return maybePromise;
     }
     return null;
 }
@@ -3192,62 +3192,62 @@ PromiseSpawn.prototype.promise = function PromiseSpawn$promise() {
 PromiseSpawn.prototype._run = function PromiseSpawn$_run() {
     this._generator = this._generatorFunction.call(this._receiver);
     this._receiver =
-	this._generatorFunction = void 0;
+        this._generatorFunction = void 0;
     this._next(void 0);
 };
 
 PromiseSpawn.prototype._continue = function PromiseSpawn$_continue(result) {
     if (result === errorObj) {
-	this._generator = void 0;
-	var trace = errors.canAttach(result.e)
-	    ? result.e : new Error(result.e + "");
-	this._promise._attachExtraTrace(trace);
-	this._promise._reject(result.e, trace);
-	return;
+        this._generator = void 0;
+        var trace = errors.canAttach(result.e)
+            ? result.e : new Error(result.e + "");
+        this._promise._attachExtraTrace(trace);
+        this._promise._reject(result.e, trace);
+        return;
     }
 
     var value = result.value;
     if (result.done === true) {
-	this._generator = void 0;
-	if (!this._promise._tryFollow(value)) {
-	    this._promise._fulfill(value);
-	}
+        this._generator = void 0;
+        if (!this._promise._tryFollow(value)) {
+            this._promise._fulfill(value);
+        }
     }
     else {
-	var maybePromise = Promise._cast(value, PromiseSpawn$_continue, void 0);
-	if (!(maybePromise instanceof Promise)) {
-	    if (isArray(maybePromise)) {
-		maybePromise = Promise.all(maybePromise);
-	    }
-	    else {
-		maybePromise = promiseFromYieldHandler(maybePromise);
-	    }
-	    if (maybePromise === null) {
-		this._throw(new TypeError("A value was yielded that could not be treated as a promise"));
-		return;
-	    }
-	}
-	maybePromise._then(
-	    this._next,
-	    this._throw,
-	    void 0,
-	    this,
-	    null
+        var maybePromise = Promise._cast(value, PromiseSpawn$_continue, void 0);
+        if (!(maybePromise instanceof Promise)) {
+            if (isArray(maybePromise)) {
+                maybePromise = Promise.all(maybePromise);
+            }
+            else {
+                maybePromise = promiseFromYieldHandler(maybePromise);
+            }
+            if (maybePromise === null) {
+                this._throw(new TypeError("A value was yielded that could not be treated as a promise"));
+                return;
+            }
+        }
+        maybePromise._then(
+            this._next,
+            this._throw,
+            void 0,
+            this,
+            null
        );
     }
 };
 
 PromiseSpawn.prototype._throw = function PromiseSpawn$_throw(reason) {
     if (errors.canAttach(reason))
-	this._promise._attachExtraTrace(reason);
+        this._promise._attachExtraTrace(reason);
     this._continue(
-	tryCatch1(this._generator["throw"], this._generator, reason)
+        tryCatch1(this._generator["throw"], this._generator, reason)
    );
 };
 
 PromiseSpawn.prototype._next = function PromiseSpawn$_next(value) {
     this._continue(
-	tryCatch1(this._generator.next, this._generator, value)
+        tryCatch1(this._generator.next, this._generator, value)
    );
 };
 
@@ -3262,17 +3262,17 @@ return PromiseSpawn;
 },{"./errors.js":10,"./util.js":38}],24:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -3280,7 +3280,7 @@ return PromiseSpawn;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, INTERNAL) {
@@ -3303,66 +3303,66 @@ function isPromisified(fn) {
 function hasPromisified(obj, key) {
     var containsKey = ((key + "Async") in obj);
     return containsKey ? isPromisified(obj[key + "Async"])
-		       : false;
+                       : false;
 }
 function checkValid(ret) {
     for (var i = 0; i < ret.length; i += 2) {
-	var key = ret[i];
-	if (rasyncSuffix.test(key)) {
-	    var keyWithoutAsyncSuffix = key.replace(rasyncSuffix, "");
-	    for (var j = 0; j < ret.length; j += 2) {
-		if (ret[j] === keyWithoutAsyncSuffix) {
-		    throw new TypeError("Cannot promisify an API " +
-			"that has normal methods with Async-suffix");
-		}
-	    }
-	}
+        var key = ret[i];
+        if (rasyncSuffix.test(key)) {
+            var keyWithoutAsyncSuffix = key.replace(rasyncSuffix, "");
+            for (var j = 0; j < ret.length; j += 2) {
+                if (ret[j] === keyWithoutAsyncSuffix) {
+                    throw new TypeError("Cannot promisify an API " +
+                        "that has normal methods with Async-suffix");
+                }
+            }
+        }
     }
 }
 var inheritedMethods = (function() {
     if (es5.isES5) {
-	var create = Object.create;
-	var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-	return function(cur) {
-	    var ret = [];
-	    var visitedKeys = create(null);
-	    var original = cur;
-	    while (cur !== null) {
-		var keys = es5.keys(cur);
-		for (var i = 0, len = keys.length; i < len; ++i) {
-		    var key = keys[i];
-		    if (visitedKeys[key]) continue;
-		    visitedKeys[key] = true;
-		    var desc = getOwnPropertyDescriptor(cur, key);
+        var create = Object.create;
+        var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+        return function(cur) {
+            var ret = [];
+            var visitedKeys = create(null);
+            var original = cur;
+            while (cur !== null) {
+                var keys = es5.keys(cur);
+                for (var i = 0, len = keys.length; i < len; ++i) {
+                    var key = keys[i];
+                    if (visitedKeys[key]) continue;
+                    visitedKeys[key] = true;
+                    var desc = getOwnPropertyDescriptor(cur, key);
 
-		    if (desc != null &&
-			typeof desc.value === "function" &&
-			!isPromisified(desc.value) &&
-			!hasPromisified(original, key)) {
-			ret.push(key, desc.value);
-		    }
-		}
-		cur = es5.getPrototypeOf(cur);
-	    }
-	    checkValid(ret);
-	    return ret;
-	};
+                    if (desc != null &&
+                        typeof desc.value === "function" &&
+                        !isPromisified(desc.value) &&
+                        !hasPromisified(original, key)) {
+                        ret.push(key, desc.value);
+                    }
+                }
+                cur = es5.getPrototypeOf(cur);
+            }
+            checkValid(ret);
+            return ret;
+        };
     }
     else {
-	return function(obj) {
-	    var ret = [];
-	    /*jshint forin:false */
-	    for (var key in obj) {
-		var fn = obj[key];
-		if (typeof fn === "function" &&
-		    !isPromisified(fn) &&
-		    !hasPromisified(obj, key)) {
-		    ret.push(key, fn);
-		}
-	    }
-	    checkValid(ret);
-	    return ret;
-	};
+        return function(obj) {
+            var ret = [];
+            /*jshint forin:false */
+            for (var key in obj) {
+                var fn = obj[key];
+                if (typeof fn === "function" &&
+                    !isPromisified(fn) &&
+                    !hasPromisified(obj, key)) {
+                    ret.push(key, fn);
+                }
+            }
+            checkValid(ret);
+            return ret;
+        };
     }
 })();
 
@@ -3370,11 +3370,11 @@ function switchCaseArgumentOrder(likelyArgumentCount) {
     var ret = [likelyArgumentCount];
     var min = Math.max(0, likelyArgumentCount - 1 - 5);
     for(var i = likelyArgumentCount - 1; i >= min; --i) {
-	if (i === likelyArgumentCount) continue;
-	ret.push(i);
+        if (i === likelyArgumentCount) continue;
+        ret.push(i);
     }
     for(var i = likelyArgumentCount + 1; i <= 5; ++i) {
-	ret.push(i);
+        ret.push(i);
     }
     return ret;
 }
@@ -3382,14 +3382,14 @@ function switchCaseArgumentOrder(likelyArgumentCount) {
 function parameterDeclaration(parameterCount) {
     var ret = new Array(parameterCount);
     for(var i = 0; i < ret.length; ++i) {
-	ret[i] = "_arg" + i;
+        ret[i] = "_arg" + i;
     }
     return ret.join(", ");
 }
 
 function parameterCount(fn) {
     if (typeof fn.length === "number") {
-	return Math.max(Math.min(fn.length, 1023 + 1), 0);
+        return Math.max(Math.min(fn.length, 1023 + 1), 0);
     }
     return 0;
 }
@@ -3397,7 +3397,7 @@ function parameterCount(fn) {
 var rident = /^[a-z$_][a-z$_0-9]*$/i;
 function propertyAccess(id) {
     if (rident.test(id)) {
-	return "." + id;
+        return "." + id;
     }
     else return "['" + id.replace(/(['\\])/g, "\\$1") + "']";
 }
@@ -3407,101 +3407,101 @@ function makeNodePromisifiedEval(callback, receiver, originalName, fn) {
     var argumentOrder = switchCaseArgumentOrder(newParameterCount);
 
     var callbackName = (typeof originalName === "string" ?
-	originalName + "Async" :
-	"promisified");
+        originalName + "Async" :
+        "promisified");
 
     function generateCallForArgumentCount(count) {
-	var args = new Array(count);
-	for (var i = 0, len = args.length; i < len; ++i) {
-	    args[i] = "arguments[" + i + "]";
-	}
-	var comma = count > 0 ? "," : "";
+        var args = new Array(count);
+        for (var i = 0, len = args.length; i < len; ++i) {
+            args[i] = "arguments[" + i + "]";
+        }
+        var comma = count > 0 ? "," : "";
 
-	if (typeof callback === "string" &&
-	    receiver === THIS) {
-	    return "this" + propertyAccess(callback) + "("+args.join(",") +
-		comma +" fn);"+
-		"break;";
-	}
-	return (receiver === void 0
-	    ? "callback("+args.join(",")+ comma +" fn);"
-	    : "callback.call("+(receiver === THIS
-		? "this"
-		: "receiver")+", "+args.join(",") + comma + " fn);") +
-	"break;";
+        if (typeof callback === "string" &&
+            receiver === THIS) {
+            return "this" + propertyAccess(callback) + "("+args.join(",") +
+                comma +" fn);"+
+                "break;";
+        }
+        return (receiver === void 0
+            ? "callback("+args.join(",")+ comma +" fn);"
+            : "callback.call("+(receiver === THIS
+                ? "this"
+                : "receiver")+", "+args.join(",") + comma + " fn);") +
+        "break;";
     }
 
     if (!rident.test(callbackName)) {
-	callbackName = "promisified";
+        callbackName = "promisified";
     }
 
     function generateArgumentSwitchCase() {
-	var ret = "";
-	for(var i = 0; i < argumentOrder.length; ++i) {
-	    ret += "case " + argumentOrder[i] +":" +
-		generateCallForArgumentCount(argumentOrder[i]);
-	}
-	ret += "default: var args = new Array(len + 1);" +
-	    "var i = 0;" +
-	    "for (var i = 0; i < len; ++i) { " +
-	    "   args[i] = arguments[i];" +
-	    "}" +
-	    "args[i] = fn;" +
+        var ret = "";
+        for(var i = 0; i < argumentOrder.length; ++i) {
+            ret += "case " + argumentOrder[i] +":" +
+                generateCallForArgumentCount(argumentOrder[i]);
+        }
+        ret += "default: var args = new Array(len + 1);" +
+            "var i = 0;" +
+            "for (var i = 0; i < len; ++i) { " +
+            "   args[i] = arguments[i];" +
+            "}" +
+            "args[i] = fn;" +
 
-	    (typeof callback === "string"
-	    ? "this" + propertyAccess(callback) + ".apply("
-	    : "callback.apply(") +
+            (typeof callback === "string"
+            ? "this" + propertyAccess(callback) + ".apply("
+            : "callback.apply(") +
 
-	    (receiver === THIS ? "this" : "receiver") +
-	    ", args); break;";
-	return ret;
+            (receiver === THIS ? "this" : "receiver") +
+            ", args); break;";
+        return ret;
     }
 
     return new Function("Promise", "callback", "receiver",
-	    "withAppended", "maybeWrapAsError", "nodebackForPromise",
-	    "INTERNAL",
-	"var ret = function " + callbackName +
-	"(" + parameterDeclaration(newParameterCount) + ") {\"use strict\";" +
-	"var len = arguments.length;" +
-	"var promise = new Promise(INTERNAL);"+
-	"promise._setTrace(void 0);" +
-	"var fn = nodebackForPromise(promise);"+
-	"try {" +
-	"switch(len) {" +
-	generateArgumentSwitchCase() +
-	"}" +
-	"}" +
-	"catch(e){ " +
-	"var wrapped = maybeWrapAsError(e);" +
-	"promise._attachExtraTrace(wrapped);" +
-	"promise._reject(wrapped);" +
-	"}" +
-	"return promise;" +
-	"" +
-	"}; ret.__isPromisified__ = true; return ret;"
+            "withAppended", "maybeWrapAsError", "nodebackForPromise",
+            "INTERNAL",
+        "var ret = function " + callbackName +
+        "(" + parameterDeclaration(newParameterCount) + ") {\"use strict\";" +
+        "var len = arguments.length;" +
+        "var promise = new Promise(INTERNAL);"+
+        "promise._setTrace(void 0);" +
+        "var fn = nodebackForPromise(promise);"+
+        "try {" +
+        "switch(len) {" +
+        generateArgumentSwitchCase() +
+        "}" +
+        "}" +
+        "catch(e){ " +
+        "var wrapped = maybeWrapAsError(e);" +
+        "promise._attachExtraTrace(wrapped);" +
+        "promise._reject(wrapped);" +
+        "}" +
+        "return promise;" +
+        "" +
+        "}; ret.__isPromisified__ = true; return ret;"
    )(Promise, callback, receiver, withAppended,
-	maybeWrapAsError, nodebackForPromise, INTERNAL);
+        maybeWrapAsError, nodebackForPromise, INTERNAL);
 }
 
 function makeNodePromisifiedClosure(callback, receiver) {
     function promisified() {
-	var _receiver = receiver;
-	if (receiver === THIS) _receiver = this;
-	if (typeof callback === "string") {
-	    callback = _receiver[callback];
-	}
-	var promise = new Promise(INTERNAL);
-	promise._setTrace(void 0);
-	var fn = nodebackForPromise(promise);
-	try {
-	    callback.apply(_receiver, withAppended(arguments, fn));
-	}
-	catch(e) {
-	    var wrapped = maybeWrapAsError(e);
-	    promise._attachExtraTrace(wrapped);
-	    promise._reject(wrapped);
-	}
-	return promise;
+        var _receiver = receiver;
+        if (receiver === THIS) _receiver = this;
+        if (typeof callback === "string") {
+            callback = _receiver[callback];
+        }
+        var promise = new Promise(INTERNAL);
+        promise._setTrace(void 0);
+        var fn = nodebackForPromise(promise);
+        try {
+            callback.apply(_receiver, withAppended(arguments, fn));
+        }
+        catch(e) {
+            var wrapped = maybeWrapAsError(e);
+            promise._attachExtraTrace(wrapped);
+            promise._reject(wrapped);
+        }
+        return promise;
     }
     promisified.__isPromisified__ = true;
     return promisified;
@@ -3513,41 +3513,41 @@ var makeNodePromisified = canEvaluate
 
 function _promisify(callback, receiver, isAll) {
     if (isAll) {
-	var methods = inheritedMethods(callback);
-	for (var i = 0, len = methods.length; i < len; i+= 2) {
-	    var key = methods[i];
-	    var fn = methods[i+1];
-	    var promisifiedKey = key + "Async";
-	    callback[promisifiedKey] = makeNodePromisified(key, THIS, key, fn);
-	}
-	util.toFastProperties(callback);
-	return callback;
+        var methods = inheritedMethods(callback);
+        for (var i = 0, len = methods.length; i < len; i+= 2) {
+            var key = methods[i];
+            var fn = methods[i+1];
+            var promisifiedKey = key + "Async";
+            callback[promisifiedKey] = makeNodePromisified(key, THIS, key, fn);
+        }
+        util.toFastProperties(callback);
+        return callback;
     }
     else {
-	return makeNodePromisified(callback, receiver, void 0, callback);
+        return makeNodePromisified(callback, receiver, void 0, callback);
     }
 }
 
 Promise.promisify = function Promise$Promisify(fn, receiver) {
     if (typeof fn === "object" && fn !== null) {
-	deprecated("Promise.promisify for promisifying entire objects is deprecated. Use Promise.promisifyAll instead.");
-	return _promisify(fn, receiver, true);
+        deprecated("Promise.promisify for promisifying entire objects is deprecated. Use Promise.promisifyAll instead.");
+        return _promisify(fn, receiver, true);
     }
     if (typeof fn !== "function") {
-	throw new TypeError("fn must be a function");
+        throw new TypeError("fn must be a function");
     }
     if (isPromisified(fn)) {
-	return fn;
+        return fn;
     }
     return _promisify(
-	fn,
-	arguments.length < 2 ? THIS : receiver,
-	false);
+        fn,
+        arguments.length < 2 ? THIS : receiver,
+        false);
 };
 
 Promise.promisifyAll = function Promise$PromisifyAll(target) {
     if (typeof target !== "function" && typeof target !== "object") {
-	throw new TypeError("the target of promisifyAll must be an object or a function");
+        throw new TypeError("the target of promisifyAll must be an object or a function");
     }
     return _promisify(target, void 0, true);
 };
@@ -3557,17 +3557,17 @@ Promise.promisifyAll = function Promise$PromisifyAll(target) {
 },{"./errors":10,"./es5.js":12,"./promise_resolver.js":22,"./util.js":38}],25:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -3575,7 +3575,7 @@ Promise.promisifyAll = function Promise$PromisifyAll(target) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, PromiseArray) {
@@ -3587,13 +3587,13 @@ function PropertiesPromiseArray(obj, boundTo) {
     var keys = es5.keys(obj);
     var values = new Array(keys.length);
     for (var i = 0, len = values.length; i < len; ++i) {
-	values[i] = obj[keys[i]];
+        values[i] = obj[keys[i]];
     }
     this.constructor$(values, boundTo);
     if (!this._isResolved()) {
-	for (var i = 0, len = keys.length; i < len; ++i) {
-	    values.push(keys[i]);
-	}
+        for (var i = 0, len = keys.length; i < len; ++i) {
+            values.push(keys[i]);
+        }
     }
 }
 inherits(PropertiesPromiseArray, PromiseArray);
@@ -3609,12 +3609,12 @@ function PropertiesPromiseArray$_promiseFulfilled(value, index) {
     this._values[index] = value;
     var totalResolved = ++this._totalResolved;
     if (totalResolved >= this._length) {
-	var val = {};
-	var keyOffset = this.length();
-	for (var i = 0, len = this.length(); i < len; ++i) {
-	    val[this._values[i + keyOffset]] = this._values[i];
-	}
-	this._resolve(val);
+        var val = {};
+        var keyOffset = this.length();
+        for (var i = 0, len = this.length(); i < len; ++i) {
+            val[this._values[i + keyOffset]] = this._values[i];
+        }
+        this._resolve(val);
     }
 };
 
@@ -3623,8 +3623,8 @@ function PropertiesPromiseArray$_promiseProgressed(value, index) {
     if (this._isResolved()) return;
 
     this._promise._progress({
-	key: this._values[index + this.length()],
-	value: value
+        key: this._values[index + this.length()],
+        value: value
     });
 };
 
@@ -3636,17 +3636,17 @@ return PropertiesPromiseArray;
 },{"./es5.js":12,"./util.js":38}],26:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -3654,7 +3654,7 @@ return PropertiesPromiseArray;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, PromiseArray) {
@@ -3669,23 +3669,23 @@ function Promise$_Props(promises, useBound) {
     var castValue = Promise._cast(promises, void 0);
 
     if (!isObject(castValue)) {
-	return apiRejection("cannot await properties of a non-object");
+        return apiRejection("cannot await properties of a non-object");
     }
     else if (castValue instanceof Promise) {
-	ret = castValue._then(Promise.props, void 0, void 0,
-			void 0, void 0);
+        ret = castValue._then(Promise.props, void 0, void 0,
+                        void 0, void 0);
     }
     else {
-	ret = new PropertiesPromiseArray(
-	    castValue,
-	    useBound === true && castValue._isBound()
-			? castValue._boundTo
-			: void 0
+        ret = new PropertiesPromiseArray(
+            castValue,
+            useBound === true && castValue._isBound()
+                        ? castValue._boundTo
+                        : void 0
        ).promise();
-	useBound = false;
+        useBound = false;
     }
     if (useBound === true && castValue._isBound()) {
-	ret._setBoundTo(castValue._boundTo);
+        ret._setBoundTo(castValue._boundTo);
     }
     return ret;
 }
@@ -3702,17 +3702,17 @@ Promise.props = function Promise$Props(promises) {
 },{"./errors_api_rejection":11,"./properties_promise_array.js":25,"./util.js":38}],27:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -3720,12 +3720,12 @@ Promise.props = function Promise$Props(promises) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 function arrayCopy(src, srcIndex, dst, dstIndex, len) {
     for (var j = 0; j < len; ++j) {
-	dst[j + dstIndex] = src[j + srcIndex];
+        dst[j + dstIndex] = src[j + srcIndex];
     }
 }
 
@@ -3743,8 +3743,8 @@ function pow2AtLeast(n) {
 function getCapacity(capacity) {
     if (typeof capacity !== "number") return 16;
     return pow2AtLeast(
-	Math.min(
-	    Math.max(16, capacity), 1073741824)
+        Math.min(
+            Math.max(16, capacity), 1073741824)
    );
 }
 
@@ -3771,10 +3771,10 @@ Queue.prototype._pushOne = function Queue$_pushOne(arg) {
 Queue.prototype.push = function Queue$push(fn, receiver, arg) {
     var length = this.length() + 3;
     if (this._willBeOverCapacity(length)) {
-	this._pushOne(fn);
-	this._pushOne(receiver);
-	this._pushOne(arg);
-	return;
+        this._pushOne(fn);
+        this._pushOne(receiver);
+        this._pushOne(arg);
+        return;
     }
     var j = this._front + length - 3;
     this._checkCapacity(length);
@@ -3787,7 +3787,7 @@ Queue.prototype.push = function Queue$push(fn, receiver, arg) {
 
 Queue.prototype.shift = function Queue$shift() {
     var front = this._front,
-	ret = this[front];
+        ret = this[front];
 
     this[front] = void 0;
     this._front = (front + 1) & (this._capacity - 1);
@@ -3802,13 +3802,13 @@ Queue.prototype.length = function Queue$length() {
 Queue.prototype._makeCapacity = function Queue$_makeCapacity() {
     var len = this._capacity;
     for (var i = 0; i < len; ++i) {
-	this[i] = void 0;
+        this[i] = void 0;
     }
 };
 
 Queue.prototype._checkCapacity = function Queue$_checkCapacity(size) {
     if (this._capacity < size) {
-	this._resizeTo(this._capacity << 3);
+        this._resizeTo(this._capacity << 3);
     }
 };
 
@@ -3823,14 +3823,14 @@ Queue.prototype._resizeTo = function Queue$_resizeTo(capacity) {
     this._makeCapacity();
     this._front = 0;
     if (oldFront + length <= oldCapacity) {
-	arrayCopy(oldQueue, oldFront, this, 0, length);
+        arrayCopy(oldQueue, oldFront, this, 0, length);
     }
     else {        var lengthBeforeWrapping =
-	    length - ((oldFront + length) & (oldCapacity - 1));
+            length - ((oldFront + length) & (oldCapacity - 1));
 
-	arrayCopy(oldQueue, oldFront, this, 0, lengthBeforeWrapping);
-	arrayCopy(oldQueue, 0, this, lengthBeforeWrapping,
-		    length - lengthBeforeWrapping);
+        arrayCopy(oldQueue, oldFront, this, 0, lengthBeforeWrapping);
+        arrayCopy(oldQueue, 0, this, lengthBeforeWrapping,
+                    length - lengthBeforeWrapping);
     }
 };
 
@@ -3839,17 +3839,17 @@ module.exports = Queue;
 },{}],28:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -3857,7 +3857,7 @@ module.exports = Queue;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, INTERNAL) {
@@ -3866,7 +3866,7 @@ var isArray = require("./util.js").isArray;
 
 var raceLater = function Promise$_raceLater(promise) {
     return promise.then(function(array) {
-	return Promise$_Race(array, promise);
+        return Promise$_Race(array, promise);
     });
 };
 
@@ -3875,38 +3875,38 @@ function Promise$_Race(promises, parent) {
     var maybePromise = Promise._cast(promises, void 0);
 
     if (maybePromise instanceof Promise) {
-	return raceLater(maybePromise);
+        return raceLater(maybePromise);
     }
     else if (!isArray(promises)) {
-	return apiRejection("expecting an array, a promise or a thenable");
+        return apiRejection("expecting an array, a promise or a thenable");
     }
 
     var ret = new Promise(INTERNAL);
     ret._setTrace(parent);
     if (parent !== void 0) {
-	if (parent._isBound()) {
-	    ret._setBoundTo(parent._boundTo);
-	}
-	if (parent._cancellable()) {
-	    ret._setCancellable();
-	    ret._cancellationParent = parent;
-	}
+        if (parent._isBound()) {
+            ret._setBoundTo(parent._boundTo);
+        }
+        if (parent._cancellable()) {
+            ret._setCancellable();
+            ret._cancellationParent = parent;
+        }
     }
     var fulfill = ret._fulfill;
     var reject = ret._reject;
     for (var i = 0, len = promises.length; i < len; ++i) {
-	var val = promises[i];
+        var val = promises[i];
 
-	if (val === void 0 && !(hasOwn.call(promises, i))) {
-	    continue;
-	}
+        if (val === void 0 && !(hasOwn.call(promises, i))) {
+            continue;
+        }
 
-	Promise.cast(val)._then(
-	    fulfill,
-	    reject,
-	    void 0,
-	    ret,
-	    null
+        Promise.cast(val)._then(
+            fulfill,
+            reject,
+            void 0,
+            ret,
+            null
        );
     }
     return ret;
@@ -3925,17 +3925,17 @@ Promise.prototype.race = function Promise$race() {
 },{"./errors_api_rejection.js":11,"./util.js":38}],29:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -3943,7 +3943,7 @@ Promise.prototype.race = function Promise$race() {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(
@@ -3979,14 +3979,14 @@ Reduction.prototype.iterate = function Reduction$iterate() {
     var callback = this.callback;
 
     for (; i < len; ++i) {
-	result = callback.call(receiver, result, items[i], i, len);
-	result = Promise._cast(result, void 0);
+        result = callback.call(receiver, result, items[i], i, len);
+        result = Promise._cast(result, void 0);
 
-	if (result instanceof Promise) {
-	    result._then(
-		this.fulfill, this.reject, void 0, this, i);
-	    return;
-	}
+        if (result instanceof Promise) {
+            result._then(
+                this.fulfill, this.reject, void 0, this, i);
+            return;
+        }
     }
     this.promise._fulfill(result);
 };
@@ -3995,25 +3995,25 @@ function Promise$_reducer(fulfilleds, initialValue) {
     var fn = this;
     var receiver = void 0;
     if (typeof fn !== "function")  {
-	receiver = fn.receiver;
-	fn = fn.fn;
+        receiver = fn.receiver;
+        fn = fn.fn;
     }
     var len = fulfilleds.length;
     var accum = void 0;
     var startIndex = 0;
 
     if (initialValue !== void 0) {
-	accum = initialValue;
-	startIndex = 0;
+        accum = initialValue;
+        startIndex = 0;
     }
     else {
-	startIndex = 1;
-	if (len > 0) accum = fulfilleds[0];
+        startIndex = 1;
+        if (len > 0) accum = fulfilleds[0];
     }
     var i = startIndex;
 
     if (i >= len) {
-	return accum;
+        return accum;
     }
 
     var reduction = new Reduction(fn, i, accum, fulfilleds, receiver);
@@ -4030,49 +4030,49 @@ function Promise$_unpackReducer(fulfilleds) {
 function Promise$_slowReduce(
     promises, fn, initialValue, useBound) {
     return initialValue._then(function(initialValue) {
-	return Promise$_Reduce(
-	    promises, fn, initialValue, useBound);
+        return Promise$_Reduce(
+            promises, fn, initialValue, useBound);
     }, void 0, void 0, void 0, void 0);
 }
 
 function Promise$_Reduce(promises, fn, initialValue, useBound) {
     if (typeof fn !== "function") {
-	return apiRejection("fn must be a function");
+        return apiRejection("fn must be a function");
     }
 
     if (useBound === true && promises._isBound()) {
-	fn = {
-	    fn: fn,
-	    receiver: promises._boundTo
-	};
+        fn = {
+            fn: fn,
+            receiver: promises._boundTo
+        };
     }
 
     if (initialValue !== void 0) {
-	if (initialValue instanceof Promise) {
-	    if (initialValue.isFulfilled()) {
-		initialValue = initialValue._settledValue;
-	    }
-	    else {
-		return Promise$_slowReduce(promises,
-		    fn, initialValue, useBound);
-	    }
-	}
+        if (initialValue instanceof Promise) {
+            if (initialValue.isFulfilled()) {
+                initialValue = initialValue._settledValue;
+            }
+            else {
+                return Promise$_slowReduce(promises,
+                    fn, initialValue, useBound);
+            }
+        }
 
-	return Promise$_CreatePromiseArray(promises, PromiseArray,
-	    useBound === true && promises._isBound()
-		? promises._boundTo
-		: void 0)
-	    .promise()
-	    ._then(Promise$_unpackReducer, void 0, void 0, {
-		fn: fn,
-		initialValue: initialValue
-	    }, void 0);
+        return Promise$_CreatePromiseArray(promises, PromiseArray,
+            useBound === true && promises._isBound()
+                ? promises._boundTo
+                : void 0)
+            .promise()
+            ._then(Promise$_unpackReducer, void 0, void 0, {
+                fn: fn,
+                initialValue: initialValue
+            }, void 0);
     }
     return Promise$_CreatePromiseArray(promises, PromiseArray,
-	    useBound === true && promises._isBound()
-		? promises._boundTo
-		: void 0).promise()
-	._then(Promise$_reducer, void 0, void 0, fn, void 0);
+            useBound === true && promises._isBound()
+                ? promises._boundTo
+                : void 0).promise()
+        ._then(Promise$_reducer, void 0, void 0, fn, void 0);
 }
 
 
@@ -4088,17 +4088,17 @@ Promise.prototype.reduce = function Promise$reduce(fn, initialValue) {
 },{}],30:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -4106,7 +4106,7 @@ Promise.prototype.reduce = function Promise$reduce(fn, initialValue) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 var global = require("./global.js");
@@ -4116,36 +4116,36 @@ if (typeof process !== "undefined" && process !== null &&
     typeof process.nextTick === "function" &&
     typeof process.version === "string") {
     schedule = function Promise$_Scheduler(fn) {
-	process.nextTick(fn);
+        process.nextTick(fn);
     };
 }
 else if ((typeof global.MutationObserver === "function" ||
-	typeof global.WebkitMutationObserver === "function" ||
-	typeof global.WebKitMutationObserver === "function") &&
-	typeof document !== "undefined" &&
-	typeof document.createElement === "function") {
+        typeof global.WebkitMutationObserver === "function" ||
+        typeof global.WebKitMutationObserver === "function") &&
+        typeof document !== "undefined" &&
+        typeof document.createElement === "function") {
 
 
     schedule = (function(){
-	var MutationObserver = global.MutationObserver ||
-	    global.WebkitMutationObserver ||
-	    global.WebKitMutationObserver;
-	var div = document.createElement("div");
-	var queuedFn = void 0;
-	var observer = new MutationObserver(
-	    function Promise$_Scheduler() {
-		var fn = queuedFn;
-		queuedFn = void 0;
-		fn();
-	    }
+        var MutationObserver = global.MutationObserver ||
+            global.WebkitMutationObserver ||
+            global.WebKitMutationObserver;
+        var div = document.createElement("div");
+        var queuedFn = void 0;
+        var observer = new MutationObserver(
+            function Promise$_Scheduler() {
+                var fn = queuedFn;
+                queuedFn = void 0;
+                fn();
+            }
        );
-	observer.observe(div, {
-	    attributes: true
-	});
-	return function Promise$_Scheduler(fn) {
-	    queuedFn = fn;
-	    div.setAttribute("class", "foo");
-	};
+        observer.observe(div, {
+            attributes: true
+        });
+        return function Promise$_Scheduler(fn) {
+            queuedFn = fn;
+            div.setAttribute("class", "foo");
+        };
 
     })();
 }
@@ -4156,53 +4156,53 @@ else if (typeof global.postMessage === "function" &&
 
     var MESSAGE_KEY = "bluebird_message_key_" + Math.random();
     schedule = (function(){
-	var queuedFn = void 0;
+        var queuedFn = void 0;
 
-	function Promise$_Scheduler(e) {
-	    if (e.source === global &&
-		e.data === MESSAGE_KEY) {
-		var fn = queuedFn;
-		queuedFn = void 0;
-		fn();
-	    }
-	}
+        function Promise$_Scheduler(e) {
+            if (e.source === global &&
+                e.data === MESSAGE_KEY) {
+                var fn = queuedFn;
+                queuedFn = void 0;
+                fn();
+            }
+        }
 
-	global.addEventListener("message", Promise$_Scheduler, false);
+        global.addEventListener("message", Promise$_Scheduler, false);
 
-	return function Promise$_Scheduler(fn) {
-	    queuedFn = fn;
-	    global.postMessage(
-		MESSAGE_KEY, "*"
-	   );
-	};
+        return function Promise$_Scheduler(fn) {
+            queuedFn = fn;
+            global.postMessage(
+                MESSAGE_KEY, "*"
+           );
+        };
 
     })();
 }
 else if (typeof global.MessageChannel === "function") {
     schedule = (function(){
-	var queuedFn = void 0;
+        var queuedFn = void 0;
 
-	var channel = new global.MessageChannel();
-	channel.port1.onmessage = function Promise$_Scheduler() {
-		var fn = queuedFn;
-		queuedFn = void 0;
-		fn();
-	};
+        var channel = new global.MessageChannel();
+        channel.port1.onmessage = function Promise$_Scheduler() {
+                var fn = queuedFn;
+                queuedFn = void 0;
+                fn();
+        };
 
-	return function Promise$_Scheduler(fn) {
-	    queuedFn = fn;
-	    channel.port2.postMessage(null);
-	};
+        return function Promise$_Scheduler(fn) {
+            queuedFn = fn;
+            channel.port2.postMessage(null);
+        };
     })();
 }
 else if (global.setTimeout) {
     schedule = function Promise$_Scheduler(fn) {
-	setTimeout(fn, 4);
+        setTimeout(fn, 4);
     };
 }
 else {
     schedule = function Promise$_Scheduler(fn) {
-	fn();
+        fn();
     };
 }
 
@@ -4211,17 +4211,17 @@ module.exports = schedule;
 },{"./global.js":16}],31:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -4229,7 +4229,7 @@ module.exports = schedule;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports =
@@ -4240,11 +4240,11 @@ var SettledPromiseArray = require("./settled_promise_array.js")(
 
 function Promise$_Settle(promises, useBound) {
     return Promise$_CreatePromiseArray(
-	promises,
-	SettledPromiseArray,
-	useBound === true && promises._isBound()
-	    ? promises._boundTo
-	    : void 0
+        promises,
+        SettledPromiseArray,
+        useBound === true && promises._isBound()
+            ? promises._boundTo
+            : void 0
    ).promise();
 }
 
@@ -4260,17 +4260,17 @@ Promise.prototype.settle = function Promise$settle() {
 },{"./settled_promise_array.js":32}],32:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -4278,7 +4278,7 @@ Promise.prototype.settle = function Promise$settle() {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, PromiseArray) {
@@ -4295,7 +4295,7 @@ function SettledPromiseArray$_promiseResolved(index, inspection) {
     this._values[index] = inspection;
     var totalResolved = ++this._totalResolved;
     if (totalResolved >= this._length) {
-	this._resolve(this._values);
+        this._resolve(this._values);
     }
 };
 
@@ -4322,17 +4322,17 @@ return SettledPromiseArray;
 },{"./util.js":38}],33:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -4340,7 +4340,7 @@ return SettledPromiseArray;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports =
@@ -4349,18 +4349,18 @@ function(Promise, Promise$_CreatePromiseArray, PromiseArray, apiRejection) {
 var SomePromiseArray = require("./some_promise_array.js")(PromiseArray);
 function Promise$_Some(promises, howMany, useBound) {
     if ((howMany | 0) !== howMany || howMany < 0) {
-	return apiRejection("expecting a positive integer");
+        return apiRejection("expecting a positive integer");
     }
     var ret = Promise$_CreatePromiseArray(
-	promises,
-	SomePromiseArray,
-	useBound === true && promises._isBound()
-	    ? promises._boundTo
-	    : void 0
+        promises,
+        SomePromiseArray,
+        useBound === true && promises._isBound()
+            ? promises._boundTo
+            : void 0
    );
     var promise = ret.promise();
     if (promise.isRejected()) {
-	return promise;
+        return promise;
     }
     ret.setHowMany(howMany);
     ret.init();
@@ -4380,17 +4380,17 @@ Promise.prototype.some = function Promise$some(count) {
 },{"./some_promise_array.js":34}],34:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -4398,7 +4398,7 @@ Promise.prototype.some = function Promise$some(count) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function (PromiseArray) {
@@ -4417,22 +4417,22 @@ inherits(SomePromiseArray, PromiseArray);
 
 SomePromiseArray.prototype._init = function SomePromiseArray$_init() {
     if (!this._initialized) {
-	return;
+        return;
     }
     if (this._howMany === 0) {
-	this._resolve([]);
-	return;
+        this._resolve([]);
+        return;
     }
     this._init$(void 0, -2);
     var isArrayResolved = isArray(this._values);
     this._holes = isArrayResolved ? this._values.length - this.length() : 0;
 
     if (!this._isResolved() &&
-	isArrayResolved &&
-	this._howMany > this._canPossiblyFulfill()) {
-	var message = "(Promise.some) input array contains less than " +
-			this._howMany  + " promises";
-	this._reject(new RangeError(message));
+        isArrayResolved &&
+        this._howMany > this._canPossiblyFulfill()) {
+        var message = "(Promise.some) input array contains less than " +
+                        this._howMany  + " promises";
+        this._reject(new RangeError(message));
     }
 };
 
@@ -4460,13 +4460,13 @@ function SomePromiseArray$_promiseFulfilled(value) {
     if (this._isResolved()) return;
     this._addFulfilled(value);
     if (this._fulfilled() === this.howMany()) {
-	this._values.length = this.howMany();
-	if (this.howMany() === 1 && this._unwrap) {
-	    this._resolve(this._values[0]);
-	}
-	else {
-	    this._resolve(this._values);
-	}
+        this._values.length = this.howMany();
+        if (this.howMany() === 1 && this._unwrap) {
+            this._resolve(this._values[0]);
+        }
+        else {
+            this._resolve(this._values);
+        }
     }
 
 };
@@ -4475,12 +4475,12 @@ function SomePromiseArray$_promiseRejected(reason) {
     if (this._isResolved()) return;
     this._addRejected(reason);
     if (this.howMany() > this._canPossiblyFulfill()) {
-	if (this._values.length === this.length()) {
-	    this._reject([]);
-	}
-	else {
-	    this._reject(this._values.slice(this.length() + this._holes));
-	}
+        if (this._values.length === this.length()) {
+            this._reject([]);
+        }
+        else {
+            this._reject(this._values.slice(this.length() + this._holes));
+        }
     }
 };
 
@@ -4513,17 +4513,17 @@ return SomePromiseArray;
 },{"./errors.js":10,"./util.js":38}],35:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -4531,20 +4531,20 @@ return SomePromiseArray;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise) {
 function PromiseInspection(promise) {
     if (promise !== void 0) {
-	this._bitField = promise._bitField;
-	this._settledValue = promise.isResolved()
-	    ? promise._settledValue
-	    : void 0;
+        this._bitField = promise._bitField;
+        this._settledValue = promise.isResolved()
+            ? promise._settledValue
+            : void 0;
     }
     else {
-	this._bitField = 0;
-	this._settledValue = void 0;
+        this._bitField = 0;
+        this._settledValue = void 0;
     }
 }
 
@@ -4566,7 +4566,7 @@ Promise.prototype.isPending = function Promise$isPending() {
 PromiseInspection.prototype.value =
 Promise.prototype.value = function Promise$value() {
     if (!this.isFulfilled()) {
-	throw new TypeError("cannot get fulfillment value of a non-fulfilled promise");
+        throw new TypeError("cannot get fulfillment value of a non-fulfilled promise");
     }
     return this._settledValue;
 };
@@ -4574,7 +4574,7 @@ Promise.prototype.value = function Promise$value() {
 PromiseInspection.prototype.error =
 Promise.prototype.reason = function Promise$reason() {
     if (!this.isRejected()) {
-	throw new TypeError("cannot get rejection reason of a non-rejected promise");
+        throw new TypeError("cannot get rejection reason of a non-rejected promise");
     }
     return this._settledValue;
 };
@@ -4594,17 +4594,17 @@ Promise.PromiseInspection = PromiseInspection;
 },{}],36:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -4612,7 +4612,7 @@ Promise.PromiseInspection = PromiseInspection;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 module.exports = function(Promise, INTERNAL) {
@@ -4623,42 +4623,42 @@ var isObject = util.isObject;
 
 function getThen(obj) {
     try {
-	return obj.then;
+        return obj.then;
     }
     catch(e) {
-	errorObj.e = e;
-	return errorObj;
+        errorObj.e = e;
+        return errorObj;
     }
 }
 
 function Promise$_Cast(obj, originalPromise) {
     if (isObject(obj)) {
-	if (obj instanceof Promise) {
-	    return obj;
-	}
-	else if (isAnyBluebirdPromise(obj)) {
-	    var ret = new Promise(INTERNAL);
-	    ret._setTrace(void 0);
-	    obj._then(
-		ret._fulfillUnchecked,
-		ret._rejectUncheckedCheckError,
-		ret._progressUnchecked,
-		ret,
-		null
-	    );
-	    ret._setFollowing();
-	    return ret;
-	}
-	var then = getThen(obj);
-	if (then === errorObj) {
-	    if (originalPromise !== void 0 && canAttach(then.e)) {
-		originalPromise._attachExtraTrace(then.e);
-	    }
-	    return Promise.reject(then.e);
-	}
-	else if (typeof then === "function") {
-	    return Promise$_doThenable(obj, then, originalPromise);
-	}
+        if (obj instanceof Promise) {
+            return obj;
+        }
+        else if (isAnyBluebirdPromise(obj)) {
+            var ret = new Promise(INTERNAL);
+            ret._setTrace(void 0);
+            obj._then(
+                ret._fulfillUnchecked,
+                ret._rejectUncheckedCheckError,
+                ret._progressUnchecked,
+                ret,
+                null
+            );
+            ret._setFollowing();
+            return ret;
+        }
+        var then = getThen(obj);
+        if (then === errorObj) {
+            if (originalPromise !== void 0 && canAttach(then.e)) {
+                originalPromise._attachExtraTrace(then.e);
+            }
+            return Promise.reject(then.e);
+        }
+        else if (typeof then === "function") {
+            return Promise$_doThenable(obj, then, originalPromise);
+        }
     }
     return obj;
 }
@@ -4672,56 +4672,56 @@ function Promise$_doThenable(x, then, originalPromise) {
     var resolver = Promise.defer();
     var called = false;
     try {
-	then.call(
-	    x,
-	    Promise$_resolveFromThenable,
-	    Promise$_rejectFromThenable,
-	    Promise$_progressFromThenable
-	);
+        then.call(
+            x,
+            Promise$_resolveFromThenable,
+            Promise$_rejectFromThenable,
+            Promise$_progressFromThenable
+        );
     }
     catch(e) {
-	if (!called) {
-	    called = true;
-	    var trace = canAttach(e) ? e : new Error(e + "");
-	    if (originalPromise !== void 0) {
-		originalPromise._attachExtraTrace(trace);
-	    }
-	    resolver.promise._reject(e, trace);
-	}
+        if (!called) {
+            called = true;
+            var trace = canAttach(e) ? e : new Error(e + "");
+            if (originalPromise !== void 0) {
+                originalPromise._attachExtraTrace(trace);
+            }
+            resolver.promise._reject(e, trace);
+        }
     }
     return resolver.promise;
 
     function Promise$_resolveFromThenable(y) {
-	if (called) return;
-	called = true;
+        if (called) return;
+        called = true;
 
-	if (x === y) {
-	    var e = Promise._makeSelfResolutionError();
-	    if (originalPromise !== void 0) {
-		originalPromise._attachExtraTrace(e);
-	    }
-	    resolver.promise._reject(e, void 0);
-	    return;
-	}
-	resolver.resolve(y);
+        if (x === y) {
+            var e = Promise._makeSelfResolutionError();
+            if (originalPromise !== void 0) {
+                originalPromise._attachExtraTrace(e);
+            }
+            resolver.promise._reject(e, void 0);
+            return;
+        }
+        resolver.resolve(y);
     }
 
     function Promise$_rejectFromThenable(r) {
-	if (called) return;
-	called = true;
-	var trace = canAttach(r) ? r : new Error(r + "");
-	if (originalPromise !== void 0) {
-	    originalPromise._attachExtraTrace(trace);
-	}
-	resolver.promise._reject(r, trace);
+        if (called) return;
+        called = true;
+        var trace = canAttach(r) ? r : new Error(r + "");
+        if (originalPromise !== void 0) {
+            originalPromise._attachExtraTrace(trace);
+        }
+        resolver.promise._reject(r, trace);
     }
 
     function Promise$_progressFromThenable(v) {
-	if (called) return;
-	var promise = resolver.promise;
-	if (typeof promise._progress === "function") {
-	    promise._progress(v);
-	}
+        if (called) return;
+        var promise = resolver.promise;
+        if (typeof promise._progress === "function") {
+            promise._progress(v);
+        }
     }
 }
 
@@ -4731,17 +4731,17 @@ Promise._cast = Promise$_Cast;
 },{"./errors.js":10,"./util.js":38}],37:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -4749,14 +4749,14 @@ Promise._cast = Promise$_Cast;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 var global = require("./global.js");
 var setTimeout = function(fn, ms) {
     var $_len = arguments.length;var args = new Array($_len - 2); for(var $_i = 2; $_i < $_len; ++$_i) {args[$_i - 2] = arguments[$_i];}
     global.setTimeout(function(){
-	fn.apply(void 0, args);
+        fn.apply(void 0, args);
     }, ms);
 };
 
@@ -4769,7 +4769,7 @@ var TimeoutError = Promise.TimeoutError;
 var afterTimeout = function Promise$_afterTimeout(promise, message, ms) {
     if (!promise.isPending()) return;
     if (typeof message !== "string") {
-	message = "operation timed out after" + " " + ms + " ms"
+        message = "operation timed out after" + " " + ms + " ms"
     }
     var err = new TimeoutError(message);
     errors.markAsOriginatingFromRejection(err);
@@ -4783,30 +4783,30 @@ var afterDelay = function Promise$_afterDelay(value, promise) {
 
 var delay = Promise.delay = function Promise$Delay(value, ms) {
     if (ms === void 0) {
-	ms = value;
-	value = void 0;
+        ms = value;
+        value = void 0;
     }
     ms = +ms;
     var maybePromise = Promise._cast(value, void 0);
     var promise = new Promise(INTERNAL);
 
     if (maybePromise instanceof Promise) {
-	if (maybePromise._isBound()) {
-	    promise._setBoundTo(maybePromise._boundTo);
-	}
-	if (maybePromise._cancellable()) {
-	    promise._setCancellable();
-	    promise._cancellationParent = maybePromise;
-	}
-	promise._setTrace(maybePromise);
-	promise._follow(maybePromise);
-	return promise.then(function(value) {
-	    return Promise.delay(value, ms);
-	});
+        if (maybePromise._isBound()) {
+            promise._setBoundTo(maybePromise._boundTo);
+        }
+        if (maybePromise._cancellable()) {
+            promise._setCancellable();
+            promise._cancellationParent = maybePromise;
+        }
+        promise._setTrace(maybePromise);
+        promise._follow(maybePromise);
+        return promise.then(function(value) {
+            return Promise.delay(value, ms);
+        });
     }
     else {
-	promise._setTrace(void 0);
-	setTimeout(afterDelay, ms, value, promise);
+        promise._setTrace(void 0);
+        setTimeout(afterDelay, ms, value, promise);
     }
     return promise;
 };
@@ -4823,8 +4823,8 @@ Promise.prototype.timeout = function Promise$timeout(ms, message) {
 
     if (this._isBound()) ret._setBoundTo(this._boundTo);
     if (this._cancellable()) {
-	ret._setCancellable();
-	ret._cancellationParent = this;
+        ret._setCancellable();
+        ret._cancellationParent = this;
     }
     ret._follow(this);
     setTimeout(afterTimeout, ms, ret, message, ms);
@@ -4836,17 +4836,17 @@ Promise.prototype.timeout = function Promise$timeout(ms, message) {
 },{"./errors.js":10,"./errors_api_rejection":11,"./global.js":16,"./util.js":38}],38:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:</p>
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -4854,73 +4854,73 @@ Promise.prototype.timeout = function Promise$timeout(ms, message) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 "use strict";
 var global = require("./global.js");
 var es5 = require("./es5.js");
 var haveGetters = (function(){
     try {
-	var o = {};
-	es5.defineProperty(o, "f", {
-	    get: function () {
-		return 3;
-	    }
-	});
-	return o.f === 3;
+        var o = {};
+        es5.defineProperty(o, "f", {
+            get: function () {
+                return 3;
+            }
+        });
+        return o.f === 3;
     }
     catch (e) {
-	return false;
+        return false;
     }
 
 })();
 
 var canEvaluate = (function() {
     if (typeof window !== "undefined" && window !== null &&
-	typeof window.document !== "undefined" &&
-	typeof navigator !== "undefined" && navigator !== null &&
-	typeof navigator.appName === "string" &&
-	window === global) {
-	return false;
+        typeof window.document !== "undefined" &&
+        typeof navigator !== "undefined" && navigator !== null &&
+        typeof navigator.appName === "string" &&
+        window === global) {
+        return false;
     }
     return true;
 })();
 
 function deprecated(msg) {
     if (typeof console !== "undefined" && console !== null &&
-	typeof console.warn === "function") {
-	console.warn("Bluebird: " + msg);
+        typeof console.warn === "function") {
+        console.warn("Bluebird: " + msg);
     }
 }
 
 var errorObj = {e: {}};
 function tryCatch1(fn, receiver, arg) {
     try {
-	return fn.call(receiver, arg);
+        return fn.call(receiver, arg);
     }
     catch (e) {
-	errorObj.e = e;
-	return errorObj;
+        errorObj.e = e;
+        return errorObj;
     }
 }
 
 function tryCatch2(fn, receiver, arg, arg2) {
     try {
-	return fn.call(receiver, arg, arg2);
+        return fn.call(receiver, arg, arg2);
     }
     catch (e) {
-	errorObj.e = e;
-	return errorObj;
+        errorObj.e = e;
+        return errorObj;
     }
 }
 
 function tryCatchApply(fn, args, receiver) {
     try {
-	return fn.apply(receiver, args);
+        return fn.apply(receiver, args);
     }
     catch (e) {
-	errorObj.e = e;
-	return errorObj;
+        errorObj.e = e;
+        return errorObj;
     }
 }
 
@@ -4928,15 +4928,15 @@ var inherits = function(Child, Parent) {
     var hasProp = {}.hasOwnProperty;
 
     function T() {
-	this.constructor = Child;
-	this.constructor$ = Parent;
-	for (var propertyName in Parent.prototype) {
-	    if (hasProp.call(Parent.prototype, propertyName) &&
-		propertyName.charAt(propertyName.length-1) !== "$"
-	   ) {
-		this[propertyName + "$"] = Parent.prototype[propertyName];
-	    }
-	}
+        this.constructor = Child;
+        this.constructor$ = Parent;
+        for (var propertyName in Parent.prototype) {
+            if (hasProp.call(Parent.prototype, propertyName) &&
+                propertyName.charAt(propertyName.length-1) !== "$"
+           ) {
+                this[propertyName + "$"] = Parent.prototype[propertyName];
+            }
+        }
     }
     T.prototype = Parent.prototype;
     Child.prototype = new T();
@@ -4949,7 +4949,7 @@ function asString(val) {
 
 function isPrimitive(val) {
     return val == null || val === true || val === false ||
-	typeof val === "string" || typeof val === "number";
+        typeof val === "string" || typeof val === "number";
 
 }
 
@@ -4968,7 +4968,7 @@ function withAppended(target, appendee) {
     var ret = new Array(len + 1);
     var i;
     for (i = 0; i < len; ++i) {
-	ret[i] = target[i];
+        ret[i] = target[i];
     }
     ret[i] = appendee;
     return ret;
@@ -4978,10 +4978,10 @@ function withAppended(target, appendee) {
 function notEnumerableProp(obj, name, value) {
     if (isPrimitive(obj)) return obj;
     var descriptor = {
-	value: value,
-	configurable: true,
-	enumerable: false,
-	writable: true
+        value: value,
+        configurable: true,
+        enumerable: false,
+        writable: true
     };
     es5.defineProperty(obj, name, descriptor);
     return obj;
@@ -5202,11 +5202,11 @@ module.exports=require('K2RcUv');
    */
   function baseIndexOf(array, value, fromIndex) {
     var index = (fromIndex || 0) - 1,
-	length = array ? array.length : 0;
+        length = array ? array.length : 0;
 
     while (++index < length) {
       if (array[index] === value) {
-	return index;
+        return index;
       }
     }
     return -1;
@@ -5247,21 +5247,21 @@ module.exports=require('K2RcUv');
    */
   function cachePush(value) {
     var cache = this.cache,
-	type = typeof value;
+        type = typeof value;
 
     if (type == 'boolean' || value == null) {
       cache[value] = true;
     } else {
       if (type != 'number' && type != 'string') {
-	type = 'object';
+        type = 'object';
       }
       var key = type == 'number' ? value : keyPrefix + value,
-	  typeCache = cache[type] || (cache[type] = {});
+          typeCache = cache[type] || (cache[type] = {});
 
       if (type == 'object') {
-	(typeCache[key] || (typeCache[key] = [])).push(value);
+        (typeCache[key] || (typeCache[key] = [])).push(value);
       } else {
-	typeCache[key] = true;
+        typeCache[key] = true;
       }
     }
   }
@@ -5289,21 +5289,21 @@ module.exports=require('K2RcUv');
    */
   function compareAscending(a, b) {
     var ac = a.criteria,
-	bc = b.criteria,
-	index = -1,
-	length = ac.length;
+        bc = b.criteria,
+        index = -1,
+        length = ac.length;
 
     while (++index < length) {
       var value = ac[index],
-	  other = bc[index];
+          other = bc[index];
 
       if (value !== other) {
-	if (value > other || typeof value == 'undefined') {
-	  return 1;
-	}
-	if (value < other || typeof other == 'undefined') {
-	  return -1;
-	}
+        if (value > other || typeof value == 'undefined') {
+          return 1;
+        }
+        if (value < other || typeof other == 'undefined') {
+          return -1;
+        }
       }
     }
     // Fixes an `Array#sort` bug in the JS engine embedded in Adobe applications
@@ -5324,13 +5324,13 @@ module.exports=require('K2RcUv');
    */
   function createCache(array) {
     var index = -1,
-	length = array.length,
-	first = array[0],
-	mid = array[(length / 2) | 0],
-	last = array[length - 1];
+        length = array.length,
+        first = array[0],
+        mid = array[(length / 2) | 0],
+        last = array[length - 1];
 
     if (first && typeof first == 'object' &&
-	mid && typeof mid == 'object' && last && typeof last == 'object') {
+        mid && typeof mid == 'object' && last && typeof last == 'object') {
       return false;
     }
     var cache = getObject();
@@ -5442,8 +5442,8 @@ module.exports=require('K2RcUv');
       end = array ? array.length : 0;
     }
     var index = -1,
-	length = end - start || 0,
-	result = Array(length < 0 ? 0 : length);
+        length = end - start || 0,
+        result = Array(length < 0 ? 0 : length);
 
     while (++index < length) {
       result[index] = array[start + index];
@@ -5471,15 +5471,15 @@ module.exports=require('K2RcUv');
 
     /** Native constructor references */
     var Array = context.Array,
-	Boolean = context.Boolean,
-	Date = context.Date,
-	Function = context.Function,
-	Math = context.Math,
-	Number = context.Number,
-	Object = context.Object,
-	RegExp = context.RegExp,
-	String = context.String,
-	TypeError = context.TypeError;
+        Boolean = context.Boolean,
+        Date = context.Date,
+        Function = context.Function,
+        Math = context.Math,
+        Number = context.Number,
+        Object = context.Object,
+        RegExp = context.RegExp,
+        String = context.String,
+        TypeError = context.TypeError;
 
     /**
      * Used for `Array` method references.
@@ -5501,43 +5501,43 @@ module.exports=require('K2RcUv');
     /** Used to detect if a method is native */
     var reNative = RegExp('^' +
       String(toString)
-	.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	.replace(/toString| for [^\]]+/g, '.*?') + '$'
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        .replace(/toString| for [^\]]+/g, '.*?') + '$'
     );
 
     /** Native method shortcuts */
     var ceil = Math.ceil,
-	clearTimeout = context.clearTimeout,
-	floor = Math.floor,
-	fnToString = Function.prototype.toString,
-	getPrototypeOf = isNative(getPrototypeOf = Object.getPrototypeOf) && getPrototypeOf,
-	hasOwnProperty = objectProto.hasOwnProperty,
-	push = arrayRef.push,
-	setTimeout = context.setTimeout,
-	splice = arrayRef.splice,
-	unshift = arrayRef.unshift;
+        clearTimeout = context.clearTimeout,
+        floor = Math.floor,
+        fnToString = Function.prototype.toString,
+        getPrototypeOf = isNative(getPrototypeOf = Object.getPrototypeOf) && getPrototypeOf,
+        hasOwnProperty = objectProto.hasOwnProperty,
+        push = arrayRef.push,
+        setTimeout = context.setTimeout,
+        splice = arrayRef.splice,
+        unshift = arrayRef.unshift;
 
     /** Used to set meta data on functions */
     var defineProperty = (function() {
       // IE 8 only accepts DOM elements
       try {
-	var o = {},
-	    func = isNative(func = Object.defineProperty) && func,
-	    result = func(o, o, o) && func;
+        var o = {},
+            func = isNative(func = Object.defineProperty) && func,
+            result = func(o, o, o) && func;
       } catch(e) { }
       return result;
     }());
 
     /* Native method shortcuts for methods with the same name as other `lodash` methods */
     var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate,
-	nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray,
-	nativeIsFinite = context.isFinite,
-	nativeIsNaN = context.isNaN,
-	nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys,
-	nativeMax = Math.max,
-	nativeMin = Math.min,
-	nativeParseInt = context.parseInt,
-	nativeRandom = Math.random;
+        nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray,
+        nativeIsFinite = context.isFinite,
+        nativeIsNaN = context.isNaN,
+        nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys,
+        nativeMax = Math.max,
+        nativeMin = Math.min,
+        nativeParseInt = context.parseInt,
+        nativeRandom = Math.random;
 
     /** Used to lookup a built-in constructor by [[Class]] */
     var ctorByClass = {};
@@ -5716,13 +5716,13 @@ module.exports=require('K2RcUv');
        */
       'imports': {
 
-	/**
-	 * A reference to the `lodash` function.
-	 *
-	 * @memberOf _.templateSettings.imports
-	 * @type Function
-	 */
-	'_': lodash
+        /**
+         * A reference to the `lodash` function.
+         *
+         * @memberOf _.templateSettings.imports
+         * @type Function
+         */
+        '_': lodash
       }
     };
 
@@ -5738,28 +5738,28 @@ module.exports=require('K2RcUv');
      */
     function baseBind(bindData) {
       var func = bindData[0],
-	  partialArgs = bindData[2],
-	  thisArg = bindData[4];
+          partialArgs = bindData[2],
+          thisArg = bindData[4];
 
       function bound() {
-	// `Function#bind` spec
-	// http://es5.github.io/#x15.3.4.5
-	if (partialArgs) {
-	  // avoid `arguments` object deoptimizations by using `slice` instead
-	  // of `Array.prototype.slice.call` and not assigning `arguments` to a
-	  // variable as a ternary expression
-	  var args = slice(partialArgs);
-	  push.apply(args, arguments);
-	}
-	// mimic the constructor's `return` behavior
-	// http://es5.github.io/#x13.2.2
-	if (this instanceof bound) {
-	  // ensure `new bound` is an instance of `func`
-	  var thisBinding = baseCreate(func.prototype),
-	      result = func.apply(thisBinding, args || arguments);
-	  return isObject(result) ? result : thisBinding;
-	}
-	return func.apply(thisArg, args || arguments);
+        // `Function#bind` spec
+        // http://es5.github.io/#x15.3.4.5
+        if (partialArgs) {
+          // avoid `arguments` object deoptimizations by using `slice` instead
+          // of `Array.prototype.slice.call` and not assigning `arguments` to a
+          // variable as a ternary expression
+          var args = slice(partialArgs);
+          push.apply(args, arguments);
+        }
+        // mimic the constructor's `return` behavior
+        // http://es5.github.io/#x13.2.2
+        if (this instanceof bound) {
+          // ensure `new bound` is an instance of `func`
+          var thisBinding = baseCreate(func.prototype),
+              result = func.apply(thisBinding, args || arguments);
+          return isObject(result) ? result : thisBinding;
+        }
+        return func.apply(thisArg, args || arguments);
       }
       setBindData(bound, bindData);
       return bound;
@@ -5779,66 +5779,66 @@ module.exports=require('K2RcUv');
      */
     function baseClone(value, isDeep, callback, stackA, stackB) {
       if (callback) {
-	var result = callback(value);
-	if (typeof result != 'undefined') {
-	  return result;
-	}
+        var result = callback(value);
+        if (typeof result != 'undefined') {
+          return result;
+        }
       }
       // inspect [[Class]]
       var isObj = isObject(value);
       if (isObj) {
-	var className = toString.call(value);
-	if (!cloneableClasses[className]) {
-	  return value;
-	}
-	var ctor = ctorByClass[className];
-	switch (className) {
-	  case boolClass:
-	  case dateClass:
-	    return new ctor(+value);
+        var className = toString.call(value);
+        if (!cloneableClasses[className]) {
+          return value;
+        }
+        var ctor = ctorByClass[className];
+        switch (className) {
+          case boolClass:
+          case dateClass:
+            return new ctor(+value);
 
-	  case numberClass:
-	  case stringClass:
-	    return new ctor(value);
+          case numberClass:
+          case stringClass:
+            return new ctor(value);
 
-	  case regexpClass:
-	    result = ctor(value.source, reFlags.exec(value));
-	    result.lastIndex = value.lastIndex;
-	    return result;
-	}
+          case regexpClass:
+            result = ctor(value.source, reFlags.exec(value));
+            result.lastIndex = value.lastIndex;
+            return result;
+        }
       } else {
-	return value;
+        return value;
       }
       var isArr = isArray(value);
       if (isDeep) {
-	// check for circular references and return corresponding clone
-	var initedStack = !stackA;
-	stackA || (stackA = getArray());
-	stackB || (stackB = getArray());
+        // check for circular references and return corresponding clone
+        var initedStack = !stackA;
+        stackA || (stackA = getArray());
+        stackB || (stackB = getArray());
 
-	var length = stackA.length;
-	while (length--) {
-	  if (stackA[length] == value) {
-	    return stackB[length];
-	  }
-	}
-	result = isArr ? ctor(value.length) : {};
+        var length = stackA.length;
+        while (length--) {
+          if (stackA[length] == value) {
+            return stackB[length];
+          }
+        }
+        result = isArr ? ctor(value.length) : {};
       }
       else {
-	result = isArr ? slice(value) : assign({}, value);
+        result = isArr ? slice(value) : assign({}, value);
       }
       // add array properties assigned by `RegExp#exec`
       if (isArr) {
-	if (hasOwnProperty.call(value, 'index')) {
-	  result.index = value.index;
-	}
-	if (hasOwnProperty.call(value, 'input')) {
-	  result.input = value.input;
-	}
+        if (hasOwnProperty.call(value, 'index')) {
+          result.index = value.index;
+        }
+        if (hasOwnProperty.call(value, 'input')) {
+          result.input = value.input;
+        }
       }
       // exit for shallow clone
       if (!isDeep) {
-	return result;
+        return result;
       }
       // add the source value to the stack of traversed objects
       // and associate it with its clone
@@ -5847,12 +5847,12 @@ module.exports=require('K2RcUv');
 
       // recursively populate clone (susceptible to call stack limits)
       (isArr ? forEach : forOwn)(value, function(objValue, key) {
-	result[key] = baseClone(objValue, isDeep, callback, stackA, stackB);
+        result[key] = baseClone(objValue, isDeep, callback, stackA, stackB);
       });
 
       if (initedStack) {
-	releaseArray(stackA);
-	releaseArray(stackB);
+        releaseArray(stackA);
+        releaseArray(stackB);
       }
       return result;
     }
@@ -5871,15 +5871,15 @@ module.exports=require('K2RcUv');
     // fallback for browsers without `Object.create`
     if (!nativeCreate) {
       baseCreate = (function() {
-	function Object() {}
-	return function(prototype) {
-	  if (isObject(prototype)) {
-	    Object.prototype = prototype;
-	    var result = new Object;
-	    Object.prototype = null;
-	  }
-	  return result || context.Object();
-	};
+        function Object() {}
+        return function(prototype) {
+          if (isObject(prototype)) {
+            Object.prototype = prototype;
+            var result = new Object;
+            Object.prototype = null;
+          }
+          return result || context.Object();
+        };
       }());
     }
 
@@ -5895,47 +5895,47 @@ module.exports=require('K2RcUv');
      */
     function baseCreateCallback(func, thisArg, argCount) {
       if (typeof func != 'function') {
-	return identity;
+        return identity;
       }
       // exit early for no `thisArg` or already bound by `Function#bind`
       if (typeof thisArg == 'undefined' || !('prototype' in func)) {
-	return func;
+        return func;
       }
       var bindData = func.__bindData__;
       if (typeof bindData == 'undefined') {
-	if (support.funcNames) {
-	  bindData = !func.name;
-	}
-	bindData = bindData || !support.funcDecomp;
-	if (!bindData) {
-	  var source = fnToString.call(func);
-	  if (!support.funcNames) {
-	    bindData = !reFuncName.test(source);
-	  }
-	  if (!bindData) {
-	    // checks if `func` references the `this` keyword and stores the result
-	    bindData = reThis.test(source);
-	    setBindData(func, bindData);
-	  }
-	}
+        if (support.funcNames) {
+          bindData = !func.name;
+        }
+        bindData = bindData || !support.funcDecomp;
+        if (!bindData) {
+          var source = fnToString.call(func);
+          if (!support.funcNames) {
+            bindData = !reFuncName.test(source);
+          }
+          if (!bindData) {
+            // checks if `func` references the `this` keyword and stores the result
+            bindData = reThis.test(source);
+            setBindData(func, bindData);
+          }
+        }
       }
       // exit early if there are no `this` references or `func` is bound
       if (bindData === false || (bindData !== true && bindData[1] & 1)) {
-	return func;
+        return func;
       }
       switch (argCount) {
-	case 1: return function(value) {
-	  return func.call(thisArg, value);
-	};
-	case 2: return function(a, b) {
-	  return func.call(thisArg, a, b);
-	};
-	case 3: return function(value, index, collection) {
-	  return func.call(thisArg, value, index, collection);
-	};
-	case 4: return function(accumulator, value, index, collection) {
-	  return func.call(thisArg, accumulator, value, index, collection);
-	};
+        case 1: return function(value) {
+          return func.call(thisArg, value);
+        };
+        case 2: return function(a, b) {
+          return func.call(thisArg, a, b);
+        };
+        case 3: return function(value, index, collection) {
+          return func.call(thisArg, value, index, collection);
+        };
+        case 4: return function(accumulator, value, index, collection) {
+          return func.call(thisArg, accumulator, value, index, collection);
+        };
       }
       return bind(func, thisArg);
     }
@@ -5950,44 +5950,44 @@ module.exports=require('K2RcUv');
      */
     function baseCreateWrapper(bindData) {
       var func = bindData[0],
-	  bitmask = bindData[1],
-	  partialArgs = bindData[2],
-	  partialRightArgs = bindData[3],
-	  thisArg = bindData[4],
-	  arity = bindData[5];
+          bitmask = bindData[1],
+          partialArgs = bindData[2],
+          partialRightArgs = bindData[3],
+          thisArg = bindData[4],
+          arity = bindData[5];
 
       var isBind = bitmask & 1,
-	  isBindKey = bitmask & 2,
-	  isCurry = bitmask & 4,
-	  isCurryBound = bitmask & 8,
-	  key = func;
+          isBindKey = bitmask & 2,
+          isCurry = bitmask & 4,
+          isCurryBound = bitmask & 8,
+          key = func;
 
       function bound() {
-	var thisBinding = isBind ? thisArg : this;
-	if (partialArgs) {
-	  var args = slice(partialArgs);
-	  push.apply(args, arguments);
-	}
-	if (partialRightArgs || isCurry) {
-	  args || (args = slice(arguments));
-	  if (partialRightArgs) {
-	    push.apply(args, partialRightArgs);
-	  }
-	  if (isCurry && args.length < arity) {
-	    bitmask |= 16 & ~32;
-	    return baseCreateWrapper([func, (isCurryBound ? bitmask : bitmask & ~3), args, null, thisArg, arity]);
-	  }
-	}
-	args || (args = arguments);
-	if (isBindKey) {
-	  func = thisBinding[key];
-	}
-	if (this instanceof bound) {
-	  thisBinding = baseCreate(func.prototype);
-	  var result = func.apply(thisBinding, args);
-	  return isObject(result) ? result : thisBinding;
-	}
-	return func.apply(thisBinding, args);
+        var thisBinding = isBind ? thisArg : this;
+        if (partialArgs) {
+          var args = slice(partialArgs);
+          push.apply(args, arguments);
+        }
+        if (partialRightArgs || isCurry) {
+          args || (args = slice(arguments));
+          if (partialRightArgs) {
+            push.apply(args, partialRightArgs);
+          }
+          if (isCurry && args.length < arity) {
+            bitmask |= 16 & ~32;
+            return baseCreateWrapper([func, (isCurryBound ? bitmask : bitmask & ~3), args, null, thisArg, arity]);
+          }
+        }
+        args || (args = arguments);
+        if (isBindKey) {
+          func = thisBinding[key];
+        }
+        if (this instanceof bound) {
+          thisBinding = baseCreate(func.prototype);
+          var result = func.apply(thisBinding, args);
+          return isObject(result) ? result : thisBinding;
+        }
+        return func.apply(thisBinding, args);
       }
       setBindData(bound, bindData);
       return bound;
@@ -6004,28 +6004,28 @@ module.exports=require('K2RcUv');
      */
     function baseDifference(array, values) {
       var index = -1,
-	  indexOf = getIndexOf(),
-	  length = array ? array.length : 0,
-	  isLarge = length >= largeArraySize && indexOf === baseIndexOf,
-	  result = [];
+          indexOf = getIndexOf(),
+          length = array ? array.length : 0,
+          isLarge = length >= largeArraySize && indexOf === baseIndexOf,
+          result = [];
 
       if (isLarge) {
-	var cache = createCache(values);
-	if (cache) {
-	  indexOf = cacheIndexOf;
-	  values = cache;
-	} else {
-	  isLarge = false;
-	}
+        var cache = createCache(values);
+        if (cache) {
+          indexOf = cacheIndexOf;
+          values = cache;
+        } else {
+          isLarge = false;
+        }
       }
       while (++index < length) {
-	var value = array[index];
-	if (indexOf(values, value) < 0) {
-	  result.push(value);
-	}
+        var value = array[index];
+        if (indexOf(values, value) < 0) {
+          result.push(value);
+        }
       }
       if (isLarge) {
-	releaseObject(values);
+        releaseObject(values);
       }
       return result;
     }
@@ -6043,29 +6043,29 @@ module.exports=require('K2RcUv');
      */
     function baseFlatten(array, isShallow, isStrict, fromIndex) {
       var index = (fromIndex || 0) - 1,
-	  length = array ? array.length : 0,
-	  result = [];
+          length = array ? array.length : 0,
+          result = [];
 
       while (++index < length) {
-	var value = array[index];
+        var value = array[index];
 
-	if (value && typeof value == 'object' && typeof value.length == 'number'
-	    && (isArray(value) || isArguments(value))) {
-	  // recursively flatten arrays (susceptible to call stack limits)
-	  if (!isShallow) {
-	    value = baseFlatten(value, isShallow, isStrict);
-	  }
-	  var valIndex = -1,
-	      valLength = value.length,
-	      resIndex = result.length;
+        if (value && typeof value == 'object' && typeof value.length == 'number'
+            && (isArray(value) || isArguments(value))) {
+          // recursively flatten arrays (susceptible to call stack limits)
+          if (!isShallow) {
+            value = baseFlatten(value, isShallow, isStrict);
+          }
+          var valIndex = -1,
+              valLength = value.length,
+              resIndex = result.length;
 
-	  result.length += valLength;
-	  while (++valIndex < valLength) {
-	    result[resIndex++] = value[valIndex];
-	  }
-	} else if (!isStrict) {
-	  result.push(value);
-	}
+          result.length += valLength;
+          while (++valIndex < valLength) {
+            result[resIndex++] = value[valIndex];
+          }
+        } else if (!isStrict) {
+          result.push(value);
+        }
       }
       return result;
     }
@@ -6086,87 +6086,87 @@ module.exports=require('K2RcUv');
     function baseIsEqual(a, b, callback, isWhere, stackA, stackB) {
       // used to indicate that when comparing objects, `a` has at least the properties of `b`
       if (callback) {
-	var result = callback(a, b);
-	if (typeof result != 'undefined') {
-	  return !!result;
-	}
+        var result = callback(a, b);
+        if (typeof result != 'undefined') {
+          return !!result;
+        }
       }
       // exit early for identical values
       if (a === b) {
-	// treat `+0` vs. `-0` as not equal
-	return a !== 0 || (1 / a == 1 / b);
+        // treat `+0` vs. `-0` as not equal
+        return a !== 0 || (1 / a == 1 / b);
       }
       var type = typeof a,
-	  otherType = typeof b;
+          otherType = typeof b;
 
       // exit early for unlike primitive values
       if (a === a &&
-	  !(a && objectTypes[type]) &&
-	  !(b && objectTypes[otherType])) {
-	return false;
+          !(a && objectTypes[type]) &&
+          !(b && objectTypes[otherType])) {
+        return false;
       }
       // exit early for `null` and `undefined` avoiding ES3's Function#call behavior
       // http://es5.github.io/#x15.3.4.4
       if (a == null || b == null) {
-	return a === b;
+        return a === b;
       }
       // compare [[Class]] names
       var className = toString.call(a),
-	  otherClass = toString.call(b);
+          otherClass = toString.call(b);
 
       if (className == argsClass) {
-	className = objectClass;
+        className = objectClass;
       }
       if (otherClass == argsClass) {
-	otherClass = objectClass;
+        otherClass = objectClass;
       }
       if (className != otherClass) {
-	return false;
+        return false;
       }
       switch (className) {
-	case boolClass:
-	case dateClass:
-	  // coerce dates and booleans to numbers, dates to milliseconds and booleans
-	  // to `1` or `0` treating invalid dates coerced to `NaN` as not equal
-	  return +a == +b;
+        case boolClass:
+        case dateClass:
+          // coerce dates and booleans to numbers, dates to milliseconds and booleans
+          // to `1` or `0` treating invalid dates coerced to `NaN` as not equal
+          return +a == +b;
 
-	case numberClass:
-	  // treat `NaN` vs. `NaN` as equal
-	  return (a != +a)
-	    ? b != +b
-	    // but treat `+0` vs. `-0` as not equal
-	    : (a == 0 ? (1 / a == 1 / b) : a == +b);
+        case numberClass:
+          // treat `NaN` vs. `NaN` as equal
+          return (a != +a)
+            ? b != +b
+            // but treat `+0` vs. `-0` as not equal
+            : (a == 0 ? (1 / a == 1 / b) : a == +b);
 
-	case regexpClass:
-	case stringClass:
-	  // coerce regexes to strings (http://es5.github.io/#x15.10.6.4)
-	  // treat string primitives and their corresponding object instances as equal
-	  return a == String(b);
+        case regexpClass:
+        case stringClass:
+          // coerce regexes to strings (http://es5.github.io/#x15.10.6.4)
+          // treat string primitives and their corresponding object instances as equal
+          return a == String(b);
       }
       var isArr = className == arrayClass;
       if (!isArr) {
-	// unwrap any `lodash` wrapped values
-	var aWrapped = hasOwnProperty.call(a, '__wrapped__'),
-	    bWrapped = hasOwnProperty.call(b, '__wrapped__');
+        // unwrap any `lodash` wrapped values
+        var aWrapped = hasOwnProperty.call(a, '__wrapped__'),
+            bWrapped = hasOwnProperty.call(b, '__wrapped__');
 
-	if (aWrapped || bWrapped) {
-	  return baseIsEqual(aWrapped ? a.__wrapped__ : a, bWrapped ? b.__wrapped__ : b, callback, isWhere, stackA, stackB);
-	}
-	// exit for functions and DOM nodes
-	if (className != objectClass) {
-	  return false;
-	}
-	// in older versions of Opera, `arguments` objects have `Array` constructors
-	var ctorA = a.constructor,
-	    ctorB = b.constructor;
+        if (aWrapped || bWrapped) {
+          return baseIsEqual(aWrapped ? a.__wrapped__ : a, bWrapped ? b.__wrapped__ : b, callback, isWhere, stackA, stackB);
+        }
+        // exit for functions and DOM nodes
+        if (className != objectClass) {
+          return false;
+        }
+        // in older versions of Opera, `arguments` objects have `Array` constructors
+        var ctorA = a.constructor,
+            ctorB = b.constructor;
 
-	// non `Object` object instances with different constructors are not equal
-	if (ctorA != ctorB &&
-	      !(isFunction(ctorA) && ctorA instanceof ctorA && isFunction(ctorB) && ctorB instanceof ctorB) &&
-	      ('constructor' in a && 'constructor' in b)
-	    ) {
-	  return false;
-	}
+        // non `Object` object instances with different constructors are not equal
+        if (ctorA != ctorB &&
+              !(isFunction(ctorA) && ctorA instanceof ctorA && isFunction(ctorB) && ctorB instanceof ctorB) &&
+              ('constructor' in a && 'constructor' in b)
+            ) {
+          return false;
+        }
       }
       // assume cyclic structures are equal
       // the algorithm for detecting cyclic structures is adapted from ES 5.1
@@ -6177,9 +6177,9 @@ module.exports=require('K2RcUv');
 
       var length = stackA.length;
       while (length--) {
-	if (stackA[length] == a) {
-	  return stackB[length] == b;
-	}
+        if (stackA[length] == a) {
+          return stackB[length] == b;
+        }
       }
       var size = 0;
       result = true;
@@ -6190,57 +6190,57 @@ module.exports=require('K2RcUv');
 
       // recursively compare objects and arrays (susceptible to call stack limits)
       if (isArr) {
-	// compare lengths to determine if a deep comparison is necessary
-	length = a.length;
-	size = b.length;
-	result = size == length;
+        // compare lengths to determine if a deep comparison is necessary
+        length = a.length;
+        size = b.length;
+        result = size == length;
 
-	if (result || isWhere) {
-	  // deep compare the contents, ignoring non-numeric properties
-	  while (size--) {
-	    var index = length,
-		value = b[size];
+        if (result || isWhere) {
+          // deep compare the contents, ignoring non-numeric properties
+          while (size--) {
+            var index = length,
+                value = b[size];
 
-	    if (isWhere) {
-	      while (index--) {
-		if ((result = baseIsEqual(a[index], value, callback, isWhere, stackA, stackB))) {
-		  break;
-		}
-	      }
-	    } else if (!(result = baseIsEqual(a[size], value, callback, isWhere, stackA, stackB))) {
-	      break;
-	    }
-	  }
-	}
+            if (isWhere) {
+              while (index--) {
+                if ((result = baseIsEqual(a[index], value, callback, isWhere, stackA, stackB))) {
+                  break;
+                }
+              }
+            } else if (!(result = baseIsEqual(a[size], value, callback, isWhere, stackA, stackB))) {
+              break;
+            }
+          }
+        }
       }
       else {
-	// deep compare objects using `forIn`, instead of `forOwn`, to avoid `Object.keys`
-	// which, in this case, is more costly
-	forIn(b, function(value, key, b) {
-	  if (hasOwnProperty.call(b, key)) {
-	    // count the number of properties.
-	    size++;
-	    // deep compare each property value.
-	    return (result = hasOwnProperty.call(a, key) && baseIsEqual(a[key], value, callback, isWhere, stackA, stackB));
-	  }
-	});
+        // deep compare objects using `forIn`, instead of `forOwn`, to avoid `Object.keys`
+        // which, in this case, is more costly
+        forIn(b, function(value, key, b) {
+          if (hasOwnProperty.call(b, key)) {
+            // count the number of properties.
+            size++;
+            // deep compare each property value.
+            return (result = hasOwnProperty.call(a, key) && baseIsEqual(a[key], value, callback, isWhere, stackA, stackB));
+          }
+        });
 
-	if (result && !isWhere) {
-	  // ensure both objects have the same number of properties
-	  forIn(a, function(value, key, a) {
-	    if (hasOwnProperty.call(a, key)) {
-	      // `size` will be `-1` if `a` has more properties than `b`
-	      return (result = --size > -1);
-	    }
-	  });
-	}
+        if (result && !isWhere) {
+          // ensure both objects have the same number of properties
+          forIn(a, function(value, key, a) {
+            if (hasOwnProperty.call(a, key)) {
+              // `size` will be `-1` if `a` has more properties than `b`
+              return (result = --size > -1);
+            }
+          });
+        }
       }
       stackA.pop();
       stackB.pop();
 
       if (initedStack) {
-	releaseArray(stackA);
-	releaseArray(stackB);
+        releaseArray(stackA);
+        releaseArray(stackB);
       }
       return result;
     }
@@ -6258,55 +6258,55 @@ module.exports=require('K2RcUv');
      */
     function baseMerge(object, source, callback, stackA, stackB) {
       (isArray(source) ? forEach : forOwn)(source, function(source, key) {
-	var found,
-	    isArr,
-	    result = source,
-	    value = object[key];
+        var found,
+            isArr,
+            result = source,
+            value = object[key];
 
-	if (source && ((isArr = isArray(source)) || isPlainObject(source))) {
-	  // avoid merging previously merged cyclic sources
-	  var stackLength = stackA.length;
-	  while (stackLength--) {
-	    if ((found = stackA[stackLength] == source)) {
-	      value = stackB[stackLength];
-	      break;
-	    }
-	  }
-	  if (!found) {
-	    var isShallow;
-	    if (callback) {
-	      result = callback(value, source);
-	      if ((isShallow = typeof result != 'undefined')) {
-		value = result;
-	      }
-	    }
-	    if (!isShallow) {
-	      value = isArr
-		? (isArray(value) ? value : [])
-		: (isPlainObject(value) ? value : {});
-	    }
-	    // add `source` and associated `value` to the stack of traversed objects
-	    stackA.push(source);
-	    stackB.push(value);
+        if (source && ((isArr = isArray(source)) || isPlainObject(source))) {
+          // avoid merging previously merged cyclic sources
+          var stackLength = stackA.length;
+          while (stackLength--) {
+            if ((found = stackA[stackLength] == source)) {
+              value = stackB[stackLength];
+              break;
+            }
+          }
+          if (!found) {
+            var isShallow;
+            if (callback) {
+              result = callback(value, source);
+              if ((isShallow = typeof result != 'undefined')) {
+                value = result;
+              }
+            }
+            if (!isShallow) {
+              value = isArr
+                ? (isArray(value) ? value : [])
+                : (isPlainObject(value) ? value : {});
+            }
+            // add `source` and associated `value` to the stack of traversed objects
+            stackA.push(source);
+            stackB.push(value);
 
-	    // recursively merge objects and arrays (susceptible to call stack limits)
-	    if (!isShallow) {
-	      baseMerge(value, source, callback, stackA, stackB);
-	    }
-	  }
-	}
-	else {
-	  if (callback) {
-	    result = callback(value, source);
-	    if (typeof result == 'undefined') {
-	      result = source;
-	    }
-	  }
-	  if (typeof result != 'undefined') {
-	    value = result;
-	  }
-	}
-	object[key] = value;
+            // recursively merge objects and arrays (susceptible to call stack limits)
+            if (!isShallow) {
+              baseMerge(value, source, callback, stackA, stackB);
+            }
+          }
+        }
+        else {
+          if (callback) {
+            result = callback(value, source);
+            if (typeof result == 'undefined') {
+              result = source;
+            }
+          }
+          if (typeof result != 'undefined') {
+            value = result;
+          }
+        }
+        object[key] = value;
       });
     }
 
@@ -6335,37 +6335,37 @@ module.exports=require('K2RcUv');
      */
     function baseUniq(array, isSorted, callback) {
       var index = -1,
-	  indexOf = getIndexOf(),
-	  length = array ? array.length : 0,
-	  result = [];
+          indexOf = getIndexOf(),
+          length = array ? array.length : 0,
+          result = [];
 
       var isLarge = !isSorted && length >= largeArraySize && indexOf === baseIndexOf,
-	  seen = (callback || isLarge) ? getArray() : result;
+          seen = (callback || isLarge) ? getArray() : result;
 
       if (isLarge) {
-	var cache = createCache(seen);
-	indexOf = cacheIndexOf;
-	seen = cache;
+        var cache = createCache(seen);
+        indexOf = cacheIndexOf;
+        seen = cache;
       }
       while (++index < length) {
-	var value = array[index],
-	    computed = callback ? callback(value, index, array) : value;
+        var value = array[index],
+            computed = callback ? callback(value, index, array) : value;
 
-	if (isSorted
-	      ? !index || seen[seen.length - 1] !== computed
-	      : indexOf(seen, computed) < 0
-	    ) {
-	  if (callback || isLarge) {
-	    seen.push(computed);
-	  }
-	  result.push(value);
-	}
+        if (isSorted
+              ? !index || seen[seen.length - 1] !== computed
+              : indexOf(seen, computed) < 0
+            ) {
+          if (callback || isLarge) {
+            seen.push(computed);
+          }
+          result.push(value);
+        }
       }
       if (isLarge) {
-	releaseArray(seen.array);
-	releaseObject(seen);
+        releaseArray(seen.array);
+        releaseObject(seen);
       } else if (callback) {
-	releaseArray(seen);
+        releaseArray(seen);
       }
       return result;
     }
@@ -6382,23 +6382,23 @@ module.exports=require('K2RcUv');
      */
     function createAggregator(setter) {
       return function(collection, callback, thisArg) {
-	var result = {};
-	callback = lodash.createCallback(callback, thisArg, 3);
+        var result = {};
+        callback = lodash.createCallback(callback, thisArg, 3);
 
-	var index = -1,
-	    length = collection ? collection.length : 0;
+        var index = -1,
+            length = collection ? collection.length : 0;
 
-	if (typeof length == 'number') {
-	  while (++index < length) {
-	    var value = collection[index];
-	    setter(result, value, callback(value, index, collection), collection);
-	  }
-	} else {
-	  forOwn(collection, function(value, key, collection) {
-	    setter(result, value, callback(value, key, collection), collection);
-	  });
-	}
-	return result;
+        if (typeof length == 'number') {
+          while (++index < length) {
+            var value = collection[index];
+            setter(result, value, callback(value, index, collection), collection);
+          }
+        } else {
+          forOwn(collection, function(value, key, collection) {
+            setter(result, value, callback(value, key, collection), collection);
+          });
+        }
+        return result;
       };
     }
 
@@ -6426,56 +6426,56 @@ module.exports=require('K2RcUv');
      */
     function createWrapper(func, bitmask, partialArgs, partialRightArgs, thisArg, arity) {
       var isBind = bitmask & 1,
-	  isBindKey = bitmask & 2,
-	  isCurry = bitmask & 4,
-	  isCurryBound = bitmask & 8,
-	  isPartial = bitmask & 16,
-	  isPartialRight = bitmask & 32;
+          isBindKey = bitmask & 2,
+          isCurry = bitmask & 4,
+          isCurryBound = bitmask & 8,
+          isPartial = bitmask & 16,
+          isPartialRight = bitmask & 32;
 
       if (!isBindKey && !isFunction(func)) {
-	throw new TypeError;
+        throw new TypeError;
       }
       if (isPartial && !partialArgs.length) {
-	bitmask &= ~16;
-	isPartial = partialArgs = false;
+        bitmask &= ~16;
+        isPartial = partialArgs = false;
       }
       if (isPartialRight && !partialRightArgs.length) {
-	bitmask &= ~32;
-	isPartialRight = partialRightArgs = false;
+        bitmask &= ~32;
+        isPartialRight = partialRightArgs = false;
       }
       var bindData = func && func.__bindData__;
       if (bindData && bindData !== true) {
-	// clone `bindData`
-	bindData = slice(bindData);
-	if (bindData[2]) {
-	  bindData[2] = slice(bindData[2]);
-	}
-	if (bindData[3]) {
-	  bindData[3] = slice(bindData[3]);
-	}
-	// set `thisBinding` is not previously bound
-	if (isBind && !(bindData[1] & 1)) {
-	  bindData[4] = thisArg;
-	}
-	// set if previously bound but not currently (subsequent curried functions)
-	if (!isBind && bindData[1] & 1) {
-	  bitmask |= 8;
-	}
-	// set curried arity if not yet set
-	if (isCurry && !(bindData[1] & 4)) {
-	  bindData[5] = arity;
-	}
-	// append partial left arguments
-	if (isPartial) {
-	  push.apply(bindData[2] || (bindData[2] = []), partialArgs);
-	}
-	// append partial right arguments
-	if (isPartialRight) {
-	  unshift.apply(bindData[3] || (bindData[3] = []), partialRightArgs);
-	}
-	// merge flags
-	bindData[1] |= bitmask;
-	return createWrapper.apply(null, bindData);
+        // clone `bindData`
+        bindData = slice(bindData);
+        if (bindData[2]) {
+          bindData[2] = slice(bindData[2]);
+        }
+        if (bindData[3]) {
+          bindData[3] = slice(bindData[3]);
+        }
+        // set `thisBinding` is not previously bound
+        if (isBind && !(bindData[1] & 1)) {
+          bindData[4] = thisArg;
+        }
+        // set if previously bound but not currently (subsequent curried functions)
+        if (!isBind && bindData[1] & 1) {
+          bitmask |= 8;
+        }
+        // set curried arity if not yet set
+        if (isCurry && !(bindData[1] & 4)) {
+          bindData[5] = arity;
+        }
+        // append partial left arguments
+        if (isPartial) {
+          push.apply(bindData[2] || (bindData[2] = []), partialArgs);
+        }
+        // append partial right arguments
+        if (isPartialRight) {
+          unshift.apply(bindData[3] || (bindData[3] = []), partialRightArgs);
+        }
+        // merge flags
+        bindData[1] |= bitmask;
+        return createWrapper.apply(null, bindData);
       }
       // fast path for `_.bind`
       var creater = (bitmask == 1 || bitmask === 17) ? baseBind : baseCreateWrapper;
@@ -6541,18 +6541,18 @@ module.exports=require('K2RcUv');
      */
     function shimIsPlainObject(value) {
       var ctor,
-	  result;
+          result;
 
       // avoid non Object objects, `arguments` objects, and DOM elements
       if (!(value && toString.call(value) == objectClass) ||
-	  (ctor = value.constructor, isFunction(ctor) && !(ctor instanceof ctor))) {
-	return false;
+          (ctor = value.constructor, isFunction(ctor) && !(ctor instanceof ctor))) {
+        return false;
       }
       // In most environments an object's own properties are iterated before
       // its inherited properties. If the last iterated property is an object's
       // own property then there are no inherited enumerable properties.
       forIn(value, function(value, key) {
-	result = key;
+        result = key;
       });
       return typeof result == 'undefined' || hasOwnProperty.call(value, result);
     }
@@ -6588,7 +6588,7 @@ module.exports=require('K2RcUv');
      */
     function isArguments(value) {
       return value && typeof value == 'object' && typeof value.length == 'number' &&
-	toString.call(value) == argsClass || false;
+        toString.call(value) == argsClass || false;
     }
 
     /**
@@ -6610,7 +6610,7 @@ module.exports=require('K2RcUv');
      */
     var isArray = nativeIsArray || function(value) {
       return value && typeof value == 'object' && typeof value.length == 'number' &&
-	toString.call(value) == arrayClass || false;
+        toString.call(value) == arrayClass || false;
     };
 
     /**
@@ -6626,11 +6626,11 @@ module.exports=require('K2RcUv');
       var index, iterable = object, result = [];
       if (!iterable) return result;
       if (!(objectTypes[typeof object])) return result;
-	for (index in iterable) {
-	  if (hasOwnProperty.call(iterable, index)) {
-	    result.push(index);
-	  }
-	}
+        for (index in iterable) {
+          if (hasOwnProperty.call(iterable, index)) {
+            result.push(index);
+          }
+        }
       return result
     };
 
@@ -6649,7 +6649,7 @@ module.exports=require('K2RcUv');
      */
     var keys = !nativeKeys ? shimKeys : function(object) {
       if (!isObject(object)) {
-	return [];
+        return [];
       }
       return nativeKeys(object);
     };
@@ -6675,7 +6675,7 @@ module.exports=require('K2RcUv');
 
     /** Used to match HTML entities and HTML characters */
     var reEscapedHtml = RegExp('(' + keys(htmlUnescapes).join('|') + ')', 'g'),
-	reUnescapedHtml = RegExp('[' + keys(htmlEscapes).join('') + ']', 'g');
+        reUnescapedHtml = RegExp('[' + keys(htmlEscapes).join('') + ']', 'g');
 
     /*--------------------------------------------------------------------------*/
 
@@ -6713,25 +6713,25 @@ module.exports=require('K2RcUv');
       var index, iterable = object, result = iterable;
       if (!iterable) return result;
       var args = arguments,
-	  argsIndex = 0,
-	  argsLength = typeof guard == 'number' ? 2 : args.length;
+          argsIndex = 0,
+          argsLength = typeof guard == 'number' ? 2 : args.length;
       if (argsLength > 3 && typeof args[argsLength - 2] == 'function') {
-	var callback = baseCreateCallback(args[--argsLength - 1], args[argsLength--], 2);
+        var callback = baseCreateCallback(args[--argsLength - 1], args[argsLength--], 2);
       } else if (argsLength > 2 && typeof args[argsLength - 1] == 'function') {
-	callback = args[--argsLength];
+        callback = args[--argsLength];
       }
       while (++argsIndex < argsLength) {
-	iterable = args[argsIndex];
-	if (iterable && objectTypes[typeof iterable]) {
-	var ownIndex = -1,
-	    ownProps = objectTypes[typeof iterable] && keys(iterable),
-	    length = ownProps ? ownProps.length : 0;
+        iterable = args[argsIndex];
+        if (iterable && objectTypes[typeof iterable]) {
+        var ownIndex = -1,
+            ownProps = objectTypes[typeof iterable] && keys(iterable),
+            length = ownProps ? ownProps.length : 0;
 
-	while (++ownIndex < length) {
-	  index = ownProps[ownIndex];
-	  result[index] = callback ? callback(result[index], iterable[index]) : iterable[index];
-	}
-	}
+        while (++ownIndex < length) {
+          index = ownProps[ownIndex];
+          result[index] = callback ? callback(result[index], iterable[index]) : iterable[index];
+        }
+        }
       }
       return result
     };
@@ -6780,9 +6780,9 @@ module.exports=require('K2RcUv');
       // allows working with "Collections" methods without using their `index`
       // and `collection` arguments for `isDeep` and `callback`
       if (typeof isDeep != 'boolean' && isDeep != null) {
-	thisArg = callback;
-	callback = isDeep;
-	isDeep = false;
+        thisArg = callback;
+        callback = isDeep;
+        isDeep = false;
       }
       return baseClone(value, isDeep, typeof callback == 'function' && baseCreateCallback(callback, thisArg, 1));
     }
@@ -6892,20 +6892,20 @@ module.exports=require('K2RcUv');
       var index, iterable = object, result = iterable;
       if (!iterable) return result;
       var args = arguments,
-	  argsIndex = 0,
-	  argsLength = typeof guard == 'number' ? 2 : args.length;
+          argsIndex = 0,
+          argsLength = typeof guard == 'number' ? 2 : args.length;
       while (++argsIndex < argsLength) {
-	iterable = args[argsIndex];
-	if (iterable && objectTypes[typeof iterable]) {
-	var ownIndex = -1,
-	    ownProps = objectTypes[typeof iterable] && keys(iterable),
-	    length = ownProps ? ownProps.length : 0;
+        iterable = args[argsIndex];
+        if (iterable && objectTypes[typeof iterable]) {
+        var ownIndex = -1,
+            ownProps = objectTypes[typeof iterable] && keys(iterable),
+            length = ownProps ? ownProps.length : 0;
 
-	while (++ownIndex < length) {
-	  index = ownProps[ownIndex];
-	  if (typeof result[index] == 'undefined') result[index] = iterable[index];
-	}
-	}
+        while (++ownIndex < length) {
+          index = ownProps[ownIndex];
+          if (typeof result[index] == 'undefined') result[index] = iterable[index];
+        }
+        }
       }
       return result
     };
@@ -6955,10 +6955,10 @@ module.exports=require('K2RcUv');
       var result;
       callback = lodash.createCallback(callback, thisArg, 3);
       forOwn(object, function(value, key, object) {
-	if (callback(value, key, object)) {
-	  result = key;
-	  return false;
-	}
+        if (callback(value, key, object)) {
+          result = key;
+          return false;
+        }
       });
       return result;
     }
@@ -7008,10 +7008,10 @@ module.exports=require('K2RcUv');
       var result;
       callback = lodash.createCallback(callback, thisArg, 3);
       forOwnRight(object, function(value, key, object) {
-	if (callback(value, key, object)) {
-	  result = key;
-	  return false;
-	}
+        if (callback(value, key, object)) {
+          result = key;
+          return false;
+        }
       });
       return result;
     }
@@ -7052,9 +7052,9 @@ module.exports=require('K2RcUv');
       if (!iterable) return result;
       if (!objectTypes[typeof iterable]) return result;
       callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
-	for (index in iterable) {
-	  if (callback(iterable[index], index, collection) === false) return result;
-	}
+        for (index in iterable) {
+          if (callback(iterable[index], index, collection) === false) return result;
+        }
       return result
     };
 
@@ -7090,15 +7090,15 @@ module.exports=require('K2RcUv');
       var pairs = [];
 
       forIn(object, function(value, key) {
-	pairs.push(key, value);
+        pairs.push(key, value);
       });
 
       var length = pairs.length;
       callback = baseCreateCallback(callback, thisArg, 3);
       while (length--) {
-	if (callback(pairs[length--], pairs[length], object) === false) {
-	  break;
-	}
+        if (callback(pairs[length--], pairs[length], object) === false) {
+          break;
+        }
       }
       return object;
     }
@@ -7129,14 +7129,14 @@ module.exports=require('K2RcUv');
       if (!iterable) return result;
       if (!objectTypes[typeof iterable]) return result;
       callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
-	var ownIndex = -1,
-	    ownProps = objectTypes[typeof iterable] && keys(iterable),
-	    length = ownProps ? ownProps.length : 0;
+        var ownIndex = -1,
+            ownProps = objectTypes[typeof iterable] && keys(iterable),
+            length = ownProps ? ownProps.length : 0;
 
-	while (++ownIndex < length) {
-	  index = ownProps[ownIndex];
-	  if (callback(iterable[index], index, collection) === false) return result;
-	}
+        while (++ownIndex < length) {
+          index = ownProps[ownIndex];
+          if (callback(iterable[index], index, collection) === false) return result;
+        }
       return result
     };
 
@@ -7160,14 +7160,14 @@ module.exports=require('K2RcUv');
      */
     function forOwnRight(object, callback, thisArg) {
       var props = keys(object),
-	  length = props.length;
+          length = props.length;
 
       callback = baseCreateCallback(callback, thisArg, 3);
       while (length--) {
-	var key = props[length];
-	if (callback(object[key], key, object) === false) {
-	  break;
-	}
+        var key = props[length];
+        if (callback(object[key], key, object) === false) {
+          break;
+        }
       }
       return object;
     }
@@ -7190,9 +7190,9 @@ module.exports=require('K2RcUv');
     function functions(object) {
       var result = [];
       forIn(object, function(value, key) {
-	if (isFunction(value)) {
-	  result.push(key);
-	}
+        if (isFunction(value)) {
+          result.push(key);
+        }
       });
       return result.sort();
     }
@@ -7231,13 +7231,13 @@ module.exports=require('K2RcUv');
      */
     function invert(object) {
       var index = -1,
-	  props = keys(object),
-	  length = props.length,
-	  result = {};
+          props = keys(object),
+          length = props.length,
+          result = {};
 
       while (++index < length) {
-	var key = props[index];
-	result[object[key]] = key;
+        var key = props[index];
+        result[object[key]] = key;
       }
       return result;
     }
@@ -7257,7 +7257,7 @@ module.exports=require('K2RcUv');
      */
     function isBoolean(value) {
       return value === true || value === false ||
-	value && typeof value == 'object' && toString.call(value) == boolClass || false;
+        value && typeof value == 'object' && toString.call(value) == boolClass || false;
     }
 
     /**
@@ -7318,17 +7318,17 @@ module.exports=require('K2RcUv');
     function isEmpty(value) {
       var result = true;
       if (!value) {
-	return result;
+        return result;
       }
       var className = toString.call(value),
-	  length = value.length;
+          length = value.length;
 
       if ((className == arrayClass || className == stringClass || className == argsClass ) ||
-	  (className == objectClass && typeof length == 'number' && isFunction(value.splice))) {
-	return !length;
+          (className == objectClass && typeof length == 'number' && isFunction(value.splice))) {
+        return !length;
       }
       forOwn(value, function() {
-	return (result = false);
+        return (result = false);
       });
       return result;
     }
@@ -7520,7 +7520,7 @@ module.exports=require('K2RcUv');
      */
     function isNumber(value) {
       return typeof value == 'number' ||
-	value && typeof value == 'object' && toString.call(value) == numberClass || false;
+        value && typeof value == 'object' && toString.call(value) == numberClass || false;
     }
 
     /**
@@ -7549,14 +7549,14 @@ module.exports=require('K2RcUv');
      */
     var isPlainObject = !getPrototypeOf ? shimIsPlainObject : function(value) {
       if (!(value && toString.call(value) == objectClass)) {
-	return false;
+        return false;
       }
       var valueOf = value.valueOf,
-	  objProto = isNative(valueOf) && (objProto = getPrototypeOf(valueOf)) && getPrototypeOf(objProto);
+          objProto = isNative(valueOf) && (objProto = getPrototypeOf(valueOf)) && getPrototypeOf(objProto);
 
       return objProto
-	? (value == objProto || getPrototypeOf(value) == objProto)
-	: shimIsPlainObject(value);
+        ? (value == objProto || getPrototypeOf(value) == objProto)
+        : shimIsPlainObject(value);
     };
 
     /**
@@ -7591,7 +7591,7 @@ module.exports=require('K2RcUv');
      */
     function isString(value) {
       return typeof value == 'string' ||
-	value && typeof value == 'object' && toString.call(value) == stringClass || false;
+        value && typeof value == 'object' && toString.call(value) == stringClass || false;
     }
 
     /**
@@ -7652,7 +7652,7 @@ module.exports=require('K2RcUv');
       callback = lodash.createCallback(callback, thisArg, 3);
 
       forOwn(object, function(value, key, object) {
-	result[key] = callback(value, key, object);
+        result[key] = callback(value, key, object);
       });
       return result;
     }
@@ -7710,28 +7710,28 @@ module.exports=require('K2RcUv');
      */
     function merge(object) {
       var args = arguments,
-	  length = 2;
+          length = 2;
 
       if (!isObject(object)) {
-	return object;
+        return object;
       }
       // allows working with `_.reduce` and `_.reduceRight` without using
       // their `index` and `collection` arguments
       if (typeof args[2] != 'number') {
-	length = args.length;
+        length = args.length;
       }
       if (length > 3 && typeof args[length - 2] == 'function') {
-	var callback = baseCreateCallback(args[--length - 1], args[length--], 2);
+        var callback = baseCreateCallback(args[--length - 1], args[length--], 2);
       } else if (length > 2 && typeof args[length - 1] == 'function') {
-	callback = args[--length];
+        callback = args[--length];
       }
       var sources = slice(arguments, 1, length),
-	  index = -1,
-	  stackA = getArray(),
-	  stackB = getArray();
+          index = -1,
+          stackA = getArray(),
+          stackB = getArray();
 
       while (++index < length) {
-	baseMerge(object, sources[index], callback, stackA, stackB);
+        baseMerge(object, sources[index], callback, stackA, stackB);
       }
       releaseArray(stackA);
       releaseArray(stackB);
@@ -7767,26 +7767,26 @@ module.exports=require('K2RcUv');
     function omit(object, callback, thisArg) {
       var result = {};
       if (typeof callback != 'function') {
-	var props = [];
-	forIn(object, function(value, key) {
-	  props.push(key);
-	});
-	props = baseDifference(props, baseFlatten(arguments, true, false, 1));
+        var props = [];
+        forIn(object, function(value, key) {
+          props.push(key);
+        });
+        props = baseDifference(props, baseFlatten(arguments, true, false, 1));
 
-	var index = -1,
-	    length = props.length;
+        var index = -1,
+            length = props.length;
 
-	while (++index < length) {
-	  var key = props[index];
-	  result[key] = object[key];
-	}
+        while (++index < length) {
+          var key = props[index];
+          result[key] = object[key];
+        }
       } else {
-	callback = lodash.createCallback(callback, thisArg, 3);
-	forIn(object, function(value, key, object) {
-	  if (!callback(value, key, object)) {
-	    result[key] = value;
-	  }
-	});
+        callback = lodash.createCallback(callback, thisArg, 3);
+        forIn(object, function(value, key, object) {
+          if (!callback(value, key, object)) {
+            result[key] = value;
+          }
+        });
       }
       return result;
     }
@@ -7807,13 +7807,13 @@ module.exports=require('K2RcUv');
      */
     function pairs(object) {
       var index = -1,
-	  props = keys(object),
-	  length = props.length,
-	  result = Array(length);
+          props = keys(object),
+          length = props.length,
+          result = Array(length);
 
       while (++index < length) {
-	var key = props[index];
-	result[index] = [key, object[key]];
+        var key = props[index];
+        result[index] = [key, object[key]];
       }
       return result;
     }
@@ -7848,23 +7848,23 @@ module.exports=require('K2RcUv');
     function pick(object, callback, thisArg) {
       var result = {};
       if (typeof callback != 'function') {
-	var index = -1,
-	    props = baseFlatten(arguments, true, false, 1),
-	    length = isObject(object) ? props.length : 0;
+        var index = -1,
+            props = baseFlatten(arguments, true, false, 1),
+            length = isObject(object) ? props.length : 0;
 
-	while (++index < length) {
-	  var key = props[index];
-	  if (key in object) {
-	    result[key] = object[key];
-	  }
-	}
+        while (++index < length) {
+          var key = props[index];
+          if (key in object) {
+            result[key] = object[key];
+          }
+        }
       } else {
-	callback = lodash.createCallback(callback, thisArg, 3);
-	forIn(object, function(value, key, object) {
-	  if (callback(value, key, object)) {
-	    result[key] = value;
-	  }
-	});
+        callback = lodash.createCallback(callback, thisArg, 3);
+        forIn(object, function(value, key, object) {
+          if (callback(value, key, object)) {
+            result[key] = value;
+          }
+        });
       }
       return result;
     }
@@ -7903,20 +7903,20 @@ module.exports=require('K2RcUv');
     function transform(object, callback, accumulator, thisArg) {
       var isArr = isArray(object);
       if (accumulator == null) {
-	if (isArr) {
-	  accumulator = [];
-	} else {
-	  var ctor = object && object.constructor,
-	      proto = ctor && ctor.prototype;
+        if (isArr) {
+          accumulator = [];
+        } else {
+          var ctor = object && object.constructor,
+              proto = ctor && ctor.prototype;
 
-	  accumulator = baseCreate(proto);
-	}
+          accumulator = baseCreate(proto);
+        }
       }
       if (callback) {
-	callback = lodash.createCallback(callback, thisArg, 4);
-	(isArr ? forEach : forOwn)(object, function(value, index, object) {
-	  return callback(accumulator, value, index, object);
-	});
+        callback = lodash.createCallback(callback, thisArg, 4);
+        (isArr ? forEach : forOwn)(object, function(value, index, object) {
+          return callback(accumulator, value, index, object);
+        });
       }
       return accumulator;
     }
@@ -7936,12 +7936,12 @@ module.exports=require('K2RcUv');
      */
     function values(object) {
       var index = -1,
-	  props = keys(object),
-	  length = props.length,
-	  result = Array(length);
+          props = keys(object),
+          length = props.length,
+          result = Array(length);
 
       while (++index < length) {
-	result[index] = object[props[index]];
+        result[index] = object[props[index]];
       }
       return result;
     }
@@ -7971,13 +7971,13 @@ module.exports=require('K2RcUv');
      */
     function at(collection) {
       var args = arguments,
-	  index = -1,
-	  props = baseFlatten(args, true, false, 1),
-	  length = (args[2] && args[2][args[1]] === collection) ? 1 : props.length,
-	  result = Array(length);
+          index = -1,
+          props = baseFlatten(args, true, false, 1),
+          length = (args[2] && args[2][args[1]] === collection) ? 1 : props.length,
+          result = Array(length);
 
       while(++index < length) {
-	result[index] = collection[props[index]];
+        result[index] = collection[props[index]];
       }
       return result;
     }
@@ -8011,21 +8011,21 @@ module.exports=require('K2RcUv');
      */
     function contains(collection, target, fromIndex) {
       var index = -1,
-	  indexOf = getIndexOf(),
-	  length = collection ? collection.length : 0,
-	  result = false;
+          indexOf = getIndexOf(),
+          length = collection ? collection.length : 0,
+          result = false;
 
       fromIndex = (fromIndex < 0 ? nativeMax(0, length + fromIndex) : fromIndex) || 0;
       if (isArray(collection)) {
-	result = indexOf(collection, target, fromIndex) > -1;
+        result = indexOf(collection, target, fromIndex) > -1;
       } else if (typeof length == 'number') {
-	result = (isString(collection) ? collection.indexOf(target, fromIndex) : indexOf(collection, target, fromIndex)) > -1;
+        result = (isString(collection) ? collection.indexOf(target, fromIndex) : indexOf(collection, target, fromIndex)) > -1;
       } else {
-	forOwn(collection, function(value) {
-	  if (++index >= fromIndex) {
-	    return !(result = value === target);
-	  }
-	});
+        forOwn(collection, function(value) {
+          if (++index >= fromIndex) {
+            return !(result = value === target);
+          }
+        });
       }
       return result;
     }
@@ -8114,18 +8114,18 @@ module.exports=require('K2RcUv');
       callback = lodash.createCallback(callback, thisArg, 3);
 
       var index = -1,
-	  length = collection ? collection.length : 0;
+          length = collection ? collection.length : 0;
 
       if (typeof length == 'number') {
-	while (++index < length) {
-	  if (!(result = !!callback(collection[index], index, collection))) {
-	    break;
-	  }
-	}
+        while (++index < length) {
+          if (!(result = !!callback(collection[index], index, collection))) {
+            break;
+          }
+        }
       } else {
-	forOwn(collection, function(value, index, collection) {
-	  return (result = !!callback(value, index, collection));
-	});
+        forOwn(collection, function(value, index, collection) {
+          return (result = !!callback(value, index, collection));
+        });
       }
       return result;
     }
@@ -8175,21 +8175,21 @@ module.exports=require('K2RcUv');
       callback = lodash.createCallback(callback, thisArg, 3);
 
       var index = -1,
-	  length = collection ? collection.length : 0;
+          length = collection ? collection.length : 0;
 
       if (typeof length == 'number') {
-	while (++index < length) {
-	  var value = collection[index];
-	  if (callback(value, index, collection)) {
-	    result.push(value);
-	  }
-	}
+        while (++index < length) {
+          var value = collection[index];
+          if (callback(value, index, collection)) {
+            result.push(value);
+          }
+        }
       } else {
-	forOwn(collection, function(value, index, collection) {
-	  if (callback(value, index, collection)) {
-	    result.push(value);
-	  }
-	});
+        forOwn(collection, function(value, index, collection) {
+          if (callback(value, index, collection)) {
+            result.push(value);
+          }
+        });
       }
       return result;
     }
@@ -8241,24 +8241,24 @@ module.exports=require('K2RcUv');
       callback = lodash.createCallback(callback, thisArg, 3);
 
       var index = -1,
-	  length = collection ? collection.length : 0;
+          length = collection ? collection.length : 0;
 
       if (typeof length == 'number') {
-	while (++index < length) {
-	  var value = collection[index];
-	  if (callback(value, index, collection)) {
-	    return value;
-	  }
-	}
+        while (++index < length) {
+          var value = collection[index];
+          if (callback(value, index, collection)) {
+            return value;
+          }
+        }
       } else {
-	var result;
-	forOwn(collection, function(value, index, collection) {
-	  if (callback(value, index, collection)) {
-	    result = value;
-	    return false;
-	  }
-	});
-	return result;
+        var result;
+        forOwn(collection, function(value, index, collection) {
+          if (callback(value, index, collection)) {
+            result = value;
+            return false;
+          }
+        });
+        return result;
       }
     }
 
@@ -8286,10 +8286,10 @@ module.exports=require('K2RcUv');
       var result;
       callback = lodash.createCallback(callback, thisArg, 3);
       forEachRight(collection, function(value, index, collection) {
-	if (callback(value, index, collection)) {
-	  result = value;
-	  return false;
-	}
+        if (callback(value, index, collection)) {
+          result = value;
+          return false;
+        }
       });
       return result;
     }
@@ -8322,17 +8322,17 @@ module.exports=require('K2RcUv');
      */
     function forEach(collection, callback, thisArg) {
       var index = -1,
-	  length = collection ? collection.length : 0;
+          length = collection ? collection.length : 0;
 
       callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
       if (typeof length == 'number') {
-	while (++index < length) {
-	  if (callback(collection[index], index, collection) === false) {
-	    break;
-	  }
-	}
+        while (++index < length) {
+          if (callback(collection[index], index, collection) === false) {
+            break;
+          }
+        }
       } else {
-	forOwn(collection, callback);
+        forOwn(collection, callback);
       }
       return collection;
     }
@@ -8358,18 +8358,18 @@ module.exports=require('K2RcUv');
       var length = collection ? collection.length : 0;
       callback = callback && typeof thisArg == 'undefined' ? callback : baseCreateCallback(callback, thisArg, 3);
       if (typeof length == 'number') {
-	while (length--) {
-	  if (callback(collection[length], length, collection) === false) {
-	    break;
-	  }
-	}
+        while (length--) {
+          if (callback(collection[length], length, collection) === false) {
+            break;
+          }
+        }
       } else {
-	var props = keys(collection);
-	length = props.length;
-	forOwn(collection, function(value, key, collection) {
-	  key = props ? props[--length] : --length;
-	  return callback(collection[key], key, collection);
-	});
+        var props = keys(collection);
+        length = props.length;
+        forOwn(collection, function(value, key, collection) {
+          key = props ? props[--length] : --length;
+          return callback(collection[key], key, collection);
+        });
       }
       return collection;
     }
@@ -8480,13 +8480,13 @@ module.exports=require('K2RcUv');
      */
     function invoke(collection, methodName) {
       var args = slice(arguments, 2),
-	  index = -1,
-	  isFunc = typeof methodName == 'function',
-	  length = collection ? collection.length : 0,
-	  result = Array(typeof length == 'number' ? length : 0);
+          index = -1,
+          isFunc = typeof methodName == 'function',
+          length = collection ? collection.length : 0,
+          result = Array(typeof length == 'number' ? length : 0);
 
       forEach(collection, function(value) {
-	result[++index] = (isFunc ? methodName : value[methodName]).apply(value, args);
+        result[++index] = (isFunc ? methodName : value[methodName]).apply(value, args);
       });
       return result;
     }
@@ -8532,19 +8532,19 @@ module.exports=require('K2RcUv');
      */
     function map(collection, callback, thisArg) {
       var index = -1,
-	  length = collection ? collection.length : 0;
+          length = collection ? collection.length : 0;
 
       callback = lodash.createCallback(callback, thisArg, 3);
       if (typeof length == 'number') {
-	var result = Array(length);
-	while (++index < length) {
-	  result[index] = callback(collection[index], index, collection);
-	}
+        var result = Array(length);
+        while (++index < length) {
+          result[index] = callback(collection[index], index, collection);
+        }
       } else {
-	result = [];
-	forOwn(collection, function(value, key, collection) {
-	  result[++index] = callback(value, key, collection);
-	});
+        result = [];
+        forOwn(collection, function(value, key, collection) {
+          result[++index] = callback(value, key, collection);
+        });
       }
       return result;
     }
@@ -8591,35 +8591,35 @@ module.exports=require('K2RcUv');
      */
     function max(collection, callback, thisArg) {
       var computed = -Infinity,
-	  result = computed;
+          result = computed;
 
       // allows working with functions like `_.map` without using
       // their `index` argument as a callback
       if (typeof callback != 'function' && thisArg && thisArg[callback] === collection) {
-	callback = null;
+        callback = null;
       }
       if (callback == null && isArray(collection)) {
-	var index = -1,
-	    length = collection.length;
+        var index = -1,
+            length = collection.length;
 
-	while (++index < length) {
-	  var value = collection[index];
-	  if (value > result) {
-	    result = value;
-	  }
-	}
+        while (++index < length) {
+          var value = collection[index];
+          if (value > result) {
+            result = value;
+          }
+        }
       } else {
-	callback = (callback == null && isString(collection))
-	  ? charAtCallback
-	  : lodash.createCallback(callback, thisArg, 3);
+        callback = (callback == null && isString(collection))
+          ? charAtCallback
+          : lodash.createCallback(callback, thisArg, 3);
 
-	forEach(collection, function(value, index, collection) {
-	  var current = callback(value, index, collection);
-	  if (current > computed) {
-	    computed = current;
-	    result = value;
-	  }
-	});
+        forEach(collection, function(value, index, collection) {
+          var current = callback(value, index, collection);
+          if (current > computed) {
+            computed = current;
+            result = value;
+          }
+        });
       }
       return result;
     }
@@ -8666,35 +8666,35 @@ module.exports=require('K2RcUv');
      */
     function min(collection, callback, thisArg) {
       var computed = Infinity,
-	  result = computed;
+          result = computed;
 
       // allows working with functions like `_.map` without using
       // their `index` argument as a callback
       if (typeof callback != 'function' && thisArg && thisArg[callback] === collection) {
-	callback = null;
+        callback = null;
       }
       if (callback == null && isArray(collection)) {
-	var index = -1,
-	    length = collection.length;
+        var index = -1,
+            length = collection.length;
 
-	while (++index < length) {
-	  var value = collection[index];
-	  if (value < result) {
-	    result = value;
-	  }
-	}
+        while (++index < length) {
+          var value = collection[index];
+          if (value < result) {
+            result = value;
+          }
+        }
       } else {
-	callback = (callback == null && isString(collection))
-	  ? charAtCallback
-	  : lodash.createCallback(callback, thisArg, 3);
+        callback = (callback == null && isString(collection))
+          ? charAtCallback
+          : lodash.createCallback(callback, thisArg, 3);
 
-	forEach(collection, function(value, index, collection) {
-	  var current = callback(value, index, collection);
-	  if (current < computed) {
-	    computed = current;
-	    result = value;
-	  }
-	});
+        forEach(collection, function(value, index, collection) {
+          var current = callback(value, index, collection);
+          if (current < computed) {
+            computed = current;
+            result = value;
+          }
+        });
       }
       return result;
     }
@@ -8757,21 +8757,21 @@ module.exports=require('K2RcUv');
       callback = lodash.createCallback(callback, thisArg, 4);
 
       var index = -1,
-	  length = collection.length;
+          length = collection.length;
 
       if (typeof length == 'number') {
-	if (noaccum) {
-	  accumulator = collection[++index];
-	}
-	while (++index < length) {
-	  accumulator = callback(accumulator, collection[index], index, collection);
-	}
+        if (noaccum) {
+          accumulator = collection[++index];
+        }
+        while (++index < length) {
+          accumulator = callback(accumulator, collection[index], index, collection);
+        }
       } else {
-	forOwn(collection, function(value, index, collection) {
-	  accumulator = noaccum
-	    ? (noaccum = false, value)
-	    : callback(accumulator, value, index, collection)
-	});
+        forOwn(collection, function(value, index, collection) {
+          accumulator = noaccum
+            ? (noaccum = false, value)
+            : callback(accumulator, value, index, collection)
+        });
       }
       return accumulator;
     }
@@ -8799,9 +8799,9 @@ module.exports=require('K2RcUv');
       var noaccum = arguments.length < 3;
       callback = lodash.createCallback(callback, thisArg, 4);
       forEachRight(collection, function(value, index, collection) {
-	accumulator = noaccum
-	  ? (noaccum = false, value)
-	  : callback(accumulator, value, index, collection);
+        accumulator = noaccum
+          ? (noaccum = false, value)
+          : callback(accumulator, value, index, collection);
       });
       return accumulator;
     }
@@ -8847,7 +8847,7 @@ module.exports=require('K2RcUv');
     function reject(collection, callback, thisArg) {
       callback = lodash.createCallback(callback, thisArg, 3);
       return filter(collection, function(value, index, collection) {
-	return !callback(value, index, collection);
+        return !callback(value, index, collection);
       });
     }
 
@@ -8872,10 +8872,10 @@ module.exports=require('K2RcUv');
      */
     function sample(collection, n, guard) {
       if (collection && typeof collection.length != 'number') {
-	collection = values(collection);
+        collection = values(collection);
       }
       if (n == null || guard) {
-	return collection ? collection[baseRandom(0, collection.length - 1)] : undefined;
+        return collection ? collection[baseRandom(0, collection.length - 1)] : undefined;
       }
       var result = shuffle(collection);
       result.length = nativeMin(nativeMax(0, n), result.length);
@@ -8898,13 +8898,13 @@ module.exports=require('K2RcUv');
      */
     function shuffle(collection) {
       var index = -1,
-	  length = collection ? collection.length : 0,
-	  result = Array(typeof length == 'number' ? length : 0);
+          length = collection ? collection.length : 0,
+          result = Array(typeof length == 'number' ? length : 0);
 
       forEach(collection, function(value) {
-	var rand = baseRandom(0, ++index);
-	result[index] = result[rand];
-	result[rand] = value;
+        var rand = baseRandom(0, ++index);
+        result[index] = result[rand];
+        result[rand] = value;
       });
       return result;
     }
@@ -8981,18 +8981,18 @@ module.exports=require('K2RcUv');
       callback = lodash.createCallback(callback, thisArg, 3);
 
       var index = -1,
-	  length = collection ? collection.length : 0;
+          length = collection ? collection.length : 0;
 
       if (typeof length == 'number') {
-	while (++index < length) {
-	  if ((result = callback(collection[index], index, collection))) {
-	    break;
-	  }
-	}
+        while (++index < length) {
+          if ((result = callback(collection[index], index, collection))) {
+            break;
+          }
+        }
       } else {
-	forOwn(collection, function(value, index, collection) {
-	  return !(result = callback(value, index, collection));
-	});
+        forOwn(collection, function(value, index, collection) {
+          return !(result = callback(value, index, collection));
+        });
       }
       return !!result;
     }
@@ -9048,33 +9048,33 @@ module.exports=require('K2RcUv');
      */
     function sortBy(collection, callback, thisArg) {
       var index = -1,
-	  isArr = isArray(callback),
-	  length = collection ? collection.length : 0,
-	  result = Array(typeof length == 'number' ? length : 0);
+          isArr = isArray(callback),
+          length = collection ? collection.length : 0,
+          result = Array(typeof length == 'number' ? length : 0);
 
       if (!isArr) {
-	callback = lodash.createCallback(callback, thisArg, 3);
+        callback = lodash.createCallback(callback, thisArg, 3);
       }
       forEach(collection, function(value, key, collection) {
-	var object = result[++index] = getObject();
-	if (isArr) {
-	  object.criteria = map(callback, function(key) { return value[key]; });
-	} else {
-	  (object.criteria = getArray())[0] = callback(value, key, collection);
-	}
-	object.index = index;
-	object.value = value;
+        var object = result[++index] = getObject();
+        if (isArr) {
+          object.criteria = map(callback, function(key) { return value[key]; });
+        } else {
+          (object.criteria = getArray())[0] = callback(value, key, collection);
+        }
+        object.index = index;
+        object.value = value;
       });
 
       length = result.length;
       result.sort(compareAscending);
       while (length--) {
-	var object = result[length];
-	result[length] = object.value;
-	if (!isArr) {
-	  releaseArray(object.criteria);
-	}
-	releaseObject(object);
+        var object = result[length];
+        result[length] = object.value;
+        if (!isArr) {
+          releaseArray(object.criteria);
+        }
+        releaseObject(object);
       }
       return result;
     }
@@ -9094,7 +9094,7 @@ module.exports=require('K2RcUv');
      */
     function toArray(collection) {
       if (collection && typeof collection.length == 'number') {
-	return slice(collection);
+        return slice(collection);
       }
       return values(collection);
     }
@@ -9144,14 +9144,14 @@ module.exports=require('K2RcUv');
      */
     function compact(array) {
       var index = -1,
-	  length = array ? array.length : 0,
-	  result = [];
+          length = array ? array.length : 0,
+          result = [];
 
       while (++index < length) {
-	var value = array[index];
-	if (value) {
-	  result.push(value);
-	}
+        var value = array[index];
+        if (value) {
+          result.push(value);
+        }
       }
       return result;
     }
@@ -9218,13 +9218,13 @@ module.exports=require('K2RcUv');
      */
     function findIndex(array, callback, thisArg) {
       var index = -1,
-	  length = array ? array.length : 0;
+          length = array ? array.length : 0;
 
       callback = lodash.createCallback(callback, thisArg, 3);
       while (++index < length) {
-	if (callback(array[index], index, array)) {
-	  return index;
-	}
+        if (callback(array[index], index, array)) {
+          return index;
+        }
       }
       return -1;
     }
@@ -9274,9 +9274,9 @@ module.exports=require('K2RcUv');
       var length = array ? array.length : 0;
       callback = lodash.createCallback(callback, thisArg, 3);
       while (length--) {
-	if (callback(array[length], length, array)) {
-	  return length;
-	}
+        if (callback(array[length], length, array)) {
+          return length;
+        }
       }
       return -1;
     }
@@ -9334,19 +9334,19 @@ module.exports=require('K2RcUv');
      */
     function first(array, callback, thisArg) {
       var n = 0,
-	  length = array ? array.length : 0;
+          length = array ? array.length : 0;
 
       if (typeof callback != 'number' && callback != null) {
-	var index = -1;
-	callback = lodash.createCallback(callback, thisArg, 3);
-	while (++index < length && callback(array[index], index, array)) {
-	  n++;
-	}
+        var index = -1;
+        callback = lodash.createCallback(callback, thisArg, 3);
+        while (++index < length && callback(array[index], index, array)) {
+          n++;
+        }
       } else {
-	n = callback;
-	if (n == null || thisArg) {
-	  return array ? array[0] : undefined;
-	}
+        n = callback;
+        if (n == null || thisArg) {
+          return array ? array[0] : undefined;
+        }
       }
       return slice(array, 0, nativeMin(nativeMax(0, n), length));
     }
@@ -9395,12 +9395,12 @@ module.exports=require('K2RcUv');
     function flatten(array, isShallow, callback, thisArg) {
       // juggle arguments
       if (typeof isShallow != 'boolean' && isShallow != null) {
-	thisArg = callback;
-	callback = (typeof isShallow != 'function' && thisArg && thisArg[isShallow] === array) ? null : isShallow;
-	isShallow = false;
+        thisArg = callback;
+        callback = (typeof isShallow != 'function' && thisArg && thisArg[isShallow] === array) ? null : isShallow;
+        isShallow = false;
       }
       if (callback != null) {
-	array = map(array, callback, thisArg);
+        array = map(array, callback, thisArg);
       }
       return baseFlatten(array, isShallow);
     }
@@ -9431,11 +9431,11 @@ module.exports=require('K2RcUv');
      */
     function indexOf(array, value, fromIndex) {
       if (typeof fromIndex == 'number') {
-	var length = array ? array.length : 0;
-	fromIndex = (fromIndex < 0 ? nativeMax(0, length + fromIndex) : fromIndex || 0);
+        var length = array ? array.length : 0;
+        fromIndex = (fromIndex < 0 ? nativeMax(0, length + fromIndex) : fromIndex || 0);
       } else if (fromIndex) {
-	var index = sortedIndex(array, value);
-	return array[index] === value ? index : -1;
+        var index = sortedIndex(array, value);
+        return array[index] === value ? index : -1;
       }
       return baseIndexOf(array, value, fromIndex);
     }
@@ -9492,16 +9492,16 @@ module.exports=require('K2RcUv');
      */
     function initial(array, callback, thisArg) {
       var n = 0,
-	  length = array ? array.length : 0;
+          length = array ? array.length : 0;
 
       if (typeof callback != 'number' && callback != null) {
-	var index = length;
-	callback = lodash.createCallback(callback, thisArg, 3);
-	while (index-- && callback(array[index], index, array)) {
-	  n++;
-	}
+        var index = length;
+        callback = lodash.createCallback(callback, thisArg, 3);
+        while (index-- && callback(array[index], index, array)) {
+          n++;
+        }
       } else {
-	n = (callback == null || thisArg) ? 1 : callback || n;
+        n = (callback == null || thisArg) ? 1 : callback || n;
       }
       return slice(array, 0, nativeMin(nativeMax(0, length - n), length));
     }
@@ -9522,48 +9522,48 @@ module.exports=require('K2RcUv');
      */
     function intersection() {
       var args = [],
-	  argsIndex = -1,
-	  argsLength = arguments.length,
-	  caches = getArray(),
-	  indexOf = getIndexOf(),
-	  trustIndexOf = indexOf === baseIndexOf,
-	  seen = getArray();
+          argsIndex = -1,
+          argsLength = arguments.length,
+          caches = getArray(),
+          indexOf = getIndexOf(),
+          trustIndexOf = indexOf === baseIndexOf,
+          seen = getArray();
 
       while (++argsIndex < argsLength) {
-	var value = arguments[argsIndex];
-	if (isArray(value) || isArguments(value)) {
-	  args.push(value);
-	  caches.push(trustIndexOf && value.length >= largeArraySize &&
-	    createCache(argsIndex ? args[argsIndex] : seen));
-	}
+        var value = arguments[argsIndex];
+        if (isArray(value) || isArguments(value)) {
+          args.push(value);
+          caches.push(trustIndexOf && value.length >= largeArraySize &&
+            createCache(argsIndex ? args[argsIndex] : seen));
+        }
       }
       var array = args[0],
-	  index = -1,
-	  length = array ? array.length : 0,
-	  result = [];
+          index = -1,
+          length = array ? array.length : 0,
+          result = [];
 
       outer:
       while (++index < length) {
-	var cache = caches[0];
-	value = array[index];
+        var cache = caches[0];
+        value = array[index];
 
-	if ((cache ? cacheIndexOf(cache, value) : indexOf(seen, value)) < 0) {
-	  argsIndex = argsLength;
-	  (cache || seen).push(value);
-	  while (--argsIndex) {
-	    cache = caches[argsIndex];
-	    if ((cache ? cacheIndexOf(cache, value) : indexOf(args[argsIndex], value)) < 0) {
-	      continue outer;
-	    }
-	  }
-	  result.push(value);
-	}
+        if ((cache ? cacheIndexOf(cache, value) : indexOf(seen, value)) < 0) {
+          argsIndex = argsLength;
+          (cache || seen).push(value);
+          while (--argsIndex) {
+            cache = caches[argsIndex];
+            if ((cache ? cacheIndexOf(cache, value) : indexOf(args[argsIndex], value)) < 0) {
+              continue outer;
+            }
+          }
+          result.push(value);
+        }
       }
       while (argsLength--) {
-	cache = caches[argsLength];
-	if (cache) {
-	  releaseObject(cache);
-	}
+        cache = caches[argsLength];
+        if (cache) {
+          releaseObject(cache);
+        }
       }
       releaseArray(caches);
       releaseArray(seen);
@@ -9622,19 +9622,19 @@ module.exports=require('K2RcUv');
      */
     function last(array, callback, thisArg) {
       var n = 0,
-	  length = array ? array.length : 0;
+          length = array ? array.length : 0;
 
       if (typeof callback != 'number' && callback != null) {
-	var index = length;
-	callback = lodash.createCallback(callback, thisArg, 3);
-	while (index-- && callback(array[index], index, array)) {
-	  n++;
-	}
+        var index = length;
+        callback = lodash.createCallback(callback, thisArg, 3);
+        while (index-- && callback(array[index], index, array)) {
+          n++;
+        }
       } else {
-	n = callback;
-	if (n == null || thisArg) {
-	  return array ? array[length - 1] : undefined;
-	}
+        n = callback;
+        if (n == null || thisArg) {
+          return array ? array[length - 1] : undefined;
+        }
       }
       return slice(array, nativeMax(0, length - n));
     }
@@ -9669,12 +9669,12 @@ module.exports=require('K2RcUv');
     function lastIndexOf(array, value, fromIndex) {
       var index = array ? array.length : 0;
       if (typeof fromIndex == 'number') {
-	index = (fromIndex < 0 ? nativeMax(0, index + fromIndex) : nativeMin(fromIndex, index - 1)) + 1;
+        index = (fromIndex < 0 ? nativeMax(0, index + fromIndex) : nativeMin(fromIndex, index - 1)) + 1;
       }
       while (index--) {
-	if (array[index] === value) {
-	  return index;
-	}
+        if (array[index] === value) {
+          return index;
+        }
       }
       return -1;
     }
@@ -9698,19 +9698,19 @@ module.exports=require('K2RcUv');
      */
     function pull(array) {
       var args = arguments,
-	  argsIndex = 0,
-	  argsLength = args.length,
-	  length = array ? array.length : 0;
+          argsIndex = 0,
+          argsLength = args.length,
+          length = array ? array.length : 0;
 
       while (++argsIndex < argsLength) {
-	var index = -1,
-	    value = args[argsIndex];
-	while (++index < length) {
-	  if (array[index] === value) {
-	    splice.call(array, index--, 1);
-	    length--;
-	  }
-	}
+        var index = -1,
+            value = args[argsIndex];
+        while (++index < length) {
+          if (array[index] === value) {
+            splice.call(array, index--, 1);
+            length--;
+          }
+        }
       }
       return array;
     }
@@ -9752,18 +9752,18 @@ module.exports=require('K2RcUv');
       step = typeof step == 'number' ? step : (+step || 1);
 
       if (end == null) {
-	end = start;
-	start = 0;
+        end = start;
+        start = 0;
       }
       // use `Array(length)` so engines like Chakra and V8 avoid slower modes
       // http://youtu.be/XAqIpGU8ZZk#t=17m25s
       var index = -1,
-	  length = nativeMax(0, ceil((end - start) / (step || 1))),
-	  result = Array(length);
+          length = nativeMax(0, ceil((end - start) / (step || 1))),
+          result = Array(length);
 
       while (++index < length) {
-	result[index] = start;
-	start += step;
+        result[index] = start;
+        start += step;
       }
       return result;
     }
@@ -9802,17 +9802,17 @@ module.exports=require('K2RcUv');
      */
     function remove(array, callback, thisArg) {
       var index = -1,
-	  length = array ? array.length : 0,
-	  result = [];
+          length = array ? array.length : 0,
+          result = [];
 
       callback = lodash.createCallback(callback, thisArg, 3);
       while (++index < length) {
-	var value = array[index];
-	if (callback(value, index, array)) {
-	  result.push(value);
-	  splice.call(array, index--, 1);
-	  length--;
-	}
+        var value = array[index];
+        if (callback(value, index, array)) {
+          result.push(value);
+          splice.call(array, index--, 1);
+          length--;
+        }
       }
       return result;
     }
@@ -9871,16 +9871,16 @@ module.exports=require('K2RcUv');
      */
     function rest(array, callback, thisArg) {
       if (typeof callback != 'number' && callback != null) {
-	var n = 0,
-	    index = -1,
-	    length = array ? array.length : 0;
+        var n = 0,
+            index = -1,
+            length = array ? array.length : 0;
 
-	callback = lodash.createCallback(callback, thisArg, 3);
-	while (++index < length && callback(array[index], index, array)) {
-	  n++;
-	}
+        callback = lodash.createCallback(callback, thisArg, 3);
+        while (++index < length && callback(array[index], index, array)) {
+          n++;
+        }
       } else {
-	n = (callback == null || thisArg) ? 1 : nativeMax(0, callback);
+        n = (callback == null || thisArg) ? 1 : nativeMax(0, callback);
       }
       return slice(array, n);
     }
@@ -9935,17 +9935,17 @@ module.exports=require('K2RcUv');
      */
     function sortedIndex(array, value, callback, thisArg) {
       var low = 0,
-	  high = array ? array.length : low;
+          high = array ? array.length : low;
 
       // explicitly reference `identity` for better inlining in Firefox
       callback = callback ? lodash.createCallback(callback, thisArg, 1) : identity;
       value = callback(value);
 
       while (low < high) {
-	var mid = (low + high) >>> 1;
-	(callback(array[mid]) < value)
-	  ? low = mid + 1
-	  : high = mid;
+        var mid = (low + high) >>> 1;
+        (callback(array[mid]) < value)
+          ? low = mid + 1
+          : high = mid;
       }
       return low;
     }
@@ -10015,12 +10015,12 @@ module.exports=require('K2RcUv');
     function uniq(array, isSorted, callback, thisArg) {
       // juggle arguments
       if (typeof isSorted != 'boolean' && isSorted != null) {
-	thisArg = callback;
-	callback = (typeof isSorted != 'function' && thisArg && thisArg[isSorted] === array) ? null : isSorted;
-	isSorted = false;
+        thisArg = callback;
+        callback = (typeof isSorted != 'function' && thisArg && thisArg[isSorted] === array) ? null : isSorted;
+        isSorted = false;
       }
       if (callback != null) {
-	callback = lodash.createCallback(callback, thisArg, 3);
+        callback = lodash.createCallback(callback, thisArg, 3);
       }
       return baseUniq(array, isSorted, callback);
     }
@@ -10063,15 +10063,15 @@ module.exports=require('K2RcUv');
      */
     function xor() {
       var index = -1,
-	  length = arguments.length;
+          length = arguments.length;
 
       while (++index < length) {
-	var array = arguments[index];
-	if (isArray(array) || isArguments(array)) {
-	  var result = result
-	    ? baseUniq(baseDifference(result, array).concat(baseDifference(array, result)))
-	    : array;
-	}
+        var array = arguments[index];
+        if (isArray(array) || isArguments(array)) {
+          var result = result
+            ? baseUniq(baseDifference(result, array).concat(baseDifference(array, result)))
+            : array;
+        }
       }
       return result || [];
     }
@@ -10094,12 +10094,12 @@ module.exports=require('K2RcUv');
      */
     function zip() {
       var array = arguments.length > 1 ? arguments : arguments[0],
-	  index = -1,
-	  length = array ? max(pluck(array, 'length')) : 0,
-	  result = Array(length < 0 ? 0 : length);
+          index = -1,
+          length = array ? max(pluck(array, 'length')) : 0,
+          result = Array(length < 0 ? 0 : length);
 
       while (++index < length) {
-	result[index] = pluck(array, index);
+        result[index] = pluck(array, index);
       }
       return result;
     }
@@ -10124,19 +10124,19 @@ module.exports=require('K2RcUv');
      */
     function zipObject(keys, values) {
       var index = -1,
-	  length = keys ? keys.length : 0,
-	  result = {};
+          length = keys ? keys.length : 0,
+          result = {};
 
       if (!values && length && !isArray(keys[0])) {
-	values = [];
+        values = [];
       }
       while (++index < length) {
-	var key = keys[index];
-	if (values) {
-	  result[key] = values[index];
-	} else if (key) {
-	  result[key[0]] = key[1];
-	}
+        var key = keys[index];
+        if (values) {
+          result[key] = values[index];
+        } else if (key) {
+          result[key[0]] = key[1];
+        }
       }
       return result;
     }
@@ -10169,12 +10169,12 @@ module.exports=require('K2RcUv');
      */
     function after(n, func) {
       if (!isFunction(func)) {
-	throw new TypeError;
+        throw new TypeError;
       }
       return function() {
-	if (--n < 1) {
-	  return func.apply(this, arguments);
-	}
+        if (--n < 1) {
+          return func.apply(this, arguments);
+        }
       };
     }
 
@@ -10202,8 +10202,8 @@ module.exports=require('K2RcUv');
      */
     function bind(func, thisArg) {
       return arguments.length > 2
-	? createWrapper(func, 17, slice(arguments, 2), null, thisArg)
-	: createWrapper(func, 1, null, null, thisArg);
+        ? createWrapper(func, 17, slice(arguments, 2), null, thisArg)
+        : createWrapper(func, 1, null, null, thisArg);
     }
 
     /**
@@ -10232,12 +10232,12 @@ module.exports=require('K2RcUv');
      */
     function bindAll(object) {
       var funcs = arguments.length > 1 ? baseFlatten(arguments, true, false, 1) : functions(object),
-	  index = -1,
-	  length = funcs.length;
+          index = -1,
+          length = funcs.length;
 
       while (++index < length) {
-	var key = funcs[index];
-	object[key] = createWrapper(object[key], 1, null, null, object);
+        var key = funcs[index];
+        object[key] = createWrapper(object[key], 1, null, null, object);
       }
       return object;
     }
@@ -10278,8 +10278,8 @@ module.exports=require('K2RcUv');
      */
     function bindKey(object, key) {
       return arguments.length > 2
-	? createWrapper(key, 19, slice(arguments, 2), null, object)
-	: createWrapper(key, 3, null, null, object);
+        ? createWrapper(key, 19, slice(arguments, 2), null, object)
+        : createWrapper(key, 3, null, null, object);
     }
 
     /**
@@ -10314,21 +10314,21 @@ module.exports=require('K2RcUv');
      */
     function compose() {
       var funcs = arguments,
-	  length = funcs.length;
+          length = funcs.length;
 
       while (length--) {
-	if (!isFunction(funcs[length])) {
-	  throw new TypeError;
-	}
+        if (!isFunction(funcs[length])) {
+          throw new TypeError;
+        }
       }
       return function() {
-	var args = arguments,
-	    length = funcs.length;
+        var args = arguments,
+            length = funcs.length;
 
-	while (length--) {
-	  args = [funcs[length].apply(this, args)];
-	}
-	return args[0];
+        while (length--) {
+          args = [funcs[length].apply(this, args)];
+        }
+        return args[0];
       };
     }
 
@@ -10406,102 +10406,102 @@ module.exports=require('K2RcUv');
      */
     function debounce(func, wait, options) {
       var args,
-	  maxTimeoutId,
-	  result,
-	  stamp,
-	  thisArg,
-	  timeoutId,
-	  trailingCall,
-	  lastCalled = 0,
-	  maxWait = false,
-	  trailing = true;
+          maxTimeoutId,
+          result,
+          stamp,
+          thisArg,
+          timeoutId,
+          trailingCall,
+          lastCalled = 0,
+          maxWait = false,
+          trailing = true;
 
       if (!isFunction(func)) {
-	throw new TypeError;
+        throw new TypeError;
       }
       wait = nativeMax(0, wait) || 0;
       if (options === true) {
-	var leading = true;
-	trailing = false;
+        var leading = true;
+        trailing = false;
       } else if (isObject(options)) {
-	leading = options.leading;
-	maxWait = 'maxWait' in options && (nativeMax(wait, options.maxWait) || 0);
-	trailing = 'trailing' in options ? options.trailing : trailing;
+        leading = options.leading;
+        maxWait = 'maxWait' in options && (nativeMax(wait, options.maxWait) || 0);
+        trailing = 'trailing' in options ? options.trailing : trailing;
       }
       var delayed = function() {
-	var remaining = wait - (now() - stamp);
-	if (remaining <= 0) {
-	  if (maxTimeoutId) {
-	    clearTimeout(maxTimeoutId);
-	  }
-	  var isCalled = trailingCall;
-	  maxTimeoutId = timeoutId = trailingCall = undefined;
-	  if (isCalled) {
-	    lastCalled = now();
-	    result = func.apply(thisArg, args);
-	    if (!timeoutId && !maxTimeoutId) {
-	      args = thisArg = null;
-	    }
-	  }
-	} else {
-	  timeoutId = setTimeout(delayed, remaining);
-	}
+        var remaining = wait - (now() - stamp);
+        if (remaining <= 0) {
+          if (maxTimeoutId) {
+            clearTimeout(maxTimeoutId);
+          }
+          var isCalled = trailingCall;
+          maxTimeoutId = timeoutId = trailingCall = undefined;
+          if (isCalled) {
+            lastCalled = now();
+            result = func.apply(thisArg, args);
+            if (!timeoutId && !maxTimeoutId) {
+              args = thisArg = null;
+            }
+          }
+        } else {
+          timeoutId = setTimeout(delayed, remaining);
+        }
       };
 
       var maxDelayed = function() {
-	if (timeoutId) {
-	  clearTimeout(timeoutId);
-	}
-	maxTimeoutId = timeoutId = trailingCall = undefined;
-	if (trailing || (maxWait !== wait)) {
-	  lastCalled = now();
-	  result = func.apply(thisArg, args);
-	  if (!timeoutId && !maxTimeoutId) {
-	    args = thisArg = null;
-	  }
-	}
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        maxTimeoutId = timeoutId = trailingCall = undefined;
+        if (trailing || (maxWait !== wait)) {
+          lastCalled = now();
+          result = func.apply(thisArg, args);
+          if (!timeoutId && !maxTimeoutId) {
+            args = thisArg = null;
+          }
+        }
       };
 
       return function() {
-	args = arguments;
-	stamp = now();
-	thisArg = this;
-	trailingCall = trailing && (timeoutId || !leading);
+        args = arguments;
+        stamp = now();
+        thisArg = this;
+        trailingCall = trailing && (timeoutId || !leading);
 
-	if (maxWait === false) {
-	  var leadingCall = leading && !timeoutId;
-	} else {
-	  if (!maxTimeoutId && !leading) {
-	    lastCalled = stamp;
-	  }
-	  var remaining = maxWait - (stamp - lastCalled),
-	      isCalled = remaining <= 0;
+        if (maxWait === false) {
+          var leadingCall = leading && !timeoutId;
+        } else {
+          if (!maxTimeoutId && !leading) {
+            lastCalled = stamp;
+          }
+          var remaining = maxWait - (stamp - lastCalled),
+              isCalled = remaining <= 0;
 
-	  if (isCalled) {
-	    if (maxTimeoutId) {
-	      maxTimeoutId = clearTimeout(maxTimeoutId);
-	    }
-	    lastCalled = stamp;
-	    result = func.apply(thisArg, args);
-	  }
-	  else if (!maxTimeoutId) {
-	    maxTimeoutId = setTimeout(maxDelayed, remaining);
-	  }
-	}
-	if (isCalled && timeoutId) {
-	  timeoutId = clearTimeout(timeoutId);
-	}
-	else if (!timeoutId && wait !== maxWait) {
-	  timeoutId = setTimeout(delayed, wait);
-	}
-	if (leadingCall) {
-	  isCalled = true;
-	  result = func.apply(thisArg, args);
-	}
-	if (isCalled && !timeoutId && !maxTimeoutId) {
-	  args = thisArg = null;
-	}
-	return result;
+          if (isCalled) {
+            if (maxTimeoutId) {
+              maxTimeoutId = clearTimeout(maxTimeoutId);
+            }
+            lastCalled = stamp;
+            result = func.apply(thisArg, args);
+          }
+          else if (!maxTimeoutId) {
+            maxTimeoutId = setTimeout(maxDelayed, remaining);
+          }
+        }
+        if (isCalled && timeoutId) {
+          timeoutId = clearTimeout(timeoutId);
+        }
+        else if (!timeoutId && wait !== maxWait) {
+          timeoutId = setTimeout(delayed, wait);
+        }
+        if (leadingCall) {
+          isCalled = true;
+          result = func.apply(thisArg, args);
+        }
+        if (isCalled && !timeoutId && !maxTimeoutId) {
+          args = thisArg = null;
+        }
+        return result;
       };
     }
 
@@ -10522,7 +10522,7 @@ module.exports=require('K2RcUv');
      */
     function defer(func) {
       if (!isFunction(func)) {
-	throw new TypeError;
+        throw new TypeError;
       }
       var args = slice(arguments, 1);
       return setTimeout(function() { func.apply(undefined, args); }, 1);
@@ -10546,7 +10546,7 @@ module.exports=require('K2RcUv');
      */
     function delay(func, wait) {
       if (!isFunction(func)) {
-	throw new TypeError;
+        throw new TypeError;
       }
       var args = slice(arguments, 2);
       return setTimeout(function() { func.apply(undefined, args); }, wait);
@@ -10591,15 +10591,15 @@ module.exports=require('K2RcUv');
      */
     function memoize(func, resolver) {
       if (!isFunction(func)) {
-	throw new TypeError;
+        throw new TypeError;
       }
       var memoized = function() {
-	var cache = memoized.cache,
-	    key = resolver ? resolver.apply(this, arguments) : keyPrefix + arguments[0];
+        var cache = memoized.cache,
+            key = resolver ? resolver.apply(this, arguments) : keyPrefix + arguments[0];
 
-	return hasOwnProperty.call(cache, key)
-	  ? cache[key]
-	  : (cache[key] = func.apply(this, arguments));
+        return hasOwnProperty.call(cache, key)
+          ? cache[key]
+          : (cache[key] = func.apply(this, arguments));
       }
       memoized.cache = {};
       return memoized;
@@ -10624,21 +10624,21 @@ module.exports=require('K2RcUv');
      */
     function once(func) {
       var ran,
-	  result;
+          result;
 
       if (!isFunction(func)) {
-	throw new TypeError;
+        throw new TypeError;
       }
       return function() {
-	if (ran) {
-	  return result;
-	}
-	ran = true;
-	result = func.apply(this, arguments);
+        if (ran) {
+          return result;
+        }
+        ran = true;
+        result = func.apply(this, arguments);
 
-	// clear the `func` variable so the function may be garbage collected
-	func = null;
-	return result;
+        // clear the `func` variable so the function may be garbage collected
+        func = null;
+        return result;
       };
     }
 
@@ -10728,16 +10728,16 @@ module.exports=require('K2RcUv');
      */
     function throttle(func, wait, options) {
       var leading = true,
-	  trailing = true;
+          trailing = true;
 
       if (!isFunction(func)) {
-	throw new TypeError;
+        throw new TypeError;
       }
       if (options === false) {
-	leading = false;
+        leading = false;
       } else if (isObject(options)) {
-	leading = 'leading' in options ? options.leading : leading;
-	trailing = 'trailing' in options ? options.trailing : trailing;
+        leading = 'leading' in options ? options.leading : leading;
+        trailing = 'trailing' in options ? options.trailing : trailing;
       }
       debounceOptions.leading = leading;
       debounceOptions.maxWait = wait;
@@ -10790,7 +10790,7 @@ module.exports=require('K2RcUv');
      */
     function constant(value) {
       return function() {
-	return value;
+        return value;
       };
     }
 
@@ -10828,35 +10828,35 @@ module.exports=require('K2RcUv');
     function createCallback(func, thisArg, argCount) {
       var type = typeof func;
       if (func == null || type == 'function') {
-	return baseCreateCallback(func, thisArg, argCount);
+        return baseCreateCallback(func, thisArg, argCount);
       }
       // handle "_.pluck" style callback shorthands
       if (type != 'object') {
-	return property(func);
+        return property(func);
       }
       var props = keys(func),
-	  key = props[0],
-	  a = func[key];
+          key = props[0],
+          a = func[key];
 
       // handle "_.where" style callback shorthands
       if (props.length == 1 && a === a && !isObject(a)) {
-	// fast path the common case of providing an object with a single
-	// property containing a primitive value
-	return function(object) {
-	  var b = object[key];
-	  return a === b && (a !== 0 || (1 / a == 1 / b));
-	};
+        // fast path the common case of providing an object with a single
+        // property containing a primitive value
+        return function(object) {
+          var b = object[key];
+          return a === b && (a !== 0 || (1 / a == 1 / b));
+        };
       }
       return function(object) {
-	var length = props.length,
-	    result = false;
+        var length = props.length,
+            result = false;
 
-	while (length--) {
-	  if (!(result = baseIsEqual(object[props[length]], func[props[length]], null, true))) {
-	    break;
-	  }
-	}
-	return result;
+        while (length--) {
+          if (!(result = baseIsEqual(object[props[length]], func[props[length]], null, true))) {
+            break;
+          }
+        }
+        return result;
       };
     }
 
@@ -10926,45 +10926,45 @@ module.exports=require('K2RcUv');
      */
     function mixin(object, source, options) {
       var chain = true,
-	  methodNames = source && functions(source);
+          methodNames = source && functions(source);
 
       if (!source || (!options && !methodNames.length)) {
-	if (options == null) {
-	  options = source;
-	}
-	ctor = lodashWrapper;
-	source = object;
-	object = lodash;
-	methodNames = functions(source);
+        if (options == null) {
+          options = source;
+        }
+        ctor = lodashWrapper;
+        source = object;
+        object = lodash;
+        methodNames = functions(source);
       }
       if (options === false) {
-	chain = false;
+        chain = false;
       } else if (isObject(options) && 'chain' in options) {
-	chain = options.chain;
+        chain = options.chain;
       }
       var ctor = object,
-	  isFunc = isFunction(ctor);
+          isFunc = isFunction(ctor);
 
       forEach(methodNames, function(methodName) {
-	var func = object[methodName] = source[methodName];
-	if (isFunc) {
-	  ctor.prototype[methodName] = function() {
-	    var chainAll = this.__chain__,
-		value = this.__wrapped__,
-		args = [value];
+        var func = object[methodName] = source[methodName];
+        if (isFunc) {
+          ctor.prototype[methodName] = function() {
+            var chainAll = this.__chain__,
+                value = this.__wrapped__,
+                args = [value];
 
-	    push.apply(args, arguments);
-	    var result = func.apply(object, args);
-	    if (chain || chainAll) {
-	      if (value === result && isObject(result)) {
-		return this;
-	      }
-	      result = new ctor(result);
-	      result.__chain__ = chainAll;
-	    }
-	    return result;
-	  };
-	}
+            push.apply(args, arguments);
+            var result = func.apply(object, args);
+            if (chain || chainAll) {
+              if (value === result && isObject(result)) {
+                return this;
+              }
+              result = new ctor(result);
+              result.__chain__ = chainAll;
+            }
+            return result;
+          };
+        }
       });
     }
 
@@ -11068,7 +11068,7 @@ module.exports=require('K2RcUv');
      */
     function property(key) {
       return function(object) {
-	return object[key];
+        return object[key];
       };
     }
 
@@ -11101,31 +11101,31 @@ module.exports=require('K2RcUv');
      */
     function random(min, max, floating) {
       var noMin = min == null,
-	  noMax = max == null;
+          noMax = max == null;
 
       if (floating == null) {
-	if (typeof min == 'boolean' && noMax) {
-	  floating = min;
-	  min = 1;
-	}
-	else if (!noMax && typeof max == 'boolean') {
-	  floating = max;
-	  noMax = true;
-	}
+        if (typeof min == 'boolean' && noMax) {
+          floating = min;
+          min = 1;
+        }
+        else if (!noMax && typeof max == 'boolean') {
+          floating = max;
+          noMax = true;
+        }
       }
       if (noMin && noMax) {
-	max = 1;
+        max = 1;
       }
       min = +min || 0;
       if (noMax) {
-	max = min;
-	min = 0;
+        max = min;
+        min = 0;
       } else {
-	max = +max || 0;
+        max = +max || 0;
       }
       if (floating || min % 1 || max % 1) {
-	var rand = nativeRandom();
-	return nativeMin(min + (rand * (max - min + parseFloat('1e-' + ((rand +'').length - 1)))), max);
+        var rand = nativeRandom();
+        return nativeMin(min + (rand * (max - min + parseFloat('1e-' + ((rand +'').length - 1)))), max);
       }
       return baseRandom(min, max);
     }
@@ -11159,8 +11159,8 @@ module.exports=require('K2RcUv');
      */
     function result(object, key) {
       if (object) {
-	var value = object[key];
-	return isFunction(value) ? object[key]() : value;
+        var value = object[key];
+        return isFunction(value) ? object[key]() : value;
       }
     }
 
@@ -11262,44 +11262,44 @@ module.exports=require('K2RcUv');
       options = defaults({}, options, settings);
 
       var imports = defaults({}, options.imports, settings.imports),
-	  importsKeys = keys(imports),
-	  importsValues = values(imports);
+          importsKeys = keys(imports),
+          importsValues = values(imports);
 
       var isEvaluating,
-	  index = 0,
-	  interpolate = options.interpolate || reNoMatch,
-	  source = "__p += '";
+          index = 0,
+          interpolate = options.interpolate || reNoMatch,
+          source = "__p += '";
 
       // compile the regexp to match each delimiter
       var reDelimiters = RegExp(
-	(options.escape || reNoMatch).source + '|' +
-	interpolate.source + '|' +
-	(interpolate === reInterpolate ? reEsTemplate : reNoMatch).source + '|' +
-	(options.evaluate || reNoMatch).source + '|$'
+        (options.escape || reNoMatch).source + '|' +
+        interpolate.source + '|' +
+        (interpolate === reInterpolate ? reEsTemplate : reNoMatch).source + '|' +
+        (options.evaluate || reNoMatch).source + '|$'
       , 'g');
 
       text.replace(reDelimiters, function(match, escapeValue, interpolateValue, esTemplateValue, evaluateValue, offset) {
-	interpolateValue || (interpolateValue = esTemplateValue);
+        interpolateValue || (interpolateValue = esTemplateValue);
 
-	// escape characters that cannot be included in string literals
-	source += text.slice(index, offset).replace(reUnescapedString, escapeStringChar);
+        // escape characters that cannot be included in string literals
+        source += text.slice(index, offset).replace(reUnescapedString, escapeStringChar);
 
-	// replace delimiters with snippets
-	if (escapeValue) {
-	  source += "' +\n__e(" + escapeValue + ") +\n'";
-	}
-	if (evaluateValue) {
-	  isEvaluating = true;
-	  source += "';\n" + evaluateValue + ";\n__p += '";
-	}
-	if (interpolateValue) {
-	  source += "' +\n((__t = (" + interpolateValue + ")) == null ? '' : __t) +\n'";
-	}
-	index = offset + match.length;
+        // replace delimiters with snippets
+        if (escapeValue) {
+          source += "' +\n__e(" + escapeValue + ") +\n'";
+        }
+        if (evaluateValue) {
+          isEvaluating = true;
+          source += "';\n" + evaluateValue + ";\n__p += '";
+        }
+        if (interpolateValue) {
+          source += "' +\n((__t = (" + interpolateValue + ")) == null ? '' : __t) +\n'";
+        }
+        index = offset + match.length;
 
-	// the JS engine embedded in Adobe products requires returning the `match`
-	// string in order to produce the correct `offset` value
-	return match;
+        // the JS engine embedded in Adobe products requires returning the `match`
+        // string in order to produce the correct `offset` value
+        return match;
       });
 
       source += "';\n";
@@ -11307,41 +11307,41 @@ module.exports=require('K2RcUv');
       // if `variable` is not specified, wrap a with-statement around the generated
       // code to add the data object to the top of the scope chain
       var variable = options.variable,
-	  hasVariable = variable;
+          hasVariable = variable;
 
       if (!hasVariable) {
-	variable = 'obj';
-	source = 'with (' + variable + ') {\n' + source + '\n}\n';
+        variable = 'obj';
+        source = 'with (' + variable + ') {\n' + source + '\n}\n';
       }
       // cleanup code by stripping empty strings
       source = (isEvaluating ? source.replace(reEmptyStringLeading, '') : source)
-	.replace(reEmptyStringMiddle, '$1')
-	.replace(reEmptyStringTrailing, '$1;');
+        .replace(reEmptyStringMiddle, '$1')
+        .replace(reEmptyStringTrailing, '$1;');
 
       // frame code as the function body
       source = 'function(' + variable + ') {\n' +
-	(hasVariable ? '' : variable + ' || (' + variable + ' = {});\n') +
-	"var __t, __p = '', __e = _.escape" +
-	(isEvaluating
-	  ? ', __j = Array.prototype.join;\n' +
-	    "function print() { __p += __j.call(arguments, '') }\n"
-	  : ';\n'
-	) +
-	source +
-	'return __p\n}';
+        (hasVariable ? '' : variable + ' || (' + variable + ' = {});\n') +
+        "var __t, __p = '', __e = _.escape" +
+        (isEvaluating
+          ? ', __j = Array.prototype.join;\n' +
+            "function print() { __p += __j.call(arguments, '') }\n"
+          : ';\n'
+        ) +
+        source +
+        'return __p\n}';
 
       // Use a sourceURL for easier debugging.
       // http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/#toc-sourceurl
       var sourceURL = '\n/*\n//# sourceURL=' + (options.sourceURL || '/lodash/template/source[' + (templateCounter++) + ']') + '\n*/';
 
       try {
-	var result = Function(importsKeys, 'return ' + source + sourceURL).apply(undefined, importsValues);
+        var result = Function(importsKeys, 'return ' + source + sourceURL).apply(undefined, importsValues);
       } catch(e) {
-	e.source = source;
-	throw e;
+        e.source = source;
+        throw e;
       }
       if (data) {
-	return result(data);
+        return result(data);
       }
       // provide the compiled function's source by its `toString` method, in
       // supported environments, or the `source` property as a convenience for
@@ -11376,11 +11376,11 @@ module.exports=require('K2RcUv');
     function times(n, callback, thisArg) {
       n = (n = +n) > -1 ? n : 0;
       var index = -1,
-	  result = Array(n);
+          result = Array(n);
 
       callback = baseCreateCallback(callback, thisArg, 1);
       while (++index < n) {
-	result[index] = callback(index);
+        result[index] = callback(index);
       }
       return result;
     }
@@ -11700,9 +11700,9 @@ module.exports=require('K2RcUv');
     mixin(function() {
       var source = {}
       forOwn(lodash, function(func, methodName) {
-	if (!lodash.prototype[methodName]) {
-	  source[methodName] = func;
-	}
+        if (!lodash.prototype[methodName]) {
+          source[methodName] = func;
+        }
       });
       return source;
     }(), false);
@@ -11721,14 +11721,14 @@ module.exports=require('K2RcUv');
     forOwn(lodash, function(func, methodName) {
       var callbackable = methodName !== 'sample';
       if (!lodash.prototype[methodName]) {
-	lodash.prototype[methodName]= function(n, guard) {
-	  var chainAll = this.__chain__,
-	      result = func(this.__wrapped__, n, guard);
+        lodash.prototype[methodName]= function(n, guard) {
+          var chainAll = this.__chain__,
+              result = func(this.__wrapped__, n, guard);
 
-	  return !chainAll && (n == null || (guard && !(callbackable && typeof n == 'function')))
-	    ? result
-	    : new lodashWrapper(result, chainAll);
-	};
+          return !chainAll && (n == null || (guard && !(callbackable && typeof n == 'function')))
+            ? result
+            : new lodashWrapper(result, chainAll);
+        };
       }
     });
 
@@ -11753,12 +11753,12 @@ module.exports=require('K2RcUv');
     forEach(['join', 'pop', 'shift'], function(methodName) {
       var func = arrayRef[methodName];
       lodash.prototype[methodName] = function() {
-	var chainAll = this.__chain__,
-	    result = func.apply(this.__wrapped__, arguments);
+        var chainAll = this.__chain__,
+            result = func.apply(this.__wrapped__, arguments);
 
-	return chainAll
-	  ? new lodashWrapper(result, chainAll)
-	  : result;
+        return chainAll
+          ? new lodashWrapper(result, chainAll)
+          : result;
       };
     });
 
@@ -11766,8 +11766,8 @@ module.exports=require('K2RcUv');
     forEach(['push', 'reverse', 'sort', 'unshift'], function(methodName) {
       var func = arrayRef[methodName];
       lodash.prototype[methodName] = function() {
-	func.apply(this.__wrapped__, arguments);
-	return this;
+        func.apply(this.__wrapped__, arguments);
+        return this;
       };
     });
 
@@ -11775,7 +11775,7 @@ module.exports=require('K2RcUv');
     forEach(['concat', 'slice', 'splice'], function(methodName) {
       var func = arrayRef[methodName];
       lodash.prototype[methodName] = function() {
-	return new lodashWrapper(func.apply(this.__wrapped__, arguments), this.__chain__);
+        return new lodashWrapper(func.apply(this.__wrapped__, arguments), this.__chain__);
       };
     });
 
