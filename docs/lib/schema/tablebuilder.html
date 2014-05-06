@@ -1,0 +1,196 @@
+<!DOCTYPE html><html lang="en"><head><title>lib/schema/tablebuilder</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="lib/schema/tablebuilder"><meta name="groc-project-path" content="lib/schema/tablebuilder.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">lib/schema/tablebuilder.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><p>TableBuilder</p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Takes the function passed to the "createTable" or "table/editTable"
+functions and calls it with the "TableBuilder" as both the context and
+the first argument. Inside this function we can specify what happens to the
+method, pushing everything we want to do onto the "allStatements" array,</p>
+
+<h2 id="which-is-then-compiled-into-sql">which is then compiled into sql.</h2></div></div><div class="code"><div class="wrapper"><span class="kd">var</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lodash&#39;</span><span class="p">);</span>
+
+<span class="kd">function</span> <span class="nx">TableBuilder</span><span class="p">(</span><span class="nx">method</span><span class="p">,</span> <span class="nx">tableName</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span>         <span class="o">=</span> <span class="nx">fn</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_method</span>     <span class="o">=</span> <span class="nx">method</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_tableName</span>  <span class="o">=</span> <span class="nx">tableName</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_statements</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_single</span>     <span class="o">=</span> <span class="p">{};</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Convert the current tableBuilder object "toSQL"
+giving us additional methods if we're altering
+rather than creating the table.</p></div></div><div class="code"><div class="wrapper"><span class="nx">TableBuilder</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">toSQL</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_method</span> <span class="o">===</span> <span class="s1">&#39;alter&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">AlterMethods</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+  <span class="kd">var</span> <span class="nx">TableCompiler</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">TableCompiler</span><span class="p">;</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nx">TableCompiler</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">toSQL</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="kd">var</span> <span class="nx">AlterMethods</span> <span class="o">=</span> <span class="p">{</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Renames the current column <code>from</code> the current
+TODO: this.column(from).rename(to)</p></div></div><div class="code"><div class="wrapper">  <span class="nx">renameColumn</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">from</span><span class="p">,</span> <span class="nx">to</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_statements</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+      <span class="nx">grouping</span><span class="o">:</span> <span class="s1">&#39;alterTable&#39;</span><span class="p">,</span>
+      <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;renameColumn&#39;</span><span class="p">,</span>
+      <span class="nx">args</span><span class="o">:</span> <span class="p">[</span><span class="nx">from</span><span class="p">,</span> <span class="nx">to</span><span class="p">]</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+  <span class="p">},</span>
+
+  <span class="nx">dropTimestamps</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">dropColumns</span><span class="p">([</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">]);</span>
+  <span class="p">}</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>TODO: changeType</p></div></div><div class="code"><div class="wrapper"><span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Drop a column from the current table.
+TODO: Enable this.column(columnName).drop();</p></div></div><div class="code"><div class="wrapper"><span class="nx">AlterMethods</span><span class="p">.</span><span class="nx">dropColumn</span> <span class="o">=</span>
+<span class="nx">AlterMethods</span><span class="p">.</span><span class="nx">dropColumns</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_statements</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+    <span class="nx">grouping</span><span class="o">:</span> <span class="s1">&#39;alterTable&#39;</span><span class="p">,</span>
+    <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;dropColumn&#39;</span><span class="p">,</span>
+    <span class="nx">args</span><span class="o">:</span> <span class="nx">_</span><span class="p">.</span><span class="nx">toArray</span><span class="p">(</span><span class="nx">arguments</span><span class="p">)</span>
+  <span class="p">});</span>
+  <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">([</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Each of the index methods can be called individually, with the
+column name to be used, e.g. table.unique('column').</p></div></div><div class="code"><div class="wrapper">  <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;primary&#39;</span><span class="p">,</span> <span class="s1">&#39;unique&#39;</span><span class="p">,</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Key specific</p></div></div><div class="code"><div class="wrapper">  <span class="s1">&#39;dropPrimary&#39;</span><span class="p">,</span> <span class="s1">&#39;dropUnique&#39;</span><span class="p">,</span> <span class="s1">&#39;dropIndex&#39;</span><span class="p">,</span> <span class="s1">&#39;dropForeign&#39;</span>
+
+<span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">method</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">TableBuilder</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">method</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_statements</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+      <span class="nx">grouping</span><span class="o">:</span> <span class="s1">&#39;alterTable&#39;</span><span class="p">,</span>
+      <span class="nx">method</span><span class="o">:</span> <span class="nx">method</span><span class="p">,</span>
+      <span class="nx">args</span><span class="o">:</span> <span class="nx">_</span><span class="p">.</span><span class="nx">toArray</span><span class="p">(</span><span class="nx">arguments</span><span class="p">)</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+  <span class="p">};</span>
+<span class="p">});</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Warn if we're not in MySQL, since that's the only time these
+three are supported.</p></div></div><div class="code"><div class="wrapper"><span class="kd">var</span> <span class="nx">specialMethods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;engine&#39;</span><span class="p">,</span> <span class="s1">&#39;charset&#39;</span><span class="p">,</span> <span class="s1">&#39;collate&#39;</span><span class="p">];</span>
+<span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">specialMethods</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">method</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">TableBuilder</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">method</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="kc">false</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">warn</span><span class="p">(</span><span class="s1">&#39;Knex only supports &#39;</span> <span class="o">+</span> <span class="nx">method</span> <span class="o">+</span> <span class="s1">&#39; statement with mysql.&#39;</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">__method</span> <span class="o">===</span> <span class="s1">&#39;alter&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">warn</span><span class="p">(</span><span class="s1">&#39;Knex does not support altering the &#39;</span> <span class="o">+</span> <span class="nx">method</span> <span class="o">+</span> <span class="s1">&#39; outside of the create table, please use knex.raw statement.&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_single</span><span class="p">[</span><span class="nx">method</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+  <span class="p">};</span>
+<span class="p">});</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Each of the column types that we can add, we create a new ColumnBuilder
+instance and push it onto the statements array.</p></div></div><div class="code"><div class="wrapper"><span class="kd">var</span> <span class="nx">columnTypes</span> <span class="o">=</span> <span class="p">[</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Numeric</p></div></div><div class="code"><div class="wrapper">  <span class="s1">&#39;tinyint&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;smallint&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;mediumint&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;int&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;bigint&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;decimal&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;float&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;double&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;real&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;bit&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;serial&#39;</span><span class="p">,</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Date / Time</p></div></div><div class="code"><div class="wrapper">  <span class="s1">&#39;date&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;datetime&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;timestamp&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;time&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;year&#39;</span><span class="p">,</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>String</p></div></div><div class="code"><div class="wrapper">  <span class="s1">&#39;char&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;varchar&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;tinytext&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;tinyText&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;text&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;mediumtext&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;mediumText&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;longtext&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;longText&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;binary&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;varbinary&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;tinyblob&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;tinyBlob&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;mediumblob&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;mediumBlob&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;blob&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;longblob&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;longBlob&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;enum&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;set&#39;</span><span class="p">,</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Increments, Aliases, and Additional</p></div></div><div class="code"><div class="wrapper">  <span class="s1">&#39;bool&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;dateTime&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;increments&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;bigincrements&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;bigIncrements&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;biginteger&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;bigInteger&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;timestamps&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;json&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;uuid&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;enu&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;specificType&#39;</span>
+<span class="p">];</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>For each of the column methods, create a new "ColumnBuilder" interface,
+push it onto the "allStatements" stack, and then return the interface,
+with which we can add indexes, etc.</p></div></div><div class="code"><div class="wrapper"><span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">columnTypes</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">TableBuilder</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">type</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">toArray</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The "timestamps" call is really a compound call to set the
+<code>created_at</code> and <code>updated_at</code> columns.</p></div></div><div class="code"><div class="wrapper">    <span class="k">if</span> <span class="p">(</span><span class="nx">type</span> <span class="o">===</span> <span class="s1">&#39;timestamps&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">===</span> <span class="kc">true</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">timestamp</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">timestamp</span><span class="p">(</span><span class="s1">&#39;updated_at&#39;</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">datetime</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">datetime</span><span class="p">(</span><span class="s1">&#39;updated_at&#39;</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kd">var</span> <span class="nx">ColumnBuilder</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">ColumnBuilder</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">builder</span>       <span class="o">=</span> <span class="k">new</span> <span class="nx">ColumnBuilder</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+
+    <span class="k">this</span><span class="p">.</span><span class="nx">_statements</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+      <span class="nx">grouping</span><span class="o">:</span> <span class="s1">&#39;columns&#39;</span><span class="p">,</span>
+      <span class="nx">builder</span><span class="o">:</span> <span class="nx">builder</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="nx">builder</span><span class="p">;</span>
+  <span class="p">};</span>
+
+<span class="p">});</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Set the comment value for a table, they're only allowed to be called
+once per table.</p></div></div><div class="code"><div class="wrapper"><span class="nx">TableBuilder</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">comment</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_single</span><span class="p">.</span><span class="nx">comment</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Set a foreign key on the table, calling
+`table.foreign('column_name').references('column').on('table').onDelete()...
+Also called from the ColumnBuilder context when chaining.</p></div></div><div class="code"><div class="wrapper"><span class="nx">TableBuilder</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">foreign</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">column</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">foreignData</span> <span class="o">=</span> <span class="p">{</span><span class="nx">column</span><span class="o">:</span> <span class="nx">column</span><span class="p">};</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">_statements</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+    <span class="nx">grouping</span><span class="o">:</span> <span class="s1">&#39;alterTable&#39;</span><span class="p">,</span>
+    <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;foreign&#39;</span><span class="p">,</span>
+    <span class="nx">args</span><span class="o">:</span> <span class="p">[</span><span class="nx">foreignData</span><span class="p">]</span>
+  <span class="p">});</span>
+  <span class="kd">var</span> <span class="nx">returnObj</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">references</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">tableColumn</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">pieces</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isString</span><span class="p">(</span><span class="nx">tableColumn</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">pieces</span> <span class="o">=</span> <span class="nx">tableColumn</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">pieces</span> <span class="o">||</span> <span class="nx">pieces</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">foreignData</span><span class="p">.</span><span class="nx">references</span> <span class="o">=</span> <span class="nx">pieces</span> <span class="o">?</span> <span class="nx">pieces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">:</span> <span class="nx">tableColumn</span><span class="p">;</span>
+        <span class="k">return</span> <span class="p">{</span>
+          <span class="nx">on</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">tableName</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">foreignData</span><span class="p">.</span><span class="nx">inTable</span> <span class="o">=</span> <span class="nx">tableName</span><span class="p">;</span>
+            <span class="k">return</span> <span class="nx">returnObj</span><span class="p">;</span>
+          <span class="p">},</span>
+          <span class="nx">inTable</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">on</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">};</span>
+      <span class="p">}</span>
+      <span class="nx">foreignData</span><span class="p">.</span><span class="nx">inTable</span> <span class="o">=</span> <span class="nx">pieces</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+      <span class="nx">foreignData</span><span class="p">.</span><span class="nx">references</span> <span class="o">=</span> <span class="nx">pieces</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+      <span class="k">return</span> <span class="nx">returnObj</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="nx">onUpdate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">statement</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">foreignData</span><span class="p">.</span><span class="nx">onUpdate</span> <span class="o">=</span> <span class="nx">statement</span><span class="p">;</span>
+      <span class="k">return</span> <span class="nx">returnObj</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="nx">onDelete</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">statement</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">foreignData</span><span class="p">.</span><span class="nx">onDelete</span> <span class="o">=</span> <span class="nx">statement</span><span class="p">;</span>
+      <span class="k">return</span> <span class="nx">returnObj</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="nx">_columnBuilder</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">builder</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="nx">builder</span><span class="p">,</span> <span class="nx">returnObj</span><span class="p">);</span>
+      <span class="nx">returnObj</span> <span class="o">=</span> <span class="nx">builder</span><span class="p">;</span>
+      <span class="k">return</span> <span class="nx">builder</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+  <span class="k">return</span> <span class="nx">returnObj</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">TableBuilder</span><span class="p">;</span></div></div></div></div></body></html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="en"><head><title>lib/schema/index</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="lib/schema/index"><meta name="groc-project-path" content="lib/schema/index.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">lib/schema/index.js</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="kd">var</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lodash&#39;</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">Builder</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./builder&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">Compiler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./compiler&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">TableBuilder</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./tablebuilder&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">TableCompiler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./tablecompiler&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">ColumnBuilder</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./columnbuilder&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">ColumnCompiler</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./columncompiler&#39;</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Initialize the compiler.</p></div></div><div class="code"><div class="wrapper"><span class="nx">Compiler</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">initCompiler</span> <span class="o">=</span>
+<span class="nx">TableCompiler</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">initCompiler</span> <span class="o">=</span>
+<span class="nx">ColumnCompiler</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">initCompiler</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">formatter</span> <span class="o">=</span> <span class="k">new</span> <span class="k">this</span><span class="p">.</span><span class="nx">Formatter</span><span class="p">();</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">sequence</span>  <span class="o">=</span> <span class="p">[];</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Push a new query onto the compiled "sequence" stack,
+creating a new formatter, returning the compiler.</p></div></div><div class="code"><div class="wrapper"><span class="nx">Compiler</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">pushQuery</span> <span class="o">=</span>
+<span class="nx">TableCompiler</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">pushQuery</span> <span class="o">=</span>
+<span class="nx">ColumnCompiler</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">pushQuery</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">query</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">query</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isString</span><span class="p">(</span><span class="nx">query</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">query</span> <span class="o">=</span> <span class="p">{</span><span class="nx">sql</span><span class="o">:</span> <span class="nx">query</span><span class="p">};</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">query</span> <span class="o">=</span> <span class="nx">query</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">query</span><span class="p">.</span><span class="nx">bindings</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">query</span><span class="p">.</span><span class="nx">bindings</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">formatter</span><span class="p">.</span><span class="nx">bindings</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">sequence</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">query</span><span class="p">);</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">formatter</span> <span class="o">=</span> <span class="k">new</span> <span class="k">this</span><span class="p">.</span><span class="nx">Formatter</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">Builder</span><span class="o">:</span> <span class="nx">Builder</span><span class="p">,</span>
+  <span class="nx">Compiler</span><span class="o">:</span> <span class="nx">Compiler</span><span class="p">,</span>
+  <span class="nx">TableBuilder</span><span class="o">:</span> <span class="nx">TableBuilder</span><span class="p">,</span>
+  <span class="nx">TableCompiler</span><span class="o">:</span> <span class="nx">TableCompiler</span><span class="p">,</span>
+  <span class="nx">ColumnBuilder</span><span class="o">:</span> <span class="nx">ColumnBuilder</span><span class="p">,</span>
+  <span class="nx">ColumnCompiler</span><span class="o">:</span> <span class="nx">ColumnCompiler</span>
+<span class="p">};</span></div></div></div></div></body></html>

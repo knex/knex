@@ -35,7 +35,7 @@
   },
   "scripts": {
     "test": "jshint knex.js lib/* && mocha -b --check-leaks -R spec test/index.js",
-    "doc": "groc -o docs --verbose lib/*.js lib/**/*.js clients/*.js clients/**/*.js clients/**/**/*.js knex.js",
+    "doc": "groc -o docs --verbose lib/*.js lib/**/*.js lib/**/**/*.js  knex.js",
     "release:patch": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:patch",
     "release:minor": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:minor"
   },

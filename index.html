@@ -1851,16 +1851,16 @@ process.stderr.on('data', function() {
   </div>
   <script src="docs/assets/ga.js" type="text/javascript" charset="utf-8"></script>
   <script src="/browser/deps.js" type="text/javascript" charset="utf-8"></script>
-  <script src="/browser/websql.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/browser/knex.js" type="text/javascript" charset="utf-8"></script>
   <script>
   var _    = require('lodash');
-  var knex = require('knex');
+  var Knex = require('knex');
 
   // Feel free to play with these in the console.
-  // pg      = knex.initialize({client: 'pg'});
-  // mysql   = knex.initialize({client: 'mysql'});
-  // sqlite3 = knex.initialize({client: 'sqlite3'});
-  websql  = knex.initialize({client: 'websql'});
+  var knex    = Knex.initialize({client: 'websql'});
+  var pg      = Knex.initialize({client: 'pg'});
+  var mysql   = Knex.initialize({client: 'mysql'});
+  var sqlite3 = Knex.initialize({client: 'sqlite3'});
   </script>
 </body>
 </html>
