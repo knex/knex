@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "mocha": "~1.18.2",
-    "mysql": "~2.0.0-rc2",
+    "mysql": "~2.2.0",
     "pg": "~2.8.2",
     "pg-query-stream": "~0.4.2",
     "sqlite3": "~2.1.7",
@@ -18,11 +18,13 @@
     "sinon": "~1.7.3",
     "sinon-chai": "~2.4.0",
     "jshint": "~2.5.0",
-    "browserify": "~3.42.0",
     "rimraf": "2.x",
-    "gulp": "^3.6.2",
-    "minimist": "0.0.8",
-    "through": "^2.3.4"
+    "minimist": "0.0.8"
+  },
+  "optionalDependencies": {
+    "through": "^2.3.4",
+    "browserify": "~3.42.0",
+    "gulp": "^3.6.2"
   },
   "dependencies": {
     "bluebird": "1.2.x",
