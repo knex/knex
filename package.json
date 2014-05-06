@@ -18,7 +18,10 @@
     "sinon-chai": "~2.4.0",
     "jshint": "~2.5.0",
     "browserify": "~3.42.0",
-    "rimraf": "2.x"
+    "rimraf": "2.x",
+    "gulp": "^3.6.2",
+    "minimist": "0.0.8",
+    "through": "^2.3.4"
   },
   "dependencies": {
     "bluebird": "1.2.x",

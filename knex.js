@@ -22,15 +22,21 @@ Knex.raw = function(sql, bindings) {
 // the correct client reference & grammar.
 var Raw = require('./lib/raw');
 
+// Doing it this way makes it easier to build for browserify.
+var mysql = function() { return require('./lib/dialects/mysql'); };
+var pg = function() { return require('./lib/dialects/postgres'); };
+var sqlite3 = function() { return require('./lib/dialects/sqlite3'); };
+var websql = function() { return require('./lib/dialects/websql'); };
+
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
-  'mysql'      : './lib/dialects/mysql',
-  'pg'         : './lib/dialects/postgres',
-  'postgres'   : './lib/dialects/postgres',
-  'postgresql' : './lib/dialects/postgres',
-  'sqlite'     : './lib/dialects/sqlite3',
-  'sqlite3'    : './lib/dialects/sqlite3',
-  'websql'     : './lib/dialects/websql'
+  'mysql'      : mysql,
+  'pg'         : pg,
+  'postgres'   : pg,
+  'postgresql' : pg,
+  'sqlite'     : sqlite3,
+  'sqlite3'    : sqlite3,
+  'websql'     : websql
 };
 
 // Require lodash.
@@ -90,7 +96,7 @@ Knex.initialize = function(config) {
   if (!Clients[clientName]) {
     throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
   }
-  Dialect = require(Clients[clientName]);
+  Dialect = Clients[clientName]();
   client  = new Dialect(config);
 
   // Allow chaining methods from the root object, before
