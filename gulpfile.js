@@ -22,7 +22,7 @@ var bases = {
 var all = ['mysql', 'pg', 'sqlite3', 'websql'];
 
 var externals = ['lodash', 'bluebird'];
-var alwaysExcluded = ['generic-pool-redux', 'node-pg-stream', 'readable-stream', './lib/migrate/index.js'];
+var alwaysExcluded = ['generic-pool-redux', 'readable-stream', './lib/migrate/index.js'];
 
 gulp.task('build', function() {
   var targets = argv.t || 'all';
