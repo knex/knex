@@ -44,7 +44,12 @@ exports.Client = ServerBase.extend({
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   getRawConnection: function() {
-    var connection = mysql.createConnection(this.connectionSettings);
+    var connection;
+    if (this.connectionSettings.charset === 'utf8') {
+      connection = mysql.createConnection(_.omit(this.connectionSettings, 'charset'));
+    } else {
+      connection = mysql.createConnection(this.connectionSettings);
+    }
     return Promise.promisify(connection.connect, connection)().yield(connection);
   },
 
