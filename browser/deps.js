@@ -166,9 +166,7 @@ Async.prototype._reset = function Async$_reset() {
 
 module.exports = new Async();
 
-},{"./global.js":16,"./queue.js":27,"./schedule.js":30,"./util.js":38}],"bluebird":[function(require,module,exports){
-module.exports=require('EjIH/G');
-},{}],"EjIH/G":[function(require,module,exports){
+},{"./global.js":16,"./queue.js":27,"./schedule.js":30,"./util.js":38}],"EjIH/G":[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -194,7 +192,9 @@ module.exports=require('EjIH/G');
 "use strict";
 var Promise = require("./promise.js")();
 module.exports = Promise;
-},{"./promise.js":20}],5:[function(require,module,exports){
+},{"./promise.js":20}],"bluebird":[function(require,module,exports){
+module.exports=require('EjIH/G');
+},{}],5:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -1209,6 +1209,7 @@ Promise.spawn = function Promise$Spawn(generatorFunction) {
 };
 
 },{"./errors.js":10,"./promise_spawn.js":23,"./util.js":38}],16:[function(require,module,exports){
+(function (global){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -1241,6 +1242,7 @@ module.exports = (function() {
     catch(e) {}
 })();
 
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],17:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
@@ -1599,6 +1601,7 @@ function Promise$_progressUnchecked(progressValue) {
 };
 
 },{"./async.js":2,"./errors.js":10,"./util.js":38}],20:[function(require,module,exports){
+(function (process){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -2732,7 +2735,8 @@ return Promise;
 
 };
 
-},{"./any.js":1,"./async.js":2,"./call_get.js":5,"./cancel.js":6,"./captured_trace.js":7,"./catch_filter.js":8,"./direct_resolve.js":9,"./errors.js":10,"./errors_api_rejection":11,"./filter.js":13,"./finally.js":14,"./generators.js":15,"./global.js":16,"./map.js":17,"./nodeify.js":18,"./progress.js":19,"./promise_array.js":21,"./promise_resolver.js":22,"./promisify.js":24,"./props.js":26,"./race.js":28,"./reduce.js":29,"./settle.js":31,"./some.js":33,"./synchronous_inspection.js":35,"./thenables.js":36,"./timers.js":37,"./util.js":38}],21:[function(require,module,exports){
+}).call(this,require("/Users/tgriesser/github/bookshelf/knex/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"./any.js":1,"./async.js":2,"./call_get.js":5,"./cancel.js":6,"./captured_trace.js":7,"./catch_filter.js":8,"./direct_resolve.js":9,"./errors.js":10,"./errors_api_rejection":11,"./filter.js":13,"./finally.js":14,"./generators.js":15,"./global.js":16,"./map.js":17,"./nodeify.js":18,"./progress.js":19,"./promise_array.js":21,"./promise_resolver.js":22,"./promisify.js":24,"./props.js":26,"./race.js":28,"./reduce.js":29,"./settle.js":31,"./some.js":33,"./synchronous_inspection.js":35,"./thenables.js":36,"./timers.js":37,"./util.js":38,"/Users/tgriesser/github/bookshelf/knex/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":39}],21:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -4086,6 +4090,7 @@ Promise.prototype.reduce = function Promise$reduce(fn, initialValue) {
 };
 
 },{}],30:[function(require,module,exports){
+(function (process){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -4208,7 +4213,8 @@ else {
 
 module.exports = schedule;
 
-},{"./global.js":16}],31:[function(require,module,exports){
+}).call(this,require("/Users/tgriesser/github/bookshelf/knex/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"./global.js":16,"/Users/tgriesser/github/bookshelf/knex/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":39}],31:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -5028,9 +5034,72 @@ var ret = {
 
 module.exports = ret;
 
-},{"./es5.js":12,"./global.js":16}],"lodash":[function(require,module,exports){
+},{"./es5.js":12,"./global.js":16}],39:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+function noop() {}
+
+process.on = noop;
+process.once = noop;
+process.off = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],"lodash":[function(require,module,exports){
 module.exports=require('K2RcUv');
 },{}],"K2RcUv":[function(require,module,exports){
+(function (global){
 /**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -11817,4 +11886,5 @@ module.exports=require('K2RcUv');
   }
 }.call(this));
 
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}]},{},[])

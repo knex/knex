@@ -9,7 +9,7 @@
   "devDependencies": {
     "mocha": "~1.18.2",
     "mysql": "~2.2.0",
-    "pg": "~2.8.2",
+    "pg": "3.0.x",
     "pg-query-stream": "~0.4.2",
     "sqlite3": "~2.1.7",
     "node-uuid": "~1.4.0",

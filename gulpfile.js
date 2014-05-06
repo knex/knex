@@ -14,7 +14,7 @@ var excluded = {
 
 var bases = {
   mysql: './lib/dialects/mysql',
-  postgres: './lib/dialects/postgres',
+  pg: './lib/dialects/postgres',
   sqlite3: './lib/dialects/sqlite3',
   websql: './lib/dialects/websql'
 };
@@ -74,10 +74,10 @@ gulp.task('build', function() {
     var outStream = fs.createWriteStream('./browser/' + outfile);
     var depStream = fs.createWriteStream('./browser/deps.js');
     b.bundle({
-      insertGlobalVars: igv
+      // insertGlobalVars: igv
     }).pipe(outStream);
     b2.bundle({
-      insertGlobalVars: igv
+      // insertGlobalVars: igv
     }).pipe(depStream);
   });
 

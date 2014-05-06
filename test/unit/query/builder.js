@@ -40,7 +40,7 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       chain = sql().select('*').from('users').where('id', '=', 1);
       expect(chain.toSQL().sql).to.equal('select * from "users" where "id" = ?');
       expect(chain.toSQL().bindings).to.eql([1]);
-      expect(chain.toQuery()).to.equal('select * from "users" where "id" = 1');
+      expect(chain.toQuery()).to.equal('select * from "users" where "id" = \'1\'');
     });
 
     it("where betweens", function() {
@@ -120,7 +120,7 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       });
       var toSql = chain.toSQL();
       expect(toSql.bindings).to.have.length(3);
-      expect(chain.toQuery()).to.equal('select * where "id" = (select "account_id" from "names" where "names"."id" > 1 or ("names"."first_name" like \'Tim%\' and "names"."id" > 10))');
+      expect(chain.toQuery()).to.equal('select * where "id" = (select "account_id" from "names" where "names"."id" > \'1\' or ("names"."first_name" like \'Tim%\' and "names"."id" > \'10\'))');
     });
 
     it('should not do whereNull on where("foo", "<>", null) #76', function() {
