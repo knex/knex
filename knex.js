@@ -43,7 +43,9 @@ var Clients = Knex.Clients = {
 var _ = require('lodash');
 
 // Each of the methods which may be statically chained from knex.
-var QueryInterface = require('./lib/query/methods');
+var QueryInterface   = require('./lib/query/methods');
+var SchemaInterface  = require('./lib/schema/methods');
+var MigrateInterface = require('./lib/migrate/methods');
 
 // Create a new "knex" instance with the appropriate configured client.
 Knex.initialize = function(config) {
@@ -56,7 +58,7 @@ Knex.initialize = function(config) {
   // in case it's called with `new`.
   function knex(tableName) {
     var qb = new client.QueryBuilder;
-
+    if (config.__transactor__) qb.transacting(config.__transactor__);
     // Passthrough all "query" events to the knex object.
     qb.on('query', function(data) {
       knex.emit('query', data);
@@ -91,13 +93,18 @@ Knex.initialize = function(config) {
     return trx;
   };
 
-  // Build the "client"
-  var clientName = config.client;
-  if (!Clients[clientName]) {
-    throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
+  if (config.__client__) {
+    client = config.__client__;
+  } else {
+    // Build the "client"
+    var clientName = config.client;
+    if (!Clients[clientName]) {
+      throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
+    }
+    Dialect = Clients[clientName]();
+    client  = new Dialect(config);
   }
-  Dialect = Clients[clientName]();
-  client  = new Dialect(config);
+
 
   // Allow chaining methods from the root object, before
   // any other information is specified.
@@ -117,8 +124,7 @@ Knex.initialize = function(config) {
   // `knex.schema.table('tableName', function() {...`
   // `knex.schema.createTable('tableName', function() {...`
   // `knex.schema.dropTableIfExists('tableName');`
-  _.each(['table', 'createTable', 'editTable', 'dropTable',
-    'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn'], function(key) {
+  _.each(SchemaInterface, function(key) {
     schema[key] = function() {
       if (!client.SchemaBuilder) client.initSchema();
       var builder = new client.SchemaBuilder();
@@ -134,7 +140,7 @@ Knex.initialize = function(config) {
   // Attach each of the `Migrator` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
   // knex.migrate.latest().then(...
   // knex.migrate.currentVersion(...
-  _.each(['make', 'latest', 'rollback', 'currentVersion'], function(method) {
+  _.each(MigrateInterface, function(method) {
     migrate[method] = function(config) {
       if (!client.Migrator) client.initMigrator();
       config.knex = knex;
