@@ -111,6 +111,7 @@ module.exports = function(knex) {
     it('should be able to rollback transactions with rejected trx query', function() {
       var id = null;
       var err = new Error('error message');
+      var __cid, count = 0;
       return knex.transaction(function(trx) {
         return trx('accounts')
           .returning('id')
@@ -131,7 +132,14 @@ module.exports = function(knex) {
           }).then(function() {
             throw err;
           });
-      }).catch(function(msg) {
+      })
+      .on('query', function(obj) {
+        count++;
+        if (!__cid) __cid = obj.__cid;
+        expect(__cid).to.equal(obj.__cid);
+      })
+      .catch(function(msg) {
+        expect(count).to.equal(4);
         expect(msg).to.equal(err);
         return knex('accounts').where('id', id).select('first_name');
       }).then(function(resp) {
