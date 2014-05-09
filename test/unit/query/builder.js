@@ -49,8 +49,20 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.bindings).to.eql([1, 2]);
     });
 
+    it("where betweens, alternate", function() {
+      chain = sql().select('*').from('users').where('id', 'BeTween', [1, 2]).toSQL();
+      expect(chain.sql).to.equal('select * from "users" where "id" between ? and ?');
+      expect(chain.bindings).to.eql([1, 2]);
+    });
+
     it("where not between", function() {
       chain = sql().select('*').from('users').whereNotBetween('id', [1, 2]).toSQL();
+      expect(chain.sql).to.equal('select * from "users" where "id" not between ? and ?');
+      expect(chain.bindings).to.eql([1, 2]);
+    });
+
+    it("where not between, alternate", function() {
+      chain = sql().select('*').from('users').where('id', 'not between ', [1, 2]).toSQL();
       expect(chain.sql).to.equal('select * from "users" where "id" not between ? and ?');
       expect(chain.bindings).to.eql([1, 2]);
     });
@@ -289,6 +301,13 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       }).toSQL();
       expect(chain.sql).to.equal('select * from "users" where "email" = ? or "id" = (select max(id) from "users" where "email" = ?)');
       expect(chain.bindings).to.eql(['foo', 'bar']);
+    });
+
+    it("where exists", function() {
+      chain = sql().select('*').from('orders').whereExists(function(qb) {
+        qb.select('*').from('products').where('products.id', '=', raw('"orders"."id"'));
+      }).toSQL();
+      expect(chain.sql).to.equal('select * from "orders" where exists (select * from "products" where "products"."id" = "orders"."id")');
     });
 
     it("where exists", function() {
@@ -607,6 +626,26 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       }).toSQL();
       var q2 = sql().table('recipients').insert(raw('(recipient_id, email) ' + q1.sql, q1.bindings));
       expect(q2.toSQL().sql).to.equal('insert into "recipients" (recipient_id, email) select \'user\', \'user@foo.com\' where not exists (select 1 from "recipients" where "recipient_id" = ?)');
+    });
+
+    it('throws if you try to use an invalid operator', function() {
+      var err;
+      try {
+        sql().select('*').where('id', 'isnt', 1).toString();
+      } catch (e) {
+        err = e.message;
+      }
+      expect(err).to.equal("The operator \"isnt\" is not permitted");
+    });
+
+    it('throws if you try to use an invalid operator in an inserted statement', function() {
+      var err, obj = sql().select('*').where('id', 'isnt', 1);
+      try {
+        sql().select('*').from('users').where('id', 'in', obj).toString();
+      } catch (e) {
+        err = e.message;
+      }
+      expect(err).to.equal("The operator \"isnt\" is not permitted");
     });
 
   });
