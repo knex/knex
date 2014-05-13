@@ -501,7 +501,8 @@ var knex = Knex.initialize({
       <br />
       Creates a <tt>select</tt> query, taking an optional array of <b>columns</b> for the query, eventually
       defaulting to <tt>*</tt> if none are specified when the query is built. The response of a select call will
-      resolve with an array of objects selected from the database.
+      resolve with an array of objects selected from the database. Select can only be called once per query. An 
+      alternative, when querying multiple times, is to use <tt>column</tt>.
     </p>
 
 <pre>
