@@ -87,6 +87,37 @@ module.exports = function(knex) {
       });
     });
 
+    describe('knex.migrate.ignore', function() {
+      before(function() {
+        return knex.migrate.ignore({directory: __dirname + '/test'});
+      });
+
+      it('should flag all migration files in the specified directory as ran', function() {
+        return knex('knex_migrations').select('*').then(function(data) {
+          expect(data.length).to.equal(2);
+        });
+      });
+
+      it('should run the migrations from oldest to newest', function() {
+        return knex('knex_migrations').orderBy('id', 'asc').select('*').then(function(data) {
+          expect(data[0].name).to.equal('20131019235242_migration_1.js');
+          expect(data[1].name).to.equal('20131019235306_migration_2.js');
+        });
+      });
+
+      it('should not create all specified tables and columns', function() {
+        // Map the table names to promises that evaluate chai expectations to
+        // confirm that the table exists and the 'id' and 'name' columns exist
+        // within the table
+        return Promise.map(tables, function(table) {
+          return knex.schema.hasTable(table).then(function(exists) {
+            expect(exists).to.be.false;
+          });
+        });
+      });
+
+    });
+
     after(function() {
       rimraf.sync(path.join(__dirname, './migration'));
     });
