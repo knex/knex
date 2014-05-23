@@ -8,7 +8,6 @@
   },
   "devDependencies": {
     "mocha": "~1.18.2",
-    "mysql": "~2.2.0",
     "pg": "3.0.x",
     "pg-query-stream": "~0.4.2",
     "sqlite3": "~2.1.7",
@@ -27,6 +26,7 @@
     "gulp": "^3.6.2"
   },
   "dependencies": {
+    "mysql": "~2.2.0",
     "bluebird": "1.2.x",
     "colors": "~0.6.2",
     "generic-pool-redux": "~0.1.0",
