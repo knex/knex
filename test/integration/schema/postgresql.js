@@ -9,12 +9,20 @@ module.exports = function(knex) {
         });
       });
 
-      it('sets search path', function() {
-        return knex.schema.searchPath('public');
+      it('creates schema', function() {
+        return knex.schema.createSchema('bogart');
       });
 
       it('sets local search path', function() {
-        return knex.schema.searchPath('public', {local: true});
+        return knex.schema.searchPath('bogart', {local: true});
+      });
+
+      it('drops schema', function() {
+        return knex.schema.dropSchema('bogart');
+      });
+
+      it('sets search path', function() {
+        return knex.schema.searchPath('public');
       });
     });
   });

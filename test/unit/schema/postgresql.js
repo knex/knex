@@ -390,6 +390,16 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('set local search_path to "chunky","bacon"');
     });
 
+    it("creates schema", function() {
+      tableSql = new SchemaBuilder().createSchema('private').toSQL();
+      expect(tableSql[0].sql).to.equal('create schema "private"');
+    });
+
+    it("drops schema", function() {
+      tableSql = new SchemaBuilder().dropSchema('private').toSQL();
+      expect(tableSql[0].sql).to.equal('drop schema "private"');
+    });
+
   });
 
 };
