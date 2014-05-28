@@ -375,6 +375,21 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('alter table "user" add column "preferences" json not null {}');
     });
 
+    it("shows search path", function() {
+      tableSql = new SchemaBuilder().searchPath().toSQL();
+      expect(tableSql[0].sql).to.equal('show search_path');
+    });
+
+    it("sets search path", function() {
+      tableSql = new SchemaBuilder().searchPath('chunky','bacon').toSQL();
+      expect(tableSql[0].sql).to.equal('set search_path to "chunky","bacon"');
+    });
+
+    it("sets local search path", function() {
+      tableSql = new SchemaBuilder().searchPath('chunky','bacon', {local: true}).toSQL();
+      expect(tableSql[0].sql).to.equal('set local search_path to "chunky","bacon"');
+    });
+
   });
 
 };

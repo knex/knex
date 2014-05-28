@@ -5,6 +5,9 @@ module.exports = function(knex) {
     this.dialect = knex.client.dialect;
 
     require('./schema')(knex);
+    if (this.dialect === 'postgresql') {
+      require('./schema/postgresql')(knex);
+    }
     require('./migrate')(knex);
     require('./builder/inserts')(knex);
     require('./builder/selects')(knex);
@@ -15,6 +18,7 @@ module.exports = function(knex) {
     require('./builder/transaction')(knex);
     require('./builder/deletes')(knex);
     require('./builder/additional')(knex);
+
   });
 
 };
