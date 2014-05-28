@@ -9,7 +9,14 @@ exports.grammar = _.defaults({
 
   // The keyword identifier wrapper format.
   wrapValue: function(value) {
-    return (value !== '*' ? Helpers.format('"%s"', value) : "*");
+    if (value === '*') {
+      return '"*"';
+    } else if (value.indexOf('[') >= 0) {
+      return Helpers.format('"%s"%s', value.substr(0,value.indexOf('[')), value.substr(value.indexOf('[')))
+    } else {
+      return Helpers.format('"%s"', value);
+    }
+    // return (value !== '*' ? Helpers.format('"%s"', value) : "*");
   },
 
   // Compiles a truncate query.
