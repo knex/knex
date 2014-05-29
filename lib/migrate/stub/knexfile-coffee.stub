@@ -19,7 +19,7 @@ module.exports =
       min: 2
       max: 10
     migrations:
-      # tableName: 'knex_migrations'
+      tableName: 'knex_migrations'
 
   production:
     client: 'postgresql'
@@ -31,4 +31,4 @@ module.exports =
       min: 2
       max: 10
     migrations:
-      # tableName: 'knex_migrations'
+      tableName: 'knex_migrations'

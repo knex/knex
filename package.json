@@ -36,7 +36,8 @@
     "inherits": "~2.0.1",
     "lodash": "~2.4.0",
     "mkdirp": "^0.5.0",
-    "readable-stream": "^1.1.12"
+    "readable-stream": "^1.1.12",
+    "knex-cli": "0.1.x"
   },
   "scripts": {
     "build": "gulp build",

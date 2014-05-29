@@ -21,7 +21,7 @@ module.exports = {
       max: 10
     },
     migrations: {
-      // tableName: 'postgresql'
+      tableName: 'postgresql'
     }
   },
 
@@ -35,6 +35,9 @@ module.exports = {
     pool: {
       min: 2,
       max: 10
+    },
+    migrations: {
+      tableName: 'postgresql'
     }
   }
 
