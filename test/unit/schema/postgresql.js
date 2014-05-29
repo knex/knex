@@ -127,7 +127,12 @@ module.exports = function(client) {
       expect(tableSql[1].sql).to.equal('alter table "users" add primary key ("name")');
     });
 
-    it("adding foreign key");
+    it("adding foreign key", function() {
+      tableSql = new SchemaBuilder().createTable('accounts', function(table) {
+        table.integer('account_id').references('users.id');
+      }).toSQL();
+      expect(tableSql[1].sql).to.equal('alter table "accounts" add constraint accounts_account_id_foreign foreign key ("account_id") references "users" ("id")');
+    });
 
     it("adding unique key", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
