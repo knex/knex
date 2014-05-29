@@ -21,8 +21,7 @@ var bases = {
   websql:  './lib/dialects/websql'
 };
 
-var all = ['mysql', 'pg', 'sqlite3', 'websql'];
-
+var all            = ['mysql', 'pg', 'sqlite3', 'websql'];
 var externals      = ['lodash', 'bluebird'];
 var alwaysExcluded = ['generic-pool-redux', 'readable-stream', './lib/migrate/index.js'];
 
@@ -91,28 +90,17 @@ gulp.task('build:websql', function() {
 });
 gulp.task('build:deps', buildDependencies);
 
+// Run the test... TODO: split these out to individual components.
+gulp.task('jshint', shell.task(['npm run jshint']));
+gulp.task('test', ['jshint'], shell.task(['npm run test']));
+
 gulp.task('bump-version', function() {
   var type = argv.type || 'patch';
   return gulp.src('./package.json')
     .pipe(bump({type: type}))
     .pipe(gulp.dest('./'));
 });
-
-gulp.task('jshint', shell.task([
-  'jshint knex.js lib/*'
-]));
-
-// Run the test... TODO: split these out to individual components.
-gulp.task('test', ['jshint'], shell.task([
-  'mocha -b --check-leaks -R spec test/index.js'
-]));
-
-// Generate the docs.
-gulp.task('docs', shell.task([
-  'groc -o docs --verbose lib/*.js lib/**/*.js lib/**/**/*.js knex.js'
-]));
-
-gulp.task('release', ['test', 'bump-version'], function() {
+gulp.task('release', ['bump-version'], function() {
   return fs.readFileAsync('./package.json')
     .bind(JSON)
     .then(JSON.parse)

@@ -1,7 +1,7 @@
 {
   "name": "knex",
   "version": "0.5.14",
-  "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
+  "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "directories": {
     "test": "test"
@@ -41,10 +41,11 @@
   },
   "scripts": {
     "build": "gulp build",
-    "test": "gulp test"
+    "test": "mocha -b --check-leaks -R spec test/index.js",
+    "jshint": "jshint knex.js lib/*"
   },
   "bin": {
-    "knex": "./node_modules/knex-cli/bin/knex.js"
+    "knex": "./node_modules/knex-cli/bin/knex-cli.js"
   },
   "repository": {
     "type": "git",

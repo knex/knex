@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width">
   <link rel="canonical" href="http://knexjs.org" />
   <link rel="icon" href="docs/images/favicon.ico" />
+  <link rel="stylesheet" href="/docs/assets/style.css" />
   <title>Knex.js - A SQL Query Builder for Javascript</title>
 <!--
 ._____.                                                                        ______
@@ -24,179 +25,6 @@
 |     |    \     \  |     |   \       |    \                 \  /     /    \     \
 |_____|     \_____\ |_____|    \______|     \_______________/  /_____/      \_____\
 -->
-
-  <style>
-    body {
-      font-size: 14px;
-      line-height: 22px;
-      background: #FEFFFC;
-      color: #000;
-      font-family: Helvetica Neue, Helvetica, Arial;
-    }
-    .interface {
-      font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
-    }
-    div#sidebar {
-      background: #fff;
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
-      width: 200px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      padding: 15px 0 30px 30px;
-      border-right: 1px solid #bbb;
-      box-shadow: 0 0 20px #ccc; -webkit-box-shadow: 0 0 20px #ccc; -moz-box-shadow: 0 0 20px #ccc;
-    }
-    a.toc_title, a.toc_title:visited {
-      display: block;
-      color: black;
-      font-weight: bold;
-      margin-top: 15px;
-    }
-      a.toc_title:hover {
-        text-decoration: underline;
-      }
-      #sidebar .version {
-        font-size: 10px;
-        font-weight: normal;
-      }
-    ul.toc_section {
-      font-size: 11px;
-      line-height: 14px;
-      margin: 5px 0 0 0;
-      padding-left: 0px;
-      list-style-type: none;
-      font-family: Lucida Grande;
-    }
-      .toc_section li {
-        cursor: pointer;
-        margin: 0 0 3px 0;
-      }
-        .toc_section li a {
-          text-decoration: none;
-          color: black;
-        }
-          .toc_section li a:hover {
-            text-decoration: underline;
-          }
-    div.container {
-      width: 550px;
-      margin: 40px 0 50px 260px;
-    }
-      div.container ul.small {
-        font-size: 12px;
-      }
-    img#logo {
-      width: 450px;
-    }
-    .warning {
-      font-size: 12px;
-      line-height: 18px;
-      font-style: italic;
-    }
-    p {
-      margin: 20px 0;
-      width: 550px;
-    }
-    a, a:visited {
-      color: #444;
-    }
-    a:active, a:hover {
-      color: #000;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      padding-top: 20px;
-    }
-      h2 {
-        font-size: 20px;
-      }
-    b.header {
-      font-size: 16px;
-      line-height: 30px;
-    }
-    span.small {
-      font-size: 12px;
-      font-style: italic;
-    }
-    span.alias {
-      font-size: 14px;
-      font-style: italic;
-      margin-left: 20px;
-    }
-    table, tr, td {
-      margin: 0; padding: 0;
-    }
-      td {
-        padding: 2px 12px 2px 0;
-      }
-      table .rule {
-        height: 1px;
-        background: #ccc;
-        margin: 5px 0;
-      }
-    ul {
-      list-style-type: circle;
-      padding: 0 0 0 20px;
-    }
-      li {
-        width: 500px;
-        margin-bottom: 10px;
-      }
-      code, pre, tt {
-        font-family: Monaco, Consolas, "Lucida Console", monospace;
-        font-size: 12px;
-        line-height: 18px;
-        font-style: normal;
-      }
-        tt {
-          padding: 0px 3px;
-          background: #fff;
-          border: 1px solid #ddd;
-          zoom: 1;
-        }
-        code {
-          margin-left: 20px;
-        }
-        pre {
-          font-size: 12px;
-          padding: 2px 0 2px 15px;
-          border-left: 5px solid #bbb;
-          margin: 0px 0 30px;
-        }
-    @media only screen and (-webkit-min-device-pixel-ratio: 1.5) and (max-width: 640px),
-          only screen and (-o-min-device-pixel-ratio: 3/2) and (max-width: 640px),
-          only screen and (min-device-pixel-ratio: 1.5) and (max-width: 640px) {
-      img {
-        max-width: 100%;
-      }
-      div#sidebar {
-        -webkit-overflow-scrolling: initial;
-        position: relative;
-        width: 90%;
-        height: 120px;
-        left: 0;
-        top: -7px;
-        padding: 10px 0 10px 30px;
-        border: 0;
-      }
-      img#logo {
-        width: auto;
-        height: auto;
-      }
-      div.container {
-        margin: 0;
-        width: 100%;
-      }
-      p, div.container ul {
-        max-width: 98%;
-        overflow-x: scroll;
-      }
-      pre {
-        overflow: scroll;
-      }
-    }
-  </style>
 </head>
 <body>
 
@@ -207,21 +35,43 @@
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
-      <li>&raquo; <a href="docs/knex.html">Annotated Source</a></li>
       <li>&raquo; <a href="#changelog">Change Log</a></li>
+    </ul>
+
+    <a class="toc_title" href="#Upgrading">
+      Upgrading
+    </a>
+    <ul class="toc_section">
+      <li>– <a href="#Upgrading-from0.5">0.5.x -> 0.6</a></li>
+      <li>– <a href="#Upgrading-from0.4">0.4.x -> 0.5</a></li>
     </ul>
 
     <a class="toc_title" href="#Installation">
       Installation
     </a>
+    <ul class="toc_section">
+      <li>– <a href="#Installation-node">Node.js</a></li>
+      <li>– <a href="#Installation-browser">Browser</a></li>
+    </ul>
 
-    <a class="toc_title" href="#Upgrading">
-      Upgrading
+    <a class="toc_title" href="#Configuring">
+      Configuring
     </a>
+    <ul class="toc_section">
+      <li>– <a href="#Configuring-client">client</a></li>
+      <li>– <a href="#Configuring-pooling">pooling</a></li>
+      <li>– <a href="#Configuring-migration-config">migrations</a></li>
+    </ul>
 
-    <a class="toc_title" href="#Initialize">
-      Initialize
+    <a class="toc_title" href="#Interfaces">
+      Interfaces
     </a>
+    <ul class="toc_section">
+      <li>– <a href="#Configuring-promises">promises</a></li>
+      <li>– <a href="#Configuring-callbacks">callbacks</a></li>
+      <li>– <a href="#Configuring-streams">streams</a></li>
+      <li>– <a href="#Configuring-events">events</a></li>
+    </ul>
 
     <a class="toc_title" href="#Builder">
       Query Builder
@@ -231,9 +81,30 @@
       <li>– <a href="#Builder-select">select</a></li>
       <li>– <a href="#Builder-column">column</a></li>
       <li>– <a href="#Builder-from">from</a></li>
-      <li>– <a href="#Builder-where">where <b>+18 methods</b></a></li>
+
+      <li><b><a href="#Builder-where">Where Methods:</a></b></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-where">where</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereExists">whereExists</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereNotExists">whereNotExists</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereIn">whereIn</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereNotIn">whereNotIn</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereNull">whereNull</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereNotNull">whereNotNull</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereBetween">whereBetween</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereNotBetween">whereNotBetween</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereRaw">whereRaw</a></li>
+
+      <li><b><a href="#Builder-joins">Join Methods:</a></b></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-innerJoin">innerJoin</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-leftJoin">leftJoin</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-leftOuterJoin">leftOuterJoin</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-rightJoin">rightJoin</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-rightOuterJoin">rightOuterJoin</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-outerJoin">outerJoin</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-fullOuterJoin">fullOuterJoin</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-crossJoin">crossJoin</a></li>
+
       <li>– <a href="#Builder-distinct">distinct</a></li>
-      <li>– <a href="#Builder-joins">joins</a></li>
       <li>– <a href="#Builder-groupBy">groupBy</a></li>
       <li>– <a href="#Builder-orderBy">orderBy</a></li>
       <li>– <a href="#Builder-having">having</a></li>
@@ -246,8 +117,8 @@
       <li>– <a href="#Builder-update">update</a></li>
       <li>– <a href="#Builder-del">del / delete</a></li>
       <li>– <a href="#Builder-transacting">transacting</a></li>
-      <li>  – <a href="#Builder-forUpdate">forUpdate</a></li>
-      <li>  – <a href="#Builder-forShare">forShare</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-forUpdate">forUpdate</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-forShare">forShare</a></li>
       <li>– <a href="#Builder-count">count</a></li>
       <li>– <a href="#Builder-min">min</a></li>
       <li>– <a href="#Builder-max">max</a></li>
@@ -270,6 +141,11 @@
     <a class="toc_title" href="#Transaction">
       Transaction
     </a>
+    <ul class="toc_section">
+      <li>– <a href="#Transaction-overview"><b>overview</b></a></li>
+      <li>– <a href="#Transaction-commit">commit</a></li>
+      <li>– <a href="#Transaction-rollback">rollback</a></li>
+    </ul>
 
     <a class="toc_title" href="#Schema">
       Schema
@@ -358,7 +234,7 @@
     </p>
 
     <p>
-      Knex.js is a query builder for <b>Postgres</b>, <b>MySQL</b> and <b>SQLite3</b>, designed to be flexible,
+      Knex.js is a SQL query builder for <b>Postgres</b>, <b>MySQL</b> and <b>SQLite3</b>, designed to be flexible,
       portable, and fun to use. It features both traditional node style <a href="#Builder-exec">callbacks</a>
       as well as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured
       query and schema builders, <b>transaction support</b>, connection pooling and standardized responses between
@@ -402,6 +278,24 @@
       </a>
     </p>
 
+    <h2 id="Upgrading">Upgrading</h2>
+
+    <h3 id="Upgrading-from0.5">Upgrading 0.5 -> 0.6</h3>
+
+    <p>
+      Minor changes from the 0.4.x series, include the fact that aggregate functions are
+      no longer aliased as "aggregate", but rather left as-is, unless explicitly aliased.
+      See <a href="https://github.com/tgriesser/knex/pull/110">this ticket</a> for more info.
+    </p>
+
+    <h3 id="Upgrading-from0.4">Upgrading 0.4 -> 0.5</h3>
+
+    <p>
+      Minor changes from the 0.4.x series, include the fact that aggregate functions are
+      no longer aliased as "aggregate", but rather left as-is, unless explicitly aliased.
+      See <a href="https://github.com/tgriesser/knex/pull/110">this ticket</a> for more info.
+    </p>
+
     <h2 id="Installation">
       Installation
     </h2>
@@ -410,8 +304,7 @@
       All dependencies are specified in <tt>package.json</tt> file but include <tt>lodash</tt>,
       <tt>bluebird</tt>, and the <tt>generic-pool-redux</tt> libraries. You then need to install
       either <tt>mysql</tt>, <tt>pg</tt>, or <tt>sqlite3</tt> from <tt>npm</tt> if you wish
-      to use one of these databases with node.js, or create your own client
-      adapter and specify it in <a href="#Initialize">knex.initialize</a>.
+      to use one of these databases with node.js, or create your own, such as the websql driver.
     </p>
 
 <pre>
@@ -423,24 +316,16 @@ $ npm install pg
 $ npm install sqlite3
 </pre>
 
-    <h2 id="Upgrading">Upgrading from 0.4.x</h2>
-
-    <p>
-      Minor changes from the 0.4.x series, include the fact that aggregate functions are
-      no longer aliased as "aggregate", but rather left as-is, unless explicitly aliased.
-      See <a href="https://github.com/tgriesser/knex/pull/110">this ticket</a> for more info.
-    </p>
-
     <h2 id="Initialize">Initialize</h2>
 
     <p>
-      <tt>Knex.initialize</tt> is the initializing function that must be called prior to using
+      The <tt>knex</tt> module is itsself a function which takes a configuration object for
       Knex, accepting a few parameters. The <tt>client</tt> parameter is required
       and determines which client adapter will be used with the library.
     </p>
 
 <pre>
-var knex = Knex.initialize({
+var knex = require('knex')({
   client: 'mysql',
   connection: {
     host     : '127.0.0.1',
@@ -461,29 +346,20 @@ var knex = Knex.initialize({
       The options are passed directly to the appropriate database client to create the connection. Acceptable <tt>charset</tt> values may vary between clients. MySQL requires a key from its <a href="https://github.com/felixge/node-mysql/blob/master/lib/protocol/constants/charsets.js">predefined list</a> (e.g. <tt>UTF8_GENERAL_CI</tt>) to be passed as the <tt>charset</tt> in Knex.
     </p>
 
-    <p>
-      You'll need to store this instance created by the <tt>initialize</tt> somewhere in the application
-      you can reference it. A common pattern to follow is to set the client as a property on the <tt>Knex</tt>
-      library when your application starts, so you can easily reference it later:
-    </p>
-
 <pre>
-// When the app starts
-var Knex  = require('knex');
-Knex.knex = Knex.initialize({
+var pg = require('knex')({
   client: 'pg',
   connection: {
     // your connection config
   }
 });
 
-// elsewhere, to use the client:
-var knex = require('knex').knex;
-
 knex('table').where('id', 1).select().then(...
 </pre>
 
-Note: When you use the SQLite3 adapter, there is a filename required, not a network connection. For example:
+    <p class="warning">
+      Note: When you use the SQLite3 adapter, there is a filename required, not a network connection. For example:
+    </p>
 
 <pre>
 var knex = Knex.initialize({
@@ -499,19 +375,17 @@ var knex = Knex.initialize({
 
     <p>
       The <tt>knex.builder</tt> is the interface used for building and executing standard SQL queries,
-      such as <tt>select</tt>, <tt>insert</tt>, <tt>update</tt>, <tt>delete</tt>. The query is run
-      by specifying a <a href="#Builder-table">tableName</a>, adding additional query parameters, and
-      executing the query with one of the public interface methods.
+      such as <tt>select</tt>, <tt>insert</tt>, <tt>update</tt>, <tt>delete</tt>.
     </p>
 
     <p id="Builder-main">
-      <b class="header">knex</b><code>knex(tableName)...</code>
+      <b class="header">knex</b><code>knex(tableName) / knex.[methodName]</code>
       <br />
-      The <b>Knex</b> query builder starts off by specifying a <b>tableName</b> you wish to query against,
-      which returns a chainable interface, similar to a jQuery chain. You can then call any additional
-      query builder methods needed to construct the query, eventually calling either
-      <a href="#Builder-then">then</a> or <a href="#Builder-exec">exec</a>, to execute the query with a
-      promise or a callback, respectively.
+      The query builder starts off either by specifying a <b>tableName</b> you wish to query against,
+      or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which
+      you can call additional query builder methods as needed to construct the query, eventually calling any of the
+      <a href="#Interface">interface methods</a>, to either convert toString, or execute the
+      query with a promise, callback, or stream.
     </p>
 
     <p id="Builder-select">
@@ -524,10 +398,10 @@ var knex = Knex.initialize({
 
 <pre>
   // select "title", "author", "year" from "books"
-  Knex('books').select('title', 'author', 'year');
+  knex.select('title', 'author', 'year').from('books');
 
   // select * from "books"
-  Knex('books').select();
+  knex.select().table('books');
 </pre>
 
     <p id="Builder-column">
@@ -536,16 +410,16 @@ var knex = Knex.initialize({
       Specifically set the <b>columns</b> to be selected on a select query, taking an array or a list of of column names.
     </p>
 
-<pre>
+<pre class="codegen">
   // select "title", "author", "year" from "books"
-  Knex('books').column('title', 'author', 'year').select();
+  knex.column('title', 'author', 'year').select().from('books');
 
   // or:
-  Knex('books').column(['title', 'author', 'year']).select();
+  knex.column(['title', 'author', 'year']).select().from('books');
 </pre>
 
     <p id="Builder-from">
-      <b class="header">from</b><code>.from([tableName])</code> <span class="alias">Alias: <b>into</b></span>
+      <b class="header">from</b><code>.from([tableName])</code> <span class="alias">Alias: <b>into</b>, <b>table</b></span>
       <br />
       Specifies the table used in the current query, replacing the current table name if
       one has already been specified. This is typically used in the sub-queries performed
@@ -564,32 +438,32 @@ var knex = Knex.initialize({
 // Basic Uses:
 
 // objects
-Knex('users').where({
+knex('users').where({
   first_name: 'Test',
   last_name:  'User'
 }).select('id').then(...
 
 // key, value
-Knex('users').where('id', 1).select('first_name', 'last_name').then(...
+knex('users').where('id', 1).select('first_name', 'last_name').then(...
 
 // operators: '=', '<', '>', '<=', '>=', 'like', 'not like', 'between', 'ilike'
-Knex('users').where('votes', '>', 100).exec(function(err, resp) { ... });
+knex('users').where('votes', '>', 100).exec(function(err, resp) { ... });
 
 // chained with "andWhere" / "orWhere"
-Knex('users').where('votes', '>', 100)
+knex('users').where('votes', '>', 100)
              .andWhere('status', 'active')
              .orWhere('name', 'John')
              .then(function(resp) { ... })
 
 // Even more where types (see list below):
 
-Knex('users').whereBetween('votes', [1, 100]).exec(...
+knex('users').whereBetween('votes', [1, 100]).exec(...
 
-Knex('users').whereIn('id', [1, 2, 3]).then(...
+knex('users').whereIn('id', [1, 2, 3]).then(...
 
-Knex('users').whereNotIn('id', [1, 2, 3]).then(...
+knex('users').whereNotIn('id', [1, 2, 3]).then(...
 
-Knex('users').whereNull('updated_at').exec(...
+knex('users').whereNull('updated_at').exec(...
 
 </pre>
 
@@ -599,7 +473,7 @@ Knex('users').whereNull('updated_at').exec(...
 
 <pre>
 // select * from users where name = 'John' or (votes > 100 and title <> 'Admin')
-Knex('users')
+knex('users')
   .where('name', '=', 'John')
   .orWhere(function() {
     this.where('votes', '>', 100).andWhere('title', '<>', 'Admin');
@@ -614,7 +488,7 @@ Knex('users')
 <pre>
 knex('users')
   .whereExists(function() {
-      this.select(Knex.raw(1))
+      this.select(knex.raw(1))
         .from('orders')
         .where(knex.raw('orders.user_id = users.id'));
   })
@@ -629,37 +503,12 @@ knex('users')
 <pre>
 
 // select author_id, content from comments where author_id in (select id from accounts where type = 'admin')
-Knex('comments').whereIn('author_id', function() {
+knex('comments').whereIn('author_id', function() {
 
   this.select('id').from('accounts').where('type', 'admin');
 
 }).select('author_id', 'content').then(...
 </pre>
-
-  <p>
-    These different where clauses may be joined together in any number of ways to make valid SQL statements.
-  </p>
-
-      <ul class="small">
-        <li>where</li>
-        <li>andWhere</li>
-        <li>orWhere</li>
-        <li>whereExists</li>
-        <li>orWhereExists</li>
-        <li>whereNotExists</li>
-        <li>orWhereNotExists</li>
-        <li>whereIn</li>
-        <li>orWhereIn</li>
-        <li>whereNotIn</li>
-        <li>orWhereNotIn</li>
-        <li>whereNull</li>
-        <li>orWhereNull</li>
-        <li>whereNotNull</li>
-        <li>orWhereNotNull</li>
-        <li>whereBetween</li>
-        <li>orWhereBetween</li>
-      </ul>
-    </p>
 
     <p id="Builder-distinct">
       <b class="header">distinct</b><code>.distinct()</code>
@@ -690,24 +539,6 @@ knex('users')
   .select('users.id', 'contacts.phone', 'orders.price')
   .then(function() { ... });
 </pre>
-
-    <p>
-      There are additional methods for types that may be used:
-      <ul>
-	<li>.leftJoin(...)</li>
-	<li>.leftOuterJoin(...)</li>
-	<li>.innerJoin(...) (default)</li>
-	<li>.fullJoin(...)</li>
-	<li>.innerJoin(...)</li>
-	<li>.leftJoin(...)</li>
-	<li>.leftOuterJoin(...)</li>
-	<li>.rightJoin(...)</li>
-	<li>.rightOuterJoin(...)</li>
-	<li>.outerJoin(...)</li>
-	<li>.fullOuterJoin(...)</li>
-	<li>.crossJoin(...)</li>
-      </ul>
-    </p>
 
     <p>
       For grouped joins, specify a function as the second argument for the
@@ -994,7 +825,7 @@ knex('accounts')
       this.on('a1.email', '<>', 'a2.email');
     })
     .select(['a1.email', 'a2.email'])
-    .where(Knex.Raw('a1.id = 1'))
+    .where(knex.raw('a1.id = 1'))
     .option({ nestTables: true, rowMode: 'array' })
     .limit(2);
 </pre>
@@ -1553,6 +1384,7 @@ process.stderr.on('data', function() {
 
     <p id="faq-nonode">
       <b class="header">Can I use Knex outside of Node.js</b><br />
+      Yes. While the WebSQL spec is deprecated, there is still an adapter that provides support.
       While there isn't a client adapter yet, it should be possible to run
       it could be adapted to work with other javascript environments supporting a <tt>sqlite3</tt>
       database, by providing a custom <a href="http://knexjs.org/#Adapters">Knex adapter</a>.
