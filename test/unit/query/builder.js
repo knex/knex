@@ -648,6 +648,11 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(err).to.equal("The operator \"isnt\" is not permitted");
     });
 
+    it("#287 - wraps correctly for arrays", function() {
+      var str = sql().select('*').from('value').join('table', 'table.array_column[1]', '=', raw('?', 1)).toString();
+      expect(str).to.equal('select * from "value" inner join "table" on "table"."array_column"[1] = \'1\'');
+    });
+
   });
 
 };

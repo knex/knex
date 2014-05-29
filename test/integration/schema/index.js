@@ -55,9 +55,9 @@ module.exports = function(knex) {
             table.text('about').comment('A comment.');
             table.timestamps();
           }).testSql(function(tester) {
-            // tester('mysql', ['create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default \'1\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add index test_table_one_first_name_index(`first_name`)','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)']);
-            // tester('postgresql', ['create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" timestamp, "updated_at" timestamp)',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index test_table_one_first_name_index on "test_table_one" ("first_name")','alter table "test_table_one" add constraint test_table_one_email_unique unique ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")','comment on table "test_table_one" is \'A table comment.\'']);
-            // tester('sqlite3', ['create table "test_table_one" ("id" integer not null primary key autoincrement, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" datetime, "updated_at" datetime)','create index test_table_one_first_name_index on "test_table_one" ("first_name")','create unique index test_table_one_email_unique on "test_table_one" ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")']);
+            tester('mysql', ['create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default \'1\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add index test_table_one_first_name_index(`first_name`)','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)']);
+            tester('postgresql', ['create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" timestamp, "updated_at" timestamp)',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index test_table_one_first_name_index on "test_table_one" ("first_name")','alter table "test_table_one" add constraint test_table_one_email_unique unique ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")','comment on table "test_table_one" is \'A table comment.\'']);
+            tester('sqlite3', ['create table "test_table_one" ("id" integer not null primary key autoincrement, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" datetime, "updated_at" datetime)','create index test_table_one_first_name_index on "test_table_one" ("first_name")','create unique index test_table_one_email_unique on "test_table_one" ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")']);
           });
       });
 
@@ -70,7 +70,7 @@ module.exports = function(knex) {
             table.text('details');
             table.tinyint('status');
           }).testSql(function(tester){
-            tester('mysql', ['create table `test_table_two` (`id` int unsigned not null auto_increment primary key, `account_id` int, `details` text, `status` tinyint) default character set utf8 engine = InnoDB']);
+            tester('mysql', ['create table `test_table_two` (`id` int unsigned not null auto_increment primary key, `account_id` int, `details` text, `status` tinyint) engine = InnoDB']);
           });
       });
 
@@ -81,7 +81,7 @@ module.exports = function(knex) {
             table.integer('main').primary();
             table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
           }).testSql(function(tester) {
-            tester('mysql', ['create table `test_table_three` (`main` int, `paragraph` text) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)']);
+            tester('mysql', ['create table `test_table_three` (`main` int, `paragraph` text) engine = InnoDB','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)']);
             tester('postgresql', ['create table "test_table_three" ("main" integer, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
             tester('sqlite3', ['create table "test_table_three" ("main" integer, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', primary key ("main"))']);
           });
@@ -93,7 +93,7 @@ module.exports = function(knex) {
             table.enum('enum_value', ['a', 'b', 'c']);
             table.uuid('uuid').notNull();
           }).testSql(function(tester) {
-            tester('mysql', ['create table `datatype_test` (`enum_value` enum(\'a\', \'b\', \'c\'), `uuid` char(36) not null) default character set utf8']);
+            tester('mysql', ['create table `datatype_test` (`enum_value` enum(\'a\', \'b\', \'c\'), `uuid` char(36) not null)']);
             tester('postgresql', ['create table "datatype_test" ("enum_value" text check (enum_value in (\'a\', \'b\', \'c\')), "uuid" uuid not null)']);
             tester('sqlite3', ['create table "datatype_test" ("enum_value" varchar, "uuid" char(36) not null)']);
           });
@@ -107,7 +107,7 @@ module.exports = function(knex) {
             .references('id')
             .inTable('test_table_two');
         }).testSql(function(tester) {
-          tester('mysql', ['create table `test_foreign_table_two` (`id` int unsigned not null auto_increment primary key, `fkey_two` int unsigned) default character set utf8','alter table `test_foreign_table_two` add constraint test_foreign_table_two_fkey_two_foreign foreign key (`fkey_two`) references `test_table_two` (`id`)']);
+          tester('mysql', ['create table `test_foreign_table_two` (`id` int unsigned not null auto_increment primary key, `fkey_two` int unsigned)','alter table `test_foreign_table_two` add constraint test_foreign_table_two_fkey_two_foreign foreign key (`fkey_two`) references `test_table_two` (`id`)']);
           tester('postgresql', ['create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer)','alter table "test_foreign_table_two" add constraint test_foreign_table_two_fkey_two_foreign foreign key ("fkey_two") references "test_table_two" ("id")']);
           tester('sqlite3', ['create table "test_foreign_table_two" ("id" integer not null primary key autoincrement, "fkey_two" integer, foreign key("fkey_two") references "test_table_two"("id"))']);
         });
@@ -122,7 +122,7 @@ module.exports = function(knex) {
             table.tinyint('status');
             table.unique(['column_a', 'column_b']);
           }).testSql(function(tester) {
-            tester('mysql', ['create table `composite_key_test` (`column_a` int, `column_b` int, `details` text, `status` tinyint) default character set utf8','alter table `composite_key_test` add unique composite_key_test_column_a_column_b_unique(`column_a`, `column_b`)']);
+            tester('mysql', ['create table `composite_key_test` (`column_a` int, `column_b` int, `details` text, `status` tinyint)','alter table `composite_key_test` add unique composite_key_test_column_a_column_b_unique(`column_a`, `column_b`)']);
             tester('postgresql', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint composite_key_test_column_a_column_b_unique unique ("column_a", "column_b")']);
             tester('sqlite3', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" tinyint)','create unique index composite_key_test_column_a_column_b_unique on "composite_key_test" ("column_a", "column_b")']);
           }).then(function() {

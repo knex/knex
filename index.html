@@ -63,14 +63,14 @@
       <li>– <a href="#Configuring-migration-config">migrations</a></li>
     </ul>
 
-    <a class="toc_title" href="#Interfaces">
+    <a class="toc_title" href="#Interface">
       Interfaces
     </a>
     <ul class="toc_section">
-      <li>– <a href="#Configuring-promises">promises</a></li>
-      <li>– <a href="#Configuring-callbacks">callbacks</a></li>
-      <li>– <a href="#Configuring-streams">streams</a></li>
-      <li>– <a href="#Configuring-events">events</a></li>
+      <li>– <a href="#Interface-promises">promises</a></li>
+      <li>– <a href="#Interface-callbacks">callbacks</a></li>
+      <li>– <a href="#Interface-streams">streams</a></li>
+      <li>– <a href="#Interface-events">events</a></li>
     </ul>
 
     <a class="toc_title" href="#Builder">
@@ -1275,14 +1275,13 @@ knex.schema.createTable('accounts', function() {
 });
 </pre>
 
+    <h3 id="raw-queries">Raw Queries:</h3>
+
     <h2 id="Raw">knex.raw</h2>
 
-    <h3 id="Raw-Expressions">Raw Expressions:</h3>
-
     <p>
-      Sometimes you may need to use a raw expression in a query. These expressions will be injected
-      into the query as strings, so be careful not to create any SQL injection points!
-      To create a raw expression, you may use the <tt>knex.raw</tt> function.
+      Sometimes you may need to use a raw expression in a query. Raw query object may be injected pretty much
+      anywhere you want, properly
     </p>
 
 <pre>
@@ -1356,8 +1355,7 @@ knex.raw('select * from users where id = 1').then(function(resp) {
 
     <p id="faq-debug">
       <b class="header">How do I debug?</b><br />
-      If you pass <tt>{debug: true}</tt> as one of the options in your initialize settings, you can see all of the query calls being made. Sometimes you need to dive a bit further into
-      the various calls and see what all is going on behind the scenes. I'd recommend
+      If you pass <tt>{debug: true}</tt> as one of the options in your initialize settings, you can see all of the query calls being made. Sometimes you need to dive a bit further into the various calls and see what all is going on behind the scenes. I'd recommend
       <a href="https://github.com/dannycoates/node-inspector">node-inspector</a>, which allows you to debug code with <tt>debugger</tt> statements like you would in the browser.
     </p>
 

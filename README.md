@@ -1,16 +1,20 @@
-Knex.js
+knex.js
 -----
 
-SQL that is flexible, portable, and fun to use.
+SQL that is flexible, portable, and fun to use!
 
 [![Build Status](https://travis-ci.org/tgriesser/knex.png?branch=master)](https://travis-ci.org/tgriesser/knex)
 
 ### [Full Documentation Site: knexjs.org](http://knexjs.org)
 
-A batteries-included, multi-dialect (MySQL, PostgreSQL, SQLite3, WebSQL) SQL query builder for Node.js, featuring
-[transactions](http://knexjs.org/#Transactions), [connection pooling](http://knexjs.org/#Initialize-pool),
-[streaming queries](http://knexjs.org/#Interface-streams), both a [promise](http://knexjs.org/#Interface-promise) and
-[callback](http://knexjs.org/#Interface-callback) API, and a [thorough test suite](https://travis-ci.org/tgriesser/knex).
+A batteries-included, multi-dialect (MySQL, PostgreSQL, SQLite3, WebSQL) SQL query builder for Node.js, featuring:
+
+- [transactions](http://knexjs.org/#Transactions)
+- [connection pooling](http://knexjs.org/#Initialize-pool)
+- [streaming queries](http://knexjs.org/#Interface-streams)
+- both a [promise](http://knexjs.org/#Interface-promises) and [callback](http://knexjs.org/#Interface-callback) API
+- a [thorough test suite](https://travis-ci.org/tgriesser/knex)
+- the ability to [run in the Browser](http://knexjs.org/#faq-browser)
 
 For Docs, FAQ, and other information, see: http://knexjs.org
 
