@@ -139,6 +139,14 @@ describe('Builder', function () {
       expect(cloned.type).to.equal('insert');
     });
 
+    it('should create a new query instance', function() {
+      var query  = builder.select().where('id', '>', '10');
+      var cloned = query.clone().where('id', '<', '10');
+
+      expect(query.toString()).to.not.contain('<');
+      expect(cloned.toString()).to.contain('>').and.to.contain('<');
+    });
+
   });
 
   describe('reset', function() {
