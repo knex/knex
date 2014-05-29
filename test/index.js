@@ -6,7 +6,7 @@ chai.use(require("chai-as-promised"));
 chai.use(require("sinon-chai"));
 chai.should();
 
-var Promise = global.testPromise    = require('../lib/promise');
+var Promise = global.testPromise = require('../lib/promise');
 global.expect         = chai.expect;
 global.AssertionError = chai.AssertionError;
 global.Assertion      = chai.Assertion;

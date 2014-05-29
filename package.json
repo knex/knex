@@ -1,30 +1,33 @@
 {
   "name": "knex",
-  "version": "0.6.0-alpha1",
+  "version": "0.5.14",
   "description": "A query builder for Postgres, MySQL and SQLite3, designed to be flexible, portable, and fun to use.",
   "main": "knex.js",
   "directories": {
     "test": "test"
   },
   "devDependencies": {
-    "mocha": "~1.18.2",
-    "mysql": "~2.2.0",
-    "pg": "3.0.x",
-    "pg-query-stream": "~0.4.2",
-    "sqlite3": "~2.1.7",
-    "node-uuid": "~1.4.0",
-    "chai": "~1.8.1",
+    "chai": "^1.9.1",
     "chai-as-promised": "~4.1.0",
-    "sinon": "~1.7.3",
-    "sinon-chai": "~2.4.0",
     "jshint": "~2.5.0",
+    "minimist": "^0.1.0",
+    "mocha": "^1.20.0",
+    "mysql": "^2.3.1",
+    "node-uuid": "~1.4.0",
+    "pg": "^3.2.0",
+    "pg-query-stream": "^0.6.0",
     "rimraf": "2.x",
-    "minimist": "0.0.8"
+    "sinon": "^1.10.0",
+    "sinon-chai": "^2.5.0",
+    "sqlite3": "^2.2.3"
   },
   "optionalDependencies": {
     "through": "^2.3.4",
-    "browserify": "^3.42.0",
-    "gulp": "^3.6.2"
+    "browserify": "^4.0.0",
+    "gulp": "^3.6.2",
+    "gulp-bump": "^0.1.8",
+    "gulp-git": "^0.4.2",
+    "gulp-shell": "^0.2.5"
   },
   "dependencies": {
     "bluebird": "1.2.x",
@@ -32,17 +35,16 @@
     "generic-pool-redux": "~0.1.0",
     "inherits": "~2.0.1",
     "lodash": "~2.4.0",
-    "mkdirp": "~0.3.5",
-    "optimist": "~0.6.0",
-    "readable-stream": "1.0.27-1"
+    "mkdirp": "^0.5.0",
+    "readable-stream": "^1.1.12"
   },
   "scripts": {
-    "test": "jshint knex.js lib/* && mocha -b --check-leaks -R spec test/index.js",
-    "doc": "groc -o docs --verbose lib/*.js lib/**/*.js lib/**/**/*.js  knex.js",
-    "release:patch": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:patch",
-    "release:minor": "git checkout master && export KNEX_DEV=0 && npm run-script test && npm run-script doc && git add . && git commit -m 'docs prep for release' && grunt release:minor"
+    "build": "gulp build",
+    "test": "gulp test"
   },
-  "bin": "bin/knex",
+  "bin": {
+    "knex": "./node_modules/knex-cli/bin/knex.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/tgriesser/knex.git"

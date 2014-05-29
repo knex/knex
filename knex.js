@@ -1,4 +1,4 @@
-// Knex.js  0.6.0-alpha
+// Knex.js  0.6.0
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -158,10 +158,9 @@ Knex.initialize = function(config) {
   // knex.migrate.latest().then(...
   // knex.migrate.currentVersion(...
   _.each(MigrateInterface, function(method) {
-    migrate[method] = function(config) {
+    migrate[method] = function() {
       if (!client.Migrator) client.initMigrator();
-      config.knex = knex;
-      var migrator = new client.Migrator(config);
+      var migrator = new client.Migrator(knex);
       return migrator[method].apply(migrator, arguments);
     };
   });

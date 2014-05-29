@@ -2735,8 +2735,8 @@ return Promise;
 
 };
 
-}).call(this,require("/Users/tgriesser/github/bookshelf/knex/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"./any.js":1,"./async.js":2,"./call_get.js":5,"./cancel.js":6,"./captured_trace.js":7,"./catch_filter.js":8,"./direct_resolve.js":9,"./errors.js":10,"./errors_api_rejection":11,"./filter.js":13,"./finally.js":14,"./generators.js":15,"./global.js":16,"./map.js":17,"./nodeify.js":18,"./progress.js":19,"./promise_array.js":21,"./promise_resolver.js":22,"./promisify.js":24,"./props.js":26,"./race.js":28,"./reduce.js":29,"./settle.js":31,"./some.js":33,"./synchronous_inspection.js":35,"./thenables.js":36,"./timers.js":37,"./util.js":38,"/Users/tgriesser/github/bookshelf/knex/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":39}],21:[function(require,module,exports){
+}).call(this,require("FWaASH"))
+},{"./any.js":1,"./async.js":2,"./call_get.js":5,"./cancel.js":6,"./captured_trace.js":7,"./catch_filter.js":8,"./direct_resolve.js":9,"./errors.js":10,"./errors_api_rejection":11,"./filter.js":13,"./finally.js":14,"./generators.js":15,"./global.js":16,"./map.js":17,"./nodeify.js":18,"./progress.js":19,"./promise_array.js":21,"./promise_resolver.js":22,"./promisify.js":24,"./props.js":26,"./race.js":28,"./reduce.js":29,"./settle.js":31,"./some.js":33,"./synchronous_inspection.js":35,"./thenables.js":36,"./timers.js":37,"./util.js":38,"FWaASH":39}],21:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -4213,8 +4213,8 @@ else {
 
 module.exports = schedule;
 
-}).call(this,require("/Users/tgriesser/github/bookshelf/knex/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"./global.js":16,"/Users/tgriesser/github/bookshelf/knex/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":39}],31:[function(require,module,exports){
+}).call(this,require("FWaASH"))
+},{"./global.js":16,"FWaASH":39}],31:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -5082,8 +5082,11 @@ process.argv = [];
 function noop() {}
 
 process.on = noop;
+process.addListener = noop;
 process.once = noop;
 process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
 process.emit = noop;
 
 process.binding = function (name) {
@@ -5096,8 +5099,6 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],"lodash":[function(require,module,exports){
-module.exports=require('K2RcUv');
 },{}],"K2RcUv":[function(require,module,exports){
 (function (global){
 /**
@@ -11887,4 +11888,6 @@ module.exports=require('K2RcUv');
 }.call(this));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],"lodash":[function(require,module,exports){
+module.exports=require('K2RcUv');
 },{}]},{},[])

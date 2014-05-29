@@ -5,24 +5,19 @@ var Promise  = require('../../../lib/promise');
 
 module.exports = function(knex) {
 
-  var migrationConfig = {
-    directory: path.join(__dirname, './migration/'),
-    name: 'test'
-  };
-
   require('rimraf').sync(path.join(__dirname, './migration'));
 
   describe('knex.migrate', function () {
 
     it('should create a new migration file with the create method', function() {
-      return knex.migrate.make(migrationConfig).then(function(name) {
+      return knex.migrate.make('test').then(function(name) {
         expect(name.split('_')[0]).to.have.length(14);
         expect(name.split('_')[1].split('.')[0]).to.equal('test');
       });
     });
 
     it('should list the current migration state with the currentVersion method', function() {
-      return knex.migrate.currentVersion(migrationConfig).then(function(version) {
+      return knex.migrate.currentVersion().then(function(version) {
         equal(version, 'none');
       });
     });
@@ -30,6 +25,7 @@ module.exports = function(knex) {
     var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
 
     describe('knex.migrate.latest', function() {
+
       before(function() {
         return knex.migrate.latest({directory: __dirname + '/test'});
       });

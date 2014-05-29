@@ -17,7 +17,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "foldPrefix": "^",
           "name": "JavaScript"
         },
-        "sourcePath": "/Users/tgriesser/github/bookshelf/knex/knex.js",
+        "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/knex.js",
         "projectPath": "knex.js",
         "targetPath": "knex",
         "pageTitle": "knex",
@@ -29,8 +29,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 2,
-            "title": "Knex.js  0.6.0-alpha",
-            "slug": "knexjs-060-alpha"
+            "title": "Knex.js  0.6.0",
+            "slug": "knexjs-060"
           },
           "depth": 2
         }
@@ -71,7 +71,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/mysql/formatter.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/formatter.js",
                     "projectPath": "lib/dialects/mysql/formatter.js",
                     "targetPath": "lib/dialects/mysql/formatter",
                     "pageTitle": "lib/dialects/mysql/formatter",
@@ -101,7 +101,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/mysql/index.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/index.js",
                     "projectPath": "lib/dialects/mysql/index.js",
                     "targetPath": "lib/dialects/mysql/index",
                     "pageTitle": "lib/dialects/mysql/index",
@@ -131,7 +131,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/mysql/migrator.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/migrator.js",
                     "projectPath": "lib/dialects/mysql/migrator.js",
                     "targetPath": "lib/dialects/mysql/migrator",
                     "pageTitle": "lib/dialects/mysql/migrator",
@@ -161,7 +161,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/mysql/pool.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/pool.js",
                     "projectPath": "lib/dialects/mysql/pool.js",
                     "targetPath": "lib/dialects/mysql/pool",
                     "pageTitle": "lib/dialects/mysql/pool",
@@ -191,7 +191,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/mysql/query.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/query.js",
                     "projectPath": "lib/dialects/mysql/query.js",
                     "targetPath": "lib/dialects/mysql/query",
                     "pageTitle": "lib/dialects/mysql/query",
@@ -237,7 +237,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/mysql/raw.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/raw.js",
                     "projectPath": "lib/dialects/mysql/raw.js",
                     "targetPath": "lib/dialects/mysql/raw",
                     "pageTitle": "lib/dialects/mysql/raw",
@@ -267,7 +267,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/mysql/runner.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/runner.js",
                     "projectPath": "lib/dialects/mysql/runner.js",
                     "targetPath": "lib/dialects/mysql/runner",
                     "pageTitle": "lib/dialects/mysql/runner",
@@ -297,7 +297,27 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/mysql/transaction.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/string.js",
+                    "projectPath": "lib/dialects/mysql/string.js",
+                    "targetPath": "lib/dialects/mysql/string",
+                    "pageTitle": "lib/dialects/mysql/string",
+                    "title": "string"
+                  },
+                  "depth": 4,
+                  "outline": []
+                }, {
+                  "type": "file",
+                  "data": {
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "multiLineComment": ["/*", "*", "*/"],
+                      "singleLineComment": ["//"],
+                      "ignorePrefix": "}",
+                      "foldPrefix": "^",
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/transaction.js",
                     "projectPath": "lib/dialects/mysql/transaction.js",
                     "targetPath": "lib/dialects/mysql/transaction",
                     "pageTitle": "lib/dialects/mysql/transaction",
@@ -337,7 +357,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/postgres/formatter.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/postgres/formatter.js",
                     "projectPath": "lib/dialects/postgres/formatter.js",
                     "targetPath": "lib/dialects/postgres/formatter",
                     "pageTitle": "lib/dialects/postgres/formatter",
@@ -367,7 +387,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/postgres/index.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/postgres/index.js",
                     "projectPath": "lib/dialects/postgres/index.js",
                     "targetPath": "lib/dialects/postgres/index",
                     "pageTitle": "lib/dialects/postgres/index",
@@ -397,7 +417,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/postgres/migrator.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/postgres/migrator.js",
                     "projectPath": "lib/dialects/postgres/migrator.js",
                     "targetPath": "lib/dialects/postgres/migrator",
                     "pageTitle": "lib/dialects/postgres/migrator",
@@ -417,7 +437,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/postgres/pool.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/postgres/pool.js",
                     "projectPath": "lib/dialects/postgres/pool.js",
                     "targetPath": "lib/dialects/postgres/pool",
                     "pageTitle": "lib/dialects/postgres/pool",
@@ -437,7 +457,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/postgres/query.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/postgres/query.js",
                     "projectPath": "lib/dialects/postgres/query.js",
                     "targetPath": "lib/dialects/postgres/query",
                     "pageTitle": "lib/dialects/postgres/query",
@@ -483,7 +503,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/postgres/raw.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/postgres/raw.js",
                     "projectPath": "lib/dialects/postgres/raw.js",
                     "targetPath": "lib/dialects/postgres/raw",
                     "pageTitle": "lib/dialects/postgres/raw",
@@ -503,7 +523,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/postgres/runner.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/postgres/runner.js",
                     "projectPath": "lib/dialects/postgres/runner.js",
                     "targetPath": "lib/dialects/postgres/runner",
                     "pageTitle": "lib/dialects/postgres/runner",
@@ -523,11 +543,31 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/postgres/transaction.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/postgres/transaction.js",
                     "projectPath": "lib/dialects/postgres/transaction.js",
                     "targetPath": "lib/dialects/postgres/transaction",
                     "pageTitle": "lib/dialects/postgres/transaction",
                     "title": "transaction"
+                  },
+                  "depth": 4,
+                  "outline": []
+                }, {
+                  "type": "file",
+                  "data": {
+                    "language": {
+                      "nameMatchers": [".js"],
+                      "pygmentsLexer": "javascript",
+                      "multiLineComment": ["/*", "*", "*/"],
+                      "singleLineComment": ["//"],
+                      "ignorePrefix": "}",
+                      "foldPrefix": "^",
+                      "name": "JavaScript"
+                    },
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/postgres/utils.js",
+                    "projectPath": "lib/dialects/postgres/utils.js",
+                    "targetPath": "lib/dialects/postgres/utils",
+                    "pageTitle": "lib/dialects/postgres/utils",
+                    "title": "utils"
                   },
                   "depth": 4,
                   "outline": []
@@ -553,7 +593,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/sqlite3/formatter.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/sqlite3/formatter.js",
                     "projectPath": "lib/dialects/sqlite3/formatter.js",
                     "targetPath": "lib/dialects/sqlite3/formatter",
                     "pageTitle": "lib/dialects/sqlite3/formatter",
@@ -583,7 +623,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/sqlite3/index.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/sqlite3/index.js",
                     "projectPath": "lib/dialects/sqlite3/index.js",
                     "targetPath": "lib/dialects/sqlite3/index",
                     "pageTitle": "lib/dialects/sqlite3/index",
@@ -613,7 +653,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/sqlite3/migrator.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/sqlite3/migrator.js",
                     "projectPath": "lib/dialects/sqlite3/migrator.js",
                     "targetPath": "lib/dialects/sqlite3/migrator",
                     "pageTitle": "lib/dialects/sqlite3/migrator",
@@ -633,7 +673,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/sqlite3/pool.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/sqlite3/pool.js",
                     "projectPath": "lib/dialects/sqlite3/pool.js",
                     "targetPath": "lib/dialects/sqlite3/pool",
                     "pageTitle": "lib/dialects/sqlite3/pool",
@@ -653,7 +693,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/sqlite3/query.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/sqlite3/query.js",
                     "projectPath": "lib/dialects/sqlite3/query.js",
                     "targetPath": "lib/dialects/sqlite3/query",
                     "pageTitle": "lib/dialects/sqlite3/query",
@@ -699,7 +739,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/sqlite3/raw.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/sqlite3/raw.js",
                     "projectPath": "lib/dialects/sqlite3/raw.js",
                     "targetPath": "lib/dialects/sqlite3/raw",
                     "pageTitle": "lib/dialects/sqlite3/raw",
@@ -729,7 +769,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/sqlite3/runner.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/sqlite3/runner.js",
                     "projectPath": "lib/dialects/sqlite3/runner.js",
                     "targetPath": "lib/dialects/sqlite3/runner",
                     "pageTitle": "lib/dialects/sqlite3/runner",
@@ -759,7 +799,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/sqlite3/transaction.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/sqlite3/transaction.js",
                     "projectPath": "lib/dialects/sqlite3/transaction.js",
                     "targetPath": "lib/dialects/sqlite3/transaction",
                     "pageTitle": "lib/dialects/sqlite3/transaction",
@@ -799,7 +839,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/websql/index.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/websql/index.js",
                     "projectPath": "lib/dialects/websql/index.js",
                     "targetPath": "lib/dialects/websql/index",
                     "pageTitle": "lib/dialects/websql/index",
@@ -829,7 +869,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                       "foldPrefix": "^",
                       "name": "JavaScript"
                     },
-                    "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/dialects/websql/runner.js",
+                    "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/dialects/websql/runner.js",
                     "projectPath": "lib/dialects/websql/runner.js",
                     "targetPath": "lib/dialects/websql/runner",
                     "pageTitle": "lib/dialects/websql/runner",
@@ -863,27 +903,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/errors.js",
-            "projectPath": "lib/errors.js",
-            "targetPath": "lib/errors",
-            "pageTitle": "lib/errors",
-            "title": "errors"
-          },
-          "depth": 2,
-          "outline": []
-        }, {
-          "type": "file",
-          "data": {
-            "language": {
-              "nameMatchers": [".js"],
-              "pygmentsLexer": "javascript",
-              "multiLineComment": ["/*", "*", "*/"],
-              "singleLineComment": ["//"],
-              "ignorePrefix": "}",
-              "foldPrefix": "^",
-              "name": "JavaScript"
-            },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/formatter.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/formatter.js",
             "projectPath": "lib/formatter.js",
             "targetPath": "lib/formatter",
             "pageTitle": "lib/formatter",
@@ -903,7 +923,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/helpers.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/helpers.js",
             "projectPath": "lib/helpers.js",
             "targetPath": "lib/helpers",
             "pageTitle": "lib/helpers",
@@ -933,7 +953,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/interface.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/interface.js",
             "projectPath": "lib/interface.js",
             "targetPath": "lib/interface",
             "pageTitle": "lib/interface",
@@ -961,7 +981,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/migrate/cli.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/migrate/cli.js",
                 "projectPath": "lib/migrate/cli.js",
                 "targetPath": "lib/migrate/cli",
                 "pageTitle": "lib/migrate/cli",
@@ -981,7 +1001,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/migrate/index.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/migrate/index.js",
                 "projectPath": "lib/migrate/index.js",
                 "targetPath": "lib/migrate/index",
                 "pageTitle": "lib/migrate/index",
@@ -1011,7 +1031,27 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/migrate/migrate-stub.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/migrate/methods.js",
+                "projectPath": "lib/migrate/methods.js",
+                "targetPath": "lib/migrate/methods",
+                "pageTitle": "lib/migrate/methods",
+                "title": "methods"
+              },
+              "depth": 3,
+              "outline": []
+            }, {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/migrate/migrate-stub.js",
                 "projectPath": "lib/migrate/migrate-stub.js",
                 "targetPath": "lib/migrate/migrate-stub",
                 "pageTitle": "lib/migrate/migrate-stub",
@@ -1033,7 +1073,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/pool.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/pool.js",
             "projectPath": "lib/pool.js",
             "targetPath": "lib/pool",
             "pageTitle": "lib/pool",
@@ -1063,7 +1103,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/promise.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/promise.js",
             "projectPath": "lib/promise.js",
             "targetPath": "lib/promise",
             "pageTitle": "lib/promise",
@@ -1091,7 +1131,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/query/builder.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/query/builder.js",
                 "projectPath": "lib/query/builder.js",
                 "targetPath": "lib/query/builder",
                 "pageTitle": "lib/query/builder",
@@ -1145,7 +1185,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/query/compiler.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/query/compiler.js",
                 "projectPath": "lib/query/compiler.js",
                 "targetPath": "lib/query/compiler",
                 "pageTitle": "lib/query/compiler",
@@ -1183,7 +1223,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/query/joinclause.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/query/joinclause.js",
                 "projectPath": "lib/query/joinclause.js",
                 "targetPath": "lib/query/joinclause",
                 "pageTitle": "lib/query/joinclause",
@@ -1213,7 +1253,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/query/methods.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/query/methods.js",
                 "projectPath": "lib/query/methods.js",
                 "targetPath": "lib/query/methods",
                 "pageTitle": "lib/query/methods",
@@ -1235,7 +1275,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/raw.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/raw.js",
             "projectPath": "lib/raw.js",
             "targetPath": "lib/raw",
             "pageTitle": "lib/raw",
@@ -1265,7 +1305,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/runner.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/runner.js",
             "projectPath": "lib/runner.js",
             "targetPath": "lib/runner",
             "pageTitle": "lib/runner",
@@ -1303,7 +1343,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/schema/builder.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/builder.js",
                 "projectPath": "lib/schema/builder.js",
                 "targetPath": "lib/schema/builder",
                 "pageTitle": "lib/schema/builder",
@@ -1323,7 +1363,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/schema/columnbuilder.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/columnbuilder.js",
                 "projectPath": "lib/schema/columnbuilder.js",
                 "targetPath": "lib/schema/columnbuilder",
                 "pageTitle": "lib/schema/columnbuilder",
@@ -1343,7 +1383,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/schema/columncompiler.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/columncompiler.js",
                 "projectPath": "lib/schema/columncompiler.js",
                 "targetPath": "lib/schema/columncompiler",
                 "pageTitle": "lib/schema/columncompiler",
@@ -1389,7 +1429,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/schema/compiler.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/compiler.js",
                 "projectPath": "lib/schema/compiler.js",
                 "targetPath": "lib/schema/compiler",
                 "pageTitle": "lib/schema/compiler",
@@ -1409,7 +1449,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/schema/index.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/index.js",
                 "projectPath": "lib/schema/index.js",
                 "targetPath": "lib/schema/index",
                 "pageTitle": "lib/schema/index",
@@ -1429,7 +1469,27 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/schema/tablebuilder.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/methods.js",
+                "projectPath": "lib/schema/methods.js",
+                "targetPath": "lib/schema/methods",
+                "pageTitle": "lib/schema/methods",
+                "title": "methods"
+              },
+              "depth": 3,
+              "outline": []
+            }, {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/tablebuilder.js",
                 "projectPath": "lib/schema/tablebuilder.js",
                 "targetPath": "lib/schema/tablebuilder",
                 "pageTitle": "lib/schema/tablebuilder",
@@ -1459,7 +1519,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/schema/tablecompiler.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/tablecompiler.js",
                 "projectPath": "lib/schema/tablecompiler.js",
                 "targetPath": "lib/schema/tablecompiler",
                 "pageTitle": "lib/schema/tablecompiler",
@@ -1497,7 +1557,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/schema/viewbuilder.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/viewbuilder.js",
                 "projectPath": "lib/schema/viewbuilder.js",
                 "targetPath": "lib/schema/viewbuilder",
                 "pageTitle": "lib/schema/viewbuilder",
@@ -1517,7 +1577,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "foldPrefix": "^",
                   "name": "JavaScript"
                 },
-                "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/schema/viewcompiler.js",
+                "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/schema/viewcompiler.js",
                 "projectPath": "lib/schema/viewcompiler.js",
                 "targetPath": "lib/schema/viewcompiler",
                 "pageTitle": "lib/schema/viewcompiler",
@@ -1539,37 +1599,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/sqlstring.js",
-            "projectPath": "lib/sqlstring.js",
-            "targetPath": "lib/sqlstring",
-            "pageTitle": "lib/sqlstring",
-            "title": "sqlstring"
-          },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "SQL String",
-                "slug": "sql-string"
-              },
-              "depth": 2
-            }
-          ]
-        }, {
-          "type": "file",
-          "data": {
-            "language": {
-              "nameMatchers": [".js"],
-              "pygmentsLexer": "javascript",
-              "multiLineComment": ["/*", "*", "*/"],
-              "singleLineComment": ["//"],
-              "ignorePrefix": "}",
-              "foldPrefix": "^",
-              "name": "JavaScript"
-            },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/transaction.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/transaction.js",
             "projectPath": "lib/transaction.js",
             "targetPath": "lib/transaction",
             "pageTitle": "lib/transaction",
@@ -1599,7 +1629,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/tgriesser/github/bookshelf/knex/lib/utils.js",
+            "sourcePath": "/Users/tgriesser/Github/bookshelf/knex/lib/utils.js",
             "projectPath": "lib/utils.js",
             "targetPath": "lib/utils",
             "pageTitle": "lib/utils",

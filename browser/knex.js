@@ -1,4 +1,4 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"qi+vRg":[function(require,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 // Knex.js  0.6.0-alpha
 // --------------
 
@@ -21,13 +21,13 @@ Knex.raw = function(sql, bindings) {
 // Require the main constructors necessary for a `Knex` instance,
 // each of which are injected with the current instance, so they maintain
 // the correct client reference & grammar.
-var Raw = require('./lib/raw');
+var Raw = _dereq_('./lib/raw');
 
 // Doing it this way makes it easier to build for browserify.
-var mysql = function() { return require('./lib/dialects/mysql'); };
-var pg = function() { return require('./lib/dialects/postgres'); };
-var sqlite3 = function() { return require('./lib/dialects/sqlite3'); };
-var websql = function() { return require('./lib/dialects/websql'); };
+var mysql = function() { return _dereq_('./lib/dialects/mysql'); };
+var pg = function() { return _dereq_('./lib/dialects/postgres'); };
+var sqlite3 = function() { return _dereq_('./lib/dialects/sqlite3'); };
+var websql = function() { return _dereq_('./lib/dialects/websql'); };
 
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
@@ -41,15 +41,17 @@ var Clients = Knex.Clients = {
 };
 
 // Require lodash.
-var _ = require('lodash');
+var _ = _dereq_('lodash');
 
 // Each of the methods which may be statically chained from knex.
-var QueryInterface = require('./lib/query/methods');
+var QueryInterface   = _dereq_('./lib/query/methods');
+var SchemaInterface  = _dereq_('./lib/schema/methods');
+var MigrateInterface = _dereq_('./lib/migrate/methods');
 
 // Create a new "knex" instance with the appropriate configured client.
 Knex.initialize = function(config) {
   var Dialect, client;
-  var EventEmitter = require('events').EventEmitter;
+  var EventEmitter = _dereq_('events').EventEmitter;
 
   // The object we're potentially using to kick off an
   // initial chain. It is assumed that `knex` isn't a
@@ -57,7 +59,7 @@ Knex.initialize = function(config) {
   // in case it's called with `new`.
   function knex(tableName) {
     var qb = new client.QueryBuilder;
-
+    if (config.__transactor__) qb.transacting(config.__transactor__);
     // Passthrough all "query" events to the knex object.
     qb.on('query', function(data) {
       knex.emit('query', data);
@@ -92,13 +94,35 @@ Knex.initialize = function(config) {
     return trx;
   };
 
-  // Build the "client"
-  var clientName = config.client;
-  if (!Clients[clientName]) {
-    throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
+  // Convenience method for tearing down the pool.
+  knex.destroy = function (callback) {
+    var pool = this.client.pool;
+    var promise = new Promise(function(resolver, rejecter) {
+      if (!pool) resolver();
+      pool.destroy(function(err) {
+        if (err) return rejecter(err);
+        resolver();
+      });
+    });
+    // Allow either a callback or promise interface for destruction.
+    if (_.isFunction(callback)) {
+      promise.exec(callback);
+    } else {
+      return promise;
+    }
+  };
+
+  if (config.__client__) {
+    client = config.__client__;
+  } else {
+    // Build the "client"
+    var clientName = config.client;
+    if (!Clients[clientName]) {
+      throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
+    }
+    Dialect = Clients[clientName]();
+    client  = new Dialect(config);
   }
-  Dialect = Clients[clientName]();
-  client  = new Dialect(config);
 
   // Allow chaining methods from the root object, before
   // any other information is specified.
@@ -118,8 +142,7 @@ Knex.initialize = function(config) {
   // `knex.schema.table('tableName', function() {...`
   // `knex.schema.createTable('tableName', function() {...`
   // `knex.schema.dropTableIfExists('tableName');`
-  _.each(['table', 'createTable', 'editTable', 'dropTable',
-    'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn'], function(key) {
+  _.each(SchemaInterface, function(key) {
     schema[key] = function() {
       if (!client.SchemaBuilder) client.initSchema();
       var builder = new client.SchemaBuilder();
@@ -135,7 +158,7 @@ Knex.initialize = function(config) {
   // Attach each of the `Migrator` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
   // knex.migrate.latest().then(...
   // knex.migrate.currentVersion(...
-  _.each(['make', 'latest', 'rollback', 'currentVersion'], function(method) {
+  _.each(MigrateInterface, function(method) {
     migrate[method] = function(config) {
       if (!client.Migrator) client.initMigrator();
       config.knex = knex;
@@ -145,18 +168,16 @@ Knex.initialize = function(config) {
   });
 
   // Add a few additional misc utils.
-  knex.utils = _.extend({}, require('./lib/utils'));
+  knex.utils = _.extend({}, _dereq_('./lib/utils'));
 
   return knex;
 };
 
 module.exports = Knex;
-},{"./lib/dialects/mysql":5,"./lib/dialects/postgres":17,"./lib/dialects/sqlite3":29,"./lib/dialects/websql":41,"./lib/query/methods":51,"./lib/raw":52,"./lib/utils":62,"events":66,"lodash":"K2RcUv"}],"knex":[function(require,module,exports){
-module.exports=require('qi+vRg');
-},{}],3:[function(require,module,exports){
+},{"./lib/dialects/mysql":4,"./lib/dialects/postgres":17,"./lib/dialects/sqlite3":30,"./lib/dialects/websql":42,"./lib/migrate/methods":47,"./lib/query/methods":53,"./lib/raw":54,"./lib/schema/methods":61,"./lib/utils":65,"events":69,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
 // "Base Client"
 // ------
-var Promise    = require('./promise');
+var Promise    = _dereq_('./promise');
 
 // The base client provides the general structure
 // for a dialect specific client object. The client
@@ -172,10 +193,6 @@ function Client() {
 // Set the "isDebugging" flag on the client to "true" to log
 // all queries run by the client.
 Client.prototype.isDebugging = false;
-
-// Internal flag to let us know this is a knex client,
-// and what the version number is.
-Client.prototype.__knex_client__ = '0.6.0';
 
 // Acquire a connection from the pool.
 Client.prototype.acquireConnection = function() {
@@ -207,13 +224,13 @@ Client.prototype.database = function() {
 };
 
 module.exports = Client;
-},{"./promise":47}],4:[function(require,module,exports){
+},{"./promise":49}],3:[function(_dereq_,module,exports){
 // MySQL Formatter
 // ------
 module.exports = function(client) {
 
-var Formatter = require('../../formatter');
-var inherits  = require('inherits');
+var Formatter = _dereq_('../../formatter');
+var inherits  = _dereq_('inherits');
 
 // The "formatter" is used to ensure all output is properly
 // escaped & parameterized.
@@ -222,6 +239,13 @@ function Formatter_MySQL() {
   Formatter.apply(this, arguments);
 }
 inherits(Formatter_MySQL, Formatter);
+
+Formatter_MySQL.prototype.operators = [
+  '=', '<', '>', '<=', '>=', '<>', '!=',
+  'like', 'not like', 'between', 'ilike',
+  '&', '|', '^', '<<', '>>',
+  'rlike', 'regexp', 'not regexp'
+];
 
 // Wraps a value (column, tableName) with the correct ticks.
 Formatter_MySQL.prototype.wrapValue = function(value) {
@@ -245,14 +269,14 @@ Formatter_MySQL.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_MySQL;
 
 };
-},{"../../formatter":43,"inherits":67}],5:[function(require,module,exports){
+},{"../../formatter":44,"inherits":70}],4:[function(_dereq_,module,exports){
 // MySQL Client
 // -------
-var inherits = require('inherits');
+var inherits = _dereq_('inherits');
 
-var _       = require('lodash');
-var Client  = require('../../client');
-var Promise = require('../../promise');
+var _       = _dereq_('lodash');
+var Client  = _dereq_('../../client');
+var Promise = _dereq_('../../promise');
 
 var mysql;
 
@@ -278,48 +302,48 @@ Client_MySQL.prototype.dialect = 'mysql';
 // Lazy-load the mysql dependency, since we might just be
 // using the client to generate SQL strings.
 Client_MySQL.prototype.initDriver = function() {
-  mysql = mysql || require('mysql');
+  mysql = mysql || _dereq_('mysql');
 };
 
 // Attach a `Formatter` constructor to the client object.
 Client_MySQL.prototype.initFormatter = function() {
-  require('./formatter')(this);
+  _dereq_('./formatter')(this);
 };
 
 // Attaches the `Raw` constructor to the client object.
 Client_MySQL.prototype.initRaw = function() {
-  require('./raw')(this);
+  _dereq_('./raw')(this);
 };
 
 // Attaches the `Transaction` constructor to the client object.
 Client_MySQL.prototype.initTransaction = function() {
-  require('./transaction')(this);
+  _dereq_('./transaction')(this);
 };
 
 // Attaches `QueryBuilder` and `QueryCompiler` constructors
 // to the client object.
 Client_MySQL.prototype.initQuery = function() {
-  require('./query')(this);
+  _dereq_('./query')(this);
 };
 
 // Initializes a new pool instance for the current client.
 Client_MySQL.prototype.initPool = function() {
-  require('./pool')(this);
+  _dereq_('./pool')(this);
 };
 
 // Initialize the query "runner"
 Client_MySQL.prototype.initRunner = function() {
-  require('./runner')(this);
+  _dereq_('./runner')(this);
 };
 
 // Lazy-load the schema dependencies; we may not need to use them.
 Client_MySQL.prototype.initSchema = function() {
-  require('./schema')(this);
+  _dereq_('./schema')(this);
 };
 
 // Lazy-load the migration dependency
 Client_MySQL.prototype.initMigrator = function() {
-  require('./migrator')(this);
+  _dereq_('./migrator')(this);
 };
 
 // Get a raw connection, called by the `pool` whenever a new
@@ -351,15 +375,16 @@ Client_MySQL.prototype.database = function() {
 };
 
 module.exports = Client_MySQL;
-},{"../../client":3,"../../promise":47,"./formatter":4,"./migrator":6,"./pool":7,"./query":8,"./raw":9,"./runner":10,"./schema":12,"./transaction":15,"inherits":67,"lodash":"K2RcUv"}],6:[function(require,module,exports){
+},{"../../client":2,"../../promise":49,"./formatter":3,"./migrator":5,"./pool":6,"./query":7,"./raw":8,"./runner":9,"./schema":11,"./transaction":15,"inherits":70,"lodash":"K2RcUv"}],5:[function(_dereq_,module,exports){
 // MySQL Migrator
 // ------
 module.exports = function(client) {
 
-var Migrator = require('../../migrate');
-var inherits = require('inherits');
+var Migrator = _dereq_('../../migrate');
+var inherits = _dereq_('inherits');
 
 function Migrator_MySQL() {
+  this.client = client;
   Migrator.apply(this, arguments);
 }
 inherits(Migrator_MySQL, Migrator);
@@ -367,13 +392,13 @@ inherits(Migrator_MySQL, Migrator);
 client.Migrator = Migrator_MySQL;
 
 };
-},{"inherits":67}],7:[function(require,module,exports){
+},{"inherits":70}],6:[function(_dereq_,module,exports){
 // MySQL Pool
 // ------
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Pool = require('../../pool');
+var inherits = _dereq_('inherits');
+var Pool = _dereq_('../../pool');
 
 function Pool_MySQL() {
   this.client = client;
@@ -384,15 +409,15 @@ inherits(Pool_MySQL, Pool);
 client.Pool = Pool_MySQL;
 
 };
-},{"../../pool":46,"inherits":67}],8:[function(require,module,exports){
+},{"../../pool":48,"inherits":70}],7:[function(_dereq_,module,exports){
 // MySQL Query Builder & Compiler
 // ------
 module.exports = function(client) {
 
-var _             = require('lodash');
-var inherits      = require('inherits');
-var QueryBuilder  = require('../../query/builder');
-var QueryCompiler = require('../../query/compiler');
+var _             = _dereq_('lodash');
+var inherits      = _dereq_('inherits');
+var QueryBuilder  = _dereq_('../../query/builder');
+var QueryCompiler = _dereq_('../../query/compiler');
 
 // Query Builder
 // -------
@@ -466,13 +491,13 @@ client.QueryBuilder  = QueryBuilder_MySQL;
 client.QueryCompiler = QueryCompiler_MySQL;
 
 };
-},{"../../query/builder":48,"../../query/compiler":49,"inherits":67,"lodash":"K2RcUv"}],9:[function(require,module,exports){
+},{"../../query/builder":50,"../../query/compiler":51,"inherits":70,"lodash":"K2RcUv"}],8:[function(_dereq_,module,exports){
 // MySQL Raw
 // -------
 module.exports = function(client) {
 
-var Raw = require('../../raw');
-var inherits = require('inherits');
+var Raw = _dereq_('../../raw');
+var inherits = _dereq_('inherits');
 
 // Inherit from the `Raw` constructor's prototype,
 // so we can add the correct `then` method.
@@ -486,17 +511,17 @@ inherits(Raw_MySQL, Raw);
 client.Raw = Raw_MySQL;
 
 };
-},{"../../raw":52,"inherits":67}],10:[function(require,module,exports){
+},{"../../raw":54,"inherits":70}],9:[function(_dereq_,module,exports){
 // MySQL Runner
 // ------
 module.exports = function(client) {
 
-var _        = require('lodash');
-var inherits = require('inherits');
+var _        = _dereq_('lodash');
+var inherits = _dereq_('inherits');
 
-var Promise  = require('../../promise');
-var Runner   = require('../../runner');
-var helpers    = require('../../helpers');
+var Promise  = _dereq_('../../promise');
+var Runner   = _dereq_('../../runner');
+var helpers    = _dereq_('../../helpers');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -559,14 +584,14 @@ Runner_MySQL.prototype.processResponse = function(obj) {
 client.Runner = Runner_MySQL;
 
 };
-},{"../../helpers":44,"../../promise":47,"../../runner":53,"inherits":67,"lodash":"K2RcUv"}],11:[function(require,module,exports){
+},{"../../helpers":45,"../../promise":49,"../../runner":55,"inherits":70,"lodash":"K2RcUv"}],10:[function(_dereq_,module,exports){
 // MySQL Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Schema   = require('../../../schema');
-var helpers  = require('../../../helpers');
+var inherits = _dereq_('inherits');
+var Schema   = _dereq_('../../../schema');
+var helpers  = _dereq_('../../../helpers');
 
 // Column Builder
 // -------
@@ -668,19 +693,19 @@ client.ColumnBuilder = ColumnBuilder_MySQL;
 client.ColumnCompiler = ColumnCompiler_MySQL;
 
 };
-},{"../../../helpers":44,"../../../schema":58,"inherits":67}],12:[function(require,module,exports){
+},{"../../../helpers":45,"../../../schema":60,"inherits":70}],11:[function(_dereq_,module,exports){
 module.exports = function(client) {
-  require('./schema')(client);
-  require('./table')(client);
-  require('./column')(client);
+  _dereq_('./schema')(client);
+  _dereq_('./table')(client);
+  _dereq_('./column')(client);
 };
-},{"./column":11,"./schema":13,"./table":14}],13:[function(require,module,exports){
+},{"./column":10,"./schema":12,"./table":13}],12:[function(_dereq_,module,exports){
 // MySQL Schema Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Schema   = require('../../../schema');
+var inherits = _dereq_('inherits');
+var Schema   = _dereq_('../../../schema');
 
 // Schema Builder
 // -------
@@ -734,13 +759,13 @@ client.SchemaBuilder = SchemaBuilder_MySQL;
 client.SchemaCompiler = SchemaCompiler_MySQL;
 
 };
-},{"../../../schema":58,"inherits":67}],14:[function(require,module,exports){
+},{"../../../schema":60,"inherits":70}],13:[function(_dereq_,module,exports){
 // MySQL Table Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Schema   = require('../../../schema');
+var inherits = _dereq_('inherits');
+var Schema   = _dereq_('../../../schema');
 
 // Table Builder
 // ------
@@ -868,13 +893,167 @@ client.TableBuilder = TableBuilder_MySQL;
 client.TableCompiler = TableCompiler_MySQL;
 
 };
-},{"../../../schema":58,"inherits":67}],15:[function(require,module,exports){
+},{"../../../schema":60,"inherits":70}],14:[function(_dereq_,module,exports){
+(function (Buffer){
+var SqlString = exports;
+
+SqlString.escapeId = function (val, forbidQualified) {
+  if (Array.isArray(val)) {
+    return val.map(function(v) {
+      return SqlString.escapeId(v, forbidQualified);
+    }).join(', ');
+  }
+
+  if (forbidQualified) {
+    return '`' + val.replace(/`/g, '``') + '`';
+  }
+  return '`' + val.replace(/`/g, '``').replace(/\./g, '`.`') + '`';
+};
+
+SqlString.escape = function(val, stringifyObjects, timeZone) {
+  if (val === undefined || val === null) {
+    return 'NULL';
+  }
+
+  switch (typeof val) {
+    case 'boolean': return (val) ? 'true' : 'false';
+    case 'number': return val+'';
+  }
+
+  if (val instanceof Date) {
+    val = SqlString.dateToString(val, timeZone || 'local');
+  }
+
+  if (Buffer.isBuffer(val)) {
+    return SqlString.bufferToString(val);
+  }
+
+  if (Array.isArray(val)) {
+    return SqlString.arrayToList(val, timeZone);
+  }
+
+  if (typeof val === 'object') {
+    if (stringifyObjects) {
+      val = val.toString();
+    } else {
+      return SqlString.objectToValues(val, timeZone);
+    }
+  }
+
+  val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
+    switch(s) {
+      case "\0": return "\\0";
+      case "\n": return "\\n";
+      case "\r": return "\\r";
+      case "\b": return "\\b";
+      case "\t": return "\\t";
+      case "\x1a": return "\\Z";
+      default: return "\\"+s;
+    }
+  });
+  return "'"+val+"'";
+};
+
+SqlString.arrayToList = function(array, timeZone) {
+  return array.map(function(v) {
+    if (Array.isArray(v)) return '(' + SqlString.arrayToList(v, timeZone) + ')';
+    return SqlString.escape(v, true, timeZone);
+  }).join(', ');
+};
+
+SqlString.format = function(sql, values, stringifyObjects, timeZone) {
+  values = values == null ? [] : [].concat(values);
+
+  return sql.replace(/\?\??/g, function(match) {
+    if (!values.length) {
+      return match;
+    }
+
+    if (match == "??") {
+      return SqlString.escapeId(values.shift());
+    }
+    return SqlString.escape(values.shift(), stringifyObjects, timeZone);
+  });
+};
+
+SqlString.dateToString = function(date, timeZone) {
+  var dt = new Date(date);
+
+  if (timeZone != 'local') {
+    var tz = convertTimezone(timeZone);
+
+    dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
+    if (tz !== false) {
+      dt.setTime(dt.getTime() + (tz * 60000));
+    }
+  }
+
+  var year   = dt.getFullYear();
+  var month  = zeroPad(dt.getMonth() + 1, 2);
+  var day    = zeroPad(dt.getDate(), 2);
+  var hour   = zeroPad(dt.getHours(), 2);
+  var minute = zeroPad(dt.getMinutes(), 2);
+  var second = zeroPad(dt.getSeconds(), 2);
+  var millisecond = zeroPad(dt.getMilliseconds(), 3);
+
+  return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
+};
+
+SqlString.bufferToString = function(buffer) {
+  var hex = '';
+  try {
+    hex = buffer.toString('hex');
+  } catch (err) {
+    // node v0.4.x does not support hex / throws unknown encoding error
+    for (var i = 0; i < buffer.length; i++) {
+      var byte = buffer[i];
+      hex += zeroPad(byte.toString(16));
+    }
+  }
+
+  return "X'" + hex+ "'";
+};
+
+SqlString.objectToValues = function(object, timeZone) {
+  var values = [];
+  for (var key in object) {
+    var value = object[key];
+    if(typeof value === 'function') {
+      continue;
+    }
+
+    values.push(this.escapeId(key) + ' = ' + SqlString.escape(value, true, timeZone));
+  }
+
+  return values.join(', ');
+};
+
+function zeroPad(number, length) {
+  number = number.toString();
+  while (number.length < length) {
+    number = '0' + number;
+  }
+
+  return number;
+}
+
+function convertTimezone(tz) {
+  if (tz == "Z") return 0;
+
+  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
+  if (m) {
+    return (m[1] == '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+  }
+  return false;
+}
+}).call(this,_dereq_("buffer").Buffer)
+},{"buffer":66}],15:[function(_dereq_,module,exports){
 // MySQL Transaction
 // ------
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Transaction = require('../../transaction');
+var inherits = _dereq_('inherits');
+var Transaction = _dereq_('../../transaction');
 
 function Transaction_MySQL() {
   this.client = client;
@@ -885,13 +1064,13 @@ inherits(Transaction_MySQL, Transaction);
 client.Transaction = Transaction_MySQL;
 
 };
-},{"../../transaction":61,"inherits":67}],16:[function(require,module,exports){
+},{"../../transaction":64,"inherits":70}],16:[function(_dereq_,module,exports){
 // PostgreSQL Formatter
 // -------
 module.exports = function(client) {
 
-var Formatter = require('../../formatter');
-var inherits  = require('inherits');
+var Formatter = _dereq_('../../formatter');
+var inherits  = _dereq_('inherits');
 
 // The "formatter" is used to ensure all output is properly
 // escaped & parameterized.
@@ -901,6 +1080,12 @@ function Formatter_PG() {
   Formatter.apply(this, arguments);
 }
 inherits(Formatter_PG, Formatter);
+
+Formatter_PG.prototype.operators = [
+  '=', '<', '>', '<=', '>=', '<>', '!=',
+  'like', 'not like', 'between', 'ilike',
+  '&', '|', '#', '<<', '>>', '&&', '^', '@>', '<@', '||'
+];
 
 // Wraps a value (column, tableName) with the correct ticks.
 Formatter_PG.prototype.wrapValue = function(value) {
@@ -924,14 +1109,14 @@ Formatter_PG.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_PG;
 
 };
-},{"../../formatter":43,"inherits":67}],17:[function(require,module,exports){
+},{"../../formatter":44,"inherits":70}],17:[function(_dereq_,module,exports){
 // PostgreSQL
 // -------
-var _        = require('lodash');
-var inherits = require('inherits');
+var _        = _dereq_('lodash');
+var inherits = _dereq_('inherits');
 
-var Client  = require('../../client');
-var Promise = require('../../promise');
+var Client  = _dereq_('../../client');
+var Promise = _dereq_('../../promise');
 
 var pg;
 
@@ -958,57 +1143,59 @@ Client_PG.prototype.dialect = 'postgresql',
 Client_PG.prototype.initDriver = function() {
   pg = pg || (function() {
     try {
-      return require('pg');
+      return _dereq_('pg');
     } catch (e) {
-      return require('pg.js');
+      return _dereq_('pg.js');
     }
   })();
 };
 
 // Attach a `Formatter` constructor to the client object.
 Client_PG.prototype.initFormatter = function() {
-  require('./formatter')(this);
+  _dereq_('./formatter')(this);
 };
 
 // Attaches the `Raw` constructor to the client object.
 Client_PG.prototype.initRaw = function() {
-  require('./raw')(this);
+  _dereq_('./raw')(this);
 };
 
 // Attaches the `Transaction` constructor to the client object.
 Client_PG.prototype.initTransaction = function() {
-  require('./transaction')(this);
+  _dereq_('./transaction')(this);
 };
 
 // Attaches `QueryBuilder` and `QueryCompiler` constructors
 // to the client object.
 Client_PG.prototype.initQuery = function() {
-  require('./query')(this);
+  _dereq_('./query')(this);
 };
 
 // Initializes a new pool instance for the current client.
 Client_PG.prototype.initPool = function() {
-  require('./pool')(this);
+  _dereq_('./pool')(this);
 };
 
 // Initialize the query "runner"
 Client_PG.prototype.initRunner = function() {
-  require('./runner')(this);
+  _dereq_('./runner')(this);
 };
 
 // Lazy-load the schema dependencies; we may not need to use them.
 Client_PG.prototype.initSchema = function() {
-  require('./schema')(this);
+  _dereq_('./schema')(this);
 };
 
 // Lazy-load the migration dependency
 Client_PG.prototype.initMigrator = function() {
-  require('./migrator')(this);
+  _dereq_('./migrator')(this);
 };
+
+var utils;
 
 // Prep the bindings as needed by PostgreSQL.
 Client_PG.prototype.prepBindings = function(bindings, tz) {
-  var utils = require('pg/lib/utils');
+  utils = utils || _dereq_('./utils');
   return _.map(bindings, utils.prepareValue);
 };
 
@@ -1049,15 +1236,16 @@ Client_PG.prototype.checkVersion = function(connection) {
 };
 
 module.exports = Client_PG;
-},{"../../client":3,"../../promise":47,"./formatter":16,"./migrator":18,"./pool":19,"./query":20,"./raw":21,"./runner":22,"./schema":24,"./transaction":27,"inherits":67,"lodash":"K2RcUv","pg/lib/utils":69}],18:[function(require,module,exports){
+},{"../../client":2,"../../promise":49,"./formatter":16,"./migrator":18,"./pool":19,"./query":20,"./raw":21,"./runner":22,"./schema":24,"./transaction":27,"./utils":28,"inherits":70,"lodash":"K2RcUv"}],18:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
-var Migrator = require('../../migrate');
-var inherits = require('inherits');
+var Migrator = _dereq_('../../migrate');
+var inherits = _dereq_('inherits');
 
 // Inherit from the `Migrator` constructor's prototype,
 // so we can add the correct `then` method.
 function Migrator_PG() {
+  this.client = client;
   Migrator.apply(this, arguments);
 }
 inherits(Migrator_PG, Migrator);
@@ -1066,11 +1254,11 @@ inherits(Migrator_PG, Migrator);
 client.Migrator = Migrator_PG;
 
 };
-},{"inherits":67}],19:[function(require,module,exports){
+},{"inherits":70}],19:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
-var Pool     = require('../../pool');
-var inherits = require('inherits');
+var Pool     = _dereq_('../../pool');
+var inherits = _dereq_('inherits');
 
 // Inherit from the `Pool` constructor's prototype.
 function Pool_PG() {
@@ -1083,16 +1271,16 @@ inherits(Pool_PG, Pool);
 client.Pool = Pool_PG;
 
 };
-},{"../../pool":46,"inherits":67}],20:[function(require,module,exports){
+},{"../../pool":48,"inherits":70}],20:[function(_dereq_,module,exports){
 // PostgreSQL Query Builder & Compiler
 // ------
 module.exports = function(client) {
 
-var _        = require('lodash');
-var inherits = require('inherits');
+var _        = _dereq_('lodash');
+var inherits = _dereq_('inherits');
 
-var QueryBuilder  = require('../../query/builder');
-var QueryCompiler = require('../../query/compiler');
+var QueryBuilder  = _dereq_('../../query/builder');
+var QueryCompiler = _dereq_('../../query/compiler');
 
 // Query Builder
 // ------
@@ -1188,11 +1376,11 @@ client.QueryBuilder = QueryBuilder_PG;
 client.QueryCompiler = QueryCompiler_PG;
 
 };
-},{"../../query/builder":48,"../../query/compiler":49,"inherits":67,"lodash":"K2RcUv"}],21:[function(require,module,exports){
+},{"../../query/builder":50,"../../query/compiler":51,"inherits":70,"lodash":"K2RcUv"}],21:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
-var Raw = require('../../raw');
-var inherits = require('inherits');
+var Raw = _dereq_('../../raw');
+var inherits = _dereq_('inherits');
 
 // Inherit from the `Raw` constructor's prototype,
 // so we can add the correct `then` method.
@@ -1206,15 +1394,15 @@ inherits(Raw_PG, Raw);
 client.Raw = Raw_PG;
 
 };
-},{"../../raw":52,"inherits":67}],22:[function(require,module,exports){
+},{"../../raw":54,"inherits":70}],22:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
-var _        = require('lodash');
-var inherits = require('inherits');
-var Promise  = require('../../promise');
+var _        = _dereq_('lodash');
+var inherits = _dereq_('inherits');
+var Promise  = _dereq_('../../promise');
 
-var Runner = require('../../runner');
-var utils  = require('../../utils');
+var Runner = _dereq_('../../runner');
+var utils  = _dereq_('../../utils');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -1226,7 +1414,7 @@ inherits(Runner_PG, Runner);
 
 var PGQueryStream;
 Runner_PG.prototype._stream = Promise.method(function(sql, stream, options) {
-  PGQueryStream = PGQueryStream || require('pg-query-stream');
+  PGQueryStream = PGQueryStream || _dereq_('pg-query-stream');
     var runner = this;
     return new Promise(function(resolver, rejecter) {
       stream.on('error', rejecter);
@@ -1279,13 +1467,13 @@ Runner_PG.prototype.processResponse = function(obj) {
 client.Runner = Runner_PG;
 
 };
-},{"../../promise":47,"../../runner":53,"../../utils":62,"inherits":67,"lodash":"K2RcUv"}],23:[function(require,module,exports){
+},{"../../promise":49,"../../runner":55,"../../utils":65,"inherits":70,"lodash":"K2RcUv"}],23:[function(_dereq_,module,exports){
 // PostgreSQL Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Schema   = require('../../../schema');
+var inherits = _dereq_('inherits');
+var Schema   = _dereq_('../../../schema');
 
 // Column Builder
 // ------
@@ -1343,15 +1531,15 @@ client.ColumnBuilder = ColumnBuilder_PG;
 client.ColumnCompiler = ColumnCompiler_PG;
 
 };
-},{"../../../schema":58,"inherits":67}],24:[function(require,module,exports){
-arguments[4][12][0].apply(exports,arguments)
-},{"./column":23,"./schema":25,"./table":26}],25:[function(require,module,exports){
+},{"../../../schema":60,"inherits":70}],24:[function(_dereq_,module,exports){
+arguments[4][11][0].apply(exports,arguments)
+},{"./column":23,"./schema":25,"./table":26}],25:[function(_dereq_,module,exports){
 // PostgreSQL Schema Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Schema   = require('../../../schema');
+var inherits = _dereq_('inherits');
+var Schema   = _dereq_('../../../schema');
 
 // Schema Builder
 // -------
@@ -1403,14 +1591,14 @@ client.SchemaBuilder = SchemaBuilder_PG;
 client.SchemaCompiler = SchemaCompiler_PG;
 
 };
-},{"../../../schema":58,"inherits":67}],26:[function(require,module,exports){
+},{"../../../schema":60,"inherits":70}],26:[function(_dereq_,module,exports){
 // PostgreSQL Table Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var _        = require('lodash');
-var inherits = require('inherits');
-var Schema   = require('../../../schema');
+var _        = _dereq_('lodash');
+var inherits = _dereq_('inherits');
+var Schema   = _dereq_('../../../schema');
 
 // Table
 // ------
@@ -1494,11 +1682,11 @@ client.TableBuilder = TableBuilder_PG;
 client.TableCompiler = TableCompiler_PG;
 
 };
-},{"../../../schema":58,"inherits":67,"lodash":"K2RcUv"}],27:[function(require,module,exports){
+},{"../../../schema":60,"inherits":70,"lodash":"K2RcUv"}],27:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Transaction = require('../../transaction');
+var inherits = _dereq_('inherits');
+var Transaction = _dereq_('../../transaction');
 
 function Transaction_PG() {
   this.client = client;
@@ -1509,13 +1697,125 @@ inherits(Transaction_PG, Transaction);
 client.Transaction = Transaction_PG;
 
 };
-},{"../../transaction":61,"inherits":67}],28:[function(require,module,exports){
+},{"../../transaction":64,"inherits":70}],28:[function(_dereq_,module,exports){
+(function (Buffer){
+
+// convert a JS array to a postgres array literal
+// uses comma separator so won't work for types like box that use
+// a different array separator.
+function arrayString(val) {
+  var result = '{';
+  for (var i = 0 ; i < val.length; i++) {
+    if(i > 0) {
+      result = result + ',';
+    }
+    if(val[i] === null || typeof val[i] === 'undefined') {
+      result = result + 'NULL';
+    }
+    else if(Array.isArray(val[i])) {
+      result = result + arrayString(val[i]);
+    }
+    else
+    {
+      result = result + JSON.stringify(prepareValue(val[i]));
+    }
+  }
+  result = result + '}';
+  return result;
+}
+
+//converts values from javascript types
+//to their 'raw' counterparts for use as a postgres parameter
+//note: you can override this function to provide your own conversion mechanism
+//for complex types, etc...
+var prepareValue = function(val, seen) {
+  if (val instanceof Buffer) {
+    return val;
+  }
+  if(val instanceof Date) {
+    return dateToString(val);
+  }
+  if(Array.isArray(val)) {
+    return arrayString(val);
+  }
+  if(val === null || typeof val === 'undefined') {
+    return null;
+  }
+  if(typeof val === 'object') {
+    return prepareObject(val, seen);
+  }
+  return val.toString();
+};
+
+function prepareObject(val, seen) {
+  if(val.toPostgres && typeof val.toPostgres === 'function') {
+    seen = seen || [];
+    if (seen.indexOf(val) !== -1) {
+      throw new Error('circular reference detected while preparing "' + val + '" for query');
+    }
+    seen.push(val);
+
+    return prepareValue(val.toPostgres(prepareValue), seen);
+  }
+  return JSON.stringify(val);
+}
+
+function dateToString(date) {
+  function pad(number, digits) {
+    number = ""+number;
+    while(number.length < digits)
+      number = "0"+number;
+    return number;
+  }
+
+  var offset = -date.getTimezoneOffset();
+  var ret = pad(date.getFullYear(), 4) + '-' +
+    pad(date.getMonth() + 1, 2) + '-' +
+    pad(date.getDate(), 2) + 'T' +
+    pad(date.getHours(), 2) + ':' +
+    pad(date.getMinutes(), 2) + ':' +
+    pad(date.getSeconds(), 2) + '.' +
+    pad(date.getMilliseconds(), 3);
+
+  if(offset < 0) {
+    ret += "-";
+    offset *= -1;
+  }
+  else
+    ret += "+";
+
+  return ret + pad(Math.floor(offset/60), 2) + ":" + pad(offset%60, 2);
+}
+
+function normalizeQueryConfig (config, values, callback) {
+  //can take in strings or config objects
+  config = (typeof(config) == 'string') ? { text: config } : config;
+  if(values) {
+    if(typeof values === 'function') {
+      config.callback = values;
+    } else {
+      config.values = values;
+    }
+  }
+  if(callback) {
+    config.callback = callback;
+  }
+  return config;
+}
+
+module.exports = {
+  prepareValue: prepareValue,
+  normalizeQueryConfig: normalizeQueryConfig
+};
+
+}).call(this,_dereq_("buffer").Buffer)
+},{"buffer":66}],29:[function(_dereq_,module,exports){
 // SQLite3 Formatter
 // -------
 module.exports = function(client) {
 
-var Formatter = require('../../formatter');
-var inherits  = require('inherits');
+var Formatter = _dereq_('../../formatter');
+var inherits  = _dereq_('inherits');
 
 // The "formatter" is used to ensure all output is properly
 // escaped & parameterized.
@@ -1524,6 +1824,12 @@ function Formatter_SQLite3() {
   Formatter.apply(this, arguments);
 }
 inherits(Formatter_SQLite3, Formatter);
+
+Formatter_SQLite3.prototype.operators = [
+  '=', '<', '>', '<=', '>=', '<>', '!=',
+  'like', 'not like', 'between', 'ilike',
+  '&', '|', '<<', '>>'
+];
 
 // Wraps a value (column, tableName) with the correct ticks.
 Formatter_SQLite3.prototype.wrapValue = function(value) {
@@ -1547,14 +1853,14 @@ Formatter_SQLite3.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_SQLite3;
 
 };
-},{"../../formatter":43,"inherits":67}],29:[function(require,module,exports){
+},{"../../formatter":44,"inherits":70}],30:[function(_dereq_,module,exports){
 // SQLite3
 // -------
 
-var inherits = require('inherits');
+var inherits = _dereq_('inherits');
 
-var Client  = require('../../client');
-var Promise = require('../../promise');
+var Client  = _dereq_('../../client');
+var Promise = _dereq_('../../promise');
 
 function Client_SQLite3(config) {
   Client.apply(this, arguments);
@@ -1577,48 +1883,48 @@ var sqlite3;
 Client_SQLite3.prototype.dialect = 'sqlite3',
 
 Client_SQLite3.prototype.initTransaction = function() {
-  require('./transaction')(this);
+  _dereq_('./transaction')(this);
 };
 
 Client_SQLite3.prototype.initFormatter = function() {
-  require('./formatter')(this);
+  _dereq_('./formatter')(this);
 };
 
 // Lazy-load the sqlite3 dependency.
 Client_SQLite3.prototype.initDriver = function() {
-  sqlite3 = sqlite3 || require('sqlite3');
+  sqlite3 = sqlite3 || _dereq_('sqlite3');
 };
 
 // Initialize the raw connection on the client.
 Client_SQLite3.prototype.initRaw = function() {
-  require('./raw')(this);
+  _dereq_('./raw')(this);
 };
 
 // Always initialize with the "Query" and "QueryCompiler"
 // objects, each of which is unique to this client (and thus)
 // can be altered without messing up anything for anyone else.
 Client_SQLite3.prototype.initQuery = function() {
-  require('./query')(this);
+  _dereq_('./query')(this);
 };
 
 // Initializes a new pool instance for the current client.
 Client_SQLite3.prototype.initPool = function() {
-  require('./pool')(this);
+  _dereq_('./pool')(this);
 };
 
 // Initialize the query "runner"
 Client_SQLite3.prototype.initRunner = function() {
-  require('./runner')(this);
+  _dereq_('./runner')(this);
 };
 
 // Lazy-load the schema dependencies.
 Client_SQLite3.prototype.initSchema = function() {
-  require('./schema')(this);
+  _dereq_('./schema')(this);
 };
 
 // Lazy-load the migration dependency
 Client_SQLite3.prototype.initMigrator = function() {
-  require('./migrator')(this);
+  _dereq_('./migrator')(this);
 };
 
 // Get a raw connection from the database, returning a promise with the connection object.
@@ -1639,15 +1945,16 @@ Client_SQLite3.prototype.destroyRawConnection = Promise.method(function(connecti
 });
 
 module.exports = Client_SQLite3;
-},{"../../client":3,"../../promise":47,"./formatter":28,"./migrator":30,"./pool":31,"./query":32,"./raw":33,"./runner":34,"./schema":37,"./transaction":40,"inherits":67}],30:[function(require,module,exports){
+},{"../../client":2,"../../promise":49,"./formatter":29,"./migrator":31,"./pool":32,"./query":33,"./raw":34,"./runner":35,"./schema":38,"./transaction":41,"inherits":70}],31:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
-var Migrator = require('../../migrate');
-var inherits = require('inherits');
+var Migrator = _dereq_('../../migrate');
+var inherits = _dereq_('inherits');
 
 // Inherit from the `Migrator` constructor's prototype,
 // so we can add the correct `then` method.
 function Migrator_SQLite3() {
+  this.client = client;
   Migrator.apply(this, arguments);
 }
 inherits(Migrator_SQLite3, Migrator);
@@ -1656,12 +1963,12 @@ inherits(Migrator_SQLite3, Migrator);
 client.Migrator = Migrator_SQLite3;
 
 };
-},{"inherits":67}],31:[function(require,module,exports){
+},{"inherits":70}],32:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
-var Pool     = require('../../pool');
-var inherits = require('inherits');
-var _        = require('lodash');
+var Pool     = _dereq_('../../pool');
+var inherits = _dereq_('inherits');
+var _        = _dereq_('lodash');
 
 // Inherit from the `Pool` constructor's prototype.
 function Pool_SQLite3() {
@@ -1682,16 +1989,16 @@ Pool_SQLite3.prototype.defaults = function() {
 client.Pool = Pool_SQLite3;
 
 };
-},{"../../pool":46,"inherits":67,"lodash":"K2RcUv"}],32:[function(require,module,exports){
+},{"../../pool":48,"inherits":70,"lodash":"K2RcUv"}],33:[function(_dereq_,module,exports){
 // SQLite3 Query Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var _        = require('lodash');
-var inherits = require('inherits');
+var _        = _dereq_('lodash');
+var inherits = _dereq_('inherits');
 
-var QueryBuilder  = require('../../query/builder');
-var QueryCompiler = require('../../query/compiler');
+var QueryBuilder  = _dereq_('../../query/builder');
+var QueryCompiler = _dereq_('../../query/compiler');
 
 // Query Builder
 // -------
@@ -1797,13 +2104,13 @@ client.QueryBuilder = QueryBuilder_SQLite3;
 client.QueryCompiler = QueryCompiler_SQLite3;
 
 };
-},{"../../query/builder":48,"../../query/compiler":49,"inherits":67,"lodash":"K2RcUv"}],33:[function(require,module,exports){
+},{"../../query/builder":50,"../../query/compiler":51,"inherits":70,"lodash":"K2RcUv"}],34:[function(_dereq_,module,exports){
 // Raw
 // -------
 module.exports = function(client) {
 
-var Raw = require('../../raw');
-var inherits = require('inherits');
+var Raw = _dereq_('../../raw');
+var inherits = _dereq_('inherits');
 
 // Inherit from the `Raw` constructor's prototype,
 // so we can add the correct `then` method.
@@ -1817,16 +2124,16 @@ inherits(Raw_SQLite3, Raw);
 client.Raw = Raw_SQLite3;
 
 };
-},{"../../raw":52,"inherits":67}],34:[function(require,module,exports){
+},{"../../raw":54,"inherits":70}],35:[function(_dereq_,module,exports){
 // Runner
 // -------
 module.exports = function(client) {
 
-var Promise  = require('../../promise');
-var Runner   = require('../../runner');
-var helpers  = require('../../helpers');
+var Promise  = _dereq_('../../promise');
+var Runner   = _dereq_('../../runner');
+var helpers  = _dereq_('../../helpers');
 
-var inherits = require('inherits');
+var inherits = _dereq_('inherits');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -1895,13 +2202,13 @@ Runner_SQLite3.prototype.processResponse = function(obj) {
 client.Runner = Runner_SQLite3;
 
 };
-},{"../../helpers":44,"../../promise":47,"../../runner":53,"inherits":67}],35:[function(require,module,exports){
+},{"../../helpers":45,"../../promise":49,"../../runner":55,"inherits":70}],36:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Schema   = require('../../../schema');
+var inherits = _dereq_('inherits');
+var Schema   = _dereq_('../../../schema');
 
 // Column Builder
 // -------
@@ -1939,7 +2246,7 @@ client.ColumnBuilder = ColumnBuilder_SQLite3;
 client.ColumnCompiler = ColumnCompiler_SQLite3;
 
 };
-},{"../../../schema":58,"inherits":67}],36:[function(require,module,exports){
+},{"../../../schema":60,"inherits":70}],37:[function(_dereq_,module,exports){
 // SQLite3_DDL
 //
 // All of the SQLite3 specific DDL helpers for renaming/dropping
@@ -1947,8 +2254,8 @@ client.ColumnCompiler = ColumnCompiler_SQLite3;
 // -------
 module.exports = function(client) {
 
-var _       = require('lodash');
-var Promise = require('../../../promise');
+var _       = _dereq_('lodash');
+var Promise = _dereq_('../../../promise');
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
@@ -2081,21 +2388,21 @@ SQLite3_DDL.prototype.dropColumn = Promise.method(function(column) {
 client.SQLite3_DDL = SQLite3_DDL;
 
 };
-},{"../../../promise":47,"lodash":"K2RcUv"}],37:[function(require,module,exports){
+},{"../../../promise":49,"lodash":"K2RcUv"}],38:[function(_dereq_,module,exports){
 module.exports = function(client) {
-  require('./ddl')(client);
-  require('./schema')(client);
-  require('./table')(client);
-  require('./column')(client);
+  _dereq_('./ddl')(client);
+  _dereq_('./schema')(client);
+  _dereq_('./table')(client);
+  _dereq_('./column')(client);
 };
-},{"./column":35,"./ddl":36,"./schema":38,"./table":39}],38:[function(require,module,exports){
+},{"./column":36,"./ddl":37,"./schema":39,"./table":40}],39:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var _        = require('lodash');
-var inherits = require('inherits');
-var Schema   = require('../../../schema');
+var _        = _dereq_('lodash');
+var inherits = _dereq_('inherits');
+var Schema   = _dereq_('../../../schema');
 
 // Schema Builder
 // -------
@@ -2145,14 +2452,14 @@ client.SchemaBuilder = SchemaBuilder_SQLite3;
 client.SchemaCompiler = SchemaCompiler_SQLite3;
 
 };
-},{"../../../schema":58,"inherits":67,"lodash":"K2RcUv"}],39:[function(require,module,exports){
+},{"../../../schema":60,"inherits":70,"lodash":"K2RcUv"}],40:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var _        = require('lodash');
-var inherits = require('inherits');
-var Schema   = require('../../../schema');
+var _        = _dereq_('lodash');
+var inherits = _dereq_('inherits');
+var Schema   = _dereq_('../../../schema');
 
 // Table Builder
 // -------
@@ -2279,13 +2586,13 @@ client.TableBuilder = TableBuilder_SQLite3;
 client.TableCompiler = TableCompiler_SQLite3;
 
 };
-},{"../../../schema":58,"inherits":67,"lodash":"K2RcUv"}],40:[function(require,module,exports){
+},{"../../../schema":60,"inherits":70,"lodash":"K2RcUv"}],41:[function(_dereq_,module,exports){
 // SQLite3 Transaction
 // -------
 module.exports = function(client) {
 
-var inherits = require('inherits');
-var Transaction = require('../../transaction');
+var inherits = _dereq_('inherits');
+var Transaction = _dereq_('../../transaction');
 
 function Transaction_SQLite3() {
   this.client = client;
@@ -2296,13 +2603,13 @@ inherits(Transaction_SQLite3, Transaction);
 client.Transaction = Transaction_SQLite3;
 
 };
-},{"../../transaction":61,"inherits":67}],41:[function(require,module,exports){
+},{"../../transaction":64,"inherits":70}],42:[function(_dereq_,module,exports){
 // WebSQL
 // -------
-var inherits = require('inherits');
+var inherits = _dereq_('inherits');
 
-var Client_SQLite3 = require('../sqlite3/index');
-var Promise = require('../../promise');
+var Client_SQLite3 = _dereq_('../sqlite3/index');
+var Promise = _dereq_('../../promise');
 
 function Client_WebSQL(config) {
   config = config || {};
@@ -2321,7 +2628,7 @@ Client_WebSQL.prototype.initMigrator = function() {};
 
 // Initialize the query "runner"
 Client_WebSQL.prototype.initRunner = function() {
-  require('./runner')(this);
+  _dereq_('./runner')(this);
 };
 
 // Get a raw connection from the database, returning a promise with the connection object.
@@ -2345,18 +2652,18 @@ Client_WebSQL.prototype.acquireConnection = function() {
 Client_WebSQL.prototype.releaseConnection = Promise.method(function(connection) {});
 
 module.exports = Client_WebSQL;
-},{"../../promise":47,"../sqlite3/index":29,"./runner":42,"inherits":67}],42:[function(require,module,exports){
+},{"../../promise":49,"../sqlite3/index":30,"./runner":43,"inherits":70}],43:[function(_dereq_,module,exports){
 // Runner
 // -------
 module.exports = function(client) {
 
-var Promise  = require('../../promise');
+var Promise  = _dereq_('../../promise');
 
 // Require the SQLite3 Runner.
-require('../sqlite3/runner')(client);
+_dereq_('../sqlite3/runner')(client);
 var Runner_SQLite3 = client.Runner;
 
-var inherits = require('inherits');
+var inherits = _dereq_('inherits');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -2404,17 +2711,14 @@ Runner_WebSQL.prototype.processResponse = function(obj) {
 client.Runner = Runner_WebSQL;
 
 };
-},{"../../promise":47,"../sqlite3/runner":34,"inherits":67}],43:[function(require,module,exports){
+},{"../../promise":49,"../sqlite3/runner":35,"inherits":70}],44:[function(_dereq_,module,exports){
 // Mixed into the query compiler & schema pieces. Assumes a `grammar`
 // property exists on the current object.
-var _            = require('lodash');
-var QueryBuilder = require('./query/builder');
+var _            = _dereq_('lodash');
+var QueryBuilder = _dereq_('./query/builder');
 
-var Raw  = require('./raw');
+var Raw  = _dereq_('./raw');
 var push = Array.prototype.push;
-
-// All operators used in the `where` clause generation.
-var operators = ['=', '<', '>', '<=', '>=', '<>', '!=', 'like', 'not like', 'between', 'ilike'];
 
 // Valid values for the `order by` clause generation.
 var orderBys  = ['asc', 'desc'];
@@ -2425,7 +2729,6 @@ var orderBys  = ['asc', 'desc'];
 // arbitrarily added to queries.
 function Formatter() {
   this.bindings = [];
-  this.errors   = [];
 }
 
 // Turns a list of values into a list of ?'s, joining them with commas unless
@@ -2508,8 +2811,8 @@ Formatter.prototype.columnize = function(target) {
 Formatter.prototype.operator = function(value) {
   var raw;
   if (raw = this.checkRaw(value)) return raw;
-  if (!_.contains(operators, value)) {
-    this.errors.push(new Error('The operator "' + value + '" is not permitted'));
+  if (!_.contains(this.operators, value)) {
+    throw new TypeError('The operator "' + value + '" is not permitted');
   }
   return value;
 };
@@ -2538,12 +2841,12 @@ Formatter.prototype.compileCallback = function(callback, method) {
 };
 
 module.exports = Formatter;
-},{"./query/builder":48,"./raw":52,"lodash":"K2RcUv"}],44:[function(require,module,exports){
+},{"./query/builder":50,"./raw":54,"lodash":"K2RcUv"}],45:[function(_dereq_,module,exports){
 // helpers.js
 // -------
 
 // Just some common functions needed in multiple places within the library.
-var _ = require('lodash');
+var _ = _dereq_('lodash');
 
 var helpers = {
 
@@ -2590,10 +2893,10 @@ var helpers = {
 };
 
 module.exports = helpers;
-},{"lodash":"K2RcUv"}],45:[function(require,module,exports){
+},{"lodash":"K2RcUv"}],46:[function(_dereq_,module,exports){
 module.exports = function(Target) {
-var _ = require('lodash');
-var SqlString = require('mysql/lib/protocol/SqlString');
+var _ = _dereq_('lodash');
+var SqlString = _dereq_('./dialects/mysql/string');
 
 Target.prototype.toQuery = function(tz) {
   var data = this.toSQL(this._method);
@@ -2661,12 +2964,14 @@ _.each(['bind', 'catch', 'spread', 'otherwise', 'tap', 'thenReturn',
 });
 
 };
-},{"lodash":"K2RcUv","mysql/lib/protocol/SqlString":68}],46:[function(require,module,exports){
+},{"./dialects/mysql/string":14,"lodash":"K2RcUv"}],47:[function(_dereq_,module,exports){
+module.exports = ['make', 'latest', 'rollback', 'currentVersion'];
+},{}],48:[function(_dereq_,module,exports){
 // Pool
 // -------
-var _           = require('lodash');
-var GenericPool = require('generic-pool-redux').Pool;
-var Promise     = require('./promise');
+var _           = _dereq_('lodash');
+var GenericPool = _dereq_('generic-pool-redux').Pool;
+var Promise     = _dereq_('./promise');
 
 // The "Pool" object is a thin wrapper around the
 // "generic-pool-redux" library, exposing a `destroy`
@@ -2737,8 +3042,8 @@ Pool.prototype.destroy = function(callback) {
 };
 
 module.exports = Pool;
-},{"./promise":47,"lodash":"K2RcUv"}],47:[function(require,module,exports){
-var Promise = require('bluebird');
+},{"./promise":49,"lodash":"K2RcUv"}],49:[function(_dereq_,module,exports){
+var Promise = _dereq_('bluebird');
 
 Promise.prototype.yield     = Promise.prototype.thenReturn;
 Promise.prototype.ensure    = Promise.prototype.lastly;
@@ -2747,17 +3052,17 @@ Promise.prototype.exec      = Promise.prototype.nodeify;
 
 module.exports = Promise;
 
-},{"bluebird":"EjIH/G"}],48:[function(require,module,exports){
+},{"bluebird":"EjIH/G"}],50:[function(_dereq_,module,exports){
 // Builder
 // -------
-var _            = require('lodash');
-var inherits     = require('inherits');
-var EventEmitter = require('events').EventEmitter;
+var _            = _dereq_('lodash');
+var inherits     = _dereq_('inherits');
+var EventEmitter = _dereq_('events').EventEmitter;
 
-var Raw          = require('../raw');
-var helpers      = require('../helpers');
+var Raw          = _dereq_('../raw');
+var helpers      = _dereq_('../helpers');
 
-var JoinClause  = require('./joinclause');
+var JoinClause  = _dereq_('./joinclause');
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
@@ -2771,12 +3076,6 @@ function QueryBuilder() {
   this._boolFlag  = 'and';
 }
 inherits(QueryBuilder, EventEmitter);
-
-// All operators used in the `where` clause generation.
-var operators = ['=', '<', '>', '<=', '>=', '<>', '!=', 'like', 'not like',
-  'between', 'ilike', '&', '&&', '|', '^', '#', '<<', '>>', '@>', '<@', '||'];
-
-var nullOperators = ['is', 'is not'];
 
 // Valid values for the `order by` clause generation.
 var orderBys = ['asc', 'desc'];
@@ -2912,7 +3211,7 @@ QueryBuilder.prototype.andWhere = function(column, operator, value) {
   }
 
   // Allow a raw statement to be passed along to the query.
-  if (column instanceof Raw) return this._whereRaw(column);
+  if (column instanceof Raw) return this.whereRaw(column);
 
   // Allows `where({id: 2})` syntax.
   if (_.isObject(column)) return this._objectWhere(column);
@@ -2923,28 +3222,38 @@ QueryBuilder.prototype.andWhere = function(column, operator, value) {
   if (arguments.length === 2) {
     value    = operator;
     operator = '=';
+
+    // If the value is null, and it's a two argument query,
+    // we assume we're going for a `whereNull`.
+    if (value === null) {
+      return this.whereNull(column);
+    }
   }
 
   // lower case the operator for comparison purposes
-  operator = operator.toLowerCase();
+  var checkOperator = ('' + operator).toLowerCase().trim();
 
-  // Ensure that the operator / query combo is legal.
-  if (!_.contains(operators, operator)) {
-    if (_.contains(nullOperators, operator)) {
-      if (value === null || _.isString(value) && value.toLowerCase() === 'null') {
-        return operator === 'is' ? this.whereNull(column, bool) : this.whereNull(column, bool, 'NotNull');
-      }
-      this._errors.push(new Error('Invalid where in clause'));
+  // If there are 3 arguments, check whether 'in' is one of them.
+  if (arguments.length === 3) {
+    if (checkOperator === 'in' || checkOperator === 'not in') {
+      return this.whereIn(arguments[0], arguments[2], (checkOperator === 'not in'));
     }
-    this._errors.push(new Error('Invalid operator: ' + operator));
+    if (checkOperator === 'between' || checkOperator === 'not between') {
+      return this.whereBetween(arguments[0], arguments[2], (checkOperator === 'not between'));
+    }
   }
 
-  // If the value is null, and the operator is equals, assume that we're
-  // going for a `whereNull` statement here.
-  if (value === null && operator === '=') {
-    return this.whereNull(column);
+  // If the value is still null, check whether they're meaning
+  // where value is null
+  if (value === null) {
+
+    // Check for .where(key, 'is', null) or .where(key, 'is not', 'null');
+    if (checkOperator === 'is' || checkOperator === 'is not') {
+      return this.whereNull(column, bool, (checkOperator === 'is not'));
+    }
   }
 
+  // Push onto the where statement stack.
   this._statements.push({
     grouping: 'where',
     type: 'whereBasic',
@@ -2955,32 +3264,23 @@ QueryBuilder.prototype.andWhere = function(column, operator, value) {
   });
   return this;
 };
-
-// Processes an object literal provided in a "where" clause.
-QueryBuilder.prototype._objectWhere = function(obj) {
-  var boolVal = this._bool();
-  for (var key in obj) {
-    this[boolVal + 'Where'](key, '=', obj[key]);
-  }
-  return this;
-};
-
 // Adds an `or where` clause to the query.
 QueryBuilder.prototype.orWhere = function() {
   return this._bool('or').where.apply(this, arguments);
 };
 
-// [Deprecated]
-QueryBuilder.prototype.orWhereRaw = function(sql, bindings) {
-  return this._bool('or').whereRaw(sql, bindings);
-};
-QueryBuilder.prototype.whereRaw = function(sql, bindings) {
-  helpers.deprecate('Knex: .whereRaw is deprecated, please use .where(knex.raw(QUERY, [bindings]))');
-  return this._whereRaw(sql, bindings);
+// Processes an object literal provided in a "where" clause.
+QueryBuilder.prototype._objectWhere = function(obj) {
+  var boolVal = this._bool();
+  for (var key in obj) {
+    this[boolVal + 'Where'](key, obj[key]);
+  }
+  return this;
 };
 
 // Adds a raw `where` clause to the query.
-QueryBuilder.prototype._whereRaw = function(sql, bindings) {
+QueryBuilder.prototype.whereRaw =
+QueryBuilder.prototype.andWhereRaw = function(sql, bindings) {
   var raw = (sql instanceof Raw ? sql : new Raw(sql, bindings));
   this._statements.push({
     grouping: 'where',
@@ -2989,6 +3289,9 @@ QueryBuilder.prototype._whereRaw = function(sql, bindings) {
     bool: this._bool()
   });
   return this;
+};
+QueryBuilder.prototype.orWhereRaw = function(sql, bindings) {
+  return this._bool('or').whereRaw(sql, bindings);
 };
 
 // Helper for compiling any advanced `where` queries.
@@ -3171,7 +3474,8 @@ QueryBuilder.prototype.unionAll = function(callback, wrap) {
 };
 
 // Adds a `having` clause to the query.
-QueryBuilder.prototype.having = function(column, operator, value) {
+QueryBuilder.prototype.having =
+QueryBuilder.prototype.andHaving = function(column, operator, value) {
   if (column instanceof Raw && arguments.length === 1) {
     return this._havingRaw(column);
   }
@@ -3189,10 +3493,7 @@ QueryBuilder.prototype.having = function(column, operator, value) {
 QueryBuilder.prototype.orHaving = function() {
   return this._bool('or').having.apply(this, arguments);
 };
-
-// [Deprecated]
 QueryBuilder.prototype.havingRaw = function(sql, bindings) {
-  helpers.deprecate('Knex: .havingRaw is deprecated, please use .having(knex.raw(QUERY, [bindings]))');
   return this._havingRaw(sql, bindings);
 };
 QueryBuilder.prototype.orHavingRaw = function(sql, bindings) {
@@ -3209,7 +3510,6 @@ QueryBuilder.prototype._havingRaw = function(sql, bindings) {
   });
   return this;
 };
-
 
 // Only allow a single "offset" to be set for the current query.
 QueryBuilder.prototype.offset = function(value) {
@@ -3406,16 +3706,16 @@ QueryBuilder.prototype._aggregate = function(method, column) {
 };
 
 // Attach all of the top level promise methods that should be chainable.
-require('../interface')(QueryBuilder);
+_dereq_('../interface')(QueryBuilder);
 
 module.exports = QueryBuilder;
-},{"../helpers":44,"../interface":45,"../raw":52,"./joinclause":50,"events":66,"inherits":67,"lodash":"K2RcUv"}],49:[function(require,module,exports){
+},{"../helpers":45,"../interface":46,"../raw":54,"./joinclause":52,"events":69,"inherits":70,"lodash":"K2RcUv"}],51:[function(_dereq_,module,exports){
 // Query Compiler
 // -------
 
-var _       = require('lodash');
-var helpers = require('../helpers');
-var Raw     = require('../raw');
+var _       = _dereq_('lodash');
+var helpers = _dereq_('../helpers');
+var Raw     = _dereq_('../raw');
 
 // The "QueryCompiler" takes all of the query statements which have been
 // gathered in the "QueryBuilder" and turns them into a properly formatted / bound
@@ -3761,7 +4061,7 @@ QueryCompiler.prototype._prepUpdate = function(data) {
 
 module.exports = QueryCompiler;
 
-},{"../helpers":44,"../raw":52,"lodash":"K2RcUv"}],50:[function(require,module,exports){
+},{"../helpers":45,"../raw":54,"lodash":"K2RcUv"}],52:[function(_dereq_,module,exports){
 // JoinClause
 // -------
 
@@ -3813,7 +4113,7 @@ JoinClause.prototype._bool = function(bool) {
 };
 
 module.exports = JoinClause;
-},{}],51:[function(require,module,exports){
+},{}],53:[function(_dereq_,module,exports){
 // All properties we can use to start a query chain
 // from the `knex` object, e.g. `knex.select('*').from(...`
 module.exports = [
@@ -3883,12 +4183,12 @@ module.exports = [
   'transacting',
   'connection'
 ];
-},{}],52:[function(require,module,exports){
+},{}],54:[function(_dereq_,module,exports){
 // Raw
 // -------
-var _ = require('lodash');
-var inherits = require('inherits');
-var EventEmitter = require('events').EventEmitter;
+var _ = _dereq_('lodash');
+var inherits = _dereq_('inherits');
+var EventEmitter = _dereq_('events').EventEmitter;
 
 function Raw(sql, bindings) {
   if (sql.toSQL) {
@@ -3931,12 +4231,12 @@ Raw.prototype._processQuery = function(sql) {
 
 // Allow the `Raw` object to be utilized with full access to the relevant
 // promise API.
-require('./interface')(Raw);
+_dereq_('./interface')(Raw);
 
 module.exports = Raw;
-},{"./interface":45,"events":66,"inherits":67,"lodash":"K2RcUv"}],53:[function(require,module,exports){
-var _       = require('lodash');
-var Promise = require('./promise');
+},{"./interface":46,"events":69,"inherits":70,"lodash":"K2RcUv"}],55:[function(_dereq_,module,exports){
+var _            = _dereq_('lodash');
+var Promise      = _dereq_('./promise');
 
 // The "Runner" constructor takes a "builder" (query, schema, or raw)
 // and runs through each of the query statements, calling any additional
@@ -3987,7 +4287,7 @@ Runner.prototype.stream = Promise.method(function(options, handler) {
   }
 
   // Lazy-load the "PassThrough" dependency.
-  PassThrough = PassThrough || require('readable-stream').PassThrough;
+  PassThrough = PassThrough || _dereq_('readable-stream').PassThrough;
   var stream  = new PassThrough({objectMode: true});
   var promise = Promise.bind(this)
     .then(this.ensureConnection)
@@ -4023,6 +4323,7 @@ Runner.prototype.pipe = function(writable) {
 // to run in sequence, and on the same connection, especially helpful when schema building
 // and dealing with foreign key constraints, etc.
 Runner.prototype.query = Promise.method(function(obj) {
+  obj.__cid = this.connection.__cid;
   this.builder.emit('query', obj);
   return this._query(obj).bind(this).then(this.processResponse);
 });
@@ -4076,7 +4377,7 @@ Runner.prototype.transactionQuery = Promise.method(function() {
 
 // Begins a transaction statement on the instance,
 // resolving with the connection of the current transaction.
-Runner.prototype.startTransaction = function() {
+Runner.prototype.startTransaction = Promise.method(function() {
   return Promise.bind(this)
     .then(this.ensureConnection)
     .then(function(connection) {
@@ -4084,13 +4385,13 @@ Runner.prototype.startTransaction = function() {
       this.transaction = true;
       return this.query({sql: this._beginTransaction});
     }).thenReturn(this);
-};
+});
 
 // Finishes the transaction statement and handles disposing of the connection,
 // resolving / rejecting the transaction's promise, and ensuring the transaction object's
 // `_runner` property is `null`'ed out so it cannot continue to be used.
 Runner.prototype.finishTransaction = Promise.method(function(action, containerObject, msg) {
-  var query, dfd = containerObject._dfd;
+  var query, dfd = containerObject.__dfd__;
 
   // Run the query to commit / rollback the transaction.
   switch (action) {
@@ -4145,10 +4446,10 @@ Runner.prototype.cleanupConnection = Promise.method(function() {
 });
 
 module.exports = Runner;
-},{"./promise":47,"lodash":"K2RcUv"}],54:[function(require,module,exports){
-var _            = require('lodash');
-var inherits     = require('inherits');
-var EventEmitter = require('events').EventEmitter;
+},{"./promise":49,"lodash":"K2RcUv"}],56:[function(_dereq_,module,exports){
+var _            = _dereq_('lodash');
+var inherits     = _dereq_('inherits');
+var EventEmitter = _dereq_('events').EventEmitter;
 
 // Constructor for the builder instance, typically called from
 // `knex.builder`, accepting the current `knex` instance,
@@ -4186,11 +4487,11 @@ SchemaBuilder.prototype.toSQL = function() {
   return new SchemaCompiler(this).toSQL();
 };
 
-require('../interface')(SchemaBuilder);
+_dereq_('../interface')(SchemaBuilder);
 
 module.exports = SchemaBuilder;
-},{"../interface":45,"events":66,"inherits":67,"lodash":"K2RcUv"}],55:[function(require,module,exports){
-var _ = require('lodash');
+},{"../interface":46,"events":69,"inherits":70,"lodash":"K2RcUv"}],57:[function(_dereq_,module,exports){
+var _ = _dereq_('lodash');
 
 // Alias a few methods for clarity when processing.
 var columnAlias = {
@@ -4282,13 +4583,13 @@ ColumnBuilder.prototype.references = function(value) {
 };
 
 module.exports = ColumnBuilder;
-},{"lodash":"K2RcUv"}],56:[function(require,module,exports){
+},{"lodash":"K2RcUv"}],58:[function(_dereq_,module,exports){
 // Column Compiler
 // Used for designating column definitions
 // during the table "create" / "alter" statements.
 // -------
-var _ = require('lodash');
-var Raw = require('../raw');
+var _ = _dereq_('lodash');
+var Raw = _dereq_('../raw');
 
 function ColumnCompiler(tableCompiler, columnBuilder) {
   this.tableCompiler = tableCompiler;
@@ -4408,7 +4709,7 @@ ColumnCompiler.prototype._num = function(val, fallback) {
 };
 
 module.exports = ColumnCompiler;
-},{"../raw":52,"lodash":"K2RcUv"}],57:[function(require,module,exports){
+},{"../raw":54,"lodash":"K2RcUv"}],59:[function(_dereq_,module,exports){
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of
 // properly formatted / bound query strings.
@@ -4445,15 +4746,15 @@ SchemaCompiler.prototype.toSQL = function() {
 };
 
 module.exports = SchemaCompiler;
-},{}],58:[function(require,module,exports){
-var _ = require('lodash');
+},{}],60:[function(_dereq_,module,exports){
+var _ = _dereq_('lodash');
 
-var Builder = require('./builder');
-var Compiler = require('./compiler');
-var TableBuilder = require('./tablebuilder');
-var TableCompiler = require('./tablecompiler');
-var ColumnBuilder = require('./columnbuilder');
-var ColumnCompiler = require('./columncompiler');
+var Builder = _dereq_('./builder');
+var Compiler = _dereq_('./compiler');
+var TableBuilder = _dereq_('./tablebuilder');
+var TableCompiler = _dereq_('./tablecompiler');
+var ColumnBuilder = _dereq_('./columnbuilder');
+var ColumnCompiler = _dereq_('./columncompiler');
 
 // Initialize the compiler.
 Compiler.prototype.initCompiler =
@@ -4489,7 +4790,10 @@ module.exports = {
   ColumnBuilder: ColumnBuilder,
   ColumnCompiler: ColumnCompiler
 };
-},{"./builder":54,"./columnbuilder":55,"./columncompiler":56,"./compiler":57,"./tablebuilder":59,"./tablecompiler":60,"lodash":"K2RcUv"}],59:[function(require,module,exports){
+},{"./builder":56,"./columnbuilder":57,"./columncompiler":58,"./compiler":59,"./tablebuilder":62,"./tablecompiler":63,"lodash":"K2RcUv"}],61:[function(_dereq_,module,exports){
+module.exports = ['table', 'createTable', 'editTable', 'dropTable',
+  'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn'];
+},{}],62:[function(_dereq_,module,exports){
 // TableBuilder
 
 // Takes the function passed to the "createTable" or "table/editTable"
@@ -4498,7 +4802,7 @@ module.exports = {
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-var _ = require('lodash');
+var _ = _dereq_('lodash');
 
 function TableBuilder(method, tableName, fn) {
   this._fn         = fn;
@@ -4737,12 +5041,12 @@ TableBuilder.prototype.foreign = function(column) {
 };
 
 module.exports = TableBuilder;
-},{"lodash":"K2RcUv"}],60:[function(require,module,exports){
+},{"lodash":"K2RcUv"}],63:[function(_dereq_,module,exports){
 // Table Compiler
 // -------
-var _ = require('lodash');
+var _ = _dereq_('lodash');
 
-var helpers = require('../helpers');
+var helpers = _dereq_('../helpers');
 
 function TableCompiler(tableBuilder) {
   this.method         = tableBuilder._method;
@@ -4888,12 +5192,12 @@ TableCompiler.prototype._indexCommand = function(type, tableName, columns) {
 };
 
 module.exports = TableCompiler;
-},{"../helpers":44,"lodash":"K2RcUv"}],61:[function(require,module,exports){
+},{"../helpers":45,"lodash":"K2RcUv"}],64:[function(_dereq_,module,exports){
 // Transaction
 // -------
-var Promise = require('./promise');
-var inherits = require('inherits');
-var EventEmitter = require('events').EventEmitter;
+var Promise = _dereq_('./promise');
+var inherits = _dereq_('inherits');
+var EventEmitter = _dereq_('events').EventEmitter;
 
 // Creates a new wrapper object for constructing a transaction.
 // Called by the `knex.transaction`, which sets the correct client
@@ -4904,30 +5208,54 @@ function Transaction(container) {
 }
 inherits(Transaction, EventEmitter);
 
-// Build the object passed around inside the transaction container.
+// Build the knex instance passed around inside the transaction container.
+// It can be used both as a fully functional knex instance, or assimilated
+// into existing knex chains via the ".transacting" method call.
 Transaction.prototype.containerObject = function(runner) {
-  var containerObj = {
-    commit: function(message) {
-      return containerObj._runner.finishTransaction(0, this, message);
-    },
-    rollback: function(error) {
-      return containerObj._runner.finishTransaction(1, this, error);
-    },
-    _runner: runner
+  var Knex = _dereq_('../knex');
+
+  // Create an entirely new knex instance just for this transaction
+  var transactor = Knex.initialize({
+    __client__     : this.client,
+    __transactor__ : {_runner: runner}
+  });
+
+  // Remove the ability to start a transaction or destroy
+  // the entire pool within a transaction.
+  transactor.destroy = transactor.transaction = void 0;
+
+  // Commits the transaction:
+  transactor.commit = function(message) {
+    runner.finishTransaction(0, transactor, message);
   };
-  return containerObj;
+
+  // Rolls back the transaction.
+  transactor.rollback = function(error) {
+    runner.finishTransaction(1, transactor, error);
+  };
+
+  transactor._runner = runner;
+
+  return transactor;
 };
 
-Transaction.prototype.initiateDeferred = function(containerObj) {
+Transaction.prototype.initiateDeferred = function(transactor) {
 
   // Initiate a deferred object, bound to the container object,
   // so we know when the transaction completes or fails
   // and can continue from there.
-  var dfd = containerObj._dfd = Promise.pending();
+  var dfd = transactor.__dfd__ = Promise.pending();
 
   // Call the container with the transaction
   // commit & rollback objects.
-  this.container(containerObj);
+  var result = this.container(transactor);
+
+  // If we've returned a "thenable" from the transaction container,
+  // and it's got the transaction object we're running for this, assume
+  // the rollback and commit are chained to this object's success / failure.
+  if (result && result.then && typeof result.then === 'function') {
+    result.then(transactor.commit).catch(transactor.rollback);
+  }
 
   // Return the promise for the entire transaction.
   return dfd.promise;
@@ -4935,7 +5263,7 @@ Transaction.prototype.initiateDeferred = function(containerObj) {
 
 // Allow the `Transaction` object to be utilized with full access to the relevant
 // promise API.
-require('./interface')(Transaction);
+_dereq_('./interface')(Transaction);
 
 // Passed a `container` function, this method runs the current
 // transaction, returning a promise.
@@ -4950,12 +5278,13 @@ Transaction.prototype.then = function(onFulfilled, onRejected) {
     .bind(this)
     .then(this.containerObject)
     .then(this.initiateDeferred)
-    .then(onFulfilled, onRejected);
+    .then(onFulfilled, onRejected)
+    .bind();
 };
 
 module.exports = Transaction;
-},{"./interface":45,"./promise":47,"events":66,"inherits":67}],62:[function(require,module,exports){
-var _ = require('lodash');
+},{"../knex":1,"./interface":46,"./promise":49,"events":69,"inherits":70}],65:[function(_dereq_,module,exports){
+var _ = _dereq_('lodash');
 
 module.exports = {
 
@@ -4981,7 +5310,7 @@ module.exports = {
   }
 
 };
-},{"lodash":"K2RcUv"}],63:[function(require,module,exports){
+},{"lodash":"K2RcUv"}],66:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -4989,8 +5318,8 @@ module.exports = {
  * @license  MIT
  */
 
-var base64 = require('base64-js')
-var ieee754 = require('ieee754')
+var base64 = _dereq_('base64-js')
+var ieee754 = _dereq_('ieee754')
 
 exports.Buffer = Buffer
 exports.SlowBuffer = Buffer
@@ -5078,7 +5407,7 @@ function Buffer (subject, encoding, noZero) {
       if (Buffer.isBuffer(subject))
         buf[i] = subject.readUInt8(i)
       else
-        buf[i] = subject[i]
+        buf.writeInt8(subject[i], i)
     }
   } else if (type === 'string') {
     buf.write(subject, 0, encoding)
@@ -5119,7 +5448,7 @@ Buffer.isBuffer = function (b) {
 
 Buffer.byteLength = function (str, encoding) {
   var ret
-  str = str + ''
+  str = str.toString()
   switch (encoding || 'utf8') {
     case 'hex':
       ret = str.length / 2
@@ -5149,8 +5478,7 @@ Buffer.byteLength = function (str, encoding) {
 }
 
 Buffer.concat = function (list, totalLength) {
-  assert(isArray(list), 'Usage: Buffer.concat(list, [totalLength])\n' +
-      'list should be an Array.')
+  assert(isArray(list), 'Usage: Buffer.concat(list[, length])')
 
   if (list.length === 0) {
     return new Buffer(0)
@@ -5159,7 +5487,7 @@ Buffer.concat = function (list, totalLength) {
   }
 
   var i
-  if (typeof totalLength !== 'number') {
+  if (totalLength === undefined) {
     totalLength = 0
     for (i = 0; i < list.length; i++) {
       totalLength += list[i].length
@@ -5176,10 +5504,28 @@ Buffer.concat = function (list, totalLength) {
   return buf
 }
 
+Buffer.compare = function (a, b) {
+  assert(Buffer.isBuffer(a) && Buffer.isBuffer(b), 'Arguments must be Buffers')
+  var x = a.length
+  var y = b.length
+  for (var i = 0, len = Math.min(x, y); i < len && a[i] === b[i]; i++) {}
+  if (i !== len) {
+    x = a[i]
+    y = b[i]
+  }
+  if (x < y) {
+    return -1
+  }
+  if (y < x) {
+    return 1
+  }
+  return 0
+}
+
 // BUFFER INSTANCE METHODS
 // =======================
 
-function _hexWrite (buf, string, offset, length) {
+function hexWrite (buf, string, offset, length) {
   offset = Number(offset) || 0
   var remaining = buf.length - offset
   if (!length) {
@@ -5203,35 +5549,30 @@ function _hexWrite (buf, string, offset, length) {
     assert(!isNaN(byte), 'Invalid hex string')
     buf[offset + i] = byte
   }
-  Buffer._charsWritten = i * 2
   return i
 }
 
-function _utf8Write (buf, string, offset, length) {
-  var charsWritten = Buffer._charsWritten =
-    blitBuffer(utf8ToBytes(string), buf, offset, length)
+function utf8Write (buf, string, offset, length) {
+  var charsWritten = blitBuffer(utf8ToBytes(string), buf, offset, length)
   return charsWritten
 }
 
-function _asciiWrite (buf, string, offset, length) {
-  var charsWritten = Buffer._charsWritten =
-    blitBuffer(asciiToBytes(string), buf, offset, length)
+function asciiWrite (buf, string, offset, length) {
+  var charsWritten = blitBuffer(asciiToBytes(string), buf, offset, length)
   return charsWritten
 }
 
-function _binaryWrite (buf, string, offset, length) {
-  return _asciiWrite(buf, string, offset, length)
+function binaryWrite (buf, string, offset, length) {
+  return asciiWrite(buf, string, offset, length)
 }
 
-function _base64Write (buf, string, offset, length) {
-  var charsWritten = Buffer._charsWritten =
-    blitBuffer(base64ToBytes(string), buf, offset, length)
+function base64Write (buf, string, offset, length) {
+  var charsWritten = blitBuffer(base64ToBytes(string), buf, offset, length)
   return charsWritten
 }
 
-function _utf16leWrite (buf, string, offset, length) {
-  var charsWritten = Buffer._charsWritten =
-    blitBuffer(utf16leToBytes(string), buf, offset, length)
+function utf16leWrite (buf, string, offset, length) {
+  var charsWritten = blitBuffer(utf16leToBytes(string), buf, offset, length)
   return charsWritten
 }
 
@@ -5265,26 +5606,26 @@ Buffer.prototype.write = function (string, offset, length, encoding) {
   var ret
   switch (encoding) {
     case 'hex':
-      ret = _hexWrite(this, string, offset, length)
+      ret = hexWrite(this, string, offset, length)
       break
     case 'utf8':
     case 'utf-8':
-      ret = _utf8Write(this, string, offset, length)
+      ret = utf8Write(this, string, offset, length)
       break
     case 'ascii':
-      ret = _asciiWrite(this, string, offset, length)
+      ret = asciiWrite(this, string, offset, length)
       break
     case 'binary':
-      ret = _binaryWrite(this, string, offset, length)
+      ret = binaryWrite(this, string, offset, length)
       break
     case 'base64':
-      ret = _base64Write(this, string, offset, length)
+      ret = base64Write(this, string, offset, length)
       break
     case 'ucs2':
     case 'ucs-2':
     case 'utf16le':
     case 'utf-16le':
-      ret = _utf16leWrite(this, string, offset, length)
+      ret = utf16leWrite(this, string, offset, length)
       break
     default:
       throw new Error('Unknown encoding')
@@ -5297,9 +5638,7 @@ Buffer.prototype.toString = function (encoding, start, end) {
 
   encoding = String(encoding || 'utf8').toLowerCase()
   start = Number(start) || 0
-  end = (end !== undefined)
-    ? Number(end)
-    : end = self.length
+  end = (end === undefined) ? self.length : Number(end)
 
   // Fastpath empty strings
   if (end === start)
@@ -5308,26 +5647,26 @@ Buffer.prototype.toString = function (encoding, start, end) {
   var ret
   switch (encoding) {
     case 'hex':
-      ret = _hexSlice(self, start, end)
+      ret = hexSlice(self, start, end)
       break
     case 'utf8':
     case 'utf-8':
-      ret = _utf8Slice(self, start, end)
+      ret = utf8Slice(self, start, end)
       break
     case 'ascii':
-      ret = _asciiSlice(self, start, end)
+      ret = asciiSlice(self, start, end)
       break
     case 'binary':
-      ret = _binarySlice(self, start, end)
+      ret = binarySlice(self, start, end)
       break
     case 'base64':
-      ret = _base64Slice(self, start, end)
+      ret = base64Slice(self, start, end)
       break
     case 'ucs2':
     case 'ucs-2':
     case 'utf16le':
     case 'utf-16le':
-      ret = _utf16leSlice(self, start, end)
+      ret = utf16leSlice(self, start, end)
       break
     default:
       throw new Error('Unknown encoding')
@@ -5340,6 +5679,16 @@ Buffer.prototype.toJSON = function () {
     type: 'Buffer',
     data: Array.prototype.slice.call(this._arr || this, 0)
   }
+}
+
+Buffer.prototype.equals = function (b) {
+  assert(Buffer.isBuffer(b), 'Argument must be a Buffer')
+  return Buffer.compare(this, b) === 0
+}
+
+Buffer.prototype.compare = function (b) {
+  assert(Buffer.isBuffer(b), 'Argument must be a Buffer')
+  return Buffer.compare(this, b)
 }
 
 // copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
@@ -5370,14 +5719,15 @@ Buffer.prototype.copy = function (target, target_start, start, end) {
   var len = end - start
 
   if (len < 100 || !Buffer._useTypedArrays) {
-    for (var i = 0; i < len; i++)
+    for (var i = 0; i < len; i++) {
       target[i + target_start] = this[i + start]
+    }
   } else {
     target._set(this.subarray(start, start + len), target_start)
   }
 }
 
-function _base64Slice (buf, start, end) {
+function base64Slice (buf, start, end) {
   if (start === 0 && end === buf.length) {
     return base64.fromByteArray(buf)
   } else {
@@ -5385,7 +5735,7 @@ function _base64Slice (buf, start, end) {
   }
 }
 
-function _utf8Slice (buf, start, end) {
+function utf8Slice (buf, start, end) {
   var res = ''
   var tmp = ''
   end = Math.min(buf.length, end)
@@ -5402,20 +5752,21 @@ function _utf8Slice (buf, start, end) {
   return res + decodeUtf8Char(tmp)
 }
 
-function _asciiSlice (buf, start, end) {
+function asciiSlice (buf, start, end) {
   var ret = ''
   end = Math.min(buf.length, end)
 
-  for (var i = start; i < end; i++)
+  for (var i = start; i < end; i++) {
     ret += String.fromCharCode(buf[i])
+  }
   return ret
 }
 
-function _binarySlice (buf, start, end) {
-  return _asciiSlice(buf, start, end)
+function binarySlice (buf, start, end) {
+  return asciiSlice(buf, start, end)
 }
 
-function _hexSlice (buf, start, end) {
+function hexSlice (buf, start, end) {
   var len = buf.length
 
   if (!start || start < 0) start = 0
@@ -5428,11 +5779,11 @@ function _hexSlice (buf, start, end) {
   return out
 }
 
-function _utf16leSlice (buf, start, end) {
+function utf16leSlice (buf, start, end) {
   var bytes = buf.slice(start, end)
   var res = ''
   for (var i = 0; i < bytes.length; i += 2) {
-    res += String.fromCharCode(bytes[i] + bytes[i+1] * 256)
+    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256)
   }
   return res
 }
@@ -5478,7 +5829,7 @@ Buffer.prototype.readUInt8 = function (offset, noAssert) {
   return this[offset]
 }
 
-function _readUInt16 (buf, offset, littleEndian, noAssert) {
+function readUInt16 (buf, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
     assert(offset !== undefined && offset !== null, 'missing offset')
@@ -5503,14 +5854,14 @@ function _readUInt16 (buf, offset, littleEndian, noAssert) {
 }
 
 Buffer.prototype.readUInt16LE = function (offset, noAssert) {
-  return _readUInt16(this, offset, true, noAssert)
+  return readUInt16(this, offset, true, noAssert)
 }
 
 Buffer.prototype.readUInt16BE = function (offset, noAssert) {
-  return _readUInt16(this, offset, false, noAssert)
+  return readUInt16(this, offset, false, noAssert)
 }
 
-function _readUInt32 (buf, offset, littleEndian, noAssert) {
+function readUInt32 (buf, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
     assert(offset !== undefined && offset !== null, 'missing offset')
@@ -5543,11 +5894,11 @@ function _readUInt32 (buf, offset, littleEndian, noAssert) {
 }
 
 Buffer.prototype.readUInt32LE = function (offset, noAssert) {
-  return _readUInt32(this, offset, true, noAssert)
+  return readUInt32(this, offset, true, noAssert)
 }
 
 Buffer.prototype.readUInt32BE = function (offset, noAssert) {
-  return _readUInt32(this, offset, false, noAssert)
+  return readUInt32(this, offset, false, noAssert)
 }
 
 Buffer.prototype.readInt8 = function (offset, noAssert) {
@@ -5567,7 +5918,7 @@ Buffer.prototype.readInt8 = function (offset, noAssert) {
     return this[offset]
 }
 
-function _readInt16 (buf, offset, littleEndian, noAssert) {
+function readInt16 (buf, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
     assert(offset !== undefined && offset !== null, 'missing offset')
@@ -5578,7 +5929,7 @@ function _readInt16 (buf, offset, littleEndian, noAssert) {
   if (offset >= len)
     return
 
-  var val = _readUInt16(buf, offset, littleEndian, true)
+  var val = readUInt16(buf, offset, littleEndian, true)
   var neg = val & 0x8000
   if (neg)
     return (0xffff - val + 1) * -1
@@ -5587,14 +5938,14 @@ function _readInt16 (buf, offset, littleEndian, noAssert) {
 }
 
 Buffer.prototype.readInt16LE = function (offset, noAssert) {
-  return _readInt16(this, offset, true, noAssert)
+  return readInt16(this, offset, true, noAssert)
 }
 
 Buffer.prototype.readInt16BE = function (offset, noAssert) {
-  return _readInt16(this, offset, false, noAssert)
+  return readInt16(this, offset, false, noAssert)
 }
 
-function _readInt32 (buf, offset, littleEndian, noAssert) {
+function readInt32 (buf, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
     assert(offset !== undefined && offset !== null, 'missing offset')
@@ -5605,7 +5956,7 @@ function _readInt32 (buf, offset, littleEndian, noAssert) {
   if (offset >= len)
     return
 
-  var val = _readUInt32(buf, offset, littleEndian, true)
+  var val = readUInt32(buf, offset, littleEndian, true)
   var neg = val & 0x80000000
   if (neg)
     return (0xffffffff - val + 1) * -1
@@ -5614,14 +5965,14 @@ function _readInt32 (buf, offset, littleEndian, noAssert) {
 }
 
 Buffer.prototype.readInt32LE = function (offset, noAssert) {
-  return _readInt32(this, offset, true, noAssert)
+  return readInt32(this, offset, true, noAssert)
 }
 
 Buffer.prototype.readInt32BE = function (offset, noAssert) {
-  return _readInt32(this, offset, false, noAssert)
+  return readInt32(this, offset, false, noAssert)
 }
 
-function _readFloat (buf, offset, littleEndian, noAssert) {
+function readFloat (buf, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
     assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
@@ -5631,14 +5982,14 @@ function _readFloat (buf, offset, littleEndian, noAssert) {
 }
 
 Buffer.prototype.readFloatLE = function (offset, noAssert) {
-  return _readFloat(this, offset, true, noAssert)
+  return readFloat(this, offset, true, noAssert)
 }
 
 Buffer.prototype.readFloatBE = function (offset, noAssert) {
-  return _readFloat(this, offset, false, noAssert)
+  return readFloat(this, offset, false, noAssert)
 }
 
-function _readDouble (buf, offset, littleEndian, noAssert) {
+function readDouble (buf, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
     assert(offset + 7 < buf.length, 'Trying to read beyond buffer length')
@@ -5648,11 +5999,11 @@ function _readDouble (buf, offset, littleEndian, noAssert) {
 }
 
 Buffer.prototype.readDoubleLE = function (offset, noAssert) {
-  return _readDouble(this, offset, true, noAssert)
+  return readDouble(this, offset, true, noAssert)
 }
 
 Buffer.prototype.readDoubleBE = function (offset, noAssert) {
-  return _readDouble(this, offset, false, noAssert)
+  return readDouble(this, offset, false, noAssert)
 }
 
 Buffer.prototype.writeUInt8 = function (value, offset, noAssert) {
@@ -5666,9 +6017,10 @@ Buffer.prototype.writeUInt8 = function (value, offset, noAssert) {
   if (offset >= this.length) return
 
   this[offset] = value
+  return offset + 1
 }
 
-function _writeUInt16 (buf, value, offset, littleEndian, noAssert) {
+function writeUInt16 (buf, value, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(value !== undefined && value !== null, 'missing value')
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
@@ -5686,17 +6038,18 @@ function _writeUInt16 (buf, value, offset, littleEndian, noAssert) {
         (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
             (littleEndian ? i : 1 - i) * 8
   }
+  return offset + 2
 }
 
 Buffer.prototype.writeUInt16LE = function (value, offset, noAssert) {
-  _writeUInt16(this, value, offset, true, noAssert)
+  return writeUInt16(this, value, offset, true, noAssert)
 }
 
 Buffer.prototype.writeUInt16BE = function (value, offset, noAssert) {
-  _writeUInt16(this, value, offset, false, noAssert)
+  return writeUInt16(this, value, offset, false, noAssert)
 }
 
-function _writeUInt32 (buf, value, offset, littleEndian, noAssert) {
+function writeUInt32 (buf, value, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(value !== undefined && value !== null, 'missing value')
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
@@ -5713,14 +6066,15 @@ function _writeUInt32 (buf, value, offset, littleEndian, noAssert) {
     buf[offset + i] =
         (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff
   }
+  return offset + 4
 }
 
 Buffer.prototype.writeUInt32LE = function (value, offset, noAssert) {
-  _writeUInt32(this, value, offset, true, noAssert)
+  return writeUInt32(this, value, offset, true, noAssert)
 }
 
 Buffer.prototype.writeUInt32BE = function (value, offset, noAssert) {
-  _writeUInt32(this, value, offset, false, noAssert)
+  return writeUInt32(this, value, offset, false, noAssert)
 }
 
 Buffer.prototype.writeInt8 = function (value, offset, noAssert) {
@@ -5738,9 +6092,10 @@ Buffer.prototype.writeInt8 = function (value, offset, noAssert) {
     this.writeUInt8(value, offset, noAssert)
   else
     this.writeUInt8(0xff + value + 1, offset, noAssert)
+  return offset + 1
 }
 
-function _writeInt16 (buf, value, offset, littleEndian, noAssert) {
+function writeInt16 (buf, value, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(value !== undefined && value !== null, 'missing value')
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
@@ -5754,20 +6109,21 @@ function _writeInt16 (buf, value, offset, littleEndian, noAssert) {
     return
 
   if (value >= 0)
-    _writeUInt16(buf, value, offset, littleEndian, noAssert)
+    writeUInt16(buf, value, offset, littleEndian, noAssert)
   else
-    _writeUInt16(buf, 0xffff + value + 1, offset, littleEndian, noAssert)
+    writeUInt16(buf, 0xffff + value + 1, offset, littleEndian, noAssert)
+  return offset + 2
 }
 
 Buffer.prototype.writeInt16LE = function (value, offset, noAssert) {
-  _writeInt16(this, value, offset, true, noAssert)
+  return writeInt16(this, value, offset, true, noAssert)
 }
 
 Buffer.prototype.writeInt16BE = function (value, offset, noAssert) {
-  _writeInt16(this, value, offset, false, noAssert)
+  return writeInt16(this, value, offset, false, noAssert)
 }
 
-function _writeInt32 (buf, value, offset, littleEndian, noAssert) {
+function writeInt32 (buf, value, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(value !== undefined && value !== null, 'missing value')
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
@@ -5781,20 +6137,21 @@ function _writeInt32 (buf, value, offset, littleEndian, noAssert) {
     return
 
   if (value >= 0)
-    _writeUInt32(buf, value, offset, littleEndian, noAssert)
+    writeUInt32(buf, value, offset, littleEndian, noAssert)
   else
-    _writeUInt32(buf, 0xffffffff + value + 1, offset, littleEndian, noAssert)
+    writeUInt32(buf, 0xffffffff + value + 1, offset, littleEndian, noAssert)
+  return offset + 4
 }
 
 Buffer.prototype.writeInt32LE = function (value, offset, noAssert) {
-  _writeInt32(this, value, offset, true, noAssert)
+  return writeInt32(this, value, offset, true, noAssert)
 }
 
 Buffer.prototype.writeInt32BE = function (value, offset, noAssert) {
-  _writeInt32(this, value, offset, false, noAssert)
+  return writeInt32(this, value, offset, false, noAssert)
 }
 
-function _writeFloat (buf, value, offset, littleEndian, noAssert) {
+function writeFloat (buf, value, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(value !== undefined && value !== null, 'missing value')
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
@@ -5808,17 +6165,18 @@ function _writeFloat (buf, value, offset, littleEndian, noAssert) {
     return
 
   ieee754.write(buf, value, offset, littleEndian, 23, 4)
+  return offset + 4
 }
 
 Buffer.prototype.writeFloatLE = function (value, offset, noAssert) {
-  _writeFloat(this, value, offset, true, noAssert)
+  return writeFloat(this, value, offset, true, noAssert)
 }
 
 Buffer.prototype.writeFloatBE = function (value, offset, noAssert) {
-  _writeFloat(this, value, offset, false, noAssert)
+  return writeFloat(this, value, offset, false, noAssert)
 }
 
-function _writeDouble (buf, value, offset, littleEndian, noAssert) {
+function writeDouble (buf, value, offset, littleEndian, noAssert) {
   if (!noAssert) {
     assert(value !== undefined && value !== null, 'missing value')
     assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
@@ -5833,14 +6191,15 @@ function _writeDouble (buf, value, offset, littleEndian, noAssert) {
     return
 
   ieee754.write(buf, value, offset, littleEndian, 52, 8)
+  return offset + 8
 }
 
 Buffer.prototype.writeDoubleLE = function (value, offset, noAssert) {
-  _writeDouble(this, value, offset, true, noAssert)
+  return writeDouble(this, value, offset, true, noAssert)
 }
 
 Buffer.prototype.writeDoubleBE = function (value, offset, noAssert) {
-  _writeDouble(this, value, offset, false, noAssert)
+  return writeDouble(this, value, offset, false, noAssert)
 }
 
 // fill(value, start=0, end=buffer.length)
@@ -5849,11 +6208,6 @@ Buffer.prototype.fill = function (value, start, end) {
   if (!start) start = 0
   if (!end) end = this.length
 
-  if (typeof value === 'string') {
-    value = value.charCodeAt(0)
-  }
-
-  assert(typeof value === 'number' && !isNaN(value), 'value is not a number')
   assert(end >= start, 'end < start')
 
   // Fill 0 bytes; we're done
@@ -5863,9 +6217,20 @@ Buffer.prototype.fill = function (value, start, end) {
   assert(start >= 0 && start < this.length, 'start out of bounds')
   assert(end >= 0 && end <= this.length, 'end out of bounds')
 
-  for (var i = start; i < end; i++) {
-    this[i] = value
+  var i
+  if (typeof value === 'number') {
+    for (i = start; i < end; i++) {
+      this[i] = value
+    }
+  } else {
+    var bytes = utf8ToBytes(value.toString())
+    var len = bytes.length
+    for (i = start; i < end; i++) {
+      this[i] = bytes[i % len]
+    }
   }
+
+  return this
 }
 
 Buffer.prototype.inspect = function () {
@@ -5891,8 +6256,9 @@ Buffer.prototype.toArrayBuffer = function () {
       return (new Buffer(this)).buffer
     } else {
       var buf = new Uint8Array(this.length)
-      for (var i = 0, len = buf.length; i < len; i += 1)
+      for (var i = 0, len = buf.length; i < len; i += 1) {
         buf[i] = this[i]
+      }
       return buf.buffer
     }
   } else {
@@ -5902,11 +6268,6 @@ Buffer.prototype.toArrayBuffer = function () {
 
 // HELPER FUNCTIONS
 // ================
-
-function stringtrim (str) {
-  if (str.trim) return str.trim()
-  return str.replace(/^\s+|\s+$/g, '')
-}
 
 var BP = Buffer.prototype
 
@@ -5928,6 +6289,8 @@ Buffer._augment = function (arr) {
   arr.toString = BP.toString
   arr.toLocaleString = BP.toString
   arr.toJSON = BP.toJSON
+  arr.equals = BP.equals
+  arr.compare = BP.compare
   arr.copy = BP.copy
   arr.slice = BP.slice
   arr.readUInt8 = BP.readUInt8
@@ -5963,6 +6326,11 @@ Buffer._augment = function (arr) {
   arr.toArrayBuffer = BP.toArrayBuffer
 
   return arr
+}
+
+function stringtrim (str) {
+  if (str.trim) return str.trim()
+  return str.replace(/^\s+|\s+$/g, '')
 }
 
 // slice(start, end)
@@ -6005,14 +6373,15 @@ function utf8ToBytes (str) {
   var byteArray = []
   for (var i = 0; i < str.length; i++) {
     var b = str.charCodeAt(i)
-    if (b <= 0x7F)
-      byteArray.push(str.charCodeAt(i))
-    else {
+    if (b <= 0x7F) {
+      byteArray.push(b)
+    } else {
       var start = i
       if (b >= 0xD800 && b <= 0xDFFF) i++
       var h = encodeURIComponent(str.slice(start, i+1)).substr(1).split('%')
-      for (var j = 0; j < h.length; j++)
+      for (var j = 0; j < h.length; j++) {
         byteArray.push(parseInt(h[j], 16))
+      }
     }
   }
   return byteArray
@@ -6046,7 +6415,6 @@ function base64ToBytes (str) {
 }
 
 function blitBuffer (src, dst, offset, length) {
-  var pos
   for (var i = 0; i < length; i++) {
     if ((i + offset >= dst.length) || (i >= src.length))
       break
@@ -6092,7 +6460,7 @@ function assert (test, message) {
   if (!test) throw new Error(message || 'Failed assertion')
 }
 
-},{"base64-js":64,"ieee754":65}],64:[function(require,module,exports){
+},{"base64-js":67,"ieee754":68}],67:[function(_dereq_,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -6215,7 +6583,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	module.exports.fromByteArray = uint8ToBase64
 }())
 
-},{}],65:[function(require,module,exports){
+},{}],68:[function(_dereq_,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -6301,7 +6669,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],66:[function(require,module,exports){
+},{}],69:[function(_dereq_,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -6449,7 +6817,10 @@ EventEmitter.prototype.addListener = function(type, listener) {
                     'leak detected. %d listeners added. ' +
                     'Use emitter.setMaxListeners() to increase limit.',
                     this._events[type].length);
-      console.trace();
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
     }
   }
 
@@ -6603,7 +6974,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],67:[function(require,module,exports){
+},{}],70:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -6628,271 +6999,6 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],68:[function(require,module,exports){
-(function (Buffer){
-var SqlString = exports;
-
-SqlString.escapeId = function (val, forbidQualified) {
-  if (Array.isArray(val)) {
-    return val.map(function(v) {
-      return SqlString.escapeId(v, forbidQualified);
-    }).join(', ');
-  }
-
-  if (forbidQualified) {
-    return '`' + val.replace(/`/g, '``') + '`';
-  }
-  return '`' + val.replace(/`/g, '``').replace(/\./g, '`.`') + '`';
-};
-
-SqlString.escape = function(val, stringifyObjects, timeZone) {
-  if (val === undefined || val === null) {
-    return 'NULL';
-  }
-
-  switch (typeof val) {
-    case 'boolean': return (val) ? 'true' : 'false';
-    case 'number': return val+'';
-  }
-
-  if (val instanceof Date) {
-    val = SqlString.dateToString(val, timeZone || 'local');
-  }
-
-  if (Buffer.isBuffer(val)) {
-    return SqlString.bufferToString(val);
-  }
-
-  if (Array.isArray(val)) {
-    return SqlString.arrayToList(val, timeZone);
-  }
-
-  if (typeof val === 'object') {
-    if (stringifyObjects) {
-      val = val.toString();
-    } else {
-      return SqlString.objectToValues(val, timeZone);
-    }
-  }
-
-  val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
-    switch(s) {
-      case "\0": return "\\0";
-      case "\n": return "\\n";
-      case "\r": return "\\r";
-      case "\b": return "\\b";
-      case "\t": return "\\t";
-      case "\x1a": return "\\Z";
-      default: return "\\"+s;
-    }
-  });
-  return "'"+val+"'";
-};
-
-SqlString.arrayToList = function(array, timeZone) {
-  return array.map(function(v) {
-    if (Array.isArray(v)) return '(' + SqlString.arrayToList(v, timeZone) + ')';
-    return SqlString.escape(v, true, timeZone);
-  }).join(', ');
-};
-
-SqlString.format = function(sql, values, stringifyObjects, timeZone) {
-  values = values == null ? [] : [].concat(values);
-
-  return sql.replace(/\?\??/g, function(match) {
-    if (!values.length) {
-      return match;
-    }
-
-    if (match == "??") {
-      return SqlString.escapeId(values.shift());
-    }
-    return SqlString.escape(values.shift(), stringifyObjects, timeZone);
-  });
-};
-
-SqlString.dateToString = function(date, timeZone) {
-  var dt = new Date(date);
-
-  if (timeZone != 'local') {
-    var tz = convertTimezone(timeZone);
-
-    dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
-    if (tz !== false) {
-      dt.setTime(dt.getTime() + (tz * 60000));
-    }
-  }
-
-  var year   = dt.getFullYear();
-  var month  = zeroPad(dt.getMonth() + 1, 2);
-  var day    = zeroPad(dt.getDate(), 2);
-  var hour   = zeroPad(dt.getHours(), 2);
-  var minute = zeroPad(dt.getMinutes(), 2);
-  var second = zeroPad(dt.getSeconds(), 2);
-  var millisecond = zeroPad(dt.getMilliseconds(), 3);
-
-  return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
-};
-
-SqlString.bufferToString = function(buffer) {
-  var hex = '';
-  try {
-    hex = buffer.toString('hex');
-  } catch (err) {
-    // node v0.4.x does not support hex / throws unknown encoding error
-    for (var i = 0; i < buffer.length; i++) {
-      var byte = buffer[i];
-      hex += zeroPad(byte.toString(16));
-    }
-  }
-
-  return "X'" + hex+ "'";
-};
-
-SqlString.objectToValues = function(object, timeZone) {
-  var values = [];
-  for (var key in object) {
-    var value = object[key];
-    if(typeof value === 'function') {
-      continue;
-    }
-
-    values.push(this.escapeId(key) + ' = ' + SqlString.escape(value, true, timeZone));
-  }
-
-  return values.join(', ');
-};
-
-function zeroPad(number, length) {
-  number = number.toString();
-  while (number.length < length) {
-    number = '0' + number;
-  }
-
-  return number;
-}
-
-function convertTimezone(tz) {
-  if (tz == "Z") return 0;
-
-  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
-  if (m) {
-    return (m[1] == '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
-  }
-  return false;
-}
-
-}).call(this,require("buffer").Buffer)
-},{"buffer":63}],69:[function(require,module,exports){
-(function (Buffer){
-
-// convert a JS array to a postgres array literal
-// uses comma separator so won't work for types like box that use
-// a different array separator.
-function arrayString(val) {
-  var result = '{';
-  for (var i = 0 ; i < val.length; i++) {
-    if(i > 0) {
-      result = result + ',';
-    }
-    if(val[i] === null || typeof val[i] === 'undefined') {
-      result = result + 'NULL';
-    }
-    else if(Array.isArray(val[i])) {
-      result = result + arrayString(val[i]);
-    }
-    else
-    {
-      result = result + JSON.stringify(prepareValue(val[i]));
-    }
-  }
-  result = result + '}';
-  return result;
-}
-
-//converts values from javascript types
-//to their 'raw' counterparts for use as a postgres parameter
-//note: you can override this function to provide your own conversion mechanism
-//for complex types, etc...
-var prepareValue = function(val, seen) {
-  if (val instanceof Buffer) {
-    return val;
-  }
-  if(val instanceof Date) {
-    return dateToString(val);
-  }
-  if(Array.isArray(val)) {
-    return arrayString(val);
-  }
-  if(val === null || typeof val === 'undefined') {
-    return null;
-  }
-  if(typeof val === 'object') {
-    return prepareObject(val, seen);
-  }
-  return val.toString();
-};
-
-function prepareObject(val, seen) {
-  if(val.toPostgres && typeof val.toPostgres === 'function') {
-    seen = seen || [];
-    if (seen.indexOf(val) !== -1) {
-      throw new Error('circular reference detected while preparing "' + val + '" for query');
-    }
-    seen.push(val);
-
-    return prepareValue(val.toPostgres(prepareValue), seen);
-  }
-  return JSON.stringify(val);
-}
-
-function dateToString(date) {
-  function pad(number, digits) {
-    number = ""+number;
-    while(number.length < digits)
-      number = "0"+number;
-    return number;
-  }
-
-  var offset = -date.getTimezoneOffset();
-  var ret = pad(date.getFullYear(), 4) + '-' +
-    pad(date.getMonth() + 1, 2) + '-' +
-    pad(date.getDate(), 2) + 'T' +
-    pad(date.getHours(), 2) + ':' +
-    pad(date.getMinutes(), 2) + ':' +
-    pad(date.getSeconds(), 2) + '.' +
-    pad(date.getMilliseconds(), 3);
-
-  if(offset < 0) {
-    ret += "-";
-    offset *= -1;
-  }
-  else
-    ret += "+";
-
-  return ret + pad(Math.floor(offset/60), 2) + ":" + pad(offset%60, 2);
-}
-
-function normalizeQueryConfig (config, values, callback) {
-  //can take in strings or config objects
-  config = (typeof(config) == 'string') ? { text: config } : config;
-  if(values) {
-    if(typeof values === 'function') {
-      config.callback = values;
-    } else {
-      config.values = values;
-    }
-  }
-  if(callback) {
-    config.callback = callback;
-  }
-  return config;
-}
-
-module.exports = {
-  prepareValue: prepareValue,
-  normalizeQueryConfig: normalizeQueryConfig
-};
-
-}).call(this,require("buffer").Buffer)
-},{"buffer":63}]},{},[])
+},{}]},{},[1])
+(1)
+});

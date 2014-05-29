@@ -4,6 +4,7 @@
 <span class="kd">var</span> <span class="nx">inherits</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;inherits&#39;</span><span class="p">);</span>
 
 <span class="kd">function</span> <span class="nx">Migrator_MySQL</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">client</span> <span class="o">=</span> <span class="nx">client</span><span class="p">;</span>
   <span class="nx">Migrator</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
 <span class="p">}</span>
 <span class="nx">inherits</span><span class="p">(</span><span class="nx">Migrator_MySQL</span><span class="p">,</span> <span class="nx">Migrator</span><span class="p">);</span>
