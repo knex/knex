@@ -7,6 +7,7 @@
   <link rel="canonical" href="http://knexjs.org" />
   <link rel="icon" href="docs/images/favicon.ico" />
   <link rel="stylesheet" href="/docs/assets/style.css" />
+  <link rel="stylesheet" href="/docs/assets/highlight.min.css" />
   <title>Knex.js - A SQL Query Builder for Javascript</title>
 <!--
 ._____.                                                                        ______
@@ -1365,6 +1366,7 @@ knex.schema.dropTable('users')
     </p>
 
 <pre>
+<code class="js">
 knex.schema.hasTable('users').then(function(exists) {
   if (!exists) {
     return knex.schema.createTable('users', function(t) {
@@ -1375,6 +1377,7 @@ knex.schema.hasTable('users').then(function(exists) {
     });
   }
 });
+</code>
 </pre>
 
     <p id="Schema-hasColumn">
@@ -2103,7 +2106,7 @@ $ npm test
   <script src="docs/assets/ga.js"></script>
   <script src="/docs/assets/jquery.min.js"></script>
   <script src="/docs/assets/jquery.cookie.js"></script>
-
+  <script src="/docs/assets/highlight.min.js"></script>
   <script src="/browser/deps.js"></script>
   <script src="/browser/knex.js"></script>
   <script>
@@ -2129,10 +2132,13 @@ $ npm test
         try {
           var blocks = code.split('\n\n')
           blocks[blocks.length - 1] = 'return (' + blocks[blocks.length - 1] + ').toString()';
-          $(this).text(code + '\nOutputs: \n' + new Function('knex', 'trx', blocks.join('\n\n'))(dialects[dialect], trx));
+          $(this).html('<code class="js">' + code + '</code>\nOutputs: \n<code class="sql">' + new Function('knex', 'trx', blocks.join('\n\n'))(dialects[dialect], trx)) + '</code>';
         } catch (e) {
           console.error(e);
         }
+      });
+      $('pre code').each(function(i, block) {
+        hljs.highlightBlock(block);
       });
     };
     var currentDialect = $.cookie('dialect') || setDialect('mysql');
@@ -2142,9 +2148,7 @@ $ npm test
     });
     $('.js-query-output').val(currentDialect);
     displayDialect(currentDialect);
-
   });
-
   </script>
 </body>
 </html>

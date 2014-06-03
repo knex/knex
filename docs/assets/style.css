@@ -174,3 +174,8 @@ div.language {
   right: 0;
   padding: 5px;
 }
+pre code.hljs {
+  background: inherit;
+  margin-left: inherit;
+  padding-left: 0px;
+}
