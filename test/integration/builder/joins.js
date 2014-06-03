@@ -620,11 +620,12 @@ module.exports = function(knex) {
         .join('accounts as a2', 'a2.email', '<>', 'accounts.email')
         .select(['accounts.email as e1', 'a2.email as e2'])
         .where('a2.email', 'test2@example.com')
+        .orderBy('e1')
         .limit(5)
         .testSql(function(tester) {
           tester(
             'mysql',
-            'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email` where `a2`.`email` = ? limit ?',
+            'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email` where `a2`.`email` = ? order by `e1` asc limit ?',
             ['test2@example.com', 5],
             [{
               e1: 'test3@example.com',
@@ -645,12 +646,9 @@ module.exports = function(knex) {
           );
           tester(
             'postgresql',
-            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? limit ?',
+            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? order by "e1" asc limit ?',
             ['test2@example.com', 5],
             [{
-              e1: 'test@example.com',
-              e2: 'test2@example.com'
-            }, {
               e1: 'test3@example.com',
               e2: 'test2@example.com'
             }, {
@@ -662,11 +660,14 @@ module.exports = function(knex) {
             }, {
               e1: 'test6@example.com',
               e2: 'test2@example.com'
+            }, {
+              e1: 'test@example.com',
+              e2: 'test2@example.com'
             }]
           );
           tester(
             'sqlite3',
-            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? limit ?',
+            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? order by "e1" collate nocase asc limit ?',
             ['test2@example.com', 5],
             [{
               e1: 'test3@example.com',
