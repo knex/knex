@@ -624,7 +624,9 @@ module.exports = function(knex) {
         .testSql(function(tester) {
           tester(
             'mysql',
-            'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email` where `a2`.`email` = ? limit ?', ['test2@example.com', 5], [{
+            'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email` where `a2`.`email` = ? limit ?',
+            ['test2@example.com', 5],
+            [{
               e1: 'test3@example.com',
               e2: 'test2@example.com'
             }, {

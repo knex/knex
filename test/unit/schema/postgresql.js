@@ -368,6 +368,13 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" bytea');
     });
 
+    it('allows adding default json objects when the column is json', function() {
+      tableSql = new SchemaBuilder().table('user', function(t) {
+        t.json('preferences').defaultTo({}).notNullable();
+      }).toSQL();
+      expect(tableSql[0].sql).to.equal('alter table "user" add column "preferences" json not null {}');
+    });
+
   });
 
 };
