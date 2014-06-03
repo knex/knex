@@ -1,13 +1,9 @@
-knex.js
------
+# [knex.js](http://knexjs.org) [![Build Status](https://travis-ci.org/tgriesser/knex.png?branch=master)](https://travis-ci.org/tgriesser/knex)
 
-SQL that is flexible, portable, and fun to use!
+A SQL query builder that is flexible, portable, and fun to use!
 
-[![Build Status](https://travis-ci.org/tgriesser/knex.png?branch=master)](https://travis-ci.org/tgriesser/knex)
-
-### [Full Documentation Site: knexjs.org](http://knexjs.org)
-
-A batteries-included, multi-dialect (MySQL, PostgreSQL, SQLite3, WebSQL) SQL query builder for Node.js, featuring:
+A batteries-included, multi-dialect (MySQL, PostgreSQL, SQLite3, WebSQL) query builder for
+Node.js and the Browser, featuring:
 
 - [transactions](http://knexjs.org/#Transactions)
 - [connection pooling](http://knexjs.org/#Initialize-pool)
@@ -16,13 +12,13 @@ A batteries-included, multi-dialect (MySQL, PostgreSQL, SQLite3, WebSQL) SQL que
 - a [thorough test suite](https://travis-ci.org/tgriesser/knex)
 - the ability to [run in the Browser](http://knexjs.org/#faq-browser)
 
-For Docs, FAQ, and other information, see: http://knexjs.org
+[Read the full documentation to get started!](http://knexjs.org)
 
 For an Object Relational Mapper, see: http://bookshelfjs.org
 
-To suggest a feature, report a bug, or general discussion: http://github.com/tgriesser/knex/issues/
+## Examples
 
-#### Here's a quick demo:
+We have several examples [on the website](http://knexjs.org). Here is the first one to get you started:
 
 ```js
 var knex = require('knex')({

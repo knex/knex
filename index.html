@@ -78,7 +78,7 @@
       <li>– <a href="#Builder-column">column</a></li>
       <li>– <a href="#Builder-from">from</a></li>
 
-      <li><b><a href="#Builder-where">Where Methods:</a></b></li>
+      <li><b><a href="#Builder-wheres">Where Methods:</a></b></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-where">where</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereIn">whereIn</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereNotIn">whereNotIn</a></li>
@@ -123,10 +123,12 @@
       <li>– <a href="#Builder-decrement">decrement</a></li>
       <li>– <a href="#Builder-truncate">truncate</a></li>
       <li>– <a href="#Builder-debug">debug</a></li>
+      <li>– <a href="#Builder-connection">connection</a></li>
       <li>– <a href="#Builder-options">options</a></li>
       <li><b><a href="#Builder-Interface">Interface:</a></b></li>
-      <li>– <a href="#Builder-tap">tap</a></li>
       <li>– <a href="#Builder-then">then</a></li>
+      <li>– <a href="#Builder-catch">catch</a></li>
+      <li>– <a href="#Builder-tap">tap</a></li>
       <li>– <a href="#Builder-map">map</a></li>
       <li>– <a href="#Builder-reduce">reduce</a></li>
       <li>– <a href="#Builder-pluck">pluck</a></li>
@@ -336,7 +338,7 @@ $ npm install sqlite3
     <h3 id="Initializing">Initializing</h3>
 
     <p>
-      The <tt>knex</tt> module is itsself a function which takes a configuration object for
+      The <tt>knex</tt> module is its self a function which takes a configuration object for
       Knex, accepting a few parameters. The <tt>client</tt> parameter is required
       and determines which client adapter will be used with the library.
     </p>
@@ -354,7 +356,7 @@ var knex = require('knex')({
 </pre>
 
     <p class="warning">
-      An initialize should only ever happen once in your application, as it creates a connection pool
+      Initializing the library should normally only ever happen once in your application, as it creates a connection pool
       for the current database, you should use the instance returned from the initialize call throughout
       your library.
     </p>
@@ -366,12 +368,8 @@ var knex = require('knex')({
 <pre>
 var pg = require('knex')({
   client: 'pg',
-  connection: {
-    // your connection config
-  }
+  connection: process.env.PG_CONNECTION_STRING
 });
-
-knex('table').where('id', 1).select().then(...
 </pre>
 
     <p class="warning">
@@ -447,12 +445,18 @@ knex.column(['title', 'author', 'year']).select().from('books')
 knex.select('*').from('users')
 </pre>
 
-    <p id="Builder-where">
-      <b class="header">where</b><code>.where(object | function, [key, value], [key, operator, value])</code>
-      <br />
-      There are several helpers for creating dynamic <tt>where</tt> clauses on queries. Take a look at a few
-      examples to see how these may be mixed and matched to create fluent constraints on the query.
+    <h3 id="Builder-wheres">Where Clauses</h3>
+
+    <p>
+      Several methods exist to assist in dynamic where clauses. In many places functions may be used in place of values,
+      constructing subqueries. In most places existing knex queries may be used to compose sub-queries, etc. Take a look at a few of the examples for each method for instruction on use:
     </p>
+
+    <p id="Builder-where">
+      <b class="header">where</b><code>.where(~mixed~)</code>
+    </p>
+
+<p class="title">Object Syntax:</p>
 
 <pre class="display">
 knex('users').where({
@@ -461,23 +465,35 @@ knex('users').where({
 }).select('id')
 </pre>
 
+<p class="title">Key, Value:</p>
+
 <pre class="display">
-knex('users').where('id', 1).select('first_name', 'last_name')
+knex('users').where('id', 1)
 </pre>
+
+<p class="title">Grouped Chain:</p>
+
+<pre class="display">
+knex('users').where(function() {
+  this.where('id', 1).orWhere('id', '>', 10)
+}).orWhere({name: 'Tester'})
+</pre>
+
+<p class="title">Operator:</p>
 
 <pre class="display">
 knex('users').where('votes', '>', 100)
 </pre>
 
 <pre class="display">
-knex('users').where('votes', '>', 100)
-  .andWhere('status', 'active')
-  .orWhere('name', 'John')
+var subquery = knex('users').where('votes', '>', 100).andWhere('status', 'active').orWhere('name', 'John').select('id');
+
+knex('accounts').where('id', 'in', subquery)
 </pre>
 
     <p id="Builder-whereIn">
       <b class="header">whereIn</b><code>.whereIn(column, array|callback) / .orWhereIn</code><br />
-      Shorthand for <tt>.where('id', 'in', obj)</tt>, the whereIn, (or|and)WhereIn methods add a "where in" clause
+      Shorthand for <tt>.where('id', 'in', obj)</tt>, the .whereIn and .orWhereIn methods add a "where in" clause
       to the query. Click the "play" button below to see the queries.
     </p>
 
@@ -492,6 +508,13 @@ knex.select('name').from('users')
   .whereIn('account_id', function() {
     this.select('id').from('accounts');
   })
+</pre>
+
+<pre class="display">
+var subquery = knex.select('id').from('accounts');
+
+knex.select('name').from('users')
+  .whereIn('account_id', subquery)
 </pre>
 
 <pre class="display">
@@ -524,7 +547,7 @@ knex('users').where('name', 'like', '%Test%').orWhereNotIn('id', [1, 2, 3])
 </pre>
 
     <p id="Builder-whereNull">
-      <b class="header">whereNull</b><code>.whereNull()</code>
+      <b class="header">whereNull</b><code>.whereNull(column)</code>
     </p>
 
 <pre class="display">
@@ -532,7 +555,7 @@ knex('users').whereNull('updated_at')
 </pre>
 
     <p id="Builder-whereNotNull">
-      <b class="header">whereNotNull</b><code>.whereNotNull()</code>
+      <b class="header">whereNotNull</b><code>.whereNotNull(column)</code>
     </p>
 
 <pre class="display">
@@ -544,7 +567,9 @@ knex('users').whereNotNull('created_at')
     </p>
 
 <pre class="display">
-knex('users').whereNotNull('created_at')
+knex('users').whereExists(function() {
+  this.select('*').from('accounts').where('users.account_id', '=', 'accounts.id');
+})
 </pre>
 
     <p id="Builder-whereNotExists">
@@ -806,6 +831,20 @@ knex('users')
   .having('count', '>', 100)
 </pre>
 
+    <p id="Builder-havingRaw">
+      <b class="header">havingRaw</b><code>.havingRaw(column, operator, value)</code>
+      <br />
+      Adds a <tt>havingRaw</tt> clause to the query.
+    </p>
+
+<pre class="display">
+knex('users')
+  .groupBy('count')
+  .orderBy('name', 'desc')
+  .havingRaw('count > ?', [100])
+</pre>
+
+
     <p id="Builder-offset">
       <b class="header">offset</b><code>.offset(value)</code>
       <br />
@@ -980,6 +1019,13 @@ knex.transaction(function(t) {
       the <tt>forUpdate</tt> adds a <tt>FOR UPDATE</tt> in PostgreSQL and MySQL during a select statement.
     </p>
 
+<pre class="display">
+knex('tableName')
+  .transacting(trx)
+  .forUpdate()
+  .select('*')
+</pre>
+
     <p id="Builder-forShare">
       <b class="header">forShare</b><code>.transacting(t).forShare()</code>
       <br />
@@ -988,11 +1034,26 @@ knex.transaction(function(t) {
       for MySQL during a select statement.
     </p>
 
+<pre class="display">
+knex('tableName')
+  .transacting(trx)
+  .forShare()
+  .select('*')
+</pre>
+
     <p id="Builder-count">
       <b class="header">count</b><code>.count(column)</code>
       <br />
       Performs a count on the specified <b>column</b>.
     </p>
+
+<pre class="display">
+knex('users').count('active')
+</pre>
+
+<pre class="display">
+knex('users').count('active as a')
+</pre>
 
     <p id="Builder-min">
       <b class="header">min</b><code>.min(column)</code>
@@ -1000,11 +1061,28 @@ knex.transaction(function(t) {
       Gets the minimum value for the specified <b>column</b>.
     </p>
 
+<pre class="display">
+knex('users').min('age')
+</pre>
+
+<pre class="display">
+knex('users').min('age as a')
+</pre>
+
+
     <p id="Builder-max">
       <b class="header">max</b><code>.max(column)</code>
       <br />
       Gets the maximum value for the specified <b>column</b>.
     </p>
+
+<pre class="display">
+knex('users').max('age')
+</pre>
+
+<pre class="display">
+knex('users').max('age as a')
+</pre>
 
     <p id="Builder-sum">
       <b class="header">sum</b><code>.sum(column)</code>
@@ -1012,11 +1090,27 @@ knex.transaction(function(t) {
       Retrieve the sum of the values of a given <b>column</b>.
     </p>
 
+<pre class="display">
+knex('users').sum('products')
+</pre>
+
+<pre class="display">
+knex('users').sum('products as p')
+</pre>
+
     <p id="Builder-avg">
       <b class="header">avg</b><code>.avg(column)</code>
       <br />
       Retrieve the average of the values of a given <b>column</b>.
     </p>
+
+<pre class="display">
+knex('users').avg('age')
+</pre>
+
+<pre class="display">
+knex('users').avg('age as a')
+</pre>
 
     <p id="Builder-increment">
       <b class="header">increment</b><code>.increment(column, amount)</code>
@@ -1024,10 +1118,10 @@ knex.transaction(function(t) {
       Increments a <b>column</b> value by the specified <b>amount</b>.
     </p>
 
-<pre>
+<pre class="display">
 knex('accounts')
-  .where('userid', '=', userid)
-  .increment('balance', 10);
+  .where('userid', '=', 1)
+  .increment('balance', 10)
 </pre>
 
     <p id="Builder-decrement">
@@ -1054,6 +1148,13 @@ knex('users').truncate()
       <b class="header">debug</b><code>.debug()</code>
       <br />
       Turns on debugging for the current query chain.
+    </p>
+
+    <p id="Builder-connection">
+      <b class="header">connection</b><code>.connection()</code>
+      <br />
+      Explicitly specify the connection for the query, allowing you to use the knex chain outside of
+      the built-in pooling capabilities.
     </p>
 
     <p id="Builder-options">
@@ -1678,10 +1779,11 @@ $ npm test
 
       <ul>
         <li>Raw bindings</li>
-        <li>Queries are more composable, may be injected in various points throughout the builder.</li>
+        <li>Queries are more composable, may be injected in various points throughout the builder ().</li>
         <li>.</li>
-        <li>Added streaming interface</li>
+        <li>Added <a href="#Interface-streams">streaming</a> interface</li>
         <li>Deprecated 5 argument <a href="#Builder-join">join</a></li>
+        <li>The wrapValue function to allow for array column operations in PostgreSQL (#287).</li>
       </ul>
 
     </p>
@@ -2005,7 +2107,7 @@ $ npm test
   <script src="/browser/deps.js"></script>
   <script src="/browser/knex.js"></script>
   <script>
-  var dialects = {};
+  var trx = {}, dialects = {};
   var _ = require('lodash');
 
   // Feel free to play with these in the console.
@@ -2014,28 +2116,35 @@ $ npm test
   var mysql   = dialects.mysql = Knex({client: 'mysql'});
   var sqlite3 = dialects.sqlite3 = Knex({client: 'sqlite3'});
 
-  // Get the current dialect.
-  var setDialect = function(dialect) {
-    $.cookie('dialect', dialect, { expires: 7, path: '/' });
-    return dialect;
-  };
-  var displayDialect = function(dialect) {
-    $('.display').each(function() {
-      var code = $(this).data('code') || $(this).data('code', $(this).text()).data('code');
-      try {
-        $(this).text(code + '\nOutputs: \n' + new Function('knex', 'return (' + code + '.toString())')(dialects[dialect]));
-      } catch (e) {
-        console.error(e);
-      }
-    });
-  };
-  var currentDialect = $.cookie('dialect') || setDialect('mysql');
+  $(function() {
 
-  $('.js-query-output').on('change', function(e) {
-    displayDialect(setDialect(e.target.value));
+    // Get the current dialect.
+    var setDialect = function(dialect) {
+      $.cookie('dialect', dialect, { expires: 7, path: '/' });
+      return dialect;
+    };
+    var displayDialect = function(dialect) {
+      $('.display').each(function() {
+        var code = $(this).data('code') || $(this).data('code', $(this).text()).data('code');
+        try {
+          var blocks = code.split('\n\n')
+          blocks[blocks.length - 1] = 'return (' + blocks[blocks.length - 1] + ').toString()';
+          $(this).text(code + '\nOutputs: \n' + new Function('knex', 'trx', blocks.join('\n\n'))(dialects[dialect], trx));
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    };
+    var currentDialect = $.cookie('dialect') || setDialect('mysql');
+
+    $('.js-query-output').on('change', function(e) {
+      displayDialect(setDialect(e.target.value));
+    });
+    $('.js-query-output').val(currentDialect);
+    displayDialect(currentDialect);
+
   });
-  $('.js-query-output').val(currentDialect);
-  displayDialect(currentDialect);
+
   </script>
 </body>
 </html>
