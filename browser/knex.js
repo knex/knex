@@ -471,7 +471,7 @@ QueryCompiler_MySQL.prototype.forShare = function() {
 };
 
 // Compiles a `columnInfo` query.
-QueryCompiler_MySQL.prototype.columnInfo = function() {
+QueryCompiler_MySQL.prototype.tableInfo = function() {
   return {
     sql: 'select * from information_schema.columns where table_name = ? and table_schema = ?',
     bindings: [this.single.table, client.database()],

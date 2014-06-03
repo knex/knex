@@ -171,9 +171,13 @@ ul {
 div.language {
   position: fixed;
   top: 0;
-  right: 0;
+  right: 140px;
   padding: 5px;
 }
+  div.language select {
+    float: right;
+  }
+
 pre code.hljs {
   background: inherit;
   margin-left: inherit;

@@ -48,8 +48,8 @@ module.exports = {
 
   sqlite3: {
     client: 'sqlite3',
-    connection: {
-      filename: ":memory:"
+    connection: testConfig.sqlite3 || {
+      filename: ':memory:'
     },
     pool: pool,
     migrations: migrations

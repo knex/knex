@@ -90,6 +90,32 @@ module.exports = function(knex) {
       });
     });
 
+    it('gets the columnInfo', function() {
+          return knex('datatype_test').columnInfo('uuid').testSql(function(tester) {
+            tester('mysql',
+              'select * from information_schema.columns where table_name = ? and table_schema = ?',
+              null, {
+                "defaultValue": null,
+                "maxLength": 36,
+                "nullable": false,
+                "type": "char"
+              });
+            tester('postgresql', 'select * from information_schema.columns where table_name = ? and table_catalog = ?',
+            null, {
+              "defaultValue": null,
+              "maxLength": null,
+              "nullable": false,
+              "type": "uuid"
+            });
+            tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
+              "defaultValue": null,
+              "maxLength": "36",
+              "nullable": false,
+              "type": "char"
+            });
+          });
+        });
+
     it('should allow renaming a column', function() {
       var count, inserts = [];
       _.times(40, function() {

@@ -14,6 +14,8 @@ Node.js and the Browser, featuring:
 
 [Read the full documentation to get started!](http://knexjs.org)
 
+For support and questions, join the #bookshelf channel on freenode IRC
+
 For an Object Relational Mapper, see: http://bookshelfjs.org
 
 ## Examples

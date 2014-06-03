@@ -2,6 +2,7 @@ module.exports = function(testSuite) {
   var Knex   = require('../../knex');
   var logger = require('./logger')(testSuite);
   var config = require('../knexfile');
+  var fs     = require('fs');
 
   var mysql    = logger.client(Knex(config.mysql));
   var postgres = logger.client(Knex(config.postgres));
@@ -10,4 +11,11 @@ module.exports = function(testSuite) {
   require('./suite')(mysql);
   require('./suite')(postgres);
   require('./suite')(sqlite3);
+
+  after(function(done) {
+    if (config.sqlite3.connection.filename !== ':memory:') {
+      fs.unlink(config.sqlite3.connection.filename, function(err) { done(); });
+    }
+  });
+
 };

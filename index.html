@@ -37,6 +37,7 @@
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
       <li>&raquo; <a href="#support">Support</a></li>
+      <li>&raquo; <a href="#faq">FAQ</a></li>
       <li>&raquo; <a href="#changelog">Change Log</a></li>
     </ul>
 
@@ -54,20 +55,11 @@
     <ul class="toc_section">
       <li>– <a href="#Installation-node">Node.js</a></li>
       <li>– <a href="#Installation-browser">Browser</a></li>
-      <li>– <a href="#Installation-initialize">Initialization</a></li>
+      <li><b><a href="#Installation-client">Config Options:</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-client">client</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Installation-debug">debug</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-pooling">pooling</a></li>
-      <li>&nbsp;&nbsp;– <a href="#Installation-migration-config">migrations</a></li>
-    </ul>
-
-    <a class="toc_title" href="#Interface">
-      Interfaces
-    </a>
-    <ul class="toc_section">
-      <li>– <a href="#Interface-promises">promises</a></li>
-      <li>– <a href="#Interface-callbacks">callbacks</a></li>
-      <li>– <a href="#Interface-streams">streams</a></li>
-      <li>– <a href="#Interface-events">events</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Installation-migrations">migrations</a></li>
     </ul>
 
     <a class="toc_title" href="#Builder">
@@ -91,7 +83,7 @@
       <li>&nbsp;&nbsp;- <a href="#Builder-whereNotBetween">whereNotBetween</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereRaw">whereRaw</a></li>
 
-      <li><b><a href="#Builder-joins">Join Methods:</a></b></li>
+      <li><b><a href="#Builder-join">Join Methods:</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Builder-innerJoin">innerJoin</a></li>
       <li>&nbsp;&nbsp;– <a href="#Builder-leftJoin">leftJoin</a></li>
       <li>&nbsp;&nbsp;– <a href="#Builder-leftOuterJoin">leftOuterJoin</a></li>
@@ -123,31 +115,24 @@
       <li>– <a href="#Builder-increment">increment</a></li>
       <li>– <a href="#Builder-decrement">decrement</a></li>
       <li>– <a href="#Builder-truncate">truncate</a></li>
+      <li>– <a href="#Builder-pluck">pluck</a></li>
+      <li>– <a href="#Builder-columnInfo">columnInfo</a></li>
       <li>– <a href="#Builder-debug">debug</a></li>
       <li>– <a href="#Builder-connection">connection</a></li>
       <li>– <a href="#Builder-options">options</a></li>
-      <li><b><a href="#Builder-Interface">Interface:</a></b></li>
-      <li>– <a href="#Builder-then">then</a></li>
-      <li>– <a href="#Builder-catch">catch</a></li>
-      <li>– <a href="#Builder-tap">tap</a></li>
-      <li>– <a href="#Builder-map">map</a></li>
-      <li>– <a href="#Builder-reduce">reduce</a></li>
-      <li>– <a href="#Builder-pluck">pluck</a></li>
-      <li>– <a href="#Builder-exec">exec</a></li>
-      <li>– <a href="#Builder-toString">toString</a></li>
     </ul>
 
-    <a class="toc_title" href="#Transaction">
+    <a class="toc_title" href="#Transactions">
       Transactions
     </a>
     <ul class="toc_section">
-      <li>– <a href="#Transaction-overview"><b>overview</b></a></li>
-      <li>– <a href="#Transaction-commit">commit</a></li>
-      <li>– <a href="#Transaction-rollback">rollback</a></li>
+      <li>– <a href="#Transactions"><b>overview</b></a></li>
+      <li>– <a href="#Transactions-commit">commit</a></li>
+      <li>– <a href="#Transactions-rollback">rollback</a></li>
     </ul>
 
     <a class="toc_title" href="#Schema">
-      Schema
+      Schema Builder
     </a>
     <ul class="toc_section">
       <li>– <a href="#Schema-createTable">createTable</a></li>
@@ -206,6 +191,30 @@
       <li>– <a href="#Raw-Queries">Raw Queries</a></li>
     </ul>
 
+    <a class="toc_title" href="#Interfaces">
+      Interfaces
+    </a>
+    <ul class="toc_section">
+      <li><b><a href="#Interfaces-Promises">Promises</a></b></li>
+      <li>&nbsp;&nbsp;– <a href="#Promises-then">then</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Promises-catch">catch</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Promises-tap">tap</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Promises-map">map</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Promises-reduce">reduce</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Promises-bind">bind</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Promises-return">return</a></li>
+      <li><b><a href="#Interfaces-Callbacks">Callbacks</a></b></li>
+      <li>&nbsp;&nbsp;– <a href="#Interfaces-exec">exec</a></li>
+      <li><b><a href="#Interfaces-Streams">Streams</a></b></li>
+      <li>&nbsp;&nbsp;– <a href="#Streams-stream">stream</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Streams-pipe">pipe</a></li>
+      <li><b><a href="#Interfaces-Events">Events</a></b></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-query">query</a></li>
+      <li><b><a href="#Interfaces-Other">Other:</a></b></li>
+      <li>&nbsp;&nbsp;– <a href="#Other-toString">toString</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Other-toSQL">toSQL</a></li>
+    </ul>
+
     <a class="toc_title" href="#Migrations">
       Migrations
     </a>
@@ -221,6 +230,10 @@
         <li>– <a href="#Migrations-currentVersion">currentVersion</a></li>
     </ul>
 
+    <a class="toc_title" href="#support">
+      Support
+    </a>
+
     <a class="toc_title" href="#faq">
       F.A.Q.
     </a>
@@ -232,13 +245,15 @@
   </div>
 
   <div class="language">
-    Show example query output as:
+    Show example query output as:<br />
     <select class="js-query-output">
-      <option value="mysql">MySQL</option>
+      <option value="mysql">MySQL / MariaDB</option>
       <option value="pg">PostgreSQL</option>
       <option value="sqlite3">SQLite3</option>
     </select>
   </div>
+
+  <a href="https://github.com/tgriesser/knex"><img style="position: fixed; top: 0; right: 0; border: 0;" src="/docs/images/github.png" alt="Fork me on GitHub"></a>
 
   <div class="container">
 
@@ -247,10 +262,9 @@
     </p>
 
     <p>
-      Knex.js is a SQL query builder for <b>Postgres</b>, <b>MySQL</b> and <b>SQLite3</b>, designed to be flexible,
-      portable, and fun to use. It features both traditional node style <a href="#Builder-exec">callbacks</a>
-      as well as a <a href="#Builder-then">promise</a> interface for cleaner async flow control, full featured
-      query and schema builders, <b>transaction support</b>, connection pooling and standardized responses between
+      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MySQL / MariaDB</b> and <b>SQLite3</b>, designed to be flexible,
+      portable, and fun to use. It features both traditional node style <a href="#Interfaces-Callbacks">callbacks</a>
+      as well as a <a href="#Interfaces-Promises">promise</a> interface for cleaner async flow control, <a href="#Interfaces-Streams">a stream interface</a>, full featured <a href="#Builder">query</a> and <a href="#Schema">schema</a> builders, <a href="#Transaction-overview"><b>transaction support</b></a>, connection <a href="#Installation-pooling">pooling</a> and standardized responses between
       different query clients and dialects.
     </p>
 
@@ -296,8 +310,10 @@
     <h3 id="Upgrading-from0.5">Upgrading 0.5 -> 0.6</h3>
 
     <p>
-      Some pretty big and exciting changes from the 0.5 release, the 0.6 release brings streamlined internals, the ability
-      to properly inject &amp; bind knex.raw statements throughout any queries, the ability to re-use.
+      Big and exciting improvements from the 0.5 release, the 0.6 release brings refactored internals, streams, the ability
+      to properly inject &amp; bind knex.raw statements throughout any queries, the ability to re-use existing snippets.
+      If you were only using the publicly documented API, no major changes should be necessary. If you notice any issues,
+      please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>. For a full list of changes, see the entry in the <a href="#release-0.6.0">change log.</a>
     </p>
 
     <h3 id="Upgrading-from0.4">Upgrading 0.4 -> 0.5</h3>
@@ -336,7 +352,7 @@ $ npm install sqlite3
       The browser builds and pre-built dependencies can be found in the <a href="https://github.com/tgriesser/knex/tree/master/browser">browser directory</a>. View source on this page to see the browser builds in-action.
     </p>
 
-    <h3 id="Initializing">Initializing</h3>
+    <h3 id="Installation-client">Initializing the Library</h3>
 
     <p>
       The <tt>knex</tt> module is its self a function which takes a configuration object for
@@ -345,7 +361,7 @@ $ npm install sqlite3
     </p>
 
 <pre>
-var knex = require('knex')({
+<code class="js">var knex = require('knex')({
   client: 'mysql',
   connection: {
     host     : '127.0.0.1',
@@ -354,6 +370,33 @@ var knex = require('knex')({
     database : 'myapp_test'
   }
 });
+</code>
+</pre>
+
+    <p>
+      The connection options are passed directly to the appropriate database client to create the connection, and may be either an object, or a connection string:
+    </p>
+
+<pre>
+<code class="js">var pg = require('knex')({
+  client: 'pg',
+  connection: process.env.PG_CONNECTION_STRING
+});
+</code>
+</pre>
+
+    <p class="warning">
+      Note: When you use the SQLite3 adapter, there is a filename required, not a network connection. For example:
+    </p>
+
+<pre>
+<code class="js">var knex = require('knex')({
+  client: 'sqlite3',
+  connection: {
+    filename: "./mydb.sqlite"
+  }
+});
+</code>
 </pre>
 
     <p class="warning">
@@ -362,30 +405,54 @@ var knex = require('knex')({
       your library.
     </p>
 
+    <h3 id="Installation-debug">Debugging</h3>
+
     <p>
-      The options are passed directly to the appropriate database client to create the connection. Acceptable <tt>charset</tt> values may vary between clients. MySQL requires a key from its <a href="https://github.com/felixge/node-mysql/blob/master/lib/protocol/constants/charsets.js">predefined list</a> (e.g. <tt>UTF8_GENERAL_CI</tt>) to be passed as the <tt>charset</tt> in Knex.
+      Passing a <tt>debug: true</tt> flag on your initialization object will.
+    </p>
+
+    <h3 id="Installation-pooling">Pooling</h3>
+
+    <p>
+      The client created by the configuration initializes a connection pool, using the <a href="https://github.com/bookshelf/generic-pool-redux">generic-pool-redux</a> library. This connection pool has a default setting of a <tt>min: 2, max: 10</tt> for the MySQL and PG libraries, and a single connection for sqlite3 (due to issues with utilizing multiple connections on a single file). To change the config settings for the pool, pass a <tt>pool</tt> option as one of the keys in the initialize block.
     </p>
 
 <pre>
-var pg = require('knex')({
-  client: 'pg',
-  connection: process.env.PG_CONNECTION_STRING
-});
-</pre>
-
-    <p class="warning">
-      Note: When you use the SQLite3 adapter, there is a filename required, not a network connection. For example:
-    </p>
-
-<pre>
-var knex = require('knex')({
-  client: 'sqlite3',
+<code class="js">var knex = require('knex')({
+  client: 'mysql',
   connection: {
-    filename: "./mydb.sqlite"
+    host     : '127.0.0.1',
+    user     : 'your_database_user',
+    password : 'your_database_password',
+    database : 'myapp_test'
+  },
+  pool: {
+    min: 0,
+    max: 7
   }
 });
+</code>
 </pre>
 
+    <h3 id="Installation-migrations">Migrations</h3>
+
+    <p>
+      For convenience, the any migration configuration may be specified when initializing the library. Read the <a href="#Migrations">Migrations</a> section for more information.
+    </p>
+
+<pre>
+<code class="js">var knex = require('knex')({
+  client: 'mysql',
+  connection: {
+    host     : '127.0.0.1',
+    user     : 'your_database_user',
+    password : 'your_database_password',
+    database : 'myapp_test'
+  },
+  migrations: migrationConfig
+});
+</code>
+</pre>
 
     <h2 id="Builder">Knex Query Builder</h2>
 
@@ -400,8 +467,8 @@ var knex = require('knex')({
       The query builder starts off either by specifying a <b>tableName</b> you wish to query against,
       or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which
       you can call additional query builder methods as needed to construct the query, eventually calling any of the
-      <a href="#Interface">interface methods</a>, to either convert toString, or execute the
-      query with a promise, callback, or stream.
+      <a href="#Interfaces">interface methods</a>, to either convert toString, or execute the
+      query with a <a href="#Interfaces-Promises">promise</a>, <a href="#Interfaces-Callbacks">callback</a>, or <a href="#Interfaces-Streams">stream</a>.
     </p>
 
     <p id="Builder-select">
@@ -493,7 +560,7 @@ knex('accounts').where('id', 'in', subquery)
 </pre>
 
     <p id="Builder-whereIn">
-      <b class="header">whereIn</b><code>.whereIn(column, array|callback) / .orWhereIn</code><br />
+      <b class="header">whereIn</b><code>.whereIn(column, array|callback|builder) / .orWhereIn</code><br />
       Shorthand for <tt>.where('id', 'in', obj)</tt>, the .whereIn and .orWhereIn methods add a "where in" clause
       to the query. Click the "play" button below to see the queries.
     </p>
@@ -526,16 +593,8 @@ knex('users')
   })
 </pre>
 
-<pre>
-var accounts = knex.select('id').from('accounts');
-
-// select "name" from "users" where "account_id" in (select "id" from "accounts")
-knex.select('name').from('users')
-  .whereIn('account_id', accounts).then(...
-</pre>
-
     <p id="Builder-whereNotIn">
-      <b class="header">whereNotIn</b><code>.whereNotIn()</code>
+      <b class="header">whereNotIn</b><code>.whereNotIn(column, array|callback|builder) / .orWhereNotIn</code>
 
     </p>
 
@@ -548,7 +607,7 @@ knex('users').where('name', 'like', '%Test%').orWhereNotIn('id', [1, 2, 3])
 </pre>
 
     <p id="Builder-whereNull">
-      <b class="header">whereNull</b><code>.whereNull(column)</code>
+      <b class="header">whereNull</b><code>.whereNull(column) / .orWhereNotNull</code>
     </p>
 
 <pre class="display">
@@ -556,7 +615,7 @@ knex('users').whereNull('updated_at')
 </pre>
 
     <p id="Builder-whereNotNull">
-      <b class="header">whereNotNull</b><code>.whereNotNull(column)</code>
+      <b class="header">whereNotNull</b><code>.whereNotNull(column) / .orWhereNotNull</code>
     </p>
 
 <pre class="display">
@@ -612,13 +671,10 @@ knex('users').whereRaw('id = ?', [1])
   <h3>Join Methods</h3>
 
   <p>
-    The join builder can be used to specify joins between tables,
-    with the first argument being the joining <b>table</b>, and the next arguments either being a closure
-    which builds a grouped
+    Several methods are provided which assist in building
   </p>
 
-
-    <p id="Builder-joins">
+    <p id="Builder-join">
       <b class="header">join</b><code>.join(table, first, [operator], second)</code>
       <br />
       The <tt>join</tt> builder can be used to specify joins between tables,
@@ -633,28 +689,18 @@ knex('users')
   .select('users.id', 'contacts.phone')
 </pre>
 
+<pre class="display">
+knex('users')
+  .join('contacts', 'users.id', 'contacts.user_id')
+  .select('users.id', 'contacts.phone')
+</pre>
+
+
     <p>
       For grouped joins, specify a function as the second argument for the
       join query, and use <tt>on</tt> and <tt>orOn</tt> to create joins that are
       grouped with parentheses.
     </p>
-
-<pre>
-knex('users')
-  .join('contacts', function() {
-      this.on('users.id', '=', 'contacts.user_id').orOn(...);
-  })
-  .exec(function(err, resp) { ... });
-</pre>
-
-    <p id="Builder-join">
-      <b class="header">join</b><code>.join(column, ~mixed~)</code>
-      <br>
-    </p>
-
-<pre class="display">
-knex.select('*').from('users').join('accounts', 'users.id', 'accounts.user_id')
-</pre>
 
 <pre class="display">
 knex.select('*').from('users').join('accounts', function() {
@@ -792,7 +838,7 @@ knex.select('*').from('users').crossJoin('accounts', function() {
       Sets a <tt>distinct</tt> clause on the query.
     </p>
 
-<pre>
+<pre class="display">
 // select distinct 'first_name' from customers
 knex('customers')
   .distinct('first_name', 'last_name')
@@ -975,42 +1021,28 @@ knex('accounts')
     <p id="Builder-transacting">
       <b class="header">transacting</b><code>.transacting(transactionObj)</code>
       <br />
-      Used by <a href="#Transaction">knex.transaction</a>, the transacting method may be chained to any
+      Used by <a href="#Transactions">knex.transaction</a>, the transacting method may be chained to any
       query and passed the object you wish to join the query as part of the transaction for.
     </p>
 
 <pre>
-var Promise = require('bluebird');
+<code class="js">var Promise = require('bluebird');
 
-knex.transaction(function(t) {
+knex.transaction(function(trx) {
 
-  knex('books')
-    .transacting(t)
-    .insert({name: 'Old Books'})
-    .then(function(row) {
-
-      return Promise.all(_.map([
-        {title: 'Canterbury Tales'},
-        {title: 'Moby Dick'},
-        {title: 'Hamlet'}
-      ], function(info) {
-
-        info.row_id = row.id;
-
-        // Some validation could take place here.
-        return knex('book').transacting(t).insert(info);
-
-      }));
+  knex('books').transacting(t).insert({name: 'Old Books'})
+    .then(function(id) {
+      return someExternalMethod(t);
     })
-    .then(function() {
-      t.commit('You saved 3 books');
-    }, t.rollback);
+    .then(t.commit)
+    .then(t.rollback);
 
 }).then(function(resp) {
-  console.log(resp);
-}, function(err) {
-  console.log(err.message);
+  console.log('Transaction complete.');
+}).catch(function(err) {
+  console.error(err);
 });
+</code>
 </pre>
 
     <p id="Builder-forUpdate">
@@ -1142,7 +1174,42 @@ knex('accounts').where('userid', '=', 1).decrement('balance', 5)
     </p>
 
 <pre class="display">
-knex('users').truncate()
+knex('accounts').truncate()
+</pre>
+
+    <p id="Builder-pluck">
+      <b class="header">pluck</b><code>.pluck(id)</code>
+      <br />
+      This will pluck the specified column from each row in your results, yielding a promise which resolves
+      to the array of values selected.
+    </p>
+
+<pre>
+<code class="js">knex.table('users').pluck('id').then(function(ids) {
+  console.log(ids);
+});
+</code>
+</pre>
+
+    <p id="Builder-columnInfo">
+      <b class="header">columnInfo</b><code>.columnInfo([columnName])</code>
+      <br />
+      Returns an object with the column info about the current table, or an individual column if one is passed, returning an object with the following keys:
+
+      <ul>
+        <li><b>defaultValue</b>: the default value for the column</li>
+        <li><b>type</b>: the column type</li>
+        <li><b>maxLength</b>: the max length set for the column</li>
+        <li><b>nullable</b>: whether the column may be null</li>
+      </ul>
+
+    </p>
+
+<pre>
+<code class="js">knex('users').columnInfo().then(function(info) {
+  // ...
+});
+</code>
 </pre>
 
     <p id="Builder-debug">
@@ -1152,7 +1219,7 @@ knex('users').truncate()
     </p>
 
     <p id="Builder-connection">
-      <b class="header">connection</b><code>.connection()</code>
+      <b class="header">connection</b><code>.connection(dbConnection)</code>
       <br />
       Explicitly specify the connection for the query, allowing you to use the knex chain outside of
       the built-in pooling capabilities.
@@ -1165,7 +1232,7 @@ knex('users').truncate()
     </p>
 
 <pre>
-knex('accounts as a1')
+<code class="js">knex('accounts as a1')
   .leftJoin('accounts as a2', function() {
     this.on('a1.email', '<>', 'a2.email');
   })
@@ -1173,103 +1240,8 @@ knex('accounts as a1')
   .where(knex.raw('a1.id = 1'))
   .option({ nestTables: true, rowMode: 'array' })
   .limit(2);
+</code>
 </pre>
-
-    <h3 id="Builder-Interface">Builder Interface Methods:</h3>
-
-    <p id="Builder-then">
-      <b class="header">then</b><code>.then(onFulfilled)</code>
-      <br />
-      Coerces the current query builder chain into a promise state, accepting the resolve
-      and reject handlers as specified by the <a href="http://promises-aplus.github.com/promises-spec">Promises/A+ spec</a>.
-      As stated in the spec, more than one call to the <tt>then</tt> method for the current query chain will resolve
-      with the same value, in the order they were called; the query will not be executed multiple times.
-    </p>
-
-<pre>
-knex.select('*').from('users').where({name: 'Tim'})
-  .then(function(rows) {
-    return knex.insert({user_id: rows[0].id, name: 'Test'}, 'id').into('accounts');
-  }).then(function(id) {
-    console.log('Inserted Account ' + id);
-  }).catch(function(error) {
-    console.error(error);
-  });
-</pre>
-
-    <p id="Builder-catch">
-      <b class="header">catch</b><code>.catch(onRejected)</code>
-      <br />
-      Coerces the current query builder into a promise state, catching any error thrown by the query, the same as calling <tt>.then(null, onRejected)</tt>.
-    </p>
-
-<pre>
-return knex.insert({id: 1, name: 'Test'}, 'id').into('accounts')
-  .catch(function(error) {
-    console.error(error);
-  }).then(function() {
-    return knex.select('*').from('accounts').where('id', 1);
-  }).then(function(rows) {
-    console.log(rows[0]);
-  }).catch(function(error) {
-    console.error(error);
-  });
-</pre>
-
-
-    <p id="Builder-exec">
-      <b class="header">exec</b><code>.exec(callback)</code>
-      <br />
-      If you'd prefer a callback interface over promises, the <b>exec</b> function
-      accepts a standard node style callback for executing the query chain. Note that as
-      with the <a href="#Builder-then">then</a> method, subsequent calls to the same
-      query chain will return the same result.
-    </p>
-
-    <p id="Builder-map">
-      <b class="header">map</b><code>.map(mapper)</code>
-      <br />
-      A passthrough to <a href="https://github.com/petkaantonov/bluebird/blob/master/API.md#mapfunction-mapper---promise">Bluebird's map implementation</a> with the result set.
-    </p>
-
-    <p id="Builder-reduce">
-      <b class="header">reduce</b><code>.reduce(reducer, [initialValue])</code>
-      <br />
-      A passthrough to <a href="https://github.com/petkaantonov/bluebird/blob/master/API.md#reducefunction-reducer--dynamic-initialvalue---promise">Bluebird's reduce implementation</a> with the result set.
-    </p>
-
-    <p id="Builder-tap">
-      <b class="header">tap</b><code>.tap(onFulfilled, onRejected)</code>
-      <br />
-      Similar to the <a href="https://github.com/cujojs/when/blob/master/docs/api.md#tap">tap</a> functionality in when.js,
-      this will execute side effects on the resolved response, ultimately returning a promise that fulfills with the original
-      value. A thrown error or rejected promise will cause the promise to transition into a rejected state.
-    </p>
-
-<pre>
-// Using only .then()
-query.then(function(x) {
-    doSideEffectsHere(x);
-    return x;
-});
-
-// Using .tap()
-promise.tap(doSideEffectsHere);
-</pre>
-
-    <p id="Builder-pluck">
-      <b class="header">pluck</b><code>.pluck(id)</code>
-      <br />
-      This will pluck the specified column from each row in your results, yielding a promise which resolves
-      to the array of values selected.
-    </p>
-
-    <p id="Builder-toString">
-      <b class="header">toString</b><code>.toString()</code>
-      <br />
-      Returns an array of query strings filled out with the
-      correct values based on bindings, etc. Useful for debugging.
-    </p>
 
     <h2 id="Transactions">Transactions</h2>
 
@@ -1285,7 +1257,7 @@ promise.tap(doSideEffectsHere);
     </p>
 
 <pre>
-var Promise = require('bluebird');
+<code class="js">var Promise = require('bluebird');
 
 knex.transaction(function(trx) {
 
@@ -1297,7 +1269,7 @@ knex.transaction(function(trx) {
 
   return trx
     .insert({name: 'Old Books'})
-    .into('catalogue')
+    .into('catalogues')
     .then(function(row) {
       return Promise.map(books, function(book) {
         book.catalogue_id = row.id;
@@ -1314,14 +1286,14 @@ knex.transaction(function(trx) {
 
 }).catch(function(error) {
 
-  // If we get here, that means that neither the 'Old Books' table,
-  // nor any of the books will have taken place
-
+  // If we get here, that means that neither the 'Old Books' catalogues insert,
+  // nor any of the books inserts will have taken place.
   console.error(error);
 });
+</code>
 </pre>
 
-    <h2 id="Schema">knex.schema</h2>
+    <h2 id="Schema">Schema Builder</h2>
 
     <p id="Schema-createTable">
       <b class="header">createTable</b><code>knex.schema.createTable(tableName, callback)</code>
@@ -1366,8 +1338,7 @@ knex.schema.dropTable('users')
     </p>
 
 <pre>
-<code class="js">
-knex.schema.hasTable('users').then(function(exists) {
+<code class="js">knex.schema.hasTable('users').then(function(exists) {
   if (!exists) {
     return knex.schema.createTable('users', function(t) {
       t.increments('id').primary();
@@ -1393,6 +1364,10 @@ knex.schema.hasTable('users').then(function(exists) {
       Drops a table conditionally if the table exists, specified by <tt>tableName</tt>.
     </p>
 
+<pre class="display">
+knex.schema.dropTableIfExists('users')
+</pre>
+
     <p id="Schema-table">
       <b class="header">table</b><code>knex.schema.table(tableName, callback)</code>
       <br />
@@ -1407,12 +1382,6 @@ knex.schema.table('users', function (table) {
   table.string('last_name');
 })
 </pre>
-
-    <p id="Schema-dropTableIfExists">
-      <b class="header">dropTableIfExists</b><code>knex.schema.dropTableIfExists(tableName)</code>
-      <br />
-      Drops a table conditionally if the table exists, specified by <tt>tableName</tt>.
-    </p>
 
     <h3 id="Schema-Building">Schema Building:</h3>
 
@@ -1672,15 +1641,19 @@ knex.schema.createTable('accounts', function() {
     <p>
       Sometimes you may need to use a raw expression in a query. Raw query object may be injected pretty much
       anywhere you want, and using proper bindings can ensure your values are escaped properly, preventing SQL-injection attacks.
-
     </p>
 
-    <h3 id="Raw">knex.raw</h3>
+    <h3 id="Raw">Raw Expressions:</h3>
 
-<pre>
+    <p>
+      Raw expressions are created by using <tt>knex.raw(sql, [bindings])</tt> and passing this as a value for any value in the query chain.
+    </p>
+
+<pre class="display">
 knex('users')
   .select(knex.raw('count(*) as user_count, status'))
-  .where('status', '<>', 1)
+  .where(knex.raw(1))
+  .orWhere(knex.raw('status <> ?', [1]))
   .groupBy('status')
 </pre>
 
@@ -1690,18 +1663,325 @@ knex('users')
       The <tt>knex.raw</tt> may also be used to build a full query and execute it, as a
       standard query builder query would be executed. The benefit of this is that it uses the connection
       pool and provides a standard interface for the different client libraries.
+    </p>
+
+<pre>
+<code class="js">knex.raw('select * from users where id = ?', [1]).then(function(resp) {
+  ...
+});
+</code>
+</pre>
+
+    <p class="warning">
       Note that the response will be whatever the underlying sql library would typically return on a
       normal query, so you may need to look at the documentation for the base library the queries are
       executing against to determine how to handle the response.
     </p>
 
+
+    <h2 id="Interfaces">Interfaces</h2>
+
+    <p>
+      Knex.js provides several options to deal with query output. The following methods are present on the query builder, schema builder, and the raw builder:
+    </p>
+
+    <h3 id="Interfaces-Promises">Promises</h3>
+
+    <p>
+      <a href="https://github.com/petkaantonov/bluebird#what-are-promises-and-why-should-i-use-them">Promises</a> are the preferred way of dealing with queries in knex, as they allow you to return values from a fulfillment handler,
+      which in turn become the value of the promise. The main benefit of promises are the ability to catch thrown errors without
+      crashing the node app, making your code behave like a <b>.try / .catch / .finally</b> in synchronous code.
+    </p>
+
 <pre>
-knex.raw('select * from users where id = 1').then(function(resp) {
-  ...
-});
+<code class="js">knex.select('name').from('users')
+  .where('id', '>', 20)
+  .andWhere('id', '<', 200)
+  .limit(10)
+  .offset(x)
+  .then(function(rows) {
+    return _.pluck(rows, 'name');
+  })
+  .then(function(names) {
+    return knex.select('id').from('nicknames').whereIn('nickname', names);
+  })
+  .then(function(rows) {
+    console.log(rows);
+  })
+  .catch(function(error) {
+    console.error(error)
+  });
+</code>
 </pre>
 
+    <p id="Promises-then">
+      <b class="header">then</b><code>.then(onFulfilled)</code>
+      <br />
+      Coerces the current query builder chain into a promise state, accepting the resolve
+      and reject handlers as specified by the <a href="http://promises-aplus.github.com/promises-spec">Promises/A+ spec</a>.
+      As stated in the spec, more than one call to the <tt>then</tt> method for the current query chain will resolve
+      with the same value, in the order they were called; the query will not be executed multiple times.
+    </p>
+
+<pre>
+<code class="js">knex.select('*').from('users').where({name: 'Tim'})
+  .then(function(rows) {
+    return knex.insert({user_id: rows[0].id, name: 'Test'}, 'id').into('accounts');
+  }).then(function(id) {
+    console.log('Inserted Account ' + id);
+  }).catch(function(error) {
+    console.error(error);
+  });
+</code>
+</pre>
+
+    <p id="Promises-catch">
+      <b class="header">catch</b><code>.catch(onRejected)</code>
+      <br />
+      Coerces the current query builder into a promise state, catching any error thrown by the query, the same as calling <tt>.then(null, onRejected)</tt>.
+    </p>
+
+<pre>
+<code class="js">return knex.insert({id: 1, name: 'Test'}, 'id').into('accounts')
+  .catch(function(error) {
+    console.error(error);
+  }).then(function() {
+    return knex.select('*').from('accounts').where('id', 1);
+  }).then(function(rows) {
+    console.log(rows[0]);
+  }).catch(function(error) {
+    console.error(error);
+  });
+</code>
+</pre>
+
+    <p id="Promises-tap">
+      <b class="header">tap</b><code>.tap(sideEffectHandler)</code>
+      <br />
+      Executes side effects on the resolved response, ultimately returning a promise that fulfills with the original
+      value. A thrown error or rejected promise will cause the promise to transition into a rejected state.
+    </p>
+
+<pre>
+<code class="js">// Using only .then()
+query.then(function(x) {
+    doSideEffectsHere(x);
+    return x;
+});
+
+// Using .tap()
+promise.tap(doSideEffectsHere);
+</code>
+</pre>
+
+
+    <p id="Promises-map">
+      <b class="header">map</b><code>.map(mapper)</code>
+      <br />
+      A passthrough to <a href="https://github.com/petkaantonov/bluebird/blob/master/API.md#mapfunction-mapper---promise">Bluebird's map implementation</a> with the result set.
+    </p>
+
+<pre>
+<code class="js">knex.select('name').from('users').limit(10).map(function(row) {
+  return row.name;
+}).then(function(names) {
+  console.log(names);
+}).catch(function(e) {
+  console.error(e);
+});
+</code>
+</pre>
+
+    <p id="Promises-reduce">
+      <b class="header">reduce</b><code>.reduce(reducer, [initialValue])</code>
+      <br />
+      A passthrough to <a href="https://github.com/petkaantonov/bluebird/blob/master/API.md#reducefunction-reducer--dynamic-initialvalue---promise">Bluebird's reduce implementation</a> with the result set.
+    </p>
+
+<pre>
+<code class="js">knex.select('name').from('users').limit(10).reduce(function(memo, row) {
+  memo.names.push(row.name);
+  memo.count++;
+  return memo;
+}, {count: 0, names: []}).then(function(obj) {
+  console.log(obj);
+}).catch(function(e) {
+  console.error(e);
+});
+</code>
+</pre>
+
+    <p id="Promises-bind">
+      <b class="header">bind</b><code>.bind(context)</code>
+      <br />
+      A passthrough to <a href="https://github.com/petkaantonov/bluebird/blob/master/API.md#binddynamic-thisarg---promise">Bluebird's bind method</a> which sets the context value (this) for the returned promise.
+    </p>
+
+<pre>
+<code class="js">knex.select('name').from('users')
+  .limit(10)
+  .bind(console)
+  .then(console.log)
+  .catch(console.error)
+</code>
+</pre>
+
+    <p id="Promises-return">
+      <b class="header">return</b><code>.return(value)</code>
+      <br />
+      Shorthand for calling <tt>.then(function() { return value })</tt>.
+    </p>
+
+
+<pre>
+<code class="js">// Without return:
+knex.insert(values).into('users')
+  .then(function() {
+    return {inserted: true};
+  });
+
+knex.insert(values).into('users').return({inserted: true});
+</code>
+</pre>
+
+    <h3 id="Interfaces-Callbacks">Callbacks</h3>
+
+    <p id="Interfaces-exec">
+      <b class="header">exec</b><code>.exec(callback)</code>
+      <br />
+      If you'd prefer a callback interface over promises, the <b>exec</b> function
+      accepts a standard node style callback for executing the query chain. Note that as
+      with the <a href="#Promises-then">then</a> method, subsequent calls to the same
+      query chain will return the same result.
+    </p>
+
+<pre>
+<code class="js">knex.select('name').from('users')
+  .where('id', '>', 20)
+  .andWhere('id', '<', 200)
+  .limit(10)
+  .offset(x)
+  .exec(function(err, rows) {
+    if (err) return console.error(err);
+    knex.select('id').from('nicknames').whereIn('nickname', _.pluck(rows, 'name'))
+      .exec(function(err, rows) {
+        if (err) return console.error(err);
+        console.log(rows);
+      });
+  });
+</code>
+</pre>
+
+    <h3 id="Interfaces-Streams">Streams</h3>
+
+    <p>
+      Streams are a powerful way of piping data through as it comes in, rather than all at once.
+      You can read more about streams <a href="https://github.com/substack/stream-handbook">here at substack's stream handbook</a>.
+      See the following for example uses of stream &amp; pipe.
+    </p>
+
+    <p id="Streams-stream">
+      <b class="header">stream</b><code>.stream([options], [callback])</code>
+      <br />
+      If called with a <b>callback</b>, the callback is passed the stream and a promise is returned. Otherwise,
+      the readable stream is returned.
+    </p>
+
+<pre>
+<code class="js">// Retrieve the stream:
+var stream = knex.select('*').from('users').stream();
+stream.pipe(writableStream);
+
+// With options:
+var stream = knex.select('*').from('users').stream({highWaterMark: 5});
+stream.pipe(writableStream);
+
+// Use as a promise:
+var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).stream(function(stream) {
+  stream.pipe(writableStream);
+}).then(function() {
+  // ...
+}).catch(function(e) {
+  console.error(e);
+});
+</code>
+</pre>
+
+    <p id="Streams-pipe">
+      <b class="header">pipe</b><code>.pipe(writableStream)</code>
+      <br />
+      Pipe a stream for the current query to a writableStream.
+    </p>
+
+<pre>
+<code class="js">var stream = knex.select('*').from('users').pipe(writableStream);
+</code>
+</pre>
+
+    <h3 id="Interfaces-Events">Events</h3>
+
+    <p id="Events-query">
+      <b class="header">query</b>
+      <br />
+      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="Other-toSQL">toSQL</a>. Useful for logging all
+    </p>
+
+
+<pre>
+<code class="js">knex.select('*')
+  .from('users')
+  .on('query', function(data) {
+    app.log(data);
+  })
+  .then(function() {
+    // ...
+  });
+</code>
+</pre>
+
+    <h3 id="Interfaces-Other">Other</h3>
+
+    <p id="Other-toString">
+      <b class="header">toString</b><code>.toString()</code>
+      <br />
+      Returns an array of query strings filled out with the
+      correct values based on bindings, etc. Useful for debugging.
+    </p>
+
+<pre class="display">
+knex.select('*').from('users').where(knex.raw('id = ?', [1])).toString()
+</pre>
+
+    <p id="Other-toSQL">
+      <b class="header">toSQL</b><code>.toSQL()</code>
+      <br />
+      Returns an array of query strings filled out with the
+      correct values based on bindings, etc. Useful for debugging.
+    </p>
+
+<pre>
+<code class="js">knex.select('*').from('users').where(knex.raw('id = ?', [1])).toSQL()
+
+// Ouputs:
+{
+  bindings: [1],
+  method: 'select',
+  sql: 'select * from "users" where id = ?',
+  options: undefined,
+}
+</code>
+</pre>
+
+
     <h2 id="Migrations">Migrations</h2>
+
+    <p>
+      Migrations allow for you to define sets of schema changes so upgrading a database is a breeze.
+    </p>
+
+    <h3 id="Migrations-CLI">Migration CLI</h3>
+
+    <h3 id="Migrations-API">Migration API</h3>
 
     <p>
       <tt>knex.migrate</tt> is the class utilized by the knex migrations cli. Each method
@@ -1732,6 +2012,12 @@ knex.raw('select * from users where id = 1').then(function(resp) {
       <br />
       Retrieves and returns the current migration version, as a promise.
       If there aren't any migrations run yet, returns "none" as the value for the currentVersion.
+    </p>
+
+    <h2 id="support">Support</h2>
+
+     <p>
+      Have questions about the library? Come join us in the <a href="http://webchat.freenode.net/?channels=bookshelf">#bookshelf freenode IRC</a> channel for support on knex.js and <a href="http://bookshelfjs.org">bookshelf.js</a>, or post an issue on <a href="http://stackoverflow.com/questions/tagged/knex.js">Stack Overflow</a> or in the GitHub <a href="https://github.com/tgriesser/knex/issues">issue tracker</a>.
     </p>
 
     <h2 id="faq">F.A.Q.</h2>
@@ -1776,18 +2062,27 @@ $ npm test
 
     <h2 id="changelog">Change Log</h2>
 
-    <p>
+    <p id="release-0.6.0">
       <b class="header">0.6.0</b> &mdash; <small><i>June 3, 2014</i></small><br />
       Major Library refactor. Notable changes &amp; fixes include:
 
       <ul>
-        <li>Raw bindings</li>
-        <li>Queries are more composable, may be injected in various points throughout the builder ().</li>
-        <li>.</li>
+        <li>Major internal overhaul to clean up the various dialect code.</li>
+        <li>More consistent use of raw query bindings throughout the library.</li>
+        <li>Queries are more composable, may be injected in various points throughout the builder.</li>
         <li>Added <a href="#Interface-streams">streaming</a> interface</li>
-        <li>Deprecated 5 argument <a href="#Builder-join">join</a></li>
+        <li>Deprecated 5 argument <a href="#Builder-join">join</a> in favor of additional join methods.</li>
         <li>The wrapValue function to allow for array column operations in PostgreSQL (#287).</li>
+        <li>An explicit connection can be passed for any query (#56).</li>
+        <li>Drop column support for sqlite3</li>
+        <li>All schema actions are run sequentially on the same connection if chained.</li>
+        <li>Schema actions can now be wrapped in a transaction</li>
+        <li><tt>.references(tableName.columnName)</tt> as shorthand for <tt>.references(columnName).inTable(tableName)</tt></li>
+        <li><tt>.join('table.column', 'otherTable.column')</tt> as shorthand for .join('table.column', '=', 'otherTable.column')</tt></li>
+        <li>Streams are supported for selects, passing through to the streaming capabilities of node-mysql and node-postgres</li>
       </ul>
+
+      For More information, see this <a href="https://github.com/tgriesser/knex/pull/252">pull-request</a>.
 
     </p>
 
@@ -2132,7 +2427,7 @@ $ npm test
         try {
           var blocks = code.split('\n\n')
           blocks[blocks.length - 1] = 'return (' + blocks[blocks.length - 1] + ').toString()';
-          $(this).html('<code class="js">' + code + '</code>\nOutputs: \n<code class="sql">' + new Function('knex', 'trx', blocks.join('\n\n'))(dialects[dialect], trx)) + '</code>';
+          $(this).html('<code class="js">' + code + '</code><br /><br />Outputs:<br /><code class="sql">' + new Function('knex', 'trx', blocks.join('\n\n'))(dialects[dialect], trx)) + '</code>';
         } catch (e) {
           console.error(e);
         }
