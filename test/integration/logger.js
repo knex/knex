@@ -1,7 +1,6 @@
 module.exports = function(testSuite) {
 
   var _ = require('lodash');
-  var isDev = parseInt(process.env.KNEX_DEV, 10);
 
   // This is where all of the info from the query calls goes...
   return {

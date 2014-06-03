@@ -168,3 +168,9 @@ ul {
     overflow: scroll;
   }
 }
+div.language {
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 5px;
+}

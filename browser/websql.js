@@ -120,6 +120,9 @@ Knex.initialize = function(config) {
     if (!Clients[clientName]) {
       throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
     }
+    knex.toString = function() {
+      return '[object Knex:' + clientName + ']';
+    };
     Dialect = Clients[clientName]();
     client  = new Dialect(config);
   }

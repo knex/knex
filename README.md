@@ -25,7 +25,10 @@ To suggest a feature, report a bug, or general discussion: http://github.com/tgr
 #### Here's a quick demo:
 
 ```js
-var knex = require('knex')({dialect: 'mysql', connection: process.env.DB_CONNECTION_STRING});
+var knex = require('knex')({
+  dialect: 'mysql',
+  connection: process.env.DB_CONNECTION_STRING
+});
 
 // Create a table
 knex.schema.createTable('users', function(table) {

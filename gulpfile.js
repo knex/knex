@@ -72,6 +72,12 @@ function buildKnex() {
   });
 }
 
+function buildWebSQL() {
+  argv.t = 'websql';
+  argv.o = argv.o || 'websql.js';
+  buildKnex();
+}
+
 function buildDependencies() {
   var b = browserify();
   var depStream = fs.createWriteStream('./browser/deps.js');
@@ -82,12 +88,13 @@ function buildDependencies() {
   });
 }
 
-gulp.task('build', buildKnex);
-gulp.task('build:websql', function() {
-  argv.t = 'websql';
-  argv.o = argv.o || 'websql.js';
+gulp.task('build', function() {
   buildKnex();
+  buildWebSQL();
+  buildDependencies();
 });
+gulp.task('build:knex', buildKnex);
+gulp.task('build:websql', buildWebSQL);
 gulp.task('build:deps', buildDependencies);
 
 // Run the test... TODO: split these out to individual components.
