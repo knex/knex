@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.0-alpha
+// Knex.js  0.6.0
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -159,10 +159,9 @@ Knex.initialize = function(config) {
   // knex.migrate.latest().then(...
   // knex.migrate.currentVersion(...
   _.each(MigrateInterface, function(method) {
-    migrate[method] = function(config) {
+    migrate[method] = function() {
       if (!client.Migrator) client.initMigrator();
-      config.knex = knex;
-      var migrator = new client.Migrator(config);
+      var migrator = new client.Migrator(knex);
       return migrator[method].apply(migrator, arguments);
     };
   });
@@ -178,16 +177,18 @@ module.exports = Knex;
 // "Base Client"
 // ------
 var Promise    = _dereq_('./promise');
+var _          = _dereq_('lodash');
 
 // The base client provides the general structure
 // for a dialect specific client object. The client
 // object attaches fresh constructors for each component
 // of the library.
-function Client() {
+function Client(config) {
   this.initFormatter();
   this.initRaw();
   this.initTransaction();
   this.initQuery();
+  this.migrationConfig = _.clone(config && config.migrations);
 }
 
 // Set the "isDebugging" flag on the client to "true" to log
@@ -224,7 +225,7 @@ Client.prototype.database = function() {
 };
 
 module.exports = Client;
-},{"./promise":24}],3:[function(_dereq_,module,exports){
+},{"./promise":24,"lodash":"K2RcUv"}],3:[function(_dereq_,module,exports){
 (function (Buffer){
 var SqlString = exports;
 
@@ -2605,17 +2606,34 @@ QueryCompiler.prototype._prepInsert = function(data) {
   var isRaw = this.formatter.rawOrFn(data);
   if (isRaw) return isRaw;
   var values = [];
-  var columns;
+  var columns, colList;
   if (!_.isArray(data)) data = data ? [data] : [];
   for (var i = 0, l = data.length; i<l; i++) {
     var sorted = helpers.sortObject(data[i]);
-    if (i === 0) columns = _.pluck(sorted, 0);
+    columns = _.pluck(sorted, 0);
+    colList = colList || columns;
+    if (!_.isEqual(columns, colList)) {
+      return this._prepInsert(this._normalizeInsert(data));
+    }
     values.push(_.pluck(sorted, 1));
   }
   return {
     columns: columns,
     values: values
   };
+};
+
+// If we are running an insert with variable object keys, we need to normalize
+// for the missing keys, presumably setting the values to undefined.
+QueryCompiler.prototype._normalizeInsert = function(data) {
+  if (!_.isArray(data)) return _.clone(data);
+  var defaultObj = _.reduce(_.union.apply(_, _.map(data, function(val) {
+    return _.keys(val);
+  })), function(memo, key) {
+    memo[key] = void 0;
+    return memo;
+  }, {});
+  return _.map(data, function(row) { return _.defaults(row, defaultObj); });
 };
 
 // "Preps" the update.
@@ -2778,7 +2796,6 @@ Raw.prototype.wrap = function(before, after) {
 };
 
 // Calls `toString` on the Knex object.
-// return '[object Knex$raw]';
 Raw.prototype.toString = function() {
   return this.toQuery();
 };
@@ -3046,7 +3063,6 @@ _.each([
   };
 });
 
-// return '[object Knex:SchemaBuilder]';
 SchemaBuilder.prototype.toString = function() {
   return this.toQuery();
 };
@@ -3162,6 +3178,7 @@ var Raw = _dereq_('../raw');
 
 function ColumnCompiler(tableCompiler, columnBuilder) {
   this.tableCompiler = tableCompiler;
+  this.columnBuilder = columnBuilder;
   this.args = columnBuilder._args;
   this.type = columnBuilder._type;
   this.grouped = _.groupBy(columnBuilder._statements, 'grouping');
@@ -3174,6 +3191,9 @@ function ColumnCompiler(tableCompiler, columnBuilder) {
 // column as it would be in the insert statement
 ColumnCompiler.prototype.toSQL = function() {
   this.pushQuery(this.compileColumn());
+  if (this.sequence.additional) {
+    this.sequence = this.sequence.concat(this.sequence.additional);
+  }
   return this.sequence;
 };
 
@@ -3349,6 +3369,13 @@ ColumnCompiler.prototype.pushQuery = function(query) {
   }
   this.sequence.push(query);
   this.formatter = new this.Formatter();
+};
+
+// Used in cases where we need to push some additional column specific statements.
+ColumnCompiler.prototype.pushAdditional = function(fn) {
+  var child = new this.constructor(this.tableCompiler, this.columnBuilder);
+  fn.call(child, _.rest(arguments));
+  this.sequence.additional = (this.sequence.additional || []).concat(child.sequence);
 };
 
 module.exports = {
@@ -3642,6 +3669,7 @@ TableCompiler.prototype.create = function() {
   var columnTypes = this.getColumnTypes(columns);
   this.createQuery(columnTypes);
   this.columnQueries(columns);
+  delete this.single.comment;
   this.alterTable();
 };
 
@@ -3678,14 +3706,13 @@ TableCompiler.prototype.getColumnTypes = function(columns) {
 
 // Adds all of the additional queries from the "column"
 TableCompiler.prototype.columnQueries = function(columns) {
-  var queries = _.reduce(columns, function(memo, column) {
-    memo.concat(_.rest(column));
+  var queries = _.reduce(_.map(columns, _.rest), function(memo, column) {
+    if (!_.isEmpty(column)) return memo.concat(column);
     return memo;
   }, []);
   for (var i = 0, l = queries.length; i < l; i++) {
     this.pushQuery(queries[i]);
   }
-  return queries;
 };
 
 // Add a new column.
@@ -3728,6 +3755,9 @@ TableCompiler.prototype.alterTable = function() {
     } else {
       console.error('Debug: ' + statement.method + ' does not exist');
     }
+  }
+  for (var item in this.single) {
+    if (_.isFunction(this[item])) this[item](this.single[item]);
   }
 };
 
@@ -3853,22 +3883,7 @@ Transaction.prototype.then = function(onFulfilled, onRejected) {
 
 module.exports = Transaction;
 },{"../knex":1,"./interface":21,"./promise":24,"events":44,"inherits":45}],40:[function(_dereq_,module,exports){
-var _ = _dereq_('lodash');
-
 module.exports = {
-
-  // If we are running an insert with variable object keys, we need to normalize
-  // for the missing keys, presumably setting the values to undefined.
-  prepInsert: function(data) {
-    if (!_.isArray(data)) return _.clone(data);
-    var defaultObj = _.reduce(_.union.apply(_, _.map(data, function(val) {
-      return _.keys(val);
-    })), function(memo, key) {
-      memo[key] = void 0;
-      return memo;
-    }, {});
-    return _.map(data, function(row) { return _.defaults(row, defaultObj); });
-  },
 
   pgBindings: function(sql) {
     var questionCount = 0;
@@ -3879,7 +3894,7 @@ module.exports = {
   }
 
 };
-},{"lodash":"K2RcUv"}],41:[function(_dereq_,module,exports){
+},{}],41:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -3972,11 +3987,12 @@ function Buffer (subject, encoding, noZero) {
     buf._set(subject)
   } else if (isArrayish(subject)) {
     // Treat array-ish objects as a byte array
-    for (i = 0; i < length; i++) {
-      if (Buffer.isBuffer(subject))
+    if (Buffer.isBuffer(subject)) {
+      for (i = 0; i < length; i++)
         buf[i] = subject.readUInt8(i)
-      else
-        buf.writeInt8(subject[i], i)
+    } else {
+      for (i = 0; i < length; i++)
+        buf[i] = ((subject[i] % 256) + 256) % 256
     }
   } else if (type === 'string') {
     buf.write(subject, 0, encoding)

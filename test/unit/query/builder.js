@@ -422,6 +422,13 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(result.sql).to.equal('insert into "users" ("email") values (CURRENT TIMESTAMP)');
     });
 
+    it("normalizes for missing keys in insert", function() {
+      var data = [{a: 1}, {b: 2}, {a: 2, c: 3}];
+      chain = sql().insert(data).into('table').toSQL();
+      assert.deepEqual(chain.bindings, [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]);
+      assert.equal(chain.sql, 'insert into "table" ("a", "b", "c") values (?, ?, ?), (?, ?, ?), (?, ?, ?)');
+    });
+
     it("update method", function() {
       chain = sql().update({'email': 'foo', 'name': 'bar'}).table('users').where('id', '=', 1).toSQL();
       expect(chain.sql).to.equal('update "users" set "email" = ?, "name" = ? where "id" = ?');
