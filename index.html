@@ -127,8 +127,6 @@
     </a>
     <ul class="toc_section">
       <li>– <a href="#Transactions"><b>overview</b></a></li>
-      <li>– <a href="#Transactions-commit">commit</a></li>
-      <li>– <a href="#Transactions-rollback">rollback</a></li>
     </ul>
 
     <a class="toc_title" href="#Schema">
@@ -220,10 +218,9 @@
     </a>
 
     <ul class="toc_section">
-      <li><a href="#CLI"><b>CLI</b></li>
-        <li>– <a href="#Migrations-cli-info">info</a></li>
-        <li>– <a href="#Migrations-cli-knexfile">knexfile.js</a></li>
-      <li><a href="#CLI"><b>API</b></li>
+      <li><a href="#Migrations-CLI"><b>CLI</b></li>
+        <li>– <a href="#knexfile">knexfile.js</a></li>
+      <li><a href="#Migrations-API"><b>API</b></li>
         <li>– <a href="#Migrations-make">make</a></li>
         <li>– <a href="#Migrations-latest">latest</a></li>
         <li>– <a href="#Migrations-rollback">rollback</a></li>
@@ -296,7 +293,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.5.14 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.6.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1246,19 +1243,25 @@ knex('accounts').truncate()
     <h2 id="Transactions">Transactions</h2>
 
     <p>
-      Transactions are an important feature of relational databases, as they allow correct recovery from failures and keep a database consistent even in cases of system failure. All queries within a transaction are executed on the same database connection, and run the entire set of queries as a single unit of work. Any failure will mean the database.
+      Transactions are an important feature of relational databases, as they allow correct recovery from failures and keep a database consistent even in cases of system failure. All queries within a transaction are executed on the same database connection, and run the entire set of queries as a single unit of work. Any failure will mean the database will rollback any queries executed on that connection to the pre-transaction state.
     </p>
 
     <p>
       Transactions are handled by passing a handler function into <tt>knex.transaction</tt>.
-      The handler function accepts a single argument, the promise for committing or rolling back
-      the transaction. This argument is then passed into any queries which are involved in the current
-      transcaction, working by explicitly passing the .
+      The handler function accepts a single argument, the an object which may be used in two ways:
+
+      <ol>
+        <li>As the "promise aware" knex connection</li>
+        <li>As an object passed into a query with <a href="#Builder-transacting"></a> and eventually call commit or rollback.</li>
+      </ol>
+
+      Consider these two examples:
     </p>
 
 <pre>
 <code class="js">var Promise = require('bluebird');
 
+// Using trx as a query builder:
 knex.transaction(function(trx) {
 
   var books = [
@@ -1280,18 +1283,62 @@ knex.transaction(function(trx) {
       }));
     });
 
-}).then(function(inserts) {
-
+})
+.then(function(inserts) {
   console.log(inserts.length + ' new books saved.');
-
-}).catch(function(error) {
-
+})
+.catch(function(error) {
   // If we get here, that means that neither the 'Old Books' catalogues insert,
   // nor any of the books inserts will have taken place.
   console.error(error);
 });
 </code>
 </pre>
+
+<p>And then this example:</p>
+
+<pre>
+<code class="js">var Promise = require('bluebird');
+
+// Using trx as a transaction object:
+knex.transaction(function(trx) {
+
+  var books = [
+    {title: 'Canterbury Tales'},
+    {title: 'Moby Dick'},
+    {title: 'Hamlet'}
+  ];
+
+  knex.insert({name: 'Old Books'})
+    .into('catalogues')
+    .transacting(trx)
+    .then(function(row) {
+      return Promise.map(books, function(book) {
+        book.catalogue_id = row.id;
+
+        // Some validation could take place here.
+
+        return knex.insert(info).into('books').transacting(trx);
+      }));
+    })
+    .then(trx.commit)
+    .then(trx.rollback);
+})
+.then(function(inserts) {
+  console.log(inserts.length + ' new books saved.');
+})
+.catch(function(error) {
+  // If we get here, that means that neither the 'Old Books' catalogues insert,
+  // nor any of the books inserts will have taken place.
+  console.error(error);
+});
+</code>
+</pre>
+
+  <p>
+    Notice that if a promise is not returned within the handler, it is up to you to ensure <tt>trx.commit</tt>, or
+    <tt>trx.rollback</tt> are called, otherwise the transaction connection will hang.
+  </p>
 
     <h2 id="Schema">Schema Builder</h2>
 
@@ -1643,7 +1690,7 @@ knex.schema.createTable('accounts', function() {
       anywhere you want, and using proper bindings can ensure your values are escaped properly, preventing SQL-injection attacks.
     </p>
 
-    <h3 id="Raw">Raw Expressions:</h3>
+    <h3 id="Raw-Expressions">Raw Expressions:</h3>
 
     <p>
       Raw expressions are created by using <tt>knex.raw(sql, [bindings])</tt> and passing this as a value for any value in the query chain.
@@ -1774,7 +1821,6 @@ promise.tap(doSideEffectsHere);
 </code>
 </pre>
 
-
     <p id="Promises-map">
       <b class="header">map</b><code>.map(mapper)</code>
       <br />
@@ -1877,7 +1923,7 @@ knex.insert(values).into('users').return({inserted: true});
     <p>
       Streams are a powerful way of piping data through as it comes in, rather than all at once.
       You can read more about streams <a href="https://github.com/substack/stream-handbook">here at substack's stream handbook</a>.
-      See the following for example uses of stream &amp; pipe.
+      See the following for example uses of stream &amp; pipe. If you wish to use streams with PostgreSQL, you must also install the <a href="https://github.com/brianc/node-pg-query-stream">pg-query-stream</a> module.
     </p>
 
     <p id="Streams-stream">
@@ -1981,6 +2027,44 @@ knex.select('*').from('users').where(knex.raw('id = ?', [1])).toString()
 
     <h3 id="Migrations-CLI">Migration CLI</h3>
 
+    <p>
+      The migration CLI is stored in a <a href="https://github.com/bookshelf/knex-cli">separate repository</a> and
+      is driven by the <a href="https://github.com/tkellen/node-liftoff">node-liftoff</a> module. Running:
+    </p>
+
+<pre>
+$ knex init
+</pre>
+
+    <p>
+      will create a sample knexfile.js - the file which contains our various database configurations. Once you have a knexfile.js,
+      you can use the migration tool to create migration files to the specified directory (default migrations). Creating new migration
+      files can be achieved by running:
+    </p>
+
+<pre>
+$ knex migrate:make migration_name
+</pre>
+
+    <p>
+      Once you have the migrations in place you wish to run, you can run:
+    </p>
+
+<pre>
+$ knex migrate:latest
+</pre>
+
+    <p>
+      To update your database to the latest version.
+    </p>
+
+    <h3 id="knexfile">knexfile.js</h3>
+
+    <p>
+      A knexfile.js or knexfile.coffee generally contains all of the configuration for your database, for each environment you will be using. You may pass a <tt>--knexfile</tt> option to any of the command line statements to specify an alternate path to your knexfile.
+    </p>
+
+
     <h3 id="Migrations-API">Migration API</h3>
 
     <p>
@@ -2008,7 +2092,7 @@ knex.select('*').from('users').where(knex.raw('id = ?', [1])).toString()
     </p>
 
     <p id="Migrations-currentVersion">
-      <b class="header">currentVersion</b><code>knex.migrate.currentVersion()</code>
+      <b class="header">currentVersion</b><code>knex.migrate.currentVersion([config])</code>
       <br />
       Retrieves and returns the current migration version, as a promise.
       If there aren't any migrations run yet, returns "none" as the value for the currentVersion.
@@ -2070,7 +2154,7 @@ $ npm test
         <li>Major internal overhaul to clean up the various dialect code.</li>
         <li>More consistent use of raw query bindings throughout the library.</li>
         <li>Queries are more composable, may be injected in various points throughout the builder.</li>
-        <li>Added <a href="#Interface-streams">streaming</a> interface</li>
+        <li>Added <a href="#Interfaces-Streams">streaming</a> interface</li>
         <li>Deprecated 5 argument <a href="#Builder-join">join</a> in favor of additional join methods.</li>
         <li>The wrapValue function to allow for array column operations in PostgreSQL (#287).</li>
         <li>An explicit connection can be passed for any query (#56).</li>
