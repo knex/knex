@@ -22,7 +22,8 @@ module.exports = {
     client: 'mysql',
     connection: testConfig.mysql || {
       database: "knex_test",
-      user: "root"
+      user: "root",
+      charset: 'utf8'
     },
     pool: _.extend({}, pool, {
       afterCreate: function(connection, callback) {
