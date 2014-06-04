@@ -2203,321 +2203,327 @@ $ npm test
       For More information, see this <a href="https://github.com/tgriesser/knex/pull/252">pull-request</a>.
     </p>
 
-    <p>
-      <b class="header">0.5.15</b> &mdash; <small><i>June 4, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.14...0.5.15">Diff</a><br />
-      Dropped indexes feature now functions correctly, (#278).
-    </p>
+    <p><a href="#" class="js-change-log" style="text-align:center">Show Full Change log</a></p>
 
-    <p>
-      <b class="header">0.5.14</b> &mdash; <small><i>May 6, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.13...0.5.14">Diff</a><br />
-      Remove the charset encoding if it's utf8 for mysql, as it's the default but also
-      currently causes some issues in recent versions of node-mysql.
-    </p>
+    <div class="change-log" style="display:none;">
 
-    <p>
-      <b class="header">0.5.13</b> &mdash; <small><i>April 2, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.12...0.5.13">Diff</a><br />
-      Fix regression in array bindings for postgresql (#228).
-    </p>
+      <p>
+        <b class="header">0.5.15</b> &mdash; <small><i>June 4, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.14...0.5.15">Diff</a><br />
+        Dropped indexes feature now functions correctly, (#278).
+      </p>
 
-    <p>
-      <b class="header">0.5.12</b> &mdash; <small><i>Mar 31, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.11...0.5.12">Diff</a><br />
-      Add more operators for where clauses, including <tt>&amp;&amp;</tt> (#226).
-    </p>
+      <p>
+        <b class="header">0.5.14</b> &mdash; <small><i>May 6, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.13...0.5.14">Diff</a><br />
+        Remove the charset encoding if it's utf8 for mysql, as it's the default but also
+        currently causes some issues in recent versions of node-mysql.
+      </p>
 
-    <p>
-      <b class="header">0.5.11</b> &mdash; <small><i>Mar 25, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.10...0.5.11">Diff</a><br />
-      <ul>
-        <li><tt>.where(col, 'is', null)</tt> or <tt>.where(col, 'is not', null)</tt> are not supported (#221).</li>
-        <li>Case insensitive <tt>where</tt> operators now allowed (#212).</li>
-        <li>Fix bug in increment/decrement truncating to an integer (#210).</li>
-        <li>Disconnected connections are now properly handled &amp; removed from the pool (#206).</li>
-        <li>Internal tweaks to binding concatenations for performance (#207).</li>
-      </ul>
-    </p>
+      <p>
+        <b class="header">0.5.13</b> &mdash; <small><i>April 2, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.12...0.5.13">Diff</a><br />
+        Fix regression in array bindings for postgresql (#228).
+      </p>
 
-    <p>
-      <b class="header">0.5.10</b> &mdash; <small><i>Mar 19, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.9...0.5.10">Diff</a><br />
-      Add the <tt>.exec</tt> method to the internal promise shim.
-    </p>
+      <p>
+        <b class="header">0.5.12</b> &mdash; <small><i>Mar 31, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.11...0.5.12">Diff</a><br />
+        Add more operators for where clauses, including <tt>&amp;&amp;</tt> (#226).
+      </p>
 
-    <p>
-      <b class="header">0.5.9</b> &mdash; <small><i>Mar 18, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.8...0.5.9">Diff</a><br />
-      Remove error'ed connections from the connection pool (#206), added support for <a href="https://github.com/brianc/node-postgres-pure">node-postgres-pure (pg.js)</a> (#200).
-    </p>
+      <p>
+        <b class="header">0.5.11</b> &mdash; <small><i>Mar 25, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.10...0.5.11">Diff</a><br />
+        <ul>
+          <li><tt>.where(col, 'is', null)</tt> or <tt>.where(col, 'is not', null)</tt> are not supported (#221).</li>
+          <li>Case insensitive <tt>where</tt> operators now allowed (#212).</li>
+          <li>Fix bug in increment/decrement truncating to an integer (#210).</li>
+          <li>Disconnected connections are now properly handled &amp; removed from the pool (#206).</li>
+          <li>Internal tweaks to binding concatenations for performance (#207).</li>
+        </ul>
+      </p>
 
-    <p>
-      <b class="header">0.5.8</b> &mdash; <small><i>Feb 27, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.7...0.5.8">Diff</a><br />
-      Fix for chaining on <tt>forUpdate</tt> / <tt>forShare</tt>, adding <a href="#Builder-map">map</a> &amp; <a href="#Builder-reduce">reduce</a> from bluebird.
-    </p>
+      <p>
+        <b class="header">0.5.10</b> &mdash; <small><i>Mar 19, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.9...0.5.10">Diff</a><br />
+        Add the <tt>.exec</tt> method to the internal promise shim.
+      </p>
 
-    <p>
-      <b class="header">0.5.7</b> &mdash; <small><i>Feb 18, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.6...0.5.7">Diff</a><br />
-      Fix for a <tt>null</tt> limit / offset breaking query chain (#182).
-    </p>
+      <p>
+        <b class="header">0.5.9</b> &mdash; <small><i>Mar 18, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.8...0.5.9">Diff</a><br />
+        Remove error'ed connections from the connection pool (#206), added support for <a href="https://github.com/brianc/node-postgres-pure">node-postgres-pure (pg.js)</a> (#200).
+      </p>
 
-    <p>
-      <b class="header">0.5.6</b> &mdash; <small><i>Feb 5, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.5...0.5.6">Diff</a><br />
-      Bump bluebird dependency to ~1.0.0, fixing regression in Bluebird 1.0.2 (#176).
-    </p>
+      <p>
+        <b class="header">0.5.8</b> &mdash; <small><i>Feb 27, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.7...0.5.8">Diff</a><br />
+        Fix for chaining on <tt>forUpdate</tt> / <tt>forShare</tt>, adding <a href="#Builder-map">map</a> &amp; <a href="#Builder-reduce">reduce</a> from bluebird.
+      </p>
 
-    <p>
-      <b class="header">0.5.5</b> &mdash; <small><i>Jan 28, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.4...0.5.5">Diff</a><br />
-      <ul>
-        <li>Fix for the exit code on the migrations cli (#151).</li>
-        <li>The <tt>init</tt> method in <tt>knex.migrate</tt> now uses <tt>this.config</tt> if one isn't passed in (#156).</li>
-      </ul>
-    </p>
+      <p>
+        <b class="header">0.5.7</b> &mdash; <small><i>Feb 18, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.6...0.5.7">Diff</a><br />
+        Fix for a <tt>null</tt> limit / offset breaking query chain (#182).
+      </p>
 
-    <p>
-      <b class="header">0.5.4</b> &mdash; <small><i>Jan 7, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.3...0.5.4">Diff</a><br />
-      Fix for using raw statements in <tt>defaultTo</tt> schema builder methods (#146).
-    </p>
+      <p>
+        <b class="header">0.5.6</b> &mdash; <small><i>Feb 5, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.5...0.5.6">Diff</a><br />
+        Bump bluebird dependency to ~1.0.0, fixing regression in Bluebird 1.0.2 (#176).
+      </p>
 
-    <p>
-      <b class="header">0.5.3</b> &mdash; <small><i>Jan 2, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.2...0.5.3">Diff</a><br />
-      Fix for incorrectly formed sql when aggregates are used with columns (#144).
-    </p>
+      <p>
+        <b class="header">0.5.5</b> &mdash; <small><i>Jan 28, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.4...0.5.5">Diff</a><br />
+        <ul>
+          <li>Fix for the exit code on the migrations cli (#151).</li>
+          <li>The <tt>init</tt> method in <tt>knex.migrate</tt> now uses <tt>this.config</tt> if one isn't passed in (#156).</li>
+        </ul>
+      </p>
 
-    <p>
-      <b class="header">0.5.2</b> &mdash; <small><i>Dec 18, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.1...0.5.2">Diff</a><br />
-      Adding passthrough "catch", "finally" to bluebird implementations, use
-      bluebird's "nodeify" internally for exec.
-    </p>
+      <p>
+        <b class="header">0.5.4</b> &mdash; <small><i>Jan 7, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.3...0.5.4">Diff</a><br />
+        Fix for using raw statements in <tt>defaultTo</tt> schema builder methods (#146).
+      </p>
 
-    <p>
-      <b class="header">0.5.1</b> &mdash; <small><i>Dec 12, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.0...0.5.1">Diff</a><br />
-      <ul>
-        <li>The <a href="#Builder-returning">returning</a> in PostgreSQL may now accept * or an array of columns to return. If either of these are passed, the response will be an array of objects rather than an array of values. Updates may also now use a <tt>returning</tt> value. (#132)</li>
-        <li>Added <tt>bigint</tt> and <tt>bigserial</tt> type to PostgreSQL. (#111)</li>
-        <li>Fix for the <a href="#Schema-specificType">specificType</a> schema call (#118)</li>
-        <li>Several fixes for migrations, including migration file path fixes, passing a
-          Promise constructor to the migration <tt>up</tt> and <tt>down</tt> methods, allowing
-          the "knex" module to be used globally, file ordering on migrations, and other small improvements. (#112-115, #125, #135)</li>
-      </ul>
-    </p>
+      <p>
+        <b class="header">0.5.3</b> &mdash; <small><i>Jan 2, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.2...0.5.3">Diff</a><br />
+        Fix for incorrectly formed sql when aggregates are used with columns (#144).
+      </p>
 
-    <p>
-      <b class="header">0.5.0</b> &mdash; <small><i>Nov 25, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.13...0.5.0">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.5.0/index.html">Docs</a><br />
-      <ul>
-        <li>Initial pass at a <a href="#Migrations">migration</a> api.</li>
-        <li>Aggregate methods are no longer aliased as "aggregate",
-          but may now be aliased and have more than one aggregate in a query (#108, #110).</li>
-        <li>Adding bigint and bigserial to PostgreSQL (#111).</li>
-        <li>Bugfix on increment/decrement values (#100).</li>
-        <li>Bugfix with having method (#107).</li>
-        <li>Switched from when.js to <a href="https://github.com/petkaantonov/bluebird">bluebird</a> for promise implementation, with shim for backward compatibility.</li>
-        <li>Switched from underscore to lodash, for semver reliability.</li>
-      </ul>
-    </p>
+      <p>
+        <b class="header">0.5.2</b> &mdash; <small><i>Dec 18, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.1...0.5.2">Diff</a><br />
+        Adding passthrough "catch", "finally" to bluebird implementations, use
+        bluebird's "nodeify" internally for exec.
+      </p>
 
-    <p>
-      <b class="header">0.4.13</b> &mdash; <small><i>Oct 31, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.12...0.4.13">Diff</a><br />
-      Fix for aggregate methods on <tt>toString</tt> and <tt>clone</tt>, (#98).
-    </p>
+      <p>
+        <b class="header">0.5.1</b> &mdash; <small><i>Dec 12, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.0...0.5.1">Diff</a><br />
+        <ul>
+          <li>The <a href="#Builder-returning">returning</a> in PostgreSQL may now accept * or an array of columns to return. If either of these are passed, the response will be an array of objects rather than an array of values. Updates may also now use a <tt>returning</tt> value. (#132)</li>
+          <li>Added <tt>bigint</tt> and <tt>bigserial</tt> type to PostgreSQL. (#111)</li>
+          <li>Fix for the <a href="#Schema-specificType">specificType</a> schema call (#118)</li>
+          <li>Several fixes for migrations, including migration file path fixes, passing a
+            Promise constructor to the migration <tt>up</tt> and <tt>down</tt> methods, allowing
+            the "knex" module to be used globally, file ordering on migrations, and other small improvements. (#112-115, #125, #135)</li>
+        </ul>
+      </p>
 
-    <p>
-      <b class="header">0.4.12</b> &mdash; <small><i>Oct 29, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.11...0.4.12">Diff</a><br />
-      Fix incorrect values passed to <tt>float</tt> in MySQL and <tt>decimal</tt>
-      in PostgreSQL.
-    </p>
+      <p>
+        <b class="header">0.5.0</b> &mdash; <small><i>Nov 25, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.13...0.5.0">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.5.0/index.html">Docs</a><br />
+        <ul>
+          <li>Initial pass at a <a href="#Migrations">migration</a> api.</li>
+          <li>Aggregate methods are no longer aliased as "aggregate",
+            but may now be aliased and have more than one aggregate in a query (#108, #110).</li>
+          <li>Adding bigint and bigserial to PostgreSQL (#111).</li>
+          <li>Bugfix on increment/decrement values (#100).</li>
+          <li>Bugfix with having method (#107).</li>
+          <li>Switched from when.js to <a href="https://github.com/petkaantonov/bluebird">bluebird</a> for promise implementation, with shim for backward compatibility.</li>
+          <li>Switched from underscore to lodash, for semver reliability.</li>
+        </ul>
+      </p>
 
-    <p>
-      <b class="header">0.4.11</b> &mdash; <small><i>Oct 15, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.10...0.4.11">Diff</a><br />
-      Fix potential sql injection vulnerability in <tt>orderBy</tt>, thanks to @sebgie.
-    </p>
+      <p>
+        <b class="header">0.4.13</b> &mdash; <small><i>Oct 31, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.12...0.4.13">Diff</a><br />
+        Fix for aggregate methods on <tt>toString</tt> and <tt>clone</tt>, (#98).
+      </p>
 
-    <p>
-      <b class="header">0.4.10</b> &mdash; <small><i>Oct 14, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.9...0.4.10">Diff</a><br />
-      <ul>
-        <li>Added <a href="#Builder-forUpdate">forUpdate</a> and <a href="#Builder-forShare">forShare</a> for select modes in transactions. (#84)</li>
-        <li>Fix bug where current query chain type is not copied on <a href="#Builder-clone">clone</a>. (#90)</li>
-        <li>Charset and collate are now added as methods on the schema builder. (#89)</li>
-        <li>Added <tt>into</tt> as an alias of <a href="#Builder-from">from</a>, for builder syntax of: <tt>insert(value).into(tableName)</tt></li>
-        <li>Internal pool fixes. (#90)</li>
-      </ul>
-    </p>
+      <p>
+        <b class="header">0.4.12</b> &mdash; <small><i>Oct 29, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.11...0.4.12">Diff</a><br />
+        Fix incorrect values passed to <tt>float</tt> in MySQL and <tt>decimal</tt>
+        in PostgreSQL.
+      </p>
 
-    <p>
-      <b class="header">0.4.9</b> &mdash; <small><i>Oct 7, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.8...0.4.9">Diff</a><br />
-      <ul>
-        <li>Fix for documentation of <a href="#Schema-hasColumn">hasColumn</a>, ensure that <tt>hasColumn</tt> works with MySQL (#87).</li>
-        <li>More cleanup of error messages, showing the original error message concatenated with the sql and bindings.</li>
-      </ul>
-    </p>
+      <p>
+        <b class="header">0.4.11</b> &mdash; <small><i>Oct 15, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.10...0.4.11">Diff</a><br />
+        Fix potential sql injection vulnerability in <tt>orderBy</tt>, thanks to @sebgie.
+      </p>
 
-    <p>
-      <b class="header">0.4.8</b> &mdash; <small><i>Oct 2, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.7...0.4.8">Diff</a><br />
-      Connections are no longer pushed back into the pool if they never existed to begin with (#85).
-    </p>
+      <p>
+        <b class="header">0.4.10</b> &mdash; <small><i>Oct 14, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.9...0.4.10">Diff</a><br />
+        <ul>
+          <li>Added <a href="#Builder-forUpdate">forUpdate</a> and <a href="#Builder-forShare">forShare</a> for select modes in transactions. (#84)</li>
+          <li>Fix bug where current query chain type is not copied on <a href="#Builder-clone">clone</a>. (#90)</li>
+          <li>Charset and collate are now added as methods on the schema builder. (#89)</li>
+          <li>Added <tt>into</tt> as an alias of <a href="#Builder-from">from</a>, for builder syntax of: <tt>insert(value).into(tableName)</tt></li>
+          <li>Internal pool fixes. (#90)</li>
+        </ul>
+      </p>
 
-    <p>
-      <b class="header">0.4.7</b> &mdash; <small><i>Sep 27, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.6...0.4.7">Diff</a><br />
-      The <a href="#Builder-column">column</a> is now a documented method on the builder api, and takes either an individual column or an array of columns to select.
-    </p>
+      <p>
+        <b class="header">0.4.9</b> &mdash; <small><i>Oct 7, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.8...0.4.9">Diff</a><br />
+        <ul>
+          <li>Fix for documentation of <a href="#Schema-hasColumn">hasColumn</a>, ensure that <tt>hasColumn</tt> works with MySQL (#87).</li>
+          <li>More cleanup of error messages, showing the original error message concatenated with the sql and bindings.</li>
+        </ul>
+      </p>
 
-    <p>
-      <b class="header">0.4.6</b> &mdash; <small><i>Sep 25, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.5...0.4.6">Diff</a><br />
-      Standardizing handling of errors for easier debugging, as noted in (#39).
-    </p>
+      <p>
+        <b class="header">0.4.8</b> &mdash; <small><i>Oct 2, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.7...0.4.8">Diff</a><br />
+        Connections are no longer pushed back into the pool if they never existed to begin with (#85).
+      </p>
 
-    <p>
-      <b class="header">0.4.5</b> &mdash; <small><i>Sep 24, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.4...0.4.5">Diff</a><br />
-      Fix for <tt>hasTable</tt> always returning true in MySQL (#82), fix where sql queries were duplicated with multiple calls on <tt>toSql</tt> with the
-      schema builder.
-    </p>
+      <p>
+        <b class="header">0.4.7</b> &mdash; <small><i>Sep 27, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.6...0.4.7">Diff</a><br />
+        The <a href="#Builder-column">column</a> is now a documented method on the builder api, and takes either an individual column or an array of columns to select.
+      </p>
 
-    <p>
-      <b class="header">0.4.4</b> &mdash; <small><i>Sep 22, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.3...0.4.4">Diff</a><br />
-      Fix for <tt>debug</tt> method not properly debugging individual queries.
-    </p>
+      <p>
+        <b class="header">0.4.6</b> &mdash; <small><i>Sep 25, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.5...0.4.6">Diff</a><br />
+        Standardizing handling of errors for easier debugging, as noted in (#39).
+      </p>
 
-    <p>
-      <b class="header">0.4.3</b> &mdash; <small><i>Sep 18, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.2...0.4.3">Diff</a><br />
-      Fix for underscore not being defined in various grammar files.
-    </p>
+      <p>
+        <b class="header">0.4.5</b> &mdash; <small><i>Sep 24, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.4...0.4.5">Diff</a><br />
+        Fix for <tt>hasTable</tt> always returning true in MySQL (#82), fix where sql queries were duplicated with multiple calls on <tt>toSql</tt> with the
+        schema builder.
+      </p>
 
-    <p>
-      <b class="header">0.4.2</b> &mdash; <small><i>Sep 17, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.1...0.4.2">Diff</a><br />
-      Fix for an error being thrown when an initialized <tt>ClientBase</tt> instance was passed into <tt>Knex.initialize</tt>. <tt>pool.destroy</tt> now optionally accepts a callback to notify when it has completed draining and destroying all connections.
-    </p>
+      <p>
+        <b class="header">0.4.4</b> &mdash; <small><i>Sep 22, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.3...0.4.4">Diff</a><br />
+        Fix for <tt>debug</tt> method not properly debugging individual queries.
+      </p>
 
-    <p>
-      <b class="header">0.4.1</b> &mdash; <small><i>Sep 16, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.0...0.4.1">Diff</a><br />
-      Cleanup from the 0.4.0 release, fix a potential exploit in "where" clauses pointed out by <a href="http://themoll.com">Andri Möll</a>, fix for clients
-      not being properly released from the pool #70, fix for <tt>where("foo", "<>", null)</tt> doing an "IS NULL" statement.
-    </p>
+      <p>
+        <b class="header">0.4.3</b> &mdash; <small><i>Sep 18, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.2...0.4.3">Diff</a><br />
+        Fix for underscore not being defined in various grammar files.
+      </p>
 
-    <p>
-      <b class="header">0.4.0</b> &mdash; <small><i>Sep 13, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.2.6...0.4.0">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.4.0/index.html">Docs</a><br />
-      <b>Breaking Changes:</b>
-      <ul>
-        <li>
-          Global state is no longer stored in the library, an instance is returned from <tt>Knex.initialize</tt>,
-          so you will need to call this once and then reference this <tt>knex</tt> client elsewhere in your application.
-        </li>
-        <li>
-          Lowercasing of <tt>knex.raw</tt>, <tt>knex.transaction</tt>, and <tt>knex.schema</tt>.
-        </li>
-        <li>
-          Created columns are now nullable by default, unless <tt>notNullable</tt> is chained as an option.
-        </li>
-        <li>
-          Keys created with <tt>increments</tt> are now assumed to be unsigned (MySQL) by default.
-        </li>
-        <li>
-          The <tt>destroyAllNow</tt> is no longer called by the library on <tt>process.exit</tt> event. If you need to call
-          it explicitly yourself, you may use <tt>knex.client.destroyPool</tt>
-        </li>
-      </ul>
-      Schema: Added <a href="#Schema-hasColumn">hasColumn</a>, <a href="#Schema-renameColumn">renameColumn</a>, <a href="#Schema-bigInteger">bigInteger</a>,
-      <a href="#Schema-specificType">specificType</a>.
-      General: Refactoring the library to support UMD and eventual use on the client. Added <a href="#Builder-options">options</a> method for adding additional
-      parameters specific to individual database libraries, #64.
-      Bugfixes: Case insensitive where operators (e.g.) <tt>LIKE, BETWEEN, NOT LIKE</tt> are now supported.
-    </p>
+      <p>
+        <b class="header">0.4.2</b> &mdash; <small><i>Sep 17, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.1...0.4.2">Diff</a><br />
+        Fix for an error being thrown when an initialized <tt>ClientBase</tt> instance was passed into <tt>Knex.initialize</tt>. <tt>pool.destroy</tt> now optionally accepts a callback to notify when it has completed draining and destroying all connections.
+      </p>
 
-    <p>
-      <b class="header">0.2.6</b> &mdash; <small><i>Aug 29, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.2.5...0.2.6">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.2.5/index.html">Docs</a><br />
-      Reject the transaction promise if the transaction "commit" fails, (#50).
-    </p>
+      <p>
+        <b class="header">0.4.1</b> &mdash; <small><i>Sep 16, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.4.0...0.4.1">Diff</a><br />
+        Cleanup from the 0.4.0 release, fix a potential exploit in "where" clauses pointed out by <a href="http://themoll.com">Andri Möll</a>, fix for clients
+        not being properly released from the pool #70, fix for <tt>where("foo", "<>", null)</tt> doing an "IS NULL" statement.
+      </p>
 
-    <p>
-      <b class="header">0.2.5</b> &mdash; <small><i>Aug 25, 2013</i></small><br />
-      Fix error if a callback isn't specified for <tt>exec</tt>, (#49).
-    </p>
+      <p>
+        <b class="header">0.4.0</b> &mdash; <small><i>Sep 13, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.2.6...0.4.0">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.4.0/index.html">Docs</a><br />
+        <b>Breaking Changes:</b>
+        <ul>
+          <li>
+            Global state is no longer stored in the library, an instance is returned from <tt>Knex.initialize</tt>,
+            so you will need to call this once and then reference this <tt>knex</tt> client elsewhere in your application.
+          </li>
+          <li>
+            Lowercasing of <tt>knex.raw</tt>, <tt>knex.transaction</tt>, and <tt>knex.schema</tt>.
+          </li>
+          <li>
+            Created columns are now nullable by default, unless <tt>notNullable</tt> is chained as an option.
+          </li>
+          <li>
+            Keys created with <tt>increments</tt> are now assumed to be unsigned (MySQL) by default.
+          </li>
+          <li>
+            The <tt>destroyAllNow</tt> is no longer called by the library on <tt>process.exit</tt> event. If you need to call
+            it explicitly yourself, you may use <tt>knex.client.destroyPool</tt>
+          </li>
+        </ul>
+        Schema: Added <a href="#Schema-hasColumn">hasColumn</a>, <a href="#Schema-renameColumn">renameColumn</a>, <a href="#Schema-bigInteger">bigInteger</a>,
+        <a href="#Schema-specificType">specificType</a>.
+        General: Refactoring the library to support UMD and eventual use on the client. Added <a href="#Builder-options">options</a> method for adding additional
+        parameters specific to individual database libraries, #64.
+        Bugfixes: Case insensitive where operators (e.g.) <tt>LIKE, BETWEEN, NOT LIKE</tt> are now supported.
+      </p>
 
-    <p>
-      <b class="header">0.2.4</b> &mdash; <small><i>Aug 22, 2013</i></small><br />
-      Fix SQLite3 delete not returning affected row count, (#45).
-    </p>
+      <p>
+        <b class="header">0.2.6</b> &mdash; <small><i>Aug 29, 2013</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.2.5...0.2.6">Diff</a> &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/tgriesser/knex/0.2.5/index.html">Docs</a><br />
+        Reject the transaction promise if the transaction "commit" fails, (#50).
+      </p>
 
-    <p>
-      <b class="header">0.2.3</b> &mdash; <small><i>Aug 22, 2013</i></small><br />
-      Fix insert with default values in PostgreSQL and SQLite3, (#44).
-    </p>
+      <p>
+        <b class="header">0.2.5</b> &mdash; <small><i>Aug 25, 2013</i></small><br />
+        Fix error if a callback isn't specified for <tt>exec</tt>, (#49).
+      </p>
 
-    <p>
-      <b class="header">0.2.2</b> &mdash; <small><i>Aug 20, 2013</i></small><br />
-      Allowing <tt>Raw</tt> queries to be passed as the primary table names.
-    </p>
+      <p>
+        <b class="header">0.2.4</b> &mdash; <small><i>Aug 22, 2013</i></small><br />
+        Fix SQLite3 delete not returning affected row count, (#45).
+      </p>
 
-    <p>
-      <b class="header">0.2.1</b> &mdash; <small><i>Aug 13, 2013</i></small><br />
-      Fix for an array passed to <tt>insert</tt> being mutated.
-    </p>
+      <p>
+        <b class="header">0.2.3</b> &mdash; <small><i>Aug 22, 2013</i></small><br />
+        Fix insert with default values in PostgreSQL and SQLite3, (#44).
+      </p>
 
-    <p>
-      <b class="header">0.2.0</b> &mdash; <small><i>Aug 7, 2013</i></small><br />
-      <b>Breaking changes:</b>
-      <ul>
-        <li>
-          <a href="#Schema-hasTable">hasTable</a> now returns a boolean rather than a failed promise.
-        </li>
-        <li>
-          Changed syntax for insert in postgresql, where the <tt>id</tt> is not assumed on inserts (#18).
-          The second parameter of <a href="#Builder-insert">insert</a> is now required to return an array of insert id's for the last insert.
-        </li>
-        <li>
-          The <a href="#Schema-timestamp">timestamp</a> method on the schema builder now uses a <tt>dateTime</tt> rather than a <tt>timestamp</tt>.
-        </li>
-      </ul>
-      Restored basic binding support on <tt>Raw</tt> queries (#19).
-      Added support for the JSON and UUID datatypes in postgres (#20).
-      Fix enabling enum in postgresql (#21).
-      Added foreign key support (#24).
-      Bugfix for column ordering on insert (#31).
-      Other minor bugfixes, documentation cleanup, &amp; tweaks.
-    </p>
+      <p>
+        <b class="header">0.2.2</b> &mdash; <small><i>Aug 20, 2013</i></small><br />
+        Allowing <tt>Raw</tt> queries to be passed as the primary table names.
+      </p>
 
-    <p>
-      <b class="header">0.1.8</b> &mdash; <small><i>July 7, 2013</i></small><br />
-      Somehow missing the <tt>!=</tt> operator. Using <tt>_.find</tt> rather than <tt>_.where</tt> in <tt>getCommandsByName</tt>(#22).
-    </p>
+      <p>
+        <b class="header">0.2.1</b> &mdash; <small><i>Aug 13, 2013</i></small><br />
+        Fix for an array passed to <tt>insert</tt> being mutated.
+      </p>
 
-    <p>
-      <b class="header">0.1.7</b> &mdash; <small><i>June 12, 2013</i></small><br />
-      Ensures unhandled errors in the <tt>exec</tt> callback interface are re-thrown.
-    </p>
+      <p>
+        <b class="header">0.2.0</b> &mdash; <small><i>Aug 7, 2013</i></small><br />
+        <b>Breaking changes:</b>
+        <ul>
+          <li>
+            <a href="#Schema-hasTable">hasTable</a> now returns a boolean rather than a failed promise.
+          </li>
+          <li>
+            Changed syntax for insert in postgresql, where the <tt>id</tt> is not assumed on inserts (#18).
+            The second parameter of <a href="#Builder-insert">insert</a> is now required to return an array of insert id's for the last insert.
+          </li>
+          <li>
+            The <a href="#Schema-timestamp">timestamp</a> method on the schema builder now uses a <tt>dateTime</tt> rather than a <tt>timestamp</tt>.
+          </li>
+        </ul>
+        Restored basic binding support on <tt>Raw</tt> queries (#19).
+        Added support for the JSON and UUID datatypes in postgres (#20).
+        Fix enabling enum in postgresql (#21).
+        Added foreign key support (#24).
+        Bugfix for column ordering on insert (#31).
+        Other minor bugfixes, documentation cleanup, &amp; tweaks.
+      </p>
 
-    <p>
-      <b class="header">0.1.6</b> &mdash; <small><i>June 9, 2013</i></small><br />
-      Renaming <tt>beforeCreate</tt> to <tt>afterCreate</tt>. Better handling of errors in the connection pooling.
-    </p>
+      <p>
+        <b class="header">0.1.8</b> &mdash; <small><i>July 7, 2013</i></small><br />
+        Somehow missing the <tt>!=</tt> operator. Using <tt>_.find</tt> rather than <tt>_.where</tt> in <tt>getCommandsByName</tt>(#22).
+      </p>
 
-    <p>
-      <b class="header">0.1.5</b> &mdash; <small><i>June 9, 2013</i></small><br />
-      Added the ability to specify <tt>beforeCreate</tt> and <tt>beforeDestroy</tt> hooks on the initialize's <tt>options.pool</tt>
-      to perform any necessary database setup/teardown on connections before use (#14). <tt>where</tt> and <tt>having</tt>
-      may now accept <tt>Knex.Raw</tt> instances, for consistency (#15). Added an <tt>orHaving</tt> method to the builder.
-      The ability to specify bindings on Raw queries has been removed.
-    </p>
+      <p>
+        <b class="header">0.1.7</b> &mdash; <small><i>June 12, 2013</i></small><br />
+        Ensures unhandled errors in the <tt>exec</tt> callback interface are re-thrown.
+      </p>
 
-    <p>
-      <b class="header">0.1.4</b> &mdash; <small><i>May 22, 2013</i></small><br />
-      <tt>defaultTo</tt> now accepts <tt>"false"</tt> for boolean columns, allows for empty strings as default values.
-    </p>
+      <p>
+        <b class="header">0.1.6</b> &mdash; <small><i>June 9, 2013</i></small><br />
+        Renaming <tt>beforeCreate</tt> to <tt>afterCreate</tt>. Better handling of errors in the connection pooling.
+      </p>
 
-    <p>
-      <b class="header">0.1.3</b> &mdash; <small><i>May 18, 2013</i></small><br />
-      Enabling table aliases (#11). Fix for issues with transactions not functioning (#12).
-    </p>
+      <p>
+        <b class="header">0.1.5</b> &mdash; <small><i>June 9, 2013</i></small><br />
+        Added the ability to specify <tt>beforeCreate</tt> and <tt>beforeDestroy</tt> hooks on the initialize's <tt>options.pool</tt>
+        to perform any necessary database setup/teardown on connections before use (#14). <tt>where</tt> and <tt>having</tt>
+        may now accept <tt>Knex.Raw</tt> instances, for consistency (#15). Added an <tt>orHaving</tt> method to the builder.
+        The ability to specify bindings on Raw queries has been removed.
+      </p>
 
-    <p>
-      <b class="header">0.1.2</b> &mdash; <small><i>May 15, 2013</i></small><br />
-      Bug fixes for <tt>groupBy</tt> (#7). Mysql using collation, charset config settings in <tt>createTable</tt>.
-      Added engine on <tt>schemaBuilder</tt> specifier (#6). Other doc fixes, tests.
-    </p>
+      <p>
+        <b class="header">0.1.4</b> &mdash; <small><i>May 22, 2013</i></small><br />
+        <tt>defaultTo</tt> now accepts <tt>"false"</tt> for boolean columns, allows for empty strings as default values.
+      </p>
 
-    <p>
-      <b class="header">0.1.1</b> &mdash; <small><i>May 14, 2013</i></small><br />
-      Bug fixes for sub-queries, minor changes to initializing "main" instance, adding "pg" as
-      a valid parameter for the client name in the connection settings.
-    </p>
+      <p>
+        <b class="header">0.1.3</b> &mdash; <small><i>May 18, 2013</i></small><br />
+        Enabling table aliases (#11). Fix for issues with transactions not functioning (#12).
+      </p>
 
-    <p>
-      <b class="header">0.1.0</b> &mdash; <small><i>May 13, 2013</i></small><br />
-      Initial Knex release.
-    </p>
+      <p>
+        <b class="header">0.1.2</b> &mdash; <small><i>May 15, 2013</i></small><br />
+        Bug fixes for <tt>groupBy</tt> (#7). Mysql using collation, charset config settings in <tt>createTable</tt>.
+        Added engine on <tt>schemaBuilder</tt> specifier (#6). Other doc fixes, tests.
+      </p>
+
+      <p>
+        <b class="header">0.1.1</b> &mdash; <small><i>May 14, 2013</i></small><br />
+        Bug fixes for sub-queries, minor changes to initializing "main" instance, adding "pg" as
+        a valid parameter for the client name in the connection settings.
+      </p>
+
+      <p>
+        <b class="header">0.1.0</b> &mdash; <small><i>May 13, 2013</i></small><br />
+        Initial Knex release.
+      </p>
+
+    </div>
 
   </div>
   <script src="docs/assets/ga.js"></script>
@@ -2535,7 +2541,6 @@ $ npm test
   var pg      = dialects.pg = Knex({client: 'pg'});
   var mysql   = dialects.mysql = Knex({client: 'mysql'});
   var sqlite3 = dialects.sqlite3 = Knex({client: 'sqlite3'});
-
 
   $(function() {
     var setDialect = function(dialect) {
@@ -2563,6 +2568,13 @@ $ npm test
     });
     $('.js-query-output').val(currentDialect);
     displayDialect(currentDialect);
+
+    // Don't show the full change log.
+    $(".js-change-log").on('click', function(e) {
+      e.preventDefault();
+      $(this).remove();
+      $('.change-log').show();
+    });
   });
   </script>
 </body>
