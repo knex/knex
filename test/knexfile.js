@@ -18,6 +18,16 @@ var migrations = {
 
 module.exports = {
 
+  maria: {
+    client: 'maria',
+    connection: testConfig.maria || {
+      db: "knex_test",
+      user: "root",
+      charset: 'utf8'
+    },
+    migrations: migrations
+  },
+
   mysql: {
     client: 'mysql',
     connection: testConfig.mysql || {

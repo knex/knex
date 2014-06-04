@@ -19,7 +19,8 @@
     "rimraf": "2.x",
     "sinon": "^1.10.0",
     "sinon-chai": "^2.5.0",
-    "sqlite3": "^2.2.3"
+    "sqlite3": "^2.2.3",
+    "mariasql": "~0.1.21"
   },
   "optionalDependencies": {
     "through": "^2.3.4",

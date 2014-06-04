@@ -28,6 +28,7 @@ module.exports = function(knex) {
     it('should allow raw queries directly with `knex.raw`', function() {
       var tables = {
         mysql: 'SHOW TABLES',
+        mariasql: 'SHOW TABLES',
         postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';"
       };

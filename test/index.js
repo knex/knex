@@ -17,6 +17,7 @@ Promise.longStackTraces();
 
 var knex = require('../knex');
 
+var maria    = knex({client: 'maria'});
 var mysql    = knex({client: 'mysql'});
 var sqlite3  = knex({client: 'sqlite3'});
 var postgres = knex({client: 'postgres'});
@@ -25,6 +26,7 @@ describe('Unit tests', function() {
   require('./unit/schema/postgresql')(postgres.client);
   require('./unit/schema/sqlite3')(sqlite3.client);
   require('./unit/schema/mysql')(mysql.client);
+  require('./unit/schema/mysql')(maria.client);
   require('./unit/query/builder')(postgres.client, mysql.client, sqlite3.client);
 });
 

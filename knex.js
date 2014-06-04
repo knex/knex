@@ -24,6 +24,7 @@ var Raw = require('./lib/raw');
 
 // Doing it this way makes it easier to build for browserify.
 var mysql = function() { return require('./lib/dialects/mysql'); };
+var maria = function() { return require('./lib/dialects/maria'); };
 var pg = function() { return require('./lib/dialects/postgres'); };
 var sqlite3 = function() { return require('./lib/dialects/sqlite3'); };
 var websql = function() { return require('./lib/dialects/websql'); };
@@ -31,6 +32,9 @@ var websql = function() { return require('./lib/dialects/websql'); };
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
   'mysql'      : mysql,
+  'maria'      : maria,
+  'mariadb'    : maria,
+  'mariasql'   : maria,
   'pg'         : pg,
   'postgres'   : pg,
   'postgresql' : pg,
