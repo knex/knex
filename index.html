@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.6.1)</span>
+      Knex.js <span class="version">(0.6.2)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -116,6 +116,7 @@
       <li>– <a href="#Builder-decrement">decrement</a></li>
       <li>– <a href="#Builder-truncate">truncate</a></li>
       <li>– <a href="#Builder-pluck">pluck</a></li>
+      <li>– <a href="#Builder-first">first</a></li>
       <li>– <a href="#Builder-columnInfo">columnInfo</a></li>
       <li>– <a href="#Builder-debug">debug</a></li>
       <li>– <a href="#Builder-connection">connection</a></li>
@@ -293,7 +294,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.6.1 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.6.2 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1188,6 +1189,20 @@ knex('accounts').truncate()
 });
 </code>
 </pre>
+
+    <p id="Builder-first">
+      <b class="header">first</b><code>.first([columns])</code>
+      <br />
+      Similar to select, but only retrieves &amp; resolves with the first record from the query.
+    </p>
+
+<pre>
+<code class="js">knex.table('users').first('id', 'name').then(function(row) {
+  console.log(row);
+});
+</code>
+</pre>
+
 
     <p id="Builder-columnInfo">
       <b class="header">columnInfo</b><code>.columnInfo([columnName])</code>
@@ -2148,6 +2163,15 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.6.2</b> &mdash; <small><i>June 4, 2014</i></small><br />
+      <ul>
+        <li>Fix regression in raw query output, (#297).</li>
+        <li>Fix regression in "pluck" method (#296).</li>
+        <li>Document <a href="#Builder-first">first</a> method.</li>
+      </ul>
+    </p>
 
     <p>
       <b class="header">0.6.1</b> &mdash; <small><i>June 4, 2014</i></small><br />

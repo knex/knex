@@ -10,6 +10,55 @@ module.exports = function(knex) {
 
     });
 
+    it('returns an array of a single column with `pluck`', function() {
+      return knex.pluck('id').from('accounts')
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'select `id` from `accounts`',
+            [],
+            [1, 2, 3, 4, 5, 7]
+          );
+          tester(
+            'postgresql',
+            'select "id" from "accounts"',
+            [],
+            ['1', '2', '3', '4', '5', '7']
+          );
+          tester(
+            'sqlite3',
+            'select "id" from "accounts"',
+            [],
+            [1, 2, 3, 4, 5, 6]
+          );
+        });
+    });
+
+    it('returns a single entry with first', function() {
+      return knex.first('id', 'first_name').from('accounts')
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'select `id`, `first_name` from `accounts` limit ?',
+            [1],
+            { id: 1, first_name: 'Test' }
+          );
+          tester(
+            'postgresql',
+            'select "id", "first_name" from "accounts" limit ?',
+            [1],
+            { id: '1', first_name: 'Test' }
+          );
+          tester(
+            'sqlite3',
+            'select "id", "first_name" from "accounts" limit ?',
+            [1],
+            { id: 1, first_name: 'Test' }
+          );
+        });
+    });
+
+
     it('allows you to stream', function() {
       var count = 0;
       return knex('accounts').stream(function(rowStream) {

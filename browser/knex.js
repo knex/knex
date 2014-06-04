@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.1
+// Knex.js  0.6.2
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -79,7 +79,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.1';
+  knex.VERSION = knex.__knex__  = '0.6.2';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -733,19 +733,22 @@ Runner_MySQL.prototype.processResponse = function(obj) {
   var method   = obj.method;
   var rows     = response[0];
   var fields   = response[1];
-  var resp;
-  if (obj.output) {
-    return obj.output.call(this, rows, fields);
-  } else if (method === 'select') {
-    resp = helpers.skim(rows);
-  } else if (method === 'insert') {
-    resp = [rows.insertId];
-  } else if (method === 'del' || method === 'update') {
-    resp = rows.affectedRows;
-  } else {
-    resp = response;
+  if (obj.output) return obj.output.call(this, rows, fields);
+  switch (method) {
+    case 'select':
+    case 'pluck':
+    case 'first':
+      var resp = helpers.skim(rows);
+      if (method === 'pluck') return _.pluck(resp, obj.pluck);
+      return method === 'first' ? resp[0] : resp;
+    case 'insert':
+      return [rows.insertId];
+    case 'del':
+    case 'update':
+      return rows.affectedRows;
+    default:
+      return response;
   }
-  return resp;
 };
 
 // Assign the newly extended `Runner` constructor to the client object.
@@ -1615,10 +1618,15 @@ Runner_PG.prototype._query = Promise.method(function(obj) {
 
 // Ensures the response is returned in the same format as other clients.
 Runner_PG.prototype.processResponse = function(obj) {
-  if (obj.output) return obj.output.call(this, obj.response);
   var resp = obj.response;
+  if (obj.output) return obj.output.call(this, resp);
+  if (obj.method === 'raw') return resp;
   var returning = obj.returning;
-  if (resp.command === 'SELECT') return resp.rows;
+  if (resp.command === 'SELECT') {
+    if (obj.method === 'first') return resp.rows[0];
+    if (obj.method === 'pluck') return _.pluck(resp.rows, obj.pluck);
+    return resp.rows;
+  }
   if (returning) {
     var returns = [];
     for (var i = 0, l = resp.rows.length; i < l; i++) {
@@ -2315,6 +2323,7 @@ client.Raw = Raw_SQLite3;
 // -------
 module.exports = function(client) {
 
+var _        = _dereq_('lodash');
 var Promise  = _dereq_('../../promise');
 var Runner   = _dereq_('../../runner');
 var helpers  = _dereq_('../../helpers');
@@ -2374,21 +2383,28 @@ Runner_SQLite3.prototype.processResponse = function(obj) {
   var ctx      = obj.context;
   var response = obj.response;
   if (obj.output) return obj.output.call(this, response);
-  if (obj.method === 'select') {
-    response = helpers.skim(response);
-  } else if (obj.method === 'insert') {
-    response = [ctx.lastID];
-  } else if (obj.method === 'del' || obj.method === 'update') {
-    response = ctx.changes;
+  switch (obj.method) {
+    case 'select':
+    case 'pluck':
+    case 'first':
+      response = helpers.skim(response);
+      if (obj.method === 'pluck') response = _.pluck(response, obj.pluck);
+      return obj.method === 'first' ? response[0] : response;
+    case 'insert':
+      return [ctx.lastID];
+    case 'del':
+    case 'update':
+      return ctx.changes;
+    default:
+      return response;
   }
-  return response;
 };
 
 // Assign the newly extended `Runner` constructor to the client object.
 client.Runner = Runner_SQLite3;
 
 };
-},{"../../helpers":47,"../../promise":51,"../../runner":57,"inherits":72}],38:[function(_dereq_,module,exports){
+},{"../../helpers":47,"../../promise":51,"../../runner":57,"inherits":72,"lodash":"K2RcUv"}],38:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -2881,18 +2897,25 @@ Runner_WebSQL.prototype._query = Promise.method(function(obj) {
 // Ensures the response is returned in the same format as other clients.
 Runner_WebSQL.prototype.processResponse = function(obj) {
   var resp = obj.response;
-  if (obj.method === 'select') {
-    var results = [];
-    for (var i = 0, l = resp.rows.length; i < l; i++) {
-      results[i] = _.clone(resp.rows.item(i));
-    }
-    return results;
-  } else if (obj.method === 'insert') {
-    resp = [resp.insertId];
-  } else if (obj.method === 'delete' || obj.method === 'update') {
-    resp = resp.rowsAffected;
+  if (obj.output) return obj.output.call(this, response);
+  switch (obj.method) {
+    case 'pluck':
+    case 'first':
+    case 'select':
+      var results = [];
+      for (var i = 0, l = resp.rows.length; i < l; i++) {
+        results[i] = _.clone(resp.rows.item(i));
+      }
+      if (obj.method === 'pluck') results = _.pluck(results, obj.pluck);
+      return obj.method === 'first' ? results[0] : results;
+    case 'insert':
+      return [resp.insertId];
+    case 'delete':
+    case 'update':
+      return resp.rowsAffected;
+    default:
+      return resp;
   }
-  return resp;
 };
 
 // Assign the newly extended `Runner` constructor to the client object.
@@ -3768,8 +3791,9 @@ QueryBuilder.prototype.first = function() {
 // Pluck a column from a query.
 QueryBuilder.prototype.pluck = function(column) {
   this._method = 'pluck';
+  this._single.pluck = column;
   this._statements.push({
-    grouping: 'column',
+    grouping: 'columns',
     type: 'pluck',
     value: column
   });
@@ -3956,7 +3980,12 @@ QueryCompiler.prototype.select = function() {
   return _.compact(statements).join(' ');
 };
 QueryCompiler.prototype.first = QueryCompiler.prototype.select;
-QueryCompiler.prototype.pluck = QueryCompiler.prototype.select;
+QueryCompiler.prototype.pluck = function() {
+  return {
+    sql: this.select(),
+    pluck: this.single.pluck
+  };
+};
 
 // Compiles an "insert" query, allowing for multiple
 // inserts using a single query statement.
@@ -4385,6 +4414,7 @@ module.exports = [
   'increment',
   'decrement',
   'first',
+  'debug',
   'pluck',
   'insert',
   'update',
