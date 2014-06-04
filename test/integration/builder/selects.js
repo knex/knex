@@ -365,6 +365,14 @@ module.exports = function(knex) {
       expect(raw2.toSQL().bindings).to.eql([1, 2, ['a', 'b', 'c']]);
     });
 
+    it('always returns the response object from raw', function() {
+      if (knex.client.dialect === 'postgresql') {
+        return knex.raw('select id from accounts').then(function(resp) {
+          assert(Array.isArray(resp.rows) === true);
+        });
+      }
+    });
+
   });
 
 };
