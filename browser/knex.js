@@ -180,6 +180,7 @@ Knex.initialize = function(config) {
 };
 
 module.exports = Knex;
+
 },{"./lib/dialects/maria":3,"./lib/dialects/mysql":6,"./lib/dialects/postgres":19,"./lib/dialects/sqlite3":32,"./lib/dialects/websql":44,"./lib/migrate/methods":49,"./lib/query/methods":55,"./lib/raw":56,"./lib/schema/methods":63,"./lib/utils":67,"events":71,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
 // "Base Client"
 // ------
@@ -314,24 +315,12 @@ Runner_MariaSQL.prototype._stream = Promise.method(function(sql, stream, options
     runner.connection.query(sql.sql, sql.bindings)
       .on('result', function(result) {
         result
-          .on('row', function(row) { stream.write(row); })
+          .on('row', rowHandler(function(row) { stream.write(row); }))
           .on('end', function(data) { resolver(data); });
       })
       .on('error', function(err) { rejecter(err); });
   });
 });
-
-Runner_MariaSQL.prototype.parseType = function(value, type) {
-  switch (type) {
-    case 'DATETIME':
-    case 'TIMESTAMP':
-      return new Date(value);
-    case 'INTEGER':
-      return parseInt(value, 10);
-    default:
-      return value;
-  }
-};
 
 // Runs the query on the specified connection, providing the bindings
 // and any other necessary prep work.
@@ -341,20 +330,11 @@ Runner_MariaSQL.prototype._query = Promise.method(function(obj) {
   var connection = this.connection;
   var tz = this.client.connectionSettings.timezone || 'local';
   if (!sql) throw new Error('The query is empty');
-  var runner = this;
   return new Promise(function(resolver, rejecter) {
-    var types, rows = [];
+    var rows = [];
     var query = connection.query(SqlString.format(sql, obj.bindings, false, tz), []);
     query.on('result', function(result) {
-      result.on('row', function(row, meta) {
-        if (!types) types = meta.types;
-        var keys = Object.keys(types);
-        for (var i = 0, l = keys.length; i < l; i++) {
-          var type = keys[i];
-          row[type] = runner.parseType(row[type], types[type]);
-        }
-        rows.push(row);
-      })
+      result.on('row', rowHandler(function(row) { rows.push(row); }))
       .on('end', function(data) {
         obj.response = [rows, data];
         resolver(obj);
@@ -385,6 +365,31 @@ Runner_MariaSQL.prototype.processResponse = function(obj) {
   }
   return resp;
 };
+
+function parseType(value, type) {
+  switch (type) {
+    case 'DATETIME':
+    case 'TIMESTAMP':
+      return new Date(value);
+    case 'INTEGER':
+      return parseInt(value, 10);
+    default:
+      return value;
+  }
+}
+
+function rowHandler(callback) {
+  var types;
+  return function(row, meta) {
+    if (!types) types = meta.types;
+    var keys = Object.keys(types);
+    for (var i = 0, l = keys.length; i < l; i++) {
+      var type = keys[i];
+      row[type] = parseType(row[type], types[type]);
+    }
+    callback(row);
+  };
+}
 
 // Assign the newly extended `Runner` constructor to the client object.
 client.Runner = Runner_MariaSQL;
@@ -1018,13 +1023,15 @@ TableCompiler_MySQL.prototype.unique = function(columns, indexName) {
 };
 
 // Compile a drop index command.
-TableCompiler_MySQL.prototype.dropIndex = function(key) {
-  this.pushQuery('alter table ' + this.tableName() + ' drop index ' + key);
+TableCompiler_MySQL.prototype.dropIndex = function(columns, indexName) {
+  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  this.pushQuery('alter table ' + this.tableName() + ' drop index ' + indexName);
 };
 
 // Compile a drop foreign key command.
-TableCompiler_MySQL.prototype.dropForeign = function(key) {
-  this.pushQuery('alter table ' + this.tableName() + ' drop foreign key ' + key);
+TableCompiler_MySQL.prototype.dropForeign = function(columns, indexName) {
+  indexName = indexName || this._indexCommand('foreign', this.tableNameRaw, columns);
+  this.pushQuery('alter table ' + this.tableName() + ' drop foreign key ' + indexName);
 };
 
 // Compile a drop primary key command.
@@ -1033,8 +1040,9 @@ TableCompiler_MySQL.prototype.dropPrimary = function() {
 };
 
 // Compile a drop unique key command.
-TableCompiler_MySQL.prototype.dropUnique = function(key) {
-  this.pushQuery('alter table ' + this.tableName() + ' drop index ' + key);
+TableCompiler_MySQL.prototype.dropUnique = function(column, indexName) {
+  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, column);
+  this.pushQuery('alter table ' + this.tableName() + ' drop index ' + indexName);
 };
 
 // Compile a foreign key command.
@@ -1841,14 +1849,17 @@ TableCompiler_PG.prototype.index = function(columns, indexName) {
 TableCompiler_PG.prototype.dropPrimary = function() {
   this.pushQuery('alter table ' + this.tableName() + " drop constraint " + this.tableNameRaw + "_pkey");
 };
-TableCompiler_PG.prototype.dropIndex = function(index) {
-  this.pushQuery('drop index ' + index);
+TableCompiler_PG.prototype.dropIndex = function(columns, indexName) {
+  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  this.pushQuery('drop index ' + indexName);
 };
-TableCompiler_PG.prototype.dropUnique = function(index) {
-  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + index);
+TableCompiler_PG.prototype.dropUnique = function(columns, indexName) {
+  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
 };
-TableCompiler_PG.prototype.dropForeign = function(index) {
-  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + index);
+TableCompiler_PG.prototype.dropForeign = function(columns, indexName) {
+  indexName = indexName || this._indexCommand('foreign', this.tableNameRaw, columns);
+  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
 };
 
 client.TableBuilder = TableBuilder_PG;
@@ -2681,12 +2692,14 @@ TableCompiler_SQLite3.prototype.addColumns = function(columns) {
 };
 
 // Compile a drop unique key command.
-TableCompiler_SQLite3.prototype.dropUnique = function(value) {
-  this.pushQuery('drop index ' + value);
+TableCompiler_SQLite3.prototype.dropUnique = function(columns, indexName) {
+  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  this.pushQuery('drop index ' + indexName);
 };
 
-TableCompiler_SQLite3.prototype.dropIndex = function(index) {
-  this.pushQuery('drop index ' + index);
+TableCompiler_SQLite3.prototype.dropIndex = function(columns, indexName) {
+  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  this.pushQuery('drop index ' + indexName);
 };
 
 // Compile a unique key command.

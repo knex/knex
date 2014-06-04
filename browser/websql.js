@@ -180,6 +180,7 @@ Knex.initialize = function(config) {
 };
 
 module.exports = Knex;
+
 },{"./lib/dialects/websql":17,"./lib/migrate/methods":22,"./lib/query/methods":28,"./lib/raw":29,"./lib/schema/methods":36,"./lib/utils":40,"events":44,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
 // "Base Client"
 // ------
@@ -1085,12 +1086,14 @@ TableCompiler_SQLite3.prototype.addColumns = function(columns) {
 };
 
 // Compile a drop unique key command.
-TableCompiler_SQLite3.prototype.dropUnique = function(value) {
-  this.pushQuery('drop index ' + value);
+TableCompiler_SQLite3.prototype.dropUnique = function(columns, indexName) {
+  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  this.pushQuery('drop index ' + indexName);
 };
 
-TableCompiler_SQLite3.prototype.dropIndex = function(index) {
-  this.pushQuery('drop index ' + index);
+TableCompiler_SQLite3.prototype.dropIndex = function(columns, indexName) {
+  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  this.pushQuery('drop index ' + indexName);
 };
 
 // Compile a unique key command.
