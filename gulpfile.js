@@ -8,20 +8,22 @@ var Promise    = require('bluebird');
 var fs         = Promise.promisifyAll(require('fs'));
 
 var excluded = {
-  sqlite3: ['sqlite3'],
-  mysql:   ['mysql'],
-  pg:      ['pg', 'pg.js', 'pg-query-stream'],
-  websql:  ['sqlite3']
+  mariasql: ['mariasql'],
+  sqlite3:  ['sqlite3'],
+  mysql:    ['mysql'],
+  pg:       ['pg', 'pg.js', 'pg-query-stream'],
+  websql:   ['sqlite3']
 };
 
 var bases = {
-  mysql:   './lib/dialects/mysql',
-  pg:      './lib/dialects/postgres',
-  sqlite3: './lib/dialects/sqlite3',
-  websql:  './lib/dialects/websql'
+  mariasql: './lib/dialects/maria',
+  mysql:    './lib/dialects/mysql',
+  pg:       './lib/dialects/postgres',
+  sqlite3:  './lib/dialects/sqlite3',
+  websql:   './lib/dialects/websql'
 };
 
-var all            = ['mysql', 'pg', 'sqlite3', 'websql'];
+var all            = ['mysql', 'mariasql', 'pg', 'sqlite3', 'websql'];
 var externals      = ['lodash', 'bluebird'];
 var alwaysExcluded = ['generic-pool-redux', 'readable-stream', './lib/migrate/index.js'];
 

@@ -259,7 +259,7 @@
     </p>
 
     <p>
-      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MySQL / MariaDB</b> and <b>SQLite3</b>, designed to be flexible,
+      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MySQL</b>, <b>MariaDB</b> and <b>SQLite3</b>, designed to be flexible,
       portable, and fun to use. It features both traditional node style <a href="#Interfaces-Callbacks">callbacks</a>
       as well as a <a href="#Interfaces-Promises">promise</a> interface for cleaner async flow control, <a href="#Interfaces-Streams">a stream interface</a>, full featured <a href="#Builder">query</a> and <a href="#Schema">schema</a> builders, <a href="#Transaction-overview"><b>transaction support</b></a>, connection <a href="#Installation-pooling">pooling</a> and standardized responses between
       different query clients and dialects.
@@ -339,6 +339,7 @@ $ npm install knex@0.6.0 --save
 
 # Then add one of the following (adding a --save) flag:
 $ npm install mysql
+$ npm install mariasql
 $ npm install pg
 $ npm install sqlite3
 </pre>

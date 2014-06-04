@@ -333,7 +333,7 @@ module.exports = function(client) {
         table.dateTime('foo');
       }).toSQL();
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamp');
+      expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamptz');
     });
 
     it("adding time", function() {
@@ -349,7 +349,7 @@ module.exports = function(client) {
         table.timestamp('foo');
       }).toSQL();
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamp');
+      expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamptz');
     });
 
     it("adding timestamps", function() {
@@ -357,7 +357,7 @@ module.exports = function(client) {
         table.timestamps();
       }).toSQL();
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamp, add column "updated_at" timestamp');
+      expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz, add column "updated_at" timestamptz');
     });
 
     it("adding binary", function() {

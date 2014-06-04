@@ -25,6 +25,7 @@ var Raw = _dereq_('./lib/raw');
 
 // Doing it this way makes it easier to build for browserify.
 var mysql = function() { return _dereq_('./lib/dialects/mysql'); };
+var maria = function() { return _dereq_('./lib/dialects/maria'); };
 var pg = function() { return _dereq_('./lib/dialects/postgres'); };
 var sqlite3 = function() { return _dereq_('./lib/dialects/sqlite3'); };
 var websql = function() { return _dereq_('./lib/dialects/websql'); };
@@ -32,6 +33,9 @@ var websql = function() { return _dereq_('./lib/dialects/websql'); };
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
   'mysql'      : mysql,
+  'maria'      : maria,
+  'mariadb'    : maria,
+  'mariasql'   : maria,
   'pg'         : pg,
   'postgres'   : pg,
   'postgresql' : pg,
@@ -653,11 +657,12 @@ QueryCompiler_SQLite3.prototype.truncate = function() {
 
 // Compiles a `columnInfo` query
 QueryCompiler_SQLite3.prototype.columnInfo = function() {
+  var column = this.single.columnInfo;
   return {
     sql: 'PRAGMA table_info(' + this.single.table +')',
     output: function(resp) {
       var maxLengthRegex = /.*\((\d+)\)/;
-      return _.reduce(resp, function (columns, val) {
+      var out = _.reduce(resp, function (columns, val) {
         var type = val.type;
         var maxLength = (maxLength = type.match(maxLengthRegex)) && maxLength[1];
         type = maxLength ? type.split('(')[0] : type;
@@ -669,6 +674,7 @@ QueryCompiler_SQLite3.prototype.columnInfo = function() {
         };
         return columns;
       }, {});
+      return column && out[column] || out;
     }
   };
 };
@@ -1526,6 +1532,12 @@ Target.prototype.stream = function(options) {
   return new Runner(this).stream(options);
 };
 
+// Initialize a stream & pipe automatically.
+Target.prototype.pipe = function(writable) {
+  var Runner = this.client.Runner;
+  return new Runner(this).pipe(writable);
+};
+
 // Creates a method which "coerces" to a promise, by calling a
 // "then" method on the current `Target`
 _.each(['bind', 'catch', 'spread', 'otherwise', 'tap', 'thenReturn',
@@ -2213,8 +2225,9 @@ QueryBuilder.prototype.truncate = function() {
 };
 
 // Retrieves columns for the table specified by `knex(tableName)`
-QueryBuilder.prototype.columnInfo = function() {
+QueryBuilder.prototype.columnInfo = function(column) {
   this._method = 'columnInfo';
+  this._single.columnInfo = column;
   return this;
 };
 
@@ -3183,10 +3196,10 @@ function ColumnCompiler(tableCompiler, columnBuilder) {
   this.tableCompiler = tableCompiler;
   this.columnBuilder = columnBuilder;
   this.args = columnBuilder._args;
-  this.type = columnBuilder._type;
+  this.type = columnBuilder._type.toLowerCase();
   this.grouped = _.groupBy(columnBuilder._statements, 'grouping');
   this.modified = columnBuilder._modifiers;
-  this.isIncrements = (this.type.toLowerCase().indexOf('increments') !== -1);
+  this.isIncrements = (this.type.indexOf('increments') !== -1);
   this.initCompiler();
 }
 
@@ -3218,7 +3231,7 @@ ColumnCompiler.prototype.getColumnName = function() {
 };
 
 ColumnCompiler.prototype.getColumnType = function() {
-  var type = this[this.type.toLowerCase()];
+  var type = this[this.type];
   return _.isFunction(type) ? type.apply(this, _.rest(this.args)) : type;
 };
 
@@ -3263,8 +3276,10 @@ ColumnCompiler.prototype.datetime = 'datetime';
 ColumnCompiler.prototype.time = 'time';
 ColumnCompiler.prototype.timestamp = 'timestamp';
 ColumnCompiler.prototype.enu = 'varchar';
+
 ColumnCompiler.prototype.bit =
 ColumnCompiler.prototype.json = 'text';
+
 ColumnCompiler.prototype.uuid = 'char(36)';
 ColumnCompiler.prototype.specificType = function(type) {
   return type;
@@ -3284,11 +3299,13 @@ ColumnCompiler.prototype.defaultTo = function(value) {
     return '';
   } else if (value instanceof Raw) {
     value = value.toQuery();
-  } else if (this.method === 'bool') {
+  } else if (this.type === 'bool') {
     if (value === 'false') value = 0;
     value = (value ? 1 : 0);
   } else if (value === true || value === false) {
     value = parseInt(value, 10);
+  } else if (this.type === 'json' && _.isObject(value)) {
+    return JSON.stringify(value);
   } else {
     value = "'" + value + "'";
   }
