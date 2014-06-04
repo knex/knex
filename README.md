@@ -43,12 +43,12 @@ knex.schema.createTable('users', function(table) {
 
 // Then query the table...
 .then(function() {
-  return knex.insert({name: 'Tim'}).into('users');
+  return knex.insert({user_name: 'Tim'}).into('users');
 })
 
 // ...and using the insert id, insert into the other table.
 .then(function(rows) {
-  return knex.table('users').insert({account_name: 'knex', user_id: knex.rows[0]});
+  return knex.table('accounts').insert({account_name: 'knex', user_id: knex.rows[0]});
 });
 
 // Query both of the rows.
