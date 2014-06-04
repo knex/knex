@@ -1237,7 +1237,8 @@ knex('accounts').truncate()
   .select(['a1.email', 'a2.email'])
   .where(knex.raw('a1.id = 1'))
   .option({ nestTables: true, rowMode: 'array' })
-  .limit(2);
+  .limit(2)
+  .then(...
 </code>
 </pre>
 
@@ -1521,9 +1522,10 @@ knex.schema.table('users', function (table) {
     </p>
 
     <p id="Schema-timestamp">
-      <b class="header">timestamp</b><code>table.timestamp(name)</code>
+      <b class="header">timestamp</b><code>table.timestamp(name, [standard])</code>
       <br />
-      Adds a timestamp column.
+      Adds a timestamp column, defaults to <tt>timestamptz</tt> in PostgreSQL, unless true
+      is passed as the second argument.
     </p>
 
     <p id="Schema-timestamps">
@@ -2148,11 +2150,12 @@ $ npm test
     <h2 id="changelog">Change Log</h2>
 
     <p id="release-0.6.0">
-      <b class="header">0.6.0</b> &mdash; <small><i>June 3, 2014</i></small><br />
+      <b class="header">0.6.0</b> &mdash; <small><i>June 4, 2014</i></small><br />
       Major Library refactor. Notable changes &amp; fixes include:
 
       <ul>
         <li>Major internal overhaul to clean up the various dialect code.</li>
+        <li>Support for the <a href="https://github.com/mscdex/node-mariasql">mariasql</a> driver.</li>
         <li>More consistent use of raw query bindings throughout the library.</li>
         <li>Queries are more composable, may be injected in various points throughout the builder.</li>
         <li>Added <a href="#Interfaces-Streams">streaming</a> interface</li>
@@ -2499,9 +2502,8 @@ $ npm test
   var mysql   = dialects.mysql = Knex({client: 'mysql'});
   var sqlite3 = dialects.sqlite3 = Knex({client: 'sqlite3'});
 
-  $(function() {
 
-    // Get the current dialect.
+  $(function() {
     var setDialect = function(dialect) {
       $.cookie('dialect', dialect, { expires: 7, path: '/' });
       return dialect;
@@ -2522,7 +2524,6 @@ $ npm test
       });
     };
     var currentDialect = $.cookie('dialect') || setDialect('mysql');
-
     $('.js-query-output').on('change', function(e) {
       displayDialect(setDialect(e.target.value));
     });
