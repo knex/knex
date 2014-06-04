@@ -6,11 +6,11 @@ A batteries-included, multi-dialect (MySQL, PostgreSQL, SQLite3, WebSQL) query b
 Node.js and the Browser, featuring:
 
 - [transactions](http://knexjs.org/#Transactions)
-- [connection pooling](http://knexjs.org/#Initialize-pool)
-- [streaming queries](http://knexjs.org/#Interface-streams)
-- both a [promise](http://knexjs.org/#Interface-promises) and [callback](http://knexjs.org/#Interface-callback) API
+- [connection pooling](http://knexjs.org/#Installation-pooling)
+- [streaming queries](http://knexjs.org/#Interfaces-Streams)
+- both a [promise](http://knexjs.org/#Interfaces-Promises) and [callback](http://knexjs.org/#Interfaces-Callbacks) API
 - a [thorough test suite](https://travis-ci.org/tgriesser/knex)
-- the ability to [run in the Browser](http://knexjs.org/#faq-browser)
+- the ability to [run in the Browser](http://knexjs.org/#Installation-browser)
 
 [Read the full documentation to get started!](http://knexjs.org)
 
