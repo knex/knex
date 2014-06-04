@@ -77,6 +77,14 @@ module.exports = function(client) {
         table.dropUnique('foo');
       }).toSQL();
       equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table "users" drop constraint users_foo_unique');
+    });
+
+    it("drop unique, custom", function() {
+      tableSql = new SchemaBuilder().table('users', function(table) {
+        table.dropUnique(null, 'foo');
+      }).toSQL();
+      equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" drop constraint foo');
     });
 
@@ -85,12 +93,28 @@ module.exports = function(client) {
         table.dropIndex('foo');
       }).toSQL();
       equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop index users_foo_index');
+    });
+
+    it("drop index, custom", function() {
+      tableSql = new SchemaBuilder().table('users', function(table) {
+        table.dropIndex(null, 'foo');
+      }).toSQL();
+      equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('drop index foo');
     });
 
     it("drop foreign", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropForeign('foo');
+      }).toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table "users" drop constraint users_foo_foreign');
+    });
+
+    it("drop foreign", function() {
+      tableSql = new SchemaBuilder().table('users', function(table) {
+        table.dropForeign(null, 'foo');
       }).toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table "users" drop constraint foo');

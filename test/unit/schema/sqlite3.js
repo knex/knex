@@ -53,12 +53,30 @@ module.exports = function(client) {
       }).toSQL();
 
       equal(1, tableSql.length);
+      equal(tableSql[0].sql, 'drop index users_foo_unique');
+    });
+
+    it("drop unique, custom", function() {
+      tableSql = new SchemaBuilder().table('users', function(table) {
+        table.dropUnique(null, 'foo');
+      }).toSQL();
+
+      equal(1, tableSql.length);
       equal(tableSql[0].sql, 'drop index foo');
     });
 
     it("drop index", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.dropIndex('foo');
+      }).toSQL();
+
+      equal(1, tableSql.length);
+      equal(tableSql[0].sql, 'drop index users_foo_index');
+    });
+
+    it("drop index, custom", function() {
+      tableSql = new SchemaBuilder().table('users', function(table) {
+        table.dropIndex(null, 'foo');
       }).toSQL();
 
       equal(1, tableSql.length);

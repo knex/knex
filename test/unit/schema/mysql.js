@@ -4,20 +4,13 @@ module.exports = function(client) {
 
   client.initSchema();
 
-  var SchemaBuilder = client.SchemaBuilder;
-  var _ = require('lodash');
-  var equal = require('assert').equal;
-  var deepEqual = require('assert').deepEqual;
-
   describe("MySQL SchemaBuilder", function() {
 
     client.initSchema();
 
     var tableSql;
     var SchemaBuilder = client.SchemaBuilder;
-    var _ = require('lodash');
     var equal = require('assert').equal;
-    var deepEqual = require('assert').deepEqual;
 
     it('test basic create table with charset and collate', function() {
       tableSql = new SchemaBuilder().createTable('users', function(table) {
@@ -98,6 +91,15 @@ module.exports = function(client) {
       }).toSQL();
 
       equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table `users` drop index users_foo_unique');
+    });
+
+    it('test drop unique, custom', function() {
+      tableSql = new SchemaBuilder().table('users', function() {
+        this.dropUnique(null, 'foo');
+      }).toSQL();
+
+      equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table `users` drop index foo');
     });
 
@@ -107,12 +109,30 @@ module.exports = function(client) {
       }).toSQL();
 
       equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table `users` drop index users_foo_index');
+    });
+
+    it('test drop index, custom', function() {
+      tableSql = new SchemaBuilder().table('users', function() {
+        this.dropIndex(null, 'foo');
+      }).toSQL();
+
+      equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table `users` drop index foo');
     });
 
     it('test drop foreign', function() {
       tableSql = new SchemaBuilder().table('users', function() {
         this.dropForeign('foo');
+      }).toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table `users` drop foreign key users_foo_foreign');
+    });
+
+    it('test drop foreign, custom', function() {
+      tableSql = new SchemaBuilder().table('users', function() {
+        this.dropForeign(null, 'foo');
       }).toSQL();
 
       equal(1, tableSql.length);
@@ -403,6 +423,15 @@ module.exports = function(client) {
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)');
+    });
+
+    it('allows dropping a unique compound index', function() {
+      tableSql = new SchemaBuilder().table('composite_key_test', function(t) {
+        t.dropUnique(['column_a', 'column_b']);
+      }).toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table `composite_key_test` drop index composite_key_test_column_a_column_b_unique');
     });
 
   });

@@ -177,6 +177,17 @@ module.exports = function(knex) {
         });
       });
 
+      it('allows dropping a unique index', function() {
+        return knex.schema.table('composite_key_test', function(t) {
+          t.dropUnique(['column_a', 'column_b']);
+        });
+      });
+
+      it('allows dropping a index', function() {
+        return knex.schema.table('test_table_one', function(t) {
+          t.dropIndex('first_name');
+        });
+      });
     });
 
 
