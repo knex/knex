@@ -154,6 +154,8 @@ Knex.initialize = function(config) {
       if (!client.SchemaBuilder) client.initSchema();
       var builder = new client.SchemaBuilder();
 
+      if (config.__transactor__) builder.transacting(config.__transactor__);
+
       // Passthrough all "query" events to the knex object.
       builder.on('query', function(data) {
         knex.emit('query', data);
@@ -3332,7 +3334,8 @@ QueryBuilder.prototype.select =
 // Adds a column or columns to the list of "columns"
 // being selected on the query.
 QueryBuilder.prototype.columns =
-QueryBuilder.prototype.column = function() {
+QueryBuilder.prototype.column = function(column) {
+  if (column == null) return this;
   this._statements.push({
     grouping: 'columns',
     value: helpers.normalizeArr.apply(null, arguments)
@@ -4645,12 +4648,13 @@ Runner.prototype.finishTransaction = Promise.method(function(action, containerOb
   }
 
   return query.then(function(resp) {
+    msg = (msg === void 0) ? resp : msg;
     switch (action) {
       case 0:
-        dfd.fulfill(msg || resp);
+        dfd.fulfill(msg);
         break;
       case 1:
-        dfd.reject(msg || resp);
+        dfd.reject(msg);
         break;
     }
 
@@ -5512,7 +5516,7 @@ Transaction.prototype.initiateDeferred = function(transactor) {
   // and it's got the transaction object we're running for this, assume
   // the rollback and commit are chained to this object's success / failure.
   if (result && result.then && typeof result.then === 'function') {
-    result.then(transactor.commit).catch(transactor.rollback);
+    result.then(function(val) { transactor.commit(val); }).catch(function(err) { transactor.rollback(err); });
   }
 
   // Return the promise for the entire transaction.
