@@ -103,13 +103,13 @@ gulp.task('build:deps', buildDependencies);
 gulp.task('jshint', shell.task(['npm run jshint']));
 gulp.task('test', ['jshint'], shell.task(['npm run test']));
 
-gulp.task('bump-version', function() {
+gulp.task('bump', function() {
   var type = argv.type || 'patch';
   return gulp.src('./package.json')
     .pipe(bump({type: type}))
     .pipe(gulp.dest('./'));
 });
-gulp.task('release', ['bump-version'], function() {
+gulp.task('release', function() {
   return fs.readFileAsync('./package.json')
     .bind(JSON)
     .then(JSON.parse)
@@ -117,7 +117,14 @@ gulp.task('release', ['bump-version'], function() {
       return shell.task([
         'git add -u',
         'git commit -m "release ' + json.version + '"',
-        'git tag ' + json.version
+        'git tag ' + json.version,
+        'npm publish',
+        'git push',
+        'git push --tags',
+        'git checkout gh-pages',
+        'git merge master',
+        'git push',
+        'git checkout master'
       ])();
     });
 });

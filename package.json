@@ -42,8 +42,8 @@
     "build": "gulp build",
     "test": "mocha -b --check-leaks -R spec test/index.js",
     "jshint": "jshint knex.js lib/*",
-    "release:patch": "npm run jshint && npm test && gulp build && gulp release --type patch",
-    "release:minor": "npm run jshint && npm test && gulp build && gulp release --type minor"
+    "release:patch": "npm run jshint && npm test && gulp build && gulp bump --type patch && gulp release",
+    "release:minor": "npm run jshint && npm test && gulp build && gulp bump --type minor && gulp release"
   },
   "bin": {
     "knex": "./node_modules/knex-cli/bin/knex-cli.js"
