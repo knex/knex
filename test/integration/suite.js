@@ -6,6 +6,7 @@ module.exports = function(knex) {
     this.dialect = knex.client.dialect;
 
     require('./schema')(knex);
+    require('./schema/transaction')(knex);
     if (this.dialect === 'postgresql') {
       require('./schema/postgresql')(knex);
     }
