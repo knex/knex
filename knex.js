@@ -1,4 +1,4 @@
-// Knex.js  0.6.2
+// Knex.js  0.6.3
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -78,7 +78,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.2';
+  knex.VERSION = knex.__knex__  = '0.6.3';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
