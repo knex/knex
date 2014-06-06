@@ -1,3 +1,5 @@
+var Promise = testPromise;
+
 module.exports = function(knex) {
 
   describe('Schema', function() {
@@ -61,6 +63,43 @@ module.exports = function(knex) {
         });
       });
 
+      it('should be able to use a different searchPath', function() {
+        var connection;
+        return knex.schema.createSchema('testing')
+        .then(function(){
+          return new Promise(function(resolve) {
+            knex.client.pool.acquire(function(err, conn) {
+              resolve(conn);
+            });
+          });
+        })
+        .then(function(conn) {
+          connection = conn;
+          return knex.transaction(function(trx) {
+            return trx.schema.searchPath('testing', {local: true})
+              .then(function() {
+                return trx.schema.searchPath();
+              }).then(function(resp) {
+                expect(resp).to.equal('testing');
+              });
+          })
+          .connection(connection)
+        })
+        .then(function() {
+          return knex.schema.searchPath().connection(connection);
+        })
+        .then(function(resp) {
+          expect(resp).to.equal('"$user",public');
+        })
+        .then(function() {
+          return new Promise(function(resolve) {
+            knex.client.pool.release(connection, resolve);
+          });
+        })
+        .finally(function() {
+          return knex.schema.dropSchema('testing');
+        });
+      });
     });
 
   });

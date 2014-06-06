@@ -120,6 +120,7 @@ Knex.initialize = function(config) {
 
   if (config.__client__) {
     client = config.__client__;
+    Dialect = Clients[client.dialect]();
   } else {
     // Build the "client"
     var clientName = config.client;
@@ -131,16 +132,16 @@ Knex.initialize = function(config) {
     };
     Dialect = Clients[clientName]();
     client  = new Dialect(config);
+  }
 
-    if (Dialect.QueryInterface) {
-      QueryInterface = _.union(QueryInterface, Dialect.QueryInterface);
-    }
-    if (Dialect.SchemaInterface) {
-      SchemaInterface = _.union(SchemaInterface, Dialect.SchemaInterface);
-    }
-    if (Dialect.MigrateInterface) {
-      MigrateInterface = _.union(MigrateInterface, Dialect.MigrateInterface);
-    }
+  if (Dialect.QueryInterface) {
+    QueryInterface = _.union(QueryInterface, Dialect.QueryInterface);
+  }
+  if (Dialect.SchemaInterface) {
+    SchemaInterface = _.union(SchemaInterface, Dialect.SchemaInterface);
+  }
+  if (Dialect.MigrateInterface) {
+    MigrateInterface = _.union(MigrateInterface, Dialect.MigrateInterface);
   }
 
   // Allow chaining methods from the root object, before
