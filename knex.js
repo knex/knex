@@ -153,6 +153,8 @@ Knex.initialize = function(config) {
       if (!client.SchemaBuilder) client.initSchema();
       var builder = new client.SchemaBuilder();
 
+      if (config.__transactor__) builder.transacting(config.__transactor__);
+
       // Passthrough all "query" events to the knex object.
       builder.on('query', function(data) {
         knex.emit('query', data);
