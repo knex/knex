@@ -7,10 +7,16 @@
     "test": "test"
   },
   "devDependencies": {
+    "minimist": "~0.0.9",
+    "through": "^2.3.4",
+    "browserify": "^4.0.0",
+    "gulp": "^3.6.2",
+    "gulp-bump": "^0.1.8",
+    "gulp-git": "^0.4.2",
+    "gulp-shell": "^0.2.5",
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.0",
     "jshint": "^2.5.0",
-    "minimist": "~0.0.9",
     "mocha": "^1.20.0",
     "mysql": "^2.3.1",
     "node-uuid": "~1.4.0",
@@ -21,14 +27,6 @@
     "sinon-chai": "^2.5.0",
     "sqlite3": "^2.2.3",
     "mariasql": "~0.1.21"
-  },
-  "optionalDependencies": {
-    "through": "^2.3.4",
-    "browserify": "^4.0.0",
-    "gulp": "^3.6.2",
-    "gulp-bump": "^0.1.8",
-    "gulp-git": "^0.4.2",
-    "gulp-shell": "^0.2.5"
   },
   "dependencies": {
     "bluebird": "1.2.x",

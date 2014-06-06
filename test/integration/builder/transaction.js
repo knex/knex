@@ -1,3 +1,4 @@
+var Promise = testPromise;
 
 module.exports = function(knex) {
 
@@ -123,13 +124,15 @@ module.exports = function(knex) {
             about: 'Lorem ipsum Dolore labore incididunt enim.',
             created_at: new Date(),
             updated_at: new Date()
-          }).then(function(resp) {
+          })
+          .then(function(resp) {
             return trx.insert({
               account_id: (id = resp[0]),
               details: '',
               status: 1
             }).into('test_table_two');
-          }).then(function() {
+          })
+          .then(function() {
             throw err;
           });
       })
@@ -142,29 +145,27 @@ module.exports = function(knex) {
         expect(count).to.equal(4);
         expect(msg).to.equal(err);
         return knex('accounts').where('id', id).select('first_name');
-      }).then(function(resp) {
-        expect(resp).to.be.empty;
+      })
+      .then(function(resp) {
+        expect(resp).to.eql([]);
       });
     });
 
-    if (knex.client.dialect === 'postgresql') {
-      it('should be able to run schema methods', function() {
-        var err = new Error('error message');
-        var __cid, count = 0;
+    it('should be able to run schema methods', function() {
+      var __cid, count = 0;
+      var err = new Error('error message');
+      if (knex.client.dialect === 'postgresql') {
         return knex.transaction(function(trx) {
-          return trx.schema
-            .createTable('test_schema_transactions', function(table) {
+          return trx.schema.createTable('test_schema_transactions', function(table) {
               table.increments();
               table.string('name');
               table.timestamps();
             }).then(function() {
-              return trx('test_schema_transactions')
-                .insert({name: 'bob'});
+              return trx('test_schema_transactions').insert({name: 'bob'});
             }).then(function() {
-              return trx('test_schema_transactions')
-                .count('*');
+              return trx('test_schema_transactions').count('*');
             }).then(function(resp) {
-              var _count = parseInt(resp[0].count);
+              var _count = parseInt(resp[0].count, 10);
               expect(_count).to.equal(1);
               throw err;
             });
@@ -177,17 +178,13 @@ module.exports = function(knex) {
         .catch(function(msg) {
           expect(msg).to.equal(err);
           expect(count).to.equal(5);
-          return knex('test_schema_migrations')
-            .count('*');
+          return knex('test_schema_migrations').count('*');
         })
         .catch(function(e) {
           expect(e.message).to.equal('relation "test_schema_migrations" does not exist');
         });
-      });
-    } else {
-      it('should be able to run schema methods', function() {
+      } else {
         var id = null;
-        var __cid, count = 0;
         return knex.transaction(function(trx) {
           return trx('accounts')
             .returning('id')
@@ -206,8 +203,7 @@ module.exports = function(knex) {
                 status: 1
               });
             }).then(function() {
-              return trx.schema
-              .createTable('test_schema_transactions', function(table) {
+              return trx.schema.createTable('test_schema_transactions', function(table) {
                 table.increments();
                 table.string('name');
                 table.timestamps();
@@ -226,8 +222,18 @@ module.exports = function(knex) {
         }).finally(function() {
           return knex.schema.dropTableIfExists('test_schema_transactions');
         });
+      }
+    });
+
+    it('should resolve with the correct value, #298', function() {
+      return knex.transaction(function(trx) {
+        trx.debugging = true;
+        return Promise.resolve(null);
+      }).then(function(result) {
+        console.log(result);
+        expect(result).to.equal(null);
       });
-    }
+    });
 
   });
 
