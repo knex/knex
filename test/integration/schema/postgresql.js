@@ -28,6 +28,20 @@ module.exports = function(knex) {
       });
     });
 
+    describe('hasTable', function() {
+
+      it('should be false if a table is not in current schema', function() {
+        return knex.transaction(function(trx) {
+          return trx.schema.searchPath('testing', {local: true})
+            .then(function() {
+              return trx.schema.hasTable('test_table_two');
+            }).then(function(resp) {
+              expect(resp).to.equal(false);
+            });
+        });
+      });
+    });
+
     describe('Transactions', function() {
 
       it('should be able to rollback a create table', function() {
