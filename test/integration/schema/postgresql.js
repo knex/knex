@@ -28,6 +28,22 @@ module.exports = function(knex) {
       });
     });
 
+    describe('hasSchema', function() {
+
+      it('checks whether a schema exists', function() {
+        return knex.schema.hasSchema('public').then(function(resp) {
+          expect(resp).to.equal(true);
+        });
+      });
+
+      it('should be false if a table does not exists', function() {
+        return knex.schema.hasSchema('fake_schema').then(function(resp) {
+          expect(resp).to.equal(false);
+        });
+      });
+
+    });
+
     describe('hasTable', function() {
 
       it('should be false if a table is not in current schema', function() {
