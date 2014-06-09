@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.5
+// Knex.js  0.6.6
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -79,7 +79,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.5';
+  knex.VERSION = knex.__knex__  = '0.6.6';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -827,11 +827,6 @@ ColumnCompiler_SQLite3.prototype.decimal =
 ColumnCompiler_SQLite3.prototype.floating = 'float';
 ColumnCompiler_SQLite3.prototype.timestamp = 'datetime';
 
-// Compile a drop column command.
-ColumnCompiler_SQLite3.prototype.dropColumn = function() {
-  throw new Error("Drop column not supported for SQLite.");
-};
-
 client.ColumnBuilder = ColumnBuilder_SQLite3;
 client.ColumnCompiler = ColumnCompiler_SQLite3;
 
@@ -959,20 +954,44 @@ SQLite3_DDL.prototype.renameColumn = Promise.method(function(from, to) {
       .then(this.dropOriginal)
       .then(function() {
         return this.runner.query({sql: createTable.sql.replace(a, b)});
-      }).then(this.reinsertData(function(row) {
+      })
+      .then(this.reinsertData(function(row) {
         row[to] = row[from];
         return _.omit(row, from);
-      })).then(this.dropTempTable);
+      }))
+      .then(this.dropTempTable);
     })
     .tap(this.commitTransaction)
     .catch(this.rollbackTransaction);
 });
 
 SQLite3_DDL.prototype.dropColumn = Promise.method(function(column) {
-  return this.getColumn(column)
-    .then(function() {
-
-    });
+   var currentCol;
+   return this.getColumn(column)
+    .bind(this)
+    .tap(function(col) { currentCol = col; })
+    .then(this.ensureTransaction)
+    .then(this.getTableSql)
+    .then(function(sql) {
+      var createTable = sql[0];
+      var a = this.formatter.wrap(column) + ' ' + currentCol.type + ', ';
+      if (createTable.sql.indexOf(a) === -1) {
+        throw new Error('Unable to find the column to change');
+      }
+      return Promise.bind(this)
+        .then(this.createTempTable(createTable))
+        .then(this.copyData)
+        .then(this.dropOriginal)
+        .then(function() {
+          return this.runner.query({sql: createTable.sql.replace(a, '')});
+        })
+        .then(this.reinsertData(function(row) {
+          return _.omit(row, column);
+        }))
+        .then(this.dropTempTable);
+    })
+    .tap(this.commitTransaction)
+    .catch(this.rollbackTransaction);
 });
 
 client.SQLite3_DDL = SQLite3_DDL;
@@ -1123,7 +1142,7 @@ TableCompiler_SQLite3.prototype.index = function(columns, indexName) {
 TableCompiler_SQLite3.prototype.primary =
 TableCompiler_SQLite3.prototype.foreign = function() {
   if (this.method !== 'create') {
-    throw new Error('Foreign & Primary keys may only be added on create');
+    console.warn('SQLite3 Foreign & Primary keys may only be added on create');
   }
 };
 
@@ -2825,7 +2844,9 @@ var EventEmitter = _dereq_('events').EventEmitter;
 
 function Raw(sql, bindings) {
   if (sql.toSQL) {
-    return this._processQuery(sql);
+    var output = sql.toSQL();
+    sql = output.sql;
+    bindings = output.bindings;
   }
   this.sql = sql;
   this.bindings = _.isArray(bindings) ? bindings :
@@ -2853,12 +2874,6 @@ Raw.prototype.toSQL = function() {
     method: 'raw',
     bindings: this.bindings
   };
-};
-
-// Convert the query toSQL.
-Raw.prototype._processQuery = function(sql) {
-  var processed = sql.toSQL();
-  return new this.constructor(processed.sql, processed.bindings);
 };
 
 // Allow the `Raw` object to be utilized with full access to the relevant
