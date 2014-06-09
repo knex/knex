@@ -11,6 +11,7 @@ var excluded = {
   mariasql: ['mariasql'],
   sqlite3:  ['sqlite3'],
   mysql:    ['mysql'],
+  mysql2:   ['mysql2'],
   pg:       ['pg', 'pg.js', 'pg-query-stream'],
   websql:   ['sqlite3']
 };
@@ -18,12 +19,13 @@ var excluded = {
 var bases = {
   mariasql: './lib/dialects/maria',
   mysql:    './lib/dialects/mysql',
+  mysql2:   './lib/dialects/mysql2',
   pg:       './lib/dialects/postgres',
   sqlite3:  './lib/dialects/sqlite3',
   websql:   './lib/dialects/websql'
 };
 
-var all            = ['mysql', 'mariasql', 'pg', 'sqlite3', 'websql'];
+var all            = ['mysql', 'mysql2', 'mariasql', 'pg', 'sqlite3', 'websql'];
 var externals      = ['lodash', 'bluebird'];
 var alwaysExcluded = ['generic-pool-redux', 'readable-stream', './lib/migrate/index.js'];
 

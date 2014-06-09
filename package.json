@@ -26,7 +26,8 @@
     "sinon": "^1.10.0",
     "sinon-chai": "^2.5.0",
     "sqlite3": "^2.2.3",
-    "mariasql": "~0.1.21"
+    "mariasql": "~0.1.21",
+    "mysql2": "~0.12.1"
   },
   "dependencies": {
     "bluebird": "1.2.x",

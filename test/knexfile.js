@@ -45,6 +45,24 @@ module.exports = {
     migrations: migrations
   },
 
+  mysql2: {
+    client: 'mysql2',
+    connection: testConfig.mysql || {
+      database: "knex_test",
+      user: "root",
+      charset: 'utf8'
+    },
+    pool: _.extend({}, pool, {
+      afterCreate: function(connection, callback) {
+        Promise.promisify(connection.query, connection)("SET sql_mode='TRADITIONAL';", []).then(function() {
+          callback(null, connection);
+        });
+      }
+    }),
+    migrations: migrations
+  },
+
+
   postgres: {
     client: 'postgres',
     connection: testConfig.postgres || {
