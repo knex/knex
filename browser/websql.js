@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.2
+// Knex.js  0.6.4
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -79,7 +79,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.2';
+  knex.VERSION = knex.__knex__  = '0.6.4';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -3382,6 +3382,9 @@ SchemaCompiler.prototype.toSQL = function() {
   }
   return this.sequence;
 };
+SchemaCompiler.prototype.raw = function(sql, bindings) {
+  this.sequence.push(new this.client.Raw(sql, bindings).toSQL());
+};
 
 module.exports = SchemaCompiler;
 },{}],35:[function(_dereq_,module,exports){
@@ -3437,7 +3440,7 @@ module.exports = {
 };
 },{"./builder":31,"./columnbuilder":32,"./columncompiler":33,"./compiler":34,"./tablebuilder":37,"./tablecompiler":38,"lodash":"K2RcUv"}],36:[function(_dereq_,module,exports){
 module.exports = ['table', 'createTable', 'editTable', 'dropTable',
-  'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn'];
+  'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn', 'raw'];
 },{}],37:[function(_dereq_,module,exports){
 // TableBuilder
 
