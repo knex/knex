@@ -660,6 +660,18 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(str).to.equal('select * from "value" inner join "table" on "table"."array_column"[1] = \'1\'');
     });
 
+    it('allows wrap on raw to wrap in parens and alias', function() {
+      var str = sql().select(
+        'e.lastname',
+        'e.salary',
+        raw(
+          sql().select('avg(salary)').from('employee').whereRaw('dept_no = e.dept_no')
+        ).wrap('(', ') avg_sal_dept')
+      ).from('employee as e')
+      .where('dept_no', '=', 'e.dept_no').toString();
+      expect(str).to.equal('select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) avg_sal_dept from "employee" as "e" where "dept_no" = \'e.dept_no\'');
+    });
+
   });
 
 };

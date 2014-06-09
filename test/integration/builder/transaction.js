@@ -230,7 +230,6 @@ module.exports = function(knex) {
         trx.debugging = true;
         return Promise.resolve(null);
       }).then(function(result) {
-        console.log(result);
         expect(result).to.equal(null);
       });
     });

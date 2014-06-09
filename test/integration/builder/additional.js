@@ -149,6 +149,30 @@ module.exports = function(knex) {
         expect(resp['count(*)']).to.equal(count);
       });
     });
+
+    it('should allow dropping a column', function() {
+      var count;
+      return knex.count('*').from('accounts').then(function(resp) {
+        count = resp['count(*)'];
+      }).then(function(resp) {
+        return knex.schema.table('accounts', function(t) {
+          t.dropColumn('first_name');
+        }).testSql(function(tester) {
+          tester('mysql', ["alter table `accounts` drop `first_name`"]);
+          tester('postgresql', ['alter table "accounts" drop column "first_name"']);
+          tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+        });
+      }).then(function() {
+        return knex.select('*').from('accounts').first();
+      }).then(function(resp) {
+        expect(_.keys(resp).sort()).to.eql(["about", "created_at", "email", "id", "last_name", "logins", "phone", "updated_at"]);
+      }).then(function() {
+        return knex.count('*').from('accounts');
+      }).then(function(resp) {
+        expect(resp['count(*)']).to.equal(count);
+      });
+    });
+
   });
 
 };
