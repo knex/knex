@@ -1455,11 +1455,12 @@ knex.schema.table('users', function (table) {
     </p>
 
 <pre class="display">
-knex.schema.raw('SET sql_mode='TRADITIONAL';').table('users', function (table) {
-  table.dropColumn('name');
-  table.string('first_name');
-  table.string('last_name');
-})
+knex.schema.raw("SET sql_mode='TRADITIONAL'")
+  .table('users', function (table) {
+    table.dropColumn('name');
+    table.string('first_name');
+    table.string('last_name');
+  })
 </pre>
 
     <h3 id="Schema-Building">Schema Building:</h3>
