@@ -189,6 +189,7 @@
     <ul class="toc_section">
       <li>– <a href="#Raw-Expressions">Raw Expressions</a></li>
       <li>– <a href="#Raw-Queries">Raw Queries</a></li>
+      <li>- <a href="#Raw-queries-wrapped">Wrapped Queries</a></li>
     </ul>
 
     <a class="toc_title" href="#Interfaces">
@@ -269,7 +270,6 @@
 
     <p>
       The project is <a href="http://github.com/tgriesser/knex">hosted on GitHub</a>,
-      and the <a href="docs/knex.html">annotated source code</a> is available,
       and has a comprehensive <a href="https://travis-ci.org/tgriesser/knex">test suite</a>.
     </p>
 
@@ -1759,6 +1759,21 @@ knex('users')
       executing against to determine how to handle the response.
     </p>
 
+    <h3 id="Raw-queries-wrapped">Wrapped Queries:</h3>
+
+    <p>
+      The raw query builder also comes with a <tt>wrap</tt> method, which allows wrapping the query in parens, and creating an alias on an entire query.
+    </p>
+
+<pre class="display">var subcolumn = knex.raw(knex.select('avg(salary)')
+  .from('employee')
+  .whereRaw('dept_no = e.dept_no'))
+  .wrap('(', ') avg_sal_dept');
+
+knex.select('e.lastname', 'e.salary', subcolumn)
+  .from('employee as e')
+  .where('dept_no', '=', 'e.dept_no')
+</pre>
 
     <h2 id="Interfaces">Interfaces</h2>
 
