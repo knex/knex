@@ -1030,12 +1030,12 @@ knex('accounts')
 
 knex.transaction(function(trx) {
 
-  knex('books').transacting(t).insert({name: 'Old Books'})
+  knex('books').transacting(trx).insert({name: 'Old Books'})
     .then(function(id) {
-      return someExternalMethod(t);
+      return someExternalMethod(trx);
     })
-    .then(t.commit)
-    .then(t.rollback);
+    .then(trx.commit)
+    .then(trx.rollback);
 
 }).then(function(resp) {
   console.log('Transaction complete.');
