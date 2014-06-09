@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.6
+// Knex.js  0.6.7
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -25,6 +25,7 @@ var Raw = _dereq_('./lib/raw');
 
 // Doing it this way makes it easier to build for browserify.
 var mysql = function() { return _dereq_('./lib/dialects/mysql'); };
+var mysql2 = function() { return _dereq_('./lib/dialects/mysql2'); };
 var maria = function() { return _dereq_('./lib/dialects/maria'); };
 var pg = function() { return _dereq_('./lib/dialects/postgres'); };
 var sqlite3 = function() { return _dereq_('./lib/dialects/sqlite3'); };
@@ -33,6 +34,7 @@ var websql = function() { return _dereq_('./lib/dialects/websql'); };
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
   'mysql'      : mysql,
+  'mysql2'     : mysql2,
   'maria'      : maria,
   'mariadb'    : maria,
   'mariasql'   : maria,
@@ -79,7 +81,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.6';
+  knex.VERSION = knex.__knex__  = '0.6.7';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -2843,7 +2845,7 @@ var inherits = _dereq_('inherits');
 var EventEmitter = _dereq_('events').EventEmitter;
 
 function Raw(sql, bindings) {
-  if (sql.toSQL) {
+  if (sql && sql.toSQL) {
     var output = sql.toSQL();
     sql = output.sql;
     bindings = output.bindings;
@@ -3113,7 +3115,7 @@ inherits(SchemaBuilder, EventEmitter);
 // "_sequence" array for consistency.
 _.each([
   'createTable', 'table', 'alterTable', 'hasTable', 'hasColumn',
-  'dropTable', 'renameTable', 'dropTableIfExists', 'raw'
+  'dropTable', 'renameTable', 'dropTableIfExists', 'raw', 'debug'
 ], function(method) {
   SchemaBuilder.prototype[method] = function() {
     if (method === 'table') method = 'alterTable';
@@ -3457,7 +3459,7 @@ module.exports = {
 };
 },{"./builder":31,"./columnbuilder":32,"./columncompiler":33,"./compiler":34,"./tablebuilder":37,"./tablecompiler":38,"lodash":"K2RcUv"}],36:[function(_dereq_,module,exports){
 module.exports = ['table', 'createTable', 'editTable', 'dropTable',
-  'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn', 'raw'];
+  'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn', 'raw', 'debug'];
 },{}],37:[function(_dereq_,module,exports){
 // TableBuilder
 

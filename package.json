@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "directories": {
@@ -16,7 +16,7 @@
     "gulp-shell": "^0.2.5",
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.0",
-    "jshint": "^2.5.0",
+    "jshint": "~2.5.1",
     "mocha": "^1.20.0",
     "mysql": "^2.3.1",
     "node-uuid": "~1.4.0",
@@ -31,13 +31,17 @@
   },
   "dependencies": {
     "bluebird": "1.2.x",
-    "colors": "~0.6.2",
+    "chalk": "^0.4.0",
+    "commander": "^2.2.0",
+    "interpret": "^0.3.2",
+    "liftoff": "^0.11.0",
+    "semver": "^2.3.0",
+    "tildify": "^0.2.0",
     "generic-pool-redux": "~0.1.0",
     "inherits": "~2.0.1",
     "lodash": "~2.4.0",
     "mkdirp": "^0.5.0",
-    "readable-stream": "^1.1.12",
-    "knex-cli": "0.1.x"
+    "readable-stream": "^1.1.12"
   },
   "scripts": {
     "build": "gulp build",
@@ -47,7 +51,7 @@
     "release:minor": "npm run jshint && npm test && gulp build && gulp bump --type minor && gulp release"
   },
   "bin": {
-    "knex": "./node_modules/knex-cli/bin/knex-cli.js"
+    "knex": "./lib/bin/cli.js"
   },
   "repository": {
     "type": "git",

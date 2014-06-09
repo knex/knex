@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.6.6)</span>
+      Knex.js <span class="version">(0.6.7)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -295,7 +295,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.6.6 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.6.7 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -2077,12 +2077,24 @@ knex.select('*').from('users').where(knex.raw('id = ?', [1])).toString()
     <h3 id="Migrations-CLI">Migration CLI</h3>
 
     <p>
-      The migration CLI is stored in a <a href="https://github.com/bookshelf/knex-cli">separate repository</a> and
-      is driven by the <a href="https://github.com/tkellen/node-liftoff">node-liftoff</a> module. Running:
+      The migration CLI is bundled with the knex install, and is driven by the <a href="https://github.com/tkellen/node-liftoff">node-liftoff</a> module. To install globally, run:
+    </p>
+
+<pre>
+$ npm install knex -g
+</pre>
+
+    <p>
+      The 0.6 migrations use a <b>knexfile</b>, which specify various configuration settings for the module. To create a new
+      knexfile, run the following:
     </p>
 
 <pre>
 $ knex init
+
+# or for .coffee
+
+$ knex init -x coffee
 </pre>
 
     <p>
@@ -2194,6 +2206,15 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.6.7</b> &mdash; <small><i>June 9, 2014</i></small><br />
+    </p>
+
+    <ul>
+      <li>Adds support for <a href="https://github.com/sidorares/node-mysql2">node-mysql2</a> library.</li>
+      <li>Bundles CLI with the knex install, various related migrate CLI fixes.</li>
+    </ul>
 
     <p>
       <b class="header">0.6.6</b> &mdash; <small><i>June 9, 2014</i></small><br />

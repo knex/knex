@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.6
+// Knex.js  0.6.7
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -25,6 +25,7 @@ var Raw = _dereq_('./lib/raw');
 
 // Doing it this way makes it easier to build for browserify.
 var mysql = function() { return _dereq_('./lib/dialects/mysql'); };
+var mysql2 = function() { return _dereq_('./lib/dialects/mysql2'); };
 var maria = function() { return _dereq_('./lib/dialects/maria'); };
 var pg = function() { return _dereq_('./lib/dialects/postgres'); };
 var sqlite3 = function() { return _dereq_('./lib/dialects/sqlite3'); };
@@ -33,6 +34,7 @@ var websql = function() { return _dereq_('./lib/dialects/websql'); };
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
   'mysql'      : mysql,
+  'mysql2'     : mysql2,
   'maria'      : maria,
   'mariadb'    : maria,
   'mariasql'   : maria,
@@ -79,7 +81,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.6';
+  knex.VERSION = knex.__knex__  = '0.6.7';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -183,7 +185,7 @@ Knex.initialize = function(config) {
 
 module.exports = Knex;
 
-},{"./lib/dialects/maria":3,"./lib/dialects/mysql":6,"./lib/dialects/postgres":19,"./lib/dialects/sqlite3":32,"./lib/dialects/websql":44,"./lib/migrate/methods":49,"./lib/query/methods":55,"./lib/raw":56,"./lib/schema/methods":63,"./lib/utils":67,"events":71,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
+},{"./lib/dialects/maria":3,"./lib/dialects/mysql":6,"./lib/dialects/mysql2":18,"./lib/dialects/postgres":21,"./lib/dialects/sqlite3":34,"./lib/dialects/websql":46,"./lib/migrate/methods":51,"./lib/query/methods":57,"./lib/raw":58,"./lib/schema/methods":65,"./lib/utils":69,"events":73,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
 // "Base Client"
 // ------
 var Promise    = _dereq_('./promise');
@@ -235,7 +237,7 @@ Client.prototype.database = function() {
 };
 
 module.exports = Client;
-},{"./promise":51,"lodash":"K2RcUv"}],3:[function(_dereq_,module,exports){
+},{"./promise":53,"lodash":"K2RcUv"}],3:[function(_dereq_,module,exports){
 // MariaSQL Client
 // -------
 var inherits = _dereq_('inherits');
@@ -289,7 +291,7 @@ Client_MariaSQL.prototype.database = function() {
 };
 
 module.exports = Client_MariaSQL;
-},{"../../promise":51,"../mysql":6,"./runner":4,"inherits":72,"lodash":"K2RcUv"}],4:[function(_dereq_,module,exports){
+},{"../../promise":53,"../mysql":6,"./runner":4,"inherits":74,"lodash":"K2RcUv"}],4:[function(_dereq_,module,exports){
 // MariaSQL Runner
 // ------
 module.exports = function(client) {
@@ -397,7 +399,7 @@ function rowHandler(callback) {
 client.Runner = Runner_MariaSQL;
 
 };
-},{"../../helpers":47,"../../promise":51,"../../runner":57,"../mysql/string":16,"inherits":72}],5:[function(_dereq_,module,exports){
+},{"../../helpers":49,"../../promise":53,"../../runner":59,"../mysql/string":16,"inherits":74}],5:[function(_dereq_,module,exports){
 // MySQL Formatter
 // ------
 module.exports = function(client) {
@@ -442,7 +444,7 @@ Formatter_MySQL.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_MySQL;
 
 };
-},{"../../formatter":46,"inherits":72}],6:[function(_dereq_,module,exports){
+},{"../../formatter":48,"inherits":74}],6:[function(_dereq_,module,exports){
 // MySQL Client
 // -------
 var inherits = _dereq_('inherits');
@@ -543,7 +545,7 @@ Client_MySQL.prototype.database = function() {
 };
 
 module.exports = Client_MySQL;
-},{"../../client":2,"../../promise":51,"./formatter":5,"./migrator":7,"./pool":8,"./query":9,"./raw":10,"./runner":11,"./schema":13,"./transaction":17,"inherits":72,"lodash":"K2RcUv"}],7:[function(_dereq_,module,exports){
+},{"../../client":2,"../../promise":53,"./formatter":5,"./migrator":7,"./pool":8,"./query":9,"./raw":10,"./runner":11,"./schema":13,"./transaction":17,"inherits":74,"lodash":"K2RcUv"}],7:[function(_dereq_,module,exports){
 // MySQL Migrator
 // ------
 module.exports = function(client) {
@@ -560,7 +562,7 @@ inherits(Migrator_MySQL, Migrator);
 client.Migrator = Migrator_MySQL;
 
 };
-},{"inherits":72}],8:[function(_dereq_,module,exports){
+},{"inherits":74}],8:[function(_dereq_,module,exports){
 // MySQL Pool
 // ------
 module.exports = function(client) {
@@ -577,7 +579,7 @@ inherits(Pool_MySQL, Pool);
 client.Pool = Pool_MySQL;
 
 };
-},{"../../pool":50,"inherits":72}],9:[function(_dereq_,module,exports){
+},{"../../pool":52,"inherits":74}],9:[function(_dereq_,module,exports){
 // MySQL Query Builder & Compiler
 // ------
 module.exports = function(client) {
@@ -661,7 +663,7 @@ client.QueryBuilder  = QueryBuilder_MySQL;
 client.QueryCompiler = QueryCompiler_MySQL;
 
 };
-},{"../../query/builder":52,"../../query/compiler":53,"inherits":72,"lodash":"K2RcUv"}],10:[function(_dereq_,module,exports){
+},{"../../query/builder":54,"../../query/compiler":55,"inherits":74,"lodash":"K2RcUv"}],10:[function(_dereq_,module,exports){
 // MySQL Raw
 // -------
 module.exports = function(client) {
@@ -681,7 +683,7 @@ inherits(Raw_MySQL, Raw);
 client.Raw = Raw_MySQL;
 
 };
-},{"../../raw":56,"inherits":72}],11:[function(_dereq_,module,exports){
+},{"../../raw":58,"inherits":74}],11:[function(_dereq_,module,exports){
 // MySQL Runner
 // ------
 module.exports = function(client) {
@@ -757,7 +759,7 @@ Runner_MySQL.prototype.processResponse = function(obj) {
 client.Runner = Runner_MySQL;
 
 };
-},{"../../helpers":47,"../../promise":51,"../../runner":57,"inherits":72,"lodash":"K2RcUv"}],12:[function(_dereq_,module,exports){
+},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":74,"lodash":"K2RcUv"}],12:[function(_dereq_,module,exports){
 // MySQL Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -864,7 +866,7 @@ client.ColumnBuilder = ColumnBuilder_MySQL;
 client.ColumnCompiler = ColumnCompiler_MySQL;
 
 };
-},{"../../../helpers":47,"../../../schema":62,"inherits":72}],13:[function(_dereq_,module,exports){
+},{"../../../helpers":49,"../../../schema":64,"inherits":74}],13:[function(_dereq_,module,exports){
 module.exports = function(client) {
   _dereq_('./schema')(client);
   _dereq_('./table')(client);
@@ -930,7 +932,7 @@ client.SchemaBuilder = SchemaBuilder_MySQL;
 client.SchemaCompiler = SchemaCompiler_MySQL;
 
 };
-},{"../../../schema":62,"inherits":72}],15:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":74}],15:[function(_dereq_,module,exports){
 // MySQL Table Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -1067,7 +1069,7 @@ client.TableBuilder = TableBuilder_MySQL;
 client.TableCompiler = TableCompiler_MySQL;
 
 };
-},{"../../../schema":62,"inherits":72}],16:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":74}],16:[function(_dereq_,module,exports){
 (function (Buffer){
 var SqlString = exports;
 
@@ -1221,7 +1223,7 @@ function convertTimezone(tz) {
   return false;
 }
 }).call(this,_dereq_("buffer").Buffer)
-},{"buffer":68}],17:[function(_dereq_,module,exports){
+},{"buffer":70}],17:[function(_dereq_,module,exports){
 // MySQL Transaction
 // ------
 module.exports = function(client) {
@@ -1238,7 +1240,135 @@ inherits(Transaction_MySQL, Transaction);
 client.Transaction = Transaction_MySQL;
 
 };
-},{"../../transaction":66,"inherits":72}],18:[function(_dereq_,module,exports){
+},{"../../transaction":68,"inherits":74}],18:[function(_dereq_,module,exports){
+// MySQL2 Client
+// -------
+var inherits = _dereq_('inherits');
+
+var _            = _dereq_('lodash');
+var Client_MySQL = _dereq_('../mysql');
+var Promise      = _dereq_('../../promise');
+
+var mysql2;
+
+// Always initialize with the "QueryBuilder" and "QueryCompiler"
+// objects, which extend the base 'lib/query/builder' and
+// 'lib/query/compiler', respectively.
+function Client_MySQL2() {
+  Client_MySQL.apply(this, arguments);
+}
+inherits(Client_MySQL2, Client_MySQL);
+
+// The "dialect", for reference elsewhere.
+Client_MySQL2.prototype.dialect = 'mysql2';
+
+// Lazy-load the mysql2 dependency, since we might just be
+// using the client to generate SQL strings.
+Client_MySQL2.prototype.initDriver = function() {
+  mysql2 = mysql2 || _dereq_('mysql2');
+};
+
+// Initialize the query "runner"
+Client_MySQL2.prototype.initRunner = function() {
+  _dereq_('./runner')(this);
+};
+
+// Get a raw connection, called by the `pool` whenever a new
+// connection needs to be added to the pool.
+Client_MySQL2.prototype.acquireRawConnection = function() {
+  var connection = mysql2.createConnection(_.pick(this.connectionSettings, 'user', 'database', 'connection'));
+  return new Promise(function(resolver, rejecter) {
+    connection.connect(function(err) {
+      if (err) return rejecter(err);
+      resolver(connection);
+    });
+  });
+};
+
+module.exports = Client_MySQL2;
+},{"../../promise":53,"../mysql":6,"./runner":19,"inherits":74,"lodash":"K2RcUv"}],19:[function(_dereq_,module,exports){
+// MySQL Runner
+// ------
+module.exports = function(client) {
+
+var _        = _dereq_('lodash');
+var inherits = _dereq_('inherits');
+
+var Promise  = _dereq_('../../promise');
+var Runner   = _dereq_('../../runner');
+var helpers  = _dereq_('../../helpers');
+
+// Inherit from the `Runner` constructor's prototype,
+// so we can add the correct `then` method.
+function Runner_MySQL2() {
+  this.client = client;
+  Runner.apply(this, arguments);
+}
+inherits(Runner_MySQL2, Runner);
+
+// Grab a connection, run the query via the MySQL streaming interface,
+// and pass that through to the stream we've sent back to the client.
+Runner_MySQL2.prototype._stream = Promise.method(function(sql, stream, options) {
+  var runner = this;
+  return new Promise(function(resolver, rejecter) {
+    stream.on('error', rejecter);
+    stream.on('end', resolver);
+    return runner.query().map(function(row) {
+      stream.write(row);
+    }).catch(function() {
+      stream.emit('error');
+    }).then(function() {
+      stream.end();
+    });
+  });
+});
+
+// Runs the query on the specified connection, providing the bindings
+// and any other necessary prep work.
+Runner_MySQL2.prototype._query = Promise.method(function(obj) {
+  var sql = obj.sql;
+  if (this.isDebugging()) this.debug(obj);
+  if (obj.options) sql = _.extend({sql: sql}, obj.options);
+  var connection = this.connection;
+  if (!sql) throw new Error('The query is empty');
+  return new Promise(function(resolver, rejecter) {
+    connection.query(sql, obj.bindings, function(err, rows, fields) {
+      if (err) return rejecter(err);
+      obj.response = [rows, fields];
+      resolver(obj);
+    });
+  });
+});
+
+// Process the response as returned from the query.
+Runner_MySQL2.prototype.processResponse = function(obj) {
+  var response = obj.response;
+  var method   = obj.method;
+  var rows     = response[0];
+  var fields   = response[1];
+  if (obj.output) return obj.output.call(this, rows, fields);
+  switch (method) {
+    case 'select':
+    case 'pluck':
+    case 'first':
+      var resp = helpers.skim(rows);
+      if (method === 'pluck') return _.pluck(resp, obj.pluck);
+      return method === 'first' ? resp[0] : resp;
+    case 'insert':
+      return [rows.insertId];
+    case 'del':
+    case 'update':
+      return rows.affectedRows;
+    default:
+      return response;
+  }
+};
+
+// Assign the newly extended `Runner` constructor to the client object.
+client.Runner = Runner_MySQL2;
+
+};
+},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":74,"lodash":"K2RcUv"}],20:[function(_dereq_,module,exports){
 // PostgreSQL Formatter
 // -------
 module.exports = function(client) {
@@ -1286,7 +1416,7 @@ Formatter_PG.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_PG;
 
 };
-},{"../../formatter":46,"inherits":72}],19:[function(_dereq_,module,exports){
+},{"../../formatter":48,"inherits":74}],21:[function(_dereq_,module,exports){
 // PostgreSQL
 // -------
 var _        = _dereq_('lodash');
@@ -1413,7 +1543,7 @@ Client_PG.prototype.checkVersion = function(connection) {
 };
 
 module.exports = Client_PG;
-},{"../../client":2,"../../promise":51,"./formatter":18,"./migrator":20,"./pool":21,"./query":22,"./raw":23,"./runner":24,"./schema":26,"./transaction":29,"./utils":30,"inherits":72,"lodash":"K2RcUv"}],20:[function(_dereq_,module,exports){
+},{"../../client":2,"../../promise":53,"./formatter":20,"./migrator":22,"./pool":23,"./query":24,"./raw":25,"./runner":26,"./schema":28,"./transaction":31,"./utils":32,"inherits":74,"lodash":"K2RcUv"}],22:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Migrator = _dereq_('../../migrate');
@@ -1431,7 +1561,7 @@ inherits(Migrator_PG, Migrator);
 client.Migrator = Migrator_PG;
 
 };
-},{"inherits":72}],21:[function(_dereq_,module,exports){
+},{"inherits":74}],23:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Pool     = _dereq_('../../pool');
@@ -1448,7 +1578,7 @@ inherits(Pool_PG, Pool);
 client.Pool = Pool_PG;
 
 };
-},{"../../pool":50,"inherits":72}],22:[function(_dereq_,module,exports){
+},{"../../pool":52,"inherits":74}],24:[function(_dereq_,module,exports){
 // PostgreSQL Query Builder & Compiler
 // ------
 module.exports = function(client) {
@@ -1555,7 +1685,7 @@ client.QueryBuilder = QueryBuilder_PG;
 client.QueryCompiler = QueryCompiler_PG;
 
 };
-},{"../../query/builder":52,"../../query/compiler":53,"inherits":72,"lodash":"K2RcUv"}],23:[function(_dereq_,module,exports){
+},{"../../query/builder":54,"../../query/compiler":55,"inherits":74,"lodash":"K2RcUv"}],25:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Raw = _dereq_('../../raw');
@@ -1573,7 +1703,7 @@ inherits(Raw_PG, Raw);
 client.Raw = Raw_PG;
 
 };
-},{"../../raw":56,"inherits":72}],24:[function(_dereq_,module,exports){
+},{"../../raw":58,"inherits":74}],26:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var _        = _dereq_('lodash');
@@ -1651,7 +1781,7 @@ Runner_PG.prototype.processResponse = function(obj) {
 client.Runner = Runner_PG;
 
 };
-},{"../../promise":51,"../../runner":57,"../../utils":67,"inherits":72,"lodash":"K2RcUv"}],25:[function(_dereq_,module,exports){
+},{"../../promise":53,"../../runner":59,"../../utils":69,"inherits":74,"lodash":"K2RcUv"}],27:[function(_dereq_,module,exports){
 // PostgreSQL Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -1719,9 +1849,9 @@ client.ColumnBuilder = ColumnBuilder_PG;
 client.ColumnCompiler = ColumnCompiler_PG;
 
 };
-},{"../../../schema":62,"inherits":72}],26:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":74}],28:[function(_dereq_,module,exports){
 arguments[4][13][0].apply(exports,arguments)
-},{"./column":25,"./schema":27,"./table":28}],27:[function(_dereq_,module,exports){
+},{"./column":27,"./schema":29,"./table":30}],29:[function(_dereq_,module,exports){
 // PostgreSQL Schema Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -1779,7 +1909,7 @@ client.SchemaBuilder = SchemaBuilder_PG;
 client.SchemaCompiler = SchemaCompiler_PG;
 
 };
-},{"../../../schema":62,"inherits":72}],28:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":74}],30:[function(_dereq_,module,exports){
 // PostgreSQL Table Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -1876,7 +2006,7 @@ client.TableBuilder = TableBuilder_PG;
 client.TableCompiler = TableCompiler_PG;
 
 };
-},{"../../../schema":62,"inherits":72,"lodash":"K2RcUv"}],29:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":74,"lodash":"K2RcUv"}],31:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var inherits = _dereq_('inherits');
@@ -1891,7 +2021,7 @@ inherits(Transaction_PG, Transaction);
 client.Transaction = Transaction_PG;
 
 };
-},{"../../transaction":66,"inherits":72}],30:[function(_dereq_,module,exports){
+},{"../../transaction":68,"inherits":74}],32:[function(_dereq_,module,exports){
 (function (Buffer){
 
 // convert a JS array to a postgres array literal
@@ -2003,7 +2133,7 @@ module.exports = {
 };
 
 }).call(this,_dereq_("buffer").Buffer)
-},{"buffer":68}],31:[function(_dereq_,module,exports){
+},{"buffer":70}],33:[function(_dereq_,module,exports){
 // SQLite3 Formatter
 // -------
 module.exports = function(client) {
@@ -2047,7 +2177,7 @@ Formatter_SQLite3.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_SQLite3;
 
 };
-},{"../../formatter":46,"inherits":72}],32:[function(_dereq_,module,exports){
+},{"../../formatter":48,"inherits":74}],34:[function(_dereq_,module,exports){
 // SQLite3
 // -------
 
@@ -2139,7 +2269,7 @@ Client_SQLite3.prototype.destroyRawConnection = Promise.method(function(connecti
 });
 
 module.exports = Client_SQLite3;
-},{"../../client":2,"../../promise":51,"./formatter":31,"./migrator":33,"./pool":34,"./query":35,"./raw":36,"./runner":37,"./schema":40,"./transaction":43,"inherits":72}],33:[function(_dereq_,module,exports){
+},{"../../client":2,"../../promise":53,"./formatter":33,"./migrator":35,"./pool":36,"./query":37,"./raw":38,"./runner":39,"./schema":42,"./transaction":45,"inherits":74}],35:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Migrator = _dereq_('../../migrate');
@@ -2157,7 +2287,7 @@ inherits(Migrator_SQLite3, Migrator);
 client.Migrator = Migrator_SQLite3;
 
 };
-},{"inherits":72}],34:[function(_dereq_,module,exports){
+},{"inherits":74}],36:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Pool     = _dereq_('../../pool');
@@ -2183,7 +2313,7 @@ Pool_SQLite3.prototype.defaults = function() {
 client.Pool = Pool_SQLite3;
 
 };
-},{"../../pool":50,"inherits":72,"lodash":"K2RcUv"}],35:[function(_dereq_,module,exports){
+},{"../../pool":52,"inherits":74,"lodash":"K2RcUv"}],37:[function(_dereq_,module,exports){
 // SQLite3 Query Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -2300,7 +2430,7 @@ client.QueryBuilder = QueryBuilder_SQLite3;
 client.QueryCompiler = QueryCompiler_SQLite3;
 
 };
-},{"../../query/builder":52,"../../query/compiler":53,"inherits":72,"lodash":"K2RcUv"}],36:[function(_dereq_,module,exports){
+},{"../../query/builder":54,"../../query/compiler":55,"inherits":74,"lodash":"K2RcUv"}],38:[function(_dereq_,module,exports){
 // Raw
 // -------
 module.exports = function(client) {
@@ -2320,7 +2450,7 @@ inherits(Raw_SQLite3, Raw);
 client.Raw = Raw_SQLite3;
 
 };
-},{"../../raw":56,"inherits":72}],37:[function(_dereq_,module,exports){
+},{"../../raw":58,"inherits":74}],39:[function(_dereq_,module,exports){
 // Runner
 // -------
 module.exports = function(client) {
@@ -2406,7 +2536,7 @@ Runner_SQLite3.prototype.processResponse = function(obj) {
 client.Runner = Runner_SQLite3;
 
 };
-},{"../../helpers":47,"../../promise":51,"../../runner":57,"inherits":72,"lodash":"K2RcUv"}],38:[function(_dereq_,module,exports){
+},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":74,"lodash":"K2RcUv"}],40:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -2445,7 +2575,7 @@ client.ColumnBuilder = ColumnBuilder_SQLite3;
 client.ColumnCompiler = ColumnCompiler_SQLite3;
 
 };
-},{"../../../schema":62,"inherits":72}],39:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":74}],41:[function(_dereq_,module,exports){
 // SQLite3_DDL
 //
 // All of the SQLite3 specific DDL helpers for renaming/dropping
@@ -2611,14 +2741,14 @@ SQLite3_DDL.prototype.dropColumn = Promise.method(function(column) {
 client.SQLite3_DDL = SQLite3_DDL;
 
 };
-},{"../../../promise":51,"lodash":"K2RcUv"}],40:[function(_dereq_,module,exports){
+},{"../../../promise":53,"lodash":"K2RcUv"}],42:[function(_dereq_,module,exports){
 module.exports = function(client) {
   _dereq_('./ddl')(client);
   _dereq_('./schema')(client);
   _dereq_('./table')(client);
   _dereq_('./column')(client);
 };
-},{"./column":38,"./ddl":39,"./schema":41,"./table":42}],41:[function(_dereq_,module,exports){
+},{"./column":40,"./ddl":41,"./schema":43,"./table":44}],43:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -2675,7 +2805,7 @@ client.SchemaBuilder = SchemaBuilder_SQLite3;
 client.SchemaCompiler = SchemaCompiler_SQLite3;
 
 };
-},{"../../../schema":62,"inherits":72,"lodash":"K2RcUv"}],42:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":74,"lodash":"K2RcUv"}],44:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -2811,7 +2941,7 @@ client.TableBuilder = TableBuilder_SQLite3;
 client.TableCompiler = TableCompiler_SQLite3;
 
 };
-},{"../../../schema":62,"inherits":72,"lodash":"K2RcUv"}],43:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":74,"lodash":"K2RcUv"}],45:[function(_dereq_,module,exports){
 // SQLite3 Transaction
 // -------
 module.exports = function(client) {
@@ -2828,7 +2958,7 @@ inherits(Transaction_SQLite3, Transaction);
 client.Transaction = Transaction_SQLite3;
 
 };
-},{"../../transaction":66,"inherits":72}],44:[function(_dereq_,module,exports){
+},{"../../transaction":68,"inherits":74}],46:[function(_dereq_,module,exports){
 // WebSQL
 // -------
 var inherits = _dereq_('inherits');
@@ -2878,7 +3008,7 @@ Client_WebSQL.prototype.acquireConnection = function() {
 Client_WebSQL.prototype.releaseConnection = Promise.method(function(connection) {});
 
 module.exports = Client_WebSQL;
-},{"../../promise":51,"../sqlite3/index":32,"./runner":45,"inherits":72,"lodash":"K2RcUv"}],45:[function(_dereq_,module,exports){
+},{"../../promise":53,"../sqlite3/index":34,"./runner":47,"inherits":74,"lodash":"K2RcUv"}],47:[function(_dereq_,module,exports){
 // Runner
 // -------
 module.exports = function(client) {
@@ -2945,7 +3075,7 @@ Runner_WebSQL.prototype.processResponse = function(obj) {
 client.Runner = Runner_WebSQL;
 
 };
-},{"../../promise":51,"../sqlite3/runner":37,"inherits":72,"lodash":"K2RcUv"}],46:[function(_dereq_,module,exports){
+},{"../../promise":53,"../sqlite3/runner":39,"inherits":74,"lodash":"K2RcUv"}],48:[function(_dereq_,module,exports){
 // Mixed into the query compiler & schema pieces. Assumes a `grammar`
 // property exists on the current object.
 var _            = _dereq_('lodash');
@@ -3075,7 +3205,7 @@ Formatter.prototype.compileCallback = function(callback, method) {
 };
 
 module.exports = Formatter;
-},{"./query/builder":52,"./raw":56,"lodash":"K2RcUv"}],47:[function(_dereq_,module,exports){
+},{"./query/builder":54,"./raw":58,"lodash":"K2RcUv"}],49:[function(_dereq_,module,exports){
 // helpers.js
 // -------
 
@@ -3127,7 +3257,7 @@ var helpers = {
 };
 
 module.exports = helpers;
-},{"lodash":"K2RcUv"}],48:[function(_dereq_,module,exports){
+},{"lodash":"K2RcUv"}],50:[function(_dereq_,module,exports){
 module.exports = function(Target) {
 var _ = _dereq_('lodash');
 var SqlString = _dereq_('./dialects/mysql/string');
@@ -3204,9 +3334,9 @@ _.each(['bind', 'catch', 'spread', 'otherwise', 'tap', 'thenReturn',
 });
 
 };
-},{"./dialects/mysql/string":16,"lodash":"K2RcUv"}],49:[function(_dereq_,module,exports){
+},{"./dialects/mysql/string":16,"lodash":"K2RcUv"}],51:[function(_dereq_,module,exports){
 module.exports = ['make', 'latest', 'rollback', 'currentVersion'];
-},{}],50:[function(_dereq_,module,exports){
+},{}],52:[function(_dereq_,module,exports){
 // Pool
 // -------
 var _           = _dereq_('lodash');
@@ -3282,7 +3412,7 @@ Pool.prototype.destroy = function(callback) {
 };
 
 module.exports = Pool;
-},{"./promise":51,"lodash":"K2RcUv"}],51:[function(_dereq_,module,exports){
+},{"./promise":53,"lodash":"K2RcUv"}],53:[function(_dereq_,module,exports){
 var Promise = _dereq_('bluebird');
 
 Promise.prototype.yield     = Promise.prototype.thenReturn;
@@ -3292,7 +3422,7 @@ Promise.prototype.exec      = Promise.prototype.nodeify;
 
 module.exports = Promise;
 
-},{"bluebird":"EjIH/G"}],52:[function(_dereq_,module,exports){
+},{"bluebird":"EjIH/G"}],54:[function(_dereq_,module,exports){
 // Builder
 // -------
 var _            = _dereq_('lodash');
@@ -3952,7 +4082,7 @@ QueryBuilder.prototype._aggregate = function(method, column) {
 _dereq_('../interface')(QueryBuilder);
 
 module.exports = QueryBuilder;
-},{"../helpers":47,"../interface":48,"../raw":56,"./joinclause":54,"events":71,"inherits":72,"lodash":"K2RcUv"}],53:[function(_dereq_,module,exports){
+},{"../helpers":49,"../interface":50,"../raw":58,"./joinclause":56,"events":73,"inherits":74,"lodash":"K2RcUv"}],55:[function(_dereq_,module,exports){
 // Query Compiler
 // -------
 
@@ -4326,7 +4456,7 @@ QueryCompiler.prototype._prepUpdate = function(data) {
 
 module.exports = QueryCompiler;
 
-},{"../helpers":47,"../raw":56,"lodash":"K2RcUv"}],54:[function(_dereq_,module,exports){
+},{"../helpers":49,"../raw":58,"lodash":"K2RcUv"}],56:[function(_dereq_,module,exports){
 // JoinClause
 // -------
 
@@ -4378,7 +4508,7 @@ JoinClause.prototype._bool = function(bool) {
 };
 
 module.exports = JoinClause;
-},{}],55:[function(_dereq_,module,exports){
+},{}],57:[function(_dereq_,module,exports){
 // All properties we can use to start a query chain
 // from the `knex` object, e.g. `knex.select('*').from(...`
 module.exports = [
@@ -4449,7 +4579,7 @@ module.exports = [
   'transacting',
   'connection'
 ];
-},{}],56:[function(_dereq_,module,exports){
+},{}],58:[function(_dereq_,module,exports){
 // Raw
 // -------
 var _ = _dereq_('lodash');
@@ -4457,7 +4587,7 @@ var inherits = _dereq_('inherits');
 var EventEmitter = _dereq_('events').EventEmitter;
 
 function Raw(sql, bindings) {
-  if (sql.toSQL) {
+  if (sql && sql.toSQL) {
     var output = sql.toSQL();
     sql = output.sql;
     bindings = output.bindings;
@@ -4495,7 +4625,7 @@ Raw.prototype.toSQL = function() {
 _dereq_('./interface')(Raw);
 
 module.exports = Raw;
-},{"./interface":48,"events":71,"inherits":72,"lodash":"K2RcUv"}],57:[function(_dereq_,module,exports){
+},{"./interface":50,"events":73,"inherits":74,"lodash":"K2RcUv"}],59:[function(_dereq_,module,exports){
 var _            = _dereq_('lodash');
 var Promise      = _dereq_('./promise');
 
@@ -4708,7 +4838,7 @@ Runner.prototype.cleanupConnection = Promise.method(function() {
 });
 
 module.exports = Runner;
-},{"./promise":51,"lodash":"K2RcUv"}],58:[function(_dereq_,module,exports){
+},{"./promise":53,"lodash":"K2RcUv"}],60:[function(_dereq_,module,exports){
 var _            = _dereq_('lodash');
 var inherits     = _dereq_('inherits');
 var EventEmitter = _dereq_('events').EventEmitter;
@@ -4727,7 +4857,7 @@ inherits(SchemaBuilder, EventEmitter);
 // "_sequence" array for consistency.
 _.each([
   'createTable', 'table', 'alterTable', 'hasTable', 'hasColumn',
-  'dropTable', 'renameTable', 'dropTableIfExists', 'raw'
+  'dropTable', 'renameTable', 'dropTableIfExists', 'raw', 'debug'
 ], function(method) {
   SchemaBuilder.prototype[method] = function() {
     if (method === 'table') method = 'alterTable';
@@ -4751,7 +4881,7 @@ SchemaBuilder.prototype.toSQL = function() {
 _dereq_('../interface')(SchemaBuilder);
 
 module.exports = SchemaBuilder;
-},{"../interface":48,"events":71,"inherits":72,"lodash":"K2RcUv"}],59:[function(_dereq_,module,exports){
+},{"../interface":50,"events":73,"inherits":74,"lodash":"K2RcUv"}],61:[function(_dereq_,module,exports){
 var _ = _dereq_('lodash');
 
 // Alias a few methods for clarity when processing.
@@ -4844,7 +4974,7 @@ ColumnBuilder.prototype.references = function(value) {
 };
 
 module.exports = ColumnBuilder;
-},{"lodash":"K2RcUv"}],60:[function(_dereq_,module,exports){
+},{"lodash":"K2RcUv"}],62:[function(_dereq_,module,exports){
 // Column Compiler
 // Used for designating column definitions
 // during the table "create" / "alter" statements.
@@ -4978,7 +5108,7 @@ ColumnCompiler.prototype._num = function(val, fallback) {
 };
 
 module.exports = ColumnCompiler;
-},{"../raw":56,"lodash":"K2RcUv"}],61:[function(_dereq_,module,exports){
+},{"../raw":58,"lodash":"K2RcUv"}],63:[function(_dereq_,module,exports){
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of
 // properly formatted / bound query strings.
@@ -5018,7 +5148,7 @@ SchemaCompiler.prototype.raw = function(sql, bindings) {
 };
 
 module.exports = SchemaCompiler;
-},{}],62:[function(_dereq_,module,exports){
+},{}],64:[function(_dereq_,module,exports){
 var _ = _dereq_('lodash');
 
 var Builder = _dereq_('./builder');
@@ -5069,10 +5199,10 @@ module.exports = {
   ColumnBuilder: ColumnBuilder,
   ColumnCompiler: ColumnCompiler
 };
-},{"./builder":58,"./columnbuilder":59,"./columncompiler":60,"./compiler":61,"./tablebuilder":64,"./tablecompiler":65,"lodash":"K2RcUv"}],63:[function(_dereq_,module,exports){
+},{"./builder":60,"./columnbuilder":61,"./columncompiler":62,"./compiler":63,"./tablebuilder":66,"./tablecompiler":67,"lodash":"K2RcUv"}],65:[function(_dereq_,module,exports){
 module.exports = ['table', 'createTable', 'editTable', 'dropTable',
-  'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn', 'raw'];
-},{}],64:[function(_dereq_,module,exports){
+  'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn', 'raw', 'debug'];
+},{}],66:[function(_dereq_,module,exports){
 // TableBuilder
 
 // Takes the function passed to the "createTable" or "table/editTable"
@@ -5320,7 +5450,7 @@ TableBuilder.prototype.foreign = function(column) {
 };
 
 module.exports = TableBuilder;
-},{"lodash":"K2RcUv"}],65:[function(_dereq_,module,exports){
+},{"lodash":"K2RcUv"}],67:[function(_dereq_,module,exports){
 // Table Compiler
 // -------
 var _ = _dereq_('lodash');
@@ -5474,7 +5604,7 @@ TableCompiler.prototype._indexCommand = function(type, tableName, columns) {
 };
 
 module.exports = TableCompiler;
-},{"../helpers":47,"lodash":"K2RcUv"}],66:[function(_dereq_,module,exports){
+},{"../helpers":49,"lodash":"K2RcUv"}],68:[function(_dereq_,module,exports){
 // Transaction
 // -------
 var Promise = _dereq_('./promise');
@@ -5565,7 +5695,7 @@ Transaction.prototype.then = function(onFulfilled, onRejected) {
 };
 
 module.exports = Transaction;
-},{"../knex":1,"./interface":48,"./promise":51,"events":71,"inherits":72}],67:[function(_dereq_,module,exports){
+},{"../knex":1,"./interface":50,"./promise":53,"events":73,"inherits":74}],69:[function(_dereq_,module,exports){
 module.exports = {
 
   pgBindings: function(sql) {
@@ -5577,7 +5707,7 @@ module.exports = {
   }
 
 };
-},{}],68:[function(_dereq_,module,exports){
+},{}],70:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -6728,7 +6858,7 @@ function assert (test, message) {
   if (!test) throw new Error(message || 'Failed assertion')
 }
 
-},{"base64-js":69,"ieee754":70}],69:[function(_dereq_,module,exports){
+},{"base64-js":71,"ieee754":72}],71:[function(_dereq_,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -6851,7 +6981,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	module.exports.fromByteArray = uint8ToBase64
 }())
 
-},{}],70:[function(_dereq_,module,exports){
+},{}],72:[function(_dereq_,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -6937,7 +7067,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],71:[function(_dereq_,module,exports){
+},{}],73:[function(_dereq_,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -7242,7 +7372,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],72:[function(_dereq_,module,exports){
+},{}],74:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
