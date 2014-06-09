@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.4
+// Knex.js  0.6.5
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -79,7 +79,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.4';
+  knex.VERSION = knex.__knex__  = '0.6.5';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -1199,6 +1199,7 @@ client.Transaction = Transaction_SQLite3;
 // WebSQL
 // -------
 var inherits = _dereq_('inherits');
+var _        = _dereq_('lodash');
 
 var Client_SQLite3 = _dereq_('../sqlite3/index');
 var Promise = _dereq_('../../promise');
@@ -1244,7 +1245,7 @@ Client_WebSQL.prototype.acquireConnection = function() {
 Client_WebSQL.prototype.releaseConnection = Promise.method(function(connection) {});
 
 module.exports = Client_WebSQL;
-},{"../../promise":24,"../sqlite3/index":5,"./runner":18,"inherits":45}],18:[function(_dereq_,module,exports){
+},{"../../promise":24,"../sqlite3/index":5,"./runner":18,"inherits":45,"lodash":"K2RcUv"}],18:[function(_dereq_,module,exports){
 // Runner
 // -------
 module.exports = function(client) {
@@ -1256,6 +1257,7 @@ _dereq_('../sqlite3/runner')(client);
 var Runner_SQLite3 = client.Runner;
 
 var inherits = _dereq_('inherits');
+var _        = _dereq_('lodash');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -1310,7 +1312,7 @@ Runner_WebSQL.prototype.processResponse = function(obj) {
 client.Runner = Runner_WebSQL;
 
 };
-},{"../../promise":24,"../sqlite3/runner":10,"inherits":45}],19:[function(_dereq_,module,exports){
+},{"../../promise":24,"../sqlite3/runner":10,"inherits":45,"lodash":"K2RcUv"}],19:[function(_dereq_,module,exports){
 // Mixed into the query compiler & schema pieces. Assumes a `grammar`
 // property exists on the current object.
 var _            = _dereq_('lodash');
