@@ -141,6 +141,7 @@
       <li>– <a href="#Schema-hasTable">hasTable</a></li>
       <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
       <li>– <a href="#Schema-table">table</a></li>
+      <li>– <a href="#Schema-raw">raw</a></li>
       <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
       <li>– <a href="#Schema-dropColumn">dropColumn</a></li>
       <li>– <a href="#Schema-dropColumns">dropColumns</a></li>
@@ -1441,6 +1442,20 @@ knex.schema.dropTableIfExists('users')
 
 <pre class="display">
 knex.schema.table('users', function (table) {
+  table.dropColumn('name');
+  table.string('first_name');
+  table.string('last_name');
+})
+</pre>
+
+    <p id="Schema-raw">
+      <b class="header">raw</b><code>knex.schema.raw(statement)</code>
+      <br />
+      Run an arbitrary sql query in the schema builder chain.
+    </p>
+
+<pre class="display">
+knex.schema.raw('SET sql_mode='TRADITIONAL';').table('users', function (table) {
   table.dropColumn('name');
   table.string('first_name');
   table.string('last_name');
