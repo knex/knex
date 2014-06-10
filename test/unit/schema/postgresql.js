@@ -10,13 +10,14 @@ module.exports = function(client) {
 
   describe("PostgreSQL SchemaBuilder", function() {
 
-    it("basic create table", function() {
+    it("fixes memoization regression", function() {
       tableSql = new SchemaBuilder().createTable('users', function(table) {
+        table.uuid('key');
         table.increments('id');
         table.string('email');
       }).toSQL();
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('create table "users" ("id" serial primary key, "email" varchar(255))');
+      expect(tableSql[0].sql).to.equal('create table "users" ("key" uuid, "id" serial primary key, "email" varchar(255))');
     });
 
     it("basic alter table", function() {
