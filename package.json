@@ -7,7 +7,6 @@
     "test": "test"
   },
   "devDependencies": {
-    "minimist": "~0.0.9",
     "through": "^2.3.4",
     "browserify": "^4.0.0",
     "gulp": "^3.6.2",
@@ -30,6 +29,7 @@
     "mysql2": "~0.12.1"
   },
   "dependencies": {
+    "minimist": "~0.0.9",
     "bluebird": "1.2.x",
     "chalk": "^0.4.0",
     "commander": "^2.2.0",
