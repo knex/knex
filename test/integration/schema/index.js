@@ -25,6 +25,7 @@ module.exports = function(knex) {
             .dropTableIfExists('migration_test_2_1')
             .dropTableIfExists('test_default_table')
             .dropTableIfExists('knex_migrations')
+            .dropTableIfExists('bool_test')
         ]);
       });
 
@@ -159,6 +160,23 @@ module.exports = function(knex) {
             tester('postgresql', ['create table "charset_collate_test" ("id" serial primary key, "account_id" integer, "details" text, "status" smallint)']);
             tester('sqlite3', ['create table "charset_collate_test" ("id" integer not null primary key autoincrement, "account_id" integer, "details" text, "status" tinyint)']);
           });
+      });
+
+      it('sets booleans & defaults correctly', function() {
+          return knex.schema
+            .createTable('bool_test', function(table) {
+              table.bool('one');
+              table.bool('two').defaultTo(false);
+              table.bool('three').defaultTo(true);
+              table.bool('four').defaultTo('true');
+              table.bool('five').defaultTo('false');
+            }).testSql(function(tester) {
+              tester('mysql', ['create table `bool_test` (`one` boolean, `two` boolean default \'0\', `three` boolean default \'1\', `four` boolean default \'1\', `five` boolean default \'0\') default character set utf8']);
+              tester('postgresql', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
+              tester('sqlite3', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
+            }).then(function() {
+              return knex.insert({one: false}).into('bool_test');
+            });
       });
 
     });

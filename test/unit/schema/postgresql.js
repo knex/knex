@@ -331,10 +331,10 @@ module.exports = function(client) {
 
     it("adding boolean", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
-        table.boolean('foo');
+        table.boolean('foo').defaultTo(false);
       }).toSQL();
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" boolean');
+      expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" boolean default \'0\'');
     });
 
     it("adding enum", function() {
