@@ -399,6 +399,13 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('alter table "user" add column "preferences" json not null {}');
     });
 
+    it('sets specificType correctly', function() {
+      tableSql = new SchemaBuilder().table('user', function(t) {
+        t.specificType('email', 'CITEXT').unique().notNullable();
+      }).toSQL();
+      expect(tableSql[0].sql).to.equal('alter table "user" add column "email" CITEXT not null');
+    });
+
   });
 
 };

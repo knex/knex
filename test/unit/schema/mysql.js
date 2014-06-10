@@ -415,6 +415,14 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` blob');
     });
 
+    it('test adding decimal', function() {
+      tableSql = new SchemaBuilder().table('users', function() {
+        this.decimal('foo', 2, 6);
+      }).toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` decimal(2, 6)');
+    });
 
     it('is possible to set raw statements in defaultTo, #146', function() {
       tableSql = new SchemaBuilder().createTable('default_raw_test', function(t) {
