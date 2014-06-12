@@ -159,6 +159,16 @@ module.exports = function(client) {
       expect(tableSql[1].sql).to.equal('alter table "accounts" add constraint accounts_account_id_foreign foreign key ("account_id") references "users" ("id")');
     });
 
+    it("adds foreign key with onUpdate and onDelete", function() {
+      tableSql = new SchemaBuilder().createTable('person', function(table) {
+	table.integer('user_id').notNull().references('users.id').onDelete('SET NULL');
+	table.integer('account_id').notNull().references('id').inTable('accounts').onUpdate('cascade');
+      }).toSQL();
+      equal(3, tableSql.length);
+      expect(tableSql[1].sql).to.equal('alter table "person" add constraint person_user_id_foreign foreign key ("user_id") references "users" ("id") on delete SET NULL');
+      expect(tableSql[2].sql).to.equal('alter table "person" add constraint person_account_id_foreign foreign key ("account_id") references "accounts" ("id") on update cascade');
+    });
+
     it("adding unique key", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.unique('foo', 'bar');
