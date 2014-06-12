@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.12
+// Knex.js  0.6.13
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -48,6 +48,7 @@ var Clients = Knex.Clients = {
 
 // Require lodash.
 var _ = _dereq_('lodash');
+var Promise = _dereq_('./lib/promise');
 
 // Each of the methods which may be statically chained from knex.
 var QueryInterface   = _dereq_('./lib/query/methods');
@@ -81,7 +82,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.12';
+  knex.VERSION = knex.__knex__  = '0.6.13';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -185,7 +186,7 @@ Knex.initialize = function(config) {
 
 module.exports = Knex;
 
-},{"./lib/dialects/websql":17,"./lib/migrate/methods":22,"./lib/query/methods":28,"./lib/raw":29,"./lib/schema/methods":36,"./lib/utils":40,"events":44,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
+},{"./lib/dialects/websql":17,"./lib/migrate/methods":22,"./lib/promise":24,"./lib/query/methods":28,"./lib/raw":29,"./lib/schema/methods":36,"./lib/utils":40,"events":44,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
 // "Base Client"
 // ------
 var Promise    = _dereq_('./promise');
@@ -1608,15 +1609,14 @@ var Promise     = _dereq_('./promise');
 // the pool if it doesn't already exist.
 var Pool = function(config) {
   this.config = _.clone(config) || {};
-  this.initialize();
+  this.genericPool = this.initialize();
 };
 
 // Typically only called internally, this initializes
 // a new `GenericPool` instance, based on the `config`
 // options passed into the constructor.
 Pool.prototype.initialize = function() {
-  this.genericPool = this.genericPool ||
-    new GenericPool(_.defaults(this.config, _.result(this, 'defaults')));
+  return new GenericPool(_.defaults(this.config, _.result(this, 'defaults')));
 };
 
 // Some basic defaults for the pool...
@@ -1647,12 +1647,20 @@ Pool.prototype.defaults = function() {
 
 // Acquires a connection from the pool.
 Pool.prototype.acquire = function(callback, priority) {
-  return this.genericPool.acquire(callback, priority);
+  if (this.genericPool) {
+    this.genericPool.acquire(callback, priority);
+  } else {
+    callback(new Error('The genericPool is not initialized.'));
+  }
 };
 
 // Release a connection back to the connection pool.
 Pool.prototype.release = function(connection, callback) {
-  return this.genericPool.release(connection, callback);
+  if (this.genericPool) {
+    this.genericPool.release(connection, callback);
+  } else {
+    callback(new Error('The genericPool is not initialized.'));
+  }
 };
 
 // Tear down the pool, only necessary if you need it.
@@ -3759,8 +3767,10 @@ TableCompiler.prototype.foreign = function(foreignData) {
     var column     = this.formatter.columnize(foreignData.column);
     var references = this.formatter.columnize(foreignData.references);
     var inTable    = this.formatter.wrap(foreignData.inTable);
-    return 'alter table ' + this.tableName() + ' add constraint ' + keyName + ' ' +
-      'foreign key (' + column + ') references ' + inTable + ' (' + references + ')';
+    var onUpdate   = foreignData.onUpdate ? ' on update ' + foreignData.onUpdate : '';
+    var onDelete   = foreignData.onDelete ? ' on delete ' + foreignData.onDelete : '';
+    this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + keyName + ' ' +
+      'foreign key (' + column + ') references ' + inTable + ' (' + references + ')' + onUpdate + onDelete);
   }
 };
 

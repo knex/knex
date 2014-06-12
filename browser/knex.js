@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.12
+// Knex.js  0.6.13
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -48,6 +48,7 @@ var Clients = Knex.Clients = {
 
 // Require lodash.
 var _ = _dereq_('lodash');
+var Promise = _dereq_('./lib/promise');
 
 // Each of the methods which may be statically chained from knex.
 var QueryInterface   = _dereq_('./lib/query/methods');
@@ -81,7 +82,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.12';
+  knex.VERSION = knex.__knex__  = '0.6.13';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -185,7 +186,7 @@ Knex.initialize = function(config) {
 
 module.exports = Knex;
 
-},{"./lib/dialects/maria":3,"./lib/dialects/mysql":6,"./lib/dialects/mysql2":18,"./lib/dialects/postgres":21,"./lib/dialects/sqlite3":34,"./lib/dialects/websql":46,"./lib/migrate/methods":51,"./lib/query/methods":57,"./lib/raw":58,"./lib/schema/methods":65,"./lib/utils":69,"events":73,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
+},{"./lib/dialects/maria":3,"./lib/dialects/mysql":6,"./lib/dialects/mysql2":18,"./lib/dialects/postgres":21,"./lib/dialects/sqlite3":34,"./lib/dialects/websql":46,"./lib/migrate/methods":51,"./lib/promise":53,"./lib/query/methods":57,"./lib/raw":58,"./lib/schema/methods":65,"./lib/utils":69,"events":73,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
 // "Base Client"
 // ------
 var Promise    = _dereq_('./promise');
@@ -1044,19 +1045,6 @@ TableCompiler_MySQL.prototype.dropPrimary = function() {
 TableCompiler_MySQL.prototype.dropUnique = function(column, indexName) {
   indexName = indexName || this._indexCommand('unique', this.tableNameRaw, column);
   this.pushQuery('alter table ' + this.tableName() + ' drop index ' + indexName);
-};
-
-// Compile a foreign key command.
-TableCompiler_MySQL.prototype.foreign = function(foreignData) {
-  var sql = Schema.TableCompiler.prototype.foreign.apply(this, arguments);
-  if (sql) {
-    // Once we have the basic foreign key creation statement constructed we can
-    // build out the syntax for what should happen on an update or delete of
-    // the affected columns, which will get something like 'cascade', etc.
-    if (foreignData.onDelete) sql += ' on delete ' + foreignData.onDelete;
-    if (foreignData.onUpdate) sql += ' on update ' + foreignData.onUpdate;
-    this.pushQuery(sql);
-  }
 };
 
 client.TableBuilder = TableBuilder_MySQL;
@@ -1951,12 +1939,6 @@ TableCompiler_PG.prototype.createQuery = function(columns) {
   });
   var hasComment = _.has(this.single, 'comment');
   if (hasComment) this.comment(this.single.comment);
-};
-
-// Compile a foreign key command.
-TableCompiler_PG.prototype.foreign = function(foreignData) {
-  var sql = Schema.TableCompiler.prototype.foreign.apply(this, arguments);
-  if (sql) this.pushQuery(sql);
 };
 
 // Compiles the comment on the table.
@@ -3344,15 +3326,14 @@ var Promise     = _dereq_('./promise');
 // the pool if it doesn't already exist.
 var Pool = function(config) {
   this.config = _.clone(config) || {};
-  this.initialize();
+  this.genericPool = this.initialize();
 };
 
 // Typically only called internally, this initializes
 // a new `GenericPool` instance, based on the `config`
 // options passed into the constructor.
 Pool.prototype.initialize = function() {
-  this.genericPool = this.genericPool ||
-    new GenericPool(_.defaults(this.config, _.result(this, 'defaults')));
+  return new GenericPool(_.defaults(this.config, _.result(this, 'defaults')));
 };
 
 // Some basic defaults for the pool...
@@ -3383,12 +3364,20 @@ Pool.prototype.defaults = function() {
 
 // Acquires a connection from the pool.
 Pool.prototype.acquire = function(callback, priority) {
-  return this.genericPool.acquire(callback, priority);
+  if (this.genericPool) {
+    this.genericPool.acquire(callback, priority);
+  } else {
+    callback(new Error('The genericPool is not initialized.'));
+  }
 };
 
 // Release a connection back to the connection pool.
 Pool.prototype.release = function(connection, callback) {
-  return this.genericPool.release(connection, callback);
+  if (this.genericPool) {
+    this.genericPool.release(connection, callback);
+  } else {
+    callback(new Error('The genericPool is not initialized.'));
+  }
 };
 
 // Tear down the pool, only necessary if you need it.
@@ -5495,8 +5484,10 @@ TableCompiler.prototype.foreign = function(foreignData) {
     var column     = this.formatter.columnize(foreignData.column);
     var references = this.formatter.columnize(foreignData.references);
     var inTable    = this.formatter.wrap(foreignData.inTable);
-    return 'alter table ' + this.tableName() + ' add constraint ' + keyName + ' ' +
-      'foreign key (' + column + ') references ' + inTable + ' (' + references + ')';
+    var onUpdate   = foreignData.onUpdate ? ' on update ' + foreignData.onUpdate : '';
+    var onDelete   = foreignData.onDelete ? ' on delete ' + foreignData.onDelete : '';
+    this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + keyName + ' ' +
+      'foreign key (' + column + ') references ' + inTable + ' (' + references + ')' + onUpdate + onDelete);
   }
 };
 
