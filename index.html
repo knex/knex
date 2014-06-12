@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.6.12)</span>
+      Knex.js <span class="version">(0.6.13)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -295,7 +295,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.6.12 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.6.13 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -433,6 +433,11 @@ $ npm install sqlite3
 });
 </code>
 </pre>
+
+    <p>
+      If you ever need to explicitly teardown the connection pool, you may use <tt>knex.destroy([callback])</tt>.
+      You may use <tt>knex.destroy</tt> by passing a callback, or by chaining as a promise, just not both.
+    </p>
 
     <h3 id="Installation-migrations">Migrations</h3>
 
@@ -2206,6 +2211,14 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.6.13</b> &mdash; <small><i>June 12, 2014</i></small><br />
+    </p>
+    <ul>
+      <li>Fix regression with onUpdate / onDelete in PostgreSQL, (#308).</li>
+      <li>Add missing <tt>Promise</tt> require to knex.js, unit test for knex.destroy (#314).</li>
+    </ul>
 
     <p>
       <b class="header">0.6.12</b> &mdash; <small><i>June 10, 2014</i></small><br />
