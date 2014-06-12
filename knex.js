@@ -47,6 +47,7 @@ var Clients = Knex.Clients = {
 
 // Require lodash.
 var _ = require('lodash');
+var Promise = require('./lib/promise');
 
 // Each of the methods which may be statically chained from knex.
 var QueryInterface   = require('./lib/query/methods');
