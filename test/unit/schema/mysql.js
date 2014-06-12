@@ -193,8 +193,8 @@ module.exports = function(client) {
 
     it("adds foreign key with onUpdate and onDelete", function() {
       tableSql = new SchemaBuilder().createTable('person', function(table) {
-	table.integer('user_id').notNull().references('users.id').onDelete('SET NULL');
-	table.integer('account_id').notNull().references('id').inTable('accounts').onUpdate('cascade');
+        table.integer('user_id').notNull().references('users.id').onDelete('SET NULL');
+        table.integer('account_id').notNull().references('id').inTable('accounts').onUpdate('cascade');
       }).toSQL();
       equal(3, tableSql.length);
       expect(tableSql[1].sql).to.equal('alter table `person` add constraint person_user_id_foreign foreign key (`user_id`) references `users` (`id`) on delete SET NULL');
