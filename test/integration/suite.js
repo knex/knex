@@ -27,7 +27,6 @@ module.exports = function(knex) {
           return knex.destroy();
         }).then(function() {
           expect(spy).to.be.calledTwice;
-          console.log('here');
         });
       });
     });
