@@ -76,10 +76,12 @@ module.exports = {
 
   sqlite3: {
     client: 'sqlite3',
-    connection: testConfig.sqlite3 || {
-      filename: ':memory:'
+    connection: {
+      filename: __dirname + '/test.sqlite3'
     },
-    pool: pool,
+    pool: _.extend({}, pool, {
+      max: 2
+    }),
     migrations: migrations
   }
 
