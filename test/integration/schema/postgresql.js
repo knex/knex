@@ -113,7 +113,7 @@ module.exports = function(knex) {
                 expect(resp).to.equal('testing');
               });
           })
-          .connection(connection)
+          .connection(connection);
         })
         .then(function() {
           return knex.schema.searchPath().connection(connection);
