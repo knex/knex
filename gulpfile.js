@@ -26,7 +26,7 @@ var bases = {
 };
 
 var all            = ['mysql', 'mysql2', 'mariasql', 'pg', 'sqlite3', 'websql'];
-var externals      = ['lodash', 'bluebird'];
+var externals      = ['lodash', 'bluebird', 'events', 'inherits'];
 var alwaysExcluded = ['generic-pool-redux', 'readable-stream', './lib/migrate/index.js'];
 
 function ensureOutputDirectory() {
@@ -85,8 +85,9 @@ function buildWebSQL() {
 function buildDependencies() {
   var b = browserify();
   var depStream = fs.createWriteStream('./browser/deps.js');
-  b.require('bluebird');
-  b.require('lodash');
+  externals.forEach(function(lib) {
+    b.require(lib);
+  });
   ensureOutputDirectory().then(function() {
     b.bundle().pipe(depStream);
   });
