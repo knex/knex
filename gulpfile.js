@@ -26,7 +26,7 @@ var bases = {
 };
 
 var all            = ['mysql', 'mysql2', 'mariasql', 'pg', 'sqlite3', 'websql'];
-var externals      = ['lodash', 'bluebird', 'events', 'inherits'];
+var externals      = ['lodash', 'bluebird', 'events', 'inherits', 'buffer'];
 var alwaysExcluded = ['generic-pool-redux', 'readable-stream', './lib/migrate/index.js'];
 
 function ensureOutputDirectory() {
