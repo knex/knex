@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.13
+// Knex.js  0.6.14
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -82,7 +82,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.13';
+  knex.VERSION = knex.__knex__  = '0.6.14';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -186,7 +186,7 @@ Knex.initialize = function(config) {
 
 module.exports = Knex;
 
-},{"./lib/dialects/maria":3,"./lib/dialects/mysql":6,"./lib/dialects/mysql2":18,"./lib/dialects/postgres":21,"./lib/dialects/sqlite3":34,"./lib/dialects/websql":46,"./lib/migrate/methods":51,"./lib/promise":53,"./lib/query/methods":57,"./lib/raw":58,"./lib/schema/methods":65,"./lib/utils":69,"events":73,"lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
+},{"./lib/dialects/maria":3,"./lib/dialects/mysql":6,"./lib/dialects/mysql2":18,"./lib/dialects/postgres":21,"./lib/dialects/sqlite3":34,"./lib/dialects/websql":46,"./lib/migrate/methods":51,"./lib/promise":53,"./lib/query/methods":57,"./lib/raw":58,"./lib/schema/methods":65,"./lib/utils":69,"events":"T9Wsc/","lodash":"K2RcUv"}],2:[function(_dereq_,module,exports){
 // "Base Client"
 // ------
 var Promise    = _dereq_('./promise');
@@ -292,7 +292,7 @@ Client_MariaSQL.prototype.database = function() {
 };
 
 module.exports = Client_MariaSQL;
-},{"../../promise":53,"../mysql":6,"./runner":4,"inherits":74,"lodash":"K2RcUv"}],4:[function(_dereq_,module,exports){
+},{"../../promise":53,"../mysql":6,"./runner":4,"inherits":"oxw+vU","lodash":"K2RcUv"}],4:[function(_dereq_,module,exports){
 // MariaSQL Runner
 // ------
 module.exports = function(client) {
@@ -400,7 +400,7 @@ function rowHandler(callback) {
 client.Runner = Runner_MariaSQL;
 
 };
-},{"../../helpers":49,"../../promise":53,"../../runner":59,"../mysql/string":16,"inherits":74}],5:[function(_dereq_,module,exports){
+},{"../../helpers":49,"../../promise":53,"../../runner":59,"../mysql/string":16,"inherits":"oxw+vU"}],5:[function(_dereq_,module,exports){
 // MySQL Formatter
 // ------
 module.exports = function(client) {
@@ -445,7 +445,7 @@ Formatter_MySQL.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_MySQL;
 
 };
-},{"../../formatter":48,"inherits":74}],6:[function(_dereq_,module,exports){
+},{"../../formatter":48,"inherits":"oxw+vU"}],6:[function(_dereq_,module,exports){
 // MySQL Client
 // -------
 var inherits = _dereq_('inherits');
@@ -546,7 +546,7 @@ Client_MySQL.prototype.database = function() {
 };
 
 module.exports = Client_MySQL;
-},{"../../client":2,"../../promise":53,"./formatter":5,"./migrator":7,"./pool":8,"./query":9,"./raw":10,"./runner":11,"./schema":13,"./transaction":17,"inherits":74,"lodash":"K2RcUv"}],7:[function(_dereq_,module,exports){
+},{"../../client":2,"../../promise":53,"./formatter":5,"./migrator":7,"./pool":8,"./query":9,"./raw":10,"./runner":11,"./schema":13,"./transaction":17,"inherits":"oxw+vU","lodash":"K2RcUv"}],7:[function(_dereq_,module,exports){
 // MySQL Migrator
 // ------
 module.exports = function(client) {
@@ -563,7 +563,7 @@ inherits(Migrator_MySQL, Migrator);
 client.Migrator = Migrator_MySQL;
 
 };
-},{"inherits":74}],8:[function(_dereq_,module,exports){
+},{"inherits":"oxw+vU"}],8:[function(_dereq_,module,exports){
 // MySQL Pool
 // ------
 module.exports = function(client) {
@@ -580,7 +580,7 @@ inherits(Pool_MySQL, Pool);
 client.Pool = Pool_MySQL;
 
 };
-},{"../../pool":52,"inherits":74}],9:[function(_dereq_,module,exports){
+},{"../../pool":52,"inherits":"oxw+vU"}],9:[function(_dereq_,module,exports){
 // MySQL Query Builder & Compiler
 // ------
 module.exports = function(client) {
@@ -664,7 +664,7 @@ client.QueryBuilder  = QueryBuilder_MySQL;
 client.QueryCompiler = QueryCompiler_MySQL;
 
 };
-},{"../../query/builder":54,"../../query/compiler":55,"inherits":74,"lodash":"K2RcUv"}],10:[function(_dereq_,module,exports){
+},{"../../query/builder":54,"../../query/compiler":55,"inherits":"oxw+vU","lodash":"K2RcUv"}],10:[function(_dereq_,module,exports){
 // MySQL Raw
 // -------
 module.exports = function(client) {
@@ -684,7 +684,7 @@ inherits(Raw_MySQL, Raw);
 client.Raw = Raw_MySQL;
 
 };
-},{"../../raw":58,"inherits":74}],11:[function(_dereq_,module,exports){
+},{"../../raw":58,"inherits":"oxw+vU"}],11:[function(_dereq_,module,exports){
 // MySQL Runner
 // ------
 module.exports = function(client) {
@@ -760,7 +760,7 @@ Runner_MySQL.prototype.processResponse = function(obj) {
 client.Runner = Runner_MySQL;
 
 };
-},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":74,"lodash":"K2RcUv"}],12:[function(_dereq_,module,exports){
+},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":"oxw+vU","lodash":"K2RcUv"}],12:[function(_dereq_,module,exports){
 // MySQL Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -861,7 +861,7 @@ client.ColumnBuilder = ColumnBuilder_MySQL;
 client.ColumnCompiler = ColumnCompiler_MySQL;
 
 };
-},{"../../../helpers":49,"../../../schema":64,"inherits":74}],13:[function(_dereq_,module,exports){
+},{"../../../helpers":49,"../../../schema":64,"inherits":"oxw+vU"}],13:[function(_dereq_,module,exports){
 module.exports = function(client) {
   _dereq_('./schema')(client);
   _dereq_('./table')(client);
@@ -927,7 +927,7 @@ client.SchemaBuilder = SchemaBuilder_MySQL;
 client.SchemaCompiler = SchemaCompiler_MySQL;
 
 };
-},{"../../../schema":64,"inherits":74}],15:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":"oxw+vU"}],15:[function(_dereq_,module,exports){
 // MySQL Table Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -1051,7 +1051,7 @@ client.TableBuilder = TableBuilder_MySQL;
 client.TableCompiler = TableCompiler_MySQL;
 
 };
-},{"../../../schema":64,"inherits":74}],16:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":"oxw+vU"}],16:[function(_dereq_,module,exports){
 (function (Buffer){
 var SqlString = exports;
 
@@ -1222,7 +1222,7 @@ inherits(Transaction_MySQL, Transaction);
 client.Transaction = Transaction_MySQL;
 
 };
-},{"../../transaction":68,"inherits":74}],18:[function(_dereq_,module,exports){
+},{"../../transaction":68,"inherits":"oxw+vU"}],18:[function(_dereq_,module,exports){
 // MySQL2 Client
 // -------
 var inherits = _dereq_('inherits');
@@ -1268,7 +1268,7 @@ Client_MySQL2.prototype.acquireRawConnection = function() {
 };
 
 module.exports = Client_MySQL2;
-},{"../../promise":53,"../mysql":6,"./runner":19,"inherits":74,"lodash":"K2RcUv"}],19:[function(_dereq_,module,exports){
+},{"../../promise":53,"../mysql":6,"./runner":19,"inherits":"oxw+vU","lodash":"K2RcUv"}],19:[function(_dereq_,module,exports){
 // MySQL Runner
 // ------
 module.exports = function(client) {
@@ -1350,7 +1350,7 @@ Runner_MySQL2.prototype.processResponse = function(obj) {
 client.Runner = Runner_MySQL2;
 
 };
-},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":74,"lodash":"K2RcUv"}],20:[function(_dereq_,module,exports){
+},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":"oxw+vU","lodash":"K2RcUv"}],20:[function(_dereq_,module,exports){
 // PostgreSQL Formatter
 // -------
 module.exports = function(client) {
@@ -1398,7 +1398,7 @@ Formatter_PG.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_PG;
 
 };
-},{"../../formatter":48,"inherits":74}],21:[function(_dereq_,module,exports){
+},{"../../formatter":48,"inherits":"oxw+vU"}],21:[function(_dereq_,module,exports){
 // PostgreSQL
 // -------
 var _        = _dereq_('lodash');
@@ -1525,7 +1525,7 @@ Client_PG.prototype.checkVersion = function(connection) {
 };
 
 module.exports = Client_PG;
-},{"../../client":2,"../../promise":53,"./formatter":20,"./migrator":22,"./pool":23,"./query":24,"./raw":25,"./runner":26,"./schema":28,"./transaction":31,"./utils":32,"inherits":74,"lodash":"K2RcUv"}],22:[function(_dereq_,module,exports){
+},{"../../client":2,"../../promise":53,"./formatter":20,"./migrator":22,"./pool":23,"./query":24,"./raw":25,"./runner":26,"./schema":28,"./transaction":31,"./utils":32,"inherits":"oxw+vU","lodash":"K2RcUv"}],22:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Migrator = _dereq_('../../migrate');
@@ -1543,7 +1543,7 @@ inherits(Migrator_PG, Migrator);
 client.Migrator = Migrator_PG;
 
 };
-},{"inherits":74}],23:[function(_dereq_,module,exports){
+},{"inherits":"oxw+vU"}],23:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Pool     = _dereq_('../../pool');
@@ -1560,7 +1560,7 @@ inherits(Pool_PG, Pool);
 client.Pool = Pool_PG;
 
 };
-},{"../../pool":52,"inherits":74}],24:[function(_dereq_,module,exports){
+},{"../../pool":52,"inherits":"oxw+vU"}],24:[function(_dereq_,module,exports){
 // PostgreSQL Query Builder & Compiler
 // ------
 module.exports = function(client) {
@@ -1667,7 +1667,7 @@ client.QueryBuilder = QueryBuilder_PG;
 client.QueryCompiler = QueryCompiler_PG;
 
 };
-},{"../../query/builder":54,"../../query/compiler":55,"inherits":74,"lodash":"K2RcUv"}],25:[function(_dereq_,module,exports){
+},{"../../query/builder":54,"../../query/compiler":55,"inherits":"oxw+vU","lodash":"K2RcUv"}],25:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Raw = _dereq_('../../raw');
@@ -1685,7 +1685,7 @@ inherits(Raw_PG, Raw);
 client.Raw = Raw_PG;
 
 };
-},{"../../raw":58,"inherits":74}],26:[function(_dereq_,module,exports){
+},{"../../raw":58,"inherits":"oxw+vU"}],26:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var _        = _dereq_('lodash');
@@ -1763,7 +1763,7 @@ Runner_PG.prototype.processResponse = function(obj) {
 client.Runner = Runner_PG;
 
 };
-},{"../../promise":53,"../../runner":59,"../../utils":69,"inherits":74,"lodash":"K2RcUv"}],27:[function(_dereq_,module,exports){
+},{"../../promise":53,"../../runner":59,"../../utils":69,"inherits":"oxw+vU","lodash":"K2RcUv"}],27:[function(_dereq_,module,exports){
 // PostgreSQL Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -1831,7 +1831,7 @@ client.ColumnBuilder = ColumnBuilder_PG;
 client.ColumnCompiler = ColumnCompiler_PG;
 
 };
-},{"../../../schema":64,"inherits":74}],28:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":"oxw+vU"}],28:[function(_dereq_,module,exports){
 arguments[4][13][0].apply(exports,arguments)
 },{"./column":27,"./schema":29,"./table":30}],29:[function(_dereq_,module,exports){
 // PostgreSQL Schema Builder & Compiler
@@ -1891,7 +1891,7 @@ client.SchemaBuilder = SchemaBuilder_PG;
 client.SchemaCompiler = SchemaCompiler_PG;
 
 };
-},{"../../../schema":64,"inherits":74}],30:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":"oxw+vU"}],30:[function(_dereq_,module,exports){
 // PostgreSQL Table Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -1982,7 +1982,7 @@ client.TableBuilder = TableBuilder_PG;
 client.TableCompiler = TableCompiler_PG;
 
 };
-},{"../../../schema":64,"inherits":74,"lodash":"K2RcUv"}],31:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":"oxw+vU","lodash":"K2RcUv"}],31:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var inherits = _dereq_('inherits');
@@ -1997,7 +1997,7 @@ inherits(Transaction_PG, Transaction);
 client.Transaction = Transaction_PG;
 
 };
-},{"../../transaction":68,"inherits":74}],32:[function(_dereq_,module,exports){
+},{"../../transaction":68,"inherits":"oxw+vU"}],32:[function(_dereq_,module,exports){
 (function (Buffer){
 
 // convert a JS array to a postgres array literal
@@ -2153,7 +2153,7 @@ Formatter_SQLite3.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_SQLite3;
 
 };
-},{"../../formatter":48,"inherits":74}],34:[function(_dereq_,module,exports){
+},{"../../formatter":48,"inherits":"oxw+vU"}],34:[function(_dereq_,module,exports){
 // SQLite3
 // -------
 
@@ -2245,7 +2245,7 @@ Client_SQLite3.prototype.destroyRawConnection = Promise.method(function(connecti
 });
 
 module.exports = Client_SQLite3;
-},{"../../client":2,"../../promise":53,"./formatter":33,"./migrator":35,"./pool":36,"./query":37,"./raw":38,"./runner":39,"./schema":42,"./transaction":45,"inherits":74}],35:[function(_dereq_,module,exports){
+},{"../../client":2,"../../promise":53,"./formatter":33,"./migrator":35,"./pool":36,"./query":37,"./raw":38,"./runner":39,"./schema":42,"./transaction":45,"inherits":"oxw+vU"}],35:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Migrator = _dereq_('../../migrate');
@@ -2263,7 +2263,7 @@ inherits(Migrator_SQLite3, Migrator);
 client.Migrator = Migrator_SQLite3;
 
 };
-},{"inherits":74}],36:[function(_dereq_,module,exports){
+},{"inherits":"oxw+vU"}],36:[function(_dereq_,module,exports){
 module.exports = function(client) {
 
 var Pool     = _dereq_('../../pool');
@@ -2289,7 +2289,7 @@ Pool_SQLite3.prototype.defaults = function() {
 client.Pool = Pool_SQLite3;
 
 };
-},{"../../pool":52,"inherits":74,"lodash":"K2RcUv"}],37:[function(_dereq_,module,exports){
+},{"../../pool":52,"inherits":"oxw+vU","lodash":"K2RcUv"}],37:[function(_dereq_,module,exports){
 // SQLite3 Query Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -2406,7 +2406,7 @@ client.QueryBuilder = QueryBuilder_SQLite3;
 client.QueryCompiler = QueryCompiler_SQLite3;
 
 };
-},{"../../query/builder":54,"../../query/compiler":55,"inherits":74,"lodash":"K2RcUv"}],38:[function(_dereq_,module,exports){
+},{"../../query/builder":54,"../../query/compiler":55,"inherits":"oxw+vU","lodash":"K2RcUv"}],38:[function(_dereq_,module,exports){
 // Raw
 // -------
 module.exports = function(client) {
@@ -2426,7 +2426,7 @@ inherits(Raw_SQLite3, Raw);
 client.Raw = Raw_SQLite3;
 
 };
-},{"../../raw":58,"inherits":74}],39:[function(_dereq_,module,exports){
+},{"../../raw":58,"inherits":"oxw+vU"}],39:[function(_dereq_,module,exports){
 // Runner
 // -------
 module.exports = function(client) {
@@ -2512,7 +2512,7 @@ Runner_SQLite3.prototype.processResponse = function(obj) {
 client.Runner = Runner_SQLite3;
 
 };
-},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":74,"lodash":"K2RcUv"}],40:[function(_dereq_,module,exports){
+},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":"oxw+vU","lodash":"K2RcUv"}],40:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -2551,7 +2551,7 @@ client.ColumnBuilder = ColumnBuilder_SQLite3;
 client.ColumnCompiler = ColumnCompiler_SQLite3;
 
 };
-},{"../../../schema":64,"inherits":74}],41:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":"oxw+vU"}],41:[function(_dereq_,module,exports){
 // SQLite3_DDL
 //
 // All of the SQLite3 specific DDL helpers for renaming/dropping
@@ -2781,7 +2781,7 @@ client.SchemaBuilder = SchemaBuilder_SQLite3;
 client.SchemaCompiler = SchemaCompiler_SQLite3;
 
 };
-},{"../../../schema":64,"inherits":74,"lodash":"K2RcUv"}],44:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":"oxw+vU","lodash":"K2RcUv"}],44:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
@@ -2917,7 +2917,7 @@ client.TableBuilder = TableBuilder_SQLite3;
 client.TableCompiler = TableCompiler_SQLite3;
 
 };
-},{"../../../schema":64,"inherits":74,"lodash":"K2RcUv"}],45:[function(_dereq_,module,exports){
+},{"../../../schema":64,"inherits":"oxw+vU","lodash":"K2RcUv"}],45:[function(_dereq_,module,exports){
 // SQLite3 Transaction
 // -------
 module.exports = function(client) {
@@ -2934,7 +2934,7 @@ inherits(Transaction_SQLite3, Transaction);
 client.Transaction = Transaction_SQLite3;
 
 };
-},{"../../transaction":68,"inherits":74}],46:[function(_dereq_,module,exports){
+},{"../../transaction":68,"inherits":"oxw+vU"}],46:[function(_dereq_,module,exports){
 // WebSQL
 // -------
 var inherits = _dereq_('inherits');
@@ -2984,7 +2984,7 @@ Client_WebSQL.prototype.acquireConnection = function() {
 Client_WebSQL.prototype.releaseConnection = Promise.method(function(connection) {});
 
 module.exports = Client_WebSQL;
-},{"../../promise":53,"../sqlite3/index":34,"./runner":47,"inherits":74,"lodash":"K2RcUv"}],47:[function(_dereq_,module,exports){
+},{"../../promise":53,"../sqlite3/index":34,"./runner":47,"inherits":"oxw+vU","lodash":"K2RcUv"}],47:[function(_dereq_,module,exports){
 // Runner
 // -------
 module.exports = function(client) {
@@ -3051,7 +3051,7 @@ Runner_WebSQL.prototype.processResponse = function(obj) {
 client.Runner = Runner_WebSQL;
 
 };
-},{"../../promise":53,"../sqlite3/runner":39,"inherits":74,"lodash":"K2RcUv"}],48:[function(_dereq_,module,exports){
+},{"../../promise":53,"../sqlite3/runner":39,"inherits":"oxw+vU","lodash":"K2RcUv"}],48:[function(_dereq_,module,exports){
 // Mixed into the query compiler & schema pieces. Assumes a `grammar`
 // property exists on the current object.
 var _            = _dereq_('lodash');
@@ -3101,14 +3101,11 @@ Formatter.prototype.checkRaw = function(value, parameter) {
   if (parameter) this.bindings.push(value);
 };
 
-Formatter.prototype.rawOrFn = function(value, wrap) {
-  var sql = '';
+Formatter.prototype.rawOrFn = function(value, method) {
   if (_.isFunction(value)) {
-    sql = this.compileCallback(value);
-  } else {
-    sql = this.checkRaw(value);
+    return this.compileCallback(value, method) || '';
   }
-  return sql ? (wrap ? '(' + sql + ')' : sql) : '';
+  return this.checkRaw(value) || '';
 };
 
 // Puts the appropriate wrapper around a value depending on the database
@@ -4065,7 +4062,7 @@ QueryBuilder.prototype._aggregate = function(method, column) {
 _dereq_('../interface')(QueryBuilder);
 
 module.exports = QueryBuilder;
-},{"../helpers":49,"../interface":50,"../raw":58,"./joinclause":56,"events":73,"inherits":74,"lodash":"K2RcUv"}],55:[function(_dereq_,module,exports){
+},{"../helpers":49,"../interface":50,"../raw":58,"./joinclause":56,"events":"T9Wsc/","inherits":"oxw+vU","lodash":"K2RcUv"}],55:[function(_dereq_,module,exports){
 // Query Compiler
 // -------
 
@@ -4266,7 +4263,12 @@ QueryCompiler.prototype.union = function() {
     var union = unions[i];
     if (i > 0) sql += ' ';
     if (i > 0 || !onlyUnions) sql += union.clause + ' ';
-    sql += this.formatter.rawOrFn(union.value, union.wrap);
+    var statement = this.formatter.rawOrFn(union.value);
+    if (statement) {
+      if (union.wrap) sql += '(';
+      sql += statement;
+      if (union.wrap) sql += ')';
+    }
   }
   return sql;
 };
@@ -4364,11 +4366,11 @@ QueryCompiler.prototype.whereBasic = function(statement) {
 };
 
 QueryCompiler.prototype.whereExists = function(statement) {
-  return this._not(statement, 'exists') + ' (' + this.formatter.compileCallback(statement.value) + ')';
+  return this._not(statement, 'exists') + ' (' + this.formatter.rawOrFn(statement.value) + ')';
 };
 
 QueryCompiler.prototype.whereWrapped = function(statement) {
-  return '(' + this.formatter.compileCallback(statement.value, 'where').slice(6) + ')';
+  return '(' + this.formatter.rawOrFn(statement.value, 'where').slice(6) + ')';
 };
 
 QueryCompiler.prototype.whereBetween = function(statement) {
@@ -4608,7 +4610,7 @@ Raw.prototype.toSQL = function() {
 _dereq_('./interface')(Raw);
 
 module.exports = Raw;
-},{"./interface":50,"events":73,"inherits":74,"lodash":"K2RcUv"}],59:[function(_dereq_,module,exports){
+},{"./interface":50,"events":"T9Wsc/","inherits":"oxw+vU","lodash":"K2RcUv"}],59:[function(_dereq_,module,exports){
 var _            = _dereq_('lodash');
 var Promise      = _dereq_('./promise');
 
@@ -4864,7 +4866,7 @@ SchemaBuilder.prototype.toSQL = function() {
 _dereq_('../interface')(SchemaBuilder);
 
 module.exports = SchemaBuilder;
-},{"../interface":50,"events":73,"inherits":74,"lodash":"K2RcUv"}],61:[function(_dereq_,module,exports){
+},{"../interface":50,"events":"T9Wsc/","inherits":"oxw+vU","lodash":"K2RcUv"}],61:[function(_dereq_,module,exports){
 var _ = _dereq_('lodash');
 
 // Alias a few methods for clarity when processing.
@@ -5678,7 +5680,7 @@ Transaction.prototype.then = function(onFulfilled, onRejected) {
 };
 
 module.exports = Transaction;
-},{"../knex":1,"./interface":50,"./promise":53,"events":73,"inherits":74}],69:[function(_dereq_,module,exports){
+},{"../knex":1,"./interface":50,"./promise":53,"events":"T9Wsc/","inherits":"oxw+vU"}],69:[function(_dereq_,module,exports){
 module.exports = {
 
   pgBindings: function(sql) {
@@ -7048,336 +7050,6 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
 
   buffer[offset + i - d] |= s * 128;
 };
-
-},{}],73:[function(_dereq_,module,exports){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-function EventEmitter() {
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-}
-module.exports = EventEmitter;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
-
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
-
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-EventEmitter.defaultMaxListeners = 10;
-
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!isNumber(n) || n < 0 || isNaN(n))
-    throw TypeError('n must be a positive number');
-  this._maxListeners = n;
-  return this;
-};
-
-EventEmitter.prototype.emit = function(type) {
-  var er, handler, len, args, i, listeners;
-
-  if (!this._events)
-    this._events = {};
-
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events.error ||
-        (isObject(this._events.error) && !this._events.error.length)) {
-      er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      } else {
-        throw TypeError('Uncaught, unspecified "error" event.');
-      }
-      return false;
-    }
-  }
-
-  handler = this._events[type];
-
-  if (isUndefined(handler))
-    return false;
-
-  if (isFunction(handler)) {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        len = arguments.length;
-        args = new Array(len - 1);
-        for (i = 1; i < len; i++)
-          args[i - 1] = arguments[i];
-        handler.apply(this, args);
-    }
-  } else if (isObject(handler)) {
-    len = arguments.length;
-    args = new Array(len - 1);
-    for (i = 1; i < len; i++)
-      args[i - 1] = arguments[i];
-
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++)
-      listeners[i].apply(this, args);
-  }
-
-  return true;
-};
-
-EventEmitter.prototype.addListener = function(type, listener) {
-  var m;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events)
-    this._events = {};
-
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener)
-    this.emit('newListener', type,
-              isFunction(listener.listener) ?
-              listener.listener : listener);
-
-  if (!this._events[type])
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  else if (isObject(this._events[type]))
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  else
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned) {
-    var m;
-    if (!isUndefined(this._maxListeners)) {
-      m = this._maxListeners;
-    } else {
-      m = EventEmitter.defaultMaxListeners;
-    }
-
-    if (m && m > 0 && this._events[type].length > m) {
-      this._events[type].warned = true;
-      console.error('(node) warning: possible EventEmitter memory ' +
-                    'leak detected. %d listeners added. ' +
-                    'Use emitter.setMaxListeners() to increase limit.',
-                    this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
-    }
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  var fired = false;
-
-  function g() {
-    this.removeListener(type, g);
-
-    if (!fired) {
-      fired = true;
-      listener.apply(this, arguments);
-    }
-  }
-
-  g.listener = listener;
-  this.on(type, g);
-
-  return this;
-};
-
-// emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function(type, listener) {
-  var list, position, length, i;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events || !this._events[type])
-    return this;
-
-  list = this._events[type];
-  length = list.length;
-  position = -1;
-
-  if (list === listener ||
-      (isFunction(list.listener) && list.listener === listener)) {
-    delete this._events[type];
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-
-  } else if (isObject(list)) {
-    for (i = length; i-- > 0;) {
-      if (list[i] === listener ||
-          (list[i].listener && list[i].listener === listener)) {
-        position = i;
-        break;
-      }
-    }
-
-    if (position < 0)
-      return this;
-
-    if (list.length === 1) {
-      list.length = 0;
-      delete this._events[type];
-    } else {
-      list.splice(position, 1);
-    }
-
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  var key, listeners;
-
-  if (!this._events)
-    return this;
-
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener) {
-    if (arguments.length === 0)
-      this._events = {};
-    else if (this._events[type])
-      delete this._events[type];
-    return this;
-  }
-
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0) {
-    for (key in this._events) {
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
-
-  listeners = this._events[type];
-
-  if (isFunction(listeners)) {
-    this.removeListener(type, listeners);
-  } else {
-    // LIFO order
-    while (listeners.length)
-      this.removeListener(type, listeners[listeners.length - 1]);
-  }
-  delete this._events[type];
-
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  var ret;
-  if (!this._events || !this._events[type])
-    ret = [];
-  else if (isFunction(this._events[type]))
-    ret = [this._events[type]];
-  else
-    ret = this._events[type].slice();
-  return ret;
-};
-
-EventEmitter.listenerCount = function(emitter, type) {
-  var ret;
-  if (!emitter._events || !emitter._events[type])
-    ret = 0;
-  else if (isFunction(emitter._events[type]))
-    ret = 1;
-  else
-    ret = emitter._events[type].length;
-  return ret;
-};
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-
-},{}],74:[function(_dereq_,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
 
 },{}]},{},[1])
 (1)
