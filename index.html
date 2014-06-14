@@ -600,7 +600,6 @@ knex('users')
 
     <p id="Builder-whereNotIn">
       <b class="header">whereNotIn</b><code>.whereNotIn(column, array|callback|builder) / .orWhereNotIn</code>
-
     </p>
 
 <pre class="display">
@@ -628,26 +627,35 @@ knex('users').whereNotNull('created_at')
 </pre>
 
     <p id="Builder-whereExists">
-      <b class="header">whereExists</b><code>.whereExists(callback) / .orWhereExists</code>
+      <b class="header">whereExists</b><code>.whereExists(builder | callback) / .orWhereExists</code>
     </p>
 
 <pre class="display">
 knex('users').whereExists(function() {
-  this.select('*').from('accounts').where('users.account_id', '=', 'accounts.id');
+  this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
 })
 </pre>
 
+<pre class="display">
+knex('users').whereExists(knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id'))
+</pre>
+
     <p id="Builder-whereNotExists">
-      <b class="header">whereNotExists</b><code>.whereNotExists() / .orWhereNotExists</code>
+      <b class="header">whereNotExists</b><code>.whereNotExists(builder | callback) / .orWhereNotExists</code>
     </p>
 
 <pre class="display">
-knex('users').whereNotNull('created_at')
+knex('users').whereNotExists(function() {
+  this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+})
+</pre>
+
+<pre class="display">
+knex('users').whereNotExists(knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id'))
 </pre>
 
     <p id="Builder-whereBetween">
       <b class="header">whereBetween</b><code>.whereBetween(column, range) / .orWhereBetween</code>
-
     </p>
 
 <pre class="display">
@@ -656,7 +664,6 @@ knex('users').whereBetween('votes', [1, 100])
 
     <p id="Builder-whereNotBetween">
       <b class="header">whereNotBetween</b><code>.whereNotBetween(column, range) / .orWhereNotBetween</code>
-
     </p>
 
 <pre class="display">
