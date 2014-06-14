@@ -675,6 +675,27 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(str).to.equal('select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) avg_sal_dept from "employee" as "e" where "dept_no" = \'e.dept_no\'');
     });
 
+    it('allows select as syntax', function() {
+      var str = sql().select(
+        'e.lastname',
+        'e.salary',
+        sql().select('avg(salary)').from('employee').whereRaw('dept_no = e.dept_no').as('avg_sal_dept')
+      ).from('employee as e')
+      .where('dept_no', '=', 'e.dept_no').toString();
+      expect(str).to.equal('select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) as "avg_sal_dept" from "employee" as "e" where "dept_no" = \'e.dept_no\'');
+    });
+
+    it('allows function for subselect column', function() {
+      var str = sql().select(
+        'e.lastname',
+        'e.salary'
+      ).select(function() {
+        this.select('avg(salary)').from('employee').whereRaw('dept_no = e.dept_no').as('avg_sal_dept');
+      }).from('employee as e')
+      .where('dept_no', '=', 'e.dept_no').toString();
+      expect(str).to.equal('select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) as "avg_sal_dept" from "employee" as "e" where "dept_no" = \'e.dept_no\'');
+    });
+
   });
 
 };
