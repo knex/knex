@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.6.14)</span>
+      Knex.js <span class="version">(0.6.15)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -68,6 +68,7 @@
     <ul class="toc_section">
       <li>– <a href="#Builder-main"><b>constructor</b></a></li>
       <li>– <a href="#Builder-select">select</a></li>
+      <li>– <a href="#Builder-as">as</a></li>
       <li>– <a href="#Builder-column">column</a></li>
       <li>– <a href="#Builder-from">from</a></li>
 
@@ -295,7 +296,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.6.14 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.6.15 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -490,6 +491,19 @@ knex.select('title', 'author', 'year').from('books')
 
 <pre class="display">
 knex.select().table('books')
+</pre>
+
+    <p id="Builder-as">
+      <b class="header">as</b><code>.as(name)</code>
+      <br />
+      Allows for aliasing a subquery, taking the string you wish to <b>name</b> the current query.
+      If the query is not a sub-query, it will be ignored.
+    </p>
+
+<pre class="display">
+knex.avg('sum_column1').from(function() {
+  this.sum('column1 as sum_column1').from('t1').groupBy('column1').as('t1')
+}).as('ignored_alias')
 </pre>
 
     <p id="Builder-column">
@@ -1774,17 +1788,29 @@ knex('users')
     <h3 id="Raw-queries-wrapped">Wrapped Queries:</h3>
 
     <p>
-      The raw query builder also comes with a <tt>wrap</tt> method, which allows wrapping the query in parens, and creating an alias on an entire query.
+      The raw query builder also comes with a <tt>wrap</tt> method, which allows wrapping the query in a value:
     </p>
 
-<pre class="display">var subcolumn = knex.raw(knex.select('avg(salary)')
-  .from('employee')
-  .whereRaw('dept_no = e.dept_no'))
+<pre class="display">var subcolumn = knex.raw('select avg(salary) from employee where dept_no = e.dept_no')
   .wrap('(', ') avg_sal_dept');
 
 knex.select('e.lastname', 'e.salary', subcolumn)
   .from('employee as e')
-  .where('dept_no', '=', 'e.dept_no')
+  .whereRaw('dept_no = e.dept_no')
+</pre>
+
+    <p>
+      Note that the example above be achieved more easily using the <a href="#Builder-as">as</a> method.
+    </p>
+
+<pre class="display">var subcolumn = knex.avg('salary')
+  .from('employee')
+  .whereRaw('dept_no = e.dept_no')
+  .as('avg_sal_dept');
+
+knex.select('e.lastname', 'e.salary', subcolumn)
+  .from('employee as e')
+  .whereRaw('dept_no = e.dept_no')
 </pre>
 
     <h2 id="Interfaces">Interfaces</h2>
@@ -2218,6 +2244,11 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.6.15</b> &mdash; <small><i>June 14, 2014</i></small><br />
+      Added the <a href="Builder-as">as</a> method for aliasing subqueries.
+    </p>
 
     <p>
       <b class="header">0.6.14</b> &mdash; <small><i>June 14, 2014</i></small><br />

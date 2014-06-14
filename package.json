@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.6.14",
+  "version": "0.6.15",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "directories": {
@@ -70,6 +70,7 @@
     "web": "https://github.com/tgriesser"
   },
   "files": [
+    "README.md",
     "lib/*",
     "browser/*",
     "gulpfile.js",
