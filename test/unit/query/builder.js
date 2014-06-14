@@ -315,11 +315,9 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.sql).to.equal('select * from "orders" where exists (select * from "products" where "products"."id" = "orders"."id")');
     });
 
-    it("where exists", function() {
-      chain = sql().select('*').from('orders').whereExists(function(qb) {
-        qb.select('*').from('products').where('products.id', '=', raw('"orders"."id"'));
-      }).toSQL();
-      expect(chain.sql).to.equal('select * from "orders" where exists (select * from "products" where "products"."id" = "orders"."id")');
+    it("where exists with builder", function() {
+      chain = sql().select('*').from('orders').whereExists(sql().select('*').from('products').whereRaw('products.id = orders.id')).toSQL();
+      expect(chain.sql).to.equal('select * from "orders" where exists (select * from "products" where products.id = orders.id)');
     });
 
     it("where not exists", function() {
