@@ -69,5 +69,12 @@
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"
   },
+  "files": [
+    "lib/*",
+    "browser/*",
+    "gulpfile.js",
+    "knex.js",
+    "LICENSE"
+  ],
   "license": "MIT"
 }
