@@ -48,7 +48,7 @@ module.exports = function(knex) {
 
       it('should be false if a table is not in current schema', function() {
         return knex.transaction(function(trx) {
-          return trx.schema.searchPath('testing', {local: true})
+          return trx.schema.searchPath('information_schema', {local: true})
             .then(function() {
               return trx.schema.hasTable('test_table_two');
             }).then(function(resp) {
