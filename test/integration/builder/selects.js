@@ -67,11 +67,6 @@ module.exports = function(knex) {
         });
       }).then(function() {
         assert(count === 6, 'Six rows should have been streamed');
-      }).catch(function(e) {
-        // Don't worry about failing streaming tests in 0.8
-        if (process.version.indexOf('0.8') === -1) {
-          throw e;
-        }
       });
     });
 
