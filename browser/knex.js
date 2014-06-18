@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.15
+// Knex.js  0.6.16
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -82,7 +82,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.15';
+  knex.VERSION = knex.__knex__  = '0.6.16';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     raw.on('query', function(data) {
@@ -356,19 +356,23 @@ Runner_MariaSQL.prototype.processResponse = function(obj) {
   var method   = obj.method;
   var rows     = response[0];
   var data     = response[1];
-  var resp;
-  if (obj.output) {
-    return obj.output.call(this, rows, data);
-  } else if (method === 'select') {
-    resp = helpers.skim(rows);
-  } else if (method === 'insert') {
-    resp = [data.insertId];
-  } else if (method === 'del' || method === 'update') {
-    resp = data.affectedRows;
-  } else {
-    resp = response;
+  if (obj.output) return obj.output.call(this, rows, fields);
+  switch (method) {
+    case 'select':
+    case 'pluck':
+    case 'first':
+      var resp = helpers.skim(rows);
+      if (method === 'pluck') return _.pluck(resp, obj.pluck);
+      return method === 'first' ? resp[0] : resp;
+    case 'insert':
+      return [data.insertId];
+    case 'del':
+    case 'update':
+    case 'counter':
+      return data.affectedRows;
+    default:
+      return response;
   }
-  return resp;
 };
 
 function parseType(value, type) {
@@ -750,6 +754,7 @@ Runner_MySQL.prototype.processResponse = function(obj) {
       return [rows.insertId];
     case 'del':
     case 'update':
+    case 'counter':
       return rows.affectedRows;
     default:
       return response;
@@ -1340,6 +1345,7 @@ Runner_MySQL2.prototype.processResponse = function(obj) {
       return [rows.insertId];
     case 'del':
     case 'update':
+    case 'counter':
       return rows.affectedRows;
     default:
       return response;
@@ -2452,7 +2458,17 @@ Runner_SQLite3.prototype._beginTransaction = 'begin transaction;';
 Runner_SQLite3.prototype._query = Promise.method(function(obj) {
   var method = obj.method;
   if (this.isDebugging()) this.debug(obj);
-  var callMethod = (method === 'insert' || method === 'update' || method === 'del') ? 'run' : 'all';
+  var callMethod;
+  switch (method) {
+    case 'insert':
+    case 'update':
+    case 'counter':
+    case 'del':
+      callMethod = 'run';
+      break;
+    default:
+      callMethod = 'all';
+  }
   var connection = this.connection;
   return new Promise(function(resolver, rejecter) {
     if (!connection || !connection[callMethod]) {
@@ -2502,6 +2518,7 @@ Runner_SQLite3.prototype.processResponse = function(obj) {
       return [ctx.lastID];
     case 'del':
     case 'update':
+    case 'counter':
       return ctx.changes;
     default:
       return response;
@@ -3041,6 +3058,7 @@ Runner_WebSQL.prototype.processResponse = function(obj) {
       return [resp.insertId];
     case 'delete':
     case 'update':
+    case 'counter':
       return resp.rowsAffected;
     default:
       return resp;
