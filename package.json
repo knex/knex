@@ -42,11 +42,13 @@
     "sqlite3": "^2.2.3",
     "mariasql": "~0.1.21",
     "mysql2": "~0.12.1",
-    "istanbul": "~0.2.11"
+    "istanbul": "~0.2.11",
+    "coveralls": "~2.10.0"
   },
   "scripts": {
     "build": "gulp build",
     "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -b -R spec test/index.js",
+    "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "jshint knex.js lib/*",
     "release:patch": "npm run jshint && npm test && gulp build && gulp bump --type patch && gulp release",
     "release:minor": "npm run jshint && npm test && gulp build && gulp bump --type minor && gulp release"

@@ -9,6 +9,9 @@ before_script:
   - psql -c 'create database knex_test;' -U postgres
   - mysql -e 'create database knex_test;'
 
+after_script:
+  - npm run-script coveralls
+
 notifications:
   email: false
 
