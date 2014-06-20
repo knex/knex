@@ -47,7 +47,7 @@
   },
   "scripts": {
     "build": "gulp build",
-    "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -b -R spec test/index.js",
+    "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "jshint knex.js lib/*",
     "release:patch": "npm run jshint && npm test && gulp build && gulp bump --type patch && gulp release",
