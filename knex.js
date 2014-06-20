@@ -66,10 +66,6 @@ Knex.initialize = function(config) {
   function knex(tableName) {
     var qb = new client.QueryBuilder;
     if (config.__transactor__) qb.transacting(config.__transactor__);
-    // Passthrough all "query" events to the knex object.
-    qb.on('query', function(data) {
-      knex.emit('query', data);
-    });
     return tableName ? qb.table(tableName) : qb;
   }
 
@@ -83,21 +79,13 @@ Knex.initialize = function(config) {
   // is a knex builder, without a full on `instanceof` check.
   knex.VERSION = knex.__knex__  = '0.6.16';
   knex.raw = function(sql, bindings) {
-    var raw = new client.Raw(sql, bindings);
-    raw.on('query', function(data) {
-      knex.emit('query', data);
-    });
-    return raw;
+    return new client.Raw(sql, bindings);
   };
 
   // Runs a new transaction, taking a container and returning a promise
   // for when the transaction is resolved.
   knex.transaction = function(container) {
-    var trx = new client.Transaction(container);
-    trx.on('query', function(data) {
-      knex.emit('query', data);
-    });
-    return trx;
+    return new client.Transaction(container);
   };
 
   // Convenience method for tearing down the pool.
@@ -131,6 +119,11 @@ Knex.initialize = function(config) {
     };
     Dialect = Clients[clientName]();
     client  = new Dialect(config);
+
+    // Passthrough all "query" events to the knex object.
+    client.on('query', function(obj) {
+      knex.emit('query', obj);
+    });
   }
 
   // Allow chaining methods from the root object, before
@@ -155,13 +148,7 @@ Knex.initialize = function(config) {
     schema[key] = function() {
       if (!client.SchemaBuilder) client.initSchema();
       var builder = new client.SchemaBuilder();
-
       if (config.__transactor__) builder.transacting(config.__transactor__);
-
-      // Passthrough all "query" events to the knex object.
-      builder.on('query', function(data) {
-        knex.emit('query', data);
-      });
       return builder[key].apply(builder, arguments);
     };
   });
