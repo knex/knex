@@ -120,7 +120,10 @@ Knex.initialize = function(config) {
     Dialect = Clients[clientName]();
     client  = new Dialect(config);
 
-    // Passthrough all "query" events to the knex object.
+    // Passthrough all "start" and "query" events to the knex object.
+    client.on('start', function(obj) {
+      knex.emit('start', obj);
+    });
     client.on('query', function(obj) {
       knex.emit('query', obj);
     });
