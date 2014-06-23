@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.16
+// Knex.js  0.6.17
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -67,10 +67,6 @@ Knex.initialize = function(config) {
   function knex(tableName) {
     var qb = new client.QueryBuilder;
     if (config.__transactor__) qb.transacting(config.__transactor__);
-    // Passthrough all "query" events to the knex object.
-    qb.on('query', function(data) {
-      knex.emit('query', data);
-    });
     return tableName ? qb.table(tableName) : qb;
   }
 
@@ -82,23 +78,15 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.16';
+  knex.VERSION = knex.__knex__  = '0.6.17';
   knex.raw = function(sql, bindings) {
-    var raw = new client.Raw(sql, bindings);
-    raw.on('query', function(data) {
-      knex.emit('query', data);
-    });
-    return raw;
+    return new client.Raw(sql, bindings);
   };
 
   // Runs a new transaction, taking a container and returning a promise
   // for when the transaction is resolved.
   knex.transaction = function(container) {
-    var trx = new client.Transaction(container);
-    trx.on('query', function(data) {
-      knex.emit('query', data);
-    });
-    return trx;
+    return new client.Transaction(container);
   };
 
   // Convenience method for tearing down the pool.
@@ -132,6 +120,14 @@ Knex.initialize = function(config) {
     };
     Dialect = Clients[clientName]();
     client  = new Dialect(config);
+
+    // Passthrough all "start" and "query" events to the knex object.
+    client.on('start', function(obj) {
+      knex.emit('start', obj);
+    });
+    client.on('query', function(obj) {
+      knex.emit('query', obj);
+    });
   }
 
   // Allow chaining methods from the root object, before
@@ -156,13 +152,7 @@ Knex.initialize = function(config) {
     schema[key] = function() {
       if (!client.SchemaBuilder) client.initSchema();
       var builder = new client.SchemaBuilder();
-
       if (config.__transactor__) builder.transacting(config.__transactor__);
-
-      // Passthrough all "query" events to the knex object.
-      builder.on('query', function(data) {
-        knex.emit('query', data);
-      });
       return builder[key].apply(builder, arguments);
     };
   });
@@ -191,6 +181,8 @@ module.exports = Knex;
 // ------
 var Promise    = _dereq_('./promise');
 var _          = _dereq_('lodash');
+var inherits   = _dereq_('inherits');
+var EventEmitter = _dereq_('events').EventEmitter;
 
 // The base client provides the general structure
 // for a dialect specific client object. The client
@@ -203,6 +195,7 @@ function Client(config) {
   this.initQuery();
   this.migrationConfig = _.clone(config && config.migrations);
 }
+inherits(Client, EventEmitter);
 
 // Set the "isDebugging" flag on the client to "true" to log
 // all queries run by the client.
@@ -238,7 +231,7 @@ Client.prototype.database = function() {
 };
 
 module.exports = Client;
-},{"./promise":53,"lodash":"K2RcUv"}],3:[function(_dereq_,module,exports){
+},{"./promise":53,"events":"T9Wsc/","inherits":"oxw+vU","lodash":"K2RcUv"}],3:[function(_dereq_,module,exports){
 // MariaSQL Client
 // -------
 var inherits = _dereq_('inherits');
@@ -3331,7 +3324,7 @@ Target.prototype.pipe = function(writable) {
 
 // Creates a method which "coerces" to a promise, by calling a
 // "then" method on the current `Target`
-_.each(['bind', 'catch', 'spread', 'otherwise', 'tap', 'thenReturn',
+_.each(['bind', 'catch', 'spread', 'otherwise', 'map', 'reduce', 'tap', 'thenReturn',
   'return', 'yield', 'ensure', 'nodeify', 'exec'], function(method) {
   Target.prototype[method] = function() {
     var then = this.then();
@@ -4683,11 +4676,36 @@ Runner.prototype.run = Promise.method(function() {
     .then(this.ensureConnection)
     .then(function(connection) {
       this.connection = connection;
+
+      // Emit a "start" event on both the builder and the client,
+      // allowing us to listen in on any events. We fire on the "client"
+      // before building the SQL, and on the builder after building the SQL
+      // in case we want to determine at how long it actually
+      // took to build the query.
+      this.client.emit('start', this.builder);
       var sql = this.builder.toSQL();
+      this.builder.emit('start', this.builder);
+
       if (_.isArray(sql)) {
         return this.queryArray(sql);
       }
       return this.query(sql);
+    })
+
+    // If there are any "error" listeners, we fire an error event
+    // and then re-throw the error to be eventually handled by
+    // the promise chain. Useful if you're wrapping in a custom `Promise`.
+    .catch(function(err) {
+      if (this.builder._events && this.builder._events.error) {
+        this.builder.emit('error', err);
+      }
+      throw err;
+    })
+
+    // Fire a single "end" event on the builder when
+    // all queries have successfully completed.
+    .tap(function() {
+      this.builder.emit('end');
     })
     .finally(this.cleanupConnection);
 });
@@ -4743,6 +4761,7 @@ Runner.prototype.pipe = function(writable) {
 Runner.prototype.query = Promise.method(function(obj) {
   obj.__cid = this.connection.__cid;
   this.builder.emit('query', obj);
+  this.client.emit('query', obj);
   return this._query(obj).bind(this).then(this.processResponse);
 });
 
