@@ -58,7 +58,6 @@ module.exports = function(knex) {
         });
     });
 
-
     it('allows you to stream', function() {
       var count = 0;
       return knex('accounts').stream(function(rowStream) {
@@ -67,6 +66,15 @@ module.exports = function(knex) {
         });
       }).then(function() {
         assert(count === 6, 'Six rows should have been streamed');
+      });
+    });
+
+    it('returns a stream if not passed a function', function(done) {
+      var count = 0;
+      var stream = knex('accounts').stream();
+      stream.on('data', function() {
+        count++;
+        if (count === 6) done();
       });
     });
 
