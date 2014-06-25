@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.17
+// Knex.js  0.6.18
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -78,7 +78,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.17';
+  knex.VERSION = knex.__knex__  = '0.6.18';
   knex.raw = function(sql, bindings) {
     return new client.Raw(sql, bindings);
   };
@@ -762,7 +762,7 @@ Runner_SQLite3.prototype._stream = Promise.method(function(sql, stream, options)
   return new Promise(function(resolver, rejecter) {
     stream.on('error', rejecter);
     stream.on('end', resolver);
-    return runner.query().map(function(row) {
+    return runner.query(sql).map(function(row) {
       stream.write(row);
     }).catch(function() {
       stream.emit('error');
@@ -2990,7 +2990,7 @@ Runner.prototype.run = Promise.method(function() {
 // Stream the result set, by passing through to the dialect's streaming
 // capabilities. If the options are
 var PassThrough;
-Runner.prototype.stream = Promise.method(function(options, handler) {
+Runner.prototype.stream = function(options, handler) {
   // If we specify stream(handler).then(...
   if (arguments.length === 1) {
     if (_.isFunction(options)) {
@@ -2998,6 +2998,9 @@ Runner.prototype.stream = Promise.method(function(options, handler) {
       options = {};
     }
   }
+
+  // Determines whether we emit an error or throw here.
+  var hasHandler = _.isFunction(handler);
 
   // Lazy-load the "PassThrough" dependency.
   PassThrough = PassThrough || _dereq_('readable-stream').PassThrough;
@@ -3009,8 +3012,8 @@ Runner.prototype.stream = Promise.method(function(options, handler) {
       var sql = this.builder.toSQL();
       var err = new Error('The stream may only be used with a single query statement.');
       if (_.isArray(sql)) {
+        if (hasHandler) throw err;
         stream.emit('error', err);
-        throw err;
       }
       return sql;
     }).then(function(sql) {
@@ -3020,12 +3023,12 @@ Runner.prototype.stream = Promise.method(function(options, handler) {
   // If a function is passed to handle the stream, send the stream
   // there and return the promise, otherwise just return the stream
   // and the promise will take care of itsself.
-  if (_.isFunction(handler)) {
+  if (hasHandler) {
     handler(stream);
     return promise;
   }
   return stream;
-});
+};
 
 // Allow you to pipe the stream to a writable stream.
 Runner.prototype.pipe = function(writable) {
