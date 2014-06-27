@@ -238,6 +238,18 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.sql).to.equal('select * from "users" order by "email" asc, "age" desc');
     });
 
+    it("raw group bys", function() {
+      chain = sql().select('*').from('users').groupByRaw('id, email').toString();
+      expect(chain).to.equal('select * from "users" group by id, email');
+    });
+
+    it("raw order bys", function() {
+      chain = sql().select('*').from('users').orderBy(raw('col NULLS LAST DESC')).toSQL();
+      expect(chain.sql).to.equal('select * from "users" order by col NULLS LAST DESC');
+      chain = sql().select('*').from('users').orderByRaw('col NULLS LAST DESC').toSQL();
+      expect(chain.sql).to.equal('select * from "users" order by col NULLS LAST DESC');
+    });
+
     it("multiple order bys", function() {
       chain = sqlite3().select('*').from('users').orderBy('email').orderBy('age', 'desc').toSQL();
       expect(chain.sql).to.equal('select * from "users" order by "email" collate nocase asc, "age" collate nocase desc');
