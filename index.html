@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.6.18)</span>
+      Knex.js <span class="version">(0.6.19)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -96,7 +96,9 @@
 
       <li>– <a href="#Builder-distinct">distinct</a></li>
       <li>– <a href="#Builder-groupBy">groupBy</a></li>
+      <li>– <a href="#Builder-groupByRaw">groupByRaw</a></li>
       <li>– <a href="#Builder-orderBy">orderBy</a></li>
+      <li>– <a href="#Builder-orderByRaw">orderByRaw</a></li>
       <li>– <a href="#Builder-having">having</a></li>
       <li>– <a href="#Builder-offset">offset</a></li>
       <li>– <a href="#Builder-limit">limit</a></li>
@@ -296,7 +298,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.6.18 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.6.19 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -881,6 +883,16 @@ knex('customers')
 knex('users').groupBy('count')
 </pre>
 
+    <p id="Builder-groupByRaw">
+      <b class="header">groupByRaw</b><code>.groupBy(sql)</code>
+      <br />
+      Adds a raw <tt>group by</tt> clause to the query.
+    </p>
+
+<pre class="display">
+knex.select('year', knex.raw('SUM(profit)')).from('sales').groupByRaw('year WITH ROLLUP')
+</pre>
+
     <p id="Builder-orderBy">
       <b class="header">orderBy</b><code>.orderBy(column, [direction])</code>
       <br />
@@ -889,6 +901,16 @@ knex('users').groupBy('count')
 
 <pre class="display">
 knex('users').orderBy('name', 'desc')
+</pre>
+
+    <p id="Builder-orderByRaw">
+      <b class="header">orderByRaw</b><code>.orderByRaw(sql)</code>
+      <br />
+      Adds an <tt>order by raw</tt> clause to the query.
+    </p>
+
+<pre class="display">
+knex.select('*').from('table').orderByRaw('col NULLS LAST DESC')
 </pre>
 
     <p id="Builder-having">
@@ -2244,6 +2266,15 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.6.19</b> &mdash; <small><i>June 27, 2014</i></small><br />
+    </p>
+    <ul>
+      <li>Add <tt>groupByRaw</tt> / <tt>orderByRaw</tt> methods, better support for raw statements in group / order (#282).</li>
+      <li>Support more config options for node-mysql2 dialect (#341).</li>
+      <li>CLI help text fix, (#342).</li>
+    </ul>
 
     <p>
       <b class="header">0.6.18</b> &mdash; <small><i>June 25, 2014</i></small><br />

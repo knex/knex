@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.18
+// Knex.js  0.6.19
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -78,7 +78,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.18';
+  knex.VERSION = knex.__knex__  = '0.6.19';
   knex.raw = function(sql, bindings) {
     return new client.Raw(sql, bindings);
   };
@@ -1256,7 +1256,7 @@ Client_MySQL2.prototype.initRunner = function() {
 // Get a raw connection, called by the `pool` whenever a new
 // connection needs to be added to the pool.
 Client_MySQL2.prototype.acquireRawConnection = function() {
-  var connection = mysql2.createConnection(_.pick(this.connectionSettings, 'user', 'database', 'connection'));
+  var connection = mysql2.createConnection(_.pick(this.connectionSettings, configOptions));
   return new Promise(function(resolver, rejecter) {
     connection.connect(function(err) {
       if (err) return rejecter(err);
@@ -1264,6 +1264,8 @@ Client_MySQL2.prototype.acquireRawConnection = function() {
     });
   });
 };
+
+var configOptions = ['user', 'database', 'host', 'password', 'ssl', 'connection', 'stream'];
 
 module.exports = Client_MySQL2;
 },{"../../promise":53,"../mysql":6,"./runner":19,"inherits":"oxw+vU","lodash":"K2RcUv"}],19:[function(_dereq_,module,exports){
@@ -3453,9 +3455,6 @@ function QueryBuilder() {
 }
 inherits(QueryBuilder, EventEmitter);
 
-// Valid values for the `order by` clause generation.
-var orderBys = ['asc', 'desc'];
-
 QueryBuilder.prototype.toString = function() {
   return this.toQuery();
 };
@@ -3806,23 +3805,47 @@ QueryBuilder.prototype.orWhereNotBetween = function(column, values) {
 };
 
 // Adds a `group by` clause to the query.
-QueryBuilder.prototype.groupBy = function() {
+QueryBuilder.prototype.groupBy = function(item) {
+  if (item instanceof Raw) {
+    return this.groupByRaw.apply(this, arguments);
+  }
   this._statements.push({
     grouping: 'group',
+    type: 'groupByBasic',
     value: helpers.normalizeArr.apply(null, arguments)
+  });
+  return this;
+};
+
+// Adds a raw `group by` clause to the query.
+QueryBuilder.prototype.groupByRaw = function(sql, bindings) {
+  var raw = (sql instanceof Raw ? sql : new Raw(sql, bindings));
+  this._statements.push({
+    grouping: 'group',
+    type: 'groupByRaw',
+    value: raw
   });
   return this;
 };
 
 // Adds a `order by` clause to the query.
 QueryBuilder.prototype.orderBy = function(column, direction) {
-  if (!(direction instanceof Raw)) {
-    if (!_.contains(orderBys, (direction || '').toLowerCase())) direction = 'asc';
-  }
   this._statements.push({
     grouping: 'order',
+    type: 'orderByBasic',
     value: column,
     direction: direction
+  });
+  return this;
+};
+
+// Add a raw `order by` clause to the query.
+QueryBuilder.prototype.orderByRaw = function(sql, bindings) {
+  var raw = (sql instanceof Raw ? sql : new Raw(sql, bindings));
+  this._statements.push({
+    grouping: 'order',
+    type: 'orderByRaw',
+    value: raw
   });
   return this;
 };
@@ -4363,10 +4386,14 @@ QueryCompiler.prototype._groupsOrders = function(type) {
   if (!items) return '';
   var sql = [];
   for (var i = 0, l = items.length; i < l; i++) {
-    var item = items[i];
-    var str = this.formatter.columnize(item.value);
-    if (type === 'order') {
-      str += ' ' + this.formatter.direction(item.direction);
+    var str, item = items[i];
+    if (item.value instanceof Raw) {
+      str = this.formatter.checkRaw(item.value);
+    } else {
+      str = this.formatter.columnize(item.value);
+      if (type === 'order') {
+        str += ' ' + this.formatter.direction(item.direction);
+      }
     }
     sql.push(str);
   }
@@ -4571,7 +4598,9 @@ module.exports = [
   'orWhereBetween',
   'orWhereNotBetween',
   'groupBy',
+  'groupByRaw',
   'orderBy',
+  'orderByRaw',
   'union',
   'unionAll',
   'having',
