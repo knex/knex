@@ -650,6 +650,11 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(q2.toSQL().sql).to.equal('insert into "recipients" (recipient_id, email) select \'user\', \'user@foo.com\' where not exists (select 1 from "recipients" where "recipient_id" = ?)');
     });
 
+    it('supports capitalized operators', function() {
+      var str = sql().select('*').from('users').where('name', 'LIKE', '%test%').toString();
+      expect(str).to.equal('select * from "users" where "name" LIKE \'%test%\'');
+    });
+
     it('throws if you try to use an invalid operator', function() {
       var err;
       try {
