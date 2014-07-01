@@ -73,6 +73,12 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.bindings).to.eql([1, 'foo']);
     });
 
+    it("chained or wheres", function() {
+      chain = sql().select('*').from('users').where('id', '=', 1).or.where('email', '=', 'foo').toSQL();
+      expect(chain.sql).to.equal('select * from "users" where "id" = ? or "email" = ?');
+      expect(chain.bindings).to.eql([1, 'foo']);
+    });
+
     it("raw wheres", function() {
       chain = sql().select('*').from('users').where(raw('id = ? or email = ?', [1, 'foo'])).toSQL();
       expect(chain.sql).to.equal('select * from "users" where id = ? or email = ?');
@@ -81,6 +87,12 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
 
     it("raw or wheres", function() {
       chain = sql().select('*').from('users').where('id', '=', 1).orWhere(raw('email = ?', ['foo'])).toSQL();
+      expect(chain.sql).to.equal('select * from "users" where "id" = ? or email = ?');
+      expect(chain.bindings).to.eql([1, 'foo']);
+    });
+
+    it("chained raw or wheres", function() {
+      chain = sql().select('*').from('users').where('id', '=', 1).or.where(raw('email = ?', ['foo'])).toSQL();
       expect(chain.sql).to.equal('select * from "users" where "id" = ? or email = ?');
       expect(chain.bindings).to.eql([1, 'foo']);
     });
@@ -103,8 +115,26 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.bindings).to.eql([1, 2, 3]);
     });
 
-    it("or where not in", function() {
-      chain = sql().select('*').from('users').where('id', '=', 1).orWhereNotIn('id', [1, 2, 3]).toSQL();
+    it("chained or where not in", function() {
+      chain = sql().select('*').from('users').where('id', '=', 1).or.not.whereIn('id', [1, 2, 3]).toSQL();
+      expect(chain.sql).to.equal('select * from "users" where "id" = ? or "id" not in (?, ?, ?)');
+      expect(chain.bindings).to.eql([1, 1, 2, 3]);
+    });
+
+    it("or.whereIn", function() {
+      chain = sql().select('*').from('users').where('id', '=', 1).or.whereIn('id', [1, 2, 3]).toSQL();
+      expect(chain.sql).to.equal('select * from "users" where "id" = ? or "id" in (?, ?, ?)');
+      expect(chain.bindings).to.eql([1, 1, 2, 3]);
+    });
+
+    it("chained basic where not ins", function() {
+      chain = sql().select('*').from('users').not.whereIn('id', [1, 2, 3]).toSQL();
+      expect(chain.sql).to.equal('select * from "users" where "id" not in (?, ?, ?)');
+      expect(chain.bindings).to.eql([1, 2, 3]);
+    });
+
+    it("chained or where not in", function() {
+      chain = sql().select('*').from('users').where('id', '=', 1).or.not.whereIn('id', [1, 2, 3]).toSQL();
       expect(chain.sql).to.equal('select * from "users" where "id" = ? or "id" not in (?, ?, ?)');
       expect(chain.bindings).to.eql([1, 1, 2, 3]);
     });
@@ -128,6 +158,18 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
         expect(this).to.equal(qb);
         this.select('account_id').from('names').where('names.id', '>', 1).orWhere(function() {
           this.where('names.first_name', 'like', 'Tim%').andWhere('names.id', '>', 10);
+        });
+      });
+      var toSql = chain.toSQL();
+      expect(toSql.bindings).to.have.length(3);
+      expect(chain.toQuery()).to.equal('select * where "id" = (select "account_id" from "names" where "names"."id" > \'1\' or ("names"."first_name" like \'Tim%\' and "names"."id" > \'10\'))');
+    });
+
+    it('should accept a function as the "value", for a sub select when chained', function() {
+      chain = sql().where('id', '=', function(qb) {
+        expect(this).to.equal(qb);
+        this.select('account_id').from('names').where('names.id', '>', 1).or.where(function() {
+          this.where('names.first_name', 'like', 'Tim%').and.where('names.id', '>', 10);
         });
       });
       var toSql = chain.toSQL();
