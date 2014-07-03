@@ -141,6 +141,14 @@ Knex.initialize = function(config) {
         if (!client.Migrator) client.initMigrator();
         return new client.Migrator(knex);
       }
+    },
+
+    // Lazy-load / return a `FunctionHelper` object.
+    fn: {
+      get: function() {
+        if (!client.FunctionHelper) client.initFunctionHelper();
+        return client.FunctionHelper;
+      }
     }
   });
 
