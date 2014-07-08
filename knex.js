@@ -79,7 +79,9 @@ Knex.initialize = function(config) {
   // is a knex builder, without a full on `instanceof` check.
   knex.VERSION = knex.__knex__  = '0.6.20';
   knex.raw = function(sql, bindings) {
-    return new client.Raw(sql, bindings);
+    var raw = new client.Raw(sql, bindings);
+    if (config.__transactor__) raw.transacting(config.__transactor__);
+    return raw;
   };
 
   // Runs a new transaction, taking a container and returning a promise
