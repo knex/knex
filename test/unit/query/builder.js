@@ -326,18 +326,6 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       chain = sql().select('*').from('users').offset(5).limit(10).toSQL();
       expect(chain.sql).to.equal('select * from "users" limit ? offset ?');
       expect(chain.bindings).to.eql([10, 5]);
-
-      // chain = sql().select('*').from('users').offset(-5).take(10);
-      // builder = chain.toSQL();
-      // expect(chain.sql).to.equal('select * from "users" limit 10 offset 0');
-
-      // chain = sql().select('*').from('users').forPage(2, 15);
-      // builder = chain.toSQL();
-      // expect(chain.sql).to.equal('select * from "users" limit 15 offset 15');
-
-      // chain = sql().select('*').from('users').forPage(-2, 15);
-      // builder = chain.toSQL();
-      // expect(chain.sql).to.equal('select * from "users" limit 15 offset 0');
     });
 
     it("where shortcut", function() {
@@ -508,6 +496,12 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       chain = mysql().from('users').join('orders', 'users.id', 'orders.user_id').where('users.id', '=', 1).update({'email': 'foo', 'name': 'bar'}).toSQL();
       expect(chain.sql).to.equal('update `users` inner join `orders` on `users`.`id` = `orders`.`user_id` set `email` = ?, `name` = ? where `users`.`id` = ?');
       expect(chain.bindings).to.eql(['foo', 'bar', 1]);
+    });
+
+    it("update method with limit mysql", function() {
+      chain = mysql().from('users').where('users.id', '=', 1).update({'email': 'foo', 'name': 'bar'}).limit(1).toSQL();
+      expect(chain.sql).to.equal('update `users` set `email` = ?, `name` = ? where `users`.`id` = ? limit ?');
+      expect(chain.bindings).to.eql(['foo', 'bar', 1, 1]);
     });
 
     it("update method without joins on postgres", function() {
