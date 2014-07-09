@@ -19,7 +19,7 @@ var migrations = {
 module.exports = {
 
   maria: {
-    client: 'maria',
+    dialect: 'maria',
     connection: testConfig.maria || {
       db: "knex_test",
       user: "root",
@@ -29,7 +29,7 @@ module.exports = {
   },
 
   mysql: {
-    client: 'mysql',
+    dialect: 'mysql',
     connection: testConfig.mysql || {
       database: "knex_test",
       user: "root",
@@ -46,7 +46,7 @@ module.exports = {
   },
 
   mysql2: {
-    client: 'mysql2',
+    dialect: 'mysql2',
     connection: testConfig.mysql || {
       database: "knex_test",
       user: "root",
@@ -64,7 +64,7 @@ module.exports = {
 
 
   postgres: {
-    client: 'postgres',
+    dialect: 'postgres',
     connection: testConfig.postgres || {
       adapter:  "postgresql",
       database: "knex_test",
@@ -75,7 +75,7 @@ module.exports = {
   },
 
   sqlite3: {
-    client: 'sqlite3',
+    dialect: 'sqlite3',
     connection: {
       filename: __dirname + '/test.sqlite3'
     },

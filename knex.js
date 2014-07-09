@@ -111,8 +111,9 @@ Knex.initialize = function(config) {
   if (config.__client__) {
     client = config.__client__;
   } else {
+    
     // Build the "client"
-    var clientName = config.client;
+    var clientName = config.client || config.dialect;
     if (!Clients[clientName]) {
       throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
     }
