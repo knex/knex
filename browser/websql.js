@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.20
+// Knex.js  0.6.21
 // --------------
 
 //     (c) 2014 Tim Griesser
@@ -78,9 +78,11 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.20';
+  knex.VERSION = knex.__knex__  = '0.6.21';
   knex.raw = function(sql, bindings) {
-    return new client.Raw(sql, bindings);
+    var raw = new client.Raw(sql, bindings);
+    if (config.__transactor__) raw.transacting(config.__transactor__);
+    return raw;
   };
 
   // Runs a new transaction, taking a container and returning a promise
@@ -110,8 +112,9 @@ Knex.initialize = function(config) {
   if (config.__client__) {
     client = config.__client__;
   } else {
+    
     // Build the "client"
-    var clientName = config.client;
+    var clientName = config.client || config.dialect;
     if (!Clients[clientName]) {
       throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
     }
@@ -764,8 +767,8 @@ Runner_SQLite3.prototype._stream = Promise.method(function(sql, stream, options)
     stream.on('end', resolver);
     return runner.query(sql).map(function(row) {
       stream.write(row);
-    }).catch(function() {
-      stream.emit('error');
+    }).catch(function(err) {
+      stream.emit('error', err);
     }).then(function() {
       stream.end();
     });
@@ -799,6 +802,7 @@ Runner_SQLite3.prototype.processResponse = function(obj) {
 client.Runner = Runner_SQLite3;
 
 };
+
 },{"../../helpers":20,"../../promise":24,"../../runner":30,"inherits":"oxw+vU","lodash":"K2RcUv"}],11:[function(_dereq_,module,exports){
 // SQLite3: Column Builder & Compiler
 // -------
@@ -1727,6 +1731,8 @@ function QueryBuilder() {
   // Internal flags used in the builder.
   this._joinFlag  = 'inner';
   this._boolFlag  = 'and';
+
+  this.and = this;
 }
 inherits(QueryBuilder, EventEmitter);
 
@@ -1965,6 +1971,7 @@ QueryBuilder.prototype.whereWrapped = function(callback) {
 
 // Adds a `where exists` clause to the query.
 QueryBuilder.prototype.whereExists = function(callback, not) {
+  not = this._not() || not;
   this._statements.push({
     grouping: 'where',
     type: 'whereExists',
@@ -1992,6 +1999,7 @@ QueryBuilder.prototype.orWhereNotExists = function(callback) {
 
 // Adds a `where in` clause to the query.
 QueryBuilder.prototype.whereIn = function(column, values, not) {
+  not = this._not() || not;
   this._statements.push({
     grouping: 'where',
     type: 'whereIn',
@@ -2020,6 +2028,7 @@ QueryBuilder.prototype.orWhereNotIn = function(column, values) {
 
 // Adds a `where null` clause to the query.
 QueryBuilder.prototype.whereNull = function(column, not) {
+  not = this._not() || not;
   this._statements.push({
     grouping: 'where',
     type: 'whereNull',
@@ -2053,6 +2062,7 @@ QueryBuilder.prototype.whereBetween = function(column, values, not) {
   if (values.length !== 2) {
     return this._errors.push(new Error('You must specify 2 values for the whereBetween clause'));
   }
+  not = this._not() || not;
   this._statements.push({
     grouping: 'where',
     type: 'whereBetween',
@@ -2367,6 +2377,17 @@ QueryBuilder.prototype._bool = function(val) {
   return ret;
 };
 
+// Helper to get or set the "notFlag" value.
+QueryBuilder.prototype._not = function(val) {
+  if (arguments.length === 1) {
+    this._notFlag = val;
+    return this;
+  }
+  var ret = this._notFlag;
+  this._notFlag = false;
+  return ret;
+};
+
 // Helper to get or set the "joinFlag" value.
 QueryBuilder.prototype._joinType = function (val) {
   if (arguments.length === 1) {
@@ -2388,6 +2409,19 @@ QueryBuilder.prototype._aggregate = function(method, column) {
   });
   return this;
 };
+
+Object.defineProperty(QueryBuilder.prototype, 'or', {
+  get: function () {
+    return this._bool('or');
+  }
+});
+
+
+Object.defineProperty(QueryBuilder.prototype, 'not', {
+  get: function () {
+    return this._not(true);
+  }
+});
 
 // Attach all of the top level promise methods that should be chainable.
 _dereq_('../interface')(QueryBuilder);
@@ -2787,6 +2821,7 @@ function JoinClause(table, type) {
   this.table    = table;
   this.joinType = type;
   this.clauses  = [];
+  this.and = this;
 }
 
 JoinClause.prototype.grouping = 'join';
@@ -2827,6 +2862,12 @@ JoinClause.prototype._bool = function(bool) {
   this._boolFlag = 'and';
   return ret;
 };
+
+Object.defineProperty(JoinClause.prototype, 'or', {
+  get: function () {
+    return this._bool('or');
+  }
+});
 
 module.exports = JoinClause;
 },{}],28:[function(_dereq_,module,exports){
