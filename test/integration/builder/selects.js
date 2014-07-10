@@ -78,6 +78,17 @@ module.exports = function(knex) {
       });
     });
 
+    it('properly escapes postgres queries on streaming', function() {
+      var count = 0;
+      return knex('accounts').where('id', 1).stream(function(rowStream) {
+        rowStream.on('data', function(chunk) {
+          count++;
+        });
+      }).then(function() {
+        assert(count === 1, 'One row should have been streamed');
+      });
+    });
+
     it('throws errors on the exec if uncaught in the last block', function(ok) {
 
       var listeners = process.listeners('uncaughtException');
