@@ -6,6 +6,13 @@
   "directories": {
     "test": "test"
   },
+  "browser": {
+    "./lib/dialects/maria": false,
+    "./lib/dialects/mysql": false,
+    "./lib/dialects/mysql2": false,
+    "./lib/dialects/postgres": false,
+    "./lib/dialects/sqlite3": false
+  },
   "dependencies": {
     "minimist": "~0.0.9",
     "bluebird": "1.2.x",
