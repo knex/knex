@@ -11,7 +11,8 @@
     "./lib/dialects/mysql": false,
     "./lib/dialects/mysql2": false,
     "./lib/dialects/postgres": false,
-    "./lib/dialects/sqlite3": false
+    "./lib/dialects/sqlite3": false,
+    "sqlite3": false
   },
   "dependencies": {
     "minimist": "~0.0.9",
