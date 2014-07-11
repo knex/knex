@@ -2,7 +2,6 @@ var gulp       = require('gulp');
 var bump       = require('gulp-bump');
 var shell      = require('gulp-shell');
 var browserify = require('browserify');
-var through    = require('through');
 var argv       = require('minimist')(process.argv.slice(2));
 var Promise    = require('bluebird');
 var fs         = Promise.promisifyAll(require('fs'));
@@ -25,39 +24,19 @@ var bases = {
   websql:   './lib/dialects/websql'
 };
 
-var all            = ['mysql', 'mysql2', 'mariasql', 'pg', 'sqlite3', 'websql'];
-var externals      = ['lodash', 'bluebird', 'events', 'inherits', 'buffer'];
-var alwaysExcluded = ['generic-pool-redux', 'readable-stream', './lib/migrate/index.js'];
+var alwaysExcluded = ['./lib/migrate/index.js'];
 
 function ensureOutputDirectory() {
   return fs.mkdirAsync('./browser').catch(function(){});
 }
 
-function buildKnex() {
-  var targets = argv.t || 'all';
-  var outfile = argv.o || 'knex.js';
-  var standalone = argv.s || 'Knex';
-
-  if (targets === 'all') targets = all;
-  if (!Array.isArray(targets)) targets = [targets];
-
+function build(targets) {
   var b = browserify(['./knex.js']);
-
   for (var key in bases) {
     if (targets.indexOf(key) === -1) {
       b.exclude(bases[key]);
     }
   }
-
-  b.transform(function() {
-    var data = '';
-    function write (buf) { data += buf; }
-    function end () {
-      this.queue(data.replace("require('bluebird/js/main/promise')()", "require('bluebird')"));
-      this.queue(null);
-    }
-    return through(write, end);
-  });
   targets.forEach(function(target) {
     excluded[target].forEach(function(file) {
       b.exclude(file);
@@ -66,41 +45,41 @@ function buildKnex() {
   alwaysExcluded.forEach(function(file) {
     b.exclude(file);
   });
-  externals.forEach(function(file) {
-    b.external(file);
-  });
+  return b;
+}
 
-  var outStream = fs.createWriteStream('./browser/' + outfile);
-  ensureOutputDirectory().then(function() {
-    b.bundle({standalone: standalone}).pipe(outStream);
-  });
+function buildKnex() {
+  var b = build(['mysql', 'mysql2', 'mariasql', 'pg', 'sqlite3', 'websql']);
+  var outStream = fs.createWriteStream('./browser/knex.js');
+  b.bundle({standalone: 'Knex'}).pipe(outStream);
+  return outStream;
 }
 
 function buildWebSQL() {
-  argv.t = 'websql';
-  argv.o = argv.o || 'websql.js';
-  buildKnex();
-}
-
-function buildDependencies() {
-  var b = browserify();
-  var depStream = fs.createWriteStream('./browser/deps.js');
-  externals.forEach(function(lib) {
-    b.require(lib);
-  });
-  ensureOutputDirectory().then(function() {
-    b.bundle().pipe(depStream);
-  });
+  var b = build(['websql']);
+  var outStream = fs.createWriteStream('./browser/websql.js');
+  b.bundle({standalone: 'Knex'}).pipe(outStream);
+  return outStream;
 }
 
 gulp.task('build', function() {
-  buildKnex();
-  buildWebSQL();
-  buildDependencies();
+
+  // Need to temporarily rename, otherwise browserify seems to read the 
+  // local package.json, sees the browser path and doesn't build properly.
+  return ensureOutputDirectory().then(function() {
+    return fs.renameAsync('./package.json', './.package.json');
+  }).then(function() {
+    return new Promise(function(resolve, reject) {
+      function finish() {
+        fs.renameAsync('./.package.json', './package.json').then(resolve).catch(reject);
+      }
+      buildKnex().on('finish', function() {
+        buildWebSQL().on('finish', finish);
+      });
+    });
+  });
+
 });
-gulp.task('build:knex', buildKnex);
-gulp.task('build:websql', buildWebSQL);
-gulp.task('build:deps', buildDependencies);
 
 // Run the test... TODO: split these out to individual components.
 gulp.task('jshint', shell.task(['npm run jshint']));
