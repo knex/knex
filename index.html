@@ -2082,7 +2082,7 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
     <p id="Events-query">
       <b class="header">query</b>
       <br />
-      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="Other-toSQL">toSQL</a>. Useful for logging all
+      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all
     </p>
 
 
@@ -2195,7 +2195,7 @@ $ knex migrate:latest
     <p>
       <tt>knex.migrate</tt> is the class utilized by the knex migrations cli. Each method
       takes an optional <tt>config</tt> object, which may specify specifies the <tt>database</tt>,
-      <tt>directory</tt>, and <tt>tableName</tt> for the migrations. Check <a href="https://github.com/tgriesser/knex/blob/master/bin/readme.md">here</a> for more information about the migration CLI tool.
+      <tt>directory</tt>, and <tt>tableName</tt> for the migrations.
     </p>
 
     <p id="Migrations-make">
