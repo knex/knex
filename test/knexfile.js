@@ -22,7 +22,6 @@ module.exports = {
     dialect: 'maria',
     connection: testConfig.maria || {
       database: "knex_test",
-      db: "knex_test",
       user: "root",
       charset: 'utf8',
       host: 'localhost'
