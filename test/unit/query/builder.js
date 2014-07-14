@@ -31,6 +31,16 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.sql).to.equal('select "foo" as "bar" from "users"');
     });
 
+    it("basic alias trims spaces", function() {
+      chain = sql().select(' foo   as bar ').from('users').toSQL();
+      expect(chain.sql).to.equal('select "foo" as "bar" from "users"');
+    });
+
+    it("allows for case-insensitive alias", function() {
+      chain = sql().select(' foo   aS bar ').from('users').toSQL();
+      expect(chain.sql).to.equal('select "foo" as "bar" from "users"');
+    });
+
     it("basic table wrapping", function() {
       chain = sql().select('*').from('public.users').toSQL();
       expect(chain.sql).to.equal('select * from "public"."users"');
