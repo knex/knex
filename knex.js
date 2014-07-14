@@ -51,8 +51,6 @@ var Promise = require('./lib/promise');
 
 // Each of the methods which may be statically chained from knex.
 var QueryInterface   = require('./lib/query/methods');
-var SchemaInterface  = require('./lib/schema/methods');
-var MigrateInterface = require('./lib/migrate/methods');
 
 // Create a new "knex" instance with the appropriate configured client.
 Knex.initialize = function(config) {
@@ -134,7 +132,7 @@ Knex.initialize = function(config) {
 
   // Allow chaining methods from the root object, before
   // any other information is specified.
-  _.each(QueryInterface, function(method) {
+  QueryInterface.forEach(function(method) {
     knex[method] = function() {
       var builder = knex();
       return builder[method].apply(builder, arguments);
@@ -142,32 +140,25 @@ Knex.initialize = function(config) {
   });
   knex.client = client;
 
-  // Namespaces for additional library components.
-  var schema  = knex.schema  = {};
-  var migrate = knex.migrate = {};
+  Object.defineProperties(knex, {
 
-  // Attach each of the `Schema` "interface" methods directly onto to `knex.schema` namespace, e.g.:
-  // `knex.schema.table('tableName', function() {...`
-  // `knex.schema.createTable('tableName', function() {...`
-  // `knex.schema.dropTableIfExists('tableName');`
-  _.each(SchemaInterface, function(key) {
-    schema[key] = function() {
-      if (!client.SchemaBuilder) client.initSchema();
-      var builder = new client.SchemaBuilder();
-      if (config.__transactor__) builder.transacting(config.__transactor__);
-      return builder[key].apply(builder, arguments);
-    };
-  });
-
-  // Attach each of the `Migrator` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
-  // knex.migrate.latest().then(...
-  // knex.migrate.currentVersion(...
-  _.each(MigrateInterface, function(method) {
-    migrate[method] = function() {
-      if (!client.Migrator) client.initMigrator();
-      var migrator = new client.Migrator(knex);
-      return migrator[method].apply(migrator, arguments);
-    };
+    // Lazy-load / return a "schema" builder object, ensuring it's context-aware.
+    schema: {
+      get: function() {
+        if (!client.SchemaBuilder) client.initSchema();
+        var builder = new client.SchemaBuilder();
+        if (config.__transactor__) builder.transacting(config.__transactor__);
+        return builder;
+      }
+    },
+    
+    // Lazy-load / return a `Migrator` object.
+    migrate: {
+      get: function() {
+        if (!client.Migrator) client.initMigrator();
+        return new client.Migrator(knex);
+      }
+    }
   });
 
   // Add a few additional misc utils.
