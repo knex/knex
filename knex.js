@@ -90,20 +90,7 @@ Knex.initialize = function(config) {
 
   // Convenience method for tearing down the pool.
   knex.destroy = function (callback) {
-    var pool = this.client.pool;
-    var promise = new Promise(function(resolver, rejecter) {
-      if (!pool) resolver();
-      pool.destroy(function(err) {
-        if (err) return rejecter(err);
-        resolver();
-      });
-    });
-    // Allow either a callback or promise interface for destruction.
-    if (_.isFunction(callback)) {
-      promise.exec(callback);
-    } else {
-      return promise;
-    }
+    return this.client.destroy(callback);
   };
 
   if (config.__client__) {
