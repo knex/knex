@@ -49,15 +49,15 @@ var Clients = Knex.Clients = {
 var _ = require('lodash');
 var Promise = require('./lib/promise');
 
-// Each of the methods which may be statically chained from knex.
-var QueryInterface   = require('./lib/query/methods');
-var SchemaInterface  = require('./lib/schema/methods');
-var MigrateInterface = require('./lib/migrate/methods');
-
 // Create a new "knex" instance with the appropriate configured client.
 Knex.initialize = function(config) {
   var Dialect, client;
   var EventEmitter = require('events').EventEmitter;
+
+  // Each of the methods which may be statically chained from knex.
+  var QueryInterface   = require('./lib/query/methods');
+  var SchemaInterface  = require('./lib/schema/methods');
+  var MigrateInterface = require('./lib/migrate/methods');
 
   // The object we're potentially using to kick off an
   // initial chain. It is assumed that `knex` isn't a
@@ -110,6 +110,7 @@ Knex.initialize = function(config) {
 
   if (config.__client__) {
     client = config.__client__;
+    Dialect = Clients[client.dialect]();
   } else {
     
     // Build the "client"
@@ -130,6 +131,16 @@ Knex.initialize = function(config) {
     client.on('query', function(obj) {
       knex.emit('query', obj);
     });
+  }
+
+  if (Dialect.QueryInterface) {
+    QueryInterface = _.union(QueryInterface, Dialect.QueryInterface);
+  }
+  if (Dialect.SchemaInterface) {
+    SchemaInterface = _.union(SchemaInterface, Dialect.SchemaInterface);
+  }
+  if (Dialect.MigrateInterface) {
+    MigrateInterface = _.union(MigrateInterface, Dialect.MigrateInterface);
   }
 
   // Allow chaining methods from the root object, before
