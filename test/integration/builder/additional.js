@@ -42,6 +42,11 @@ module.exports = function(knex) {
       expect(knex(knex.raw("raw_table_name")).toQuery()).to.equal('select * from raw_table_name');
     });
 
+    it('should allow using .fn-methods to create raw statements', function() {
+      expect(knex.fn.now().prototype === knex.raw().prototype);
+      expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
+    });
+
     it('gets the columnInfo', function() {
       return knex('datatype_test').columnInfo().testSql(function(tester) {
         tester('mysql',
