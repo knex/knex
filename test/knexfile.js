@@ -13,11 +13,11 @@ var pool = {
 };
 
 var migrations = {
-  directory: __dirname + '/integration/migrate/migration'
+  directory: 'test/integration/migrate/migration'
 };
 
 var seeds = {
-  directory: __dirname + '/integration/seed/seeds'
+  directory: 'test/integration/seed/seeds'
 };
 
 module.exports = {
