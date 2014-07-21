@@ -12,7 +12,7 @@ module.exports = function(knex) {
     describe('knex.seed.make', function() {
       it('should create a new seed file with the make method', function () {
         return knex.seed.make('test').then(function (name) {
-          expect(path.basename(name)).to.equal('test');
+          expect(path.basename(name)).to.equal('test.js');
         });
       });
     });
