@@ -12,20 +12,13 @@ module.exports = function(knex) {
     describe('knex.seed.make', function() {
       it('should create a new seed file with the make method', function () {
         return knex.seed.make('test').then(function (name) {
-          expect(name).to.equal('test');
+          expect(path.basename(name)).to.equal('test');
         });
       });
     });
 
     describe('knex.seed.run', function() {
       it('should run all seed files in the configured seed directory', function() {
-        return knex.seed.run({directory: __dirname + '/test'}).then(function(data) {
-          expect(data[0].name).to.equal('seed1.js');
-          expect(data[1].name).to.equal('seed2.js');
-        });
-      });
-
-      it('should raise error if exports.seed function is not defined in seed file', function() {
         return knex.seed.run({directory: __dirname + '/test'}).then(function(data) {
           expect(data[0].name).to.equal('seed1.js');
           expect(data[1].name).to.equal('seed2.js');
