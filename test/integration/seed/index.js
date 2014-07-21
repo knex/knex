@@ -18,8 +18,8 @@ module.exports = function(knex) {
   describe('knex.seed.run', function() {
     it('should run all seed files in the configured seed directory', function() {
       return knex.seed.run({directory: 'test/integration/seed/test'}).then(function(data) {
-        expect(data[0].name).to.equal('seed1.js');
-        expect(data[1].name).to.equal('seed2.js');
+        expect(path.basename(data[0])).to.equal('seed1.js');
+        expect(path.basename(data[1])).to.equal('seed2.js');
       });
     });
   });
