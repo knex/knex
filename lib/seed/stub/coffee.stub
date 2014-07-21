@@ -1,0 +1,3 @@
+
+exports.seed = (knex, Promise) ->
+  knex('tableName').insert({colName: 'rowValue'})

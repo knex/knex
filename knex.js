@@ -142,6 +142,14 @@ Knex.initialize = function(config) {
         return new client.Migrator(knex);
       }
     },
+    
+    // Lazy-load / return a `Seeder` object.
+    seed: {
+      get: function() {
+        if (!client.Seeder) client.initSeeder();
+        return new client.Seeder(knex);
+      }
+    },
 
     // Lazy-load / return a `FunctionHelper` object.
     fn: {

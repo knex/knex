@@ -24,7 +24,7 @@ var bases = {
   websql:   './lib/dialects/websql'
 };
 
-var alwaysExcluded = ['./lib/migrate/index.js'];
+var alwaysExcluded = ['./lib/migrate/index.js', './lib/seed/index.js'];
 
 function ensureOutputDirectory() {
   return fs.mkdirAsync('./browser').catch(function(){});
