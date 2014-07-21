@@ -27,7 +27,7 @@ module.exports = function(knex) {
     describe('knex.migrate.latest', function() {
 
       before(function() {
-        return knex.migrate.latest({directory: __dirname + '/test'});
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'});
       });
 
       it('should run all migration files in the specified directory', function() {
@@ -68,7 +68,7 @@ module.exports = function(knex) {
 
     describe('knex.migrate.rollback', function() {
       it('should delete the most recent batch from the migration log', function() {
-        return knex.migrate.rollback({directory: __dirname + '/test'}).then(function() {
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test'}).then(function() {
           return knex('knex_migrations').select('*').then(function(data) {
             expect(data.length).to.equal(0);
           });
