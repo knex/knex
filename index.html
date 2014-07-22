@@ -225,12 +225,17 @@
 
     <ul class="toc_section">
       <li><a href="#Migrations-CLI"><b>CLI</b></li>
+        <li>– <a href="#Migrations-CLI">Migrations</a></li>
+        <li>– <a href="#Seeds-CLI">Seed files</a></li>
         <li>– <a href="#knexfile">knexfile.js</a></li>
-      <li><a href="#Migrations-API"><b>API</b></li>
+      <li><a href="#Migrations-API"><b>Migration API</b></li>
         <li>– <a href="#Migrations-make">make</a></li>
         <li>– <a href="#Migrations-latest">latest</a></li>
         <li>– <a href="#Migrations-rollback">rollback</a></li>
         <li>– <a href="#Migrations-currentVersion">currentVersion</a></li>
+      <li><a href="#Seeds-API"><b>Seed API</b></li>
+        <li>– <a href="#Seeds-make">make</a></li>
+        <li>– <a href="#Seeds-run">run</a></li>
     </ul>
 
     <a class="toc_title" href="#support">
@@ -2183,6 +2188,52 @@ $ knex migrate:latest
       To update your database to the latest version.
     </p>
 
+    <h2 id="Seeds">Seed files</h2>
+
+    <p>
+      Seed files allow you to populate your database with test or seed data independent of your migration files.  
+    </p>
+
+    <h3 id="Seeds-CLI">Seed CLI</h3>
+
+    <p>
+      To create a seed file, run:
+    </p>
+
+<pre>
+$ knex seed:make seed_name
+</pre>
+
+    <p>
+      Seed files are created in the directory specified in your knexfile.js for the current environment.  A sample seed configuration looks like:
+    </p>
+
+<pre>
+development: {
+  client: ...,
+  connection: { ... },
+  <b>seeds: {
+      directory: './seeds/dev'
+  }</b>
+}
+</pre>
+
+    <p>
+      If no <tt>seeds.directory</tt> is defined, files are created in <tt>./seeds</tt>.  Note that the seed directory needs to be a relative path.  Absolute paths are not supported (nor is it good practice).
+    </p>
+
+    <p>
+      To run seed files, execute:
+    </p>
+
+<pre>
+$ knex seed:run
+</pre>
+
+    <p>
+      Seed files are executed in alphabetical order.
+    </p>
+
     <h3 id="knexfile">knexfile.js</h3>
 
     <p>
@@ -2221,6 +2272,26 @@ $ knex migrate:latest
       <br />
       Retrieves and returns the current migration version, as a promise.
       If there aren't any migrations run yet, returns "none" as the value for the currentVersion.
+    </p>
+
+    <h3 id="Seeds-API">Seed API</h3>
+
+    <p>
+      <tt>knex.seed</tt> is the class utilized by the knex seed CLI. Each method
+      takes an optional <tt>config</tt> object, which may specify the relative
+      <tt>directory</tt> for the migrations.
+    </p>
+
+    <p id="Seeds-make">
+      <b class="header">make</b><code>knex.seed.make(name, [config])</code>
+      <br />
+      Creates a new seed file, with the <b>name</b> of the seed file being added.
+    </p>
+
+    <p id="Seeds-run">
+      <b class="header">run</b><code>knex.seed.run([config])</code>
+      <br />
+      Runs all seed files for the current environment.
     </p>
 
     <h2 id="support">Support</h2>
