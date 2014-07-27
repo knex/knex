@@ -7,6 +7,6 @@ exports.up = function(knex, promise) {
     });
 };
 
-exports.down = function(knex, promsie) {
+exports.down = function(knex, promise) {
   return knex.schema.dropTable('migration_test_1');
 };
