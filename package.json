@@ -15,19 +15,19 @@
     "sqlite3": false
   },
   "dependencies": {
-    "minimist": "~0.0.9",
-    "bluebird": "1.2.x",
+    "bluebird": ">=1.2.0",
     "chalk": "^0.4.0",
     "commander": "^2.2.0",
-    "interpret": "^0.3.2",
-    "liftoff": "^0.11.0",
-    "semver": "^2.3.0",
-    "tildify": "^0.2.0",
     "generic-pool-redux": "~0.1.0",
     "inherits": "~2.0.1",
+    "interpret": "^0.3.2",
+    "liftoff": "^0.11.0",
     "lodash": "~2.4.0",
+    "minimist": "~0.0.9",
     "mkdirp": "^0.5.0",
-    "readable-stream": "^1.1.12"
+    "readable-stream": "^1.1.12",
+    "semver": "^2.3.0",
+    "tildify": "^0.2.0"
   },
   "devDependencies": {
     "through": "^2.3.4",
