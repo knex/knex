@@ -783,7 +783,7 @@ inherits(ColumnBuilder_MySQL, Schema.ColumnBuilder);
 
 function ColumnCompiler_MySQL() {
   this.Formatter = client.Formatter;
-  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'after', 'comment'];
+  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment'];
   Schema.ColumnCompiler.apply(this, arguments);
 }
 inherits(ColumnCompiler_MySQL, Schema.ColumnCompiler);
@@ -847,6 +847,9 @@ ColumnCompiler_MySQL.prototype.defaultTo = function(value) {
 };
 ColumnCompiler_MySQL.prototype.unsigned = function() {
   return 'unsigned';
+};
+ColumnCompiler_MySQL.prototype.first = function() {
+  return 'first';
 };
 ColumnCompiler_MySQL.prototype.after = function(column) {
   return 'after ' + this.formatter.wrap(column);

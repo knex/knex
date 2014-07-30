@@ -228,6 +228,15 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `name` varchar(255) after `foo`');
     });
 
+    it('test adding column on the first place', function() {
+      tableSql = new SchemaBuilder().table('users', function() {
+        this.string('first_name').first();
+      }).toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table `users` add `first_name` varchar(255) first');
+    });
+
     it('test adding string', function() {
       tableSql = new SchemaBuilder().table('users', function() {
         this.string('foo');

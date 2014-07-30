@@ -182,6 +182,7 @@
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
       <li>– <a href="#Chainable-notNullable">notNullable</a></li>
       <li>– <a href="#Chainable-nullable">nullable</a></li>
+      <li>– <a href="#Chainable-first">first</a></li>
       <li>– <a href="#Chainable-after">after</a></li>
       <li>– <a href="#Chainable-comment">comment</a></li>
     </ul>
@@ -1748,6 +1749,12 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       <b class="header">nullable</b><code>column.nullable()</code>
       <br />
       Default on column creation, this explicitly sets a field to be nullable.
+    </p>
+
+    <p id="Chainable-first">
+      <b class="header">first</b><code>column.first()</code>
+      <br />
+      Sets the column to be inserted on the first position, only used in MySQL alter tables.
     </p>
 
     <p id="Chainable-after">
