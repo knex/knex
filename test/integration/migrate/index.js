@@ -11,6 +11,7 @@ module.exports = function(knex) {
 
     it('should create a new migration file with the create method', function() {
       return knex.migrate.make('test').then(function(name) {
+        name = path.basename(name);
         expect(name.split('_')[0]).to.have.length(14);
         expect(name.split('_')[1].split('.')[0]).to.equal('test');
       });
@@ -27,7 +28,7 @@ module.exports = function(knex) {
     describe('knex.migrate.latest', function() {
 
       before(function() {
-        return knex.migrate.latest({directory: __dirname + '/test'});
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'});
       });
 
       it('should run all migration files in the specified directory', function() {
@@ -38,8 +39,8 @@ module.exports = function(knex) {
 
       it('should run the migrations from oldest to newest', function() {
         return knex('knex_migrations').orderBy('id', 'asc').select('*').then(function(data) {
-          expect(data[0].name).to.equal('20131019235242_migration_1.js');
-          expect(data[1].name).to.equal('20131019235306_migration_2.js');
+          expect(path.basename(data[0].name)).to.equal('20131019235242_migration_1.js');
+          expect(path.basename(data[1].name)).to.equal('20131019235306_migration_2.js');
         });
       });
 
@@ -68,7 +69,7 @@ module.exports = function(knex) {
 
     describe('knex.migrate.rollback', function() {
       it('should delete the most recent batch from the migration log', function() {
-        return knex.migrate.rollback({directory: __dirname + '/test'}).then(function() {
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test'}).then(function() {
           return knex('knex_migrations').select('*').then(function(data) {
             expect(data.length).to.equal(0);
           });

@@ -13,7 +13,11 @@ var pool = {
 };
 
 var migrations = {
-  directory: __dirname + '/integration/migrate/migration'
+  directory: 'test/integration/migrate/migration'
+};
+
+var seeds = {
+  directory: 'test/integration/seed/seeds'
 };
 
 module.exports = {
@@ -25,7 +29,8 @@ module.exports = {
       user: "root",
       charset: 'utf8'
     },
-    migrations: migrations
+    migrations: migrations,
+    seeds: seeds
   },
 
   mysql: {
@@ -42,7 +47,8 @@ module.exports = {
         });
       }
     }),
-    migrations: migrations
+    migrations: migrations,
+    seeds: seeds
   },
 
   mysql2: {
@@ -59,7 +65,8 @@ module.exports = {
         });
       }
     }),
-    migrations: migrations
+    migrations: migrations,
+    seeds: seeds
   },
 
 
@@ -71,7 +78,8 @@ module.exports = {
       user:     "postgres"
     },
     pool: pool,
-    migrations: migrations
+    migrations: migrations,
+    seeds: seeds
   },
 
   sqlite3: {
@@ -82,7 +90,8 @@ module.exports = {
     pool: _.extend({}, pool, {
       max: 2
     }),
-    migrations: migrations
+    migrations: migrations,
+    seeds: seeds
   }
 
 };
