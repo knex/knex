@@ -304,7 +304,7 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
 
     it("multiple order bys", function() {
       chain = sqlite3().select('*').from('users').orderBy('email').orderBy('age', 'desc').toSQL();
-      expect(chain.sql).to.equal('select * from "users" order by "email" collate nocase asc, "age" collate nocase desc');
+      expect(chain.sql).to.equal('select * from "users" order by "email" asc, "age" desc');
     });
 
     it("havings", function() {
@@ -561,7 +561,7 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
 
     it("SQLite order by", function() {
       chain = sqlite3().select('*').from('users').orderBy('email', 'desc').toSQL();
-      expect(chain.sql).to.equal('select * from "users" order by "email" collate nocase desc');
+      expect(chain.sql).to.equal('select * from "users" order by "email" desc');
     });
 
     // it("sql server limits and offsets", function() {

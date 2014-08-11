@@ -667,7 +667,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? order by "e1" collate nocase asc limit ?',
+            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? order by "e1" asc limit ?',
             ['test2@example.com', 5],
             [{
               e1: 'test3@example.com',
