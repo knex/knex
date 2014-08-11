@@ -142,7 +142,12 @@ module.exports = function(knex) {
         expect(__cid).to.equal(obj.__cid);
       })
       .catch(function(msg) {
-        expect(count).to.equal(4);
+        if (knex.client.dialect === 'oracle') {
+          // oracle start transaction /rollback are no queries
+          expect(count).to.equal(2);
+        } else {
+          expect(count).to.equal(4);
+        }
         expect(msg).to.equal(err);
         return knex('accounts').where('id', id).select('first_name');
       })

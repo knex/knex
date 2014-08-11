@@ -38,10 +38,17 @@ module.exports = function(knex) {
       });
 
       it('should run the migrations from oldest to newest', function() {
-        return knex('knex_migrations').orderBy('id', 'asc').select('*').then(function(data) {
-          expect(path.basename(data[0].name)).to.equal('20131019235242_migration_1.js');
-          expect(path.basename(data[1].name)).to.equal('20131019235306_migration_2.js');
-        });
+        if (knex.client.dialect === 'oracle') {
+          return knex('knex_migrations').orderBy('migration_time', 'asc').select('*').then(function(data) {
+            expect(path.basename(data[0].name)).to.equal('20131019235242_migration_1.js');
+            expect(path.basename(data[1].name)).to.equal('20131019235306_migration_2.js');
+          });
+        } else {
+          return knex('knex_migrations').orderBy('id', 'asc').select('*').then(function(data) {
+            expect(path.basename(data[0].name)).to.equal('20131019235242_migration_1.js');
+            expect(path.basename(data[1].name)).to.equal('20131019235306_migration_2.js');
+          });
+        }
       });
 
       it('should create all specified tables and columns', function() {

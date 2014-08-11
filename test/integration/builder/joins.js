@@ -767,61 +767,65 @@ module.exports = function(knex) {
     });
 
     it('supports joins with overlapping column names', function() {
-      return knex('accounts as a1')
-        .leftJoin('accounts as a2', function() {
-          this.on('a1.email', '<>', 'a2.email');
-        })
-        .select(['a1.email', 'a2.email'])
-        .where(knex.raw('a1.id = 1'))
-        .options({
-          nestTables: true,
-          rowMode: 'array'
-        })
-        .limit(2)
-        .testSql(function(tester) {
-          tester(
-            'mysql',
-            'select `a1`.`email`, `a2`.`email` from `accounts` as `a1` left join `accounts` as `a2` on `a1`.`email` <> `a2`.`email` where a1.id = 1 limit ?',
-            [2],
-            [{
-              a1: {
-                email: 'test@example.com'
-              },
-              a2: {
+      if (knex.client.dialect === 'oracle') {
+        console.warn("Overlapping column names not supported with oracle");
+      } else {
+        return knex('accounts as a1')
+          .leftJoin('accounts as a2', function() {
+            this.on('a1.email', '<>', 'a2.email');
+          })
+          .select(['a1.email', 'a2.email'])
+          .where('a1.id', '=', '1')
+          .options({
+            nestTables: true,
+            rowMode: 'array'
+          })
+          .limit(2)
+          .testSql(function(tester) {
+            tester(
+              'mysql',
+              'select `a1`.`email`, `a2`.`email` from `accounts` as `a1` left join `accounts` as `a2` on `a1`.`email` <> `a2`.`email` where a1.id = 1 limit ?',
+              [2],
+              [{
+                a1: {
+                  email: 'test@example.com'
+                },
+                a2: {
+                  email: 'test2@example.com'
+                }
+              },{
+                a1: {
+                  email: 'test@example.com'
+                },
+                a2: {
+                  email: 'test3@example.com'
+                }
+              }]
+            );
+            tester(
+              'postgres',
+              'select "a1"."email", "a2"."email" from "accounts" as "a1" left join "accounts" as "a2" on "a1"."email" <> "a2"."email" where a1.id = 1 limit ?',
+              [2],
+              [{
+                0: 'test@example.com',
+                1: 'test2@example.com'
+              },{
+                0: 'test@example.com',
+                1: 'test3@example.com'
+              }]
+            );
+            tester(
+              'sqlite3',
+              'select "a1"."email", "a2"."email" from "accounts" as "a1" left join "accounts" as "a2" on "a1"."email" <> "a2"."email" where a1.id = 1 limit ?',
+              [2],
+              [{
                 email: 'test2@example.com'
-              }
-            },{
-              a1: {
-                email: 'test@example.com'
-              },
-              a2: {
+              },{
                 email: 'test3@example.com'
-              }
-            }]
-          );
-          tester(
-            'postgres',
-            'select "a1"."email", "a2"."email" from "accounts" as "a1" left join "accounts" as "a2" on "a1"."email" <> "a2"."email" where a1.id = 1 limit ?',
-            [2],
-            [{
-              0: 'test@example.com',
-              1: 'test2@example.com'
-            },{
-              0: 'test@example.com',
-              1: 'test3@example.com'
-            }]
-          );
-          tester(
-            'sqlite3',
-            'select "a1"."email", "a2"."email" from "accounts" as "a1" left join "accounts" as "a2" on "a1"."email" <> "a2"."email" where a1.id = 1 limit ?',
-            [2],
-            [{
-              email: 'test2@example.com'
-            },{
-              email: 'test3@example.com'
-            }]
-          );
+              }]
+            );
         });
+      }
     });
 
   });

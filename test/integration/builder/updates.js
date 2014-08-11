@@ -127,6 +127,12 @@ module.exports = function(knex) {
           ['test100@example.com','UpdatedUser','UpdatedTest',1],
           1
         );
+        tester(
+          'oracle',
+          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+          ['test100@example.com','UpdatedUser','UpdatedTest',1],
+          1
+        );
       });
 
     });
