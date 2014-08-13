@@ -25,9 +25,10 @@ module.exports = {
   maria: {
     dialect: 'maria',
     connection: testConfig.maria || {
-      db: "knex_test",
+      database: "knex_test",
       user: "root",
-      charset: 'utf8'
+      charset: 'utf8',
+      host: 'localhost'
     },
     migrations: migrations,
     seeds: seeds
