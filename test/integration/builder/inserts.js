@@ -87,8 +87,10 @@ module.exports = function(knex) {
           );
           tester(
             'oracle',
-            "insert all into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) select 1 from dual",
-            ['Lorem ipsum Dolore labore incididunt enim.', d,'test2@example.com','Test','User',1, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test3@example.com','Test','User',2, d]
+            "begin execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning \"id\" into :8' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning \"id\" into :8' using ?, ?, ?, ?, ?, ?, ?, out ?;end;",
+            ['Lorem ipsum Dolore labore incididunt enim.', d,'test2@example.com','Test','User',1, d, function (v) { return v.toString() === '[object ReturningHelper:id]';},
+             'Lorem ipsum Dolore labore incididunt enim.', d,'test3@example.com','Test','User',2, d, function (v) { return v.toString() === '[object ReturningHelper:id]';}],
+            [2, 3]
           );
         });
 
@@ -331,17 +333,13 @@ module.exports = function(knex) {
         });
     });
 
-    it('should take an array of columns to return in postgres', function() {
+    it('should take an array of columns to return in oracle or postgres', function() {
       var insertData = {
         account_id: 10,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
         status: 0
       };
-      var returning = ['account_id', 'details'];
-      if (knex.client.dialect === 'oracle') {
-        returning = 'account_id';
-      }
-      return knex('test_table_two').insert(insertData, returning).testSql(function(tester) {
+      return knex('test_table_two').insert(insertData,['account_id', 'details']).testSql(function(tester) {
         tester(
           'mysql',
           'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?)',
@@ -365,15 +363,18 @@ module.exports = function(knex) {
         );
         tester(
           'oracle',
-          'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning "account_id" into ?',
+          "insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (?, ?, ?) returning \"account_id\", \"details\" into ?, ?",
           [
             10,
             'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
             0,
-            function (v) {return v.toString() === '[object ReturningHelper:account_id]';}
-            // function (v) {return v.toString() === '[object ReturningHelper:details]';},
+            function (v) {return v.toString() === '[object ReturningHelper:account_id]';},
+            function (v) {return v.toString() === '[object ReturningHelper:details]';},
           ],
-          [10]
+          [{
+            account_id: 10,
+            details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+          }]
         );
       }).then(function(rows) {
         expect(rows.length).to.equal(1);
@@ -391,7 +392,12 @@ module.exports = function(knex) {
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
         status: 0
       };
-      return knex('test_table_two').insert(insertData, '*').testSql(function(tester) {
+
+      var returningColumn = '*';
+      if (knex.client.dialect === 'oracle') {
+        returningColumn = 'id';
+      }
+      return knex('test_table_two').insert(insertData, returningColumn).testSql(function(tester) {
         tester(
           'postgresql',
           'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning *',
