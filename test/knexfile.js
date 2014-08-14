@@ -2,6 +2,9 @@ var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
 var _          = require('lodash');
 var Promise    = require('bluebird');
 
+// excluding oracle and maria dialects from default integrations test
+testIntegrationDialects = (process.env.KNEX_TEST_INTEGRATION_DIALECTS || "mysql mysql2 postgres sqlite3").match(/\w+/g);
+
 var pool = {
   afterCreate: function(connection, callback) {
     expect(connection).to.have.property('__cid');
@@ -20,8 +23,7 @@ var seeds = {
   directory: 'test/integration/seed/seeds'
 };
 
-module.exports = {
-
+var testConfigs = {
   maria: {
     dialect: 'maria',
     connection: testConfig.maria || {
@@ -69,6 +71,16 @@ module.exports = {
     seeds: seeds
   },
 
+  oracle: {
+    dialect: 'oracle',
+    connection: testConfig.oracle || {
+      adapter:  "oracle",
+      database: "knex_test",
+      user:     "oracle"
+    },
+    pool: pool,
+    migrations: migrations
+  },
 
   postgres: {
     dialect: 'postgres',
@@ -93,5 +105,10 @@ module.exports = {
     migrations: migrations,
     seeds: seeds
   }
-
 };
+
+// export only copy the specified dialects
+module.exports  = _.reduce(testIntegrationDialects, function (res, dialectName) {
+  res[dialectName] = testConfigs[dialectName];
+  return res;
+}, {});

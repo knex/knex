@@ -398,13 +398,24 @@ module.exports = function(knex) {
     });
 
     it('does where(raw)', function() {
-      return knex('accounts')
-        .whereExists(function() {
-          this.select(knex.raw(1))
-            .from('test_table_two')
-            .where(knex.raw('test_table_two.account_id = accounts.id'));
-        })
-        .select();
+      if (knex.client.dialect === 'oracle') {
+        // special case for oracle
+        return knex('accounts')
+          .whereExists(function() {
+            this.select(knex.raw(1))
+              .from('test_table_two')
+              .where(knex.raw('"test_table_two"."account_id" = "accounts"."id"'));
+          })
+          .select();
+      } else {
+        return knex('accounts')
+          .whereExists(function() {
+            this.select(knex.raw(1))
+              .from('test_table_two')
+              .where(knex.raw('test_table_two.account_id = accounts.id'));
+          })
+          .select();
+      }
     });
 
     it('does sub-selects', function() {
@@ -418,7 +429,11 @@ module.exports = function(knex) {
     });
 
     it("Allows for knex.Raw passed to the `where` clause", function() {
-      return knex('accounts').where(knex.raw('id = 2')).select('email', 'logins');
+      if (knex.client.dialect === 'oracle') {
+        return knex('accounts').where(knex.raw('"id" = 2')).select('email', 'logins');
+      } else {
+        return knex('accounts').where(knex.raw('id = 2')).select('email', 'logins');
+      }
     });
 
     it('Retains array bindings, #228', function() {

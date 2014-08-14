@@ -1,4 +1,4 @@
-module.exports = function(pgclient, mysqlclient, sqlite3client) {
+module.exports = function(pgclient, mysqlclient, sqlite3client, oracleclient) {
 
   var Raw = require('../../../lib/raw');
 
@@ -9,6 +9,7 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
     var sql = function () { return new pgclient.QueryBuilder(); };
     var mysql = function () { return new mysqlclient.QueryBuilder(); };
     var sqlite3 = function () { return new sqlite3client.QueryBuilder(); };
+    var oracle = function () { return new oracleclient.QueryBuilder(); };
     var raw = function(sql, bindings) { return new Raw(sql, bindings); };
 
     it("basic select", function() {
@@ -31,14 +32,24 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.sql).to.equal('select "foo" as "bar" from "users"');
     });
 
-    it("basic alias trims spaces", function() {
-      chain = sql().select(' foo   as bar ').from('users').toSQL();
-      expect(chain.sql).to.equal('select "foo" as "bar" from "users"');
+    it("Oracle basic alias", function() {
+      chain = oracle().select('foo as bar').from('users').toSQL();
+      expect(chain.sql).to.equal('select "foo" "bar" from "users"');
+    });
+
+    it("Oracle basic alias trims spaces", function() {
+      chain = oracle().select(' foo   as bar ').from('users').toSQL();
+      expect(chain.sql).to.equal('select "foo" "bar" from "users"');
     });
 
     it("allows for case-insensitive alias", function() {
       chain = sql().select(' foo   aS bar ').from('users').toSQL();
       expect(chain.sql).to.equal('select "foo" as "bar" from "users"');
+    });
+
+    it("Oracle allows for case-insensitive alias", function() {
+      chain = oracle().select(' foo   aS bar ').from('users').toSQL();
+      expect(chain.sql).to.equal('select "foo" "bar" from "users"');
     });
 
     it("basic table wrapping", function() {
@@ -338,6 +349,24 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.bindings).to.eql([10, 5]);
     });
 
+    it("Oracle limits", function() {
+      chain = oracle().select('*').from('users').limit(10).toSQL();
+      expect(chain.sql).to.equal('select * from (select * from \"users\") where rownum <= ?');
+      expect(chain.bindings).to.eql([10]);
+    });
+
+    it("Oracle limits and offsets", function() {
+      chain = oracle().select('*').from('users').offset(5).limit(10).toSQL();
+      expect(chain.sql).to.equal('select * from (select row_.*, ROWNUM rownum_ from (select * from \"users\") row_ where rownum <= ?) where rownum_ > ?');
+      expect(chain.bindings).to.eql([15, 5]);
+    });
+
+    it("Oracle offsets only", function() {
+      chain = oracle().select('*').from('users').offset(5).toSQL();
+      expect(chain.sql).to.equal('select * from (select row_.*, ROWNUM rownum_ from (select * from \"users\") row_ where rownum <= ?) where rownum_ > ?');
+      expect(chain.bindings).to.eql([10000000000005, 5]);
+    });
+
     it("where shortcut", function() {
       chain = sql().select('*').from('users').where('id', 1).orWhere('name', 'foo').toSQL();
       expect(chain.sql).to.equal('select * from "users" where "id" = ? or "name" = ?');
@@ -445,6 +474,11 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(chain.sql).to.equal('select count(*) as "all" from "users"');
     });
 
+    it("Oracle aggregate alias", function() {
+      chain = oracle().from('users').count('* as all').toSQL();
+      expect(chain.sql).to.equal('select count(*) "all" from "users"');
+    });
+
     it("max", function() {
       chain = sql().from('users').max('id').toSQL();
       expect(chain.sql).to.equal('select max("id") from "users"');
@@ -470,6 +504,40 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       chain = sqlite3().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}]).toSQL();
       expect(chain.sql).to.equal('insert into "users" ("email", "name") select ? as "email", ? as "name" union all select ? as "email", ? as "name"');
       expect(chain.bindings).to.eql(['foo', 'taylor', 'bar', 'dayle']);
+    });
+
+    it("Oracle multiple inserts", function() {
+      chain = oracle().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}]).toSQL();
+
+      expect(chain.sql).to.equal("begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2)' using ?, ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2)' using ?, ?;end;");
+      expect(chain.bindings).to.deep.equal(['foo', 'taylor', 'bar', 'dayle']);
+    });
+
+    it("Oracle multiple inserts with returning", function() {
+      chain = oracle().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}], 'id').toSQL();
+
+      expect(chain.sql).to.equal("begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\" into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\" into :3' using ?, ?, out ?;end;");
+      expect(chain.bindings.length).to.equal(6);
+      expect(chain.bindings[0]).to.equal('foo');
+      expect(chain.bindings[1]).to.equal('taylor');
+      expect(chain.bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+      expect(chain.bindings[3]).to.equal('bar');
+      expect(chain.bindings[4]).to.equal('dayle');
+      expect(chain.bindings[5].toString()).to.equal('[object ReturningHelper:id]');
+    });
+
+    it("Oracle multiple inserts with multiple returning", function() {
+      chain = oracle().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}], ['id', 'name']).toSQL();
+      expect(chain.sql).to.equal("begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\", \"name\" into :3, :4' using ?, ?, out ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\", \"name\" into :3, :4' using ?, ?, out ?, out ?;end;");
+      expect(chain.bindings.length).to.equal(8);
+      expect(chain.bindings[0]).to.equal('foo');
+      expect(chain.bindings[1]).to.equal('taylor');
+      expect(chain.bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+      expect(chain.bindings[3].toString()).to.equal('[object ReturningHelper:name]');
+      expect(chain.bindings[4]).to.equal('bar');
+      expect(chain.bindings[5]).to.equal('dayle');
+      expect(chain.bindings[6].toString()).to.equal('[object ReturningHelper:id]');
+      expect(chain.bindings[7].toString()).to.equal('[object ReturningHelper:name]');
     });
 
     it("insert method respects raw bindings", function() {
@@ -547,6 +615,13 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       chain = sqlite3().table('users').truncate().toSQL();
       expect(chain.sql).to.equal('delete from sqlite_sequence where name = "users"');
       expect(typeof chain.output).to.equal('function');
+      chain = oracle().table('users').truncate().toSQL();
+      expect(chain.sql).to.equal('truncate table "users"');
+    });
+
+    it("Oracle insert get id", function() {
+      chain = oracle().from('users').insert({email: 'foo'}, 'id').toSQL();
+      expect(chain.sql).to.equal('insert into "users" ("email") values (?) returning "id" into ?', ['foo', '']);
     });
 
     it("postgres insert get id", function() {

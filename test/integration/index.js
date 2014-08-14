@@ -4,18 +4,12 @@ module.exports = function(testSuite) {
   var config = require('../knexfile');
   var fs     = require('fs');
 
-  var mysql    = logger.client(Knex(config.mysql));
-  var mysql2   = logger.client(Knex(config.mysql2));
-  var postgres = logger.client(Knex(config.postgres));
-  var sqlite3  = logger.client(Knex(config.sqlite3));
-
-  require('./suite')(mysql);
-  require('./suite')(mysql2);
-  require('./suite')(postgres);
-  require('./suite')(sqlite3);
+  Object.keys(config).forEach(function (dialectName) {
+    require('./suite')(logger.client(Knex(config[dialectName])));
+  });
 
   after(function(done) {
-    if (config.sqlite3.connection.filename !== ':memory:') {
+    if (config.sqlite3 && config.sqlite3.connection.filename !== ':memory:') {
       fs.unlink(config.sqlite3.connection.filename, function(err) { done(); });
     } else {
       done();

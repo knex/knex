@@ -13,7 +13,22 @@ module.exports = function(testSuite) {
         'pg': 'postgresql',
         'sqlite': 'sqlite3'
       };
-      var matches = ['mysql', 'pg', 'sqlite', 'sqlite3', 'postgresql'];
+
+      function compareBindings(gotBindings, wantedBindings) {
+        if (_.isArray(wantedBindings)) {
+          expect(gotBindings.length).to.eql(wantedBindings.length);
+
+          _.each(wantedBindings, function (wantedBinding, index) {
+            if (_.isFunction(wantedBinding)) {
+              expect(wantedBinding(gotBindings[index])).to.eql(true);
+            } else {
+              expect(wantedBinding).to.eql(gotBindings[index]);
+            }
+          });
+        } else {
+          expect(gotBindings).to.eql(wantedBindings);
+        }
+      }
 
       function testSqlTester(dialect, statement, bindings, returnval) {
         // Useful in cases where we want to just test the sql for both PG and SQLite3
@@ -33,9 +48,9 @@ module.exports = function(testSuite) {
           }
           if (bindings != null) {
             if (_.isArray(sql)) {
-              expect(_.pluck(sql, 'bindings')).to.eql(bindings);
+              compareBindings(_.pluck(sql, 'bindings'), bindings);
             } else {
-              expect(sql.bindings).to.eql(bindings);
+              compareBindings(sql.bindings, bindings);
             }
           }
           if (returnval != null) {

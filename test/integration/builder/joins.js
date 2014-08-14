@@ -767,6 +767,11 @@ module.exports = function(knex) {
     });
 
     it('supports joins with overlapping column names', function() {
+      if (knex.client.dialect === 'oracle') {
+        console.warn("Overlapping column names not supported with oracle");
+        return;
+      }
+
       return knex('accounts as a1')
         .leftJoin('accounts as a2', function() {
           this.on('a1.email', '<>', 'a2.email');
