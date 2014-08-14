@@ -854,6 +854,20 @@ module.exports = function(pgclient, mysqlclient, sqlite3client, oracleclient) {
       expect(chain.bindings).to.eql([-10, 10, 4326, 100000, -5, 5, 4326, 50000, [1,2,3] ]);
     });
 
+    it('has joinRaw for arbitrary join clauses', function() {
+      var chain = sql().select('*').from('accounts').joinRaw('natural full join table1').where('id', 1).toSQL();
+
+      expect(chain.sql).to.equal('select * from "accounts" natural full join table1 where "id" = ?');
+      expect(chain.bindings).to.eql([1]);
+    });
+
+    it('accepts a knex.raw for arbitrary join clauses', function() {
+      var chain = sql().select('*').from('accounts').join(raw('natural full join table1')).where('id', 1).toSQL();
+
+      expect(chain.sql).to.equal('select * from "accounts" natural full join table1 where "id" = ?');
+      expect(chain.bindings).to.eql([1]);
+    });
+
   });
 
 };
