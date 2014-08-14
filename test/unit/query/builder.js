@@ -834,6 +834,26 @@ module.exports = function(pgclient, mysqlclient, sqlite3client, oracleclient) {
       expect(str).to.equal('select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) as "avg_sal_dept" from "employee" as "e" where "dept_no" = \'e.dept_no\'');
     });
 
+    it('supports arbitrarily nested raws', function() {
+      var chain = sql().select('*').from('places')
+        .where(raw('ST_DWithin((places.address).xy, ?, ?) AND ST_Distance((places.address).xy, ?) > ? AND ?', [
+          raw('ST_SetSRID(?,?)', [
+            raw('ST_MakePoint(?,?)', [-10,10]),
+            4326
+          ]),
+          100000,
+          raw('ST_SetSRID(?,?)', [
+            raw('ST_MakePoint(?,?)', [-5,5]),
+            4326
+          ]),
+          50000,
+          raw('places.id IN ?', [ [1,2,3] ])
+        ])).toSQL();
+
+      expect(chain.sql).to.equal('select * from "places" where ST_DWithin((places.address).xy, ST_SetSRID(ST_MakePoint(?,?),?), ?) AND ST_Distance((places.address).xy, ST_SetSRID(ST_MakePoint(?,?),?)) > ? AND places.id IN ?');
+      expect(chain.bindings).to.eql([-10, 10, 4326, 100000, -5, 5, 4326, 50000, [1,2,3] ]);
+    });
+
   });
 
 };
