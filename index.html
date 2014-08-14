@@ -93,6 +93,7 @@
       <li>&nbsp;&nbsp;– <a href="#Builder-outerJoin">outerJoin</a></li>
       <li>&nbsp;&nbsp;– <a href="#Builder-fullOuterJoin">fullOuterJoin</a></li>
       <li>&nbsp;&nbsp;– <a href="#Builder-crossJoin">crossJoin</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Builder-joinRaw">joinRaw</a></li>
 
       <li>– <a href="#Builder-distinct">distinct</a></li>
       <li>– <a href="#Builder-groupBy">groupBy</a></li>
@@ -261,6 +262,7 @@
       <option value="mysql">MySQL / MariaDB</option>
       <option value="pg">PostgreSQL</option>
       <option value="sqlite3">SQLite3</option>
+      <option value="oracle">Oracle (experimental)</option>
     </select>
   </div>
 
@@ -866,6 +868,20 @@ knex.select('*').from('users').crossJoin('accounts', 'users.id', 'accounts.user_
 knex.select('*').from('users').crossJoin('accounts', function() {
   this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
 })
+</pre>
+
+
+    <p id="Builder-joinRaw">
+      <b class="header">joinRaw</b><code>.joinRaw(sql, [bindings])</code>
+      <br>
+    </p>
+
+<pre class="display">
+knex.select('*').from('accounts').joinRaw('natural full join table1').where('id', 1)
+</pre>
+
+<pre class="display">
+knex.select('*').from('accounts').join(knex.raw('natural full join table1')).where('id', 1)
 </pre>
 
     <p id="Builder-distinct">
@@ -2848,20 +2864,20 @@ $ npm test
 
   </div>
   <script src="docs/assets/ga.js"></script>
+  <script src="docs/assets/lodash.js"></script>
   <script src="docs/assets/jquery.min.js"></script>
   <script src="docs/assets/jquery.cookie.js"></script>
   <script src="docs/assets/highlight.min.js"></script>
   <script src="/browser/knex.js"></script>
   <script>
   var trx = {}, dialects = {};
-  var _   = require('lodash');
-  var Knex = knex;
-
+  
   // Feel free to play with these in the console.
   var knex    = Knex({client: 'websql'});
   var pg      = dialects.pg = Knex({client: 'pg'});
   var mysql   = dialects.mysql = Knex({client: 'mysql'});
   var sqlite3 = dialects.sqlite3 = Knex({client: 'sqlite3'});
+  var oracle  = dialects.oracle = Knex({client: 'oracle'});
 
   $(function() {
     var setDialect = function(dialect) {
