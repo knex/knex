@@ -7,6 +7,7 @@ var Promise    = require('bluebird');
 var fs         = Promise.promisifyAll(require('fs'));
 
 var excluded = {
+  oracle:   ['oracle'],
   mariasql: ['mariasql'],
   sqlite3:  ['sqlite3'],
   mysql:    ['mysql'],
@@ -16,6 +17,7 @@ var excluded = {
 };
 
 var bases = {
+  oracle:   './lib/dialects/oracle',
   mariasql: './lib/dialects/maria',
   mysql:    './lib/dialects/mysql',
   mysql2:   './lib/dialects/mysql2',
@@ -31,7 +33,7 @@ function ensureOutputDirectory() {
 }
 
 function build(targets) {
-  var b = browserify(['./knex.js']);
+  var b = browserify(['./knex.js'], {standalone: 'Knex'});
   for (var key in bases) {
     if (targets.indexOf(key) === -1) {
       b.exclude(bases[key]);
@@ -49,16 +51,16 @@ function build(targets) {
 }
 
 function buildKnex() {
-  var b = build(['mysql', 'mysql2', 'mariasql', 'pg', 'sqlite3', 'websql']);
+  var b = build(['mysql', 'mysql2', 'mariasql', 'pg', 'sqlite3', 'websql', 'oracle']);
   var outStream = fs.createWriteStream('./browser/knex.js');
-  b.bundle({standalone: 'Knex'}).pipe(outStream);
+  b.bundle().pipe(outStream);
   return outStream;
 }
 
 function buildWebSQL() {
   var b = build(['websql']);
   var outStream = fs.createWriteStream('./browser/websql.js');
-  b.bundle({standalone: 'Knex'}).pipe(outStream);
+  b.bundle().pipe(outStream);
   return outStream;
 }
 
