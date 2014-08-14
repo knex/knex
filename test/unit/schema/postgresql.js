@@ -352,7 +352,7 @@ module.exports = function(client) {
         table.enum('foo', ['bar', 'baz']);
       }).toSQL();
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" text check (foo in (\'bar\', \'baz\'))');
+      expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" text check ("foo" in (\'bar\', \'baz\'))');
     });
 
     it("adding date", function() {
