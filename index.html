@@ -120,6 +120,7 @@
       <li>– <a href="#Builder-truncate">truncate</a></li>
       <li>– <a href="#Builder-pluck">pluck</a></li>
       <li>– <a href="#Builder-first">first</a></li>
+      <li>– <a href="#Builder-clone">clone</a></li>
       <li>– <a href="#Builder-columnInfo">columnInfo</a></li>
       <li>– <a href="#Builder-debug">debug</a></li>
       <li>– <a href="#Builder-connection">connection</a></li>
@@ -1258,6 +1259,13 @@ knex('accounts').truncate()
 });
 </code>
 </pre>
+
+    <p id="Builder-clone">
+      <b class="header">clone</b><code>.clone()</code>
+      <br />
+      Clones the current query chain, useful for re-using partial query snippets in other queries
+      without mutating the original.
+    </p>
 
 
     <p id="Builder-columnInfo">
