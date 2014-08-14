@@ -1103,8 +1103,9 @@ knex('accounts')
 knex.transaction(function(trx) {
 
   knex('books').transacting(trx).insert({name: 'Old Books'})
-    .then(function(id) {
-      return someExternalMethod(trx);
+    .then(function(resp) {
+      var id = resp[0];
+      return someExternalMethod(id, trx);
     })
     .then(trx.commit)
     .then(trx.rollback);
@@ -1368,11 +1369,11 @@ knex.transaction(function(trx) {
   ];
 
   return trx
-    .insert({name: 'Old Books'})
+    .insert({name: 'Old Books'}, 'id')
     .into('catalogues')
-    .then(function(row) {
+    .then(function(ids) {
       return Promise.map(books, function(book) {
-        book.catalogue_id = row.id;
+        book.catalogue_id = ids[0];
 
         // Some validation could take place here.
 
@@ -1406,12 +1407,12 @@ knex.transaction(function(trx) {
     {title: 'Hamlet'}
   ];
 
-  knex.insert({name: 'Old Books'})
+  knex.insert({name: 'Old Books'}, 'id')
     .into('catalogues')
     .transacting(trx)
-    .then(function(row) {
+    .then(function(ids) {
       return Promise.map(books, function(book) {
-        book.catalogue_id = row.id;
+        book.catalogue_id = ids[0];
 
         // Some validation could take place here.
 
