@@ -27,6 +27,18 @@ module.exports = function(client) {
       expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
     });
 
+    it('test basic create table if not exists', function() {
+      tableSql = new SchemaBuilder().createTableIfNotExists('users', function(table) {
+        table.increments('id');
+        table.string('email');
+      });
+
+      equal(3, tableSql.toSQL().length);
+      expect(tableSql.toSQL()[0].sql).to.equal("begin execute immediate 'create table \"users\" (\"id\" integer not null primary key, \"email\" varchar2(255))'; exception when others then if sqlcode != -955 then raise; end if; end;");
+      expect(tableSql.toSQL()[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
+      expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
+    });
+
     it('test drop table', function() {
       tableSql = new SchemaBuilder().dropTable('users').toSQL();
 
