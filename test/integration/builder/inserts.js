@@ -40,7 +40,7 @@ module.exports = function(knex) {
         );
         tester(
           'oracle',
-          'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
+          "insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) returning ROWID into ?",
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test@example.com','Test','User', 1, d, function (v) { return v.toString() === '[object ReturningHelper:id]';}],
           [1]
         );
@@ -87,7 +87,7 @@ module.exports = function(knex) {
           );
           tester(
             'oracle',
-            "begin execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning \"id\" into :8' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning \"id\" into :8' using ?, ?, ?, ?, ?, ?, ?, out ?;end;",
+            "begin execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning ROWID into :8' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning ROWID into :8' using ?, ?, ?, ?, ?, ?, ?, out ?;end;",
             ['Lorem ipsum Dolore labore incididunt enim.', d,'test2@example.com','Test','User',1, d, function (v) { return v.toString() === '[object ReturningHelper:id]';},
              'Lorem ipsum Dolore labore incididunt enim.', d,'test3@example.com','Test','User',2, d, function (v) { return v.toString() === '[object ReturningHelper:id]';}],
             [2, 3]
@@ -324,7 +324,7 @@ module.exports = function(knex) {
             );
             tester(
               'oracle',
-              'insert into "test_default_table" ("id") values (default) returning "id" into ?',
+              "insert into \"test_default_table\" (\"id\") values (default) returning ROWID into ?",
               [function (v) {return v.toString() === '[object ReturningHelper:id]';}],
               [1]
             );
@@ -339,7 +339,7 @@ module.exports = function(knex) {
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
         status: 0
       };
-      return knex('test_table_two').insert(insertData,['account_id', 'details']).testSql(function(tester) {
+      return knex('test_table_two').insert(insertData, ['account_id', 'details']).testSql(function(tester) {
         tester(
           'mysql',
           'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?)',
@@ -363,13 +363,12 @@ module.exports = function(knex) {
         );
         tester(
           'oracle',
-          "insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (?, ?, ?) returning \"account_id\", \"details\" into ?, ?",
+          "insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (?, ?, ?) returning ROWID into ?",
           [
             10,
             'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
             0,
-            function (v) {return v.toString() === '[object ReturningHelper:account_id]';},
-            function (v) {return v.toString() === '[object ReturningHelper:details]';},
+            function (v) {return v.toString() === '[object ReturningHelper:account_id:details]';}
           ],
           [{
             account_id: 10,
@@ -386,7 +385,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('should allow a * for returning in postgres', function() {
+    it('should allow a * for returning in postgres and oracle', function() {
       var insertData = {
         account_id: 10,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -394,14 +393,28 @@ module.exports = function(knex) {
       };
 
       var returningColumn = '*';
-      if (knex.client.dialect === 'oracle') {
-        returningColumn = 'id';
-      }
       return knex('test_table_two').insert(insertData, returningColumn).testSql(function(tester) {
         tester(
           'postgresql',
           'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning *',
           [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
+          [{
+            id: 5,
+            account_id: 10,
+            details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+            status: 0,
+            json_data: null
+          }]
+        );
+        tester(
+          'oracle',
+          "insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (?, ?, ?) returning ROWID into ?",
+          [
+            10,
+            'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+            0,
+            function (v) {return v.toString() === '[object ReturningHelper:*]';}
+          ],
           [{
             id: 5,
             account_id: 10,
