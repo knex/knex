@@ -61,7 +61,7 @@ module.exports = function(client) {
       }).toSQL();
 
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" drop column "foo"');
+      expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo")');
     });
 
     it('drops multiple columns with an array', function() {
@@ -70,7 +70,7 @@ module.exports = function(client) {
       }).toSQL();
 
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" drop column "foo", drop column "bar"');
+      expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo", "bar")');
     });
 
     it('drops multiple columns as multiple arguments', function() {
@@ -79,7 +79,7 @@ module.exports = function(client) {
       }).toSQL();
 
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" drop column "foo", drop column "bar"');
+      expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo", "bar")');
     });
 
     it('test drop primary', function() {
@@ -151,7 +151,7 @@ module.exports = function(client) {
       }).toSQL();
 
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" drop column "created_at", drop column "updated_at"');
+      expect(tableSql[0].sql).to.equal('alter table "users" drop ("created_at", "updated_at")');
     });
 
     it("rename table", function() {
