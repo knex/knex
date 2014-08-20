@@ -516,7 +516,7 @@ module.exports = function(pgclient, mysqlclient, sqlite3client, oracleclient) {
     it("Oracle multiple inserts with returning", function() {
       chain = oracle().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}], 'id').toSQL();
 
-      expect(chain.sql).to.equal("begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\" into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\" into :3' using ?, ?, out ?;end;");
+      expect(chain.sql).to.equal("begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;");
       expect(chain.bindings.length).to.equal(6);
       expect(chain.bindings[0]).to.equal('foo');
       expect(chain.bindings[1]).to.equal('taylor');
@@ -528,16 +528,14 @@ module.exports = function(pgclient, mysqlclient, sqlite3client, oracleclient) {
 
     it("Oracle multiple inserts with multiple returning", function() {
       chain = oracle().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}], ['id', 'name']).toSQL();
-      expect(chain.sql).to.equal("begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\", \"name\" into :3, :4' using ?, ?, out ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\", \"name\" into :3, :4' using ?, ?, out ?, out ?;end;");
-      expect(chain.bindings.length).to.equal(8);
+      expect(chain.sql).to.equal("begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;");
+      expect(chain.bindings.length).to.equal(6);
       expect(chain.bindings[0]).to.equal('foo');
       expect(chain.bindings[1]).to.equal('taylor');
-      expect(chain.bindings[2].toString()).to.equal('[object ReturningHelper:id]');
-      expect(chain.bindings[3].toString()).to.equal('[object ReturningHelper:name]');
-      expect(chain.bindings[4]).to.equal('bar');
-      expect(chain.bindings[5]).to.equal('dayle');
-      expect(chain.bindings[6].toString()).to.equal('[object ReturningHelper:id]');
-      expect(chain.bindings[7].toString()).to.equal('[object ReturningHelper:name]');
+      expect(chain.bindings[2].toString()).to.equal('[object ReturningHelper:id:name]');
+      expect(chain.bindings[3]).to.equal('bar');
+      expect(chain.bindings[4]).to.equal('dayle');
+      expect(chain.bindings[5].toString()).to.equal('[object ReturningHelper:id:name]');
     });
 
     it("insert method respects raw bindings", function() {
@@ -621,7 +619,7 @@ module.exports = function(pgclient, mysqlclient, sqlite3client, oracleclient) {
 
     it("Oracle insert get id", function() {
       chain = oracle().from('users').insert({email: 'foo'}, 'id').toSQL();
-      expect(chain.sql).to.equal('insert into "users" ("email") values (?) returning "id" into ?', ['foo', '']);
+      expect(chain.sql).to.equal("insert into \"users\" (\"email\") values (?) returning ROWID into ?", ['foo', '']);
     });
 
     it("postgres insert get id", function() {
