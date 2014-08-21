@@ -6,10 +6,11 @@ module.exports = function(knex) {
       return knex('accounts')
         .join('test_table_two', 'accounts.id', '=', 'test_table_two.account_id')
         .select('accounts.*', 'test_table_two.details')
+        .orderBy('accounts.id')
         .testSql(function(tester) {
           tester(
             'mysql',
-            'select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`', [], [{
+            'select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` order by `accounts`.`id` asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -47,7 +48,7 @@ module.exports = function(knex) {
 
           tester(
             'postgresql',
-            'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"', [], [{
+            'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc', [], [{
               id: '1',
               first_name: 'Test',
               last_name: 'User',
@@ -84,7 +85,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"', [], [{
+            'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -119,17 +120,56 @@ module.exports = function(knex) {
               details: ''
             }]
           );
+          tester(
+            'oracle',
+            "select \"accounts\".*, \"test_table_two\".\"details\" from \"accounts\" inner join \"test_table_two\" on \"accounts\".\"id\" = \"test_table_two\".\"account_id\" order by \"accounts\".\"id\" asc", [], [{
+              id: 1,
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+            }, {
+              id: 2,
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test2@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+            }, {
+              id: 3,
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test3@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: null // Oracle implicitly converted '' to NULL
+            }]
+          );
         });
+
     });
 
     it('has a leftJoin method parameter to specify the join type', function() {
       return knex('accounts')
         .leftJoin('test_table_two', 'accounts.id', '=', 'test_table_two.account_id')
         .select('accounts.*', 'test_table_two.details')
+        .orderBy('accounts.id')
         .testSql(function(tester) {
           tester(
             'mysql',
-            'select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id`', [], [{
+            'select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` order by `accounts`.`id` asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -199,7 +239,7 @@ module.exports = function(knex) {
           );
           tester(
             'postgresql',
-            'select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"', [], [{
+            'select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc', [], [{
               id: '1',
               first_name: 'Test',
               last_name: 'User',
@@ -233,10 +273,10 @@ module.exports = function(knex) {
               phone: null,
               details: ''
             }, {
-              id: '5',
+              id: '4',
               first_name: 'Test',
               last_name: 'User',
-              email: 'test5@example.com',
+              email: 'test4@example.com',
               logins: 2,
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               created_at: d,
@@ -244,10 +284,10 @@ module.exports = function(knex) {
               phone: null,
               details: null
             }, {
-              id: '4',
+              id: '5',
               first_name: 'Test',
               last_name: 'User',
-              email: 'test4@example.com',
+              email: 'test5@example.com',
               logins: 2,
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               created_at: d,
@@ -269,7 +309,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id"', [], [{
+            'select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -337,6 +377,76 @@ module.exports = function(knex) {
               details: null
             }]
           );
+          tester(
+            'oracle',
+            "select \"accounts\".*, \"test_table_two\".\"details\" from \"accounts\" left join \"test_table_two\" on \"accounts\".\"id\" = \"test_table_two\".\"account_id\" order by \"accounts\".\"id\" asc", [], [{
+              id: 1,
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+            }, {
+              id: 2,
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test2@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+            }, {
+              id: 3,
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test3@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: null  // Oracle implicitly converted '' to NULL
+            }, {
+              id: 4,
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test4@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: null
+            }, {
+              id: 5,
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test5@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: null
+            }, {
+              id: 7,
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test6@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: null
+            }]
+          );
         });
     });
 
@@ -346,10 +456,11 @@ module.exports = function(knex) {
         join.orOn('accounts.email', '=', 'test_table_two.details');
       })
         .select()
+        .orderBy('accounts.id')
         .testSql(function(tester) {
           tester(
             'mysql',
-            'select * from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` or `accounts`.`email` = `test_table_two`.`details`', [], [{
+            'select * from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` or `accounts`.`email` = `test_table_two`.`details` order by `accounts`.`id` asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -437,7 +548,7 @@ module.exports = function(knex) {
           );
           tester(
             'postgresql',
-            'select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details"', [], [{
+            'select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details" order by "accounts"."id" asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -525,7 +636,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details"', [], [{
+            'select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details" order by "accounts"."id" asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -686,6 +797,27 @@ module.exports = function(knex) {
               e2: 'test2@example.com'
             }]
           );
+          tester(
+            'oracle',
+            "select * from (select \"accounts\".\"email\" \"e1\", \"a2\".\"email\" \"e2\" from \"accounts\" inner join \"accounts\" \"a2\" on \"a2\".\"email\" <> \"accounts\".\"email\" where \"a2\".\"email\" = ? order by \"e1\" asc) where rownum <= ?",
+            ['test2@example.com', 5],
+            [{
+              e1: 'test3@example.com',
+              e2: 'test2@example.com'
+            }, {
+              e1: 'test4@example.com',
+              e2: 'test2@example.com'
+            }, {
+              e1: 'test5@example.com',
+              e2: 'test2@example.com'
+            }, {
+              e1: 'test6@example.com',
+              e2: 'test2@example.com'
+            }, {
+              e1: 'test@example.com',
+              e2: 'test2@example.com'
+            }]
+          );
         });
     });
 
@@ -699,10 +831,11 @@ module.exports = function(knex) {
         .where('a2.email', 'test2@example.com')
         .select(['accounts.email as e1', 'a2.email as e2'])
         .limit(5)
+        .orderBy('e1')
         .testSql(function(tester) {
           tester(
             'mysql',
-            'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `accounts`.`email` <> `a2`.`email` or `accounts`.`id` = 2 where `a2`.`email` = ? limit ?',
+            'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `accounts`.`email` <> `a2`.`email` or `accounts`.`id` = 2 where `a2`.`email` = ? order by `e1` asc limit ?',
             ['test2@example.com', 5],
             [{
               e1: 'test2@example.com',
@@ -723,28 +856,28 @@ module.exports = function(knex) {
           );
           tester(
             'postgresql',
-            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 where "a2"."email" = ? limit ?',
+            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 where "a2"."email" = ? order by "e1" asc limit ?',
             ['test2@example.com', 5],
             [{
-                e1: 'test@example.com',
-                e2: 'test2@example.com'
-              },{
-                e1: 'test2@example.com',
-                e2: 'test2@example.com'
-              },{
-                e1: 'test3@example.com',
-                e2: 'test2@example.com'
-              },{
-                e1: 'test4@example.com',
-                e2: 'test2@example.com'
-              },{
-                e1: 'test5@example.com',
-                e2: 'test2@example.com'
+              e1: 'test2@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test3@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test4@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test5@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test6@example.com',
+              e2: 'test2@example.com'
             }]
           );
           tester(
             'sqlite3',
-            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 where "a2"."email" = ? limit ?',
+            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 where "a2"."email" = ? order by "e1" asc limit ?',
             ['test2@example.com', 5],
             [{
                 e1: 'test2@example.com',
@@ -761,6 +894,27 @@ module.exports = function(knex) {
               },{
                 e1: 'test6@example.com',
                 e2: 'test2@example.com'
+            }]
+          );
+          tester(
+            'oracle',
+            "select * from (select \"accounts\".\"email\" \"e1\", \"a2\".\"email\" \"e2\" from \"accounts\" inner join \"accounts\" \"a2\" on \"accounts\".\"email\" <> \"a2\".\"email\" or \"accounts\".\"id\" = 2 where \"a2\".\"email\" = ? order by \"e1\" asc) where rownum <= ?",
+            ['test2@example.com', 5],
+            [{
+              e1: 'test2@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test3@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test4@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test5@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test6@example.com',
+              e2: 'test2@example.com'
             }]
           );
         });
