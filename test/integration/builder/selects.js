@@ -11,47 +11,59 @@ module.exports = function(knex) {
     });
 
     it('returns an array of a single column with `pluck`', function() {
-      return knex.pluck('id').from('accounts')
+      return knex.pluck('id').orderBy('id').from('accounts')
         .testSql(function(tester) {
           tester(
             'mysql',
-            'select `id` from `accounts`',
+            'select `id` from `accounts` order by `id` asc',
             [],
             [1, 2, 3, 4, 5, 7]
           );
           tester(
             'postgresql',
-            'select "id" from "accounts"',
+            'select "id" from "accounts" order by "id" asc',
             [],
             ['1', '2', '3', '4', '5', '7']
           );
           tester(
             'sqlite3',
-            'select "id" from "accounts"',
+            'select "id" from "accounts" order by "id" asc',
             [],
             [1, 2, 3, 4, 5, 6]
+          );
+          tester(
+            'oracle',
+            "select \"id\" from \"accounts\" order by \"id\" asc",
+            [],
+            [1, 2, 3, 4, 5, 7]
           );
         });
     });
 
     it('returns a single entry with first', function() {
-      return knex.first('id', 'first_name').from('accounts')
+      return knex.first('id', 'first_name').orderBy('id').from('accounts')
         .testSql(function(tester) {
           tester(
             'mysql',
-            'select `id`, `first_name` from `accounts` limit ?',
+            'select `id`, `first_name` from `accounts` order by `id` asc limit ?',
             [1],
             { id: 1, first_name: 'Test' }
           );
           tester(
             'postgresql',
-            'select "id", "first_name" from "accounts" limit ?',
+            'select "id", "first_name" from "accounts" order by "id" asc limit ?',
             [1],
             { id: '1', first_name: 'Test' }
           );
           tester(
             'sqlite3',
-            'select "id", "first_name" from "accounts" limit ?',
+            'select "id", "first_name" from "accounts" order by "id" asc limit ?',
+            [1],
+            { id: 1, first_name: 'Test' }
+          );
+          tester(
+            'oracle',
+            "select * from (select \"id\", \"first_name\" from \"accounts\" order by \"id\" asc) where rownum <= ?",
             [1],
             { id: 1, first_name: 'Test' }
           );
@@ -110,8 +122,16 @@ module.exports = function(knex) {
 
     it('uses `orderBy`', function() {
       return knex('accounts')
-        .select()
-        .orderBy('id', 'asc');
+        .pluck('id')
+        .orderBy('id', 'desc')
+        .testSql(function(tester) {
+          tester(
+            'oracle',
+            "select \"id\" from \"accounts\" order by \"id\" desc",
+            [],
+            [7, 5, 4, 3, 2, 1]
+          );
+        });
     });
 
     describe('simple "where" cases', function() {
@@ -125,17 +145,38 @@ module.exports = function(knex) {
             tester(
               'mysql',
               'select `first_name`, `last_name` from `accounts` where `id` = ?',
-              [1]
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
             );
             tester(
               'postgresql',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
-              [1]
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
             );
             tester(
               'sqlite3',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
-              [1]
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
+            );
+            tester(
+              'oracle',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
             );
           });
       });
@@ -149,17 +190,39 @@ module.exports = function(knex) {
             tester(
               'mysql',
               'select `first_name`, `last_name` from `accounts` where `id` = ?',
-              [1]
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
+
             );
             tester(
               'postgresql',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
-              [1]
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
             );
             tester(
               'sqlite3',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
-              [1]
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
+            );
+            tester(
+              'oracle',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
             );
           });
       });
@@ -182,6 +245,11 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
+              'select "email", "logins" from "accounts" where "id" > ?',
+              [1]
+            );
+            tester(
+              'oracle',
               'select "email", "logins" from "accounts" where "id" > ?',
               [1]
             );
@@ -213,12 +281,50 @@ module.exports = function(knex) {
             tester(
               'postgresql',
               'select * from "accounts" where "id" = ?',
-              [1]
+              [1],
+              [{
+                id: '1',
+                first_name: "Test",
+                last_name: "User",
+                email: "test@example.com",
+                logins: 1,
+                about: "Lorem ipsum Dolore labore incididunt enim.",
+                created_at: d,
+                updated_at: d,
+                phone: null
+              }]
             );
             tester(
               'sqlite3',
               'select * from "accounts" where "id" = ?',
-              [1]
+              [1],
+              [{
+                id: 1,
+                first_name: "Test",
+                last_name: "User",
+                email: "test@example.com",
+                logins: 1,
+                about: "Lorem ipsum Dolore labore incididunt enim.",
+                created_at: d,
+                updated_at: d,
+                phone: null
+              }]
+            );
+            tester(
+              'oracle',
+              'select * from "accounts" where "id" = ?',
+              [1],
+              [{
+                id: 1,
+                first_name: "Test",
+                last_name: "User",
+                email: "test@example.com",
+                logins: 1,
+                about: "Lorem ipsum Dolore labore incididunt enim.",
+                created_at: d,
+                updated_at: d,
+                phone: null
+              }]
             );
           });
       });
@@ -232,16 +338,25 @@ module.exports = function(knex) {
             tester(
               'mysql',
               'select `first_name`, `email` from `accounts` where `id` is null',
+              [],
               []
             );
             tester(
               'postgresql',
               'select "first_name", "email" from "accounts" where "id" is null',
+              [],
               []
             );
             tester(
               'sqlite3',
               'select "first_name", "email" from "accounts" where "id" is null',
+              [],
+              []
+            );
+            tester(
+              'oracle',
+              'select "first_name", "email" from "accounts" where "id" is null',
+              [],
               []
             );
           });
@@ -257,17 +372,26 @@ module.exports = function(knex) {
             tester(
               'mysql',
               'select * from `accounts` where `id` = ?',
-              [0]
+              [0],
+              []
             );
             tester(
               'postgresql',
               'select * from "accounts" where "id" = ?',
-              [0]
+              [0],
+              []
             );
             tester(
               'sqlite3',
               'select * from "accounts" where "id" = ?',
-              [0]
+              [0],
+              []
+            );
+            tester(
+              'oracle',
+              'select * from "accounts" where "id" = ?',
+              [0],
+              []
             );
           });
       });
@@ -345,6 +469,20 @@ module.exports = function(knex) {
                 details: 'One, Two, Zero',
                 status: 0
               }]);
+            tester('oracle',
+              'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?))',
+              [1,1,1,2],
+              [{
+                column_a: 1,
+                column_b: 1,
+                details: 'One, One, One',
+                status: 1
+              },{
+                column_a: 1,
+                column_b: 2,
+                details: 'One, Two, Zero',
+                status: 0
+              }]);
           });
       }
     });
@@ -366,6 +504,15 @@ module.exports = function(knex) {
                 status: 1
               }]);
             tester('postgresql',
+              'select * from "composite_key_test" where "status" = ? and ("column_a","column_b") in ((?, ?),(?, ?))',
+              [1,1,1,1,2],
+              [{
+                column_a: 1,
+                column_b: 1,
+                details: 'One, One, One',
+                status: 1
+              }]);
+            tester('oracle',
               'select * from "composite_key_test" where "status" = ? and ("column_a","column_b") in ((?, ?),(?, ?))',
               [1,1,1,1,2],
               [{
