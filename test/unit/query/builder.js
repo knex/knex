@@ -872,6 +872,20 @@ module.exports = function(pgclient, mysqlclient, sqlite3client, oracleclient) {
       expect(chain.bindings).to.eql([1]);
     });
 
+    it('allows sub-query function on insert, #427', function() {
+      var chain = sql().into('votes').insert(function() {
+        this.select('*').from('votes').where('id', 99);
+      }).toSQL();
+      expect(chain.sql).to.equal('insert into "votes" select * from "votes" where "id" = ?');
+      expect(chain.bindings).to.eql([99]);
+    });
+
+    it('allows sub-query chain on insert, #427', function() {
+      var chain = sql().into('votes').insert(sql().select('*').from('votes').where('id', 99)).toSQL();
+      expect(chain.sql).to.equal('insert into "votes" select * from "votes" where "id" = ?');
+      expect(chain.bindings).to.eql([99]);
+    });
+
   });
 
 };
