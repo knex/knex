@@ -110,7 +110,28 @@ module.exports = function(knex) {
         account_id: 3,
         details: '',
         status: 1
-      }], 'id').exec(function(err, resp) {
+      }], 'id')
+      .testSql(function(tester) {
+          tester(
+            'oracle',
+            "begin execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?;end;",
+            [
+              1,
+              'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+              0,
+              function (v) {return v.toString() === '[object ReturningHelper:id]';},
+              2,
+              'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+              1,
+              function (v) {return v.toString() === '[object ReturningHelper:id]';},
+              3,
+              '',
+              1,
+              function (v) {return v.toString() === '[object ReturningHelper:id]';}
+            ],
+            [1, 2, 3]
+          );
+      }).exec(function(err, resp) {
         if (err) return ok(err);
         ok();
       });
@@ -154,6 +175,29 @@ module.exports = function(knex) {
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test4@example.com','Test','User',2, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test5@example.com','Test','User',2, d],
           [5]
         );
+        tester(
+          'oracle',
+          "begin execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning ROWID into :8' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning ROWID into :8' using ?, ?, ?, ?, ?, ?, ?, out ?;end;",
+          [
+            'Lorem ipsum Dolore labore incididunt enim.',
+            d,
+            'test4@example.com',
+            'Test',
+            'User',
+            2,
+            d,
+            function (v) {return v.toString() === '[object ReturningHelper:id]';},
+            'Lorem ipsum Dolore labore incididunt enim.',
+            d,
+            'test5@example.com',
+            'Test',
+            'User',
+            2,
+            d,
+            function (v) {return v.toString() === '[object ReturningHelper:id]';}
+          ],
+          [4, 5]
+        );
       });
 
     });
@@ -187,6 +231,11 @@ module.exports = function(knex) {
             'sqlite3',
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d]
+          );
+          tester(
+            'oracle',
+            "insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) returning ROWID into ?",
+            ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d, function (v) {return v.toString() === '[object ReturningHelper:id]';}]
           );
         })
         .then(function() {
@@ -227,6 +276,12 @@ module.exports = function(knex) {
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test6@example.com','Test','User',2, d],
             [6]
           );
+          tester(
+            'oracle',
+            "insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) returning ROWID into ?",
+            ['Lorem ipsum Dolore labore incididunt enim.', d, 'test6@example.com','Test','User',2, d, function (v) {return v.toString() === '[object ReturningHelper:id]';}],
+            [7]
+          );
         });
 
     });
@@ -251,6 +306,11 @@ module.exports = function(knex) {
             'insert into "datatype_test" ("enum_value") values (?)',
             ['d'],
             [1]
+          );
+          tester(
+            'oracle',
+            'insert into "datatype_test" ("enum_value") values (?)',
+            ['d']
           );
         })
         .then(function() {

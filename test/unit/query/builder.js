@@ -349,6 +349,12 @@ module.exports = function(pgclient, mysqlclient, sqlite3client, oracleclient) {
       expect(chain.bindings).to.eql([10, 5]);
     });
 
+    it("Oracle first", function() {
+      chain = oracle().first('*').from('users').toSQL();
+      expect(chain.sql).to.equal('select * from (select * from \"users\") where rownum <= ?');
+      expect(chain.bindings).to.eql([1]);
+    });
+
     it("Oracle limits", function() {
       chain = oracle().select('*').from('users').limit(10).toSQL();
       expect(chain.sql).to.equal('select * from (select * from \"users\") where rownum <= ?');

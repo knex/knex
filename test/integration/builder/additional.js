@@ -196,7 +196,7 @@ module.exports = function(knex) {
           return knex.schema.table('accounts', function (t) {
             t.dropColumn('first_name');
           }).testSql(function (tester) {
-            tester('oracle', ['alter table "accounts" drop column "first_name"']);
+            tester('oracle', ['alter table "accounts" drop ("first_name")']);
           });
         }).then(function () {
           return knex.select('*').from('accounts').first();
