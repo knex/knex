@@ -10,8 +10,9 @@ var pool = {
     expect(connection).to.have.property('__cid');
     callback(null, connection);
   },
-  beforeDestroy: function(connection) {
+  beforeDestroy: function(connection, continueFunc) {
     expect(connection).to.have.property('__cid');
+    continueFunc();
   }
 };
 
