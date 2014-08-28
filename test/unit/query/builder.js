@@ -1190,10 +1190,6 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'update `users` set `email` = ?, `name` = ? where `id` = ? order by `foo` desc limit ?',
           bindings: ['foo', 'bar', 1, 5]
         },
-        oracle: {
-          sql: 'update "users" set "email" = ?, "name" = ? where "id" = ? order by "foo" desc', // TODO: This is wrong
-          bindings: ['foo', 'bar', 1]
-        },
         default: {
           sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
           bindings: ['foo', 'bar', 1]
@@ -1208,10 +1204,6 @@ module.exports = function(qb, clientName, aliasName) {
           bindings: ['foo', 'bar', 1]
         },
         sqlite3: { // TODO: This is wrong
-          sql: 'update "users" inner join "orders" on "users"."id" = "orders"."user_id" set "email" = ?, "name" = ? where "users"."id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-        oracle: { // TODO: This is wrong
           sql: 'update "users" inner join "orders" on "users"."id" = "orders"."user_id" set "email" = ?, "name" = ? where "users"."id" = ?',
           bindings: ['foo', 'bar', 1]
         },
@@ -1405,11 +1397,6 @@ module.exports = function(qb, clientName, aliasName) {
           sql: "select * from \"foo\" where \"bar\" = ? for share",
           bindings: ['baz']
         },
-        oracle: {
-          // TODO: This is wrong/not possible
-          sql: "select * from \"foo\" where \"bar\" = ? lock in share mode",
-          bindings: ['baz']
-        },
         default: {
           sql: 'select * from "foo" where "bar" = ?',
           bindings: ['baz']
@@ -1563,18 +1550,13 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'update `tblPerson` inner join `tblPersonData` on `tblPersonData`.`PersonId` = `tblPerson`.`PersonId` set `tblPerson`.`City` = ? where `tblPersonData`.`DataId` = ? and `tblPerson`.`PersonId` = ?',
           bindings: ['Boonesville', 1, 5]
         },
-        postgres: {
-          sql: 'update "tblPerson" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
-          bindings: ['Boonesville', 1, 5]
-        },
         sqlite3: {
           // TODO: THIS IS NOT WORKING
           sql: 'update "tblPerson" inner join "tblPersonData" on "tblPersonData"."PersonId" = "tblPerson"."PersonId" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
           bindings: ['Boonesville', 1, 5]
         },
-        oracle: {
-          // TODO: THIS IS NOT WORKING
-          sql: 'update "tblPerson" inner join "tblPersonData" on "tblPersonData"."PersonId" = "tblPerson"."PersonId" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
+        default: {
+          sql: 'update "tblPerson" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
           bindings: ['Boonesville', 1, 5]
         }
       });
@@ -1698,7 +1680,7 @@ module.exports = function(qb, clientName, aliasName) {
         default: {
           sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) as "avg_sal_dept" from "employee" as "e" where "dept_no" = ?',
           bindings: ["e.dept_no"]
-        }        
+        }
       });
     });
 
@@ -1722,7 +1704,7 @@ module.exports = function(qb, clientName, aliasName) {
         default: {
           sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) as "avg_sal_dept" from "employee" as "e" where "dept_no" = ?',
           bindings: ["e.dept_no"]
-        }        
+        }
       });
     });
 
@@ -1788,15 +1770,10 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'insert into `votes` select * from `votes` where `id` = ?',
           bindings: [99]
         },
-        oracle: {
-          // TODO: THIS IS WRONG
-          sql: "insert into \"votes\" (\"undefined\") values (default)",
-          bindings: []
-        },
         sqlite3: {
           // TODO: THIS IS MAYBE WRONG
           sql: "insert into \"votes\" default values",
-          bindings: []          
+          bindings: []
         },
         default: {
           sql: 'insert into "votes" select * from "votes" where "id" = ?',
@@ -1818,7 +1795,6 @@ module.exports = function(qb, clientName, aliasName) {
           bindings: [99]
         },
         oracle: {
-          // TODO: Check if possible
           sql: 'insert into "votes" select * from "votes" where "id" = ?',
           bindings: [99]
         },
@@ -1826,7 +1802,7 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'insert into "votes" select * from "votes" where "id" = ?',
           bindings: [99]
         }
-      });      
+      });
     });
 
   });
