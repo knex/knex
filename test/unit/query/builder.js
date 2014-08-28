@@ -620,10 +620,6 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'select * from `users` order by col NULLS LAST DESC',
           bindings: []
         },
-        sqlite3: {
-          sql: 'select * from "users" order by col NULLS LAST DESC asc',  // TODO: THIS IS WRONG
-          bindings: []
-        },
         default: {
           sql: 'select * from "users" order by col NULLS LAST DESC',
           bindings: []
@@ -633,10 +629,6 @@ module.exports = function(qb, clientName, aliasName) {
       testsql(qb().select('*').from('users').orderByRaw('col NULLS LAST DESC'), {
         mysql: {
           sql: 'select * from `users` order by col NULLS LAST DESC',
-          bindings: []
-        },
-        sqlite3: {
-          sql: 'select * from "users" order by col NULLS LAST DESC asc',  // TODO: THIS IS WRONG
           bindings: []
         },
         default: {
