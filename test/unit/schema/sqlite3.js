@@ -193,6 +193,14 @@ module.exports = function(client) {
       equal(tableSql[0].sql, 'alter table "users" add column "foo" varchar(100)');
     });
 
+    it("correctly interprets defaultTo(null)", function() {
+      tableSql = new SchemaBuilder().table('users', function(table) {
+        table.string('foo').defaultTo(null);
+      }).toSQL();
+      
+      equal(tableSql[0].sql, 'alter table "users" add column "foo" varchar(255) default null');
+    });
+    
     it("chains notNull and defaultTo", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.string('foo', 100).notNull().defaultTo('bar');
