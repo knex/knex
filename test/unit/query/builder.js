@@ -729,7 +729,7 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
-    it("Oracle first", function() {
+    it("first", function() {
       testsql(qb().first('*').from('users'), {
         mysql: {
           sql: 'select * from `users` limit ?',
@@ -749,15 +749,15 @@ module.exports = function(qb, clientName, aliasName) {
     it("offsets only", function() {
       testsql(qb().select('*').from('users').offset(5), {
         mysql: {
-          sql: 'select * from `users` offset ?',  // TODO: This is wrong
+          sql: 'select * from `users` limit 18446744073709551615 offset ?',
           bindings: [5]
         },
         sqlite3: {
-          sql: 'select * from "users" offset ?',  // TODO: This is wrong
-          bindings: [5]
+          sql: 'select * from "users" limit ? offset ?',
+          bindings: [-1, 5]
         },
         postgres: {
-          sql: 'select * from "users" offset ?',  // TODO: This is wrong
+          sql: 'select * from "users" offset ?',
           bindings: [5]
         },
         oracle: {
