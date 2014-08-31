@@ -1741,19 +1741,6 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
-    it('accepts a knex.raw for arbitrary join clauses', function() {
-      testsql(qb().select('*').from('accounts').join(raw('natural full join table1')).where('id', 1), {
-        mysql: {
-          sql: 'select * from `accounts` natural full join table1 where `id` = ?',
-          bindings: [1]
-        },
-        default: {
-          sql: 'select * from "accounts" natural full join table1 where "id" = ?',
-          bindings: [1]
-        }
-      });
-    });
-
     it('allows sub-query function on insert, #427', function() {
       testsql(qb().into('votes').insert(function() {
         this.select('*').from('votes').where('id', 99);
@@ -1795,6 +1782,32 @@ module.exports = function(qb, clientName, aliasName) {
           bindings: [99]
         }
       });
+    });
+
+    it('allow for raw values in join, #441', function() {
+      testsql(qb()
+        .select('A.nid AS id')
+        .from(raw('nidmap2 AS A'))
+        .innerJoin(
+          raw([
+            'SELECT MIN(nid) AS location_id',
+            'FROM nidmap2',
+          ].join(' ')).wrap('(', ') AS B'),
+          'A.x', '=', 'B.x'
+        ), {
+          mysql: {
+            sql: 'select `A`.`nid` as `id` from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on `A`.`x` = `B`.`x`',
+            bindings: []
+          },
+          oracle: {
+            sql: 'select "A"."nid" "id" from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on "A"."x" = "B"."x"',
+            bindings: []
+          },
+          default: {
+            sql: 'select "A"."nid" as "id" from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on "A"."x" = "B"."x"',
+            bindings: []
+          }
+        });
     });
 
   });
