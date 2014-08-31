@@ -1195,10 +1195,6 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'update `users` inner join `orders` on `users`.`id` = `orders`.`user_id` set `email` = ?, `name` = ? where `users`.`id` = ?',
           bindings: ['foo', 'bar', 1]
         },
-        sqlite3: { // TODO: This is wrong
-          sql: 'update "users" inner join "orders" on "users"."id" = "orders"."user_id" set "email" = ?, "name" = ? where "users"."id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
         default: {
           sql: "update \"users\" set \"email\" = ?, \"name\" = ? where \"users\".\"id\" = ?",
           bindings: ['foo', 'bar', 1]
@@ -1530,7 +1526,7 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
-    it('does an update with join, #191', function() {
+    it('does an update with join on mysql, #191', function() {
       var setObj = {'tblPerson.City': 'Boonesville'};
       var query = qb().table('tblPerson').update(setObj)
         .join('tblPersonData', 'tblPersonData.PersonId', '=', 'tblPerson.PersonId')
@@ -1540,11 +1536,6 @@ module.exports = function(qb, clientName, aliasName) {
       testsql(query, {
         mysql: {
           sql: 'update `tblPerson` inner join `tblPersonData` on `tblPersonData`.`PersonId` = `tblPerson`.`PersonId` set `tblPerson`.`City` = ? where `tblPersonData`.`DataId` = ? and `tblPerson`.`PersonId` = ?',
-          bindings: ['Boonesville', 1, 5]
-        },
-        sqlite3: {
-          // TODO: THIS IS NOT WORKING
-          sql: 'update "tblPerson" inner join "tblPersonData" on "tblPersonData"."PersonId" = "tblPerson"."PersonId" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
           bindings: ['Boonesville', 1, 5]
         },
         default: {
@@ -1784,7 +1775,7 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
-    it('allow for raw values in join, #441', function() {
+    it('allows for raw values in join, #441', function() {
       testsql(qb()
         .select('A.nid AS id')
         .from(raw('nidmap2 AS A'))
