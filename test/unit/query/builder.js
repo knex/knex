@@ -1504,11 +1504,6 @@ module.exports = function(qb, clientName, aliasName) {
     });
 
     it('allows specifying the columns and the query for insert, #211', function() {
-      if (clientName === 'sqlite3') {
-        // TODO: THIS IS NOT WORKING
-        console.log("This tests fails with SQLite3");
-        return;
-      }
       var id = 1;
       var email = 'foo@bar.com';
       testsql(qb().into(raw('recipients (recipient_id, email)')).insert(
@@ -1546,11 +1541,6 @@ module.exports = function(qb, clientName, aliasName) {
     });
 
     it('does crazy advanced inserts with clever raw use, #211', function() {
-      if (clientName === 'sqlite3') {
-        // TODO: THIS IS NOT WORKING
-        console.log("This tests fails with SQLite3");
-        return;
-      }
       var q1 = qb().select(raw("'user'"), raw("'user@foo.com'")).whereNotExists(function() {
         this.select(1).from('recipients').where('recipient_id', 1);
       }).toSQL();
@@ -1748,12 +1738,6 @@ module.exports = function(qb, clientName, aliasName) {
     });
 
     it('allows sub-query chain on insert, #427', function() {
-      if (clientName === 'sqlite3') {
-        // TODO: THIS IS NOT WORKING
-        console.log("This tests fails with SQLite3");
-        return;
-      }
-
       testsql(qb().into('votes').insert(qb().select('*').from('votes').where('id', 99)), {
         mysql: {
           sql: 'insert into `votes` select * from `votes` where `id` = ?',
