@@ -1740,11 +1740,6 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'insert into `votes` select * from `votes` where `id` = ?',
           bindings: [99]
         },
-        sqlite3: {
-          // TODO: THIS IS MAYBE WRONG
-          sql: "insert into \"votes\" default values",
-          bindings: []
-        },
         default: {
           sql: 'insert into "votes" select * from "votes" where "id" = ?',
           bindings: [99]
