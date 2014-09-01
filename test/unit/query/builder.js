@@ -614,8 +614,34 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
-    it("raw order bys", function() {
-      testsql(qb().select('*').from('users').orderBy(raw('col NULLS LAST DESC')), {
+    it("raw order bys with default direction", function() {
+      testsql(qb().select('*').from('users').orderBy(raw('col NULLS LAST')), {
+        mysql: {
+          sql: 'select * from `users` order by col NULLS LAST asc',
+          bindings: []
+        },
+        default: {
+          sql: 'select * from "users" order by col NULLS LAST asc',
+          bindings: []
+        }
+      });
+    });
+
+    it("raw order bys with specified direction", function() {
+      testsql(qb().select('*').from('users').orderBy(raw('col NULLS LAST'), 'desc'), {
+        mysql: {
+          sql: 'select * from `users` order by col NULLS LAST desc',
+          bindings: []
+        },
+        default: {
+          sql: 'select * from "users" order by col NULLS LAST desc',
+          bindings: []
+        }
+      });
+    });
+
+    it("orderByRaw", function() {
+      testsql(qb().select('*').from('users').orderByRaw('col NULLS LAST DESC'), {
         mysql: {
           sql: 'select * from `users` order by col NULLS LAST DESC',
           bindings: []
@@ -625,15 +651,17 @@ module.exports = function(qb, clientName, aliasName) {
           bindings: []
         }
       });
+    });
 
-      testsql(qb().select('*').from('users').orderByRaw('col NULLS LAST DESC'), {
+    it("orderByRaw second argument is the binding", function() {
+      testsql(qb().select('*').from('users').orderByRaw('col NULLS LAST ?', 'dEsc'), {
         mysql: {
-          sql: 'select * from `users` order by col NULLS LAST DESC',
-          bindings: []
+          sql: 'select * from `users` order by col NULLS LAST ?',
+          bindings: ['dEsc']
         },
         default: {
-          sql: 'select * from "users" order by col NULLS LAST DESC',
-          bindings: []
+          sql: 'select * from "users" order by col NULLS LAST ?',
+          bindings: ['dEsc']
         }
       });
     });
