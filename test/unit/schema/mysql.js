@@ -1,3 +1,7 @@
+/*global describe, expect, it*/
+
+'use strict';
+
 module.exports = function(client) {
 
   var knex = require('../../../knex');

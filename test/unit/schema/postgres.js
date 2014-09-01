@@ -1,12 +1,14 @@
+/*global describe, expect, it*/
+
+'use strict';
+
 module.exports = function(client) {
 
   client.initSchema();
 
   var tableSql;
   var SchemaBuilder = client.SchemaBuilder;
-  var _ = require('lodash');
   var equal = require('assert').equal;
-  var deepEqual = require('assert').deepEqual;
 
   describe("PostgreSQL SchemaBuilder", function() {
 

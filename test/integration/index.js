@@ -1,3 +1,7 @@
+/*global after*/
+
+'use strict';
+
 module.exports = function(testSuite) {
   var Knex   = require('../../knex');
   var logger = require('./logger')(testSuite);

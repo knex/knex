@@ -1,6 +1,8 @@
 // Knex.js  0.6.22
 // --------------
 
+'use strict';
+
 //     (c) 2014 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
@@ -60,7 +62,7 @@ Knex.initialize = function(config) {
   // constructor, so we have no reference to 'this' just
   // in case it's called with `new`.
   function knex(tableName) {
-    var qb = new client.QueryBuilder;
+    var qb = new client.QueryBuilder();
     if (config.__transactor__) qb.transacting(config.__transactor__);
     return tableName ? qb.table(tableName) : qb;
   }
@@ -94,7 +96,7 @@ Knex.initialize = function(config) {
   if (config.__client__) {
     client = config.__client__;
   } else {
-    
+
     // Build the "client"
     var clientName = config.client || config.dialect;
     if (!Clients[clientName]) {
@@ -136,7 +138,7 @@ Knex.initialize = function(config) {
         return builder;
       }
     },
-    
+
     // Lazy-load / return a `Migrator` object.
     migrate: {
       get: function() {
@@ -144,7 +146,7 @@ Knex.initialize = function(config) {
         return new client.Migrator(knex);
       }
     },
-    
+
     // Lazy-load / return a `Seeder` object.
     seed: {
       get: function() {

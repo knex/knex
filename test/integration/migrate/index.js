@@ -1,3 +1,6 @@
+/*global after, before, describe, expect, it*/
+'use strict';
+
 var equal    = require('assert').equal;
 var path     = require('path');
 var rimraf   = require('rimraf');

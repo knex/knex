@@ -1,9 +1,9 @@
+/*global describe, expect, it, d*/
+
+'use strict';
+
 var uuid = require('node-uuid');
 var _    = require('lodash');
-
-function stackSql(stack, sql) {
-  expect(stack.sql).to.equal(sql);
-}
 
 module.exports = function(knex) {
 

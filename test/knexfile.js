@@ -1,9 +1,13 @@
+/*global expect*/
+
+'use strict';
+
 var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
 var _          = require('lodash');
 var Promise    = require('bluebird');
 
 // excluding oracle and maria dialects from default integrations test
-testIntegrationDialects = (process.env.KNEX_TEST_INTEGRATION_DIALECTS || "mysql mysql2 postgres sqlite3").match(/\w+/g);
+var testIntegrationDialects = (process.env.KNEX_TEST_INTEGRATION_DIALECTS || "mysql mysql2 postgres sqlite3").match(/\w+/g);
 
 var pool = {
   afterCreate: function(connection, callback) {

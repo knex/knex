@@ -1,3 +1,7 @@
+/*global describe, expect, it, d*/
+
+'use strict';
+
 module.exports = function(knex) {
 
   describe('Updates', function () {

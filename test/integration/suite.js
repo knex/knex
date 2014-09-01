@@ -1,3 +1,7 @@
+/*global expect, describe, it*/
+
+'use strict';
+
 module.exports = function(knex) {
   var sinon = require('sinon');
 

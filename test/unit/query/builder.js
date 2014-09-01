@@ -1,3 +1,7 @@
+/*global expect, describe, it*/
+
+'use strict';
+
 module.exports = function(qb, clientName, aliasName) {
 
   var Raw = require('../../../lib/raw');

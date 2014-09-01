@@ -1,3 +1,5 @@
+'use strict';
+
 var Promise = require('bluebird');
 var fs      = Promise.promisifyAll(require('fs'));
 var shelljs = Promise.promisifyAll(require('shelljs'));
@@ -20,9 +22,9 @@ Promise.try(function() {
   var Benchmark  = require('benchmark');
   var Knex1      = require(tmpDir + '/knex.js');
   var Knex2      = require('../../knex');
-  var suite      = new Benchmark.Suite;
-  global.knex1   = Knex1.initialize({client: 'mysql', connection: {}});
-  global.knex2   = Knex2.initialize({client: 'mysql'});
+  var suite      = new Benchmark.Suite();
+  var knex1      = Knex1.initialize({client: 'mysql', connection: {}});
+  var knex2      = Knex2.initialize({client: 'mysql'});
 
   suite
     .add('0.5.13: simple where clauses', function() {
