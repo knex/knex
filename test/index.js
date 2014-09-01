@@ -1,3 +1,7 @@
+/*global describe*/
+
+'use strict';
+
 global.sinon = require("sinon");
 
 var chai = global.chai = require("chai");
@@ -11,7 +15,7 @@ global.expect         = chai.expect;
 global.AssertionError = chai.AssertionError;
 global.Assertion      = chai.Assertion;
 global.assert         = chai.assert;
-global.d = new Date;
+global.d = new Date();
 
 Promise.longStackTraces();
 

@@ -1,3 +1,7 @@
+/*global expect, d*/
+
+'use strict';
+
 module.exports = function(testSuite) {
 
   var _ = require('lodash');
@@ -30,14 +34,14 @@ module.exports = function(testSuite) {
         }
       }
 
-      function testSqlTester(dialect, statement, bindings, returnval) {
+      function testSqlTester(qb, dialect, statement, bindings, returnval) {
         // Useful in cases where we want to just test the sql for both PG and SQLite3
         if (_.isArray(dialect)) {
           _.each(dialect, function(val) {
             testSqlTester.call(this, val, statement, bindings, returnval);
-          }, this);
+          }, qb);
         } else if (client.dialect === dialect || aliases[dialect] === client.dialect) {
-          var sql = this.toSQL();
+          var sql = qb.toSQL();
 
           if (statement != null) {
             if (_.isArray(sql)) {
@@ -54,8 +58,8 @@ module.exports = function(testSuite) {
             }
           }
           if (returnval != null) {
-            var oldThen = this.then;
-            this.then = function() {
+            var oldThen = qb.then;
+            qb.then = function() {
               var promise = oldThen.apply(this, []);
               promise = promise.tap(function(resp) {
                 _.isFunction(returnval) ? expect(returnval(resp)).to.be.true : expect(stripDates(resp)).to.eql(returnval);
@@ -83,7 +87,7 @@ module.exports = function(testSuite) {
       Raw.prototype.testSql =
       client.QueryBuilder.prototype.testSql =
       client.SchemaBuilder.prototype.testSql = function Logger$testSql(handler) {
-        handler(_.bind(testSqlTester, this));
+        handler(_.bind(testSqlTester, null, this));
         return this;
       };
 

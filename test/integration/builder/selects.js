@@ -1,3 +1,6 @@
+/*global describe, expect, it, assert, testPromise, d*/
+'use strict';
+
 var Promise = testPromise;
 
 module.exports = function(knex) {
@@ -146,7 +149,7 @@ module.exports = function(knex) {
       });
 
       knex('accounts').select().exec(function() {
-        console.log(undefinedVar);
+        console.log(this['undefinedVar'].test);
       });
     });
 

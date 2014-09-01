@@ -1,3 +1,7 @@
+/*global describe, expect, it*/
+
+'use strict';
+
 module.exports = function(client) {
 
   client.initSchema();
@@ -197,10 +201,10 @@ module.exports = function(client) {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.string('foo').defaultTo(null);
       }).toSQL();
-      
+
       equal(tableSql[0].sql, 'alter table "users" add column "foo" varchar(255) default null');
     });
-    
+
     it("chains notNull and defaultTo", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.string('foo', 100).notNull().defaultTo('bar');

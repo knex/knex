@@ -1,7 +1,8 @@
-var equal    = require('assert').equal;
+/*global after, describe, it, expect*/
+'use strict';
+
 var path     = require('path');
 var rimraf   = require('rimraf');
-var Promise  = require('../../../lib/promise');
 
 module.exports = function(knex) {
 
