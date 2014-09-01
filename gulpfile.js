@@ -1,3 +1,5 @@
+'use strict';
+
 var gulp       = require('gulp');
 var bump       = require('gulp-bump');
 var shell      = require('gulp-shell');
@@ -5,6 +7,7 @@ var browserify = require('browserify');
 var argv       = require('minimist')(process.argv.slice(2));
 var Promise    = require('bluebird');
 var fs         = Promise.promisifyAll(require('fs'));
+var jshint     = require('gulp-jshint');
 
 var excluded = {
   oracle:   ['oracle'],
@@ -66,7 +69,7 @@ function buildWebSQL() {
 
 gulp.task('build', function() {
 
-  // Need to temporarily rename, otherwise browserify seems to read the 
+  // Need to temporarily rename, otherwise browserify seems to read the
   // local package.json, sees the browser path and doesn't build properly.
   return ensureOutputDirectory().then(function() {
     return fs.renameAsync('./package.json', './.package.json');
@@ -84,7 +87,12 @@ gulp.task('build', function() {
 });
 
 // Run the test... TODO: split these out to individual components.
-gulp.task('jshint', shell.task(['npm run jshint']));
+gulp.task('jshint', function () {
+  gulp.src(['*.js', 'lib/**/*.js', 'test/**/*.js', '!test/coverage/**/*.js'])
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'))
+    .pipe(jshint.reporter('fail'));
+});
 gulp.task('test', ['jshint'], shell.task(['npm run test']));
 
 gulp.task('bump', function() {
