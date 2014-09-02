@@ -20,6 +20,7 @@
     "chalk": "~0.5.1",
     "commander": "^2.2.0",
     "generic-pool-redux": "~0.1.0",
+    "gulp-jshint": "^1.8.4",
     "inherits": "~2.0.1",
     "interpret": "^0.3.2",
     "liftoff": "~0.12.0",
@@ -56,11 +57,11 @@
   },
   "scripts": {
     "build": "gulp build",
-    "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js",
+    "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "jshint": "jshint knex.js lib/*",
-    "release:patch": "npm run jshint && npm test && gulp build && gulp bump --type patch && gulp release",
-    "release:minor": "npm run jshint && npm test && gulp build && gulp bump --type minor && gulp release"
+    "jshint": "gulp jshint",
+    "release:patch": "gulp jshint && npm test && gulp build && gulp bump --type patch && gulp release",
+    "release:minor": "gulp jshint && npm test && gulp build && gulp bump --type minor && gulp release"
   },
   "bin": {
     "knex": "./lib/bin/cli.js"

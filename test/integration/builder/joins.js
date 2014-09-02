@@ -1,3 +1,7 @@
+/*global describe, it, d*/
+
+'use strict';
+
 module.exports = function(knex) {
 
   describe('Joins', function() {

@@ -1,3 +1,6 @@
+/*global describe, expect, it, assert, testPromise, d*/
+'use strict';
+
 var Promise = testPromise;
 
 module.exports = function(knex) {
@@ -36,6 +39,36 @@ module.exports = function(knex) {
             "select \"id\" from \"accounts\" order by \"id\" asc",
             [],
             [1, 2, 3, 4, 5, 7]
+          );
+        });
+    });
+
+    it('starts selecting at offset', function () {
+      return knex.pluck('id').orderBy('id').from('accounts').offset(2)
+        .testSql(function (tester) {
+          tester(
+            'mysql',
+            'select `id` from `accounts` order by `id` asc limit 18446744073709551615 offset ?',
+            [2],
+            [3, 4, 5, 7]
+          );
+          tester(
+            'postgresql',
+            'select "id" from "accounts" order by "id" asc offset ?',
+            [2],
+            ['3', '4', '5', '7']
+          );
+          tester(
+            'sqlite3',
+            'select "id" from "accounts" order by "id" asc limit ? offset ?',
+            [-1, 2],
+            [3, 4, 5, 6]
+          );
+          tester(
+            'oracle',
+            "select * from (select row_.*, ROWNUM rownum_ from (select \"id\" from \"accounts\" order by \"id\" asc) row_ where rownum <= ?) where rownum_ > ?",
+            [10000000000002, 2],
+            [3, 4, 5, 7]
           );
         });
     });
@@ -116,7 +149,7 @@ module.exports = function(knex) {
       });
 
       knex('accounts').select().exec(function() {
-        console.log(undefinedVar);
+        console.log(this['undefinedVar'].test);
       });
     });
 

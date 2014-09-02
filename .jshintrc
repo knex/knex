@@ -6,9 +6,9 @@
   "latedef": false,
   "newcap": false,
   "node": true,
-  "strict": false,
-  "supernew": true,
+  "strict": true,
   "sub": true,
   "trailing": true,
-  "unused": "vars"
+  "unused": "vars",
+  "predef": [ "-Promise" ]
 }

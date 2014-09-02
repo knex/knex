@@ -1,3 +1,5 @@
+'use strict';
+
 
 exports.up = function(knex, promise) {
   return promise.all([

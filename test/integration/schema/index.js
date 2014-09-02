@@ -1,3 +1,7 @@
+/*global describe, it, expect, testPromise*/
+
+'use strict';
+
 var Promise = testPromise;
 
 module.exports = function(knex) {

@@ -1,3 +1,7 @@
+/*global describe, expect, it*/
+
+'use strict';
+
 module.exports = function(knex) {
 
   var _ = require('lodash');

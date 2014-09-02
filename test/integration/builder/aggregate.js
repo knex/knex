@@ -1,3 +1,7 @@
+/*global describe, it*/
+
+'use strict';
+
 module.exports = function(knex) {
 
   describe('Aggregate', function() {
