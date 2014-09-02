@@ -43,21 +43,21 @@ module.exports = function(testSuite) {
         } else if (client.dialect === dialect || aliases[dialect] === client.dialect) {
           var sql = qb.toSQL();
 
-          if (statement != null) {
+          if (statement) {
             if (_.isArray(sql)) {
               expect(_.pluck(sql, 'sql')).to.eql(statement);
             } else {
               expect(sql.sql).to.equal(statement);
             }
           }
-          if (bindings != null) {
+          if (bindings) {
             if (_.isArray(sql)) {
               compareBindings(_.pluck(sql, 'bindings'), bindings);
             } else {
               compareBindings(sql.bindings, bindings);
             }
           }
-          if (returnval != null) {
+          if (returnval !== undefined && returnval !== null) {
             var oldThen = qb.then;
             qb.then = function() {
               var promise = oldThen.apply(this, []);
