@@ -4,7 +4,6 @@
   "newcap": false,
   "node": true,
   "strict": true,
-  "sub": true,
   "trailing": true,
   "unused": "vars",
   "predef": [ "-Promise" ]

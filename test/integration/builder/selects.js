@@ -149,7 +149,7 @@ module.exports = function(knex) {
       });
 
       knex('accounts').select().exec(function() {
-        console.log(this['undefinedVar'].test);
+        console.log(this.undefinedVar.test);
       });
     });
 
