@@ -14,7 +14,7 @@ module.exports = function(testSuite) {
 
   after(function(done) {
     if (config.sqlite3 && config.sqlite3.connection.filename !== ':memory:') {
-      fs.unlink(config.sqlite3.connection.filename, function(err) { done(); });
+      fs.unlink(config.sqlite3.connection.filename, function() { done(); });
     } else {
       done();
     }

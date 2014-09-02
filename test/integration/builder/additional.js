@@ -215,7 +215,7 @@ module.exports = function(knex) {
 
       return knex.count('*').from('accounts').then(function(resp) {
         count = resp['count(*)'];
-      }).then(function(resp) {
+      }).then(function() {
         return knex.schema.table('accounts', function(t) {
           t.dropColumn('first_name');
         }).testSql(function(tester) {

@@ -131,7 +131,7 @@ module.exports = function(knex) {
             ],
             [1, 2, 3]
           );
-      }).exec(function(err, resp) {
+      }).exec(function(err) {
         if (err) return ok(err);
         ok();
       });

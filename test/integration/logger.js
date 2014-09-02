@@ -2,7 +2,7 @@
 
 'use strict';
 
-module.exports = function(testSuite) {
+module.exports = function () {
 
   var _ = require('lodash');
 

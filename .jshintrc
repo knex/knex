@@ -5,6 +5,6 @@
   "node": true,
   "strict": true,
   "trailing": true,
-  "unused": "vars",
+  "unused": true,
   "predef": [ "-Promise" ]
 }
