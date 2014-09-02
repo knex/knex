@@ -465,5 +465,14 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('alter table `composite_key_test` drop index composite_key_test_column_a_column_b_unique');
     });
 
+    it('allows default as alias for defaultTo', function() {
+      tableSql = new SchemaBuilder().createTable('default_raw_test', function(t) {
+        t.timestamp('created_at').default(knex.raw('CURRENT_TIMESTAMP'));
+      }).toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)');
+    });
+
   });
 };
