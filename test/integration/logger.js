@@ -62,7 +62,11 @@ module.exports = function(testSuite) {
             qb.then = function() {
               var promise = oldThen.apply(this, []);
               promise = promise.tap(function(resp) {
-                _.isFunction(returnval) ? expect(returnval(resp)).to.be.true : expect(stripDates(resp)).to.eql(returnval);
+                if (_.isFunction(returnval)) {
+                  expect(!!returnval(resp)).to.equal(true);
+                } else {
+                  expect(stripDates(resp)).to.eql(returnval);
+                }
               });
               return promise.then.apply(promise, arguments);
             };

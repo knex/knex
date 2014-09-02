@@ -1,6 +1,5 @@
 {
   "browser": true,
-  "expr": true,
   "eqnull": true,
   "latedef": false,
   "newcap": false,

@@ -27,11 +27,11 @@ module.exports = function(knex) {
       it('should allow destroying the pool with knex.destroy', function() {
         var spy = sinon.spy(knex.client.pool, 'destroy');
         return knex.destroy().then(function() {
-          expect(spy).to.be.calledOnce;
-          expect(knex.client.pool.genericPool).to.be.undefined;
+          expect(spy).to.have.callCount(1);
+          expect(knex.client.pool.genericPool).to.equal(undefined);
           return knex.destroy();
         }).then(function() {
-          expect(spy).to.be.calledTwice;
+          expect(spy).to.have.callCount(2);
         });
       });
     });
