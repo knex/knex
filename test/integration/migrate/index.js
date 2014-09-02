@@ -60,14 +60,14 @@ module.exports = function(knex) {
         // within the table
         return Promise.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
-            expect(exists).to.be.true;
+            expect(exists).to.equal(true);
             if (exists) {
               return Promise.all([
                 knex.schema.hasColumn(table, 'id').then(function(exists) {
-                  expect(exists).to.be.true;
+                  expect(exists).to.equal(true);
                 }),
                 knex.schema.hasColumn(table, 'name').then(function(exists) {
-                  expect(exists).to.be.true;
+                  expect(exists).to.equal(true);
                 })
               ]);
             }
@@ -89,7 +89,7 @@ module.exports = function(knex) {
       it('should drop tables as specified in the batch', function() {
         return Promise.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
-            expect(exists).to.be.false;
+            expect(!!exists).to.equal(false);
           });
         });
       });

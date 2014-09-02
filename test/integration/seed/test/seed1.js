@@ -1,5 +1,5 @@
 'use strict';
 
-exports.seed = function(knex, promise) {
+exports.seed = function() {
   return 'seed 1';
 };

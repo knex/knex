@@ -106,7 +106,7 @@ module.exports = function(knex) {
     it('allows you to stream', function() {
       var count = 0;
       return knex('accounts').stream(function(rowStream) {
-        rowStream.on('data', function(chunk) {
+        rowStream.on('data', function() {
           count++;
         });
       }).then(function() {
@@ -126,7 +126,7 @@ module.exports = function(knex) {
     it('properly escapes postgres queries on streaming', function() {
       var count = 0;
       return knex('accounts').where('id', 1).stream(function(rowStream) {
-        rowStream.on('data', function(chunk) {
+        rowStream.on('data', function() {
           count++;
         });
       }).then(function() {
@@ -149,7 +149,7 @@ module.exports = function(knex) {
       });
 
       knex('accounts').select().exec(function() {
-        console.log(this['undefinedVar'].test);
+        console.log(this.undefinedVar.test);
       });
     });
 

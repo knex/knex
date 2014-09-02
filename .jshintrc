@@ -1,14 +1,12 @@
 {
-  "boss": true,
-  "browser": true,
-  "expr": true,
-  "eqnull": true,
+  "browser": false,
   "latedef": false,
   "newcap": false,
   "node": true,
   "strict": true,
-  "sub": true,
+  "newcap": true,
+  "undef": true,
   "trailing": true,
-  "unused": "vars",
+  "unused": true,
   "predef": [ "-Promise" ]
 }

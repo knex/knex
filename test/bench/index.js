@@ -47,7 +47,7 @@ Promise.try(function() {
     })
 
     // add listeners
-    .on('error', function(event) {
+    .on('error', function() {
       console.log(arguments);
     })
     .on('cycle', function(event) {

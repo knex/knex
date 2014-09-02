@@ -2,7 +2,7 @@
 
 'use strict';
 
-module.exports = function(testSuite) {
+module.exports = function () {
 
   var _ = require('lodash');
 
@@ -43,26 +43,30 @@ module.exports = function(testSuite) {
         } else if (client.dialect === dialect || aliases[dialect] === client.dialect) {
           var sql = qb.toSQL();
 
-          if (statement != null) {
+          if (statement) {
             if (_.isArray(sql)) {
               expect(_.pluck(sql, 'sql')).to.eql(statement);
             } else {
               expect(sql.sql).to.equal(statement);
             }
           }
-          if (bindings != null) {
+          if (bindings) {
             if (_.isArray(sql)) {
               compareBindings(_.pluck(sql, 'bindings'), bindings);
             } else {
               compareBindings(sql.bindings, bindings);
             }
           }
-          if (returnval != null) {
+          if (returnval !== undefined && returnval !== null) {
             var oldThen = qb.then;
             qb.then = function() {
               var promise = oldThen.apply(this, []);
               promise = promise.tap(function(resp) {
-                _.isFunction(returnval) ? expect(returnval(resp)).to.be.true : expect(stripDates(resp)).to.eql(returnval);
+                if (_.isFunction(returnval)) {
+                  expect(!!returnval(resp)).to.equal(true);
+                } else {
+                  expect(stripDates(resp)).to.eql(returnval);
+                }
               });
               return promise.then.apply(promise, arguments);
             };
