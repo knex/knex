@@ -1,5 +1,5 @@
 {
-  "browser": true,
+  "browser": false,
   "latedef": false,
   "newcap": false,
   "node": true,
