@@ -13,16 +13,16 @@ function Knex() {
   return Knex.initialize.apply(null, arguments);
 }
 
+// Require the main constructors necessary for a `Knex` instance,
+// each of which are injected with the current instance, so they maintain
+// the correct client reference & grammar.
+var Raw = require('./lib/raw');
+
 // Run a "raw" query, though we can't do anything with it other than put
 // it in a query statement.
 Knex.raw = function(sql, bindings) {
   return new Raw(sql, bindings);
 };
-
-// Require the main constructors necessary for a `Knex` instance,
-// each of which are injected with the current instance, so they maintain
-// the correct client reference & grammar.
-var Raw = require('./lib/raw');
 
 // Doing it this way makes it easier to build for browserify.
 var mysql = function() { return require('./lib/dialects/mysql'); };

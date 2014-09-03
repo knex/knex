@@ -1,6 +1,6 @@
 {
   "browser": false,
-  "latedef": false,
+  "latedef": true,
   "newcap": false,
   "node": true,
   "strict": true,
