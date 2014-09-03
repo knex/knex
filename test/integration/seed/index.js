@@ -1,4 +1,4 @@
-/*global after, describe, it, expect*/
+/*global describe, it, expect*/
 'use strict';
 
 var path     = require('path');
@@ -6,11 +6,10 @@ var rimraf   = require('rimraf');
 
 module.exports = function(knex) {
 
-  require('rimraf').sync(path.join(__dirname, './seed'));
-
   describe('knex.seed.make', function() {
     it('should create a new seed file with the make method', function () {
       return knex.seed.make('test').then(function (name) {
+        rimraf.sync(path.dirname(name));
         expect(path.basename(name)).to.equal('test.js');
       });
     });
@@ -23,10 +22,6 @@ module.exports = function(knex) {
         expect(path.basename(data[1])).to.equal('seed2.js');
       });
     });
-  });
-
-  after(function() {
-    rimraf.sync(path.join(__dirname, './seed'));
   });
 
 };
