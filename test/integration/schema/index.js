@@ -32,6 +32,8 @@ module.exports = function(knex) {
             .dropTableIfExists('migration_test_2')
             .dropTableIfExists('migration_test_2_1')
             .dropTableIfExists('test_default_table')
+            .dropTableIfExists('test_default_table2')
+            .dropTableIfExists('test_default_table3')
             .dropTableIfExists('knex_migrations')
             .dropTableIfExists('bool_test')
         ]);
