@@ -393,6 +393,87 @@ module.exports = function(knex) {
         });
     });
 
+
+    it('should handle empty arrays inserts', function() {
+
+      return knex.schema
+        .createTable('test_default_table2', function(qb) {
+          qb.increments().primary();
+          qb.string('string').defaultTo('hello');
+          qb.tinyint('tinyint').defaultTo(0);
+          qb.text('text').nullable();
+        }).then(function() {
+          return knex('test_default_table2').insert([{}], 'id').testSql(function(tester) {
+            tester(
+              'mysql',
+              'insert into `test_default_table2` () values ()',
+              [],
+              [1]
+            );
+            tester(
+              'postgresql',
+              'insert into "test_default_table2" default values returning "id"',
+              [],
+              [1]
+            );
+            tester(
+              'sqlite3',
+              'insert into "test_default_table2" default values',
+              [],
+              [1]
+            );
+            tester(
+              'oracle',
+              "insert into \"test_default_table2\" (\"id\") values (default) returning ROWID into ?",
+              [function (v) {return v.toString() === '[object ReturningHelper:id]';}],
+              [1]
+            );
+
+          });
+        });
+    });
+
+    it('should handle multiple default inserts with returning only', function() {
+      if (knex.client.dialect === 'sqlite3') {
+        console.log('not tested for sqlite3');
+        return;
+      }
+
+      return knex.schema
+        .createTable('test_default_table3', function(qb) {
+          qb.increments().primary();
+          qb.string('string').defaultTo('hello');
+          qb.tinyint('tinyint').defaultTo(0);
+          qb.text('text').nullable();
+        }).then(function() {
+          return knex('test_default_table3').insert([{}, {}], 'id').testSql(function(tester) {
+            tester(
+              'mysql',
+              'insert into `test_default_table3` () values (), ()',
+              [],
+              [1]
+            );
+            tester(
+              'postgresql',
+              'insert into "test_default_table3" ("id") values (default), (default) returning "id"',
+              [],
+              [1, 2]
+            );
+            tester(
+              'oracle',
+              "begin execute immediate 'insert into \"test_default_table3\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"test_default_table3\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
+              [function (v) {return v.toString() === '[object ReturningHelper:id]';}, function (v) {return v.toString() === '[object ReturningHelper:id]';}],
+              [1, 2]
+            );
+
+          });
+        }).then(function () {
+          return knex('test_default_table3').then(function (rows) {
+            expect(rows.length).to.equal(2);
+          });
+        });
+    });
+
     it('should take an array of columns to return in oracle or postgres', function() {
       var insertData = {
         account_id: 10,

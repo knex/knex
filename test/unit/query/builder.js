@@ -1181,6 +1181,213 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it("insert with only default values", function() {
+      testsql(qb().into('users').insert(), {
+        mysql: {
+          sql: 'insert into `users` () values ()',
+          bindings: []
+        },
+        oracle: {
+          sql: 'insert into "users" ("undefined") values (default)',
+          bindings: []
+        },
+        default: {
+          sql: 'insert into "users" default values',
+          bindings: []
+        }
+      });
+    });
+
+    it("insert with empty array should insert default values", function() {
+      testsql(qb().into('users').insert([]), {
+        mysql: {
+          sql: 'insert into `users` () values ()',
+          bindings: []
+        },
+        oracle: {
+          // Oracle dialect needs at least on return column to work correctly
+          sql: 'insert into "users" ("undefined") values (default)',
+          bindings: []
+        },
+        default: {
+          sql: 'insert into "users" default values',
+          bindings: []
+        }
+      });
+    });
+
+    it("insert with empty array should insert default values and returning", function() {
+      testsql(qb().into('users').insert([], 'id'), {
+        mysql: {
+          sql: 'insert into `users` () values ()',
+          bindings: []
+        },
+        postgres: {
+          sql: 'insert into "users" default values returning "id"',
+          bindings: []
+        },
+        oracle: {
+          sql: 'insert into "users" ("id") values (default) returning ROWID into ?',
+          bindings: function (bindings) {
+            expect(bindings.length).to.equal(1);
+            expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
+          }
+        },
+        default: {
+          sql: 'insert into "users" default values',
+          bindings: []
+        }
+      });
+    });
+
+    it("insert with array with empty object and returning", function() {
+      testsql(qb().into('users').insert([{}], 'id'), {
+        mysql: {
+          sql: 'insert into `users` () values ()',
+          bindings: []
+        },
+        sqlite3: {
+          sql: 'insert into "users" default values',
+          bindings: []
+        },
+        postgres: {
+          sql: 'insert into "users" default values returning "id"',
+          bindings: []
+        },
+        oracle: {
+          sql: "insert into \"users\" (\"id\") values (default) returning ROWID into ?",
+          bindings: function (bindings) {
+            expect(bindings.length).to.equal(1);
+            expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
+          }
+        },
+        default: {
+          sql: 'insert into "users" default values',
+          bindings: []
+        }
+      });
+    });
+
+    it("insert with array with null value and returning", function() {
+      testsql(qb().into('users').insert([null], 'id'), {
+        mysql: {
+          sql: 'insert into `users` () values ()',
+          bindings: []
+        },
+        sqlite3: {
+          sql: 'insert into "users" default values',
+          bindings: []
+        },
+        postgres: {
+          sql: 'insert into "users" default values returning "id"',
+          bindings: []
+        },
+        oracle: {
+          sql: "insert into \"users\" (\"id\") values (default) returning ROWID into ?",
+          bindings: function (bindings) {
+            expect(bindings.length).to.equal(1);
+            expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
+          }
+        },
+        default: {
+          sql: 'insert into "users" default values',
+          bindings: []
+        }
+      });
+    });
+
+    it("insert with array of multiple null values ", function() {
+      testsql(qb().into('users').insert([null, null]), {
+        mysql: {
+          sql: 'insert into `users` () values (), ()',
+          bindings: []
+        },
+        sqlite3: {
+          // This does not work
+          // Not possible to insert multiple default value rows at once with sqlite
+          sql: 'insert into "users" () select  union all select ',
+          bindings: []
+        },
+        oracle: {
+          // This does not work
+          // It's not possible to insert default value without knowing at least one column
+          sql: "begin execute immediate 'insert into \"users\" (\"undefined\") values (default); execute immediate 'insert into \"users\" (\"undefined\") values (default);end;",
+          bindings: []
+        },
+        postgres: {
+          // This does not work
+          // Postgres does not support inserting multiple default values without specifying a column
+          sql: "insert into \"users\" (\"undefined\") values (default), (default)",
+          bindings: []
+        },
+        default: {
+          sql: 'insert into "users" default values',
+          bindings: []
+        }
+      });
+    });
+
+    it("insert with multiple array of empty values", function() {
+      testsql(qb().into('users').insert([{}, {}]), {
+        mysql: {
+          sql: 'insert into `users` () values (), ()',
+          bindings: []
+        },
+        sqlite3: {
+          // This does not work
+          // Not possible to insert multiple default value rows at once with sqlite
+          sql: 'insert into "users" () select  union all select ',
+          bindings: []
+        },
+        oracle: {
+          // This does not work
+          // It's not possible to insert default value without knowing at least one column
+          sql: "begin execute immediate 'insert into \"users\" (\"undefined\") values (default); execute immediate 'insert into \"users\" (\"undefined\") values (default);end;",
+          bindings: []
+        },
+        postgres: {
+          // This does not work
+          // Postgres does not support inserting multiple default values without specifying a column
+          sql: "insert into \"users\" (\"undefined\") values (default), (default)",
+          bindings: []
+        },
+        default: {
+          sql: 'insert into "users" default values',
+          bindings: []
+        }
+      });
+    });
+
+    it("insert with multiple empty values with returning", function() {
+      testsql(qb().into('users').insert([null, null], 'id'), {
+        mysql: {
+          sql: 'insert into `users` () values (), ()',
+          bindings: []
+        },
+        sqlite3: {
+          // It's not possible to insert multiple default value rows at once with sqlite
+          sql: 'insert into "users" () select  union all select ',
+          bindings: []
+        },
+        oracle: {
+          sql: "begin execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
+          bindings: function (bindings) {
+            expect(bindings.length).to.equal(2);
+            expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
+            expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
+          }
+        },
+        postgres: {
+          sql: 'insert into "users" ("id") values (default), (default) returning "id"',
+          bindings: []
+        },
+        default: {
+          sql: 'not checked',
+          bindings: []
+        }
+      });
+    });
+
     it("update method", function() {
       testsql(qb().update({'email': 'foo', 'name': 'bar'}).table('users').where('id', '=', 1), {
         mysql: {
