@@ -2,6 +2,8 @@
 
 'use strict';
 
+var Promise = require('bluebird');
+
 module.exports = function(knex) {
 
   var _ = require('lodash');
@@ -265,5 +267,70 @@ module.exports = function(knex) {
     });
 
   });
+
+  it('throws on an invalid hook type', function () {
+    expect(function () {
+      return knex.select('foo')
+        .hook('fail', function () { });
+    }).to.throw('Invalid arguments');
+  });
+  it('executes the "after" hook', function () {
+    var ran = false;
+    return knex.select('foo')
+      .hook('after', function () {
+        ran = true;
+      })
+      .then(function () {
+        expect(ran).to.equal(true);
+      });
+  });
+  it('propagates changes', function () {
+    return knex.select('foo AS foo')
+      .hook('after', function (data) {
+        data.foo = 'bar';
+        return data.map(function (item) {
+            item.foo = 'bar';
+            return item;
+        });
+      })
+      .then(function (data) {
+        expect(data[0].foo).to.equal('bar');
+      });
+  });
+  it('allows returning a promise', function () {
+    return knex.select('foo')
+      .hook('after', function (data) {
+        return Promise.map(data, function (item) {
+            item.foo = 'bar';
+            return item;
+        });
+      })
+      .then(function (data) {
+        expect(data[0].foo).to.equal('bar');
+      });
+  });
+  it('returns the input value if nothing is returned', function () {
+    return knex.select('foo AS foo')
+      .hook('after', function () {
+        return;
+      })
+      .then(function (data) {
+        expect(data).to.eql([{foo: 'foo'}]);
+      });
+  });
+  it('executes hooks in the order they were called', function () {
+    var count = 0;
+    return knex.select('foo')
+      .hook('after', function () {
+        count++;
+        expect(count).to.equal(1);
+      })
+      .hook('after', function () {
+        count++;
+        expect(count).to.equal(2);
+      });
+  });
+
+
 
 };
