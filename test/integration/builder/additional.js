@@ -270,13 +270,13 @@ module.exports = function(knex) {
 
   it('throws on an invalid hook type', function () {
     expect(function () {
-      return knex.select('foo')
+      return knex.select(knex.raw('1 as foo'))
         .hook('fail', function () { });
     }).to.throw('Invalid arguments');
   });
   it('executes the "after" hook', function () {
     var ran = false;
-    return knex.select('foo')
+    return knex.select(knex.raw('1 as foo'))
       .hook('after', function () {
         ran = true;
       })
@@ -285,7 +285,7 @@ module.exports = function(knex) {
       });
   });
   it('propagates changes', function () {
-    return knex.select('foo AS foo')
+    return knex.select(knex.raw('1 as foo'))
       .hook('after', function (data) {
         data.foo = 'bar';
         return data.map(function (item) {
@@ -298,7 +298,7 @@ module.exports = function(knex) {
       });
   });
   it('allows returning a promise', function () {
-    return knex.select('foo')
+    return knex.select(knex.raw('1 as foo'))
       .hook('after', function (data) {
         return Promise.map(data, function (item) {
             item.foo = 'bar';
@@ -310,17 +310,17 @@ module.exports = function(knex) {
       });
   });
   it('returns the input value if nothing is returned', function () {
-    return knex.select('foo AS foo')
+    return knex.select(knex.raw('1 as foo'))
       .hook('after', function () {
         return;
       })
       .then(function (data) {
-        expect(data).to.eql([{foo: 'foo'}]);
+        expect(data).to.eql([{foo: 1}]);
       });
   });
   it('executes hooks in the order they were called', function () {
     var count = 0;
-    return knex.select('foo')
+    return knex.select(knex.raw('1 as foo'))
       .hook('after', function () {
         count++;
         expect(count).to.equal(1);
