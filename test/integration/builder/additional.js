@@ -315,7 +315,8 @@ module.exports = function(knex) {
         return;
       })
       .then(function (data) {
-        expect(data).to.eql([{'1': 1}]);
+        var col = Object.keys(data[0])[0];
+        expect(data[0][col]).to.eql(1);
       });
   });
   it('executes hooks in the order they were called', function () {
