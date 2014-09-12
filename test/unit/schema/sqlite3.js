@@ -104,6 +104,18 @@ module.exports = function(client) {
       equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), primary key ("foo"))');
     });
 
+    it("adding composite primary key", function() {
+      tableSql = new SchemaBuilder().createTable('users', function(table) {
+        table.string('foo');
+        table.string('order_id');
+        table.primary(['foo', 'order_id']);
+      }).toSQL();
+
+      equal(1, tableSql.length);
+      equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), "order_id" varchar(255), primary key ("foo", "order_id"))');
+    });
+
+
     it("adding primary key fluently", function() {
       tableSql = new SchemaBuilder().createTable('users', function(table) {
         table.string('foo').primary();
