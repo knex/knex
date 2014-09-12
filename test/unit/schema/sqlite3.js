@@ -115,7 +115,6 @@ module.exports = function(client) {
       equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), "order_id" varchar(255), primary key ("foo", "order_id"))');
     });
 
-
     it("adding primary key fluently", function() {
       tableSql = new SchemaBuilder().createTable('users', function(table) {
         table.string('foo').primary();
