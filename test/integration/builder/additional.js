@@ -270,13 +270,13 @@ module.exports = function(knex) {
 
   it('throws on an invalid hook type', function () {
     expect(function () {
-      return knex.select(knex.raw('1 as foo'))
+      return knex.select(knex.raw('1'))
         .hook('fail', function () { });
     }).to.throw('Invalid arguments');
   });
   it('executes the "after" hook', function () {
     var ran = false;
-    return knex.select(knex.raw('1 as foo'))
+    return knex.select(knex.raw('1'))
       .hook('after', function () {
         ran = true;
       })
@@ -285,42 +285,42 @@ module.exports = function(knex) {
       });
   });
   it('propagates changes', function () {
-    return knex.select(knex.raw('1 as foo'))
+    return knex.select(knex.raw('1'))
       .hook('after', function (data) {
-        data.foo = 'bar';
+        data[1] = 'bar';
         return data.map(function (item) {
-            item.foo = 'bar';
+            item[1] = 'bar';
             return item;
         });
       })
       .then(function (data) {
-        expect(data[0].foo).to.equal('bar');
+        expect(data[0][1]).to.equal('bar');
       });
   });
   it('allows returning a promise', function () {
-    return knex.select(knex.raw('1 as foo'))
+    return knex.select(knex.raw('1'))
       .hook('after', function (data) {
         return Promise.map(data, function (item) {
-            item.foo = 'bar';
+            item[1] = 'bar';
             return item;
         });
       })
       .then(function (data) {
-        expect(data[0].foo).to.equal('bar');
+        expect(data[0][1]).to.equal('bar');
       });
   });
   it('returns the input value if nothing is returned', function () {
-    return knex.select(knex.raw('1 as foo'))
+    return knex.select(knex.raw('1'))
       .hook('after', function () {
         return;
       })
       .then(function (data) {
-        expect(data).to.eql([{foo: 1}]);
+        expect(data).to.eql([{'1': 1}]);
       });
   });
   it('executes hooks in the order they were called', function () {
     var count = 0;
-    return knex.select(knex.raw('1 as foo'))
+    return knex.select(knex.raw('1'))
       .hook('after', function () {
         count++;
         expect(count).to.equal(1);
