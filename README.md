@@ -24,8 +24,10 @@ We have several examples [on the website](http://knexjs.org). Here is the first 
 
 ```js
 var knex = require('knex')({
-  dialect: 'mysql',
-  connection: process.env.DB_CONNECTION_STRING
+  dialect: 'sqlite3',
+  connection: {
+    filename: './data.db'
+  }
 });
 
 // Create a table
@@ -48,13 +50,13 @@ knex.schema.createTable('users', function(table) {
 
 // ...and using the insert id, insert into the other table.
 .then(function(rows) {
-  return knex.table('accounts').insert({account_name: 'knex', user_id: knex.rows[0]});
-});
+  return knex.table('accounts').insert({account_name: 'knex', user_id: rows[0]});
+})
 
 // Query both of the rows.
 .then(function() {
   return knex('users')
-    .join('accounts', 'accounts.id')
+    .join('accounts', 'users.id', 'accounts.user_id')
     .select('users.user_name as user', 'accounts.account_name as account');
 })
 
