@@ -1666,10 +1666,11 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
     </p>
 
     <p id="Schema-json">
-      <b class="header">json</b><code>table.json(name)</code>
+      <b class="header">json</b><code>table.json(name, [jsonb])</code>
       <br />
-      Adds a json column, using the built-in json type in postgresql, defaulting to a text column
-      in older versions of postgresql or in unsupported databases.
+      Adds a json column, using the built-in <tt>json</tt> type in postgresql, defaulting to a text column
+      in older versions of postgresql or in unsupported databases. <tt>jsonb</tt> can be used by passing
+      <tt>true</tt> as the second argument.
     </p>
 
     <p id="Schema-uuid">
