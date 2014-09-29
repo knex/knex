@@ -60,6 +60,7 @@
     "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "gulp jshint",
+    "docs": "gulp docs",
     "release:patch": "gulp jshint && npm test && gulp build && gulp bump --type patch && gulp release",
     "release:minor": "gulp jshint && npm test && gulp build && gulp bump --type minor && gulp release"
   },

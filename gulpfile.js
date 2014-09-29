@@ -116,10 +116,16 @@ gulp.task('release', function() {
         'npm publish',
         'git push',
         'git push --tags',
-        'git checkout gh-pages',
-        'git merge master',
-        'git push',
-        'git checkout master'
+        'gulp docs'
       ])();
     });
+});
+
+gulp.task('docs', function() {
+  return shell.task([
+    'git checkout gh-pages',
+    'git merge master',
+    'git push',
+    'git checkout master'
+  ])();
 });
