@@ -924,6 +924,44 @@ module.exports = function(knex) {
         });
     });
 
+    it('supports cross join without arguments', function () {
+
+      return knex.select('account_id').from('accounts').crossJoin('test_table_two').orderBy('account_id').testSql(function (tester) {
+          tester(
+            'mysql',
+            'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
+            [],
+            function (res) {
+              return res.length === 30;
+            }
+          );
+          tester(
+            'postgresql',
+            'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
+            [],
+            function (res) {
+              return res.length === 30;
+            }
+          );
+          tester(
+            'oracle',
+            'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
+            [],
+            function (res) {
+              return res.length === 30;
+            }
+          );
+          tester(
+            'sqlite3',
+            'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
+            [],
+            function (res) {
+              return res.length === 30;
+            }
+          );
+      });
+    });
+
     it('supports joins with overlapping column names', function() {
       if (knex.client.dialect === 'oracle') {
         console.warn("Overlapping column names not supported with oracle");
