@@ -455,7 +455,7 @@ $ npm install sqlite3
     <h3 id="Installation-migrations">Migrations</h3>
 
     <p>
-      For convenience, the any migration configuration may be specified when initializing the library. Read the <a href="#Migrations">Migrations</a> section for more information.
+      For convenience, the any migration configuration may be specified when initializing the library. Read the <a href="#Migrations">Migrations</a> section for more information and a full list of configuration options.
     </p>
 
 <pre>
@@ -467,7 +467,9 @@ $ npm install sqlite3
     password : 'your_database_password',
     database : 'myapp_test'
   },
-  migrations: migrationConfig
+  migrations: {
+    tableName: 'migrations'
+  }
 });
 </code>
 </pre>
