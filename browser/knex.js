@@ -1,6 +1,8 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Knex.js  0.6.22
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+// Knex.js  0.7.0
 // --------------
+
+'use strict';
 
 //     (c) 2014 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
@@ -12,24 +14,25 @@ function Knex() {
   return Knex.initialize.apply(null, arguments);
 }
 
+// Require the main constructors necessary for a `Knex` instance,
+// each of which are injected with the current instance, so they maintain
+// the correct client reference & grammar.
+var Raw = require('./lib/raw');
+
 // Run a "raw" query, though we can't do anything with it other than put
 // it in a query statement.
 Knex.raw = function(sql, bindings) {
   return new Raw(sql, bindings);
 };
 
-// Require the main constructors necessary for a `Knex` instance,
-// each of which are injected with the current instance, so they maintain
-// the correct client reference & grammar.
-var Raw = _dereq_('./lib/raw');
-
 // Doing it this way makes it easier to build for browserify.
-var mysql = function() { return _dereq_('./lib/dialects/mysql'); };
-var mysql2 = function() { return _dereq_('./lib/dialects/mysql2'); };
-var maria = function() { return _dereq_('./lib/dialects/maria'); };
-var pg = function() { return _dereq_('./lib/dialects/postgres'); };
-var sqlite3 = function() { return _dereq_('./lib/dialects/sqlite3'); };
-var websql = function() { return _dereq_('./lib/dialects/websql'); };
+var mysql = function() { return require('./lib/dialects/mysql'); };
+var mysql2 = function() { return require('./lib/dialects/mysql2'); };
+var maria = function() { return require('./lib/dialects/maria'); };
+var oracle = function() { return require('./lib/dialects/oracle'); };
+var pg = function() { return require('./lib/dialects/postgres'); };
+var sqlite3 = function() { return require('./lib/dialects/sqlite3'); };
+var websql = function() { return require('./lib/dialects/websql'); };
 
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
@@ -38,6 +41,7 @@ var Clients = Knex.Clients = {
   'maria'      : maria,
   'mariadb'    : maria,
   'mariasql'   : maria,
+  'oracle'     : oracle,
   'pg'         : pg,
   'postgres'   : pg,
   'postgresql' : pg,
@@ -46,26 +50,20 @@ var Clients = Knex.Clients = {
   'websql'     : websql
 };
 
-// Require lodash.
-var _ = _dereq_('lodash');
-var Promise = _dereq_('./lib/promise');
-
 // Each of the methods which may be statically chained from knex.
-var QueryInterface   = _dereq_('./lib/query/methods');
-var SchemaInterface  = _dereq_('./lib/schema/methods');
-var MigrateInterface = _dereq_('./lib/migrate/methods');
+var QueryInterface   = require('./lib/query/methods');
 
 // Create a new "knex" instance with the appropriate configured client.
 Knex.initialize = function(config) {
   var Dialect, client;
-  var EventEmitter = _dereq_('events').EventEmitter;
+  var EventEmitter = require('events').EventEmitter;
 
   // The object we're potentially using to kick off an
   // initial chain. It is assumed that `knex` isn't a
   // constructor, so we have no reference to 'this' just
   // in case it's called with `new`.
   function knex(tableName) {
-    var qb = new client.QueryBuilder;
+    var qb = new client.QueryBuilder();
     if (config.__transactor__) qb.transacting(config.__transactor__);
     return tableName ? qb.table(tableName) : qb;
   }
@@ -78,7 +76,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.6.21';
+  knex.VERSION = knex.__knex__  = '0.7.0';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     if (config.__transactor__) raw.transacting(config.__transactor__);
@@ -93,26 +91,13 @@ Knex.initialize = function(config) {
 
   // Convenience method for tearing down the pool.
   knex.destroy = function (callback) {
-    var pool = this.client.pool;
-    var promise = new Promise(function(resolver, rejecter) {
-      if (!pool) resolver();
-      pool.destroy(function(err) {
-        if (err) return rejecter(err);
-        resolver();
-      });
-    });
-    // Allow either a callback or promise interface for destruction.
-    if (_.isFunction(callback)) {
-      promise.exec(callback);
-    } else {
-      return promise;
-    }
+    return this.client.destroy(callback);
   };
 
   if (config.__client__) {
     client = config.__client__;
   } else {
-    
+
     // Build the "client"
     var clientName = config.client || config.dialect;
     if (!Clients[clientName]) {
@@ -135,7 +120,7 @@ Knex.initialize = function(config) {
 
   // Allow chaining methods from the root object, before
   // any other information is specified.
-  _.each(QueryInterface, function(method) {
+  QueryInterface.forEach(function(method) {
     knex[method] = function() {
       var builder = knex();
       return builder[method].apply(builder, arguments);
@@ -143,49 +128,57 @@ Knex.initialize = function(config) {
   });
   knex.client = client;
 
-  // Namespaces for additional library components.
-  var schema  = knex.schema  = {};
-  var migrate = knex.migrate = {};
+  Object.defineProperties(knex, {
 
-  // Attach each of the `Schema` "interface" methods directly onto to `knex.schema` namespace, e.g.:
-  // `knex.schema.table('tableName', function() {...`
-  // `knex.schema.createTable('tableName', function() {...`
-  // `knex.schema.dropTableIfExists('tableName');`
-  _.each(SchemaInterface, function(key) {
-    schema[key] = function() {
-      if (!client.SchemaBuilder) client.initSchema();
-      var builder = new client.SchemaBuilder();
-      if (config.__transactor__) builder.transacting(config.__transactor__);
-      return builder[key].apply(builder, arguments);
-    };
+    // Lazy-load / return a "schema" builder object, ensuring it's context-aware.
+    schema: {
+      get: function() {
+        if (!client.SchemaBuilder) client.initSchema();
+        var builder = new client.SchemaBuilder();
+        if (config.__transactor__) builder.transacting(config.__transactor__);
+        return builder;
+      }
+    },
+
+    // Lazy-load / return a `Migrator` object.
+    migrate: {
+      get: function() {
+        if (!client.Migrator) client.initMigrator();
+        return new client.Migrator(knex);
+      }
+    },
+
+    // Lazy-load / return a `Seeder` object.
+    seed: {
+      get: function() {
+        if (!client.Seeder) client.initSeeder();
+        return new client.Seeder(knex);
+      }
+    },
+
+    // Lazy-load / return a `FunctionHelper` object.
+    fn: {
+      get: function() {
+        if (!client.FunctionHelper) client.initFunctionHelper();
+        return client.FunctionHelper;
+      }
+    }
   });
-
-  // Attach each of the `Migrator` "interface" methods directly onto to `knex.migrate` namespace, e.g.:
-  // knex.migrate.latest().then(...
-  // knex.migrate.currentVersion(...
-  _.each(MigrateInterface, function(method) {
-    migrate[method] = function() {
-      if (!client.Migrator) client.initMigrator();
-      var migrator = new client.Migrator(knex);
-      return migrator[method].apply(migrator, arguments);
-    };
-  });
-
-  // Add a few additional misc utils.
-  knex.utils = _.extend({}, _dereq_('./lib/utils'));
 
   return knex;
 };
 
 module.exports = Knex;
 
-},{"./lib/dialects/maria":3,"./lib/dialects/mysql":6,"./lib/dialects/mysql2":18,"./lib/dialects/postgres":21,"./lib/dialects/sqlite3":34,"./lib/dialects/websql":46,"./lib/migrate/methods":51,"./lib/promise":53,"./lib/query/methods":57,"./lib/raw":58,"./lib/schema/methods":65,"./lib/utils":69,"events":110,"lodash":115}],2:[function(_dereq_,module,exports){
+},{"./lib/dialects/maria":3,"./lib/dialects/mysql":7,"./lib/dialects/mysql2":20,"./lib/dialects/oracle":24,"./lib/dialects/postgres":40,"./lib/dialects/sqlite3":55,"./lib/dialects/websql":68,"./lib/query/methods":79,"./lib/raw":80,"events":144}],2:[function(require,module,exports){
+'use strict';
+
 // "Base Client"
 // ------
-var Promise    = _dereq_('./promise');
-var _          = _dereq_('lodash');
-var inherits   = _dereq_('inherits');
-var EventEmitter = _dereq_('events').EventEmitter;
+var Promise    = require('./promise');
+var _          = require('lodash');
+var inherits   = require('inherits');
+var EventEmitter = require('events').EventEmitter;
 
 // The base client provides the general structure
 // for a dialect specific client object. The client
@@ -197,6 +190,7 @@ function Client(config) {
   this.initTransaction();
   this.initQuery();
   this.migrationConfig = _.clone(config && config.migrations);
+  this.seedConfig = _.clone(config && config.seeds);
 }
 inherits(Client, EventEmitter);
 
@@ -228,20 +222,41 @@ Client.prototype.releaseConnection = function(connection) {
   });
 };
 
+// Destroy the current connection pool for the client.
+Client.prototype.destroy = function(callback) {
+  var pool = this.pool;
+  var promise = new Promise(function(resolver, rejecter) {
+    if (!pool) resolver();
+    pool.destroy(function(err) {
+      if (err) return rejecter(err);
+      resolver();
+    });
+  });
+  // Allow either a callback or promise interface for destruction.
+  if (typeof callback === 'function') {
+    promise.exec(callback);
+  } else {
+    return promise;
+  }
+};
+
 // Return the database being used by this client.
 Client.prototype.database = function() {
   return this.connectionSettings.database;
 };
 
 module.exports = Client;
-},{"./promise":53,"events":110,"inherits":114,"lodash":115}],3:[function(_dereq_,module,exports){
+
+},{"./promise":75,"events":144,"inherits":150,"lodash":151}],3:[function(require,module,exports){
+'use strict';
+
 // MariaSQL Client
 // -------
-var inherits = _dereq_('inherits');
+var inherits = require('inherits');
 
-var _            = _dereq_('lodash');
-var Client_MySQL = _dereq_('../mysql');
-var Promise      = _dereq_('../../promise');
+var _            = require('lodash');
+var Client_MySQL = require('../mysql');
+var Promise      = require('../../promise');
 
 var Mariasql;
 
@@ -259,12 +274,12 @@ Client_MariaSQL.prototype.dialect = 'mariasql';
 // Lazy-load the mariasql dependency, since we might just be
 // using the client to generate SQL strings.
 Client_MariaSQL.prototype.initDriver = function() {
-  Mariasql = Mariasql || _dereq_('mariasql');
+  Mariasql = Mariasql || require('mariasql');
 };
 
 // Initialize the query "runner"
 Client_MariaSQL.prototype.initRunner = function() {
-  _dereq_('./runner')(this);
+  require('./runner')(this);
 };
 
 // Get a raw connection, called by the `pool` whenever a new
@@ -288,17 +303,20 @@ Client_MariaSQL.prototype.database = function() {
 };
 
 module.exports = Client_MariaSQL;
-},{"../../promise":53,"../mysql":6,"./runner":4,"inherits":114,"lodash":115}],4:[function(_dereq_,module,exports){
+},{"../../promise":75,"../mysql":7,"./runner":4,"inherits":150,"lodash":151,"mariasql":undefined}],4:[function(require,module,exports){
+'use strict';
+
 // MariaSQL Runner
 // ------
 module.exports = function(client) {
 
-var inherits  = _dereq_('inherits');
-var SqlString = _dereq_('../mysql/string');
+var _         = require('lodash');
+var inherits  = require('inherits');
+var SqlString = require('../mysql/string');
 
-var Promise  = _dereq_('../../promise');
-var Runner   = _dereq_('../../runner');
-var helpers    = _dereq_('../../helpers');
+var Promise  = require('../../promise');
+var Runner   = require('../../runner');
+var helpers    = require('../../helpers');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -311,6 +329,7 @@ inherits(Runner_MariaSQL, Runner);
 // Grab a connection, run the query via the MariaSQL streaming interface,
 // and pass that through to the stream we've sent back to the client.
 Runner_MariaSQL.prototype._stream = Promise.method(function(sql, stream, options) {
+  /*jshint unused: false*/
   var runner = this;
   return new Promise(function(resolver, rejecter) {
     runner.connection.query(sql.sql, sql.bindings)
@@ -352,7 +371,7 @@ Runner_MariaSQL.prototype.processResponse = function(obj) {
   var method   = obj.method;
   var rows     = response[0];
   var data     = response[1];
-  if (obj.output) return obj.output.call(this, rows, fields);
+  if (obj.output) return obj.output.call(this, rows/*, fields*/);
   switch (method) {
     case 'select':
     case 'pluck':
@@ -400,13 +419,16 @@ function rowHandler(callback) {
 client.Runner = Runner_MariaSQL;
 
 };
-},{"../../helpers":49,"../../promise":53,"../../runner":59,"../mysql/string":16,"inherits":114}],5:[function(_dereq_,module,exports){
+
+},{"../../helpers":72,"../../promise":75,"../../runner":81,"../mysql/string":18,"inherits":150,"lodash":151}],5:[function(require,module,exports){
+'use strict';
+
 // MySQL Formatter
 // ------
 module.exports = function(client) {
 
-var Formatter = _dereq_('../../formatter');
-var inherits  = _dereq_('inherits');
+var Formatter = require('../../formatter');
+var inherits  = require('inherits');
 
 // The "formatter" is used to ensure all output is properly
 // escaped & parameterized.
@@ -445,14 +467,30 @@ Formatter_MySQL.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_MySQL;
 
 };
-},{"../../formatter":48,"inherits":114}],6:[function(_dereq_,module,exports){
+},{"../../formatter":70,"inherits":150}],6:[function(require,module,exports){
+'use strict';
+
+module.exports = function(client) {
+
+var FunctionHelper = require('../../functionhelper');
+
+var FunctionHelper_MySQL = Object.create(FunctionHelper);
+FunctionHelper_MySQL.client = client;
+
+// Assign the newly extended `FunctionHelper` constructor to the client object.
+client.FunctionHelper = FunctionHelper_MySQL;
+
+};
+},{"../../functionhelper":71}],7:[function(require,module,exports){
+'use strict';
+
 // MySQL Client
 // -------
-var inherits = _dereq_('inherits');
+var inherits = require('inherits');
 
-var _       = _dereq_('lodash');
-var Client  = _dereq_('../../client');
-var Promise = _dereq_('../../promise');
+var _       = require('lodash');
+var Client  = require('../../client');
+var Promise = require('../../promise');
 
 var mysql;
 
@@ -478,48 +516,58 @@ Client_MySQL.prototype.dialect = 'mysql';
 // Lazy-load the mysql dependency, since we might just be
 // using the client to generate SQL strings.
 Client_MySQL.prototype.initDriver = function() {
-  mysql = mysql || _dereq_('mysql');
+  mysql = mysql || require('mysql');
 };
 
 // Attach a `Formatter` constructor to the client object.
 Client_MySQL.prototype.initFormatter = function() {
-  _dereq_('./formatter')(this);
+  require('./formatter')(this);
 };
 
 // Attaches the `Raw` constructor to the client object.
 Client_MySQL.prototype.initRaw = function() {
-  _dereq_('./raw')(this);
+  require('./raw')(this);
+};
+
+// Attaches the `FunctionHelper` constructor to the client object.
+Client_MySQL.prototype.initFunctionHelper = function() {
+  require('./functionhelper')(this);
 };
 
 // Attaches the `Transaction` constructor to the client object.
 Client_MySQL.prototype.initTransaction = function() {
-  _dereq_('./transaction')(this);
+  require('./transaction')(this);
 };
 
 // Attaches `QueryBuilder` and `QueryCompiler` constructors
 // to the client object.
 Client_MySQL.prototype.initQuery = function() {
-  _dereq_('./query')(this);
+  require('./query')(this);
 };
 
 // Initializes a new pool instance for the current client.
 Client_MySQL.prototype.initPool = function() {
-  _dereq_('./pool')(this);
+  require('./pool')(this);
 };
 
 // Initialize the query "runner"
 Client_MySQL.prototype.initRunner = function() {
-  _dereq_('./runner')(this);
+  require('./runner')(this);
 };
 
 // Lazy-load the schema dependencies; we may not need to use them.
 Client_MySQL.prototype.initSchema = function() {
-  _dereq_('./schema')(this);
+  require('./schema')(this);
 };
 
 // Lazy-load the migration dependency
 Client_MySQL.prototype.initMigrator = function() {
-  _dereq_('./migrator')(this);
+    require('./migrator')(this);
+};
+
+// Lazy-load the seeding dependency
+Client_MySQL.prototype.initSeeder = function() {
+    require('./seeder')(this);
 };
 
 // Get a raw connection, called by the `pool` whenever a new
@@ -546,13 +594,15 @@ Client_MySQL.prototype.database = function() {
 };
 
 module.exports = Client_MySQL;
-},{"../../client":2,"../../promise":53,"./formatter":5,"./migrator":7,"./pool":8,"./query":9,"./raw":10,"./runner":11,"./schema":13,"./transaction":17,"inherits":114,"lodash":115}],7:[function(_dereq_,module,exports){
+},{"../../client":2,"../../promise":75,"./formatter":5,"./functionhelper":6,"./migrator":8,"./pool":9,"./query":10,"./raw":11,"./runner":12,"./schema":14,"./seeder":17,"./transaction":19,"inherits":150,"lodash":151,"mysql":undefined}],8:[function(require,module,exports){
+'use strict';
+
 // MySQL Migrator
 // ------
 module.exports = function(client) {
 
-var Migrator = _dereq_('../../migrate');
-var inherits = _dereq_('inherits');
+var Migrator = require('../../migrate');
+var inherits = require('inherits');
 
 function Migrator_MySQL() {
   this.client = client;
@@ -563,13 +613,15 @@ inherits(Migrator_MySQL, Migrator);
 client.Migrator = Migrator_MySQL;
 
 };
-},{"inherits":114}],8:[function(_dereq_,module,exports){
+},{"../../migrate":undefined,"inherits":150}],9:[function(require,module,exports){
+'use strict';
+
 // MySQL Pool
 // ------
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Pool = _dereq_('../../pool');
+var inherits = require('inherits');
+var Pool = require('../../pool');
 
 function Pool_MySQL() {
   this.client = client;
@@ -580,15 +632,17 @@ inherits(Pool_MySQL, Pool);
 client.Pool = Pool_MySQL;
 
 };
-},{"../../pool":52,"inherits":114}],9:[function(_dereq_,module,exports){
+},{"../../pool":74,"inherits":150}],10:[function(require,module,exports){
+'use strict';
+
 // MySQL Query Builder & Compiler
 // ------
 module.exports = function(client) {
 
-var _             = _dereq_('lodash');
-var inherits      = _dereq_('inherits');
-var QueryBuilder  = _dereq_('../../query/builder');
-var QueryCompiler = _dereq_('../../query/compiler');
+var _             = require('lodash');
+var inherits      = require('inherits');
+var QueryBuilder  = require('../../query/builder');
+var QueryCompiler = require('../../query/compiler');
 
 // Query Builder
 // -------
@@ -658,19 +712,29 @@ QueryCompiler_MySQL.prototype.columnInfo = function() {
   };
 };
 
+QueryCompiler_MySQL.prototype.limit = function() {
+  if (!this.single.limit && !this.single.offset) return '';
+
+  // Workaround for offset only, see http://stackoverflow.com/questions/255517/mysql-offset-infinite-rows
+  return 'limit ' + ((this.single.offset && !this.single.limit) ? '18446744073709551615' : this.formatter.parameter(this.single.limit));
+};
+
 // Set the QueryBuilder & QueryCompiler on the client object,
 // incase anyone wants to modify things to suit their own purposes.
 client.QueryBuilder  = QueryBuilder_MySQL;
 client.QueryCompiler = QueryCompiler_MySQL;
 
 };
-},{"../../query/builder":54,"../../query/compiler":55,"inherits":114,"lodash":115}],10:[function(_dereq_,module,exports){
+
+},{"../../query/builder":76,"../../query/compiler":77,"inherits":150,"lodash":151}],11:[function(require,module,exports){
+'use strict';
+
 // MySQL Raw
 // -------
 module.exports = function(client) {
 
-var Raw = _dereq_('../../raw');
-var inherits = _dereq_('inherits');
+var Raw = require('../../raw');
+var inherits = require('inherits');
 
 // Inherit from the `Raw` constructor's prototype,
 // so we can add the correct `then` method.
@@ -684,17 +748,19 @@ inherits(Raw_MySQL, Raw);
 client.Raw = Raw_MySQL;
 
 };
-},{"../../raw":58,"inherits":114}],11:[function(_dereq_,module,exports){
+},{"../../raw":80,"inherits":150}],12:[function(require,module,exports){
+'use strict';
+
 // MySQL Runner
 // ------
 module.exports = function(client) {
 
-var _        = _dereq_('lodash');
-var inherits = _dereq_('inherits');
+var _        = require('lodash');
+var inherits = require('inherits');
 
-var Promise  = _dereq_('../../promise');
-var Runner   = _dereq_('../../runner');
-var helpers    = _dereq_('../../helpers');
+var Promise  = require('../../promise');
+var Runner   = require('../../runner');
+var helpers    = require('../../helpers');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -761,14 +827,16 @@ Runner_MySQL.prototype.processResponse = function(obj) {
 client.Runner = Runner_MySQL;
 
 };
-},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":114,"lodash":115}],12:[function(_dereq_,module,exports){
+},{"../../helpers":72,"../../promise":75,"../../runner":81,"inherits":150,"lodash":151}],13:[function(require,module,exports){
+'use strict';
+
 // MySQL Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Schema   = _dereq_('../../../schema');
-var helpers  = _dereq_('../../../helpers');
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
+var helpers  = require('../../../helpers');
 
 // Column Builder
 // -------
@@ -839,8 +907,9 @@ ColumnCompiler_MySQL.prototype.bit = function(length) {
 // ------
 
 ColumnCompiler_MySQL.prototype.defaultTo = function(value) {
+  /*jshint unused: false*/
   var defaultVal = ColumnCompiler_MySQL.super_.prototype.defaultTo.apply(this, arguments);
-  if (this.type != 'blob' && this.type.indexOf('text') === -1) {
+  if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
     return defaultVal;
   }
   return '';
@@ -865,19 +934,24 @@ client.ColumnBuilder = ColumnBuilder_MySQL;
 client.ColumnCompiler = ColumnCompiler_MySQL;
 
 };
-},{"../../../helpers":49,"../../../schema":64,"inherits":114}],13:[function(_dereq_,module,exports){
+
+},{"../../../helpers":72,"../../../schema":86,"inherits":150}],14:[function(require,module,exports){
+'use strict';
+
 module.exports = function(client) {
-  _dereq_('./schema')(client);
-  _dereq_('./table')(client);
-  _dereq_('./column')(client);
+  require('./schema')(client);
+  require('./table')(client);
+  require('./column')(client);
 };
-},{"./column":12,"./schema":14,"./table":15}],14:[function(_dereq_,module,exports){
+},{"./column":13,"./schema":15,"./table":16}],15:[function(require,module,exports){
+'use strict';
+
 // MySQL Schema Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Schema   = _dereq_('../../../schema');
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
 
 // Schema Builder
 // -------
@@ -931,13 +1005,16 @@ client.SchemaBuilder = SchemaBuilder_MySQL;
 client.SchemaCompiler = SchemaCompiler_MySQL;
 
 };
-},{"../../../schema":64,"inherits":114}],15:[function(_dereq_,module,exports){
+},{"../../../schema":86,"inherits":150}],16:[function(require,module,exports){
+'use strict';
+
 // MySQL Table Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Schema   = _dereq_('../../../schema');
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
+var helpers  = require('../../../helpers');
 
 // Table Builder
 // ------
@@ -958,8 +1035,9 @@ function TableCompiler_MySQL() {
 }
 inherits(TableCompiler_MySQL, Schema.TableCompiler);
 
-TableCompiler_MySQL.prototype.createQuery = function(columns) {
-  var conn = {}, sql = 'create table ' + this.tableName() + ' (' + columns.sql.join(', ') + ')';
+TableCompiler_MySQL.prototype.createQuery = function(columns, ifNot) {
+  var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
+  var conn = {}, sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
 
   // Check if the connection settings are set.
   if (client.connectionSettings) {
@@ -971,12 +1049,11 @@ TableCompiler_MySQL.prototype.createQuery = function(columns) {
   var engine    = this.single.engine  || '';
 
   // var conn = builder.client.connectionSettings;
-  if (charset) sql   += ' default character set ' + charset;
+  if (charset)   sql += ' default character set ' + charset;
   if (collation) sql += ' collate ' + collation;
-  if (engine) sql    += ' engine = ' + engine;
+  if (engine)    sql += ' engine = ' + engine;
 
-  var hasComment = this.single.comment != void 0;
-  if (hasComment) {
+  if (this.single.comment) {
     var comment = (this.single.comment || '');
     if (comment.length > 60) helpers.warn('The max length for a table comment is 60 characters');
     sql += " comment = '" + comment + "'";
@@ -1055,8 +1132,50 @@ client.TableBuilder = TableBuilder_MySQL;
 client.TableCompiler = TableCompiler_MySQL;
 
 };
-},{"../../../schema":64,"inherits":114}],16:[function(_dereq_,module,exports){
+
+},{"../../../helpers":72,"../../../schema":86,"inherits":150}],17:[function(require,module,exports){
+'use strict';
+
+module.exports = function(client) {
+
+var Seeder = require('../../seed');
+var inherits = require('inherits');
+
+// Inherit from the `Seeder` constructor's prototype,
+// so we can add the correct `then` method.
+function Seeder_MySQL() {
+  this.client = client;
+  Seeder.apply(this, arguments);
+}
+inherits(Seeder_MySQL, Seeder);
+
+// Assign the newly extended `Seeder` constructor to the client object.
+client.Seeder = Seeder_MySQL;
+
+};
+},{"../../seed":undefined,"inherits":150}],18:[function(require,module,exports){
 (function (Buffer){
+'use strict';
+
+function zeroPad(number, length) {
+  number = number.toString();
+  while (number.length < length) {
+    number = '0' + number;
+  }
+
+  return number;
+}
+
+function convertTimezone(tz) {
+  if (tz === "Z") return 0;
+
+  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
+  if (m) {
+    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+  }
+  return false;
+}
+
 var SqlString = exports;
 
 SqlString.escapeId = function (val, forbidQualified) {
@@ -1124,14 +1243,14 @@ SqlString.arrayToList = function(array, timeZone) {
 };
 
 SqlString.format = function(sql, values, stringifyObjects, timeZone) {
-  values = values == null ? [] : [].concat(values);
+  values = !values ? [] : [].concat(values);
 
   return sql.replace(/\?\??/g, function(match) {
     if (!values.length) {
       return match;
     }
 
-    if (match == "??") {
+    if (match === "??") {
       return SqlString.escapeId(values.shift());
     }
     return SqlString.escape(values.shift(), stringifyObjects, timeZone);
@@ -1141,7 +1260,7 @@ SqlString.format = function(sql, values, stringifyObjects, timeZone) {
 SqlString.dateToString = function(date, timeZone) {
   var dt = new Date(date);
 
-  if (timeZone != 'local') {
+  if (timeZone !== 'local') {
     var tz = convertTimezone(timeZone);
 
     dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
@@ -1190,32 +1309,16 @@ SqlString.objectToValues = function(object, timeZone) {
   return values.join(', ');
 };
 
-function zeroPad(number, length) {
-  number = number.toString();
-  while (number.length < length) {
-    number = '0' + number;
-  }
+}).call(this,require("buffer").Buffer)
+},{"buffer":125}],19:[function(require,module,exports){
+'use strict';
 
-  return number;
-}
-
-function convertTimezone(tz) {
-  if (tz == "Z") return 0;
-
-  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
-  if (m) {
-    return (m[1] == '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
-  }
-  return false;
-}
-}).call(this,_dereq_("buffer").Buffer)
-},{"buffer":107}],17:[function(_dereq_,module,exports){
 // MySQL Transaction
 // ------
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Transaction = _dereq_('../../transaction');
+var inherits = require('inherits');
+var Transaction = require('../../transaction');
 
 function Transaction_MySQL() {
   this.client = client;
@@ -1226,14 +1329,18 @@ inherits(Transaction_MySQL, Transaction);
 client.Transaction = Transaction_MySQL;
 
 };
-},{"../../transaction":68,"inherits":114}],18:[function(_dereq_,module,exports){
+},{"../../transaction":89,"inherits":150}],20:[function(require,module,exports){
+'use strict';
+
 // MySQL2 Client
 // -------
-var inherits = _dereq_('inherits');
+var inherits = require('inherits');
 
-var _            = _dereq_('lodash');
-var Client_MySQL = _dereq_('../mysql');
-var Promise      = _dereq_('../../promise');
+var _            = require('lodash');
+var Client_MySQL = require('../mysql');
+var Promise      = require('../../promise');
+
+var configOptions = ['user', 'database', 'host', 'password', 'ssl', 'connection', 'stream'];
 
 var mysql2;
 
@@ -1251,12 +1358,12 @@ Client_MySQL2.prototype.dialect = 'mysql2';
 // Lazy-load the mysql2 dependency, since we might just be
 // using the client to generate SQL strings.
 Client_MySQL2.prototype.initDriver = function() {
-  mysql2 = mysql2 || _dereq_('mysql2');
+  mysql2 = mysql2 || require('mysql2');
 };
 
 // Initialize the query "runner"
 Client_MySQL2.prototype.initRunner = function() {
-  _dereq_('./runner')(this);
+  require('./runner')(this);
 };
 
 // Get a raw connection, called by the `pool` whenever a new
@@ -1271,20 +1378,21 @@ Client_MySQL2.prototype.acquireRawConnection = function() {
   });
 };
 
-var configOptions = ['user', 'database', 'host', 'password', 'ssl', 'connection', 'stream'];
-
 module.exports = Client_MySQL2;
-},{"../../promise":53,"../mysql":6,"./runner":19,"inherits":114,"lodash":115}],19:[function(_dereq_,module,exports){
+
+},{"../../promise":75,"../mysql":7,"./runner":21,"inherits":150,"lodash":151,"mysql2":undefined}],21:[function(require,module,exports){
+'use strict';
+
 // MySQL Runner
 // ------
 module.exports = function(client) {
 
-var _        = _dereq_('lodash');
-var inherits = _dereq_('inherits');
+var _        = require('lodash');
+var inherits = require('inherits');
 
-var Promise  = _dereq_('../../promise');
-var Runner   = _dereq_('../../runner');
-var helpers  = _dereq_('../../helpers');
+var Promise  = require('../../promise');
+var Runner   = require('../../runner');
+var helpers  = require('../../helpers');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -1297,6 +1405,7 @@ inherits(Runner_MySQL2, Runner);
 // Grab a connection, run the query via the MySQL streaming interface,
 // and pass that through to the stream we've sent back to the client.
 Runner_MySQL2.prototype._stream = Promise.method(function(sql, stream, options) {
+  /*jshint unused: false*/
   var runner = this;
   return new Promise(function(resolver, rejecter) {
     stream.on('error', rejecter);
@@ -1357,13 +1466,1219 @@ Runner_MySQL2.prototype.processResponse = function(obj) {
 client.Runner = Runner_MySQL2;
 
 };
-},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":114,"lodash":115}],20:[function(_dereq_,module,exports){
+},{"../../helpers":72,"../../promise":75,"../../runner":81,"inherits":150,"lodash":151}],22:[function(require,module,exports){
+'use strict';
+
+// Oracle Formatter
+// ------
+module.exports = function(client) {
+
+var Formatter = require('../../formatter');
+var inherits  = require('inherits');
+
+// The "formatter" is used to ensure all output is properly
+// escaped & parameterized.
+function Formatter_Oracle() {
+  this.client = client;
+  Formatter.apply(this, arguments);
+}
+inherits(Formatter_Oracle, Formatter);
+
+Formatter_Oracle.prototype.operators = [
+  '=', '<', '>', '<=', '>=', '<>', '!=',
+  'like', 'not like', 'between', 'ilike',
+  '&', '|', '^', '<<', '>>',
+  'rlike', 'regexp', 'not regexp'
+];
+
+// Wraps a value (column, tableName) with the correct ticks.
+Formatter_Oracle.prototype.wrapValue = function(value) {
+  return (value !== '*' ? '"' + value + '"' : '*');
+};
+
+
+// Coerce to string to prevent strange errors when it's not a string.
+Formatter_Oracle.prototype._wrapString = function(value) {
+  var segments, asIndex = value.toLowerCase().indexOf(' as ');
+  if (asIndex !== -1) {
+    var first  = value.slice(0, asIndex);
+    var second = value.slice(asIndex + 4);
+    return this.wrap(first) + ' ' + this.wrap(second);
+  }
+  var wrapped = [];
+  segments = value.split('.');
+  for (var i = 0, l = segments.length; i < l; i = ++i) {
+    value = segments[i];
+    if (i === 0 && segments.length > 1) {
+      wrapped.push(this.wrap((value || '').trim()));
+    } else {
+      wrapped.push(this.wrapValue((value || '').trim()));
+    }
+  }
+  return wrapped.join('.');
+};
+
+// Memoize the calls to "wrap" for a little extra perf.
+var wrapperMemo = (function(){
+  var memo = Object.create(null);
+  return function(key) {
+    if (memo[key] === void 0) {
+      memo[key] = this._wrapString(key);
+    }
+    return memo[key];
+  };
+}());
+
+Formatter_Oracle.prototype._wrap = wrapperMemo;
+
+// Ensures the query is aliased if necessary.
+Formatter_Oracle.prototype.outputQuery = function(compiled, alwaysWrapped) {
+  var sql = compiled.sql || '';
+  if (sql) {
+    if (compiled.method === 'select' && alwaysWrapped || compiled.as) {
+      sql = '(' + sql + ')';
+      if (compiled.as) sql += ' ' + this.wrap(compiled.as);
+    }
+  }
+  return sql;
+};
+
+
+// Assign the formatter to the the client.
+client.Formatter = Formatter_Oracle;
+
+};
+
+},{"../../formatter":70,"inherits":150}],23:[function(require,module,exports){
+'use strict';
+
+module.exports = function(client) {
+
+var FunctionHelper = require('../../functionhelper');
+
+var FunctionHelper_Oracle = Object.create(FunctionHelper);
+FunctionHelper_Oracle.client = client;
+
+// Assign the newly extended `FunctionHelper` constructor to the client object.
+client.FunctionHelper = FunctionHelper_Oracle;
+
+};
+
+},{"../../functionhelper":71}],24:[function(require,module,exports){
+'use strict';
+
+// Oracle Client
+// -------
+var inherits = require('inherits');
+var _        = require('lodash');
+var Client   = require('../../client');
+var Promise  = require('../../promise');
+
+var oracle;
+
+// Always initialize with the "QueryBuilder" and "QueryCompiler"
+// objects, which extend the base 'lib/query/builder' and
+// 'lib/query/compiler', respectively.
+function Client_Oracle(config) {
+  Client.apply(this, arguments);
+  if (config.debug) this.isDebugging = true;
+  if (config.connection) {
+    this.initDriver();
+    this.initRunner();
+    this.connectionSettings = _.clone(config.connection);
+    this.initPool();
+    this.pool = new this.Pool(config.pool);
+  }
+}
+inherits(Client_Oracle, Client);
+
+// The "dialect", for reference elsewhere.
+Client_Oracle.prototype.dialect = 'oracle';
+
+// Lazy-load the oracle dependency, since we might just be
+// using the client to generate SQL strings.
+Client_Oracle.prototype.initDriver = function() {
+  oracle = oracle || require('oracle');
+};
+
+// Attach a `Formatter` constructor to the client object.
+Client_Oracle.prototype.initFormatter = function() {
+  require('./formatter')(this);
+};
+
+// Attaches the `Raw` constructor to the client object.
+Client_Oracle.prototype.initRaw = function() {
+  require('./raw')(this);
+};
+
+// Attaches the `FunctionHelper` constructor to the client object.
+Client_Oracle.prototype.initFunctionHelper = function() {
+  require('./functionhelper')(this);
+};
+
+// Attaches the `Transaction` constructor to the client object.
+Client_Oracle.prototype.initTransaction = function() {
+  require('./transaction')(this);
+};
+
+// Attaches `QueryBuilder` and `QueryCompiler` constructors
+// to the client object.
+Client_Oracle.prototype.initQuery = function() {
+  require('./query')(this);
+};
+
+// Initializes a new pool instance for the current client.
+Client_Oracle.prototype.initPool = function() {
+  require('./pool')(this);
+};
+
+// Initialize the query "runner"
+Client_Oracle.prototype.initRunner = function() {
+  require('./runner')(this);
+};
+
+// Lazy-load the schema dependencies; we may not need to use them.
+Client_Oracle.prototype.initSchema = function() {
+  require('./schema')(this);
+};
+
+// Lazy-load the migration dependency
+Client_Oracle.prototype.initMigrator = function() {
+  require('./migrator')(this);
+};
+
+// Lazy-load the seeding dependency
+Client_Oracle.prototype.initSeeder = function() {
+  require('./seeder')(this);
+};
+
+// Get a raw connection, called by the `pool` whenever a new
+// connection needs to be added to the pool.
+Client_Oracle.prototype.acquireRawConnection = function() {
+  var self = this;
+  return new Promise(function(resolver, rejecter) {
+    oracle.connect(self.connectionSettings, function(err, connection) {
+      if (err) return rejecter(err);
+      resolver(connection);
+    });
+  });
+};
+
+// Used to explicitly close a connection, called internally by the pool
+// when a connection times out or the pool is shutdown.
+Client_Oracle.prototype.destroyRawConnection = function(connection) {
+  connection.close();
+};
+
+// Return the database for the Oracle client.
+Client_Oracle.prototype.database = function() {
+  return this.connectionSettings.database;
+};
+
+// Position the bindings for the query.
+Client_Oracle.prototype.positionBindings = function(sql) {
+  var questionCount = 0;
+  return sql.replace(/\?/g, function() {
+    questionCount += 1;
+    return ':' + questionCount;
+  });
+};
+
+
+var ReturningHelper = require('./utils').ReturningHelper;
+
+Client_Oracle.prototype.preprocessBindings = function (bindings) {
+
+  if (!bindings) {
+    return bindings;
+  }
+
+  return bindings.map(function (binding) {
+    if (binding instanceof ReturningHelper && oracle) {
+      // returning helper uses always ROWID as string
+      return new oracle.OutParam(oracle.OCCISTRING);
+    }
+
+    if (typeof binding === 'boolean') {
+      return binding ? 1 : 0;
+    }
+    return binding;
+  });
+};
+
+module.exports = Client_Oracle;
+
+},{"../../client":2,"../../promise":75,"./formatter":22,"./functionhelper":23,"./migrator":25,"./pool":27,"./query":28,"./raw":29,"./runner":30,"./schema":32,"./seeder":35,"./transaction":36,"./utils":37,"inherits":150,"lodash":151,"oracle":undefined}],25:[function(require,module,exports){
+'use strict';
+
+// Oracle Migrator
+// ------
+module.exports = function(client) {
+
+var _        = require('lodash');
+var Migrator = require('../../migrate');
+var inherits = require('inherits');
+var Promise  = require('../../promise');
+
+function Migrator_Oracle() {
+  this.client = client;
+  Migrator.apply(this, arguments);
+}
+inherits(Migrator_Oracle, Migrator);
+
+// Create the migration table, if it doesn't already exist.
+Migrator_Oracle.prototype._createMigrationTable = function(tableName) {
+  return this.knex.schema.createTable(tableName, function(t) {
+    t.timestamp('migration_time').primary().nullable(false);
+    t.string('name');
+    t.integer('batch');
+  });
+};
+
+// Lists all migrations that have been completed for the current db, as an array.
+Migrator_Oracle.prototype._listCompleted = Promise.method(function() {
+  var tableName = this.config.tableName;
+  return this._ensureTable(tableName)
+    .bind(this)
+    .then(function () {
+      return this.knex(tableName).orderBy('migration_time').select('name');
+    })
+    .then(function(migrations) {
+      return _.pluck(migrations, 'name');
+    });
+});
+
+// Get the last batch of migrations, by name, ordered by insert migration_time
+// in reverse order.
+Migrator_Oracle.prototype._getLastBatch = function() {
+  var tableName = this.config.tableName;
+  return this.knex(tableName)
+    .where('batch', function() {
+      this.select().max('batch').from(tableName);
+    })
+    .orderBy('migration_time', 'desc');
+};
+
+client.Migrator = Migrator_Oracle;
+
+};
+
+},{"../../migrate":undefined,"../../promise":75,"inherits":150,"lodash":151}],26:[function(require,module,exports){
+(function (process){
+'use strict';
+
+/*jslint node:true, nomen: true*/
+var inherits = require('util').inherits;
+var Readable = require('stream').Readable;
+
+var _ = require('lodash');
+
+function OracleQueryStream(connection, sql, bindings, options) {
+    try {
+        Readable.call(this, _.merge({}, {
+            objectMode: true,
+            highWaterMark: 1000
+        }, options));
+
+        this.oracleReader = connection.reader(sql, bindings || []);
+    } catch (err) {
+        throw err;
+    }
+}
+
+inherits(OracleQueryStream, Readable);
+
+OracleQueryStream.prototype._read = function () {
+    var self = this;
+
+    this.oracleReader.nextRow(function (err, row) {
+        if (err) {
+            return self.emit('error', err);
+        }
+
+        if (!row) {
+            process.nextTick(function () {
+                self.push(null);
+            });
+        }
+
+        self.push(row);
+    });
+};
+
+module.exports = OracleQueryStream;
+
+}).call(this,require('_process'))
+},{"_process":145,"lodash":151,"stream":146,"util":148}],27:[function(require,module,exports){
+'use strict';
+
+// Oracle Pool
+// ------
+module.exports = function(client) {
+
+var _        = require('lodash');
+var inherits = require('inherits');
+var Pool     = require('../../pool');
+
+function Pool_Oracle() {
+  this.client = client;
+  Pool.apply(this, arguments);
+}
+inherits(Pool_Oracle, Pool);
+
+Pool_Oracle.prototype.defaults = function() {
+  return _.extend(Pool.prototype.defaults.call(this), {
+    destroy: function(client) { client.close(); }
+  });
+};
+
+client.Pool = Pool_Oracle;
+
+};
+
+},{"../../pool":74,"inherits":150,"lodash":151}],28:[function(require,module,exports){
+'use strict';
+
+// Oracle Query Builder & Compiler
+// ------
+module.exports = function(client) {
+
+var _             = require('lodash');
+var inherits      = require('inherits');
+var QueryBuilder  = require('../../query/builder');
+var QueryCompiler = require('../../query/compiler');
+var helpers       = require('../../helpers');
+
+var ReturningHelper = require('./utils').ReturningHelper;
+
+// Query Builder
+// -------
+
+// Extend the QueryBuilder base class to include the "Formatter"
+// which has been defined on the client, as well as the
+function QueryBuilder_Oracle() {
+  this.client = client;
+  QueryBuilder.apply(this, arguments);
+}
+inherits(QueryBuilder_Oracle, QueryBuilder);
+
+// Query Compiler
+// -------
+
+// Set the "Formatter" to use for the queries,
+// ensuring that all parameterized values (even across sub-queries)
+// are properly built into the same query.
+function QueryCompiler_Oracle() {
+  this.formatter = new client.Formatter();
+  QueryCompiler.apply(this, arguments);
+}
+inherits(QueryCompiler_Oracle, QueryCompiler);
+
+// for single commands only
+QueryCompiler_Oracle.prototype._addReturningToSqlAndConvert = function (sql, returning, tableName) {
+  var res = {
+    sql: sql
+  };
+
+  if (!returning) {
+    return res;
+  }
+
+  var returningValues = _.isArray(returning) ? returning : [returning];
+  var returningHelper = new ReturningHelper(returningValues.join(':'));
+  res.sql = sql + ' returning ROWID into ' + this.formatter.parameter(returningHelper);
+  res.returningSql = 'select ' + this.formatter.columnize(returning) + ' from ' + tableName + ' where ROWID = :1';
+  res.outParams = [returningHelper];
+  res.returning = returning;
+  return res;
+};
+
+// Compiles an "insert" query, allowing for multiple
+// inserts using a single query statement.
+QueryCompiler_Oracle.prototype.insert = function() {
+  var self = this;
+  var returning  = self.single.returning;
+
+  // always wrap returning argument in array
+  if (returning && !_.isArray(returning)) {
+    returning = [returning];
+  }
+
+  if (_.isArray(self.single.insert) && (self.single.insert.length === 1) && _.isEmpty(self.single.insert[0])) {
+    self.single.insert = [];
+  }
+
+  if (_.isEmpty(self.single.insert) && !_.isFunction(this.single.insert)) {
+    return self._addReturningToSqlAndConvert('insert into ' + self.tableName + ' (' + self.formatter.wrap(self.single.returning) + ') values (default)', returning, self.tableName);
+  }
+
+  var insertData = self._prepInsert(self.single.insert);
+
+  var sql = {};
+
+  if (_.isString(insertData)) {
+    return self._addReturningToSqlAndConvert('insert into ' + self.tableName + ' ' + insertData, returning);
+  }
+
+  if (insertData.values.length === 1) {
+    return self._addReturningToSqlAndConvert('insert into ' + self.tableName + ' (' + self.formatter.columnize(insertData.columns) + ') values (' + self.formatter.parameterize(insertData.values[0]) + ')', returning, self.tableName);
+  }
+
+  var insertDefaultsOnly = (insertData.columns.length === 0);
+
+  sql.sql = 'begin ' +
+    _.map(insertData.values, function (value) {
+        var returningHelper;
+        var parameterizedValues = !insertDefaultsOnly ? self.formatter.parameterize(value) : '';
+        var returningValues = _.isArray(returning) ? returning : [returning];
+        var subSql = 'insert into ' + self.tableName + ' ';
+
+        if (returning) {
+          returningHelper = new ReturningHelper(returningValues.join(':'));
+          sql.outParams = (sql.outParams || []).concat(returningHelper);
+        }
+
+        if (insertDefaultsOnly) {
+          // no columns given so only the default value
+          subSql += '(' + self.formatter.wrap(self.single.returning) + ') values (default)';
+        } else {
+          subSql += '(' + self.formatter.columnize(insertData.columns) + ') values (' + parameterizedValues + ')';
+        }
+        subSql += (returning ? ' returning ROWID into ' + self.formatter.parameter(returningHelper) : '');
+
+        // pre bind position because subSql is an execute immediate parameter
+        // later position binding will only convert the ? params
+        subSql = self.formatter.client.positionBindings(subSql);
+        return 'execute immediate \'' + subSql.replace(/'/g, "''") +
+          ((parameterizedValues || returning) ? '\' using ' : '') +
+          parameterizedValues +
+          ((parameterizedValues && returning) ? ', ' : '') +
+          (returning ? 'out ?' : '') + ';';
+      }
+    ).join(' ') +
+    'end;';
+
+  if (returning) {
+    sql.returning = returning;
+    // generate select statement with special order by to keep the order because 'in (..)' may change the order
+    sql.returningSql = 'select ' + this.formatter.columnize(returning) +
+      ' from ' + self.tableName +
+      ' where ROWID in (' + sql.outParams.map(function (v, i) {return ':' + (i + 1);}).join(', ') + ')' +
+      ' order by case ROWID ' + sql.outParams.map(function (v, i) {return 'when CHARTOROWID(:' + (i + 1) + ') then ' + i;}).join(' ') + ' end';
+  }
+
+  return sql;
+};
+
+// Update method, including joins, wheres, order & limits.
+QueryCompiler_Oracle.prototype.update = function() {
+  var updates = this._prepUpdate(this.single.update);
+  var where   = this.where();
+  return 'update ' + this.tableName +
+    ' set ' + updates.join(', ') +
+    (where ? ' ' + where : '');
+};
+
+// Compiles a `truncate` query.
+QueryCompiler_Oracle.prototype.truncate = function() {
+  return 'truncate table ' + this.tableName;
+};
+
+QueryCompiler_Oracle.prototype.forUpdate = function() {
+  return 'for update';
+};
+QueryCompiler_Oracle.prototype.forShare = function() {
+  // lock for share is not directly supported by oracle
+  // use LOCK TABLE .. IN SHARE MODE; instead
+  helpers.warn('lock for share is not supported by oracle dialect');
+  return '';
+};
+
+// Compiles a `columnInfo` query.
+QueryCompiler_Oracle.prototype.columnInfo = function() {
+  var column = this.single.columnInfo;
+  return {
+    sql: 'select COLUMN_NAME, DATA_TYPE, CHAR_COL_DECL_LENGTH, NULLABLE from USER_TAB_COLS where TABLE_NAME = :1',
+    bindings: [this.single.table],
+    output: function(resp) {
+      var out = _.reduce(resp, function(columns, val) {
+        columns[val.COLUMN_NAME] = {
+          type: val.DATA_TYPE,
+          maxLength: val.CHAR_COL_DECL_LENGTH,
+          nullable: (val.NULLABLE === 'Y')
+        };
+        return columns;
+      }, {});
+      return column && out[column] || out;
+    }
+  };
+};
+
+QueryCompiler_Oracle.prototype.limit = function() {
+  // throw new Error("This function should never be called for oracle");
+};
+
+QueryCompiler_Oracle.prototype.offset = function() {
+  // throw new Error("This function should never be called for oracle");
+};
+
+function surroundQueryWithLimitAndOffset(self, query, limit, offset) {
+  if (!limit && !offset) {
+    return query;
+  }
+
+  query = query || "";
+
+  if (limit && !offset) {
+    return "select * from (" + query + ") where rownum <= " + self.formatter.parameter(limit);
+  }
+
+  var endRow = +(offset) + (+limit || 10000000000000);
+
+  return "select * from " +
+         "(select row_.*, ROWNUM rownum_ from (" + query + ") row_ " +
+         "where rownum <= " + self.formatter.parameter(endRow) + ") " +
+         "where rownum_ > " + self.formatter.parameter(offset);
+}
+
+var components = [
+  'columns', 'join', 'where', 'union', 'group',
+  'having', 'order', /*'limit', 'offset', */'lock'
+];
+
+// Compiles the `select` statement, or nested sub-selects
+// by calling each of the component compilers, trimming out
+// the empties, and returning a generated query string.
+
+QueryCompiler_Oracle.prototype.first =
+QueryCompiler_Oracle.prototype.select = function() {
+  var self = this;
+  var statements = _.map(components, function (component) {
+    return self[component](self);
+  });
+  var query = _.compact(statements).join(' ');
+  return surroundQueryWithLimitAndOffset(self, query, this.single.limit, this.single.offset);
+};
+
+QueryCompiler_Oracle.prototype.aggregate = function(stmt) {
+  var val = stmt.value;
+  var splitOn = val.toLowerCase().indexOf(' as ');
+  // Allows us to speciy an alias for the aggregate types.
+  if (splitOn !== -1) {
+    var col = val.slice(0, splitOn);
+    var alias = val.slice(splitOn + 4);
+    return stmt.method + '(' + this.formatter.wrap(col) + ') ' + this.formatter.wrap(alias);
+  }
+  return stmt.method + '(' + this.formatter.wrap(val) + ')';
+};
+
+// Set the QueryBuilder & QueryCompiler on the client object,
+// incase anyone wants to modify things to suit their own purposes.
+client.QueryBuilder  = QueryBuilder_Oracle;
+client.QueryCompiler = QueryCompiler_Oracle;
+
+};
+
+},{"../../helpers":72,"../../query/builder":76,"../../query/compiler":77,"./utils":37,"inherits":150,"lodash":151}],29:[function(require,module,exports){
+'use strict';
+
+// Oracle Raw
+// -------
+module.exports = function(client) {
+
+var Raw = require('../../raw');
+var inherits = require('inherits');
+
+// Inherit from the `Raw` constructor's prototype,
+// so we can add the correct `then` method.
+function Raw_Oracle() {
+  this.client = client;
+  Raw.apply(this, arguments);
+}
+inherits(Raw_Oracle, Raw);
+
+// Assign the newly extended `Raw` constructor to the client object.
+client.Raw = Raw_Oracle;
+
+};
+
+},{"../../raw":80,"inherits":150}],30:[function(require,module,exports){
+'use strict';
+
+// Oracle Runner
+// ------
+module.exports = function(client) {
+
+var _        = require('lodash');
+var inherits = require('inherits');
+
+var Promise  = require('../../promise');
+var Runner   = require('../../runner');
+var helpers  = require('../../helpers');
+
+var OracleQueryStream = require('./oracle-query-stream');
+
+// Inherit from the `Runner` constructor's prototype,
+// so we can add the correct `then` method.
+function Runner_Oracle() {
+  this.client = client;
+  Runner.apply(this, arguments);
+}
+inherits(Runner_Oracle, Runner);
+
+Runner_Oracle.prototype._stream = Promise.method(function (obj, stream, options) {
+  var self = this;
+
+  obj.sql = this.client.positionBindings(obj.sql);
+  if (this.isDebugging()) this.debug(obj);
+
+  return new Promise(function (resolver, rejecter) {
+    stream.on('error', rejecter);
+    stream.on('end', resolver);
+    var queryStream = new OracleQueryStream(self.connection, obj.sql, obj.bindings, options);
+    queryStream.pipe(stream);
+  });
+});
+
+// Runs the query on the specified connection, providing the bindings
+// and any other necessary prep work.
+Runner_Oracle.prototype._query = Promise.method(function(obj) {
+  var connection = this.connection;
+
+  // convert ? params into positional bindings (:1)
+  obj.sql = this.client.positionBindings(obj.sql);
+  // convert boolean parameters into 0 or 1
+  obj.bindings = this.client.preprocessBindings(obj.bindings) || [];
+
+  if (!obj.sql) throw new Error('The query is empty');
+  if (this.isDebugging()) this.debug(obj);
+  return new Promise(function(resolver, rejecter) {
+    connection.execute(obj.sql, obj.bindings, function(err, response) {
+      if (err) return rejecter(err);
+
+      if (obj.returning) {
+        var rowIds = obj.outParams.map(function (v, i) {
+          return response['returnParam' + (i ? i : '')];
+        });
+
+        return connection.execute(obj.returningSql, rowIds, function (err, subres) {
+          if (err) return rejecter(err);
+          obj.response = subres;
+          resolver(obj);
+        });
+      } else {
+        obj.response = response;
+        resolver(obj);
+      }
+    });
+  });
+});
+
+// Process the response as returned from the query.
+Runner_Oracle.prototype.processResponse = function(obj) {
+  var response = obj.response;
+  var method   = obj.method;
+  if (obj.output) return obj.output.call(this, response);
+
+  switch (method) {
+    case 'select':
+    case 'pluck':
+    case 'first':
+      response = helpers.skim(response);
+      if (obj.method === 'pluck') response = _.pluck(response, obj.pluck);
+      return obj.method === 'first' ? response[0] : response;
+    case 'insert':
+    case 'del':
+    case 'update':
+    case 'counter':
+      if (obj.returning) {
+        if (obj.returning.length > 1 || obj.returning[0] === '*') {
+          return response;
+        }
+        // return an array with values if only one returning value was specified
+        return _.flatten(_.map(response, _.values));
+      }
+      return response.updateCount;
+    default:
+      return response;
+  }
+};
+
+function finishOracleTransaction(connection, finishFunc) {
+  return new Promise(function (resolver, rejecter) {
+    return finishFunc.bind(connection)(function (err, result) {
+      if (err) {
+        return rejecter(err);
+      }
+      // reset AutoCommit back to default to allow recycling in pool
+      connection.setAutoCommit(true);
+      resolver(result);
+    });
+  });
+}
+
+// disable autocommit to allow correct behavior (default is true)
+Runner_Oracle.prototype.beginTransaction = function() {
+  return this.connection.setAutoCommit(false);
+};
+Runner_Oracle.prototype.commitTransaction = function() {
+  return finishOracleTransaction(this.connection, this.connection.commit);
+};
+Runner_Oracle.prototype.rollbackTransaction = function() {
+  return finishOracleTransaction(this.connection, this.connection.rollback);
+};
+
+// Assign the newly extended `Runner` constructor to the client object.
+client.Runner = Runner_Oracle;
+
+};
+
+},{"../../helpers":72,"../../promise":75,"../../runner":81,"./oracle-query-stream":26,"inherits":150,"lodash":151}],31:[function(require,module,exports){
+'use strict';
+
+// Oracle Column Builder & Compiler
+// -------
+module.exports = function(client) {
+
+var _        = require('lodash');
+var inherits = require('inherits');
+var Raw      = require('../raw');
+var Schema   = require('../../../schema');
+var utils    = require('../utils');
+
+// Column Builder
+// -------
+
+function ColumnBuilder_Oracle() {
+  Schema.ColumnBuilder.apply(this, arguments);
+}
+inherits(ColumnBuilder_Oracle, Schema.ColumnBuilder);
+
+// checkIn added to the builder to allow the column compiler to change the
+// order via the modifiers ("check" must be after "default")
+ColumnBuilder_Oracle.prototype.checkIn = function () {
+  this._modifiers.checkIn = _.toArray(arguments);
+  return this;
+};
+
+// Column Compiler
+// -------
+
+function ColumnCompiler_Oracle() {
+  this.modifiers = ['defaultTo', 'checkIn', 'nullable', 'comment'];
+  this.Formatter = client.Formatter;
+  Schema.ColumnCompiler.apply(this, arguments);
+}
+inherits(ColumnCompiler_Oracle, Schema.ColumnCompiler);
+
+// Types
+// ------
+
+// helper function for pushAdditional in increments() and bigincrements()
+ColumnCompiler_Oracle.prototype._createAutoIncrementTriggerAndSequence = function () {
+  // TODO Add warning that sequence etc is created
+  this.pushAdditional(function () {
+    var sequenceName = this.tableCompiler._indexCommand('seq', this.tableCompiler.tableNameRaw);
+    var triggerName = this.tableCompiler._indexCommand('trg', this.tableCompiler.tableNameRaw, this.getColumnName());
+    var tableName = this.tableCompiler.tableName();
+    var columnName = this.formatter.wrap(this.getColumnName());
+    var createTriggerSQL = 'create or replace trigger ' + triggerName + ' before insert on ' + tableName +
+      ' for each row' +
+      ' when (new.' + columnName + ' is null) ' +
+      ' begin' +
+      ' select ' + sequenceName + '.nextval into :new.' + columnName + ' from dual;' +
+      ' end;';
+    this.pushQuery(utils.wrapSqlWithCatch('create sequence ' + sequenceName, -955));
+    this.pushQuery(createTriggerSQL);
+  });
+};
+
+ColumnCompiler_Oracle.prototype.increments = function () {
+  this._createAutoIncrementTriggerAndSequence();
+  return 'integer not null primary key';
+};
+
+ColumnCompiler_Oracle.prototype.bigincrements = function () {
+  this._createAutoIncrementTriggerAndSequence();
+  return 'number(20, 0) not null primary key';
+};
+
+ColumnCompiler_Oracle.prototype.double = function(precision, scale) {
+  // if (!precision) return 'number'; // TODO: Check If default is ok
+  return 'number(' + this._num(precision, 8) + ', ' + this._num(scale, 2) + ')';
+};
+
+ColumnCompiler_Oracle.prototype.integer = function(length) {
+    return length ? 'number(' + this._num(length, 11) + ')' : 'integer';
+};
+
+ColumnCompiler_Oracle.prototype.tinyint =
+ColumnCompiler_Oracle.prototype.smallint = 'smallint';
+
+ColumnCompiler_Oracle.prototype.mediumint = 'integer';
+
+ColumnCompiler_Oracle.prototype.biginteger = 'number(20, 0)';
+
+ColumnCompiler_Oracle.prototype.text = 'clob';
+
+ColumnCompiler_Oracle.prototype.enu = function (allowed) {
+  allowed = _.uniq(allowed);
+  var maxLength = (allowed || []).reduce(function (maxLength, name) {
+    return Math.max(maxLength, String(name).length);
+  }, 1);
+
+  // implicitly add the enum values as checked values
+  this.columnBuilder._modifiers.checkIn = [allowed];
+
+  return "varchar2(" + maxLength + ")";
+};
+
+ColumnCompiler_Oracle.prototype.time =
+ColumnCompiler_Oracle.prototype.datetime =
+ColumnCompiler_Oracle.prototype.timestamp = 'timestamp';
+
+ColumnCompiler_Oracle.prototype.bit = 'clob';
+ColumnCompiler_Oracle.prototype.json = 'clob';
+ColumnCompiler_Oracle.prototype.text = 'clob';
+
+ColumnCompiler_Oracle.prototype.bool = function () {
+  // implicitly add the check for 0 and 1
+  this.columnBuilder._modifiers.checkIn = [[0, 1]];
+  return 'number(1, 0)';
+};
+
+ColumnCompiler_Oracle.prototype.varchar = function(length) {
+  return 'varchar2(' + this._num(length, 255) + ')';
+};
+
+// Modifiers
+// ------
+
+ColumnCompiler_Oracle.prototype.comment = function(comment) {
+  this.pushAdditional(function() {
+    this.pushQuery('comment on column ' + this.tableCompiler.tableName() + '.' +
+      this.formatter.wrap(this.args[0]) + " is '" + (comment || '')+ "'");
+  }, comment);
+};
+
+ColumnCompiler_Oracle.prototype.checkIn = function (value) {
+  // TODO: Maybe accept arguments also as array
+  // TODO: value(s) should be escaped properly
+  if (value === undefined) {
+    return '';
+  } else if (value instanceof Raw) {
+    value = value.toQuery();
+  } else if (_.isArray(value)) {
+    value = _.map(value, function (v) {
+      return "'" + v + "'";
+    }).join(', ');
+  } else {
+    value = "'" + value + "'";
+  }
+  return 'check (' + this.formatter.wrap(this.args[0]) + ' in (' + value + '))';
+};
+
+client.ColumnBuilder = ColumnBuilder_Oracle;
+client.ColumnCompiler = ColumnCompiler_Oracle;
+
+};
+},{"../../../schema":86,"../raw":29,"../utils":37,"inherits":150,"lodash":151}],32:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"./column":31,"./schema":33,"./table":34,"/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/schema/index.js":14}],33:[function(require,module,exports){
+'use strict';
+
+// Oracle Schema Builder & Compiler
+// -------
+module.exports = function(client) {
+
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
+var utils    = require('../utils');
+
+// Schema Builder
+// -------
+
+function SchemaBuilder_Oracle() {
+  this.client = client;
+  Schema.Builder.apply(this, arguments);
+}
+inherits(SchemaBuilder_Oracle, Schema.Builder);
+
+// Schema Compiler
+// -------
+
+function SchemaCompiler_Oracle() {
+  this.client = client;
+  this.Formatter = client.Formatter;
+  Schema.Compiler.apply(this, arguments);
+}
+inherits(SchemaCompiler_Oracle, Schema.Compiler);
+
+// Rename a table on the schema.
+SchemaCompiler_Oracle.prototype.renameTable = function(tableName, to) {
+  this.pushQuery('rename ' + this.formatter.wrap(tableName) + ' to ' + this.formatter.wrap(to));
+};
+
+// Check whether a table exists on the query.
+SchemaCompiler_Oracle.prototype.hasTable = function(tableName) {
+  this.pushQuery({
+    sql: 'select TABLE_NAME from USER_TABLES where TABLE_NAME = ' +
+      this.formatter.parameter(tableName),
+    output: function(resp) {
+      return resp.length > 0;
+    }
+  });
+};
+
+// Check whether a column exists on the schema.
+SchemaCompiler_Oracle.prototype.hasColumn = function(tableName, column) {
+  this.pushQuery({
+    sql: 'select COLUMN_NAME from USER_TAB_COLUMNS where TABLE_NAME = ' + this.formatter.parameter(tableName) +
+      ' and COLUMN_NAME = ' + this.formatter.parameter(column),
+    output: function(resp) {
+      return resp.length > 0;
+    }
+  });
+};
+
+SchemaCompiler_Oracle.prototype.dropSequenceIfExists = function (sequenceName) {
+  this.pushQuery(utils.wrapSqlWithCatch("drop sequence " + this.formatter.wrap(sequenceName), -2289));
+};
+
+SchemaCompiler_Oracle.prototype._dropRelatedSequenceIfExists = function (tableName) {
+  // removing the sequence that was possibly generated by increments() column
+  var sequenceName = utils.generateCombinedName('seq', tableName);
+  this.dropSequenceIfExists(sequenceName);
+};
+
+SchemaCompiler_Oracle.prototype.dropTable = function (tableName) {
+  this.pushQuery('drop table ' + this.formatter.wrap(tableName));
+
+  // removing the sequence that was possibly generated by increments() column
+  this._dropRelatedSequenceIfExists(tableName);
+};
+
+SchemaCompiler_Oracle.prototype.dropTableIfExists = function(tableName) {
+  this.pushQuery(utils.wrapSqlWithCatch("drop table " + this.formatter.wrap(tableName), -942));
+
+  // removing the sequence that was possibly generated by increments() column
+  this._dropRelatedSequenceIfExists(tableName);
+};
+
+client.SchemaBuilder = SchemaBuilder_Oracle;
+client.SchemaCompiler = SchemaCompiler_Oracle;
+
+};
+},{"../../../schema":86,"../utils":37,"inherits":150}],34:[function(require,module,exports){
+'use strict';
+
+// Oracle Table Builder & Compiler
+// -------
+module.exports = function(client) {
+
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
+var utils    = require('../utils');
+var helpers  = require('../../../helpers');
+
+// Table Builder
+// ------
+
+function TableBuilder_Oracle() {
+  this.client = client;
+  Schema.TableBuilder.apply(this, arguments);
+}
+inherits(TableBuilder_Oracle, Schema.TableBuilder);
+
+// Table Compiler
+// ------
+
+function TableCompiler_Oracle() {
+  this.client = client;
+  this.Formatter = client.Formatter;
+  Schema.TableCompiler.apply(this, arguments);
+}
+inherits(TableCompiler_Oracle, Schema.TableCompiler);
+
+// Compile a rename column command.
+TableCompiler_Oracle.prototype.renameColumn = function(from, to) {
+  return this.pushQuery({
+    sql: 'alter table ' + this.tableName() + ' rename column '+ this.formatter.wrap(from) + ' to ' + this.formatter.wrap(to)
+  });
+};
+
+TableCompiler_Oracle.prototype.compileAdd = function(builder) {
+  var table = this.formatter.wrap(builder);
+  var columns = this.prefixArray('add column', this.getColumns(builder));
+  return this.pushQuery({
+    sql: 'alter table ' + table + ' ' + columns.join(', ')
+  });
+};
+
+// Adds the "create" query to the query sequence.
+TableCompiler_Oracle.prototype.createQuery = function(columns, ifNot) {
+  var sql = 'create table ' + this.tableName() + ' (' + columns.sql.join(', ') + ')';
+  this.pushQuery({
+    // catch "name is already used by an existing object" for workaround for "if not exists"
+    sql: ifNot ? utils.wrapSqlWithCatch(sql, -955) : sql,
+    bindings: columns.bindings
+  });
+  if (this.single.comment) this.comment(this.single.comment);
+};
+
+// Compiles the comment on the table.
+TableCompiler_Oracle.prototype.comment = function(comment) {
+  this.pushQuery('comment on table ' + this.tableName() + ' is ' + "'" + (comment || '') + "'");
+};
+
+TableCompiler_Oracle.prototype.addColumnsPrefix = 'add ';
+
+TableCompiler_Oracle.prototype.dropColumn = function() {
+  var columns = helpers.normalizeArr.apply(null, arguments);
+  this.pushQuery('alter table ' + this.tableName() + ' drop (' + this.formatter.columnize(columns) + ')');
+};
+
+TableCompiler_Oracle.prototype.changeType = function() {
+  // alter table + table + ' modify ' + wrapped + '// type';
+};
+
+TableCompiler_Oracle.prototype._indexCommand = function(type, tableName, columns) {
+  return this.formatter.wrap(utils.generateCombinedName(type, tableName, columns));
+};
+
+TableCompiler_Oracle.prototype.primary = function(columns) {
+  this.pushQuery('alter table ' + this.tableName() + " add primary key (" + this.formatter.columnize(columns) + ")");
+};
+
+TableCompiler_Oracle.prototype.dropPrimary = function() {
+  this.pushQuery('alter table ' + this.tableName() + ' drop primary key');
+};
+
+TableCompiler_Oracle.prototype.index = function(columns, indexName) {
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+  this.pushQuery('create index ' + indexName + ' on ' + this.tableName() +
+    ' (' + this.formatter.columnize(columns) + ')');
+};
+
+TableCompiler_Oracle.prototype.dropIndex = function(columns, indexName) {
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+  this.pushQuery('drop index ' + indexName);
+};
+
+TableCompiler_Oracle.prototype.unique = function(columns, indexName) {
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
+  this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + indexName +
+    ' unique (' + this.formatter.columnize(columns) + ')');
+};
+
+TableCompiler_Oracle.prototype.dropUnique = function(columns, indexName) {
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
+  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
+};
+
+TableCompiler_Oracle.prototype.dropForeign = function(columns, indexName) {
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
+  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
+};
+
+client.TableBuilder = TableBuilder_Oracle;
+client.TableCompiler = TableCompiler_Oracle;
+
+};
+
+},{"../../../helpers":72,"../../../schema":86,"../utils":37,"inherits":150}],35:[function(require,module,exports){
+'use strict';
+
+module.exports = function(client) {
+
+var Seeder = require('../../seed');
+var inherits = require('inherits');
+
+// Inherit from the `Seeder` constructor's prototype,
+// so we can add the correct `then` method.
+function Seeder_Oracle() {
+  this.client = client;
+  Seeder.apply(this, arguments);
+}
+inherits(Seeder_Oracle, Seeder);
+
+// Assign the newly extended `Seeder` constructor to the client object.
+client.Seeder = Seeder_Oracle;
+
+};
+},{"../../seed":undefined,"inherits":150}],36:[function(require,module,exports){
+'use strict';
+
+// Oracle Transaction
+// ------
+
+module.exports = function(client) {
+
+var inherits = require('inherits');
+var Transaction = require('../../transaction');
+
+function Transaction_Oracle() {
+  this.client = client;
+  Transaction.apply(this, arguments);
+}
+inherits(Transaction_Oracle, Transaction);
+
+client.Transaction = Transaction_Oracle;
+
+};
+
+},{"../../transaction":89,"inherits":150}],37:[function(require,module,exports){
+'use strict';
+
+var crypto = require('crypto');
+var _ = require('lodash');
+
+var helpers  = require('../../helpers');
+
+function generateCombinedName(postfix, name, subNames) {
+  var limit = 30;
+  if (!_.isArray(subNames)) subNames = subNames ? [subNames] : [];
+  var table = name.replace(/\.|-/g, '_');
+  var subNamesPart = subNames.join('_');
+  var result = (table + '_' + (subNamesPart.length ? subNamesPart + '_': '') + postfix).toLowerCase();
+  if (result.length > limit) {
+    helpers.warn('Automatically generated name "' + result + '" exceeds ' + limit + ' character limit for Oracle. Using base64 encoded sha1 of that name instead.');
+    // generates the sha1 of the name and encode it with base64
+    result = crypto.createHash('sha1')
+      .update(result)
+      .digest('base64')
+      .replace('=', '');
+  }
+  return result;
+}
+
+function wrapSqlWithCatch(sql, errorNumberToCatch) {
+  return "begin execute immediate '" + sql.replace(/'/g, "''") + "'; exception when others then if sqlcode != " + errorNumberToCatch + " then raise; end if; end;";
+}
+
+function ReturningHelper(columnName) {
+  this.columnName = columnName;
+}
+
+ReturningHelper.prototype.toString = function () {
+  return '[object ReturningHelper:' + this.columnName + ']';
+};
+
+module.exports = {
+  generateCombinedName: generateCombinedName,
+  wrapSqlWithCatch: wrapSqlWithCatch,
+  ReturningHelper: ReturningHelper
+};
+
+},{"../../helpers":72,"crypto":132,"lodash":151}],38:[function(require,module,exports){
+'use strict';
+
 // PostgreSQL Formatter
 // -------
 module.exports = function(client) {
 
-var Formatter = _dereq_('../../formatter');
-var inherits  = _dereq_('inherits');
+var Formatter = require('../../formatter');
+var inherits  = require('inherits');
 
 // The "formatter" is used to ensure all output is properly
 // escaped & parameterized.
@@ -1405,14 +2720,30 @@ Formatter_PG.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_PG;
 
 };
-},{"../../formatter":48,"inherits":114}],21:[function(_dereq_,module,exports){
+},{"../../formatter":70,"inherits":150}],39:[function(require,module,exports){
+'use strict';
+
+module.exports = function(client) {
+
+var FunctionHelper = require('../../functionhelper');
+
+var FunctionHelper_PG = Object.create(FunctionHelper);
+FunctionHelper_PG.client = client;
+
+// Assign the newly extended `FunctionHelper` constructor to the client object.
+client.FunctionHelper = FunctionHelper_PG;
+
+};
+},{"../../functionhelper":71}],40:[function(require,module,exports){
+'use strict';
+
 // PostgreSQL
 // -------
-var _        = _dereq_('lodash');
-var inherits = _dereq_('inherits');
+var _        = require('lodash');
+var inherits = require('inherits');
 
-var Client  = _dereq_('../../client');
-var Promise = _dereq_('../../promise');
+var Client  = require('../../client');
+var Promise = require('../../promise');
 
 var pg;
 
@@ -1421,6 +2752,7 @@ var pg;
 // 'lib/query/compiler', respectively.
 function Client_PG(config) {
   Client.apply(this, arguments);
+  if (config.returning) this.defaultReturning = config.returning;
   if (config.debug) this.isDebugging = true;
   if (config.connection) {
     this.initDriver();
@@ -1432,74 +2764,96 @@ function Client_PG(config) {
 }
 inherits(Client_PG, Client);
 
-Client_PG.prototype.dialect = 'postgresql',
+Client_PG.prototype.dialect = 'postgresql';
 
 // Lazy load the pg dependency, since we might just be using
 // the client to generate SQL strings.
 Client_PG.prototype.initDriver = function() {
   pg = pg || (function() {
     try {
-      return _dereq_('pg');
+      return require('pg');
     } catch (e) {
-      return _dereq_('pg.js');
+      return require('pg.js');
     }
   })();
 };
 
 // Attach a `Formatter` constructor to the client object.
 Client_PG.prototype.initFormatter = function() {
-  _dereq_('./formatter')(this);
+  require('./formatter')(this);
 };
 
 // Attaches the `Raw` constructor to the client object.
 Client_PG.prototype.initRaw = function() {
-  _dereq_('./raw')(this);
+  require('./raw')(this);
+};
+
+// Attaches the `FunctionHelper` constructor to the client object.
+Client_PG.prototype.initFunctionHelper = function() {
+  require('./functionhelper')(this);
 };
 
 // Attaches the `Transaction` constructor to the client object.
 Client_PG.prototype.initTransaction = function() {
-  _dereq_('./transaction')(this);
+  require('./transaction')(this);
 };
 
 // Attaches `QueryBuilder` and `QueryCompiler` constructors
 // to the client object.
 Client_PG.prototype.initQuery = function() {
-  _dereq_('./query')(this);
+  require('./query')(this);
 };
 
 // Initializes a new pool instance for the current client.
 Client_PG.prototype.initPool = function() {
-  _dereq_('./pool')(this);
+  require('./pool')(this);
 };
 
 // Initialize the query "runner"
 Client_PG.prototype.initRunner = function() {
-  _dereq_('./runner')(this);
+  require('./runner')(this);
 };
 
 // Lazy-load the schema dependencies; we may not need to use them.
 Client_PG.prototype.initSchema = function() {
-  _dereq_('./schema')(this);
+  require('./schema')(this);
 };
 
 // Lazy-load the migration dependency
 Client_PG.prototype.initMigrator = function() {
-  _dereq_('./migrator')(this);
+  require('./migrator')(this);
+};
+
+// Lazy-load the seeding dependency
+Client_PG.prototype.initSeeder = function() {
+  require('./seeder')(this);
 };
 
 var utils;
 
 // Prep the bindings as needed by PostgreSQL.
 Client_PG.prototype.prepBindings = function(bindings, tz) {
-  utils = utils || _dereq_('./utils');
+  /*jshint unused: false*/
+  utils = utils || require('./utils');
   return _.map(bindings, utils.prepareValue);
 };
 
 // Get a raw connection, called by the `pool` whenever a new
 // connection needs to be added to the pool.
 Client_PG.prototype.acquireRawConnection = Promise.method(function(callback) {
+  /*jshint unused: false*/
+  // TODO: use callback or remove callback
   var connection = new pg.Client(this.connectionSettings);
   var client = this;
+
+  this.connectionSettings = {
+    user : connection.connectionParameters.user,
+    database : connection.connectionParameters.database,
+    port : connection.connectionParameters.port,
+    host : connection.connectionParameters.host,
+    password : connection.connectionParameters.password
+  };
+
   return new Promise(function(resolver, rejecter) {
     connection.connect(function(err, connection) {
       if (err) return rejecter(err);
@@ -1512,7 +2866,7 @@ Client_PG.prototype.acquireRawConnection = Promise.method(function(callback) {
       resolver(connection);
     });
   });
-}),
+});
 
 // Used to explicitly close a connection, called internally by the pool
 // when a connection times out or the pool is shutdown.
@@ -1531,12 +2885,24 @@ Client_PG.prototype.checkVersion = function(connection) {
   });
 };
 
+// Position the bindings for the query.
+Client_PG.prototype.positionBindings = function(sql) {
+  var questionCount = 0;
+  return sql.replace(/\?/g, function() {
+    questionCount++;
+    return '$' + questionCount;
+  });
+};
+
 module.exports = Client_PG;
-},{"../../client":2,"../../promise":53,"./formatter":20,"./migrator":22,"./pool":23,"./query":24,"./raw":25,"./runner":26,"./schema":28,"./transaction":31,"./utils":32,"inherits":114,"lodash":115}],22:[function(_dereq_,module,exports){
+
+},{"../../client":2,"../../promise":75,"./formatter":38,"./functionhelper":39,"./migrator":41,"./pool":42,"./query":43,"./raw":44,"./runner":45,"./schema":47,"./seeder":50,"./transaction":51,"./utils":52,"inherits":150,"lodash":151,"pg":undefined,"pg.js":undefined}],41:[function(require,module,exports){
+'use strict';
+
 module.exports = function(client) {
 
-var Migrator = _dereq_('../../migrate');
-var inherits = _dereq_('inherits');
+var Migrator = require('../../migrate');
+var inherits = require('inherits');
 
 // Inherit from the `Migrator` constructor's prototype,
 // so we can add the correct `then` method.
@@ -1550,11 +2916,13 @@ inherits(Migrator_PG, Migrator);
 client.Migrator = Migrator_PG;
 
 };
-},{"inherits":114}],23:[function(_dereq_,module,exports){
+},{"../../migrate":undefined,"inherits":150}],42:[function(require,module,exports){
+'use strict';
+
 module.exports = function(client) {
 
-var Pool     = _dereq_('../../pool');
-var inherits = _dereq_('inherits');
+var Pool     = require('../../pool');
+var inherits = require('inherits');
 
 // Inherit from the `Pool` constructor's prototype.
 function Pool_PG() {
@@ -1567,16 +2935,18 @@ inherits(Pool_PG, Pool);
 client.Pool = Pool_PG;
 
 };
-},{"../../pool":52,"inherits":114}],24:[function(_dereq_,module,exports){
+},{"../../pool":74,"inherits":150}],43:[function(require,module,exports){
+'use strict';
+
 // PostgreSQL Query Builder & Compiler
 // ------
 module.exports = function(client) {
 
-var _        = _dereq_('lodash');
-var inherits = _dereq_('inherits');
+var _        = require('lodash');
+var inherits = require('inherits');
 
-var QueryBuilder  = _dereq_('../../query/builder');
-var QueryCompiler = _dereq_('../../query/compiler');
+var QueryBuilder  = require('../../query/builder');
+var QueryCompiler = require('../../query/compiler');
 
 // Query Builder
 // ------
@@ -1584,6 +2954,9 @@ var QueryCompiler = _dereq_('../../query/compiler');
 function QueryBuilder_PG() {
   this.client = client;
   QueryBuilder.apply(this, arguments);
+  if (client.defaultReturning) {
+    this._single.returning = client.defaultReturning;
+  }
 }
 inherits(QueryBuilder_PG, QueryBuilder);
 
@@ -1604,10 +2977,39 @@ QueryCompiler_PG.prototype.truncate = function() {
 // Used when the insert call is empty.
 QueryCompiler_PG.prototype._emptyInsertValue = 'default values';
 
+// is used if the an array with multiple empty values supplied
+QueryCompiler_PG.prototype._defaultInsertValue = 'default';
+
 // Compiles an `insert` query, allowing for multiple
 // inserts using a single query statement.
 QueryCompiler_PG.prototype.insert = function() {
-  var sql = QueryCompiler.prototype.insert.call(this);
+  var self = this;
+  var insertValues = this.single.insert;
+
+  var sql = 'insert into ' + this.tableName + ' ';
+
+  if (_.isArray(insertValues) && (insertValues.length === 1) && _.isEmpty(insertValues[0])) {
+    insertValues = [];
+  }
+
+  if (_.isEmpty(insertValues) && !_.isFunction(insertValues)) {
+    sql += this._emptyInsertValue;
+  } else {
+    var insertData = this._prepInsert(insertValues);
+
+    if (_.isString(insertData)) {
+      sql += insertData;
+    } else  {
+      if (insertData.columns.length) {
+        sql += '(' + this.formatter.columnize(insertData.columns) + ') values (' +
+          _.map(insertData.values, this.formatter.parameterize, this.formatter).join('), (') + ')';
+      } else {
+        // if there is no target column only insert default values
+        sql += '(' + self.formatter.wrap(self.single.returning) + ') values ' + _.map(insertData.values, function () { return '(' + (self._defaultInsertValue || '') + ')'; }).join(', ');
+      }
+    }
+  }
+
   var returning  = this.single.returning;
   return {
     sql: sql + this._returning(returning),
@@ -1674,11 +3076,13 @@ client.QueryBuilder = QueryBuilder_PG;
 client.QueryCompiler = QueryCompiler_PG;
 
 };
-},{"../../query/builder":54,"../../query/compiler":55,"inherits":114,"lodash":115}],25:[function(_dereq_,module,exports){
+},{"../../query/builder":76,"../../query/compiler":77,"inherits":150,"lodash":151}],44:[function(require,module,exports){
+'use strict';
+
 module.exports = function(client) {
 
-var Raw = _dereq_('../../raw');
-var inherits = _dereq_('inherits');
+var Raw = require('../../raw');
+var inherits = require('inherits');
 
 // Inherit from the `Raw` constructor's prototype,
 // so we can add the correct `then` method.
@@ -1692,15 +3096,16 @@ inherits(Raw_PG, Raw);
 client.Raw = Raw_PG;
 
 };
-},{"../../raw":58,"inherits":114}],26:[function(_dereq_,module,exports){
+},{"../../raw":80,"inherits":150}],45:[function(require,module,exports){
+'use strict';
+
 module.exports = function(client) {
 
-var _        = _dereq_('lodash');
-var inherits = _dereq_('inherits');
-var Promise  = _dereq_('../../promise');
+var _        = require('lodash');
+var inherits = require('inherits');
+var Promise  = require('../../promise');
 
-var Runner = _dereq_('../../runner');
-var utils  = _dereq_('../../utils');
+var Runner = require('../../runner');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -1712,9 +3117,9 @@ inherits(Runner_PG, Runner);
 
 var PGQueryStream;
 Runner_PG.prototype._stream = Promise.method(function(obj, stream, options) {
-  PGQueryStream = PGQueryStream || _dereq_('pg-query-stream');
+  PGQueryStream = PGQueryStream || require('pg-query-stream');
   var runner = this;
-  var sql = obj.sql = utils.pgBindings(obj.sql);
+  var sql = obj.sql = this.client.positionBindings(obj.sql);
   if (this.isDebugging()) this.debug(obj);
   return new Promise(function(resolver, rejecter) {
     stream.on('error', rejecter);
@@ -1727,7 +3132,7 @@ Runner_PG.prototype._stream = Promise.method(function(obj, stream, options) {
 // and any other necessary prep work.
 Runner_PG.prototype._query = Promise.method(function(obj) {
   var connection = this.connection;
-  var sql = obj.sql = utils.pgBindings(obj.sql);
+  var sql = obj.sql = this.client.positionBindings(obj.sql);
   if (this.isDebugging()) this.debug(obj);
   if (obj.options) sql = _.extend({text: sql}, obj.options);
   return new Promise(function(resolver, rejecter) {
@@ -1772,13 +3177,15 @@ Runner_PG.prototype.processResponse = function(obj) {
 client.Runner = Runner_PG;
 
 };
-},{"../../promise":53,"../../runner":59,"../../utils":69,"inherits":114,"lodash":115}],27:[function(_dereq_,module,exports){
+},{"../../promise":75,"../../runner":81,"inherits":150,"lodash":151,"pg-query-stream":undefined}],46:[function(require,module,exports){
+'use strict';
+
 // PostgreSQL Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Schema   = _dereq_('../../../schema');
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
 
 // Column Builder
 // ------
@@ -1809,14 +3216,14 @@ ColumnCompiler_PG.prototype.bool = 'boolean';
 // Create the column definition for an enum type.
 // Using method "2" here: http://stackoverflow.com/a/10984951/525714
 ColumnCompiler_PG.prototype.enu = function(allowed) {
-  return 'text check (' + this.args[0] + " in ('" + allowed.join("', '")  + "'))";
+  return 'text check (' + this.formatter.wrap(this.args[0]) + " in ('" + allowed.join("', '")  + "'))";
 };
 
-ColumnCompiler_PG.prototype.double = 'double precision',
-ColumnCompiler_PG.prototype.floating = 'real',
-ColumnCompiler_PG.prototype.increments = 'serial primary key',
-ColumnCompiler_PG.prototype.json = function() {
-  if (!client.version || parseFloat(client.version) >= 9.2) return 'json';
+ColumnCompiler_PG.prototype.double = 'double precision';
+ColumnCompiler_PG.prototype.floating = 'real';
+ColumnCompiler_PG.prototype.increments = 'serial primary key';
+ColumnCompiler_PG.prototype.json = function(jsonb) {
+  if (!client.version || parseFloat(client.version) >= 9.2) return jsonb ? 'jsonb' : 'json';
   return 'text';
 };
 ColumnCompiler_PG.prototype.smallint =
@@ -1840,15 +3247,18 @@ client.ColumnBuilder = ColumnBuilder_PG;
 client.ColumnCompiler = ColumnCompiler_PG;
 
 };
-},{"../../../schema":64,"inherits":114}],28:[function(_dereq_,module,exports){
-arguments[4][13][0].apply(exports,arguments)
-},{"./column":27,"./schema":29,"./table":30}],29:[function(_dereq_,module,exports){
+
+},{"../../../schema":86,"inherits":150}],47:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"./column":46,"./schema":48,"./table":49,"/Users/tgriesser/Github/bookshelf/knex/lib/dialects/mysql/schema/index.js":14}],48:[function(require,module,exports){
+'use strict';
+
 // PostgreSQL Schema Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Schema   = _dereq_('../../../schema');
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
 
 // Schema Builder
 // -------
@@ -1896,18 +3306,38 @@ SchemaCompiler_PG.prototype.renameTable = function(from, to) {
   this.pushQuery('alter table ' + this.formatter.wrap(from) + ' rename to ' + this.formatter.wrap(to));
 };
 
+SchemaCompiler_PG.prototype.createSchema = function(schemaName) {
+  this.pushQuery('create schema ' + this.formatter.wrap(schemaName));
+};
+
+SchemaCompiler_PG.prototype.createSchemaIfNotExists = function(schemaName) {
+  this.pushQuery('create schema if not exists ' + this.formatter.wrap(schemaName));
+};
+
+SchemaCompiler_PG.prototype.dropSchema = function(schemaName) {
+  this.pushQuery('drop schema ' + this.formatter.wrap(schemaName));
+};
+
+SchemaCompiler_PG.prototype.dropSchemaIfExists = function(schemaName) {
+  this.pushQuery('drop schema if exists ' + this.formatter.wrap(schemaName));
+};
+
+
 client.SchemaBuilder = SchemaBuilder_PG;
 client.SchemaCompiler = SchemaCompiler_PG;
 
 };
-},{"../../../schema":64,"inherits":114}],30:[function(_dereq_,module,exports){
+
+},{"../../../schema":86,"inherits":150}],49:[function(require,module,exports){
+'use strict';
+
 // PostgreSQL Table Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var _        = _dereq_('lodash');
-var inherits = _dereq_('inherits');
-var Schema   = _dereq_('../../../schema');
+var _        = require('lodash');
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
 
 // Table
 // ------
@@ -1941,9 +3371,10 @@ TableCompiler_PG.prototype.compileAdd = function(builder) {
 };
 
 // Adds the "create" query to the query sequence.
-TableCompiler_PG.prototype.createQuery = function(columns) {
+TableCompiler_PG.prototype.createQuery = function(columns, ifNot) {
+  var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
   this.pushQuery({
-    sql: 'create table ' + this.tableName() + ' (' + columns.sql.join(', ') + ')',
+    sql: createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')',
     bindings: columns.bindings
   });
   var hasComment = _.has(this.single, 'comment');
@@ -1952,6 +3383,7 @@ TableCompiler_PG.prototype.createQuery = function(columns) {
 
 // Compiles the comment on the table.
 TableCompiler_PG.prototype.comment = function(comment) {
+  /*jshint unused: false*/
   this.pushQuery('comment on table ' + this.tableName() + ' is ' + "'" + (this.single.comment || '') + "'");
 };
 
@@ -1991,11 +3423,33 @@ client.TableBuilder = TableBuilder_PG;
 client.TableCompiler = TableCompiler_PG;
 
 };
-},{"../../../schema":64,"inherits":114,"lodash":115}],31:[function(_dereq_,module,exports){
+},{"../../../schema":86,"inherits":150,"lodash":151}],50:[function(require,module,exports){
+'use strict';
+
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Transaction = _dereq_('../../transaction');
+var Seeder = require('../../seed');
+var inherits = require('inherits');
+
+// Inherit from the `Seeder` constructor's prototype,
+// so we can add the correct `then` method.
+function Seeder_PG() {
+  this.client = client;
+  Seeder.apply(this, arguments);
+}
+inherits(Seeder_PG, Seeder);
+
+// Assign the newly extended `Seeder` constructor to the client object.
+client.Seeder = Seeder_PG;
+
+};
+},{"../../seed":undefined,"inherits":150}],51:[function(require,module,exports){
+'use strict';
+
+module.exports = function(client) {
+
+var inherits = require('inherits');
+var Transaction = require('../../transaction');
 
 function Transaction_PG() {
   this.client = client;
@@ -2006,74 +3460,16 @@ inherits(Transaction_PG, Transaction);
 client.Transaction = Transaction_PG;
 
 };
-},{"../../transaction":68,"inherits":114}],32:[function(_dereq_,module,exports){
+},{"../../transaction":89,"inherits":150}],52:[function(require,module,exports){
 (function (Buffer){
-
-// convert a JS array to a postgres array literal
-// uses comma separator so won't work for types like box that use
-// a different array separator.
-function arrayString(val) {
-  var result = '{';
-  for (var i = 0 ; i < val.length; i++) {
-    if(i > 0) {
-      result = result + ',';
-    }
-    if(val[i] === null || typeof val[i] === 'undefined') {
-      result = result + 'NULL';
-    }
-    else if(Array.isArray(val[i])) {
-      result = result + arrayString(val[i]);
-    }
-    else
-    {
-      result = result + JSON.stringify(prepareValue(val[i]));
-    }
-  }
-  result = result + '}';
-  return result;
-}
-
-//converts values from javascript types
-//to their 'raw' counterparts for use as a postgres parameter
-//note: you can override this function to provide your own conversion mechanism
-//for complex types, etc...
-var prepareValue = function(val, seen) {
-  if (val instanceof Buffer) {
-    return val;
-  }
-  if(val instanceof Date) {
-    return dateToString(val);
-  }
-  if(Array.isArray(val)) {
-    return arrayString(val);
-  }
-  if(val === null || typeof val === 'undefined') {
-    return null;
-  }
-  if(typeof val === 'object') {
-    return prepareObject(val, seen);
-  }
-  return val.toString();
-};
-
-function prepareObject(val, seen) {
-  if(val.toPostgres && typeof val.toPostgres === 'function') {
-    seen = seen || [];
-    if (seen.indexOf(val) !== -1) {
-      throw new Error('circular reference detected while preparing "' + val + '" for query');
-    }
-    seen.push(val);
-
-    return prepareValue(val.toPostgres(prepareValue), seen);
-  }
-  return JSON.stringify(val);
-}
+'use strict';
 
 function dateToString(date) {
   function pad(number, digits) {
-    number = ""+number;
-    while(number.length < digits)
-      number = "0"+number;
+    number = number.toString();
+    while (number.length < digits) {
+      number = "0" + number;
+    }
     return number;
   }
 
@@ -2086,27 +3482,81 @@ function dateToString(date) {
     pad(date.getSeconds(), 2) + '.' +
     pad(date.getMilliseconds(), 3);
 
-  if(offset < 0) {
+  if (offset < 0) {
     ret += "-";
     offset *= -1;
-  }
-  else
+  } else {
     ret += "+";
+  }
 
-  return ret + pad(Math.floor(offset/60), 2) + ":" + pad(offset%60, 2);
+  return ret + pad(Math.floor(offset / 60), 2) + ":" + pad(offset % 60, 2);
 }
 
-function normalizeQueryConfig (config, values, callback) {
+var prepareObject;
+var arrayString;
+
+//converts values from javascript types
+//to their 'raw' counterparts for use as a postgres parameter
+//note: you can override this function to provide your own conversion mechanism
+//for complex types, etc...
+var prepareValue = function (val, seen) {
+  if (val instanceof Buffer) {
+    return val;
+  }
+  if (val instanceof Date) {
+    return dateToString(val);
+  }
+  if (Array.isArray(val)) {
+    return arrayString(val);
+  }
+  if (val === null || val === undefined) {
+    return null;
+  }
+  if (typeof val === 'object') {
+    return prepareObject(val, seen);
+  }
+  return val.toString();
+};
+
+prepareObject = function prepareObject(val, seen) {
+  if (val && typeof val.toPostgres === 'function') {
+    seen = seen || [];
+    if (seen.indexOf(val) !== -1) {
+      throw new Error('circular reference detected while preparing "' + val + '" for query');
+    }
+    seen.push(val);
+
+    return prepareValue(val.toPostgres(prepareValue), seen);
+  }
+  return JSON.stringify(val);
+};
+
+// convert a JS array to a postgres array literal
+// uses comma separator so won't work for types like box that use
+// a different array separator.
+arrayString = function arrayString(val) {
+  return '{' + val.map(function (elem) {
+    if (elem === null || elem === undefined) {
+      return 'NULL';
+    }
+    if (Array.isArray(elem)) {
+      return arrayString(elem);
+    }
+    return JSON.stringify(prepareValue(elem));
+  }).join(',') + '}';
+};
+
+function normalizeQueryConfig(config, values, callback) {
   //can take in strings or config objects
-  config = (typeof(config) == 'string') ? { text: config } : config;
-  if(values) {
-    if(typeof values === 'function') {
+  config = (typeof config === 'string') ? { text: config } : config;
+  if (values) {
+    if (typeof values === 'function') {
       config.callback = values;
     } else {
       config.values = values;
     }
   }
-  if(callback) {
+  if (callback) {
     config.callback = callback;
   }
   return config;
@@ -2117,14 +3567,16 @@ module.exports = {
   normalizeQueryConfig: normalizeQueryConfig
 };
 
-}).call(this,_dereq_("buffer").Buffer)
-},{"buffer":107}],33:[function(_dereq_,module,exports){
+}).call(this,require("buffer").Buffer)
+},{"buffer":125}],53:[function(require,module,exports){
+'use strict';
+
 // SQLite3 Formatter
 // -------
 module.exports = function(client) {
 
-var Formatter = _dereq_('../../formatter');
-var inherits  = _dereq_('inherits');
+var Formatter = require('../../formatter');
+var inherits  = require('inherits');
 
 // The "formatter" is used to ensure all output is properly
 // escaped & parameterized.
@@ -2162,14 +3614,30 @@ Formatter_SQLite3.prototype._wrap = wrapperMemo;
 client.Formatter = Formatter_SQLite3;
 
 };
-},{"../../formatter":48,"inherits":114}],34:[function(_dereq_,module,exports){
+},{"../../formatter":70,"inherits":150}],54:[function(require,module,exports){
+'use strict';
+
+module.exports = function(client) {
+
+var FunctionHelper = require('../../functionhelper');
+
+var FunctionHelper_SQLite3 = Object.create(FunctionHelper);
+FunctionHelper_SQLite3.client = client;
+
+// Assign the newly extended `FunctionHelper` constructor to the client object.
+client.FunctionHelper = FunctionHelper_SQLite3;
+
+};
+},{"../../functionhelper":71}],55:[function(require,module,exports){
+'use strict';
+
 // SQLite3
 // -------
 
-var inherits = _dereq_('inherits');
+var inherits = require('inherits');
 
-var Client  = _dereq_('../../client');
-var Promise = _dereq_('../../promise');
+var Client  = require('../../client');
+var Promise = require('../../promise');
 
 function Client_SQLite3(config) {
   Client.apply(this, arguments);
@@ -2189,51 +3657,61 @@ inherits(Client_SQLite3, Client);
 // the client to generate SQL strings.
 var sqlite3;
 
-Client_SQLite3.prototype.dialect = 'sqlite3',
+Client_SQLite3.prototype.dialect = 'sqlite3';
 
 Client_SQLite3.prototype.initTransaction = function() {
-  _dereq_('./transaction')(this);
+  require('./transaction')(this);
 };
 
 Client_SQLite3.prototype.initFormatter = function() {
-  _dereq_('./formatter')(this);
+  require('./formatter')(this);
 };
 
 // Lazy-load the sqlite3 dependency.
 Client_SQLite3.prototype.initDriver = function() {
-  sqlite3 = sqlite3 || _dereq_('sqlite3');
+  sqlite3 = sqlite3 || require('sqlite3');
 };
 
 // Initialize the raw connection on the client.
 Client_SQLite3.prototype.initRaw = function() {
-  _dereq_('./raw')(this);
+  require('./raw')(this);
+};
+
+// Attaches the `FunctionHelper` constructor to the client object.
+Client_SQLite3.prototype.initFunctionHelper = function() {
+  require('./functionhelper')(this);
 };
 
 // Always initialize with the "Query" and "QueryCompiler"
 // objects, each of which is unique to this client (and thus)
 // can be altered without messing up anything for anyone else.
 Client_SQLite3.prototype.initQuery = function() {
-  _dereq_('./query')(this);
+  require('./query')(this);
 };
 
 // Initializes a new pool instance for the current client.
 Client_SQLite3.prototype.initPool = function() {
-  _dereq_('./pool')(this);
+  require('./pool')(this);
 };
 
 // Initialize the query "runner"
 Client_SQLite3.prototype.initRunner = function() {
-  _dereq_('./runner')(this);
+  require('./runner')(this);
 };
 
 // Lazy-load the schema dependencies.
 Client_SQLite3.prototype.initSchema = function() {
-  _dereq_('./schema')(this);
+  require('./schema')(this);
 };
 
 // Lazy-load the migration dependency
 Client_SQLite3.prototype.initMigrator = function() {
-  _dereq_('./migrator')(this);
+    require('./migrator')(this);
+};
+
+// Lazy-load the seeding dependency
+Client_SQLite3.prototype.initSeeder = function() {
+    require('./seeder')(this);
 };
 
 // Get a raw connection from the database, returning a promise with the connection object.
@@ -2254,11 +3732,13 @@ Client_SQLite3.prototype.destroyRawConnection = Promise.method(function(connecti
 });
 
 module.exports = Client_SQLite3;
-},{"../../client":2,"../../promise":53,"./formatter":33,"./migrator":35,"./pool":36,"./query":37,"./raw":38,"./runner":39,"./schema":42,"./transaction":45,"inherits":114}],35:[function(_dereq_,module,exports){
+},{"../../client":2,"../../promise":75,"./formatter":53,"./functionhelper":54,"./migrator":56,"./pool":57,"./query":58,"./raw":59,"./runner":60,"./schema":63,"./seeder":66,"./transaction":67,"inherits":150,"sqlite3":undefined}],56:[function(require,module,exports){
+'use strict';
+
 module.exports = function(client) {
 
-var Migrator = _dereq_('../../migrate');
-var inherits = _dereq_('inherits');
+var Migrator = require('../../migrate');
+var inherits = require('inherits');
 
 // Inherit from the `Migrator` constructor's prototype,
 // so we can add the correct `then` method.
@@ -2272,12 +3752,14 @@ inherits(Migrator_SQLite3, Migrator);
 client.Migrator = Migrator_SQLite3;
 
 };
-},{"inherits":114}],36:[function(_dereq_,module,exports){
+},{"../../migrate":undefined,"inherits":150}],57:[function(require,module,exports){
+'use strict';
+
 module.exports = function(client) {
 
-var Pool     = _dereq_('../../pool');
-var inherits = _dereq_('inherits');
-var _        = _dereq_('lodash');
+var Pool     = require('../../pool');
+var inherits = require('inherits');
+var _        = require('lodash');
 
 // Inherit from the `Pool` constructor's prototype.
 function Pool_SQLite3() {
@@ -2298,16 +3780,18 @@ Pool_SQLite3.prototype.defaults = function() {
 client.Pool = Pool_SQLite3;
 
 };
-},{"../../pool":52,"inherits":114,"lodash":115}],37:[function(_dereq_,module,exports){
+},{"../../pool":74,"inherits":150,"lodash":151}],58:[function(require,module,exports){
+'use strict';
+
 // SQLite3 Query Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var _        = _dereq_('lodash');
-var inherits = _dereq_('inherits');
+var _        = require('lodash');
+var inherits = require('inherits');
 
-var QueryBuilder  = _dereq_('../../query/builder');
-var QueryCompiler = _dereq_('../../query/compiler');
+var QueryBuilder  = require('../../query/builder');
+var QueryCompiler = require('../../query/compiler');
 
 // Query Builder
 // -------
@@ -2337,8 +3821,16 @@ QueryCompiler_SQLite3.prototype.forUpdate = function() {
 QueryCompiler_SQLite3.prototype.insert = function() {
   var insert = this.single.insert;
   var sql = 'insert into ' + this.tableName + ' ';
-  if (_.isEmpty(this.single.insert)) return sql + 'default values';
+
+  if (_.isArray(insert) && (insert.length === 1) && _.isEmpty(insert[0])) {
+    insert = [];
+  }
+
+  if (_.isEmpty(insert) && !_.isFunction(insert)) {
+    return sql + 'default values';
+  }
   var insertData = this._prepInsert(insert);
+  if (_.isString(insertData)) return sql + insertData;
   sql += '(' + this.formatter.columnize(insertData.columns) + ')';
   if (insertData.values.length === 1) {
     return sql + ' values (' + this.formatter.parameterize(insertData.values[0]) + ')';
@@ -2353,27 +3845,6 @@ QueryCompiler_SQLite3.prototype.insert = function() {
     blocks[i] = block.join(', ');
   }
   return sql + ' select ' + blocks.join(' union all select ');
-};
-
-// Adds a `order by` clause to the query, using "collate nocase" for the sort.
-QueryCompiler_SQLite3.prototype.order = function() {
-  var orders = this.grouped.order;
-  if (!orders) return '';
-  return 'order by ' + _.map(orders, function(order) {
-    var cols = _.isArray(order.value) ? order.value : [order.value];
-    return this.formatter.columnize(cols) + ' collate nocase ' + this.formatter.direction(order.direction);
-  }, this).join(', ');
-};
-
-// Compiles an `update` query.
-QueryCompiler_SQLite3.prototype.update = function() {
-  var updateData = this._prepUpdate(this.single.update);
-  var joins      = this.join();
-  var wheres     = this.where();
-  return 'update ' + this.tableName +
-    (joins ? ' ' + joins : '') +
-    ' set ' + updateData.join(', ') +
-    (wheres ? ' ' + wheres : '');
 };
 
 // Compile a truncate table statement into SQL.
@@ -2411,17 +3882,27 @@ QueryCompiler_SQLite3.prototype.columnInfo = function() {
   };
 };
 
+QueryCompiler_SQLite3.prototype.limit = function() {
+  if (!this.single.limit && !this.single.offset) return '';
+
+  // Workaround for offset only, see http://stackoverflow.com/questions/10491492/sqllite-with-skip-offset-only-not-limit
+  return 'limit ' + this.formatter.parameter((this.single.offset && !this.single.limit) ? -1 : this.single.limit);
+};
+
 client.QueryBuilder = QueryBuilder_SQLite3;
 client.QueryCompiler = QueryCompiler_SQLite3;
 
 };
-},{"../../query/builder":54,"../../query/compiler":55,"inherits":114,"lodash":115}],38:[function(_dereq_,module,exports){
+
+},{"../../query/builder":76,"../../query/compiler":77,"inherits":150,"lodash":151}],59:[function(require,module,exports){
+'use strict';
+
 // Raw
 // -------
 module.exports = function(client) {
 
-var Raw = _dereq_('../../raw');
-var inherits = _dereq_('inherits');
+var Raw = require('../../raw');
+var inherits = require('inherits');
 
 // Inherit from the `Raw` constructor's prototype,
 // so we can add the correct `then` method.
@@ -2435,17 +3916,19 @@ inherits(Raw_SQLite3, Raw);
 client.Raw = Raw_SQLite3;
 
 };
-},{"../../raw":58,"inherits":114}],39:[function(_dereq_,module,exports){
+},{"../../raw":80,"inherits":150}],60:[function(require,module,exports){
+'use strict';
+
 // Runner
 // -------
 module.exports = function(client) {
 
-var _        = _dereq_('lodash');
-var Promise  = _dereq_('../../promise');
-var Runner   = _dereq_('../../runner');
-var helpers  = _dereq_('../../helpers');
+var _        = require('lodash');
+var Promise  = require('../../promise');
+var Runner   = require('../../runner');
+var helpers  = require('../../helpers');
 
-var inherits = _dereq_('inherits');
+var inherits = require('inherits');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -2491,6 +3974,7 @@ Runner_SQLite3.prototype._query = Promise.method(function(obj) {
 
 // Sounds like .each doesn't work great for
 Runner_SQLite3.prototype._stream = Promise.method(function(sql, stream, options) {
+  /*jshint unused: false*/
   var runner = this;
   return new Promise(function(resolver, rejecter) {
     stream.on('error', rejecter);
@@ -2533,13 +4017,15 @@ client.Runner = Runner_SQLite3;
 
 };
 
-},{"../../helpers":49,"../../promise":53,"../../runner":59,"inherits":114,"lodash":115}],40:[function(_dereq_,module,exports){
+},{"../../helpers":72,"../../promise":75,"../../runner":81,"inherits":150,"lodash":151}],61:[function(require,module,exports){
+'use strict';
+
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Schema   = _dereq_('../../../schema');
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
 
 // Column Builder
 // -------
@@ -2572,7 +4058,9 @@ client.ColumnBuilder = ColumnBuilder_SQLite3;
 client.ColumnCompiler = ColumnCompiler_SQLite3;
 
 };
-},{"../../../schema":64,"inherits":114}],41:[function(_dereq_,module,exports){
+},{"../../../schema":86,"inherits":150}],62:[function(require,module,exports){
+'use strict';
+
 // SQLite3_DDL
 //
 // All of the SQLite3 specific DDL helpers for renaming/dropping
@@ -2580,8 +4068,8 @@ client.ColumnCompiler = ColumnCompiler_SQLite3;
 // -------
 module.exports = function(client) {
 
-var _       = _dereq_('lodash');
-var Promise = _dereq_('../../../promise');
+var _       = require('lodash');
+var Promise = require('../../../promise');
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
@@ -2590,7 +4078,7 @@ function SQLite3_DDL(runner, tableCompiler, pragma) {
   this.tableCompiler = tableCompiler;
   this.pragma = pragma;
   this.runner = runner;
-  this.formatter = new client.Formatter;
+  this.formatter = new client.Formatter();
   this.tableName = this.tableCompiler.tableNameRaw;
   this.alteredName = '_knex_temp_alter' + _.uniqueId();
 }
@@ -2603,18 +4091,19 @@ SQLite3_DDL.prototype.getColumn = Promise.method(function(column) {
 
 SQLite3_DDL.prototype.ensureTransaction = Promise.method(function() {
   if (!this.runner.transaction) {
-    return this.runner.query({sql: 'begin transaction;'});
+    return this.runner.beginTransaction();
   }
 });
 
 SQLite3_DDL.prototype.commitTransaction = Promise.method(function() {
-  return this.runner.commitTransaction();
+  if (!this.runner.transaction) {
+    return this.runner.commitTransaction();
+  }
 });
 
 SQLite3_DDL.prototype.rollbackTransaction = function(e) {
-  return this.runner.rollbackTransaction().then(function() {
-    throw e;
-  });
+  if (this.runner.transaction) throw e;
+  return this.runner.rollbackTransaction().throw(e);
 };
 
 SQLite3_DDL.prototype.getTableSql = function() {
@@ -2654,6 +4143,7 @@ SQLite3_DDL.prototype.insertChunked = function(amount, target, iterator) {
     var ddl = this;
     return Promise.reduce(result, function(memo, row) {
       memo++;
+      batch.push(row);
       if (memo % 20 === 0 || memo === result.length) {
         return new client.QueryBuilder()
           .connection(ddl.runner.connection)
@@ -2662,7 +4152,6 @@ SQLite3_DDL.prototype.insertChunked = function(amount, target, iterator) {
           .then(function() { batch = []; })
           .thenReturn(memo);
       }
-      batch.push(row);
       return memo;
     }, 0);
   };
@@ -2677,10 +4166,12 @@ SQLite3_DDL.prototype.createTempTable = function(createTable) {
 // Boy, this is quite a method.
 SQLite3_DDL.prototype.renameColumn = Promise.method(function(from, to) {
   var currentCol;
-  return this.getColumn(from)
+  return this.ensureTransaction()
     .bind(this)
+    .then(function() {
+      return this.getColumn(from);
+    })
     .tap(function(col) { currentCol = col; })
-    .then(this.ensureTransaction)
     .then(this.getTableSql)
     .then(function(sql) {
       var createTable = sql[0];
@@ -2708,10 +4199,12 @@ SQLite3_DDL.prototype.renameColumn = Promise.method(function(from, to) {
 
 SQLite3_DDL.prototype.dropColumn = Promise.method(function(column) {
    var currentCol;
-   return this.getColumn(column)
+   return this.ensureTransaction()
     .bind(this)
+    .then(function() {
+      return this.getColumn(column);
+    })
     .tap(function(col) { currentCol = col; })
-    .then(this.ensureTransaction)
     .then(this.getTableSql)
     .then(function(sql) {
       var createTable = sql[0];
@@ -2738,21 +4231,26 @@ SQLite3_DDL.prototype.dropColumn = Promise.method(function(column) {
 client.SQLite3_DDL = SQLite3_DDL;
 
 };
-},{"../../../promise":53,"lodash":115}],42:[function(_dereq_,module,exports){
+
+},{"../../../promise":75,"lodash":151}],63:[function(require,module,exports){
+'use strict';
+
 module.exports = function(client) {
-  _dereq_('./ddl')(client);
-  _dereq_('./schema')(client);
-  _dereq_('./table')(client);
-  _dereq_('./column')(client);
+  require('./ddl')(client);
+  require('./schema')(client);
+  require('./table')(client);
+  require('./column')(client);
 };
-},{"./column":40,"./ddl":41,"./schema":43,"./table":44}],43:[function(_dereq_,module,exports){
+},{"./column":61,"./ddl":62,"./schema":64,"./table":65}],64:[function(require,module,exports){
+'use strict';
+
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var _        = _dereq_('lodash');
-var inherits = _dereq_('inherits');
-var Schema   = _dereq_('../../../schema');
+var _        = require('lodash');
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
 
 // Schema Builder
 // -------
@@ -2788,7 +4286,7 @@ SchemaCompiler_SQLite3.prototype.hasColumn = function(tableName, column) {
   this.pushQuery({
     sql: 'PRAGMA table_info(' + this.formatter.wrap(tableName) + ')',
     output: function(resp) {
-      return _.findWhere(resp, {name: column}) != null;
+      return _.some(resp, {name: column});
     }
   });
 };
@@ -2802,14 +4300,16 @@ client.SchemaBuilder = SchemaBuilder_SQLite3;
 client.SchemaCompiler = SchemaCompiler_SQLite3;
 
 };
-},{"../../../schema":64,"inherits":114,"lodash":115}],44:[function(_dereq_,module,exports){
+},{"../../../schema":86,"inherits":150,"lodash":151}],65:[function(require,module,exports){
+'use strict';
+
 // SQLite3: Column Builder & Compiler
 // -------
 module.exports = function(client) {
 
-var _        = _dereq_('lodash');
-var inherits = _dereq_('inherits');
-var Schema   = _dereq_('../../../schema');
+var _        = require('lodash');
+var inherits = require('inherits');
+var Schema   = require('../../../schema');
 
 // Table Builder
 // -------
@@ -2833,8 +4333,9 @@ function TableCompiler_SQLite3() {
 inherits(TableCompiler_SQLite3, Schema.TableCompiler);
 
 // Create a new table.
-TableCompiler_SQLite3.prototype.createQuery = function(columns) {
-  var sql = 'create table ' + this.tableName() + ' (' + columns.sql.join(', ');
+TableCompiler_SQLite3.prototype.createQuery = function(columns, ifNot) {
+  var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
+  var sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ');
 
   // SQLite forces primary keys to be added when the table is initially created
   // so we will need to check for a primary key commands and add the columns
@@ -2890,7 +4391,8 @@ TableCompiler_SQLite3.prototype.foreign = function() {
 TableCompiler_SQLite3.prototype.primaryKeys = function() {
   var pks = _.where(this.grouped.alterTable || [], {method: 'primary'});
   if (pks.length > 0 && pks[0].args.length > 0) {
-    return ', primary key (' + this.formatter.columnize(pks[0].args) + ')';
+    var args = _.isArray(pks[0].args[0]) ? pks[0].args[0] : pks[0].args;
+    return ', primary key (' + this.formatter.columnize(args) + ')';
   }
 };
 
@@ -2938,13 +4440,35 @@ client.TableBuilder = TableBuilder_SQLite3;
 client.TableCompiler = TableCompiler_SQLite3;
 
 };
-},{"../../../schema":64,"inherits":114,"lodash":115}],45:[function(_dereq_,module,exports){
+},{"../../../schema":86,"inherits":150,"lodash":151}],66:[function(require,module,exports){
+'use strict';
+
+module.exports = function(client) {
+
+var Seeder = require('../../seed');
+var inherits = require('inherits');
+
+// Inherit from the `Seeder` constructor's prototype,
+// so we can add the correct `then` method.
+function Seeder_SQLite3() {
+  this.client = client;
+  Seeder.apply(this, arguments);
+}
+inherits(Seeder_SQLite3, Seeder);
+
+// Assign the newly extended `Seeder` constructor to the client object.
+client.Seeder = Seeder_SQLite3;
+
+};
+},{"../../seed":undefined,"inherits":150}],67:[function(require,module,exports){
+'use strict';
+
 // SQLite3 Transaction
 // -------
 module.exports = function(client) {
 
-var inherits = _dereq_('inherits');
-var Transaction = _dereq_('../../transaction');
+var inherits = require('inherits');
+var Transaction = require('../../transaction');
 
 function Transaction_SQLite3() {
   this.client = client;
@@ -2955,33 +4479,41 @@ inherits(Transaction_SQLite3, Transaction);
 client.Transaction = Transaction_SQLite3;
 
 };
-},{"../../transaction":68,"inherits":114}],46:[function(_dereq_,module,exports){
+},{"../../transaction":89,"inherits":150}],68:[function(require,module,exports){
+'use strict';
+
 // WebSQL
 // -------
-var inherits = _dereq_('inherits');
-var _        = _dereq_('lodash');
+var inherits = require('inherits');
+var _        = require('lodash');
 
-var Client_SQLite3 = _dereq_('../sqlite3/index');
-var Promise = _dereq_('../../promise');
+var Client_SQLite3 = require('../sqlite3/index');
+var Promise = require('../../promise');
 
 function Client_WebSQL(config) {
   config = config || {};
   Client_SQLite3.super_.apply(this, arguments);
   if (config.debug) this.isDebugging = true;
   this.name = config.name || 'knex_database';
+  this.version = config.version || '1.0';
+  this.displayName = config.displayName || this.name;
+  this.estimatedSize = config.estimatedSize || 5 * 1024 * 1024;
   this.initDriver();
   this.initRunner();
+  this.transaction = function () {
+    return this;
+  };
 }
 inherits(Client_WebSQL, Client_SQLite3);
 
-Client_WebSQL.prototype.dialect = 'websql',
+Client_WebSQL.prototype.dialect = 'websql';
 Client_WebSQL.prototype.initDriver = function() {};
 Client_WebSQL.prototype.initPool = function() {};
 Client_WebSQL.prototype.initMigrator = function() {};
 
 // Initialize the query "runner"
 Client_WebSQL.prototype.initRunner = function() {
-  _dereq_('./runner')(this);
+  require('./runner')(this);
 };
 
 // Get a raw connection from the database, returning a promise with the connection object.
@@ -2989,7 +4521,8 @@ Client_WebSQL.prototype.acquireConnection = function() {
   var client = this;
   return new Promise(function(resolve, reject) {
     try {
-      var db = openDatabase(client.name, '1.0', client.name, 65536);
+      /*jslint browser: true*/
+      var db = openDatabase(client.name, client.version, client.displayName, client.estimatedSize);
       db.transaction(function(t) {
         t.__cid = _.uniqueId('__cid');
         resolve(t);
@@ -3002,22 +4535,24 @@ Client_WebSQL.prototype.acquireConnection = function() {
 
 // Used to explicitly close a connection, called internally by the pool
 // when a connection times out or the pool is shutdown.
-Client_WebSQL.prototype.releaseConnection = Promise.method(function(connection) {});
+Client_WebSQL.prototype.releaseConnection = Promise.method(function() {});
 
 module.exports = Client_WebSQL;
-},{"../../promise":53,"../sqlite3/index":34,"./runner":47,"inherits":114,"lodash":115}],47:[function(_dereq_,module,exports){
+},{"../../promise":75,"../sqlite3/index":55,"./runner":69,"inherits":150,"lodash":151}],69:[function(require,module,exports){
+'use strict';
+
 // Runner
 // -------
 module.exports = function(client) {
 
-var Promise  = _dereq_('../../promise');
+var Promise  = require('../../promise');
 
 // Require the SQLite3 Runner.
-_dereq_('../sqlite3/runner')(client);
+require('../sqlite3/runner')(client);
 var Runner_SQLite3 = client.Runner;
 
-var inherits = _dereq_('inherits');
-var _        = _dereq_('lodash');
+var inherits = require('inherits');
+var _        = require('lodash');
 
 // Inherit from the `Runner` constructor's prototype,
 // so we can add the correct `then` method.
@@ -3044,10 +4579,15 @@ Runner_WebSQL.prototype._query = Promise.method(function(obj) {
   });
 });
 
+// Null out the transaction statements so they aren't run.
+Runner_WebSQL.prototype._beginTransaction    = null;
+Runner_WebSQL.prototype._commitTransaction   = null;
+Runner_WebSQL.prototype._rollbackTransaction = null;
+
 // Ensures the response is returned in the same format as other clients.
 Runner_WebSQL.prototype.processResponse = function(obj) {
   var resp = obj.response;
-  if (obj.output) return obj.output.call(this, response);
+  if (obj.output) return obj.output.call(this, resp);
   switch (obj.method) {
     case 'pluck':
     case 'first':
@@ -3073,13 +4613,15 @@ Runner_WebSQL.prototype.processResponse = function(obj) {
 client.Runner = Runner_WebSQL;
 
 };
-},{"../../promise":53,"../sqlite3/runner":39,"inherits":114,"lodash":115}],48:[function(_dereq_,module,exports){
+},{"../../promise":75,"../sqlite3/runner":60,"inherits":150,"lodash":151}],70:[function(require,module,exports){
+'use strict';
+
 // Mixed into the query compiler & schema pieces. Assumes a `grammar`
 // property exists on the current object.
-var _            = _dereq_('lodash');
-var QueryBuilder = _dereq_('./query/builder');
+var _            = require('lodash');
+var QueryBuilder = require('./query/builder');
 
-var Raw  = _dereq_('./raw');
+var Raw  = require('./raw');
 var push = Array.prototype.push;
 
 // Valid values for the `order by` clause generation.
@@ -3137,7 +4679,8 @@ Formatter.prototype.wrap = function(value) {
   if (_.isFunction(value)) {
     return this.outputQuery(this.compileCallback(value), true);
   }
-  if (raw = this.checkRaw(value)) return raw;
+  raw = this.checkRaw(value);
+  if (raw) return raw;
   if (_.isNumber(value)) return value;
   return this._wrap(value + '');
 };
@@ -3155,9 +4698,9 @@ Formatter.prototype._wrapString = function(value) {
   for (var i = 0, l = segments.length; i < l; i = ++i) {
     value = segments[i];
     if (i === 0 && segments.length > 1) {
-      wrapped.push(this.wrap(value));
+      wrapped.push(this.wrap((value || '').trim()));
     } else {
-      wrapped.push(this.wrapValue(value));
+      wrapped.push(this.wrapValue((value || '').trim()));
     }
   }
   return wrapped.join('.');
@@ -3171,8 +4714,8 @@ Formatter.prototype.columnize = function(target) {
 
 // The operator method takes a value and returns something or other.
 Formatter.prototype.operator = function(value) {
-  var raw;
-  if (raw = this.checkRaw(value)) return raw;
+  var raw = this.checkRaw(value);
+  if (raw) return raw;
   if (!_.contains(this.operators, (value || '').toLowerCase())) {
     throw new TypeError('The operator "' + value + '" is not permitted');
   }
@@ -3181,8 +4724,8 @@ Formatter.prototype.operator = function(value) {
 
 // Specify the direction of the ordering.
 Formatter.prototype.direction = function(value) {
-  var raw;
-  if (raw = this.checkRaw(value)) return raw;
+  var raw = this.checkRaw(value);
+  if (raw) return raw;
   return _.contains(orderBys, (value || '').toLowerCase()) ? value : 'asc';
 };
 
@@ -3215,12 +4758,26 @@ Formatter.prototype.outputQuery = function(compiled, alwaysWrapped) {
 };
 
 module.exports = Formatter;
-},{"./query/builder":54,"./raw":58,"lodash":115}],49:[function(_dereq_,module,exports){
+},{"./query/builder":76,"./raw":80,"lodash":151}],71:[function(require,module,exports){
+'use strict';
+
+// FunctionHelper
+// -------
+module.exports = {
+
+  now: function() {
+    return new this.client.Raw('CURRENT_TIMESTAMP');
+  }
+
+};
+},{}],72:[function(require,module,exports){
+'use strict';
+
 // helpers.js
 // -------
 
 // Just some common functions needed in multiple places within the library.
-var _ = _dereq_('lodash');
+var _ = require('lodash');
 
 var helpers = {
 
@@ -3267,10 +4824,12 @@ var helpers = {
 };
 
 module.exports = helpers;
-},{"lodash":115}],50:[function(_dereq_,module,exports){
+},{"lodash":151}],73:[function(require,module,exports){
+'use strict';
+
 module.exports = function(Target) {
-var _ = _dereq_('lodash');
-var SqlString = _dereq_('./dialects/mysql/string');
+var _ = require('lodash');
+var SqlString = require('./dialects/mysql/string');
 
 Target.prototype.toQuery = function(tz) {
   var data = this.toSQL(this._method);
@@ -3311,7 +4870,7 @@ Target.prototype.connection = function(connection) {
 
 // Set a debug flag for the current schema query stack.
 Target.prototype.debug = function(val) {
-  this._debug = (val == null ? true : val);
+  this._debug = (val === undefined || val === null) ? true : val;
   return this;
 };
 
@@ -3344,24 +4903,24 @@ _.each(['bind', 'catch', 'spread', 'otherwise', 'map', 'reduce', 'tap', 'thenRet
 });
 
 };
-},{"./dialects/mysql/string":16,"lodash":115}],51:[function(_dereq_,module,exports){
-module.exports = ['make', 'latest', 'rollback', 'currentVersion'];
-},{}],52:[function(_dereq_,module,exports){
+},{"./dialects/mysql/string":18,"lodash":151}],74:[function(require,module,exports){
+'use strict';
+
 // Pool
 // -------
-var _           = _dereq_('lodash');
-var GenericPool = _dereq_('generic-pool-redux').Pool;
-var Promise     = _dereq_('./promise');
+var _           = require('lodash');
+var GenericPool = require('generic-pool-redux').Pool;
+var Promise     = require('./promise');
 
 // The "Pool" object is a thin wrapper around the
 // "generic-pool-redux" library, exposing a `destroy`
 // method for explicitly draining the pool. The
 // `init` method is called internally and initializes
 // the pool if it doesn't already exist.
-var Pool = function(config) {
+function Pool(config) {
   this.config = _.clone(config) || {};
   this.genericPool = this.initialize();
-};
+}
 
 // Typically only called internally, this initializes
 // a new `GenericPool` instance, based on the `config`
@@ -3429,8 +4988,10 @@ Pool.prototype.destroy = function(callback) {
 };
 
 module.exports = Pool;
-},{"./promise":53,"generic-pool-redux":113,"lodash":115}],53:[function(_dereq_,module,exports){
-var Promise = _dereq_('bluebird/js/main/promise')();
+},{"./promise":75,"generic-pool-redux":149,"lodash":151}],75:[function(require,module,exports){
+'use strict';
+
+var Promise = require('bluebird/js/main/promise')();
 
 Promise.prototype.yield     = Promise.prototype.thenReturn;
 Promise.prototype.ensure    = Promise.prototype.lastly;
@@ -3439,17 +5000,19 @@ Promise.prototype.exec      = Promise.prototype.nodeify;
 
 module.exports = Promise;
 
-},{"bluebird/js/main/promise":87}],54:[function(_dereq_,module,exports){
+},{"bluebird/js/main/promise":108}],76:[function(require,module,exports){
+'use strict';
+
 // Builder
 // -------
-var _            = _dereq_('lodash');
-var inherits     = _dereq_('inherits');
-var EventEmitter = _dereq_('events').EventEmitter;
+var _            = require('lodash');
+var inherits     = require('inherits');
+var EventEmitter = require('events').EventEmitter;
 
-var Raw          = _dereq_('../raw');
-var helpers      = _dereq_('../helpers');
+var Raw          = require('../raw');
+var helpers      = require('../helpers');
 
-var JoinClause  = _dereq_('./joinclause');
+var JoinClause  = require('./joinclause');
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
@@ -3461,6 +5024,7 @@ function QueryBuilder() {
   // Internal flags used in the builder.
   this._joinFlag  = 'inner';
   this._boolFlag  = 'and';
+  this._notFlag   = false;
 
   this.and = this;
 }
@@ -3502,7 +5066,7 @@ QueryBuilder.prototype.select =
 // being selected on the query.
 QueryBuilder.prototype.columns =
 QueryBuilder.prototype.column = function(column) {
-  if (column == null) return this;
+  if (!column) return this;
   this._statements.push({
     grouping: 'columns',
     value: helpers.normalizeArr.apply(null, arguments)
@@ -3539,28 +5103,20 @@ QueryBuilder.prototype.distinct = function() {
 
 // Adds a join clause to the query, allowing for advanced joins
 // with an anonymous function as the second argument.
-QueryBuilder.prototype.join = function(table, first, operator, second) {
-  var i, args = new Array(arguments.length);
-  for (i = 0; i < args.length; i++) {
-    args[i] = arguments[i];
-  }
-  if (args.length === 5) {
-    helpers.deprecate('The five argument join syntax is now deprecated, ' +
-      'please check the docs and update your code.');
-    return this._joinType(args[4]).join(table, first, operator, second);
-  }
+// function(table, first, operator, second)
+QueryBuilder.prototype.join = function(table, first) {
   var join;
+  var joinType = this._joinType();
   if (_.isFunction(first)) {
-    if (args.length > 2) {
-      helpers.deprecate('The [table, fn, type] join syntax is deprecated, ' +
-        'please check the docs and update your code.');
-      return this._joinType(args[2]).join(table, first);
-    }
-    join = new JoinClause(table, this._joinType());
+    join = new JoinClause(table, joinType);
     first.call(join, join);
+  } else if (joinType === 'raw') {
+    join = new JoinClause(new Raw(table, first), 'raw');
   } else {
-    join = new JoinClause(table, this._joinType());
-    join.on.apply(join, args.slice(1));
+    join = new JoinClause(table, joinType);
+    if (arguments.length > 1) {
+      join.on.apply(join, _.toArray(arguments).slice(1));
+    }
   }
   this._statements.push(join);
   return this;
@@ -3591,12 +5147,20 @@ QueryBuilder.prototype.fullOuterJoin = function() {
 QueryBuilder.prototype.crossJoin = function() {
   return this._joinType('cross').join.apply(this, arguments);
 };
+QueryBuilder.prototype.joinRaw = function() {
+  return this._joinType('raw').join.apply(this, arguments);
+};
 
 // The where function can be used in several ways:
 // The most basic is `where(key, value)`, which expands to
 // where key = value.
 QueryBuilder.prototype.where =
 QueryBuilder.prototype.andWhere = function(column, operator, value) {
+
+  // Support "where true || where false"
+  if (column === false || column === true) {
+    return this.whereRaw(column);
+  }
 
   // Check if the column is a function, in which case it's
   // a where statement wrapped in parens.
@@ -3630,10 +5194,10 @@ QueryBuilder.prototype.andWhere = function(column, operator, value) {
   // If there are 3 arguments, check whether 'in' is one of them.
   if (arguments.length === 3) {
     if (checkOperator === 'in' || checkOperator === 'not in') {
-      return this.whereIn(arguments[0], arguments[2], (checkOperator === 'not in'));
+      return this._not(checkOperator === 'not in').whereIn(arguments[0], arguments[2]);
     }
     if (checkOperator === 'between' || checkOperator === 'not between') {
-      return this.whereBetween(arguments[0], arguments[2], (checkOperator === 'not between'));
+      return this._not(checkOperator === 'not between').whereBetween(arguments[0], arguments[2]);
     }
   }
 
@@ -3643,7 +5207,7 @@ QueryBuilder.prototype.andWhere = function(column, operator, value) {
 
     // Check for .where(key, 'is', null) or .where(key, 'is not', 'null');
     if (checkOperator === 'is' || checkOperator === 'is not') {
-      return this.whereNull(column, bool, (checkOperator === 'is not'));
+      return this._not(checkOperator === 'is not').whereNull(column);
     }
   }
 
@@ -3700,13 +5264,12 @@ QueryBuilder.prototype.whereWrapped = function(callback) {
 };
 
 // Adds a `where exists` clause to the query.
-QueryBuilder.prototype.whereExists = function(callback, not) {
-  not = this._not() || not;
+QueryBuilder.prototype.whereExists = function(callback) {
   this._statements.push({
     grouping: 'where',
     type: 'whereExists',
     value: callback,
-    not: not || false,
+    not: this._not(),
     bool: this._bool(),
   });
   return this;
@@ -3719,23 +5282,23 @@ QueryBuilder.prototype.orWhereExists = function(callback) {
 
 // Adds a `where not exists` clause to the query.
 QueryBuilder.prototype.whereNotExists = function(callback) {
-  return this.whereExists(callback, true);
+  return this._not(true).whereExists(callback);
 };
 
 // Adds a `or where not exists` clause to the query.
 QueryBuilder.prototype.orWhereNotExists = function(callback) {
-  return this._bool('or').whereExists(callback, true);
+  return this._bool('or').whereNotExists(callback);
 };
 
 // Adds a `where in` clause to the query.
-QueryBuilder.prototype.whereIn = function(column, values, not) {
-  not = this._not() || not;
+QueryBuilder.prototype.whereIn = function(column, values) {
+  if (_.isArray(values) && _.isEmpty(values)) return this.where(this._not());
   this._statements.push({
     grouping: 'where',
     type: 'whereIn',
     column: column,
     value: values,
-    not: not || false,
+    not: this._not(),
     bool: this._bool()
   });
   return this;
@@ -3748,22 +5311,21 @@ QueryBuilder.prototype.orWhereIn = function(column, values) {
 
 // Adds a `where not in` clause to the query.
 QueryBuilder.prototype.whereNotIn = function(column, values) {
-  return this.whereIn(column, values, true);
+  return this._not(true).whereIn(column, values);
 };
 
 // Adds a `or where not in` clause to the query.
 QueryBuilder.prototype.orWhereNotIn = function(column, values) {
-  return this._bool('or').whereIn(column, values, true);
+  return this._bool('or')._not(true).whereIn(column, values);
 };
 
 // Adds a `where null` clause to the query.
-QueryBuilder.prototype.whereNull = function(column, not) {
-  not = this._not() || not;
+QueryBuilder.prototype.whereNull = function(column) {
   this._statements.push({
     grouping: 'where',
     type: 'whereNull',
     column: column,
-    not: not || false,
+    not: this._not(),
     bool: this._bool()
   });
   return this;
@@ -3776,29 +5338,28 @@ QueryBuilder.prototype.orWhereNull = function(column) {
 
 // Adds a `where not null` clause to the query.
 QueryBuilder.prototype.whereNotNull = function(column) {
-  return this.whereNull(column, ' is not null');
+  return this._not(true).whereNull(column);
 };
 
 // Adds a `or where not null` clause to the query.
 QueryBuilder.prototype.orWhereNotNull = function(column) {
-  return this._bool('or').whereNull(column, ' is not null');
+  return this._bool('or').whereNotNull(column);
 };
 
 // Adds a `where between` clause to the query.
-QueryBuilder.prototype.whereBetween = function(column, values, not) {
+QueryBuilder.prototype.whereBetween = function(column, values) {
   if (!_.isArray(values)) {
     return this._errors.push(new Error('The second argument to whereBetween must be an array.'));
   }
   if (values.length !== 2) {
     return this._errors.push(new Error('You must specify 2 values for the whereBetween clause'));
   }
-  not = this._not() || not;
   this._statements.push({
     grouping: 'where',
     type: 'whereBetween',
     column: column,
     value: values,
-    not: not || false,
+    not: this._not(),
     bool: this._bool()
   });
   return this;
@@ -3806,7 +5367,7 @@ QueryBuilder.prototype.whereBetween = function(column, values, not) {
 
 // Adds a `where not between` clause to the query.
 QueryBuilder.prototype.whereNotBetween = function(column, values) {
-  return this.whereBetween(column, values, true);
+  return this._not(true).whereBetween(column, values);
 };
 
 // Adds a `or where between` clause to the query.
@@ -3816,7 +5377,7 @@ QueryBuilder.prototype.orWhereBetween = function(column, values) {
 
 // Adds a `or where not between` clause to the query.
 QueryBuilder.prototype.orWhereNotBetween = function(column, values) {
-  return this._bool('or').whereNotBetwen(column, values);
+  return this._bool('or').whereNotBetween(column, values);
 };
 
 // Adds a `group by` clause to the query.
@@ -4154,16 +5715,19 @@ Object.defineProperty(QueryBuilder.prototype, 'not', {
 });
 
 // Attach all of the top level promise methods that should be chainable.
-_dereq_('../interface')(QueryBuilder);
+require('../interface')(QueryBuilder);
 
 module.exports = QueryBuilder;
-},{"../helpers":49,"../interface":50,"../raw":58,"./joinclause":56,"events":110,"inherits":114,"lodash":115}],55:[function(_dereq_,module,exports){
+
+},{"../helpers":72,"../interface":73,"../raw":80,"./joinclause":78,"events":144,"inherits":150,"lodash":151}],77:[function(require,module,exports){
+'use strict';
+
 // Query Compiler
 // -------
 
-var _       = _dereq_('lodash');
-var helpers = _dereq_('../helpers');
-var Raw     = _dereq_('../raw');
+var _       = require('lodash');
+var helpers = require('../helpers');
+var Raw     = require('../raw');
 
 // The "QueryCompiler" takes all of the query statements which have been
 // gathered in the "QueryBuilder" and turns them into a properly formatted / bound
@@ -4222,16 +5786,30 @@ QueryCompiler.prototype.pluck = function() {
 // Compiles an "insert" query, allowing for multiple
 // inserts using a single query statement.
 QueryCompiler.prototype.insert = function() {
+  var self = this;
+  var insertValues = this.single.insert;
+
   var sql = 'insert into ' + this.tableName + ' ';
-  if (_.isEmpty(this.single.insert)) {
+
+  if (_.isArray(insertValues) && (insertValues.length === 1) && _.isEmpty(insertValues[0])) {
+    insertValues = [];
+  }
+
+  if (_.isEmpty(insertValues) && !_.isFunction(insertValues)) {
     sql += this._emptyInsertValue;
   } else {
-    var insertData = this._prepInsert(this.single.insert);
+    var insertData = this._prepInsert(insertValues);
+
     if (_.isString(insertData)) {
       sql += insertData;
     } else  {
-      sql += '(' + this.formatter.columnize(insertData.columns) + ') values (' +
-        _.map(insertData.values, this.formatter.parameterize, this.formatter).join('), (') + ')';
+      if (insertData.columns.length) {
+        sql += '(' + this.formatter.columnize(insertData.columns) + ') values (' +
+          _.map(insertData.values, this.formatter.parameterize, this.formatter).join('), (') + ')';
+      } else {
+        // if there is no target column only insert default values
+        sql += '() values ' + _.map(insertData.values, function () { return '(' + (self._defaultInsertValue || '') + ')'; }).join(', ');
+      }
     }
   }
   return sql;
@@ -4239,17 +5817,11 @@ QueryCompiler.prototype.insert = function() {
 
 // Compiles the "update" query.
 QueryCompiler.prototype.update = function() {
-  obj = helpers.sortObject(obj);
-  var vals = [];
-  for (var i = 0; i < obj.length; i++) {
-    var value = obj[i];
-    vals.push(this.formatter.wrap(value[0]) + ' = ' + this.formatter.parameter(value[1]));
-  }
-  if (!_.isEmpty(ret)) this.returning(ret);
-  return {
-    grouping: 'update',
-    columns: vals.join(', ')
-  };
+  var updateData = this._prepUpdate(this.single.update);
+  var wheres     = this.where();
+  return 'update ' + this.tableName +
+    ' set ' + updateData.join(', ') +
+    (wheres ? ' ' + wheres : '');
 };
 
 // Compiles the columns in the query, specifying if an item was distinct.
@@ -4293,17 +5865,21 @@ QueryCompiler.prototype.join = function() {
   if (!joins) return '';
   var sql = [];
   for (var i = 0, l = joins.length; i < l; i++) {
-    var stmt = joins[i];
-    var str  = stmt.joinType + ' join ' + this.formatter.wrap(stmt.table);
-    for (var i2 = 0, l2 = stmt.clauses.length; i2 < l2; i2++) {
-      var clause = stmt.clauses[i2];
-      if (i2 > 0) {
-        str += ' ' + clause[1] + ' ';
-      } else {
-        str += ' on ';
+    var str, stmt = joins[i];
+    if (stmt.joinType === 'raw') {
+      str = this.formatter.checkRaw(stmt.table);
+    } else {
+      str = stmt.joinType + ' join ' + this.formatter.wrap(stmt.table);
+      for (var i2 = 0, l2 = stmt.clauses.length; i2 < l2; i2++) {
+        var clause = stmt.clauses[i2];
+        if (i2 > 0) {
+          str += ' ' + clause[1] + ' ';
+        } else {
+          str += ' on ';
+        }
+        str += this.formatter.wrap(clause[2]) + ' ' + this.formatter.operator(clause[3]) +
+          ' ' + this.formatter.wrap(clause[4]);
       }
-      str += this.formatter.wrap(clause[2]) + ' ' + this.formatter.operator(clause[3]) +
-        ' ' + this.formatter.wrap(clause[4]);
     }
     sql.push(str);
   }
@@ -4376,12 +5952,12 @@ QueryCompiler.prototype.onlyUnions = function() {
 };
 
 QueryCompiler.prototype.limit = function() {
-  if (this.single.limit == void 0) return '';
+  if (!this.single.limit) return '';
   return 'limit ' + this.formatter.parameter(this.single.limit);
 };
 
 QueryCompiler.prototype.offset = function() {
-  if (this.single.offset == void 0) return '';
+  if (!this.single.offset) return '';
   return 'offset ' + this.formatter.parameter(this.single.offset);
 };
 
@@ -4423,20 +5999,12 @@ QueryCompiler.prototype.counter = function() {
 QueryCompiler.prototype._groupsOrders = function(type) {
   var items = this.grouped[type];
   if (!items) return '';
-  var sql = [];
-  for (var i = 0, l = items.length; i < l; i++) {
-    var str, item = items[i];
-    if (item.value instanceof Raw) {
-      str = this.formatter.checkRaw(item.value);
-    } else {
-      str = this.formatter.columnize(item.value);
-      if (type === 'order') {
-        str += ' ' + this.formatter.direction(item.direction);
-      }
-    }
-    sql.push(str);
-  }
-  return sql.length > 0 ? type + ' by ' + sql.join(', ') : '';
+  var formatter = this.formatter;
+  var sql = items.map(function (item) {
+    return (item.value instanceof Raw ? formatter.checkRaw(item.value) : formatter.columnize(item.value)) +
+      ((type === 'order' && item.type !== 'orderByRaw') ? ' ' + formatter.direction(item.direction) : '');
+  });
+  return sql.length ? type + ' by ' + sql.join(', ') : '';
 };
 
 // Where Clause
@@ -4541,7 +6109,9 @@ QueryCompiler.prototype._prepUpdate = function(data) {
 
 module.exports = QueryCompiler;
 
-},{"../helpers":49,"../raw":58,"lodash":115}],56:[function(_dereq_,module,exports){
+},{"../helpers":72,"../raw":80,"lodash":151}],78:[function(require,module,exports){
+'use strict';
+
 // JoinClause
 // -------
 
@@ -4551,13 +6121,14 @@ function JoinClause(table, type) {
   this.table    = table;
   this.joinType = type;
   this.clauses  = [];
-  this.and = this;
+  this.and      = this;
 }
 
 JoinClause.prototype.grouping = 'join';
 
 // Adds an "on" clause to the current join object.
 JoinClause.prototype.on = function(first, operator, second) {
+  var data;
   if (arguments.length === 2) {
     data = ['on', this._bool(), first, '=', operator];
   } else {
@@ -4574,6 +6145,7 @@ JoinClause.prototype.andOn = function() {
 
 // Adds an "or on" clause to the current join object.
 JoinClause.prototype.orOn = function(first, operator, second) {
+  /*jshint unused: false*/
   return this._bool('or').on.apply(this, arguments);
 };
 
@@ -4600,7 +6172,9 @@ Object.defineProperty(JoinClause.prototype, 'or', {
 });
 
 module.exports = JoinClause;
-},{}],57:[function(_dereq_,module,exports){
+},{}],79:[function(require,module,exports){
+'use strict';
+
 // All properties we can use to start a query chain
 // from the `knex` object, e.g. `knex.select('*').from(...`
 module.exports = [
@@ -4613,6 +6187,7 @@ module.exports = [
   'table',
   'distinct',
   'join',
+  'joinRaw',
   'innerJoin',
   'leftJoin',
   'leftOuterJoin',
@@ -4674,12 +6249,14 @@ module.exports = [
   'transacting',
   'connection'
 ];
-},{}],58:[function(_dereq_,module,exports){
+},{}],80:[function(require,module,exports){
+'use strict';
+
 // Raw
 // -------
-var _ = _dereq_('lodash');
-var inherits = _dereq_('inherits');
-var EventEmitter = _dereq_('events').EventEmitter;
+var _ = require('lodash');
+var inherits = require('inherits');
+var EventEmitter = require('events').EventEmitter;
 
 function Raw(sql, bindings) {
   if (sql && sql.toSQL) {
@@ -4687,10 +6264,11 @@ function Raw(sql, bindings) {
     sql = output.sql;
     bindings = output.bindings;
   }
-  this.sql = sql;
+  this.sql = sql + '';
   this.bindings = _.isArray(bindings) ? bindings :
     bindings ? [bindings] : [];
-  this._debug = void 0;
+  this.interpolateBindings();
+  this._debug       = void 0;
   this._transacting = void 0;
 }
 inherits(Raw, EventEmitter);
@@ -4706,6 +6284,47 @@ Raw.prototype.toString = function() {
   return this.toQuery();
 };
 
+// Ensure all Raw / builder bindings are mixed-in to the ? placeholders
+// as appropriate.
+Raw.prototype.interpolateBindings = function() {
+  var replacements = [];
+  this.bindings = _.reduce(this.bindings, function(accum, param, index) {
+    var innerBindings = [param];
+    if (param && param.toSQL) {
+      var result    = this.splicer(param, index);
+      innerBindings = result.bindings;
+      replacements.push(result.replacer);
+    }
+    return accum.concat(innerBindings);
+  }, [], this);
+
+  // we run this in reverse order, because ? concats earlier in the
+  // query string will disrupt indices for later ones
+  this.sql = _.reduce(replacements.reverse(), function(accum, fn) {
+    return fn(accum);
+  }, this.sql.split('?')).join('?');
+};
+
+// Returns a replacer function that splices into the i'th
+// ? in the sql string the inner raw's sql,
+// and the bindings associated with it
+Raw.prototype.splicer = function(raw, i) {
+  var obj = raw.toSQL();
+
+  // the replacer function assumes that the sql has been
+  // already sql.split('?') and will be arr.join('?')
+  var replacer = function(arr) {
+    arr[i] = arr[i] + obj.sql + arr[i + 1];
+    arr.splice(i + 1, 1);
+    return arr;
+  };
+
+  return {
+    replacer: replacer,
+    bindings: obj.bindings
+  };
+};
+
 // Returns the raw sql for the query.
 Raw.prototype.toSQL = function() {
   return {
@@ -4717,12 +6336,14 @@ Raw.prototype.toSQL = function() {
 
 // Allow the `Raw` object to be utilized with full access to the relevant
 // promise API.
-_dereq_('./interface')(Raw);
+require('./interface')(Raw);
 
 module.exports = Raw;
-},{"./interface":50,"events":110,"inherits":114,"lodash":115}],59:[function(_dereq_,module,exports){
-var _            = _dereq_('lodash');
-var Promise      = _dereq_('./promise');
+},{"./interface":73,"events":144,"inherits":150,"lodash":151}],81:[function(require,module,exports){
+'use strict';
+
+var _            = require('lodash');
+var Promise      = require('./promise');
 
 // The "Runner" constructor takes a "builder" (query, schema, or raw)
 // and runs through each of the query statements, calling any additional
@@ -4801,7 +6422,7 @@ Runner.prototype.stream = function(options, handler) {
   var hasHandler = _.isFunction(handler);
 
   // Lazy-load the "PassThrough" dependency.
-  PassThrough = PassThrough || _dereq_('readable-stream').PassThrough;
+  PassThrough = PassThrough || require('readable-stream').PassThrough;
   var stream  = new PassThrough({objectMode: true});
   var promise = Promise.bind(this)
     .then(this.ensureConnection)
@@ -4837,6 +6458,9 @@ Runner.prototype.pipe = function(writable) {
 // to run in sequence, and on the same connection, especially helpful when schema building
 // and dealing with foreign key constraints, etc.
 Runner.prototype.query = Promise.method(function(obj) {
+  if (!this.connection) {
+    throw new Error('There is an error with the database connection. Please check your config.');
+  }
   obj.__cid = this.connection.__cid;
   this.builder.emit('query', obj);
   this.client.emit('query', obj);
@@ -4891,14 +6515,14 @@ Runner.prototype.transactionQuery = Promise.method(function() {
 });
 
 // Begins a transaction statement on the instance,
-// resolving with the connection of the current transaction.
+// resolving with the current runner.
 Runner.prototype.startTransaction = Promise.method(function() {
   return Promise.bind(this)
     .then(this.ensureConnection)
     .then(function(connection) {
       this.connection  = connection;
       this.transaction = true;
-      return this.query({sql: this._beginTransaction});
+      return this.beginTransaction();
     }).thenReturn(this);
 });
 
@@ -4945,27 +6569,33 @@ Runner.prototype.finishTransaction = Promise.method(function(action, containerOb
   });
 });
 
+Runner.prototype.beginTransaction = function() {
+  return this._beginTransaction   && this.query({sql: this._beginTransaction});
+};
 Runner.prototype.commitTransaction = function() {
-  return this.query({sql: this._commitTransaction});
+  return this._commitTransaction   && this.query({sql: this._commitTransaction});
 };
 Runner.prototype.rollbackTransaction = function() {
-  return this.query({sql: this._rollbackTransaction});
+  return this._rollbackTransaction && this.query({sql: this._rollbackTransaction});
 };
 
 // Cleanup the connection as necessary, if the `_connection` was
 // explicitly set on the query we don't need to do anything here,
 // otherwise we
 Runner.prototype.cleanupConnection = Promise.method(function() {
-  if (!this.builder._connection) {
+  if (!this.builder._connection && typeof this.connection !== "undefined") {
     return this.client.releaseConnection(this.connection);
   }
 });
 
 module.exports = Runner;
-},{"./promise":53,"lodash":115,"readable-stream":126}],60:[function(_dereq_,module,exports){
-var _            = _dereq_('lodash');
-var inherits     = _dereq_('inherits');
-var EventEmitter = _dereq_('events').EventEmitter;
+
+},{"./promise":75,"lodash":151,"readable-stream":162}],82:[function(require,module,exports){
+'use strict';
+
+var _            = require('lodash');
+var inherits     = require('inherits');
+var EventEmitter = require('events').EventEmitter;
 
 // Constructor for the builder instance, typically called from
 // `knex.builder`, accepting the current `knex` instance,
@@ -4980,7 +6610,9 @@ inherits(SchemaBuilder, EventEmitter);
 // Each of the schema builder methods just add to the
 // "_sequence" array for consistency.
 _.each([
-  'createTable', 'table', 'alterTable', 'hasTable', 'hasColumn',
+  'createTable', 'createTableIfNotExists', 'createSchema',
+  'createSchemaIfNotExists', 'dropSchema', 'dropSchemaIfExists',
+  'table', 'alterTable', 'hasTable', 'hasColumn',
   'dropTable', 'renameTable', 'dropTableIfExists', 'raw', 'debug'
 ], function(method) {
   SchemaBuilder.prototype[method] = function() {
@@ -5002,11 +6634,48 @@ SchemaBuilder.prototype.toSQL = function() {
   return new SchemaCompiler(this).toSQL();
 };
 
-_dereq_('../interface')(SchemaBuilder);
+require('../interface')(SchemaBuilder);
 
 module.exports = SchemaBuilder;
-},{"../interface":50,"events":110,"inherits":114,"lodash":115}],61:[function(_dereq_,module,exports){
-var _ = _dereq_('lodash');
+
+},{"../interface":73,"events":144,"inherits":150,"lodash":151}],83:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+
+var AlterMethods = {};
+
+// Specify that the column is to be dropped. This takes precedence
+// over all other rules for the column.
+AlterMethods.drop = function() {
+  this._single.drop = true;
+  return this;
+};
+
+// Specify the "type" that we're looking to set the
+// Knex takes no responsibility for any data-loss that may
+// occur when changing data types.
+AlterMethods.alterType = function(type) {
+  this._statements.push({
+    grouping: 'alterType',
+    value: type
+  });
+  return this;
+};
+
+// All of the modifier methods that can be used to modify the current query.
+var modifiers = [
+  'default', 'defaultsTo', 'defaultTo', 'unsigned',
+  'nullable', 'notNull', 'notNullable',
+  'first', 'after', 'comment'
+];
+
+// Aliases for convenience.
+var aliasMethod = {
+  default: 'defaultTo',
+  defaultsTo: 'defaultTo',
+  notNull: 'notNullable'
+};
 
 // Alias a few methods for clarity when processing.
 var columnAlias = {
@@ -5032,39 +6701,6 @@ function ColumnBuilder(tableBuilder, type, args) {
     _.extend(this, AlterMethods);
   }
 }
-
-var AlterMethods = {};
-
-// Specify that the column is to be dropped. This takes precedence
-// over all other rules for the column.
-AlterMethods.drop = function() {
-  this._single.drop = true;
-  return this;
-};
-
-// Specify the "type" that we're looking to set the
-// Knex takes no responsibility for any data-loss that may
-// occur when changing data types.
-AlterMethods.alterType = function(type) {
-  this._statements.push({
-    grouping: 'alterType',
-    value: type
-  });
-  return this;
-};
-
-// All of the modifier methods that can be used to modify the current query.
-var modifiers = [
-  'defaultsTo', 'defaultTo', 'unsigned',
-  'nullable', 'notNull', 'notNullable',
-  'after', 'comment'
-];
-
-// Aliases for convenience.
-var aliasMethod = {
-  defaultsTo: 'defaultTo',
-  notNull: 'notNullable'
-};
 
 // If we call any of the modifiers (index or otherwise) on the chainable, we pretend
 // as though we're calling `table.method(column)` directly.
@@ -5098,13 +6734,16 @@ ColumnBuilder.prototype.references = function(value) {
 };
 
 module.exports = ColumnBuilder;
-},{"lodash":115}],62:[function(_dereq_,module,exports){
+
+},{"lodash":151}],84:[function(require,module,exports){
+'use strict';
+
 // Column Compiler
 // Used for designating column definitions
 // during the table "create" / "alter" statements.
 // -------
-var _ = _dereq_('lodash');
-var Raw = _dereq_('../raw');
+var _ = require('lodash');
+var Raw = require('../raw');
 
 function ColumnCompiler(tableCompiler, columnBuilder) {
   this.tableCompiler = tableCompiler;
@@ -5211,6 +6850,8 @@ ColumnCompiler.prototype.notNullable = function() {
 ColumnCompiler.prototype.defaultTo = function(value) {
   if (value === void 0) {
     return '';
+  } else if (value === null) {
+    value = "null";
   } else if (value instanceof Raw) {
     value = value.toQuery();
   } else if (this.type === 'bool') {
@@ -5224,13 +6865,16 @@ ColumnCompiler.prototype.defaultTo = function(value) {
   return 'default ' + value;
 };
 ColumnCompiler.prototype._num = function(val, fallback) {
-  if (val == null) return fallback;
+  if (val === undefined || val === null) return fallback;
   var number = parseInt(val, 10);
   return isNaN(number) ? fallback : number;
 };
 
 module.exports = ColumnCompiler;
-},{"../raw":58,"lodash":115}],63:[function(_dereq_,module,exports){
+
+},{"../raw":80,"lodash":151}],85:[function(require,module,exports){
+'use strict';
+
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of
 // properly formatted / bound query strings.
@@ -5250,7 +6894,9 @@ function buildTable(type) {
 }
 
 SchemaCompiler.prototype.createTable = buildTable('create');
+SchemaCompiler.prototype.createTableIfNotExists = buildTable('createIfNot');
 SchemaCompiler.prototype.alterTable  = buildTable('alter');
+
 SchemaCompiler.prototype.dropTable = function(tableName) {
   this.pushQuery('drop table ' + this.formatter.wrap(tableName));
 };
@@ -5270,15 +6916,17 @@ SchemaCompiler.prototype.raw = function(sql, bindings) {
 };
 
 module.exports = SchemaCompiler;
-},{}],64:[function(_dereq_,module,exports){
-var _ = _dereq_('lodash');
+},{}],86:[function(require,module,exports){
+'use strict';
 
-var Builder = _dereq_('./builder');
-var Compiler = _dereq_('./compiler');
-var TableBuilder = _dereq_('./tablebuilder');
-var TableCompiler = _dereq_('./tablecompiler');
-var ColumnBuilder = _dereq_('./columnbuilder');
-var ColumnCompiler = _dereq_('./columncompiler');
+var _ = require('lodash');
+
+var Builder = require('./builder');
+var Compiler = require('./compiler');
+var TableBuilder = require('./tablebuilder');
+var TableCompiler = require('./tablecompiler');
+var ColumnBuilder = require('./columnbuilder');
+var ColumnCompiler = require('./columncompiler');
 
 // Initialize the compiler.
 Compiler.prototype.initCompiler =
@@ -5321,10 +6969,9 @@ module.exports = {
   ColumnBuilder: ColumnBuilder,
   ColumnCompiler: ColumnCompiler
 };
-},{"./builder":60,"./columnbuilder":61,"./columncompiler":62,"./compiler":63,"./tablebuilder":66,"./tablecompiler":67,"lodash":115}],65:[function(_dereq_,module,exports){
-module.exports = ['table', 'createTable', 'editTable', 'dropTable',
-  'dropTableIfExists',  'renameTable', 'hasTable', 'hasColumn', 'raw', 'debug'];
-},{}],66:[function(_dereq_,module,exports){
+},{"./builder":82,"./columnbuilder":83,"./columncompiler":84,"./compiler":85,"./tablebuilder":87,"./tablecompiler":88,"lodash":151}],87:[function(require,module,exports){
+'use strict';
+
 // TableBuilder
 
 // Takes the function passed to the "createTable" or "table/editTable"
@@ -5333,27 +6980,8 @@ module.exports = ['table', 'createTable', 'editTable', 'dropTable',
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-var _ = _dereq_('lodash');
-
-function TableBuilder(method, tableName, fn) {
-  this._fn         = fn;
-  this._method     = method;
-  this._tableName  = tableName;
-  this._statements = [];
-  this._single     = {};
-}
-
-// Convert the current tableBuilder object "toSQL"
-// giving us additional methods if we're altering
-// rather than creating the table.
-TableBuilder.prototype.toSQL = function() {
-  if (this._method === 'alter') {
-    _.extend(this, AlterMethods);
-  }
-  this._fn.call(this, this);
-  var TableCompiler = this.client.TableCompiler;
-  return new TableCompiler(this).toSQL();
-};
+var _ = require('lodash');
+var helpers = require('../helpers');
 
 var AlterMethods = {
 
@@ -5387,6 +7015,26 @@ AlterMethods.dropColumns = function() {
   return this;
 };
 
+function TableBuilder(method, tableName, fn) {
+  this._fn         = fn;
+  this._method     = method;
+  this._tableName  = tableName;
+  this._statements = [];
+  this._single     = {};
+}
+
+// Convert the current tableBuilder object "toSQL"
+// giving us additional methods if we're altering
+// rather than creating the table.
+TableBuilder.prototype.toSQL = function() {
+  if (this._method === 'alter') {
+    _.extend(this, AlterMethods);
+  }
+  this._fn.call(this, this);
+  var TableCompiler = this.client.TableCompiler;
+  return new TableCompiler(this).toSQL();
+};
+
 _.each([
 
   // Each of the index methods can be called individually, with the
@@ -5413,9 +7061,9 @@ var specialMethods = ['engine', 'charset', 'collate'];
 _.each(specialMethods, function(method) {
   TableBuilder.prototype[method] = function(value) {
     if (false) {
-      warn('Knex only supports ' + method + ' statement with mysql.');
+      helpers.warn('Knex only supports ' + method + ' statement with mysql.');
     } if (this.__method === 'alter') {
-      warn('Knex does not support altering the ' + method + ' outside of the create table, please use knex.raw statement.');
+      helpers.warn('Knex does not support altering the ' + method + ' outside of the create table, please use knex.raw statement.');
     }
     this._single[method] = value;
   };
@@ -5572,12 +7220,15 @@ TableBuilder.prototype.foreign = function(column) {
 };
 
 module.exports = TableBuilder;
-},{"lodash":115}],67:[function(_dereq_,module,exports){
+
+},{"../helpers":72,"lodash":151}],88:[function(require,module,exports){
+'use strict';
+
 // Table Compiler
 // -------
-var _ = _dereq_('lodash');
+var _ = require('lodash');
 
-var helpers = _dereq_('../helpers');
+var helpers = require('../helpers');
 
 function TableCompiler(tableBuilder) {
   this.method         = tableBuilder._method;
@@ -5599,13 +7250,18 @@ TableCompiler.prototype.toSQL = function() {
 // If this is a table "creation", we need to first run through all
 // of the columns to build them into a single string,
 // and then run through anything else and push it to the query sequence.
-TableCompiler.prototype.create = function() {
+TableCompiler.prototype.create = function(ifNot) {
   var columns = this.getColumns();
   var columnTypes = this.getColumnTypes(columns);
-  this.createQuery(columnTypes);
+  this.createQuery(columnTypes, ifNot);
   this.columnQueries(columns);
   delete this.single.comment;
   this.alterTable();
+};
+
+// Only create the table if it doesn't exist.
+TableCompiler.prototype.createIfNot = function() {
+  this.create(true);
 };
 
 // If we're altering the table, we need to one-by-one
@@ -5728,12 +7384,14 @@ TableCompiler.prototype._indexCommand = function(type, tableName, columns) {
 };
 
 module.exports = TableCompiler;
-},{"../helpers":49,"lodash":115}],68:[function(_dereq_,module,exports){
+},{"../helpers":72,"lodash":151}],89:[function(require,module,exports){
+'use strict';
+
 // Transaction
 // -------
-var Promise = _dereq_('./promise');
-var inherits = _dereq_('inherits');
-var EventEmitter = _dereq_('events').EventEmitter;
+var Promise = require('./promise');
+var inherits = require('inherits');
+var EventEmitter = require('events').EventEmitter;
 
 // Creates a new wrapper object for constructing a transaction.
 // Called by the `knex.transaction`, which sets the correct client
@@ -5748,7 +7406,7 @@ inherits(Transaction, EventEmitter);
 // It can be used both as a fully functional knex instance, or assimilated
 // into existing knex chains via the ".transacting" method call.
 Transaction.prototype.containerObject = function(runner) {
-  var Knex = _dereq_('../knex');
+  var Knex = require('../knex');
 
   // Create an entirely new knex instance just for this transaction
   var transactor = Knex.initialize({
@@ -5799,207 +7457,30 @@ Transaction.prototype.initiateDeferred = function(transactor) {
 
 // Allow the `Transaction` object to be utilized with full access to the relevant
 // promise API.
-_dereq_('./interface')(Transaction);
+require('./interface')(Transaction);
 
 // Passed a `container` function, this method runs the current
 // transaction, returning a promise.
 Transaction.prototype.then = function(onFulfilled, onRejected) {
-  var Runner = this.client.Runner;
-
+  var Runner  = this.client.Runner;
+  var promise = this;
+  
   // Create a new "runner" object, passing the "runner"
   // object along, so we can easily keep track of every
   // query run on the current connection.
   return new Runner(this)
     .startTransaction()
-    .bind(this)
-    .then(this.containerObject)
-    .then(this.initiateDeferred)
-    .then(onFulfilled, onRejected)
-    .bind();
+    .then(function(obj) {
+      return promise.containerObject(obj);
+    })
+    .then(function(obj) {
+      return promise.initiateDeferred(obj);
+    })
+    .then(onFulfilled, onRejected);
 };
 
 module.exports = Transaction;
-},{"../knex":1,"./interface":50,"./promise":53,"events":110,"inherits":114}],69:[function(_dereq_,module,exports){
-module.exports = {
-
-  pgBindings: function(sql) {
-    var questionCount = 0;
-    return sql.replace(/\?/g, function() {
-      questionCount++;
-      return '$' + questionCount;
-    });
-  }
-
-};
-},{}],70:[function(_dereq_,module,exports){
-/**
- * Copyright (c) 2014 Petka Antonov
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:</p>
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * 
- */
-"use strict";
-module.exports = function(Promise, Promise$_CreatePromiseArray, PromiseArray) {
-
-var SomePromiseArray = _dereq_("./some_promise_array.js")(PromiseArray);
-function Promise$_Any(promises, useBound) {
-    var ret = Promise$_CreatePromiseArray(
-        promises,
-        SomePromiseArray,
-        useBound === true && promises._isBound()
-            ? promises._boundTo
-            : void 0
-   );
-    var promise = ret.promise();
-    if (promise.isRejected()) {
-        return promise;
-    }
-    ret.setHowMany(1);
-    ret.setUnwrap();
-    ret.init();
-    return promise;
-}
-
-Promise.any = function Promise$Any(promises) {
-    return Promise$_Any(promises, false);
-};
-
-Promise.prototype.any = function Promise$any() {
-    return Promise$_Any(this, true);
-};
-
-};
-
-},{"./some_promise_array.js":101}],71:[function(_dereq_,module,exports){
-/**
- * Copyright (c) 2014 Petka Antonov
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:</p>
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * 
- */
-"use strict";
-var schedule = _dereq_("./schedule.js");
-var Queue = _dereq_("./queue.js");
-var errorObj = _dereq_("./util.js").errorObj;
-var tryCatch1 = _dereq_("./util.js").tryCatch1;
-var process = _dereq_("./global.js").process;
-
-function Async() {
-    this._isTickUsed = false;
-    this._length = 0;
-    this._lateBuffer = new Queue();
-    this._functionBuffer = new Queue(25000 * 3);
-    var self = this;
-    this.consumeFunctionBuffer = function Async$consumeFunctionBuffer() {
-        self._consumeFunctionBuffer();
-    };
-}
-
-Async.prototype.haveItemsQueued = function Async$haveItemsQueued() {
-    return this._length > 0;
-};
-
-Async.prototype.invokeLater = function Async$invokeLater(fn, receiver, arg) {
-    if (process !== void 0 &&
-        process.domain != null &&
-        !fn.domain) {
-        fn = process.domain.bind(fn);
-    }
-    this._lateBuffer.push(fn, receiver, arg);
-    this._queueTick();
-};
-
-Async.prototype.invoke = function Async$invoke(fn, receiver, arg) {
-    if (process !== void 0 &&
-        process.domain != null &&
-        !fn.domain) {
-        fn = process.domain.bind(fn);
-    }
-    var functionBuffer = this._functionBuffer;
-    functionBuffer.push(fn, receiver, arg);
-    this._length = functionBuffer.length();
-    this._queueTick();
-};
-
-Async.prototype._consumeFunctionBuffer =
-function Async$_consumeFunctionBuffer() {
-    var functionBuffer = this._functionBuffer;
-    while(functionBuffer.length() > 0) {
-        var fn = functionBuffer.shift();
-        var receiver = functionBuffer.shift();
-        var arg = functionBuffer.shift();
-        fn.call(receiver, arg);
-    }
-    this._reset();
-    this._consumeLateBuffer();
-};
-
-Async.prototype._consumeLateBuffer = function Async$_consumeLateBuffer() {
-    var buffer = this._lateBuffer;
-    while(buffer.length() > 0) {
-        var fn = buffer.shift();
-        var receiver = buffer.shift();
-        var arg = buffer.shift();
-        var res = tryCatch1(fn, receiver, arg);
-        if (res === errorObj) {
-            this._queueTick();
-            if (fn.domain != null) {
-                fn.domain.emit("error", res.e);
-            }
-            else {
-                throw res.e;
-            }
-        }
-    }
-};
-
-Async.prototype._queueTick = function Async$_queue() {
-    if (!this._isTickUsed) {
-        schedule(this.consumeFunctionBuffer);
-        this._isTickUsed = true;
-    }
-};
-
-Async.prototype._reset = function Async$_reset() {
-    this._isTickUsed = false;
-    this._length = 0;
-};
-
-module.exports = new Async();
-
-},{"./global.js":83,"./queue.js":94,"./schedule.js":97,"./util.js":105}],72:[function(_dereq_,module,exports){
+},{"../knex":undefined,"./interface":73,"./promise":75,"events":144,"inherits":150}],90:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6024,37 +7505,266 @@ module.exports = new Async();
  */
 "use strict";
 module.exports = function(Promise) {
-Promise.prototype.call = function Promise$call(propertyName) {
-    var $_len = arguments.length;var args = new Array($_len - 1); for(var $_i = 1; $_i < $_len; ++$_i) {args[$_i - 1] = arguments[$_i];}
+var SomePromiseArray = Promise._SomePromiseArray;
+function Promise$_Any(promises) {
+    var ret = new SomePromiseArray(promises);
+    var promise = ret.promise();
+    if (promise.isRejected()) {
+        return promise;
+    }
+    ret.setHowMany(1);
+    ret.setUnwrap();
+    ret.init();
+    return promise;
+}
 
-    return this._then(function(obj) {
-            return obj[propertyName].apply(obj, args);
-        },
-        void 0,
-        void 0,
-        void 0,
-        void 0
-   );
+Promise.any = function Promise$Any(promises) {
+    return Promise$_Any(promises);
 };
 
-function Promise$getter(obj) {
-    var prop = typeof this === "string"
-        ? this
-        : ("" + this);
-    return obj[prop];
+Promise.prototype.any = function Promise$any() {
+    return Promise$_Any(this);
+};
+
+};
+
+},{}],91:[function(require,module,exports){
+(function (process){
+/**
+ * Copyright (c) 2014 Petka Antonov
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:</p>
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ */
+"use strict";
+var schedule = require("./schedule.js");
+var Queue = require("./queue.js");
+var errorObj = require("./util.js").errorObj;
+var tryCatch1 = require("./util.js").tryCatch1;
+var _process = typeof process !== "undefined" ? process : void 0;
+
+function Async() {
+    this._isTickUsed = false;
+    this._schedule = schedule;
+    this._length = 0;
+    this._lateBuffer = new Queue(16);
+    this._functionBuffer = new Queue(65536);
+    var self = this;
+    this.consumeFunctionBuffer = function Async$consumeFunctionBuffer() {
+        self._consumeFunctionBuffer();
+    };
+}
+
+Async.prototype.haveItemsQueued = function Async$haveItemsQueued() {
+    return this._length > 0;
+};
+
+Async.prototype.invokeLater = function Async$invokeLater(fn, receiver, arg) {
+    if (_process !== void 0 &&
+        _process.domain != null &&
+        !fn.domain) {
+        fn = _process.domain.bind(fn);
+    }
+    this._lateBuffer.push(fn, receiver, arg);
+    this._queueTick();
+};
+
+Async.prototype.invoke = function Async$invoke(fn, receiver, arg) {
+    if (_process !== void 0 &&
+        _process.domain != null &&
+        !fn.domain) {
+        fn = _process.domain.bind(fn);
+    }
+    var functionBuffer = this._functionBuffer;
+    functionBuffer.push(fn, receiver, arg);
+    this._length = functionBuffer.length();
+    this._queueTick();
+};
+
+Async.prototype._consumeFunctionBuffer =
+function Async$_consumeFunctionBuffer() {
+    var functionBuffer = this._functionBuffer;
+    while (functionBuffer.length() > 0) {
+        var fn = functionBuffer.shift();
+        var receiver = functionBuffer.shift();
+        var arg = functionBuffer.shift();
+        fn.call(receiver, arg);
+    }
+    this._reset();
+    this._consumeLateBuffer();
+};
+
+Async.prototype._consumeLateBuffer = function Async$_consumeLateBuffer() {
+    var buffer = this._lateBuffer;
+    while(buffer.length() > 0) {
+        var fn = buffer.shift();
+        var receiver = buffer.shift();
+        var arg = buffer.shift();
+        var res = tryCatch1(fn, receiver, arg);
+        if (res === errorObj) {
+            this._queueTick();
+            if (fn.domain != null) {
+                fn.domain.emit("error", res.e);
+            } else {
+                throw res.e;
+            }
+        }
+    }
+};
+
+Async.prototype._queueTick = function Async$_queue() {
+    if (!this._isTickUsed) {
+        this._schedule(this.consumeFunctionBuffer);
+        this._isTickUsed = true;
+    }
+};
+
+Async.prototype._reset = function Async$_reset() {
+    this._isTickUsed = false;
+    this._length = 0;
+};
+
+module.exports = new Async();
+
+}).call(this,require('_process'))
+},{"./queue.js":113,"./schedule.js":116,"./util.js":123,"_process":145}],92:[function(require,module,exports){
+/**
+ * Copyright (c) 2014 Petka Antonov
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:</p>
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ */
+"use strict";
+var cr = Object.create;
+if (cr) {
+    var callerCache = cr(null);
+    var getterCache = cr(null);
+    callerCache[" size"] = getterCache[" size"] = 0;
+}
+
+module.exports = function(Promise) {
+var util = require("./util.js");
+var canEvaluate = util.canEvaluate;
+var isIdentifier = util.isIdentifier;
+
+function makeMethodCaller (methodName) {
+    return new Function("obj", "                                             \n\
+        'use strict'                                                         \n\
+        var len = this.length;                                               \n\
+        switch(len) {                                                        \n\
+            case 1: return obj.methodName(this[0]);                          \n\
+            case 2: return obj.methodName(this[0], this[1]);                 \n\
+            case 3: return obj.methodName(this[0], this[1], this[2]);        \n\
+            case 0: return obj.methodName();                                 \n\
+            default: return obj.methodName.apply(obj, this);                 \n\
+        }                                                                    \n\
+        ".replace(/methodName/g, methodName));
+}
+
+function makeGetter (propertyName) {
+    return new Function("obj", "                                             \n\
+        'use strict';                                                        \n\
+        return obj.propertyName;                                             \n\
+        ".replace("propertyName", propertyName));
+}
+
+function getCompiled(name, compiler, cache) {
+    var ret = cache[name];
+    if (typeof ret !== "function") {
+        if (!isIdentifier(name)) {
+            return null;
+        }
+        ret = compiler(name);
+        cache[name] = ret;
+        cache[" size"]++;
+        if (cache[" size"] > 512) {
+            var keys = Object.keys(cache);
+            for (var i = 0; i < 256; ++i) delete cache[keys[i]];
+            cache[" size"] = keys.length - 256;
+        }
+    }
+    return ret;
+}
+
+function getMethodCaller(name) {
+    return getCompiled(name, makeMethodCaller, callerCache);
+}
+
+function getGetter(name) {
+    return getCompiled(name, makeGetter, getterCache);
+}
+
+function caller(obj) {
+    return obj[this.pop()].apply(obj, this);
+}
+Promise.prototype.call = function Promise$call(methodName) {
+    var $_len = arguments.length;var args = new Array($_len - 1); for(var $_i = 1; $_i < $_len; ++$_i) {args[$_i - 1] = arguments[$_i];}
+    if (canEvaluate) {
+        var maybeCaller = getMethodCaller(methodName);
+        if (maybeCaller !== null) {
+            return this._then(maybeCaller, void 0, void 0, args, void 0);
+        }
+    }
+    args.push(methodName);
+    return this._then(caller, void 0, void 0, args, void 0);
+};
+
+function namedGetter(obj) {
+    return obj[this];
+}
+function indexedGetter(obj) {
+    return obj[this];
 }
 Promise.prototype.get = function Promise$get(propertyName) {
-    return this._then(
-        Promise$getter,
-        void 0,
-        void 0,
-        propertyName,
-        void 0
-   );
+    var isIndex = (typeof propertyName === "number");
+    var getter;
+    if (!isIndex) {
+        if (canEvaluate) {
+            var maybeGetter = getGetter(propertyName);
+            getter = maybeGetter !== null ? maybeGetter : namedGetter;
+        } else {
+            getter = namedGetter;
+        }
+    } else {
+        getter = indexedGetter;
+    }
+    return this._then(getter, void 0, void 0, propertyName, void 0);
 };
 };
 
-},{}],73:[function(_dereq_,module,exports){
+},{"./util.js":123}],93:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6079,11 +7789,12 @@ Promise.prototype.get = function Promise$get(propertyName) {
  */
 "use strict";
 module.exports = function(Promise, INTERNAL) {
-var errors = _dereq_("./errors.js");
-var async = _dereq_("./async.js");
+var errors = require("./errors.js");
+var canAttach = errors.canAttach;
+var async = require("./async.js");
 var CancellationError = errors.CancellationError;
 
-Promise.prototype._cancel = function Promise$_cancel() {
+Promise.prototype._cancel = function Promise$_cancel(reason) {
     if (!this.isCancellable()) return this;
     var parent;
     var promiseToReject = this;
@@ -6091,14 +7802,16 @@ Promise.prototype._cancel = function Promise$_cancel() {
         parent.isCancellable()) {
         promiseToReject = parent;
     }
-    var err = new CancellationError();
-    promiseToReject._attachExtraTrace(err);
-    promiseToReject._rejectUnchecked(err);
+    promiseToReject._attachExtraTrace(reason);
+    promiseToReject._rejectUnchecked(reason);
 };
 
-Promise.prototype.cancel = function Promise$cancel() {
+Promise.prototype.cancel = function Promise$cancel(reason) {
     if (!this.isCancellable()) return this;
-    async.invokeLater(this._cancel, this, void 0);
+    reason = reason !== void 0
+        ? (canAttach(reason) ? reason : new Error(reason + ""))
+        : new CancellationError();
+    async.invokeLater(this._cancel, this, reason);
     return this;
 };
 
@@ -6111,10 +7824,9 @@ Promise.prototype.cancellable = function Promise$cancellable() {
 
 Promise.prototype.uncancellable = function Promise$uncancellable() {
     var ret = new Promise(INTERNAL);
-    ret._setTrace(this);
+    ret._propagateFrom(this, 2 | 4);
     ret._follow(this);
     ret._unsetCancellable();
-    if (this._isBound()) ret._setBoundTo(this._boundTo);
     return ret;
 };
 
@@ -6129,7 +7841,7 @@ function Promise$fork(didFulfill, didReject, didProgress) {
 };
 };
 
-},{"./async.js":71,"./errors.js":77}],74:[function(_dereq_,module,exports){
+},{"./async.js":91,"./errors.js":98}],94:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6154,12 +7866,12 @@ function Promise$fork(didFulfill, didReject, didProgress) {
  */
 "use strict";
 module.exports = function() {
-var inherits = _dereq_("./util.js").inherits;
-var defineProperty = _dereq_("./es5.js").defineProperty;
+var inherits = require("./util.js").inherits;
+var defineProperty = require("./es5.js").defineProperty;
 
 var rignore = new RegExp(
     "\\b(?:[a-zA-Z0-9.]+\\$_\\w+|" +
-    "tryCatch(?:1|2|Apply)|new \\w*PromiseArray|" +
+    "tryCatch(?:1|2|3|4|Apply)|new \\w*PromiseArray|" +
     "\\w*PromiseArray\\.\\w*PromiseArray|" +
     "setTimeout|CatchFilter\\$_\\w+|makeNodePromisified|processImmediate|" +
     "process._tickCallback|nextTick|Async\\$\\w+)\\b"
@@ -6174,8 +7886,7 @@ function formatNonError(obj) {
         str = "[function " +
             (obj.name || "anonymous") +
             "]";
-    }
-    else {
+    } else {
         str = obj.toString();
         var ruselessToString = /\[object [a-zA-Z0-9$_]+\]/;
         if (ruselessToString.test(str)) {
@@ -6220,15 +7931,13 @@ function CapturedTrace$PossiblyUnhandledRejection(reason) {
         if (typeof reason === "object" || typeof reason === "function") {
             var stack = reason.stack;
             message = "Possibly unhandled " + formatStack(stack, reason);
-        }
-        else {
+        } else {
             message = "Possibly unhandled " + String(reason);
         }
         if (typeof console.error === "function" ||
             typeof console.error === "object") {
             console.error(message);
-        }
-        else if (typeof console.log === "function" ||
+        } else if (typeof console.log === "function" ||
             typeof console.log === "object") {
             console.log(message);
         }
@@ -6242,8 +7951,7 @@ CapturedTrace.combine = function CapturedTrace$Combine(current, prev) {
         if (current[curLast] === line) {
             current.pop();
             curLast--;
-        }
-        else {
+        } else {
             break;
         }
     }
@@ -6255,7 +7963,7 @@ CapturedTrace.combine = function CapturedTrace$Combine(current, prev) {
 
     for (var i = 0, len = lines.length; i < len; ++i) {
 
-        if ((rignore.test(lines[i]) ||
+        if (((rignore.test(lines[i]) && rtraceline.test(lines[i])) ||
             (i > 0 && !rtraceline.test(lines[i])) &&
             lines[i] !== "From previous event:")
        ) {
@@ -6264,6 +7972,22 @@ CapturedTrace.combine = function CapturedTrace$Combine(current, prev) {
         ret.push(lines[i]);
     }
     return ret;
+};
+
+CapturedTrace.protectErrorMessageNewlines = function(stack) {
+    for (var i = 0; i < stack.length; ++i) {
+        if (rtraceline.test(stack[i])) {
+            break;
+        }
+    }
+
+    if (i <= 1) return;
+
+    var errorMessageLines = [];
+    for (var j = 0; j < i; ++j) {
+        errorMessageLines.push(stack.shift());
+    }
+    stack.unshift(errorMessageLines.join("\u0002\u0000\u0001"));
 };
 
 CapturedTrace.isSupported = function CapturedTrace$IsSupported() {
@@ -6332,8 +8056,7 @@ var captureStackTrace = (function stackDetection() {
             }
             o.stack = ret;
         };
-    }
-    else {
+    } else {
         formatStack = function(stack, error) {
             if (typeof stack === "string") return stack;
 
@@ -6353,7 +8076,7 @@ var captureStackTrace = (function stackDetection() {
 return CapturedTrace;
 };
 
-},{"./es5.js":79,"./util.js":105}],75:[function(_dereq_,module,exports){
+},{"./es5.js":100,"./util.js":123}],95:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6378,11 +8101,11 @@ return CapturedTrace;
  */
 "use strict";
 module.exports = function(NEXT_FILTER) {
-var util = _dereq_("./util.js");
-var errors = _dereq_("./errors.js");
+var util = require("./util.js");
+var errors = require("./errors.js");
 var tryCatch1 = util.tryCatch1;
 var errorObj = util.errorObj;
-var keys = _dereq_("./es5.js").keys;
+var keys = require("./es5.js").keys;
 var TypeError = errors.TypeError;
 
 function CatchFilter(instances, callback, promise) {
@@ -6410,7 +8133,7 @@ function CatchFilter$_safePredicate(predicate, e) {
 CatchFilter.prototype.doFilter = function CatchFilter$_doFilter(e) {
     var cb = this._callback;
     var promise = this._promise;
-    var boundTo = promise._isBound() ? promise._boundTo : void 0;
+    var boundTo = promise._boundTo;
     for (var i = 0, len = this._instances.length; i < len; ++i) {
         var item = this._instances[i];
         var itemIsErrorType = item === Error ||
@@ -6449,7 +8172,7 @@ CatchFilter.prototype.doFilter = function CatchFilter$_doFilter(e) {
 return CatchFilter;
 };
 
-},{"./errors.js":77,"./es5.js":79,"./util.js":105}],76:[function(_dereq_,module,exports){
+},{"./errors.js":98,"./es5.js":100,"./util.js":123}],96:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6473,7 +8196,7 @@ return CatchFilter;
  * 
  */
 "use strict";
-var util = _dereq_("./util.js");
+var util = require("./util.js");
 var isPrimitive = util.isPrimitive;
 var wrapsPrimitiveReceiver = util.wrapsPrimitiveReceiver;
 
@@ -6490,8 +8213,7 @@ var wrapper = function Promise$_wrapper(value, action) {
         return function Promise$_thrower() {
             throw value;
         };
-    }
-    else if (action === 2) {
+    } else if (action === 2) {
         return function Promise$_returner() {
             return value;
         };
@@ -6530,7 +8252,7 @@ function Promise$thenThrow(reason) {
 };
 };
 
-},{"./util.js":105}],77:[function(_dereq_,module,exports){
+},{"./util.js":123}],97:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6554,24 +8276,58 @@ function Promise$thenThrow(reason) {
  * 
  */
 "use strict";
-var global = _dereq_("./global.js");
-var Objectfreeze = _dereq_("./es5.js").freeze;
-var util = _dereq_("./util.js");
+module.exports = function(Promise, INTERNAL) {
+var PromiseReduce = Promise.reduce;
+
+Promise.prototype.each = function Promise$each(fn) {
+    return PromiseReduce(this, fn, null, INTERNAL);
+};
+
+Promise.each = function Promise$Each(promises, fn) {
+    return PromiseReduce(promises, fn, null, INTERNAL);
+};
+};
+
+},{}],98:[function(require,module,exports){
+/**
+ * Copyright (c) 2014 Petka Antonov
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:</p>
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ */
+"use strict";
+var Objectfreeze = require("./es5.js").freeze;
+var util = require("./util.js");
 var inherits = util.inherits;
 var notEnumerableProp = util.notEnumerableProp;
-var Error = global.Error;
 
 function markAsOriginatingFromRejection(e) {
     try {
-        notEnumerableProp(e, "isAsync", true);
+        notEnumerableProp(e, "isOperational", true);
     }
     catch(ignore) {}
 }
 
 function originatesFromRejection(e) {
     if (e == null) return false;
-    return ((e instanceof RejectionError) ||
-        e["isAsync"] === true);
+    return ((e instanceof OperationalError) ||
+        e["isOperational"] === true);
 }
 
 function isError(obj) {
@@ -6595,58 +8351,91 @@ function subError(nameProperty, defaultMessage) {
     return SubError;
 }
 
-var TypeError = global.TypeError;
-if (typeof TypeError !== "function") {
-    TypeError = subError("TypeError", "type error");
-}
-var RangeError = global.RangeError;
-if (typeof RangeError !== "function") {
-    RangeError = subError("RangeError", "range error");
-}
+var _TypeError, _RangeError;
 var CancellationError = subError("CancellationError", "cancellation error");
 var TimeoutError = subError("TimeoutError", "timeout error");
+var AggregateError = subError("AggregateError", "aggregate error");
+try {
+    _TypeError = TypeError;
+    _RangeError = RangeError;
+} catch(e) {
+    _TypeError = subError("TypeError", "type error");
+    _RangeError = subError("RangeError", "range error");
+}
 
-function RejectionError(message) {
-    this.name = "RejectionError";
+var methods = ("join pop push shift unshift slice filter forEach some " +
+    "every map indexOf lastIndexOf reduce reduceRight sort reverse").split(" ");
+
+for (var i = 0; i < methods.length; ++i) {
+    if (typeof Array.prototype[methods[i]] === "function") {
+        AggregateError.prototype[methods[i]] = Array.prototype[methods[i]];
+    }
+}
+
+AggregateError.prototype.length = 0;
+AggregateError.prototype["isOperational"] = true;
+var level = 0;
+AggregateError.prototype.toString = function() {
+    var indent = Array(level * 4 + 1).join(" ");
+    var ret = "\n" + indent + "AggregateError of:" + "\n";
+    level++;
+    indent = Array(level * 4 + 1).join(" ");
+    for (var i = 0; i < this.length; ++i) {
+        var str = this[i] === this ? "[Circular AggregateError]" : this[i] + "";
+        var lines = str.split("\n");
+        for (var j = 0; j < lines.length; ++j) {
+            lines[j] = indent + lines[j];
+        }
+        str = lines.join("\n");
+        ret += str + "\n";
+    }
+    level--;
+    return ret;
+};
+
+function OperationalError(message) {
+    this.name = "OperationalError";
     this.message = message;
     this.cause = message;
-    this.isAsync = true;
+    this["isOperational"] = true;
 
     if (message instanceof Error) {
         this.message = message.message;
         this.stack = message.stack;
-    }
-    else if (Error.captureStackTrace) {
+    } else if (Error.captureStackTrace) {
         Error.captureStackTrace(this, this.constructor);
     }
 
 }
-inherits(RejectionError, Error);
+inherits(OperationalError, Error);
 
 var key = "__BluebirdErrorTypes__";
-var errorTypes = global[key];
+var errorTypes = Error[key];
 if (!errorTypes) {
     errorTypes = Objectfreeze({
         CancellationError: CancellationError,
         TimeoutError: TimeoutError,
-        RejectionError: RejectionError
+        OperationalError: OperationalError,
+        RejectionError: OperationalError,
+        AggregateError: AggregateError
     });
-    notEnumerableProp(global, key, errorTypes);
+    notEnumerableProp(Error, key, errorTypes);
 }
 
 module.exports = {
     Error: Error,
-    TypeError: TypeError,
-    RangeError: RangeError,
+    TypeError: _TypeError,
+    RangeError: _RangeError,
     CancellationError: errorTypes.CancellationError,
-    RejectionError: errorTypes.RejectionError,
+    OperationalError: errorTypes.OperationalError,
     TimeoutError: errorTypes.TimeoutError,
+    AggregateError: errorTypes.AggregateError,
     originatesFromRejection: originatesFromRejection,
     markAsOriginatingFromRejection: markAsOriginatingFromRejection,
     canAttach: canAttach
 };
 
-},{"./es5.js":79,"./global.js":83,"./util.js":105}],78:[function(_dereq_,module,exports){
+},{"./es5.js":100,"./util.js":123}],99:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6671,7 +8460,7 @@ module.exports = {
  */
 "use strict";
 module.exports = function(Promise) {
-var TypeError = _dereq_('./errors.js').TypeError;
+var TypeError = require('./errors.js').TypeError;
 
 function apiRejection(msg) {
     var error = new TypeError(msg);
@@ -6686,7 +8475,7 @@ function apiRejection(msg) {
 return apiRejection;
 };
 
-},{"./errors.js":77}],79:[function(_dereq_,module,exports){
+},{"./errors.js":98}],100:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6723,9 +8512,7 @@ if (isES5) {
         isArray: Array.isArray,
         isES5: isES5
     };
-}
-
-else {
+} else {
     var has = {}.hasOwnProperty;
     var str = {}.toString;
     var proto = {}.constructor.prototype;
@@ -6777,7 +8564,7 @@ else {
     };
 }
 
-},{}],80:[function(_dereq_,module,exports){
+},{}],101:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6801,36 +8588,19 @@ else {
  * 
  */
 "use strict";
-module.exports = function(Promise) {
-var isArray = _dereq_("./util.js").isArray;
+module.exports = function(Promise, INTERNAL) {
+var PromiseMap = Promise.map;
 
-function Promise$_filter(booleans) {
-    var values = this instanceof Promise ? this._settledValue : this;
-    var len = values.length;
-    var ret = new Array(len);
-    var j = 0;
-
-    for (var i = 0; i < len; ++i) {
-        if (booleans[i]) ret[j++] = values[i];
-
-    }
-    ret.length = j;
-    return ret;
-}
-
-var ref = {ref: null};
-Promise.filter = function Promise$Filter(promises, fn) {
-    return Promise.map(promises, fn, ref)
-                  ._then(Promise$_filter, void 0, void 0, ref.ref, void 0);
+Promise.prototype.filter = function Promise$filter(fn, options) {
+    return PromiseMap(this, fn, options, INTERNAL);
 };
 
-Promise.prototype.filter = function Promise$filter(fn) {
-    return this.map(fn, ref)
-               ._then(Promise$_filter, void 0, void 0, ref.ref, void 0);
+Promise.filter = function Promise$Filter(promises, fn, options) {
+    return PromiseMap(promises, fn, options, INTERNAL);
 };
 };
 
-},{"./util.js":105}],81:[function(_dereq_,module,exports){
+},{}],102:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6854,12 +8624,11 @@ Promise.prototype.filter = function Promise$filter(fn) {
  * 
  */
 "use strict";
-module.exports = function(Promise, NEXT_FILTER) {
-var util = _dereq_("./util.js");
+module.exports = function(Promise, NEXT_FILTER, cast) {
+var util = require("./util.js");
 var wrapsPrimitiveReceiver = util.wrapsPrimitiveReceiver;
 var isPrimitive = util.isPrimitive;
 var thrower = util.thrower;
-
 
 function returnThis() {
     return this;
@@ -6881,8 +8650,7 @@ function promisedFinally(ret, reasonOrValue, isFulfilled) {
     var then;
     if (wrapsPrimitiveReceiver && isPrimitive(reasonOrValue)) {
         then = isFulfilled ? return$(reasonOrValue) : throw$(reasonOrValue);
-    }
-    else {
+    } else {
         then = isFulfilled ? returnThis : throwThis;
     }
     return ret._then(then, thrower, void 0, reasonOrValue, void 0);
@@ -6897,7 +8665,7 @@ function finallyHandler(reasonOrValue) {
                     : handler();
 
     if (ret !== void 0) {
-        var maybePromise = Promise._cast(ret, void 0);
+        var maybePromise = cast(ret, void 0);
         if (maybePromise instanceof Promise) {
             return promisedFinally(maybePromise, reasonOrValue,
                                     promise.isFulfilled());
@@ -6907,8 +8675,7 @@ function finallyHandler(reasonOrValue) {
     if (promise.isRejected()) {
         NEXT_FILTER.e = reasonOrValue;
         return NEXT_FILTER;
-    }
-    else {
+    } else {
         return reasonOrValue;
     }
 }
@@ -6922,7 +8689,7 @@ function tapHandler(value) {
                     : handler(value);
 
     if (ret !== void 0) {
-        var maybePromise = Promise._cast(ret, void 0);
+        var maybePromise = cast(ret, void 0);
         if (maybePromise instanceof Promise) {
             return promisedFinally(maybePromise, value, true);
         }
@@ -6955,7 +8722,7 @@ Promise.prototype.tap = function Promise$tap(handler) {
 };
 };
 
-},{"./util.js":105}],82:[function(_dereq_,module,exports){
+},{"./util.js":123}],103:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -6979,27 +8746,122 @@ Promise.prototype.tap = function Promise$tap(handler) {
  * 
  */
 "use strict";
-module.exports = function(Promise, apiRejection, INTERNAL) {
-var PromiseSpawn = _dereq_("./promise_spawn.js")(Promise, INTERNAL);
-var errors = _dereq_("./errors.js");
+module.exports = function(Promise, apiRejection, INTERNAL, cast) {
+var errors = require("./errors.js");
 var TypeError = errors.TypeError;
-var deprecated = _dereq_("./util.js").deprecated;
+var deprecated = require("./util.js").deprecated;
+var util = require("./util.js");
+var errorObj = util.errorObj;
+var tryCatch1 = util.tryCatch1;
+var yieldHandlers = [];
 
-Promise.coroutine = function Promise$Coroutine(generatorFunction) {
+function promiseFromYieldHandler(value, yieldHandlers) {
+    var _errorObj = errorObj;
+    var _Promise = Promise;
+    var len = yieldHandlers.length;
+    for (var i = 0; i < len; ++i) {
+        var result = tryCatch1(yieldHandlers[i], void 0, value);
+        if (result === _errorObj) {
+            return _Promise.reject(_errorObj.e);
+        }
+        var maybePromise = cast(result, promiseFromYieldHandler);
+        if (maybePromise instanceof _Promise) return maybePromise;
+    }
+    return null;
+}
+
+function PromiseSpawn(generatorFunction, receiver, yieldHandler) {
+    var promise = this._promise = new Promise(INTERNAL);
+    promise._setTrace(void 0);
+    this._generatorFunction = generatorFunction;
+    this._receiver = receiver;
+    this._generator = void 0;
+    this._yieldHandlers = typeof yieldHandler === "function"
+        ? [yieldHandler].concat(yieldHandlers)
+        : yieldHandlers;
+}
+
+PromiseSpawn.prototype.promise = function PromiseSpawn$promise() {
+    return this._promise;
+};
+
+PromiseSpawn.prototype._run = function PromiseSpawn$_run() {
+    this._generator = this._generatorFunction.call(this._receiver);
+    this._receiver =
+        this._generatorFunction = void 0;
+    this._next(void 0);
+};
+
+PromiseSpawn.prototype._continue = function PromiseSpawn$_continue(result) {
+    if (result === errorObj) {
+        this._generator = void 0;
+        var trace = errors.canAttach(result.e)
+            ? result.e : new Error(result.e + "");
+        this._promise._attachExtraTrace(trace);
+        this._promise._reject(result.e, trace);
+        return;
+    }
+
+    var value = result.value;
+    if (result.done === true) {
+        this._generator = void 0;
+        if (!this._promise._tryFollow(value)) {
+            this._promise._fulfill(value);
+        }
+    } else {
+        var maybePromise = cast(value, void 0);
+        if (!(maybePromise instanceof Promise)) {
+            maybePromise =
+                promiseFromYieldHandler(maybePromise, this._yieldHandlers);
+            if (maybePromise === null) {
+                this._throw(new TypeError("A value was yielded that could not be treated as a promise"));
+                return;
+            }
+        }
+        maybePromise._then(
+            this._next,
+            this._throw,
+            void 0,
+            this,
+            null
+       );
+    }
+};
+
+PromiseSpawn.prototype._throw = function PromiseSpawn$_throw(reason) {
+    if (errors.canAttach(reason))
+        this._promise._attachExtraTrace(reason);
+    this._continue(
+        tryCatch1(this._generator["throw"], this._generator, reason)
+   );
+};
+
+PromiseSpawn.prototype._next = function PromiseSpawn$_next(value) {
+    this._continue(
+        tryCatch1(this._generator.next, this._generator, value)
+   );
+};
+
+Promise.coroutine =
+function Promise$Coroutine(generatorFunction, options) {
     if (typeof generatorFunction !== "function") {
         throw new TypeError("generatorFunction must be a function");
     }
+    var yieldHandler = Object(options).yieldHandler;
     var PromiseSpawn$ = PromiseSpawn;
     return function () {
         var generator = generatorFunction.apply(this, arguments);
-        var spawn = new PromiseSpawn$(void 0, void 0);
+        var spawn = new PromiseSpawn$(void 0, void 0, yieldHandler);
         spawn._generator = generator;
         spawn._next(void 0);
         return spawn.promise();
     };
 };
 
-Promise.coroutine.addYieldHandler = PromiseSpawn.addYieldHandler;
+Promise.coroutine.addYieldHandler = function(fn) {
+    if (typeof fn !== "function") throw new TypeError("fn must be a function");
+    yieldHandlers.push(fn);
+};
 
 Promise.spawn = function Promise$Spawn(generatorFunction) {
     deprecated("Promise.spawn is deprecated. Use Promise.coroutine instead.");
@@ -7013,42 +8875,7 @@ Promise.spawn = function Promise$Spawn(generatorFunction) {
 };
 };
 
-},{"./errors.js":77,"./promise_spawn.js":90,"./util.js":105}],83:[function(_dereq_,module,exports){
-(function (global){
-/**
- * Copyright (c) 2014 Petka Antonov
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:</p>
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * 
- */
-module.exports = (function() {
-    if (this !== void 0) return this;
-    try {return global;}
-    catch(e) {}
-    try {return window;}
-    catch(e) {}
-    try {return self;}
-    catch(e) {}
-})();
-
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],84:[function(_dereq_,module,exports){
+},{"./errors.js":98,"./util.js":123}],104:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -7072,161 +8899,258 @@ module.exports = (function() {
  * 
  */
 "use strict";
-module.exports = function(Promise, PromiseArray, INTERNAL, apiRejection) {
+module.exports =
+function(Promise, PromiseArray, cast, INTERNAL) {
+var util = require("./util.js");
+var canEvaluate = util.canEvaluate;
+var tryCatch1 = util.tryCatch1;
+var errorObj = util.errorObj;
 
-var all = Promise.all;
-var util = _dereq_("./util.js");
-var canAttach = _dereq_("./errors.js").canAttach;
-var isArray = util.isArray;
-var _cast = Promise._cast;
 
-function unpack(values) {
-    return Promise$_Map(values, this[0], this[1], this[2]);
-}
+if (canEvaluate) {
+    var thenCallback = function(i) {
+        return new Function("value", "holder", "                             \n\
+            'use strict';                                                    \n\
+            holder.pIndex = value;                                           \n\
+            holder.checkFulfillment(this);                                   \n\
+            ".replace(/Index/g, i));
+    };
 
-function Promise$_Map(promises, fn, useBound, ref) {
-    if (typeof fn !== "function") {
-        return apiRejection("fn must be a function");
+    var caller = function(count) {
+        var values = [];
+        for (var i = 1; i <= count; ++i) values.push("holder.p" + i);
+        return new Function("holder", "                                      \n\
+            'use strict';                                                    \n\
+            var callback = holder.fn;                                        \n\
+            return callback(values);                                         \n\
+            ".replace(/values/g, values.join(", ")));
+    };
+    var thenCallbacks = [];
+    var callers = [void 0];
+    for (var i = 1; i <= 5; ++i) {
+        thenCallbacks.push(thenCallback(i));
+        callers.push(caller(i));
     }
 
-    var receiver = void 0;
-    if (useBound === true) {
-        if (promises._isBound()) {
-            receiver = promises._boundTo;
+    var Holder = function(total, fn) {
+        this.p1 = this.p2 = this.p3 = this.p4 = this.p5 = null;
+        this.fn = fn;
+        this.total = total;
+        this.now = 0;
+    };
+
+    Holder.prototype.callers = callers;
+    Holder.prototype.checkFulfillment = function(promise) {
+        var now = this.now;
+        now++;
+        var total = this.total;
+        if (now >= total) {
+            var handler = this.callers[total];
+            var ret = tryCatch1(handler, void 0, this);
+            if (ret === errorObj) {
+                promise._rejectUnchecked(ret.e);
+            } else if (!promise._tryFollow(ret)) {
+                promise._fulfillUnchecked(ret);
+            }
+        } else {
+            this.now = now;
         }
-    }
-    else if (useBound !== false) {
-        receiver = useBound;
-    }
-
-    var shouldUnwrapItems = ref !== void 0;
-    if (shouldUnwrapItems) ref.ref = promises;
-
-    if (promises instanceof Promise) {
-        var pack = [fn, receiver, ref];
-        return promises._then(unpack, void 0, void 0, pack, void 0);
-    }
-    else if (!isArray(promises)) {
-        return apiRejection("expecting an array, a promise or a thenable");
-    }
-
-    var promise = new Promise(INTERNAL);
-    if (receiver !== void 0) promise._setBoundTo(receiver);
-    promise._setTrace(void 0);
-
-    var mapping = new Mapping(promise,
-                                fn,
-                                promises,
-                                receiver,
-                                shouldUnwrapItems);
-    mapping.init();
-    return promise;
+    };
 }
 
-var pending = {};
-function Mapping(promise, callback, items, receiver, shouldUnwrapItems) {
-    this.shouldUnwrapItems = shouldUnwrapItems;
-    this.index = 0;
-    this.items = items;
-    this.callback = callback;
-    this.receiver = receiver;
-    this.promise = promise;
-    this.result = new Array(items.length);
-}
-util.inherits(Mapping, PromiseArray);
 
-Mapping.prototype.init = function Mapping$init() {
-    var items = this.items;
-    var len = items.length;
-    var result = this.result;
-    var isRejected = false;
-    for (var i = 0; i < len; ++i) {
-        var maybePromise = _cast(items[i], void 0);
-        if (maybePromise instanceof Promise) {
-            if (maybePromise.isPending()) {
-                result[i] = pending;
-                maybePromise._proxyPromiseArray(this, i);
-            }
-            else if (maybePromise.isFulfilled()) {
-                result[i] = maybePromise.value();
-            }
-            else {
-                maybePromise._unsetRejectionIsUnhandled();
-                if (!isRejected) {
-                    this.reject(maybePromise.reason());
-                    isRejected = true;
+
+
+Promise.join = function Promise$Join() {
+    var last = arguments.length - 1;
+    var fn;
+    if (last > 0 && typeof arguments[last] === "function") {
+        fn = arguments[last];
+        if (last < 6 && canEvaluate) {
+            var ret = new Promise(INTERNAL);
+            ret._setTrace(void 0);
+            var holder = new Holder(last, fn);
+            var reject = ret._reject;
+            var callbacks = thenCallbacks;
+            for (var i = 0; i < last; ++i) {
+                var maybePromise = cast(arguments[i], void 0);
+                if (maybePromise instanceof Promise) {
+                    if (maybePromise.isPending()) {
+                        maybePromise._then(callbacks[i], reject,
+                                           void 0, ret, holder);
+                    } else if (maybePromise.isFulfilled()) {
+                        callbacks[i].call(ret,
+                                          maybePromise._settledValue, holder);
+                    } else {
+                        ret._reject(maybePromise._settledValue);
+                        maybePromise._unsetRejectionIsUnhandled();
+                    }
+                } else {
+                    callbacks[i].call(ret, maybePromise, holder);
                 }
             }
-        }
-        else {
-            result[i] = maybePromise;
+            return ret;
         }
     }
-    if (!isRejected) this.iterate();
+    var $_len = arguments.length;var args = new Array($_len); for(var $_i = 0; $_i < $_len; ++$_i) {args[$_i] = arguments[$_i];}
+    var ret = new PromiseArray(args).promise();
+    return fn !== void 0 ? ret.spread(fn) : ret;
 };
 
-Mapping.prototype.isResolved = function Mapping$isResolved() {
-    return this.promise === null;
 };
 
-Mapping.prototype._promiseProgressed =
-function Mapping$_promiseProgressed(value) {
-    if (this.isResolved()) return;
-    this.promise._progress(value);
-};
+},{"./util.js":123}],105:[function(require,module,exports){
+/**
+ * Copyright (c) 2014 Petka Antonov
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:</p>
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ */
+"use strict";
+module.exports = function(Promise, PromiseArray, apiRejection, cast, INTERNAL) {
+var util = require("./util.js");
+var tryCatch3 = util.tryCatch3;
+var errorObj = util.errorObj;
+var PENDING = {};
+var EMPTY_ARRAY = [];
 
-Mapping.prototype._promiseFulfilled =
-function Mapping$_promiseFulfilled(value, index) {
-    if (this.isResolved()) return;
-    this.result[index] = value;
-    if (this.shouldUnwrapItems) this.items[index] = value;
-    if (this.index === index) this.iterate();
-};
+function MappingPromiseArray(promises, fn, limit, _filter) {
+    this.constructor$(promises);
+    this._callback = fn;
+    this._preservedValues = _filter === INTERNAL
+        ? new Array(this.length())
+        : null;
+    this._limit = limit;
+    this._inFlight = 0;
+    this._queue = limit >= 1 ? [] : EMPTY_ARRAY;
+    this._init$(void 0, -2);
+}
+util.inherits(MappingPromiseArray, PromiseArray);
 
-Mapping.prototype._promiseRejected =
-function Mapping$_promiseRejected(reason) {
-    this.reject(reason);
-};
+MappingPromiseArray.prototype._init = function MappingPromiseArray$_init() {};
 
-Mapping.prototype.reject = function Mapping$reject(reason) {
-    if (this.isResolved()) return;
-    var trace = canAttach(reason) ? reason : new Error(reason + "");
-    this.promise._attachExtraTrace(trace);
-    this.promise._reject(reason, trace);
-};
+MappingPromiseArray.prototype._promiseFulfilled =
+function MappingPromiseArray$_promiseFulfilled(value, index) {
+    var values = this._values;
+    if (values === null) return;
 
-Mapping.prototype.iterate = function Mapping$iterate() {
-    var i = this.index;
-    var items = this.items;
-    var result = this.result;
-    var len = items.length;
-    var result = this.result;
-    var receiver = this.receiver;
-    var callback = this.callback;
-
-    for (; i < len; ++i) {
-        var value = result[i];
-        if (value === pending) {
-            this.index = i;
+    var length = this.length();
+    var preservedValues = this._preservedValues;
+    var limit = this._limit;
+    if (values[index] === PENDING) {
+        values[index] = value;
+        if (limit >= 1) {
+            this._inFlight--;
+            this._drainQueue();
+            if (this._isResolved()) return;
+        }
+    } else {
+        if (limit >= 1 && this._inFlight >= limit) {
+            values[index] = value;
+            this._queue.push(index);
             return;
         }
-        try { result[i] = callback.call(receiver, value, i, len); }
-        catch (e) { return this.reject(e); }
+        if (preservedValues !== null) preservedValues[index] = value;
+
+        var callback = this._callback;
+        var receiver = this._promise._boundTo;
+        var ret = tryCatch3(callback, receiver, value, index, length);
+        if (ret === errorObj) return this._reject(ret.e);
+
+        var maybePromise = cast(ret, void 0);
+        if (maybePromise instanceof Promise) {
+            if (maybePromise.isPending()) {
+                if (limit >= 1) this._inFlight++;
+                values[index] = PENDING;
+                return maybePromise._proxyPromiseArray(this, index);
+            } else if (maybePromise.isFulfilled()) {
+                ret = maybePromise.value();
+            } else {
+                maybePromise._unsetRejectionIsUnhandled();
+                return this._reject(maybePromise.reason());
+            }
+        }
+        values[index] = ret;
     }
-    this.promise._follow(all(result));
-    this.items = this.result = this.callback = this.promise = null;
+    var totalResolved = ++this._totalResolved;
+    if (totalResolved >= length) {
+        if (preservedValues !== null) {
+            this._filter(values, preservedValues);
+        } else {
+            this._resolve(values);
+        }
+
+    }
 };
 
-Promise.prototype.map = function Promise$map(fn, ref) {
-    return Promise$_Map(this, fn, true, ref);
+MappingPromiseArray.prototype._drainQueue =
+function MappingPromiseArray$_drainQueue() {
+    var queue = this._queue;
+    var limit = this._limit;
+    var values = this._values;
+    while (queue.length > 0 && this._inFlight < limit) {
+        var index = queue.pop();
+        this._promiseFulfilled(values[index], index);
+    }
 };
 
-Promise.map = function Promise$Map(promises, fn, ref) {
-    return Promise$_Map(promises, fn, false, ref);
-};
+MappingPromiseArray.prototype._filter =
+function MappingPromiseArray$_filter(booleans, values) {
+    var len = values.length;
+    var ret = new Array(len);
+    var j = 0;
+    for (var i = 0; i < len; ++i) {
+        if (booleans[i]) ret[j++] = values[i];
+    }
+    ret.length = j;
+    this._resolve(ret);
 };
 
-},{"./errors.js":77,"./util.js":105}],85:[function(_dereq_,module,exports){
+MappingPromiseArray.prototype.preservedValues =
+function MappingPromiseArray$preserveValues() {
+    return this._preservedValues;
+};
+
+function map(promises, fn, options, _filter) {
+    var limit = typeof options === "object" && options !== null
+        ? options.concurrency
+        : 0;
+    limit = typeof limit === "number" &&
+        isFinite(limit) && limit >= 1 ? limit : 0;
+    return new MappingPromiseArray(promises, fn, limit, _filter);
+}
+
+Promise.prototype.map = function Promise$map(fn, options) {
+    if (typeof fn !== "function") return apiRejection("fn must be a function");
+
+    return map(this, fn, options, null).promise();
+};
+
+Promise.map = function Promise$Map(promises, fn, options, _filter) {
+    if (typeof fn !== "function") return apiRejection("fn must be a function");
+    return map(promises, fn, options, _filter).promise();
+};
+
+
+};
+
+},{"./util.js":123}],106:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -7251,14 +9175,22 @@ Promise.map = function Promise$Map(promises, fn, ref) {
  */
 "use strict";
 module.exports = function(Promise) {
-var util = _dereq_("./util.js");
-var async = _dereq_("./async.js");
+var util = require("./util.js");
+var async = require("./async.js");
 var tryCatch2 = util.tryCatch2;
 var tryCatch1 = util.tryCatch1;
 var errorObj = util.errorObj;
 
 function thrower(r) {
     throw r;
+}
+
+function Promise$_spreadAdapter(val, receiver) {
+    if (!util.isArray(val)) return Promise$_successAdapter(val, receiver);
+    var ret = util.tryCatchApply(this, [null].concat(val), receiver);
+    if (ret === errorObj) {
+        async.invokeLater(thrower, void 0, ret.e);
+    }
 }
 
 function Promise$_successAdapter(val, receiver) {
@@ -7278,21 +9210,25 @@ function Promise$_errorAdapter(reason, receiver) {
     }
 }
 
-Promise.prototype.nodeify = function Promise$nodeify(nodeback) {
+Promise.prototype.nodeify = function Promise$nodeify(nodeback, options) {
     if (typeof nodeback == "function") {
+        var adapter = Promise$_successAdapter;
+        if (options !== void 0 && Object(options).spread) {
+            adapter = Promise$_spreadAdapter;
+        }
         this._then(
-            Promise$_successAdapter,
+            adapter,
             Promise$_errorAdapter,
             void 0,
             nodeback,
-            this._isBound() ? this._boundTo : null
+            this._boundTo
         );
     }
     return this;
 };
 };
 
-},{"./async.js":71,"./util.js":105}],86:[function(_dereq_,module,exports){
+},{"./async.js":91,"./util.js":123}],107:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -7316,10 +9252,10 @@ Promise.prototype.nodeify = function Promise$nodeify(nodeback) {
  * 
  */
 "use strict";
-module.exports = function(Promise, isPromiseArrayProxy) {
-var util = _dereq_("./util.js");
-var async = _dereq_("./async.js");
-var errors = _dereq_("./errors.js");
+module.exports = function(Promise, PromiseArray) {
+var util = require("./util.js");
+var async = require("./async.js");
+var errors = require("./errors.js");
 var tryCatch1 = util.tryCatch1;
 var errorObj = util.errorObj;
 
@@ -7333,10 +9269,19 @@ Promise.prototype._progress = function Promise$_progress(progressValue) {
 
 };
 
+Promise.prototype._clearFirstHandlerData$Base =
+Promise.prototype._clearFirstHandlerData;
+Promise.prototype._clearFirstHandlerData =
+function Promise$_clearFirstHandlerData() {
+    this._clearFirstHandlerData$Base();
+    this._progressHandler0 = void 0;
+};
+
 Promise.prototype._progressHandlerAt =
 function Promise$_progressHandlerAt(index) {
-    if (index === 0) return this._progressHandler0;
-    return this[index + 2 - 5];
+    return index === 0
+        ? this._progressHandler0
+        : this[(index << 2) + index - 5 + 2];
 };
 
 Promise.prototype._doProgressWith =
@@ -7346,10 +9291,7 @@ function Promise$_doProgressWith(progression) {
     var promise = progression.promise;
     var receiver = progression.receiver;
 
-    this._pushContext();
     var ret = tryCatch1(handler, receiver, progressValue);
-    this._popContext();
-
     if (ret === errorObj) {
         if (ret.e != null &&
             ret.e.name !== "StopProgressPropagation") {
@@ -7358,11 +9300,9 @@ function Promise$_doProgressWith(progression) {
             promise._attachExtraTrace(trace);
             promise._progress(ret.e);
         }
-    }
-    else if (ret instanceof Promise) {
+    } else if (ret instanceof Promise) {
         ret._then(promise._progress, null, null, promise, void 0);
-    }
-    else {
+    } else {
         promise._progress(ret);
     }
 };
@@ -7373,18 +9313,16 @@ function Promise$_progressUnchecked(progressValue) {
     if (!this.isPending()) return;
     var len = this._length();
     var progress = this._progress;
-    for (var i = 0; i < len; i += 5) {
+    for (var i = 0; i < len; i++) {
         var handler = this._progressHandlerAt(i);
         var promise = this._promiseAt(i);
         if (!(promise instanceof Promise)) {
             var receiver = this._receiverAt(i);
             if (typeof handler === "function") {
                 handler.call(receiver, progressValue, promise);
-            }
-            else if (receiver instanceof Promise && receiver._isProxied()) {
+            } else if (receiver instanceof Promise && receiver._isProxied()) {
                 receiver._progressUnchecked(progressValue);
-            }
-            else if (isPromiseArrayProxy(receiver, promise)) {
+            } else if (receiver instanceof PromiseArray) {
                 receiver._promiseProgressed(progressValue, promise);
             }
             continue;
@@ -7397,15 +9335,14 @@ function Promise$_progressUnchecked(progressValue) {
                 receiver: this._receiverAt(i),
                 value: progressValue
             });
-        }
-        else {
+        } else {
             async.invoke(progress, promise, progressValue);
         }
     }
 };
 };
 
-},{"./async.js":71,"./errors.js":77,"./util.js":105}],87:[function(_dereq_,module,exports){
+},{"./async.js":91,"./errors.js":98,"./util.js":123}],108:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2014 Petka Antonov
@@ -7430,20 +9367,27 @@ function Promise$_progressUnchecked(progressValue) {
  * 
  */
 "use strict";
+var old;
+if (typeof Promise !== "undefined") old = Promise;
+function noConflict(bluebird) {
+    try { if (Promise === bluebird) Promise = old; }
+    catch (e) {}
+    return bluebird;
+}
 module.exports = function() {
-var global = _dereq_("./global.js");
-var util = _dereq_("./util.js");
-var async = _dereq_("./async.js");
-var errors = _dereq_("./errors.js");
+var util = require("./util.js");
+var async = require("./async.js");
+var errors = require("./errors.js");
 
 var INTERNAL = function(){};
 var APPLY = {};
 var NEXT_FILTER = {e: null};
 
-var PromiseArray = _dereq_("./promise_array.js")(Promise, INTERNAL);
-var CapturedTrace = _dereq_("./captured_trace.js")();
-var CatchFilter = _dereq_("./catch_filter.js")(NEXT_FILTER);
-var PromiseResolver = _dereq_("./promise_resolver.js");
+var cast = require("./thenables.js")(Promise, INTERNAL);
+var PromiseArray = require("./promise_array.js")(Promise, INTERNAL, cast);
+var CapturedTrace = require("./captured_trace.js")();
+var CatchFilter = require("./catch_filter.js")(NEXT_FILTER);
+var PromiseResolver = require("./promise_resolver.js");
 
 var isArray = util.isArray;
 
@@ -7455,29 +9399,17 @@ var RangeError = errors.RangeError;
 var TypeError = errors.TypeError;
 var CancellationError = errors.CancellationError;
 var TimeoutError = errors.TimeoutError;
-var RejectionError = errors.RejectionError;
+var OperationalError = errors.OperationalError;
 var originatesFromRejection = errors.originatesFromRejection;
 var markAsOriginatingFromRejection = errors.markAsOriginatingFromRejection;
 var canAttach = errors.canAttach;
 var thrower = util.thrower;
-var apiRejection = _dereq_("./errors_api_rejection")(Promise);
+var apiRejection = require("./errors_api_rejection")(Promise);
 
 
 var makeSelfResolutionError = function Promise$_makeSelfResolutionError() {
     return new TypeError("circular promise resolution chain");
 };
-
-function isPromise(obj) {
-    if (obj === void 0) return false;
-    return obj instanceof Promise;
-}
-
-function isPromiseArrayProxy(receiver, promiseSlotValue) {
-    if (receiver instanceof PromiseArray) {
-        return promiseSlotValue >= 0;
-    }
-    return false;
-}
 
 function Promise(resolver) {
     if (typeof resolver !== "function") {
@@ -7496,15 +9428,24 @@ function Promise(resolver) {
     if (resolver !== INTERNAL) this._resolveFromResolver(resolver);
 }
 
+function returnFirstElement(elements) {
+    return elements[0];
+}
+
 Promise.prototype.bind = function Promise$bind(thisArg) {
+    var maybePromise = cast(thisArg, void 0);
     var ret = new Promise(INTERNAL);
-    ret._setTrace(this);
-    ret._follow(this);
-    ret._setBoundTo(thisArg);
-    if (this._cancellable()) {
-        ret._setCancellable();
-        ret._cancellationParent = this;
+    if (maybePromise instanceof Promise) {
+        var binder = maybePromise.then(function(thisArg) {
+            ret._setBoundTo(thisArg);
+        });
+        var p = Promise.all([this, binder]).then(returnFirstElement);
+        ret._follow(p);
+    } else {
+        ret._follow(this);
+        ret._setBoundTo(thisArg);
     }
+    ret._propagateFrom(this, 2 | 1);
     return ret;
 };
 
@@ -7522,16 +9463,14 @@ function Promise$catch(fn) {
             var item = arguments[i];
             if (typeof item === "function") {
                 catchInstances[j++] = item;
-            }
-            else {
+            } else {
                 var catchFilterTypeError =
                     new TypeError(
                         "A catch filter must be an error constructor "
                         + "or a filter function");
 
                 this._attachExtraTrace(catchFilterTypeError);
-                async.invoke(this._reject, this, catchFilterTypeError);
-                return;
+                return Promise.reject(catchFilterTypeError);
             }
         }
         catchInstances.length = j;
@@ -7579,8 +9518,7 @@ Promise.prototype.toJSON = function Promise$toJSON() {
     if (this.isFulfilled()) {
         ret.fulfillmentValue = this._settledValue;
         ret.isFulfilled = true;
-    }
-    else if (this.isRejected()) {
+    } else if (this.isRejected()) {
         ret.rejectionReason = this._settledValue;
         ret.isRejected = true;
     }
@@ -7588,56 +9526,16 @@ Promise.prototype.toJSON = function Promise$toJSON() {
 };
 
 Promise.prototype.all = function Promise$all() {
-    return Promise$_all(this, true);
+    return new PromiseArray(this).promise();
 };
 
 
-Promise.is = isPromise;
+Promise.is = function Promise$Is(val) {
+    return val instanceof Promise;
+};
 
-function Promise$_all(promises, useBound) {
-    return Promise$_CreatePromiseArray(
-        promises,
-        PromiseArray,
-        useBound === true && promises._isBound()
-            ? promises._boundTo
-            : void 0
-   ).promise();
-}
 Promise.all = function Promise$All(promises) {
-    return Promise$_all(promises, false);
-};
-
-Promise.join = function Promise$Join() {
-    var $_len = arguments.length;var args = new Array($_len); for(var $_i = 0; $_i < $_len; ++$_i) {args[$_i] = arguments[$_i];}
-    return Promise$_CreatePromiseArray(args, PromiseArray, void 0).promise();
-};
-
-Promise.resolve = Promise.fulfilled =
-function Promise$Resolve(value) {
-    var ret = new Promise(INTERNAL);
-    ret._setTrace(void 0);
-    if (ret._tryFollow(value)) {
-        return ret;
-    }
-    ret._cleanValues();
-    ret._setFulfilled();
-    ret._settledValue = value;
-    return ret;
-};
-
-Promise.reject = Promise.rejected = function Promise$Reject(reason) {
-    var ret = new Promise(INTERNAL);
-    ret._setTrace(void 0);
-    markAsOriginatingFromRejection(reason);
-    ret._cleanValues();
-    ret._setRejected();
-    ret._settledValue = reason;
-    if (!canAttach(reason)) {
-        var trace = new Error(reason + "");
-        ret._setCarriedStackTrace(trace);
-    }
-    ret._ensurePossibleRejectionHandled();
-    return ret;
+    return new PromiseArray(promises).promise();
 };
 
 Promise.prototype.error = function Promise$_error(fn) {
@@ -7651,13 +9549,11 @@ function Promise$_resolveFromSyncValue(value) {
         this._setRejected();
         this._settledValue = value.e;
         this._ensurePossibleRejectionHandled();
-    }
-    else {
-        var maybePromise = Promise._cast(value, void 0);
+    } else {
+        var maybePromise = cast(value, void 0);
         if (maybePromise instanceof Promise) {
             this._follow(maybePromise);
-        }
-        else {
+        } else {
             this._cleanValues();
             this._setFulfilled();
             this._settledValue = value;
@@ -7707,18 +9603,49 @@ Promise.defer = Promise.pending = function Promise$Defer() {
 };
 
 Promise.bind = function Promise$Bind(thisArg) {
+    var maybePromise = cast(thisArg, void 0);
     var ret = new Promise(INTERNAL);
     ret._setTrace(void 0);
-    ret._setFulfilled();
-    ret._setBoundTo(thisArg);
+
+    if (maybePromise instanceof Promise) {
+        var p = maybePromise.then(function(thisArg) {
+            ret._setBoundTo(thisArg);
+        });
+        ret._follow(p);
+    } else {
+        ret._setBoundTo(thisArg);
+        ret._setFulfilled();
+    }
     return ret;
 };
 
 Promise.cast = function Promise$_Cast(obj) {
-    var ret = Promise._cast(obj, void 0);
+    var ret = cast(obj, void 0);
     if (!(ret instanceof Promise)) {
-        return Promise.resolve(ret);
+        var val = ret;
+        ret = new Promise(INTERNAL);
+        ret._setTrace(void 0);
+        ret._setFulfilled();
+        ret._cleanValues();
+        ret._settledValue = val;
     }
+    return ret;
+};
+
+Promise.resolve = Promise.fulfilled = Promise.cast;
+
+Promise.reject = Promise.rejected = function Promise$Reject(reason) {
+    var ret = new Promise(INTERNAL);
+    ret._setTrace(void 0);
+    markAsOriginatingFromRejection(reason);
+    ret._cleanValues();
+    ret._setRejected();
+    ret._settledValue = reason;
+    if (!canAttach(reason)) {
+        var trace = new Error(reason + "");
+        ret._setCarriedStackTrace(trace);
+    }
+    ret._ensurePossibleRejectionHandled();
     return ret;
 };
 
@@ -7756,39 +9683,6 @@ Promise.hasLongStackTraces = function Promise$HasLongStackTraces() {
     return debugging && CapturedTrace.isSupported();
 };
 
-Promise.prototype._setProxyHandlers =
-function Promise$_setProxyHandlers(receiver, promiseSlotValue) {
-    var index = this._length();
-
-    if (index >= 524287 - 5) {
-        index = 0;
-        this._setLength(0);
-    }
-    if (index === 0) {
-        this._promise0 = promiseSlotValue;
-        this._receiver0 = receiver;
-    }
-    else {
-        var i = index - 5;
-        this[i + 3] = promiseSlotValue;
-        this[i + 4] = receiver;
-        this[i + 0] =
-        this[i + 1] =
-        this[i + 2] = void 0;
-    }
-    this._setLength(index + 5);
-};
-
-Promise.prototype._proxyPromiseArray =
-function Promise$_proxyPromiseArray(promiseArray, index) {
-    this._setProxyHandlers(promiseArray, index);
-};
-
-Promise.prototype._proxyPromise = function Promise$_proxyPromise(promise) {
-    promise._setProxied();
-    this._setProxyHandlers(promise, -1);
-};
-
 Promise.prototype._then =
 function Promise$_then(
     didFulfill,
@@ -7800,23 +9694,16 @@ function Promise$_then(
     var haveInternalData = internalData !== void 0;
     var ret = haveInternalData ? internalData : new Promise(INTERNAL);
 
-    if (debugging && !haveInternalData) {
-        var haveSameContext = this._peekContext() === this._traceParent;
-        ret._traceParent = haveSameContext ? this._traceParent : this;
-        ret._setTrace(this);
-    }
-
-    if (!haveInternalData && this._isBound()) {
-        ret._setBoundTo(this._boundTo);
+    if (!haveInternalData) {
+        if (debugging) {
+            var haveSameContext = this._peekContext() === this._traceParent;
+            ret._traceParent = haveSameContext ? this._traceParent : this;
+        }
+        ret._propagateFrom(this, 7);
     }
 
     var callbackIndex =
         this._addCallbacks(didFulfill, didReject, didProgress, ret, receiver);
-
-    if (!haveInternalData && this._cancellable()) {
-        ret._setCancellable();
-        ret._cancellationParent = this;
-    }
 
     if (this.isResolved()) {
         async.invoke(this._queueSettleAt, this, callbackIndex);
@@ -7826,7 +9713,7 @@ function Promise$_then(
 };
 
 Promise.prototype._length = function Promise$_length() {
-    return this._bitField & 524287;
+    return this._bitField & 262143;
 };
 
 Promise.prototype._isFollowingOrFulfilledOrRejected =
@@ -7839,8 +9726,8 @@ Promise.prototype._isFollowing = function Promise$_isFollowing() {
 };
 
 Promise.prototype._setLength = function Promise$_setLength(len) {
-    this._bitField = (this._bitField & -524288) |
-        (len & 524287);
+    this._bitField = (this._bitField & -262144) |
+        (len & 262143);
 };
 
 Promise.prototype._setFulfilled = function Promise$_setFulfilled() {
@@ -7934,13 +9821,9 @@ function Promise$_getCarriedStackTrace() {
 };
 
 Promise.prototype._receiverAt = function Promise$_receiverAt(index) {
-    var ret;
-    if (index === 0) {
-        ret = this._receiver0;
-    }
-    else {
-        ret = this[index + 4 - 5];
-    }
+    var ret = index === 0
+        ? this._receiver0
+        : this[(index << 2) + index - 5 + 4];
     if (this._isBound() && ret === void 0) {
         return this._boundTo;
     }
@@ -7948,39 +9831,104 @@ Promise.prototype._receiverAt = function Promise$_receiverAt(index) {
 };
 
 Promise.prototype._promiseAt = function Promise$_promiseAt(index) {
-    if (index === 0) return this._promise0;
-    return this[index + 3 - 5];
+    return index === 0
+        ? this._promise0
+        : this[(index << 2) + index - 5 + 3];
 };
 
 Promise.prototype._fulfillmentHandlerAt =
 function Promise$_fulfillmentHandlerAt(index) {
-    if (index === 0) return this._fulfillmentHandler0;
-    return this[index + 0 - 5];
+    return index === 0
+        ? this._fulfillmentHandler0
+        : this[(index << 2) + index - 5 + 0];
 };
 
 Promise.prototype._rejectionHandlerAt =
 function Promise$_rejectionHandlerAt(index) {
-    if (index === 0) return this._rejectionHandler0;
-    return this[index + 1 - 5];
+    return index === 0
+        ? this._rejectionHandler0
+        : this[(index << 2) + index - 5 + 1];
 };
 
-Promise.prototype._unsetAt = function Promise$_unsetAt(index) {
-     if (index === 0) {
-        this._rejectionHandler0 =
-        this._progressHandler0 =
-        this._promise0 =
-        this._receiver0 = void 0;
-        if (!this._isCarryingStackTrace()) {
-            this._fulfillmentHandler0 = void 0;
-        }
+Promise.prototype._addCallbacks = function Promise$_addCallbacks(
+    fulfill,
+    reject,
+    progress,
+    promise,
+    receiver
+) {
+    var index = this._length();
+
+    if (index >= 262143 - 5) {
+        index = 0;
+        this._setLength(0);
     }
-    else {
-        this[index - 5 + 0] =
-        this[index - 5 + 1] =
-        this[index - 5 + 2] =
-        this[index - 5 + 3] =
-        this[index - 5 + 4] = void 0;
+
+    if (index === 0) {
+        this._promise0 = promise;
+        if (receiver !== void 0) this._receiver0 = receiver;
+        if (typeof fulfill === "function" && !this._isCarryingStackTrace())
+            this._fulfillmentHandler0 = fulfill;
+        if (typeof reject === "function") this._rejectionHandler0 = reject;
+        if (typeof progress === "function") this._progressHandler0 = progress;
+    } else {
+        var base = (index << 2) + index - 5;
+        this[base + 3] = promise;
+        this[base + 4] = receiver;
+        this[base + 0] = typeof fulfill === "function"
+                                            ? fulfill : void 0;
+        this[base + 1] = typeof reject === "function"
+                                            ? reject : void 0;
+        this[base + 2] = typeof progress === "function"
+                                            ? progress : void 0;
     }
+    this._setLength(index + 1);
+    return index;
+};
+
+Promise.prototype._setProxyHandlers =
+function Promise$_setProxyHandlers(receiver, promiseSlotValue) {
+    var index = this._length();
+
+    if (index >= 262143 - 5) {
+        index = 0;
+        this._setLength(0);
+    }
+    if (index === 0) {
+        this._promise0 = promiseSlotValue;
+        this._receiver0 = receiver;
+    } else {
+        var base = (index << 2) + index - 5;
+        this[base + 3] = promiseSlotValue;
+        this[base + 4] = receiver;
+        this[base + 0] =
+        this[base + 1] =
+        this[base + 2] = void 0;
+    }
+    this._setLength(index + 1);
+};
+
+Promise.prototype._proxyPromiseArray =
+function Promise$_proxyPromiseArray(promiseArray, index) {
+    this._setProxyHandlers(promiseArray, index);
+};
+
+Promise.prototype._proxyPromise = function Promise$_proxyPromise(promise) {
+    promise._setProxied();
+    this._setProxyHandlers(promise, -15);
+};
+
+Promise.prototype._setBoundTo = function Promise$_setBoundTo(obj) {
+    if (obj !== void 0) {
+        this._bitField = this._bitField | 8388608;
+        this._boundTo = obj;
+    } else {
+        this._bitField = this._bitField & (~8388608);
+    }
+};
+
+Promise.prototype._isBound = function Promise$_isBound() {
+    return (this._bitField & 8388608) === 8388608;
 };
 
 Promise.prototype._resolveFromResolver =
@@ -8011,99 +9959,41 @@ function Promise$_resolveFromResolver(resolver) {
     }
 };
 
-Promise.prototype._addCallbacks = function Promise$_addCallbacks(
-    fulfill,
-    reject,
-    progress,
-    promise,
-    receiver
-) {
-    var index = this._length();
-
-    if (index >= 524287 - 5) {
-        index = 0;
-        this._setLength(0);
-    }
-
-    if (index === 0) {
-        this._promise0 = promise;
-        if (receiver !== void 0) this._receiver0 = receiver;
-        if (typeof fulfill === "function" && !this._isCarryingStackTrace())
-            this._fulfillmentHandler0 = fulfill;
-        if (typeof reject === "function") this._rejectionHandler0 = reject;
-        if (typeof progress === "function") this._progressHandler0 = progress;
-    }
-    else {
-        var i = index - 5;
-        this[i + 3] = promise;
-        this[i + 4] = receiver;
-        this[i + 0] = typeof fulfill === "function"
-                                            ? fulfill : void 0;
-        this[i + 1] = typeof reject === "function"
-                                            ? reject : void 0;
-        this[i + 2] = typeof progress === "function"
-                                            ? progress : void 0;
-    }
-    this._setLength(index + 5);
-    return index;
-};
-
-
-
-Promise.prototype._setBoundTo = function Promise$_setBoundTo(obj) {
-    if (obj !== void 0) {
-        this._bitField = this._bitField | 8388608;
-        this._boundTo = obj;
-    }
-    else {
-        this._bitField = this._bitField & (~8388608);
-    }
-};
-
-Promise.prototype._isBound = function Promise$_isBound() {
-    return (this._bitField & 8388608) === 8388608;
-};
-
 Promise.prototype._spreadSlowCase =
 function Promise$_spreadSlowCase(targetFn, promise, values, boundTo) {
-    var promiseForAll =
-            Promise$_CreatePromiseArray
-                (values, PromiseArray, boundTo)
-            .promise()
-            ._then(function() {
-                return targetFn.apply(boundTo, arguments);
-            }, void 0, void 0, APPLY, void 0);
-
-    promise._follow(promiseForAll);
+    var promiseForAll = new PromiseArray(values).promise();
+    var promise2 = promiseForAll._then(function() {
+        return targetFn.apply(boundTo, arguments);
+    }, void 0, void 0, APPLY, void 0);
+    promise._follow(promise2);
 };
 
 Promise.prototype._callSpread =
-function Promise$_callSpread(handler, promise, value, localDebugging) {
-    var boundTo = this._isBound() ? this._boundTo : void 0;
+function Promise$_callSpread(handler, promise, value) {
+    var boundTo = this._boundTo;
     if (isArray(value)) {
         for (var i = 0, len = value.length; i < len; ++i) {
-            if (isPromise(Promise._cast(value[i], void 0))) {
+            if (cast(value[i], void 0) instanceof Promise) {
                 this._spreadSlowCase(handler, promise, value, boundTo);
                 return;
             }
         }
     }
-    if (localDebugging) promise._pushContext();
+    promise._pushContext();
     return tryCatchApply(handler, value, boundTo);
 };
 
 Promise.prototype._callHandler =
 function Promise$_callHandler(
-    handler, receiver, promise, value, localDebugging) {
+    handler, receiver, promise, value) {
     var x;
     if (receiver === APPLY && !this.isRejected()) {
-        x = this._callSpread(handler, promise, value, localDebugging);
-    }
-    else {
-        if (localDebugging) promise._pushContext();
+        x = this._callSpread(handler, promise, value);
+    } else {
+        promise._pushContext();
         x = tryCatch1(handler, receiver, value);
     }
-    if (localDebugging) promise._popContext();
+    promise._popContext();
     return x;
 };
 
@@ -8111,15 +10001,11 @@ Promise.prototype._settlePromiseFromHandler =
 function Promise$_settlePromiseFromHandler(
     handler, receiver, value, promise
 ) {
-    if (!isPromise(promise)) {
+    if (!(promise instanceof Promise)) {
         handler.call(receiver, value, promise);
         return;
     }
-
-    var localDebugging = debugging;
-    var x = this._callHandler(handler, receiver,
-                                promise, value, localDebugging);
-
+    var x = this._callHandler(handler, receiver, promise, value);
     if (promise._isFollowing()) return;
 
     if (x === errorObj || x === promise || x === NEXT_FILTER) {
@@ -8129,10 +10015,9 @@ function Promise$_settlePromiseFromHandler(
         var trace = canAttach(err) ? err : new Error(err + "");
         if (x !== NEXT_FILTER) promise._attachExtraTrace(trace);
         promise._rejectUnchecked(err, trace);
-    }
-    else {
-        var castValue = Promise._cast(x, promise);
-        if (isPromise(castValue)) {
+    } else {
+        var castValue = cast(x, promise);
+        if (castValue instanceof Promise) {
             if (castValue.isRejected() &&
                 !castValue._isCarryingStackTrace() &&
                 !canAttach(castValue._settledValue)) {
@@ -8141,12 +10026,8 @@ function Promise$_settlePromiseFromHandler(
                 castValue._setCarriedStackTrace(trace);
             }
             promise._follow(castValue);
-            if (castValue._cancellable()) {
-                promise._cancellationParent = castValue;
-                promise._setCancellable();
-            }
-        }
-        else {
+            promise._propagateFrom(castValue, 1);
+        } else {
             promise._fulfillUnchecked(x);
         }
     }
@@ -8157,16 +10038,11 @@ function Promise$_follow(promise) {
     this._setFollowing();
 
     if (promise.isPending()) {
-        if (promise._cancellable() ) {
-            this._cancellationParent = promise;
-            this._setCancellable();
-        }
+        this._propagateFrom(promise, 1);
         promise._proxyPromise(this);
-    }
-    else if (promise.isFulfilled()) {
+    } else if (promise.isFulfilled()) {
         this._fulfillUnchecked(promise._settledValue);
-    }
-    else {
+    } else {
         this._rejectUnchecked(promise._settledValue,
             promise._getCarriedStackTrace());
     }
@@ -8185,8 +10061,8 @@ function Promise$_tryFollow(value) {
         value === this) {
         return false;
     }
-    var maybePromise = Promise._cast(value, void 0);
-    if (!isPromise(maybePromise)) {
+    var maybePromise = cast(value, void 0);
+    if (!(maybePromise instanceof Promise)) {
         return false;
     }
     this._follow(maybePromise);
@@ -8207,8 +10083,7 @@ Promise.prototype._setTrace = function Promise$_setTrace(parent) {
         if (parent !== void 0 &&
             parent._traceParent === context) {
             this._trace = parent._trace;
-        }
-        else {
+        } else {
             this._trace = new CapturedTrace(isTopLevel);
         }
     }
@@ -8220,28 +10095,33 @@ function Promise$_attachExtraTrace(error) {
     if (debugging) {
         var promise = this;
         var stack = error.stack;
-        stack = typeof stack === "string"
-            ? stack.split("\n") : [];
+        stack = typeof stack === "string" ? stack.split("\n") : [];
+        CapturedTrace.protectErrorMessageNewlines(stack);
         var headerLineCount = 1;
-
+        var combinedTraces = 1;
         while(promise != null &&
             promise._trace != null) {
             stack = CapturedTrace.combine(
                 stack,
                 promise._trace.stack.split("\n")
-           );
+            );
             promise = promise._traceParent;
+            combinedTraces++;
         }
 
-        var max = Error.stackTraceLimit + headerLineCount;
+        var stackTraceLimit = Error.stackTraceLimit || 10;
+        var max = (stackTraceLimit + headerLineCount) * combinedTraces;
         var len = stack.length;
-        if (len  > max) {
+        if (len > max) {
             stack.length = max;
         }
+
+        if (len > 0)
+            stack[0] = stack[0].split("\u0002\u0000\u0001").join("\n");
+
         if (stack.length <= headerLineCount) {
             error.stack = "(No stack trace)";
-        }
-        else {
+        } else {
             error.stack = stack.join("\n");
         }
     }
@@ -8250,6 +10130,20 @@ function Promise$_attachExtraTrace(error) {
 Promise.prototype._cleanValues = function Promise$_cleanValues() {
     if (this._cancellable()) {
         this._cancellationParent = void 0;
+    }
+};
+
+Promise.prototype._propagateFrom =
+function Promise$_propagateFrom(parent, flags) {
+    if ((flags & 1) > 0 && parent._cancellable()) {
+        this._setCancellable();
+        this._cancellationParent = parent;
+    }
+    if ((flags & 4) > 0) {
+        this._setBoundTo(parent._boundTo);
+    }
+    if ((flags & 2) > 0) {
+        this._setTrace(parent);
     }
 };
 
@@ -8275,8 +10169,7 @@ Promise.prototype._settlePromiseAt = function Promise$_settlePromiseAt(index) {
 
     if (typeof handler === "function") {
         this._settlePromiseFromHandler(handler, receiver, value, promise);
-    }
-    else {
+    } else {
         var done = false;
         var isFulfilled = this.isFulfilled();
         if (receiver !== void 0) {
@@ -8288,8 +10181,7 @@ Promise.prototype._settlePromiseAt = function Promise$_settlePromiseAt(index) {
                 else receiver._rejectUnchecked(value,
                     this._getCarriedStackTrace());
                 done = true;
-            }
-            else if (isPromiseArrayProxy(receiver, promise)) {
+            } else if (receiver instanceof PromiseArray) {
                 if (isFulfilled) receiver._promiseFulfilled(value, promise);
                 else receiver._promiseRejected(value, promise);
                 done = true;
@@ -8302,7 +10194,7 @@ Promise.prototype._settlePromiseAt = function Promise$_settlePromiseAt(index) {
         }
     }
 
-    if (index >= 256) {
+    if (index >= 4) {
         this._queueGC();
     }
 };
@@ -8338,13 +10230,21 @@ Promise.prototype._queueGC = function Promise$_queueGC() {
 };
 
 Promise.prototype._gc = function Promise$gc() {
-    var len = this._length();
-    this._unsetAt(0);
+    var len = this._length() * 5 - 5;
     for (var i = 0; i < len; i++) {
         delete this[i];
     }
+    this._clearFirstHandlerData();
     this._setLength(0);
     this._unsetGcQueued();
+};
+
+Promise.prototype._clearFirstHandlerData =
+function Promise$_clearFirstHandlerData() {
+    this._fulfillmentHandler0 = void 0;
+    this._rejectionHandler0 = void 0;
+    this._promise0 = void 0;
+    this._receiver0 = void 0;
 };
 
 Promise.prototype._queueSettleAt = function Promise$_queueSettleAt(index) {
@@ -8398,8 +10298,7 @@ function Promise$_rejectUnchecked(reason, trace) {
 
     if (len > 0) {
         async.invoke(this._rejectPromises, this, null);
-    }
-    else {
+    } else {
         this._ensurePossibleRejectionHandled();
     }
 };
@@ -8411,7 +10310,7 @@ Promise.prototype._rejectPromises = function Promise$_rejectPromises() {
 
 Promise.prototype._settlePromises = function Promise$_settlePromises() {
     var len = this._length();
-    for (var i = 0; i < len; i+= 5) {
+    for (var i = 0; i < len; i++) {
         this._settlePromiseAt(i);
     }
 };
@@ -8469,36 +10368,13 @@ Promise.prototype._popContext = function Promise$_popContext() {
     contextStack.pop();
 };
 
-function Promise$_CreatePromiseArray(
-    promises, PromiseArrayConstructor, boundTo) {
+Promise.noConflict = function Promise$NoConflict() {
+    return noConflict(Promise);
+};
 
-    var list = null;
-    if (isArray(promises)) {
-        list = promises;
-    }
-    else {
-        list = Promise._cast(promises, void 0);
-        if (list !== promises) {
-            list._setBoundTo(boundTo);
-        }
-        else if (!isPromise(list)) {
-            list = null;
-        }
-    }
-    if (list !== null) {
-        return new PromiseArrayConstructor(list, boundTo);
-    }
-    return {
-        promise: function() {return apiRejection("expecting an array, a promise or a thenable");}
-    };
-}
-
-var old = global.Promise;
-Promise.noConflict = function() {
-    if (global.Promise === Promise) {
-        global.Promise = old;
-    }
-    return Promise;
+Promise.setScheduler = function(fn) {
+    if (typeof fn !== "function") throw new TypeError("fn must be a function");
+    async._schedule = fn;
 };
 
 if (!CapturedTrace.isSupported()) {
@@ -8507,41 +10383,46 @@ if (!CapturedTrace.isSupported()) {
 }
 
 Promise._makeSelfResolutionError = makeSelfResolutionError;
-_dereq_("./finally.js")(Promise, NEXT_FILTER);
-_dereq_("./direct_resolve.js")(Promise);
-_dereq_("./thenables.js")(Promise, INTERNAL);
-_dereq_("./synchronous_inspection.js")(Promise);
+require("./finally.js")(Promise, NEXT_FILTER, cast);
+require("./direct_resolve.js")(Promise);
+require("./synchronous_inspection.js")(Promise);
+require("./join.js")(Promise, PromiseArray, cast, INTERNAL);
 Promise.RangeError = RangeError;
 Promise.CancellationError = CancellationError;
 Promise.TimeoutError = TimeoutError;
 Promise.TypeError = TypeError;
-Promise.RejectionError = RejectionError;
+Promise.OperationalError = OperationalError;
+Promise.RejectionError = OperationalError;
+Promise.AggregateError = errors.AggregateError;
 
 util.toFastProperties(Promise);
 util.toFastProperties(Promise.prototype);
-_dereq_('./timers.js')(Promise,INTERNAL);
-_dereq_('./any.js')(Promise,Promise$_CreatePromiseArray,PromiseArray);
-_dereq_('./race.js')(Promise,INTERNAL);
-_dereq_('./call_get.js')(Promise);
-_dereq_('./filter.js')(Promise,Promise$_CreatePromiseArray,PromiseArray,apiRejection);
-_dereq_('./generators.js')(Promise,apiRejection,INTERNAL);
-_dereq_('./map.js')(Promise,PromiseArray,INTERNAL,apiRejection);
-_dereq_('./nodeify.js')(Promise);
-_dereq_('./promisify.js')(Promise,INTERNAL);
-_dereq_('./props.js')(Promise,PromiseArray);
-_dereq_('./reduce.js')(Promise,Promise$_CreatePromiseArray,PromiseArray,apiRejection,INTERNAL);
-_dereq_('./settle.js')(Promise,Promise$_CreatePromiseArray,PromiseArray);
-_dereq_('./some.js')(Promise,Promise$_CreatePromiseArray,PromiseArray,apiRejection);
-_dereq_('./progress.js')(Promise,isPromiseArrayProxy);
-_dereq_('./cancel.js')(Promise,INTERNAL);
+Promise.Promise = Promise;
+require('./timers.js')(Promise,INTERNAL,cast);
+require('./race.js')(Promise,INTERNAL,cast);
+require('./call_get.js')(Promise);
+require('./generators.js')(Promise,apiRejection,INTERNAL,cast);
+require('./map.js')(Promise,PromiseArray,apiRejection,cast,INTERNAL);
+require('./nodeify.js')(Promise);
+require('./promisify.js')(Promise,INTERNAL);
+require('./props.js')(Promise,PromiseArray,cast);
+require('./reduce.js')(Promise,PromiseArray,apiRejection,cast,INTERNAL);
+require('./settle.js')(Promise,PromiseArray);
+require('./some.js')(Promise,PromiseArray,apiRejection);
+require('./progress.js')(Promise,PromiseArray);
+require('./cancel.js')(Promise,INTERNAL);
+require('./filter.js')(Promise,INTERNAL);
+require('./any.js')(Promise,PromiseArray);
+require('./each.js')(Promise,INTERNAL);
+require('./using.js')(Promise,apiRejection,cast);
 
 Promise.prototype = Promise.prototype;
 return Promise;
 
 };
 
-}).call(this,_dereq_("FWaASH"))
-},{"./any.js":70,"./async.js":71,"./call_get.js":72,"./cancel.js":73,"./captured_trace.js":74,"./catch_filter.js":75,"./direct_resolve.js":76,"./errors.js":77,"./errors_api_rejection":78,"./filter.js":80,"./finally.js":81,"./generators.js":82,"./global.js":83,"./map.js":84,"./nodeify.js":85,"./progress.js":86,"./promise_array.js":88,"./promise_resolver.js":89,"./promisify.js":91,"./props.js":93,"./race.js":95,"./reduce.js":96,"./settle.js":98,"./some.js":100,"./synchronous_inspection.js":102,"./thenables.js":103,"./timers.js":104,"./util.js":105,"FWaASH":111}],88:[function(_dereq_,module,exports){
+}).call(this,require('_process'))
+},{"./any.js":90,"./async.js":91,"./call_get.js":92,"./cancel.js":93,"./captured_trace.js":94,"./catch_filter.js":95,"./direct_resolve.js":96,"./each.js":97,"./errors.js":98,"./errors_api_rejection":99,"./filter.js":101,"./finally.js":102,"./generators.js":103,"./join.js":104,"./map.js":105,"./nodeify.js":106,"./progress.js":107,"./promise_array.js":109,"./promise_resolver.js":110,"./promisify.js":111,"./props.js":112,"./race.js":114,"./reduce.js":115,"./settle.js":117,"./some.js":118,"./synchronous_inspection.js":119,"./thenables.js":120,"./timers.js":121,"./using.js":122,"./util.js":123,"_process":145}],109:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -8565,11 +10446,9 @@ return Promise;
  * 
  */
 "use strict";
-module.exports = function(Promise, INTERNAL) {
-var canAttach = _dereq_("./errors.js").canAttach;
-var util = _dereq_("./util.js");
-var async = _dereq_("./async.js");
-var hasOwn = {}.hasOwnProperty;
+module.exports = function(Promise, INTERNAL, cast) {
+var canAttach = require("./errors.js").canAttach;
+var util = require("./util.js");
 var isArray = util.isArray;
 
 function toResolutionValue(val) {
@@ -8580,18 +10459,12 @@ function toResolutionValue(val) {
     }
 }
 
-function PromiseArray(values, boundTo) {
+function PromiseArray(values) {
     var promise = this._promise = new Promise(INTERNAL);
     var parent = void 0;
     if (values instanceof Promise) {
         parent = values;
-        if (values._cancellable()) {
-            promise._setCancellable();
-            promise._cancellationParent = values;
-        }
-        if (values._isBound()) {
-            promise._setBoundTo(boundTo);
-        }
+        promise._propagateFrom(parent, 1 | 4);
     }
     promise._setTrace(parent);
     this._values = values;
@@ -8599,8 +10472,6 @@ function PromiseArray(values, boundTo) {
     this._totalResolved = 0;
     this._init(void 0, -2);
 }
-PromiseArray.PropertiesPromiseArray = function() {};
-
 PromiseArray.prototype.length = function PromiseArray$length() {
     return this._length;
 };
@@ -8611,8 +10482,10 @@ PromiseArray.prototype.promise = function PromiseArray$promise() {
 
 PromiseArray.prototype._init =
 function PromiseArray$_init(_, resolveValueIfEmpty) {
-    var values = this._values;
+    var values = cast(this._values, void 0);
     if (values instanceof Promise) {
+        this._values = values;
+        values._setBoundTo(this._promise._boundTo);
         if (values.isFulfilled()) {
             values = values._settledValue;
             if (!isArray(values)) {
@@ -8620,76 +10493,57 @@ function PromiseArray$_init(_, resolveValueIfEmpty) {
                 this.__hardReject__(err);
                 return;
             }
-            this._values = values;
-        }
-        else if (values.isPending()) {
+        } else if (values.isPending()) {
             values._then(
-                this._init,
+                PromiseArray$_init,
                 this._reject,
                 void 0,
                 this,
                 resolveValueIfEmpty
            );
             return;
-        }
-        else {
+        } else {
             values._unsetRejectionIsUnhandled();
             this._reject(values._settledValue);
             return;
         }
+    } else if (!isArray(values)) {
+        var err = new Promise.TypeError("expecting an array, a promise or a thenable");
+        this.__hardReject__(err);
+        return;
     }
 
     if (values.length === 0) {
-        this._resolve(toResolutionValue(resolveValueIfEmpty));
-        return;
-    }
-    var len = values.length;
-    var newLen = len;
-    var newValues;
-    if (this instanceof PromiseArray.PropertiesPromiseArray) {
-        newValues = this._values;
-    }
-    else {
-        newValues = new Array(len);
-    }
-    var isDirectScanNeeded = false;
-    for (var i = 0; i < len; ++i) {
-        var promise = values[i];
-        if (promise === void 0 && !hasOwn.call(values, i)) {
-            newLen--;
-            continue;
-        }
-        var maybePromise = Promise._cast(promise, void 0);
-        if (maybePromise instanceof Promise) {
-            if (maybePromise.isPending()) {
-                maybePromise._proxyPromiseArray(this, i);
-            }
-            else {
-                maybePromise._unsetRejectionIsUnhandled();
-                isDirectScanNeeded = true;
-            }
-        }
-        else {
-            isDirectScanNeeded = true;
-        }
-        newValues[i] = maybePromise;
-    }
-    if (newLen === 0) {
-        if (resolveValueIfEmpty === -2) {
-            this._resolve(newValues);
+        if (resolveValueIfEmpty === -5) {
+            this._resolveEmptyArray();
         }
         else {
             this._resolve(toResolutionValue(resolveValueIfEmpty));
         }
         return;
     }
+    var len = this.getActualLength(values.length);
+    var newLen = len;
+    var newValues = this.shouldCopyValues() ? new Array(len) : this._values;
+    var isDirectScanNeeded = false;
+    for (var i = 0; i < len; ++i) {
+        var maybePromise = cast(values[i], void 0);
+        if (maybePromise instanceof Promise) {
+            if (maybePromise.isPending()) {
+                maybePromise._proxyPromiseArray(this, i);
+            } else {
+                maybePromise._unsetRejectionIsUnhandled();
+                isDirectScanNeeded = true;
+            }
+        } else {
+            isDirectScanNeeded = true;
+        }
+        newValues[i] = maybePromise;
+    }
     this._values = newValues;
     this._length = newLen;
     if (isDirectScanNeeded) {
-        var scanMethod = newLen === len
-            ? this._scanDirectValues
-            : this._scanDirectValuesHoled;
-        async.invoke(scanMethod, this, len);
+        this._scanDirectValues(len);
     }
 };
 
@@ -8698,24 +10552,10 @@ function PromiseArray$_settlePromiseAt(index) {
     var value = this._values[index];
     if (!(value instanceof Promise)) {
         this._promiseFulfilled(value, index);
-    }
-    else if (value.isFulfilled()) {
+    } else if (value.isFulfilled()) {
         this._promiseFulfilled(value._settledValue, index);
-    }
-    else if (value.isRejected()) {
+    } else if (value.isRejected()) {
         this._promiseRejected(value._settledValue, index);
-    }
-};
-
-PromiseArray.prototype._scanDirectValuesHoled =
-function PromiseArray$_scanDirectValuesHoled(len) {
-    for (var i = 0; i < len; ++i) {
-        if (this._isResolved()) {
-            break;
-        }
-        if (hasOwn.call(this._values, i)) {
-            this._settlePromiseAt(i);
-        }
     }
 };
 
@@ -8773,10 +10613,20 @@ function PromiseArray$_promiseRejected(reason, index) {
     this._reject(reason);
 };
 
+PromiseArray.prototype.shouldCopyValues =
+function PromiseArray$_shouldCopyValues() {
+    return true;
+};
+
+PromiseArray.prototype.getActualLength =
+function PromiseArray$getActualLength(len) {
+    return len;
+};
+
 return PromiseArray;
 };
 
-},{"./async.js":71,"./errors.js":77,"./util.js":105}],89:[function(_dereq_,module,exports){
+},{"./errors.js":98,"./util.js":123}],110:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -8800,26 +10650,25 @@ return PromiseArray;
  * 
  */
 "use strict";
-var util = _dereq_("./util.js");
+var util = require("./util.js");
 var maybeWrapAsError = util.maybeWrapAsError;
-var errors = _dereq_("./errors.js");
+var errors = require("./errors.js");
 var TimeoutError = errors.TimeoutError;
-var RejectionError = errors.RejectionError;
-var async = _dereq_("./async.js");
+var OperationalError = errors.OperationalError;
+var async = require("./async.js");
 var haveGetters = util.haveGetters;
-var es5 = _dereq_("./es5.js");
+var es5 = require("./es5.js");
 
 function isUntypedError(obj) {
     return obj instanceof Error &&
         es5.getPrototypeOf(obj) === Error.prototype;
 }
 
-function wrapAsRejectionError(obj) {
+function wrapAsOperationalError(obj) {
     var ret;
     if (isUntypedError(obj)) {
-        ret = new RejectionError(obj);
-    }
-    else {
+        ret = new OperationalError(obj);
+    } else {
         ret = obj;
     }
     errors.markAsOriginatingFromRejection(ret);
@@ -8831,18 +10680,14 @@ function nodebackForPromise(promise) {
         if (promise === null) return;
 
         if (err) {
-            var wrapped = wrapAsRejectionError(maybeWrapAsError(err));
+            var wrapped = wrapAsOperationalError(maybeWrapAsError(err));
             promise._attachExtraTrace(wrapped);
             promise._reject(wrapped);
-        }
-        else {
-            if (arguments.length > 2) {
-                var $_len = arguments.length;var args = new Array($_len - 1); for(var $_i = 1; $_i < $_len; ++$_i) {args[$_i - 1] = arguments[$_i];}
-                promise._fulfill(args);
-            }
-            else {
-                promise._fulfill(value);
-            }
+        } else if (arguments.length > 2) {
+            var $_len = arguments.length;var args = new Array($_len - 1); for(var $_i = 1; $_i < $_len; ++$_i) {args[$_i - 1] = arguments[$_i];}
+            promise._fulfill(args);
+        } else {
+            promise._fulfill(value);
         }
 
         promise = null;
@@ -8882,10 +10727,11 @@ PromiseResolver.prototype.toString = function PromiseResolver$toString() {
 
 PromiseResolver.prototype.resolve =
 PromiseResolver.prototype.fulfill = function PromiseResolver$resolve(value) {
-    var promise = this.promise;
-    if ((promise === void 0) || (promise._tryFollow === void 0)) {
+    if (!(this instanceof PromiseResolver)) {
         throw new TypeError("Illegal invocation, resolver resolve/reject must be called within a resolver context. Consider using the promise constructor instead.");
     }
+
+    var promise = this.promise;
     if (promise._tryFollow(value)) {
         return;
     }
@@ -8893,10 +10739,11 @@ PromiseResolver.prototype.fulfill = function PromiseResolver$resolve(value) {
 };
 
 PromiseResolver.prototype.reject = function PromiseResolver$reject(reason) {
-    var promise = this.promise;
-    if ((promise === void 0) || (promise._attachExtraTrace === void 0)) {
+    if (!(this instanceof PromiseResolver)) {
         throw new TypeError("Illegal invocation, resolver resolve/reject must be called within a resolver context. Consider using the promise constructor instead.");
     }
+
+    var promise = this.promise;
     errors.markAsOriginatingFromRejection(reason);
     var trace = errors.canAttach(reason) ? reason : new Error(reason + "");
     promise._attachExtraTrace(trace);
@@ -8908,6 +10755,9 @@ PromiseResolver.prototype.reject = function PromiseResolver$reject(reason) {
 
 PromiseResolver.prototype.progress =
 function PromiseResolver$progress(value) {
+    if (!(this instanceof PromiseResolver)) {
+        throw new TypeError("Illegal invocation, resolver resolve/reject must be called within a resolver context. Consider using the promise constructor instead.");
+    }
     async.invoke(this.promise._progress, this.promise, value);
 };
 
@@ -8936,139 +10786,7 @@ function PromiseResolver$_setCarriedStackTrace(trace) {
 
 module.exports = PromiseResolver;
 
-},{"./async.js":71,"./errors.js":77,"./es5.js":79,"./util.js":105}],90:[function(_dereq_,module,exports){
-/**
- * Copyright (c) 2014 Petka Antonov
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:</p>
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * 
- */
-"use strict";
-module.exports = function(Promise, INTERNAL) {
-var errors = _dereq_("./errors.js");
-var TypeError = errors.TypeError;
-var util = _dereq_("./util.js");
-var isArray = util.isArray;
-var errorObj = util.errorObj;
-var tryCatch1 = util.tryCatch1;
-var yieldHandlers = [];
-
-function promiseFromYieldHandler(value) {
-    var _yieldHandlers = yieldHandlers;
-    var _errorObj = errorObj;
-    var _Promise = Promise;
-    var len = _yieldHandlers.length;
-    for (var i = 0; i < len; ++i) {
-        var result = tryCatch1(_yieldHandlers[i], void 0, value);
-        if (result === _errorObj) {
-            return _Promise.reject(_errorObj.e);
-        }
-        var maybePromise = _Promise._cast(result,
-            promiseFromYieldHandler, void 0);
-        if (maybePromise instanceof _Promise) return maybePromise;
-    }
-    return null;
-}
-
-function PromiseSpawn(generatorFunction, receiver) {
-    var promise = this._promise = new Promise(INTERNAL);
-    promise._setTrace(void 0);
-    this._generatorFunction = generatorFunction;
-    this._receiver = receiver;
-    this._generator = void 0;
-}
-
-PromiseSpawn.prototype.promise = function PromiseSpawn$promise() {
-    return this._promise;
-};
-
-PromiseSpawn.prototype._run = function PromiseSpawn$_run() {
-    this._generator = this._generatorFunction.call(this._receiver);
-    this._receiver =
-        this._generatorFunction = void 0;
-    this._next(void 0);
-};
-
-PromiseSpawn.prototype._continue = function PromiseSpawn$_continue(result) {
-    if (result === errorObj) {
-        this._generator = void 0;
-        var trace = errors.canAttach(result.e)
-            ? result.e : new Error(result.e + "");
-        this._promise._attachExtraTrace(trace);
-        this._promise._reject(result.e, trace);
-        return;
-    }
-
-    var value = result.value;
-    if (result.done === true) {
-        this._generator = void 0;
-        if (!this._promise._tryFollow(value)) {
-            this._promise._fulfill(value);
-        }
-    }
-    else {
-        var maybePromise = Promise._cast(value, PromiseSpawn$_continue, void 0);
-        if (!(maybePromise instanceof Promise)) {
-            if (isArray(maybePromise)) {
-                maybePromise = Promise.all(maybePromise);
-            }
-            else {
-                maybePromise = promiseFromYieldHandler(maybePromise);
-            }
-            if (maybePromise === null) {
-                this._throw(new TypeError("A value was yielded that could not be treated as a promise"));
-                return;
-            }
-        }
-        maybePromise._then(
-            this._next,
-            this._throw,
-            void 0,
-            this,
-            null
-       );
-    }
-};
-
-PromiseSpawn.prototype._throw = function PromiseSpawn$_throw(reason) {
-    if (errors.canAttach(reason))
-        this._promise._attachExtraTrace(reason);
-    this._continue(
-        tryCatch1(this._generator["throw"], this._generator, reason)
-   );
-};
-
-PromiseSpawn.prototype._next = function PromiseSpawn$_next(value) {
-    this._continue(
-        tryCatch1(this._generator.next, this._generator, value)
-   );
-};
-
-PromiseSpawn.addYieldHandler = function PromiseSpawn$AddYieldHandler(fn) {
-    if (typeof fn !== "function") throw new TypeError("fn must be a function");
-    yieldHandlers.push(fn);
-};
-
-return PromiseSpawn;
-};
-
-},{"./errors.js":77,"./util.js":105}],91:[function(_dereq_,module,exports){
+},{"./async.js":91,"./errors.js":98,"./es5.js":100,"./util.js":123}],111:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -9094,86 +10812,71 @@ return PromiseSpawn;
 "use strict";
 module.exports = function(Promise, INTERNAL) {
 var THIS = {};
-var util = _dereq_("./util.js");
-var es5 = _dereq_("./es5.js");
-var nodebackForPromise = _dereq_("./promise_resolver.js")
+var util = require("./util.js");
+var nodebackForPromise = require("./promise_resolver.js")
     ._nodebackForPromise;
 var withAppended = util.withAppended;
 var maybeWrapAsError = util.maybeWrapAsError;
 var canEvaluate = util.canEvaluate;
-var deprecated = util.deprecated;
-var TypeError = _dereq_("./errors").TypeError;
+var TypeError = require("./errors").TypeError;
+var defaultSuffix = "Async";
+var defaultFilter = function(name, func) {
+    return util.isIdentifier(name) &&
+        name.charAt(0) !== "_" &&
+        !util.isClass(func);
+};
+var defaultPromisified = {__isPromisified__: true};
 
 
-var rasyncSuffix = new RegExp("Async" + "$");
+function escapeIdentRegex(str) {
+    return str.replace(/([$])/, "\\$");
+}
+
 function isPromisified(fn) {
-    return fn.__isPromisified__ === true;
+    try {
+        return fn.__isPromisified__ === true;
+    }
+    catch (e) {
+        return false;
+    }
 }
-function hasPromisified(obj, key) {
-    var containsKey = ((key + "Async") in obj);
-    return containsKey ? isPromisified(obj[key + "Async"])
-                       : false;
+
+function hasPromisified(obj, key, suffix) {
+    var val = util.getDataPropertyOrDefault(obj, key + suffix,
+                                            defaultPromisified);
+    return val ? isPromisified(val) : false;
 }
-function checkValid(ret) {
+function checkValid(ret, suffix, suffixRegexp) {
     for (var i = 0; i < ret.length; i += 2) {
         var key = ret[i];
-        if (rasyncSuffix.test(key)) {
-            var keyWithoutAsyncSuffix = key.replace(rasyncSuffix, "");
+        if (suffixRegexp.test(key)) {
+            var keyWithoutAsyncSuffix = key.replace(suffixRegexp, "");
             for (var j = 0; j < ret.length; j += 2) {
                 if (ret[j] === keyWithoutAsyncSuffix) {
                     throw new TypeError("Cannot promisify an API " +
-                        "that has normal methods with Async-suffix");
+                        "that has normal methods with '"+suffix+"'-suffix");
                 }
             }
         }
     }
 }
-var inheritedMethods = (function() {
-    if (es5.isES5) {
-        var create = Object.create;
-        var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-        return function(cur) {
-            var ret = [];
-            var visitedKeys = create(null);
-            var original = cur;
-            while (cur !== null) {
-                var keys = es5.keys(cur);
-                for (var i = 0, len = keys.length; i < len; ++i) {
-                    var key = keys[i];
-                    if (visitedKeys[key]) continue;
-                    visitedKeys[key] = true;
-                    var desc = getOwnPropertyDescriptor(cur, key);
 
-                    if (desc != null &&
-                        typeof desc.value === "function" &&
-                        !isPromisified(desc.value) &&
-                        !hasPromisified(original, key)) {
-                        ret.push(key, desc.value);
-                    }
-                }
-                cur = es5.getPrototypeOf(cur);
-            }
-            checkValid(ret);
-            return ret;
-        };
+function promisifiableMethods(obj, suffix, suffixRegexp, filter) {
+    var keys = util.inheritedDataKeys(obj);
+    var ret = [];
+    for (var i = 0; i < keys.length; ++i) {
+        var key = keys[i];
+        var value = obj[key];
+        if (typeof value === "function" &&
+            !isPromisified(value) &&
+            !hasPromisified(obj, key, suffix) &&
+            filter(key, value, obj)) {
+            ret.push(key, value);
+        }
     }
-    else {
-        return function(obj) {
-            var ret = [];
-            /*jshint forin:false */
-            for (var key in obj) {
-                var fn = obj[key];
-                if (typeof fn === "function" &&
-                    !isPromisified(fn) &&
-                    !hasPromisified(obj, key)) {
-                    ret.push(key, fn);
-                }
-            }
-            checkValid(ret);
-            return ret;
-        };
-    }
-})();
+    checkValid(ret, suffix, suffixRegexp);
+    return ret;
+}
 
 function switchCaseArgumentOrder(likelyArgumentCount) {
     var ret = [likelyArgumentCount];
@@ -9188,12 +10891,12 @@ function switchCaseArgumentOrder(likelyArgumentCount) {
     return ret;
 }
 
+function argumentSequence(argumentCount) {
+    return util.filledRange(argumentCount, "arguments[", "]");
+}
+
 function parameterDeclaration(parameterCount) {
-    var ret = new Array(parameterCount);
-    for(var i = 0; i < ret.length; ++i) {
-        ret[i] = "_arg" + i;
-    }
-    return ret.join(", ");
+    return util.filledRange(parameterCount, "_arg", "");
 }
 
 function parameterCount(fn) {
@@ -9203,45 +10906,47 @@ function parameterCount(fn) {
     return 0;
 }
 
-var rident = /^[a-z$_][a-z$_0-9]*$/i;
-function propertyAccess(id) {
-    if (rident.test(id)) {
-        return "." + id;
+function generatePropertyAccess(key) {
+    if (util.isIdentifier(key)) {
+        return "." + key;
     }
-    else return "['" + id.replace(/(['\\])/g, "\\$1") + "']";
+    else return "['" + key.replace(/(['\\])/g, "\\$1") + "']";
 }
 
-function makeNodePromisifiedEval(callback, receiver, originalName, fn) {
+function makeNodePromisifiedEval(callback, receiver, originalName, fn, suffix) {
     var newParameterCount = Math.max(0, parameterCount(fn) - 1);
     var argumentOrder = switchCaseArgumentOrder(newParameterCount);
-
-    var callbackName = (typeof originalName === "string" ?
-        originalName + "Async" :
-        "promisified");
+    var callbackName =
+        (typeof originalName === "string" && util.isIdentifier(originalName)
+            ? originalName + suffix
+            : "promisified");
 
     function generateCallForArgumentCount(count) {
-        var args = new Array(count);
-        for (var i = 0, len = args.length; i < len; ++i) {
-            args[i] = "arguments[" + i + "]";
+        var args = argumentSequence(count).join(", ");
+        var comma = count > 0 ? ", " : "";
+        var ret;
+        if (typeof callback === "string") {
+            ret = "                                                          \n\
+                this.method(args, fn);                                       \n\
+                break;                                                       \n\
+            ".replace(".method", generatePropertyAccess(callback));
+        } else if (receiver === THIS) {
+            ret =  "                                                         \n\
+                callback.call(this, args, fn);                               \n\
+                break;                                                       \n\
+            ";
+        } else if (receiver !== void 0) {
+            ret =  "                                                         \n\
+                callback.call(receiver, args, fn);                           \n\
+                break;                                                       \n\
+            ";
+        } else {
+            ret =  "                                                         \n\
+                callback(args, fn);                                          \n\
+                break;                                                       \n\
+            ";
         }
-        var comma = count > 0 ? "," : "";
-
-        if (typeof callback === "string" &&
-            receiver === THIS) {
-            return "this" + propertyAccess(callback) + "("+args.join(",") +
-                comma +" fn);"+
-                "break;";
-        }
-        return (receiver === void 0
-            ? "callback("+args.join(",")+ comma +" fn);"
-            : "callback.call("+(receiver === THIS
-                ? "this"
-                : "receiver")+", "+args.join(",") + comma + " fn);") +
-        "break;";
-    }
-
-    if (!rident.test(callbackName)) {
-        callbackName = "promisified";
+        return ret.replace("args", args).replace(", ", comma);
     }
 
     function generateArgumentSwitchCase() {
@@ -9250,46 +10955,74 @@ function makeNodePromisifiedEval(callback, receiver, originalName, fn) {
             ret += "case " + argumentOrder[i] +":" +
                 generateCallForArgumentCount(argumentOrder[i]);
         }
-        ret += "default: var args = new Array(len + 1);" +
-            "var i = 0;" +
-            "for (var i = 0; i < len; ++i) { " +
-            "   args[i] = arguments[i];" +
-            "}" +
-            "args[i] = fn;" +
+        var codeForCall;
+        if (typeof callback === "string") {
+            codeForCall = "                                                  \n\
+                this.property.apply(this, args);                             \n\
+            "
+                .replace(".property", generatePropertyAccess(callback));
+        } else if (receiver === THIS) {
+            codeForCall = "                                                  \n\
+                callback.apply(this, args);                                  \n\
+            ";
+        } else {
+            codeForCall = "                                                  \n\
+                callback.apply(receiver, args);                              \n\
+            ";
+        }
 
-            (typeof callback === "string"
-            ? "this" + propertyAccess(callback) + ".apply("
-            : "callback.apply(") +
-
-            (receiver === THIS ? "this" : "receiver") +
-            ", args); break;";
+        ret += "                                                             \n\
+        default:                                                             \n\
+            var args = new Array(len + 1);                                   \n\
+            var i = 0;                                                       \n\
+            for (var i = 0; i < len; ++i) {                                  \n\
+               args[i] = arguments[i];                                       \n\
+            }                                                                \n\
+            args[i] = fn;                                                    \n\
+            [CodeForCall]                                                    \n\
+            break;                                                           \n\
+        ".replace("[CodeForCall]", codeForCall);
         return ret;
     }
 
-    return new Function("Promise", "callback", "receiver",
-            "withAppended", "maybeWrapAsError", "nodebackForPromise",
-            "INTERNAL",
-        "var ret = function " + callbackName +
-        "(" + parameterDeclaration(newParameterCount) + ") {\"use strict\";" +
-        "var len = arguments.length;" +
-        "var promise = new Promise(INTERNAL);"+
-        "promise._setTrace(void 0);" +
-        "var fn = nodebackForPromise(promise);"+
-        "try {" +
-        "switch(len) {" +
-        generateArgumentSwitchCase() +
-        "}" +
-        "}" +
-        "catch(e){ " +
-        "var wrapped = maybeWrapAsError(e);" +
-        "promise._attachExtraTrace(wrapped);" +
-        "promise._reject(wrapped);" +
-        "}" +
-        "return promise;" +
-        "" +
-        "}; ret.__isPromisified__ = true; return ret;"
-   )(Promise, callback, receiver, withAppended,
-        maybeWrapAsError, nodebackForPromise, INTERNAL);
+    return new Function("Promise",
+                        "callback",
+                        "receiver",
+                        "withAppended",
+                        "maybeWrapAsError",
+                        "nodebackForPromise",
+                        "INTERNAL","                                         \n\
+        var ret = function FunctionName(Parameters) {                        \n\
+            'use strict';                                                    \n\
+            var len = arguments.length;                                      \n\
+            var promise = new Promise(INTERNAL);                             \n\
+            promise._setTrace(void 0);                                       \n\
+            var fn = nodebackForPromise(promise);                            \n\
+            try {                                                            \n\
+                switch(len) {                                                \n\
+                    [CodeForSwitchCase]                                      \n\
+                }                                                            \n\
+            } catch (e) {                                                    \n\
+                var wrapped = maybeWrapAsError(e);                           \n\
+                promise._attachExtraTrace(wrapped);                          \n\
+                promise._reject(wrapped);                                    \n\
+            }                                                                \n\
+            return promise;                                                  \n\
+        };                                                                   \n\
+        ret.__isPromisified__ = true;                                        \n\
+        return ret;                                                          \n\
+        "
+        .replace("FunctionName", callbackName)
+        .replace("Parameters", parameterDeclaration(newParameterCount))
+        .replace("[CodeForSwitchCase]", generateArgumentSwitchCase()))(
+            Promise,
+            callback,
+            receiver,
+            withAppended,
+            maybeWrapAsError,
+            nodebackForPromise,
+            INTERNAL
+        );
 }
 
 function makeNodePromisifiedClosure(callback, receiver) {
@@ -9304,8 +11037,7 @@ function makeNodePromisifiedClosure(callback, receiver) {
         var fn = nodebackForPromise(promise);
         try {
             callback.apply(_receiver, withAppended(arguments, fn));
-        }
-        catch(e) {
+        } catch(e) {
             var wrapped = maybeWrapAsError(e);
             promise._attachExtraTrace(wrapped);
             promise._reject(wrapped);
@@ -9320,50 +11052,69 @@ var makeNodePromisified = canEvaluate
     ? makeNodePromisifiedEval
     : makeNodePromisifiedClosure;
 
-function _promisify(callback, receiver, isAll) {
-    if (isAll) {
-        var methods = inheritedMethods(callback);
-        for (var i = 0, len = methods.length; i < len; i+= 2) {
-            var key = methods[i];
-            var fn = methods[i+1];
-            var promisifiedKey = key + "Async";
-            callback[promisifiedKey] = makeNodePromisified(key, THIS, key, fn);
-        }
-        util.toFastProperties(callback);
-        return callback;
+function promisifyAll(obj, suffix, filter, promisifier) {
+    var suffixRegexp = new RegExp(escapeIdentRegex(suffix) + "$");
+    var methods =
+        promisifiableMethods(obj, suffix, suffixRegexp, filter);
+
+    for (var i = 0, len = methods.length; i < len; i+= 2) {
+        var key = methods[i];
+        var fn = methods[i+1];
+        var promisifiedKey = key + suffix;
+        obj[promisifiedKey] = promisifier === makeNodePromisified
+                ? makeNodePromisified(key, THIS, key, fn, suffix)
+                : promisifier(fn);
     }
-    else {
-        return makeNodePromisified(callback, receiver, void 0, callback);
-    }
+    util.toFastProperties(obj);
+    return obj;
+}
+
+function promisify(callback, receiver) {
+    return makeNodePromisified(callback, receiver, void 0, callback);
 }
 
 Promise.promisify = function Promise$Promisify(fn, receiver) {
-    if (typeof fn === "object" && fn !== null) {
-        deprecated("Promise.promisify for promisifying entire objects is deprecated. Use Promise.promisifyAll instead.");
-        return _promisify(fn, receiver, true);
-    }
     if (typeof fn !== "function") {
         throw new TypeError("fn must be a function");
     }
     if (isPromisified(fn)) {
         return fn;
     }
-    return _promisify(
-        fn,
-        arguments.length < 2 ? THIS : receiver,
-        false);
+    return promisify(fn, arguments.length < 2 ? THIS : receiver);
 };
 
-Promise.promisifyAll = function Promise$PromisifyAll(target) {
+Promise.promisifyAll = function Promise$PromisifyAll(target, options) {
     if (typeof target !== "function" && typeof target !== "object") {
         throw new TypeError("the target of promisifyAll must be an object or a function");
     }
-    return _promisify(target, void 0, true);
+    options = Object(options);
+    var suffix = options.suffix;
+    if (typeof suffix !== "string") suffix = defaultSuffix;
+    var filter = options.filter;
+    if (typeof filter !== "function") filter = defaultFilter;
+    var promisifier = options.promisifier;
+    if (typeof promisifier !== "function") promisifier = makeNodePromisified;
+
+    if (!util.isIdentifier(suffix)) {
+        throw new RangeError("suffix must be a valid identifier");
+    }
+
+    var keys = util.inheritedDataKeys(target, {includeHidden: true});
+    for (var i = 0; i < keys.length; ++i) {
+        var value = target[keys[i]];
+        if (keys[i] !== "constructor" &&
+            util.isClass(value)) {
+            promisifyAll(value.prototype, suffix, filter, promisifier);
+            promisifyAll(value, suffix, filter, promisifier);
+        }
+    }
+
+    return promisifyAll(target, suffix, filter, promisifier);
 };
 };
 
 
-},{"./errors":77,"./es5.js":79,"./promise_resolver.js":89,"./util.js":105}],92:[function(_dereq_,module,exports){
+},{"./errors":98,"./promise_resolver.js":110,"./util.js":123}],112:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -9387,25 +11138,24 @@ Promise.promisifyAll = function Promise$PromisifyAll(target) {
  * 
  */
 "use strict";
-module.exports = function(Promise, PromiseArray) {
-var util = _dereq_("./util.js");
-var inherits = util.inherits;
-var es5 = _dereq_("./es5.js");
+module.exports = function(Promise, PromiseArray, cast) {
+var util = require("./util.js");
+var apiRejection = require("./errors_api_rejection")(Promise);
+var isObject = util.isObject;
+var es5 = require("./es5.js");
 
-function PropertiesPromiseArray(obj, boundTo) {
+function PropertiesPromiseArray(obj) {
     var keys = es5.keys(obj);
-    var values = new Array(keys.length);
-    for (var i = 0, len = values.length; i < len; ++i) {
-        values[i] = obj[keys[i]];
+    var len = keys.length;
+    var values = new Array(len * 2);
+    for (var i = 0; i < len; ++i) {
+        var key = keys[i];
+        values[i] = obj[key];
+        values[i + len] = key;
     }
-    this.constructor$(values, boundTo);
-    if (!this._isResolved()) {
-        for (var i = 0, len = keys.length; i < len; ++i) {
-            values.push(keys[i]);
-        }
-    }
+    this.constructor$(values);
 }
-inherits(PropertiesPromiseArray, PromiseArray);
+util.inherits(PropertiesPromiseArray, PromiseArray);
 
 PropertiesPromiseArray.prototype._init =
 function PropertiesPromiseArray$_init() {
@@ -9437,78 +11187,44 @@ function PropertiesPromiseArray$_promiseProgressed(value, index) {
     });
 };
 
-PromiseArray.PropertiesPromiseArray = PropertiesPromiseArray;
-
-return PropertiesPromiseArray;
+PropertiesPromiseArray.prototype.shouldCopyValues =
+function PropertiesPromiseArray$_shouldCopyValues() {
+    return false;
 };
 
-},{"./es5.js":79,"./util.js":105}],93:[function(_dereq_,module,exports){
-/**
- * Copyright (c) 2014 Petka Antonov
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:</p>
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * 
- */
-"use strict";
-module.exports = function(Promise, PromiseArray) {
-var PropertiesPromiseArray = _dereq_("./properties_promise_array.js")(
-    Promise, PromiseArray);
-var util = _dereq_("./util.js");
-var apiRejection = _dereq_("./errors_api_rejection")(Promise);
-var isObject = util.isObject;
+PropertiesPromiseArray.prototype.getActualLength =
+function PropertiesPromiseArray$getActualLength(len) {
+    return len >> 1;
+};
 
-function Promise$_Props(promises, useBound) {
+function Promise$_Props(promises) {
     var ret;
-    var castValue = Promise._cast(promises, void 0);
+    var castValue = cast(promises, void 0);
 
     if (!isObject(castValue)) {
         return apiRejection("cannot await properties of a non-object");
+    } else if (castValue instanceof Promise) {
+        ret = castValue._then(Promise.props, void 0, void 0, void 0, void 0);
+    } else {
+        ret = new PropertiesPromiseArray(castValue).promise();
     }
-    else if (castValue instanceof Promise) {
-        ret = castValue._then(Promise.props, void 0, void 0,
-                        void 0, void 0);
-    }
-    else {
-        ret = new PropertiesPromiseArray(
-            castValue,
-            useBound === true && castValue._isBound()
-                        ? castValue._boundTo
-                        : void 0
-       ).promise();
-        useBound = false;
-    }
-    if (useBound === true && castValue._isBound()) {
-        ret._setBoundTo(castValue._boundTo);
+
+    if (castValue instanceof Promise) {
+        ret._propagateFrom(castValue, 4);
     }
     return ret;
 }
 
 Promise.prototype.props = function Promise$props() {
-    return Promise$_Props(this, true);
+    return Promise$_Props(this);
 };
 
 Promise.props = function Promise$Props(promises) {
-    return Promise$_Props(promises, false);
+    return Promise$_Props(promises);
 };
 };
 
-},{"./errors_api_rejection":78,"./properties_promise_array.js":92,"./util.js":105}],94:[function(_dereq_,module,exports){
+},{"./errors_api_rejection":99,"./es5.js":100,"./util.js":123}],113:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -9538,27 +11254,8 @@ function arrayCopy(src, srcIndex, dst, dstIndex, len) {
     }
 }
 
-function pow2AtLeast(n) {
-    n = n >>> 0;
-    n = n - 1;
-    n = n | (n >> 1);
-    n = n | (n >> 2);
-    n = n | (n >> 4);
-    n = n | (n >> 8);
-    n = n | (n >> 16);
-    return n + 1;
-}
-
-function getCapacity(capacity) {
-    if (typeof capacity !== "number") return 16;
-    return pow2AtLeast(
-        Math.min(
-            Math.max(16, capacity), 1073741824)
-   );
-}
-
 function Queue(capacity) {
-    this._capacity = getCapacity(capacity);
+    this._capacity = capacity;
     this._length = 0;
     this._front = 0;
     this._makeCapacity();
@@ -9633,8 +11330,7 @@ Queue.prototype._resizeTo = function Queue$_resizeTo(capacity) {
     this._front = 0;
     if (oldFront + length <= oldCapacity) {
         arrayCopy(oldQueue, oldFront, this, 0, length);
-    }
-    else {        var lengthBeforeWrapping =
+    } else {        var lengthBeforeWrapping =
             length - ((oldFront + length) & (oldCapacity - 1));
 
         arrayCopy(oldQueue, oldFront, this, 0, lengthBeforeWrapping);
@@ -9645,7 +11341,7 @@ Queue.prototype._resizeTo = function Queue$_resizeTo(capacity) {
 
 module.exports = Queue;
 
-},{}],95:[function(_dereq_,module,exports){
+},{}],114:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -9669,9 +11365,9 @@ module.exports = Queue;
  * 
  */
 "use strict";
-module.exports = function(Promise, INTERNAL) {
-var apiRejection = _dereq_("./errors_api_rejection.js")(Promise);
-var isArray = _dereq_("./util.js").isArray;
+module.exports = function(Promise, INTERNAL, cast) {
+var apiRejection = require("./errors_api_rejection.js")(Promise);
+var isArray = require("./util.js").isArray;
 
 var raceLater = function Promise$_raceLater(promise) {
     return promise.then(function(array) {
@@ -9681,25 +11377,19 @@ var raceLater = function Promise$_raceLater(promise) {
 
 var hasOwn = {}.hasOwnProperty;
 function Promise$_Race(promises, parent) {
-    var maybePromise = Promise._cast(promises, void 0);
+    var maybePromise = cast(promises, void 0);
 
     if (maybePromise instanceof Promise) {
         return raceLater(maybePromise);
-    }
-    else if (!isArray(promises)) {
+    } else if (!isArray(promises)) {
         return apiRejection("expecting an array, a promise or a thenable");
     }
 
     var ret = new Promise(INTERNAL);
-    ret._setTrace(parent);
     if (parent !== void 0) {
-        if (parent._isBound()) {
-            ret._setBoundTo(parent._boundTo);
-        }
-        if (parent._cancellable()) {
-            ret._setCancellable();
-            ret._cancellationParent = parent;
-        }
+        ret._propagateFrom(parent, 7);
+    } else {
+        ret._setTrace(void 0);
     }
     var fulfill = ret._fulfill;
     var reject = ret._reject;
@@ -9710,13 +11400,7 @@ function Promise$_Race(promises, parent) {
             continue;
         }
 
-        Promise.cast(val)._then(
-            fulfill,
-            reject,
-            void 0,
-            ret,
-            null
-       );
+        Promise.cast(val)._then(fulfill, reject, void 0, ret, null);
     }
     return ret;
 }
@@ -9731,7 +11415,7 @@ Promise.prototype.race = function Promise$race() {
 
 };
 
-},{"./errors_api_rejection.js":78,"./util.js":105}],96:[function(_dereq_,module,exports){
+},{"./errors_api_rejection.js":99,"./util.js":123}],115:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -9755,146 +11439,166 @@ Promise.prototype.race = function Promise$race() {
  * 
  */
 "use strict";
-module.exports = function(
-    Promise, Promise$_CreatePromiseArray,
-    PromiseArray, apiRejection, INTERNAL) {
+module.exports = function(Promise, PromiseArray, apiRejection, cast, INTERNAL) {
+var util = require("./util.js");
+var tryCatch4 = util.tryCatch4;
+var tryCatch3 = util.tryCatch3;
+var errorObj = util.errorObj;
+function ReductionPromiseArray(promises, fn, accum, _each) {
+    this.constructor$(promises);
+    this._preservedValues = _each === INTERNAL ? [] : null;
+    this._zerothIsAccum = (accum === void 0);
+    this._gotAccum = false;
+    this._reducingIndex = (this._zerothIsAccum ? 1 : 0);
+    this._valuesPhase = undefined;
 
-function Reduction(callback, index, accum, items, receiver) {
-    this.promise = new Promise(INTERNAL);
-    this.index = index;
-    this.length = items.length;
-    this.items = items;
-    this.callback = callback;
-    this.receiver = receiver;
-    this.accum = accum;
-}
-
-Reduction.prototype.reject = function Reduction$reject(e) {
-    this.promise._reject(e);
-};
-
-Reduction.prototype.fulfill = function Reduction$fulfill(value, index) {
-    this.accum = value;
-    this.index = index + 1;
-    this.iterate();
-};
-
-Reduction.prototype.iterate = function Reduction$iterate() {
-    var i = this.index;
-    var len = this.length;
-    var items = this.items;
-    var result = this.accum;
-    var receiver = this.receiver;
-    var callback = this.callback;
-
-    for (; i < len; ++i) {
-        result = callback.call(receiver, result, items[i], i, len);
-        result = Promise._cast(result, void 0);
-
-        if (result instanceof Promise) {
-            result._then(
-                this.fulfill, this.reject, void 0, this, i);
-            return;
+    var maybePromise = cast(accum, void 0);
+    var rejected = false;
+    var isPromise = maybePromise instanceof Promise;
+    if (isPromise) {
+        if (maybePromise.isPending()) {
+            maybePromise._proxyPromiseArray(this, -1);
+        } else if (maybePromise.isFulfilled()) {
+            accum = maybePromise.value();
+            this._gotAccum = true;
+        } else {
+            maybePromise._unsetRejectionIsUnhandled();
+            this._reject(maybePromise.reason());
+            rejected = true;
         }
     }
-    this.promise._fulfill(result);
+    if (!(isPromise || this._zerothIsAccum)) this._gotAccum = true;
+    this._callback = fn;
+    this._accum = accum;
+    if (!rejected) this._init$(void 0, -5);
+}
+util.inherits(ReductionPromiseArray, PromiseArray);
+
+ReductionPromiseArray.prototype._init =
+function ReductionPromiseArray$_init() {};
+
+ReductionPromiseArray.prototype._resolveEmptyArray =
+function ReductionPromiseArray$_resolveEmptyArray() {
+    if (this._gotAccum || this._zerothIsAccum) {
+        this._resolve(this._preservedValues !== null
+                        ? [] : this._accum);
+    }
 };
 
-function Promise$_reducer(fulfilleds, initialValue) {
-    var fn = this;
-    var receiver = void 0;
-    if (typeof fn !== "function")  {
-        receiver = fn.receiver;
-        fn = fn.fn;
+ReductionPromiseArray.prototype._promiseFulfilled =
+function ReductionPromiseArray$_promiseFulfilled(value, index) {
+    var values = this._values;
+    if (values === null) return;
+    var length = this.length();
+    var preservedValues = this._preservedValues;
+    var isEach = preservedValues !== null;
+    var gotAccum = this._gotAccum;
+    var valuesPhase = this._valuesPhase;
+    var valuesPhaseIndex;
+    if (!valuesPhase) {
+        valuesPhase = this._valuesPhase = Array(length);
+        for (valuesPhaseIndex=0; valuesPhaseIndex<length; ++valuesPhaseIndex) {
+            valuesPhase[valuesPhaseIndex] = 0;
+        }
     }
-    var len = fulfilleds.length;
-    var accum = void 0;
-    var startIndex = 0;
+    valuesPhaseIndex = valuesPhase[index];
 
-    if (initialValue !== void 0) {
-        accum = initialValue;
-        startIndex = 0;
-    }
-    else {
-        startIndex = 1;
-        if (len > 0) accum = fulfilleds[0];
-    }
-    var i = startIndex;
-
-    if (i >= len) {
-        return accum;
-    }
-
-    var reduction = new Reduction(fn, i, accum, fulfilleds, receiver);
-    reduction.iterate();
-    return reduction.promise;
-}
-
-function Promise$_unpackReducer(fulfilleds) {
-    var fn = this.fn;
-    var initialValue = this.initialValue;
-    return Promise$_reducer.call(fn, fulfilleds, initialValue);
-}
-
-function Promise$_slowReduce(
-    promises, fn, initialValue, useBound) {
-    return initialValue._then(function(initialValue) {
-        return Promise$_Reduce(
-            promises, fn, initialValue, useBound);
-    }, void 0, void 0, void 0, void 0);
-}
-
-function Promise$_Reduce(promises, fn, initialValue, useBound) {
-    if (typeof fn !== "function") {
-        return apiRejection("fn must be a function");
-    }
-
-    if (useBound === true && promises._isBound()) {
-        fn = {
-            fn: fn,
-            receiver: promises._boundTo
-        };
-    }
-
-    if (initialValue !== void 0) {
-        if (initialValue instanceof Promise) {
-            if (initialValue.isFulfilled()) {
-                initialValue = initialValue._settledValue;
+    if (index === 0 && this._zerothIsAccum) {
+        if (!gotAccum) {
+            this._accum = value;
+            this._gotAccum = gotAccum = true;
+        }
+        valuesPhase[index] = ((valuesPhaseIndex === 0)
+            ? 1 : 2);
+    } else if (index === -1) {
+        if (!gotAccum) {
+            this._accum = value;
+            this._gotAccum = gotAccum = true;
+        }
+    } else {
+        if (valuesPhaseIndex === 0) {
+            valuesPhase[index] = 1;
+        }
+        else {
+            valuesPhase[index] = 2;
+            if (gotAccum) {
+                this._accum = value;
             }
-            else {
-                return Promise$_slowReduce(promises,
-                    fn, initialValue, useBound);
+        }
+    }
+    if (!gotAccum) return;
+
+    var callback = this._callback;
+    var receiver = this._promise._boundTo;
+    var ret;
+
+    for (var i = this._reducingIndex; i < length; ++i) {
+        valuesPhaseIndex = valuesPhase[i];
+        if (valuesPhaseIndex === 2) {
+            this._reducingIndex = i + 1;
+            continue;
+        }
+        if (valuesPhaseIndex !== 1) return;
+
+        value = values[i];
+        if (value instanceof Promise) {
+            if (value.isFulfilled()) {
+                value = value._settledValue;
+            } else if (value.isPending()) {
+                return;
+            } else {
+                value._unsetRejectionIsUnhandled();
+                return this._reject(value.reason());
             }
         }
 
-        return Promise$_CreatePromiseArray(promises, PromiseArray,
-            useBound === true && promises._isBound()
-                ? promises._boundTo
-                : void 0)
-            .promise()
-            ._then(Promise$_unpackReducer, void 0, void 0, {
-                fn: fn,
-                initialValue: initialValue
-            }, void 0);
+        if (isEach) {
+            preservedValues.push(value);
+            ret = tryCatch3(callback, receiver, value, i, length);
+        }
+        else {
+            ret = tryCatch4(callback, receiver, this._accum, value, i, length);
+        }
+
+        if (ret === errorObj) return this._reject(ret.e);
+
+        var maybePromise = cast(ret, void 0);
+        if (maybePromise instanceof Promise) {
+            if (maybePromise.isPending()) {
+                valuesPhase[i] = 4;
+                return maybePromise._proxyPromiseArray(this, i);
+            } else if (maybePromise.isFulfilled()) {
+                ret = maybePromise.value();
+            } else {
+                maybePromise._unsetRejectionIsUnhandled();
+                return this._reject(maybePromise.reason());
+            }
+        }
+
+        this._reducingIndex = i + 1;
+        this._accum = ret;
     }
-    return Promise$_CreatePromiseArray(promises, PromiseArray,
-            useBound === true && promises._isBound()
-                ? promises._boundTo
-                : void 0).promise()
-        ._then(Promise$_reducer, void 0, void 0, fn, void 0);
-}
 
-
-Promise.reduce = function Promise$Reduce(promises, fn, initialValue) {
-    return Promise$_Reduce(promises, fn, initialValue, false);
+    if (this._reducingIndex < length) return;
+    this._resolve(isEach ? preservedValues : this._accum);
 };
+
+function reduce(promises, fn, initialValue, _each) {
+    if (typeof fn !== "function") return apiRejection("fn must be a function");
+    var array = new ReductionPromiseArray(promises, fn, initialValue, _each);
+    return array.promise();
+}
 
 Promise.prototype.reduce = function Promise$reduce(fn, initialValue) {
-    return Promise$_Reduce(this, fn, initialValue, true);
+    return reduce(this, fn, initialValue, null);
+};
+
+Promise.reduce = function Promise$Reduce(promises, fn, initialValue, _each) {
+    return reduce(promises, fn, initialValue, _each);
 };
 };
 
-},{}],97:[function(_dereq_,module,exports){
+},{"./util.js":123}],116:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2014 Petka Antonov
@@ -9919,30 +11623,21 @@ Promise.prototype.reduce = function Promise$reduce(fn, initialValue) {
  * 
  */
 "use strict";
-var global = _dereq_("./global.js");
 var schedule;
-if (typeof process !== "undefined" && process !== null &&
-    typeof process.cwd === "function" &&
-    typeof process.nextTick === "function" &&
-    typeof process.version === "string") {
+var _MutationObserver;
+if (typeof process === "object" && typeof process.version === "string") {
     schedule = function Promise$_Scheduler(fn) {
         process.nextTick(fn);
     };
 }
-else if ((typeof global.MutationObserver === "function" ||
-        typeof global.WebkitMutationObserver === "function" ||
-        typeof global.WebKitMutationObserver === "function") &&
-        typeof document !== "undefined" &&
-        typeof document.createElement === "function") {
-
-
-    schedule = (function(){
-        var MutationObserver = global.MutationObserver ||
-            global.WebkitMutationObserver ||
-            global.WebKitMutationObserver;
+else if ((typeof MutationObserver !== "undefined" &&
+         (_MutationObserver = MutationObserver)) ||
+         (typeof WebKitMutationObserver !== "undefined" &&
+         (_MutationObserver = WebKitMutationObserver))) {
+    schedule = (function() {
         var div = document.createElement("div");
         var queuedFn = void 0;
-        var observer = new MutationObserver(
+        var observer = new _MutationObserver(
             function Promise$_Scheduler() {
                 var fn = queuedFn;
                 queuedFn = void 0;
@@ -9954,72 +11649,21 @@ else if ((typeof global.MutationObserver === "function" ||
         });
         return function Promise$_Scheduler(fn) {
             queuedFn = fn;
-            div.setAttribute("class", "foo");
+            div.classList.toggle("foo");
         };
 
     })();
 }
-else if (typeof global.postMessage === "function" &&
-    typeof global.importScripts !== "function" &&
-    typeof global.addEventListener === "function" &&
-    typeof global.removeEventListener === "function") {
-
-    var MESSAGE_KEY = "bluebird_message_key_" + Math.random();
-    schedule = (function(){
-        var queuedFn = void 0;
-
-        function Promise$_Scheduler(e) {
-            if (e.source === global &&
-                e.data === MESSAGE_KEY) {
-                var fn = queuedFn;
-                queuedFn = void 0;
-                fn();
-            }
-        }
-
-        global.addEventListener("message", Promise$_Scheduler, false);
-
-        return function Promise$_Scheduler(fn) {
-            queuedFn = fn;
-            global.postMessage(
-                MESSAGE_KEY, "*"
-           );
-        };
-
-    })();
-}
-else if (typeof global.MessageChannel === "function") {
-    schedule = (function(){
-        var queuedFn = void 0;
-
-        var channel = new global.MessageChannel();
-        channel.port1.onmessage = function Promise$_Scheduler() {
-                var fn = queuedFn;
-                queuedFn = void 0;
-                fn();
-        };
-
-        return function Promise$_Scheduler(fn) {
-            queuedFn = fn;
-            channel.port2.postMessage(null);
-        };
-    })();
-}
-else if (global.setTimeout) {
+else if (typeof setTimeout !== "undefined") {
     schedule = function Promise$_Scheduler(fn) {
-        setTimeout(fn, 4);
+        setTimeout(fn, 0);
     };
 }
-else {
-    schedule = function Promise$_Scheduler(fn) {
-        fn();
-    };
-}
-
+else throw new Error("no async scheduler available");
 module.exports = schedule;
 
-}).call(this,_dereq_("FWaASH"))
-},{"./global.js":83,"FWaASH":111}],98:[function(_dereq_,module,exports){
+}).call(this,require('_process'))
+},{"_process":145}],117:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -10044,62 +11688,14 @@ module.exports = schedule;
  */
 "use strict";
 module.exports =
-    function(Promise, Promise$_CreatePromiseArray, PromiseArray) {
-
-var SettledPromiseArray = _dereq_("./settled_promise_array.js")(
-    Promise, PromiseArray);
-
-function Promise$_Settle(promises, useBound) {
-    return Promise$_CreatePromiseArray(
-        promises,
-        SettledPromiseArray,
-        useBound === true && promises._isBound()
-            ? promises._boundTo
-            : void 0
-   ).promise();
-}
-
-Promise.settle = function Promise$Settle(promises) {
-    return Promise$_Settle(promises, false);
-};
-
-Promise.prototype.settle = function Promise$settle() {
-    return Promise$_Settle(this, true);
-};
-};
-
-},{"./settled_promise_array.js":99}],99:[function(_dereq_,module,exports){
-/**
- * Copyright (c) 2014 Petka Antonov
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:</p>
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * 
- */
-"use strict";
-module.exports = function(Promise, PromiseArray) {
+    function(Promise, PromiseArray) {
 var PromiseInspection = Promise.PromiseInspection;
-var util = _dereq_("./util.js");
-var inherits = util.inherits;
-function SettledPromiseArray(values, boundTo) {
-    this.constructor$(values, boundTo);
+var util = require("./util.js");
+
+function SettledPromiseArray(values) {
+    this.constructor$(values);
 }
-inherits(SettledPromiseArray, PromiseArray);
+util.inherits(SettledPromiseArray, PromiseArray);
 
 SettledPromiseArray.prototype._promiseResolved =
 function SettledPromiseArray$_promiseResolved(index, inspection) {
@@ -10127,10 +11723,16 @@ function SettledPromiseArray$_promiseRejected(reason, index) {
     this._promiseResolved(index, ret);
 };
 
-return SettledPromiseArray;
+Promise.settle = function Promise$Settle(promises) {
+    return new SettledPromiseArray(promises).promise();
 };
 
-},{"./util.js":105}],100:[function(_dereq_,module,exports){
+Promise.prototype.settle = function Promise$settle() {
+    return new SettledPromiseArray(this).promise();
+};
+};
+
+},{"./util.js":123}],118:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -10155,76 +11757,20 @@ return SettledPromiseArray;
  */
 "use strict";
 module.exports =
-function(Promise, Promise$_CreatePromiseArray, PromiseArray, apiRejection) {
-
-var SomePromiseArray = _dereq_("./some_promise_array.js")(PromiseArray);
-function Promise$_Some(promises, howMany, useBound) {
-    if ((howMany | 0) !== howMany || howMany < 0) {
-        return apiRejection("expecting a positive integer");
-    }
-    var ret = Promise$_CreatePromiseArray(
-        promises,
-        SomePromiseArray,
-        useBound === true && promises._isBound()
-            ? promises._boundTo
-            : void 0
-   );
-    var promise = ret.promise();
-    if (promise.isRejected()) {
-        return promise;
-    }
-    ret.setHowMany(howMany);
-    ret.init();
-    return promise;
-}
-
-Promise.some = function Promise$Some(promises, howMany) {
-    return Promise$_Some(promises, howMany, false);
-};
-
-Promise.prototype.some = function Promise$some(count) {
-    return Promise$_Some(this, count, true);
-};
-
-};
-
-},{"./some_promise_array.js":101}],101:[function(_dereq_,module,exports){
-/**
- * Copyright (c) 2014 Petka Antonov
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:</p>
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * 
- */
-"use strict";
-module.exports = function (PromiseArray) {
-var util = _dereq_("./util.js");
-var RangeError = _dereq_("./errors.js").RangeError;
-var inherits = util.inherits;
+function(Promise, PromiseArray, apiRejection) {
+var util = require("./util.js");
+var RangeError = require("./errors.js").RangeError;
+var AggregateError = require("./errors.js").AggregateError;
 var isArray = util.isArray;
 
-function SomePromiseArray(values, boundTo) {
-    this.constructor$(values, boundTo);
+
+function SomePromiseArray(values) {
+    this.constructor$(values);
     this._howMany = 0;
     this._unwrap = false;
     this._initialized = false;
 }
-inherits(SomePromiseArray, PromiseArray);
+util.inherits(SomePromiseArray, PromiseArray);
 
 SomePromiseArray.prototype._init = function SomePromiseArray$_init() {
     if (!this._initialized) {
@@ -10234,16 +11780,12 @@ SomePromiseArray.prototype._init = function SomePromiseArray$_init() {
         this._resolve([]);
         return;
     }
-    this._init$(void 0, -2);
+    this._init$(void 0, -5);
     var isArrayResolved = isArray(this._values);
-    this._holes = isArrayResolved ? this._values.length - this.length() : 0;
-
     if (!this._isResolved() &&
         isArrayResolved &&
         this._howMany > this._canPossiblyFulfill()) {
-        var message = "(Promise.some) input array contains less than " +
-                        this._howMany  + " promises";
-        this._reject(new RangeError(message));
+        this._reject(this._getRangeError(this.length()));
     }
 };
 
@@ -10274,8 +11816,7 @@ function SomePromiseArray$_promiseFulfilled(value) {
         this._values.length = this.howMany();
         if (this.howMany() === 1 && this._unwrap) {
             this._resolve(this._values[0]);
-        }
-        else {
+        } else {
             this._resolve(this._values);
         }
     }
@@ -10286,12 +11827,11 @@ function SomePromiseArray$_promiseRejected(reason) {
     if (this._isResolved()) return;
     this._addRejected(reason);
     if (this.howMany() > this._canPossiblyFulfill()) {
-        if (this._values.length === this.length()) {
-            this._reject([]);
+        var e = new AggregateError();
+        for (var i = this.length(); i < this._values.length; ++i) {
+            e.push(this._values[i]);
         }
-        else {
-            this._reject(this._values.slice(this.length() + this._holes));
-        }
+        this._reject(e);
     }
 };
 
@@ -10300,7 +11840,7 @@ SomePromiseArray.prototype._fulfilled = function SomePromiseArray$_fulfilled() {
 };
 
 SomePromiseArray.prototype._rejected = function SomePromiseArray$_rejected() {
-    return this._values.length - this.length() - this._holes;
+    return this._values.length - this.length();
 };
 
 SomePromiseArray.prototype._addRejected =
@@ -10318,10 +11858,44 @@ function SomePromiseArray$_canPossiblyFulfill() {
     return this.length() - this._rejected();
 };
 
-return SomePromiseArray;
+SomePromiseArray.prototype._getRangeError =
+function SomePromiseArray$_getRangeError(count) {
+    var message = "Input array must contain at least " +
+            this._howMany + " items but contains only " + count + " items";
+    return new RangeError(message);
 };
 
-},{"./errors.js":77,"./util.js":105}],102:[function(_dereq_,module,exports){
+SomePromiseArray.prototype._resolveEmptyArray =
+function SomePromiseArray$_resolveEmptyArray() {
+    this._reject(this._getRangeError(0));
+};
+
+function Promise$_Some(promises, howMany) {
+    if ((howMany | 0) !== howMany || howMany < 0) {
+        return apiRejection("expecting a positive integer");
+    }
+    var ret = new SomePromiseArray(promises);
+    var promise = ret.promise();
+    if (promise.isRejected()) {
+        return promise;
+    }
+    ret.setHowMany(howMany);
+    ret.init();
+    return promise;
+}
+
+Promise.some = function Promise$Some(promises, howMany) {
+    return Promise$_Some(promises, howMany);
+};
+
+Promise.prototype.some = function Promise$some(howMany) {
+    return Promise$_Some(this, howMany);
+};
+
+Promise._SomePromiseArray = SomePromiseArray;
+};
+
+},{"./errors.js":98,"./util.js":123}],119:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -10383,6 +11957,7 @@ Promise.prototype.value = function Promise$value() {
 };
 
 PromiseInspection.prototype.error =
+PromiseInspection.prototype.reason =
 Promise.prototype.reason = function Promise$reason() {
     if (!this.isRejected()) {
         throw new TypeError("cannot get rejection reason of a non-rejected promise");
@@ -10395,14 +11970,10 @@ Promise.prototype.isResolved = function Promise$isResolved() {
     return (this._bitField & 402653184) > 0;
 };
 
-Promise.prototype.inspect = function Promise$inspect() {
-    return new PromiseInspection(this);
-};
-
 Promise.PromiseInspection = PromiseInspection;
 };
 
-},{}],103:[function(_dereq_,module,exports){
+},{}],120:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -10427,8 +11998,8 @@ Promise.PromiseInspection = PromiseInspection;
  */
 "use strict";
 module.exports = function(Promise, INTERNAL) {
-var util = _dereq_("./util.js");
-var canAttach = _dereq_("./errors.js").canAttach;
+var util = require("./util.js");
+var canAttach = require("./errors.js").canAttach;
 var errorObj = util.errorObj;
 var isObject = util.isObject;
 
@@ -10466,8 +12037,7 @@ function Promise$_Cast(obj, originalPromise) {
                 originalPromise._attachExtraTrace(then.e);
             }
             return Promise.reject(then.e);
-        }
-        else if (typeof then === "function") {
+        } else if (typeof then === "function") {
             return Promise$_doThenable(obj, then, originalPromise);
         }
     }
@@ -10489,8 +12059,7 @@ function Promise$_doThenable(x, then, originalPromise) {
             Promise$_rejectFromThenable,
             Promise$_progressFromThenable
         );
-    }
-    catch(e) {
+    } catch(e) {
         if (!called) {
             called = true;
             var trace = canAttach(e) ? e : new Error(e + "");
@@ -10536,10 +12105,10 @@ function Promise$_doThenable(x, then, originalPromise) {
     }
 }
 
-Promise._cast = Promise$_Cast;
+return Promise$_Cast;
 };
 
-},{"./errors.js":77,"./util.js":105}],104:[function(_dereq_,module,exports){
+},{"./errors.js":98,"./util.js":123}],121:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -10563,18 +12132,20 @@ Promise._cast = Promise$_Cast;
  * 
  */
 "use strict";
-var global = _dereq_("./global.js");
-var setTimeout = function(fn, ms) {
-    var $_len = arguments.length;var args = new Array($_len - 2); for(var $_i = 2; $_i < $_len; ++$_i) {args[$_i - 2] = arguments[$_i];}
-    global.setTimeout(function(){
-        fn.apply(void 0, args);
-    }, ms);
+var _setTimeout = function(fn, ms) {
+    var len = arguments.length;
+    var arg0 = arguments[2];
+    var arg1 = arguments[3];
+    var arg2 = len >= 5 ? arguments[4] : void 0;
+    setTimeout(function() {
+        fn(arg0, arg1, arg2);
+    }, ms|0);
 };
 
-module.exports = function(Promise, INTERNAL) {
-var util = _dereq_("./util.js");
-var errors = _dereq_("./errors.js");
-var apiRejection = _dereq_("./errors_api_rejection")(Promise);
+module.exports = function(Promise, INTERNAL, cast) {
+var util = require("./util.js");
+var errors = require("./errors.js");
+var apiRejection = require("./errors_api_rejection")(Promise);
 var TimeoutError = Promise.TimeoutError;
 
 var afterTimeout = function Promise$_afterTimeout(promise, message, ms) {
@@ -10585,7 +12156,7 @@ var afterTimeout = function Promise$_afterTimeout(promise, message, ms) {
     var err = new TimeoutError(message);
     errors.markAsOriginatingFromRejection(err);
     promise._attachExtraTrace(err);
-    promise._rejectUnchecked(err);
+    promise._cancel(err);
 };
 
 var afterDelay = function Promise$_afterDelay(value, promise) {
@@ -10598,26 +12169,18 @@ var delay = Promise.delay = function Promise$Delay(value, ms) {
         value = void 0;
     }
     ms = +ms;
-    var maybePromise = Promise._cast(value, void 0);
+    var maybePromise = cast(value, void 0);
     var promise = new Promise(INTERNAL);
 
     if (maybePromise instanceof Promise) {
-        if (maybePromise._isBound()) {
-            promise._setBoundTo(maybePromise._boundTo);
-        }
-        if (maybePromise._cancellable()) {
-            promise._setCancellable();
-            promise._cancellationParent = maybePromise;
-        }
-        promise._setTrace(maybePromise);
+        promise._propagateFrom(maybePromise, 7);
         promise._follow(maybePromise);
         return promise.then(function(value) {
             return Promise.delay(value, ms);
         });
-    }
-    else {
+    } else {
         promise._setTrace(void 0);
-        setTimeout(afterDelay, ms, value, promise);
+        _setTimeout(afterDelay, ms, value, promise);
     }
     return promise;
 };
@@ -10630,21 +12193,15 @@ Promise.prototype.timeout = function Promise$timeout(ms, message) {
     ms = +ms;
 
     var ret = new Promise(INTERNAL);
-    ret._setTrace(this);
-
-    if (this._isBound()) ret._setBoundTo(this._boundTo);
-    if (this._cancellable()) {
-        ret._setCancellable();
-        ret._cancellationParent = this;
-    }
+    ret._propagateFrom(this, 7);
     ret._follow(this);
-    setTimeout(afterTimeout, ms, ret, message, ms);
-    return ret;
+    _setTimeout(afterTimeout, ms, ret, message, ms);
+    return ret.cancellable();
 };
 
 };
 
-},{"./errors.js":77,"./errors_api_rejection":78,"./global.js":83,"./util.js":105}],105:[function(_dereq_,module,exports){
+},{"./errors.js":98,"./errors_api_rejection":99,"./util.js":123}],122:[function(require,module,exports){
 /**
  * Copyright (c) 2014 Petka Antonov
  * 
@@ -10668,8 +12225,199 @@ Promise.prototype.timeout = function Promise$timeout(ms, message) {
  * 
  */
 "use strict";
-var global = _dereq_("./global.js");
-var es5 = _dereq_("./es5.js");
+module.exports = function (Promise, apiRejection, cast) {
+    var TypeError = require("./errors.js").TypeError;
+    var inherits = require("./util.js").inherits;
+    var PromiseInspection = Promise.PromiseInspection;
+
+    function inspectionMapper(inspections) {
+        var len = inspections.length;
+        for (var i = 0; i < len; ++i) {
+            var inspection = inspections[i];
+            if (inspection.isRejected()) {
+                return Promise.reject(inspection.error());
+            }
+            inspections[i] = inspection.value();
+        }
+        return inspections;
+    }
+
+    function thrower(e) {
+        setTimeout(function(){throw e;}, 0);
+    }
+
+    function castPreservingDisposable(thenable) {
+        var maybePromise = cast(thenable, void 0);
+        if (maybePromise !== thenable &&
+            typeof thenable._isDisposable === "function" &&
+            typeof thenable._getDisposer === "function" &&
+            thenable._isDisposable()) {
+            maybePromise._setDisposable(thenable._getDisposer());
+        }
+        return maybePromise;
+    }
+    function dispose(resources, inspection) {
+        var i = 0;
+        var len = resources.length;
+        var ret = Promise.defer();
+        function iterator() {
+            if (i >= len) return ret.resolve();
+            var maybePromise = castPreservingDisposable(resources[i++]);
+            if (maybePromise instanceof Promise &&
+                maybePromise._isDisposable()) {
+                try {
+                    maybePromise = cast(maybePromise._getDisposer()
+                                        .tryDispose(inspection), void 0);
+                } catch (e) {
+                    return thrower(e);
+                }
+                if (maybePromise instanceof Promise) {
+                    return maybePromise._then(iterator, thrower,
+                                              null, null, null);
+                }
+            }
+            iterator();
+        }
+        iterator();
+        return ret.promise;
+    }
+
+    function disposerSuccess(value) {
+        var inspection = new PromiseInspection();
+        inspection._settledValue = value;
+        inspection._bitField = 268435456;
+        return dispose(this, inspection).thenReturn(value);
+    }
+
+    function disposerFail(reason) {
+        var inspection = new PromiseInspection();
+        inspection._settledValue = reason;
+        inspection._bitField = 134217728;
+        return dispose(this, inspection).thenThrow(reason);
+    }
+
+    function Disposer(data, promise) {
+        this._data = data;
+        this._promise = promise;
+    }
+
+    Disposer.prototype.data = function Disposer$data() {
+        return this._data;
+    };
+
+    Disposer.prototype.promise = function Disposer$promise() {
+        return this._promise;
+    };
+
+    Disposer.prototype.resource = function Disposer$resource() {
+        if (this.promise().isFulfilled()) {
+            return this.promise().value();
+        }
+        return null;
+    };
+
+    Disposer.prototype.tryDispose = function(inspection) {
+        var resource = this.resource();
+        var ret = resource !== null
+            ? this.doDispose(resource, inspection) : null;
+        this._promise._unsetDisposable();
+        this._data = this._promise = null;
+        return ret;
+    };
+
+    Disposer.isDisposer = function Disposer$isDisposer(d) {
+        return (d != null &&
+                typeof d.resource === "function" &&
+                typeof d.tryDispose === "function");
+    };
+
+    function FunctionDisposer(fn, promise) {
+        this.constructor$(fn, promise);
+    }
+    inherits(FunctionDisposer, Disposer);
+
+    FunctionDisposer.prototype.doDispose = function (resource, inspection) {
+        var fn = this.data();
+        return fn.call(resource, resource, inspection);
+    };
+
+    Promise.using = function Promise$using() {
+        var len = arguments.length;
+        if (len < 2) return apiRejection(
+                        "you must pass at least 2 arguments to Promise.using");
+        var fn = arguments[len - 1];
+        if (typeof fn !== "function") return apiRejection("fn must be a function");
+        len--;
+        var resources = new Array(len);
+        for (var i = 0; i < len; ++i) {
+            var resource = arguments[i];
+            if (Disposer.isDisposer(resource)) {
+                var disposer = resource;
+                resource = resource.promise();
+                resource._setDisposable(disposer);
+            }
+            resources[i] = resource;
+        }
+
+        return Promise.settle(resources)
+            .then(inspectionMapper)
+            .spread(fn)
+            ._then(disposerSuccess, disposerFail, void 0, resources, void 0);
+    };
+
+    Promise.prototype._setDisposable =
+    function Promise$_setDisposable(disposer) {
+        this._bitField = this._bitField | 262144;
+        this._disposer = disposer;
+    };
+
+    Promise.prototype._isDisposable = function Promise$_isDisposable() {
+        return (this._bitField & 262144) > 0;
+    };
+
+    Promise.prototype._getDisposer = function Promise$_getDisposer() {
+        return this._disposer;
+    };
+
+    Promise.prototype._unsetDisposable = function Promise$_unsetDisposable() {
+        this._bitField = this._bitField & (~262144);
+        this._disposer = void 0;
+    };
+
+    Promise.prototype.disposer = function Promise$disposer(fn) {
+        if (typeof fn === "function") {
+            return new FunctionDisposer(fn, this);
+        }
+        throw new TypeError();
+    };
+
+};
+
+},{"./errors.js":98,"./util.js":123}],123:[function(require,module,exports){
+/**
+ * Copyright (c) 2014 Petka Antonov
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:</p>
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ */
+"use strict";
+var es5 = require("./es5.js");
 var haveGetters = (function(){
     try {
         var o = {};
@@ -10685,30 +12433,10 @@ var haveGetters = (function(){
     }
 
 })();
-
-var canEvaluate = (function() {
-    if (typeof window !== "undefined" && window !== null &&
-        typeof window.document !== "undefined" &&
-        typeof navigator !== "undefined" && navigator !== null &&
-        typeof navigator.appName === "string" &&
-        window === global) {
-        return false;
-    }
-    return true;
-})();
-
-function deprecated(msg) {
-    if (typeof console !== "undefined" && console !== null &&
-        typeof console.warn === "function") {
-        console.warn("Bluebird: " + msg);
-    }
-}
-
+var canEvaluate = typeof navigator == "undefined";
 var errorObj = {e: {}};
 function tryCatch1(fn, receiver, arg) {
-    try {
-        return fn.call(receiver, arg);
-    }
+    try { return fn.call(receiver, arg); }
     catch (e) {
         errorObj.e = e;
         return errorObj;
@@ -10716,9 +12444,23 @@ function tryCatch1(fn, receiver, arg) {
 }
 
 function tryCatch2(fn, receiver, arg, arg2) {
-    try {
-        return fn.call(receiver, arg, arg2);
+    try { return fn.call(receiver, arg, arg2); }
+    catch (e) {
+        errorObj.e = e;
+        return errorObj;
     }
+}
+
+function tryCatch3(fn, receiver, arg, arg2, arg3) {
+    try { return fn.call(receiver, arg, arg2, arg3); }
+    catch (e) {
+        errorObj.e = e;
+        return errorObj;
+    }
+}
+
+function tryCatch4(fn, receiver, arg, arg2, arg3, arg4) {
+    try { return fn.call(receiver, arg, arg2, arg3, arg4); }
     catch (e) {
         errorObj.e = e;
         return errorObj;
@@ -10726,9 +12468,7 @@ function tryCatch2(fn, receiver, arg, arg2) {
 }
 
 function tryCatchApply(fn, args, receiver) {
-    try {
-        return fn.apply(receiver, args);
-    }
+    try { return fn.apply(receiver, args); }
     catch (e) {
         errorObj.e = e;
         return errorObj;
@@ -10785,6 +12525,18 @@ function withAppended(target, appendee) {
     return ret;
 }
 
+function getDataPropertyOrDefault(obj, key, defaultValue) {
+    if (es5.isES5) {
+        var desc = Object.getOwnPropertyDescriptor(obj, key);
+        if (desc != null) {
+            return desc.get == null && desc.set == null
+                    ? desc.value
+                    : defaultValue;
+        }
+    } else {
+        return {}.hasOwnProperty.call(obj, key) ? obj[key] : void 0;
+    }
+}
 
 function notEnumerableProp(obj, name, value) {
     if (isPrimitive(obj)) return obj;
@@ -10807,6 +12559,59 @@ function thrower(r) {
     throw r;
 }
 
+var inheritedDataKeys = (function() {
+    if (es5.isES5) {
+        return function(obj, opts) {
+            var ret = [];
+            var visitedKeys = Object.create(null);
+            var getKeys = Object(opts).includeHidden
+                ? Object.getOwnPropertyNames
+                : Object.keys;
+            while (obj != null) {
+                var keys;
+                try {
+                    keys = getKeys(obj);
+                } catch (e) {
+                    return ret;
+                }
+                for (var i = 0; i < keys.length; ++i) {
+                    var key = keys[i];
+                    if (visitedKeys[key]) continue;
+                    visitedKeys[key] = true;
+                    var desc = Object.getOwnPropertyDescriptor(obj, key);
+                    if (desc != null && desc.get == null && desc.set == null) {
+                        ret.push(key);
+                    }
+                }
+                obj = es5.getPrototypeOf(obj);
+            }
+            return ret;
+        };
+    } else {
+        return function(obj) {
+            var ret = [];
+            /*jshint forin:false */
+            for (var key in obj) {
+                ret.push(key);
+            }
+            return ret;
+        };
+    }
+
+})();
+
+function isClass(fn) {
+    try {
+        if (typeof fn === "function") {
+            var keys = es5.keys(fn.prototype);
+            return keys.length > 0 &&
+                   !(keys.length === 1 && keys[0] === "constructor");
+        }
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
 
 function toFastProperties(obj) {
     /*jshint -W027*/
@@ -10816,7 +12621,24 @@ function toFastProperties(obj) {
     eval(obj);
 }
 
+var rident = /^[a-z$_][a-z$_0-9]*$/i;
+function isIdentifier(str) {
+    return rident.test(str);
+}
+
+function filledRange(count, prefix, suffix) {
+    var ret = new Array(count);
+    for(var i = 0; i < count; ++i) {
+        ret[i] = prefix + i + suffix;
+    }
+    return ret;
+}
+
 var ret = {
+    isClass: isClass,
+    isIdentifier: isIdentifier,
+    inheritedDataKeys: inheritedDataKeys,
+    getDataPropertyOrDefault: getDataPropertyOrDefault,
     thrower: thrower,
     isArray: es5.isArray,
     haveGetters: haveGetters,
@@ -10824,24 +12646,26 @@ var ret = {
     isPrimitive: isPrimitive,
     isObject: isObject,
     canEvaluate: canEvaluate,
-    deprecated: deprecated,
     errorObj: errorObj,
     tryCatch1: tryCatch1,
     tryCatch2: tryCatch2,
+    tryCatch3: tryCatch3,
+    tryCatch4: tryCatch4,
     tryCatchApply: tryCatchApply,
     inherits: inherits,
     withAppended: withAppended,
     asString: asString,
     maybeWrapAsError: maybeWrapAsError,
     wrapsPrimitiveReceiver: wrapsPrimitiveReceiver,
-    toFastProperties: toFastProperties
+    toFastProperties: toFastProperties,
+    filledRange: filledRange
 };
 
 module.exports = ret;
 
-},{"./es5.js":79,"./global.js":83}],106:[function(_dereq_,module,exports){
+},{"./es5.js":100}],124:[function(require,module,exports){
 
-},{}],107:[function(_dereq_,module,exports){
+},{}],125:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -10849,31 +12673,47 @@ module.exports = ret;
  * @license  MIT
  */
 
-var base64 = _dereq_('base64-js')
-var ieee754 = _dereq_('ieee754')
+var base64 = require('base64-js')
+var ieee754 = require('ieee754')
+var isArray = require('is-array')
 
 exports.Buffer = Buffer
 exports.SlowBuffer = Buffer
 exports.INSPECT_MAX_BYTES = 50
-Buffer.poolSize = 8192
+Buffer.poolSize = 8192 // not used by this implementation
+
+var kMaxLength = 0x3fffffff
 
 /**
- * If `Buffer._useTypedArrays`:
+ * If `Buffer.TYPED_ARRAY_SUPPORT`:
  *   === true    Use Uint8Array implementation (fastest)
- *   === false   Use Object implementation (compatible down to IE6)
+ *   === false   Use Object implementation (most compatible, even IE6)
+ *
+ * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
+ * Opera 11.6+, iOS 4.2+.
+ *
+ * Note:
+ *
+ * - Implementation must support adding new properties to `Uint8Array` instances.
+ *   Firefox 4-29 lacked support, fixed in Firefox 30+.
+ *   See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
+ *
+ *  - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
+ *
+ *  - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
+ *    incorrect length in some situations.
+ *
+ * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they will
+ * get the Object implementation, which is slower but will work correctly.
  */
-Buffer._useTypedArrays = (function () {
-  // Detect if browser supports Typed Arrays. Supported browsers are IE 10+, Firefox 4+,
-  // Chrome 7+, Safari 5.1+, Opera 11.6+, iOS 4.2+. If the browser does not support adding
-  // properties to `Uint8Array` instances, then that's the same as no `Uint8Array` support
-  // because we need to be able to add all the node Buffer API methods. This is an issue
-  // in Firefox 4-29. Now fixed: https://bugzilla.mozilla.org/show_bug.cgi?id=695438
+Buffer.TYPED_ARRAY_SUPPORT = (function () {
   try {
     var buf = new ArrayBuffer(0)
     var arr = new Uint8Array(buf)
     arr.foo = function () { return 42 }
-    return 42 === arr.foo() &&
-        typeof arr.subarray === 'function' // Chrome 9-10 lack `subarray`
+    return 42 === arr.foo() && // typed array instances can be augmented
+        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+        new Uint8Array(1).subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
   } catch (e) {
     return false
   }
@@ -10897,23 +12737,27 @@ function Buffer (subject, encoding, noZero) {
 
   var type = typeof subject
 
-  if (encoding === 'base64' && type === 'string') {
-    subject = base64clean(subject)
-  }
-
   // Find the length
   var length
   if (type === 'number')
-    length = coerce(subject)
-  else if (type === 'string')
+    length = subject > 0 ? subject >>> 0 : 0
+  else if (type === 'string') {
+    if (encoding === 'base64')
+      subject = base64clean(subject)
     length = Buffer.byteLength(subject, encoding)
-  else if (type === 'object')
-    length = coerce(subject.length) // assume that object is array-like
-  else
-    throw new Error('First argument needs to be a number, array or string.')
+  } else if (type === 'object' && subject !== null) { // assume object is array-like
+    if (subject.type === 'Buffer' && isArray(subject.data))
+      subject = subject.data
+    length = +subject.length > 0 ? Math.floor(+subject.length) : 0
+  } else
+    throw new TypeError('must start with number, buffer, array or string')
+
+  if (this.length > kMaxLength)
+    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
+      'size: 0x' + kMaxLength.toString(16) + ' bytes')
 
   var buf
-  if (Buffer._useTypedArrays) {
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
     // Preferred: Return an augmented `Uint8Array` instance for best performance
     buf = Buffer._augment(new Uint8Array(length))
   } else {
@@ -10924,7 +12768,7 @@ function Buffer (subject, encoding, noZero) {
   }
 
   var i
-  if (Buffer._useTypedArrays && typeof subject.byteLength === 'number') {
+  if (Buffer.TYPED_ARRAY_SUPPORT && typeof subject.byteLength === 'number') {
     // Speed optimization -- use set if we're copying from a typed array
     buf._set(subject)
   } else if (isArrayish(subject)) {
@@ -10938,7 +12782,7 @@ function Buffer (subject, encoding, noZero) {
     }
   } else if (type === 'string') {
     buf.write(subject, 0, encoding)
-  } else if (type === 'number' && !Buffer._useTypedArrays && !noZero) {
+  } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT && !noZero) {
     for (i = 0; i < length; i++) {
       buf[i] = 0
     }
@@ -10947,8 +12791,25 @@ function Buffer (subject, encoding, noZero) {
   return buf
 }
 
-// STATIC METHODS
-// ==============
+Buffer.isBuffer = function (b) {
+  return !!(b != null && b._isBuffer)
+}
+
+Buffer.compare = function (a, b) {
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b))
+    throw new TypeError('Arguments must be Buffers')
+
+  var x = a.length
+  var y = b.length
+  for (var i = 0, len = Math.min(x, y); i < len && a[i] === b[i]; i++) {}
+  if (i !== len) {
+    x = a[i]
+    y = b[i]
+  }
+  if (x < y) return -1
+  if (y < x) return 1
+  return 0
+}
 
 Buffer.isEncoding = function (encoding) {
   switch (String(encoding).toLowerCase()) {
@@ -10969,43 +12830,8 @@ Buffer.isEncoding = function (encoding) {
   }
 }
 
-Buffer.isBuffer = function (b) {
-  return !!(b !== null && b !== undefined && b._isBuffer)
-}
-
-Buffer.byteLength = function (str, encoding) {
-  var ret
-  str = str.toString()
-  switch (encoding || 'utf8') {
-    case 'hex':
-      ret = str.length / 2
-      break
-    case 'utf8':
-    case 'utf-8':
-      ret = utf8ToBytes(str).length
-      break
-    case 'ascii':
-    case 'binary':
-    case 'raw':
-      ret = str.length
-      break
-    case 'base64':
-      ret = base64ToBytes(str).length
-      break
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      ret = str.length * 2
-      break
-    default:
-      throw new Error('Unknown encoding')
-  }
-  return ret
-}
-
 Buffer.concat = function (list, totalLength) {
-  assert(isArray(list), 'Usage: Buffer.concat(list[, length])')
+  if (!isArray(list)) throw new TypeError('Usage: Buffer.concat(list[, length])')
 
   if (list.length === 0) {
     return new Buffer(0)
@@ -11031,26 +12857,118 @@ Buffer.concat = function (list, totalLength) {
   return buf
 }
 
-Buffer.compare = function (a, b) {
-  assert(Buffer.isBuffer(a) && Buffer.isBuffer(b), 'Arguments must be Buffers')
-  var x = a.length
-  var y = b.length
-  for (var i = 0, len = Math.min(x, y); i < len && a[i] === b[i]; i++) {}
-  if (i !== len) {
-    x = a[i]
-    y = b[i]
+Buffer.byteLength = function (str, encoding) {
+  var ret
+  str = str + ''
+  switch (encoding || 'utf8') {
+    case 'ascii':
+    case 'binary':
+    case 'raw':
+      ret = str.length
+      break
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      ret = str.length * 2
+      break
+    case 'hex':
+      ret = str.length >>> 1
+      break
+    case 'utf8':
+    case 'utf-8':
+      ret = utf8ToBytes(str).length
+      break
+    case 'base64':
+      ret = base64ToBytes(str).length
+      break
+    default:
+      ret = str.length
   }
-  if (x < y) {
-    return -1
-  }
-  if (y < x) {
-    return 1
-  }
-  return 0
+  return ret
 }
 
-// BUFFER INSTANCE METHODS
-// =======================
+// pre-set for values that may exist in the future
+Buffer.prototype.length = undefined
+Buffer.prototype.parent = undefined
+
+// toString(encoding, start=0, end=buffer.length)
+Buffer.prototype.toString = function (encoding, start, end) {
+  var loweredCase = false
+
+  start = start >>> 0
+  end = end === undefined || end === Infinity ? this.length : end >>> 0
+
+  if (!encoding) encoding = 'utf8'
+  if (start < 0) start = 0
+  if (end > this.length) end = this.length
+  if (end <= start) return ''
+
+  while (true) {
+    switch (encoding) {
+      case 'hex':
+        return hexSlice(this, start, end)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Slice(this, start, end)
+
+      case 'ascii':
+        return asciiSlice(this, start, end)
+
+      case 'binary':
+        return binarySlice(this, start, end)
+
+      case 'base64':
+        return base64Slice(this, start, end)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return utf16leSlice(this, start, end)
+
+      default:
+        if (loweredCase)
+          throw new TypeError('Unknown encoding: ' + encoding)
+        encoding = (encoding + '').toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+
+Buffer.prototype.equals = function (b) {
+  if(!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
+  return Buffer.compare(this, b) === 0
+}
+
+Buffer.prototype.inspect = function () {
+  var str = ''
+  var max = exports.INSPECT_MAX_BYTES
+  if (this.length > 0) {
+    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ')
+    if (this.length > max)
+      str += ' ... '
+  }
+  return '<Buffer ' + str + '>'
+}
+
+Buffer.prototype.compare = function (b) {
+  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
+  return Buffer.compare(this, b)
+}
+
+// `get` will be removed in Node 0.13+
+Buffer.prototype.get = function (offset) {
+  console.log('.get() is deprecated. Access using array indexes instead.')
+  return this.readUInt8(offset)
+}
+
+// `set` will be removed in Node 0.13+
+Buffer.prototype.set = function (v, offset) {
+  console.log('.set() is deprecated. Access using array indexes instead.')
+  return this.writeUInt8(v, offset)
+}
 
 function hexWrite (buf, string, offset, length) {
   offset = Number(offset) || 0
@@ -11066,14 +12984,14 @@ function hexWrite (buf, string, offset, length) {
 
   // must be an even number of digits
   var strLen = string.length
-  assert(strLen % 2 === 0, 'Invalid hex string')
+  if (strLen % 2 !== 0) throw new Error('Invalid hex string')
 
   if (length > strLen / 2) {
     length = strLen / 2
   }
   for (var i = 0; i < length; i++) {
     var byte = parseInt(string.substr(i * 2, 2), 16)
-    assert(!isNaN(byte), 'Invalid hex string')
+    if (isNaN(byte)) throw new Error('Invalid hex string')
     buf[offset + i] = byte
   }
   return i
@@ -11155,48 +13073,7 @@ Buffer.prototype.write = function (string, offset, length, encoding) {
       ret = utf16leWrite(this, string, offset, length)
       break
     default:
-      throw new Error('Unknown encoding')
-  }
-  return ret
-}
-
-Buffer.prototype.toString = function (encoding, start, end) {
-  var self = this
-
-  encoding = String(encoding || 'utf8').toLowerCase()
-  start = Number(start) || 0
-  end = (end === undefined) ? self.length : Number(end)
-
-  // Fastpath empty strings
-  if (end === start)
-    return ''
-
-  var ret
-  switch (encoding) {
-    case 'hex':
-      ret = hexSlice(self, start, end)
-      break
-    case 'utf8':
-    case 'utf-8':
-      ret = utf8Slice(self, start, end)
-      break
-    case 'ascii':
-      ret = asciiSlice(self, start, end)
-      break
-    case 'binary':
-      ret = binarySlice(self, start, end)
-      break
-    case 'base64':
-      ret = base64Slice(self, start, end)
-      break
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      ret = utf16leSlice(self, start, end)
-      break
-    default:
-      throw new Error('Unknown encoding')
+      throw new TypeError('Unknown encoding: ' + encoding)
   }
   return ret
 }
@@ -11205,52 +13082,6 @@ Buffer.prototype.toJSON = function () {
   return {
     type: 'Buffer',
     data: Array.prototype.slice.call(this._arr || this, 0)
-  }
-}
-
-Buffer.prototype.equals = function (b) {
-  assert(Buffer.isBuffer(b), 'Argument must be a Buffer')
-  return Buffer.compare(this, b) === 0
-}
-
-Buffer.prototype.compare = function (b) {
-  assert(Buffer.isBuffer(b), 'Argument must be a Buffer')
-  return Buffer.compare(this, b)
-}
-
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer.prototype.copy = function (target, target_start, start, end) {
-  var source = this
-
-  if (!start) start = 0
-  if (!end && end !== 0) end = this.length
-  if (!target_start) target_start = 0
-
-  // Copy 0 bytes; we're done
-  if (end === start) return
-  if (target.length === 0 || source.length === 0) return
-
-  // Fatal error conditions
-  assert(end >= start, 'sourceEnd < sourceStart')
-  assert(target_start >= 0 && target_start < target.length,
-      'targetStart out of bounds')
-  assert(start >= 0 && start < source.length, 'sourceStart out of bounds')
-  assert(end >= 0 && end <= source.length, 'sourceEnd out of bounds')
-
-  // Are we oob?
-  if (end > this.length)
-    end = this.length
-  if (target.length - target_start < end - start)
-    end = target.length - target_start + start
-
-  var len = end - start
-
-  if (len < 100 || !Buffer._useTypedArrays) {
-    for (var i = 0; i < len; i++) {
-      target[i + target_start] = this[i + start]
-    }
-  } else {
-    target._set(this.subarray(start, start + len), target_start)
   }
 }
 
@@ -11317,10 +13148,29 @@ function utf16leSlice (buf, start, end) {
 
 Buffer.prototype.slice = function (start, end) {
   var len = this.length
-  start = clamp(start, len, 0)
-  end = clamp(end, len, len)
+  start = ~~start
+  end = end === undefined ? len : ~~end
 
-  if (Buffer._useTypedArrays) {
+  if (start < 0) {
+    start += len;
+    if (start < 0)
+      start = 0
+  } else if (start > len) {
+    start = len
+  }
+
+  if (end < 0) {
+    end += len
+    if (end < 0)
+      end = 0
+  } else if (end > len) {
+    end = len
+  }
+
+  if (end < start)
+    end = start
+
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
     return Buffer._augment(this.subarray(start, end))
   } else {
     var sliceLen = end - start
@@ -11332,365 +13182,275 @@ Buffer.prototype.slice = function (start, end) {
   }
 }
 
-// `get` will be removed in Node 0.13+
-Buffer.prototype.get = function (offset) {
-  console.log('.get() is deprecated. Access using array indexes instead.')
-  return this.readUInt8(offset)
-}
-
-// `set` will be removed in Node 0.13+
-Buffer.prototype.set = function (v, offset) {
-  console.log('.set() is deprecated. Access using array indexes instead.')
-  return this.writeUInt8(v, offset)
+/*
+ * Need to make sure that buffer isn't trying to write out of bounds.
+ */
+function checkOffset (offset, ext, length) {
+  if ((offset % 1) !== 0 || offset < 0)
+    throw new RangeError('offset is not uint')
+  if (offset + ext > length)
+    throw new RangeError('Trying to access beyond buffer length')
 }
 
 Buffer.prototype.readUInt8 = function (offset, noAssert) {
-  if (!noAssert) {
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset < this.length, 'Trying to read beyond buffer length')
-  }
-
-  if (offset >= this.length)
-    return
-
+  if (!noAssert)
+    checkOffset(offset, 1, this.length)
   return this[offset]
 }
 
-function readUInt16 (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 1 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  var len = buf.length
-  if (offset >= len)
-    return
-
-  var val
-  if (littleEndian) {
-    val = buf[offset]
-    if (offset + 1 < len)
-      val |= buf[offset + 1] << 8
-  } else {
-    val = buf[offset] << 8
-    if (offset + 1 < len)
-      val |= buf[offset + 1]
-  }
-  return val
-}
-
 Buffer.prototype.readUInt16LE = function (offset, noAssert) {
-  return readUInt16(this, offset, true, noAssert)
+  if (!noAssert)
+    checkOffset(offset, 2, this.length)
+  return this[offset] | (this[offset + 1] << 8)
 }
 
 Buffer.prototype.readUInt16BE = function (offset, noAssert) {
-  return readUInt16(this, offset, false, noAssert)
-}
-
-function readUInt32 (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  var len = buf.length
-  if (offset >= len)
-    return
-
-  var val
-  if (littleEndian) {
-    if (offset + 2 < len)
-      val = buf[offset + 2] << 16
-    if (offset + 1 < len)
-      val |= buf[offset + 1] << 8
-    val |= buf[offset]
-    if (offset + 3 < len)
-      val = val + (buf[offset + 3] << 24 >>> 0)
-  } else {
-    if (offset + 1 < len)
-      val = buf[offset + 1] << 16
-    if (offset + 2 < len)
-      val |= buf[offset + 2] << 8
-    if (offset + 3 < len)
-      val |= buf[offset + 3]
-    val = val + (buf[offset] << 24 >>> 0)
-  }
-  return val
+  if (!noAssert)
+    checkOffset(offset, 2, this.length)
+  return (this[offset] << 8) | this[offset + 1]
 }
 
 Buffer.prototype.readUInt32LE = function (offset, noAssert) {
-  return readUInt32(this, offset, true, noAssert)
+  if (!noAssert)
+    checkOffset(offset, 4, this.length)
+
+  return ((this[offset]) |
+      (this[offset + 1] << 8) |
+      (this[offset + 2] << 16)) +
+      (this[offset + 3] * 0x1000000)
 }
 
 Buffer.prototype.readUInt32BE = function (offset, noAssert) {
-  return readUInt32(this, offset, false, noAssert)
+  if (!noAssert)
+    checkOffset(offset, 4, this.length)
+
+  return (this[offset] * 0x1000000) +
+      ((this[offset + 1] << 16) |
+      (this[offset + 2] << 8) |
+      this[offset + 3])
 }
 
 Buffer.prototype.readInt8 = function (offset, noAssert) {
-  if (!noAssert) {
-    assert(offset !== undefined && offset !== null,
-        'missing offset')
-    assert(offset < this.length, 'Trying to read beyond buffer length')
-  }
-
-  if (offset >= this.length)
-    return
-
-  var neg = this[offset] & 0x80
-  if (neg)
-    return (0xff - this[offset] + 1) * -1
-  else
-    return this[offset]
-}
-
-function readInt16 (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 1 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  var len = buf.length
-  if (offset >= len)
-    return
-
-  var val = readUInt16(buf, offset, littleEndian, true)
-  var neg = val & 0x8000
-  if (neg)
-    return (0xffff - val + 1) * -1
-  else
-    return val
+  if (!noAssert)
+    checkOffset(offset, 1, this.length)
+  if (!(this[offset] & 0x80))
+    return (this[offset])
+  return ((0xff - this[offset] + 1) * -1)
 }
 
 Buffer.prototype.readInt16LE = function (offset, noAssert) {
-  return readInt16(this, offset, true, noAssert)
+  if (!noAssert)
+    checkOffset(offset, 2, this.length)
+  var val = this[offset] | (this[offset + 1] << 8)
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
 }
 
 Buffer.prototype.readInt16BE = function (offset, noAssert) {
-  return readInt16(this, offset, false, noAssert)
-}
-
-function readInt32 (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  var len = buf.length
-  if (offset >= len)
-    return
-
-  var val = readUInt32(buf, offset, littleEndian, true)
-  var neg = val & 0x80000000
-  if (neg)
-    return (0xffffffff - val + 1) * -1
-  else
-    return val
+  if (!noAssert)
+    checkOffset(offset, 2, this.length)
+  var val = this[offset + 1] | (this[offset] << 8)
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
 }
 
 Buffer.prototype.readInt32LE = function (offset, noAssert) {
-  return readInt32(this, offset, true, noAssert)
+  if (!noAssert)
+    checkOffset(offset, 4, this.length)
+
+  return (this[offset]) |
+      (this[offset + 1] << 8) |
+      (this[offset + 2] << 16) |
+      (this[offset + 3] << 24)
 }
 
 Buffer.prototype.readInt32BE = function (offset, noAssert) {
-  return readInt32(this, offset, false, noAssert)
-}
+  if (!noAssert)
+    checkOffset(offset, 4, this.length)
 
-function readFloat (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  return ieee754.read(buf, offset, littleEndian, 23, 4)
+  return (this[offset] << 24) |
+      (this[offset + 1] << 16) |
+      (this[offset + 2] << 8) |
+      (this[offset + 3])
 }
 
 Buffer.prototype.readFloatLE = function (offset, noAssert) {
-  return readFloat(this, offset, true, noAssert)
+  if (!noAssert)
+    checkOffset(offset, 4, this.length)
+  return ieee754.read(this, offset, true, 23, 4)
 }
 
 Buffer.prototype.readFloatBE = function (offset, noAssert) {
-  return readFloat(this, offset, false, noAssert)
-}
-
-function readDouble (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset + 7 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  return ieee754.read(buf, offset, littleEndian, 52, 8)
+  if (!noAssert)
+    checkOffset(offset, 4, this.length)
+  return ieee754.read(this, offset, false, 23, 4)
 }
 
 Buffer.prototype.readDoubleLE = function (offset, noAssert) {
-  return readDouble(this, offset, true, noAssert)
+  if (!noAssert)
+    checkOffset(offset, 8, this.length)
+  return ieee754.read(this, offset, true, 52, 8)
 }
 
 Buffer.prototype.readDoubleBE = function (offset, noAssert) {
-  return readDouble(this, offset, false, noAssert)
+  if (!noAssert)
+    checkOffset(offset, 8, this.length)
+  return ieee754.read(this, offset, false, 52, 8)
+}
+
+function checkInt (buf, value, offset, ext, max, min) {
+  if (!Buffer.isBuffer(buf)) throw new TypeError('buffer must be a Buffer instance')
+  if (value > max || value < min) throw new TypeError('value is out of bounds')
+  if (offset + ext > buf.length) throw new TypeError('index out of range')
 }
 
 Buffer.prototype.writeUInt8 = function (value, offset, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset < this.length, 'trying to write beyond buffer length')
-    verifuint(value, 0xff)
-  }
-
-  if (offset >= this.length) return
-
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 1, 0xff, 0)
+  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   this[offset] = value
   return offset + 1
 }
 
-function writeUInt16 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 1 < buf.length, 'trying to write beyond buffer length')
-    verifuint(value, 0xffff)
+function objectWriteUInt16 (buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffff + value + 1
+  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; i++) {
+    buf[offset + i] = (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
+      (littleEndian ? i : 1 - i) * 8
   }
-
-  var len = buf.length
-  if (offset >= len)
-    return
-
-  for (var i = 0, j = Math.min(len - offset, 2); i < j; i++) {
-    buf[offset + i] =
-        (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
-            (littleEndian ? i : 1 - i) * 8
-  }
-  return offset + 2
 }
 
 Buffer.prototype.writeUInt16LE = function (value, offset, noAssert) {
-  return writeUInt16(this, value, offset, true, noAssert)
-}
-
-Buffer.prototype.writeUInt16BE = function (value, offset, noAssert) {
-  return writeUInt16(this, value, offset, false, noAssert)
-}
-
-function writeUInt32 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'trying to write beyond buffer length')
-    verifuint(value, 0xffffffff)
-  }
-
-  var len = buf.length
-  if (offset >= len)
-    return
-
-  for (var i = 0, j = Math.min(len - offset, 4); i < j; i++) {
-    buf[offset + i] =
-        (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff
-  }
-  return offset + 4
-}
-
-Buffer.prototype.writeUInt32LE = function (value, offset, noAssert) {
-  return writeUInt32(this, value, offset, true, noAssert)
-}
-
-Buffer.prototype.writeUInt32BE = function (value, offset, noAssert) {
-  return writeUInt32(this, value, offset, false, noAssert)
-}
-
-Buffer.prototype.writeInt8 = function (value, offset, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset < this.length, 'Trying to write beyond buffer length')
-    verifsint(value, 0x7f, -0x80)
-  }
-
-  if (offset >= this.length)
-    return
-
-  if (value >= 0)
-    this.writeUInt8(value, offset, noAssert)
-  else
-    this.writeUInt8(0xff + value + 1, offset, noAssert)
-  return offset + 1
-}
-
-function writeInt16 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 1 < buf.length, 'Trying to write beyond buffer length')
-    verifsint(value, 0x7fff, -0x8000)
-  }
-
-  var len = buf.length
-  if (offset >= len)
-    return
-
-  if (value >= 0)
-    writeUInt16(buf, value, offset, littleEndian, noAssert)
-  else
-    writeUInt16(buf, 0xffff + value + 1, offset, littleEndian, noAssert)
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 2, 0xffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value
+    this[offset + 1] = (value >>> 8)
+  } else objectWriteUInt16(this, value, offset, true)
   return offset + 2
 }
 
-Buffer.prototype.writeInt16LE = function (value, offset, noAssert) {
-  return writeInt16(this, value, offset, true, noAssert)
+Buffer.prototype.writeUInt16BE = function (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 2, 0xffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 8)
+    this[offset + 1] = value
+  } else objectWriteUInt16(this, value, offset, false)
+  return offset + 2
 }
 
-Buffer.prototype.writeInt16BE = function (value, offset, noAssert) {
-  return writeInt16(this, value, offset, false, noAssert)
-}
-
-function writeInt32 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'Trying to write beyond buffer length')
-    verifsint(value, 0x7fffffff, -0x80000000)
+function objectWriteUInt32 (buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffffffff + value + 1
+  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; i++) {
+    buf[offset + i] = (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff
   }
+}
 
-  var len = buf.length
-  if (offset >= len)
-    return
-
-  if (value >= 0)
-    writeUInt32(buf, value, offset, littleEndian, noAssert)
-  else
-    writeUInt32(buf, 0xffffffff + value + 1, offset, littleEndian, noAssert)
+Buffer.prototype.writeUInt32LE = function (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset + 3] = (value >>> 24)
+    this[offset + 2] = (value >>> 16)
+    this[offset + 1] = (value >>> 8)
+    this[offset] = value
+  } else objectWriteUInt32(this, value, offset, true)
   return offset + 4
 }
 
+Buffer.prototype.writeUInt32BE = function (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 24)
+    this[offset + 1] = (value >>> 16)
+    this[offset + 2] = (value >>> 8)
+    this[offset + 3] = value
+  } else objectWriteUInt32(this, value, offset, false)
+  return offset + 4
+}
+
+Buffer.prototype.writeInt8 = function (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 1, 0x7f, -0x80)
+  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
+  if (value < 0) value = 0xff + value + 1
+  this[offset] = value
+  return offset + 1
+}
+
+Buffer.prototype.writeInt16LE = function (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value
+    this[offset + 1] = (value >>> 8)
+  } else objectWriteUInt16(this, value, offset, true)
+  return offset + 2
+}
+
+Buffer.prototype.writeInt16BE = function (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 8)
+    this[offset + 1] = value
+  } else objectWriteUInt16(this, value, offset, false)
+  return offset + 2
+}
+
 Buffer.prototype.writeInt32LE = function (value, offset, noAssert) {
-  return writeInt32(this, value, offset, true, noAssert)
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value
+    this[offset + 1] = (value >>> 8)
+    this[offset + 2] = (value >>> 16)
+    this[offset + 3] = (value >>> 24)
+  } else objectWriteUInt32(this, value, offset, true)
+  return offset + 4
 }
 
 Buffer.prototype.writeInt32BE = function (value, offset, noAssert) {
-  return writeInt32(this, value, offset, false, noAssert)
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert)
+    checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (value < 0) value = 0xffffffff + value + 1
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 24)
+    this[offset + 1] = (value >>> 16)
+    this[offset + 2] = (value >>> 8)
+    this[offset + 3] = value
+  } else objectWriteUInt32(this, value, offset, false)
+  return offset + 4
+}
+
+function checkIEEE754 (buf, value, offset, ext, max, min) {
+  if (value > max || value < min) throw new TypeError('value is out of bounds')
+  if (offset + ext > buf.length) throw new TypeError('index out of range')
 }
 
 function writeFloat (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'Trying to write beyond buffer length')
-    verifIEEE754(value, 3.4028234663852886e+38, -3.4028234663852886e+38)
-  }
-
-  var len = buf.length
-  if (offset >= len)
-    return
-
+  if (!noAssert)
+    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38)
   ieee754.write(buf, value, offset, littleEndian, 23, 4)
   return offset + 4
 }
@@ -11704,19 +13464,8 @@ Buffer.prototype.writeFloatBE = function (value, offset, noAssert) {
 }
 
 function writeDouble (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof littleEndian === 'boolean', 'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 7 < buf.length,
-        'Trying to write beyond buffer length')
-    verifIEEE754(value, 1.7976931348623157E+308, -1.7976931348623157E+308)
-  }
-
-  var len = buf.length
-  if (offset >= len)
-    return
-
+  if (!noAssert)
+    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308)
   ieee754.write(buf, value, offset, littleEndian, 52, 8)
   return offset + 8
 }
@@ -11729,20 +13478,56 @@ Buffer.prototype.writeDoubleBE = function (value, offset, noAssert) {
   return writeDouble(this, value, offset, false, noAssert)
 }
 
+// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
+Buffer.prototype.copy = function (target, target_start, start, end) {
+  var source = this
+
+  if (!start) start = 0
+  if (!end && end !== 0) end = this.length
+  if (!target_start) target_start = 0
+
+  // Copy 0 bytes; we're done
+  if (end === start) return
+  if (target.length === 0 || source.length === 0) return
+
+  // Fatal error conditions
+  if (end < start) throw new TypeError('sourceEnd < sourceStart')
+  if (target_start < 0 || target_start >= target.length)
+    throw new TypeError('targetStart out of bounds')
+  if (start < 0 || start >= source.length) throw new TypeError('sourceStart out of bounds')
+  if (end < 0 || end > source.length) throw new TypeError('sourceEnd out of bounds')
+
+  // Are we oob?
+  if (end > this.length)
+    end = this.length
+  if (target.length - target_start < end - start)
+    end = target.length - target_start + start
+
+  var len = end - start
+
+  if (len < 100 || !Buffer.TYPED_ARRAY_SUPPORT) {
+    for (var i = 0; i < len; i++) {
+      target[i + target_start] = this[i + start]
+    }
+  } else {
+    target._set(this.subarray(start, start + len), target_start)
+  }
+}
+
 // fill(value, start=0, end=buffer.length)
 Buffer.prototype.fill = function (value, start, end) {
   if (!value) value = 0
   if (!start) start = 0
   if (!end) end = this.length
 
-  assert(end >= start, 'end < start')
+  if (end < start) throw new TypeError('end < start')
 
   // Fill 0 bytes; we're done
   if (end === start) return
   if (this.length === 0) return
 
-  assert(start >= 0 && start < this.length, 'start out of bounds')
-  assert(end >= 0 && end <= this.length, 'end out of bounds')
+  if (start < 0 || start >= this.length) throw new TypeError('start out of bounds')
+  if (end < 0 || end > this.length) throw new TypeError('end out of bounds')
 
   var i
   if (typeof value === 'number') {
@@ -11760,26 +13545,13 @@ Buffer.prototype.fill = function (value, start, end) {
   return this
 }
 
-Buffer.prototype.inspect = function () {
-  var out = []
-  var len = this.length
-  for (var i = 0; i < len; i++) {
-    out[i] = toHex(this[i])
-    if (i === exports.INSPECT_MAX_BYTES) {
-      out[i + 1] = '...'
-      break
-    }
-  }
-  return '<Buffer ' + out.join(' ') + '>'
-}
-
 /**
  * Creates a new `ArrayBuffer` with the *copied* memory of the buffer instance.
  * Added in Node 0.12. Only available in browsers that support ArrayBuffer.
  */
 Buffer.prototype.toArrayBuffer = function () {
   if (typeof Uint8Array !== 'undefined') {
-    if (Buffer._useTypedArrays) {
+    if (Buffer.TYPED_ARRAY_SUPPORT) {
       return (new Buffer(this)).buffer
     } else {
       var buf = new Uint8Array(this.length)
@@ -11789,7 +13561,7 @@ Buffer.prototype.toArrayBuffer = function () {
       return buf.buffer
     }
   } else {
-    throw new Error('Buffer.toArrayBuffer not supported in this browser')
+    throw new TypeError('Buffer.toArrayBuffer not supported in this browser')
   }
 }
 
@@ -11872,31 +13644,6 @@ function stringtrim (str) {
   return str.replace(/^\s+|\s+$/g, '')
 }
 
-// slice(start, end)
-function clamp (index, len, defaultValue) {
-  if (typeof index !== 'number') return defaultValue
-  index = ~~index;  // Coerce to integer.
-  if (index >= len) return len
-  if (index >= 0) return index
-  index += len
-  if (index >= 0) return index
-  return 0
-}
-
-function coerce (length) {
-  // Coerce length to a number (possibly NaN), round up
-  // in case it's fractional (e.g. 123.456) then do a
-  // double negate to coerce a NaN to 0. Easy, right?
-  length = ~~Math.ceil(+length)
-  return length < 0 ? 0 : length
-}
-
-function isArray (subject) {
-  return (Array.isArray || function (subject) {
-    return Object.prototype.toString.call(subject) === '[object Array]'
-  })(subject)
-}
-
 function isArrayish (subject) {
   return isArray(subject) || Buffer.isBuffer(subject) ||
       subject && typeof subject === 'object' &&
@@ -11970,36 +13717,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-/*
- * We have to make sure that the value is a valid integer. This means that it
- * is non-negative. It has no fractional component and that it does not
- * exceed the maximum allowed value.
- */
-function verifuint (value, max) {
-  assert(typeof value === 'number', 'cannot write a non-number as a number')
-  assert(value >= 0, 'specified a negative value for writing an unsigned value')
-  assert(value <= max, 'value is larger than maximum value for type')
-  assert(Math.floor(value) === value, 'value has a fractional component')
-}
-
-function verifsint (value, max, min) {
-  assert(typeof value === 'number', 'cannot write a non-number as a number')
-  assert(value <= max, 'value larger than maximum allowed value')
-  assert(value >= min, 'value smaller than minimum allowed value')
-  assert(Math.floor(value) === value, 'value has a fractional component')
-}
-
-function verifIEEE754 (value, max, min) {
-  assert(typeof value === 'number', 'cannot write a non-number as a number')
-  assert(value <= max, 'value larger than maximum allowed value')
-  assert(value >= min, 'value smaller than minimum allowed value')
-}
-
-function assert (test, message) {
-  if (!test) throw new Error(message || 'Failed assertion')
-}
-
-},{"base64-js":108,"ieee754":109}],108:[function(_dereq_,module,exports){
+},{"base64-js":126,"ieee754":127,"is-array":128}],126:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -12121,7 +13839,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],109:[function(_dereq_,module,exports){
+},{}],127:[function(require,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -12207,7 +13925,1359 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],110:[function(_dereq_,module,exports){
+},{}],128:[function(require,module,exports){
+
+/**
+ * isArray
+ */
+
+var isArray = Array.isArray;
+
+/**
+ * toString
+ */
+
+var str = Object.prototype.toString;
+
+/**
+ * Whether or not the given `val`
+ * is an array.
+ *
+ * example:
+ *
+ *        isArray([]);
+ *        // > true
+ *        isArray(arguments);
+ *        // > false
+ *        isArray('');
+ *        // > false
+ *
+ * @param {mixed} val
+ * @return {bool}
+ */
+
+module.exports = isArray || function (val) {
+  return !! val && '[object Array]' == str.call(val);
+};
+
+},{}],129:[function(require,module,exports){
+(function (Buffer){
+var createHash = require('sha.js')
+
+var md5 = toConstructor(require('./md5'))
+var rmd160 = toConstructor(require('ripemd160'))
+
+function toConstructor (fn) {
+  return function () {
+    var buffers = []
+    var m= {
+      update: function (data, enc) {
+        if(!Buffer.isBuffer(data)) data = new Buffer(data, enc)
+        buffers.push(data)
+        return this
+      },
+      digest: function (enc) {
+        var buf = Buffer.concat(buffers)
+        var r = fn(buf)
+        buffers = null
+        return enc ? r.toString(enc) : r
+      }
+    }
+    return m
+  }
+}
+
+module.exports = function (alg) {
+  if('md5' === alg) return new md5()
+  if('rmd160' === alg) return new rmd160()
+  return createHash(alg)
+}
+
+}).call(this,require("buffer").Buffer)
+},{"./md5":133,"buffer":125,"ripemd160":136,"sha.js":138}],130:[function(require,module,exports){
+(function (Buffer){
+var createHash = require('./create-hash')
+
+var zeroBuffer = new Buffer(128)
+zeroBuffer.fill(0)
+
+module.exports = Hmac
+
+function Hmac (alg, key) {
+  if(!(this instanceof Hmac)) return new Hmac(alg, key)
+  this._opad = opad
+  this._alg = alg
+
+  var blocksize = (alg === 'sha512') ? 128 : 64
+
+  key = this._key = !Buffer.isBuffer(key) ? new Buffer(key) : key
+
+  if(key.length > blocksize) {
+    key = createHash(alg).update(key).digest()
+  } else if(key.length < blocksize) {
+    key = Buffer.concat([key, zeroBuffer], blocksize)
+  }
+
+  var ipad = this._ipad = new Buffer(blocksize)
+  var opad = this._opad = new Buffer(blocksize)
+
+  for(var i = 0; i < blocksize; i++) {
+    ipad[i] = key[i] ^ 0x36
+    opad[i] = key[i] ^ 0x5C
+  }
+
+  this._hash = createHash(alg).update(ipad)
+}
+
+Hmac.prototype.update = function (data, enc) {
+  this._hash.update(data, enc)
+  return this
+}
+
+Hmac.prototype.digest = function (enc) {
+  var h = this._hash.digest()
+  return createHash(this._alg).update(this._opad).update(h).digest(enc)
+}
+
+
+}).call(this,require("buffer").Buffer)
+},{"./create-hash":129,"buffer":125}],131:[function(require,module,exports){
+(function (Buffer){
+var intSize = 4;
+var zeroBuffer = new Buffer(intSize); zeroBuffer.fill(0);
+var chrsz = 8;
+
+function toArray(buf, bigEndian) {
+  if ((buf.length % intSize) !== 0) {
+    var len = buf.length + (intSize - (buf.length % intSize));
+    buf = Buffer.concat([buf, zeroBuffer], len);
+  }
+
+  var arr = [];
+  var fn = bigEndian ? buf.readInt32BE : buf.readInt32LE;
+  for (var i = 0; i < buf.length; i += intSize) {
+    arr.push(fn.call(buf, i));
+  }
+  return arr;
+}
+
+function toBuffer(arr, size, bigEndian) {
+  var buf = new Buffer(size);
+  var fn = bigEndian ? buf.writeInt32BE : buf.writeInt32LE;
+  for (var i = 0; i < arr.length; i++) {
+    fn.call(buf, arr[i], i * 4, true);
+  }
+  return buf;
+}
+
+function hash(buf, fn, hashSize, bigEndian) {
+  if (!Buffer.isBuffer(buf)) buf = new Buffer(buf);
+  var arr = fn(toArray(buf, bigEndian), buf.length * chrsz);
+  return toBuffer(arr, hashSize, bigEndian);
+}
+
+module.exports = { hash: hash };
+
+}).call(this,require("buffer").Buffer)
+},{"buffer":125}],132:[function(require,module,exports){
+(function (Buffer){
+var rng = require('./rng')
+
+function error () {
+  var m = [].slice.call(arguments).join(' ')
+  throw new Error([
+    m,
+    'we accept pull requests',
+    'http://github.com/dominictarr/crypto-browserify'
+    ].join('\n'))
+}
+
+exports.createHash = require('./create-hash')
+
+exports.createHmac = require('./create-hmac')
+
+exports.randomBytes = function(size, callback) {
+  if (callback && callback.call) {
+    try {
+      callback.call(this, undefined, new Buffer(rng(size)))
+    } catch (err) { callback(err) }
+  } else {
+    return new Buffer(rng(size))
+  }
+}
+
+function each(a, f) {
+  for(var i in a)
+    f(a[i], i)
+}
+
+exports.getHashes = function () {
+  return ['sha1', 'sha256', 'sha512', 'md5', 'rmd160']
+}
+
+var p = require('./pbkdf2')(exports)
+exports.pbkdf2 = p.pbkdf2
+exports.pbkdf2Sync = p.pbkdf2Sync
+
+
+// the least I can do is make error messages for the rest of the node.js/crypto api.
+each(['createCredentials'
+, 'createCipher'
+, 'createCipheriv'
+, 'createDecipher'
+, 'createDecipheriv'
+, 'createSign'
+, 'createVerify'
+, 'createDiffieHellman'
+], function (name) {
+  exports[name] = function () {
+    error('sorry,', name, 'is not implemented yet')
+  }
+})
+
+}).call(this,require("buffer").Buffer)
+},{"./create-hash":129,"./create-hmac":130,"./pbkdf2":142,"./rng":143,"buffer":125}],133:[function(require,module,exports){
+/*
+ * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
+ * Digest Algorithm, as defined in RFC 1321.
+ * Version 2.1 Copyright (C) Paul Johnston 1999 - 2002.
+ * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
+ * Distributed under the BSD License
+ * See http://pajhome.org.uk/crypt/md5 for more info.
+ */
+
+var helpers = require('./helpers');
+
+/*
+ * Calculate the MD5 of an array of little-endian words, and a bit length
+ */
+function core_md5(x, len)
+{
+  /* append padding */
+  x[len >> 5] |= 0x80 << ((len) % 32);
+  x[(((len + 64) >>> 9) << 4) + 14] = len;
+
+  var a =  1732584193;
+  var b = -271733879;
+  var c = -1732584194;
+  var d =  271733878;
+
+  for(var i = 0; i < x.length; i += 16)
+  {
+    var olda = a;
+    var oldb = b;
+    var oldc = c;
+    var oldd = d;
+
+    a = md5_ff(a, b, c, d, x[i+ 0], 7 , -680876936);
+    d = md5_ff(d, a, b, c, x[i+ 1], 12, -389564586);
+    c = md5_ff(c, d, a, b, x[i+ 2], 17,  606105819);
+    b = md5_ff(b, c, d, a, x[i+ 3], 22, -1044525330);
+    a = md5_ff(a, b, c, d, x[i+ 4], 7 , -176418897);
+    d = md5_ff(d, a, b, c, x[i+ 5], 12,  1200080426);
+    c = md5_ff(c, d, a, b, x[i+ 6], 17, -1473231341);
+    b = md5_ff(b, c, d, a, x[i+ 7], 22, -45705983);
+    a = md5_ff(a, b, c, d, x[i+ 8], 7 ,  1770035416);
+    d = md5_ff(d, a, b, c, x[i+ 9], 12, -1958414417);
+    c = md5_ff(c, d, a, b, x[i+10], 17, -42063);
+    b = md5_ff(b, c, d, a, x[i+11], 22, -1990404162);
+    a = md5_ff(a, b, c, d, x[i+12], 7 ,  1804603682);
+    d = md5_ff(d, a, b, c, x[i+13], 12, -40341101);
+    c = md5_ff(c, d, a, b, x[i+14], 17, -1502002290);
+    b = md5_ff(b, c, d, a, x[i+15], 22,  1236535329);
+
+    a = md5_gg(a, b, c, d, x[i+ 1], 5 , -165796510);
+    d = md5_gg(d, a, b, c, x[i+ 6], 9 , -1069501632);
+    c = md5_gg(c, d, a, b, x[i+11], 14,  643717713);
+    b = md5_gg(b, c, d, a, x[i+ 0], 20, -373897302);
+    a = md5_gg(a, b, c, d, x[i+ 5], 5 , -701558691);
+    d = md5_gg(d, a, b, c, x[i+10], 9 ,  38016083);
+    c = md5_gg(c, d, a, b, x[i+15], 14, -660478335);
+    b = md5_gg(b, c, d, a, x[i+ 4], 20, -405537848);
+    a = md5_gg(a, b, c, d, x[i+ 9], 5 ,  568446438);
+    d = md5_gg(d, a, b, c, x[i+14], 9 , -1019803690);
+    c = md5_gg(c, d, a, b, x[i+ 3], 14, -187363961);
+    b = md5_gg(b, c, d, a, x[i+ 8], 20,  1163531501);
+    a = md5_gg(a, b, c, d, x[i+13], 5 , -1444681467);
+    d = md5_gg(d, a, b, c, x[i+ 2], 9 , -51403784);
+    c = md5_gg(c, d, a, b, x[i+ 7], 14,  1735328473);
+    b = md5_gg(b, c, d, a, x[i+12], 20, -1926607734);
+
+    a = md5_hh(a, b, c, d, x[i+ 5], 4 , -378558);
+    d = md5_hh(d, a, b, c, x[i+ 8], 11, -2022574463);
+    c = md5_hh(c, d, a, b, x[i+11], 16,  1839030562);
+    b = md5_hh(b, c, d, a, x[i+14], 23, -35309556);
+    a = md5_hh(a, b, c, d, x[i+ 1], 4 , -1530992060);
+    d = md5_hh(d, a, b, c, x[i+ 4], 11,  1272893353);
+    c = md5_hh(c, d, a, b, x[i+ 7], 16, -155497632);
+    b = md5_hh(b, c, d, a, x[i+10], 23, -1094730640);
+    a = md5_hh(a, b, c, d, x[i+13], 4 ,  681279174);
+    d = md5_hh(d, a, b, c, x[i+ 0], 11, -358537222);
+    c = md5_hh(c, d, a, b, x[i+ 3], 16, -722521979);
+    b = md5_hh(b, c, d, a, x[i+ 6], 23,  76029189);
+    a = md5_hh(a, b, c, d, x[i+ 9], 4 , -640364487);
+    d = md5_hh(d, a, b, c, x[i+12], 11, -421815835);
+    c = md5_hh(c, d, a, b, x[i+15], 16,  530742520);
+    b = md5_hh(b, c, d, a, x[i+ 2], 23, -995338651);
+
+    a = md5_ii(a, b, c, d, x[i+ 0], 6 , -198630844);
+    d = md5_ii(d, a, b, c, x[i+ 7], 10,  1126891415);
+    c = md5_ii(c, d, a, b, x[i+14], 15, -1416354905);
+    b = md5_ii(b, c, d, a, x[i+ 5], 21, -57434055);
+    a = md5_ii(a, b, c, d, x[i+12], 6 ,  1700485571);
+    d = md5_ii(d, a, b, c, x[i+ 3], 10, -1894986606);
+    c = md5_ii(c, d, a, b, x[i+10], 15, -1051523);
+    b = md5_ii(b, c, d, a, x[i+ 1], 21, -2054922799);
+    a = md5_ii(a, b, c, d, x[i+ 8], 6 ,  1873313359);
+    d = md5_ii(d, a, b, c, x[i+15], 10, -30611744);
+    c = md5_ii(c, d, a, b, x[i+ 6], 15, -1560198380);
+    b = md5_ii(b, c, d, a, x[i+13], 21,  1309151649);
+    a = md5_ii(a, b, c, d, x[i+ 4], 6 , -145523070);
+    d = md5_ii(d, a, b, c, x[i+11], 10, -1120210379);
+    c = md5_ii(c, d, a, b, x[i+ 2], 15,  718787259);
+    b = md5_ii(b, c, d, a, x[i+ 9], 21, -343485551);
+
+    a = safe_add(a, olda);
+    b = safe_add(b, oldb);
+    c = safe_add(c, oldc);
+    d = safe_add(d, oldd);
+  }
+  return Array(a, b, c, d);
+
+}
+
+/*
+ * These functions implement the four basic operations the algorithm uses.
+ */
+function md5_cmn(q, a, b, x, s, t)
+{
+  return safe_add(bit_rol(safe_add(safe_add(a, q), safe_add(x, t)), s),b);
+}
+function md5_ff(a, b, c, d, x, s, t)
+{
+  return md5_cmn((b & c) | ((~b) & d), a, b, x, s, t);
+}
+function md5_gg(a, b, c, d, x, s, t)
+{
+  return md5_cmn((b & d) | (c & (~d)), a, b, x, s, t);
+}
+function md5_hh(a, b, c, d, x, s, t)
+{
+  return md5_cmn(b ^ c ^ d, a, b, x, s, t);
+}
+function md5_ii(a, b, c, d, x, s, t)
+{
+  return md5_cmn(c ^ (b | (~d)), a, b, x, s, t);
+}
+
+/*
+ * Add integers, wrapping at 2^32. This uses 16-bit operations internally
+ * to work around bugs in some JS interpreters.
+ */
+function safe_add(x, y)
+{
+  var lsw = (x & 0xFFFF) + (y & 0xFFFF);
+  var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+  return (msw << 16) | (lsw & 0xFFFF);
+}
+
+/*
+ * Bitwise rotate a 32-bit number to the left.
+ */
+function bit_rol(num, cnt)
+{
+  return (num << cnt) | (num >>> (32 - cnt));
+}
+
+module.exports = function md5(buf) {
+  return helpers.hash(buf, core_md5, 16);
+};
+
+},{"./helpers":131}],134:[function(require,module,exports){
+var crypto = require('crypto')
+
+var exportFn = require('./pbkdf2')
+var exported = exportFn(crypto)
+
+module.exports = {
+  pbkdf2: exported.pbkdf2,
+  pbkdf2Sync: exported.pbkdf2Sync,
+
+  // for crypto-browserify
+  __pbkdf2Export: exportFn
+}
+
+},{"./pbkdf2":135,"crypto":132}],135:[function(require,module,exports){
+(function (Buffer){
+module.exports = function(crypto) {
+  function pbkdf2(password, salt, iterations, keylen, digest, callback) {
+    if ('function' === typeof digest) {
+      callback = digest
+      digest = undefined
+    }
+
+    if ('function' !== typeof callback)
+      throw new Error('No callback provided to pbkdf2')
+
+    setTimeout(function() {
+      var result
+
+      try {
+        result = pbkdf2Sync(password, salt, iterations, keylen, digest)
+      } catch (e) {
+        return callback(e)
+      }
+
+      callback(undefined, result)
+    })
+  }
+
+  function pbkdf2Sync(password, salt, iterations, keylen, digest) {
+    if ('number' !== typeof iterations)
+      throw new TypeError('Iterations not a number')
+
+    if (iterations < 0)
+      throw new TypeError('Bad iterations')
+
+    if ('number' !== typeof keylen)
+      throw new TypeError('Key length not a number')
+
+    if (keylen < 0)
+      throw new TypeError('Bad key length')
+
+    digest = digest || 'sha1'
+
+    if (!Buffer.isBuffer(password)) password = new Buffer(password)
+    if (!Buffer.isBuffer(salt)) salt = new Buffer(salt)
+
+    var hLen, l = 1, r, T
+    var DK = new Buffer(keylen)
+    var block1 = new Buffer(salt.length + 4)
+    salt.copy(block1, 0, 0, salt.length)
+
+    for (var i = 1; i <= l; i++) {
+      block1.writeUInt32BE(i, salt.length)
+
+      var U = crypto.createHmac(digest, password).update(block1).digest()
+
+      if (!hLen) {
+        hLen = U.length
+        T = new Buffer(hLen)
+        l = Math.ceil(keylen / hLen)
+        r = keylen - (l - 1) * hLen
+
+        if (keylen > (Math.pow(2, 32) - 1) * hLen)
+          throw new TypeError('keylen exceeds maximum length')
+      }
+
+      U.copy(T, 0, 0, hLen)
+
+      for (var j = 1; j < iterations; j++) {
+        U = crypto.createHmac(digest, password).update(U).digest()
+
+        for (var k = 0; k < hLen; k++) {
+          T[k] ^= U[k]
+        }
+      }
+
+      var destPos = (i - 1) * hLen
+      var len = (i == l ? r : hLen)
+      T.copy(DK, destPos, 0, len)
+    }
+
+    return DK
+  }
+
+  return {
+    pbkdf2: pbkdf2,
+    pbkdf2Sync: pbkdf2Sync
+  }
+}
+
+}).call(this,require("buffer").Buffer)
+},{"buffer":125}],136:[function(require,module,exports){
+(function (Buffer){
+
+module.exports = ripemd160
+
+
+
+/*
+CryptoJS v3.1.2
+code.google.com/p/crypto-js
+(c) 2009-2013 by Jeff Mott. All rights reserved.
+code.google.com/p/crypto-js/wiki/License
+*/
+/** @preserve
+(c) 2012 by Cédric Mesnil. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    - Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    - Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+// Constants table
+var zl = [
+    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+    7,  4, 13,  1, 10,  6, 15,  3, 12,  0,  9,  5,  2, 14, 11,  8,
+    3, 10, 14,  4,  9, 15,  8,  1,  2,  7,  0,  6, 13, 11,  5, 12,
+    1,  9, 11, 10,  0,  8, 12,  4, 13,  3,  7, 15, 14,  5,  6,  2,
+    4,  0,  5,  9,  7, 12,  2, 10, 14,  1,  3,  8, 11,  6, 15, 13];
+var zr = [
+    5, 14,  7,  0,  9,  2, 11,  4, 13,  6, 15,  8,  1, 10,  3, 12,
+    6, 11,  3,  7,  0, 13,  5, 10, 14, 15,  8, 12,  4,  9,  1,  2,
+    15,  5,  1,  3,  7, 14,  6,  9, 11,  8, 12,  2, 10,  0,  4, 13,
+    8,  6,  4,  1,  3, 11, 15,  0,  5, 12,  2, 13,  9,  7, 10, 14,
+    12, 15, 10,  4,  1,  5,  8,  7,  6,  2, 13, 14,  0,  3,  9, 11];
+var sl = [
+     11, 14, 15, 12,  5,  8,  7,  9, 11, 13, 14, 15,  6,  7,  9,  8,
+    7, 6,   8, 13, 11,  9,  7, 15,  7, 12, 15,  9, 11,  7, 13, 12,
+    11, 13,  6,  7, 14,  9, 13, 15, 14,  8, 13,  6,  5, 12,  7,  5,
+      11, 12, 14, 15, 14, 15,  9,  8,  9, 14,  5,  6,  8,  6,  5, 12,
+    9, 15,  5, 11,  6,  8, 13, 12,  5, 12, 13, 14, 11,  8,  5,  6 ];
+var sr = [
+    8,  9,  9, 11, 13, 15, 15,  5,  7,  7,  8, 11, 14, 14, 12,  6,
+    9, 13, 15,  7, 12,  8,  9, 11,  7,  7, 12,  7,  6, 15, 13, 11,
+    9,  7, 15, 11,  8,  6,  6, 14, 12, 13,  5, 14, 13, 13,  7,  5,
+    15,  5,  8, 11, 14, 14,  6, 14,  6,  9, 12,  9, 12,  5, 15,  8,
+    8,  5, 12,  9, 12,  5, 14,  6,  8, 13,  6,  5, 15, 13, 11, 11 ];
+
+var hl =  [ 0x00000000, 0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xA953FD4E];
+var hr =  [ 0x50A28BE6, 0x5C4DD124, 0x6D703EF3, 0x7A6D76E9, 0x00000000];
+
+var bytesToWords = function (bytes) {
+  var words = [];
+  for (var i = 0, b = 0; i < bytes.length; i++, b += 8) {
+    words[b >>> 5] |= bytes[i] << (24 - b % 32);
+  }
+  return words;
+};
+
+var wordsToBytes = function (words) {
+  var bytes = [];
+  for (var b = 0; b < words.length * 32; b += 8) {
+    bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
+  }
+  return bytes;
+};
+
+var processBlock = function (H, M, offset) {
+
+  // Swap endian
+  for (var i = 0; i < 16; i++) {
+    var offset_i = offset + i;
+    var M_offset_i = M[offset_i];
+
+    // Swap
+    M[offset_i] = (
+        (((M_offset_i << 8)  | (M_offset_i >>> 24)) & 0x00ff00ff) |
+        (((M_offset_i << 24) | (M_offset_i >>> 8))  & 0xff00ff00)
+    );
+  }
+
+  // Working variables
+  var al, bl, cl, dl, el;
+  var ar, br, cr, dr, er;
+
+  ar = al = H[0];
+  br = bl = H[1];
+  cr = cl = H[2];
+  dr = dl = H[3];
+  er = el = H[4];
+  // Computation
+  var t;
+  for (var i = 0; i < 80; i += 1) {
+    t = (al +  M[offset+zl[i]])|0;
+    if (i<16){
+        t +=  f1(bl,cl,dl) + hl[0];
+    } else if (i<32) {
+        t +=  f2(bl,cl,dl) + hl[1];
+    } else if (i<48) {
+        t +=  f3(bl,cl,dl) + hl[2];
+    } else if (i<64) {
+        t +=  f4(bl,cl,dl) + hl[3];
+    } else {// if (i<80) {
+        t +=  f5(bl,cl,dl) + hl[4];
+    }
+    t = t|0;
+    t =  rotl(t,sl[i]);
+    t = (t+el)|0;
+    al = el;
+    el = dl;
+    dl = rotl(cl, 10);
+    cl = bl;
+    bl = t;
+
+    t = (ar + M[offset+zr[i]])|0;
+    if (i<16){
+        t +=  f5(br,cr,dr) + hr[0];
+    } else if (i<32) {
+        t +=  f4(br,cr,dr) + hr[1];
+    } else if (i<48) {
+        t +=  f3(br,cr,dr) + hr[2];
+    } else if (i<64) {
+        t +=  f2(br,cr,dr) + hr[3];
+    } else {// if (i<80) {
+        t +=  f1(br,cr,dr) + hr[4];
+    }
+    t = t|0;
+    t =  rotl(t,sr[i]) ;
+    t = (t+er)|0;
+    ar = er;
+    er = dr;
+    dr = rotl(cr, 10);
+    cr = br;
+    br = t;
+  }
+  // Intermediate hash value
+  t    = (H[1] + cl + dr)|0;
+  H[1] = (H[2] + dl + er)|0;
+  H[2] = (H[3] + el + ar)|0;
+  H[3] = (H[4] + al + br)|0;
+  H[4] = (H[0] + bl + cr)|0;
+  H[0] =  t;
+};
+
+function f1(x, y, z) {
+  return ((x) ^ (y) ^ (z));
+}
+
+function f2(x, y, z) {
+  return (((x)&(y)) | ((~x)&(z)));
+}
+
+function f3(x, y, z) {
+  return (((x) | (~(y))) ^ (z));
+}
+
+function f4(x, y, z) {
+  return (((x) & (z)) | ((y)&(~(z))));
+}
+
+function f5(x, y, z) {
+  return ((x) ^ ((y) |(~(z))));
+}
+
+function rotl(x,n) {
+  return (x<<n) | (x>>>(32-n));
+}
+
+function ripemd160(message) {
+  var H = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0];
+
+  if (typeof message == 'string')
+    message = new Buffer(message, 'utf8');
+
+  var m = bytesToWords(message);
+
+  var nBitsLeft = message.length * 8;
+  var nBitsTotal = message.length * 8;
+
+  // Add padding
+  m[nBitsLeft >>> 5] |= 0x80 << (24 - nBitsLeft % 32);
+  m[(((nBitsLeft + 64) >>> 9) << 4) + 14] = (
+      (((nBitsTotal << 8)  | (nBitsTotal >>> 24)) & 0x00ff00ff) |
+      (((nBitsTotal << 24) | (nBitsTotal >>> 8))  & 0xff00ff00)
+  );
+
+  for (var i=0 ; i<m.length; i += 16) {
+    processBlock(H, m, i);
+  }
+
+  // Swap endian
+  for (var i = 0; i < 5; i++) {
+      // Shortcut
+    var H_i = H[i];
+
+    // Swap
+    H[i] = (((H_i << 8)  | (H_i >>> 24)) & 0x00ff00ff) |
+          (((H_i << 24) | (H_i >>> 8))  & 0xff00ff00);
+  }
+
+  var digestbytes = wordsToBytes(H);
+  return new Buffer(digestbytes);
+}
+
+
+
+}).call(this,require("buffer").Buffer)
+},{"buffer":125}],137:[function(require,module,exports){
+module.exports = function (Buffer) {
+
+  //prototype class for hash functions
+  function Hash (blockSize, finalSize) {
+    this._block = new Buffer(blockSize) //new Uint32Array(blockSize/4)
+    this._finalSize = finalSize
+    this._blockSize = blockSize
+    this._len = 0
+    this._s = 0
+  }
+
+  Hash.prototype.init = function () {
+    this._s = 0
+    this._len = 0
+  }
+
+  Hash.prototype.update = function (data, enc) {
+    if ("string" === typeof data) {
+      enc = enc || "utf8"
+      data = new Buffer(data, enc)
+    }
+
+    var l = this._len += data.length
+    var s = this._s = (this._s || 0)
+    var f = 0
+    var buffer = this._block
+
+    while (s < l) {
+      var t = Math.min(data.length, f + this._blockSize - (s % this._blockSize))
+      var ch = (t - f)
+
+      for (var i = 0; i < ch; i++) {
+        buffer[(s % this._blockSize) + i] = data[i + f]
+      }
+
+      s += ch
+      f += ch
+
+      if ((s % this._blockSize) === 0) {
+        this._update(buffer)
+      }
+    }
+    this._s = s
+
+    return this
+  }
+
+  Hash.prototype.digest = function (enc) {
+    // Suppose the length of the message M, in bits, is l
+    var l = this._len * 8
+
+    // Append the bit 1 to the end of the message
+    this._block[this._len % this._blockSize] = 0x80
+
+    // and then k zero bits, where k is the smallest non-negative solution to the equation (l + 1 + k) === finalSize mod blockSize
+    this._block.fill(0, this._len % this._blockSize + 1)
+
+    if (l % (this._blockSize * 8) >= this._finalSize * 8) {
+      this._update(this._block)
+      this._block.fill(0)
+    }
+
+    // to this append the block which is equal to the number l written in binary
+    // TODO: handle case where l is > Math.pow(2, 29)
+    this._block.writeInt32BE(l, this._blockSize - 4)
+
+    var hash = this._update(this._block) || this._hash()
+
+    return enc ? hash.toString(enc) : hash
+  }
+
+  Hash.prototype._update = function () {
+    throw new Error('_update must be implemented by subclass')
+  }
+
+  return Hash
+}
+
+},{}],138:[function(require,module,exports){
+var exports = module.exports = function (alg) {
+  var Alg = exports[alg]
+  if(!Alg) throw new Error(alg + ' is not supported (we accept pull requests)')
+  return new Alg()
+}
+
+var Buffer = require('buffer').Buffer
+var Hash   = require('./hash')(Buffer)
+
+exports.sha1 = require('./sha1')(Buffer, Hash)
+exports.sha256 = require('./sha256')(Buffer, Hash)
+exports.sha512 = require('./sha512')(Buffer, Hash)
+
+},{"./hash":137,"./sha1":139,"./sha256":140,"./sha512":141,"buffer":125}],139:[function(require,module,exports){
+/*
+ * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
+ * in FIPS PUB 180-1
+ * Version 2.1a Copyright Paul Johnston 2000 - 2002.
+ * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
+ * Distributed under the BSD License
+ * See http://pajhome.org.uk/crypt/md5 for details.
+ */
+
+var inherits = require('util').inherits
+
+module.exports = function (Buffer, Hash) {
+
+  var A = 0|0
+  var B = 4|0
+  var C = 8|0
+  var D = 12|0
+  var E = 16|0
+
+  var W = new (typeof Int32Array === 'undefined' ? Array : Int32Array)(80)
+
+  var POOL = []
+
+  function Sha1 () {
+    if(POOL.length)
+      return POOL.pop().init()
+
+    if(!(this instanceof Sha1)) return new Sha1()
+    this._w = W
+    Hash.call(this, 16*4, 14*4)
+
+    this._h = null
+    this.init()
+  }
+
+  inherits(Sha1, Hash)
+
+  Sha1.prototype.init = function () {
+    this._a = 0x67452301
+    this._b = 0xefcdab89
+    this._c = 0x98badcfe
+    this._d = 0x10325476
+    this._e = 0xc3d2e1f0
+
+    Hash.prototype.init.call(this)
+    return this
+  }
+
+  Sha1.prototype._POOL = POOL
+  Sha1.prototype._update = function (X) {
+
+    var a, b, c, d, e, _a, _b, _c, _d, _e
+
+    a = _a = this._a
+    b = _b = this._b
+    c = _c = this._c
+    d = _d = this._d
+    e = _e = this._e
+
+    var w = this._w
+
+    for(var j = 0; j < 80; j++) {
+      var W = w[j] = j < 16 ? X.readInt32BE(j*4)
+        : rol(w[j - 3] ^ w[j -  8] ^ w[j - 14] ^ w[j - 16], 1)
+
+      var t = add(
+        add(rol(a, 5), sha1_ft(j, b, c, d)),
+        add(add(e, W), sha1_kt(j))
+      )
+
+      e = d
+      d = c
+      c = rol(b, 30)
+      b = a
+      a = t
+    }
+
+    this._a = add(a, _a)
+    this._b = add(b, _b)
+    this._c = add(c, _c)
+    this._d = add(d, _d)
+    this._e = add(e, _e)
+  }
+
+  Sha1.prototype._hash = function () {
+    if(POOL.length < 100) POOL.push(this)
+    var H = new Buffer(20)
+    //console.log(this._a|0, this._b|0, this._c|0, this._d|0, this._e|0)
+    H.writeInt32BE(this._a|0, A)
+    H.writeInt32BE(this._b|0, B)
+    H.writeInt32BE(this._c|0, C)
+    H.writeInt32BE(this._d|0, D)
+    H.writeInt32BE(this._e|0, E)
+    return H
+  }
+
+  /*
+   * Perform the appropriate triplet combination function for the current
+   * iteration
+   */
+  function sha1_ft(t, b, c, d) {
+    if(t < 20) return (b & c) | ((~b) & d);
+    if(t < 40) return b ^ c ^ d;
+    if(t < 60) return (b & c) | (b & d) | (c & d);
+    return b ^ c ^ d;
+  }
+
+  /*
+   * Determine the appropriate additive constant for the current iteration
+   */
+  function sha1_kt(t) {
+    return (t < 20) ?  1518500249 : (t < 40) ?  1859775393 :
+           (t < 60) ? -1894007588 : -899497514;
+  }
+
+  /*
+   * Add integers, wrapping at 2^32. This uses 16-bit operations internally
+   * to work around bugs in some JS interpreters.
+   * //dominictarr: this is 10 years old, so maybe this can be dropped?)
+   *
+   */
+  function add(x, y) {
+    return (x + y ) | 0
+  //lets see how this goes on testling.
+  //  var lsw = (x & 0xFFFF) + (y & 0xFFFF);
+  //  var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+  //  return (msw << 16) | (lsw & 0xFFFF);
+  }
+
+  /*
+   * Bitwise rotate a 32-bit number to the left.
+   */
+  function rol(num, cnt) {
+    return (num << cnt) | (num >>> (32 - cnt));
+  }
+
+  return Sha1
+}
+
+},{"util":148}],140:[function(require,module,exports){
+
+/**
+ * A JavaScript implementation of the Secure Hash Algorithm, SHA-256, as defined
+ * in FIPS 180-2
+ * Version 2.2-beta Copyright Angel Marin, Paul Johnston 2000 - 2009.
+ * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
+ *
+ */
+
+var inherits = require('util').inherits
+
+module.exports = function (Buffer, Hash) {
+
+  var K = [
+      0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5,
+      0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
+      0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3,
+      0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174,
+      0xE49B69C1, 0xEFBE4786, 0x0FC19DC6, 0x240CA1CC,
+      0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA,
+      0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7,
+      0xC6E00BF3, 0xD5A79147, 0x06CA6351, 0x14292967,
+      0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13,
+      0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85,
+      0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3,
+      0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070,
+      0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5,
+      0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3,
+      0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208,
+      0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2
+    ]
+
+  var W = new Array(64)
+
+  function Sha256() {
+    this.init()
+
+    this._w = W //new Array(64)
+
+    Hash.call(this, 16*4, 14*4)
+  }
+
+  inherits(Sha256, Hash)
+
+  Sha256.prototype.init = function () {
+
+    this._a = 0x6a09e667|0
+    this._b = 0xbb67ae85|0
+    this._c = 0x3c6ef372|0
+    this._d = 0xa54ff53a|0
+    this._e = 0x510e527f|0
+    this._f = 0x9b05688c|0
+    this._g = 0x1f83d9ab|0
+    this._h = 0x5be0cd19|0
+
+    this._len = this._s = 0
+
+    return this
+  }
+
+  function S (X, n) {
+    return (X >>> n) | (X << (32 - n));
+  }
+
+  function R (X, n) {
+    return (X >>> n);
+  }
+
+  function Ch (x, y, z) {
+    return ((x & y) ^ ((~x) & z));
+  }
+
+  function Maj (x, y, z) {
+    return ((x & y) ^ (x & z) ^ (y & z));
+  }
+
+  function Sigma0256 (x) {
+    return (S(x, 2) ^ S(x, 13) ^ S(x, 22));
+  }
+
+  function Sigma1256 (x) {
+    return (S(x, 6) ^ S(x, 11) ^ S(x, 25));
+  }
+
+  function Gamma0256 (x) {
+    return (S(x, 7) ^ S(x, 18) ^ R(x, 3));
+  }
+
+  function Gamma1256 (x) {
+    return (S(x, 17) ^ S(x, 19) ^ R(x, 10));
+  }
+
+  Sha256.prototype._update = function(M) {
+
+    var W = this._w
+    var a, b, c, d, e, f, g, h
+    var T1, T2
+
+    a = this._a | 0
+    b = this._b | 0
+    c = this._c | 0
+    d = this._d | 0
+    e = this._e | 0
+    f = this._f | 0
+    g = this._g | 0
+    h = this._h | 0
+
+    for (var j = 0; j < 64; j++) {
+      var w = W[j] = j < 16
+        ? M.readInt32BE(j * 4)
+        : Gamma1256(W[j - 2]) + W[j - 7] + Gamma0256(W[j - 15]) + W[j - 16]
+
+      T1 = h + Sigma1256(e) + Ch(e, f, g) + K[j] + w
+
+      T2 = Sigma0256(a) + Maj(a, b, c);
+      h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a = T1 + T2;
+    }
+
+    this._a = (a + this._a) | 0
+    this._b = (b + this._b) | 0
+    this._c = (c + this._c) | 0
+    this._d = (d + this._d) | 0
+    this._e = (e + this._e) | 0
+    this._f = (f + this._f) | 0
+    this._g = (g + this._g) | 0
+    this._h = (h + this._h) | 0
+
+  };
+
+  Sha256.prototype._hash = function () {
+    var H = new Buffer(32)
+
+    H.writeInt32BE(this._a,  0)
+    H.writeInt32BE(this._b,  4)
+    H.writeInt32BE(this._c,  8)
+    H.writeInt32BE(this._d, 12)
+    H.writeInt32BE(this._e, 16)
+    H.writeInt32BE(this._f, 20)
+    H.writeInt32BE(this._g, 24)
+    H.writeInt32BE(this._h, 28)
+
+    return H
+  }
+
+  return Sha256
+
+}
+
+},{"util":148}],141:[function(require,module,exports){
+var inherits = require('util').inherits
+
+module.exports = function (Buffer, Hash) {
+  var K = [
+    0x428a2f98, 0xd728ae22, 0x71374491, 0x23ef65cd,
+    0xb5c0fbcf, 0xec4d3b2f, 0xe9b5dba5, 0x8189dbbc,
+    0x3956c25b, 0xf348b538, 0x59f111f1, 0xb605d019,
+    0x923f82a4, 0xaf194f9b, 0xab1c5ed5, 0xda6d8118,
+    0xd807aa98, 0xa3030242, 0x12835b01, 0x45706fbe,
+    0x243185be, 0x4ee4b28c, 0x550c7dc3, 0xd5ffb4e2,
+    0x72be5d74, 0xf27b896f, 0x80deb1fe, 0x3b1696b1,
+    0x9bdc06a7, 0x25c71235, 0xc19bf174, 0xcf692694,
+    0xe49b69c1, 0x9ef14ad2, 0xefbe4786, 0x384f25e3,
+    0x0fc19dc6, 0x8b8cd5b5, 0x240ca1cc, 0x77ac9c65,
+    0x2de92c6f, 0x592b0275, 0x4a7484aa, 0x6ea6e483,
+    0x5cb0a9dc, 0xbd41fbd4, 0x76f988da, 0x831153b5,
+    0x983e5152, 0xee66dfab, 0xa831c66d, 0x2db43210,
+    0xb00327c8, 0x98fb213f, 0xbf597fc7, 0xbeef0ee4,
+    0xc6e00bf3, 0x3da88fc2, 0xd5a79147, 0x930aa725,
+    0x06ca6351, 0xe003826f, 0x14292967, 0x0a0e6e70,
+    0x27b70a85, 0x46d22ffc, 0x2e1b2138, 0x5c26c926,
+    0x4d2c6dfc, 0x5ac42aed, 0x53380d13, 0x9d95b3df,
+    0x650a7354, 0x8baf63de, 0x766a0abb, 0x3c77b2a8,
+    0x81c2c92e, 0x47edaee6, 0x92722c85, 0x1482353b,
+    0xa2bfe8a1, 0x4cf10364, 0xa81a664b, 0xbc423001,
+    0xc24b8b70, 0xd0f89791, 0xc76c51a3, 0x0654be30,
+    0xd192e819, 0xd6ef5218, 0xd6990624, 0x5565a910,
+    0xf40e3585, 0x5771202a, 0x106aa070, 0x32bbd1b8,
+    0x19a4c116, 0xb8d2d0c8, 0x1e376c08, 0x5141ab53,
+    0x2748774c, 0xdf8eeb99, 0x34b0bcb5, 0xe19b48a8,
+    0x391c0cb3, 0xc5c95a63, 0x4ed8aa4a, 0xe3418acb,
+    0x5b9cca4f, 0x7763e373, 0x682e6ff3, 0xd6b2b8a3,
+    0x748f82ee, 0x5defb2fc, 0x78a5636f, 0x43172f60,
+    0x84c87814, 0xa1f0ab72, 0x8cc70208, 0x1a6439ec,
+    0x90befffa, 0x23631e28, 0xa4506ceb, 0xde82bde9,
+    0xbef9a3f7, 0xb2c67915, 0xc67178f2, 0xe372532b,
+    0xca273ece, 0xea26619c, 0xd186b8c7, 0x21c0c207,
+    0xeada7dd6, 0xcde0eb1e, 0xf57d4f7f, 0xee6ed178,
+    0x06f067aa, 0x72176fba, 0x0a637dc5, 0xa2c898a6,
+    0x113f9804, 0xbef90dae, 0x1b710b35, 0x131c471b,
+    0x28db77f5, 0x23047d84, 0x32caab7b, 0x40c72493,
+    0x3c9ebe0a, 0x15c9bebc, 0x431d67c4, 0x9c100d4c,
+    0x4cc5d4be, 0xcb3e42b6, 0x597f299c, 0xfc657e2a,
+    0x5fcb6fab, 0x3ad6faec, 0x6c44198c, 0x4a475817
+  ]
+
+  var W = new Array(160)
+
+  function Sha512() {
+    this.init()
+    this._w = W
+
+    Hash.call(this, 128, 112)
+  }
+
+  inherits(Sha512, Hash)
+
+  Sha512.prototype.init = function () {
+
+    this._a = 0x6a09e667|0
+    this._b = 0xbb67ae85|0
+    this._c = 0x3c6ef372|0
+    this._d = 0xa54ff53a|0
+    this._e = 0x510e527f|0
+    this._f = 0x9b05688c|0
+    this._g = 0x1f83d9ab|0
+    this._h = 0x5be0cd19|0
+
+    this._al = 0xf3bcc908|0
+    this._bl = 0x84caa73b|0
+    this._cl = 0xfe94f82b|0
+    this._dl = 0x5f1d36f1|0
+    this._el = 0xade682d1|0
+    this._fl = 0x2b3e6c1f|0
+    this._gl = 0xfb41bd6b|0
+    this._hl = 0x137e2179|0
+
+    this._len = this._s = 0
+
+    return this
+  }
+
+  function S (X, Xl, n) {
+    return (X >>> n) | (Xl << (32 - n))
+  }
+
+  function Ch (x, y, z) {
+    return ((x & y) ^ ((~x) & z));
+  }
+
+  function Maj (x, y, z) {
+    return ((x & y) ^ (x & z) ^ (y & z));
+  }
+
+  Sha512.prototype._update = function(M) {
+
+    var W = this._w
+    var a, b, c, d, e, f, g, h
+    var al, bl, cl, dl, el, fl, gl, hl
+
+    a = this._a | 0
+    b = this._b | 0
+    c = this._c | 0
+    d = this._d | 0
+    e = this._e | 0
+    f = this._f | 0
+    g = this._g | 0
+    h = this._h | 0
+
+    al = this._al | 0
+    bl = this._bl | 0
+    cl = this._cl | 0
+    dl = this._dl | 0
+    el = this._el | 0
+    fl = this._fl | 0
+    gl = this._gl | 0
+    hl = this._hl | 0
+
+    for (var i = 0; i < 80; i++) {
+      var j = i * 2
+
+      var Wi, Wil
+
+      if (i < 16) {
+        Wi = W[j] = M.readInt32BE(j * 4)
+        Wil = W[j + 1] = M.readInt32BE(j * 4 + 4)
+
+      } else {
+        var x  = W[j - 15*2]
+        var xl = W[j - 15*2 + 1]
+        var gamma0  = S(x, xl, 1) ^ S(x, xl, 8) ^ (x >>> 7)
+        var gamma0l = S(xl, x, 1) ^ S(xl, x, 8) ^ S(xl, x, 7)
+
+        x  = W[j - 2*2]
+        xl = W[j - 2*2 + 1]
+        var gamma1  = S(x, xl, 19) ^ S(xl, x, 29) ^ (x >>> 6)
+        var gamma1l = S(xl, x, 19) ^ S(x, xl, 29) ^ S(xl, x, 6)
+
+        // W[i] = gamma0 + W[i - 7] + gamma1 + W[i - 16]
+        var Wi7  = W[j - 7*2]
+        var Wi7l = W[j - 7*2 + 1]
+
+        var Wi16  = W[j - 16*2]
+        var Wi16l = W[j - 16*2 + 1]
+
+        Wil = gamma0l + Wi7l
+        Wi  = gamma0  + Wi7 + ((Wil >>> 0) < (gamma0l >>> 0) ? 1 : 0)
+        Wil = Wil + gamma1l
+        Wi  = Wi  + gamma1  + ((Wil >>> 0) < (gamma1l >>> 0) ? 1 : 0)
+        Wil = Wil + Wi16l
+        Wi  = Wi  + Wi16 + ((Wil >>> 0) < (Wi16l >>> 0) ? 1 : 0)
+
+        W[j] = Wi
+        W[j + 1] = Wil
+      }
+
+      var maj = Maj(a, b, c)
+      var majl = Maj(al, bl, cl)
+
+      var sigma0h = S(a, al, 28) ^ S(al, a, 2) ^ S(al, a, 7)
+      var sigma0l = S(al, a, 28) ^ S(a, al, 2) ^ S(a, al, 7)
+      var sigma1h = S(e, el, 14) ^ S(e, el, 18) ^ S(el, e, 9)
+      var sigma1l = S(el, e, 14) ^ S(el, e, 18) ^ S(e, el, 9)
+
+      // t1 = h + sigma1 + ch + K[i] + W[i]
+      var Ki = K[j]
+      var Kil = K[j + 1]
+
+      var ch = Ch(e, f, g)
+      var chl = Ch(el, fl, gl)
+
+      var t1l = hl + sigma1l
+      var t1 = h + sigma1h + ((t1l >>> 0) < (hl >>> 0) ? 1 : 0)
+      t1l = t1l + chl
+      t1 = t1 + ch + ((t1l >>> 0) < (chl >>> 0) ? 1 : 0)
+      t1l = t1l + Kil
+      t1 = t1 + Ki + ((t1l >>> 0) < (Kil >>> 0) ? 1 : 0)
+      t1l = t1l + Wil
+      t1 = t1 + Wi + ((t1l >>> 0) < (Wil >>> 0) ? 1 : 0)
+
+      // t2 = sigma0 + maj
+      var t2l = sigma0l + majl
+      var t2 = sigma0h + maj + ((t2l >>> 0) < (sigma0l >>> 0) ? 1 : 0)
+
+      h  = g
+      hl = gl
+      g  = f
+      gl = fl
+      f  = e
+      fl = el
+      el = (dl + t1l) | 0
+      e  = (d + t1 + ((el >>> 0) < (dl >>> 0) ? 1 : 0)) | 0
+      d  = c
+      dl = cl
+      c  = b
+      cl = bl
+      b  = a
+      bl = al
+      al = (t1l + t2l) | 0
+      a  = (t1 + t2 + ((al >>> 0) < (t1l >>> 0) ? 1 : 0)) | 0
+    }
+
+    this._al = (this._al + al) | 0
+    this._bl = (this._bl + bl) | 0
+    this._cl = (this._cl + cl) | 0
+    this._dl = (this._dl + dl) | 0
+    this._el = (this._el + el) | 0
+    this._fl = (this._fl + fl) | 0
+    this._gl = (this._gl + gl) | 0
+    this._hl = (this._hl + hl) | 0
+
+    this._a = (this._a + a + ((this._al >>> 0) < (al >>> 0) ? 1 : 0)) | 0
+    this._b = (this._b + b + ((this._bl >>> 0) < (bl >>> 0) ? 1 : 0)) | 0
+    this._c = (this._c + c + ((this._cl >>> 0) < (cl >>> 0) ? 1 : 0)) | 0
+    this._d = (this._d + d + ((this._dl >>> 0) < (dl >>> 0) ? 1 : 0)) | 0
+    this._e = (this._e + e + ((this._el >>> 0) < (el >>> 0) ? 1 : 0)) | 0
+    this._f = (this._f + f + ((this._fl >>> 0) < (fl >>> 0) ? 1 : 0)) | 0
+    this._g = (this._g + g + ((this._gl >>> 0) < (gl >>> 0) ? 1 : 0)) | 0
+    this._h = (this._h + h + ((this._hl >>> 0) < (hl >>> 0) ? 1 : 0)) | 0
+  }
+
+  Sha512.prototype._hash = function () {
+    var H = new Buffer(64)
+
+    function writeInt64BE(h, l, offset) {
+      H.writeInt32BE(h, offset)
+      H.writeInt32BE(l, offset + 4)
+    }
+
+    writeInt64BE(this._a, this._al, 0)
+    writeInt64BE(this._b, this._bl, 8)
+    writeInt64BE(this._c, this._cl, 16)
+    writeInt64BE(this._d, this._dl, 24)
+    writeInt64BE(this._e, this._el, 32)
+    writeInt64BE(this._f, this._fl, 40)
+    writeInt64BE(this._g, this._gl, 48)
+    writeInt64BE(this._h, this._hl, 56)
+
+    return H
+  }
+
+  return Sha512
+
+}
+
+},{"util":148}],142:[function(require,module,exports){
+var pbkdf2Export = require('pbkdf2-compat').__pbkdf2Export
+
+module.exports = function (crypto, exports) {
+  exports = exports || {}
+
+  var exported = pbkdf2Export(crypto)
+
+  exports.pbkdf2 = exported.pbkdf2
+  exports.pbkdf2Sync = exported.pbkdf2Sync
+
+  return exports
+}
+
+},{"pbkdf2-compat":134}],143:[function(require,module,exports){
+(function (global,Buffer){
+(function() {
+  var g = ('undefined' === typeof window ? global : window) || {}
+  var foolBrowserify = require
+  _crypto = (
+    g.crypto || g.msCrypto || foolBrowserify('crypto')
+  )
+  module.exports = function(size) {
+    // Modern Browsers
+    if(_crypto.getRandomValues) {
+      var bytes = new Buffer(size); //in browserify, this is an extended Uint8Array
+      /* This will not work in older browsers.
+       * See https://developer.mozilla.org/en-US/docs/Web/API/window.crypto.getRandomValues
+       */
+    
+      _crypto.getRandomValues(bytes);
+      return bytes;
+    }
+    else if (_crypto.randomBytes) {
+      return _crypto.randomBytes(size)
+    }
+    else
+      throw new Error(
+        'secure random number generation not supported by this browser\n'+
+        'use chrome, FireFox or Internet Explorer 11'
+      )
+  }
+}())
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
+},{"buffer":125}],144:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -12267,10 +15337,8 @@ EventEmitter.prototype.emit = function(type) {
       er = arguments[1];
       if (er instanceof Error) {
         throw er; // Unhandled 'error' event
-      } else {
-        throw TypeError('Uncaught, unspecified "error" event.');
       }
-      return false;
+      throw TypeError('Uncaught, unspecified "error" event.');
     }
   }
 
@@ -12512,7 +15580,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],111:[function(_dereq_,module,exports){
+},{}],145:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -12577,7 +15645,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],112:[function(_dereq_,module,exports){
+},{}],146:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -12601,15 +15669,15 @@ process.chdir = function (dir) {
 
 module.exports = Stream;
 
-var EE = _dereq_('events').EventEmitter;
-var inherits = _dereq_('inherits');
+var EE = require('events').EventEmitter;
+var inherits = require('inherits');
 
 inherits(Stream, EE);
-Stream.Readable = _dereq_('readable-stream/readable.js');
-Stream.Writable = _dereq_('readable-stream/writable.js');
-Stream.Duplex = _dereq_('readable-stream/duplex.js');
-Stream.Transform = _dereq_('readable-stream/transform.js');
-Stream.PassThrough = _dereq_('readable-stream/passthrough.js');
+Stream.Readable = require('readable-stream/readable.js');
+Stream.Writable = require('readable-stream/writable.js');
+Stream.Duplex = require('readable-stream/duplex.js');
+Stream.Transform = require('readable-stream/transform.js');
+Stream.PassThrough = require('readable-stream/passthrough.js');
 
 // Backwards-compat with node 0.4.x
 Stream.Stream = Stream;
@@ -12706,7 +15774,604 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":110,"inherits":114,"readable-stream/duplex.js":116,"readable-stream/passthrough.js":125,"readable-stream/readable.js":126,"readable-stream/transform.js":127,"readable-stream/writable.js":128}],113:[function(_dereq_,module,exports){
+},{"events":144,"inherits":150,"readable-stream/duplex.js":152,"readable-stream/passthrough.js":161,"readable-stream/readable.js":162,"readable-stream/transform.js":163,"readable-stream/writable.js":164}],147:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],148:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":147,"_process":145,"inherits":150}],149:[function(require,module,exports){
 // Generic Pool Redux
 //
 // Fork of https://github.com/coopernurse/node-pool
@@ -12717,7 +16382,7 @@ Stream.prototype.pipe = function(dest, options) {
 
 "use strict";
 
-define(function(_dereq_, exports, module) {
+define(function(require, exports, module) {
 
   // Initialize arrays to hold queue elements.
   var PriorityQueue = function(size) {
@@ -13037,9 +16702,9 @@ define(function(_dereq_, exports, module) {
 });
 
 })(
-  typeof define === 'function' && define.amd ? define : function (factory) { factory(_dereq_, exports, module); }
+  typeof define === 'function' && define.amd ? define : function (factory) { factory(require, exports, module); }
 );
-},{}],114:[function(_dereq_,module,exports){
+},{}],150:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -13064,7 +16729,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],115:[function(_dereq_,module,exports){
+},{}],151:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -19852,11 +23517,11 @@ if (typeof Object.create === 'function') {
   }
 }.call(this));
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],116:[function(_dereq_,module,exports){
-module.exports = _dereq_("./lib/_stream_duplex.js")
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],152:[function(require,module,exports){
+module.exports = require("./lib/_stream_duplex.js")
 
-},{"./lib/_stream_duplex.js":117}],117:[function(_dereq_,module,exports){
+},{"./lib/_stream_duplex.js":153}],153:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -19896,12 +23561,12 @@ var objectKeys = Object.keys || function (obj) {
 
 
 /*<replacement>*/
-var util = _dereq_('core-util-is');
-util.inherits = _dereq_('inherits');
+var util = require('core-util-is');
+util.inherits = require('inherits');
 /*</replacement>*/
 
-var Readable = _dereq_('./_stream_readable');
-var Writable = _dereq_('./_stream_writable');
+var Readable = require('./_stream_readable');
+var Writable = require('./_stream_writable');
 
 util.inherits(Duplex, Readable);
 
@@ -19948,8 +23613,8 @@ function forEach (xs, f) {
   }
 }
 
-}).call(this,_dereq_("FWaASH"))
-},{"./_stream_readable":119,"./_stream_writable":121,"FWaASH":111,"core-util-is":122,"inherits":114}],118:[function(_dereq_,module,exports){
+}).call(this,require('_process'))
+},{"./_stream_readable":155,"./_stream_writable":157,"_process":145,"core-util-is":158,"inherits":150}],154:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19977,11 +23642,11 @@ function forEach (xs, f) {
 
 module.exports = PassThrough;
 
-var Transform = _dereq_('./_stream_transform');
+var Transform = require('./_stream_transform');
 
 /*<replacement>*/
-var util = _dereq_('core-util-is');
-util.inherits = _dereq_('inherits');
+var util = require('core-util-is');
+util.inherits = require('inherits');
 /*</replacement>*/
 
 util.inherits(PassThrough, Transform);
@@ -19997,7 +23662,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./_stream_transform":120,"core-util-is":122,"inherits":114}],119:[function(_dereq_,module,exports){
+},{"./_stream_transform":156,"core-util-is":158,"inherits":150}],155:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -20023,17 +23688,17 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
 module.exports = Readable;
 
 /*<replacement>*/
-var isArray = _dereq_('isarray');
+var isArray = require('isarray');
 /*</replacement>*/
 
 
 /*<replacement>*/
-var Buffer = _dereq_('buffer').Buffer;
+var Buffer = require('buffer').Buffer;
 /*</replacement>*/
 
 Readable.ReadableState = ReadableState;
 
-var EE = _dereq_('events').EventEmitter;
+var EE = require('events').EventEmitter;
 
 /*<replacement>*/
 if (!EE.listenerCount) EE.listenerCount = function(emitter, type) {
@@ -20041,18 +23706,18 @@ if (!EE.listenerCount) EE.listenerCount = function(emitter, type) {
 };
 /*</replacement>*/
 
-var Stream = _dereq_('stream');
+var Stream = require('stream');
 
 /*<replacement>*/
-var util = _dereq_('core-util-is');
-util.inherits = _dereq_('inherits');
+var util = require('core-util-is');
+util.inherits = require('inherits');
 /*</replacement>*/
 
 var StringDecoder;
 
 
 /*<replacement>*/
-var debug = _dereq_('util');
+var debug = require('util');
 if (debug && debug.debuglog) {
   debug = debug.debuglog('stream');
 } else {
@@ -20064,6 +23729,8 @@ if (debug && debug.debuglog) {
 util.inherits(Readable, Stream);
 
 function ReadableState(options, stream) {
+  var Duplex = require('./_stream_duplex');
+
   options = options || {};
 
   // the point at which it stops calling _read() to fill the buffer
@@ -20101,6 +23768,9 @@ function ReadableState(options, stream) {
   // make all the buffer merging and length checks go away
   this.objectMode = !!options.objectMode;
 
+  if (stream instanceof Duplex)
+    this.objectMode = this.objectMode || !!options.readableObjectMode;
+
   // Crypto is kind of old and crusty.  Historically, its default string
   // encoding is 'binary' so we have to make this configurable.
   // Everything else in the universe uses 'utf8', though.
@@ -20120,13 +23790,15 @@ function ReadableState(options, stream) {
   this.encoding = null;
   if (options.encoding) {
     if (!StringDecoder)
-      StringDecoder = _dereq_('string_decoder/').StringDecoder;
+      StringDecoder = require('string_decoder/').StringDecoder;
     this.decoder = new StringDecoder(options.encoding);
     this.encoding = options.encoding;
   }
 }
 
 function Readable(options) {
+  var Duplex = require('./_stream_duplex');
+
   if (!(this instanceof Readable))
     return new Readable(options);
 
@@ -20228,7 +23900,7 @@ function needMoreData(state) {
 // backwards compatibility.
 Readable.prototype.setEncoding = function(enc) {
   if (!StringDecoder)
-    StringDecoder = _dereq_('string_decoder/').StringDecoder;
+    StringDecoder = require('string_decoder/').StringDecoder;
   this._readableState.decoder = new StringDecoder(enc);
   this._readableState.encoding = enc;
   return this;
@@ -20944,8 +24616,8 @@ function indexOf (xs, x) {
   return -1;
 }
 
-}).call(this,_dereq_("FWaASH"))
-},{"FWaASH":111,"buffer":107,"core-util-is":122,"events":110,"inherits":114,"isarray":123,"stream":112,"string_decoder/":124,"util":106}],120:[function(_dereq_,module,exports){
+}).call(this,require('_process'))
+},{"./_stream_duplex":153,"_process":145,"buffer":125,"core-util-is":158,"events":144,"inherits":150,"isarray":159,"stream":146,"string_decoder/":160,"util":124}],156:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21012,11 +24684,11 @@ function indexOf (xs, x) {
 
 module.exports = Transform;
 
-var Duplex = _dereq_('./_stream_duplex');
+var Duplex = require('./_stream_duplex');
 
 /*<replacement>*/
-var util = _dereq_('core-util-is');
-util.inherits = _dereq_('inherits');
+var util = require('core-util-is');
+util.inherits = require('inherits');
 /*</replacement>*/
 
 util.inherits(Transform, Duplex);
@@ -21156,7 +24828,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./_stream_duplex":117,"core-util-is":122,"inherits":114}],121:[function(_dereq_,module,exports){
+},{"./_stream_duplex":153,"core-util-is":158,"inherits":150}],157:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -21186,18 +24858,18 @@ function done(stream, er) {
 module.exports = Writable;
 
 /*<replacement>*/
-var Buffer = _dereq_('buffer').Buffer;
+var Buffer = require('buffer').Buffer;
 /*</replacement>*/
 
 Writable.WritableState = WritableState;
 
 
 /*<replacement>*/
-var util = _dereq_('core-util-is');
-util.inherits = _dereq_('inherits');
+var util = require('core-util-is');
+util.inherits = require('inherits');
 /*</replacement>*/
 
-var Stream = _dereq_('stream');
+var Stream = require('stream');
 
 util.inherits(Writable, Stream);
 
@@ -21208,6 +24880,8 @@ function WriteReq(chunk, encoding, cb) {
 }
 
 function WritableState(options, stream) {
+  var Duplex = require('./_stream_duplex');
+
   options = options || {};
 
   // the point at which write() starts returning false
@@ -21220,6 +24894,9 @@ function WritableState(options, stream) {
   // object stream flag to indicate whether or not this stream
   // contains buffers or objects.
   this.objectMode = !!options.objectMode;
+
+  if (stream instanceof Duplex)
+    this.objectMode = this.objectMode || !!options.writableObjectMode;
 
   // cast to ints.
   this.highWaterMark = ~~this.highWaterMark;
@@ -21291,7 +24968,7 @@ function WritableState(options, stream) {
 }
 
 function Writable(options) {
-  var Duplex = _dereq_('./_stream_duplex');
+  var Duplex = require('./_stream_duplex');
 
   // Writable ctor is applied to Duplexes, though they're not
   // instanceof Writable, they're instanceof Readable.
@@ -21631,8 +25308,8 @@ function endWritable(stream, state, cb) {
   state.ended = true;
 }
 
-}).call(this,_dereq_("FWaASH"))
-},{"./_stream_duplex":117,"FWaASH":111,"buffer":107,"core-util-is":122,"inherits":114,"stream":112}],122:[function(_dereq_,module,exports){
+}).call(this,require('_process'))
+},{"./_stream_duplex":153,"_process":145,"buffer":125,"core-util-is":158,"inherits":150,"stream":146}],158:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -21741,13 +25418,13 @@ exports.isBuffer = isBuffer;
 function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
-}).call(this,_dereq_("buffer").Buffer)
-},{"buffer":107}],123:[function(_dereq_,module,exports){
+}).call(this,require("buffer").Buffer)
+},{"buffer":125}],159:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],124:[function(_dereq_,module,exports){
+},{}],160:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21769,7 +25446,7 @@ module.exports = Array.isArray || function (arr) {
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var Buffer = _dereq_('buffer').Buffer;
+var Buffer = require('buffer').Buffer;
 
 var isBufferEncoding = Buffer.isEncoding
   || function(encoding) {
@@ -21786,6 +25463,14 @@ function assertEncoding(encoding) {
   }
 }
 
+// StringDecoder provides an interface for efficiently splitting a series of
+// buffers into a series of JS strings without breaking apart multi-byte
+// characters. CESU-8 is handled as part of the UTF-8 encoding.
+//
+// @TODO Handling all encodings inside a single object makes it very difficult
+// to reason about this code, so it should be split up in the future.
+// @TODO There should be a utf8-strict encoding that rejects invalid UTF-8 code
+// points as used by CESU-8.
 var StringDecoder = exports.StringDecoder = function(encoding) {
   this.encoding = (encoding || 'utf8').toLowerCase().replace(/[-_]/, '');
   assertEncoding(encoding);
@@ -21810,37 +25495,50 @@ var StringDecoder = exports.StringDecoder = function(encoding) {
       return;
   }
 
+  // Enough space to store all bytes of a single character. UTF-8 needs 4
+  // bytes, but CESU-8 may require up to 6 (3 bytes per surrogate).
   this.charBuffer = new Buffer(6);
+  // Number of bytes received for the current incomplete multi-byte character.
   this.charReceived = 0;
+  // Number of bytes expected for the current incomplete multi-byte character.
   this.charLength = 0;
 };
 
 
+// write decodes the given buffer and returns it as JS string that is
+// guaranteed to not contain any partial multi-byte characters. Any partial
+// character found at the end of the buffer is buffered up, and will be
+// returned when calling write again with the remaining bytes.
+//
+// Note: Converting a Buffer containing an orphan surrogate to a String
+// currently works, but converting a String to a Buffer (via `new Buffer`, or
+// Buffer#write) will replace incomplete surrogates with the unicode
+// replacement character. See https://codereview.chromium.org/121173009/ .
 StringDecoder.prototype.write = function(buffer) {
   var charStr = '';
-  var offset = 0;
-
   // if our last write ended with an incomplete multibyte character
   while (this.charLength) {
     // determine how many remaining bytes this buffer has to offer for this char
-    var i = (buffer.length >= this.charLength - this.charReceived) ?
-                this.charLength - this.charReceived :
-                buffer.length;
+    var available = (buffer.length >= this.charLength - this.charReceived) ?
+        this.charLength - this.charReceived :
+        buffer.length;
 
     // add the new bytes to the char buffer
-    buffer.copy(this.charBuffer, this.charReceived, offset, i);
-    this.charReceived += (i - offset);
-    offset = i;
+    buffer.copy(this.charBuffer, this.charReceived, 0, available);
+    this.charReceived += available;
 
     if (this.charReceived < this.charLength) {
       // still not enough chars in this buffer? wait for more ...
       return '';
     }
 
+    // remove bytes belonging to the current character from the buffer
+    buffer = buffer.slice(available, buffer.length);
+
     // get the character that was split
     charStr = this.charBuffer.slice(0, this.charLength).toString(this.encoding);
 
-    // lead surrogate (D800-DBFF) is also the incomplete character
+    // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
     var charCode = charStr.charCodeAt(charStr.length - 1);
     if (charCode >= 0xD800 && charCode <= 0xDBFF) {
       this.charLength += this.surrogateSize;
@@ -21850,34 +25548,33 @@ StringDecoder.prototype.write = function(buffer) {
     this.charReceived = this.charLength = 0;
 
     // if there are no more bytes in this buffer, just emit our char
-    if (i == buffer.length) return charStr;
-
-    // otherwise cut off the characters end from the beginning of this buffer
-    buffer = buffer.slice(i, buffer.length);
+    if (buffer.length === 0) {
+      return charStr;
+    }
     break;
   }
 
-  var lenIncomplete = this.detectIncompleteChar(buffer);
+  // determine and set charLength / charReceived
+  this.detectIncompleteChar(buffer);
 
   var end = buffer.length;
   if (this.charLength) {
     // buffer the incomplete character bytes we got
-    buffer.copy(this.charBuffer, 0, buffer.length - lenIncomplete, end);
-    this.charReceived = lenIncomplete;
-    end -= lenIncomplete;
+    buffer.copy(this.charBuffer, 0, buffer.length - this.charReceived, end);
+    end -= this.charReceived;
   }
 
   charStr += buffer.toString(this.encoding, 0, end);
 
   var end = charStr.length - 1;
   var charCode = charStr.charCodeAt(end);
-  // lead surrogate (D800-DBFF) is also the incomplete character
+  // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
   if (charCode >= 0xD800 && charCode <= 0xDBFF) {
     var size = this.surrogateSize;
     this.charLength += size;
     this.charReceived += size;
     this.charBuffer.copy(this.charBuffer, size, 0, size);
-    this.charBuffer.write(charStr.charAt(charStr.length - 1), this.encoding);
+    buffer.copy(this.charBuffer, 0, 0, size);
     return charStr.substring(0, end);
   }
 
@@ -21885,6 +25582,10 @@ StringDecoder.prototype.write = function(buffer) {
   return charStr;
 };
 
+// detectIncompleteChar determines if there is an incomplete UTF-8 character at
+// the end of the given buffer. If so, it sets this.charLength to the byte
+// length that character, and sets this.charReceived to the number of bytes
+// that are available for this character.
 StringDecoder.prototype.detectIncompleteChar = function(buffer) {
   // determine how many bytes we have to check at the end of this buffer
   var i = (buffer.length >= 3) ? 3 : buffer.length;
@@ -21914,8 +25615,7 @@ StringDecoder.prototype.detectIncompleteChar = function(buffer) {
       break;
     }
   }
-
-  return i;
+  this.charReceived = i;
 };
 
 StringDecoder.prototype.end = function(buffer) {
@@ -21938,35 +25638,32 @@ function passThroughWrite(buffer) {
 }
 
 function utf16DetectIncompleteChar(buffer) {
-  var incomplete = this.charReceived = buffer.length % 2;
-  this.charLength = incomplete ? 2 : 0;
-  return incomplete;
+  this.charReceived = buffer.length % 2;
+  this.charLength = this.charReceived ? 2 : 0;
 }
 
 function base64DetectIncompleteChar(buffer) {
-  var incomplete = this.charReceived = buffer.length % 3;
-  this.charLength = incomplete ? 3 : 0;
-  return incomplete;
+  this.charReceived = buffer.length % 3;
+  this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":107}],125:[function(_dereq_,module,exports){
-module.exports = _dereq_("./lib/_stream_passthrough.js")
+},{"buffer":125}],161:[function(require,module,exports){
+module.exports = require("./lib/_stream_passthrough.js")
 
-},{"./lib/_stream_passthrough.js":118}],126:[function(_dereq_,module,exports){
-exports = module.exports = _dereq_('./lib/_stream_readable.js');
-exports.Stream = _dereq_('stream');
+},{"./lib/_stream_passthrough.js":154}],162:[function(require,module,exports){
+exports = module.exports = require('./lib/_stream_readable.js');
+exports.Stream = require('stream');
 exports.Readable = exports;
-exports.Writable = _dereq_('./lib/_stream_writable.js');
-exports.Duplex = _dereq_('./lib/_stream_duplex.js');
-exports.Transform = _dereq_('./lib/_stream_transform.js');
-exports.PassThrough = _dereq_('./lib/_stream_passthrough.js');
+exports.Writable = require('./lib/_stream_writable.js');
+exports.Duplex = require('./lib/_stream_duplex.js');
+exports.Transform = require('./lib/_stream_transform.js');
+exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":117,"./lib/_stream_passthrough.js":118,"./lib/_stream_readable.js":119,"./lib/_stream_transform.js":120,"./lib/_stream_writable.js":121,"stream":112}],127:[function(_dereq_,module,exports){
-module.exports = _dereq_("./lib/_stream_transform.js")
+},{"./lib/_stream_duplex.js":153,"./lib/_stream_passthrough.js":154,"./lib/_stream_readable.js":155,"./lib/_stream_transform.js":156,"./lib/_stream_writable.js":157,"stream":146}],163:[function(require,module,exports){
+module.exports = require("./lib/_stream_transform.js")
 
-},{"./lib/_stream_transform.js":120}],128:[function(_dereq_,module,exports){
-module.exports = _dereq_("./lib/_stream_writable.js")
+},{"./lib/_stream_transform.js":156}],164:[function(require,module,exports){
+module.exports = require("./lib/_stream_writable.js")
 
-},{"./lib/_stream_writable.js":121}]},{},[1])
-(1)
+},{"./lib/_stream_writable.js":157}]},{},[1])(1)
 });
