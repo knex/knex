@@ -126,6 +126,13 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it('where bool', function() {
+      testquery(qb().select('*').from('users').where(true), {
+        mysql: 'select * from `users` where true',
+        default: 'select * from "users" where true'
+      });
+    });
+
     it("where betweens", function() {
       testsql(qb().select('*').from('users').whereBetween('id', [1, 2]), {
         mysql: {
