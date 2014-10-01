@@ -334,6 +334,32 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it('whereIn with empty array, #477', function() {
+      testsql(qb().select('*').from('users').whereIn('id', []), {
+        mysql: {
+          sql: 'select * from `users` where false',
+          bindings: []
+        },
+        default: {
+          sql: 'select * from "users" where false',
+          bindings: []
+        }
+      });
+    });
+
+    it('whereNotIn with empty array, #477', function() {
+      testsql(qb().select('*').from('users').whereNotIn('id', []), {
+        mysql: {
+          sql: 'select * from `users` where true',
+          bindings: []
+        },
+        default: {
+          sql: 'select * from "users" where true',
+          bindings: []
+        }
+      });
+    });
+
     it('should allow a function as the first argument, for a grouped where clause', function() {
       var partial = qb().table('test').where('id', '=', 1);
       testsql(partial, {
