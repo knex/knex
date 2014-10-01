@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.6.22)</span>
+      Knex.js <span class="version">(0.7.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -308,7 +308,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.6.22 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.7.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -319,6 +319,16 @@
 
     <h2 id="Upgrading">Upgrading</h2>
 
+    <h3 id="Upgrading-from0.6">Upgrading 0.6 -> 0.7</h3>
+
+    <p>
+      Should be a painless upgrade, the only breaking change should be "collate nocase" 
+      no longer used as the default <tt>order by</tt> in sqlite3 
+      for <a href="https://github.com/tgriesser/knex/pull/396">performance reasons</a>. 
+      If there are other issues, please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>.
+    </p>
+
+
     <h3 id="Upgrading-from0.5">Upgrading 0.5 -> 0.6</h3>
 
     <p>
@@ -326,14 +336,6 @@
       to properly inject &amp; bind knex.raw statements throughout any queries, the ability to re-use existing snippets.
       If you were only using the publicly documented API, no major changes should be necessary. If you notice any issues,
       please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>. For a full list of changes, see the entry in the <a href="#release-0.6.0">change log.</a>
-    </p>
-
-    <h3 id="Upgrading-from0.4">Upgrading 0.4 -> 0.5</h3>
-
-    <p>
-      Minor changes from the 0.4.x series, include the fact that aggregate functions are
-      no longer aliased as "aggregate", but rather left as-is, unless explicitly aliased.
-      See <a href="https://github.com/tgriesser/knex/pull/110">this ticket</a> for more info.
     </p>
 
     <h2 id="Installation">
@@ -2379,6 +2381,38 @@ $ npm test
 
     <h2 id="changelog">Change Log</h2>
 
+    <p>
+      <b class="header">0.7.0</b> &mdash; <small><i>Oct 1, 2014</i></small><br />
+      
+      <b>New Features:</b>
+      <ul>
+        <li>Oracle support, #419</li>
+        <li>Database seed file support, #391</li>
+        <li>Improved support for sub-raw queries within raw statements</li>
+      </ul>
+
+      <b>Breaking Changes:</b>
+      <ul>
+        <li>"collate nocase" no longer used by default in sqlite3 #396</li>
+      </ul>
+
+      <b>Other Changes:</b>
+      <ul>
+        <li>Bumping Bluebird to ^2.x</li>
+        <li>Transactions in websql are now a no-op (unsupported) #375</li>
+        <li>Improved test suite</li>
+        <li>knex.fn namespace as function helper (knex.fn.now), #372</li>
+        <li>Better handling of disconnect errors</li>
+        <li>Support for offset without limit, #446</li>
+        <li>Chainable first method for mysql schema, #406</li>
+        <li>Support for empty array in <tt>whereIn</tt></li>
+        <li>Create/drop schema for postgres, #511</li>
+        <li>Inserting multiple rows with default values, #468</li>
+        <li>Join columns are optional for cross-join, #508</li>
+        <li>Flag for creating jsonb columns in Postgresql, #500</li>
+      </ul>
+    </p>
+    
     <p>
       <b class="header">0.6.22</b> &mdash; <small><i>July 10, 2014</i></small><br />
       Bug fix for properly binding postgresql streaming queries, (#363).
