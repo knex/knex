@@ -1994,6 +1994,32 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it('allows a raw query in the second param', function() {
+      testsql(qb().select('*').from('accounts').innerJoin(
+        'table1', raw('ST_Contains(buildings_pluto.geom, ST_Centroid(buildings_building.geom))')
+      ), {
+        mysql: {
+          sql: 'select * from `accounts` inner join `table1` on ST_Contains(buildings_pluto.geom, ST_Centroid(buildings_building.geom))'
+        },
+        default: {
+          sql: 'select * from "accounts" inner join "table1" on ST_Contains(buildings_pluto.geom, ST_Centroid(buildings_building.geom))'
+        }
+      });
+    });
+
+    it('allows join "using"', function() {
+      testsql(qb().select('*').from('accounts').innerJoin('table1', function() {
+        this.using('id');
+      }), {
+        mysql: {
+          sql: 'select * from `accounts` inner join `table1` using `id`'
+        },
+        default: {
+          sql: 'select * from "accounts" inner join "table1" using "id"'
+        }
+      });
+    });
+
     it('allows sub-query function on insert, #427', function() {
       testsql(qb().into('votes').insert(function() {
         this.select('*').from('votes').where('id', 99);
