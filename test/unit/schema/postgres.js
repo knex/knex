@@ -213,6 +213,23 @@ module.exports = function(client) {
       expect(tableSql[1].sql).to.equal('create index users_name_index on "users" ("name")');
     });
 
+    it("adding index with an index type", function() {
+       tableSql = new SchemaBuilder().table('users', function(table) {
+        table.index(['foo', 'bar'], 'baz', 'gist');
+      }).toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('create index baz on "users" using gist ("foo", "bar")');
+    });
+
+    it("adding index with an index type fluently", function() {
+       tableSql = new SchemaBuilder().table('users', function(table) {
+        table.string('name').index('baz', 'gist');
+      }).toSQL();
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table "users" add column "name" varchar(255)');
+      expect(tableSql[1].sql).to.equal('create index baz on "users" using gist ("name")');
+    });
+
     it("adding incrementing id", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.increments('id');
