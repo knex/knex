@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// Knex.js  0.7.2
+// Knex.js  0.7.3
 // --------------
 
 'use strict';
@@ -76,7 +76,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.7.2';
+  knex.VERSION = knex.__knex__  = '0.7.3';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     if (config.__transactor__) raw.transacting(config.__transactor__);
@@ -242,7 +242,7 @@ Client.prototype.destroy = function(callback) {
 
 // Return the database being used by this client.
 Client.prototype.database = function() {
-  return this.connectionSettings.database;
+  return this.databaseName || this.connectionSettings.database;
 };
 
 module.exports = Client;
@@ -584,6 +584,7 @@ function connectionErrorHandler(client, connection, err) {
 Client_MySQL.prototype.acquireRawConnection = function() {
   var client = this;
   var connection = mysql.createConnection(this.connectionSettings);
+  this.databaseName = connection.config.database;
   return new Promise(function(resolver, rejecter) {
     connection.connect(function(err) {
       if (err) return rejecter(err);
@@ -598,11 +599,6 @@ Client_MySQL.prototype.acquireRawConnection = function() {
 // when a connection times out or the pool is shutdown.
 Client_MySQL.prototype.destroyRawConnection = function(connection) {
   connection.end();
-};
-
-// Return the database for the MySQL client.
-Client_MySQL.prototype.database = function() {
-  return this.connectionSettings.database;
 };
 
 module.exports = Client_MySQL;
@@ -1382,6 +1378,7 @@ Client_MySQL2.prototype.initRunner = function() {
 // connection needs to be added to the pool.
 Client_MySQL2.prototype.acquireRawConnection = function() {
   var connection = mysql2.createConnection(_.pick(this.connectionSettings, configOptions));
+  this.databaseName = connection.config.database;
   return new Promise(function(resolver, rejecter) {
     connection.connect(function(err) {
       if (err) return rejecter(err);
@@ -2856,16 +2853,9 @@ Client_PG.prototype.acquireRawConnection = Promise.method(function(callback) {
   /*jshint unused: false*/
   // TODO: use callback or remove callback
   var connection = new pg.Client(this.connectionSettings);
+  this.databaseName = connection.database;
+
   var client = this;
-
-  this.connectionSettings = {
-    user : connection.connectionParameters.user,
-    database : connection.connectionParameters.database,
-    port : connection.connectionParameters.port,
-    host : connection.connectionParameters.host,
-    password : connection.connectionParameters.password
-  };
-
   return new Promise(function(resolver, rejecter) {
     connection.connect(function(err, connection) {
       if (err) return rejecter(err);
@@ -3410,9 +3400,9 @@ TableCompiler_PG.prototype.unique = function(columns, indexName) {
   this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + indexName +
     ' unique (' + this.formatter.columnize(columns) + ')');
 };
-TableCompiler_PG.prototype.index = function(columns, indexName) {
+TableCompiler_PG.prototype.index = function(columns, indexName, indexType) {
   indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
-  this.pushQuery('create index ' + indexName + ' on ' + this.tableName() +
+  this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + (indexType && (' using ' + indexType) || '') +
     ' (' + this.formatter.columnize(columns) + ')');
 };
 TableCompiler_PG.prototype.dropPrimary = function() {
@@ -3435,6 +3425,7 @@ client.TableBuilder = TableBuilder_PG;
 client.TableCompiler = TableCompiler_PG;
 
 };
+
 },{"../../../schema":86,"inherits":150,"lodash":151}],50:[function(require,module,exports){
 'use strict';
 
@@ -5875,26 +5866,20 @@ QueryCompiler.prototype.aggregate = function(stmt) {
 QueryCompiler.prototype.join = function() {
   var joins = this.grouped.join;
   if (!joins) return '';
-  var sql = [];
-  for (var i = 0, l = joins.length; i < l; i++) {
-    var str, stmt = joins[i];
-    if (stmt.joinType === 'raw') {
-      str = this.formatter.checkRaw(stmt.table);
+  var sql = _.reduce(joins, function(acc, join) {
+    if (join.joinType === 'raw') {
+      acc.push(this.formatter.checkRaw(join.table));
     } else {
-      str = stmt.joinType + ' join ' + this.formatter.wrap(stmt.table);
-      for (var i2 = 0, l2 = stmt.clauses.length; i2 < l2; i2++) {
-        var clause = stmt.clauses[i2];
-        if (i2 > 0) {
-          str += ' ' + clause[1] + ' ';
-        } else {
-          str += ' on ';
-        }
-        str += this.formatter.wrap(clause[2]) + ' ' + this.formatter.operator(clause[3]) +
-          ' ' + this.formatter.wrap(clause[4]);
-      }
+      acc.push(join.joinType + ' join ' + this.formatter.wrap(join.table));
+      _.each(join.clauses, function(clause, i) {
+        acc.push(i > 0 ? clause[1] : clause[0]);
+        acc.push(this.formatter.wrap(clause[2]));
+        if (clause[3]) acc.push(this.formatter.operator(clause[3]));
+        if (clause[4]) acc.push(this.formatter.wrap(clause[4]));
+      }, this);
     }
-    sql.push(str);
-  }
+    return acc;
+  }, [], this);
   return sql.length > 0 ? sql.join(' ') : '';
 };
 
@@ -6141,13 +6126,18 @@ JoinClause.prototype.grouping = 'join';
 // Adds an "on" clause to the current join object.
 JoinClause.prototype.on = function(first, operator, second) {
   var data;
-  if (arguments.length === 2) {
-    data = ['on', this._bool(), first, '=', operator];
-  } else {
-    data = ['on', this._bool(), first, operator, second];
+  switch (arguments.length) {
+    case 1:  data = ['on', this._bool(), first]; break;
+    case 2:  data = ['on', this._bool(), first, '=', operator]; break;
+    default: data = ['on', this._bool(), first, operator, second];
   }
   this.clauses.push(data);
   return this;
+};
+
+// Adds a "using" clause to the current join.
+JoinClause.prototype.using = function(table) {
+  return this.clauses.push(['using', this._bool(), table]);
 };
 
 // Adds an "and on" clause to the current join object.

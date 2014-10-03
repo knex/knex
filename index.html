@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.7.2)</span>
+      Knex.js <span class="version">(0.7.3)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -45,8 +45,8 @@
       Upgrading
     </a>
     <ul class="toc_section">
+      <li>– <a href="#Upgrading-from0.6">0.6.x -> 0.7</a></li>
       <li>– <a href="#Upgrading-from0.5">0.5.x -> 0.6</a></li>
-      <li>– <a href="#Upgrading-from0.4">0.4.x -> 0.5</a></li>
     </ul>
 
     <a class="toc_title" href="#Installation">
@@ -308,7 +308,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.7.2 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.7.3 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1722,9 +1722,12 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
     </p>
 
     <p id="Chainable-index">
-      <b class="header">index</b><code>column.index()</code>
+      <b class="header">index</b><code>column.index([indexName], [indexType])</code>
       <br />
-      Specifies an field as an index. No-op if this is chained off of a field that cannot be indexed.
+      Specifies an field as an index. If an <tt>indexName</tt> is specified, it is used in places of the standard 
+      index naming convention of <tt>tableName</tt>_<tt>columnName</tt>. The <tt>indexType</tt> can be optionally specified 
+      for PostgreSQL.
+      No-op if this is chained off of a field that cannot be indexed.
     </p>
 
     <p id="Chainable-primary">
@@ -2380,6 +2383,15 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.7.3</b> &mdash; <small><i>Oct 3, 2014</i></small><br />
+    </p>
+
+    <ul>
+      <li>Support for <tt>join(table, rawOrBuilder)</tt> syntax.</li>
+      <li>Fix for regression in PostgreSQL connection (#516).</li>
+    </ul>
 
     <p>
       <b class="header">0.7.1 &amp; 0.7.2</b> &mdash; <small><i>Oct 1, 2014</i></small><br />
