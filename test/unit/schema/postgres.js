@@ -230,6 +230,15 @@ module.exports = function(client) {
       expect(tableSql[1].sql).to.equal('create index baz on "users" using gist ("name")');
     });
 
+    it("adding index with an index type and default name fluently", function() {
+       tableSql = new SchemaBuilder().table('users', function(table) {
+        table.string('name').index(null, 'gist');
+      }).toSQL();
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table "users" add column "name" varchar(255)');
+      expect(tableSql[1].sql).to.equal('create index users_name_index on "users" using gist ("name")');
+    });
+
     it("adding incrementing id", function() {
       tableSql = new SchemaBuilder().table('users', function(table) {
         table.increments('id');
