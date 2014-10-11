@@ -7,3 +7,34 @@
 [codebase](https://github.com/tgriesser/knex/blob/master/knex.js).
 
 * All pull requests should be made to the `master` branch.
+
+## Integration Tests
+
+### The Easy Way
+
+By default, Knex runs tests against MySQL (using [mysql](https://github.com/felixge/node-mysql) and [mysql2](https://github.com/sidorares/node-mysql2)), Postgres, and SQLite. The easiet way to run the tests is by creating the database `'knex_test'` and granting permissions to the database's default username:
+
+* **MySQL**: *root*
+* **Postgres**: *postgres*
+
+No setup is required for SQLite.
+
+### Specifying Databases
+You can optionally specify which dialects to test using the `KNEX_TEST_INTEGRATION_DIALECTS` environment variable. Values shoud be space separated and can include:
+* mysql
+* mysql2
+* postgres
+* sqlite3
+* maria
+* oracle
+
+```bash
+$ KNEX_TEST_INTEGRATION_DIALECTS='postgres mysql' npm test
+```
+
+### Custom Configuration
+If you'd like to override the database configuration (to use a different host, for example), you can override the path to the [default test configuration](https://github.com/tgriesser/knex/blob/master/test/knexfile.js) using the `KNEX_TEST` environment variable.
+
+```bash
+$ KNEX_TEST='./path/to/my/config.js' npm test
+```
