@@ -2279,8 +2279,39 @@ $ knex seed:run
     <h3 id="knexfile">knexfile.js</h3>
 
     <p>
-      A knexfile.js or knexfile.coffee generally contains all of the configuration for your database, for each environment you will be using. You may pass a <tt>--knexfile</tt> option to any of the command line statements to specify an alternate path to your knexfile.
+      A knexfile.js or knexfile.coffee generally contains all of the configuration for your database. It can optionally provide different configuration for different environments. You may pass a <tt>--knexfile</tt> option to any of the command line statements to specify an alternate path to your knexfile.
     </p>
+
+    <h4>Basic configuration:</h4>
+<pre>
+<code class="js">module.exports = {
+  client: 'pg',
+  connection: process.env.DATABASE_URL || {
+    username: 'me',
+    database: 'my_app'
+  }
+};
+</code>
+</pre>
+
+    <h4>Environment configuration:</h4>
+<pre>
+<code class="js">module.exports = {
+  development: {
+    client: 'pg',
+    connection: {
+      username: 'me',
+      database: 'my_app'
+    }
+  },
+  production: {
+    client: 'pg',
+    connection: process.env.DATABASE_URL
+  }
+};
+</code>
+</pre>
+
 
 
     <h3 id="Migrations-API">Migration API</h3>
