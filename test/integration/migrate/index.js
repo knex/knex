@@ -218,6 +218,27 @@ module.exports = function(knex) {
 
       });
 
+      describe('using only integer part of migration name', function() {
+
+        before(function() {
+          return knex.migrate.to(20131019235306, config);
+        });
+
+        after(function() {
+          return resetTables();
+        });
+
+        it('runs up-migrations up to and including the target', function() {
+          return getCompletedMigrations().then(function(names) {
+            expect(names).to.deep.equal([
+              '20131019235242_migration_1.js',
+              '20131019235306_migration_2.js'
+            ]);
+          });
+        });
+
+      });
+
       describe('from empty to empty', function() {
         before(function() {
           return knex.migrate.to(null, config);
@@ -301,6 +322,26 @@ module.exports = function(knex) {
         });
 
         it('does nothing', function() {
+          return getCompletedMigrations().then(function(names) {
+            expect(names).to.deep.equal([
+              '20131019235242_migration_1.js'
+            ]);
+          });
+        });
+
+      });
+
+      describe('using only integer part of migration name', function() {
+
+        before(function() {
+          return knex.migrate.before(20131019235306, config);
+        });
+
+        after(function() {
+          return resetTables();
+        });
+
+        it('runs up-migrations up to excluding the target', function() {
           return getCompletedMigrations().then(function(names) {
             expect(names).to.deep.equal([
               '20131019235242_migration_1.js'
