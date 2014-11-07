@@ -1585,6 +1585,9 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       <br />
       In MySQL or PostgreSQL, adds a <tt>bigint</tt> column,
       otherwise adds a normal integer.
+      <br />
+      <br />
+      Note that the biginteger columns will return a string from a query, due to a decision in <a href="https://github.com/tgriesser/knex/issues/387", target="_blank">node-postgres's type parser</a>
     </p>
 
     <p id="Schema-text">
