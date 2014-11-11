@@ -452,6 +452,26 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('alter table "user" add column "email" CITEXT not null');
     });
 
+    it('allows creating an extension', function() {
+      var sql = new SchemaBuilder().createExtension('test').toSQL();
+      expect(sql[0].sql).to.equal('create extension "test"');
+    });
+
+    it('allows dropping an extension', function() {
+      var sql = new SchemaBuilder().dropExtension('test').toSQL();
+      expect(sql[0].sql).to.equal('drop extension "test"');
+    });
+
+    it('allows creating an extension only if it doesn\'t exist', function() {
+      var sql = new SchemaBuilder().createExtensionIfNotExists('test').toSQL();
+      expect(sql[0].sql).to.equal('create extension if not exists "test"');
+    });
+
+    it('allows dropping an extension only if it exists', function() {
+      var sql = new SchemaBuilder().dropExtensionIfExists('test').toSQL();
+      expect(sql[0].sql).to.equal('drop extension if exists "test"');
+    });
+
   });
 
 };
