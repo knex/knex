@@ -1154,7 +1154,7 @@ knex('tableName')
     <p id="Builder-count">
       <b class="header">count</b><code>.count(column)</code>
       <br />
-      Performs a count on the specified <b>column</b>.
+      Performs a count on the specified <b>column</b>. Note that in Postgres, <tt>count</tt> returns a <tt>bigint</tt> type which will be a <tt>String</tt> and not a <tt>Number</tt> <a href="https://github.com/tgriesser/knex/issues/387">(more info)</a>.
     </p>
 
 <pre class="display">
@@ -1584,7 +1584,7 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       <b class="header">bigInteger</b><code>table.bigInteger(name)</code>
       <br />
       In MySQL or PostgreSQL, adds a <tt>bigint</tt> column,
-      otherwise adds a normal integer.
+      otherwise adds a normal integer. Note that <tt>bigint</tt> data is returned as a string in queries because JavaScript may be unable to parse them without loss of precision.
     </p>
 
     <p id="Schema-text">
