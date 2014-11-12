@@ -129,6 +129,7 @@ module.exports = function(qb, clientName, aliasName) {
     it('where bool', function() {
       testquery(qb().select('*').from('users').where(true), {
         mysql: 'select * from `users` where true',
+        sqlite3: 'select * from "users" where 1',
         default: 'select * from "users" where true'
       });
     });
@@ -347,6 +348,10 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'select * from `users` where false',
           bindings: []
         },
+        sqlite3: {
+          sql: 'select * from "users" where 0',
+          bindings: []
+        },
         default: {
           sql: 'select * from "users" where false',
           bindings: []
@@ -358,6 +363,10 @@ module.exports = function(qb, clientName, aliasName) {
       testsql(qb().select('*').from('users').whereNotIn('id', []), {
         mysql: {
           sql: 'select * from `users` where true',
+          bindings: []
+        },
+        sqlite3: {
+          sql: 'select * from "users" where 1',
           bindings: []
         },
         default: {
