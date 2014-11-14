@@ -1852,6 +1852,18 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it('supports POSIX regex operators', function() {
+      console.log('-------------------------------', clientName);
+      if (clientName === 'postgres') {
+        testsql(qb().select('*').from('users').where('name', '~', '.*test.*'), {
+          postgres: {
+            sql: 'select * from "users" where "name" ~ ?',
+            bindings: ['.*test.*']
+          }
+        });
+      }
+    });
+
     it('throws if you try to use an invalid operator', function() {
       var err;
       try {
