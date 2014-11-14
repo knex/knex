@@ -1868,23 +1868,18 @@ module.exports = function(qb, clientName, aliasName) {
     });
 
     it('throws if you try to use an invalid operator', function() {
-      var err;
-      try {
+      expect(function () {
         qb().select('*').where('id', 'isnt', 1).toString();
-      } catch (e) {
-        err = e.message;
-      }
-      expect(err).to.equal("The operator \"isnt\" is not permitted");
+      })
+      .to.throw("The operator \"isnt\" is not permitted");
     });
 
     it('throws if you try to use an invalid operator in an inserted statement', function() {
-      var err, obj = qb().select('*').where('id', 'isnt', 1);
-      try {
+      var obj = qb().select('*').where('id', 'isnt', 1);
+      expect(function () {
         qb().select('*').from('users').where('id', 'in', obj).toString();
-      } catch (e) {
-        err = e.message;
-      }
-      expect(err).to.equal("The operator \"isnt\" is not permitted");
+      })
+      .to.throw("The operator \"isnt\" is not permitted");
     });
 
     it("#287 - wraps correctly for arrays", function() {
