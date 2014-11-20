@@ -731,6 +731,25 @@ module.exports = function(qb, clientName, aliasName) {
         default: 'select * from "users" having "email" > ?'
       });
     });
+    
+    it("nested having", function() {
+      testsql(qb().select('*').from('users').having(function(){
+        this.where('email', '>', 1);
+      }), {
+        mysql: 'select * from `users` having (`email` > ?)',
+        default: 'select * from "users" having ("email" > ?)'
+      });
+    });
+    
+    it("nested or havings", function() {
+      testsql(qb().select('*').from('users').having(function(){
+        this.where('email', '>', 10);
+        this.orWhere('email', '=', 7);
+      }), {
+        mysql: 'select * from `users` having (`email` > ? or `email` = ?)',
+        default: 'select * from "users" having ("email" > ? or "email" = ?)'
+      });
+    });
 
     it("grouped having", function() {
       testsql(qb().select('*').from('users').groupBy('email').having('email', '>', 1), {
