@@ -31,6 +31,7 @@ var maria = function() { return require('./lib/dialects/maria'); };
 var oracle = function() { return require('./lib/dialects/oracle'); };
 var pg = function() { return require('./lib/dialects/postgres'); };
 var sqlite3 = function() { return require('./lib/dialects/sqlite3'); };
+var strong_oracle = function() { return require('./lib/dialects/strong-oracle'); };
 var websql = function() { return require('./lib/dialects/websql'); };
 
 // The client names we'll allow in the `{name: lib}` pairing.
@@ -46,6 +47,7 @@ var Clients = Knex.Clients = {
   'postgresql' : pg,
   'sqlite'     : sqlite3,
   'sqlite3'    : sqlite3,
+  'strong-oracle': strong_oracle,
   'websql'     : websql
 };
 

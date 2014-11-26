@@ -11,6 +11,7 @@ var jshint     = require('gulp-jshint');
 
 var excluded = {
   oracle:   ['oracle'],
+  "strong-oracle":   ['strong-oracle'],
   mariasql: ['mariasql'],
   sqlite3:  ['sqlite3'],
   mysql:    ['mysql'],
@@ -21,6 +22,7 @@ var excluded = {
 
 var bases = {
   oracle:   './lib/dialects/oracle',
+  "strong-oracle":   './lib/dialects/strong-oracle',
   mariasql: './lib/dialects/maria',
   mysql:    './lib/dialects/mysql',
   mysql2:   './lib/dialects/mysql2',
