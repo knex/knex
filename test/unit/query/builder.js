@@ -797,6 +797,23 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it("can limit 0", function() {
+      testsql(qb().select('*').from('users').limit(0), {
+        mysql: {
+          sql: 'select * from `users` limit ?',
+          bindings: [0]
+        },
+        oracle: {
+          sql: 'select * from (select * from "users") where rownum <= ?',
+          bindings: [0]
+        },
+        default: {
+          sql: 'select * from "users" limit ?',
+          bindings: [0]
+        }
+      });
+    });
+
     it("limits and offsets", function() {
       testsql(qb().select('*').from('users').offset(5).limit(10), {
         mysql: {
