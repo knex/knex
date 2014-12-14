@@ -115,8 +115,8 @@ Knex.initialize = function(config) {
     client.on('query', function(obj) {
       knex.emit('query', obj);
     });
-    client.on('notify:error', function(obj) {
-      knex.emit('notify:error', obj);
+    client.on('query-error', function(obj) {
+      knex.emit('query-error', obj);
     });
   }
 
