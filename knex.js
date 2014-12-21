@@ -149,6 +149,14 @@ Knex.initialize = function(config) {
       }
     },
 
+    // Lazy-load / return a `SchemaLoader` object.
+    schemaLoader: {
+      get: function() {
+        if (!client.SchemaLoader) client.initSchemaLoader();
+        return new client.SchemaLoader(knex);
+      }
+    },
+
     // Lazy-load / return a `Seeder` object.
     seed: {
       get: function() {
