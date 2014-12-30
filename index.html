@@ -322,9 +322,9 @@
     <h3 id="Upgrading-from0.6">Upgrading 0.6 -> 0.7</h3>
 
     <p>
-      Should be a painless upgrade, the only breaking change should be "collate nocase" 
-      no longer used as the default <tt>order by</tt> in sqlite3 
-      for <a href="https://github.com/tgriesser/knex/pull/396">performance reasons</a>. 
+      Should be a painless upgrade, the only breaking change should be "collate nocase"
+      no longer used as the default <tt>order by</tt> in sqlite3
+      for <a href="https://github.com/tgriesser/knex/pull/396">performance reasons</a>.
       If there are other issues, please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>.
     </p>
 
@@ -352,7 +352,7 @@
     </p>
 
 <pre>
-$ npm install knex@0.6 --save
+$ npm install knex@0.7 --save
 
 # Then add one of the following (adding a --save) flag:
 $ npm install mysql
@@ -1724,8 +1724,8 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
     <p id="Chainable-index">
       <b class="header">index</b><code>column.index([indexName], [indexType])</code>
       <br />
-      Specifies an field as an index. If an <tt>indexName</tt> is specified, it is used in places of the standard 
-      index naming convention of <tt>tableName</tt>_<tt>columnName</tt>. The <tt>indexType</tt> can be optionally specified 
+      Specifies an field as an index. If an <tt>indexName</tt> is specified, it is used in places of the standard
+      index naming convention of <tt>tableName</tt>_<tt>columnName</tt>. The <tt>indexType</tt> can be optionally specified
       for PostgreSQL.
       No-op if this is chained off of a field that cannot be indexed.
     </p>
@@ -2233,7 +2233,7 @@ $ knex migrate:latest
     <h2 id="Seeds">Seed files</h2>
 
     <p>
-      Seed files allow you to populate your database with test or seed data independent of your migration files.  
+      Seed files allow you to populate your database with test or seed data independent of your migration files.
     </p>
 
     <h3 id="Seeds-CLI">Seed CLI</h3>
@@ -2435,7 +2435,7 @@ $ npm test
 
     <p>
       <b class="header">0.7.0</b> &mdash; <small><i>Oct 1, 2014</i></small><br />
-      
+
       <b>New Features:</b>
       <ul>
         <li>Oracle support, #419</li>
@@ -2464,7 +2464,7 @@ $ npm test
         <li>Flag for creating jsonb columns in Postgresql, #500</li>
       </ul>
     </p>
-    
+
     <p>
       <b class="header">0.6.22</b> &mdash; <small><i>July 10, 2014</i></small><br />
       Bug fix for properly binding postgresql streaming queries, (#363).
@@ -2962,7 +2962,7 @@ $ npm test
   <script src="/browser/knex.js"></script>
   <script>
   var trx = {}, dialects = {};
-  
+
   // Feel free to play with these in the console.
   var knex    = Knex({client: 'websql'});
   var pg      = dialects.pg = Knex({client: 'pg'});
