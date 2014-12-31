@@ -414,6 +414,24 @@ $ npm install sqlite3
 </code>
 </pre>
 
+
+    <p>
+      You can also connect via an unix domain socket, which will ignore host and port.
+    </p>
+
+<pre>
+<code class="js">var knex = require('knex')({
+  client: 'mysql',
+  connection: {
+    socketPath     : '/path/to/socket.sock',
+    user     : 'your_database_user',
+    password : 'your_database_password',
+    database : 'myapp_test'
+  }
+});
+</code>
+</pre>
+
     <p class="warning">
       Initializing the library should normally only ever happen once in your application, as it creates a connection pool
       for the current database, you should use the instance returned from the initialize call throughout
