@@ -2102,6 +2102,7 @@ knex.insert(values).into('users').return({inserted: true});
       Streams are a powerful way of piping data through as it comes in, rather than all at once.
       You can read more about streams <a href="https://github.com/substack/stream-handbook">here at substack's stream handbook</a>.
       See the following for example uses of stream &amp; pipe. If you wish to use streams with PostgreSQL, you must also install the <a href="https://github.com/brianc/node-pg-query-stream">pg-query-stream</a> module.
+      On an HTTP server, make sure to <a href="https://github.com/tgriesser/knex/wiki/Manually-Closing-Streams">manually your streams</a> if a request is aborted.
     </p>
 
     <p id="Streams-stream">
