@@ -23,32 +23,28 @@ var knex = require('../knex');
 
 var clients = {
   maria: {
-    name: 'maria',
-    client: knex({client: 'maria'}).client,
+    knex: knex({client: 'maria'}),
     alias: 'mysql'
   },
   mysql: {
-    name: 'mysql',
-    client: knex({client: 'mysql'}).client,
+    knex: knex({client: 'mysql'}),
   },
   sqlite3: {
-    name: 'sqlite3',
-    client: knex({client: 'sqlite3'}).client
+    knex: knex({client: 'sqlite3'})
   },
   postgres: {
-    name: 'postgres',
-    client: knex({client: 'postgres'}).client,
+    knex: knex({client: 'postgres'}),
   },
   oracle: {
-    name: 'oracle',
-    client: knex({client: 'oracle'}).client,
+    knex: knex({client: 'oracle'}),
   }
 };
 
 describe('Unit tests', function() {
   Object.keys(clients).forEach(function (clientName) {
-    require('./unit/schema/' + (clients[clientName].alias || clients[clientName].name))(clients[clientName].client);
-    require('./unit/query/builder')(function () { return new clients[clientName].client.QueryBuilder(); }, clients[clientName].name, clients[clientName].alias);
+    var current = clients[clientName];
+    require('./unit/schema/' + (current.alias || clientName))(current.knex.client);
+    require('./unit/query/builder')(function () { return new current.knex.client.QueryBuilder(); }, clientName, current.alias, current.knex);
   });
 });
 

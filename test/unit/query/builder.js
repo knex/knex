@@ -2,7 +2,7 @@
 
 'use strict';
 
-module.exports = function(qb, clientName, aliasName) {
+module.exports = function(qb, clientName, aliasName, knex) {
 
   var Raw = require('../../../lib/raw');
 
@@ -2131,6 +2131,17 @@ module.exports = function(qb, clientName, aliasName) {
             bindings: []
           }
         });
+    });
+
+    it('handles raw postgres queries with ? operator', function() {
+      if (clientName === 'postgres') {
+        var sql = qb().select('*').from('a')
+          .whereIn('a.id', knex.raw("select id from product where tags ?& array['17']"))
+          .orWhere('id', 2)
+          .toSQL();
+        expect(knex.client.positionBindings(sql.sql)).to.equal('select * from "a" where "a"."id" in (select id from product where tags ?& array[\'17\']) or "id" = $1');
+        expect(sql.bindings).to.deep.equal([2]);
+      }
     });
 
   });
