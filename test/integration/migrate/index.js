@@ -68,10 +68,19 @@ module.exports = function(knex) {
                 }),
                 knex.schema.hasColumn(table, 'name').then(function(exists) {
                   expect(exists).to.equal(true);
+                }),
+                knex.schema.hasColumn(table, 'transaction').then(function(exists) {
+                  expect(exists).to.equal(false);
                 })
               ]);
             }
           });
+        });
+      });
+
+      it('should not proceed after invalid migration', function() {
+        return knex.schema.hasTable('should_not_be_run').then(function(exists) {
+          expect(exists).to.equal(false);
         });
       });
 
