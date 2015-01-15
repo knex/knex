@@ -731,7 +731,7 @@ module.exports = function(qb, clientName, aliasName) {
         default: 'select * from "users" having "email" > ?'
       });
     });
-    
+
     it("nested having", function() {
       testsql(qb().select('*').from('users').having(function(){
         this.where('email', '>', 1);
@@ -740,7 +740,7 @@ module.exports = function(qb, clientName, aliasName) {
         default: 'select * from "users" having ("email" > ?)'
       });
     });
-    
+
     it("nested or havings", function() {
       testsql(qb().select('*').from('users').having(function(){
         this.where('email', '>', 10);
@@ -2136,6 +2136,22 @@ module.exports = function(qb, clientName, aliasName) {
             bindings: []
           }
         });
+    });
+
+    it('allows insert values of sub-select without raw, #627', function() {
+      testsql(qb().table('entries').insert({
+        secret: 123,
+        sequence: qb().count('*').from('entries').where('secret', 123)
+      }), {
+        mysql: {
+          sql: 'insert into `entries` (`secret`, `sequence`) values (?, (select count(*) from `entries` where `secret` = ?))',
+          bindings: [123, 123]
+        },
+        default: {
+          sql: 'insert into "entries" ("secret", "sequence") values (?, (select count(*) from "entries" where "secret" = ?))',
+          bindings: [123, 123]
+        }
+      });
     });
 
   });
