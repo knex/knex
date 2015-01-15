@@ -1017,6 +1017,19 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it("joins with raw", function() {
+      testsql(qb().select('*').from('users').join('contacts', 'users.id', raw(1)).leftJoin('photos', 'photos.title', '=', raw('?', ['My Photo'])), {
+        mysql: {
+          sql: 'select * from `users` inner join `contacts` on `users`.`id` = 1 left join `photos` on `photos`.`title` = ?',
+          bindings: ['My Photo']
+        },
+        default: {
+          sql: 'select * from "users" inner join "contacts" on "users"."id" = 1 left join "photos" on "photos"."title" = ?',
+          bindings: ['My Photo']
+        }
+      });
+    });
+
     it("raw expressions in select", function() {
       testsql(qb().select(raw('substr(foo, 6)')).from('users'), {
         mysql: {

@@ -731,7 +731,7 @@ knex('users').whereRaw('id = ?', [1])
   <h3>Join Methods</h3>
 
   <p>
-    Several methods are provided which assist in building
+    Several methods are provided which assist in building joins.
   </p>
 
     <p id="Builder-join">
@@ -767,6 +767,13 @@ knex.select('*').from('users').join('accounts', function() {
   this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
 })
 </pre>
+
+<p>
+  If you need to use a literal value (string, number, or boolean) in a join instead of a column, use <tt>knex.raw</tt>.
+
+  <pre class="display">
+  knex.select('*').from('users').join('accounts', 'accounts.type', knex.raw('?', ['admin']));
+  </pre>
 
     <p id="Builder-innerJoin">
       <b class="header">innerJoin</b><code>.innerJoin(column, ~mixed~)</code>
