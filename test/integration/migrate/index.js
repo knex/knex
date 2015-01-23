@@ -80,7 +80,7 @@ module.exports = function(knex) {
           // MySQL commits transactions implicit for most common
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
           // so we need to check for dialect
-          if (knex.toString() === '[object Knex:mysql]') {
+          if (knex.client.dialect === 'mysql') {
             expect(exists).to.equal(true);
           } else {
             expect(exists).to.equal(false);
