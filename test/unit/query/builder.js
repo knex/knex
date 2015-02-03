@@ -476,6 +476,24 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it("wraps unions", function() {
+      var wrappedChain = qb().select('*').from('users').where('id', 'in', function() {
+        this.table('users').max("id").union(function() {
+          this.table('users').min("id");
+        }, true);
+      });
+      testsql(wrappedChain, {
+        mysql: {
+          sql: 'select * from `users` where `id` in (select max(`id`) from `users` union (select min(`id`) from `users`))',
+          bindings: []
+        },
+        default: {
+          sql: 'select * from "users" where "id" in (select max("id") from "users" union (select min("id") from "users"))',
+          bindings: []
+        }
+      });
+    });
+
     // it("handles grouped mysql unions", function() {
     //   chain = myqb().union(
     //     raw(myqb().select('*').from('users').where('id', '=', 1)).wrap('(', ')'),
