@@ -989,9 +989,10 @@ knex.select('*').from('users').limit(10).offset(30)
 </pre>
 
     <p id="Builder-union">
-      <b class="header">union</b><code>.union(query)</code>
+      <b class="header">union</b><code>.union([*queries], [wrap])</code>
       <br />
-      Creates a <tt>union</tt> query, taking a callback to build the union statement.
+      Creates a <tt>union</tt> query, taking an array or a list of callbacks to build the union statement, with optional
+      boolean wrap. The queries will be individually wrapped in parentheses with a <tt>true</tt> wrap parameter.
     </p>
 
 <pre class="display">
