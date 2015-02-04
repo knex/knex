@@ -474,6 +474,40 @@ module.exports = function(qb, clientName, aliasName) {
           bindings: [1, 2]
         }
       });
+
+      var multipleArgumentsChain = qb().select('*').from('users').where({id: 1}).union(function() {
+        this.select('*').from('users').where({id: 2});
+      }, function() {
+        this.select('*').from('users').where({id: 3});
+      });
+      testsql(multipleArgumentsChain, {
+        mysql: {
+          sql: 'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+          bindings: [1, 2, 3]
+        },
+        default: {
+          sql: 'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+          bindings: [1, 2, 3]
+        }
+      });
+
+      var arrayChain = qb().select('*').from('users').where({id: 1}).union([
+        function() {
+          this.select('*').from('users').where({id: 2});
+        }, function() {
+          this.select('*').from('users').where({id: 3});
+        }
+      ]);
+      testsql(arrayChain, {
+        mysql: {
+          sql: 'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+          bindings: [1, 2, 3]
+        },
+        default: {
+          sql: 'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+          bindings: [1, 2, 3]
+        }
+      });
     });
 
     it("wraps unions", function() {
@@ -490,6 +524,41 @@ module.exports = function(qb, clientName, aliasName) {
         default: {
           sql: 'select * from "users" where "id" in (select max("id") from "users" union (select min("id") from "users"))',
           bindings: []
+        }
+      });
+
+      // worthwhile since we're playing games with the 'wrap' specification with arguments
+      var multipleArgumentsWrappedChain = qb().select('*').from('users').where({id: 1}).union(function() {
+        this.select('*').from('users').where({id: 2});
+      }, function() {
+        this.select('*').from('users').where({id: 3});
+      }, true);
+      testsql(multipleArgumentsWrappedChain, {
+        mysql: {
+          sql: 'select * from `users` where `id` = ? union (select * from `users` where `id` = ?) union (select * from `users` where `id` = ?)',
+          bindings: [1, 2, 3]
+        },
+        default: {
+          sql: 'select * from "users" where "id" = ? union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
+          bindings: [1, 2, 3]
+        }
+      });
+
+      var arrayWrappedChain = qb().select('*').from('users').where({id: 1}).union([
+        function() {
+          this.select('*').from('users').where({id: 2});
+        }, function() {
+          this.select('*').from('users').where({id: 3});
+        }
+      ], true);
+      testsql(arrayWrappedChain, {
+        mysql: {
+          sql: 'select * from `users` where `id` = ? union (select * from `users` where `id` = ?) union (select * from `users` where `id` = ?)',
+          bindings: [1, 2, 3]
+        },
+        default: {
+          sql: 'select * from "users" where "id" = ? union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
+          bindings: [1, 2, 3]
         }
       });
     });
