@@ -421,6 +421,29 @@ module.exports = function(client) {
       equal(2, tableSql.length);
       equal(tableSql[0].sql, 'create table "users" ("user_id" varchar(36), foreign key("user_id") references "user"("id") on delete CASCADE)');
     });
-
+    
+    describe('SQLite3_DDL.prototype._doReplace', function () {
+      it('should not change a query that has no matches', function () {
+        return new SchemaBuilder().table('foo', function (tbl) {
+          // i don't really know how to get at an instance of this 'correctly'
+          var doReplace = tbl.client.SQLite3_DDL.prototype._doReplace;
+          
+          var sql1 = 'CREATE TABLE "foo" ("id" integer not null primary key autoincrement, '+
+                '"parent_id_test" integer, foreign key("parent_id") references "foo"("id"))';
+          var sql2 = 'CREATE TABLE "foo" ("id" integer not null primary key autoincrement, '+
+                '"parent_id_test" integer, foreign key("parent_id") references "bar"("id"))';
+          
+          var sql1b = 'CREATE TABLE "foo" ("id_foo" integer not null primary key autoincrement, '+
+                '"parent_id_test" integer, foreign key("parent_id") references "foo"("id_foo"))';
+          var sql2b = 'CREATE TABLE "foo" ("id_foo" integer not null primary key autoincrement, '+
+                '"parent_id_test" integer, foreign key("parent_id") references "bar"("id"))';
+          
+          
+          expect(doReplace(sql1, '"bar"', '"lar"')).to.equal(sql1);
+          expect(doReplace(sql1, '"id"', '"id_foo"')).to.equal(sql1b);
+          expect(doReplace(sql2, '"id"', '"id_foo"')).to.equal(sql2b);
+        }).toSQL();
+      });
+    });
   });
 };
