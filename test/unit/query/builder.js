@@ -866,6 +866,10 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
           bindings: [10000000000005, 5]
         },
+        fdbsql: {
+          sql: 'select * from "users" offset ?',
+          bindings: [5]
+        },
         default: {
           sql: 'select * from "users" limit ? offset ?',
           bindings: [10000000000005, 5]
@@ -1198,6 +1202,10 @@ module.exports = function(qb, clientName, aliasName) {
             expect(bindings[5].toString()).to.equal('[object ReturningHelper:id]');
           }
         },
+        fdbsql: {
+          sql: "insert into \"users\" (\"email\", \"name\") values (?, ?), (?, ?) returning \"id\"",
+          bindings: ['foo', 'taylor', 'bar', 'dayle']
+        },
         default: {
           sql: 'als',
           bindings: ['foo', 'taylor', 'bar', 'dayle']
@@ -1230,6 +1238,10 @@ module.exports = function(qb, clientName, aliasName) {
             expect(bindings[4]).to.equal('dayle');
             expect(bindings[5].toString()).to.equal('[object ReturningHelper:id:name]');
           }
+        },
+        fdbsql: {
+          sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?) returning "id", "name"',
+          bindings: ['foo', 'taylor', 'bar', 'dayle']
         },
         default: {
           sql: '',
@@ -1324,6 +1336,10 @@ module.exports = function(qb, clientName, aliasName) {
             expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
           }
         },
+        fdbsql: {
+          sql: 'insert into "users" default values returning "id"',
+          bindings: []
+        },
         default: {
           sql: 'insert into "users" default values',
           bindings: []
@@ -1352,6 +1368,10 @@ module.exports = function(qb, clientName, aliasName) {
             expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
           }
         },
+        fdbsql: {
+          sql: 'insert into "users" default values returning "id"',
+          bindings: []
+        },
         default: {
           sql: 'insert into "users" default values',
           bindings: []
@@ -1379,6 +1399,10 @@ module.exports = function(qb, clientName, aliasName) {
             expect(bindings.length).to.equal(1);
             expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
           }
+        },
+        fdbsql: {
+          sql: 'insert into "users" default values returning "id"',
+          bindings: []
         },
         default: {
           sql: 'insert into "users" default values',
@@ -1409,6 +1433,10 @@ module.exports = function(qb, clientName, aliasName) {
           // This does not work
           // Postgres does not support inserting multiple default values without specifying a column
           sql: "insert into \"users\" (\"undefined\") values (default), (default)",
+          bindings: []
+        },
+        fdbsql: {
+          sql: "insert into \"users\" values (default), (default)",
           bindings: []
         },
         default: {
@@ -1442,6 +1470,10 @@ module.exports = function(qb, clientName, aliasName) {
           sql: "insert into \"users\" (\"undefined\") values (default), (default)",
           bindings: []
         },
+        fdbsql: {
+          sql: "insert into \"users\" values (default), (default)",
+          bindings: []
+        },
         default: {
           sql: 'insert into "users" default values',
           bindings: []
@@ -1470,6 +1502,10 @@ module.exports = function(qb, clientName, aliasName) {
         },
         postgres: {
           sql: 'insert into "users" ("id") values (default), (default) returning "id"',
+          bindings: []
+        },
+        fdbsql: {
+          sql: 'insert into "users" values (default), (default) returning "id"',
           bindings: []
         },
         default: {
@@ -1613,6 +1649,10 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'truncate table "users"',
           bindings: []
         },
+        fdbsql: {
+          sql: 'truncate table "users"',
+          bindings: []
+        },
         default: {
           sql: '',
           bindings: []
@@ -1637,6 +1677,10 @@ module.exports = function(qb, clientName, aliasName) {
             expect(bindings[0]).to.equal('foo');
             expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
           }
+        },
+        fdbsql: {
+          sql: 'insert into "users" ("email") values (?) returning "id"',
+          bindings: ['foo']
         },
         default: {
           sql: 'insert into "users" ("email") values (?)',

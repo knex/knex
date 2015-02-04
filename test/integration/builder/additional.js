@@ -17,6 +17,7 @@ module.exports = function(knex) {
           tester('postgresql', 'truncate "test_table_two" restart identity');
           tester('sqlite3', "delete from sqlite_sequence where name = \"test_table_two\"");
           tester('oracle', "truncate table \"test_table_two\"");
+          tester('fdbsql', 'truncate table \"test_table_two\"');
         })
         .then(function() {
 
@@ -37,7 +38,8 @@ module.exports = function(knex) {
         mariasql: 'SHOW TABLES',
         postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';",
-        oracle: "select TABLE_NAME from USER_TABLES"
+        oracle: "select TABLE_NAME from USER_TABLES",
+        fdbsql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
       };
       return knex.raw(tables[knex.client.dialect]).testSql(function(tester) {
         tester(knex.client.dialect, tables[knex.client.dialect]);
@@ -117,6 +119,25 @@ module.exports = function(knex) {
             }
           }
         );
+        tester(
+          'fdbsql',
+          'select * from information_schema.columns where table_name = ? and table_schema = ? and table_schema = CURRENT_SCHEMA',
+          null,
+          {
+            "enum_value": {
+              "defaultValue": null,
+              "maxLength": 1,
+              "nullable": true,
+              "type": "VARCHAR"
+            },
+            "uuid": {
+              "defaultValue": null,
+              "maxLength": null,
+              "nullable": false,
+              "type": "GUID"
+            }
+          }
+        );
       });
     });
 
@@ -153,6 +174,13 @@ module.exports = function(knex) {
             "type": "CHAR"
           }
         );
+        tester('fdbsql', 'select * from information_schema.columns where table_name = ? and table_schema = ? and table_schema = CURRENT_SCHEMA',
+          null, {
+          "defaultValue": null,
+          "maxLength": null,
+          "nullable": false,
+          "type": "GUID"
+        });
       });
     });
 
@@ -172,6 +200,7 @@ module.exports = function(knex) {
           tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
           tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
+          tester('fdbsql', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
         });
       }).then(function() {
         return knex.count('*').from('accounts');
@@ -222,6 +251,7 @@ module.exports = function(knex) {
           tester('mysql', ["alter table `accounts` drop `first_name`"]);
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
           tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+          tester('fdbsql', ['alter table "accounts" drop column "first_name"']);
         });
       }).then(function() {
         return knex.select('*').from('accounts').first();

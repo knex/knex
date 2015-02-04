@@ -41,6 +41,14 @@ module.exports = function(knex) {
               'SUM("LOGINS")': 10
             }]
           );
+          tester(
+            'fdbsql',
+            'select sum("logins") from "accounts"',
+            [],
+            [{
+              _SQL_COL_1: '10'
+            }]
+          );
       });
     });
 
@@ -60,6 +68,8 @@ module.exports = function(knex) {
         tester('postgresql', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'avg'));
         // oracle: 1.66666666666667
         tester('oracle', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'AVG("LOGINS")'));
+        // fdbsql: '1.6666666666666667'
+        tester('fdbsql', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, '_SQL_COL_1'));
       });
 
     });
@@ -97,6 +107,14 @@ module.exports = function(knex) {
           [],
           [{
             'COUNT("ID")': 6
+          }]
+        );
+        tester(
+          'fdbsql',
+          'select count("id") from "accounts"',
+          [],
+          [{
+            _SQL_COL_1: '6'
           }]
         );
       });
@@ -146,6 +164,16 @@ module.exports = function(knex) {
             'MIN("LOGINS")': 1
           }]
         );
+        tester(
+          'fdbsql',
+          'select count("id"), max("logins"), min("logins") from "accounts"',
+          [],
+          [{
+            _SQL_COL_1: '6',
+            _SQL_COL_2: 2,
+            _SQL_COL_3: 1
+          }]
+        );
       });
 
     });
@@ -193,6 +221,16 @@ module.exports = function(knex) {
             'COUNT("ID")': 4
           }]
         );
+        tester(
+          'fdbsql',
+          'select count("id") from "accounts" group by "logins"',
+          [],
+          [{
+            _SQL_COL_1: '2'
+          },{
+            _SQL_COL_1: '4'
+          }]
+        );
 
 
       }).then(function() {
@@ -228,6 +266,14 @@ module.exports = function(knex) {
             [],
             [{
               'COUNT("ID")': 6
+            }]
+          );
+          tester(
+            'fdbsql',
+            'select count("id") from "accounts" group by "first_name"',
+            [],
+            [{
+              _SQL_COL_1: '6'
             }]
           );
         });
