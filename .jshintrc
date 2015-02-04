@@ -9,5 +9,5 @@
   "undef": true,
   "trailing": true,
   "unused": true,
-  "predef": [ "-Promise" ]
+  "predef": [ "-Promise", "before", "after" ]
 }
