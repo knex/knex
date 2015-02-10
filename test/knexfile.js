@@ -109,7 +109,19 @@ var testConfigs = {
     }),
     migrations: migrations,
     seeds: seeds
-  }
+  },
+
+  fdbsql: {
+    dialect: "fdbsql",
+    connection: testConfig.fdb || {
+      adapter: "fdbsql",
+      database: "knex_test",
+      user: "fdbsql",
+    },
+    pool: pool,
+    migrations: migrations,
+    seeds: seeds
+  },
 };
 
 // export only copy the specified dialects

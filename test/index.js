@@ -42,6 +42,10 @@ var clients = {
   oracle: {
     name: 'oracle',
     client: knex({client: 'oracle'}).client,
+  },
+  fdbsql: {
+    name: 'fdbsql',
+    client: knex({client: 'fdbsql'}).client,
   }
 };
 
