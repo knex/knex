@@ -432,10 +432,18 @@ module.exports = function(client) {
     });
 
     it('adding jsonb', function() {
-      tableSql = new SchemaBuilder().table('user', function(t) {
+      var builder = new SchemaBuilder();
+      var _client = builder.client;
+      builder.client.version = 9.2;
+
+      tableSql = builder.table('user', function(t) {
         t.json('preferences', true);
       }).toSQL();
+      
       expect(tableSql[0].sql).to.equal('alter table "user" add column "preferences" jsonb');
+      
+      if (_client === void 0) { delete builder.client; }
+      else { builder.client = _client; }
     });
 
     it('allows adding default json objects when the column is json', function() {
