@@ -21,6 +21,7 @@
     "chalk": "~0.5.1",
     "commander": "^2.2.0",
     "generic-pool-redux": "~0.1.0",
+    "hashmap": "^2.0.1",
     "inherits": "~2.0.1",
     "interpret": "^0.3.2",
     "liftoff": "~2.0.0",
