@@ -20,13 +20,13 @@
     "bluebird": "^2.0.0",
     "chalk": "~0.5.1",
     "commander": "^2.2.0",
-    "generic-pool-redux": "~0.1.0",
     "inherits": "~2.0.1",
     "interpret": "^0.3.2",
     "liftoff": "~2.0.0",
     "lodash": "~2.4.0",
     "minimist": "~1.1.0",
     "mkdirp": "^0.5.0",
+    "pool2": "^1.0.0",
     "readable-stream": "^1.1.12",
     "tildify": "~1.0.0",
     "v8flags": "^2.0.2"
@@ -58,6 +58,7 @@
   },
   "scripts": {
     "build": "gulp build",
+    "plaintest": "mocha --check-leaks -t 5000 -b -R spec test/index.js",
     "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "gulp jshint",
