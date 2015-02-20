@@ -36,6 +36,7 @@ module.exports = function(knex) {
             .dropTableIfExists('test_default_table3')
             .dropTableIfExists('knex_migrations')
             .dropTableIfExists('bool_test')
+            .dropTableIfExists('rename_column_test')
         ]);
       });
 
@@ -310,6 +311,40 @@ module.exports = function(knex) {
       });
     });
 
-  });
+    describe('renameColumn', function () {
+      before(function () {
+        return knex.schema.createTable('rename_column_test', function (tbl) {
+          tbl.increments('id_test').unsigned()
+            .primary();
+          tbl.integer('parent_id_test').unsigned()
+            .references('id_test')
+            .inTable('rename_column_test');
+        })
+        .then(function () {
+          // without data, the column isn't found??
+          return knex.insert({parent_id_test: 1}).into('rename_column_test');
+        });
+      });
+      after(function () {
+        return knex.schema.dropTable('rename_column_test');
+      });
+      it('renames the column', function () {
+        return knex.schema.table('rename_column_test', function (tbl) {
+          return tbl.renameColumn('id_test', 'id');
+        })
+        .then(function () {
+          return knex.schema.hasColumn('rename_column_test', 'id');
+        })
+        .then(function (exists) {
+          expect(exists).to.equal(true);
+        });
+      });
+      it('successfully renames a column referenced in a foreign key', function () {
+        return knex.schema.table('rename_column_test', function (tbl) {
+          tbl.renameColumn('parent_id_test', 'parent_id');
+        });
+      });
+    });
 
+  });
 };
