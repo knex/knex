@@ -23,7 +23,7 @@
     "inherits": "~2.0.1",
     "interpret": "^0.3.2",
     "liftoff": "~2.0.0",
-    "lodash": "~2.4.0",
+    "lodash": "^3.0.0",
     "minimist": "~1.1.0",
     "mkdirp": "^0.5.0",
     "pool2": "^1.0.0",
