@@ -2241,6 +2241,28 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it('correctly orders parameters when selecting from subqueries, #704', function() {
+      var subquery = qb().select(raw('? as f', ['inner raw select'])).as('g');
+      testsql(qb()
+        .select(raw('?', ['outer raw select']), 'g.f')
+        .from(subquery)
+        .where('g.secret', 123),
+        {
+          mysql: {
+            sql: 'select ?, `g`.`f` from (select ? as f) as `g` where `g`.`secret` = ?',
+            bindings: ['outer raw select', 'inner raw select', 123]
+          },
+          oracle: {
+            sql: 'select ?, "g"."f" from (select ? as f) "g" where "g"."secret" = ?',
+            bindings: ['outer raw select', 'inner raw select', 123]
+          },
+          default: {
+            sql: 'select ?, "g"."f" from (select ? as f) as "g" where "g"."secret" = ?',
+            bindings: ['outer raw select', 'inner raw select', 123]
+          }
+        });
+    });
+
   });
 
 };
