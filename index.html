@@ -14,7 +14,7 @@
 |     |                                                                       /     /
 |     |                                                                      /     /
 |     |     _____   ._____      ._____.     ,_____________.   ______        /     /
-|     |    /    /   |     \     |     |     /             \   \     \      /     /
+|     |    /    /   |     \     |     |     /             \   \   .th  \      /     /
 |     |   /    /    |      \    |     |    /               \   \     \    /     /
 |     |  /    /     |       \   |     |   /     ,______.    \   \     \  /     /
 |     | /    /      |        \  |     |  /     /       \     \   \     \/     /
@@ -1138,7 +1138,7 @@ knex.transaction(function(trx) {
       return someExternalMethod(id, trx);
     })
     .then(trx.commit)
-    .then(trx.rollback);
+    .catch(trx.rollback);
 
 }).then(function(resp) {
   console.log('Transaction complete.');
@@ -1450,7 +1450,7 @@ knex.transaction(function(trx) {
       }));
     })
     .then(trx.commit)
-    .then(trx.rollback);
+    .catch(trx.rollback);
 })
 .then(function(inserts) {
   console.log(inserts.length + ' new books saved.');
