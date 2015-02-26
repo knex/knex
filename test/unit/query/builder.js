@@ -147,7 +147,7 @@ module.exports = function(qb, clientName, aliasName) {
     });
 
     it("grouped or where not", function() {
-      testsql(qb().select('*').from('users').whereNot(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); } ), {
+      testsql(qb().select('*').from('users').whereNot(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); }), {
         mysql: {
           sql: 'select * from `users` where not (`id` = ? or not `id` = ?)',
           bindings: [1, 3]
@@ -158,7 +158,7 @@ module.exports = function(qb, clientName, aliasName) {
         }
       });
 
-      testquery(qb().select('*').from('users').whereNot(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); } ), {
+      testquery(qb().select('*').from('users').whereNot(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); }), {
         mysql: 'select * from `users` where not (`id` = 1 or not `id` = 3)',
         postgres: 'select * from "users" where not ("id" = \'1\' or not "id" = \'3\')',
         default: 'select * from "users" where not ("id" = 1 or not "id" = 3)'
@@ -166,7 +166,7 @@ module.exports = function(qb, clientName, aliasName) {
     });
 
     it("grouped or where not alternate", function() {
-      testsql(qb().select('*').from('users').where(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); } ), {
+      testsql(qb().select('*').from('users').where(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); }), {
         mysql: {
           sql: 'select * from `users` where (`id` = ? or not `id` = ?)',
           bindings: [1, 3]
@@ -177,12 +177,33 @@ module.exports = function(qb, clientName, aliasName) {
         }
       });
 
-      testquery(qb().select('*').from('users').where(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); } ), {
+      testquery(qb().select('*').from('users').where(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); }), {
         mysql: 'select * from `users` where (`id` = 1 or not `id` = 3)',
         postgres: 'select * from "users" where ("id" = \'1\' or not "id" = \'3\')',
         default: 'select * from "users" where ("id" = 1 or not "id" = 3)'
       });
     });
+
+
+    it("where not object", function() {
+      testsql(qb().select('*').from('users').whereNot({first_name: 'Test', last_name: 'User'}), {
+        mysql: {
+          sql: 'select * from `users` where not `first_name` = ? and not `last_name` = ?',
+          bindings: ['Test', 'User']
+        },
+        default: {
+          sql: 'select * from "users" where not "first_name" = ? and not "last_name" = ?',
+          bindings: ['Test', 'User']
+        }
+      });
+
+      testquery(qb().select('*').from('users').whereNot({first_name: 'Test', last_name: 'User'}), {
+        mysql: 'select * from `users` where not `first_name` = \'Test\' and not `last_name` = \'User\'',
+        postgres: 'select * from "users" where not "first_name" = \'Test\' and not "last_name" = \'User\'',
+        default: 'select * from "users" where not "first_name" = \'Test\' and not "last_name" = \'User\''
+      });
+    });
+
 
     it('where bool', function() {
       testquery(qb().select('*').from('users').where(true), {
