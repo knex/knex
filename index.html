@@ -1337,9 +1337,10 @@ knex('accounts').truncate()
 </pre>
 
     <p id="Builder-debug">
-      <b class="header">debug</b><code>.debug()</code>
+      <b class="header">debug</b><code>.debug([flag])</code>
       <br />
-      Turns on debugging for the current query chain.
+      Turns debugging on (by default) or off for the current query chain.
+      One-time debug muting might be useful in case of especially long queries.
     </p>
 
     <p id="Builder-connection">
