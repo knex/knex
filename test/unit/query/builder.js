@@ -2263,6 +2263,22 @@ module.exports = function(qb, clientName, aliasName) {
         });
     });
 
+    it('escapes queries properly, #737', function() {
+      testsql(qb()
+        .select('id","name')
+        .from('test'),
+        {
+          mysql: {
+            sql: 'select `id","name` from `test`',
+            bindings: []
+          },
+          default: {
+            sql: 'select "id"",""name" from "test"',
+            bindings: []
+          }
+        });
+    });
+
   });
 
 };
