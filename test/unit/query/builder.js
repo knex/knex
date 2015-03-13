@@ -750,19 +750,8 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
     });
 
     it('escapes queries properly, #737', function() {
-      testsql(qb()
-        .select('id","name')
-        .from('test'),
-        {
-          mysql: {
-            sql: 'select `id","name` from `test`',
-            bindings: []
-          },
-          default: {
-            sql: 'select "id"",""name" from "test"',
-            bindings: []
-          }
-        });
+      var str = sql().select('id","name').from('test').toString();
+      expect(str).to.equal('select "id"",""name" from "test"');
     });
 
   });
