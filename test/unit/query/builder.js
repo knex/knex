@@ -749,6 +749,22 @@ module.exports = function(pgclient, mysqlclient, sqlite3client) {
       expect(str).to.equal('select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) as "avg_sal_dept" from "employee" as "e" where "dept_no" = \'e.dept_no\'');
     });
 
+    it('escapes queries properly, #737', function() {
+      testsql(qb()
+        .select('id","name')
+        .from('test'),
+        {
+          mysql: {
+            sql: 'select `id","name` from `test`',
+            bindings: []
+          },
+          default: {
+            sql: 'select "id"",""name" from "test"',
+            bindings: []
+          }
+        });
+    });
+
   });
 
 };
