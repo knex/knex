@@ -326,13 +326,22 @@ module.exports = function(client) {
       expect(tableSql[0].sql).to.equal('alter table "users" add "foo" smallint');
     });
 
-    it('test adding float', function() {
+    it('test adding default float', function() {
       tableSql = new SchemaBuilder().table('users', function() {
-        this.float('foo', 5, 2);
+        this.float('foo');
       }).toSQL();
 
       equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table "users" add "foo" float(5, 2)');
+      expect(tableSql[0].sql).to.equal('alter table "users" add "foo" float');
+    });
+
+    it('test adding float with precision', function() {
+      tableSql = new SchemaBuilder().table('users', function() {
+        this.float('foo', 5);
+      }).toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table "users" add "foo" float(5)');
     });
 
     it('test adding double', function() {

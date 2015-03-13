@@ -1337,9 +1337,9 @@ knex('accounts').truncate()
 </pre>
 
     <p id="Builder-debug">
-      <b class="header">debug</b><code>.debug()</code>
+      <b class="header">debug</b><code>.debug([enabled])</code>
       <br />
-      Turns on debugging for the current query chain.
+      Overrides the global <tt>debug</tt> setting for the current query chain. If <tt>enabled</tt> is omitted, query debugging will be turned on.
     </p>
 
     <p id="Builder-connection">
