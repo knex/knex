@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Knex=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// Knex.js  0.7.5
+// Knex.js  0.7.6
 // --------------
 
 'use strict';
@@ -76,7 +76,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.7.5';
+  knex.VERSION = knex.__knex__  = '0.7.6';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     if (config.__transactor__) raw.transacting(config.__transactor__);
@@ -430,7 +430,7 @@ Formatter_SQLite3.prototype.operators = [
 
 // Wraps a value (column, tableName) with the correct ticks.
 Formatter_SQLite3.prototype.wrapValue = function(value) {
-  return (value !== '*' ? '"' + value + '"' : '*');
+  return (value !== '*' ? '"' + value.replace(/"/g, '""') + '"' : '*');
 };
 
 // Memoize the calls to "wrap" for a little extra perf.
@@ -6156,6 +6156,7 @@ module.exports = function(Promise,
                           apiRejection,
                           tryConvertToPromise,
                           INTERNAL) {
+var async = require("./async.js");
 var util = require("./util.js");
 var tryCatch = util.tryCatch;
 var errorObj = util.errorObj;
@@ -6172,9 +6173,10 @@ function MappingPromiseArray(promises, fn, limit, _filter) {
     this._limit = limit;
     this._inFlight = 0;
     this._queue = limit >= 1 ? [] : EMPTY_ARRAY;
-    this._init$(undefined, -2);
+    async.invoke(init, this, undefined);
 }
 util.inherits(MappingPromiseArray, PromiseArray);
+function init() {this._init$(undefined, -2);}
 
 MappingPromiseArray.prototype._init = function () {};
 
@@ -6280,7 +6282,7 @@ Promise.map = function (promises, fn, options, _filter) {
 
 };
 
-},{"./util.js":77}],59:[function(require,module,exports){
+},{"./async.js":42,"./util.js":77}],59:[function(require,module,exports){
 "use strict";
 module.exports =
 function(Promise, INTERNAL, tryConvertToPromise, apiRejection) {
@@ -7956,6 +7958,7 @@ module.exports = function(Promise,
                           apiRejection,
                           tryConvertToPromise,
                           INTERNAL) {
+var async = require("./async.js");
 var util = require("./util.js");
 var tryCatch = util.tryCatch;
 var errorObj = util.errorObj;
@@ -7985,7 +7988,10 @@ function ReductionPromiseArray(promises, fn, accum, _each) {
     if (!(isPromise || this._zerothIsAccum)) this._gotAccum = true;
     this._callback = fn;
     this._accum = accum;
-    if (!rejected) this._init$(undefined, -5);
+    if (!rejected) async.invoke(init, this, undefined);
+}
+function init() {
+    this._init$(undefined, -5);
 }
 util.inherits(ReductionPromiseArray, PromiseArray);
 
@@ -8093,16 +8099,13 @@ Promise.reduce = function (promises, fn, initialValue, _each) {
 };
 };
 
-},{"./util.js":77}],70:[function(require,module,exports){
-(function (process,global){
+},{"./async.js":42,"./util.js":77}],70:[function(require,module,exports){
+(function (process){
 "use strict";
 var schedule;
 if (require("./util.js").isNode) {
-    var version = process.versions.node.split(".").map(Number);
-    schedule = (version[0] === 0 && version[1] > 10) || (version[0] > 0)
-        ? global.setImmediate : process.nextTick;
-}
-else if (typeof MutationObserver !== "undefined") {
+    schedule = process.nextTick;
+} else if (typeof MutationObserver !== "undefined") {
     schedule = function(fn) {
         var div = document.createElement("div");
         var observer = new MutationObserver(fn);
@@ -8110,20 +8113,18 @@ else if (typeof MutationObserver !== "undefined") {
         return function() { div.classList.toggle("foo"); };
     };
     schedule.isStatic = true;
-}
-else if (typeof setTimeout !== "undefined") {
+} else if (typeof setTimeout !== "undefined") {
     schedule = function (fn) {
         setTimeout(fn, 0);
     };
-}
-else {
+} else {
     schedule = function() {
         throw new Error("No async scheduler available\u000a\u000a    See http://goo.gl/m3OTXk\u000a");
     };
 }
 module.exports = schedule;
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,require('_process'))
 },{"./util.js":77,"_process":84}],71:[function(require,module,exports){
 "use strict";
 module.exports =
