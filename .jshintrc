@@ -10,5 +10,6 @@
   "supernew": true,
   "sub": true,
   "trailing": true,
-  "unused": "vars"
+  "unused": "vars",
+  "predef": [ "-Promise", "before", "after" ]
 }
