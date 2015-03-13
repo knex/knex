@@ -1,4 +1,4 @@
-// Knex.js  0.7.5
+// Knex.js  0.7.6
 // --------------
 
 'use strict';
@@ -75,7 +75,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.7.5';
+  knex.VERSION = knex.__knex__  = '0.7.6';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     if (config.__transactor__) raw.transacting(config.__transactor__);
