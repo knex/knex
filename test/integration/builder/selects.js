@@ -723,6 +723,14 @@ module.exports = function(knex) {
       }
     });
 
+    it('properly escapes identifiers, #737', function() {
+      if (knex.client.dialect === 'postgresql') {
+        var query = knex.select('id","name').from('test').toSQL();
+        assert(query.sql === 'select "id"",""name" from "test"');
+      }
+    });
+
+
   });
 
 };
