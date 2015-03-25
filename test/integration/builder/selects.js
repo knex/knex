@@ -40,12 +40,6 @@ module.exports = function(knex) {
             [],
             [1, 2, 3, 4, 5, 7]
           );
-          tester(
-            'fdbsql',
-            'select "id" from "accounts" order by "id" asc',
-            [],
-            ['1', '2', '3', '4', '5', '7']
-          );
         });
     });
 
@@ -76,12 +70,6 @@ module.exports = function(knex) {
             [10000000000002, 2],
             [3, 4, 5, 7]
           );
-          tester(
-            'fdbsql',
-            'select "id" from "accounts" order by "id" asc offset ?',
-            [2],
-            ['3', '4', '5', '7']
-          );
         });
     });
 
@@ -111,12 +99,6 @@ module.exports = function(knex) {
             "select * from (select \"id\", \"first_name\" from \"accounts\" order by \"id\" asc) where rownum <= ?",
             [1],
             { id: 1, first_name: 'Test' }
-          );
-          tester(
-            'fdbsql',
-            'select "id", "first_name" from "accounts" order by "id" asc limit ?',
-            [1],
-            { id: '1', first_name: 'Test' }
           );
         });
     });
@@ -229,15 +211,6 @@ module.exports = function(knex) {
                 last_name: 'User'
               }]
             );
-            tester(
-              'fdbsql',
-              'select "first_name", "last_name" from "accounts" where "id" = ?',
-              [1],
-              [{
-                first_name: 'Test',
-                last_name: 'User'
-              }]
-            );
           });
       });
 
@@ -284,15 +257,6 @@ module.exports = function(knex) {
                 last_name: 'User'
               }]
             );
-            tester(
-              'fdbsql',
-              'select "first_name", "last_name" from "accounts" where "id" = ?',
-              [1],
-              [{
-                first_name: 'Test',
-                last_name: 'User'
-              }]
-            );
           });
       });
 
@@ -319,11 +283,6 @@ module.exports = function(knex) {
             );
             tester(
               'oracle',
-              'select "email", "logins" from "accounts" where "id" > ?',
-              [1]
-            );
-            tester(
-              'fdbsql',
               'select "email", "logins" from "accounts" where "id" > ?',
               [1]
             );
@@ -400,22 +359,6 @@ module.exports = function(knex) {
                 phone: null
               }]
             );
-            tester(
-              'fdbsql',
-              'select * from "accounts" where "id" = ?',
-              [1],
-              [{
-                id: '1',
-                first_name: "Test",
-                last_name: "User",
-                email: "test@example.com",
-                logins: 1,
-                about: "Lorem ipsum Dolore labore incididunt enim.",
-                created_at: d,
-                updated_at: d,
-                phone: null
-              }]
-            );
           });
       });
 
@@ -445,12 +388,6 @@ module.exports = function(knex) {
             );
             tester(
               'oracle',
-              'select "first_name", "email" from "accounts" where "id" is null',
-              [],
-              []
-            );
-            tester(
-              'fdbsql',
               'select "first_name", "email" from "accounts" where "id" is null',
               [],
               []
@@ -485,12 +422,6 @@ module.exports = function(knex) {
             );
             tester(
               'oracle',
-              'select * from "accounts" where "id" = ?',
-              [0],
-              []
-            );
-            tester(
-              'fdbsql',
               'select * from "accounts" where "id" = ?',
               [0],
               []
@@ -585,20 +516,6 @@ module.exports = function(knex) {
                 details: 'One, Two, Zero',
                 status: 0
               }]);
-            tester('fdbsql',
-              'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?))',
-              [1,1,1,2],
-              [{
-                column_a: 1,
-                column_b: 1,
-                details: 'One, One, One',
-                status: 1
-              },{
-                column_a: 1,
-                column_b: 2,
-                details: 'One, Two, Zero',
-                status: 0
-              }]);
           });
       }
     });
@@ -629,15 +546,6 @@ module.exports = function(knex) {
                 status: 1
               }]);
             tester('oracle',
-              'select * from "composite_key_test" where "status" = ? and ("column_a","column_b") in ((?, ?),(?, ?))',
-              [1,1,1,1,2],
-              [{
-                column_a: 1,
-                column_b: 1,
-                details: 'One, One, One',
-                status: 1
-              }]);
-            tester('fdbsql',
               'select * from "composite_key_test" where "status" = ? and ("column_a","column_b") in ((?, ?),(?, ?))',
               [1,1,1,1,2],
               [{
@@ -716,7 +624,7 @@ module.exports = function(knex) {
     });
 
     it('always returns the response object from raw', function() {
-      if (knex.client.dialect === 'postgresql' || knex.client.dialect === 'fdbsql') {
+      if (knex.client.dialect === 'postgresql') {
         return knex.raw('select id from accounts').then(function(resp) {
           assert(Array.isArray(resp.rows) === true);
         });

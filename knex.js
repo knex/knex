@@ -33,7 +33,6 @@ var pg = function() { return require('./lib/dialects/postgres'); };
 var sqlite3 = function() { return require('./lib/dialects/sqlite3'); };
 var strong_oracle = function() { return require('./lib/dialects/strong-oracle'); };
 var websql = function() { return require('./lib/dialects/websql'); };
-var fdbsql = function() { return require('./lib/dialects/fdbsql'); };
 
 // The client names we'll allow in the `{name: lib}` pairing.
 var Clients = Knex.Clients = {
@@ -49,8 +48,7 @@ var Clients = Knex.Clients = {
   'sqlite'     : sqlite3,
   'sqlite3'    : sqlite3,
   'strong-oracle': strong_oracle,
-  'websql'     : websql,
-  'fdbsql'     : fdbsql
+  'websql'     : websql
 };
 
 // Each of the methods which may be statically chained from knex.

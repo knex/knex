@@ -17,8 +17,7 @@ var excluded = {
   mysql:    ['mysql'],
   mysql2:   ['mysql2'],
   pg:       ['pg', 'pg.js', 'pg-query-stream'],
-  websql:   ['sqlite3'],
-  fdbsql:   ['fdbsql']
+  websql:   ['sqlite3']
 };
 
 var bases = {
@@ -29,8 +28,7 @@ var bases = {
   mysql2:   './lib/dialects/mysql2',
   pg:       './lib/dialects/postgres',
   sqlite3:  './lib/dialects/sqlite3',
-  websql:   './lib/dialects/websql',
-  fdbsql:   './lib/dialects/fdbsql'
+  websql:   './lib/dialects/websql'
 };
 
 var alwaysExcluded = ['./lib/migrate/index.js', './lib/seed/index.js'];
@@ -58,7 +56,7 @@ function build(targets) {
 }
 
 function buildKnex() {
-  var b = build(['mysql', 'mysql2', 'mariasql', 'pg', 'sqlite3', 'websql', 'oracle', 'fdbsql']);
+  var b = build(['mysql', 'mysql2', 'mariasql', 'pg', 'sqlite3', 'websql', 'oracle']);
   var outStream = fs.createWriteStream('./browser/knex.js');
   b.bundle().pipe(outStream);
   return outStream;

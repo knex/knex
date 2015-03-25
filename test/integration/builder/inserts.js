@@ -44,12 +44,6 @@ module.exports = function(knex) {
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test@example.com','Test','User', 1, d, function (v) { return v.toString() === '[object ReturningHelper:id]';}],
           [1]
         );
-        tester(
-          'fdbsql',
-          'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
-          ['Lorem ipsum Dolore labore incididunt enim.', d,'test@example.com','Test','User', 1, d],
-          ['1']
-        );
       });
     });
 
@@ -97,12 +91,6 @@ module.exports = function(knex) {
             ['Lorem ipsum Dolore labore incididunt enim.', d,'test2@example.com','Test','User',1, d, function (v) { return v.toString() === '[object ReturningHelper:id]';},
              'Lorem ipsum Dolore labore incididunt enim.', d,'test3@example.com','Test','User',2, d, function (v) { return v.toString() === '[object ReturningHelper:id]';}],
             [2, 3]
-          );
-          tester(
-            'fdbsql',
-            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
-            ['Lorem ipsum Dolore labore incididunt enim.', d,'test2@example.com','Test','User',1, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test3@example.com','Test','User',2, d],
-            ['2','3']
           );
         });
 
@@ -210,12 +198,6 @@ module.exports = function(knex) {
           ],
           [4, 5]
         );
-        tester(
-          'fdbsql',
-          'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
-          ['Lorem ipsum Dolore labore incididunt enim.', d,'test4@example.com','Test','User',2, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test5@example.com','Test','User',2, d],
-          ['4','5']
-        );
       });
 
     });
@@ -254,11 +236,6 @@ module.exports = function(knex) {
             'oracle',
             "insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) returning ROWID into ?",
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d, function (v) {return v.toString() === '[object ReturningHelper:id]';}]
-          );
-          tester(
-            'fdbsql',
-            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
-            ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d]
           );
         })
         .then(function() {
@@ -304,12 +281,6 @@ module.exports = function(knex) {
             "insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) returning ROWID into ?",
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test6@example.com','Test','User',2, d, function (v) {return v.toString() === '[object ReturningHelper:id]';}],
             [7]
-          );
-          tester(
-            'fdbsql',
-            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
-            ['Lorem ipsum Dolore labore incididunt enim.', d, 'test6@example.com','Test','User',2, d],
-            ['7']
           );
         });
 
@@ -363,7 +334,7 @@ module.exports = function(knex) {
         }).then(function() {
           // No errors happen in sqlite3 or mysql, which dont have native support
           // for the uuid type.
-          if (knex.client.dialect === 'postgresql' || knex.client.dialect === 'fdbsql') {
+          if (knex.client.dialect === 'postgresql') {
             throw new Error('There should be an error in postgresql for uuids');
           }
         }, function() {});
@@ -417,12 +388,6 @@ module.exports = function(knex) {
               [function (v) {return v.toString() === '[object ReturningHelper:id]';}],
               [1]
             );
-            tester(
-              'fdbsql',
-              'insert into "test_default_table" default values returning "id"',
-              [],
-              [1]
-            );
 
           });
         });
@@ -463,12 +428,6 @@ module.exports = function(knex) {
               [function (v) {return v.toString() === '[object ReturningHelper:id]';}],
               [1]
             );
-            tester(
-              'fdbsql',
-              'insert into "test_default_table2" default values returning "id"',
-              [],
-              [1]
-            );
 
           });
         });
@@ -506,12 +465,6 @@ module.exports = function(knex) {
               [function (v) {return v.toString() === '[object ReturningHelper:id]';}, function (v) {return v.toString() === '[object ReturningHelper:id]';}],
               [1, 2]
             );
-            tester(
-              'fdbsql',
-              'insert into "test_default_table3" values (default), (default) returning "id"',
-              [],
-              [1, 2]
-            );
 
           });
         }).then(function () {
@@ -521,7 +474,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should take an array of columns to return in oracle, postgres, or fdbsql', function() {
+    it('should take an array of columns to return in oracle or postgres', function() {
       var insertData = {
         account_id: 10,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -563,18 +516,9 @@ module.exports = function(knex) {
             details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
           }]
         );
-        tester(
-          'fdbsql',
-          'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning "account_id", "details"',
-          [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
-          [{
-            account_id: 10,
-            details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
-          }]
-        );
       }).then(function(rows) {
         expect(rows.length).to.equal(1);
-        if (knex.client.dialect === 'postgresql' || knex.client.dialect === 'fdbsql') {
+        if (knex.client.dialect === 'postgresql') {
           expect(_.keys(rows[0]).length).to.equal(2);
           expect(rows[0].account_id).to.equal(insertData.account_id);
           expect(rows[0].details).to.equal(insertData.details);
@@ -582,7 +526,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('should allow a * for returning in postgres, oracle, and fdbsql', function() {
+    it('should allow a * for returning in postgres and oracle', function() {
       var insertData = {
         account_id: 10,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -620,21 +564,9 @@ module.exports = function(knex) {
             json_data: null
           }]
         );
-        tester(
-          'fdbsql',
-          'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning *',
-          [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
-          [{
-            id: 5,
-            account_id: 10,
-            details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-            status: 0,
-            json_data: null
-          }]
-        );
       }).then(function(rows) {
         expect(rows.length).to.equal(1);
-        if (knex.client.dialect === 'postgresql' || knex.client.dialect === 'fdbsql') {
+        if (knex.client.dialect === 'postgresql') {
           expect(_.keys(rows[0]).length).to.equal(5);
           expect(rows[0].account_id).to.equal(insertData.account_id);
           expect(rows[0].details).to.equal(insertData.details);

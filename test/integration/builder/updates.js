@@ -32,12 +32,6 @@ module.exports = function(knex) {
             ['test100@example.com','User','Test',1],
             1
           );
-          tester(
-            'fdbsql',
-            'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
-            ['test100@example.com','User','Test',1],
-            1
-          );
         });
     });
 
@@ -102,7 +96,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('should allow returning for updates in postgresql and fdbsql', function() {
+    it('should allow returning for updates in postgresql', function() {
 
       return knex('accounts').where('id', 1).update({
         first_name: 'UpdatedUser',
@@ -142,22 +136,6 @@ module.exports = function(knex) {
           'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
           ['test100@example.com','UpdatedUser','UpdatedTest',1],
           1
-        );
-        tester(
-          'fdbsql',
-          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning *',
-          ['test100@example.com','UpdatedUser','UpdatedTest',1],
-          [{
-            id: '1',
-            first_name: 'UpdatedUser',
-            last_name: 'UpdatedTest',
-            email: 'test100@example.com',
-            logins: 1,
-            about: 'Lorem ipsum Dolore labore incididunt enim.',
-            created_at: d,
-            updated_at: d,
-            phone: null
-          }]
         );
       });
 
