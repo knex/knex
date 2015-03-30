@@ -74,6 +74,7 @@
 
       <li><b><a href="#Builder-wheres">Where Methods:</a></b></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-where">where</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-where">whereNot</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereIn">whereIn</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereNotIn">whereNotIn</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereNull">whereNull</a></li>
@@ -611,6 +612,55 @@ var subquery = knex('users').where('votes', '>', 100).andWhere('status', 'active
 
 knex('accounts').where('id', 'in', subquery)
 </pre>
+
+
+
+    <p id="Builder-whereNot">
+      <b class="header">whereNot</b><code>.whereNot(~mixed~)</code>
+    </p>
+
+    <p class="title">Object Syntax:</p>
+
+<pre class="display">
+knex('users').whereNot({
+  first_name: 'Test',
+  last_name:  'User'
+}).select('id')
+</pre>
+
+    <p class="title">Key, Value:</p>
+
+<pre class="display">
+knex('users').whereNot('id', 1)
+</pre>
+
+    <p class="title">Grouped Chain:</p>
+
+<pre class="display">
+knex('users').whereNot(function() {
+  this.where('id', 1).orWhereNot('id', '>', 10)
+}).orWhereNot({name: 'Tester'})
+</pre>
+
+    <p class="title">Operator:</p>
+
+<pre class="display">
+knex('users').whereNot('votes', '>', 100)
+</pre>
+
+<p>
+  CAVEAT:
+  WhereNot is not suitable for "in" and "between" type subqueries. You should use "not in" and "not between" instead.
+</p>
+
+<pre class="display">
+var subquery = knex('users').whereNot('votes', '>', 100).andWhere('status', 'active').orWhere('name', 'John').select('id');
+
+<span style='text-decoration:line-through'>knex('accounts').whereNot('id', 'in', subquery)</span>
+  knex('accounts').where('id', 'not in', subquery)
+</pre>
+
+
 
     <p id="Builder-whereIn">
       <b class="header">whereIn</b><code>.whereIn(column, array|callback|builder) / .orWhereIn</code><br />
