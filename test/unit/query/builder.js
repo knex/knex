@@ -126,6 +126,25 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it("array wheres", function() {
+      testsql(qb().select('*').from('users').where([{foo : 'bar'},['id', 'in', [1, 2, 3]]]), {
+        mysql: {
+          sql: 'select * from `users` where `foo` = ? and `id` in (?, ?, ?)',
+          bindings: ['bar', 1, 2, 3]
+        },
+        default: {
+          sql: 'select * from "users" where "foo" = ? and "id" in (?, ?, ?)',
+          bindings: ['bar', 1, 2, 3]
+        }
+      });
+
+      testquery(qb().select('*').from('users').where([['id',1], {foo: 'bar', a: 42},['x','>', 12]]), {
+        mysql: 'select * from `users` where `id` = 1 and `foo` = \'bar\' and `a` = 42 and `x` > 12',
+        postgres: 'select * from "users" where "id" = \'1\' and "foo" = \'bar\' and "a" = \'42\' and "x" > \'12\'',
+        default: 'select * from "users" where "id" = 1 and "foo" = \'bar\' and "a" = 42 and "x" > 12'
+      });
+    });
+
 
     it("where not", function() {
       testsql(qb().select('*').from('users').whereNot('id', '=', 1), {
