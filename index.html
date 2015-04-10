@@ -1458,7 +1458,7 @@ knex.transaction(function(trx) {
         // Some validation could take place here.
 
         return trx.insert(info).into('books');
-      }));
+      });
     });
 
 })
@@ -1497,7 +1497,7 @@ knex.transaction(function(trx) {
         // Some validation could take place here.
 
         return knex.insert(info).into('books').transacting(trx);
-      }));
+      });
     })
     .then(trx.commit)
     .catch(trx.rollback);
