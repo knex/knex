@@ -1,63 +1,24 @@
-// Knex.js  0.7.5
-// --------------
-
 'use strict';
 
+// Knex.js  0.8.0
+// --------------
 //     (c) 2014 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
 //     http://knexjs.org
 
-// The "Knex" object we're exporting is just a passthrough to `Knex.initialize`.
-function Knex() {
-  return Knex.initialize.apply(null, arguments);
-}
-
 // Require the main constructors necessary for a `Knex` instance,
 // each of which are injected with the current instance, so they maintain
 // the correct client reference & grammar.
 var Raw = require('./lib/raw');
-
-// Run a "raw" query, though we can't do anything with it other than put
-// it in a query statement.
-Knex.raw = function(sql, bindings) {
-  return new Raw(sql, bindings);
-};
-
-// Doing it this way makes it easier to build for browserify.
-var mysql = function() { return require('./lib/dialects/mysql'); };
-var mysql2 = function() { return require('./lib/dialects/mysql2'); };
-var maria = function() { return require('./lib/dialects/maria'); };
-var oracle = function() { return require('./lib/dialects/oracle'); };
-var pg = function() { return require('./lib/dialects/postgres'); };
-var sqlite3 = function() { return require('./lib/dialects/sqlite3'); };
-var strong_oracle = function() { return require('./lib/dialects/strong-oracle'); };
-var websql = function() { return require('./lib/dialects/websql'); };
-
-// The client names we'll allow in the `{name: lib}` pairing.
-var Clients = Knex.Clients = {
-  'mysql'      : mysql,
-  'mysql2'     : mysql2,
-  'maria'      : maria,
-  'mariadb'    : maria,
-  'mariasql'   : maria,
-  'oracle'     : oracle,
-  'pg'         : pg,
-  'postgres'   : pg,
-  'postgresql' : pg,
-  'sqlite'     : sqlite3,
-  'sqlite3'    : sqlite3,
-  'strong-oracle': strong_oracle,
-  'websql'     : websql
-};
+var warn = require('./lib/helpers').warn
 
 // Each of the methods which may be statically chained from knex.
-var QueryInterface   = require('./lib/query/methods');
+var QueryInterface = require('./lib/query/methods');
 
-// Create a new "knex" instance with the appropriate configured client.
-Knex.initialize = function(config) {
+function Knex(config) {
   var Dialect, client;
-  var EventEmitter = require('events').EventEmitter;
+  var EventEmitter   = require('events').EventEmitter;
 
   // The object we're potentially using to kick off an
   // initial chain. It is assumed that `knex` isn't a
@@ -77,7 +38,7 @@ Knex.initialize = function(config) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.7.5';
+  knex.VERSION = knex.__knex__  = '0.8.0';
   knex.raw = function(sql, bindings) {
     var raw = new client.Raw(sql, bindings);
     if (config.__transactor__) raw.transacting(config.__transactor__);
@@ -90,8 +51,13 @@ Knex.initialize = function(config) {
     return new client.Transaction(container);
   };
 
+  // Typically never needed, initializes the pool for a knex client.
+  knex.initialize = function(config) {
+    return this.client.initialize(config)
+  }
+
   // Convenience method for tearing down the pool.
-  knex.destroy = function (callback) {
+  knex.destroy = function(callback) {
     return this.client.destroy(callback);
   };
 
@@ -101,13 +67,13 @@ Knex.initialize = function(config) {
 
     // Build the "client"
     var clientName = config.client || config.dialect;
-    if (!Clients[clientName]) {
+    if (!Knex.Clients[clientName]) {
       throw new Error(clientName + ' is not a valid Knex client, did you misspell it?');
     }
     knex.toString = function() {
       return '[object Knex:' + clientName + ']';
     };
-    Dialect = Clients[clientName]();
+    Dialect = Knex.Clients[clientName]();
     client  = new Dialect(config);
 
     // Passthrough all "start" and "query" events to the knex object.
@@ -167,6 +133,45 @@ Knex.initialize = function(config) {
   });
 
   return knex;
+}
+
+// Run a "raw" query, though we can't do anything with it other than put
+// it in a query statement.
+Knex.raw = function(sql, bindings) {
+  return new Raw(sql, bindings);
+};
+
+// Create a new "knex" instance with the appropriate configured client.
+Knex.initialize = function(config) {
+  warn('knex.initialize is deprecated, pass your config object directly to the knex module')
+  return new Knex(config)
+};
+
+// Doing it this way makes it easier to build for browserify.
+var mysql = function() { return require('./lib/dialects/mysql'); };
+var mysql2 = function() { return require('./lib/dialects/mysql2'); };
+var maria = function() { return require('./lib/dialects/maria'); };
+var oracle = function() { return require('./lib/dialects/oracle'); };
+var pg = function() { return require('./lib/dialects/postgres'); };
+var sqlite3 = function() { return require('./lib/dialects/sqlite3'); };
+var strong_oracle = function() { return require('./lib/dialects/strong-oracle'); };
+var websql = function() { return require('./lib/dialects/websql'); };
+
+// The client names we'll allow in the `{name: lib}` pairing.
+Knex.Clients = {
+  'mysql'      : mysql,
+  'mysql2'     : mysql2,
+  'maria'      : maria,
+  'mariadb'    : maria,
+  'mariasql'   : maria,
+  'oracle'     : oracle,
+  'pg'         : pg,
+  'postgres'   : pg,
+  'postgresql' : pg,
+  'sqlite'     : sqlite3,
+  'sqlite3'    : sqlite3,
+  'strong-oracle': strong_oracle,
+  'websql'     : websql
 };
 
 module.exports = Knex;

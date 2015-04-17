@@ -11,11 +11,11 @@ var testIntegrationDialects = (process.env.KNEX_TEST_INTEGRATION_DIALECTS || "my
 
 var pool = {
   afterCreate: function(connection, callback) {
-    expect(connection).to.have.property('__cid');
+    expect(connection).to.have.property('__knexUid');
     callback(null, connection);
   },
   beforeDestroy: function(connection, continueFunc) {
-    expect(connection).to.have.property('__cid');
+    expect(connection).to.have.property('__knexUid');
     continueFunc();
   }
 };

@@ -116,7 +116,7 @@ module.exports = function(knex) {
     it('should be able to rollback transactions with rejected trx query', function() {
       var id = null;
       var err = new Error('error message');
-      var __cid, count = 0;
+      var __knexUid, count = 0;
       return knex.transaction(function(trx) {
         return trx('accounts')
           .returning('id')
@@ -142,8 +142,8 @@ module.exports = function(knex) {
       })
       .on('query', function(obj) {
         count++;
-        if (!__cid) __cid = obj.__cid;
-        expect(__cid).to.equal(obj.__cid);
+        if (!__knexUid) __knexUid = obj.__knexUid;
+        expect(__knexUid).to.equal(obj.__knexUid);
       })
       .catch(function(msg) {
         if (knex.client.dialect === 'oracle') {
@@ -161,7 +161,7 @@ module.exports = function(knex) {
     });
 
     it('should be able to run schema methods', function() {
-      var __cid, count = 0;
+      var __knexUid, count = 0;
       var err = new Error('error message');
       if (knex.client.dialect === 'postgresql') {
         return knex.transaction(function(trx) {
@@ -181,8 +181,8 @@ module.exports = function(knex) {
         })
         .on('query', function(obj) {
           count++;
-          if (!__cid) __cid = obj.__cid;
-          expect(__cid).to.equal(obj.__cid);
+          if (!__knexUid) __knexUid = obj.__knexUid;
+          expect(__knexUid).to.equal(obj.__knexUid);
         })
         .catch(function(msg) {
           expect(msg).to.equal(err);
@@ -221,8 +221,8 @@ module.exports = function(knex) {
         })
         .on('query', function(obj) {
           count++;
-          if (!__cid) __cid = obj.__cid;
-          expect(__cid).to.equal(obj.__cid);
+          if (!__knexUid) __knexUid = obj.__knexUid;
+          expect(__knexUid).to.equal(obj.__knexUid);
         }).then(function() {
           expect(count).to.equal(5);
           return knex('accounts').where('id', id).select('first_name');

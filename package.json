@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "bluebird": "^2.0.0",
-    "chalk": "~0.5.1",
+    "chalk": "^0.5.1",
     "commander": "^2.2.0",
     "inherits": "~2.0.1",
     "interpret": "^0.3.2",
