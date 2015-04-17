@@ -2366,6 +2366,26 @@ module.exports = function(qb, clientName, aliasName) {
         });
     });
 
+    it('has a fromJS method for json construction of queries', function() {
+      testsql(qb().fromJS({
+        select: '*',
+        from: 'accounts',
+        where: {
+          id: 1
+        },
+        whereIn: ['name', ['a', 'b', 'c']]
+      }), {
+        mysql: {
+          sql: 'select * from `accounts` where `id` = ? and `name` in (?, ?, ?)',
+          bindings: [1, 'a', 'b', 'c']
+        },
+        default: {
+          sql: 'select * from "accounts" where "id" = ? and "name" in (?, ?, ?)',
+          bindings: [1, 'a', 'b', 'c']
+        }
+      })
+    })
+
   });
 
 };
