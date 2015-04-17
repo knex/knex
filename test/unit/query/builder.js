@@ -291,6 +291,19 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
+    it("raw column wheres", function() {
+      testsql(qb().select('*').from('users').where(raw('LCASE("name")'), 'foo'), {
+        mysql: {
+          sql: 'select * from `users` where LCASE("name") = ?',
+          bindings: ['foo']
+        },
+        default: {
+          sql: 'select * from "users" where LCASE("name") = ?',
+          bindings: ['foo']
+        }
+      });
+    });
+
     it("raw wheres", function() {
       testsql(qb().select('*').from('users').where(raw('id = ? or email = ?', [1, 'foo'])), {
         mysql: {
