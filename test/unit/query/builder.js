@@ -126,7 +126,6 @@ module.exports = function(qb, clientName, aliasName) {
       });
     });
 
-
     it("where not", function() {
       testsql(qb().select('*').from('users').whereNot('id', '=', 1), {
         mysql: {
@@ -340,6 +339,25 @@ module.exports = function(qb, clientName, aliasName) {
           sql: 'select * from "users" where "id" in (?, ?, ?)',
           bindings: [1, 2, 3]
         }
+      });
+    });
+
+    it("auto whereIn", function() {
+      testsql(qb().select('*').from('users').where('id', [1,2]), {
+        mysql: {
+          sql: 'select * from `users` where `id` in (?, ?)',
+          bindings: [1,2]
+        },
+        default: {
+          sql: 'select * from "users" where "id" in (?, ?)',
+          bindings: [1,2]
+        }
+      });
+
+      testquery(qb().select('*').from('users').where({'id' : [1, 2]}), {
+        mysql: 'select * from `users` where `id` in (1, 2)',
+        postgres: 'select * from "users" where "id" in (\'1\', \'2\')',
+        default: 'select * from "users" where "id" in (1, 2)'
       });
     });
 
