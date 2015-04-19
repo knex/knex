@@ -6,18 +6,14 @@ module.exports = function(client) {
 
   var knex = require('../../../knex');
 
-  client.initSchema();
-
   describe("Oracle SchemaBuilder", function() {
-
-    client.initSchema();
 
     var tableSql;
     var SchemaBuilder = client.SchemaBuilder;
     var equal = require('assert').equal;
 
     it('test basic create table with charset and collate', function() {
-      tableSql = new SchemaBuilder().createTable('users', function(table) {
+      tableSql = client.schemaBuilder().createTable('users', function(table) {
         table.increments('id');
         table.string('email');
       });
@@ -29,7 +25,7 @@ module.exports = function(client) {
     });
 
     it('test basic create table if not exists', function() {
-      tableSql = new SchemaBuilder().createTableIfNotExists('users', function(table) {
+      tableSql = client.schemaBuilder().createTableIfNotExists('users', function(table) {
         table.increments('id');
         table.string('email');
       });
@@ -41,7 +37,7 @@ module.exports = function(client) {
     });
 
     it('test drop table', function() {
-      tableSql = new SchemaBuilder().dropTable('users').toSQL();
+      tableSql = client.schemaBuilder().dropTable('users').toSQL();
 
       equal(2, tableSql.length);
       expect(tableSql[0].sql).to.equal('drop table "users"');
@@ -49,7 +45,7 @@ module.exports = function(client) {
     });
 
     it('test drop table if exists', function() {
-      tableSql = new SchemaBuilder().dropTableIfExists('users').toSQL();
+      tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
       equal(2, tableSql.length);
       expect(tableSql[0].sql).to.equal("begin execute immediate 'drop table \"users\"'; exception when others then if sqlcode != -942 then raise; end if; end;");
@@ -57,7 +53,7 @@ module.exports = function(client) {
     });
 
     it('test drop column', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropColumn('foo');
       }).toSQL();
 
@@ -66,7 +62,7 @@ module.exports = function(client) {
     });
 
     it('drops multiple columns with an array', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropColumn(['foo', 'bar']);
       }).toSQL();
 
@@ -75,7 +71,7 @@ module.exports = function(client) {
     });
 
     it('drops multiple columns as multiple arguments', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropColumn('foo', 'bar');
       }).toSQL();
 
@@ -84,7 +80,7 @@ module.exports = function(client) {
     });
 
     it('test drop primary', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropPrimary();
       }).toSQL();
 
@@ -93,7 +89,7 @@ module.exports = function(client) {
     });
 
     it('test drop unique', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropUnique('foo');
       }).toSQL();
 
@@ -102,7 +98,7 @@ module.exports = function(client) {
     });
 
     it('test drop unique, custom', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropUnique(null, 'foo');
       }).toSQL();
 
@@ -111,7 +107,7 @@ module.exports = function(client) {
     });
 
     it('test drop index', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropIndex('foo');
       }).toSQL();
 
@@ -120,7 +116,7 @@ module.exports = function(client) {
     });
 
     it('test drop index, custom', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropIndex(null, 'foo');
       }).toSQL();
 
@@ -129,7 +125,7 @@ module.exports = function(client) {
     });
 
     it('test drop foreign', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropForeign('foo');
       }).toSQL();
 
@@ -138,7 +134,7 @@ module.exports = function(client) {
     });
 
     it('test drop foreign, custom', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropForeign(null, 'foo');
       }).toSQL();
 
@@ -147,7 +143,7 @@ module.exports = function(client) {
     });
 
     it('test drop timestamps', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dropTimestamps();
       }).toSQL();
 
@@ -156,13 +152,13 @@ module.exports = function(client) {
     });
 
     it("rename table", function() {
-      tableSql = new SchemaBuilder().renameTable('users', 'foo').toSQL();
+      tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('rename "users" to "foo"');
     });
 
     it('test adding primary key', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.primary('foo', 'bar');
       }).toSQL();
 
@@ -171,7 +167,7 @@ module.exports = function(client) {
     });
 
     it('test adding unique key', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.unique('foo', 'bar');
       }).toSQL();
 
@@ -180,7 +176,7 @@ module.exports = function(client) {
     });
 
     it('test adding index', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.index(['foo', 'bar'], 'baz');
       }).toSQL();
 
@@ -189,7 +185,7 @@ module.exports = function(client) {
     });
 
     it('test adding foreign key', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.foreign('foo_id').references('id').on('orders');
       }).toSQL();
 
@@ -198,7 +194,7 @@ module.exports = function(client) {
     });
 
     it("adds foreign key with onUpdate and onDelete", function() {
-      tableSql = new SchemaBuilder().createTable('person', function(table) {
+      tableSql = client.schemaBuilder().createTable('person', function(table) {
         table.integer('user_id').notNull().references('users.id').onDelete('SET NULL');
         table.integer('account_id').notNull().references('id').inTable('accounts').onUpdate('cascade');
       }).toSQL();
@@ -208,7 +204,7 @@ module.exports = function(client) {
     });
 
     it('test adding incrementing id', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.increments('id');
       }).toSQL();
 
@@ -219,7 +215,7 @@ module.exports = function(client) {
     });
 
     it('test adding big incrementing id', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.bigIncrements('id');
       }).toSQL();
 
@@ -230,7 +226,7 @@ module.exports = function(client) {
     });
 
     it('test rename column', function() {
-      tableSql = new SchemaBuilder().table('users', function () {
+      tableSql = client.schemaBuilder().table('users', function () {
         this.renameColumn('foo', 'bar');
       }).toSQL();
       equal(1, tableSql.length);
@@ -238,7 +234,7 @@ module.exports = function(client) {
     });
 
     it('test adding string', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.string('foo');
       }).toSQL();
 
@@ -247,7 +243,7 @@ module.exports = function(client) {
     });
 
     it('uses the varchar column constraint', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.string('foo', 100);
       }).toSQL();
 
@@ -256,7 +252,7 @@ module.exports = function(client) {
     });
 
     it('chains notNull and defaultTo', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.string('foo', 100).notNull().defaultTo('bar');
       }).toSQL();
       equal(1, tableSql.length);
@@ -264,7 +260,7 @@ module.exports = function(client) {
     });
 
     it('allows for raw values in the default field', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.string('foo', 100).nullable().defaultTo(knex.raw('CURRENT TIMESTAMP'));
       }).toSQL();
 
@@ -273,7 +269,7 @@ module.exports = function(client) {
     });
 
     it('test adding text', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.text('foo');
       }).toSQL();
 
@@ -282,7 +278,7 @@ module.exports = function(client) {
     });
 
     it('test adding big integer', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.bigInteger('foo');
       }).toSQL();
 
@@ -291,7 +287,7 @@ module.exports = function(client) {
     });
 
     it('test adding integer', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.integer('foo');
       }).toSQL();
 
@@ -300,7 +296,7 @@ module.exports = function(client) {
     });
 
     it('test adding medium integer', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.mediumint('foo');
       }).toSQL();
 
@@ -309,7 +305,7 @@ module.exports = function(client) {
     });
 
     it('test adding small integer', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.smallint('foo');
       }).toSQL();
 
@@ -318,7 +314,7 @@ module.exports = function(client) {
     });
 
     it('test adding tiny integer', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.tinyint('foo');
       }).toSQL();
 
@@ -327,7 +323,7 @@ module.exports = function(client) {
     });
 
     it('test adding default float', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.float('foo');
       }).toSQL();
 
@@ -336,7 +332,7 @@ module.exports = function(client) {
     });
 
     it('test adding float with precision', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.float('foo', 5);
       }).toSQL();
 
@@ -345,7 +341,7 @@ module.exports = function(client) {
     });
 
     it('test adding double', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.double('foo');
       }).toSQL();
 
@@ -354,7 +350,7 @@ module.exports = function(client) {
     });
 
     it('test adding double specifying precision', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.double('foo', 15, 8);
       }).toSQL();
 
@@ -363,7 +359,7 @@ module.exports = function(client) {
     });
 
     it('test adding decimal', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.decimal('foo', 5, 2);
       }).toSQL();
 
@@ -372,7 +368,7 @@ module.exports = function(client) {
     });
 
     it('test adding boolean', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.boolean('foo');
       }).toSQL();
 
@@ -381,7 +377,7 @@ module.exports = function(client) {
     });
 
     it('test adding enum', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.enum('foo', ['bar', 'baz']);
       }).toSQL();
 
@@ -390,7 +386,7 @@ module.exports = function(client) {
     });
 
     it('test adding date', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.date('foo');
       }).toSQL();
 
@@ -399,7 +395,7 @@ module.exports = function(client) {
     });
 
     it('test adding date time', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.dateTime('foo');
       }).toSQL();
 
@@ -408,7 +404,7 @@ module.exports = function(client) {
     });
 
     it('test adding time', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.time('foo');
       }).toSQL();
 
@@ -419,7 +415,7 @@ module.exports = function(client) {
     });
 
     it('test adding time stamp', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.timestamp('foo');
       }).toSQL();
 
@@ -428,7 +424,7 @@ module.exports = function(client) {
     });
 
     it('test adding time stamps', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.timestamps();
       }).toSQL();
 
@@ -437,7 +433,7 @@ module.exports = function(client) {
     });
 
     it('test adding binary', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.binary('foo');
       }).toSQL();
 
@@ -446,7 +442,7 @@ module.exports = function(client) {
     });
 
     it('test adding decimal', function() {
-      tableSql = new SchemaBuilder().table('users', function() {
+      tableSql = client.schemaBuilder().table('users', function() {
         this.decimal('foo', 2, 6);
       }).toSQL();
 
@@ -455,7 +451,7 @@ module.exports = function(client) {
     });
 
     it('is possible to set raw statements in defaultTo, #146', function() {
-      tableSql = new SchemaBuilder().createTable('default_raw_test', function(t) {
+      tableSql = client.schemaBuilder().createTable('default_raw_test', function(t) {
         t.timestamp('created_at').defaultTo(knex.raw('CURRENT_TIMESTAMP'));
       }).toSQL();
 
@@ -464,7 +460,7 @@ module.exports = function(client) {
     });
 
     it('allows dropping a unique compound index with too long generated name', function() {
-      tableSql = new SchemaBuilder().table('composite_key_test', function(t) {
+      tableSql = client.schemaBuilder().table('composite_key_test', function(t) {
         t.dropUnique(['column_a', 'column_b']);
       }).toSQL();
 
@@ -473,7 +469,7 @@ module.exports = function(client) {
     });
 
     it('allows dropping a unique compound index with specified name', function() {
-      tableSql = new SchemaBuilder().table('composite_key_test', function(t) {
+      tableSql = client.schemaBuilder().table('composite_key_test', function(t) {
         t.dropUnique(['column_a', 'column_b'], 'ckt_unique');
       }).toSQL();
 

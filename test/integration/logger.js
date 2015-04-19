@@ -11,7 +11,6 @@ module.exports = function () {
     client: function(knex) {
       var Raw = require('../../lib/raw');
       var client = knex.client;
-      client.initSchema();
 
       var aliases = {
         'pg': 'postgresql',

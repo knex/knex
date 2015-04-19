@@ -19,40 +19,17 @@ global.d = new Date();
 
 Promise.longStackTraces();
 
-var knex = require('../knex');
+require('./unit/query/builder')
+require('./unit/schema/mysql')
 
-var clients = {
-  maria: {
-    name: 'maria',
-    client: knex({client: 'maria'}).client,
-    alias: 'mysql'
-  },
-  mysql: {
-    name: 'mysql',
-    client: knex({client: 'mysql'}).client,
-  },
-  sqlite3: {
-    name: 'sqlite3',
-    client: knex({client: 'sqlite3'}).client
-  },
-  postgres: {
-    name: 'postgres',
-    client: knex({client: 'postgres'}).client,
-  },
-  oracle: {
-    name: 'oracle',
-    client: knex({client: 'oracle'}).client,
-  }
-};
+// describe('Unit tests', function() {
+//   Object.keys(clients).forEach(function (clientName) {
+//     require('./unit/schema/' + (clients[clientName].alias || clients[clientName].name))(clients[clientName].client);
+//     require('./unit/query/builder')(function () { return new clients[clientName].client.QueryBuilder(); }, clients[clientName].name, clients[clientName].alias);
+//   });
+// });
 
-describe('Unit tests', function() {
-  Object.keys(clients).forEach(function (clientName) {
-    require('./unit/schema/' + (clients[clientName].alias || clients[clientName].name))(clients[clientName].client);
-    require('./unit/query/builder')(function () { return new clients[clientName].client.QueryBuilder(); }, clients[clientName].name, clients[clientName].alias);
-  });
-});
-
-// Integration Tests
-describe('Integration Tests', function() {
-  require('./integration')(this);
-});
+// // Integration Tests
+// describe('Integration Tests', function() {
+//   require('./integration')(this);
+// });

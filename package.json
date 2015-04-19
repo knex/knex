@@ -59,7 +59,7 @@
   "scripts": {
     "build": "gulp build",
     "plaintest": "mocha --check-leaks -t 5000 -b -R spec test/index.js",
-    "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js",
+    "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run jshint",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "gulp jshint",
     "release:patch": "gulp jshint && npm test && gulp build && gulp bump --type patch && gulp release",

@@ -4,10 +4,7 @@
 
 module.exports = function(client) {
 
-  client.initSchema();
-
   var tableSql;
-  var SchemaBuilder = client.SchemaBuilder;
   var _ = require('lodash');
   var equal = require('assert').equal;
   var deepEqual = require('assert').deepEqual;
@@ -15,7 +12,7 @@ module.exports = function(client) {
   describe("SQLite SchemaBuilder", function() {
 
     it("basic create table", function() {
-      tableSql = new SchemaBuilder().createTable('users', function(table) {
+      tableSql = client.schemaBuilder().createTable('users', function(table) {
         table.increments('id');
         table.string('email');
       }).toSQL();
@@ -25,7 +22,7 @@ module.exports = function(client) {
     });
 
     it("basic alter table", function() {
-      tableSql = new SchemaBuilder().alterTable('users', function(table) {
+      tableSql = client.schemaBuilder().alterTable('users', function(table) {
         table.increments('id');
         table.string('email');
       }).toSQL();
@@ -39,20 +36,20 @@ module.exports = function(client) {
     });
 
     it("drop table", function() {
-      tableSql = new SchemaBuilder().dropTable('users').toSQL();
+      tableSql = client.schemaBuilder().dropTable('users').toSQL();
       equal(1, tableSql.length);
       equal(tableSql[0].sql, 'drop table "users"');
     });
 
     it("drop table if exists", function() {
-      tableSql = new SchemaBuilder().dropTableIfExists('users').toSQL();
+      tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
       equal(1, tableSql.length);
       equal(tableSql[0].sql, 'drop table if exists "users"');
     });
 
     it("drop unique", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.dropUnique('foo');
       }).toSQL();
 
@@ -61,7 +58,7 @@ module.exports = function(client) {
     });
 
     it("drop unique, custom", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.dropUnique(null, 'foo');
       }).toSQL();
 
@@ -70,7 +67,7 @@ module.exports = function(client) {
     });
 
     it("drop index", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.dropIndex('foo');
       }).toSQL();
 
@@ -79,7 +76,7 @@ module.exports = function(client) {
     });
 
     it("drop index, custom", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.dropIndex(null, 'foo');
       }).toSQL();
 
@@ -88,14 +85,14 @@ module.exports = function(client) {
     });
 
     it("rename table", function() {
-      tableSql = new SchemaBuilder().renameTable('users', 'foo').toSQL();
+      tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
 
       equal(1, tableSql.length);
       equal(tableSql[0].sql, 'alter table "users" rename to "foo"');
     });
 
     it("adding primary key", function() {
-      tableSql = new SchemaBuilder().createTable('users', function(table) {
+      tableSql = client.schemaBuilder().createTable('users', function(table) {
         table.string('foo');
         table.primary('foo');
       }).toSQL();
@@ -105,7 +102,7 @@ module.exports = function(client) {
     });
 
     it("adding composite primary key", function() {
-      tableSql = new SchemaBuilder().createTable('users', function(table) {
+      tableSql = client.schemaBuilder().createTable('users', function(table) {
         table.string('foo');
         table.string('order_id');
         table.primary(['foo', 'order_id']);
@@ -114,7 +111,7 @@ module.exports = function(client) {
       equal(1, tableSql.length);
       equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), "order_id" varchar(255), primary key ("foo", "order_id"))');
 
-      tableSql = new SchemaBuilder().createTable('users', function(table) {
+      tableSql = client.schemaBuilder().createTable('users', function(table) {
         table.string('foo');
         table.string('order_id');
         table.primary('foo', 'order_id');
@@ -125,7 +122,7 @@ module.exports = function(client) {
     });
 
     it("adding primary key fluently", function() {
-      tableSql = new SchemaBuilder().createTable('users', function(table) {
+      tableSql = client.schemaBuilder().createTable('users', function(table) {
         table.string('foo').primary();
       }).toSQL();
 
@@ -134,7 +131,7 @@ module.exports = function(client) {
     });
 
     it("adding foreign key", function() {
-      tableSql = new SchemaBuilder().createTable('users', function(table) {
+      tableSql = client.schemaBuilder().createTable('users', function(table) {
         table.string('foo').primary();
         table.string('order_id');
         table.foreign('order_id').references('id').on('orders');
@@ -145,7 +142,7 @@ module.exports = function(client) {
     });
 
     it("adding foreign key fluently", function() {
-      tableSql = new SchemaBuilder().createTable('users', function(table) {
+      tableSql = client.schemaBuilder().createTable('users', function(table) {
         table.string('foo').primary();
         table.string('order_id').references('id').on('orders');
       }).toSQL();
@@ -155,7 +152,7 @@ module.exports = function(client) {
     });
 
     it("adds a unique key with autogenerated name", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.unique('foo');
       }).toSQL();
 
@@ -164,7 +161,7 @@ module.exports = function(client) {
     });
 
     it("adding unique key with specific name", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.unique('foo', 'bar');
       }).toSQL();
 
@@ -173,7 +170,7 @@ module.exports = function(client) {
     });
 
     it("adding index", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.index(['foo', 'bar'], 'baz');
       }).toSQL();
 
@@ -182,7 +179,7 @@ module.exports = function(client) {
     });
 
     it("adding incrementing id", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.increments('id');
       }).toSQL();
 
@@ -191,7 +188,7 @@ module.exports = function(client) {
     });
 
     it("adding big incrementing id", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.bigIncrements('id');
       }).toSQL();
 
@@ -200,7 +197,7 @@ module.exports = function(client) {
     });
 
     it("adding string", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.string('foo');
       }).toSQL();
 
@@ -209,7 +206,7 @@ module.exports = function(client) {
     });
 
     it("allows setting a value in the string length, although unused by sqlite3", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.string('foo', 100);
       }).toSQL();
 
@@ -218,7 +215,7 @@ module.exports = function(client) {
     });
 
     it("correctly interprets defaultTo(null)", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.string('foo').defaultTo(null);
       }).toSQL();
 
@@ -226,7 +223,7 @@ module.exports = function(client) {
     });
 
     it("chains notNull and defaultTo", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.string('foo', 100).notNull().defaultTo('bar');
       }).toSQL();
 
@@ -235,7 +232,7 @@ module.exports = function(client) {
     });
 
     it("adding text", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.text('foo');
       }).toSQL();
 
@@ -244,7 +241,7 @@ module.exports = function(client) {
     });
 
     it("adding big integer", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.bigInteger('foo');
       }).toSQL();
 
@@ -253,7 +250,7 @@ module.exports = function(client) {
     });
 
     it("bigincrements works the same as increments for sqlite3", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.bigIncrements('foo');
       }).toSQL();
 
@@ -262,7 +259,7 @@ module.exports = function(client) {
     });
 
     it("adding integer", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.integer('foo');
       }).toSQL();
 
@@ -271,7 +268,7 @@ module.exports = function(client) {
     });
 
     it("adding autoincrements", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.increments('foo');
       }).toSQL();
 
@@ -280,7 +277,7 @@ module.exports = function(client) {
     });
 
     it("adding medium integer", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.mediumint('foo');
       }).toSQL();
 
@@ -289,7 +286,7 @@ module.exports = function(client) {
     });
 
     it("adding tiny integer", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.tinyint('foo');
       }).toSQL();
 
@@ -298,7 +295,7 @@ module.exports = function(client) {
     });
 
     it("adding small integer", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.smallint('foo');
       }).toSQL();
 
@@ -307,7 +304,7 @@ module.exports = function(client) {
     });
 
     it("adding float", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.float('foo', 5, 2);
       }).toSQL();
 
@@ -316,7 +313,7 @@ module.exports = function(client) {
     });
 
     it("adding double", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.double('foo', 15, 8);
       }).toSQL();
 
@@ -325,7 +322,7 @@ module.exports = function(client) {
     });
 
     it("adding decimal", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.decimal('foo', 5, 2);
       }).toSQL();
 
@@ -334,7 +331,7 @@ module.exports = function(client) {
     });
 
     it("adding boolean", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.boolean('foo');
       }).toSQL();
 
@@ -343,7 +340,7 @@ module.exports = function(client) {
     });
 
     it("adding enum", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.enum('foo', ['bar', 'baz']);
       }).toSQL();
 
@@ -352,7 +349,7 @@ module.exports = function(client) {
     });
 
     it("adding date", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.date('foo');
       }).toSQL();
 
@@ -361,7 +358,7 @@ module.exports = function(client) {
     });
 
     it("adding date time", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.dateTime('foo');
       }).toSQL();
 
@@ -370,7 +367,7 @@ module.exports = function(client) {
     });
 
     it("adding time", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.time('foo');
       }).toSQL();
 
@@ -379,7 +376,7 @@ module.exports = function(client) {
     });
 
     it("adding time stamp", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.timestamp('foo');
       }).toSQL();
 
@@ -388,7 +385,7 @@ module.exports = function(client) {
     });
 
     it("adding time stamps", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.timestamps();
       }).toSQL();
 
@@ -401,7 +398,7 @@ module.exports = function(client) {
     });
 
     it("adding binary", function() {
-      tableSql = new SchemaBuilder().table('users', function(table) {
+      tableSql = client.schemaBuilder().table('users', function(table) {
         table.binary('foo');
       }).toSQL();
 
@@ -410,7 +407,7 @@ module.exports = function(client) {
     });
 
     it('allows for on delete cascade with foreign keys, #166', function() {
-      tableSql = new SchemaBuilder().createTable('users', function(table) {
+      tableSql = client.schemaBuilder().createTable('users', function(table) {
         table.string('user_id', 36)
           .index()
           .references('id')
@@ -424,7 +421,7 @@ module.exports = function(client) {
     
     describe('SQLite3_DDL.prototype._doReplace', function () {
       it('should not change a query that has no matches', function () {
-        return new SchemaBuilder().table('foo', function (tbl) {
+        return client.schemaBuilder().table('foo', function (tbl) {
           // i don't really know how to get at an instance of this 'correctly'
           var doReplace = tbl.client.SQLite3_DDL.prototype._doReplace;
           

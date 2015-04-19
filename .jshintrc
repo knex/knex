@@ -1,7 +1,6 @@
 {
   "asi": true,
   "browser": false,
-  "latedef": true,
   "eqeqeq" : true,
   "newcap": false,
   "node": true,
