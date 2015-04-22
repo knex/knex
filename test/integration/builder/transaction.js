@@ -3,7 +3,6 @@
 'use strict';
 
 var Promise = testPromise;
-var debug = require('debug')
 
 module.exports = function(knex) {
 

@@ -424,9 +424,8 @@ describe("SQLite SchemaBuilder", function() {
   
   describe('SQLite3_DDL.prototype._doReplace', function () {
     it('should not change a query that has no matches', function () {
-      return client.schemaBuilder().table('foo', function (tbl) {
+      return client.schemaBuilder().table('foo', function() {
         
-        // i don't really know how to get at an instance of this 'correctly'
         var doReplace = SQLite3_DDL.prototype._doReplace;
         
         var sql1 = 'CREATE TABLE "foo" ("id" integer not null primary key autoincrement, '+
