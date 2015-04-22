@@ -31,6 +31,11 @@ var clients = {
     name: 'mysql',
     client: knex({client: 'mysql'}).client,
   },
+  mysql2: {
+    name: 'mysql2',
+    client: knex({client: 'mysql2'}).client,
+    alias: 'mysql'
+  },
   sqlite3: {
     name: 'sqlite3',
     client: knex({client: 'sqlite3'}).client
