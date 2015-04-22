@@ -20,11 +20,11 @@ global.d              = new Date();
 Promise.longStackTraces();
 
 describe('Query Building Tests', function() {
-  require('./builder/query')
-  require('./builder/schema/mysql')
-  require('./builder/schema/postgres')
-  require('./builder/schema/sqlite3')
-  require('./builder/schema/oracle')  
+  require('./unit/query/builder')
+  require('./unit/schema/mysql')
+  require('./unit/schema/postgres')
+  require('./unit/schema/sqlite3')
+  require('./unit/schema/oracle')  
 })
 
 describe('Integration Tests', function() {

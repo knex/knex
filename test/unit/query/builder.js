@@ -2,11 +2,11 @@
 
 'use strict';
 
-var MySQL_Client   = require('../../lib/dialects/mysql')
-var PG_Client      = require('../../lib/dialects/postgres')
-var Oracle_Client  = require('../../lib/dialects/oracle')
-var SQLite3_Client = require('../../lib/dialects/sqlite3')
-var Client         = require('../../lib/client')
+var MySQL_Client   = require('../../../lib/dialects/mysql')
+var PG_Client      = require('../../../lib/dialects/postgres')
+var Oracle_Client  = require('../../../lib/dialects/oracle')
+var SQLite3_Client = require('../../../lib/dialects/sqlite3')
+var Client         = require('../../../lib/client')
 
 var clients = {
   mysql:    new MySQL_Client({}),
@@ -298,6 +298,19 @@ describe("QueryBuilder", function() {
       default: {
         sql: 'select * from "users" where "id" = ? or "email" = ?',
         bindings: [1, 'foo']
+      }
+    });
+  });
+
+  it("raw column wheres", function() {
+    testsql(qb().select('*').from('users').where(raw('LCASE("name")'), 'foo'), {
+      mysql: {
+        sql: 'select * from `users` where LCASE("name") = ?',
+        bindings: ['foo']
+      },
+      default: {
+        sql: 'select * from "users" where LCASE("name") = ?',
+        bindings: ['foo']
       }
     });
   });
