@@ -29,6 +29,7 @@ var seeds = {
 };
 
 var testConfigs = {
+  
   maria: {
     dialect: 'maria',
     connection: testConfig.maria || {

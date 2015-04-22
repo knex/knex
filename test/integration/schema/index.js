@@ -328,6 +328,7 @@ module.exports = function(knex) {
           expect(exists).to.equal(true);
         });
       });
+      
       it('successfully renames a column referenced in a foreign key', function () {
         return knex.schema.table('rename_column_test', function (tbl) {
           tbl.renameColumn('parent_id_test', 'parent_id');

@@ -2,11 +2,21 @@
 
 'use strict';
 
-var MySQL_Client = require('../../../lib/dialects/mysql');
+var MySQL_Client  = require('../../../lib/dialects/mysql');
+var Maria_Client  = require('../../../lib/dialects/maria');
+var MySQL2_Client = require('../../../lib/dialects/mysql2');
 
-describe("MySQL SchemaBuilder", function() {
+module.exports = function(dialect) {
 
-  var client = new MySQL_Client({})
+describe(dialect + " SchemaBuilder", function() {
+
+  var client;
+  switch(dialect) {
+    case 'mysql': client = new MySQL_Client(); break;
+    case 'mysql2': client = new MySQL2_Client(); break;
+    case 'maria': client = new Maria_Client(); break;
+  }
+
   var tableSql;
   var equal = require('assert').equal;
 
@@ -469,3 +479,6 @@ describe("MySQL SchemaBuilder", function() {
   });
 
 });
+
+
+}
