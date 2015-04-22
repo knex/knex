@@ -653,8 +653,8 @@ knex('users').whereNot('votes', '>', 100)
   WhereNot is not suitable for "in" and "between" type subqueries. You should use "not in" and "not between" instead.
 </p>
 
-<pre class="display">
-var subquery = knex('users').whereNot('votes', '>', 100).andWhere('status', 'active').orWhere('name', 'John').select('id');
+<pre class="js">
+  var subquery = knex('users').whereNot('votes', '>', 100).andWhere('status', 'active').orWhere('name', 'John').select('id');
 
 <span style='text-decoration:line-through'>knex('accounts').whereNot('id', 'in', subquery)</span>
   knex('accounts').where('id', 'not in', subquery)
@@ -3059,9 +3059,11 @@ $ npm test
   <script src="docs/assets/jquery.min.js"></script>
   <script src="docs/assets/jquery.cookie.js"></script>
   <script src="docs/assets/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.24/bluebird.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.7.0/lodash.js"></script>
   <script src="browser/knex.js"></script>
   <script>
-  var trx = {}, dialects = {};
+  var trx, dialects = {};
 
   // Feel free to play with these in the console.
   var knex    = Knex({client: 'websql'});
@@ -3080,6 +3082,8 @@ $ npm test
         var code = $(this).data('code') || $(this).data('code', $(this).text()).data('code');
         try {
           var blocks = code.split('\n\n')
+          dialects[dialect].client.transacting = true
+          trx = dialects[dialect]
           blocks[blocks.length - 1] = 'return (' + blocks[blocks.length - 1] + ').toString()';
           $(this).html('<code class="js">' + code + '</code><br /><br />Outputs:<br /><code class="sql">' + new Function('knex', 'trx', blocks.join('\n\n'))(dialects[dialect], trx)) + '</code>';
         } catch (e) {
