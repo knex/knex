@@ -3,16 +3,17 @@
 'use strict';
 
 var Promise = testPromise;
+var debug = require('debug')
 
 module.exports = function(knex) {
 
   describe('Transactions', function() {
 
-    it('can run with exec', function(ok) {
-
+    it('can run with asCallback', function(ok) {
       knex.transaction(function(t) {
         t.commit();
-      }).exec(ok);
+      })
+      .asCallback(ok)
 
     });
 
@@ -237,11 +238,12 @@ module.exports = function(knex) {
     it('should resolve with the correct value, #298', function() {
       return knex.transaction(function(trx) {
         trx.debugging = true;
-        return Promise.resolve(null);
+        return Promise.resolve(null)
       }).then(function(result) {
-        expect(result).to.equal(null);
+        expect(result).to.equal(null)
       });
     });
+
 
   });
 

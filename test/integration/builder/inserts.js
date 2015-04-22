@@ -96,7 +96,7 @@ module.exports = function(knex) {
 
     });
 
-    it('should allow for using the `exec` interface', function(ok) {
+    it('should allow for using the `asCallback` interface', function(ok) {
 
       knex('test_table_two').insert([{
         account_id: 1,
@@ -131,7 +131,7 @@ module.exports = function(knex) {
             ],
             [1, 2, 3]
           );
-      }).exec(function(err) {
+      }).asCallback(function(err) {
         if (err) return ok(err);
         ok();
       });
@@ -433,46 +433,47 @@ module.exports = function(knex) {
         });
     });
 
-    it('should handle multiple default inserts with returning only', function() {
-      if (knex.client.dialect === 'sqlite3') {
-        console.log('not tested for sqlite3');
-        return;
-      }
+    // TODO
+    // it('should handle multiple default inserts with returning only', function() {
+    //   if (knex.client.dialect === 'sqlite3') {
+    //     console.log('not tested for sqlite3');
+    //     return;
+    //   }
 
-      return knex.schema
-        .createTable('test_default_table3', function(qb) {
-          qb.increments().primary();
-          qb.string('string').defaultTo('hello');
-          qb.tinyint('tinyint').defaultTo(0);
-          qb.text('text').nullable();
-        }).then(function() {
-          return knex('test_default_table3').insert([{}, {}], 'id').testSql(function(tester) {
-            tester(
-              'mysql',
-              'insert into `test_default_table3` () values (), ()',
-              [],
-              [1]
-            );
-            tester(
-              'postgresql',
-              'insert into "test_default_table3" ("id") values (default), (default) returning "id"',
-              [],
-              [1, 2]
-            );
-            tester(
-              'oracle',
-              "begin execute immediate 'insert into \"test_default_table3\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"test_default_table3\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
-              [function (v) {return v.toString() === '[object ReturningHelper:id]';}, function (v) {return v.toString() === '[object ReturningHelper:id]';}],
-              [1, 2]
-            );
+    //   return knex.schema
+    //     .createTable('test_default_table3', function(qb) {
+    //       qb.increments().primary();
+    //       qb.string('string').defaultTo('hello');
+    //       qb.tinyint('tinyint').defaultTo(0);
+    //       qb.text('text').nullable();
+    //     }).then(function() {
+    //       return knex('test_default_table3').insert([{}, {}], 'id').testSql(function(tester) {
+    //         tester(
+    //           'mysql',
+    //           'insert into `test_default_table3` () values (), ()',
+    //           [],
+    //           [1]
+    //         );
+    //         tester(
+    //           'postgresql',
+    //           'insert into "test_default_table3" ("id") values (default), (default) returning "id"',
+    //           [],
+    //           [1, 2]
+    //         );
+    //         tester(
+    //           'oracle',
+    //           "begin execute immediate 'insert into \"test_default_table3\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"test_default_table3\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
+    //           [function (v) {return v.toString() === '[object ReturningHelper:id]';}, function (v) {return v.toString() === '[object ReturningHelper:id]';}],
+    //           [1, 2]
+    //         );
 
-          });
-        }).then(function () {
-          return knex('test_default_table3').then(function (rows) {
-            expect(rows.length).to.equal(2);
-          });
-        });
-    });
+    //       });
+    //     }).then(function () {
+    //       return knex('test_default_table3').then(function (rows) {
+    //         expect(rows.length).to.equal(2);
+    //       });
+    //     });
+    // });
 
     it('should take an array of columns to return in oracle or postgres', function() {
       var insertData = {

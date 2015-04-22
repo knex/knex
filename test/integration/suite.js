@@ -5,9 +5,10 @@
 module.exports = function(knex) {
   var sinon = require('sinon');
 
-  describe('Dialect: ' + knex.client.dialect, function() {
+  describe(knex.client.dialect + ' | ' + knex.client.driverName, function() {
 
     this.dialect = knex.client.dialect;
+    this.driverName  = knex.client.driverName;
 
     require('./schema')(knex);
     require('./migrate')(knex);
@@ -23,7 +24,6 @@ module.exports = function(knex) {
     require('./builder/additional')(knex);
 
     describe('knex.destroy', function() {
-
       it('should allow destroying the pool with knex.destroy', function() {
         var spy = sinon.spy(knex.client.pool, 'end');
         return knex.destroy().then(function() {
@@ -35,7 +35,6 @@ module.exports = function(knex) {
         });
       });
     });
-
   });
 
 };

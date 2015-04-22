@@ -105,7 +105,8 @@ var testConfigs = {
       filename: __dirname + '/test.sqlite3'
     },
     pool: _.extend({}, pool, {
-      max: 2
+      min: 1,
+      max: 1
     }),
     migrations: migrations,
     seeds: seeds

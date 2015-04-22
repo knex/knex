@@ -1,12 +1,12 @@
-/*global describe, expect, it*/
+/*global it, describe, expect*/
 
 'use strict';
 
-var MySQL_Client = require('../../../lib/dialects/mysql');
+var Oracle_Client = require('../../../lib/dialects/oracle');
+var client        = new Oracle_Client({})
 
-describe("MySQL SchemaBuilder", function() {
+describe("Oracle SchemaBuilder", function() {
 
-  var client = new MySQL_Client({})
   var tableSql;
   var equal = require('assert').equal;
 
@@ -14,37 +14,40 @@ describe("MySQL SchemaBuilder", function() {
     tableSql = client.schemaBuilder().createTable('users', function(table) {
       table.increments('id');
       table.string('email');
-      table.charset('utf8');
-      table.collate('utf8_unicode_ci');
     });
 
-    equal(1, tableSql.toSQL().length);
-    expect(tableSql.toSQL()[0].sql).to.equal('create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255)) default character set utf8 collate utf8_unicode_ci');
-    expect(tableSql.toQuery()).to.equal('create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255)) default character set utf8 collate utf8_unicode_ci');
+    equal(3, tableSql.toSQL().length);
+    expect(tableSql.toSQL()[0].sql).to.equal('create table "users" ("id" integer not null primary key, "email" varchar2(255))');
+    expect(tableSql.toSQL()[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
   });
 
-  it('basic create table without charset or collate', function() {
-    tableSql = client.schemaBuilder().table('users', function() {
-      this.increments('id');
-      this.string('email');
-    }).toSQL();
+  it('test basic create table if not exists', function() {
+    tableSql = client.schemaBuilder().createTableIfNotExists('users', function(table) {
+      table.increments('id');
+      table.string('email');
+    });
 
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `id` int unsigned not null auto_increment primary key, add `email` varchar(255)');
+    equal(3, tableSql.toSQL().length);
+    expect(tableSql.toSQL()[0].sql).to.equal("begin execute immediate 'create table \"users\" (\"id\" integer not null primary key, \"email\" varchar2(255))'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql.toSQL()[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
   });
 
   it('test drop table', function() {
     tableSql = client.schemaBuilder().dropTable('users').toSQL();
 
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('drop table `users`');
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table "users"');
+    expect(tableSql[1].sql).to.equal("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
   });
 
   it('test drop table if exists', function() {
     tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('drop table if exists `users`');
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal("begin execute immediate 'drop table \"users\"'; exception when others then if sqlcode != -942 then raise; end if; end;");
+    expect(tableSql[1].sql).to.equal("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
   });
 
   it('test drop column', function() {
@@ -53,7 +56,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop `foo`');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo")');
   });
 
   it('drops multiple columns with an array', function() {
@@ -62,7 +65,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop `foo`, drop `bar`');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo", "bar")');
   });
 
   it('drops multiple columns as multiple arguments', function() {
@@ -71,7 +74,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop `foo`, drop `bar`');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo", "bar")');
   });
 
   it('test drop primary', function() {
@@ -80,7 +83,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop primary key');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop primary key');
   });
 
   it('test drop unique', function() {
@@ -89,7 +92,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop index users_foo_unique');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_foo_unique"');
   });
 
   it('test drop unique, custom', function() {
@@ -98,7 +101,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop index foo');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "foo"');
   });
 
   it('test drop index', function() {
@@ -107,7 +110,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop index users_foo_index');
+    expect(tableSql[0].sql).to.equal('drop index "users_foo_index"');
   });
 
   it('test drop index, custom', function() {
@@ -116,7 +119,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop index foo');
+    expect(tableSql[0].sql).to.equal('drop index "foo"');
   });
 
   it('test drop foreign', function() {
@@ -125,7 +128,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop foreign key users_foo_foreign');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_foo_foreign"');
   });
 
   it('test drop foreign, custom', function() {
@@ -134,7 +137,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop foreign key foo');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "foo"');
   });
 
   it('test drop timestamps', function() {
@@ -143,14 +146,13 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop `created_at`, drop `updated_at`');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop ("created_at", "updated_at")');
   });
 
-  it('test rename table', function() {
+  it("rename table", function() {
     tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
-
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('rename table `users` to `foo`');
+    expect(tableSql[0].sql).to.equal('rename "users" to "foo"');
   });
 
   it('test adding primary key', function() {
@@ -159,7 +161,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add primary key bar(`foo`)');
+    expect(tableSql[0].sql).to.equal('alter table "users" add primary key ("foo")');
   });
 
   it('test adding unique key', function() {
@@ -168,7 +170,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add unique bar(`foo`)');
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "bar" unique ("foo")');
   });
 
   it('test adding index', function() {
@@ -177,7 +179,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add index baz(`foo`, `bar`)');
+    expect(tableSql[0].sql).to.equal('create index "baz" on "users" ("foo", "bar")');
   });
 
   it('test adding foreign key', function() {
@@ -186,7 +188,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add constraint users_foo_id_foreign foreign key (`foo_id`) references `orders` (`id`)');
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "orders" ("id")');
   });
 
   it("adds foreign key with onUpdate and onDelete", function() {
@@ -195,8 +197,8 @@ describe("MySQL SchemaBuilder", function() {
       table.integer('account_id').notNull().references('id').inTable('accounts').onUpdate('cascade');
     }).toSQL();
     equal(3, tableSql.length);
-    expect(tableSql[1].sql).to.equal('alter table `person` add constraint person_user_id_foreign foreign key (`user_id`) references `users` (`id`) on delete SET NULL');
-    expect(tableSql[2].sql).to.equal('alter table `person` add constraint person_account_id_foreign foreign key (`account_id`) references `accounts` (`id`) on update cascade');
+    expect(tableSql[1].sql).to.equal('alter table "person" add constraint "person_user_id_foreign" foreign key ("user_id") references "users" ("id") on delete SET NULL');
+    expect(tableSql[2].sql).to.equal('alter table "person" add constraint "person_account_id_foreign" foreign key ("account_id") references "accounts" ("id") on update cascade');
   });
 
   it('test adding incrementing id', function() {
@@ -204,8 +206,10 @@ describe("MySQL SchemaBuilder", function() {
       this.increments('id');
     }).toSQL();
 
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `id` int unsigned not null auto_increment primary key');
+    equal(3, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "id" integer not null primary key');
+    expect(tableSql[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
   });
 
   it('test adding big incrementing id', function() {
@@ -213,26 +217,18 @@ describe("MySQL SchemaBuilder", function() {
       this.bigIncrements('id');
     }).toSQL();
 
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `id` bigint unsigned not null auto_increment primary key');
+    equal(3, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "id" number(20, 0) not null primary key');
+    expect(tableSql[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
   });
 
-  it('test adding column after another column', function() {
-    tableSql = client.schemaBuilder().table('users', function() {
-      this.string('name').after('foo');
+  it('test rename column', function() {
+    tableSql = client.schemaBuilder().table('users', function () {
+      this.renameColumn('foo', 'bar');
     }).toSQL();
-
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `name` varchar(255) after `foo`');
-  });
-
-  it('test adding column on the first place', function() {
-    tableSql = client.schemaBuilder().table('users', function() {
-      this.string('first_name').first();
-    }).toSQL();
-
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `first_name` varchar(255) first');
+    expect(tableSql[0].sql).to.equal('alter table "users" rename column "foo" to "bar"');
   });
 
   it('test adding string', function() {
@@ -241,7 +237,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` varchar(255)');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(255)');
   });
 
   it('uses the varchar column constraint', function() {
@@ -250,7 +246,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` varchar(100)');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(100)');
   });
 
   it('chains notNull and defaultTo', function() {
@@ -258,16 +254,16 @@ describe("MySQL SchemaBuilder", function() {
       this.string('foo', 100).notNull().defaultTo('bar');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` varchar(100) not null default \'bar\'');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(100) default \'bar\' not null');
   });
 
   it('allows for raw values in the default field', function() {
     tableSql = client.schemaBuilder().table('users', function() {
-      this.string('foo', 100).nullable().defaultTo(knex.raw('CURRENT TIMESTAMP'));
+      this.string('foo', 100).nullable().defaultTo(client.raw('CURRENT TIMESTAMP'));
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` varchar(100) null default CURRENT TIMESTAMP');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(100) default CURRENT TIMESTAMP null');
   });
 
   it('test adding text', function() {
@@ -276,7 +272,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` text');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" clob');
   });
 
   it('test adding big integer', function() {
@@ -285,7 +281,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` bigint');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" number(20, 0)');
   });
 
   it('test adding integer', function() {
@@ -294,7 +290,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` int');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" integer');
   });
 
   it('test adding medium integer', function() {
@@ -303,7 +299,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` mediumint');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" integer');
   });
 
   it('test adding small integer', function() {
@@ -312,7 +308,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` smallint');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" smallint');
   });
 
   it('test adding tiny integer', function() {
@@ -321,16 +317,25 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` tinyint');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" smallint');
   });
 
-  it('test adding float', function() {
+  it('test adding default float', function() {
     tableSql = client.schemaBuilder().table('users', function() {
-      this.float('foo', 5, 2);
+      this.float('foo');
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` float(5, 2)');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" float');
+  });
+
+  it('test adding float with precision', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.float('foo', 5);
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" float(5)');
   });
 
   it('test adding double', function() {
@@ -339,7 +344,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` double');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" number(8, 2)');
   });
 
   it('test adding double specifying precision', function() {
@@ -348,7 +353,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` double(15, 8)');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" number(15, 8)');
   });
 
   it('test adding decimal', function() {
@@ -357,7 +362,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` decimal(5, 2)');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" decimal(5, 2)');
   });
 
   it('test adding boolean', function() {
@@ -366,7 +371,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` boolean');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" number(1, 0) check ("foo" in (\'0\', \'1\'))');
   });
 
   it('test adding enum', function() {
@@ -375,7 +380,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` enum(\'bar\', \'baz\')');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(3) check ("foo" in (\'bar\', \'baz\'))');
   });
 
   it('test adding date', function() {
@@ -384,7 +389,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` date');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" date');
   });
 
   it('test adding date time', function() {
@@ -393,7 +398,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` datetime');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
   });
 
   it('test adding time', function() {
@@ -401,8 +406,10 @@ describe("MySQL SchemaBuilder", function() {
       this.time('foo');
     }).toSQL();
 
+    // oracle does not support time
+
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` time');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
   });
 
   it('test adding time stamp', function() {
@@ -411,7 +418,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` timestamp');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
   });
 
   it('test adding time stamps', function() {
@@ -420,7 +427,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `created_at` datetime, add `updated_at` datetime');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "created_at" timestamp, add "updated_at" timestamp');
   });
 
   it('test adding binary', function() {
@@ -429,7 +436,7 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` blob');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" blob');
   });
 
   it('test adding decimal', function() {
@@ -438,34 +445,34 @@ describe("MySQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` decimal(2, 6)');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" decimal(2, 6)');
   });
 
   it('is possible to set raw statements in defaultTo, #146', function() {
     tableSql = client.schemaBuilder().createTable('default_raw_test', function(t) {
-      t.timestamp('created_at').defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+      t.timestamp('created_at').defaultTo(client.raw('CURRENT_TIMESTAMP'));
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)');
+    expect(tableSql[0].sql).to.equal('create table "default_raw_test" ("created_at" timestamp default CURRENT_TIMESTAMP)');
   });
 
-  it('allows dropping a unique compound index', function() {
+  it('allows dropping a unique compound index with too long generated name', function() {
     tableSql = client.schemaBuilder().table('composite_key_test', function(t) {
       t.dropUnique(['column_a', 'column_b']);
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `composite_key_test` drop index composite_key_test_column_a_column_b_unique');
+    expect(tableSql[0].sql).to.equal('alter table "composite_key_test" drop constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk"');
   });
 
-  it('allows default as alias for defaultTo', function() {
-    tableSql = client.schemaBuilder().createTable('default_raw_test', function(t) {
-      t.timestamp('created_at').default(knex.raw('CURRENT_TIMESTAMP'));
+  it('allows dropping a unique compound index with specified name', function() {
+    tableSql = client.schemaBuilder().table('composite_key_test', function(t) {
+      t.dropUnique(['column_a', 'column_b'], 'ckt_unique');
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)');
+    expect(tableSql[0].sql).to.equal('alter table "composite_key_test" drop constraint "ckt_unique"');
   });
 
 });

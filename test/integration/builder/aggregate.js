@@ -18,6 +18,14 @@ module.exports = function(knex) {
             }]
           );
           tester(
+            'mysql2',
+            'select sum(`logins`) from `accounts`',
+            [],
+            [{
+              'sum(`logins`)': '10'
+            }]
+          );
+          tester(
             'postgresql',
             'select sum("logins") from "accounts"',
             [],
