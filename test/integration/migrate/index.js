@@ -75,6 +75,25 @@ module.exports = function(knex) {
         });
       });
 
+      it('should not create column for invalid migration', function() {
+        knex.schema.hasColumn('migration_test_1', 'transaction').then(function(exists) {
+          // MySQL commits transactions implicit for most common
+          // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
+          // so we need to check for dialect
+          if (knex.client.dialect === 'mysql') {
+            expect(exists).to.equal(true);
+          } else {
+            expect(exists).to.equal(false);
+          }
+        });
+      });
+
+      it('should not proceed after invalid migration', function() {
+        return knex.schema.hasTable('should_not_be_run').then(function(exists) {
+          expect(exists).to.equal(false);
+        });
+      });
+
     });
 
     describe('knex.migrate.rollback', function() {
