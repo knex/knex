@@ -37,6 +37,7 @@ module.exports = function(knex) {
             .dropTableIfExists('knex_migrations')
             .dropTableIfExists('bool_test')
             .dropTableIfExists('rename_column_test')
+            .dropTableIfExists('should_not_be_run')
         ]);
       });
 
