@@ -1,7 +1,10 @@
 'use strict';
 
-var tape     = require('tape')
-var harness  = require('./harness')
+var harness    = require('./harness')
+var tape       = require('tape')
+var async      = require('async')
+var JSONStream = require('JSONStream')
+var Promise    = require('bluebird')
 
 module.exports = function(knex) {
 
@@ -74,6 +77,41 @@ module.exports = function(knex) {
       })
     })
   
+  })
+
+  test('#625 - streams/transactions', 'postgresql', function(t) {
+
+    var cid, queryCount = 0;
+
+    return knex.transaction(function(tx) { 
+      async.eachSeries([
+        'SET join_collapse_limit to 1',
+        'SET enable_nestloop = off'
+      ],
+      function (request, cb) {
+        knex.raw(request).transacting(tx).asCallback(cb);
+      },
+      function (err) {
+        if (err) return tx.rollback(err)
+        var stream = knex('test_table').transacting(tx).stream();
+        stream.on('end', function () {
+          tx.commit();
+          t.equal(queryCount, 5, 'Five queries run')
+        });
+        stream.pipe(JSONStream.stringify());
+      })
+    })
+    .on('query', function(q) {
+      if (!cid) {
+        cid = q.__knexUid
+      } else {
+        if (cid !== q.__knexUid) {
+          throw new Error('Invalid connection ID')
+        }
+      }
+      queryCount++
+    })
+
   })
 
 }

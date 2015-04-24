@@ -25,6 +25,8 @@
     "v8flags": "^2.0.2"
   },
   "devDependencies": {
+    "JSONStream": "^0.10.0",
+    "async": "^0.9.0",
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.0",
     "coveralls": "~2.11.1",

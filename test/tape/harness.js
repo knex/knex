@@ -1,12 +1,25 @@
 'use strict';
-
+var chalk   = require('chalk')
 var tape    = require('tape')
 var Promise = require('bluebird')
+var debug   = require('debug')('knex:tests')
 
 module.exports = function(tableName, knex) {
   
-  return function(name, cb) {
+  return function(name, dialects, cb) {
     
+    if (arguments.length === 2) {
+      cb = dialects
+    } else {
+      if (!Array.isArray(dialects)) {
+        dialects = [dialects]
+      }
+      if (dialects.indexOf(knex.client.dialect) === -1) {
+        debug('Skipping dialect ' + knex.client.dialect + ' for test ' + name)
+        return;
+      }
+    }
+
     return tape(name, function(t) {
       
       var hasPlanned = false

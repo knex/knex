@@ -8,7 +8,6 @@ Master:
 
 - Pool2 in favor of generic-pool-redux
 - Support for strong-oracle driver, #580
-- Support for FoundationDB, #641
 - Subqueries in insert statements, #627
 - Allow mysql2 to use non-default port, #588
 - Support creating & dropping extensions in PostgreSQL, #540
