@@ -6,7 +6,11 @@
   "directories": {
     "test": "test"
   },
-  "browser": "./browser/websql.js",
+  "browser": {
+    "../migrate":"lodash/utility/noop",
+    "../seed":"lodash/utility/noop",
+    "bluebird/js/main/promise": "./lib/util/bluebird.js"
+  },
   "dependencies": {
     "bluebird": "^2.9.24",
     "chalk": "^1.0.0",
