@@ -21,6 +21,7 @@ module.exports = function(knex) {
     require('./builder/transaction')(knex);
     require('./builder/deletes')(knex);
     require('./builder/additional')(knex);
+    require('./builder/domain')(knex);
 
     describe('knex.destroy', function() {
 
