@@ -13,7 +13,6 @@ module.exports = function(knex) {
         t.commit();
       })
       .asCallback(ok)
-
     });
 
     it('should be able to commit transactions', function() {
@@ -190,7 +189,7 @@ module.exports = function(knex) {
           return knex('test_schema_migrations').count('*');
         })
         .catch(function(e) {
-          expect(e.message).to.equal('relation "test_schema_migrations" does not exist');
+          expect(e.message).to.equal('select count(*) from \"test_schema_migrations\" - relation "test_schema_migrations" does not exist');
         });
       } else {
         var id = null;

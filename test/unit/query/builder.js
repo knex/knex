@@ -1730,7 +1730,7 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       sqlite3: {
-        sql: 'delete from sqlite_sequence where name = "users"',
+        sql: 'delete from "users"',
         bindings: [],
         output: function (output) {
           expect(typeof output).to.equal('function');

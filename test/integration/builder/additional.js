@@ -15,7 +15,7 @@ module.exports = function(knex) {
         .testSql(function(tester) {
           tester('mysql', 'truncate `test_table_two`');
           tester('postgresql', 'truncate "test_table_two" restart identity');
-          tester('sqlite3', "delete from sqlite_sequence where name = \"test_table_two\"");
+          tester('sqlite3', "delete from \"test_table_two\"");
           tester('oracle', "truncate table \"test_table_two\"");
         })
         .then(function() {

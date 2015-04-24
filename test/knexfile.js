@@ -1,7 +1,6 @@
-/*global expect*/
-
 'use strict';
 
+var assert     = require('assert')
 var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
 var _          = require('lodash');
 var Promise    = require('bluebird');
@@ -11,11 +10,11 @@ var testIntegrationDialects = (process.env.KNEX_TEST_INTEGRATION_DIALECTS || "my
 
 var pool = {
   afterCreate: function(connection, callback) {
-    expect(connection).to.have.property('__knexUid');
+    assert.ok(typeof connection.__knexUid !== 'undefined')
     callback(null, connection);
   },
   beforeDestroy: function(connection, continueFunc) {
-    expect(connection).to.have.property('__knexUid');
+    assert.ok(typeof connection.__knexUid !== 'undefined')
     continueFunc();
   }
 };

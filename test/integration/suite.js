@@ -7,8 +7,8 @@ module.exports = function(knex) {
 
   describe(knex.client.dialect + ' | ' + knex.client.driverName, function() {
 
-    this.dialect = knex.client.dialect;
-    this.driverName  = knex.client.driverName;
+    this.dialect    = knex.client.dialect;
+    this.driverName = knex.client.driverName;
 
     require('./schema')(knex);
     require('./migrate')(knex);

@@ -1,6 +1,7 @@
-/*global describe, expect, it, assert, testPromise, d*/
+/*global describe, expect, it, testPromise, d*/
 'use strict';
 
+var assert  = require('assert')
 var Promise = testPromise;
 
 module.exports = function(knex) {
