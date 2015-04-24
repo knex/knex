@@ -10,9 +10,9 @@ chai.use(require("chai-as-promised"));
 chai.use(require("sinon-chai"));
 chai.should();
 
-var Promise           = global.testPromise = require('../lib/promise');
-global.expect         = chai.expect;
-global.d              = new Date();
+var Promise   = global.testPromise = require('../lib/promise');
+global.expect = chai.expect;
+global.d      = new Date();
 
 Promise.longStackTraces();
 
