@@ -12,7 +12,6 @@ chai.should();
 
 var Promise           = global.testPromise = require('../lib/promise');
 global.expect         = chai.expect;
-global.assert         = chai.assert;
 global.d              = new Date();
 
 Promise.longStackTraces();

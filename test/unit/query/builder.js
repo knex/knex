@@ -2345,4 +2345,11 @@ describe("QueryBuilder", function() {
     })
   })
 
+  it('Allows for empty where #749', function() {
+    testsql(qb().select('foo').from('tbl').where(function() {}), {
+      mysql:   'select `foo` from `tbl`',
+      default: 'select "foo" from "tbl"'
+    })
+  })
+
 });
