@@ -66,7 +66,7 @@ module.exports =
 
 	var makeClient      = __webpack_require__(6)
 	var makeKnex        = __webpack_require__(7)
-	var parseConnection = __webpack_require__(54)
+	var parseConnection = __webpack_require__(8)
 	var assign          = __webpack_require__(2)
 
 	function Knex(config) {
@@ -78,7 +78,7 @@ module.exports =
 	    Dialect = makeClient(Client)
 	  } else {
 	    var clientName = config.client || config.dialect
-	    Dialect = makeClient(__webpack_require__(8)("./" + (aliases[clientName] || clientName) + '/index.js'))
+	    Dialect = makeClient(__webpack_require__(9)("./" + (aliases[clientName] || clientName) + '/index.js'))
 	  }
 	  return makeKnex(new Dialect(config))
 	}
@@ -119,9 +119,9 @@ module.exports =
 
 	// Raw
 	// -------
-	var _            = __webpack_require__(9)
-	var inherits     = __webpack_require__(12)
-	var EventEmitter = __webpack_require__(13).EventEmitter
+	var _            = __webpack_require__(16)
+	var inherits     = __webpack_require__(11)
+	var EventEmitter = __webpack_require__(12).EventEmitter
 	var assign       = __webpack_require__(2);
 
 	function Raw(client) {
@@ -211,7 +211,7 @@ module.exports =
 
 	// Allow the `Raw` object to be utilized with full access to the relevant
 	// promise API.
-	__webpack_require__(19)(Raw)
+	__webpack_require__(33)(Raw)
 
 	module.exports = Raw
 
@@ -222,8 +222,8 @@ module.exports =
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
-	var _     = __webpack_require__(9)
-	var chalk = __webpack_require__(10)
+	var _     = __webpack_require__(16)
+	var chalk = __webpack_require__(17)
 
 	var helpers = {
 
@@ -269,7 +269,7 @@ module.exports =
 	};
 
 	module.exports = helpers;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)))
 
 /***/ },
 /* 5 */
@@ -277,33 +277,33 @@ module.exports =
 
 	'use strict';
 
-	var Promise        = __webpack_require__(20)
+	var Promise        = __webpack_require__(21)
 	var helpers        = __webpack_require__(4)
 
 	var Raw            = __webpack_require__(3)
-	var Runner         = __webpack_require__(21)
-	var Formatter      = __webpack_require__(22)
-	var Transaction    = __webpack_require__(23)
+	var Runner         = __webpack_require__(22)
+	var Formatter      = __webpack_require__(23)
+	var Transaction    = __webpack_require__(24)
 
-	var QueryBuilder   = __webpack_require__(24)
-	var QueryCompiler  = __webpack_require__(25)
+	var QueryBuilder   = __webpack_require__(25)
+	var QueryCompiler  = __webpack_require__(26)
 
-	var SchemaBuilder  = __webpack_require__(26)
-	var SchemaCompiler = __webpack_require__(27)
-	var TableBuilder   = __webpack_require__(28)
-	var TableCompiler  = __webpack_require__(29)
-	var ColumnBuilder  = __webpack_require__(30)
-	var ColumnCompiler = __webpack_require__(31)
+	var SchemaBuilder  = __webpack_require__(27)
+	var SchemaCompiler = __webpack_require__(28)
+	var TableBuilder   = __webpack_require__(29)
+	var TableCompiler  = __webpack_require__(30)
+	var ColumnBuilder  = __webpack_require__(31)
+	var ColumnCompiler = __webpack_require__(32)
 
-	var Pool2          = __webpack_require__(14)
-	var inherits       = __webpack_require__(12)
-	var EventEmitter   = __webpack_require__(13).EventEmitter
+	var Pool2          = __webpack_require__(10)
+	var inherits       = __webpack_require__(11)
+	var EventEmitter   = __webpack_require__(12).EventEmitter
 
 	var assign         = __webpack_require__(2)
-	var uniqueId       = __webpack_require__(15)
-	var cloneDeep      = __webpack_require__(16)
-	var debug          = __webpack_require__(17)('knex:client')
-	var debugQuery     = __webpack_require__(17)('knex:query')
+	var uniqueId       = __webpack_require__(13)
+	var cloneDeep      = __webpack_require__(14)
+	var debug          = __webpack_require__(15)('knex:client')
+	var debugQuery     = __webpack_require__(15)('knex:query')
 
 	// The base client provides the general structure
 	// for a dialect specific client object.
@@ -415,7 +415,7 @@ module.exports =
 
 	  initializeDriver: function() {
 	    try {
-	      this.driver = __webpack_require__(18)(this.driverName)  
+	      this.driver = __webpack_require__(19)(this.driverName)  
 	    } catch (e) {
 	      helpers.exit('Knex: run\n$ npm install ' + this.driverName + ' --save')
 	    }
@@ -533,7 +533,7 @@ module.exports =
 	'use strict';
 
 	var assign   = __webpack_require__(2);
-	var inherits = __webpack_require__(12)
+	var inherits = __webpack_require__(11)
 
 	// Ensure the client has fresh objects so we can tack onto 
 	// the prototypes without mutating them globally.
@@ -608,13 +608,13 @@ module.exports =
 
 	'use strict';
 
-	var EventEmitter   = __webpack_require__(13).EventEmitter
+	var EventEmitter   = __webpack_require__(12).EventEmitter
 	var assign         = __webpack_require__(2);
 
-	var Migrator       = __webpack_require__(51)
-	var Seeder         = __webpack_require__(51)
-	var FunctionHelper = __webpack_require__(32)
-	var QueryInterface = __webpack_require__(33)
+	var Migrator       = __webpack_require__(52)
+	var Seeder         = __webpack_require__(52)
+	var FunctionHelper = __webpack_require__(34)
+	var QueryInterface = __webpack_require__(35)
 	var helpers        = __webpack_require__(4)
 
 	module.exports = function makeKnex(client) {
@@ -726,151 +726,71 @@ module.exports =
 /* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var map = {
-		"./sqlite3/index.js": 34,
-		"./websql/index.js": 35
-	};
-	function webpackContext(req) {
-		return __webpack_require__(webpackContextResolve(req));
-	};
-	function webpackContextResolve(req) {
-		return map[req] || (function() { throw new Error("Cannot find module '" + req + "'.") }());
-	};
-	webpackContext.keys = function webpackContextKeys() {
-		return Object.keys(map);
-	};
-	webpackContext.resolve = webpackContextResolve;
-	module.exports = webpackContext;
-	webpackContext.id = 8;
+	'use strict';
 
+	var url = __webpack_require__(20)
+
+	module.exports = parseConnectionString
+
+	function parseConnectionString(str) {
+	  var parsed   = url.parse(str)
+	  var protocol = parsed.protocol
+	  if (protocol && protocol.indexOf('maria') === 0) {
+	    protocol = 'maria'
+	  }
+	  if (protocol === null) {
+	    return {
+	      client: 'sqlite3',
+	      connection: {
+	        filename: str
+	      }
+	    }  
+	  }
+	  if (protocol.slice(-1) === ':') {
+	    protocol = protocol.slice(0, -1);
+	  }
+	  return {
+	    client: protocol,
+	    connection: connectionObject(parsed)
+	  }  
+	}
+
+	function connectionObject(parsed) {
+	  var connection = {};
+	  var db = parsed.pathname;
+	  if (db[0] === '/') {
+	    db = db.slice(1)
+	  }
+	  if (parsed.protocol.indexOf('maria') === 0) {
+	    connection.db = db
+	  } else {
+	    connection.database = db
+	  }
+	  if (parsed.hostname) {
+	    connection.host = parsed.hostname;
+	  }
+	  if (parsed.port) {
+	    connection.port = parsed.port;
+	  }
+	  if (parsed.auth) {
+	    var idx = parsed.auth.indexOf(':');
+	    if (idx !== -1) {
+	      connection.user = parsed.auth.slice(0, idx);
+	      if (idx < parsed.auth.length - 1) {
+	        connection.password = parsed.auth.slice(idx + 1);
+	      }
+	    }
+	  }
+	  return connection
+	}
 
 /***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = require("lodash");
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("chalk");
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("/Users/tgriesser/Github/bookshelf/knex/node_modules/webpack/node_modules/node-libs-browser/node_modules/process/browser.js");
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("inherits");
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("events");
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("pool2");
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("lodash/utility/uniqueId");
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("lodash/lang/cloneDeep");
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("debug");
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var map = {
-		"./client": 5,
-		"./client.js": 5,
-		"./dialects/sqlite3/index": 34,
-		"./dialects/sqlite3/index.js": 34,
-		"./dialects/sqlite3/query/compiler": 43,
-		"./dialects/sqlite3/query/compiler.js": 43,
-		"./dialects/sqlite3/schema/columncompiler": 44,
-		"./dialects/sqlite3/schema/columncompiler.js": 44,
-		"./dialects/sqlite3/schema/compiler": 45,
-		"./dialects/sqlite3/schema/compiler.js": 45,
-		"./dialects/sqlite3/schema/ddl": 46,
-		"./dialects/sqlite3/schema/ddl.js": 46,
-		"./dialects/sqlite3/schema/tablecompiler": 47,
-		"./dialects/sqlite3/schema/tablecompiler.js": 47,
-		"./dialects/websql/index": 35,
-		"./dialects/websql/index.js": 35,
-		"./dialects/websql/transaction": 48,
-		"./dialects/websql/transaction.js": 48,
-		"./formatter": 22,
-		"./formatter.js": 22,
-		"./functionhelper": 32,
-		"./functionhelper.js": 32,
-		"./helpers": 4,
-		"./helpers.js": 4,
-		"./index": 1,
-		"./index.js": 1,
-		"./interface": 19,
-		"./interface.js": 19,
-		"./promise": 20,
-		"./promise.js": 20,
-		"./query/builder": 24,
-		"./query/builder.js": 24,
-		"./query/compiler": 25,
-		"./query/compiler.js": 25,
-		"./query/joinclause": 41,
-		"./query/joinclause.js": 41,
-		"./query/methods": 33,
-		"./query/methods.js": 33,
-		"./query/string": 40,
-		"./query/string.js": 40,
-		"./raw": 3,
-		"./raw.js": 3,
-		"./runner": 21,
-		"./runner.js": 21,
-		"./schema/builder": 26,
-		"./schema/builder.js": 26,
-		"./schema/columnbuilder": 30,
-		"./schema/columnbuilder.js": 30,
-		"./schema/columncompiler": 31,
-		"./schema/columncompiler.js": 31,
-		"./schema/compiler": 27,
-		"./schema/compiler.js": 27,
-		"./schema/helpers": 42,
-		"./schema/helpers.js": 42,
-		"./schema/tablebuilder": 28,
-		"./schema/tablebuilder.js": 28,
-		"./schema/tablecompiler": 29,
-		"./schema/tablecompiler.js": 29,
-		"./transaction": 23,
-		"./transaction.js": 23,
-		"./util/bluebird": 49,
-		"./util/bluebird.js": 49,
-		"./util/make-client": 6,
-		"./util/make-client.js": 6,
-		"./util/make-knex": 7,
-		"./util/make-knex.js": 7,
-		"./util/parse-connection": 54,
-		"./util/parse-connection.js": 54
+		"./sqlite3/index.js": 36,
+		"./websql/index.js": 37
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -883,109 +803,164 @@ module.exports =
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 18;
+	webpackContext.id = 9;
 
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("pool2");
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("inherits");
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("events");
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("lodash/utility/uniqueId");
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("lodash/lang/cloneDeep");
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("debug");
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("lodash");
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("chalk");
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("/Users/tgriesser/Github/bookshelf/knex/node_modules/webpack/node_modules/node-libs-browser/node_modules/process/browser.js");
 
 /***/ },
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	var assert  = __webpack_require__(36);
-	var helpers = __webpack_require__(4)
-
-	module.exports = function(Target) {
-	  var _         = __webpack_require__(9);
-	  var SqlString = __webpack_require__(40);
-
-	  Target.prototype.toQuery = function(tz) {
-	    var data = this.toSQL(this._method);
-	    if (this._errors && this._errors.length > 0) throw this._errors[0];
-	    if (!_.isArray(data)) data = [data];
-	    return _.map(data, function(statement) {
-	      return this._formatQuery(statement.sql, statement.bindings, tz);
-	    }, this).join(';\n');
-	  };
-
-	  // Format the query as sql, prepping bindings as necessary.
-	  Target.prototype._formatQuery = function(sql, bindings, tz) {
-	    if (this.client && this.client.prepBindings) {
-	      bindings = this.client.prepBindings(bindings, tz);
-	    }
-	    return SqlString.format(sql, bindings, true, tz);
-	  };
-
-	  // Create a new instance of the `Runner`, passing in the current object.
-	  Target.prototype.then = function(/* onFulfilled, onRejected */) {
-	    var result = this.client.runner(this).run()
-	    return result.then.apply(result, arguments);
-	  };
-
-	  // Add additional "options" to the builder. Typically used for client specific
-	  // items, like the `mysql` and `sqlite3` drivers.
-	  Target.prototype.options = function(opts) {
-	    this._options = this._options || [];
-	    this._options.push(_.clone(opts) || {});
-	    return this;
-	  };
-
-	  // Sets an explicit "connnection" we wish to use for this query.
-	  Target.prototype.connection = function(connection) {
-	    this._connection = connection;
-	    return this;
-	  };
-
-	  // Set a debug flag for the current schema query stack.
-	  Target.prototype.debug = function(enabled) {
-	    assert(!arguments.length || typeof enabled === 'boolean', 'debug requires a boolean');
-	    this._debug = arguments.length ? enabled : true;
-	    return this;
-	  };
-
-	  // Set the transaction object for this query.
-	  Target.prototype.transacting = function(t) {
-	    if (t && t.client) {
-	      if (!t.client.transacting) {
-	        helpers.warn('Invalid transaction value: ' + t.client)
-	      } else {
-	        this.client = t.client
-	      }
-	    }
-	    return this;
-	  };
-
-	  // Initializes a stream.
-	  Target.prototype.stream = function(options) {
-	    return this.client.runner(this).stream(options);
-	  };
-
-	  // Initialize a stream & pipe automatically.
-	  Target.prototype.pipe = function(writable, options) {
-	    return this.client.runner(this).pipe(writable, options);
-	  };
-
-	  // Creates a method which "coerces" to a promise, by calling a
-	  // "then" method on the current `Target`
-	  _.each(['bind', 'catch', 'finally', 'asCallback', 
-	    'spread', 'map', 'reduce', 'tap', 'thenReturn',
-	    'return', 'yield', 'ensure', 'nodeify', 'exec'], function(method) {
-	    Target.prototype[method] = function() {
-	      var then = this.then();
-	      then = then[method].apply(then, arguments);
-	      return then;
-	    };
-	  });
-
+	var map = {
+		"./client": 5,
+		"./client.js": 5,
+		"./dialects/sqlite3/index": 36,
+		"./dialects/sqlite3/index.js": 36,
+		"./dialects/sqlite3/query/compiler": 44,
+		"./dialects/sqlite3/query/compiler.js": 44,
+		"./dialects/sqlite3/schema/columncompiler": 45,
+		"./dialects/sqlite3/schema/columncompiler.js": 45,
+		"./dialects/sqlite3/schema/compiler": 46,
+		"./dialects/sqlite3/schema/compiler.js": 46,
+		"./dialects/sqlite3/schema/ddl": 47,
+		"./dialects/sqlite3/schema/ddl.js": 47,
+		"./dialects/sqlite3/schema/tablecompiler": 48,
+		"./dialects/sqlite3/schema/tablecompiler.js": 48,
+		"./dialects/websql/index": 37,
+		"./dialects/websql/index.js": 37,
+		"./dialects/websql/transaction": 49,
+		"./dialects/websql/transaction.js": 49,
+		"./formatter": 23,
+		"./formatter.js": 23,
+		"./functionhelper": 34,
+		"./functionhelper.js": 34,
+		"./helpers": 4,
+		"./helpers.js": 4,
+		"./index": 1,
+		"./index.js": 1,
+		"./interface": 33,
+		"./interface.js": 33,
+		"./promise": 21,
+		"./promise.js": 21,
+		"./query/builder": 25,
+		"./query/builder.js": 25,
+		"./query/compiler": 26,
+		"./query/compiler.js": 26,
+		"./query/joinclause": 42,
+		"./query/joinclause.js": 42,
+		"./query/methods": 35,
+		"./query/methods.js": 35,
+		"./query/string": 50,
+		"./query/string.js": 50,
+		"./raw": 3,
+		"./raw.js": 3,
+		"./runner": 22,
+		"./runner.js": 22,
+		"./schema/builder": 27,
+		"./schema/builder.js": 27,
+		"./schema/columnbuilder": 31,
+		"./schema/columnbuilder.js": 31,
+		"./schema/columncompiler": 32,
+		"./schema/columncompiler.js": 32,
+		"./schema/compiler": 28,
+		"./schema/compiler.js": 28,
+		"./schema/helpers": 43,
+		"./schema/helpers.js": 43,
+		"./schema/tablebuilder": 29,
+		"./schema/tablebuilder.js": 29,
+		"./schema/tablecompiler": 30,
+		"./schema/tablecompiler.js": 30,
+		"./transaction": 24,
+		"./transaction.js": 24,
+		"./util/bluebird": 51,
+		"./util/bluebird.js": 51,
+		"./util/make-client": 6,
+		"./util/make-client.js": 6,
+		"./util/make-knex": 7,
+		"./util/make-knex.js": 7,
+		"./util/parse-connection": 8,
+		"./util/parse-connection.js": 8
 	};
+	function webpackContext(req) {
+		return __webpack_require__(webpackContextResolve(req));
+	};
+	function webpackContextResolve(req) {
+		return map[req] || (function() { throw new Error("Cannot find module '" + req + "'.") }());
+	};
+	webpackContext.keys = function webpackContextKeys() {
+		return Object.keys(map);
+	};
+	webpackContext.resolve = webpackContextResolve;
+	module.exports = webpackContext;
+	webpackContext.id = 19;
+
 
 /***/ },
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
+	module.exports = require("url");
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
-	var Promise   = __webpack_require__(37)();
+	var Promise   = __webpack_require__(40)();
 	var deprecate = __webpack_require__(4).deprecate
 
 	// Incase we're using an older version of bluebird
@@ -1000,13 +975,13 @@ module.exports =
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _       = __webpack_require__(9)
-	var Promise = __webpack_require__(20)
+	var _       = __webpack_require__(16)
+	var Promise = __webpack_require__(21)
 	var assign  = __webpack_require__(2);
 
 	var PassThrough;
@@ -1158,12 +1133,12 @@ module.exports =
 	module.exports = Runner;
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var QueryBuilder = __webpack_require__(24)
+	var QueryBuilder = __webpack_require__(25)
 	var Raw          = __webpack_require__(3)
 	var assign       = __webpack_require__(2)
 	var transform    = __webpack_require__(39)
@@ -1336,21 +1311,21 @@ module.exports =
 
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// Transaction
 	// -------
-	var Promise      = __webpack_require__(20)
-	var EventEmitter = __webpack_require__(13).EventEmitter
-	var inherits     = __webpack_require__(12)
+	var Promise      = __webpack_require__(21)
+	var EventEmitter = __webpack_require__(12).EventEmitter
+	var inherits     = __webpack_require__(11)
 
 	var makeKnex     = __webpack_require__(7)
 	var assign       = __webpack_require__(2)
-	var uniqueId     = __webpack_require__(15)
-	var debug        = __webpack_require__(17)('knex:tx')
+	var uniqueId     = __webpack_require__(13)
+	var debug        = __webpack_require__(15)('knex:tx')
 
 	// Acts as a facade for a Promise, keeping the internal state
 	// and managing any child transactions.
@@ -1594,21 +1569,21 @@ module.exports =
 
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// Builder
 	// -------
-	var _            = __webpack_require__(9)
-	var assert       = __webpack_require__(36)
-	var inherits     = __webpack_require__(12)
-	var EventEmitter = __webpack_require__(13).EventEmitter
+	var _            = __webpack_require__(16)
+	var assert       = __webpack_require__(41)
+	var inherits     = __webpack_require__(11)
+	var EventEmitter = __webpack_require__(12).EventEmitter
 
 	var Raw          = __webpack_require__(3)
 	var helpers      = __webpack_require__(4)
-	var JoinClause   = __webpack_require__(41)
+	var JoinClause   = __webpack_require__(42)
 
 	// Typically called from `knex.builder`,
 	// start a new query building chain.
@@ -2361,20 +2336,20 @@ module.exports =
 	});
 
 	// Attach all of the top level promise methods that should be chainable.
-	__webpack_require__(19)(QueryBuilder);
+	__webpack_require__(33)(QueryBuilder);
 
 	module.exports = QueryBuilder;
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// Query Compiler
 	// -------
-	var _       = __webpack_require__(9);
+	var _       = __webpack_require__(16);
 	var helpers = __webpack_require__(4);
 	var Raw     = __webpack_require__(3);
 	var assign  = __webpack_require__(2)
@@ -2807,14 +2782,14 @@ module.exports =
 
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _            = __webpack_require__(9)
-	var inherits     = __webpack_require__(12)
-	var EventEmitter = __webpack_require__(13).EventEmitter
+	var _            = __webpack_require__(16)
+	var inherits     = __webpack_require__(11)
+	var EventEmitter = __webpack_require__(12).EventEmitter
 
 	// Constructor for the builder instance, typically called from
 	// `knex.builder`, accepting the current `knex` instance,
@@ -2859,7 +2834,7 @@ module.exports =
 	  }
 	})
 
-	__webpack_require__(19)(SchemaBuilder)
+	__webpack_require__(33)(SchemaBuilder)
 
 	SchemaBuilder.prototype.toString = function() {
 	  return this.toQuery()
@@ -2873,12 +2848,12 @@ module.exports =
 
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var helpers = __webpack_require__(42)
+	var helpers = __webpack_require__(43)
 	var assign  = __webpack_require__(2);
 
 	// The "SchemaCompiler" takes all of the query statements which have been
@@ -2940,7 +2915,7 @@ module.exports =
 
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2953,7 +2928,7 @@ module.exports =
 	// method, pushing everything we want to do onto the "allStatements" array,
 	// which is then compiled into sql.
 	// ------
-	var _ = __webpack_require__(9);
+	var _ = __webpack_require__(16);
 	var helpers = __webpack_require__(4);
 
 	function TableBuilder(client, method, tableName, fn) {
@@ -3196,15 +3171,15 @@ module.exports =
 
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// Table Compiler
 	// -------
-	var _ = __webpack_require__(9);
-	var helpers = __webpack_require__(42);
+	var _ = __webpack_require__(16);
+	var helpers = __webpack_require__(43);
 	var normalizeArr = __webpack_require__(4).normalizeArr
 
 	function TableCompiler(client, tableBuilder) {
@@ -3368,12 +3343,12 @@ module.exports =
 	module.exports = TableCompiler;
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _ = __webpack_require__(9);
+	var _ = __webpack_require__(16);
 
 	// The chainable interface off the original "column" method.
 	function ColumnBuilder(client, tableBuilder, type, args) {
@@ -3470,7 +3445,7 @@ module.exports =
 
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3479,9 +3454,9 @@ module.exports =
 	// Used for designating column definitions
 	// during the table "create" / "alter" statements.
 	// -------
-	var _       = __webpack_require__(9);
+	var _       = __webpack_require__(16);
 	var Raw     = __webpack_require__(3);
-	var helpers = __webpack_require__(42)
+	var helpers = __webpack_require__(43)
 
 	function ColumnCompiler(client, tableCompiler, columnBuilder) {
 	  this.client        = client
@@ -3618,7 +3593,100 @@ module.exports =
 
 
 /***/ },
-/* 32 */
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var assert  = __webpack_require__(41);
+	var helpers = __webpack_require__(4)
+
+	module.exports = function(Target) {
+	  var _         = __webpack_require__(16);
+	  var SqlString = __webpack_require__(50);
+
+	  Target.prototype.toQuery = function(tz) {
+	    var data = this.toSQL(this._method);
+	    if (this._errors && this._errors.length > 0) throw this._errors[0];
+	    if (!_.isArray(data)) data = [data];
+	    return _.map(data, function(statement) {
+	      return this._formatQuery(statement.sql, statement.bindings, tz);
+	    }, this).join(';\n');
+	  };
+
+	  // Format the query as sql, prepping bindings as necessary.
+	  Target.prototype._formatQuery = function(sql, bindings, tz) {
+	    if (this.client && this.client.prepBindings) {
+	      bindings = this.client.prepBindings(bindings, tz);
+	    }
+	    return SqlString.format(sql, bindings, true, tz);
+	  };
+
+	  // Create a new instance of the `Runner`, passing in the current object.
+	  Target.prototype.then = function(/* onFulfilled, onRejected */) {
+	    var result = this.client.runner(this).run()
+	    return result.then.apply(result, arguments);
+	  };
+
+	  // Add additional "options" to the builder. Typically used for client specific
+	  // items, like the `mysql` and `sqlite3` drivers.
+	  Target.prototype.options = function(opts) {
+	    this._options = this._options || [];
+	    this._options.push(_.clone(opts) || {});
+	    return this;
+	  };
+
+	  // Sets an explicit "connnection" we wish to use for this query.
+	  Target.prototype.connection = function(connection) {
+	    this._connection = connection;
+	    return this;
+	  };
+
+	  // Set a debug flag for the current schema query stack.
+	  Target.prototype.debug = function(enabled) {
+	    assert(!arguments.length || typeof enabled === 'boolean', 'debug requires a boolean');
+	    this._debug = arguments.length ? enabled : true;
+	    return this;
+	  };
+
+	  // Set the transaction object for this query.
+	  Target.prototype.transacting = function(t) {
+	    if (t && t.client) {
+	      if (!t.client.transacting) {
+	        helpers.warn('Invalid transaction value: ' + t.client)
+	      } else {
+	        this.client = t.client
+	      }
+	    }
+	    return this;
+	  };
+
+	  // Initializes a stream.
+	  Target.prototype.stream = function(options) {
+	    return this.client.runner(this).stream(options);
+	  };
+
+	  // Initialize a stream & pipe automatically.
+	  Target.prototype.pipe = function(writable, options) {
+	    return this.client.runner(this).pipe(writable, options);
+	  };
+
+	  // Creates a method which "coerces" to a promise, by calling a
+	  // "then" method on the current `Target`
+	  _.each(['bind', 'catch', 'finally', 'asCallback', 
+	    'spread', 'map', 'reduce', 'tap', 'thenReturn',
+	    'return', 'yield', 'ensure', 'nodeify', 'exec'], function(method) {
+	    Target.prototype[method] = function() {
+	      var then = this.then();
+	      then = then[method].apply(then, arguments);
+	      return then;
+	    };
+	  });
+
+	};
+
+/***/ },
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3636,7 +3704,7 @@ module.exports =
 	module.exports = FunctionHelper
 
 /***/ },
-/* 33 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3721,27 +3789,27 @@ module.exports =
 	];
 
 /***/ },
-/* 34 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// SQLite3
 	// -------
-	var Promise        = __webpack_require__(20)
+	var Promise        = __webpack_require__(21)
 
-	var inherits       = __webpack_require__(12)
+	var inherits       = __webpack_require__(11)
 	var assign         = __webpack_require__(2)
-	var pluck          = __webpack_require__(50);
+	var pluck          = __webpack_require__(53);
 
 	var Client         = __webpack_require__(5)
 	var helpers        = __webpack_require__(4)
 
-	var QueryCompiler  = __webpack_require__(43)
-	var SchemaCompiler = __webpack_require__(45)
-	var ColumnCompiler = __webpack_require__(44)
-	var TableCompiler  = __webpack_require__(47)
-	var SQLite3_DDL    = __webpack_require__(46)
+	var QueryCompiler  = __webpack_require__(44)
+	var SchemaCompiler = __webpack_require__(46)
+	var ColumnCompiler = __webpack_require__(45)
+	var TableCompiler  = __webpack_require__(48)
+	var SQLite3_DDL    = __webpack_require__(47)
 
 	function Client_SQLite3(config) {
 	  Client.call(this, config)
@@ -3867,19 +3935,19 @@ module.exports =
 
 
 /***/ },
-/* 35 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// WebSQL
 	// -------
-	var inherits       = __webpack_require__(12)
-	var _              = __webpack_require__(9)
+	var inherits       = __webpack_require__(11)
+	var _              = __webpack_require__(16)
 
-	var Transaction    = __webpack_require__(48)
-	var Client_SQLite3 = __webpack_require__(34)
-	var Promise        = __webpack_require__(20)
+	var Transaction    = __webpack_require__(49)
+	var Client_SQLite3 = __webpack_require__(36)
+	var Promise        = __webpack_require__(21)
 	var assign         = __webpack_require__(2)
 
 	function Client_WebSQL(config) {
@@ -3981,18 +4049,6 @@ module.exports =
 
 
 /***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("assert");
-
-/***/ },
-/* 37 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("bluebird/js/main/promise");
-
-/***/ },
 /* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -4008,154 +4064,16 @@ module.exports =
 /* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict'
-
-	var SqlString = exports;
-
-	SqlString.escapeId = function (val, forbidQualified) {
-	  if (Array.isArray(val)) {
-	    return val.map(function(v) {
-	      return SqlString.escapeId(v, forbidQualified);
-	    }).join(', ');
-	  }
-
-	  if (forbidQualified) {
-	    return '`' + val.replace(/`/g, '``') + '`';
-	  }
-	  return '`' + val.replace(/`/g, '``').replace(/\./g, '`.`') + '`';
-	};
-
-	SqlString.escape = function(val, stringifyObjects, timeZone) {
-	  if (val == null) {
-	    return 'NULL';
-	  }
-
-	  switch (typeof val) {
-	    case 'boolean': return (val) ? 'true' : 'false';
-	    case 'number': return val+'';
-	  }
-
-	  if (val instanceof Date) {
-	    val = SqlString.dateToString(val, timeZone || 'local');
-	  }
-
-	  if (Buffer.isBuffer(val)) {
-	    return SqlString.bufferToString(val);
-	  }
-
-	  if (Array.isArray(val)) {
-	    return SqlString.arrayToList(val, timeZone);
-	  }
-
-	  if (typeof val === 'object') {
-	    if (stringifyObjects) {
-	      val = val.toString();
-	    } else {
-	      return SqlString.objectToValues(val, timeZone);
-	    }
-	  }
-
-	  val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
-	    switch(s) {
-	      case "\0": return "\\0";
-	      case "\n": return "\\n";
-	      case "\r": return "\\r";
-	      case "\b": return "\\b";
-	      case "\t": return "\\t";
-	      case "\x1a": return "\\Z";
-	      default: return "\\"+s;
-	    }
-	  });
-	  return "'"+val+"'";
-	};
-
-	SqlString.arrayToList = function(array, timeZone) {
-	  return array.map(function(v) {
-	    if (Array.isArray(v)) return '(' + SqlString.arrayToList(v, timeZone) + ')';
-	    return SqlString.escape(v, true, timeZone);
-	  }).join(', ');
-	};
-
-	SqlString.format = function(sql, values, stringifyObjects, timeZone) {
-	  values = values == null ? [] : [].concat(values);
-
-	  var index = 0;
-	  return sql.replace(/\?\??/g, function(match) {
-	    if (index === values.length) {
-	      return match;
-	    }
-
-	    var value = values[index++];
-
-	    return match === '??' ? SqlString.escapeId(value) : 
-	      SqlString.escape(value, stringifyObjects, timeZone);
-	  });
-	};
-
-	SqlString.dateToString = function(date, timeZone) {
-	  var dt = new Date(date);
-
-	  if (timeZone !== 'local') {
-	    var tz = convertTimezone(timeZone);
-
-	    dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
-	    if (tz !== false) {
-	      dt.setTime(dt.getTime() + (tz * 60000));
-	    }
-	  }
-
-	  var year   = dt.getFullYear();
-	  var month  = zeroPad(dt.getMonth() + 1, 2);
-	  var day    = zeroPad(dt.getDate(), 2);
-	  var hour   = zeroPad(dt.getHours(), 2);
-	  var minute = zeroPad(dt.getMinutes(), 2);
-	  var second = zeroPad(dt.getSeconds(), 2);
-	  var millisecond = zeroPad(dt.getMilliseconds(), 3);
-
-	  return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
-	};
-
-	SqlString.bufferToString = function bufferToString(buffer) {
-	  return "X'" + buffer.toString('hex') + "'";
-	};
-
-	SqlString.objectToValues = function(object, timeZone) {
-	  var values = [];
-	  for (var key in object) {
-	    var value = object[key];
-	    if(typeof value === 'function') {
-	      continue;
-	    }
-
-	    values.push(this.escapeId(key) + ' = ' + SqlString.escape(value, true, timeZone));
-	  }
-
-	  return values.join(', ');
-	};
-
-	function zeroPad(number, length) {
-	  number = number.toString();
-	  while (number.length < length) {
-	    number = '0' + number;
-	  }
-
-	  return number;
-	}
-
-	function convertTimezone(tz) {
-	  if (tz === "Z") return 0;
-
-	  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
-	  if (m) {
-	    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
-	  }
-	  return false;
-	}
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(52).Buffer))
+	module.exports = require("bluebird/js/main/promise");
 
 /***/ },
 /* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("assert");
+
+/***/ },
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4227,12 +4145,12 @@ module.exports =
 	module.exports = JoinClause;
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _ = __webpack_require__(9);
+	var _ = __webpack_require__(16);
 
 	// Push a new query onto the compiled "sequence" stack,
 	// creating a new formatter, returning the compiler.
@@ -4259,16 +4177,16 @@ module.exports =
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// SQLite3 Query Builder & Compiler
 
-	var _             = __webpack_require__(9)
-	var inherits      = __webpack_require__(12)
-	var QueryCompiler = __webpack_require__(25)
+	var _             = __webpack_require__(16)
+	var inherits      = __webpack_require__(11)
+	var QueryCompiler = __webpack_require__(26)
 	var assign        = __webpack_require__(2);
 
 	function QueryCompiler_SQLite3(client, builder) {
@@ -4388,13 +4306,13 @@ module.exports =
 
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var inherits = __webpack_require__(12);
-	var ColumnCompiler = __webpack_require__(31);
+	var inherits = __webpack_require__(11);
+	var ColumnCompiler = __webpack_require__(32);
 
 	// Column Compiler
 	// -------
@@ -4416,16 +4334,16 @@ module.exports =
 	module.exports = ColumnCompiler_SQLite3;
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// SQLite3: Column Builder & Compiler
 	// -------
-	var _        = __webpack_require__(9);
-	var inherits = __webpack_require__(12);
-	var SchemaCompiler   = __webpack_require__(27);
+	var _        = __webpack_require__(16);
+	var inherits = __webpack_require__(11);
+	var SchemaCompiler   = __webpack_require__(28);
 
 	// Schema Compiler
 	// -------
@@ -4464,7 +4382,7 @@ module.exports =
 
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4475,8 +4393,8 @@ module.exports =
 	// columns and changing datatypes.
 	// -------
 
-	var _       = __webpack_require__(9);
-	var Promise = __webpack_require__(20);
+	var _       = __webpack_require__(16);
+	var Promise = __webpack_require__(21);
 	var assign  = __webpack_require__(2);
 
 	// So altering the schema in SQLite3 is a major pain.
@@ -4710,14 +4628,14 @@ module.exports =
 
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _        = __webpack_require__(9);
-	var inherits = __webpack_require__(12);
-	var TableCompiler   = __webpack_require__(29);
+	var _        = __webpack_require__(16);
+	var inherits = __webpack_require__(11);
+	var TableCompiler   = __webpack_require__(30);
 
 	// Table Compiler
 	// -------
@@ -4836,16 +4754,16 @@ module.exports =
 
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var makeKnex = __webpack_require__(7)
-	var Promise  = __webpack_require__(20)
+	var Promise  = __webpack_require__(21)
 	var helpers  = __webpack_require__(4)
-	var inherits = __webpack_require__(12)
-	var EventEmitter = __webpack_require__(13).EventEmitter
+	var inherits = __webpack_require__(11)
+	var EventEmitter = __webpack_require__(12).EventEmitter
 
 	function Transaction_WebSQL(client, container) {
 	  helpers.warn('WebSQL transactions will run queries, but do not commit or rollback')
@@ -4889,7 +4807,157 @@ module.exports =
 
 
 /***/ },
-/* 49 */
+/* 50 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict'
+
+	var SqlString = exports;
+
+	SqlString.escapeId = function (val, forbidQualified) {
+	  if (Array.isArray(val)) {
+	    return val.map(function(v) {
+	      return SqlString.escapeId(v, forbidQualified);
+	    }).join(', ');
+	  }
+
+	  if (forbidQualified) {
+	    return '`' + val.replace(/`/g, '``') + '`';
+	  }
+	  return '`' + val.replace(/`/g, '``').replace(/\./g, '`.`') + '`';
+	};
+
+	SqlString.escape = function(val, stringifyObjects, timeZone) {
+	  if (val == null) {
+	    return 'NULL';
+	  }
+
+	  switch (typeof val) {
+	    case 'boolean': return (val) ? 'true' : 'false';
+	    case 'number': return val+'';
+	  }
+
+	  if (val instanceof Date) {
+	    val = SqlString.dateToString(val, timeZone || 'local');
+	  }
+
+	  if (Buffer.isBuffer(val)) {
+	    return SqlString.bufferToString(val);
+	  }
+
+	  if (Array.isArray(val)) {
+	    return SqlString.arrayToList(val, timeZone);
+	  }
+
+	  if (typeof val === 'object') {
+	    if (stringifyObjects) {
+	      val = val.toString();
+	    } else {
+	      return SqlString.objectToValues(val, timeZone);
+	    }
+	  }
+
+	  val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
+	    switch(s) {
+	      case "\0": return "\\0";
+	      case "\n": return "\\n";
+	      case "\r": return "\\r";
+	      case "\b": return "\\b";
+	      case "\t": return "\\t";
+	      case "\x1a": return "\\Z";
+	      default: return "\\"+s;
+	    }
+	  });
+	  return "'"+val+"'";
+	};
+
+	SqlString.arrayToList = function(array, timeZone) {
+	  return array.map(function(v) {
+	    if (Array.isArray(v)) return '(' + SqlString.arrayToList(v, timeZone) + ')';
+	    return SqlString.escape(v, true, timeZone);
+	  }).join(', ');
+	};
+
+	SqlString.format = function(sql, values, stringifyObjects, timeZone) {
+	  values = values == null ? [] : [].concat(values);
+
+	  var index = 0;
+	  return sql.replace(/\?\??/g, function(match) {
+	    if (index === values.length) {
+	      return match;
+	    }
+
+	    var value = values[index++];
+
+	    return match === '??' ? SqlString.escapeId(value) : 
+	      SqlString.escape(value, stringifyObjects, timeZone);
+	  });
+	};
+
+	SqlString.dateToString = function(date, timeZone) {
+	  var dt = new Date(date);
+
+	  if (timeZone !== 'local') {
+	    var tz = convertTimezone(timeZone);
+
+	    dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
+	    if (tz !== false) {
+	      dt.setTime(dt.getTime() + (tz * 60000));
+	    }
+	  }
+
+	  var year   = dt.getFullYear();
+	  var month  = zeroPad(dt.getMonth() + 1, 2);
+	  var day    = zeroPad(dt.getDate(), 2);
+	  var hour   = zeroPad(dt.getHours(), 2);
+	  var minute = zeroPad(dt.getMinutes(), 2);
+	  var second = zeroPad(dt.getSeconds(), 2);
+	  var millisecond = zeroPad(dt.getMilliseconds(), 3);
+
+	  return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
+	};
+
+	SqlString.bufferToString = function bufferToString(buffer) {
+	  return "X'" + buffer.toString('hex') + "'";
+	};
+
+	SqlString.objectToValues = function(object, timeZone) {
+	  var values = [];
+	  for (var key in object) {
+	    var value = object[key];
+	    if(typeof value === 'function') {
+	      continue;
+	    }
+
+	    values.push(this.escapeId(key) + ' = ' + SqlString.escape(value, true, timeZone));
+	  }
+
+	  return values.join(', ');
+	};
+
+	function zeroPad(number, length) {
+	  number = number.toString();
+	  while (number.length < length) {
+	    number = '0' + number;
+	  }
+
+	  return number;
+	}
+
+	function convertTimezone(tz) {
+	  if (tz === "Z") return 0;
+
+	  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
+	  if (m) {
+	    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+	  }
+	  return false;
+	}
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(54).Buffer))
+
+/***/ },
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
@@ -4897,17 +4965,11 @@ module.exports =
 	// Use this shim module rather than "bluebird/js/main/promise" 
 	// when bundling for client
 	module.exports = function() {
-	  return __webpack_require__(53)
+	  return __webpack_require__(55)
 	}
 
 /***/ },
-/* 50 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("lodash/collection/pluck");
-
-/***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4930,84 +4992,22 @@ module.exports =
 
 
 /***/ },
-/* 52 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = require("/Users/tgriesser/Github/bookshelf/knex/node_modules/webpack/node_modules/node-libs-browser/node_modules/buffer/index.js");
-
-/***/ },
 /* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = require("bluebird");
+	module.exports = require("lodash/collection/pluck");
 
 /***/ },
 /* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	var url = __webpack_require__(55)
-
-	module.exports = parseConnectionString
-
-	function parseConnectionString(str) {
-	  var parsed   = url.parse(str)
-	  var protocol = parsed.protocol
-	  if (protocol && protocol.indexOf('maria') === 0) {
-	    protocol = 'maria'
-	  }
-	  if (protocol === null) {
-	    return {
-	      client: 'sqlite3',
-	      connection: {
-	        filename: str
-	      }
-	    }  
-	  }
-	  if (protocol.slice(-1) === ':') {
-	    protocol = protocol.slice(0, -1);
-	  }
-	  return {
-	    client: protocol,
-	    connection: connectionObject(parsed)
-	  }  
-	}
-
-	function connectionObject(parsed) {
-	  var connection = {};
-	  var db = parsed.pathname;
-	  if (db[0] === '/') {
-	    db = db.slice(1)
-	  }
-	  if (parsed.protocol.indexOf('maria') === 0) {
-	    connection.db = db
-	  } else {
-	    connection.database = db
-	  }
-	  if (parsed.hostname) {
-	    connection.host = parsed.hostname;
-	  }
-	  if (parsed.port) {
-	    connection.port = parsed.port;
-	  }
-	  if (parsed.auth) {
-	    var idx = parsed.auth.indexOf(':');
-	    if (idx !== -1) {
-	      connection.user = parsed.auth.slice(0, idx);
-	      if (idx < parsed.auth.length - 1) {
-	        connection.password = parsed.auth.slice(idx + 1);
-	      }
-	    }
-	  }
-	  return connection
-	}
+	module.exports = require("/Users/tgriesser/Github/bookshelf/knex/node_modules/webpack/node_modules/node-libs-browser/node_modules/buffer/index.js");
 
 /***/ },
 /* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = require("url");
+	module.exports = require("bluebird");
 
 /***/ }
 /******/ ]);
