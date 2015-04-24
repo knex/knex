@@ -14,16 +14,6 @@ if (process.env.WEBSQL) {
   )
 }
 
-if (process.env.COMPRESS) {
-  plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      compressor: {
-        warnings: false
-      }
-    })
-  );
-}
-
 var externals = [{
   "bluebird": {
     root: "Promise",

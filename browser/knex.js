@@ -5060,8 +5060,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// WebSQL
 	// -------
-	var inherits = __webpack_require__(41);
-	var _        = __webpack_require__(8);
+	var inherits       = __webpack_require__(41)
+	var _              = __webpack_require__(8)
 
 	var Transaction    = __webpack_require__(71)
 	var Client_SQLite3 = __webpack_require__(35)
@@ -5564,24 +5564,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
-
-	function zeroPad(number, length) {
-	  number = number.toString();
-	  while (number.length < length) {
-	    number = '0' + number;
-	  }
-	  return number;
-	}
-
-	function convertTimezone(tz) {
-	  if (tz === "Z") return 0;
-	  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
-	  if (m) {
-	    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
-	  }
-	  return false;
-	}
+	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict'
 
 	var SqlString = exports;
 
@@ -5599,7 +5582,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	SqlString.escape = function(val, stringifyObjects, timeZone) {
-	  if (val === undefined || val === null) {
+	  if (val == null) {
 	    return 'NULL';
 	  }
 
@@ -5621,7 +5604,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  if (typeof val === 'object') {
-	    val = val.toString()
+	    if (stringifyObjects) {
+	      val = val.toString();
+	    } else {
+	      return SqlString.objectToValues(val, timeZone);
+	    }
 	  }
 
 	  val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
@@ -5646,17 +5633,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	SqlString.format = function(sql, values, stringifyObjects, timeZone) {
-	  values = !values ? [] : [].concat(values);
+	  values = values == null ? [] : [].concat(values);
 
+	  var index = 0;
 	  return sql.replace(/\?\??/g, function(match) {
-	    if (!values.length) {
+	    if (index === values.length) {
 	      return match;
 	    }
 
-	    if (match === "??") {
-	      return SqlString.escapeId(values.shift());
-	    }
-	    return SqlString.escape(values.shift(), stringifyObjects, timeZone);
+	    var value = values[index++];
+
+	    return match === '??' ? SqlString.escapeId(value) : 
+	      SqlString.escape(value, stringifyObjects, timeZone);
 	  });
 	};
 
@@ -5683,19 +5671,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
 	};
 
-	SqlString.bufferToString = function(buffer) {
-	  var hex = '';
-	  try {
-	    hex = buffer.toString('hex');
-	  } catch (err) {
-	    // node v0.4.x does not support hex / throws unknown encoding error
-	    for (var i = 0; i < buffer.length; i++) {
-	      var byte = buffer[i];
-	      hex += zeroPad(byte.toString(16));
+	SqlString.bufferToString = function bufferToString(buffer) {
+	  return "X'" + buffer.toString('hex') + "'";
+	};
+
+	SqlString.objectToValues = function(object, timeZone) {
+	  var values = [];
+	  for (var key in object) {
+	    var value = object[key];
+	    if(typeof value === 'function') {
+	      continue;
 	    }
+
+	    values.push(this.escapeId(key) + ' = ' + SqlString.escape(value, true, timeZone));
 	  }
 
-	  return "X'" + hex+ "'";
+	  return values.join(', ');
+	};
+
+	function zeroPad(number, length) {
+	  number = number.toString();
+	  while (number.length < length) {
+	    number = '0' + number;
+	  }
+
+	  return number;
+	}
+
+	function convertTimezone(tz) {
+	  if (tz === "Z") return 0;
+
+	  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
+	  if (m) {
+	    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+	  }
+	  return false;
 	}
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(108).Buffer))
@@ -5704,7 +5714,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// Use this module rather than "bluebird/js/main/promise" when bundling
+	'use strict'
+
+	// Use this shim module rather than "bluebird/js/main/promise" 
+	// when bundling for client
 	module.exports = function() {
 	  return __webpack_require__(82)
 	}
@@ -8118,13 +8131,32 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var makeKnex = __webpack_require__(6)
 	var Promise  = __webpack_require__(11)
+	var helpers  = __webpack_require__(3)
 	var inherits = __webpack_require__(41)
-	var assign   = __webpack_require__(23);
+	var EventEmitter = __webpack_require__(29).EventEmitter
 
-	function Transaction_WebSQL(client, container, config, outerTx) {
+	function Transaction_WebSQL(client, container) {
+	  helpers.warn('WebSQL transactions will run queries, but do not commit or rollback')
+	  var trx = this
 	  this._promise = Promise.try(function() {
-	    container(makeKnex(client))
+	    container(makeKnex(makeClient(trx, client)))
 	  })
+	}
+	inherits(Transaction_WebSQL, EventEmitter)
+
+	function makeClient(trx, client) {
+	  
+	  var trxClient         = Object.create(client.constructor.prototype)
+	  trxClient.config      = client.config
+	  trxClient.transacting = true
+	  
+	  trxClient.on('query', function(arg) {
+	    trx.emit('query', arg)
+	  })
+	  trxClient.commit = function() {}
+	  trxClient.rollback = function() {}
+
+	  return trxClient  
 	}
 
 	var promiseInterface = [

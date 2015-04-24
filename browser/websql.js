@@ -123,8 +123,8 @@ module.exports =
 	// Raw
 	// -------
 	var _            = __webpack_require__(9)
-	var inherits     = __webpack_require__(10)
-	var EventEmitter = __webpack_require__(11).EventEmitter
+	var inherits     = __webpack_require__(12)
+	var EventEmitter = __webpack_require__(13).EventEmitter
 	var assign       = __webpack_require__(2);
 
 	function Raw(client) {
@@ -226,7 +226,7 @@ module.exports =
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
 	var _     = __webpack_require__(9)
-	var chalk = __webpack_require__(12)
+	var chalk = __webpack_require__(10)
 
 	var helpers = {
 
@@ -272,7 +272,7 @@ module.exports =
 	};
 
 	module.exports = helpers;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
 /* 5 */
@@ -299,8 +299,8 @@ module.exports =
 	var ColumnCompiler = __webpack_require__(31)
 
 	var Pool2          = __webpack_require__(14)
-	var inherits       = __webpack_require__(10)
-	var EventEmitter   = __webpack_require__(11).EventEmitter
+	var inherits       = __webpack_require__(12)
+	var EventEmitter   = __webpack_require__(13).EventEmitter
 
 	var assign         = __webpack_require__(2)
 	var uniqueId       = __webpack_require__(15)
@@ -536,7 +536,7 @@ module.exports =
 	'use strict';
 
 	var assign   = __webpack_require__(2);
-	var inherits = __webpack_require__(10)
+	var inherits = __webpack_require__(12)
 
 	// Ensure the client has fresh objects so we can tack onto 
 	// the prototypes without mutating them globally.
@@ -611,7 +611,7 @@ module.exports =
 
 	'use strict';
 
-	var EventEmitter   = __webpack_require__(11).EventEmitter
+	var EventEmitter   = __webpack_require__(13).EventEmitter
 	var assign         = __webpack_require__(2);
 
 	var Migrator       = __webpack_require__(51)
@@ -757,25 +757,25 @@ module.exports =
 /* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = require("inherits");
+	module.exports = require("chalk");
 
 /***/ },
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = require("events");
+	module.exports = require("/Users/tgriesser/Github/bookshelf/knex/node_modules/webpack/node_modules/node-libs-browser/node_modules/process/browser.js");
 
 /***/ },
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = require("chalk");
+	module.exports = require("inherits");
 
 /***/ },
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = require("/Users/tgriesser/Github/bookshelf/knex/node_modules/webpack/node_modules/node-libs-browser/node_modules/process/browser.js");
+	module.exports = require("events");
 
 /***/ },
 /* 14 */
@@ -1345,8 +1345,8 @@ module.exports =
 	// Transaction
 	// -------
 	var Promise      = __webpack_require__(20)
-	var EventEmitter = __webpack_require__(11).EventEmitter
-	var inherits     = __webpack_require__(10)
+	var EventEmitter = __webpack_require__(13).EventEmitter
+	var inherits     = __webpack_require__(12)
 
 	var makeKnex     = __webpack_require__(7)
 
@@ -1605,8 +1605,8 @@ module.exports =
 	// -------
 	var _            = __webpack_require__(9)
 	var assert       = __webpack_require__(36)
-	var inherits     = __webpack_require__(10)
-	var EventEmitter = __webpack_require__(11).EventEmitter
+	var inherits     = __webpack_require__(12)
+	var EventEmitter = __webpack_require__(13).EventEmitter
 
 	var Raw          = __webpack_require__(3)
 	var helpers      = __webpack_require__(4)
@@ -2815,8 +2815,8 @@ module.exports =
 	'use strict';
 
 	var _            = __webpack_require__(9)
-	var inherits     = __webpack_require__(10)
-	var EventEmitter = __webpack_require__(11).EventEmitter
+	var inherits     = __webpack_require__(12)
+	var EventEmitter = __webpack_require__(13).EventEmitter
 
 	// Constructor for the builder instance, typically called from
 	// `knex.builder`, accepting the current `knex` instance,
@@ -3732,7 +3732,7 @@ module.exports =
 	// -------
 	var Promise        = __webpack_require__(20)
 
-	var inherits       = __webpack_require__(10)
+	var inherits       = __webpack_require__(12)
 	var assign         = __webpack_require__(2)
 	var pluck          = __webpack_require__(50);
 
@@ -3876,8 +3876,8 @@ module.exports =
 
 	// WebSQL
 	// -------
-	var inherits = __webpack_require__(10);
-	var _        = __webpack_require__(9);
+	var inherits       = __webpack_require__(12)
+	var _              = __webpack_require__(9)
 
 	var Transaction    = __webpack_require__(48)
 	var Client_SQLite3 = __webpack_require__(34)
@@ -4010,24 +4010,7 @@ module.exports =
 /* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
-
-	function zeroPad(number, length) {
-	  number = number.toString();
-	  while (number.length < length) {
-	    number = '0' + number;
-	  }
-	  return number;
-	}
-
-	function convertTimezone(tz) {
-	  if (tz === "Z") return 0;
-	  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
-	  if (m) {
-	    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
-	  }
-	  return false;
-	}
+	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict'
 
 	var SqlString = exports;
 
@@ -4045,7 +4028,7 @@ module.exports =
 	};
 
 	SqlString.escape = function(val, stringifyObjects, timeZone) {
-	  if (val === undefined || val === null) {
+	  if (val == null) {
 	    return 'NULL';
 	  }
 
@@ -4067,7 +4050,11 @@ module.exports =
 	  }
 
 	  if (typeof val === 'object') {
-	    val = val.toString()
+	    if (stringifyObjects) {
+	      val = val.toString();
+	    } else {
+	      return SqlString.objectToValues(val, timeZone);
+	    }
 	  }
 
 	  val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
@@ -4092,17 +4079,18 @@ module.exports =
 	};
 
 	SqlString.format = function(sql, values, stringifyObjects, timeZone) {
-	  values = !values ? [] : [].concat(values);
+	  values = values == null ? [] : [].concat(values);
 
+	  var index = 0;
 	  return sql.replace(/\?\??/g, function(match) {
-	    if (!values.length) {
+	    if (index === values.length) {
 	      return match;
 	    }
 
-	    if (match === "??") {
-	      return SqlString.escapeId(values.shift());
-	    }
-	    return SqlString.escape(values.shift(), stringifyObjects, timeZone);
+	    var value = values[index++];
+
+	    return match === '??' ? SqlString.escapeId(value) : 
+	      SqlString.escape(value, stringifyObjects, timeZone);
 	  });
 	};
 
@@ -4129,19 +4117,41 @@ module.exports =
 	  return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
 	};
 
-	SqlString.bufferToString = function(buffer) {
-	  var hex = '';
-	  try {
-	    hex = buffer.toString('hex');
-	  } catch (err) {
-	    // node v0.4.x does not support hex / throws unknown encoding error
-	    for (var i = 0; i < buffer.length; i++) {
-	      var byte = buffer[i];
-	      hex += zeroPad(byte.toString(16));
+	SqlString.bufferToString = function bufferToString(buffer) {
+	  return "X'" + buffer.toString('hex') + "'";
+	};
+
+	SqlString.objectToValues = function(object, timeZone) {
+	  var values = [];
+	  for (var key in object) {
+	    var value = object[key];
+	    if(typeof value === 'function') {
+	      continue;
 	    }
+
+	    values.push(this.escapeId(key) + ' = ' + SqlString.escape(value, true, timeZone));
 	  }
 
-	  return "X'" + hex+ "'";
+	  return values.join(', ');
+	};
+
+	function zeroPad(number, length) {
+	  number = number.toString();
+	  while (number.length < length) {
+	    number = '0' + number;
+	  }
+
+	  return number;
+	}
+
+	function convertTimezone(tz) {
+	  if (tz === "Z") return 0;
+
+	  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
+	  if (m) {
+	    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+	  }
+	  return false;
 	}
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(52).Buffer))
@@ -4259,7 +4269,7 @@ module.exports =
 	// SQLite3 Query Builder & Compiler
 
 	var _             = __webpack_require__(9)
-	var inherits      = __webpack_require__(10)
+	var inherits      = __webpack_require__(12)
 	var QueryCompiler = __webpack_require__(25)
 	var assign        = __webpack_require__(2);
 
@@ -4385,7 +4395,7 @@ module.exports =
 
 	'use strict';
 
-	var inherits = __webpack_require__(10);
+	var inherits = __webpack_require__(12);
 	var ColumnCompiler = __webpack_require__(31);
 
 	// Column Compiler
@@ -4416,7 +4426,7 @@ module.exports =
 	// SQLite3: Column Builder & Compiler
 	// -------
 	var _        = __webpack_require__(9);
-	var inherits = __webpack_require__(10);
+	var inherits = __webpack_require__(12);
 	var SchemaCompiler   = __webpack_require__(27);
 
 	// Schema Compiler
@@ -4708,7 +4718,7 @@ module.exports =
 	'use strict';
 
 	var _        = __webpack_require__(9);
-	var inherits = __webpack_require__(10);
+	var inherits = __webpack_require__(12);
 	var TableCompiler   = __webpack_require__(29);
 
 	// Table Compiler
@@ -4835,13 +4845,32 @@ module.exports =
 
 	var makeKnex = __webpack_require__(7)
 	var Promise  = __webpack_require__(20)
-	var inherits = __webpack_require__(10)
-	var assign   = __webpack_require__(2);
+	var helpers  = __webpack_require__(4)
+	var inherits = __webpack_require__(12)
+	var EventEmitter = __webpack_require__(13).EventEmitter
 
-	function Transaction_WebSQL(client, container, config, outerTx) {
+	function Transaction_WebSQL(client, container) {
+	  helpers.warn('WebSQL transactions will run queries, but do not commit or rollback')
+	  var trx = this
 	  this._promise = Promise.try(function() {
-	    container(makeKnex(client))
+	    container(makeKnex(makeClient(trx, client)))
 	  })
+	}
+	inherits(Transaction_WebSQL, EventEmitter)
+
+	function makeClient(trx, client) {
+	  
+	  var trxClient         = Object.create(client.constructor.prototype)
+	  trxClient.config      = client.config
+	  trxClient.transacting = true
+	  
+	  trxClient.on('query', function(arg) {
+	    trx.emit('query', arg)
+	  })
+	  trxClient.commit = function() {}
+	  trxClient.rollback = function() {}
+
+	  return trxClient  
 	}
 
 	var promiseInterface = [
@@ -4865,7 +4894,10 @@ module.exports =
 /* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// Use this module rather than "bluebird/js/main/promise" when bundling
+	'use strict'
+
+	// Use this shim module rather than "bluebird/js/main/promise" 
+	// when bundling for client
 	module.exports = function() {
 	  return __webpack_require__(53)
 	}
