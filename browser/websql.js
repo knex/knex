@@ -45,12 +45,6 @@ module.exports =
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(1)
-
-/***/ },
-/* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
 	// Knex.js  0.8.0
 	// --------------
 	//     (c) 2014 Tim Griesser
@@ -58,19 +52,26 @@ module.exports =
 	//     For details and documentation:
 	//     http://knexjs.org
 
+	module.exports = __webpack_require__(1)
+
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	var Raw            = __webpack_require__(3)
 	var warn           = __webpack_require__(4).warn
 	var Client         = __webpack_require__(5)
 
-	var makeClient     = __webpack_require__(6)
-	var makeKnex       = __webpack_require__(7)
-	var assign         = __webpack_require__(2)
+	var makeClient      = __webpack_require__(6)
+	var makeKnex        = __webpack_require__(7)
+	var parseConnection = __webpack_require__(54)
+	var assign          = __webpack_require__(2)
 
 	function Knex(config) {
 	  if (typeof config === 'string') {
-	    return new Knex(assign(parseUrl(config), arguments[2]))
+	    return new Knex(assign(parseConnection(config), arguments[2]))
 	  }
 	  var Dialect;
 	  if (arguments.length === 0 || (!config.client && !config.dialect)) {
@@ -92,10 +93,6 @@ module.exports =
 	Knex.initialize = function(config) {
 	  warn('knex.initialize is deprecated, pass your config object directly to the knex module')
 	  return new Knex(config)
-	}
-
-	function parseUrl() {
-
 	}
 
 	// The client names we'll allow in the `{name: lib}` pairing.
@@ -871,7 +868,9 @@ module.exports =
 		"./util/make-client": 6,
 		"./util/make-client.js": 6,
 		"./util/make-knex": 7,
-		"./util/make-knex.js": 7
+		"./util/make-knex.js": 7,
+		"./util/parse-connection": 54,
+		"./util/parse-connection.js": 54
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -1349,7 +1348,6 @@ module.exports =
 	var inherits     = __webpack_require__(12)
 
 	var makeKnex     = __webpack_require__(7)
-
 	var assign       = __webpack_require__(2)
 	var uniqueId     = __webpack_require__(15)
 	var debug        = __webpack_require__(17)('knex:tx')
@@ -4942,6 +4940,74 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = require("bluebird");
+
+/***/ },
+/* 54 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var url = __webpack_require__(55)
+
+	module.exports = parseConnectionString
+
+	function parseConnectionString(str) {
+	  var parsed   = url.parse(str)
+	  var protocol = parsed.protocol
+	  if (protocol && protocol.indexOf('maria') === 0) {
+	    protocol = 'maria'
+	  }
+	  if (protocol === null) {
+	    return {
+	      client: 'sqlite3',
+	      connection: {
+	        filename: str
+	      }
+	    }  
+	  }
+	  if (protocol.slice(-1) === ':') {
+	    protocol = protocol.slice(0, -1);
+	  }
+	  return {
+	    client: protocol,
+	    connection: connectionObject(parsed)
+	  }  
+	}
+
+	function connectionObject(parsed) {
+	  var connection = {};
+	  var db = parsed.pathname;
+	  if (db[0] === '/') {
+	    db = db.slice(1)
+	  }
+	  if (parsed.protocol.indexOf('maria') === 0) {
+	    connection.db = db
+	  } else {
+	    connection.database = db
+	  }
+	  if (parsed.hostname) {
+	    connection.host = parsed.hostname;
+	  }
+	  if (parsed.port) {
+	    connection.port = parsed.port;
+	  }
+	  if (parsed.auth) {
+	    var idx = parsed.auth.indexOf(':');
+	    if (idx !== -1) {
+	      connection.user = parsed.auth.slice(0, idx);
+	      if (idx < parsed.auth.length - 1) {
+	        connection.password = parsed.auth.slice(idx + 1);
+	      }
+	    }
+	  }
+	  return connection
+	}
+
+/***/ },
+/* 55 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = require("url");
 
 /***/ }
 /******/ ]);

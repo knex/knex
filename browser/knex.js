@@ -54,12 +54,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(1)
-
-/***/ },
-/* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
 	// Knex.js  0.8.0
 	// --------------
 	//     (c) 2014 Tim Griesser
@@ -67,19 +61,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	//     For details and documentation:
 	//     http://knexjs.org
 
+	module.exports = __webpack_require__(1)
+
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	var Raw            = __webpack_require__(2)
 	var warn           = __webpack_require__(3).warn
 	var Client         = __webpack_require__(4)
 
-	var makeClient     = __webpack_require__(5)
-	var makeKnex       = __webpack_require__(6)
-	var assign         = __webpack_require__(23)
+	var makeClient      = __webpack_require__(5)
+	var makeKnex        = __webpack_require__(6)
+	var parseConnection = __webpack_require__(187)
+	var assign          = __webpack_require__(23)
 
 	function Knex(config) {
 	  if (typeof config === 'string') {
-	    return new Knex(assign(parseUrl(config), arguments[2]))
+	    return new Knex(assign(parseConnection(config), arguments[2]))
 	  }
 	  var Dialect;
 	  if (arguments.length === 0 || (!config.client && !config.dialect)) {
@@ -101,10 +102,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	Knex.initialize = function(config) {
 	  warn('knex.initialize is deprecated, pass your config object directly to the knex module')
 	  return new Knex(config)
-	}
-
-	function parseUrl() {
-
 	}
 
 	// The client names we'll allow in the `{name: lib}` pairing.
@@ -880,7 +877,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		"./util/make-client": 5,
 		"./util/make-client.js": 5,
 		"./util/make-knex": 6,
-		"./util/make-knex.js": 6
+		"./util/make-knex.js": 6,
+		"./util/parse-connection": 187,
+		"./util/parse-connection.js": 187
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -19022,6 +19021,58 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	}
 
+
+/***/ },
+/* 187 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	module.exports = parseConnectionString
+
+	function parseConnectionString(str) {
+	  var parsed   = url.parse(string)
+	  var protocol = parsed.protocol
+	  if (protocol === null) {
+	    return {
+	      client: 'sqlite3',
+	      connection: {
+	        filename: string
+	      }
+	    }  
+	  }
+	  if (protocol.slice(-1) === ':') {
+	    protocol = protocol.slice(0, -1);
+	  }
+	  return {
+	    client: protocol,
+	    connection: connectionObject(parsed)
+	  }  
+	}
+
+	function connectionObject(parsed) {
+	  var connection = {};
+	  var db = parsed.pathname;
+	  if (db[0] === '/') {
+	    db = db.slice(1)
+	  }
+	  connection.database = db
+	  if (parsed.hostname) {
+	    connection.host = parsed.hostname;
+	  }
+	  if (parsed.port) {
+	    connection.port = parsed.port;
+	  }
+	  if (parsed.auth) {
+	    var idx = parsed.auth.indexOf(':');
+	    if (idx !== -1) {
+	      connection.user = parsed.auth.slice(0, idx);
+	      if (idx < parsed.auth.length - 1) {
+	        connection.password = parsed.auth.slice(idx + 1);
+	      }
+	    }
+	  }
+	  return connection
+	}
 
 /***/ }
 /******/ ])
