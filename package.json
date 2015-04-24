@@ -6,7 +6,6 @@
   "directories": {
     "test": "test"
   },
-  "browser": "./browser/websql.js",
   "dependencies": {
     "bluebird": "^2.9.24",
     "chalk": "^1.0.0",
