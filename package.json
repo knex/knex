@@ -18,7 +18,7 @@
     "lodash": "^3.7.0",
     "minimist": "~1.1.0",
     "mkdirp": "^0.5.0",
-    "pool2": "myndzi/pool2.git#3d34f5b9ecd1ca5a702ffa65d7fa7b04cb346434",
+    "pool2": "^1.1.0",
     "readable-stream": "^1.1.12",
     "tildify": "~1.0.0",
     "v8flags": "^2.0.2"
@@ -45,10 +45,12 @@
     "sinon": "^1.10.0",
     "sinon-chai": "^2.5.0",
     "sqlite3": "~3.0.2",
+    "tape": "^4.0.0",
     "through": "^2.3.4",
     "webpack": "^1.8.9"
   },
   "scripts": {
+    "tape": "tape ./test/tape/index.js",
     "build": "gulp build",
     "plaintest": "mocha --check-leaks -t 5000 -b -R spec test/index.js",
     "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run jshint",
