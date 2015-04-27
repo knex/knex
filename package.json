@@ -6,11 +6,6 @@
   "directories": {
     "test": "test"
   },
-  "browser": {
-    "../migrate":"lodash/utility/noop",
-    "../seed":"lodash/utility/noop",
-    "bluebird/js/main/promise": "./lib/util/bluebird.js"
-  },
   "dependencies": {
     "bluebird": "^2.9.24",
     "chalk": "^1.0.0",
@@ -83,6 +78,13 @@
   "author": {
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"
+  },
+  "browser": {
+    "pg-query-stream":          false,
+    "bluebird/js/main/promise": "./lib/util/bluebird.js",    
+    "./lib/migrate/index.js":   "./lib/migrate/index.web.js",
+    "./lib/bin/cli.js":         "lodash/utility/noop",
+    "./lib/seed/index.js":      "lodash/utility/noop"
   },
   "files": [
     "README.md",
