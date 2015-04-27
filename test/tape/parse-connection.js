@@ -4,13 +4,9 @@ var parseConnection = require('../../lib/util/parse-connection')
 var test = require('tape')
 
 test('parses standard connections', function(t) {
-  
   t.plan(1)
-
   t.deepEqual(parseConnection('postgres://username:pass@path.to.some-url:6000/testdb'), {
-
     client: 'postgres',
-
     connection: {
       user: 'username',
       password: 'pass',
@@ -18,15 +14,11 @@ test('parses standard connections', function(t) {
       port: '6000',
       database: 'testdb'
     }
-
   })
-
 })
 
 test('parses maria connections, aliasing database to db', function(t) {
-  
   t.plan(3)
-  
   var maria = {
     client: 'maria',
     connection: {
@@ -37,21 +29,17 @@ test('parses maria connections, aliasing database to db', function(t) {
       db: 'testdb'
     }
   }
-
   t.deepEqual(parseConnection('maria://username:pass@path.to.some-url:6000/testdb'), maria)
   t.deepEqual(parseConnection('mariasql://username:pass@path.to.some-url:6000/testdb'), maria)
   t.deepEqual(parseConnection('mariadb://username:pass@path.to.some-url:6000/testdb'), maria)
 })
 
 test('assume a path is mysql', function(t) {
-  
   t.plan(1)
-
   t.deepEqual(parseConnection('/path/to/file.db'), {
     client: 'sqlite3',
     connection: {
       filename: '/path/to/file.db'
     }
   })
-
 })

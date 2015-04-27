@@ -4,7 +4,6 @@ var harness    = require('./harness')
 var tape       = require('tape')
 var async      = require('async')
 var JSONStream = require('JSONStream')
-var Promise    = require('bluebird')
 
 module.exports = function(knex) {
 

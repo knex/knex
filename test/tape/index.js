@@ -7,7 +7,8 @@ var knexfile = require('../knexfile')
 Object.keys(knexfile).forEach(function(key) {
   
   require('./parse-connection')
-
+  require('./raw')
+  
   var knex = makeKnex(knexfile[key])
   require('./transactions')(knex)
 

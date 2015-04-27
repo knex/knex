@@ -77,7 +77,7 @@ var testConfigs = {
   },
 
   oracle: {
-    dialect: 'oracle',
+    client: 'strong-oracle',
     connection: testConfig.oracle || {
       adapter:  "oracle",
       database: "knex_test",
@@ -104,10 +104,7 @@ var testConfigs = {
     connection: {
       filename: __dirname + '/test.sqlite3'
     },
-    pool: _.extend({}, pool, {
-      min: 1,
-      max: 1
-    }),
+    pool: pool,
     migrations: migrations,
     seeds: seeds
   }

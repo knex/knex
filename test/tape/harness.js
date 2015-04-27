@@ -1,5 +1,4 @@
 'use strict';
-var chalk   = require('chalk')
 var tape    = require('tape')
 var Promise = require('bluebird')
 var debug   = require('debug')('knex:tests')

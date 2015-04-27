@@ -77,10 +77,10 @@ module.exports = function(knex) {
 
       it('should not create column for invalid migration', function() {
         knex.schema.hasColumn('migration_test_1', 'transaction').then(function(exists) {
-          // MySQL commits transactions implicit for most common
+          // MySQL / Oracle commit transactions implicit for most common
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
           // so we need to check for dialect
-          if (knex.client.dialect === 'mysql') {
+          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'oracle') {
             expect(exists).to.equal(true);
           } else {
             expect(exists).to.equal(false);
