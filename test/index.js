@@ -26,6 +26,6 @@ describe('Query Building Tests', function() {
   require('./unit/schema/oracle')  
 })
 
-// describe('Integration Tests', function() {
-//   require('./integration')
-// })
+describe('Integration Tests', function() {
+  require('./integration')
+})

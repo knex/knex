@@ -77,6 +77,9 @@ module.exports = function(knex) {
         expect(msg).to.equal(err);
         return knex('accounts').where('id', id).select('first_name');
       }).then(function(resp) {
+
+        console.log(resp)
+
         expect(resp.length).to.equal(0);
       });
     });
