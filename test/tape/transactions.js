@@ -121,7 +121,7 @@ module.exports = function(knex) {
       knex('test_table')
         .transacting(trx)
         .insert({name: 'Inserted before rollback called.'})
-        .then(function(resp) { 
+        .then(function() { 
           trx.rollback(new Error('Rolled back'));
         })
         .then(function() {
@@ -129,11 +129,12 @@ module.exports = function(knex) {
             .transacting(trx)
             .insert({name: 'Inserted after rollback called.'})
             .then(function(resp) { 
-              console.log("Insert after rollback done");
+              t.error(resp)
             })
+            .catch(function() {})
         })
     })
-    .on('query', function(sql) {
+    .on('query', function() {
       queryCount++
     })
     .catch(function(err) {
