@@ -113,4 +113,36 @@ module.exports = function(knex) {
 
   })
 
+  test('#785 - skipping extra transaction statements after commit / rollback', function(t) {
+    
+    var queryCount = 0
+
+    return knex.transaction(function(trx) {    
+      knex('test_table')
+        .transacting(trx)
+        .insert({name: 'Inserted before rollback called.'})
+        .then(function(resp) { 
+          trx.rollback(new Error('Rolled back'));
+        })
+        .then(function() {
+          return knex('test_table')
+            .transacting(trx)
+            .insert({name: 'Inserted after rollback called.'})
+            .then(function(resp) { 
+              console.log("Insert after rollback done");
+            })
+        })
+    })
+    .on('query', function(sql) {
+      queryCount++
+    })
+    .catch(function(err) {
+      t.equal(err.message, 'Rolled back')
+    })
+    .finally(function() {
+      t.equal(queryCount, 3)
+    })
+
+  })
+
 }
