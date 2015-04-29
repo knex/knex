@@ -92,7 +92,7 @@ gulp.task('build', function() {
 gulp.task('jshint', function () {
   gulp.src([
       '*.js', 'lib/**/*.js', 'test/**/*.js',
-      '!test/coverage/**/*.js', '!test/integration/migrate/migrations/*.js'
+      '!test/coverage/**/*.js', '!test/integration/migrate/migration/*.js'
     ])
     .pipe(jshint())
     .pipe(jshint.reporter('default'))
