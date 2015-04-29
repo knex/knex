@@ -6,6 +6,7 @@ raw
 node_modules
 test.sqlite3
 npm-debug.log
+tmp
 
 # Testing for the knex cli:
 bin/migrations-folder

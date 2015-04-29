@@ -3,9 +3,6 @@
   "version": "0.8.0",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
-  "directories": {
-    "test": "test"
-  },
   "dependencies": {
     "bluebird": "^2.9.24",
     "chalk": "^1.0.0",
@@ -26,18 +23,15 @@
   "devDependencies": {
     "JSONStream": "^0.10.0",
     "async": "^0.9.0",
-    "chai": "^1.9.1",
-    "chai-as-promised": "^4.1.0",
+    "chai": "^2.3.0",
+    "chai-as-promised": "^5.0.0",
     "coveralls": "~2.11.1",
     "gulp": "^3.8.11",
-    "gulp-bump": "^0.1.8",
-    "gulp-git": "~0.5.0",
     "gulp-jshint": "^1.8.4",
-    "gulp-shell": "^0.2.5",
     "istanbul": "~0.3.0",
-    "jshint": "~2.5.1",
-    "mariasql": "~0.1.21",
-    "mocha": "^1.20.0",
+    "jshint": "^2.7.0",
+    "mariasql": "^0.1.21",
+    "mocha": "^2.2.4",
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
     "node-uuid": "~1.4.0",
@@ -52,13 +46,11 @@
     "webpack": "^1.8.9"
   },
   "scripts": {
-    "build": "gulp build",
+    "build": "./scripts/build.sh build",
     "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && node test/tape/index.js && gulp jshint",
     "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape && npm run jshint",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "jshint": "gulp jshint",
-    "release:patch": "gulp jshint && npm test && gulp build && gulp bump --type patch && gulp release",
-    "release:minor": "gulp jshint && npm test && gulp build && gulp bump --type minor && gulp release"
+    "jshint": "gulp jshint"
   },
   "bin": {
     "knex": "./lib/bin/cli.js"
@@ -79,7 +71,7 @@
     "web": "https://github.com/tgriesser"
   },
   "browser": {
-    "bluebird/js/main/promise": "./lib/util/bluebird.js",    
+    "bluebird/js/main/promise": "./lib/util/bluebird.js",
     "./lib/migrate/index.js": "lodash/utility/noop",
     "./lib/bin/cli.js": "lodash/utility/noop",
     "./lib/seed/index.js": "lodash/utility/noop",
@@ -88,7 +80,7 @@
     "mysql2": false,
     "mariasql": false,
     "pg": false,
-    "pg-query-stream":false,
+    "pg-query-stream": false,
     "oracle": false,
     "strong-oracle": false,
     "sqlite3": false
@@ -96,7 +88,7 @@
   "files": [
     "README.md",
     "lib/*",
-    "browser/*",
+    "build/*",
     "gulpfile.js",
     "knex.js",
     "LICENSE"
