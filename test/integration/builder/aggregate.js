@@ -8,7 +8,7 @@ module.exports = function(knex) {
 
     it('has a sum', function() {
 
-      return knex('accounts').debug().sum('logins').testSql(function(tester) {
+      return knex('accounts').sum('logins').testSql(function(tester) {
           tester(
             'mysql',
             'select sum(`logins`) from `accounts`',

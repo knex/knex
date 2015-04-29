@@ -46,7 +46,7 @@
     "rimraf": "2.x",
     "sinon": "^1.10.0",
     "sinon-chai": "^2.5.0",
-    "sqlite3": "~3.0.2",
+    "sqlite3": "^3.0.5",
     "tape": "^4.0.0",
     "through": "^2.3.4",
     "webpack": "^1.8.9"
