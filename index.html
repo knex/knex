@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.7.5)</span>
+      Knex.js <span class="version">(0.8.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -45,8 +45,8 @@
       Upgrading
     </a>
     <ul class="toc_section">
+      <li>– <a href="#Upgrading-from0.7">0.7.x -> 0.8</a></li>
       <li>– <a href="#Upgrading-from0.6">0.6.x -> 0.7</a></li>
-      <li>– <a href="#Upgrading-from0.5">0.5.x -> 0.6</a></li>
     </ul>
 
     <a class="toc_title" href="#Installation">
@@ -309,7 +309,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.7.5 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.8.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -320,6 +320,13 @@
 
     <h2 id="Upgrading">Upgrading</h2>
 
+    <h3 id="Upgrading-from0.7">Upgrading 0.7 -> 0.8</h3>
+
+    <p>
+      There should be no major changes breaking the external API. If you encounter issues, 
+      please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>.
+    </p>
+
     <h3 id="Upgrading-from0.6">Upgrading 0.6 -> 0.7</h3>
 
     <p>
@@ -327,16 +334,6 @@
       no longer used as the default <tt>order by</tt> in sqlite3
       for <a href="https://github.com/tgriesser/knex/pull/396">performance reasons</a>.
       If there are other issues, please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>.
-    </p>
-
-
-    <h3 id="Upgrading-from0.5">Upgrading 0.5 -> 0.6</h3>
-
-    <p>
-      Big and exciting improvements from the 0.5 release, the 0.6 release brings refactored internals, streams, the ability
-      to properly inject &amp; bind knex.raw statements throughout any queries, the ability to re-use existing snippets.
-      If you were only using the publicly documented API, no major changes should be necessary. If you notice any issues,
-      please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>. For a full list of changes, see the entry in the <a href="#release-0.6.0">change log.</a>
     </p>
 
     <h2 id="Installation">
@@ -353,19 +350,22 @@
     </p>
 
 <pre>
-$ npm install knex@0.7 --save
+$ npm install knex@0.8 --save
 
 # Then add one of the following (adding a --save) flag:
-$ npm install mysql
-$ npm install mariasql
 $ npm install pg
 $ npm install sqlite3
+$ npm install mysql
+$ npm install mysql2
+$ npm install mariasql
+$ npm install strong-oracle
+$ npm install oracle
 </pre>
 
     <h3 id="Installation-browser">Browser</h3>
 
     <p>
-      The browser builds and pre-built dependencies can be found in the <a href="https://github.com/tgriesser/knex/tree/master/browser">browser directory</a>. View source on this page to see the browser builds in-action.
+      Knex can be built using browserify or webpack, and a pre-built version can be found in the <a href="https://github.com/tgriesser/knex/tree/master/build">build directory</a>. View source on this page to see the browser build in-action.
     </p>
 
     <h3 id="Installation-client">Initializing the Library</h3>
@@ -805,7 +805,6 @@ knex('users')
   .select('users.id', 'contacts.phone')
 </pre>
 
-
     <p>
       For grouped joins, specify a function as the second argument for the
       join query, and use <tt>on</tt> and <tt>orOn</tt> to create joins that are
@@ -818,8 +817,17 @@ knex.select('*').from('users').join('accounts', function() {
 })
 </pre>
 
+    <p>
+      It is also possible to use an object to represent the join syntax.
+    </p>
+
+<pre class="display">
+knex.select('*').from('users').join('accounts', {'accounts.id': 'users.account_id'})
+</pre>
+
+
 <p>
-  If you need to use a literal value (string, number, or boolean) in a join instead of a column, use <tt>knex.raw</tt>.
+  If you need to use a literal value (string, number, or boolean) in a join instead of a column, use <tt>knex.raw</tt>.</p>
 
   <pre class="display">
   knex.select('*').from('users').join('accounts', 'accounts.type', knex.raw('?', ['admin']))
@@ -2463,6 +2471,11 @@ $ knex seed:run
 
     <p id="faq-debug">
       <b class="header">How do I debug?</b><br />
+      Knex is beginning to make use of the <a href="https://github.com/visionmedia/debug">debug</a> module internally, so you can set the <tt>DEBUG</tt> environment variable to <tt>knex:*</tt> to see all debugging,
+      or select individual namespaces <tt>DEBUG=knex:query,knex:tx</tt> to constrain a bit.
+    </p>
+
+    <p>
       If you pass <tt>{debug: true}</tt> as one of the options in your initialize settings, you can see all of the query calls being made. Sometimes you need to dive a bit further into the various calls and see what all is going on behind the scenes. I'd recommend
       <a href="https://github.com/dannycoates/node-inspector">node-inspector</a>, which allows you to debug code with <tt>debugger</tt> statements like you would in the browser.
     </p>
@@ -2491,6 +2504,37 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.8.0</b> &mdash; <small><i>Apr 29, 2015</i></small><br />
+    </p>    
+
+    <b>New Features:</b>
+    <ul>
+      <li>Fixes several major outstanding bugs with the connection pool, switching to <a href="https://github.com/myndzi/pool2">Pool2</a> in place of generic-pool-redux</li>
+      <li>strong-oracle module support</li>
+      <li>Nested transactions automatically become savepoints, with <tt>commit</tt> &amp; <tt>rollback</tt> releasing or rolling back the current savepoint.</li>
+      <li>Database seed file support, #391</li>
+      <li>Improved support for sub-raw queries within raw statements</li>
+      <li>Migrations are now wrapped in transactions where possible</li>
+      <li>Subqueries supported in insert statements, #627</li>
+      <li>Support for nested having, #572</li>
+      <li>Support object syntax for joins, similar to "where" #743</li>
+    </ul>
+
+    <b>Major Changes:</b>
+    <ul>
+      <li>Transactions are immediately invoked as A+ promises, #470 (this is a feature and should not actually break anything in practice)</li>
+      <li>Heavy refactoring internal APIs (public APIs should not be affected)</li>
+    </ul>
+
+    <b>Other Changes:</b>
+    <ul>
+      <li>Allow mysql2 to use non-default port, #588</li>
+      <li>Support creating &amp; dropping extensions in PostgreSQL, #540</li>
+      <li>CLI support for knexfiles that do not provide environment keys, #527</li>
+      <li>Added sqlite3 dialect version of whereRaw/andWhereRaw (#477).</li>
+    </ul>
 
     <p>
       <b class="header">0.7.5</b> &mdash; <small><i>Mar 9, 2015</i></small><br />
@@ -2564,6 +2608,10 @@ $ npm test
         <li>Flag for creating jsonb columns in Postgresql, #500</li>
       </ul>
     </p>
+
+    <p><a href="#" class="js-change-log" style="text-align:center">Show Full Change log</a></p>
+
+    <div class="change-log" style="display:none;">
 
     <p>
       <b class="header">0.6.22</b> &mdash; <small><i>July 10, 2014</i></small><br />
@@ -2731,9 +2779,6 @@ $ npm test
       For More information, see this <a href="https://github.com/tgriesser/knex/pull/252">pull-request</a>.
     </p>
 
-    <p><a href="#" class="js-change-log" style="text-align:center">Show Full Change log</a></p>
-
-    <div class="change-log" style="display:none;">
 
       <p>
         <b class="header">0.5.15</b> &mdash; <small><i>June 4, 2014</i></small> &mdash; <a href="https://github.com/tgriesser/knex/compare/0.5.14...0.5.15">Diff</a><br />
@@ -3061,7 +3106,7 @@ $ npm test
   <script src="docs/assets/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/2.9.24/bluebird.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.7.0/lodash.js"></script>
-  <script src="docs/assets/knex.js"></script>
+  <script src="build/knex.js"></script>
   <script>
   var trx, dialects = {};
 
