@@ -52,9 +52,8 @@
     "webpack": "^1.8.9"
   },
   "scripts": {
-    "tape": "tape ./test/tape/index.js",
     "build": "gulp build",
-    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
+    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && node test/tape/index.js && gulp jshint",
     "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape && npm run jshint",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "gulp jshint",
@@ -80,11 +79,19 @@
     "web": "https://github.com/tgriesser"
   },
   "browser": {
-    "pg-query-stream":          false,
     "bluebird/js/main/promise": "./lib/util/bluebird.js",    
-    "./lib/migrate/index.js":   "./lib/migrate/index.web.js",
-    "./lib/bin/cli.js":         "lodash/utility/noop",
-    "./lib/seed/index.js":      "lodash/utility/noop"
+    "./lib/migrate/index.js": "lodash/utility/noop",
+    "./lib/bin/cli.js": "lodash/utility/noop",
+    "./lib/seed/index.js": "lodash/utility/noop",
+    "pool2": "lodash/utility/noop",
+    "mysql": false,
+    "mysql2": false,
+    "mariasql": false,
+    "pg": false,
+    "pg-query-stream":false,
+    "oracle": false,
+    "strong-oracle": false,
+    "sqlite3": false
   },
   "files": [
     "README.md",
