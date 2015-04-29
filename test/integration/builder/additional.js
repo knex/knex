@@ -34,7 +34,7 @@ module.exports = function(knex) {
       var tables = {
         mysql: 'SHOW TABLES',
         mysql2: 'SHOW TABLES',
-        mariasql: 'SHOW TABLES',
+        mariadb: 'SHOW TABLES',
         postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';",
         oracle: "select TABLE_NAME from USER_TABLES"
