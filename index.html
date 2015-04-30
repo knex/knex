@@ -263,7 +263,7 @@
       <option value="mysql">MySQL / MariaDB</option>
       <option value="pg">PostgreSQL</option>
       <option value="sqlite3">SQLite3</option>
-      <option value="oracle">Oracle (experimental)</option>
+      <option value="oracle">Oracle</option>
     </select>
   </div>
 
@@ -276,9 +276,9 @@
     </p>
 
     <p>
-      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MySQL</b>, <b>MariaDB</b> and <b>SQLite3</b>, designed to be flexible,
+      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MySQL</b>, <b>MariaDB</b>, <b>SQLite3</b>, and <b>Oracle</b> designed to be flexible,
       portable, and fun to use. It features both traditional node style <a href="#Interfaces-Callbacks">callbacks</a>
-      as well as a <a href="#Interfaces-Promises">promise</a> interface for cleaner async flow control, <a href="#Interfaces-Streams">a stream interface</a>, full featured <a href="#Builder">query</a> and <a href="#Schema">schema</a> builders, <a href="#Transactions"><b>transaction support</b></a>, connection <a href="#Installation-pooling">pooling</a> and standardized responses between
+      as well as a <a href="#Interfaces-Promises">promise</a> interface for cleaner async flow control, <a href="#Interfaces-Streams">a stream interface</a>, full featured <a href="#Builder">query</a> and <a href="#Schema">schema</a> builders, <a href="#Transactions"><b>transaction support (with savepoints)</b></a>, connection <a href="#Installation-pooling">pooling</a> and standardized responses between
       different query clients and dialects.
     </p>
 
@@ -415,7 +415,6 @@ $ npm install oracle
 </code>
 </pre>
 
-
     <p>
       You can also connect via an unix domain socket, which will ignore host and port.
     </p>
@@ -424,7 +423,7 @@ $ npm install oracle
 <code class="js">var knex = require('knex')({
   client: 'mysql',
   connection: {
-    socketPath     : '/path/to/socket.sock',
+    socketPath : '/path/to/socket.sock',
     user     : 'your_database_user',
     password : 'your_database_password',
     database : 'myapp_test'
@@ -448,7 +447,7 @@ $ npm install oracle
     <h3 id="Installation-pooling">Pooling</h3>
 
     <p>
-      The client created by the configuration initializes a connection pool, using the <a href="https://github.com/bookshelf/generic-pool-redux">generic-pool-redux</a> library. This connection pool has a default setting of a <tt>min: 2, max: 10</tt> for the MySQL and PG libraries, and a single connection for sqlite3 (due to issues with utilizing multiple connections on a single file). To change the config settings for the pool, pass a <tt>pool</tt> option as one of the keys in the initialize block.
+      The client created by the configuration initializes a connection pool, using the <a href="https://github.com/myndzi/pool2">Pool2</a> library. This connection pool has a default setting of a <tt>min: 2, max: 10</tt> for the MySQL and PG libraries, and a single connection for sqlite3 (due to issues with utilizing multiple connections on a single file). To change the config settings for the pool, pass a <tt>pool</tt> option as one of the keys in the initialize block. Checkout the <a href="https://github.com/myndzi/pool2">Pool2</a> library for more information.
     </p>
 
 <pre>

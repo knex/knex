@@ -2,7 +2,7 @@
 
 A SQL query builder that is flexible, portable, and fun to use!
 
-A batteries-included, multi-dialect (MySQL, PostgreSQL, SQLite3, WebSQL) query builder for
+A batteries-included, multi-dialect (MySQL, PostgreSQL, SQLite3, WebSQL, Oracle) query builder for
 Node.js and the Browser, featuring:
 
 - [transactions](http://knexjs.org/#Transactions)

@@ -46,8 +46,9 @@
     "webpack": "^1.8.9"
   },
   "scripts": {
-    "build": "./scripts/build.sh build",
-    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && node test/tape/index.js && gulp jshint",
+    "build": "./scripts/build.sh",
+    "tape": "node test/tape/index.js",
+    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape && gulp jshint",
     "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape && npm run jshint",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "gulp jshint"
@@ -64,7 +65,9 @@
     "query",
     "postgresql",
     "mysql",
-    "sqlite3"
+    "mariadb",
+    "sqlite3",
+    "oracle"
   ],
   "author": {
     "name": "Tim Griesser",
