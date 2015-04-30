@@ -49,7 +49,7 @@
     "build": "./scripts/build.sh",
     "tape": "node test/tape/index.js",
     "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape && gulp jshint",
-    "test": "istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape && npm run jshint",
+    "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "gulp jshint"
   },
