@@ -32,3 +32,17 @@ test('allows for :val: for interpolated identifiers', function(t) {
     "select * from \"users\" where user_id = 1 and name = 'tim'"
   )
 })
+
+test('allows for options in raw queries, #605', function(t) {
+  t.plan(1)
+  var x = raw("select 'foo', 'bar';")
+    .options({ rowMode: "array" })
+    .toSQL()
+
+  t.deepEqual(x, {
+    sql: "select 'foo', 'bar';",
+    options: {rowMode: "array"},
+    method: 'raw',
+    bindings: undefined
+  })
+})
