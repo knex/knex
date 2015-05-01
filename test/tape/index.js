@@ -10,8 +10,10 @@ Object.keys(knexfile).forEach(function(key) {
   require('./raw')
   require('./query-builder')
   require('./seed')
-  
+  require('./knex')
+
   var knex = makeKnex(knexfile[key])
+  
   require('./transactions')(knex)
 
   // Tear down the knex connection
