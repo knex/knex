@@ -1,3 +1,4 @@
+'use strict';
 
 var knex = require('../../lib/index');
 var test = require('tape')
