@@ -40,8 +40,7 @@
     "sinon-chai": "^2.5.0",
     "sqlite3": "^3.0.5",
     "tape": "^4.0.0",
-    "through": "^2.3.4",
-    "webpack": "^1.8.9"
+    "through": "^2.3.4"
   },
   "scripts": {
     "build": "./scripts/build.sh",

@@ -20,7 +20,7 @@ By default, Knex runs tests against MySQL (using [mysql](https://github.com/feli
 No setup is required for SQLite.
 
 ### Specifying Databases
-You can optionally specify which dialects to test using the `KNEX_TEST_INTEGRATION_DIALECTS` environment variable. Values shoud be space separated and can include:
+You can optionally specify which dialects to test using the `DB` environment variable. Values shoud be space separated and can include:
 * mysql
 * mysql2
 * postgres
@@ -29,7 +29,7 @@ You can optionally specify which dialects to test using the `KNEX_TEST_INTEGRATI
 * oracle
 
 ```bash
-$ KNEX_TEST_INTEGRATION_DIALECTS='postgres mysql' npm test
+$ DB='postgres mysql' npm test
 ```
 
 ### Custom Configuration

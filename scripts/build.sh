@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+npm install webpack@1.8.11
+
 webpack=node_modules/.bin/webpack
 
 rm -rf tmp

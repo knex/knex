@@ -146,4 +146,18 @@ module.exports = function(knex) {
 
   })
 
+  test('#805 - nested ddl transaction', function(t) {
+    return knex.transaction(function(knex) {
+      return knex.transaction(function(trx) {
+        return trx.schema.createTable('ages', function(t) {
+          t.increments('id').primary();
+          t.string('name').unique().notNull();
+        });
+      })  
+    })
+    .finally(function() {
+      return knex.schema.dropTableIfExists('ages')
+    });    
+  });
+
 }
