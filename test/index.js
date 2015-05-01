@@ -6,7 +6,6 @@ global.sinon = require("sinon");
 
 var chai = global.chai = require("chai");
 
-// chai.use(require("chai-as-promised"));
 chai.use(require("sinon-chai"));
 chai.should();
 

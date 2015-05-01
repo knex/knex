@@ -31,7 +31,7 @@
     "istanbul": "~0.3.0",
     "jshint": "^2.7.0",
     "mariasql": "^0.1.21",
-    "mocha": "^2.2.4",
+    "mocha": "^1.21.5",
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
     "node-uuid": "~1.4.0",
@@ -48,8 +48,8 @@
   "scripts": {
     "build": "./scripts/build.sh",
     "tape": "node test/tape/index.js",
-    "test": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape && npm run jshint",
-    "covertest": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
+    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape && gulp jshint",
+    "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "gulp jshint"
   },
