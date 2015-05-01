@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.8.0)</span>
+      Knex.js <span class="version">(0.8.1)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -309,7 +309,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.8.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.8.1 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -2396,8 +2396,6 @@ $ knex seed:run
 </code>
 </pre>
 
-
-
     <h3 id="Migrations-API">Migration API</h3>
 
     <p>
@@ -2503,6 +2501,15 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.8.1</b> &mdash; <small><i>May 1, 2015</i></small><br />
+    </p>
+    
+    <ul>
+      <li>Warn rather than error when implicit commits wipe out savepoints in mysql / mariadb, #805.</li>
+      <li>Fix for incorrect seed config reference, #804.</li>
+    </ul>
 
     <p>
       <b class="header">0.8.0</b> &mdash; <small><i>Apr 30, 2015</i></small><br />
