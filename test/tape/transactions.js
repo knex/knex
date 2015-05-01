@@ -146,7 +146,7 @@ module.exports = function(knex) {
 
   })
 
-  test('#805 - nested ddl transaction', function(t) {
+  test('#805 - nested ddl transaction', function() {
     return knex.transaction(function(knex) {
       return knex.transaction(function(trx) {
         return trx.schema.createTable('ages', function(t) {
