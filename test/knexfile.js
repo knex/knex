@@ -19,6 +19,25 @@ var pool = {
   }
 };
 
+var mysqlPool = _.extend({}, pool, {
+  afterCreate: function(connection, callback) {
+    Promise.promisify(connection.query, connection)("SET sql_mode='TRADITIONAL';", []).then(function() {
+      callback(null, connection);
+    });
+  }
+});
+
+var mariaPool = _.extend({}, pool, {
+  afterCreate: function(connection, callback) {
+    var query = connection.query("SET sql_mode='TRADITIONAL';", [])
+    query.on('result', function(result) {
+      result.on('end', function() {
+        callback(null, connection)
+      })
+    })
+  }
+});
+
 var migrations = {
   directory: 'test/integration/migrate/migration'
 };
@@ -34,8 +53,10 @@ var testConfigs = {
     connection: testConfig.maria || {
       db: "knex_test",
       user: "root",
-      charset: 'utf8'
+      charset: 'utf8',
+      host: '127.0.0.1'
     },
+    pool: mariaPool,
     migrations: migrations,
     seeds: seeds
   },
@@ -47,13 +68,7 @@ var testConfigs = {
       user: "root",
       charset: 'utf8'
     },
-    pool: _.extend({}, pool, {
-      afterCreate: function(connection, callback) {
-        Promise.promisify(connection.query, connection)("SET sql_mode='TRADITIONAL';", []).then(function() {
-          callback(null, connection);
-        });
-      }
-    }),
+    pool: mysqlPool,
     migrations: migrations,
     seeds: seeds
   },
@@ -65,13 +80,7 @@ var testConfigs = {
       user: "root",
       charset: 'utf8'
     },
-    pool: _.extend({}, pool, {
-      afterCreate: function(connection, callback) {
-        Promise.promisify(connection.query, connection)("SET sql_mode='TRADITIONAL';", []).then(function() {
-          callback(null, connection);
-        });
-      }
-    }),
+    pool: mysqlPool,
     migrations: migrations,
     seeds: seeds
   },
