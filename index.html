@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.8.2)</span>
+      Knex.js <span class="version">(0.8.3)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -213,7 +213,7 @@
       <li>&nbsp;&nbsp;– <a href="#Promises-bind">bind</a></li>
       <li>&nbsp;&nbsp;– <a href="#Promises-return">return</a></li>
       <li><b><a href="#Interfaces-Callbacks">Callbacks</a></b></li>
-      <li>&nbsp;&nbsp;– <a href="#Interfaces-exec">exec</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Interfaces-asCallback">asCallback</a></li>
       <li><b><a href="#Interfaces-Streams">Streams</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Streams-stream">stream</a></li>
       <li>&nbsp;&nbsp;– <a href="#Streams-pipe">pipe</a></li>
@@ -309,7 +309,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.8.2 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.8.3 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -2135,10 +2135,10 @@ knex.insert(values).into('users').return({inserted: true});
 
     <h3 id="Interfaces-Callbacks">Callbacks</h3>
 
-    <p id="Interfaces-exec">
-      <b class="header">exec</b><code>.exec(callback)</code>
+    <p id="Interfaces-asCallback">
+      <b class="header">asCallback</b><code>.asCallback(callback)</code>
       <br />
-      If you'd prefer a callback interface over promises, the <b>exec</b> function
+      If you'd prefer a callback interface over promises, the <b>asCallback</b> function
       accepts a standard node style callback for executing the query chain. Note that as
       with the <a href="#Promises-then">then</a> method, subsequent calls to the same
       query chain will return the same result.
@@ -2503,12 +2503,16 @@ $ npm test
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.8.3</b> &mdash; <small><i>May 2, 2015</i></small><br />
+    </p>
+    
+    <p>Alias postgresql -> postgres in connection config options.</li>
+    
+    <p>
       <b class="header">0.8.2</b> &mdash; <small><i>May 1, 2015</i></small><br />
     </p>
     
-    <ul>
-      <li>Fix regression in using query string in connection config.</li>
-    </ul>
+    <p>Fix regression in using query string in connection config.</p>
 
     <p>
       <b class="header">0.8.1</b> &mdash; <small><i>May 1, 2015</i></small><br />

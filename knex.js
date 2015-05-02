@@ -1,4 +1,4 @@
-// Knex.js  0.8.0
+// Knex.js
 // --------------
 //     (c) 2014 Tim Griesser
 //     Knex may be freely distributed under the MIT license.
