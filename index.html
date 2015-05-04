@@ -272,7 +272,7 @@
   <div class="container">
 
     <p>
-      <img id="logo" src="docs/images/knex.png" alt="Knex.js">
+      <img height="108" id="logo" src="docs/images/knex.png" alt="Knex.js">
     </p>
 
     <p>
@@ -2150,10 +2150,10 @@ knex.insert(values).into('users').return({inserted: true});
   .andWhere('id', '<', 200)
   .limit(10)
   .offset(x)
-  .exec(function(err, rows) {
+  .asCallback(function(err, rows) {
     if (err) return console.error(err);
     knex.select('id').from('nicknames').whereIn('nickname', _.pluck(rows, 'name'))
-      .exec(function(err, rows) {
+      .asCallback(function(err, rows) {
         if (err) return console.error(err);
         console.log(rows);
       });
