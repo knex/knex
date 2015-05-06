@@ -46,3 +46,13 @@ test('allows for options in raw queries, #605', function(t) {
     bindings: undefined
   })
 })
+
+test('raw query strings with keys replace values', function(t) {
+  
+  t.plan(2)
+  
+  t.equal(raw('select :item from :place', {}).toSQL().sql, 'select from')
+
+  t.equal(raw('select :item :cool 2 from :place', {}).toSQL().sql, 'select 2 from')
+
+})
