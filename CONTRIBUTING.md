@@ -1,5 +1,8 @@
 ## How to contribute to Knex.js
 
+* Make changes in the `/src` directory and run `npm run dev` to
+update the files in `/lib`
+
 * Before sending a pull request for a feature or bug fix, be sure to have
 [tests](https://github.com/tgriesser/knex/tree/master/test).
 

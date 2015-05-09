@@ -3,11 +3,17 @@
 npm install webpack@1.8.11
 
 webpack=node_modules/.bin/webpack
+babel=node_modules/.bin/babel
+jshint=node_modules/.bin/jshint
 
 rm -rf tmp
 mkdir tmp
 rm -rf build
 mkdir build
+
+rm -rf lib
+mkdir lib
+babel -D src/ --out-dir lib/
 
 cp -r lib tmp/lib
 cp knex.js tmp

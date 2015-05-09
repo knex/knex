@@ -20,12 +20,11 @@
     "v8flags": "^2.0.2"
   },
   "devDependencies": {
-    "JSONStream": "^0.10.0",
+    "JSONStream": "^1.0.3",
     "async": "^0.9.0",
+    "babel": "^5.2.17",
     "chai": "^2.3.0",
     "coveralls": "~2.11.1",
-    "gulp": "^3.8.11",
-    "gulp-jshint": "^1.8.4",
     "istanbul": "~0.3.0",
     "jshint": "^2.7.0",
     "mariasql": "^0.1.21",
@@ -43,12 +42,13 @@
     "through": "^2.3.4"
   },
   "scripts": {
+    "dev": "babel -D -w src/ --out-dir lib/",
     "build": "./scripts/build.sh",
     "tape": "node test/tape/index.js",
-    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape && gulp jshint",
     "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
+    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "jshint": "gulp jshint"
+    "jshint": "jshint --exclude=test/coverage/. test/. src/."
   },
   "bin": {
     "knex": "./lib/bin/cli.js"
@@ -87,9 +87,9 @@
   },
   "files": [
     "README.md",
+    "src/*",
     "lib/*",
     "build/*",
-    "gulpfile.js",
     "knex.js",
     "LICENSE"
   ],
