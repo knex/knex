@@ -14,21 +14,20 @@ function OracleQueryStream(connection, sql, bindings, options) {
 inherits(OracleQueryStream, Readable)
 
 OracleQueryStream.prototype._read = function() {
-  var stream = this;
   function pushNull() {
-    process.nextTick(function() {
-      stream.push(null)
+    process.nextTick(() => {
+      this.push(null)
     })
   }
   try {
-    this.oracleReader.nextRows(function(err, rows) {
-      if (err) return stream.emit('error', err)
+    this.oracleReader.nextRows((err, rows) => {
+      if (err) return this.emit('error', err)
       if (rows.length === 0) {
         pushNull()
       } else {
         for (var i = 0; i < rows.length; i++) {
           if (rows[i]) {
-            stream.push(rows[i])
+            this.push(rows[i])
           } else {
             pushNull()
           }

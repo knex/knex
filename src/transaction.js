@@ -23,17 +23,15 @@ function Transaction(client, container, config, outerTx) {
 
   debug('%s: Starting %s transaction', txid, outerTx ? 'nested' : 'top level')
 
-  var t = this
-
-  this._promise = Promise.using(this.acquireConnection(client, config, txid), function(connection) {
+  this._promise = Promise.using(this.acquireConnection(client, config, txid), (connection) => {
     
-    var trxClient = t.trxClient = makeTxClient(t, client, connection)
-    var init      = client.transacting ? t.savepoint(connection) : t.begin(connection)
+    var trxClient = this.trxClient = makeTxClient(this, client, connection)
+    var init      = client.transacting ? this.savepoint(connection) : this.begin(connection)
     
-    init.then(function() {
-      return makeTransactor(t, connection, trxClient)
+    init.then(() => {
+      return makeTransactor(this, connection, trxClient)
     })
-    .then(function(transactor) {
+    .then((transactor) => {
 
       var result = container(transactor)
 
@@ -41,19 +39,19 @@ function Transaction(client, container, config, outerTx) {
       // and it's got the transaction object we're running for this, assume
       // the rollback and commit are chained to this object's success / failure.
       if (result && result.then && typeof result.then === 'function') {
-        result.then(function(val) { 
+        result.then((val) => {
           transactor.commit(val)
         })
-        .catch(function(err) {
+        .catch((err) => {
           transactor.rollback(err)
         })
       }
     
     })
 
-    return new Promise(function(resolver, rejecter) {
-      t._resolver = resolver
-      t._rejecter = rejecter
+    return new Promise((resolver, rejecter) => {
+      this._resolver = resolver
+      this._rejecter = rejecter
     })
   })
 
@@ -118,20 +116,19 @@ assign(Transaction.prototype, {
   },
 
   query: function(conn, sql, status, value) {
-    var t = this
     var q = this.trxClient.query(conn, sql)
-      .catch(function(err) {
+      .catch((err) => {
         status = 2
         value  = err
-        t._completed = true
-        debug('%s error running transaction query', t.txid)
+        this._completed = true
+        debug('%s error running transaction query', this.txid)
       })
-      .tap(function() {
-        if (status === 1) t._resolver(value)
-        if (status === 2) t._rejecter(value)
+      .tap(() => {
+        if (status === 1) this._resolver(value)
+        if (status === 2) this._rejecter(value)
       })
     if (status === 1 || status === 2) {
-      t._completed = true
+      this._completed = true
     }
     return q;
   },
