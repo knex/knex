@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-'use strict';
 
 var Liftoff   = require('liftoff');
 var Promise   = require('bluebird');

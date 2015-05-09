@@ -1,4 +1,3 @@
-'use strict';
 
 // Oracle Client
 // -------

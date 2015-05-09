@@ -1,4 +1,3 @@
-'use strict';
 
 /*jslint node:true, nomen: true*/
 var inherits = require('inherits')

@@ -1,4 +1,3 @@
-'use strict';
 
 var inherits      = require('inherits');
 var ColumnBuilder = require('../../../schema/columnbuilder');

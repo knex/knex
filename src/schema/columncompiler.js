@@ -1,4 +1,3 @@
-'use strict';
 
 // Column Compiler
 // Used for designating column definitions

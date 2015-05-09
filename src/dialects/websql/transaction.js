@@ -1,4 +1,3 @@
-'use strict';
 
 var makeKnex = require('../../util/make-knex')
 var Promise  = require('../../promise')

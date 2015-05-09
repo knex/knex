@@ -1,7 +1,6 @@
 // PostgreSQL Schema Compiler
 // -------
 
-'use strict';
 
 var inherits       = require('inherits');
 var SchemaCompiler = require('../../../schema/compiler');

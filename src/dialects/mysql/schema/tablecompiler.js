@@ -1,4 +1,3 @@
-'use strict';
 
 // MySQL Table Builder & Compiler
 // -------

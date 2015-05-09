@@ -1,4 +1,3 @@
-'use strict';
 
 var helpers = require('./helpers')
 var assign  = require('lodash/object/assign');

@@ -1,4 +1,3 @@
-'use strict';
 
 var QueryBuilder = require('./query/builder')
 var Raw          = require('./raw')

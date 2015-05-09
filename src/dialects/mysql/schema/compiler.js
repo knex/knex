@@ -1,4 +1,3 @@
-'use strict';
 
 // MySQL Schema Compiler
 // -------

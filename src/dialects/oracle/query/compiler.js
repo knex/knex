@@ -1,4 +1,3 @@
-'use strict';
 
 // Oracle Query Builder & Compiler
 // ------

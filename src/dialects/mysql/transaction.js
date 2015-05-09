@@ -1,4 +1,3 @@
-'use strict';
 
 var Transaction = require('../../transaction')
 var assign      = require('lodash/object/assign');

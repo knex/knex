@@ -1,4 +1,3 @@
-'use strict';
 
 var EventEmitter   = require('events').EventEmitter
 var assign         = require('lodash/object/assign');

@@ -1,4 +1,3 @@
-'use strict';
 
 var Raw            = require('./raw')
 var warn           = require('./helpers').warn

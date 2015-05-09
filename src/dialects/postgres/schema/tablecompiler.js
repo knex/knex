@@ -1,6 +1,5 @@
 // PostgreSQL Table Builder & Compiler
 // -------
-'use strict';
 
 var _             = require('lodash');
 var inherits      = require('inherits');

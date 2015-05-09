@@ -1,4 +1,3 @@
-'use strict';
 
 // MySQL2 Client
 // -------

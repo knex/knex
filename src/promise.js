@@ -1,4 +1,3 @@
-'use strict';
 
 var Promise   = require('bluebird/js/main/promise')();
 var deprecate = require('./helpers').deprecate

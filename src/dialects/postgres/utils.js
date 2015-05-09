@@ -1,4 +1,3 @@
-'use strict';
 
 function dateToString(date) {
   function pad(number, digits) {

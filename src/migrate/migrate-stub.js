@@ -1,4 +1,3 @@
-'use strict';
 
 // Stub Migrate:
 // Used for now in browser builds, where filesystem access isn't
