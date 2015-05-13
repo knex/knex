@@ -36,7 +36,9 @@ function Client(config) {
   this.connectionSettings = cloneDeep(config.connection || {})
   if (this.driverName && config.connection) {
     this.initializeDriver()
-    this.initializePool(config)
+    if (config.pool && config.pool.max !== 0) {
+      this.initializePool(config)  
+    }
   }
 }
 inherits(Client, EventEmitter)

@@ -10,6 +10,7 @@ Object.keys(knexfile).forEach(function(key) {
   require('./raw')
   require('./query-builder')
   require('./seed')
+  require('./pool')
   require('./knex')
 
   var knex = makeKnex(knexfile[key])
