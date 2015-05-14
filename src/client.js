@@ -30,14 +30,13 @@ var debugQuery     = require('debug')('knex:query')
 
 // The base client provides the general structure
 // for a dialect specific client object.
-function Client(config) {
-  config = config || {}
+function Client(config = {}) {
   this.config = config
   this.connectionSettings = cloneDeep(config.connection || {})
   if (this.driverName && config.connection) {
     this.initializeDriver()
-    if (config.pool && config.pool.max !== 0) {
-      this.initializePool(config)  
+    if (!config.pool || (config.pool && config.pool.max !== 0)) {
+      this.initializePool(config)
     }
   }
 }
