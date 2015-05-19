@@ -1,7 +1,7 @@
-# [knex.js](http://knexjs.org) [![Build Status](https://travis-ci.org/tgriesser/knex.png?branch=master)](https://travis-ci.org/tgriesser/knex) [![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.png?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
+# [knex.js](http://knexjs.org) [![Build Status](https://travis-ci.org/tgriesser/knex.svg?branch=master)](https://travis-ci.org/tgriesser/knex) [![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.svg?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
 
 Gitter chat
-[![Gitter chat](https://badges.gitter.im/tgriesser/knex.png)](https://gitter.im/tgriesser/knex "Gitter chat")
+[![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex "Gitter chat")
 
 A SQL query builder that is flexible, portable, and fun to use!
 
