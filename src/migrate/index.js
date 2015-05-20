@@ -200,18 +200,16 @@ export default class Migrator {
     var directory = this._absoluteConfigDir()
     var current   = Promise.bind({failed: false, failedOn: 0});
     var log       = [];
-    _.each(migrations, function(migration) {
+    _.each(migrations, (migration) => {
       var name  = migration;
       migration = require(directory + '/' + name);
 
       // We're going to run each of the migrations in the current "up"
-      current = current.then(function() {
+      current = current.then(() => {
         if (disableTransactions) {
-          return warnPromise(migration[direction](knex, Promise), 'migration ' + name + ' did not return a promise')
+          return warnPromise(migration[direction](knex, Promise), name)
         }
-        return knex.transaction(function(trx) {
-          return warnPromise(migration[direction](trx, Promise), 'migration ' + name + ' did not return a promise');
-        });
+        return this._transaction(migration, direction, name)
       })
       .then(() => {
         log.push(path.join(directory, name));
@@ -229,6 +227,14 @@ export default class Migrator {
     })
 
     return current.thenReturn([batchNo, log]);
+  }
+
+  _transaction(migration, direction, name) {
+    return this.knex.transaction((trx) => {
+      return warnPromise(migration[direction](trx, Promise), name, () => {
+        trx.commit()
+      })
+    })
   }
 
   _absoluteConfigDir() {
@@ -257,9 +263,10 @@ function validateMigrationList(migrations) {
   }
 }
 
-function warnPromise(value, message) {
+function warnPromise(value, name, fn) {
   if (!value || typeof value.then !== 'function') {
-    helpers.warn(message);
+    helpers.warn(`migration ${name} did not return a promise`);
+    if (fn && typeof fn === 'function') fn()
   }
   return value;
 }
