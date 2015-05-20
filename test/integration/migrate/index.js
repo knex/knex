@@ -31,7 +31,7 @@ module.exports = function(knex) {
     describe('knex.migrate.latest', function() {
 
       before(function() {
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'});
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function() {});
       });
 
       it('should run all migration files in the specified directory', function() {

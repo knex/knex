@@ -42,7 +42,7 @@
     "through": "^2.3.4"
   },
   "scripts": {
-    "dev": "babel -D -w src/ --out-dir lib/",
+    "dev": "babel -L -D -w src/ --out-dir lib/",
     "build": "./scripts/build.sh",
     "tape": "node test/tape/index.js",
     "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
