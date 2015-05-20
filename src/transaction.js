@@ -48,6 +48,7 @@ function Transaction(client, container, config, outerTx) {
       }
     
     })
+    .catch((e) => this._rejecter(e))
 
     return new Promise((resolver, rejecter) => {
       this._resolver = resolver

@@ -160,4 +160,12 @@ module.exports = function(knex) {
     });    
   });
 
+  test('#832 - exceptions in transaction container', function(t) {
+    return knex.transaction(function() {
+      throw new Error('Some Error')
+    }).catch(function(e) {
+      t.equal(e.message, 'Some Error')
+    })
+  })
+
 }
