@@ -120,8 +120,10 @@ Migrator.prototype._runBatch = function(migrations, direction) {
         })
         .then(function(batchNo) {
           return this._waterfallBatch(batchNo, migrations, direction)
-        }).catch(function(error) {
+        })
+        .catch(function(error) {
           helpers.warn('migrations failed with error: ' + error.message)
+          throw error
         });
     });
 };
