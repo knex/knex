@@ -2371,7 +2371,7 @@ $ knex seed:run
 <code class="js">module.exports = {
   client: 'pg',
   connection: process.env.DATABASE_URL || {
-    username: 'me',
+    user: 'me',
     database: 'my_app'
   }
 };
@@ -2384,7 +2384,7 @@ $ knex seed:run
   development: {
     client: 'pg',
     connection: {
-      username: 'me',
+      user: 'me',
       database: 'my_app'
     }
   },
