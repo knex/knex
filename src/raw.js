@@ -80,7 +80,9 @@ function replaceRawArrBindings(raw) {
     
     if (value && typeof value.toSQL === 'function') {
       var bindingSQL = value.toSQL()
-      bindings = bindings.concat(bindingSQL.bindings)
+      if (bindingSQL.bindings !== undefined) {
+        bindings = bindings.concat(bindingSQL.bindings)  
+      }
       return bindingSQL.sql
     }
 
@@ -114,7 +116,9 @@ function replaceKeyBindings(raw) {
     if (value === undefined) return ''
     if (value && typeof value.toSQL === 'function') {
       var bindingSQL = value.toSQL()
-      bindings = bindings.concat(bindingSQL.bindings)
+      if (bindingSQL.bindings !== undefined) {
+        bindings = bindings.concat(bindingSQL.bindings)  
+      }
       return full.replace(key, bindingSQL.sql)
     }
     if (isIdentifier) {

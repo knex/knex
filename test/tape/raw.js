@@ -56,3 +56,15 @@ test('raw query strings with keys replace values', function(t) {
   t.equal(raw('select :item :cool 2 from :place', {}).toSQL().sql, 'select 2 from')
 
 })
+
+test('raw bindings are optional', function(t) {
+  
+  t.plan(2)
+
+  var sql = raw('select * from ? where id=?', [raw('foo'), 4]).toSQL()
+
+  t.equal(sql.sql, 'select * from foo where id=?')
+
+  t.deepEqual(sql.bindings, [4])
+
+})
