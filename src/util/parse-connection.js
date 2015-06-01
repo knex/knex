@@ -1,9 +1,8 @@
 
-var url = require('url')
+import url from 'url'
+import {parse as parsePG} from 'pg-connection-string'
 
-module.exports = parseConnectionString
-
-function parseConnectionString(str) {
+export default function parseConnectionString(str) {
   var parsed   = url.parse(str)
   var protocol = parsed.protocol
   if (protocol && protocol.indexOf('maria') === 0) {
@@ -22,7 +21,7 @@ function parseConnectionString(str) {
   }
   return {
     client: protocol,
-    connection: connectionObject(parsed)
+    connection: protocol === 'postgres' ? parsePG(str) : connectionObject(parsed)
   }  
 }
 
