@@ -106,9 +106,13 @@ assign(Client_PG.prototype, {
     PGQueryStream = process.browser ? undefined : require('pg-query-stream');
     var sql = obj.sql = this.positionBindings(obj.sql)
     return new Promise(function(resolver, rejecter) {
+      var queryStream = connection.query(new PGQueryStream(sql, obj.bindings, options));
+      queryStream.on('error', rejecter);
+      // 'error' is not propagated by .pipe, but it breaks the pipe
       stream.on('error', rejecter);
+      // 'end' IS propagated by .pipe, by default
       stream.on('end', resolver);
-      connection.query(new PGQueryStream(sql, obj.bindings, options)).pipe(stream);
+      queryStream.pipe(stream);
     });
   },
 
