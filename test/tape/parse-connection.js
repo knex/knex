@@ -43,3 +43,15 @@ test('assume a path is mysql', function(t) {
     }
   })
 })
+
+test('#852, ssl param with query string', function(t) {
+  t.plan(1)
+  t.deepEqual(parseConnection("postgres://user:password@host:0000/database?ssl=true").connection, {
+    host: "host",
+    port: "0000",
+    user: "user",
+    password: "password",
+    database: "database",
+    ssl: true    
+  })
+})
