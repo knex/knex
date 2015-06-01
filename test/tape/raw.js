@@ -57,7 +57,7 @@ test('raw query strings with keys replace values', function(t) {
 
 })
 
-test('raw bindings are optional', function(t) {
+test('raw bindings are optional, #853', function(t) {
   
   t.plan(2)
 
