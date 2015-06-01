@@ -16,7 +16,8 @@ Object.keys(knexfile).forEach(function(key) {
   var knex = makeKnex(knexfile[key])
   
   require('./transactions')(knex)
-
+  require('./stream')(knex)
+  
   // Tear down the knex connection
   tape(knex.client.driverName + ' - transactions: after', function(t) {
     knex.destroy().then(function() {

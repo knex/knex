@@ -105,7 +105,7 @@ assign(Runner.prototype, {
 
   // Allow you to pipe the stream to a writable stream.
   pipe: function(writable, options) {
-    return this.stream().pipe(writable, options);
+    return this.stream(options).pipe(writable);
   },
 
   // "Runs" a query, returning a promise. All queries specified by the builder are guaranteed
