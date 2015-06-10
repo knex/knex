@@ -11,11 +11,11 @@ export default class Connection extends EventEmitter {
     this.managed = false
   }
 
-  execute(sql, bindings) {
+  execute() {
     return this._execute()
   }
 
-  
+
 
 }
 
