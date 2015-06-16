@@ -4,7 +4,6 @@ npm install webpack@1.8.11
 
 webpack=node_modules/.bin/webpack
 babel=node_modules/.bin/babel
-jshint=node_modules/.bin/jshint
 
 rm -rf tmp
 mkdir tmp

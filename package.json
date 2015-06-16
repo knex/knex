@@ -39,13 +39,14 @@
     "sinon": "^1.10.0",
     "sinon-chai": "^2.5.0",
     "sqlite3": "^3.0.5",
+    "tap-spec": "^4.0.0",
     "tape": "^4.0.0",
     "through": "^2.3.4"
   },
   "scripts": {
     "dev": "babel -L -D -w src/ --out-dir lib/",
     "build": "./scripts/build.sh",
-    "tape": "node test/tape/index.js",
+    "tape": "node test/tape/index.js | tap-spec",
     "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
     "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
