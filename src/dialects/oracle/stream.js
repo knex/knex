@@ -14,7 +14,7 @@ function OracleQueryStream(connection, sql, bindings, options) {
 inherits(OracleQueryStream, Readable)
 
 OracleQueryStream.prototype._read = function() {
-  function pushNull() {
+  var pushNull = () => {
     process.nextTick(() => {
       this.push(null)
     })
