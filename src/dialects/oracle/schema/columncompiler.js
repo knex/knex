@@ -82,11 +82,15 @@ assign(ColumnCompiler_Oracle.prototype, {
     return "varchar2(" + maxLength + ")";
   },
 
-  time: 'timestamp',
+  time: 'timestamp with time zone',
 
-  datetime: 'timestamp',
+  datetime: function(without) {
+    return without ? 'timestamp' : 'timestamp with time zone';
+  },
 
-  timestamp: 'timestamp',
+  timestamp: function(without) {
+    return without ? 'timestamp' : 'timestamp with time zone';
+  },
 
   bit: 'clob',
   
@@ -129,6 +133,6 @@ assign(ColumnCompiler_Oracle.prototype, {
     return 'check (' + this.formatter.wrap(this.args[0]) + ' in (' + value + '))';
   }
 
-})
+});
 
 module.exports = ColumnCompiler_Oracle;

@@ -398,6 +398,15 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with time zone');
+  });
+
+  it('test adding date time without time zone', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.dateTime('foo', true);
+    }).toSQL();
+
+    equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
   });
 
@@ -409,12 +418,21 @@ describe("Oracle SchemaBuilder", function() {
     // oracle does not support time
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with time zone');
   });
 
   it('test adding time stamp', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.timestamp('foo');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with time zone');
+  });
+
+  it('test adding time stamp without time zone', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.timestamp('foo', true);
     }).toSQL();
 
     equal(1, tableSql.length);
@@ -427,7 +445,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "created_at" timestamp, add "updated_at" timestamp');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "created_at" timestamp with time zone, add "updated_at" timestamp with time zone');
   });
 
   it('test adding binary', function() {
@@ -454,7 +472,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create table "default_raw_test" ("created_at" timestamp default CURRENT_TIMESTAMP)');
+    expect(tableSql[0].sql).to.equal('create table "default_raw_test" ("created_at" timestamp with time zone default CURRENT_TIMESTAMP)');
   });
 
   it('allows dropping a unique compound index with too long generated name', function() {
