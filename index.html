@@ -141,6 +141,7 @@
     </a>
     <ul class="toc_section">
       <li>– <a href="#Schema-createTable">createTable</a></li>
+      <li>– <a href="#Schema-createTableIfNotExists">createTableIfNotExists</a></li>
       <li>– <a href="#Schema-renameTable">renameTable</a></li>
       <li>– <a href="#Schema-dropTable">dropTable</a></li>
       <li>– <a href="#Schema-hasColumn">hasColumn</a></li>
@@ -1537,6 +1538,21 @@ knex.transaction(function(trx) {
 
 <pre class="display">
 knex.schema.createTable('users', function (table) {
+  table.increments();
+  table.string('name');
+  table.timestamps();
+})
+</pre>
+
+    <p id="Schema-createTableIfNotExists">
+      <b class="header">createTableIfNotExists</b><code>knex.schema.createTableIfNotExists(tableName, callback)</code>
+      <br />
+      Creates a new table on the database if it doesn't exists on database, with a callback function to modify the table's
+      structure, using the <a href="#Schema-Building">schema-building</a> commands.
+    </p>
+
+<pre class="display">
+knex.schema.createTableIfNotExists('users', function (table) {
   table.increments();
   table.string('name');
   table.timestamps();
