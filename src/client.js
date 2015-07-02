@@ -109,8 +109,6 @@ assign(Client.prototype, {
     return new this.Runner(this, connection)
   },
 
-  SqlString: SqlString,
-
   Transaction: Transaction,
 
   transaction: function(container, config, outerTx) {
