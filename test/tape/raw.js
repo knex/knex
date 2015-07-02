@@ -68,3 +68,11 @@ test('raw bindings are optional, #853', function(t) {
   t.deepEqual(sql.bindings, [4])
 
 })
+
+test('array bindings', function(t) {
+
+  var sql = raw('select ? as col', [[1,2]]).toString()
+
+  t.equal(sql, 'select \'{"1","2"}\' as col')
+
+})
