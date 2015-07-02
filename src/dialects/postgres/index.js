@@ -34,6 +34,8 @@ assign(Client_PG.prototype, {
 
   SchemaCompiler: SchemaCompiler,
 
+  SqlString: require('../../query/string'),
+
   TableCompiler: TableCompiler,
 
   dialect: 'postgresql',
@@ -42,7 +44,7 @@ assign(Client_PG.prototype, {
 
   _driver: function() {
     return require('pg')
-  },  
+  },
 
   wrapIdentifier: function(value) {
     if (value === '*') return value;

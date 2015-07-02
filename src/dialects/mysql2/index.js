@@ -10,7 +10,7 @@ var pluck        = require('lodash/collection/pluck')
 var assign       = require('lodash/object/assign');
 var Transaction  = require('./transaction')
 
-var configOptions = ['user', 'database', 'host', 'password', 
+var configOptions = ['user', 'database', 'host', 'password',
   'port', 'ssl', 'connection', 'compress', 'stream'];
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
@@ -26,11 +26,13 @@ assign(Client_MySQL2.prototype, {
   // The "dialect", for reference elsewhere.
   driverName: 'mysql2',
 
+  SqlString: require('../../query/string'),
+
   Transaction: Transaction,
 
   _driver: function() {
     return require('mysql2')
-  },  
+  },
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.

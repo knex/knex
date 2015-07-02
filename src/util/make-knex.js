@@ -20,7 +20,7 @@ module.exports = function makeKnex(client) {
   }
 
   assign(knex, {
-    
+
     Promise: require('../promise'),
 
     // A new query builder instance
@@ -68,7 +68,7 @@ module.exports = function makeKnex(client) {
       return builder[method].apply(builder, arguments)
     }
   })
-  
+
   knex.client = client
 
   Object.defineProperties(knex, {
@@ -103,7 +103,7 @@ module.exports = function makeKnex(client) {
   client.on('start', function(obj) {
     knex.emit('start', obj)
   })
-  
+
   client.on('query', function(obj) {
     knex.emit('query', obj)
   })

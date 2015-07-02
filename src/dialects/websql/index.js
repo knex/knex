@@ -20,6 +20,8 @@ inherits(Client_WebSQL, Client_SQLite3);
 
 assign(Client_WebSQL.prototype, {
 
+  SqlString: require('../../query/string'),
+
   Transaction: Transaction,
 
   dialect: 'websql',
@@ -76,7 +78,7 @@ assign(Client_WebSQL.prototype, {
         stream.end()
       })
     })
-  },  
+  },
 
   processResponse: function(obj, runner) {
     var resp = obj.response;
@@ -100,7 +102,7 @@ assign(Client_WebSQL.prototype, {
       default:
         return resp;
     }
-  }  
+  }
 
 })
 

@@ -38,6 +38,8 @@ assign(Client_Oracle.prototype, {
     return require('oracle')
   },
 
+  SqlString: require('../../query/string'),
+
   Transaction: Transaction,
 
   Formatter: Formatter,
@@ -125,7 +127,7 @@ assign(Client_Oracle.prototype, {
 
     // convert ? params into positional bindings (:1)
     obj.sql = this.positionBindings(obj.sql);
-    
+
     obj.bindings = this.prepBindings(obj.bindings) || [];
 
     if (!obj.sql) throw new Error('The query is empty');
@@ -170,7 +172,7 @@ assign(Client_Oracle.prototype, {
       default:
         return response;
     }
-  }  
+  }
 
 })
 

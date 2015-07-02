@@ -34,12 +34,14 @@ assign(Client_MySQL.prototype, {
   },
 
   QueryCompiler: QueryCompiler,
-  
+
   SchemaCompiler: SchemaCompiler,
 
   TableCompiler: TableCompiler,
 
   ColumnCompiler: ColumnCompiler,
+
+  SqlString: require('../../query/string'),
 
   Transaction: Transaction,
 
@@ -119,7 +121,7 @@ assign(Client_MySQL.prototype, {
       default:
         return response
     }
-  }  
+  }
 
 })
 
