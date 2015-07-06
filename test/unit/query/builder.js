@@ -29,7 +29,7 @@ function qb() {
   return clients.default.queryBuilder()
 }
 
-function raw(sql, bindings) { 
+function raw(sql, bindings) {
   return clients.default.raw(sql, bindings)
 }
 
@@ -39,7 +39,7 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
       expectedObj[key](sqlObj[key]);
     } else {
       try {
-        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);  
+        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);
       } catch (e) {
         e.stack = dialect + ': ' + e.stack
         throw e
@@ -2489,6 +2489,13 @@ describe("QueryBuilder", function() {
     })
   })
 
+  it("escapes single quotes properly", function() {
+    testquery(qb().select('*').from('users').where('last_name', 'O\'Brien'), {
+      postgres: 'select * from "users" where "last_name" = \'O\'\'Brien\'',
+      default: 'select * from "users" where "last_name" = \'O\\\'Brien\'',
+    });
+  });
+  
   it("allows join without operator and with value 0 #953", function() {
     testsql(qb().select('*').from('users').join('photos', 'photos.id', 0), {
       mysql: {
