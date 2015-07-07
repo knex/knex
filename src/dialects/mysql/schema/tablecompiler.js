@@ -105,7 +105,8 @@ assign(TableCompiler_MySQL.prototype, {
               'JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS AS RC '+
               '       USING(CONSTRAINT_NAME)' +
               'WHERE KCU.REFERENCED_TABLE_NAME = ' + formatter.parameter(this.tableNameRaw) + ' '+
-              '  AND KCU.CONSTRAINT_SCHEMA = ' + formatter.parameter(this.client.database());
+              '  AND KCU.CONSTRAINT_SCHEMA = ' + formatter.parameter(this.client.database()) + ' '+
+              '  AND RC.CONSTRAINT_SCHEMA = ' + formatter.parameter(this.client.database());
 
     return runner.query({
       sql: sql,
@@ -118,15 +119,17 @@ assign(TableCompiler_MySQL.prototype, {
     
     return Promise.all(refs.map(function (ref) {
       var constraintName = formatter.wrap(ref.CONSTRAINT_NAME);
+      var tableName  = formatter.wrap(ref.TABLE_NAME);
       return runner.query({
-        sql: 'alter table ' + this.tableName() + ' drop foreign key ' + constraintName
+        sql: 'alter table ' + tableName + ' drop foreign key ' + constraintName
       });
-    }.bind(this)));
+    }));
   },
   createFKRefs: function (runner, refs) {
     var formatter = this.client.formatter();
     
     return Promise.all(refs.map(function (ref) {
+      var tableName  = formatter.wrap(ref.TABLE_NAME);
       var keyName    = formatter.wrap(ref.COLUMN_NAME);
       var column     = formatter.columnize(ref.COLUMN_NAME);
       var references = formatter.columnize(ref.REFERENCED_COLUMN_NAME);
@@ -135,10 +138,10 @@ assign(TableCompiler_MySQL.prototype, {
       var onDelete   = ' ON DELETE ' + ref.DELETE_RULE;
       
       return runner.query({
-        sql: 'alter table ' + this.tableName() + ' add constraint ' + keyName + ' ' + 
+        sql: 'alter table ' + tableName + ' add constraint ' + keyName + ' ' + 
           'foreign key (' + column + ') references ' + inTable + ' (' + references + ')' + onUpdate + onDelete
       });
-    }.bind(this)));
+    }));
   },
   index: function(columns, indexName) {
     indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
