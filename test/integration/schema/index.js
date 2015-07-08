@@ -36,6 +36,7 @@ module.exports = function(knex) {
             .dropTableIfExists('test_default_table3')
             .dropTableIfExists('knex_migrations')
             .dropTableIfExists('bool_test')
+            .dropTableIfExists('rename_column_foreign_test')
             .dropTableIfExists('rename_column_test')
             .dropTableIfExists('should_not_be_run')
         ]);
@@ -308,6 +309,13 @@ module.exports = function(knex) {
             .references('id_test')
             .inTable('rename_column_test');
         })
+        .createTable('rename_column_foreign_test', function(tbl) {
+          tbl.increments('id').unsigned()
+            .primary();
+          tbl.integer('foreign_id_test').unsigned()
+            .references('id_test')
+            .inTable('rename_column_test');
+        })
         .then(function () {
           // without data, the column isn't found??
           return knex.insert({parent_id_test: 1}).into('rename_column_test');
@@ -315,7 +323,7 @@ module.exports = function(knex) {
       });
       
       after(function () {
-        return knex.schema.dropTable('rename_column_test');
+        return knex.schema.dropTable('rename_column_foreign_test').dropTable('rename_column_test');
       });
       
       it('renames the column', function () {
@@ -333,6 +341,12 @@ module.exports = function(knex) {
       it('successfully renames a column referenced in a foreign key', function () {
         return knex.schema.table('rename_column_test', function (tbl) {
           tbl.renameColumn('parent_id_test', 'parent_id');
+        });
+      });
+
+      it('successfully renames a column referenced by another table', function () {
+        return knex.schema.table('rename_column_test', function (tbl) {
+          tbl.renameColumn('id', 'id_new');
         });
       });
     });
