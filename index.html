@@ -123,6 +123,7 @@
       <li>– <a href="#Builder-pluck">pluck</a></li>
       <li>– <a href="#Builder-first">first</a></li>
       <li>– <a href="#Builder-clone">clone</a></li>
+      <li>– <a href="#Builder-compose">compose</a></li>
       <li>– <a href="#Builder-columnInfo">columnInfo</a></li>
       <li>– <a href="#Builder-debug">debug</a></li>
       <li>– <a href="#Builder-connection">connection</a></li>
@@ -1371,6 +1372,32 @@ knex('accounts').truncate()
       without mutating the original.
     </p>
 
+    <p id="Builder-compose">
+      <b class="header">compose</b><code>.compose(fn, *arguments)</code>
+      <br />
+      Allows encapsulating and re-using query snippets and common behaviors as functions. 
+      The first parameter is a callback whose this context is bound to the current query chain.
+      Rest of the (optional) parameters are passed to the callback.
+
+<pre>
+<code class="js">var withUserName = function(foreignKey) {
+  this
+    .leftJoin('users', foreignKey, 'users.id')
+    .select('users.user_name');
+};
+
+knex
+  .table('articles')
+  .select('title', 'body')
+  .compose(withUserName, 'articles_user.id')
+  .then(function(article) {
+    console.log(article.user_name);
+  });
+</code>
+</pre>    
+      
+      
+    </p>
 
     <p id="Builder-columnInfo">
       <b class="header">columnInfo</b><code>.columnInfo([columnName])</code>
