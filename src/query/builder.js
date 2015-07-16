@@ -689,6 +689,13 @@ assign(Builder.prototype, {
     return this
   },
 
+  // Passes query to provided callback function, useful for e.g. composing
+  // domain-specific helpers
+  modify: function(callback) {
+    callback.apply(this, _.rest(arguments));
+    return this;
+  },
+
   // ----------------------------------------------------------------------
 
   // Helper for the incrementing/decrementing queries.
