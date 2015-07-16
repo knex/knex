@@ -1808,8 +1808,29 @@ describe("QueryBuilder", function() {
   //   expect(chain.sql).to.equal('select * from (select *, row_number() over (order by [email] desc) as row_num from [users]) as temp_table where row_num between 11 and 20');
   // });
 
-  it("providing null or false as second parameter builds correctly", function() {
+  it("providing null as second parameter builds correctly", function() {
     testsql(qb().select('*').from('users').where('foo', null), {
+      mysql: 'select * from `users` where `foo` is null',
+      default: 'select * from "users" where "foo" is null'
+    });
+  });
+
+  it("providing null as third parameter builds correctly", function() {
+    testsql(qb().select('*').from('users').where('foo', 'is', null), {
+      mysql: 'select * from `users` where `foo` is null',
+      default: 'select * from "users" where "foo" is null'
+    });
+  });
+
+  it("providing undefined as second parameter builds correctly", function() {
+    testsql(qb().select('*').from('users').where('foo', undefined), {
+      mysql: 'select * from `users` where `foo` is null',
+      default: 'select * from "users" where "foo" is null'
+    });
+  });
+
+  it("providing undefined as third parameter builds correctly", function() {
+    testsql(qb().select('*').from('users').where('foo', 'is', undefined), {
       mysql: 'select * from `users` where `foo` is null',
       default: 'select * from "users" where "foo" is null'
     });
