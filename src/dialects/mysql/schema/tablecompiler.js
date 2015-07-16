@@ -144,29 +144,29 @@ assign(TableCompiler_MySQL.prototype, {
     }));
   },
   index: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + " add index " + indexName + "(" + this.formatter.columnize(columns) + ")");
   },
 
   primary: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('primary', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('primary', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + " add primary key " + indexName + "(" + this.formatter.columnize(columns) + ")");
   },
 
   unique: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + " add unique " + indexName + "(" + this.formatter.columnize(columns) + ")");
   },
 
   // Compile a drop index command.
   dropIndex: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + ' drop index ' + indexName);
   },
 
   // Compile a drop foreign key command.
   dropForeign: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('foreign', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + ' drop foreign key ' + indexName);
   },
 
@@ -177,7 +177,7 @@ assign(TableCompiler_MySQL.prototype, {
 
   // Compile a drop unique key command.
   dropUnique: function(column, indexName) {
-    indexName = indexName || this._indexCommand('unique', this.tableNameRaw, column);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, column);
     this.pushQuery('alter table ' + this.tableName() + ' drop index ' + indexName);
   }
 

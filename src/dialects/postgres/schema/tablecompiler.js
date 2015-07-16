@@ -49,12 +49,12 @@ TableCompiler_PG.prototype.primary = function(columns) {
   this.pushQuery('alter table ' + this.tableName() + " add primary key (" + this.formatter.columnize(columns) + ")");
 };
 TableCompiler_PG.prototype.unique = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
   this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + indexName +
     ' unique (' + this.formatter.columnize(columns) + ')');
 };
 TableCompiler_PG.prototype.index = function(columns, indexName, indexType) {
-  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
   this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + (indexType && (' using ' + indexType) || '') +
     ' (' + this.formatter.columnize(columns) + ')');
 };
@@ -62,15 +62,15 @@ TableCompiler_PG.prototype.dropPrimary = function() {
   this.pushQuery('alter table ' + this.tableName() + " drop constraint " + this.tableNameRaw + "_pkey");
 };
 TableCompiler_PG.prototype.dropIndex = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
   this.pushQuery('drop index ' + indexName);
 };
 TableCompiler_PG.prototype.dropUnique = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
   this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
 };
 TableCompiler_PG.prototype.dropForeign = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('foreign', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
   this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
 };
 

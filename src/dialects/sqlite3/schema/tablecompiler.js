@@ -38,25 +38,25 @@ TableCompiler_SQLite3.prototype.addColumns = function(columns) {
 
 // Compile a drop unique key command.
 TableCompiler_SQLite3.prototype.dropUnique = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
   this.pushQuery('drop index ' + indexName);
 };
 
 TableCompiler_SQLite3.prototype.dropIndex = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
   this.pushQuery('drop index ' + indexName);
 };
 
 // Compile a unique key command.
 TableCompiler_SQLite3.prototype.unique = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
   columns = this.formatter.columnize(columns);
   this.pushQuery('create unique index ' + indexName + ' on ' + this.tableName() + ' (' + columns + ')');
 };
 
 // Compile a plain index key command.
 TableCompiler_SQLite3.prototype.index = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
   columns = this.formatter.columnize(columns);
   this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + ' (' + columns + ')');
 };
