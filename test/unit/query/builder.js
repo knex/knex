@@ -2346,8 +2346,13 @@ describe("QueryBuilder", function() {
   })
   
   it('has a modify method which accepts a function that can modify the query', function() {
-    // arbitrary number of arguments can be passed to `.modify`, builder is bound to `this`
-    var withBars = function(table, fk) {
+    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`, 
+    // builder is bound to `this`
+    var withBars = function(queryBuilder, table, fk) {
+      if(!this || this !== queryBuilder) {
+        throw 'Expected query builder passed as first argument and bound as `this` context';
+      }
+      
       this
         .leftJoin('bars', table + '.' + fk, 'bars.id')
         .select('bars.*')
