@@ -691,7 +691,7 @@ assign(Builder.prototype, {
 
   // Passes query to provided callback function, useful for e.g. composing
   // domain-specific helpers
-  compose: function(callback) {
+  modify: function(callback) {
     callback.apply(this, _.rest(arguments));
     return this;
   },

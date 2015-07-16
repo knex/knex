@@ -2345,15 +2345,15 @@ describe("QueryBuilder", function() {
     })
   })
   
-  it('has a compose method which accepts a function that can modify the query', function() {
-    // arbitrary number of arguments can be passed to `.compose`, builder is bound to `this`
+  it('has a modify method which accepts a function that can modify the query', function() {
+    // arbitrary number of arguments can be passed to `.modify`, builder is bound to `this`
     var withBars = function(table, fk) {
       this
         .leftJoin('bars', table + '.' + fk, 'bars.id')
         .select('bars.*')
     };
     
-    testsql(qb().select('foo_id').from('foos').compose(withBars, 'foos', 'bar_id'), {
+    testsql(qb().select('foo_id').from('foos').modify(withBars, 'foos', 'bar_id'), {
       mysql: {
         sql: 'select `foo_id`, `bars`.* from `foos` left join `bars` on `foos`.`bar_id` = `bars`.`id`'
       },
