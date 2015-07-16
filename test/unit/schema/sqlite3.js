@@ -57,7 +57,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index users_foo_unique');
+    equal(tableSql[0].sql, 'drop index "users_foo_unique"');
   });
 
   it("drop unique, custom", function() {
@@ -66,7 +66,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index foo');
+    equal(tableSql[0].sql, 'drop index "foo"');
   });
 
   it("drop index", function() {
@@ -75,7 +75,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index users_foo_index');
+    equal(tableSql[0].sql, 'drop index "users_foo_index"');
   });
 
   it("drop index, custom", function() {
@@ -84,7 +84,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index foo');
+    equal(tableSql[0].sql, 'drop index "foo"');
   });
 
   it("rename table", function() {
@@ -160,7 +160,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create unique index users_foo_unique on "users" ("foo")');
+    equal(tableSql[0].sql, 'create unique index "users_foo_unique" on "users" ("foo")');
   });
 
   it("adding unique key with specific name", function() {
@@ -169,7 +169,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create unique index bar on "users" ("foo")');
+    equal(tableSql[0].sql, 'create unique index "bar" on "users" ("foo")');
   });
 
   it("adding index", function() {
@@ -178,7 +178,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create index baz on "users" ("foo", "bar")');
+    equal(tableSql[0].sql, 'create index "baz" on "users" ("foo", "bar")');
   });
 
   it("adding incrementing id", function() {

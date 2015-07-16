@@ -38,6 +38,7 @@ module.exports = function(knex) {
             .dropTableIfExists('test_default_table3')
             .dropTableIfExists('knex_migrations')
             .dropTableIfExists('bool_test')
+            .dropTableIfExists('10_test_table')
             .dropTableIfExists('rename_column_foreign_test')
             .dropTableIfExists('rename_column_test')
             .dropTableIfExists('should_not_be_run')
@@ -87,9 +88,9 @@ module.exports = function(knex) {
             }
             table.timestamps();
           }).testSql(function(tester) {
-            tester('mysql', ['create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default \'1\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add index test_table_one_first_name_index(`first_name`)','alter table `test_table_one` add unique test_table_one_email_unique(`email`)','alter table `test_table_one` add index test_table_one_logins_index(`logins`)']);
-            tester('pg', ['create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index test_table_one_first_name_index on "test_table_one" ("first_name")','alter table "test_table_one" add constraint test_table_one_email_unique unique ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")']);
-            tester('sqlite3', ['create table "test_table_one" ("id" integer not null primary key autoincrement, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" datetime, "updated_at" datetime)','create index test_table_one_first_name_index on "test_table_one" ("first_name")','create unique index test_table_one_email_unique on "test_table_one" ("email")','create index test_table_one_logins_index on "test_table_one" ("logins")']);
+            tester('mysql', ['create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default \'1\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add index `test_table_one_first_name_index`(`first_name`)','alter table `test_table_one` add unique `test_table_one_email_unique`(`email`)','alter table `test_table_one` add index `test_table_one_logins_index`(`logins`)']);
+            tester('pg', ['create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index "test_table_one_first_name_index" on "test_table_one" ("first_name")','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")','create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
+            tester('sqlite3', ['create table "test_table_one" ("id" integer not null primary key autoincrement, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" datetime, "updated_at" datetime)','create index "test_table_one_first_name_index" on "test_table_one" ("first_name")','create unique index "test_table_one_email_unique" on "test_table_one" ("email")','create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
             tester('oracle', [
               'create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default \'1\', "about" varchar2(4000), "created_at" timestamp with time zone, "updated_at" timestamp with time zone)',
               'comment on table "test_table_one" is \'A table comment.\'',
@@ -133,7 +134,7 @@ module.exports = function(knex) {
             table.integer('main').notNullable().primary();
             table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
           }).testSql(function(tester) {
-            tester('mysql', ['create table `test_table_three` (`main` int not null, `paragraph` text) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)']);
+            tester('mysql', ['create table `test_table_three` (`main` int not null, `paragraph` text) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key `test_table_three_main_primary`(`main`)']);
             tester('pg', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
             tester('sqlite3', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', primary key ("main"))']);
             tester('oracle', ['create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
@@ -163,8 +164,8 @@ module.exports = function(knex) {
             .references('id')
             .inTable('test_table_two');
         }).testSql(function(tester) {
-          tester('mysql', ['create table `test_foreign_table_two` (`id` int unsigned not null auto_increment primary key, `fkey_two` int unsigned) default character set utf8','alter table `test_foreign_table_two` add constraint test_foreign_table_two_fkey_two_foreign foreign key (`fkey_two`) references `test_table_two` (`id`)']);
-          tester('pg', ['create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer)','alter table "test_foreign_table_two" add constraint test_foreign_table_two_fkey_two_foreign foreign key ("fkey_two") references "test_table_two" ("id")']);
+          tester('mysql', ['create table `test_foreign_table_two` (`id` int unsigned not null auto_increment primary key, `fkey_two` int unsigned) default character set utf8','alter table `test_foreign_table_two` add constraint `test_foreign_table_two_fkey_two_foreign` foreign key (`fkey_two`) references `test_table_two` (`id`)']);
+          tester('pg', ['create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer)','alter table "test_foreign_table_two" add constraint "test_foreign_table_two_fkey_two_foreign" foreign key ("fkey_two") references "test_table_two" ("id")']);
           tester('sqlite3', ['create table "test_foreign_table_two" ("id" integer not null primary key autoincrement, "fkey_two" integer, foreign key("fkey_two") references "test_table_two"("id"))']);
           tester('oracle', [
             'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer)',
@@ -199,9 +200,9 @@ module.exports = function(knex) {
             table.tinyint('status');
             table.unique(['column_a', 'column_b']);
           }).testSql(function(tester) {
-            tester('mysql', ['create table `composite_key_test` (`column_a` int, `column_b` int, `details` text, `status` tinyint) default character set utf8','alter table `composite_key_test` add unique composite_key_test_column_a_column_b_unique(`column_a`, `column_b`)']);
-            tester('pg', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint composite_key_test_column_a_column_b_unique unique ("column_a", "column_b")']);
-            tester('sqlite3', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" tinyint)','create unique index composite_key_test_column_a_column_b_unique on "composite_key_test" ("column_a", "column_b")']);
+            tester('mysql', ['create table `composite_key_test` (`column_a` int, `column_b` int, `details` text, `status` tinyint) default character set utf8','alter table `composite_key_test` add unique `composite_key_test_column_a_column_b_unique`(`column_a`, `column_b`)']);
+            tester('pg', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint "composite_key_test_column_a_column_b_unique" unique ("column_a", "column_b")']);
+            tester('sqlite3', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" tinyint)','create unique index "composite_key_test_column_a_column_b_unique" on "composite_key_test" ("column_a", "column_b")']);
             tester('oracle', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" clob, "status" smallint)','alter table "composite_key_test" add constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk" unique ("column_a", "column_b")']);
             tester('mssql', ['CREATE TABLE [composite_key_test] ([column_a] int, [column_b] int, [details] nvarchar(max), [status] tinyint, CONSTRAINT composite_key_test_column_a_column_b_unique UNIQUE ([column_a], [column_b]))']);
           }).then(function() {
@@ -266,6 +267,45 @@ module.exports = function(knex) {
             });
       });
 
+      it('accepts table names starting with numeric values', function() {
+        return knex.schema
+          .createTable('10_test_table', function(table) {
+            table.bigIncrements('id');
+            table.string('first_name').index();
+            table.string('last_name');
+            table.string('email').unique().nullable();
+            table.integer('logins').defaultTo(1).index().comment();
+          }).testSql(function(tester) {
+            tester('mysql', [
+              'create table `10_test_table` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default \'1\') default character set utf8',
+              'alter table `10_test_table` add index `10_test_table_first_name_index`(`first_name`)',
+              'alter table `10_test_table` add unique `10_test_table_email_unique`(`email`)',
+              'alter table `10_test_table` add index `10_test_table_logins_index`(`logins`)'
+            ]);
+            tester('pg', [
+              'create table "10_test_table" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\')',
+              'comment on column \"10_test_table\".\"logins\" is NULL',
+              'create index "10_test_table_first_name_index" on "10_test_table" ("first_name")',
+              'alter table "10_test_table" add constraint "10_test_table_email_unique" unique ("email")',
+              'create index "10_test_table_logins_index" on "10_test_table" ("logins")'
+            ]);
+            tester('sqlite3', [
+              'create table "10_test_table" ("id" integer not null primary key autoincrement, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\')',
+              'create index "10_test_table_first_name_index" on "10_test_table" ("first_name")',
+              'create unique index "10_test_table_email_unique" on "10_test_table" ("email")',
+              'create index "10_test_table_logins_index" on "10_test_table" ("logins")'
+            ]);
+            tester('oracle', [
+              'create table "10_test_table" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default \'1\')',
+              "begin execute immediate 'create sequence \"10_test_table_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;",
+              "create or replace trigger \"10_test_table_id_trg\" before insert on \"10_test_table\" for each row when (new.\"id\" is null)  begin select \"10_test_table_seq\".nextval into :new.\"id\" from dual; end;",
+              "comment on column \"10_test_table\".\"logins\" is \'\'",
+              'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "10_test_table" ("first_name")',
+              'alter table "10_test_table" add constraint "10_test_table_email_unique" unique ("email")',
+              'create index "10_test_table_logins_index" on "10_test_table" ("logins")'
+            ]);
+          });
+      });
     });
 
     describe('table', function() {
