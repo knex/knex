@@ -1376,12 +1376,12 @@ knex('accounts').truncate()
       <b class="header">modify</b><code>.modify(fn, *arguments)</code>
       <br />
       Allows encapsulating and re-using query snippets and common behaviors as functions. 
-      The first parameter is a callback whose this context is bound to the current query chain.
-      Rest of the (optional) parameters are passed to the callback.
+      The callback function should receive the query builder as its first argument, followed by 
+      the rest of the (optional) parameters passed to modify.
 
 <pre>
-<code class="js">var withUserName = function(foreignKey) {
-  this
+<code class="js">var withUserName = function(queryBuilder, foreignKey) {
+  queryBuilder
     .leftJoin('users', foreignKey, 'users.id')
     .select('users.user_name');
 };
