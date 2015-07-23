@@ -75,8 +75,8 @@ assign(Client_Oracle.prototype, {
     return new Promise(function(resolver, rejecter) {
       client.driver.connect(client.connectionSettings,
         function(err, connection) {
-          Promise.promisifyAll(connection)
           if (err) return rejecter(err)
+          Promise.promisifyAll(connection)
           if (client.connectionSettings.prefetchRowCount) {
             connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount)
           }
