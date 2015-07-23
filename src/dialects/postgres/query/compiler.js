@@ -62,11 +62,24 @@ assign(QueryCompiler_PG.prototype, {
   },
 
   forUpdate: function() {
-    return 'for update';
+    return this._lock('update', this.single.of, this.single.noWait);
   },
 
   forShare: function() {
-    return 'for share';
+    return this._lock('share', this.single.of, this.single.noWait);
+  },
+
+  _lock: function(strength, tables, noWait) {
+    var sql = 'for ' + strength;
+    if (tables.length > 0) {
+      sql += ' of ' + _.map(tables, function(table) {
+        return this.formatter.wrap(table);
+      }, this).join(', ');
+    }
+    if (noWait) {
+      sql += ' nowait';
+    }
+    return sql;
   },
 
   // Compiles a columnInfo query
