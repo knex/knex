@@ -10,8 +10,8 @@ var pluck        = require('lodash/collection/pluck')
 var assign       = require('lodash/object/assign');
 var Transaction  = require('./transaction')
 
-var configOptions = ['user', 'database', 'host', 'password', 
-  'port', 'ssl', 'connection', 'compress', 'stream'];
+var configOptions = ['user', 'database', 'host', 'password',
+  'port', 'ssl', 'connection', 'compress', 'stream', 'timezone'];
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
