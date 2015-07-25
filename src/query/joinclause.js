@@ -63,6 +63,11 @@ assign(JoinClause.prototype, {
     return this;
   },
 
+  as: function(as) {
+    this.as = as;
+    return this;
+  },
+
   _bool: function(bool) {
     if (arguments.length === 1) {
       this._boolFlag = bool;
