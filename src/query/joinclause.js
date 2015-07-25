@@ -64,7 +64,7 @@ assign(JoinClause.prototype, {
   },
 
   as: function(as) {
-    this.as = as;
+    this.joinAs = as;
     return this;
   },
 

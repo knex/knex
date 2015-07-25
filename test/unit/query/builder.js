@@ -20,7 +20,7 @@ function qb() {
   return clients.default.queryBuilder()
 }
 
-function raw(sql, bindings) { 
+function raw(sql, bindings) {
   return clients.default.raw(sql, bindings)
 }
 
@@ -30,7 +30,7 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
       expectedObj[key](sqlObj[key]);
     } else {
       try {
-        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);  
+        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);
       } catch (e) {
         e.stack = dialect + ': ' + e.stack
         throw e
@@ -39,7 +39,7 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
   });
 }
 
-function testsql(chain, valuesToCheck) {  
+function testsql(chain, valuesToCheck) {
   Object.keys(valuesToCheck).forEach(function(key) {
     var newChain = chain.clone()
         newChain.client = clients[key]
@@ -1186,6 +1186,22 @@ describe("QueryBuilder", function() {
       },
       default: {
         sql: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" left join "photos" on "users"."id" = "photos"."id"',
+        bindings: []
+      }
+    });
+  });
+
+  it("basic join as", function() {
+    testsql(qb().select('*').from('users').join('contacts', function() {
+      this.on('users.id', '=', 'contacts.id');
+      this.as('tablealias');
+    }).leftJoin('photos', 'users.id', '=', 'photos.id'), {
+      mysql: {
+        sql: 'select * from `users` inner join `contacts` as `tablealias` on `users`.`id` = `contacts`.`id` left join `photos` on `users`.`id` = `photos`.`id`',
+        bindings: []
+      },
+      default: {
+        sql: 'select * from "users" inner join "contacts" as "tablealias" on "users"."id" = "contacts"."id" left join "photos" on "users"."id" = "photos"."id"',
         bindings: []
       }
     });
@@ -2344,20 +2360,20 @@ describe("QueryBuilder", function() {
       }
     })
   })
-  
+
   it('has a modify method which accepts a function that can modify the query', function() {
-    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`, 
+    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`,
     // builder is bound to `this`
     var withBars = function(queryBuilder, table, fk) {
       if(!this || this !== queryBuilder) {
         throw 'Expected query builder passed as first argument and bound as `this` context';
       }
-      
+
       this
         .leftJoin('bars', table + '.' + fk, 'bars.id')
         .select('bars.*')
     };
-    
+
     testsql(qb().select('foo_id').from('foos').modify(withBars, 'foos', 'bar_id'), {
       mysql: {
         sql: 'select `foo_id`, `bars`.* from `foos` left join `bars` on `foos`.`bar_id` = `bars`.`id`'

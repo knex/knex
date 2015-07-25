@@ -159,8 +159,8 @@ assign(QueryCompiler.prototype, {
         sql += this.formatter.unwrapRaw(join.table)
       } else {
         sql += join.joinType + ' join ' + this.formatter.wrap(join.table)
-        if (join.as) {
-          sql += ' as ' + this.formatter.wrap(join.as) + ' ';
+        if (join.joinAs) {
+          sql += ' as ' + this.formatter.wrap(join.joinAs);
         }
         var ii = -1
         while (++ii < join.clauses.length) {
