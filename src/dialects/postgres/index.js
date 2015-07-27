@@ -37,7 +37,11 @@ assign(Client_PG.prototype, {
   driverName: 'pg',
 
   _driver: function() {
-    return require('pg')
+    try {
+      return require('pg').native;
+    } catch (e) {
+      return require('pg');
+    }
   },  
 
   wrapIdentifier: function(value) {
