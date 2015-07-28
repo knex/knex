@@ -159,6 +159,15 @@ assign(Client_PG.prototype, {
     return resp;
   },
 
+  // ping method for pool to validate connection.
+  ping: function(connection, callback) {
+    if (connection.native && !connection._connected) {
+      process.nextTick(callback.bind(null, new Error('Not connected to database')))
+      return
+    }
+    process.nextTick(callback)
+  },
+
   __endConnection: function(connection) {
     if (!connection || connection.__knex__disposed) return;
     if (this.pool) {
