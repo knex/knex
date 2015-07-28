@@ -49,7 +49,7 @@ function initKnex(env) {
   var environment = commander.env || process.env.NODE_ENV;
   var defaultEnv  = 'development';
   var config      = require(env.configPath);
-  
+
   if (!environment && typeof config[defaultEnv] === 'object') {
     environment = defaultEnv;
   }
@@ -71,7 +71,7 @@ function initKnex(env) {
 
 function invoke(env) {
 
-  var pending, filetypes = ['js', 'coffee', 'ls'];
+  var pending, filetypes = ['js', 'coffee', 'eg', 'ls'];
 
   commander
     .version(
