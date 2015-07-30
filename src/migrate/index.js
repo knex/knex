@@ -14,7 +14,7 @@ var assign   = require('lodash/object/assign');
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the migration.
 export default class Migrator {
-  
+
   constructor(knex) {
     this.knex   = knex
     this.config = this.setConfig(knex.client.config.migrations);
@@ -73,7 +73,7 @@ export default class Migrator {
       .then((migrations) => {
         return _.filter(migrations, function(value) {
           var extension = path.extname(value);
-          return _.contains(['.co', '.coffee', '.iced', '.js', '.litcoffee', '.ls'], extension);
+          return _.contains(['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls'], extension);
         }).sort();
       })
   }
