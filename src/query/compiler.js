@@ -153,12 +153,13 @@ assign(QueryCompiler.prototype, {
     var sql = '', i = -1, joins = this.grouped.join;
     if (!joins) return '';
     while (++i < joins.length) {
-      var join = joins[i]
+      var join = joins[i];
+      var table = join.schema ? `${join.schema}.${join.table}` : join.table;
       if (i > 0) sql += ' '
       if (join.joinType === 'raw') {
         sql += this.formatter.unwrapRaw(join.table)
       } else {
-        sql += join.joinType + ' join ' + this.formatter.wrap(join.table)
+        sql += join.joinType + ' join ' + this.formatter.wrap(table)
         var ii = -1
         while (++ii < join.clauses.length) {
           var clause = join.clauses[ii]
@@ -425,7 +426,12 @@ Object.defineProperty(QueryCompiler.prototype, 'tableName', {
   get: function() {
     if(!this._tableName) {
       // Only call this.formatter.wrap() the first time this property is accessed.
-      this._tableName = this.single.table ? this.formatter.wrap(this.single.table) : '';
+      var tableName = this.single.table;
+      var schemaName = this.single.schema;
+
+      if (tableName && schemaName) tableName = `${schemaName}.${tableName}`;
+
+      this._tableName = tableName ? this.formatter.wrap(tableName) : '';
     }
     return this._tableName;
   }

@@ -9,6 +9,7 @@ module.exports = [
   'from',
   'fromJS',
   'into',
+  'using',
   'table',
   'distinct',
   'join',
