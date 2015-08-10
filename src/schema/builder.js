@@ -48,6 +48,11 @@ _.each([
 
 require('../interface')(SchemaBuilder)
 
+SchemaBuilder.prototype.using = function(schemaName) {
+  this._schema = schemaName;
+  return this;
+}
+
 SchemaBuilder.prototype.toString = function() {
   return this.toQuery()
 }

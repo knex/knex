@@ -30,16 +30,36 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "id" serial primary key, add column "email" varchar(255)');
   });
 
+  it("alter table with schema", function() {
+    tableSql = client.schemaBuilder().using('myschema').table('users', function(table) {
+      table.increments('id');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "myschema"."users" add column "id" serial primary key');
+  });
+
   it("drop table", function() {
     tableSql = client.schemaBuilder().dropTable('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table "users"');
   });
 
+  it("drop table with schema", function() {
+    tableSql = client.schemaBuilder().using('myschema').dropTable('users').toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table "myschema"."users"');
+  });
+
   it("drop table if exists", function() {
     tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table if exists "users"');
+  });
+
+  it("drop table if exists with schema", function() {
+    tableSql = client.schemaBuilder().using('myschema').dropTableIfExists('users').toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table if exists "myschema"."users"');
   });
 
   it("drop column", function() {
