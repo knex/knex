@@ -71,6 +71,7 @@
       <li>– <a href="#Builder-as">as</a></li>
       <li>– <a href="#Builder-column">column</a></li>
       <li>– <a href="#Builder-from">from</a></li>
+      <li>– <a href="#Builder-withSchema">withSchema</a></li>
 
       <li><b><a href="#Builder-wheres">Where Methods:</a></b></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-where">where</a></li>
@@ -141,6 +142,7 @@
       Schema Builder
     </a>
     <ul class="toc_section">
+      <li>– <a href="#Schema-withSchema">withSchema</a></li>
       <li>– <a href="#Schema-createTable">createTable</a></li>
       <li>– <a href="#Schema-createTableIfNotExists">createTableIfNotExists</a></li>
       <li>– <a href="#Schema-renameTable">renameTable</a></li>
@@ -325,7 +327,7 @@
     <h3 id="Upgrading-from0.7">Upgrading 0.7 -> 0.8</h3>
 
     <p>
-      There should be no major changes breaking the external API. If you encounter issues, 
+      There should be no major changes breaking the external API. If you encounter issues,
       please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>.
     </p>
 
@@ -398,7 +400,8 @@ $ npm install oracle
 <pre>
 <code class="js">var pg = require('knex')({
   client: 'pg',
-  connection: process.env.PG_CONNECTION_STRING
+  connection: process.env.PG_CONNECTION_STRING,
+  searchPath: 'knex,public'
 });
 </code>
 </pre>
@@ -566,6 +569,16 @@ knex.column(['title', 'author', 'year']).select().from('books')
 
 <pre class="display">
 knex.select('*').from('users')
+</pre>
+
+    <p id="Builder-withSchema">
+      <b class="header">withSchema</b><code>.withSchema([schemaName])</code>
+      <br />
+      Specifies the schema to be used as prefix of table name.
+    </p>
+
+<pre class="display">
+knex.withSchema('public').select('*').from('users')
 </pre>
 
     <h3 id="Builder-wheres">Where Clauses</h3>
@@ -1376,8 +1389,8 @@ knex('accounts').truncate()
     <p id="Builder-modify">
       <b class="header">modify</b><code>.modify(fn, *arguments)</code>
       <br />
-      Allows encapsulating and re-using query snippets and common behaviors as functions. 
-      The callback function should receive the query builder as its first argument, followed by 
+      Allows encapsulating and re-using query snippets and common behaviors as functions.
+      The callback function should receive the query builder as its first argument, followed by
       the rest of the (optional) parameters passed to modify.
 
 <pre>
@@ -1395,9 +1408,9 @@ knex
     console.log(article.user_name);
   });
 </code>
-</pre>    
-      
-      
+</pre>
+
+
     </p>
 
     <p id="Builder-columnInfo">
@@ -1555,6 +1568,19 @@ knex.transaction(function(trx) {
 
     <h2 id="Schema">Schema Builder</h2>
     These methods return <a href="http://knexjs.org/#Interfaces-Promises">promises</a>.
+
+    <p id="Schema-withSchema">
+      <b class="header">withSchema</b><code>knex.schema.withSchema([schemaName])</code>
+      <br />
+      Specifies the schema to be used when using the
+      <a href="#Schema-Building">schema-building</a> commands.
+    </p>
+
+<pre class="display">
+knex.schema.withSchema('public').createTable('users', function (table) {
+  table.increments();
+})
+</pre>
 
     <p id="Schema-createTable">
       <b class="header">createTable</b><code>knex.schema.createTable(tableName, callback)</code>
@@ -2548,38 +2574,38 @@ $ npm test
     <p>
       <b class="header">0.8.6</b> &mdash; <small><i>May 20, 2015</i></small><br />
     </p>
-    
+
     <p>Fix for several transaction / migration issues, #832, #833, #834, #835.</p>
 
     <p>
       <b class="header">0.8.5</b> &mdash; <small><i>May 14, 2015</i></small><br />
     </p>
-    
+
     <p>Pool should be initialized if no pool options are specified.</p>
 
 
     <p>
       <b class="header">0.8.4</b> &mdash; <small><i>May 13, 2015</i></small><br />
     </p>
-    
+
     <p>Pool should not be initialized if {max: 0} is sent in config options.</p>
 
     <p>
       <b class="header">0.8.3</b> &mdash; <small><i>May 2, 2015</i></small><br />
     </p>
-    
+
     <p>Alias postgresql -> postgres in connection config options.</p>
-    
+
     <p>
       <b class="header">0.8.2</b> &mdash; <small><i>May 1, 2015</i></small><br />
     </p>
-    
+
     <p>Fix regression in using query string in connection config.</p>
 
     <p>
       <b class="header">0.8.1</b> &mdash; <small><i>May 1, 2015</i></small><br />
     </p>
-    
+
     <ul>
       <li>Warn rather than error when implicit commits wipe out savepoints in mysql / mariadb, #805.</li>
       <li>Fix for incorrect seed config reference, #804.</li>
@@ -2587,7 +2613,7 @@ $ npm test
 
     <p>
       <b class="header">0.8.0</b> &mdash; <small><i>Apr 30, 2015</i></small><br />
-    </p>    
+    </p>
 
     <b>New Features:</b>
     <ul>
