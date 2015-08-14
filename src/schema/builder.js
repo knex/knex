@@ -48,7 +48,7 @@ _.each([
 
 require('../interface')(SchemaBuilder)
 
-SchemaBuilder.prototype.using = function(schemaName) {
+SchemaBuilder.prototype.withSchema = function(schemaName) {
   this._schema = schemaName;
   return this;
 }

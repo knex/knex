@@ -72,7 +72,7 @@ assign(Builder.prototype, {
   },
 
   // Prepends the `schemaName` on `tableName` defined by `.table` and `.join`.
-  using: function(schemaName) {
+  withSchema: function(schemaName) {
     this._single.schema = schemaName;
     return this;
   },

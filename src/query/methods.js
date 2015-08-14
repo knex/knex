@@ -9,7 +9,7 @@ module.exports = [
   'from',
   'fromJS',
   'into',
-  'using',
+  'withSchema',
   'table',
   'distinct',
   'join',

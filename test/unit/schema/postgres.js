@@ -31,7 +31,7 @@ describe("PostgreSQL SchemaBuilder", function() {
   });
 
   it("alter table with schema", function() {
-    tableSql = client.schemaBuilder().using('myschema').table('users', function(table) {
+    tableSql = client.schemaBuilder().withSchema('myschema').table('users', function(table) {
       table.increments('id');
     }).toSQL();
     equal(1, tableSql.length);
@@ -45,7 +45,7 @@ describe("PostgreSQL SchemaBuilder", function() {
   });
 
   it("drop table with schema", function() {
-    tableSql = client.schemaBuilder().using('myschema').dropTable('users').toSQL();
+    tableSql = client.schemaBuilder().withSchema('myschema').dropTable('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table "myschema"."users"');
   });
@@ -57,7 +57,7 @@ describe("PostgreSQL SchemaBuilder", function() {
   });
 
   it("drop table if exists with schema", function() {
-    tableSql = client.schemaBuilder().using('myschema').dropTableIfExists('users').toSQL();
+    tableSql = client.schemaBuilder().withSchema('myschema').dropTableIfExists('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table if exists "myschema"."users"');
   });

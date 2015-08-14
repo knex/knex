@@ -119,7 +119,7 @@ describe("QueryBuilder", function() {
   });
 
   it("basic table wrapping with declared schema", function() {
-    testsql(qb().using('myschema').select('*').from('users'), {
+    testsql(qb().withSchema('myschema').select('*').from('users'), {
       mysql: 'select * from `myschema`.`users`',
       postgres: 'select * from "myschema"."users"',
       default: 'select * from "myschema"."users"'
@@ -1228,7 +1228,7 @@ describe("QueryBuilder", function() {
   });
 
   it("joins with schema", function() {
-    testsql(qb().using('myschema').select('*').from('users').join('contacts', 'users.id', '=', 'contacts.id').leftJoin('photos', 'users.id', '=', 'photos.id'), {
+    testsql(qb().withSchema('myschema').select('*').from('users').join('contacts', 'users.id', '=', 'contacts.id').leftJoin('photos', 'users.id', '=', 'photos.id'), {
       mysql: {
         sql: 'select * from `myschema`.`users` inner join `myschema`.`contacts` on `users`.`id` = `contacts`.`id` left join `myschema`.`photos` on `users`.`id` = `photos`.`id`',
         bindings: []
