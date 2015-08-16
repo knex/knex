@@ -24,6 +24,7 @@ module.exports = function(knex) {
             .dropTableIfExists('catch_test')
             .dropTableIfExists('test_table_two')
             .dropTableIfExists('test_table_three')
+            .dropTableIfExists('test_table_four')
             .dropTableIfExists('datatype_test')
             .dropTableIfExists('composite_key_test')
             .dropTableIfExists('charset_collate_test')

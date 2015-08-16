@@ -8,6 +8,7 @@ var normalizeArr = require('../helpers').normalizeArr
 function TableCompiler(client, tableBuilder) {
   this.client         = client
   this.method         = tableBuilder._method;
+  this.schemaNameRaw  = tableBuilder._schemaName;
   this.tableNameRaw   = tableBuilder._tableName;
   this.single         = tableBuilder._single;
   this.grouped        = _.groupBy(tableBuilder._statements, 'grouping');
@@ -115,7 +116,11 @@ TableCompiler.prototype.getColumns = function() {
 };
 
 TableCompiler.prototype.tableName = function() {
-  return this.formatter.wrap(this.tableNameRaw);
+  var name = this.schemaNameRaw ?
+    `${this.schemaNameRaw}.${this.tableNameRaw}`
+    : this.tableNameRaw;
+
+  return this.formatter.wrap(name);
 };
 
 // Generate all of the alter column statements necessary for the query.

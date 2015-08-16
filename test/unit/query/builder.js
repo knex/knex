@@ -118,6 +118,14 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("basic table wrapping with declared schema", function() {
+    testsql(qb().withSchema('myschema').select('*').from('users'), {
+      mysql: 'select * from `myschema`.`users`',
+      postgres: 'select * from "myschema"."users"',
+      default: 'select * from "myschema"."users"'
+    });
+  });
+
   it("basic wheres", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1), {
       mysql: {
@@ -1219,6 +1227,18 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("joins with schema", function() {
+    testsql(qb().withSchema('myschema').select('*').from('users').join('contacts', 'users.id', '=', 'contacts.id').leftJoin('photos', 'users.id', '=', 'photos.id'), {
+      mysql: {
+        sql: 'select * from `myschema`.`users` inner join `myschema`.`contacts` on `users`.`id` = `contacts`.`id` left join `myschema`.`photos` on `users`.`id` = `photos`.`id`',
+        bindings: []
+      },
+      default: {
+        sql: 'select * from "myschema"."users" inner join "myschema"."contacts" on "users"."id" = "contacts"."id" left join "myschema"."photos" on "users"."id" = "photos"."id"',
+        bindings: []
+      }
+    });
+  });
   it("raw expressions in select", function() {
     testsql(qb().select(raw('substr(foo, 6)')).from('users'), {
       mysql: {
