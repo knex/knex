@@ -168,4 +168,20 @@ module.exports = function(knex) {
     })
   })
 
+  if (knex.client.driverName === 'pg') {
+    tape('allows postgres ? operator in knex.raw() if no bindings given #519 and #888', function (t) {
+      t.plan(1)
+      knex.from('test_table_two')
+        .whereRaw("(json_data->'me')::jsonb \\?& array['keyOne', 'keyTwo']")
+        .where('id', '>', 1)
+        .then(function (result) {
+          t.equal(result.length, 0, "Table should have been empty")
+          return result
+        })
+        .finally(function () {
+          t.end()
+        });
+    })
+  }
+
 }

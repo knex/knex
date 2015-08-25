@@ -235,7 +235,7 @@ module.exports = function(knex) {
 
       it('allows adding a field', function () {
         return knex.schema.table('test_table_two', function(t) {
-          t.json('json_data').nullable();
+          t.json('json_data', true).nullable();
         });
       });
 
