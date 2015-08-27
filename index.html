@@ -2377,7 +2377,8 @@ $ knex migrate:make migration_name
 </pre>
 
     <p>
-      Once you have the migrations in place you wish to run, you can run:
+      Once you have finished writing the migrations, you can update the database
+      matching your <tt>NODE_ENV</tt> by running:
     </p>
 
 <pre>
@@ -2385,8 +2386,13 @@ $ knex migrate:latest
 </pre>
 
     <p>
-      To update your database to the latest version.
+      You can also pass the <tt>--env</tt> flag to select an alternative
+      environment:
     </p>
+
+<pre>
+$ knex migrate:latest --env production
+</pre>
 
     <h2 id="Seeds">Seed files</h2>
 
