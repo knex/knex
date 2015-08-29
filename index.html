@@ -2891,6 +2891,7 @@ $ knex seed:run
       <li><tt>directory</tt>: a relative path to the directory containing the migration files (default <tt>./migrations</tt>)</li>
       <li><tt>extension</tt>: the file extension used for the generated migration files (default <tt>js</tt>)</li>
       <li><tt>tableName</tt>: the table name used for storing the migration state (default <tt>knex_migrations</tt>)</li>
+      <li><tt>disableTransactions</tt>: don't run migrations inside transactions (default <tt>false</tt>)</li>
     </ul>
 
     <h4 id="Migrations-API-transactions">Transactions in migrations</h4>
