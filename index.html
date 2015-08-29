@@ -2880,10 +2880,18 @@ $ knex seed:run
     <h3 id="Migrations-API">Migration API</h3>
 
     <p>
-      <tt>knex.migrate</tt> is the class utilized by the knex migrations cli. Each method
-      takes an optional <tt>config</tt> object, which may specify the <tt>database</tt>,
-      <tt>directory</tt>, <tt>extension</tt>, and <tt>tableName</tt> for the migrations.
+      <tt>knex.migrate</tt> is the class utilized by the knex migrations cli.
     </p>
+
+    <p>
+      Each method takes an optional <tt>config</tt> object, which may specify the following properties:
+    </p>
+
+    <ul>
+      <li><tt>directory</tt>: a relative path to the directory containing the migration files (default <tt>./migrations</tt>)</li>
+      <li><tt>extension</tt>: the file extension used for the generated migration files (default <tt>js</tt>)</li>
+      <li><tt>tableName</tt>: the table name used for storing the migration state (default <tt>knex_migrations</tt>)</li>
+    </ul>
 
     <h4 id="Migrations-API-transactions">Transactions in migrations</h4>
 
