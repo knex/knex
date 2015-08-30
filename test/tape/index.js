@@ -10,6 +10,7 @@ Object.keys(knexfile).forEach(function(key) {
   require('./raw')
   require('./query-builder')
   require('./seed')
+  require('./migrate')
   require('./pool')
   require('./knex')
 
