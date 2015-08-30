@@ -192,6 +192,18 @@ export default class Migrator {
       });
   }
 
+  // If transaction conf for a single migration is defined, use that.
+  // Otherwise, rely on the common config. This allows enabling/disabling
+  // transaction for a single migration by will, regardless of the common
+  // config.
+  _useTransaction(migration, allTransactionsDisabled) {
+    var singleTransactionValue = _.get(migration, 'config.transaction');
+
+    return _.isBoolean(singleTransactionValue) ?
+      singleTransactionValue :
+      !allTransactionsDisabled;
+  }
+
   // Runs a batch of `migrations` in a specified `direction`,
   // saving the appropriate database information as the migrations are run.
   _waterfallBatch(batchNo, migrations, direction) {
@@ -206,10 +218,10 @@ export default class Migrator {
 
       // We're going to run each of the migrations in the current "up"
       current = current.then(() => {
-        if (disableTransactions) {
-          return warnPromise(migration[direction](knex, Promise), name)
+        if (this._useTransaction(migration, disableTransactions)) {
+          return this._transaction(migration, direction, name)
         }
-        return this._transaction(migration, direction, name)
+        return warnPromise(migration[direction](knex, Promise), name)
       })
       .then(() => {
         log.push(path.join(directory, name));
