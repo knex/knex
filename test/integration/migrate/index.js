@@ -120,4 +120,28 @@ module.exports = function(knex) {
 
   });
 
+  describe('knex.migrate (transactions disabled)', function () {
+
+    describe('knex.migrate.latest (all transactions disabled)', function() {
+
+      before(function() {
+        return knex.migrate.latest({directory: 'test/integration/migrate/test', disableTransactions: true}).catch(function() {});
+      });
+
+      // Same test as before, but this time, because
+      // transactions are off, the column gets created for all dialects always.
+      it('should create column even in invalid migration', function() {
+        return knex.schema.hasColumn('migration_test_1', 'transaction').then(function(exists) {
+          expect(exists).to.equal(true);
+        });
+      });
+
+      after(function() {
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test'});
+      });
+
+    });
+
+  });
+
 };
