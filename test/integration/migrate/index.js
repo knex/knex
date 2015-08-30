@@ -142,6 +142,61 @@ module.exports = function(knex) {
 
     });
 
+    describe('knex.migrate.latest (per-migration transaction disabled)', function() {
+
+      before(function() {
+        return knex.migrate.latest({directory: 'test/integration/migrate/test_per_migration_trx_disabled'}).catch(function() {});
+      });
+
+      it('should run all working migration files in the specified directory', function() {
+        return knex('knex_migrations').select('*').then(function(data) {
+          expect(data.length).to.equal(1);
+        });
+      });
+
+      it('should create column in invalid migration with transaction disabled', function() {
+        return knex.schema.hasColumn('migration_test_trx_1', 'transaction').then(function(exists) {
+          expect(exists).to.equal(true);
+        });
+      });
+
+      after(function() {
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test_per_migration_trx_disabled'});
+      });
+
+    });
+
+    describe('knex.migrate.latest (per-migration transaction enabled)', function() {
+
+      before(function() {
+        return knex.migrate.latest({directory: 'test/integration/migrate/test_per_migration_trx_enabled', disableTransactions: true}).catch(function() {});
+      });
+
+      it('should run all working migration files in the specified directory', function() {
+        return knex('knex_migrations').select('*').then(function(data) {
+          expect(data.length).to.equal(1);
+        });
+      });
+
+      it('should not create column for invalid migration with transaction enabled', function() {
+        return knex.schema.hasColumn('migration_test_trx_1', 'transaction').then(function(exists) {
+          // MySQL / Oracle commit transactions implicit for most common
+          // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
+          // so we need to check for dialect
+          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'mariadb' || knex.client.dialect === 'oracle') {
+            expect(exists).to.equal(true);
+          } else {
+            expect(exists).to.equal(false);
+          }
+        });
+      });
+
+      after(function() {
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test_per_migration_trx_enabled'});
+      });
+
+    });
+
   });
 
 };
