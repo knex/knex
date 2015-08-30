@@ -2484,6 +2484,26 @@ $ knex seed:run
       <tt>directory</tt>, <tt>extension</tt>, and <tt>tableName</tt> for the migrations.
     </p>
 
+    <h4 id="Migrations-API-transactions">Transactions in migrations</h4>
+
+    <p>
+      By default, each migration is run inside a transaction. Whenever needed, one can disable transactions for all migrations via the common migration config option <tt>config.disableTransactions</tt> or per-migration, via exposing a boolean property <tt>config.transaction</tt> from a migration file:
+    </p>
+
+<pre>
+<code class="js">
+exports.up = function(knex, Promise) { /* ... */ };
+exports.down = function(knex, Promise) { /* ... */ };
+exports.config {
+  transaction: false
+};
+</code>
+</pre>
+
+    <p>
+      The same config property can be used for enabling transaction per-migration in case the common configuration has <tt>disableTransactions: true</tt>.
+    </p>
+
     <p id="Migrations-make">
       <b class="header">make</b><code>knex.migrate.make(name, [config])</code>
       <br />
