@@ -76,7 +76,7 @@ module.exports = function(knex) {
       });
 
       it('should not create column for invalid migration', function() {
-        knex.schema.hasColumn('migration_test_1', 'transaction').then(function(exists) {
+        return knex.schema.hasColumn('migration_test_1', 'transaction').then(function(exists) {
           // MySQL / Oracle commit transactions implicit for most common
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
           // so we need to check for dialect
