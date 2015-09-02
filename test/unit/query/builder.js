@@ -1519,6 +1519,19 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("should not insert with undefined values", function(){
+    testsql(qb().into('users').insert({'email': 'foo', 'name': undefined}), {
+      mysql: {
+        sql: 'insert into `users` (`email`) values (?)',
+        bindings: ['foo']
+      },
+      default: {
+        sql: 'insert into "users" ("email") values (?)',
+        bindings: ['foo']
+      }
+    });
+  });
+
   // it("insert with array with null value and returning is a noop", function() {
   //   testsql(qb().into('users').insert([null], 'id'), {
   //     mysql: {
@@ -1639,6 +1652,19 @@ describe("QueryBuilder", function() {
       default: {
         sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
         bindings: ['foo', 'bar', 1]
+      }
+    });
+  });
+
+  it("should not update columns undefined values", function() {
+    testsql(qb().update({'email': 'foo', 'name': undefined}).table('users').where('id', '=', 1), {
+      mysql: {
+        sql: 'update `users` set `email` = ? where `id` = ?',
+        bindings: ['foo', 1]
+      },
+      default: {
+        sql: 'update "users" set "email" = ? where "id" = ?',
+        bindings: ['foo', 1]
       }
     });
   });

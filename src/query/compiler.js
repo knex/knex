@@ -57,7 +57,7 @@ assign(QueryCompiler.prototype, {
     }
     return _.compact(statements).join(' ');
   },
-  
+
   pluck: function() {
     return {
       sql: this.select(),
@@ -78,13 +78,12 @@ assign(QueryCompiler.prototype, {
     } else if (typeof insertValues === 'object' && _.isEmpty(insertValues)) {
       return sql + this._emptyInsertValue
     }
-
     var insertData = this._prepInsert(insertValues);
     if (typeof insertData === 'string') {
       sql += insertData;
     } else  {
       if (insertData.columns.length) {
-        sql += '(' + this.formatter.columnize(insertData.columns) 
+        sql += '(' + this.formatter.columnize(insertData.columns)
         sql += ') values ('
         var i = -1
         while (++i < insertData.values.length) {
@@ -124,14 +123,14 @@ assign(QueryCompiler.prototype, {
         if (stmt.distinct) distinct = true
         if (stmt.type === 'aggregate') {
           sql.push(this.aggregate(stmt))
-        } 
+        }
         else if (stmt.value && stmt.value.length > 0) {
           sql.push(this.formatter.columnize(stmt.value))
         }
       }
     }
     if (sql.length === 0) sql = ['*'];
-    return 'select ' + (distinct ? 'distinct ' : '') + 
+    return 'select ' + (distinct ? 'distinct ' : '') +
       sql.join(', ') + (this.tableName ? ' from ' + this.tableName : '');
   },
 
@@ -357,7 +356,7 @@ assign(QueryCompiler.prototype, {
     if (statement.not) return 'not ' + str;
     return str;
   },
-  
+
   _prepInsert: function(data) {
     var isRaw = this.formatter.rawOrFn(data);
     if (isRaw) return isRaw;
@@ -367,6 +366,7 @@ assign(QueryCompiler.prototype, {
     var i = -1
     while (++i < data.length) {
       if (data[i] == null) break;
+      data[i] = _.omit(data[i], _.isUndefined)
       if (i === 0) columns = Object.keys(data[i]).sort()
       var row  = new Array(columns.length)
       var keys = Object.keys(data[i])
@@ -395,6 +395,7 @@ assign(QueryCompiler.prototype, {
 
   // "Preps" the update.
   _prepUpdate: function(data) {
+    data = _.omit(data, _.isUndefined)
     var vals   = []
     var sorted = Object.keys(data).sort()
     var i      = -1
