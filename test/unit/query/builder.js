@@ -2395,4 +2395,26 @@ describe("QueryBuilder", function() {
     })
   })
 
+  it("allows join without operator and with value 0 #953", function() {
+    testsql(qb().select('*').from('users').join('photos', 'photos.id', 0), {
+      mysql: {
+        sql: 'select * from `users` inner join `photos` on `photos`.`id` = 0'
+      },
+      default: {
+        sql: 'select * from "users" inner join "photos" on "photos"."id" = 0'
+      }
+    });
+  });
+
+  it("allows join with operator and with value 0 #953", function() {
+    testsql(qb().select('*').from('users').join('photos', 'photos.id', '>', 0), {
+      mysql: {
+        sql: 'select * from `users` inner join `photos` on `photos`.`id` > 0'
+      },
+      default: {
+        sql: 'select * from "users" inner join "photos" on "photos"."id" > 0'
+      }
+    });
+  });
+
 });

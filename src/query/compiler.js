@@ -165,8 +165,8 @@ assign(QueryCompiler.prototype, {
           var clause = join.clauses[ii]
           sql += ' ' + (ii > 0 ? clause[0] : clause[1]) + ' '
           sql += this.formatter.wrap(clause[2])
-          if (clause[3]) sql += ' ' + this.formatter.operator(clause[3])
-          if (clause[4]) sql += ' ' + this.formatter.wrap(clause[4])
+          if (!_.isUndefined(clause[3])) sql += ' ' + this.formatter.operator(clause[3])
+          if (!_.isUndefined(clause[4])) sql += ' ' + this.formatter.wrap(clause[4])
         }
       }
     }
