@@ -366,7 +366,6 @@ assign(QueryCompiler.prototype, {
     var i = -1
     while (++i < data.length) {
       if (data[i] == null) break;
-      data[i] = _.omit(data[i], _.isUndefined)
       if (i === 0) columns = Object.keys(data[i]).sort()
       var row  = new Array(columns.length)
       var keys = Object.keys(data[i])
