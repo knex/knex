@@ -33,7 +33,7 @@ function checkLocalModule(env) {
   }
 }
 
-function environmentBasedConfig (env) {
+function environmentBasedConfig () {
   return process.env.DB_URL || process.env.DATABASE_URL;
 }
 
