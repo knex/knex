@@ -33,19 +33,11 @@ function checkLocalModule(env) {
   }
 }
 
-function initKnex(env) {
+function environmentBasedConfig (env) {
+  return process.env.DB_URL || process.env.DATABASE_URL;
+}
 
-  checkLocalModule(env);
-
-  if (!env.configPath) {
-    exit('No knexfile found in this directory. Specify a path with --knexfile');
-  }
-
-  if (process.cwd() !== env.cwd) {
-    process.chdir(env.cwd);
-    console.log('Working directory changed to', chalk.magenta(tildify(env.cwd)));
-  }
-
+function fileBasedConfig (env) {
   var environment = commander.env || process.env.NODE_ENV;
   var defaultEnv  = 'development';
   var config      = require(env.configPath);
@@ -57,6 +49,29 @@ function initKnex(env) {
     console.log('Using environment:', chalk.magenta(environment));
     config = config[environment];
   }
+  return config;
+}
+
+function determineConfig(env) {
+  if (env.configPath && fs.accessSync(env.configPath, fs.R_OK)) {
+    return fileBasedConfig(env);
+  }
+
+  if (process.env.DB_URL || process.env.DATABASE_URL) {
+    return environmentBasedConfig(env);
+  }
+}
+
+function initKnex(env) {
+
+  checkLocalModule(env);
+
+  if (process.cwd() !== env.cwd) {
+    process.chdir(env.cwd);
+    console.log('Working directory changed to', chalk.magenta(tildify(env.cwd)));
+  }
+
+  var config = determineConfig(env);
 
   if (!config) {
     console.log(chalk.red('Warning: unable to read knexfile config'));
