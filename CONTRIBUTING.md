@@ -15,7 +15,7 @@ update the files in `/lib`
 
 ### The Easy Way
 
-By default, Knex runs tests against MySQL (using [mysql](https://github.com/felixge/node-mysql) and [mysql2](https://github.com/sidorares/node-mysql2)), Postgres, and SQLite. The easiet way to run the tests is by creating the database `'knex_test'` and granting permissions to the database's default username:
+By default, Knex runs tests against MySQL (using [mysql](https://github.com/felixge/node-mysql) and [mysql2](https://github.com/sidorares/node-mysql2)), Postgres, and SQLite. The easiest way to run the tests is by creating the database `'knex_test'` and granting permissions to the database's default username:
 
 * **MySQL**: *root*
 * **Postgres**: *postgres*
@@ -23,7 +23,7 @@ By default, Knex runs tests against MySQL (using [mysql](https://github.com/feli
 No setup is required for SQLite.
 
 ### Specifying Databases
-You can optionally specify which dialects to test using the `DB` environment variable. Values shoud be space separated and can include:
+You can optionally specify which dialects to test using the `DB` environment variable. Values should be space separated and can include:
 * mysql
 * mysql2
 * postgres
