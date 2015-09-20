@@ -253,6 +253,27 @@ module.exports = function(knex) {
       })
     })
 
+    it('#855 - Query Event should trigger on Transaction Client AND main Client', function(done) {
+      var queryEventTriggered = false;
+
+      knex.once('query', function(queryData) {
+        queryEventTriggered = true;
+        return queryData;
+      });
+
+      function expectQueryEventToHaveBeenTriggered() {
+        expect(queryEventTriggered).to.equal(true);
+        done();
+      }
+
+      knex.transaction(function(trx) {
+        trx.select('*').from('accounts').then(tr.commit).catch(tr.rollback);
+      })
+          .then(expectQueryEventToHaveBeenTriggered)
+          .catch(expectQueryEventToHaveBeenTriggered);
+
+    });
+
   });
 
 };
