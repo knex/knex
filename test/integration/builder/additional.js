@@ -77,13 +77,15 @@ module.exports = function(knex) {
             "defaultValue": null,
             "maxLength": null,
             "nullable": true,
-            "type": "text"
+            "type": "text",
+            "udtName": "text"
           },
           "uuid": {
             "defaultValue": null,
             "maxLength": null,
             "nullable": false,
-            "type": "uuid"
+            "type": "uuid",
+            "udtName": "uuid"
           }
         });
         tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
