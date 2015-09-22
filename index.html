@@ -443,6 +443,23 @@ $ npm install oracle
       your library.
     </p>
 
+    <p>
+      You can even use knex without a connection, just for its query building features. Just pass in an empty object when
+      initializing the library. Specify a client if you are interested in a particular flavour of SQL.
+    </p>
+
+<pre>
+<code class="js">var knex = require('knex')({});
+var pg = require('knex')({client: 'pg'});
+
+knex('table').insert({a: 'b'}).returning('*').toString();
+// "insert into "table" ("a") values ('b')"
+
+pg('table').insert({a: 'b'}).returning('*').toString();
+// "insert into "table" ("a") values ('b') returning *"
+</code>
+</pre>
+
     <h3 id="Installation-debug">Debugging</h3>
 
     <p>
