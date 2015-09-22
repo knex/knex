@@ -73,30 +73,32 @@ assign(Client_Oracle.prototype, {
   acquireRawConnection: function acquireRawConnection() {
     var client = this;
     return new Promise(function (resolver, rejecter) {
-      client.driver.getConnection({
-        user: client.connectionSettings.user,
-        password: client.connectionSettings.password,
-        connectString: client.connectionSettings.host + '/' + client.connectionSettings.database
-      }, function (err, connection) {
-        if (err) return rejecter(err);
-        if (client.connectionSettings.prefetchRowCount) {
-          connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount);
-        }
-        connection.executeAsync = function (sql, bindParams, options) {
-          var self = this;
-          return new Promise(function (resolve, reject) {
-            var options = options || {};
-            options.outFormat = client.driver.OBJECT;
-            self.execute(sql, bindParams || [], options, function (err, results) {
-              if (err) {
-                return reject(err);
-              }
-              return resolve(results);
+      client.driver.getConnection(
+        {
+          user: client.connectionSettings.user,
+          password: client.connectionSettings.password,
+          connectString: client.connectionSettings.host + '/' + client.connectionSettings.database
+        },function (err, connection) {
+          if (err) return rejecter(err);
+          if (client.connectionSettings.prefetchRowCount) {
+            connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount);
+          }
+          connection.executeAsync = function(sql, bindParams, options){
+            var self = this;
+            return new Promise(function(resolve, reject) {
+              var options = options || {};
+              options.outFormat = client.driver.OBJECT;
+              self.execute(sql, bindParams || [], options, function(err, results) {
+                if (err) {
+                  return reject(err);
+                }
+                return resolve(results);
+              });
             });
-          });
-        };
-        resolver(connection);
-      });
+          };
+          resolver(connection);
+        }
+      );
     });
   },
 
