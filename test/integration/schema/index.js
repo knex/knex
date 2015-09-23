@@ -322,11 +322,11 @@ module.exports = function(knex) {
           return knex.insert({parent_id_test: 1}).into('rename_column_test');
         });
       });
-      
+
       after(function () {
         return knex.schema.dropTable('rename_column_foreign_test').dropTable('rename_column_test');
       });
-      
+
       it('renames the column', function () {
         return knex.schema.table('rename_column_test', function (tbl) {
           return tbl.renameColumn('id_test', 'id');
@@ -338,7 +338,7 @@ module.exports = function(knex) {
           expect(exists).to.equal(true);
         });
       });
-      
+
       it('successfully renames a column referenced in a foreign key', function () {
         return knex.schema.table('rename_column_test', function (tbl) {
           tbl.renameColumn('parent_id_test', 'parent_id');
