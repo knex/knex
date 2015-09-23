@@ -267,7 +267,7 @@ module.exports = function(knex) {
       }
 
       knex.transaction(function(trx) {
-        trx.select('*').from('accounts').then(tr.commit).catch(tr.rollback);
+        trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
       })
           .then(expectQueryEventToHaveBeenTriggered)
           .catch(expectQueryEventToHaveBeenTriggered);
