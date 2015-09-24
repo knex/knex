@@ -78,14 +78,14 @@ assign(ColumnCompiler_Oracle.prototype, {
     return "varchar2(" + maxLength + ")";
   },
 
-  time: 'timestamp with time zone',
+  time: 'timestamp with local time zone',
 
   datetime: function datetime(without) {
-    return without ? 'timestamp' : 'timestamp with time zone';
+    return without ? 'timestamp' : 'timestamp with local time zone';
   },
 
   timestamp: function timestamp(without) {
-    return without ? 'timestamp' : 'timestamp with time zone';
+    return without ? 'timestamp' : 'timestamp with local time zone';
   },
 
   bit: 'clob',
