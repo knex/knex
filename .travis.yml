@@ -20,9 +20,12 @@ notifications:
 
 env:
   - CXX=g++-4.8
-  
+
 addons:
   postgresql: '9.4'
   apt:
+    sources:
+    - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
+    - gcc-4.8
