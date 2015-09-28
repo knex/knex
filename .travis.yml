@@ -18,5 +18,11 @@ after_script:
 notifications:
   email: false
 
+env:
+  - CXX=g++-4.8
+  
 addons:
   postgresql: '9.4'
+  apt:
+    packages:
+    - g++-4.8
