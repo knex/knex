@@ -1842,6 +1842,17 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       Adds a json column, using the built-in <tt>json</tt> type in postgresql, defaulting to a text column
       in older versions of postgresql or in unsupported databases. <tt>jsonb</tt> can be used by passing
       <tt>true</tt> as the second argument.
+      <br />
+      Note that when setting an array (or a value that could be an array) as the value of a <tt>json</tt> or
+      <tt>jsonb</tt> column, you should use <tt>JSON.stringify()</tt> to convert your value to a string prior to
+      passing it to the query builder, e.g.
+<pre class="display">
+knex.table('users')
+  .where({id: 1})
+  .update({json_data: JSON.stringify(mightBeAnArray)});
+</pre>
+      This is because postgresql has a native array type which uses a syntax incompatible with json; knex has no way
+      of knowing which syntax to use, and calling <tt>JSON.stringify()</tt> forces json-style syntax.
     </p>
 
     <p id="Schema-uuid">
