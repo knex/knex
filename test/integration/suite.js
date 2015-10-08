@@ -4,11 +4,16 @@
 
 module.exports = function(knex) {
   var sinon = require('sinon');
+  var Pool2 = require('pool2');
 
   describe(knex.client.dialect + ' | ' + knex.client.driverName, function() {
 
     this.dialect    = knex.client.dialect;
     this.driverName = knex.client.driverName;
+
+    before(function () {
+      return knex.initialize(knex.client.config)
+    });
 
     require('./schema')(knex);
     require('./migrate')(knex);
@@ -22,6 +27,17 @@ module.exports = function(knex) {
     require('./builder/transaction')(knex);
     require('./builder/deletes')(knex);
     require('./builder/additional')(knex);
+
+    describe('knex.initialize', function() {
+      it('should allow reinitializing the pool with knex.initialize', function() {
+        var spy = sinon.spy(knex.client.pool, 'end');
+        return knex.initialize(knex.client.config)
+        .then(function () {
+          expect(knex.client.pool).to.be.an.instanceof(Pool2);
+          expect(spy).to.have.callCount(1);
+        });
+      });
+    });
 
     describe('knex.destroy', function() {
       it('should allow destroying the pool with knex.destroy', function() {

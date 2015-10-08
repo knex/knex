@@ -20,7 +20,7 @@ module.exports = function makeKnex(client) {
   }
 
   assign(knex, {
-    
+
     Promise: require('../promise'),
 
     // A new query builder instance
@@ -38,12 +38,15 @@ module.exports = function makeKnex(client) {
       return client.transaction(container, config)
     },
 
-    // Typically never needed, initializes the pool for a knex client.
-    initialize: function(config) {
-      return client.initialize(config)
+    // Initializes the pool for a knex client. Must be called before submitting
+    // queries to the database. Returns a promise, and may optionally be called
+    // with a callback.
+    initialize: function(config, callback) {
+      return client.initializePool(config, callback)
     },
 
-    // Convenience method for tearing down the pool.
+    // Convenience method for tearing down the pool. Returns a promise, and may
+    // optionally be called with a callback.
     destroy: function(callback) {
       return client.destroy(callback)
     }
@@ -68,7 +71,7 @@ module.exports = function makeKnex(client) {
       return builder[method].apply(builder, arguments)
     }
   })
-  
+
   knex.client = client
 
   Object.defineProperties(knex, {
@@ -103,7 +106,7 @@ module.exports = function makeKnex(client) {
   client.on('start', function(obj) {
     knex.emit('start', obj)
   })
-  
+
   client.on('query', function(obj) {
     knex.emit('query', obj)
   })

@@ -35,9 +35,6 @@ function Client(config = {}) {
   this.connectionSettings = cloneDeep(config.connection || {})
   if (this.driverName && config.connection) {
     this.initializeDriver()
-    if (!config.pool || (config.pool && config.pool.max !== 0)) {
-      this.initializePool(config)
-    }
   }
 }
 inherits(Client, EventEmitter)
@@ -148,15 +145,32 @@ assign(Client.prototype, {
 
   Pool: Pool2,
 
-  initializePool: function(config) {
-    if (this.pool) this.destroy()
-    this.pool = new this.Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
-    this.pool.on('error', function(err) {
-      helpers.error('Pool2 - ' + err)
+  initializePool: function(config, callback) {
+    var client = this
+    var promise = new Promise(function (resolver, rejecter) {
+      return Promise.try(function () {
+        if (client.pool) {
+          return client.destroy()
+        }
+      })
+      .then(function () {
+        client.pool = new client.Pool(assign(client.poolDefaults(config.pool || {}), config.pool))
+        client.pool.on('error', function(err) {
+          helpers.error('Pool2 - ' + err)
+        })
+        client.pool.on('warn', function(msg) {
+          helpers.warn('Pool2 - ' + msg)
+        })
+        resolver()
+      })
+      .catch(rejecter)
     })
-    this.pool.on('warn', function(msg) {
-      helpers.warn('Pool2 - ' + msg)
-    })
+    // Allow either a callback or promise interface for initialization.
+    if (typeof callback === 'function') {
+      promise.nodeify(callback)
+    } else {
+      return promise
+    }
   },
 
   poolDefaults: function(poolConfig) {
