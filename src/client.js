@@ -147,23 +147,22 @@ assign(Client.prototype, {
 
   initializePool: function(config, callback) {
     var client = this
-    var promise = new Promise(function (resolver, rejecter) {
-      return Promise.try(function () {
+    var promise = Promise.try(function() {
+      return Promise.try(function() {
         if (client.pool) {
           return client.destroy()
         }
       })
-      .then(function () {
+      .then(function() {
         client.pool = new client.Pool(assign(client.poolDefaults(config.pool || {}), config.pool))
+        client.pool.setMaxListeners(0) // Suppress warnings about too many event listeners
         client.pool.on('error', function(err) {
           helpers.error('Pool2 - ' + err)
         })
         client.pool.on('warn', function(msg) {
           helpers.warn('Pool2 - ' + msg)
         })
-        resolver()
       })
-      .catch(rejecter)
     })
     // Allow either a callback or promise interface for initialization.
     if (typeof callback === 'function') {
@@ -207,39 +206,69 @@ assign(Client.prototype, {
   },
 
   // Acquire a connection from the pool.
-  acquireConnection: function() {
+  acquireConnection: function(callback) {
     var client = this
-    return new Promise(function(resolver, rejecter) {
+    var promise = Promise.try(function() {
       if (!client.pool) {
-        return rejecter(new Error('There is no pool defined on the current client'))
+        if (!client.config.pool || (client.config.pool && client.config.pool.max !== 0)) {
+          return client.initializePool(client.config)
+        }
+        throw new Error('There is no pool defined on the current client')
       }
-      client.pool.acquire(function(err, connection) {
-        if (err) return rejecter(err)
+    })
+    .then(function() {
+      return Promise.fromNode(client.pool.acquire.bind(client.pool))
+      .then(function(connection) {
         debug('acquiring connection from pool: %s', connection.__knexUid)
-        resolver(connection)
+        return connection
       })
     })
+    // Allow either a callback or promise interface for initialization.
+    if (typeof callback === 'function') {
+      promise.nodeify(callback)
+    } else {
+      return promise
+    }
   },
 
   // Releases a connection back to the connection pool,
   // returning a promise resolved when the connection is released.
-  releaseConnection: function(connection) {
+  // A callback may also be used instead of a promise.
+  releaseConnection: function(connection, callback) {
     var pool = this.pool
-    return new Promise(function(resolver) {
+    var promise = new Promise(function(resolver, rejecter) {
+      var errorHandler, successHandler
       debug('releasing connection to pool: %s', connection.__knexUid)
+      errorHandler = function(err) {
+        pool.removeListener('drain', successHandler)
+        rejecter(err)
+      }
+      successHandler = function() {
+        pool.removeListener('error', errorHandler)
+        resolver()
+      }
+      pool.once('error', errorHandler)
+      pool.once('drain', successHandler)
       pool.release(connection)
-      resolver()
     })
+    // Allow either a callback or promise interface for releasing connections.
+    if (typeof callback === 'function') {
+      promise.nodeify(callback)
+    } else {
+      return promise
+    }
   },
 
   // Destroy the current connection pool for the client.
   destroy: function(callback) {
     var client = this
-    var promise = new Promise(function(resolver) {
-      if (!client.pool) return resolver()
-      client.pool.end(function() {
+    var promise = Promise.try(function() {
+      if (!client.pool) {
+        return
+      }
+      return Promise.fromNode(client.pool.end.bind(client.pool))
+      .then(function() {
         client.pool = undefined
-        resolver()
       })
     })
     // Allow either a callback or promise interface for destruction.

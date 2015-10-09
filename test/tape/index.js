@@ -15,19 +15,14 @@ Object.keys(knexfile).forEach(function(key) {
 
   var knex = makeKnex(knexfile[key])
 
-  knex.initialize(knex.client.config, function () {
+  require('./transactions')(knex)
+  require('./stream')(knex)
 
-    require('./transactions')(knex)
-    require('./stream')(knex)
-
-    // Tear down the knex connection
-    tape(knex.client.driverName + ' - transactions: after', function(t) {
-      knex.destroy(function() {
-        t.end()
-      })
+  // Tear down the knex connection
+  tape(knex.client.driverName + ' - transactions: after', function(t) {
+    knex.destroy(function(err) {
+      t.end(err)
     })
-
-
   })
 
 })
