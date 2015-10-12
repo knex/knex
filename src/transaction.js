@@ -13,7 +13,7 @@ var debug        = require('debug')('knex:tx')
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
 function Transaction(client, container, config, outerTx) {
-  
+
   var txid = this.txid = uniqueId('trx')
 
   this.client    = client
@@ -24,10 +24,10 @@ function Transaction(client, container, config, outerTx) {
   debug('%s: Starting %s transaction', txid, outerTx ? 'nested' : 'top level')
 
   this._promise = Promise.using(this.acquireConnection(client, config, txid), (connection) => {
-    
+
     var trxClient = this.trxClient = makeTxClient(this, client, connection)
     var init      = client.transacting ? this.savepoint(connection) : this.begin(connection)
-    
+
     init.then(() => {
       return makeTransactor(this, connection, trxClient)
     })
@@ -46,7 +46,7 @@ function Transaction(client, container, config, outerTx) {
           transactor.rollback(err)
         })
       }
-    
+
     })
     .catch((e) => this._rejecter(e))
 
@@ -65,7 +65,7 @@ function Transaction(client, container, config, outerTx) {
   // The queue is a noop unless we have child promises.
   this._queue = this._queue || Promise.resolve(true)
 
-  // If there's a wrapping transaction, we need to see if there are 
+  // If there's a wrapping transaction, we need to see if there are
   // any current children in the pending queue.
   if (outerTx) {
 
@@ -117,6 +117,11 @@ assign(Transaction.prototype, {
   },
 
   query: function(conn, sql, status, value) {
+    if (status === 1) {
+      this.emit('commit', value);
+    } else if (status === 2) {
+      this.emit('rollback', value);
+    }
     var q = this.trxClient.query(conn, sql)
       .catch((err) => {
         status = 2
@@ -143,13 +148,13 @@ assign(Transaction.prototype, {
     return Promise.reject(new Error('Transaction ' + this.txid + ' has already been released skipping: ' + sql))
   },
 
-  // Acquire a connection and create a disposer - either using the one passed 
-  // via config or getting one off the client. The disposer will be called once 
+  // Acquire a connection and create a disposer - either using the one passed
+  // via config or getting one off the client. The disposer will be called once
   // the original promise is marked completed.
   acquireConnection: function(client, config, txid) {
     var configConnection = config && config.connection
     return Promise.try(function() {
-      return configConnection || client.acquireConnection()  
+      return configConnection || client.acquireConnection()
     })
     .disposer(function(connection) {
       if (!configConnection) {
@@ -163,18 +168,25 @@ assign(Transaction.prototype, {
 
 })
 
-// The transactor is a full featured knex object, with a "commit", 
+// The transactor is a full featured knex object, with a "commit",
 // a "rollback" and a "savepoint" function. The "savepoint" is just
 // sugar for creating a new transaction. If the rollback is run
 // inside a savepoint, it rolls back to the last savepoint - otherwise
 // it rolls back the transaction.
 function makeTransactor(trx, connection, trxClient) {
-  
+
   var transactor = makeKnex(trxClient)
+
+  trx.on('rollback', function(arg) {
+    transactor.emit('rollback', arg);
+  });
+  trx.on('commit', function(arg) {
+    transactor.emit('commit', arg);
+  });
 
   transactor.transaction = function(container, options) {
     return new trxClient.Transaction(trxClient, container, options, trx)
-  }  
+  }
   transactor.savepoint = function(container, options) {
     return transactor.transaction(container, options)
   }
@@ -199,7 +211,7 @@ function makeTransactor(trx, connection, trxClient) {
 }
 
 
-// We need to make a client object which always acquires the same 
+// We need to make a client object which always acquires the same
 // connection and does not release back into the pool.
 function makeTxClient(trx, client, connection) {
 
@@ -208,7 +220,7 @@ function makeTxClient(trx, client, connection) {
   trxClient.driver             = client.driver
   trxClient.connectionSettings = client.connectionSettings
   trxClient.transacting        = true
-  
+
   trxClient.on('query', function(arg) {
     trx.emit('query', arg)
   })
@@ -236,7 +248,7 @@ function makeTxClient(trx, client, connection) {
       return connection
     })
   }
-  trxClient.releaseConnection = function() { 
+  trxClient.releaseConnection = function() {
     return Promise.resolve()
   }
 
@@ -246,7 +258,7 @@ function makeTxClient(trx, client, connection) {
 function completedError(trx, obj) {
   var sql = typeof obj === 'string' ? obj : obj && obj.sql
   debug('%s: Transaction completed: %s', trx.id, sql)
-  throw new Error('Transaction query already complete, run with DEBUG=knex:tx for more info')  
+  throw new Error('Transaction query already complete, run with DEBUG=knex:tx for more info')
 }
 
 var promiseInterface = [

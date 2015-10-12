@@ -229,6 +229,8 @@
       <li>&nbsp;&nbsp;– <a href="#Streams-pipe">pipe</a></li>
       <li><b><a href="#Interfaces-Events">Events</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Events-query">query</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-commit">commit</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-rollback">rollback</a></li>
       <li><b><a href="#Interfaces-Other">Other:</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toString">toString</a></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toSQL">toSQL</a></li>
@@ -1576,6 +1578,9 @@ knex.transaction(function(trx) {
 
 // Using trx as a transaction object:
 knex.transaction(function(trx) {
+  // We can optionally listen for commit and rollback events, e.g:
+  // trx.on('commit', console.log)
+  // trx.on('rollback', console.error)
 
   var books = [
     {title: 'Canterbury Tales'},
@@ -2409,6 +2414,38 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
   .then(function() {
     // ...
   });
+</code>
+</pre>
+
+    <p id="Events-commit">
+      <b class="header">commit</b>
+      <br />
+      A <b>commit</b> event is fired from the transaction object just before it is committed.
+    </p>
+
+    <p id="Events-rollback">
+      <b class="header">rollback</b>
+      <br />
+      A <b>rollback</b> event is fired from the transaction object just before it is rollbacked.
+    </p>
+
+
+
+<pre>
+<code class="js">knex.transaction(function(trx) {
+  trx.on('commit', function () {
+    // this is fired if the transaction succeeds
+  });
+  trx.on('rollback', function (err) {
+    // this is fired if the transaction fails
+  });
+
+  knex.insert({name: 'Old Books'}, 'id')
+    .into('catalogues')
+    .transacting(trx)
+    .then(trx.commit)
+    .catch(trx.rollback);
+});
 </code>
 </pre>
 

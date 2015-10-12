@@ -159,6 +159,82 @@ module.exports = function(knex) {
       });
     });
 
+    it('should emit rollback event', function() {
+      var id = null;
+      var err = new Error('error message');
+      var rollbackErr = false;
+      var commitEv = 0;
+      var rollbackEv = 0;
+      return knex.transaction(function(trx) {
+        trx.on('rollback', function(err) {
+          rollbackEv += 1;
+          rollbackErr = err;
+        });
+        trx.on('commit', function() {
+          commitEv += 1;
+        });
+
+        return trx('accounts')
+          .returning('id')
+          .insert({
+            first_name: 'Transacting',
+            last_name: 'User2',
+            email:'transaction-test4@example.com',
+            logins: 1,
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            created_at: new Date(),
+            updated_at: new Date()
+          })
+          .then(function() {
+            throw err;
+          });
+      })
+      .catch(function() {
+        expect(rollbackEv).to.equal(1);
+        expect(commitEv).to.equal(0);
+        expect(rollbackErr).to.equal(err);
+        return knex('accounts').where('id', id).select('first_name');
+      })
+      .then(function(resp) {
+        expect(resp).to.eql([]);
+      });
+    });
+
+    it('should emit commit event', function() {
+      var commitEv = 0;
+      var rollbackEv = 0;
+      return knex.transaction(function(trx) {
+        trx.on('commit', function() {
+          commitEv += 1;
+        });
+        trx.on('rollback', function() {
+          rollbackEv += 1;
+        });
+
+        return trx('accounts')
+          .returning('id')
+          .insert({
+            first_name: 'Transacting',
+            last_name: 'User2',
+            email:'transaction-test4@example.com',
+            logins: 1,
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            created_at: new Date(),
+            updated_at: new Date()
+          });
+      })
+      .then(function(resp) {
+        var id = parseInt(resp[0], 10);
+        expect(rollbackEv).to.equal(0);
+        expect(commitEv).to.equal(1);
+        return knex('accounts').where('id', id).select('first_name');
+      })
+      .then(function(resp) {
+        expect(resp.length).to.equal(1);
+        expect(resp[0].first_name).to.equal('Transacting');
+      });
+    });
+
     it('should be able to run schema methods', function() {
       var __knexUid, count = 0;
       var err = new Error('error message');
