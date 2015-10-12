@@ -1,7 +1,8 @@
 ## How to contribute to Knex.js
 
-* Make changes in the `/src` directory and run `npm run dev` to
-update the files in `/lib`
+* Make changes in the `/src` directory and run `npm run babel` (runs once and
+  then quits) or `npm run dev` (runs once and then watches for changes) to
+  update the files in `/lib`. `npm test` will also do this.
 
 * Before sending a pull request for a feature or bug fix, be sure to have
 [tests](https://github.com/tgriesser/knex/tree/master/test).
