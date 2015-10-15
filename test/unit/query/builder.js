@@ -2417,4 +2417,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it('where object with keys containing array values', function() {
+    testsql(qb().select('name').from('players').where({team: ['=', 'foo'], score: ['>=', 500]}), {
+      mysql: {
+        sql: 'select `name` from `players` where `team` = ? and `score` >= ?'
+      },
+      default: {
+        sql: 'select "name" from "players" where "team" = ? and "score" >= ?'
+      }
+    });
+  });
+
 });
