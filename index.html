@@ -1813,8 +1813,8 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       is passed as the second argument.
       <br />
       Note that the method for defaulting to the current datetime varies from one database to another.
-      For example: PostreSQL requires <tt>.defaultTo(knex.raw('now()'))</tt>,
-      but SQLite3 requires <tt>.defaultTo(knex.raw("date('now')"))</tt>.
+      For example: PostreSQL requires <tt>.defaultTo(knex.fn.now())</tt>,
+      but SQLite3 requires <tt>.defaultTo(knex.fn.now())</tt>.
     </p>
 
     <p id="Schema-timestamps">
