@@ -28,7 +28,7 @@
     "coveralls": "~2.11.1",
     "istanbul": "~0.3.0",
     "jshint": "^2.7.0",
-    "mariasql": "^0.1.21",
+    "mariasql": "^0.2.1",
     "mocha": "^2.2.4",
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
