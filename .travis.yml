@@ -6,7 +6,7 @@ language: node_js
 node_js:
   - '0.10'
   - '0.12'
-  - '4.1'
+  - 'stable'
 
 before_script:
   - psql -c 'create database knex_test;' -U postgres
