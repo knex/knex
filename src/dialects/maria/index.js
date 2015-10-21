@@ -61,7 +61,6 @@ assign(Client_MariaSQL.prototype, {
     return new Promise(function(resolver, rejecter) {
       connection.query(sql.sql, sql.bindings)
         .on('result', function(res) {
-          console.log('stream begin');
           res
             .on('error', rejecter)
             .on('end', function() {
