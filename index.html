@@ -1812,9 +1812,10 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       Adds a timestamp column, defaults to <tt>timestamptz</tt> in PostgreSQL, unless true
       is passed as the second argument.
       <br />
-      Note that the method for defaulting to the current datetime varies from one database to another.
-      For example: PostreSQL requires <tt>.defaultTo(knex.raw('now()'))</tt>,
-      but SQLite3 requires <tt>.defaultTo(knex.raw("date('now')"))</tt>.
+      For Example:
+<pre class="display">
+  table.timestamp('created_at').defaultTo(knex.fn.now());
+</pre>
     </p>
 
     <p id="Schema-timestamps">
