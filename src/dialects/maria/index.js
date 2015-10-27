@@ -34,7 +34,7 @@ assign(Client_MariaSQL.prototype, {
     connection.connect(assign({metadata: true}, this.connectionSettings));
     return new Promise(function(resolver, rejecter) {
       connection
-        .on('connect', function() {
+        .on('ready', function() {
           connection.removeAllListeners('end');
           connection.removeAllListeners('error');
           resolver(connection);
@@ -60,12 +60,17 @@ assign(Client_MariaSQL.prototype, {
   _stream: function(connection, sql, stream) {
     return new Promise(function(resolver, rejecter) {
       connection.query(sql.sql, sql.bindings)
-        .on('result', function(result) {
-          result
-            .on('row', rowHandler(function(row) { stream.write(row); }))
-            .on('end', function(data) { resolver(data); });
+        .on('result', function(res) {
+          res
+            .on('error', rejecter)
+            .on('end', function() {
+              resolver(res.info);
+            })
+            .on('data', function (data) {
+              stream.write(handleRow(data, res.info.metadata));
+            })
         })
-        .on('error', function(err) { rejecter(err); });
+        .on('error', rejecter);
     });
   },
 
@@ -75,16 +80,15 @@ assign(Client_MariaSQL.prototype, {
     var tz  = this.connectionSettings.timezone || 'local';
     return new Promise(function(resolver, rejecter) {
       if (!obj.sql) return resolver()
-      var rows = [];
-      var query = connection.query(SqlString.format(obj.sql, obj.bindings, tz), [])
-      query.on('result', function(result) {
-        result.on('row', rowHandler(function(row) { rows.push(row); }))
-        .on('end', function(data) {
-          obj.response = [rows, data];
-          resolver(obj);
-        });
+      var sql = SqlString.format(obj.sql, obj.bindings, tz);
+      connection.query(sql, function (err, rows) {
+        if (err) {
+          return rejecter(err);
+        }
+        handleRows(rows, rows.info.metadata);
+        obj.response = [rows, rows.info];
+        resolver(obj);
       })
-      .on('error', rejecter)
     });
   },
 
@@ -107,11 +111,11 @@ assign(Client_MariaSQL.prototype, {
       case 'del':
       case 'update':
       case 'counter':
-        return data.affectedRows;
+        return parseInt(data.affectedRows, 10);
       default:
         return response;
     }
-  }  
+  }
 
 })
 
@@ -127,17 +131,22 @@ function parseType(value, type) {
   }
 }
 
-function rowHandler(callback) {
-  var types;
-  return function(row, meta) {
-    if (!types) types = meta.types;
-    var keys = Object.keys(types);
-    for (var i = 0, l = keys.length; i < l; i++) {
-      var type = keys[i];
-      row[type] = parseType(row[type], types[type]);
-    }
-    callback(row);
-  };
+function handleRow(row, metadata) {
+  var keys = Object.keys(metadata);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var type = metadata[key].type;
+    row[key] = parseType(row[key], type);
+  }
+  return row;
+}
+
+function handleRows(rows, metadata) {
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    handleRow(row, metadata);
+  }
+  return rows;
 }
 
 module.exports = Client_MariaSQL
