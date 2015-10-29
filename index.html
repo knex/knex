@@ -178,6 +178,8 @@
       <li>– <a href="#Schema-charset">charset</a></li>
       <li>– <a href="#Schema-collate">collate</a></li>
       <li>– <a href="#Schema-specificType">specificType</a></li>
+      <li>– <a href="#Schema-index">index</a></li>
+      <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -1894,6 +1896,20 @@ knex.table('users')
       <b class="header">specificType</b><code>table.specificType(column, value)</code>
       <br />
       Sets a specific type for the column creation, if you'd like to add a column type that isn't supported here.
+    </p>
+
+    <p id="Schema-index">
+      <b class="header">index</b><code>table.index(columns, [indexName])</code>
+      <br />
+      Adds an index to a table over the given columns. A default index name using the columns is used unless
+      indexName is specified.
+    </p>
+
+    <p id="Schema-dropIndex">
+      <b class="header">dropIndex</b><code>table.dropIndex(columns, [indexName])</code>
+      <br />
+      Drops an index from a table. A default index name using the columns is used unless
+      indexName is specified.
     </p>
 
     <h3 id="Chainable">Chainable Methods:</h3>
