@@ -2536,8 +2536,7 @@ $ knex seed:run
     </p>
 
 <pre>
-<code class="js">
-exports.up = function(knex, Promise) { /* ... */ };
+<code class="js">exports.up = function(knex, Promise) { /* ... */ };
 exports.down = function(knex, Promise) { /* ... */ };
 exports.config {
   transaction: false
@@ -2562,20 +2561,20 @@ exports.config {
     </p>
 
     <p>
-      If you need to run something only after all migrations finish their execution,
-      you can do something like this:
+      If you need to run something only after all migrations have finished their
+      execution, you can do something like this:
     </p>
-    <pre class="js">
-      // example
-      console.log("(1/3) running [knex.migrate.latest()]");
-      knex.migrate.latest().then(function(){
-        console.log("(2/3) running [knex.seed.run()]");
-        return knex.seed.run();
-      }).then(function(){
-        console.log("(3/3) app ready. Listening port: "+port+", addr: "+(addr ? addr : "0.0.0.0"));
-        app.listen(port,addr);
-      });
-    </pre>
+
+<pre>
+<code class="js">knex.migrate.latest()
+.then(function() {
+  return knex.seed.run();
+})
+.then(function() {
+  // migrations are finished
+});
+</code>
+</pre>
 
     <p id="Migrations-rollback">
       <b class="header">rollback</b><code>knex.migrate.rollback([config])</code>
