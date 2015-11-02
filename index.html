@@ -2663,6 +2663,24 @@ $ npm test
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.9.0</b> &mdash; <small><i>TBA</i></small><br />
+    </p>
+
+    <ul>
+      <li>Fix error when merging <tt>knex.raw</tt> instances without arguments. #853</li>
+      <li>Fix error that caused the connection to time out while streaming. #849</li>
+      <li>Correctly parse SSL query parameter for PostgreSQL. #852</li>
+      <li>Pass <tt>compress</tt> option to MySQL2. #843</li>
+      <li>Schema: Use <tt>timestamp with timezone</tt> by default for <tt>time</tt>, <tt>datetime</tt> and <tt>timestamp</tt> for Oracle. #876</li>
+      <li>Add <a href="#Builder-modify"><tt>QueryBuilder#modify</tt></a> #881</li>
+      <li>Add LiveScript and Early Gray support for seeds and migrations.</li>
+      <li>Add <a href="#Builder-withSchema"><tt>QueryBuilder#withSchema</tt></a> #518</li>
+      <li>Allow escaping of <tt>?</tt> in <tt>knex.raw</tt> queries. #946</li>
+      <li>Allow <tt>0</tt> in join clause. #953</li>
+      <li>Add migration config to allow disabling/enabling transactions per migration. #834</li>
+    </ul>
+
+    <p>
       <b class="header">0.8.6</b> &mdash; <small><i>May 20, 2015</i></small><br />
     </p>
 
