@@ -39,6 +39,9 @@ assign(ColumnCompiler_PG.prototype, {
     if (!this.client.version || parseFloat(this.client.version) >= 9.2) return jsonb ? 'jsonb' : 'json';
     return 'text';
   },
+  jsonb: function() {
+    return this.json(true);
+  },
   smallint: 'smallint',
   tinyint:  'smallint',
   datetime: function(without) {

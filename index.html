@@ -173,6 +173,7 @@
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
       <li>– <a href="#Schema-json">json</a></li>
+      <li>– <a href="#Schema-jsonb">jsonb</a></li>
       <li>– <a href="#Schema-uuid">uuid</a></li>
       <li>– <a href="#Schema-comment">comment</a></li>
       <li>– <a href="#Schema-engine">engine</a></li>
@@ -1858,6 +1859,12 @@ knex.table('users')
 </pre>
       This is because postgresql has a native array type which uses a syntax incompatible with json; knex has no way
       of knowing which syntax to use, and calling <tt>JSON.stringify()</tt> forces json-style syntax.
+    </p>
+
+    <p id="Schema-jsonb">
+      <b class="header">jsonb</b><code>table.jsonb(name)</code>
+      <br />
+      Adds a jsonb column - shortcut to <tt>json('column_name', true)</tt> call.
     </p>
 
     <p id="Schema-uuid">
