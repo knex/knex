@@ -1,4 +1,5 @@
 
+var _              = require('lodash')
 var Promise        = require('./promise')
 var helpers        = require('./helpers')
 
@@ -38,6 +39,10 @@ function Client(config = {}) {
     if (!config.pool || (config.pool && config.pool.max !== 0)) {
       this.initializePool(config)
     }
+  }
+  this.valueForUndefined = null
+  if (config.replaceUndefinedWithDefault) {
+    this.valueForUndefined = this.raw('DEFAULT');
   }
 }
 inherits(Client, EventEmitter)
@@ -132,6 +137,12 @@ assign(Client.prototype, {
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
     debugQuery(obj.sql)
     return this._stream.call(this, connection, obj, stream, options)
+  },
+
+  prepBindings: function(bindings) {
+    return _.map(bindings, function(binding) {
+      return binding === undefined ? this.valueForUndefined : binding
+    }, this);
   },
 
   wrapIdentifier: function(value) {

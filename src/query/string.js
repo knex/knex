@@ -4,7 +4,11 @@ var SqlString = exports;
 var helpers   = require('../helpers')
 
 SqlString.escape = function(val, timeZone) {
-  if (val == null) {
+  // Cant do require on top of file beacuse Raw is not yet initialized when this file is
+  // executed for the first time
+  var Raw = require('../raw')
+
+  if (val === null || val === undefined) {
     return 'NULL';
   }
 
@@ -23,6 +27,10 @@ SqlString.escape = function(val, timeZone) {
 
   if (Array.isArray(val)) {
     return SqlString.arrayToList(val, timeZone);
+  }
+
+  if (val instanceof Raw) {
+    return val;
   }
 
   if (typeof val === 'object') {

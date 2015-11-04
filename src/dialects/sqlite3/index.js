@@ -18,6 +18,9 @@ var SQLite3_DDL    = require('./schema/ddl')
 
 function Client_SQLite3(config) {
   Client.call(this, config)
+  if (config.replaceUndefinedWithDefault) {
+    throw new Error('replaceUndefinedWithDefault not supported by sqlite3')
+  }
 }
 inherits(Client_SQLite3, Client)
 
