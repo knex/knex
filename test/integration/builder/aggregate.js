@@ -158,6 +158,53 @@ module.exports = function(knex) {
 
     });
 
+    it('has distinct modifier for aggregates', function() {
+
+      return knex('accounts').countDistinct('id').sumDistinct('logins').avgDistinct('logins').testSql(function(tester) {
+        tester(
+            'mysql',
+            'select count(distinct `id`), sum(distinct `logins`), avg(distinct `logins`) from `accounts`',
+            [],
+            [{
+              'count(distinct `id`)': 6,
+              'sum(distinct `logins`)': 3,
+              'avg(distinct `logins`)': 1.5
+            }]
+        );
+        tester(
+            'postgresql',
+            'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
+            [],
+            [{
+              count: '6',
+              sum: 3,
+              avg: 1.5
+            }]
+        );
+        tester(
+            'sqlite3',
+            'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
+            [],
+            [{
+              'count(distinct "id")': 6,
+              'sum(distinct "logins")': 3,
+              'avg(distinct "logins")': 1.5
+            }]
+        );
+        tester(
+            'oracle',
+            'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
+            [],
+            [{
+              'COUNT(DISTINCT "ID")': 6,
+              'SUM(DISTINCT "LOGINS")': 3,
+              'AVG(DISTINCT "LOGINS")': 1.5
+            }]
+        );
+      });
+
+    });
+
     it("support the groupBy function", function() {
 
       return knex('accounts').count('id').groupBy('logins').testSql(function(tester) {
