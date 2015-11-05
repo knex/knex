@@ -12,8 +12,8 @@ function raw(sql, bindings) {
 test('allows for ?? to interpolate identifiers', function(t) {
   t.plan(1)
   t.equal(
-    raw('select * from ?? where id = ?', ['table', 1]).toString(), 
-    'select * from "table" where id = 1'
+    raw('select * from ?? where id = ? and ?? = ??', ['table', 1, 'table.first', 'table.second']).toString(),
+    'select * from "table" where id = 1 and "table"."first" = "table"."second"'
   )
 })
 
@@ -30,6 +30,14 @@ test('allows for :val: for interpolated identifiers', function(t) {
   t.equal(
     raw('select * from :table: where user_id = :userId and name = :name', {table: 'users', userId: 1, name: 'tim'}).toString(),
     "select * from \"users\" where user_id = 1 and name = 'tim'"
+  )
+})
+
+test('allows for :val: to be interpolated when identifiers with dots', function(t) {
+  t.plan(1)
+  t.equal(
+    raw('select * from "table" join "chair" on :tableCol: = :chairCol:', {tableCol: 'table.id', chairCol: 'chair.table_id'}).toString(),
+    'select * from "table" join "chair" on "table"."id" = "chair"."table_id"'
   )
 })
 

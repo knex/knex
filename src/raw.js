@@ -88,7 +88,7 @@ function replaceRawArrBindings(raw) {
     }
 
     if (match === '??') {
-      return client.wrapIdentifier(value)
+      return client.formatter().columnize(value)
     }
     bindings.push(value)
     return '?'
@@ -123,7 +123,7 @@ function replaceKeyBindings(raw) {
       return full.replace(key, bindingSQL.sql)
     }
     if (isIdentifier) {
-      return full.replace(key, client.wrapIdentifier(value))
+      return full.replace(key, client.formatter().columnize(value))
     }
     bindings.push(value)
     return full.replace(key, '?')
