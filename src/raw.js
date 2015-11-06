@@ -110,8 +110,9 @@ function replaceKeyBindings(raw) {
   var client   = raw.client
   var sql      = raw.sql, bindings = []
 
-  var regex = new RegExp('\\s(\\:\\w+\\:?)', 'g')
-  sql = raw.sql.replace(regex, function(full, key) {
+  var regex = new RegExp('(^|\\s)(\\:\\w+\\:?)', 'g')
+  sql = raw.sql.replace(regex, function(full) {
+    var key = full.trim();
     var isIdentifier = key[key.length - 1] === ':'
     var value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
     if (value === undefined) return ''

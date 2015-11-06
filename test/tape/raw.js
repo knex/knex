@@ -33,6 +33,22 @@ test('allows for :val: for interpolated identifiers', function(t) {
   )
 })
 
+test('allows use :val: in start of raw query', function(t) {
+  t.plan(1)
+  t.equal(
+    raw(':userIdCol: = :userId', {userIdCol: 'table', userId: 1}).toString(),
+    "\"table\" = 1"
+  )
+})
+
+test('allows use :val in start of raw query', function(t) {
+  t.plan(1)
+  t.equal(
+    raw(':userId', {userId: 1}).toString(),
+    "1"
+  )
+})
+
 test('allows for :val: to be interpolated when identifiers with dots', function(t) {
   t.plan(1)
   t.equal(
