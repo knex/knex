@@ -2417,4 +2417,31 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("where with date object", function () {
+    var date = new Date();
+    testsql(qb().select('*').from('users').where("birthday", ">=", date), {
+      mysql: {
+        sql: 'select * from `users` where `birthday` >= ?',
+        bindings: [date]
+      },
+      default: {
+        sql: 'select * from "users" where "birthday" >= ?',
+        bindings: [date]
+      }
+    });
+  });
+
+  it("raw where with date object", function() {
+    var date = new Date();
+    testsql(qb().select('*').from('users').whereRaw("birthday >= ?", date), {
+      mysql: {
+        sql: 'select * from `users` where birthday >= ?',
+        bindings: [date]
+      },
+      default: {
+        sql: 'select * from "users" where birthday >= ?',
+        bindings: [date]
+      }
+    });
+  });
 });

@@ -1,10 +1,11 @@
 
 // Raw
 // -------
-var inherits     = require('inherits')
-var EventEmitter = require('events').EventEmitter
-var assign       = require('lodash/object/assign')
-var reduce       = require('lodash/collection/reduce')
+var inherits      = require('inherits')
+var EventEmitter  = require('events').EventEmitter
+var assign        = require('lodash/object/assign')
+var reduce        = require('lodash/collection/reduce')
+var isPlainObject = require('lodash/lang/isPlainObject')
 
 function Raw(client) {
   this.client   = client
@@ -47,7 +48,7 @@ assign(Raw.prototype, {
     if (this._cached) return this._cached
     if (Array.isArray(this.bindings)) {
       this._cached = replaceRawArrBindings(this) 
-    } else if (this.bindings && typeof this.bindings === 'object') {
+    } else if (this.bindings && isPlainObject(this.bindings)) {
       this._cached = replaceKeyBindings(this)
     } else {
       this._cached = {
