@@ -119,6 +119,7 @@
       <li>– <a href="#Builder-min">min</a></li>
       <li>– <a href="#Builder-max">max</a></li>
       <li>– <a href="#Builder-sum">sum</a></li>
+      <li>– <a href="#Builder-avg">avg</a></li>
       <li>– <a href="#Builder-increment">increment</a></li>
       <li>– <a href="#Builder-decrement">decrement</a></li>
       <li>– <a href="#Builder-truncate">truncate</a></li>
@@ -1284,6 +1285,14 @@ knex('users').count('active')
 knex('users').count('active as a')
 </pre>
 
+    <p id="Builder-countDistinct">
+      Use <b>countDistinct</b> to add a distinct expression inside the aggregate function.
+    </p>
+
+<pre class="display">
+knex('users').countDistinct('active')
+</pre>
+
     <p id="Builder-min">
       <b class="header">min</b><code>.min(column)</code>
       <br />
@@ -1327,6 +1336,14 @@ knex('users').sum('products')
 knex('users').sum('products as p')
 </pre>
 
+    <p id="Builder-sumDistinct">
+      Use <b>sumDistinct</b> to add a distinct expression inside the aggregate function.
+    </p>
+
+<pre class="display">
+knex('users').sumDistinct('products')
+</pre>
+
     <p id="Builder-avg">
       <b class="header">avg</b><code>.avg(column)</code>
       <br />
@@ -1339,6 +1356,14 @@ knex('users').avg('age')
 
 <pre class="display">
 knex('users').avg('age as a')
+</pre>
+
+    <p id="Builder-avgDistinct">
+      Use <b>avgDistinct</b> to add a distinct expression inside the aggregate function.
+    </p>
+
+<pre class="display">
+knex('users').avgDistinct('age')
 </pre>
 
     <p id="Builder-increment">

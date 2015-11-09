@@ -1252,7 +1252,7 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("aggregate functions", function() {
+  it("count", function() {
     testsql(qb().from('users').count(), {
       mysql: {
         sql: 'select count(*) from `users`',
@@ -1265,7 +1265,20 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("aggregate alias", function() {
+  it("count distinct", function() {
+    testsql(qb().from('users').countDistinct(), {
+      mysql: {
+        sql: 'select count(distinct *) from `users`',
+        bindings: []
+      },
+      default: {
+        sql: 'select count(distinct *) from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count with alias", function() {
     testsql(qb().from('users').count('* as all'), {
       mysql: {
         sql: 'select count(*) as `all` from `users`',
@@ -1277,6 +1290,23 @@ describe("QueryBuilder", function() {
       },
       default: {
         sql: 'select count(*) as "all" from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count distinct with alias", function() {
+    testsql(qb().from('users').countDistinct('* as all'), {
+      mysql: {
+        sql: 'select count(distinct *) as `all` from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: []
+      },
+      default: {
+        sql: 'select count(distinct *) as "all" from "users"',
         bindings: []
       }
     });
@@ -1316,6 +1346,19 @@ describe("QueryBuilder", function() {
       },
       default: {
         sql: 'select sum("id") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("sum distinct", function() {
+    testsql(qb().from('users').sumDistinct('id'), {
+      mysql: {
+        sql: 'select sum(distinct `id`) from `users`',
+        bindings: []
+      },
+      default: {
+        sql: 'select sum(distinct "id") from "users"',
         bindings: []
       }
     });

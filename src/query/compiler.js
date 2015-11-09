@@ -138,13 +138,14 @@ assign(QueryCompiler.prototype, {
   aggregate: function(stmt) {
     var val = stmt.value;
     var splitOn = val.toLowerCase().indexOf(' as ');
+    var distinct = stmt.aggregateDistinct ? 'distinct ' : '';
     // Allows us to speciy an alias for the aggregate types.
     if (splitOn !== -1) {
       var col = val.slice(0, splitOn);
       var alias = val.slice(splitOn + 4);
-      return stmt.method + '(' + this.formatter.wrap(col) + ') as ' + this.formatter.wrap(alias);
+      return stmt.method + '(' + distinct + this.formatter.wrap(col) + ') as ' + this.formatter.wrap(alias);
     }
-    return stmt.method + '(' + this.formatter.wrap(val) + ')';
+    return stmt.method + '(' + distinct + this.formatter.wrap(val) + ')';
   },
 
   // Compiles all each of the `join` clauses on the query,
