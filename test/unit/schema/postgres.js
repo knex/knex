@@ -452,7 +452,7 @@ describe("PostgreSQL SchemaBuilder", function() {
 
   it('adding jsonb', function() {
     tableSql = client.schemaBuilder().table('user', function(t) {
-      t.json('preferences', true);
+      t.jsonb('preferences');
     }).toSQL();
     expect(tableSql[0].sql).to.equal('alter table "user" add column "preferences" jsonb');
   });
