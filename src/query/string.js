@@ -34,7 +34,7 @@ SqlString.escape = function(val, timeZone) {
     }
   }
 
-  val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
+  val = val.replace(/(\\\?)|[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
     switch(s) {
       case "\0": return "\\0";
       case "\n": return "\\n";
@@ -42,6 +42,7 @@ SqlString.escape = function(val, timeZone) {
       case "\b": return "\\b";
       case "\t": return "\\t";
       case "\x1a": return "\\Z";
+      case "\\?": return "?";
       default: return "\\"+s;
     }
   });
@@ -58,13 +59,14 @@ SqlString.arrayToList = function(array, timeZone) {
 SqlString.format = function(sql, values, timeZone) {
   values = values == null ? [] : [].concat(values);
   var index = 0;
-  return sql.replace(/\?/g, function(match) {
+  return sql.replace(/\\?\?/g, function(match) {
+    if (match === '\\?') return match;
     if (index === values.length) {
       return match;
     }
     var value = values[index++];
     return SqlString.escape(value, timeZone)
-  });
+  }).replace('\\?', '?');
 };
 
 SqlString.dateToString = function(date, timeZone) {
