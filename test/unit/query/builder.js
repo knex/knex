@@ -66,6 +66,23 @@ function testquery(chain, valuesToCheck) {
 
 describe("QueryBuilder", function() {
 
+  it("query \\\\? escaping", function() {
+    function createBuilder() {
+      return qb().select('*').from('users').where('id', '=', 1)
+        .whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey\\?']);
+    }
+
+    // need to test each platform separately because QueryBuilder.clone does only shallow copy
+    // and cached raw query strings are not re-evaluated when query builder client is changed
+    testquery(createBuilder(), {
+      mysql: 'select * from `users` where `id` = 1 and `jsonColumn` ? \'jsonKey?\''
+    });
+
+    testquery(createBuilder(), {
+      default: 'select * from "users" where "id" = 1 and "jsonColumn" ? \'jsonKey?\''
+    });
+  });
+
   it("basic select", function() {
     testsql(qb().select('*').from('users'), {
       mysql: 'select * from `users`',
