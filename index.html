@@ -204,6 +204,7 @@
       Raw
     </a>
     <ul class="toc_section">
+      <li>– <a href="#Raw-Bindings">Raw Parameter Binding</a></li>
       <li>– <a href="#Raw-Expressions">Raw Expressions</a></li>
       <li>– <a href="#Raw-Queries">Raw Queries</a></li>
       <li>- <a href="#Raw-queries-wrapped">Wrapped Queries</a></li>
@@ -2057,6 +2058,36 @@ knex.schema.createTable('accounts', function() {
       To prevent replacement one can use escape sequence <tt>\\?</tt> to use JSON operators or in string literals
       e.g. <tt>knex.raw("(json_column->'json_field')::jsonb \\?& array['keyOne', 'keyWithQuestion\\?']")</tt>.
     </p>
+
+    <h3 id="Raw-Bindings">Raw Parameter Binding:</h3>
+
+    <p>
+      One can paramterize sql given to <tt>knex.raw(sql, bindings)</tt>. Parameters can be positional
+      named. One can also choose if parameter should be treated as value or as sql identifier
+      e.g. in case of <tt>'TableName.ColumnName'</tt> reference.
+    </p>
+
+<pre class="display">
+knex('users')
+  .select(knex.raw('count(*) as user_count, status'))
+  .where(knex.raw(1))
+  .orWhere(knex.raw('status <> ?', [1]))
+  .groupBy('status')
+</pre>
+<pre class="display">
+// positional bindings ? is interpret as value and ?? as identifier
+knex('users').where(knex.raw('?? = ?', ['user.name', 1]))
+</pre>
+
+<pre class="display">
+// named bindings :name is interpret as value and :name: as identifier
+knex('users')
+  .where(knex.raw(':name: = :thisGuy or :name: = :otherGuy', {
+    name: 'users.name',
+    thisGuy: 'Bob',
+    otherGuy: 'Jay'
+  }))
+</pre>
 
     <h3 id="Raw-Expressions">Raw Expressions:</h3>
 

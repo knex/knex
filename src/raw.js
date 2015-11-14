@@ -88,7 +88,7 @@ function replaceRawArrBindings(raw) {
     }
 
     if (match === '??') {
-      return client.wrapIdentifier(value)
+      return client.formatter().columnize(value)
     }
     bindings.push(value)
     return '?'
@@ -110,8 +110,9 @@ function replaceKeyBindings(raw) {
   var client   = raw.client
   var sql      = raw.sql, bindings = []
 
-  var regex = new RegExp('\\s(\\:\\w+\\:?)', 'g')
-  sql = raw.sql.replace(regex, function(full, key) {
+  var regex = new RegExp('(^|\\s)(\\:\\w+\\:?)', 'g')
+  sql = raw.sql.replace(regex, function(full) {
+    var key = full.trim();
     var isIdentifier = key[key.length - 1] === ':'
     var value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
     if (value === undefined) return ''
@@ -123,7 +124,7 @@ function replaceKeyBindings(raw) {
       return full.replace(key, bindingSQL.sql)
     }
     if (isIdentifier) {
-      return full.replace(key, client.wrapIdentifier(value))
+      return full.replace(key, client.formatter().columnize(value))
     }
     bindings.push(value)
     return full.replace(key, '?')
