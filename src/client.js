@@ -40,9 +40,9 @@ function Client(config = {}) {
       this.initializePool(config)
     }
   }
-  this.valueForUndefined = null
-  if (config.replaceUndefinedWithDefault) {
-    this.valueForUndefined = this.raw('DEFAULT');
+  this.valueForUndefined = this.raw('DEFAULT');
+  if (config.useNullAsDefault) {
+    this.valueForUndefined = null
   }
 }
 inherits(Client, EventEmitter)

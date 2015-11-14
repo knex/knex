@@ -1160,9 +1160,8 @@ knex.insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], 'id').into('bo
 </pre>
 
     <p>
-      If one prefers that undefined keys are replaced with <tt>DEFAULT</tt> instead of <tt>NULL</tt>
-      one may give <tt>replaceUndefinedWithDefault</tt> configuration parameter in knex config. Option
-      is supported by all other drivers except <tt>sqlite</tt> and <tt>websql</tt>.
+      If one prefers that undefined keys are replaced with <tt>NULL</tt> instead of <tt>DEFAULT</tt>
+      one may give <tt>useNullAsDefault</tt> configuration parameter in knex config.
     </p>
 
 <pre>
@@ -1175,10 +1174,10 @@ var knex = require('knex')({
     password : 'your_database_password',
     database : 'myapp_test'
   },
-  replaceUndefinedWithDefault: true
+  useNullAsDefault: true
 });
 knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
-// insert into `coords` (`x`, `y`) values (20, DEFAULT), (DEFAULT, 30), (10, 20)
+// insert into `coords` (`x`, `y`) values (20, NULL), (NULL, 30), (10, 20)
 </code>
 </pre>
 
