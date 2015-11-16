@@ -26,12 +26,44 @@ module.exports = function(knex) {
       });
     });
 
+    it('should create a migrations lock table', function() {
+      return knex.schema.hasTable('knex_migrations_lock').then(function(exists) {
+        expect(exists).to.equal(true);
+
+        return knex.schema.hasColumn('knex_migrations_lock', 'is_locked').then(function(exists) {
+          expect(exists).to.equal(true);
+        });
+      });
+    });
+
     var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
 
     describe('knex.migrate.latest', function() {
 
       before(function() {
         return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function() {});
+      });
+
+      it('should remove the record in the lock table once finished', function() {
+        return knex('knex_migrations_lock').select('*').then(function(data) {
+          expect(data).to.have.length(0);
+        });
+      });
+
+      it('should throw error if the migrations are already running', function() {
+        return knex('knex_migrations_lock')
+          .insert({ is_locked: true })
+          .then(function() {
+            return knex.migrate.latest({directory: 'test/integration/migrate/test'})
+              .then(function() {
+                throw new Error('then should not execute');
+              });
+          })
+          .catch(function(error) {
+            expect(error).to.have.property('message', 'migrations failed: migration in progress');
+            // Clean up lock for other tests
+            return knex('knex_migrations_lock').del();
+          });
       });
 
       it('should run all migration files in the specified directory', function() {
