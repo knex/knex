@@ -43,6 +43,19 @@ export default class Migrator {
     })
   }
 
+  status(config) {
+    this.config = this.setConfig(config);
+
+    return Promise.all([
+      this.knex(this.config.tableName).select('*'),
+      this._listAll()
+    ])
+    .spread(function(db, code) {
+      return db.length - code.length;
+    });
+
+  }
+
   // Retrieves and returns the current migration version
   // we're on, as a promise. If there aren't any migrations run yet,
   // return "none" as the value for the `currentVersion`.

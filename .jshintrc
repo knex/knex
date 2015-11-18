@@ -10,5 +10,5 @@
   "undef": true,
   "trailing": true,
   "unused": true,
-  "predef": [ "-Promise", "before", "after" ]
+  "predef": [ "-Promise", "before", "after", "beforeEach", "afterEach" ]
 }
