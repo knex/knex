@@ -19,7 +19,7 @@ assign(Oracle_Formatter.prototype, {
   parameter: function parameter(value, notSetValue) {
     // Returning helper uses always ROWID as string
     if (value instanceof ReturningHelper && this.client.driver) {
-      value = {type: this.client.driver.STRING, dir : this.client.driver.BIND_OUT};
+      value = { type: this.client.driver.STRING, dir: this.client.driver.BIND_OUT };
     } else if (typeof value === 'boolean') {
       value = value ? 1 : 0;
     }

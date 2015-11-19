@@ -22,6 +22,31 @@ var TableCompiler = require('./schema/tablecompiler');
 var OracleQueryStream = require('./stream');
 var ReturningHelper = require('./utils').ReturningHelper;
 
+//handle clob
+var stream = require('stream');
+var async = require('async');
+function readStream(stream, type, cb) {
+  var data = '';
+  if (type === String) {
+    stream.setEncoding('utf-8');
+  } else {
+    data = new Buffer();
+  }
+  stream.on('error', function(err) {
+    cb(err);
+  });
+  stream.on('data', function(chunk) {
+    if (type === String) {
+      data += chunk;
+    } else {
+      data = Buffer.concat(data, chunk);
+    }
+  });
+  stream.on('end', function() {
+    cb(null, data);
+  });
+}
+
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
 // 'lib/query/compiler', respectively.
@@ -37,7 +62,10 @@ assign(Client_Oracle.prototype, {
   driverName: 'oracledb',
 
   _driver: function _driver() {
-    return require('oracledb');
+    var oracledb = require('oracledb');  
+    oracledb.autoCommit = true;
+    oracledb.fetchAsString = [ oracledb.CLOB ];  
+    return oracledb;
   },
 
   Transaction: Transaction,
@@ -61,8 +89,12 @@ assign(Client_Oracle.prototype, {
         return new this.driver.OutParam(this.driver.STRING);
       } else if (typeof value === 'boolean') {
         return value ? 1 : 0;
-      } else if (Buffer.isBuffer(value)) {
-        return SqlString.bufferToString(value);
+      } else if (Buffer.isBuffer(value)) { 
+        console.log("prepBindings: BUFFER");
+        var Stream = new stream.PassThrough();
+        Stream.end(value);
+        return Stream;
+        //return SqlString.bufferToString(value);
       }
       return value;
     }, this);
@@ -73,32 +105,64 @@ assign(Client_Oracle.prototype, {
   acquireRawConnection: function acquireRawConnection() {
     var client = this;
     return new Promise(function (resolver, rejecter) {
-      client.driver.getConnection(
-        {
-          user: client.connectionSettings.user,
-          password: client.connectionSettings.password,
-          connectString: client.connectionSettings.host + '/' + client.connectionSettings.database
-        },function (err, connection) {
-          if (err) return rejecter(err);
-          if (client.connectionSettings.prefetchRowCount) {
-            connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount);
-          }
-          connection.executeAsync = function(sql, bindParams){
-            var self = this;
-            return new Promise(function(resolve, reject) {
-              var options = {};
-              options.outFormat = client.driver.OBJECT;
-              self.execute(sql, bindParams || [], options, function(err, results) {
-                if (err) {
-                  return reject(err);
+      client.driver.getConnection({
+        user: client.connectionSettings.user,
+        password: client.connectionSettings.password,
+        connectString: client.connectionSettings.host + '/' + client.connectionSettings.database
+      }, function (err, connection) {
+        if (err) return rejecter(err);
+        if (client.connectionSettings.prefetchRowCount) {
+          connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount);
+        }
+        connection.executeAsync = function (sql, bindParams) {
+          var self = this;
+          return new Promise(function (resolve, reject) {
+            var options = {};
+            options.outFormat = client.driver.OBJECT;
+            self.execute(sql, bindParams || [], options, function (err, results) {
+              if (err) {
+                return reject(err);
+              }
+              //handle clob as string for the moment
+            if (!err && results) {
+              var lobs = [];
+              if (results.rows) {
+                var data = results.rows;
+                if (Array.isArray(data)) {
+                  for (var i = 0, n = data.length; i < n; i++) {
+                    // Iterate through the rows
+                    var row = data[i];
+                    for (var k in row) {
+                      var val = row[k];
+                      if (val instanceof stream.Readable) {
+                        lobs.push({index: i, key: k, stream: val});
+                      }
+                    }
+                  }
                 }
+              }
+              if (lobs.length === 0) {
+                return resolve(results);
+              }
+              async.each(lobs, function(lob, done) {
+                readStream(lob.stream, String, function(err, d) {
+                  if (err) return done(err);
+                  results.rows[lob.index][lob.key] = d;
+                  done();
+                });
+              }, function(err) {
+                if (err) return reject(err);
                 return resolve(results);
               });
+            } else {
+              return resolve(results);
+            }
+
             });
-          };
-          resolver(connection);
-        }
-      );
+          });
+        };
+        resolver(connection);
+      });
     });
   },
 
