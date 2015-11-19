@@ -1,10 +1,11 @@
 
 // Raw
 // -------
-var inherits     = require('inherits')
-var EventEmitter = require('events').EventEmitter
-var assign       = require('lodash/object/assign')
-var reduce       = require('lodash/collection/reduce')
+var inherits      = require('inherits')
+var EventEmitter  = require('events').EventEmitter
+var assign        = require('lodash/object/assign')
+var reduce        = require('lodash/collection/reduce')
+var isPlainObject = require('lodash/lang/isPlainObject')
 
 function Raw(client) {
   this.client   = client
@@ -47,7 +48,7 @@ assign(Raw.prototype, {
     if (this._cached) return this._cached
     if (Array.isArray(this.bindings)) {
       this._cached = replaceRawArrBindings(this) 
-    } else if (this.bindings && typeof this.bindings === 'object') {
+    } else if (this.bindings && isPlainObject(this.bindings)) {
       this._cached = replaceKeyBindings(this)
     } else {
       this._cached = {
@@ -87,7 +88,7 @@ function replaceRawArrBindings(raw) {
     }
 
     if (match === '??') {
-      return client.wrapIdentifier(value)
+      return client.formatter().columnize(value)
     }
     bindings.push(value)
     return '?'
@@ -109,8 +110,9 @@ function replaceKeyBindings(raw) {
   var client   = raw.client
   var sql      = raw.sql, bindings = []
 
-  var regex = new RegExp('\\s(\\:\\w+\\:?)', 'g')
-  sql = raw.sql.replace(regex, function(full, key) {
+  var regex = new RegExp('(^|\\s)(\\:\\w+\\:?)', 'g')
+  sql = raw.sql.replace(regex, function(full) {
+    var key = full.trim();
     var isIdentifier = key[key.length - 1] === ':'
     var value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
     if (value === undefined) return ''
@@ -122,7 +124,7 @@ function replaceKeyBindings(raw) {
       return full.replace(key, bindingSQL.sql)
     }
     if (isIdentifier) {
-      return full.replace(key, client.wrapIdentifier(value))
+      return full.replace(key, client.formatter().columnize(value))
     }
     bindings.push(value)
     return full.replace(key, '?')

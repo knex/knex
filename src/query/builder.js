@@ -565,6 +565,21 @@ assign(Builder.prototype, {
     return this._aggregate('avg', column);
   },
 
+  // Retrieve the "count" of the distinct results of the query.
+  countDistinct: function(column) {
+    return this._aggregate('count', (column || '*'), true);
+  },
+
+  // Retrieve the sum of the distinct values of a given column.
+  sumDistinct: function(column) {
+    return this._aggregate('sum', column, true);
+  },
+
+  // Retrieve the vg of the distinct results of the query.
+  avgDistinct: function(column) {
+    return this._aggregate('avg', column, true);
+  },
+
   // Increments a column's value by the specified amount.
   increment: function(column, amount) {
     return this._counter(column, amount);
@@ -752,12 +767,13 @@ assign(Builder.prototype, {
   },
 
   // Helper for compiling any aggregate queries.
-  _aggregate: function(method, column) {
+  _aggregate: function(method, column, aggregateDistinct) {
     this._statements.push({
       grouping: 'columns',
       type: 'aggregate',
       method: method,
-      value: column
+      value: column,
+      aggregateDistinct: aggregateDistinct || false
     });
     return this;
   }

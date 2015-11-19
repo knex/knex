@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.8.6",
+  "version": "0.9.0",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "dependencies": {
@@ -28,7 +28,7 @@
     "coveralls": "~2.11.1",
     "istanbul": "~0.3.0",
     "jshint": "^2.7.0",
-    "mariasql": "^0.1.21",
+    "mariasql": "^0.2.3",
     "mocha": "^2.2.4",
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
@@ -45,9 +45,10 @@
   },
   "scripts": {
     "dev": "babel -L -D -w src/ --out-dir lib/",
+    "babel": "babel -L -D src/ --out-dir lib/",
     "build": "./scripts/build.sh",
     "tape": "node test/tape/index.js | tap-spec",
-    "test": "npm run jshint && istanbul --config=test/.istanbul.yml cover _mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
+    "test": "npm run babel && npm run jshint && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
     "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "jshint --exclude=test/coverage/. test/. src/."

@@ -6,6 +6,8 @@ language: node_js
 node_js:
   - '0.10'
   - '0.12'
+  - '4'
+  - '5'
 
 before_script:
   - psql -c 'create database knex_test;' -U postgres
@@ -17,5 +19,14 @@ after_script:
 notifications:
   email: false
 
+env:
+  - CXX=g++-4.8
+
 addons:
   postgresql: '9.4'
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
+    - gcc-4.8

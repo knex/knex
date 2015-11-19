@@ -211,6 +211,7 @@ function makeTxClient(trx, client, connection) {
   
   trxClient.on('query', function(arg) {
     trx.emit('query', arg)
+    client.emit('query', arg)
   })
 
   var _query = trxClient.query;
