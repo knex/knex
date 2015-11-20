@@ -56,6 +56,7 @@ var aliases = {
 // the best way to do some of this.
 if (process.browser) {
   require('./dialects/websql/index.js')
+  require('./dialects/alasql/index.js')
 }
 
 module.exports = Knex
