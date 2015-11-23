@@ -484,13 +484,13 @@ assign(Builder.prototype, {
     if (column instanceof Raw && arguments.length === 1) {
       return this._havingRaw(column);
     }
-    
+
     // Check if the column is a function, in which case it's
     // a having statement wrapped in parens.
     if (typeof column === 'function') {
       return this.havingWrapped(column);
     }
-    
+
     this._statements.push({
       grouping: 'having',
       type: 'havingBasic',
@@ -535,7 +535,7 @@ assign(Builder.prototype, {
     if (isNaN(val)) {
       helpers.warn('A valid integer must be provided to limit')
     } else {
-      this._single.limit = val;  
+      this._single.limit = val;
     }
     return this;
   },
@@ -722,7 +722,7 @@ assign(Builder.prototype, {
 
   // Helper for the incrementing/decrementing queries.
   _counter: function(column, amount, symbol) {
-    var amt = parseInt(amount, 10);
+    var amt = Number(amount);
     if (isNaN(amt)) amt = 1;
     this._method = 'counter';
     this._single.counter = {
