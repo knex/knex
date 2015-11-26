@@ -398,7 +398,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with time zone');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with local time zone');
   });
 
   it('test adding date time without time zone', function() {
@@ -418,7 +418,7 @@ describe("Oracle SchemaBuilder", function() {
     // oracle does not support time
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with time zone');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with local time zone');
   });
 
   it('test adding time stamp', function() {
@@ -445,7 +445,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "created_at" timestamp with time zone, add "updated_at" timestamp with local time zone');
+    expect(tableSql[0].sql).to.equal('alter table "users" add "created_at" timestamp with local time zone, add "updated_at" timestamp with local time zone');
   });
 
   it('test adding binary', function() {
