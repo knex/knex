@@ -28,6 +28,90 @@ module.exports = function(knex) {
 
     var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
 
+    describe('knex.migrate.status', function() {
+
+      beforeEach(function() {
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function() {});
+      });
+
+      afterEach(function() {
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test'});
+      });
+
+      it('should return 0 if code matches DB', function() {
+        // Put in a couple dummy migrations. Needed
+        // since the migrations directory has a couple
+        // bad migrations that don't get loaded. This
+        // will simulate the DB and source being in sync.
+        return Promise.all([
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobar',
+            batch: 5,
+            migration_time: new Date()
+          }),
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobarbaz',
+            batch: 6,
+            migration_time: new Date()
+          })
+        ])
+        .spread(function(migration1, migration2) {
+          return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+            expect(migrationLevel).to.equal(0);
+          })
+          .then(function() {
+            // Cleanup the added migrations
+            return knex('knex_migrations')
+              .where('id', migration1[0])
+              .orWhere('id', migration2[0])
+              .del()
+          });
+
+        });
+
+      });
+
+      it('should return a negative number if the DB is behind', function() {
+        return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+          expect(migrationLevel).to.equal(-2);
+        });
+      });
+
+      it('should return a positive number if the DB is ahead', function() {
+        return Promise.all([
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobar',
+            batch: 5,
+            migration_time: new Date()
+          }),
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobar',
+            batch: 5,
+            migration_time: new Date()
+          }),
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobarbaz',
+            batch: 6,
+            migration_time: new Date()
+          })
+        ])
+        .spread(function(migration1, migration2, migration3) {
+          return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+            expect(migrationLevel).to.equal(1);
+          })
+          .then(function() {
+            // Cleanup the added migrations
+            return knex('knex_migrations')
+              .where('id', migration1[0])
+              .orWhere('id', migration2[0])
+              .orWhere('id', migration3[0])
+              .del()
+          });
+        });
+      });
+
+    });
+
     describe('knex.migrate.latest', function() {
 
       before(function() {

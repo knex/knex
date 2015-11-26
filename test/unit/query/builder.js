@@ -18,6 +18,16 @@ var clients = {
   default:  new Client({})
 }
 
+var useNullAsDefaultConfig = { useNullAsDefault: true };
+var clientsWithNullAsDefault = {
+  mysql:    new MySQL_Client(useNullAsDefaultConfig),
+  postgres: new PG_Client(useNullAsDefaultConfig),
+  oracle:   new Oracle_Client(useNullAsDefaultConfig),
+  oracledb:   new Oracledb_Client(useNullAsDefaultConfig),  
+  sqlite3:  new SQLite3_Client(useNullAsDefaultConfig),
+  default:  new Client(useNullAsDefaultConfig)
+}
+
 function qb() {
   return clients.default.queryBuilder()
 }
@@ -41,10 +51,11 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
   });
 }
 
-function testsql(chain, valuesToCheck) {  
+function testsql(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
   Object.keys(valuesToCheck).forEach(function(key) {
     var newChain = chain.clone()
-        newChain.client = clients[key]
+        newChain.client = selectedClients[key]
     var sqlAndBindings = newChain.toSQL()
 
     var checkValue = valuesToCheck[key]
@@ -56,10 +67,11 @@ function testsql(chain, valuesToCheck) {
   })
 }
 
-function testquery(chain, valuesToCheck) {
+function testquery(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
   Object.keys(valuesToCheck).forEach(function(key) {
     var newChain = chain.clone()
-        newChain.client = clients[key]
+        newChain.client = selectedClients[key]
     var sqlString  = newChain.toQuery()
     var checkValue = valuesToCheck[key]
     expect(checkValue).to.equal(sqlString)
@@ -1438,6 +1450,31 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       }
     });
+  });
+
+  it("multiple inserts with partly undefined keys client with configuration nullAsDefault: true", function() {
+    testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
+      mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (NULL, 'dayle')",
+      sqlite3: 'insert into "users" ("email", "name") select \'foo\' as "email", \'taylor\' as "name" union all select NULL as "email", \'dayle\' as "name"',
+      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using NULL, \'dayle\';end;',
+      oracledb: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using NULL, \'dayle\';end;',
+      default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (NULL, \'dayle\')'
+    }, clientsWithNullAsDefault);
+  });
+
+  it("multiple inserts with partly undefined keys", function() {
+    testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
+      mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
+      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using DEFAULT, \'dayle\';end;',
+      oracledb: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using NULL, \'dayle\';end;',
+      default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (DEFAULT, \'dayle\')'
+    });
+  });
+
+  it("multiple inserts with partly undefined keys throw error with sqlite", function() {
+    expect(function () {
+      testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), { sqlite3: "" });
+    }).to.throw(TypeError)
   });
 
   it("multiple inserts with returning", function() {

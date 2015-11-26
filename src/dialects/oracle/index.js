@@ -64,6 +64,9 @@ assign(Client_Oracle.prototype, {
       else if (Buffer.isBuffer(value)) {
         return SqlString.bufferToString(value)
       }
+      else if (value === undefined) {
+        return this.valueForUndefined
+      }
       return value
     }, this)
   },

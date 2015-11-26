@@ -54,8 +54,8 @@ assign(Client_PG.prototype, {
   // Prep the bindings as needed by PostgreSQL.
   prepBindings: function(bindings, tz) {
     return _.map(bindings, function(binding) {
-      return utils.prepareValue(binding, tz)
-    });
+      return utils.prepareValue(binding, tz, this.valueForUndefined)
+    }, this);
   },
 
   // Get a raw connection, called by the `pool` whenever a new
