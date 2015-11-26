@@ -11,7 +11,7 @@ var Formatter = require('./formatter');
 var Client = require('../../client');
 var Promise = require('../../promise');
 var helpers = require('../../helpers');
-var SqlString = require('../../query/string');
+// var SqlString = require('../../query/string');
 
 var Transaction = require('./transaction');
 var QueryCompiler = require('./query/compiler');

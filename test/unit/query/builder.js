@@ -5,6 +5,7 @@
 var MySQL_Client   = require('../../../lib/dialects/mysql')
 var PG_Client      = require('../../../lib/dialects/postgres')
 var Oracle_Client  = require('../../../lib/dialects/oracle')
+var Oracledb_Client  = require('../../../lib/dialects/oracledb')
 var SQLite3_Client = require('../../../lib/dialects/sqlite3')
 var Client         = require('../../../lib/client')
 
@@ -12,6 +13,7 @@ var clients = {
   mysql:    new MySQL_Client({}),
   postgres: new PG_Client({}),
   oracle:   new Oracle_Client({}),
+  oracledb:   new Oracledb_Client({}),  
   sqlite3:  new SQLite3_Client({}),
   default:  new Client({})
 }
@@ -91,6 +93,7 @@ describe("QueryBuilder", function() {
     testsql(qb().select('foo as bar').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
+      oracledb: 'select "foo" "bar" from "users"',
       default: 'select "foo" as "bar" from "users"'
     });
   });
@@ -99,6 +102,7 @@ describe("QueryBuilder", function() {
     testsql(qb().select(' foo   as bar ').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
+      oracledb: 'select "foo" "bar" from "users"',
       default: 'select "foo" as "bar" from "users"'
     });
   });
@@ -107,6 +111,7 @@ describe("QueryBuilder", function() {
     testsql(qb().select(' foo   aS bar ').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
+      oracledb: 'select "foo" "bar" from "users"',
       default: 'select "foo" as "bar" from "users"'
     });
   });
@@ -744,6 +749,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from "users" where "id" in (select * from (select "id" from "users" where "age" > ?) where rownum <= ?)',
         bindings: [25, 3]
       },
+      oracledb: {
+        sql: 'select * from "users" where "id" in (select * from (select "id" from "users" where "age" > ?) where rownum <= ?)',
+        bindings: [25, 3]
+      },
       default: {
         sql: 'select * from "users" where "id" in (select "id" from "users" where "age" > ? limit ?)',
         bindings: [25, 3]
@@ -959,6 +968,7 @@ describe("QueryBuilder", function() {
     testsql(qb().select('email as foo_email').from('users').having('foo_email', '>', 1), {
       mysql: 'select `email` as `foo_email` from `users` having `foo_email` > ?',
       oracle: 'select "email" "foo_email" from "users" having "foo_email" > ?',
+      oracledb: 'select "email" "foo_email" from "users" having "foo_email" > ?',      
       default: 'select "email" as "foo_email" from "users" having "foo_email" > ?'
     });
   });
@@ -987,6 +997,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from (select * from "users") where rownum <= ?',
         bindings: [10]
       },
+      oracledb: {
+        sql: 'select * from (select * from "users") where rownum <= ?',
+        bindings: [10]
+      },      
       default: {
         sql: 'select * from "users" limit ?',
         bindings: [10]
@@ -1001,6 +1015,10 @@ describe("QueryBuilder", function() {
         bindings: [0]
       },
       oracle: {
+        sql: 'select * from (select * from "users") where rownum <= ?',
+        bindings: [0]
+      },
+      oracledb: {
         sql: 'select * from (select * from "users") where rownum <= ?',
         bindings: [0]
       },
@@ -1021,6 +1039,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
         bindings: [15, 5]
       },
+      oracledb: {
+        sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
+        bindings: [15, 5]
+      },
       default: {
         sql: 'select * from "users" limit ? offset ?',
         bindings: [10, 5]
@@ -1035,6 +1057,10 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       oracle: {
+        sql: 'select * from (select * from "users") where rownum <= ?',
+        bindings: [1]
+      },
+      oracledb: {
         sql: 'select * from (select * from "users") where rownum <= ?',
         bindings: [1]
       },
@@ -1060,6 +1086,10 @@ describe("QueryBuilder", function() {
         bindings: [5]
       },
       oracle: {
+        sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
+        bindings: [10000000000005, 5]
+      },
+      oracledb: {
         sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
         bindings: [10000000000005, 5]
       },
@@ -1288,6 +1318,10 @@ describe("QueryBuilder", function() {
         sql: 'select count(*) "all" from "users"',
         bindings: []
       },
+      oracledb: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: []
+      },
       default: {
         sql: 'select count(*) as "all" from "users"',
         bindings: []
@@ -1302,6 +1336,10 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       oracle: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: []
+      },
+      oracledb: {
         sql: 'select count(distinct *) "all" from "users"',
         bindings: []
       },
@@ -1391,6 +1429,10 @@ describe("QueryBuilder", function() {
         sql: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using ?, ?; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using ?, ?;end;',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
+      oracledb: {
+        sql: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using ?, ?; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using ?, ?;end;',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
       default: {
         sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
@@ -1425,6 +1467,18 @@ describe("QueryBuilder", function() {
           expect(bindings[5].toString()).to.equal('[object ReturningHelper:id]');
         }
       },
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;",
+        bindings: function(bindings) {
+          expect(bindings.length).to.equal(6);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3]).to.equal('bar');
+          expect(bindings[4]).to.equal('dayle');
+          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },      
       default: {
         sql: 'insert into \"users\" (\"email\", \"name\") values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
@@ -1447,6 +1501,18 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       oracle: {
+        sql: "begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;",
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(6);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id:name]');
+          expect(bindings[3]).to.equal('bar');
+          expect(bindings[4]).to.equal('dayle');
+          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id:name]');
+        }
+      },
+      oracledb: {
         sql: "begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;",
         bindings: function (bindings) {
           expect(bindings.length).to.equal(6);
@@ -1493,6 +1559,10 @@ describe("QueryBuilder", function() {
         sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
         bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
       },
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
+        bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
+      },
       default: {
         sql: 'insert into "table" ("a", "b", "c") values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
         bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
@@ -1510,6 +1580,10 @@ describe("QueryBuilder", function() {
         sql: '',
         bindings: []
       },
+      oracledb: {
+        sql: '',
+        bindings: []
+      },
       default: {
         sql: '',
         bindings: []
@@ -1524,6 +1598,10 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       oracle: {
+        sql: '',
+        bindings: []
+      },
+      oracledb: {
         sql: '',
         bindings: []
       },
@@ -1555,6 +1633,13 @@ describe("QueryBuilder", function() {
           expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
         }
       },
+      oracledb: {
+        sql: "insert into \"users\" (\"id\") values (default) returning ROWID into ?",
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(1);
+          expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },      
       default: {
         sql: 'insert into "users" default values',
         bindings: []
@@ -1580,6 +1665,10 @@ describe("QueryBuilder", function() {
   //       sql: "",
   //       bindings: []
   //     },
+  //     oracledb: {
+  //       sql: "",
+  //       bindings: []
+  //     },
   //     default: {
   //       sql: '',
   //       bindings: []
@@ -1598,6 +1687,10 @@ describe("QueryBuilder", function() {
   //       bindings: []
   //     },
   //     oracle: {
+  //       sql: "",
+  //       bindings: []
+  //     },
+  //     oracledb: {
   //       sql: "",
   //       bindings: []
   //     },
@@ -1630,6 +1723,12 @@ describe("QueryBuilder", function() {
   //       sql: "begin execute immediate 'insert into \"users\" (\"undefined\") values (default); execute immediate 'insert into \"users\" (\"undefined\") values (default);end;",
   //       bindings: []
   //     },
+  //     oracledb: {
+  //       // This does not work
+  //       // It's not possible to insert default value without knowing at least one column
+  //       sql: "begin execute immediate 'insert into \"users\" (\"undefined\") values (default); execute immediate 'insert into \"users\" (\"undefined\") values (default);end;",
+  //       bindings: []
+  //     },
   //     postgres: {
   //       // This does not work
   //       // Postgres does not support inserting multiple default values without specifying a column
@@ -1655,6 +1754,14 @@ describe("QueryBuilder", function() {
   //       bindings: []
   //     },
   //     oracle: {
+  //       sql: "begin execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
+  //       bindings: function (bindings) {
+  //         expect(bindings.length).to.equal(2);
+  //         expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
+  //         expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
+  //       }
+  //     },
+  //     oracledb: {
   //       sql: "begin execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
   //       bindings: function (bindings) {
   //         expect(bindings.length).to.equal(2);
@@ -1807,6 +1914,10 @@ describe("QueryBuilder", function() {
         sql: 'truncate table "users"',
         bindings: []
       },
+      oracledb: {
+        sql: 'truncate table "users"',
+        bindings: []
+      },
       default: {
         sql: 'truncate "users"',
         bindings: []
@@ -1832,6 +1943,14 @@ describe("QueryBuilder", function() {
           expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
         }
       },
+      oracledb: {
+        sql: 'insert into "users" ("email") values (?) returning ROWID into ?',
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(2);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },      
       default: {
         sql: 'insert into "users" ("email") values (?)',
         bindings: ['foo']
@@ -1889,6 +2008,10 @@ describe("QueryBuilder", function() {
   //       bindings: ['baz']
   //     },
   //     oracle: {
+  //       sql: 'select * from "foo" where "bar" = ? for update',
+  //       bindings: ['baz']
+  //     },
+  //     oracledb: {
   //       sql: 'select * from "foo" where "bar" = ? for update',
   //       bindings: ['baz']
   //     },
@@ -2155,6 +2278,10 @@ describe("QueryBuilder", function() {
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) avg_sal_dept from "employee" "e" where "dept_no" = ?',
         bindings: ['e.dept_no']
       },
+      oracledb: {
+        sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) avg_sal_dept from "employee" "e" where "dept_no" = ?',
+        bindings: ['e.dept_no']
+      },
       default: {
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) avg_sal_dept from "employee" as "e" where "dept_no" = ?',
         bindings: ['e.dept_no']
@@ -2174,6 +2301,11 @@ describe("QueryBuilder", function() {
         bindings: ["e.dept_no"]
       },
       oracle: {
+        // TODO: Check if possible
+        sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) "avg_sal_dept" from "employee" "e" where "dept_no" = ?',
+        bindings: ["e.dept_no"]
+      },
+      oracledb: {
         // TODO: Check if possible
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) "avg_sal_dept" from "employee" "e" where "dept_no" = ?',
         bindings: ["e.dept_no"]
@@ -2198,6 +2330,11 @@ describe("QueryBuilder", function() {
         bindings: ["e.dept_no"]
       },
       oracle: {
+        // TODO: Check if possible
+        sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) "avg_sal_dept" from "employee" "e" where "dept_no" = ?',
+        bindings: ["e.dept_no"]
+      },
+      oracledb: {
         // TODO: Check if possible
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) "avg_sal_dept" from "employee" "e" where "dept_no" = ?',
         bindings: ["e.dept_no"]
@@ -2301,6 +2438,10 @@ describe("QueryBuilder", function() {
         sql: 'insert into "votes" select * from "votes" where "id" = ?',
         bindings: [99]
       },
+      oracledb: {
+        sql: 'insert into "votes" select * from "votes" where "id" = ?',
+        bindings: [99]
+      },
       default: {
         sql: 'insert into "votes" select * from "votes" where "id" = ?',
         bindings: [99]
@@ -2324,6 +2465,10 @@ describe("QueryBuilder", function() {
           bindings: []
         },
         oracle: {
+          sql: 'select "A"."nid" "id" from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on "A"."x" = "B"."x"',
+          bindings: []
+        },
+        oracledb: {
           sql: 'select "A"."nid" "id" from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on "A"."x" = "B"."x"',
           bindings: []
         },
@@ -2362,6 +2507,10 @@ describe("QueryBuilder", function() {
           bindings: ['outer raw select', 'inner raw select', 123]
         },
         oracle: {
+          sql: 'select ?, "g"."f" from (select ? as f) "g" where "g"."secret" = ?',
+          bindings: ['outer raw select', 'inner raw select', 123]
+        },
+        oracledb: {
           sql: 'select ?, "g"."f" from (select ? as f) "g" where "g"."secret" = ?',
           bindings: ['outer raw select', 'inner raw select', 123]
         },
