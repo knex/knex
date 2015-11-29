@@ -21,8 +21,6 @@ assign(Client_MariaSQL.prototype, {
 
   driverName: 'mariasql',
 
-  SqlString: require('../../query/string'),
-
   Transaction: Transaction,
 
   _driver: function() {

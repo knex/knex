@@ -41,8 +41,6 @@ assign(Client_MySQL.prototype, {
 
   ColumnCompiler: ColumnCompiler,
 
-  SqlString: require('../../query/string'),
-
   Transaction: Transaction,
 
   wrapIdentifier: function(value) {

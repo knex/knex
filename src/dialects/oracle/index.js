@@ -38,8 +38,6 @@ assign(Client_Oracle.prototype, {
     return require('oracle')
   },
 
-  SqlString: require('../../query/string'),
-
   Transaction: Transaction,
 
   Formatter: Formatter,

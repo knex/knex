@@ -26,8 +26,6 @@ assign(Client_MySQL2.prototype, {
   // The "dialect", for reference elsewhere.
   driverName: 'mysql2',
 
-  SqlString: require('../../query/string'),
-
   Transaction: Transaction,
 
   _driver: function() {
