@@ -34,7 +34,7 @@ assign(Client_PG.prototype, {
 
   SchemaCompiler: SchemaCompiler,
 
-  SqlString: require('./string'),
+  SqlString: require('./query/string'),
 
   TableCompiler: TableCompiler,
 

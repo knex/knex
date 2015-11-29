@@ -1,7 +1,7 @@
 'use strict'
 
 var SqlString = exports;
-var helpers   = require('../../helpers')
+var helpers   = require('../../../helpers')
 
 SqlString.escape = function(val, timeZone) {
   if (val == null) {
