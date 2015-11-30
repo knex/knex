@@ -54,6 +54,7 @@ assign(Formatter.prototype, {
       return this.outputQuery(query, isParameter);
     }
     if (value instanceof Raw) {
+      value.client = this.client;
       query = value.toSQL()
       if (query.bindings) {
         this.bindings = this.bindings.concat(query.bindings);

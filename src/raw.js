@@ -75,8 +75,12 @@ function replaceRawArrBindings(raw) {
   var client           = raw.client
   var index            = 0;
   var bindings         = []
-  
-  var sql = raw.sql.replace(/\?\??/g, function(match) {
+
+  var sql = raw.sql.replace(/\\?\?\??/g, function(match) {
+    if (match === '\\?') {
+      return match
+    }
+
     var value = values[index++]
     
     if (value && typeof value.toSQL === 'function') {

@@ -1154,10 +1154,31 @@ knex('books').insert({title: 'Slaughterhouse Five'})
 knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
 </pre>
 
-
 <pre class="display">
 // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
 knex.insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], 'id').into('books')
+</pre>
+
+    <p>
+      If one prefers that undefined keys are replaced with <tt>NULL</tt> instead of <tt>DEFAULT</tt>
+      one may give <tt>useNullAsDefault</tt> configuration parameter in knex config.
+    </p>
+
+<pre>
+<code class="js">
+var knex = require('knex')({
+  client: 'mysql',
+  connection: {
+    host     : '127.0.0.1',
+    user     : 'your_database_user',
+    password : 'your_database_password',
+    database : 'myapp_test'
+  },
+  useNullAsDefault: true
+});
+knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
+// insert into `coords` (`x`, `y`) values (20, NULL), (NULL, 30), (10, 20)
+</code>
 </pre>
 
     <p id="Builder-returning">
@@ -2053,11 +2074,6 @@ knex.schema.createTable('accounts', function() {
       Sometimes you may need to use a raw expression in a query. Raw query object may be injected pretty much
       anywhere you want, and using proper bindings can ensure your values are escaped properly, preventing SQL-injection attacks.
     </p>
-    <p>
-      With PostgreSQL <tt>?</tt> replacements are converted to <tt>$1..$n</tt> variables in prepared statements.
-      To prevent replacement one can use escape sequence <tt>\\?</tt> to use JSON operators or in string literals
-      e.g. <tt>knex.raw("(json_column->'json_field')::jsonb \\?& array['keyOne', 'keyWithQuestion\\?']")</tt>.
-    </p>
 
     <h3 id="Raw-Bindings">Raw Parameter Binding:</h3>
 
@@ -2087,6 +2103,14 @@ knex('users')
     thisGuy: 'Bob',
     otherGuy: 'Jay'
   }))
+</pre>
+
+    <p>
+      To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
+    </p>
+
+<pre class="display">
+knex.select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey'])
 </pre>
 
     <h3 id="Raw-Expressions">Raw Expressions:</h3>

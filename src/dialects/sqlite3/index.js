@@ -1,6 +1,7 @@
 
 // SQLite3
 // -------
+var _              = require('lodash')
 var Promise        = require('../../promise')
 
 var inherits       = require('inherits')
@@ -18,6 +19,9 @@ var SQLite3_DDL    = require('./schema/ddl')
 
 function Client_SQLite3(config) {
   Client.call(this, config)
+  if (_.isUndefined(config.useNullAsDefault)) {
+    helpers.warn('sqlite does not support inserting default values. Set the `useNullAsDefault` flag to hide this warning. (see docs http://knexjs.org/#Builder-insert).');
+  }
 }
 inherits(Client_SQLite3, Client)
 
@@ -106,6 +110,16 @@ assign(Client_SQLite3.prototype, {
         stream.end()
       })
     })
+  },
+
+  prepBindings: function(bindings) {
+    return _.map(bindings, function(binding) {
+      if (binding === undefined && this.valueForUndefined !== null) {
+        throw new TypeError("`sqlite` does not support inserting default values. Specify values explicitly or use the `useNullAsDefault` config flag. (see docs http://knexjs.org/#Builder-insert).");
+      } else {
+        return binding
+      }
+    }, this);
   },
 
   // Ensures the response is returned in the same format as other clients.

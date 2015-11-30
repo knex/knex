@@ -16,6 +16,15 @@ var clients = {
   default:  new Client({})
 }
 
+var useNullAsDefaultConfig = { useNullAsDefault: true };
+var clientsWithNullAsDefault = {
+  mysql:    new MySQL_Client(useNullAsDefaultConfig),
+  postgres: new PG_Client(useNullAsDefaultConfig),
+  oracle:   new Oracle_Client(useNullAsDefaultConfig),
+  sqlite3:  new SQLite3_Client(useNullAsDefaultConfig),
+  default:  new Client(useNullAsDefaultConfig)
+}
+
 function qb() {
   return clients.default.queryBuilder()
 }
@@ -39,10 +48,11 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
   });
 }
 
-function testsql(chain, valuesToCheck) {  
+function testsql(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
   Object.keys(valuesToCheck).forEach(function(key) {
     var newChain = chain.clone()
-        newChain.client = clients[key]
+        newChain.client = selectedClients[key]
     var sqlAndBindings = newChain.toSQL()
 
     var checkValue = valuesToCheck[key]
@@ -54,10 +64,11 @@ function testsql(chain, valuesToCheck) {
   })
 }
 
-function testquery(chain, valuesToCheck) {
+function testquery(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
   Object.keys(valuesToCheck).forEach(function(key) {
     var newChain = chain.clone()
-        newChain.client = clients[key]
+        newChain.client = selectedClients[key]
     var sqlString  = newChain.toQuery()
     var checkValue = valuesToCheck[key]
     expect(checkValue).to.equal(sqlString)
@@ -65,6 +76,23 @@ function testquery(chain, valuesToCheck) {
 }
 
 describe("QueryBuilder", function() {
+
+  it("query \\\\? escaping", function() {
+    function createBuilder() {
+      return qb().select('*').from('users').where('id', '=', 1)
+        .whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey\\?']);
+    }
+
+    // need to test each platform separately because QueryBuilder.clone does only shallow copy
+    // and cached raw query strings are not re-evaluated when query builder client is changed
+    testquery(createBuilder(), {
+      mysql: 'select * from `users` where `id` = 1 and `jsonColumn` ? \'jsonKey?\''
+    });
+
+    testquery(createBuilder(), {
+      default: 'select * from "users" where "id" = 1 and "jsonColumn" ? \'jsonKey?\''
+    });
+  });
 
   it("basic select", function() {
     testsql(qb().select('*').from('users'), {
@@ -1396,6 +1424,29 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       }
     });
+  });
+
+  it("multiple inserts with partly undefined keys client with configuration nullAsDefault: true", function() {
+    testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
+      mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (NULL, 'dayle')",
+      sqlite3: 'insert into "users" ("email", "name") select \'foo\' as "email", \'taylor\' as "name" union all select NULL as "email", \'dayle\' as "name"',
+      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using NULL, \'dayle\';end;',
+      default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (NULL, \'dayle\')'
+    }, clientsWithNullAsDefault);
+  });
+
+  it("multiple inserts with partly undefined keys", function() {
+    testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
+      mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
+      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using DEFAULT, \'dayle\';end;',
+      default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (DEFAULT, \'dayle\')'
+    });
+  });
+
+  it("multiple inserts with partly undefined keys throw error with sqlite", function() {
+    expect(function () {
+      testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), { sqlite3: "" });
+    }).to.throw(TypeError)
   });
 
   it("multiple inserts with returning", function() {
