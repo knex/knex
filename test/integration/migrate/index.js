@@ -62,7 +62,6 @@ module.exports = function(knex) {
               });
           })
           .catch(function(error) {
-            console.log('FOOOOOOOOOOOOOOOOOOOOOOOO', error);
             expect(error).to.have.property('message', 'migrations failed: migration in progress');
             // Clean up lock for other tests
             return knex('knex_migrations_lock')

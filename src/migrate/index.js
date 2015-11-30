@@ -18,6 +18,8 @@ export default class Migrator {
   constructor(knex) {
     this.knex   = knex
     this.config = this.setConfig(knex.client.config.migrations);
+    this.LockError = function() {}
+    this.LockError.prototype = Object.create(Error.prototype);
   }
 
   // Migrators to the latest configuration.
@@ -161,7 +163,7 @@ export default class Migrator {
   // Run a batch of current migrations, in sequence.
   _runBatch(migrations, direction) {
     return this._isLocked()
-      .then((isLocked) => {
+      .then(isLocked => {
         if (isLocked) {
           throw new Error('migrations failed: migration in progress');
         }
@@ -169,28 +171,26 @@ export default class Migrator {
       })
       .then(() => this._lockMigrations())
       .then(() => this._latestBatchNumber())
-      .then((batchNo) => {
+      .then(batchNo => {
         if (direction === 'up') batchNo++;
         return batchNo;
       })
-      .then((batchNo) => {
+      .then(batchNo => {
         return this._waterfallBatch(batchNo, migrations, direction)
       })
       .then(() => this._unlockMigrations())
-      .catch((error) => {
+      .catch(this.LockError, error => { 
+        helpers.warn('migrations failed with error: ' + error.message);
+        throw error;
+      })
+      .catch(error => {
         helpers.warn('migrations failed with error: ' + error.message)
-
         // If the error was not due to a locking issue, then
         // remove the lock. Otherwise, leave it in place to
         // force manual intervention
-        if (error.message !== 'migrations failed: migration in progress') {
-          return this._unlockMigrations().then(function() {
-            throw error;
-          });
-        }
-        else {
+        return this._unlockMigrations().then(function() {
           throw error;
-        }
+        });
       });
   }
 
