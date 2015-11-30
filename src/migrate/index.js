@@ -102,6 +102,15 @@ export default class Migrator {
           .then((exists) => {
             if (!exists) return this._createMigrationLockTable(lockTable);
           });
+      })
+      .then(() => {
+        return this.knex(lockTable)
+          .select('*')
+          .then((data) => { 
+            if (!data.length) {
+              return this.knex(lockTable).insert({ is_locked: false });
+            }
+          });
       });
   }
 
@@ -128,9 +137,9 @@ export default class Migrator {
   _isLocked() {
     var tableName = this._getLockTableName(this.config.tableName);
     return this.knex(tableName)
-      .count('is_locked as count')
+      .select('*')
       .then(function(data) {
-        if (data[0].count > 0) {
+        if (data[0].is_locked) {
           return true;
         }
         return false;
@@ -140,12 +149,13 @@ export default class Migrator {
   _lockMigrations() {
     var tableName = this._getLockTableName(this.config.tableName);
     return this.knex(tableName)
-      .insert({ is_locked: true });
+      .update({ is_locked: true });
   }
 
   _unlockMigrations() {
     var tableName = this._getLockTableName(this.config.tableName);
-    return this.knex(tableName).del();
+    return this.knex(tableName)
+      .update({ is_locked: false });
   }
 
   // Run a batch of current migrations, in sequence.

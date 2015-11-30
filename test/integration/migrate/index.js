@@ -1,4 +1,5 @@
 /*global after, before, describe, expect, it*/
+/*jshint -W030 */
 'use strict';
 
 var equal    = require('assert').equal;
@@ -46,13 +47,14 @@ module.exports = function(knex) {
 
       it('should remove the record in the lock table once finished', function() {
         return knex('knex_migrations_lock').select('*').then(function(data) {
-          expect(data).to.have.length(0);
+          expect(data[0]).to.have.property('is_locked');
+          expect(data[0].is_locked).to.not.be.ok;
         });
       });
 
       it('should throw error if the migrations are already running', function() {
         return knex('knex_migrations_lock')
-          .insert({ is_locked: true })
+          .update({ is_locked: true })
           .then(function() {
             return knex.migrate.latest({directory: 'test/integration/migrate/test'})
               .then(function() {
@@ -60,9 +62,11 @@ module.exports = function(knex) {
               });
           })
           .catch(function(error) {
+            console.log('FOOOOOOOOOOOOOOOOOOOOOOOO', error);
             expect(error).to.have.property('message', 'migrations failed: migration in progress');
             // Clean up lock for other tests
-            return knex('knex_migrations_lock').del();
+            return knex('knex_migrations_lock')
+              .update({ is_locked: false })
           });
       });
 
