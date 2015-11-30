@@ -69,6 +69,22 @@ module.exports = function(knex) {
           });
       });
 
+      it('should release lock if non-locking related error is thrown', function() {
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'})
+          .then(function() {
+            throw new Error('then should not execute');
+          })
+          .catch(function(error) {
+            // This will fail because of the invalid migration
+            expect(error).to.have.property('message');
+            return knex('knex_migrations_lock')
+              .select('*')
+              .then(function(data) {
+                expect(data[0].is_locked).to.not.be.ok;
+              });
+          });
+      });
+
       it('should run all migration files in the specified directory', function() {
         return knex('knex_migrations').select('*').then(function(data) {
           expect(data.length).to.equal(2);
