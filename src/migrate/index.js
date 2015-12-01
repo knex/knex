@@ -9,6 +9,13 @@ var mkdirp   = require('mkdirp');
 var Promise  = require('../promise');
 var helpers  = require('../helpers');
 var assign   = require('lodash/object/assign');
+var inherits = require('inherits');
+
+function LockError() {
+  this.name = 'MigrationLocked';
+  this.message = 'migrations failed: migration in progress';
+}
+inherits(LockError, Error);
 
 // The new migration we're performing, typically called from the `knex.migrate`
 // interface on the main `knex` object. Passes the `knex` instance performing
@@ -18,8 +25,6 @@ export default class Migrator {
   constructor(knex) {
     this.knex   = knex
     this.config = this.setConfig(knex.client.config.migrations);
-    this.LockError = function() {}
-    this.LockError.prototype = Object.create(Error.prototype);
   }
 
   // Migrators to the latest configuration.
@@ -109,24 +114,11 @@ export default class Migrator {
     var table = this.config.tableName;
     var lockTable = this._getLockTableName(table);
     return this.knex.schema.hasTable(table)
-      .then((exists) => {
-        if (!exists) return this._createMigrationTable(table);
-      })
-      .then(() => {
-        return this.knex.schema.hasTable(lockTable)
-          .then((exists) => {
-            if (!exists) return this._createMigrationLockTable(lockTable);
-          });
-      })
-      .then(() => {
-        return this.knex(lockTable)
-          .select('*')
-          .then((data) => { 
-            if (!data.length) {
-              return this.knex(lockTable).insert({ is_locked: false });
-            }
-          });
-      });
+      .then(exists => !exists && this._createMigrationTable(table))
+      .then(() => this.knex.schema.hasTable(lockTable))
+      .then(exists => !exists && this._createMigrationLockTable(lockTable))
+      .then(() => this.knex(lockTable).select('*'))
+      .then(data => !data.length && this.knex(lockTable).insert({ is_locked: false }));
   }
 
   // Create the migration table, if it doesn't already exist.
@@ -149,21 +141,19 @@ export default class Migrator {
     return tableName + '_lock';
   }
 
-  _isLocked() {
+  _isLocked(trx) {
     var tableName = this._getLockTableName(this.config.tableName);
     return this.knex(tableName)
+      .transacting(trx)
+      .forUpdate()
       .select('*')
-      .then(function(data) {
-        if (data[0].is_locked) {
-          return true;
-        }
-        return false;
-      });
+      .then(data => data[0].is_locked);
   }
 
-  _lockMigrations() {
+  _lockMigrations(trx) {
     var tableName = this._getLockTableName(this.config.tableName);
     return this.knex(tableName)
+      .transacting(trx)
       .update({ is_locked: true });
   }
 
@@ -175,37 +165,39 @@ export default class Migrator {
 
   // Run a batch of current migrations, in sequence.
   _runBatch(migrations, direction) {
-    return this._isLocked()
-      .then(isLocked => {
-        if (isLocked) {
-          throw new Error('migrations failed: migration in progress');
-        }
-        return Promise.all(_.map(migrations, this._validateMigrationStructure, this))
-      })
-      .then(() => this._lockMigrations())
-      .then(() => this._latestBatchNumber())
-      .then(batchNo => {
-        if (direction === 'up') batchNo++;
-        return batchNo;
-      })
-      .then(batchNo => {
-        return this._waterfallBatch(batchNo, migrations, direction)
-      })
-      .then(() => this._unlockMigrations())
-      .catch(this.LockError, error => { 
-        helpers.warn('migrations failed with error: ' + error.message);
+    return this.knex.transaction(trx => {
+      return this._isLocked(trx)
+        .then(isLocked => {
+          if (isLocked) {
+            throw new LockError();
+          }
+          return Promise.all(_.map(migrations, this._validateMigrationStructure, this))
+        })
+        .then(() => this._lockMigrations(trx));
+    })
+    .then(() => this._latestBatchNumber())
+    .then(batchNo => {
+      if (direction === 'up') batchNo++;
+      return batchNo;
+    })
+    .then(batchNo => {
+      return this._waterfallBatch(batchNo, migrations, direction)
+    })
+    .then(() => this._unlockMigrations())
+    .catch(LockError, error => { 
+      helpers.warn('migrations failed with error: ' + error.message);
+      throw error;
+    })
+    .catch(error => {
+      helpers.warn('migrations failed with error: ' + error.message)
+      // If the error was not due to a locking issue, then
+      // remove the lock. Otherwise, leave it in place to
+      // force manual intervention
+      return this._unlockMigrations().finally(function() {
         throw error;
-      })
-      .catch(error => {
-        helpers.warn('migrations failed with error: ' + error.message)
-        // If the error was not due to a locking issue, then
-        // remove the lock. Otherwise, leave it in place to
-        // force manual intervention
-        return this._unlockMigrations().then(function() {
-          throw error;
-        });
       });
-  }
+    });
+}
 
   // Validates some migrations by requiring and checking for an `up` and `down` function.
   _validateMigrationStructure(name) {
