@@ -132,20 +132,13 @@ module.exports = function(knex) {
       it('should remove the record in the lock table once finished', function() {
         return knex('knex_migrations_lock').select('*').then(function(data) {
           expect(data[0]).to.have.property('is_locked');
-          // This is to handle the different databases
-          // data[0].is_locked == false will also work but
-          // JSHint requires === which won't do triple equals
-          if (data[0].is_locked !== false &&
-              data[0].is_locked !== 0 &&
-              data[0].is_locked !== '0') {
-            throw new Error('is_locked should be false');
-          }
+          expect(data[0].is_locked).to.not.be.ok;
         });
       });
 
       it('should throw error if the migrations are already running', function() {
         return knex('knex_migrations_lock')
-          .update({ is_locked: true })
+          .update({ is_locked: 1 })
           .then(function() {
             return knex.migrate.latest({directory: 'test/integration/migrate/test'})
               .then(function() {
@@ -156,7 +149,7 @@ module.exports = function(knex) {
             expect(error).to.have.property('message', 'migrations failed: migration in progress');
             // Clean up lock for other tests
             return knex('knex_migrations_lock')
-              .update({ is_locked: false })
+              .update({ is_locked: 0 })
           });
       });
 
@@ -171,14 +164,7 @@ module.exports = function(knex) {
             return knex('knex_migrations_lock').select('*')
           })
           .then(function(data) {
-            // This is to handle the different databases
-            // data[0].is_locked == false will also work but
-            // JSHint requires === which won't do triple equals
-            if (data[0].is_locked !== false &&
-                data[0].is_locked !== 0 &&
-                data[0].is_locked !== '0') {
-              throw new Error('is_locked should be false');
-            }
+            expect(data[0].is_locked).to.not.be.ok;
           });
       });
 

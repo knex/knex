@@ -118,7 +118,7 @@ export default class Migrator {
       .then(() => this.knex.schema.hasTable(lockTable))
       .then(exists => !exists && this._createMigrationLockTable(lockTable))
       .then(() => this.knex(lockTable).select('*'))
-      .then(data => !data.length && this.knex(lockTable).insert({ is_locked: false }));
+      .then(data => !data.length && this.knex(lockTable).insert({ is_locked: 0 }));
   }
 
   // Create the migration table, if it doesn't already exist.
@@ -133,7 +133,7 @@ export default class Migrator {
 
   _createMigrationLockTable(tableName) {
     return this.knex.schema.createTable(tableName, function(t) {
-      t.boolean('is_locked');
+      t.integer('is_locked');
     });
   }
 
@@ -147,31 +147,20 @@ export default class Migrator {
       .transacting(trx)
       .forUpdate()
       .select('*')
-      .then(data => {
-        // This is to handle the different databases
-        // data[0].is_locked == false will also work but
-        // JSHint requires === which won't do triple equals
-        if (data[0].is_locked !== false &&
-            data[0].is_locked !== '0' &&
-            data[0].is_locked !== 0) {
-          return true;
-        }
-
-        return false;
-      });
+      .then(data => data[0].is_locked);
   }
 
   _lockMigrations(trx) {
     var tableName = this._getLockTableName(this.config.tableName);
     return this.knex(tableName)
       .transacting(trx)
-      .update({ is_locked: true });
+      .update({ is_locked: 1 });
   }
 
   _unlockMigrations() {
     var tableName = this._getLockTableName(this.config.tableName);
     return this.knex(tableName)
-      .update({ is_locked: false });
+      .update({ is_locked: 0 });
   }
 
   // Run a batch of current migrations, in sequence.
