@@ -171,10 +171,10 @@ export default class Migrator {
           if (isLocked) {
             throw new LockError();
           }
-          return Promise.all(_.map(migrations, this._validateMigrationStructure, this))
         })
         .then(() => this._lockMigrations(trx));
     })
+    .then(() => Promise.all(_.map(migrations, this._validateMigrationStructure, this)))
     .then(() => this._latestBatchNumber())
     .then(batchNo => {
       if (direction === 'up') batchNo++;
