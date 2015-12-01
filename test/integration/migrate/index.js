@@ -73,8 +73,8 @@ module.exports = function(knex) {
           .then(function() {
             // Cleanup the added migrations
             return knex('knex_migrations')
-              .where('id', migration1[0])
-              .orWhere('id', migration2[0])
+              .where('id', parseInt(migration1[0]))
+              .orWhere('id', parseInt(migration2[0]))
               .del()
           });
 
@@ -132,7 +132,14 @@ module.exports = function(knex) {
       it('should remove the record in the lock table once finished', function() {
         return knex('knex_migrations_lock').select('*').then(function(data) {
           expect(data[0]).to.have.property('is_locked');
-          expect(data[0].is_locked).to.not.be.ok;
+          // This is to handle the different databases
+          // data[0].is_locked == false will also work but
+          // JSHint requires === which won't do triple equals
+          if (data[0].is_locked !== false &&
+              data[0].is_locked !== 0 &&
+              data[0].is_locked !== '0') {
+            throw new Error('is_locked should be false');
+          }
         });
       });
 
@@ -161,11 +168,17 @@ module.exports = function(knex) {
           .catch(function(error) {
             // This will fail because of the invalid migration
             expect(error).to.have.property('message');
-            return knex('knex_migrations_lock')
-              .select('*')
-              .then(function(data) {
-                expect(data[0].is_locked).to.not.be.ok;
-              });
+            return knex('knex_migrations_lock').select('*')
+          })
+          .then(function(data) {
+            // This is to handle the different databases
+            // data[0].is_locked == false will also work but
+            // JSHint requires === which won't do triple equals
+            if (data[0].is_locked !== false &&
+                data[0].is_locked !== 0 &&
+                data[0].is_locked !== '0') {
+              throw new Error('is_locked should be false');
+            }
           });
       });
 

@@ -147,7 +147,18 @@ export default class Migrator {
       .transacting(trx)
       .forUpdate()
       .select('*')
-      .then(data => data[0].is_locked);
+      .then(data => {
+        // This is to handle the different databases
+        // data[0].is_locked == false will also work but
+        // JSHint requires === which won't do triple equals
+        if (data[0].is_locked !== false &&
+            data[0].is_locked !== '0' &&
+            data[0].is_locked !== 0) {
+          return true;
+        }
+
+        return false;
+      });
   }
 
   _lockMigrations(trx) {
