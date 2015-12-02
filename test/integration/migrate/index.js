@@ -147,9 +147,13 @@ module.exports = function(knex) {
           })
           .catch(function(error) {
             expect(error).to.have.property('message', 'migrations failed: migration in progress');
+            return knex('knex_migrations_lock').select('*');
+          })
+          .then(function(data) {
+            expect(data[0].is_locked).to.equal(1);
+
             // Clean up lock for other tests
-            return knex('knex_migrations_lock')
-              .update({ is_locked: 0 })
+            return knex('knex_migrations_lock').update({ is_locked: 0 })
           });
       });
 

@@ -186,7 +186,7 @@ export default class Migrator {
     .then(() => this._unlockMigrations())
     .catch(LockError, error => { 
       helpers.warn('migrations failed with error: ' + error.message);
-      throw error;
+      return error;
     })
     .catch(error => {
       helpers.warn('migrations failed with error: ' + error.message)
@@ -194,8 +194,18 @@ export default class Migrator {
       // remove the lock. Otherwise, leave it in place to
       // force manual intervention
       return this._unlockMigrations().finally(function() {
-        throw error;
+        return  error;
       });
+    })
+    .then(result => {
+      // Throw the error so calling code can respond
+      // to any problems if needed
+      if (result instanceof Error) {
+        throw result;
+      }
+      else {
+        return result;
+      }
     });
 }
 
