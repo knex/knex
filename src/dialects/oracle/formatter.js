@@ -14,11 +14,17 @@ assign(Oracle_Formatter.prototype, {
   alias: function(first, second) {
     return first + ' ' + second;
   },
-
+  
+  bindOutString: function() {
+    if (this.client.driver) {
+      return new this.client.driver.OutParam(this.client.driver.OCCISTRING)
+    }
+  },
+  
   parameter: function(value, notSetValue) {
     // Returning helper uses always ROWID as string
     if (value instanceof ReturningHelper && this.client.driver) {
-      value = new this.client.driver.OutParam(this.client.driver.OCCISTRING)
+      value = this.bindOutString();
     }
     else if (typeof value === 'boolean') {
       value = value ? 1 : 0
