@@ -275,8 +275,9 @@ assign(Builder.prototype, {
   havingWrapped: function(callback) {
     this._statements.push({
       grouping: 'having',
-      type: 'whereWrapped',
+      type: 'havingWrapped',
       value: callback,
+      not: this._not(),
       bool: this._bool()
     });
     return this;
@@ -481,16 +482,26 @@ assign(Builder.prototype, {
 
   // Adds a `having` clause to the query.
   having: function(column, operator, value) {
-    if (column instanceof Raw && arguments.length === 1) {
-      return this._havingRaw(column);
-    }
-    
     // Check if the column is a function, in which case it's
     // a having statement wrapped in parens.
     if (typeof column === 'function') {
       return this.havingWrapped(column);
     }
-    
+		  // Support "having true || having false"
+		if (column === false || column === true) {
+		 return this.having(1, '=', column ? 1 : 0);
+		}
+		// Allow a raw statement to be passed along to the query.
+		if (column instanceof Raw && arguments.length === 1) return this.havingRaw(column);
+
+		// Enable the having('key', value) syntax, only when there
+		// are explicitly two arguments passed, so it's not possible to
+		// do having('key', '!=') and have that turn into where key != null
+		if (arguments.length === 2) {
+		 value = operator;
+		 operator = '=';
+		}
+
     this._statements.push({
       grouping: 'having',
       type: 'havingBasic',
@@ -535,7 +546,7 @@ assign(Builder.prototype, {
     if (isNaN(val)) {
       helpers.warn('A valid integer must be provided to limit')
     } else {
-      this._single.limit = val;  
+      this._single.limit = val;
     }
     return this;
   },

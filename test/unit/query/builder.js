@@ -29,7 +29,7 @@ function qb() {
   return clients.default.queryBuilder()
 }
 
-function raw(sql, bindings) { 
+function raw(sql, bindings) {
   return clients.default.raw(sql, bindings)
 }
 
@@ -39,7 +39,7 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
       expectedObj[key](sqlObj[key]);
     } else {
       try {
-        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);  
+        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);
       } catch (e) {
         e.stack = dialect + ': ' + e.stack
         throw e
@@ -959,7 +959,7 @@ describe("QueryBuilder", function() {
 
   it("nested having", function() {
     testsql(qb().select('*').from('users').having(function(){
-      this.where('email', '>', 1);
+      this.having('email', '>', 1);
     }), {
       mysql: 'select * from `users` having (`email` > ?)',
       default: 'select * from "users" having ("email" > ?)'
@@ -968,8 +968,8 @@ describe("QueryBuilder", function() {
 
   it("nested or havings", function() {
     testsql(qb().select('*').from('users').having(function(){
-      this.where('email', '>', 10);
-      this.orWhere('email', '=', 7);
+      this.having('email', '>', 10);
+      this.orHaving('email', '=', 7);
     }), {
       mysql: 'select * from `users` having (`email` > ? or `email` = ?)',
       default: 'select * from "users" having ("email" > ? or "email" = ?)'
@@ -2458,20 +2458,20 @@ describe("QueryBuilder", function() {
       }
     })
   })
-  
+
   it('has a modify method which accepts a function that can modify the query', function() {
-    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`, 
+    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`,
     // builder is bound to `this`
     var withBars = function(queryBuilder, table, fk) {
       if(!this || this !== queryBuilder) {
         throw 'Expected query builder passed as first argument and bound as `this` context';
       }
-      
+
       this
         .leftJoin('bars', table + '.' + fk, 'bars.id')
         .select('bars.*')
     };
-    
+
     testsql(qb().select('foo_id').from('foos').modify(withBars, 'foos', 'bar_id'), {
       mysql: {
         sql: 'select `foo_id`, `bars`.* from `foos` left join `bars` on `foos`.`bar_id` = `bars`.`id`'
