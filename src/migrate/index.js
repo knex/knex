@@ -11,9 +11,9 @@ var helpers  = require('../helpers');
 var assign   = require('lodash/object/assign');
 var inherits = require('inherits');
 
-function LockError() {
+function LockError(msg) {
   this.name = 'MigrationLocked';
-  this.message = 'migrations failed: migration in progress';
+  this.message = msg;
 }
 inherits(LockError, Error);
 
@@ -112,7 +112,7 @@ export default class Migrator {
   // dependent on the migration config settings.
   _ensureTable() {
     var table = this.config.tableName;
-    var lockTable = this._getLockTableName(table);
+    var lockTable = this._getLockTableName();
     return this.knex.schema.hasTable(table)
       .then(exists => !exists && this._createMigrationTable(table))
       .then(() => this.knex.schema.hasTable(lockTable))
@@ -137,12 +137,12 @@ export default class Migrator {
     });
   }
 
-  _getLockTableName(tableName) {
-    return tableName + '_lock';
+  _getLockTableName() {
+    return this.config.tableName + '_lock';
   }
 
   _isLocked(trx) {
-    var tableName = this._getLockTableName(this.config.tableName);
+    var tableName = this._getLockTableName();
     return this.knex(tableName)
       .transacting(trx)
       .forUpdate()
@@ -151,28 +151,45 @@ export default class Migrator {
   }
 
   _lockMigrations(trx) {
-    var tableName = this._getLockTableName(this.config.tableName);
+    var tableName = this._getLockTableName();
     return this.knex(tableName)
       .transacting(trx)
       .update({ is_locked: 1 });
   }
 
-  _unlockMigrations() {
-    var tableName = this._getLockTableName(this.config.tableName);
-    return this.knex(tableName)
-      .update({ is_locked: 0 });
-  }
-
-  // Run a batch of current migrations, in sequence.
-  _runBatch(migrations, direction) {
+  _getLock() {
+    console.log("Getting lock;");
     return this.knex.transaction(trx => {
       return this._isLocked(trx)
         .then(isLocked => {
           if (isLocked) {
-            throw new LockError();
+            throw new Error("Migration table is are already locked");
           }
         })
         .then(() => this._lockMigrations(trx));
+    })
+    .then(ret => {
+      console.log("Got the lock:", ret);
+      return ret;
+    });
+  }
+
+  _freeLock() {
+    console.log("Freeing lock;");
+    var tableName = this._getLockTableName();
+    return this.knex(tableName)
+      .update({ is_locked: 0 })
+      .then(ret => {
+        console.log("Freed the lock:", ret);
+        return ret;
+      });
+  }
+
+  // Run a batch of current migrations, in sequence.
+  _runBatch(migrations, direction) {
+    return this._getLock()
+    .catch(err => {
+      throw new LockError(err.message);
     })
     .then(() => Promise.all(_.map(migrations, this._validateMigrationStructure, this)))
     .then(() => this._latestBatchNumber())
@@ -183,29 +200,28 @@ export default class Migrator {
     .then(batchNo => {
       return this._waterfallBatch(batchNo, migrations, direction)
     })
-    .then(() => this._unlockMigrations())
-    .catch(LockError, error => { 
-      helpers.warn('migrations failed with error: ' + error.message);
-      return error;
-    })
+    .then(() => this._freeLock())
     .catch(error => {
-      helpers.warn('migrations failed with error: ' + error.message)
-      // If the error was not due to a locking issue, then
-      // remove the lock. Otherwise, leave it in place to
-      // force manual intervention
-      return this._unlockMigrations().finally(function() {
-        return  error;
+      var cleanupReady = Promise.resolve();
+
+      if (error instanceof LockError) {
+        // if locking error do not free the lock
+        helpers.warn('Cant take lock to run migrations: ' + error.message);
+        helpers.warn(
+          'If you are sue migrations are not running you can release ' +
+          'lock manually by deleting all the rows from migrations lock table: ' +
+          this._getLockTableName()
+        );
+      } else {
+        helpers.warn('migrations failed with error: ' + error.message)
+        // If the error was not due to a locking issue, then
+        // remove the lock.
+        cleanupReady = this._freeLock();
+      }
+
+      return cleanupReady.finally(function() {
+        throw error;
       });
-    })
-    .then(result => {
-      // Throw the error so calling code can respond
-      // to any problems if needed
-      if (result instanceof Error) {
-        throw result;
-      }
-      else {
-        return result;
-      }
     });
 }
 

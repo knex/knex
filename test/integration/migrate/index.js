@@ -11,7 +11,7 @@ module.exports = function(knex) {
 
   require('rimraf').sync(path.join(__dirname, './migration'));
 
-  describe('knex.migrate', function () {
+  describe.only('knex.migrate', function () {
 
     it('should create a new migration file with the create method', function() {
       return knex.migrate.make('test').then(function(name) {
@@ -42,7 +42,7 @@ module.exports = function(knex) {
     describe('knex.migrate.status', function() {
 
       beforeEach(function() {
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function() {});
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'});
       });
 
       afterEach(function() {
@@ -73,8 +73,8 @@ module.exports = function(knex) {
           .then(function() {
             // Cleanup the added migrations
             return knex('knex_migrations')
-              .where('id', parseInt(migration1[0]))
-              .orWhere('id', parseInt(migration2[0]))
+              .where('id', migration1[0])
+              .orWhere('id', migration2[0])
               .del()
           });
 
@@ -126,7 +126,7 @@ module.exports = function(knex) {
     describe('knex.migrate.latest', function() {
 
       before(function() {
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function() {});
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'});
       });
 
       it('should remove the record in the lock table once finished', function() {
@@ -253,6 +253,7 @@ module.exports = function(knex) {
     });
 
     after(function() {
+      console.log("AFTER: DELETE migration path");
       rimraf.sync(path.join(__dirname, './migration'));
     });
 
