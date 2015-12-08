@@ -6,7 +6,8 @@ var assign = require('lodash/object/assign');
 
 // The "JoinClause" is an object holding any necessary info about a join,
 // including the type, and any associated tables & columns being joined.
-function JoinClause(table, type, schema) {
+function JoinClause(builder, table, type, schema) {
+  this.builder  = builder;
   this.schema   = schema;
   this.table    = table;
   this.joinType = type;
@@ -45,6 +46,7 @@ assign(JoinClause.prototype, {
   // Adds a "using" clause to the current join.
   using: function(column) {
     return this.clauses.push([this._bool(), 'using', column]);
+    //return this.clauses.push([this._bool(), 'on', column, '=', column]);
   },
 
   // Adds an "and on" clause to the current join object.
