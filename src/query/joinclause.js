@@ -46,7 +46,6 @@ assign(JoinClause.prototype, {
   // Adds a "using" clause to the current join.
   using: function(column) {
     return this.clauses.push([this._bool(), 'using', column]);
-    //return this.clauses.push([this._bool(), 'on', column, '=', column]);
   },
 
   // Adds an "and on" clause to the current join object.

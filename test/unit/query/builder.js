@@ -1286,7 +1286,7 @@ describe("QueryBuilder", function() {
         bindings: [15, 5]
       },
       mssql: {
-        sql: 'select top (?) * from [users] offset ?',
+        sql: 'select top (?) * from [users] offset ? rows',
         bindings: [10, 5]
       },
       default: {
@@ -1336,7 +1336,7 @@ describe("QueryBuilder", function() {
         bindings: [10000000000005, 5]
       },
       mssql: {
-        sql: 'select * from [users] offset ?',
+        sql: 'select * from [users] offset ? rows',
         bindings: [5]
       },
       default: {
@@ -1821,7 +1821,7 @@ describe("QueryBuilder", function() {
         }
       },
       mssql: {
-        sql: 'insert into [users] ([email], [name]) values (?, ?), (?, ?)',
+        sql: 'insert into [users] ([email], [name]) output inserted.[id] values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       default: {
@@ -1858,7 +1858,7 @@ describe("QueryBuilder", function() {
         }
       },
       mssql: {
-        sql: 'insert into [users] ([email], [name]) values (?, ?), (?, ?)',
+        sql: 'insert into [users] ([email], [name]) output inserted.[id], inserted.[name] values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       default: {
@@ -1975,7 +1975,7 @@ describe("QueryBuilder", function() {
         }
       },
       mssql: {
-        sql: 'insert into [users] () values ()',
+        sql: 'insert into [users] output inserted.[id] default values',
         bindings: []
       },
       default: {
@@ -2119,7 +2119,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
       },
       default: {
@@ -2136,7 +2136,7 @@ describe("QueryBuilder", function() {
         bindings: [null, 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
         bindings: [null, 'bar', 1]
       },
       default: {
@@ -2154,7 +2154,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1, 5]
       },
       mssql: {
-        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc',
+        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc;select @@rowcount',
         bindings: ['foo', 'bar', 1, 5]
       },
       default: {
@@ -2171,7 +2171,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] inner join [orders] on [users].[id] = [orders].[user_id] set [email] = ?, [name] = ? where [users].[id] = ?',
+        sql: 'update [users] inner join [orders] on [users].[id] = [orders].[user_id] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
       },
       default: {
@@ -2189,7 +2189,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1, 1]
       },
       mssql: {
-        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?',
+        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1, 1]
       },
       default: {
@@ -2206,7 +2206,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
       },
       default: {
@@ -2230,7 +2230,7 @@ describe("QueryBuilder", function() {
         bindings: ['bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = foo, [name] = ? where [id] = ?',
+        sql: 'update [users] set [email] = foo, [name] = ? where [id] = ?;select @@rowcount',
         bindings: ['bar', 1]
       },
       default: {
@@ -2247,7 +2247,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo']
       },
       mssql: {
-        sql: 'delete from [users] where [email] = ?',
+        sql: 'delete from [users] where [email] = ?;select @@rowcount',
         bindings: ['foo']
       },
       default: {
@@ -2308,7 +2308,7 @@ describe("QueryBuilder", function() {
         }
       },
       mssql: {
-        sql: 'insert into [users] ([email]) values (?)',
+        sql: 'insert into [users] ([email]) output inserted.[id] values (?)',
         bindings: ['foo']
       },
       default: {
@@ -2505,7 +2505,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'delete from [word] where [page_id] in (select [id] from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?))',
+        sql: 'delete from [word] where [page_id] in (select [id] from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?));select @@rowcount',
         bindings: [1]
       },
       default: {
@@ -2520,7 +2520,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'delete from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?)',
+        sql: 'delete from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?);select @@rowcount',
         bindings: [1]
       },
       default: {
@@ -2535,7 +2535,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'delete from [chapter] where [book] = ?',
+        sql: 'delete from [chapter] where [book] = ?;select @@rowcount',
         bindings: [1]
       },
       default: {
@@ -2580,7 +2580,7 @@ describe("QueryBuilder", function() {
         bindings: ['Boonesville', 1, 5]
       },
       mssql: {
-        sql: 'update [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] set [tblPerson].[City] = ? where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?',
+        sql: 'update [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] set [tblPerson].[City] = ? where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
         bindings: ['Boonesville', 1, 5]
       },
       default: {
@@ -2832,7 +2832,8 @@ describe("QueryBuilder", function() {
         sql: 'select * from `accounts` inner join `table1` using `id`'
       },
       mssql: {
-        sql: 'select * from [accounts] inner join [table1] on [accounts].[id] = [table1].[id]'
+        //sql: 'select * from [accounts] inner join [table1] on [accounts].[id] = [table1].[id]'
+        sql: 'select * from [accounts] inner join [table1] using [id]'
       },
       default: {
         sql: 'select * from "accounts" inner join "table1" using "id"'

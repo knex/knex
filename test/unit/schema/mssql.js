@@ -19,8 +19,8 @@ describe("MSSQL SchemaBuilder", function() {
     });
 
     equal(1, tableSql.toSQL().length);
-    expect(tableSql.toSQL()[0].sql).to.equal('create table [users] ([id] int identity(1,1) not null primary key, [email] varchar(255)) collate utf8_unicode_ci');
-    expect(tableSql.toQuery()).to.equal('create table [users] ([id] int identity(1,1) not null primary key, [email] varchar(255)) collate utf8_unicode_ci');
+    expect(tableSql.toSQL()[0].sql).to.equal('create table [users] ([id] int identity(1,1) not null primary key, [email] nvarchar(255))');
+    expect(tableSql.toQuery()).to.equal('create table [users] ([id] int identity(1,1) not null primary key, [email] nvarchar(255))');
   });
 
   it('basic create table without charset or collate', function() {
@@ -30,7 +30,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [id] int identity(1,1) not null primary key, add [email] varchar(255)');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [id] int identity(1,1) not null primary key, add [email] nvarchar(255)');
   });
 
   it('test drop table', function() {
@@ -53,7 +53,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop [foo]');
+    expect(tableSql[0].sql).to.equal('alter table [users] drop column [foo]');
   });
 
   it('drops multiple columns with an array', function() {
@@ -62,7 +62,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop [foo], drop [bar]');
+    expect(tableSql[0].sql).to.equal('alter table [users] drop column [foo], drop column [bar]');
   });
 
   it('drops multiple columns as multiple arguments', function() {
@@ -71,7 +71,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop [foo], drop [bar]');
+    expect(tableSql[0].sql).to.equal('alter table [users] drop column [foo], drop column [bar]');
   });
 
   it('test drop primary', function() {
@@ -89,7 +89,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop index users_foo_unique');
+    expect(tableSql[0].sql).to.equal('drop index users_foo_unique on [users]');
   });
 
   it('test drop unique, custom', function() {
@@ -98,7 +98,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop index foo');
+    expect(tableSql[0].sql).to.equal('drop index foo on [users]');
   });
 
   it('test drop index', function() {
@@ -107,7 +107,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop index users_foo_index');
+    expect(tableSql[0].sql).to.equal('drop index users_foo_index on [users]');
   });
 
   it('test drop index, custom', function() {
@@ -116,7 +116,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop index foo');
+    expect(tableSql[0].sql).to.equal('drop index foo on [users]');
   });
 
   it('test drop foreign', function() {
@@ -125,7 +125,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop foreign key users_foo_foreign');
+    expect(tableSql[0].sql).to.equal('alter table [users] drop constraint users_foo_foreign');
   });
 
   it('test drop foreign, custom', function() {
@@ -134,7 +134,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop foreign key foo');
+    expect(tableSql[0].sql).to.equal('alter table [users] drop constraint foo');
   });
 
   it('test drop timestamps', function() {
@@ -143,14 +143,16 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] drop [created_at], drop [updated_at]');
+    expect(tableSql[0].sql).to.equal('alter table [users] drop column [created_at], drop column [updated_at]');
   });
 
   it('test rename table', function() {
     tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('rename table [users] to [foo]');
+    expect(tableSql[0].sql).to.equal('exec sp_rename ?, ?');
+    expect(tableSql[0].bindings[0]).to.equal('users');
+    expect(tableSql[0].bindings[1]).to.equal('foo');
   });
 
   it('test adding primary key', function() {
@@ -159,7 +161,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add primary key bar([foo])');
+    expect(tableSql[0].sql).to.equal('alter table [users] add primary key ([foo])');
   });
 
   it('test adding unique key', function() {
@@ -168,7 +170,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add unique bar([foo])');
+    expect(tableSql[0].sql).to.equal('create unique index bar on [users] ([foo])');
   });
 
   it('test adding index', function() {
@@ -177,7 +179,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add index baz([foo], [bar])');
+    expect(tableSql[0].sql).to.equal('create index baz on [users] ([foo], [bar])');
   });
 
   it('test adding foreign key', function() {
@@ -223,7 +225,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [name] varchar(255) after [foo]');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [name] nvarchar(255) after [foo]');
   });
 
   it('test adding column on the first place', function() {
@@ -232,7 +234,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [first_name] varchar(255) first');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [first_name] nvarchar(255) first');
   });
 
   it('test adding string', function() {
@@ -241,7 +243,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] varchar(255)');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] nvarchar(255)');
   });
 
   it('uses the varchar column constraint', function() {
@@ -250,7 +252,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] varchar(100)');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] nvarchar(100)');
   });
 
   it('chains notNull and defaultTo', function() {
@@ -258,7 +260,7 @@ describe("MSSQL SchemaBuilder", function() {
       this.string('foo', 100).notNull().defaultTo('bar');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] varchar(100) not null default \'bar\'');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] nvarchar(100) not null default \'bar\'');
   });
 
   it('allows for raw values in the default field', function() {
@@ -267,7 +269,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] varchar(100) null default CURRENT TIMESTAMP');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] nvarchar(100) null default CURRENT TIMESTAMP');
   });
 
   it('test adding text', function() {
@@ -276,7 +278,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] text');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] nvarchar(max)');
   });
 
   it('test adding big integer', function() {
@@ -366,17 +368,17 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] boolean');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] bit');
   });
 
-//   it('test adding enum', function() {
-//     tableSql = client.schemaBuilder().table('users', function() {
-//       this.enum('foo', ['bar', 'baz']);
-//     }).toSQL();
-// 
-//     equal(1, tableSql.length);
-//     expect(tableSql[0].sql).to.equal('alter table [users] add [foo] enum(\'bar\', \'baz\')');
-//   });
+  it('test adding enum', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.enum('foo', ['bar', 'baz']);
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] nvarchar(100)');
+  });
 
   it('test adding date', function() {
     tableSql = client.schemaBuilder().table('users', function() {
@@ -411,7 +413,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] timestamp');
+    expect(tableSql[0].sql).to.equal('alter table [users] add [foo] datetime');
   });
 
   it('test adding time stamps', function() {
@@ -443,11 +445,11 @@ describe("MSSQL SchemaBuilder", function() {
 
   it('is possible to set raw statements in defaultTo, #146', function() {
     tableSql = client.schemaBuilder().createTable('default_raw_test', function(t) {
-      t.timestamp('created_at').defaultTo(client.raw('CURRENT_TIMESTAMP'));
+      t.timestamp('created_at').defaultTo(client.raw('GETDATE()'));
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create table [default_raw_test] ([created_at] timestamp default CURRENT_TIMESTAMP)');
+    expect(tableSql[0].sql).to.equal('create table [default_raw_test] ([created_at] datetime default GETDATE())');
   });
 
   it('allows dropping a unique compound index', function() {
@@ -456,16 +458,16 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table [composite_key_test] drop index composite_key_test_column_a_column_b_unique');
+    expect(tableSql[0].sql).to.equal('drop index composite_key_test_column_a_column_b_unique on [composite_key_test]');
   });
 
   it('allows default as alias for defaultTo', function() {
     tableSql = client.schemaBuilder().createTable('default_raw_test', function(t) {
-      t.timestamp('created_at').default(client.raw('CURRENT_TIMESTAMP'));
+      t.timestamp('created_at').default(client.raw('GETDATE()'));
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create table [default_raw_test] ([created_at] timestamp default CURRENT_TIMESTAMP)');
+    expect(tableSql[0].sql).to.equal('create table [default_raw_test] ([created_at] datetime default GETDATE())');
   });
 
 });

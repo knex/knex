@@ -19,13 +19,13 @@ assign(SchemaCompiler_MSSQL.prototype, {
 
   // Rename a table on the schema.
   renameTable: function(tableName, to) {
-    this.pushQuery('rename table ' + this.formatter.wrap(tableName) + ' to ' + this.formatter.wrap(to));
+    this.pushQuery('exec sp_rename ' + this.formatter.parameter(tableName) + ', ' + this.formatter.parameter(to));
   },
 
   // Check whether a table exists on the query.
   hasTable: function(tableName) {
     this.pushQuery({
-      sql: 'SELECT object_id FROM sys.tables WHERE object_id = Object_ID(N\'' + this.formatter.parameter(tableName) + '\')',
+      sql: 'select object_id from sys.tables where object_id = object_id(' + this.formatter.parameter(this.formatter.wrap(tableName)) + ')',
       output: function(resp) {
         return resp.length > 0;
       }
@@ -35,8 +35,8 @@ assign(SchemaCompiler_MSSQL.prototype, {
   // Check whether a column exists on the schema.
   hasColumn: function(tableName, column) {
     this.pushQuery({
-      sql: 'SELECT object_id FROM sys.columns WHERE Name Like ' + this.formatter.parameter(column) +
-      ' AND object_id = Object_ID(N\'' + this.formatter.wrap(tableName) + '\')',
+      sql: 'select object_id from sys.columns where name = ' + this.formatter.parameter(column) +
+      ' and object_id = object_id(' + this.formatter.parameter(this.formatter.wrap(tableName)) + ')',
       output: function(resp) {
         return resp.length > 0;
       }

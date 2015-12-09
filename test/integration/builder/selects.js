@@ -41,6 +41,12 @@ module.exports = function(knex) {
             [],
             [1, 2, 3, 4, 5, 7]
           );
+          tester(
+            'mssql',
+            'select [id] from [accounts] order by [id] asc',
+            [],
+            ['1', '2', '3', '4', '5', '7']
+          );
         });
     });
 
@@ -71,6 +77,12 @@ module.exports = function(knex) {
             [10000000000002, 2],
             [3, 4, 5, 7]
           );
+          tester(
+            'mssql',
+            'select [id] from [accounts] order by [id] asc offset ? rows',
+            [2],
+            ['3', '4', '5', '7']
+          );
         });
     });
 
@@ -100,6 +112,12 @@ module.exports = function(knex) {
             "select * from (select \"id\", \"first_name\" from \"accounts\" order by \"id\" asc) where rownum <= ?",
             [1],
             { id: 1, first_name: 'Test' }
+          );
+          tester(
+            'mssql',
+            'select top (?) [id], [first_name] from [accounts] order by [id] asc',
+            [1],
+            { id: '1', first_name: 'Test' }
           );
         });
     });
@@ -165,6 +183,12 @@ module.exports = function(knex) {
             [],
             [7, 5, 4, 3, 2, 1]
           );
+          tester(
+            'mssql',
+            "select [id] from [accounts] order by [id] desc",
+            [],
+            ['7', '5', '4', '3', '2', '1']
+          );
         });
     });
 
@@ -212,6 +236,15 @@ module.exports = function(knex) {
                 last_name: 'User'
               }]
             );
+            tester(
+              'mssql',
+              'select [first_name], [last_name] from [accounts] where [id] = ?',
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
+            );
           });
       });
 
@@ -229,7 +262,6 @@ module.exports = function(knex) {
                 first_name: 'Test',
                 last_name: 'User'
               }]
-
             );
             tester(
               'postgresql',
@@ -252,6 +284,15 @@ module.exports = function(knex) {
             tester(
               'oracle',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
+            );
+            tester(
+              'mssql',
+              'select [first_name], [last_name] from [accounts] where [id] = ?',
               [1],
               [{
                 first_name: 'Test',
@@ -285,6 +326,11 @@ module.exports = function(knex) {
             tester(
               'oracle',
               'select "email", "logins" from "accounts" where "id" > ?',
+              [1]
+            );
+            tester(
+              'mssql',
+              'select [email], [logins] from [accounts] where [id] > ?',
               [1]
             );
           });
@@ -360,6 +406,22 @@ module.exports = function(knex) {
                 phone: null
               }]
             );
+            tester(
+              'mssql',
+              'select * from [accounts] where [id] = ?',
+              [1],
+              [{
+                id: '1',
+                first_name: "Test",
+                last_name: "User",
+                email: "test@example.com",
+                logins: 1,
+                about: "Lorem ipsum Dolore labore incididunt enim.",
+                created_at: d,
+                updated_at: d,
+                phone: null
+              }]
+            );
           });
       });
 
@@ -390,6 +452,12 @@ module.exports = function(knex) {
             tester(
               'oracle',
               'select "first_name", "email" from "accounts" where "id" is null',
+              [],
+              []
+            );
+            tester(
+              'mssql',
+              'select [first_name], [email] from [accounts] where [id] is null',
               [],
               []
             );
@@ -424,6 +492,12 @@ module.exports = function(knex) {
             tester(
               'oracle',
               'select * from "accounts" where "id" = ?',
+              [0],
+              []
+            );
+            tester(
+              'mssql',
+              'select * from [accounts] where [id] = ?',
               [0],
               []
             );
@@ -470,7 +544,7 @@ module.exports = function(knex) {
     });
 
     it('handles multi-column "where in" cases', function() {
-      if (knex.client.dialect !== 'sqlite3') {
+      if (knex.client.dialect !== 'sqlite3' && knex.client.dialect !== 'mssql') {
         return knex('composite_key_test')
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
           .select()
@@ -522,7 +596,7 @@ module.exports = function(knex) {
     });
 
     it('handles multi-column "where in" cases with where', function() {
-      if (knex.client.dialect !== 'sqlite3') {
+      if (knex.client.dialect !== 'sqlite3' && knex.client.dialect !== 'mssql') {
         return knex('composite_key_test')
           .where('status', 1)
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
@@ -638,7 +712,6 @@ module.exports = function(knex) {
         assert(query.sql === 'select "id"",""name" from "test"');
       }
     });
-
 
   });
 

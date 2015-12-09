@@ -26,6 +26,6 @@ describe('Query Building Tests', function() {
   require('./unit/schema/mssql')  
 })
 
-describe('Integration Tests', function() {return;
+describe('Integration Tests', function() {
   require('./integration')
 })

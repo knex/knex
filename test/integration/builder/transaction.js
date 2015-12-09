@@ -19,7 +19,6 @@ module.exports = function(knex) {
 
       var id = null;
       return knex.transaction(function(t) {
-
         knex('accounts')
           .transacting(t)
           .returning('id')
@@ -145,7 +144,7 @@ module.exports = function(knex) {
         expect(__knexUid).to.equal(obj.__knexUid);
       })
       .catch(function(msg) {
-        if (knex.client.dialect === 'oracle') {
+        if (knex.client.dialect === 'oracle' || knex.client.dialect === 'mssql') {
           // oracle start transaction /rollback are no queries
           expect(count).to.equal(2);
         } else {
@@ -223,7 +222,11 @@ module.exports = function(knex) {
           if (!__knexUid) __knexUid = obj.__knexUid;
           expect(__knexUid).to.equal(obj.__knexUid);
         }).then(function() {
-          expect(count).to.equal(5);
+          if (knex.client.dialect === 'mssql') {
+            expect(count).to.equal(3);
+          } else {
+            expect(count).to.equal(5);
+          }
           return knex('accounts').where('id', id).select('first_name');
         }).then(function(resp) {
           expect(resp).to.have.length(1);

@@ -42,34 +42,27 @@ assign(ColumnCompiler_MSSQL.prototype, {
     return 'tinyint' + length
   },
 
+  varchar: function(length) {
+    return 'nvarchar(' + this._num(length, 255) + ')';
+  },
+  
   text: function(column) {
-    switch (column) {
-      case 'medium':
-      case 'mediumtext':
-        return 'mediumtext';
-      case 'long':
-      case 'longtext':
-        return 'longtext'
-      default:
-        return 'text';
-    }
+    return 'nvarchar(max)';
   },
 
-  mediumtext: function() {
-    return this.text('medium')
-  },
-
-  longtext: function() {
-    return this.text('long')
-  },
+  mediumtext: 'nvarchar(max)',
+  
+  longtext: 'nvarchar(max)',
 
   enu: function(allowed) {
-    return ''
+    return 'nvarchar(100)';
   },
+
+  uuid: 'uniqueidentifier',
 
   datetime: 'datetime',
 
-  timestamp: 'timestamp',
+  timestamp: 'datetime',
 
   bit: function(length) {
     return length ? 'bit(' + this._num(length) + ')' : 'bit'
@@ -78,6 +71,8 @@ assign(ColumnCompiler_MSSQL.prototype, {
   binary: function(length) {
     return length ? 'varbinary(' + this._num(length) + ')' : 'blob'
   },
+  
+  bool: 'bit',
 
   // Modifiers
   // ------
@@ -103,7 +98,7 @@ assign(ColumnCompiler_MSSQL.prototype, {
     if (comment && comment.length > 255) {
       helpers.warn('Your comment is longer than the max comment length for MSSQL')
     }
-    return comment && "comment '" + comment + "'"
+    return ''
   }
 
 })

@@ -17,6 +17,7 @@ module.exports = function(knex) {
           tester('postgresql', 'truncate "test_table_two" restart identity');
           tester('sqlite3', "delete from \"test_table_two\"");
           tester('oracle', "truncate table \"test_table_two\"");
+          tester('mssql', 'truncate table [test_table_two]');
         })
         .then(function() {
 
@@ -37,7 +38,8 @@ module.exports = function(knex) {
         mariadb: 'SHOW TABLES',
         postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';",
-        oracle: "select TABLE_NAME from USER_TABLES"
+        oracle: "select TABLE_NAME from USER_TABLES",
+        mssql: "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'"
       };
       return knex.raw(tables[knex.client.dialect]).testSql(function(tester) {
         tester(knex.client.dialect, tables[knex.client.dialect]);
@@ -117,6 +119,22 @@ module.exports = function(knex) {
             }
           }
         );
+        tester('mssql',
+          'select * from information_schema.columns where table_name = ? and table_schema = \'dbo\'',
+          ['datatype_test'], {
+            "enum_value": {
+              "defaultValue": null,
+              "maxLength": 100,
+              "nullable": true,
+              "type": "nvarchar"
+            },
+            "uuid": {
+              "defaultValue": null,
+              "maxLength": null,
+              "nullable": false,
+              "type": "uniqueidentifier"
+            }
+          });
       });
     });
 
@@ -153,18 +171,33 @@ module.exports = function(knex) {
             "type": "CHAR"
           }
         );
+        tester('mssql',
+          'select * from information_schema.columns where table_name = ? and table_schema = \'dbo\'',
+          null, {
+            "defaultValue": null,
+            "maxLength": null,
+            "nullable": false,
+            "type": "uniqueidentifier"
+          });
       });
     });
 
     it('should allow renaming a column', function() {
+      var countColumn
+      console.log(knex.client.dialect);
+      switch (knex.client.dialect) {
+        case 'oracle': countColumn = 'COUNT(*)'; break;
+        case 'mssql': countColumn = ''; break;
+        default: countColumn = 'count(*)'; break;
+      }
       var count, inserts = [];
-      _.times(40, function() {
-        inserts.push({first_name: 'Test', last_name: 'Data'});
+      _.times(40, function(i) {
+        inserts.push({email: 'email'+ i, first_name: 'Test', last_name: 'Data'});
       });
       return knex('accounts').insert(inserts).then(function() {
         return knex.count('*').from('accounts');
       }).then(function(resp) {
-        count = resp['count(*)'];
+        count = resp[0][countColumn];
         return knex.schema.table('accounts', function(t) {
           t.renameColumn('about', 'about_col');
         }).testSql(function(tester) {
@@ -172,11 +205,12 @@ module.exports = function(knex) {
           tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
           tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
+          tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
         });
       }).then(function() {
         return knex.count('*').from('accounts');
       }).then(function(resp) {
-        expect(resp['count(*)']).to.equal(count);
+        expect(resp[0][countColumn]).to.equal(count);
       }).then(function() {
         return knex('accounts').select('about_col');
       }).then(function() {
@@ -186,35 +220,20 @@ module.exports = function(knex) {
       }).then(function() {
         return knex.count('*').from('accounts');
       }).then(function(resp) {
-        expect(resp['count(*)']).to.equal(count);
+        expect(resp[0][countColumn]).to.equal(count);
       });
     });
 
     it('should allow dropping a column', function() {
-      var count;
-
-      if (knex.client.dialect === 'oracle') {
-        return knex.count('*').from('accounts').then(function (resp) {
-          count = resp[0]['COUNT(*)'];
-        }).then(function () {
-          return knex.schema.table('accounts', function (t) {
-            t.dropColumn('first_name');
-          }).testSql(function (tester) {
-            tester('oracle', ['alter table "accounts" drop ("first_name")']);
-          });
-        }).then(function () {
-          return knex.select('*').from('accounts').first();
-        }).then(function(resp) {
-          expect(_.keys(resp).sort()).to.eql(["about", "created_at", "email", "id", "last_name", "logins", "phone", "updated_at"]);
-        }).then(function() {
-          return knex.count('*').from('accounts');
-        }).then(function(resp) {
-          expect(resp[0]['COUNT(*)']).to.equal(count);
-        });
+      var countColumn
+      switch (knex.client.dialect) {
+        case 'oracle': countColumn = 'COUNT(*)'; break;
+        case 'mssql': countColumn = ''; break;
+        default: countColumn = 'count(*)'; break;
       }
-
+      var count;
       return knex.count('*').from('accounts').then(function(resp) {
-        count = resp['count(*)'];
+        count = resp[0][countColumn];
       }).then(function() {
         return knex.schema.table('accounts', function(t) {
           t.dropColumn('first_name');
@@ -222,6 +241,8 @@ module.exports = function(knex) {
           tester('mysql', ["alter table `accounts` drop `first_name`"]);
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
           tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+          tester('oracle', ['alter table "accounts" drop ("first_name")']);
+          tester('mssql', ["alter table [accounts] drop column [first_name]"]);
         });
       }).then(function() {
         return knex.select('*').from('accounts').first();
@@ -230,7 +251,7 @@ module.exports = function(knex) {
       }).then(function() {
         return knex.count('*').from('accounts');
       }).then(function(resp) {
-        expect(resp['count(*)']).to.equal(count);
+        expect(resp[0][countColumn]).to.equal(count);
       });
     });
 
