@@ -122,10 +122,10 @@ module.exports = function(knex) {
             table.integer('main').notNullable().primary();
             table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
           }).testSql(function(tester) {
-            tester('mysql', ['create table `test_table_three` (`main` int, `paragraph` text) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)']);
-            tester('pg', ['create table "test_table_three" ("main" integer, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
-            tester('sqlite3', ['create table "test_table_three" ("main" integer, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', primary key ("main"))']);
-            tester('oracle', ['create table "test_table_three" ("main" integer, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
+            tester('mysql', ['create table `test_table_three` (`main` int not null, `paragraph` text) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key test_table_three_main_primary(`main`)']);
+            tester('pg', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
+            tester('sqlite3', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', primary key ("main"))']);
+            tester('oracle', ['create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
             tester('mssql', ['create table [test_table_three] ([main] int not null, [paragraph] nvarchar(max))','alter table [test_table_three] add primary key ([main])']);            
           });
       });
