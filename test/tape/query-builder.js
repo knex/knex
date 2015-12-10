@@ -1,6 +1,7 @@
 'use strict';
 
 var tape         = require('tape')
+var omit         = require('lodash/object/omit')
 var QueryBuilder = require('../../lib/query/builder')
 var Client       = require('../../lib/client')
 
@@ -18,6 +19,35 @@ tape('allows for object syntax in join', function(t) {
     'accounts.id': 'users.account_id',
     'accounts.owner_id': 'users.id'
   }).toSQL('join')
-  t.equal(sql.sql, 
+  t.equal(sql.sql,
     'inner join "accounts" on "accounts"."id" = "users"."account_id" and "accounts"."owner_id" = "users"."id"')
 })
+
+tape('clones correctly', function(t) {
+  var qb = new QueryBuilder(new Client())
+  var original = qb.table('users').debug().innerJoin('accounts', {
+    'accounts.id': 'users.account_id',
+    'accounts.owner_id': 'users.id'
+  });
+
+  var cloned = original.clone();
+
+  t.notEqual(original, cloned);
+
+  // `deepEqual` freezes when it encounters circular references,
+  // so they must be omitted.
+  t.deepEqual(
+    omit(cloned, 'client', 'and'),
+    omit(original, 'client', 'and')
+  );
+
+  t.equal(
+    cloned.client,
+    original.client,
+    'clone references same client'
+  );
+
+  t.equal(cloned.and, cloned, 'cloned `and` references self');
+
+  t.end();
+});
