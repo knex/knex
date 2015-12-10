@@ -68,7 +68,7 @@ module.exports = function(knex) {
           return Math.abs(10/6 - +(resp[0][key])) < 0.001;
         }
        function checkResRangeMssql(key, resp) {
-          return +(resp[0][key]) == 1;
+          return +(resp[0][key]) === 1;
         }
 
         // mysql: 1.6667

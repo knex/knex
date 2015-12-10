@@ -46,17 +46,13 @@ assign(ColumnCompiler_MSSQL.prototype, {
     return 'nvarchar(' + this._num(length, 255) + ')';
   },
   
-  text: function(column) {
-    return 'nvarchar(max)';
-  },
+  text: 'nvarchar(max)',
 
   mediumtext: 'nvarchar(max)',
   
   longtext: 'nvarchar(max)',
 
-  enu: function(allowed) {
-    return 'nvarchar(100)';
-  },
+  enu: 'nvarchar(100)',
 
   uuid: 'uniqueidentifier',
 
