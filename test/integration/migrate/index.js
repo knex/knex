@@ -11,7 +11,12 @@ module.exports = function(knex) {
 
   require('rimraf').sync(path.join(__dirname, './migration'));
 
-  describe.only('knex.migrate', function () {
+  before(() => {
+    // make sure lock was not left from previous failed test run
+    return knex.migrate.forceFreeMigrationsLock({directory: 'test/integration/migrate/test'});
+  });
+
+  describe('knex.migrate', function () {
 
     it('should create a new migration file with the create method', function() {
       return knex.migrate.make('test').then(function(name) {
@@ -27,26 +32,27 @@ module.exports = function(knex) {
       });
     });
 
-    it('should create a migrations lock table', function() {
-      return knex.schema.hasTable('knex_migrations_lock').then(function(exists) {
-        expect(exists).to.equal(true);
-
-        return knex.schema.hasColumn('knex_migrations_lock', 'is_locked').then(function(exists) {
-          expect(exists).to.equal(true);
-        });
-      });
-    });
-
     var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
 
     describe('knex.migrate.status', function() {
 
       beforeEach(function() {
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'});
+        // ignore errors from failed migrations
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(() => true);
       });
 
       afterEach(function() {
         return knex.migrate.rollback({directory: 'test/integration/migrate/test'});
+      });
+
+      it('should create a migrations lock table', function() {
+        return knex.schema.hasTable('knex_migrations_lock').then(function(exists) {
+          expect(exists).to.equal(true);
+
+          return knex.schema.hasColumn('knex_migrations_lock', 'is_locked').then(function(exists) {
+            expect(exists).to.equal(true);
+          });
+        });
       });
 
       it('should return 0 if code matches DB', function() {
@@ -126,7 +132,8 @@ module.exports = function(knex) {
     describe('knex.migrate.latest', function() {
 
       before(function() {
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'});
+        // ignore errors from failed migrations
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(() => true);
       });
 
       it('should remove the record in the lock table once finished', function() {
@@ -146,7 +153,7 @@ module.exports = function(knex) {
               });
           })
           .catch(function(error) {
-            expect(error).to.have.property('message', 'migrations failed: migration in progress');
+            expect(error).to.have.property('message', 'Migration table is are already locked');
             return knex('knex_migrations_lock').select('*');
           })
           .then(function(data) {
@@ -253,7 +260,6 @@ module.exports = function(knex) {
     });
 
     after(function() {
-      console.log("AFTER: DELETE migration path");
       rimraf.sync(path.join(__dirname, './migration'));
     });
 

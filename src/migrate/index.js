@@ -77,6 +77,13 @@ export default class Migrator {
       })
   }
 
+  forceFreeMigrationsLock(config) {
+    this.config = this.setConfig(config);
+    var lockTable = this._getLockTableName();
+    return this.knex.schema.hasTable(lockTable)
+        .then(exist => exist && this._freeLock);
+  }
+
   // Creates a new migration, with a given name.
   make(name, config) {
     this.config = this.setConfig(config);
@@ -158,7 +165,6 @@ export default class Migrator {
   }
 
   _getLock() {
-    console.log("Getting lock;");
     return this.knex.transaction(trx => {
       return this._isLocked(trx)
         .then(isLocked => {
@@ -167,22 +173,13 @@ export default class Migrator {
           }
         })
         .then(() => this._lockMigrations(trx));
-    })
-    .then(ret => {
-      console.log("Got the lock:", ret);
-      return ret;
     });
   }
 
   _freeLock() {
-    console.log("Freeing lock;");
     var tableName = this._getLockTableName();
     return this.knex(tableName)
-      .update({ is_locked: 0 })
-      .then(ret => {
-        console.log("Freed the lock:", ret);
-        return ret;
-      });
+      .update({ is_locked: 0 });
   }
 
   // Run a batch of current migrations, in sequence.
