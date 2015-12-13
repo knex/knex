@@ -29,7 +29,7 @@ function qb() {
   return clients.default.queryBuilder()
 }
 
-function raw(sql, bindings) { 
+function raw(sql, bindings) {
   return clients.default.raw(sql, bindings)
 }
 
@@ -39,7 +39,7 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
       expectedObj[key](sqlObj[key]);
     } else {
       try {
-        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);  
+        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);
       } catch (e) {
         e.stack = dialect + ': ' + e.stack
         throw e
@@ -2458,20 +2458,20 @@ describe("QueryBuilder", function() {
       }
     })
   })
-  
+
   it('has a modify method which accepts a function that can modify the query', function() {
-    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`, 
+    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`,
     // builder is bound to `this`
     var withBars = function(queryBuilder, table, fk) {
       if(!this || this !== queryBuilder) {
         throw 'Expected query builder passed as first argument and bound as `this` context';
       }
-      
+
       this
         .leftJoin('bars', table + '.' + fk, 'bars.id')
         .select('bars.*')
     };
-    
+
     testsql(qb().select('foo_id').from('foos').modify(withBars, 'foos', 'bar_id'), {
       mysql: {
         sql: 'select `foo_id`, `bars`.* from `foos` left join `bars` on `foos`.`bar_id` = `bars`.`id`'
@@ -2488,6 +2488,20 @@ describe("QueryBuilder", function() {
       default: 'select "foo" from "tbl"'
     })
   })
+
+  it("escapes single quotes properly", function() {
+    testquery(qb().select('*').from('users').where('last_name', 'O\'Brien'), {
+      postgres: 'select * from "users" where "last_name" = \'O\'\'Brien\'',
+      default: 'select * from "users" where "last_name" = \'O\\\'Brien\'',
+    });
+  });
+
+  it("escapes double quotes property", function(){
+    testquery(qb().select('*').from('players').where('name', 'Gerald "Ice" Williams'), {
+      postgres: 'select * from "players" where "name" = \'Gerald "Ice" Williams\'',
+      default: 'select * from "players" where "name" = \'Gerald \\"Ice\\" Williams\''
+    });
+  });
 
   it("allows join without operator and with value 0 #953", function() {
     testsql(qb().select('*').from('users').join('photos', 'photos.id', 0), {
