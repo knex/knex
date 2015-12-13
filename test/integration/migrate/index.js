@@ -1,4 +1,5 @@
 /*global after, before, describe, expect, it*/
+/*jshint -W030 */
 'use strict';
 
 var equal    = require('assert').equal;
@@ -23,6 +24,16 @@ module.exports = function(knex) {
     it('should list the current migration state with the currentVersion method', function() {
       return knex.migrate.currentVersion().then(function(version) {
         equal(version, 'none');
+      });
+    });
+
+    it('should create a migrations lock table', function() {
+      return knex.schema.hasTable('knex_migrations_lock').then(function(exists) {
+        expect(exists).to.equal(true);
+
+        return knex.schema.hasColumn('knex_migrations_lock', 'is_locked').then(function(exists) {
+          expect(exists).to.equal(true);
+        });
       });
     });
 
@@ -62,8 +73,8 @@ module.exports = function(knex) {
           .then(function() {
             // Cleanup the added migrations
             return knex('knex_migrations')
-              .where('id', migration1[0])
-              .orWhere('id', migration2[0])
+              .where('id', parseInt(migration1[0]))
+              .orWhere('id', parseInt(migration2[0]))
               .del()
           });
 
@@ -116,6 +127,49 @@ module.exports = function(knex) {
 
       before(function() {
         return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function() {});
+      });
+
+      it('should remove the record in the lock table once finished', function() {
+        return knex('knex_migrations_lock').select('*').then(function(data) {
+          expect(data[0]).to.have.property('is_locked');
+          expect(data[0].is_locked).to.not.be.ok;
+        });
+      });
+
+      it('should throw error if the migrations are already running', function() {
+        return knex('knex_migrations_lock')
+          .update({ is_locked: 1 })
+          .then(function() {
+            return knex.migrate.latest({directory: 'test/integration/migrate/test'})
+              .then(function() {
+                throw new Error('then should not execute');
+              });
+          })
+          .catch(function(error) {
+            expect(error).to.have.property('message', 'migrations failed: migration in progress');
+            return knex('knex_migrations_lock').select('*');
+          })
+          .then(function(data) {
+            expect(data[0].is_locked).to.equal(1);
+
+            // Clean up lock for other tests
+            return knex('knex_migrations_lock').update({ is_locked: 0 })
+          });
+      });
+
+      it('should release lock if non-locking related error is thrown', function() {
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'})
+          .then(function() {
+            throw new Error('then should not execute');
+          })
+          .catch(function(error) {
+            // This will fail because of the invalid migration
+            expect(error).to.have.property('message');
+            return knex('knex_migrations_lock').select('*')
+          })
+          .then(function(data) {
+            expect(data[0].is_locked).to.not.be.ok;
+          });
       });
 
       it('should run all migration files in the specified directory', function() {
