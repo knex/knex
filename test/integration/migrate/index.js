@@ -11,7 +11,7 @@ module.exports = function(knex) {
 
   require('rimraf').sync(path.join(__dirname, './migration'));
 
-  before(() => {
+  before(function() {
     // make sure lock was not left from previous failed test run
     return knex.migrate.forceFreeMigrationsLock({directory: 'test/integration/migrate/test'});
   });
@@ -38,7 +38,7 @@ module.exports = function(knex) {
 
       beforeEach(function() {
         // ignore errors from failed migrations
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(() => true);
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function () {});
       });
 
       afterEach(function() {
@@ -133,7 +133,7 @@ module.exports = function(knex) {
 
       before(function() {
         // ignore errors from failed migrations
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(() => true);
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function () {});
       });
 
       it('should remove the record in the lock table once finished', function() {

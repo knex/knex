@@ -81,7 +81,7 @@ export default class Migrator {
     this.config = this.setConfig(config);
     var lockTable = this._getLockTableName();
     return this.knex.schema.hasTable(lockTable)
-        .then(exist => exist && this._freeLock);
+        .then(exist => exist && this._freeLock());
   }
 
   // Creates a new migration, with a given name.
