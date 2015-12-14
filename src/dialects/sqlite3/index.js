@@ -33,7 +33,7 @@ assign(Client_SQLite3.prototype, {
 
   _driver: function() {
     return require('sqlite3')
-  },  
+  },
 
   SchemaCompiler: SchemaCompiler,
 
@@ -150,7 +150,7 @@ assign(Client_SQLite3.prototype, {
       min: 1,
       max: 1
     })
-  } 
+  }
 
 })
 

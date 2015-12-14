@@ -6,7 +6,7 @@ var _          = require('lodash');
 var Promise    = require('bluebird');
 
 // excluding oracle and maria dialects from default integrations test
-var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres sqlite3 mssql").match(/\w+/g);
+var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres sqlite3").match(/\w+/g);
 
 var pool = {
   afterCreate: function(connection, callback) {
@@ -118,19 +118,18 @@ var testConfigs = {
     seeds: seeds
   },
   
-  // mssql: {
-  //   debug: false,
-  //   dialect: 'mssql',
-  //   connection: testConfig.mssql || {
-  //     user: "knex_test",
-  //     password: "knex_test",
-  //     server: "127.0.0.1",
-  //     database: "knex_test"
-  //   },
-  //   pool: pool,
-  //   migrations: migrations,
-  //   seeds: seeds
-  // }
+  mssql: {
+    dialect: 'mssql',
+    connection: testConfig.mssql || {
+      user: "knex_test",
+      password: "knex_test",
+      server: "127.0.0.1",
+      database: "knex_test"
+    },
+    pool: pool,
+    migrations: migrations,
+    seeds: seeds
+  }
 };
 
 // export only copy the specified dialects

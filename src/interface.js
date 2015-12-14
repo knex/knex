@@ -3,7 +3,6 @@ var helpers = require('./helpers')
 
 module.exports = function(Target) {
   var _         = require('lodash');
-  var SqlString = require('./query/string');
 
   Target.prototype.toQuery = function(tz) {
     var data = this.toSQL(this._method);
@@ -18,7 +17,7 @@ module.exports = function(Target) {
     if (this.client && this.client.prepBindings) {
       bindings = this.client.prepBindings(bindings, tz);
     }
-    return SqlString.format(sql, bindings, tz);
+    return this.client.SqlString.format(sql, bindings, tz);
   };
 
   // Create a new instance of the `Runner`, passing in the current object.
@@ -72,7 +71,7 @@ module.exports = function(Target) {
 
   // Creates a method which "coerces" to a promise, by calling a
   // "then" method on the current `Target`
-  _.each(['bind', 'catch', 'finally', 'asCallback', 
+  _.each(['bind', 'catch', 'finally', 'asCallback',
     'spread', 'map', 'reduce', 'tap', 'thenReturn',
     'return', 'yield', 'ensure', 'nodeify', 'exec'], function(method) {
     Target.prototype[method] = function() {

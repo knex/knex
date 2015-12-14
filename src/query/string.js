@@ -58,13 +58,15 @@ SqlString.escape = function(val, timeZone) {
 };
 
 SqlString.arrayToList = function(array, timeZone) {
+  var self = this;
   return array.map(function(v) {
     if (Array.isArray(v)) return '(' + SqlString.arrayToList(v, timeZone) + ')';
-    return SqlString.escape(v, timeZone);
+    return self.escape(v, timeZone);
   }).join(', ');
 };
 
 SqlString.format = function(sql, values, timeZone) {
+  var self = this;
   values = values == null ? [] : [].concat(values);
   var index = 0;
   return sql.replace(/\\?\?/g, function(match) {
@@ -73,7 +75,7 @@ SqlString.format = function(sql, values, timeZone) {
       return match;
     }
     var value = values[index++];
-    return SqlString.escape(value, timeZone)
+    return self.escape(value, timeZone)
   }).replace('\\?', '?');
 };
 
