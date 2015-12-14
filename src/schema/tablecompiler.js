@@ -26,6 +26,8 @@ TableCompiler.prototype.toSQL = function() {
   return this.sequence;
 };
 
+TableCompiler.prototype.lowerCase = true;
+
 // Column Compilation
 // -------
 
@@ -63,10 +65,15 @@ TableCompiler.prototype.foreign = function(foreignData) {
     var column     = this.formatter.columnize(foreignData.column);
     var references = this.formatter.columnize(foreignData.references);
     var inTable    = this.formatter.wrap(foreignData.inTable);
-    var onUpdate   = foreignData.onUpdate ? ' on update ' + foreignData.onUpdate : '';
-    var onDelete   = foreignData.onDelete ? ' on delete ' + foreignData.onDelete : '';
-    this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + keyName + ' ' +
-      'foreign key (' + column + ') references ' + inTable + ' (' + references + ')' + onUpdate + onDelete);
+    var onUpdate   = foreignData.onUpdate ? (this.lowerCase ? ' on update ' : ' ON UPDATE ') + foreignData.onUpdate : '';
+    var onDelete   = foreignData.onDelete ? (this.lowerCase ? ' on delete ' : ' ON DELETE ') + foreignData.onDelete : '';
+    if (this.lowerCase) {
+      this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + keyName + ' ' +
+        'foreign key (' + column + ') references ' + inTable + ' (' + references + ')' + onUpdate + onDelete);
+    } else {
+      this.pushQuery('ALTER TABLE ' + this.tableName() + ' ADD CONSTRAINT ' + keyName + ' ' +
+        'FOREIGN KEY (' + column + ') REFERENCES ' + inTable + ' (' + references + ')' + onUpdate + onDelete);
+    }
   }
 };
 
@@ -100,7 +107,7 @@ TableCompiler.prototype.addColumns = function(columns) {
       return this.addColumnsPrefix + column;
     }, this);
     this.pushQuery({
-      sql: 'alter table ' + this.tableName() + ' ' + columnSql.join(', '),
+      sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + columnSql.join(', '),
       bindings: columns.bindings
     });
   }
@@ -156,7 +163,7 @@ TableCompiler.prototype.dropColumn = function() {
   var drops = _.map(_.isArray(columns) ? columns : [columns], function(column) {
     return this.dropColumnPrefix + this.formatter.wrap(column);
   }, this);
-  this.pushQuery('alter table ' + this.tableName() + ' ' + drops.join(', '));
+  this.pushQuery((this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + drops.join(', '));
 };
 
 // If no name was specified for this index, we will create one using a basic

@@ -242,7 +242,7 @@ module.exports = function(knex) {
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
           tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
           tester('oracle', ['alter table "accounts" drop ("first_name")']);
-          tester('mssql', ["alter table [accounts] drop column [first_name]"]);
+          tester('mssql', ["ALTER TABLE [accounts] DROP COLUMN [first_name]"]);
         });
       }).then(function() {
         return knex.select('*').from('accounts').first();

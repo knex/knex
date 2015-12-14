@@ -12,9 +12,10 @@ inherits(SchemaCompiler_MSSQL, SchemaCompiler)
 
 assign(SchemaCompiler_MSSQL.prototype, {
 
+  dropTablePrefix: 'DROP TABLE ',
   dropTableIfExists: function(tableName) {
     var name = this.formatter.wrap(prefixedTableName(this.schema, tableName));
-    this.pushQuery('if object_id(\'' + name +'\', \'U\') is not null drop table ' + name);
+    this.pushQuery('if object_id(\'' + name +'\', \'U\') is not null DROP TABLE ' + name);
   },
 
   // Rename a table on the schema.

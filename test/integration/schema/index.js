@@ -19,7 +19,7 @@ module.exports = function(knex) {
               "begin execute immediate 'drop table \"test_foreign_table_two\"'; exception when others then if sqlcode != -942 then raise; end if; end;",
               "begin execute immediate 'drop sequence \"test_foreign_table_two_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;"
             ]);
-            tester('mssql', ["if object_id('[test_foreign_table_two]', 'U') is not null drop table [test_foreign_table_two]"]);
+            tester('mssql', ["if object_id('[test_foreign_table_two]', 'U') is not null DROP TABLE [test_foreign_table_two]"]);
           }),
           knex.schema.dropTableIfExists('test_table_one')
             .dropTableIfExists('catch_test')
@@ -88,10 +88,10 @@ module.exports = function(knex) {
               'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "test_table_one" ("first_name")',
               'alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")',
               'create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
-            tester('mssql', ['create table [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int default \'1\', [about] nvarchar(max), [created_at] datetime, [updated_at] datetime)',
-              'create index test_table_one_first_name_index on [test_table_one] ([first_name])',
-              'create unique index test_table_one_email_unique on [test_table_one] ([email])',
-              'create index test_table_one_logins_index on [test_table_one] ([logins])']);
+            tester('mssql', ['CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int default \'1\', [about] nvarchar(max), [created_at] datetime, [updated_at] datetime)',
+              'CREATE INDEX test_table_one_first_name_index ON [test_table_one] ([first_name])',
+              'CREATE UNIQUE INDEX test_table_one_email_unique ON [test_table_one] ([email])',
+              'CREATE INDEX test_table_one_logins_index ON [test_table_one] ([logins])']);
           });
       });
 
@@ -111,7 +111,7 @@ module.exports = function(knex) {
             table.tinyint('status');
           }).testSql(function(tester){
             tester('mysql', ['create table `test_table_two` (`id` int unsigned not null auto_increment primary key, `account_id` int, `details` text, `status` tinyint) default character set utf8 engine = InnoDB']);
-            tester('mssql', ['create table [test_table_two] ([id] int identity(1,1) not null primary key, [account_id] int, [details] nvarchar(max), [status] tinyint)']);
+            tester('mssql', ['CREATE TABLE [test_table_two] ([id] int identity(1,1) not null primary key, [account_id] int, [details] nvarchar(max), [status] tinyint)']);
           });
       });
 
@@ -126,7 +126,7 @@ module.exports = function(knex) {
             tester('pg', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
             tester('sqlite3', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', primary key ("main"))']);
             tester('oracle', ['create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
-            tester('mssql', ['create table [test_table_three] ([main] int not null, [paragraph] nvarchar(max))','alter table [test_table_three] add primary key ([main])']);            
+            tester('mssql', ['CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max))','ALTER TABLE [test_table_three] ADD PRIMARY KEY ([main])']);            
           });
       });
 
@@ -140,7 +140,7 @@ module.exports = function(knex) {
             tester('pg', ['create table "datatype_test" ("enum_value" text check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" uuid not null)']);
             tester('sqlite3', ['create table "datatype_test" ("enum_value" varchar, "uuid" char(36) not null)']);
             tester('oracle', ['create table "datatype_test" ("enum_value" varchar2(1) check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" char(36) not null)']);
-            tester('mssql', ['create table [datatype_test] ([enum_value] nvarchar(100), [uuid] uniqueidentifier not null)']);
+            tester('mssql', ['CREATE TABLE [datatype_test] ([enum_value] nvarchar(100), [uuid] uniqueidentifier not null)']);
           });
       });
 
@@ -161,7 +161,7 @@ module.exports = function(knex) {
             "create or replace trigger \"test_foreign_table_two_id_trg\" before insert on \"test_foreign_table_two\" for each row when (new.\"id\" is null)  begin select \"test_foreign_table_two_seq\".nextval into :new.\"id\" from dual; end;",
             'alter table "test_foreign_table_two" add constraint "q7TfvbIx3HUQbh+l+e5N+J+Guag" foreign key ("fkey_two") references "test_table_two" ("id")'
           ]);
-          tester('mssql', ['create table [test_foreign_table_two] ([id] int identity(1,1) not null primary key, [fkey_two] int)','alter table [test_foreign_table_two] add constraint test_foreign_table_two_fkey_two_foreign foreign key ([fkey_two]) references [test_table_two] ([id])']);
+          tester('mssql', ['CREATE TABLE [test_foreign_table_two] ([id] int identity(1,1) not null primary key, [fkey_two] int)','ALTER TABLE [test_foreign_table_two] ADD CONSTRAINT test_foreign_table_two_fkey_two_foreign FOREIGN KEY ([fkey_two]) REFERENCES [test_table_two] ([id])']);
         });
       });
 
@@ -178,7 +178,7 @@ module.exports = function(knex) {
             tester('pg', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint composite_key_test_column_a_column_b_unique unique ("column_a", "column_b")']);
             tester('sqlite3', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" tinyint)','create unique index composite_key_test_column_a_column_b_unique on "composite_key_test" ("column_a", "column_b")']);
             tester('oracle', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" clob, "status" smallint)','alter table "composite_key_test" add constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk" unique ("column_a", "column_b")']);
-            tester('mssql', ['create table [composite_key_test] ([column_a] int, [column_b] int, [details] nvarchar(max), [status] tinyint)','create unique index composite_key_test_column_a_column_b_unique on [composite_key_test] ([column_a], [column_b])']);
+            tester('mssql', ['CREATE TABLE [composite_key_test] ([column_a] int, [column_b] int, [details] nvarchar(max), [status] tinyint)','CREATE UNIQUE INDEX composite_key_test_column_a_column_b_unique ON [composite_key_test] ([column_a], [column_b])']);
           }).then(function() {
             return knex('composite_key_test').insert([{
               column_a: 1,
@@ -218,7 +218,7 @@ module.exports = function(knex) {
               "begin execute immediate 'create sequence \"charset_collate_test_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;",
               "create or replace trigger \"charset_collate_test_id_trg\" before insert on \"charset_collate_test\" for each row when (new.\"id\" is null)  begin select \"charset_collate_test_seq\".nextval into :new.\"id\" from dual; end;"
             ]);
-            tester('mssql', ['create table [charset_collate_test] ([id] int identity(1,1) not null primary key, [account_id] int, [details] nvarchar(max), [status] tinyint)']);
+            tester('mssql', ['CREATE TABLE [charset_collate_test] ([id] int identity(1,1) not null primary key, [account_id] int, [details] nvarchar(max), [status] tinyint)']);
           });
       });
 
@@ -235,7 +235,7 @@ module.exports = function(knex) {
               tester('pg', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
               tester('sqlite3', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
               tester('oracle', ['create table "bool_test" ("one" number(1, 0) check ("one" in (\'0\', \'1\')), "two" number(1, 0) default \'0\' check ("two" in (\'0\', \'1\')), "three" number(1, 0) default \'1\' check ("three" in (\'0\', \'1\')), "four" number(1, 0) default \'1\' check ("four" in (\'0\', \'1\')), "five" number(1, 0) default \'0\' check ("five" in (\'0\', \'1\')))']);
-              tester('mssql', ['create table [bool_test] ([one] bit, [two] bit default \'0\', [three] bit default \'1\', [four] bit default \'1\', [five] bit default \'0\')']);              
+              tester('mssql', ['CREATE TABLE [bool_test] ([one] bit, [two] bit default \'0\', [three] bit default \'1\', [four] bit default \'1\', [five] bit default \'0\')']);              
             }).then(function() {
               return knex.insert({one: false}).into('bool_test');
             });

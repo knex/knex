@@ -25,12 +25,13 @@ assign(SchemaCompiler.prototype, {
 
   alterTable: buildTable('alter'),
 
+  dropTablePrefix: 'drop table ',
   dropTable: function(tableName) {
-    this.pushQuery('drop table ' + this.formatter.wrap(prefixedTableName(this.schema, tableName)));
+    this.pushQuery(this.dropTablePrefix + this.formatter.wrap(prefixedTableName(this.schema, tableName)));
   },
 
   dropTableIfExists: function(tableName) {
-    this.pushQuery('drop table if exists ' + this.formatter.wrap(prefixedTableName(this.schema, tableName)));
+    this.pushQuery(this.dropTablePrefix + 'if exists ' + this.formatter.wrap(prefixedTableName(this.schema, tableName)));
   },
 
   raw: function(sql, bindings) {

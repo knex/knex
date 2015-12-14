@@ -16,9 +16,9 @@ function TableCompiler_MSSQL() {
 inherits(TableCompiler_MSSQL, TableCompiler);
 
 assign(TableCompiler_MSSQL.prototype, {
-
+  
   createQuery: function(columns, ifNot) {
-    var createStatement = ifNot ? 'if object_id(\'' + this.tableName() +'\', \'U\') is not null create table ' : 'create table ';
+    var createStatement = ifNot ? 'if object_id(\'' + this.tableName() +'\', \'U\') is not null CREATE TABLE ' : 'CREATE TABLE ';
     var client = this.client, conn = {}, 
       sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
 
@@ -38,9 +38,11 @@ assign(TableCompiler_MSSQL.prototype, {
     this.pushQuery(sql);
   },
 
-  addColumnsPrefix: 'add ',
+  lowerCase: false,
   
-  dropColumnPrefix: 'drop column ',
+  addColumnsPrefix: 'ADD ',
+  
+  dropColumnPrefix: 'DROP COLUMN ',
 
   // Compiles the comment on the table.
   comment: function() {
@@ -76,7 +78,7 @@ assign(TableCompiler_MSSQL.prototype, {
       var constraintName = formatter.wrap(ref.CONSTRAINT_NAME);
       var tableName = formatter.wrap(ref.TABLE_NAME);
       return runner.query({
-        sql: 'alter table ' + tableName + ' drop constraint ' + constraintName
+        sql: 'ALTER TABLE ' + tableName + ' DROP CONSTRAINT ' + constraintName
       });
     }));
   },
@@ -93,47 +95,47 @@ assign(TableCompiler_MSSQL.prototype, {
       var onDelete   = ' ON DELETE ' + ref.DELETE_RULE;
       
       return runner.query({
-        sql: 'alter table ' + tableName + ' add constraint ' + keyName + 
-          ' foreign key (' + column + ') refrences ' + inTable + ' (' + references + ')' + onUpdate + onDelete
+        sql: 'ALTER TABLE ' + tableName + ' ADD CONSTRAINT ' + keyName + 
+          ' FOREIGN KEY (' + column + ') REFERENCES ' + inTable + ' (' + references + ')' + onUpdate + onDelete
       });
     }));
   },
   index: function(columns, indexName) {
     indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
-    this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + ' (' + this.formatter.columnize(columns) + ')');
+    this.pushQuery('CREATE INDEX ' + indexName + ' ON ' + this.tableName() + ' (' + this.formatter.columnize(columns) + ')');
   },
 
   primary: function(columns, indexName) {
     indexName = indexName || this._indexCommand('primary', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + ' add primary key (' + this.formatter.columnize(columns) + ')');
+    this.pushQuery('ALTER TABLE ' + this.tableName() + ' ADD PRIMARY KEY (' + this.formatter.columnize(columns) + ')');
   },
 
   unique: function(columns, indexName) {
     indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
-    this.pushQuery('create unique index ' + indexName + ' on ' + this.tableName() + ' (' + this.formatter.columnize(columns) + ')');
+    this.pushQuery('CREATE UNIQUE INDEX ' + indexName + ' ON ' + this.tableName() + ' (' + this.formatter.columnize(columns) + ')');
   },
 
   // Compile a drop index command.
   dropIndex: function(columns, indexName) {
     indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
-    this.pushQuery('drop index ' + indexName + ' on ' + this.tableName());
+    this.pushQuery('DROP INDEX ' + indexName + ' ON ' + this.tableName());
   },
 
   // Compile a drop foreign key command.
   dropForeign: function(columns, indexName) {
     indexName = indexName || this._indexCommand('foreign', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
+    this.pushQuery('ALTER TABLE ' + this.tableName() + ' DROP CONSTRAINT ' + indexName);
   },
 
   // Compile a drop primary key command.
   dropPrimary: function() {
-    this.pushQuery('alter table ' + this.tableName() + ' drop primary key');
+    this.pushQuery('ALTER TABLE ' + this.tableName() + ' DROP PRIMARY KEY');
   },
 
   // Compile a drop unique key command.
   dropUnique: function(column, indexName) {
     indexName = indexName || this._indexCommand('unique', this.tableNameRaw, column);
-    this.pushQuery('drop index ' + indexName + ' on ' + this.tableName());
+    this.pushQuery('DROP INDEX ' + indexName + ' ON ' + this.tableName());
   }
 
 })
