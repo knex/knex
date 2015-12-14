@@ -2492,6 +2492,7 @@ describe("QueryBuilder", function() {
   it("escapes single quotes properly", function() {
     testquery(qb().select('*').from('users').where('last_name', 'O\'Brien'), {
       postgres: 'select * from "users" where "last_name" = \'O\'\'Brien\'',
+      sqlite3: 'select * from "users" where "last_name" = \'O\'\'Brien\'',
       default: 'select * from "users" where "last_name" = \'O\\\'Brien\'',
     });
   });
