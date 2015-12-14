@@ -89,7 +89,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('DROP INDEX users_foo_unique ON [users]');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP CONSTRAINT users_foo_unique');
   });
 
   it('test drop unique, custom', function() {
@@ -98,7 +98,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('DROP INDEX foo ON [users]');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP CONSTRAINT foo');
   });
 
   it('test drop index', function() {
@@ -196,9 +196,8 @@ describe("MSSQL SchemaBuilder", function() {
       table.integer('user_id').notNull().references('users.id').onDelete('SET NULL');
       table.integer('account_id').notNull().references('id').inTable('accounts').onUpdate('cascade');
     }).toSQL();
-    equal(3, tableSql.length);
-    expect(tableSql[1].sql).to.equal('ALTER TABLE [person] ADD CONSTRAINT person_user_id_foreign FOREIGN KEY ([user_id]) REFERENCES [users] ([id]) ON DELETE SET NULL');
-    expect(tableSql[2].sql).to.equal('ALTER TABLE [person] ADD CONSTRAINT person_account_id_foreign FOREIGN KEY ([account_id]) REFERENCES [accounts] ([id]) ON UPDATE cascade');
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('CREATE TABLE [person] ([user_id] int not null, [account_id] int not null, CONSTRAINT person_user_id_foreign FOREIGN KEY ([user_id]) REFERENCES [users] ([id]) ON DELETE SET NULL, CONSTRAINT person_account_id_foreign FOREIGN KEY ([account_id]) REFERENCES [accounts] ([id]) ON UPDATE cascade)');
   });
 
   it('test adding incrementing id', function() {
@@ -458,7 +457,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('DROP INDEX composite_key_test_column_a_column_b_unique ON [composite_key_test]');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [composite_key_test] DROP CONSTRAINT composite_key_test_column_a_column_b_unique');
   });
 
   it('allows default as alias for defaultTo', function() {

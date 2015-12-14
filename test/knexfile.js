@@ -123,7 +123,7 @@ var testConfigs = {
     connection: testConfig.mssql || {
       user: "knex_test",
       password: "knex_test",
-      server: "127.0.0.1",
+      server: "DEGD02.degdarwin.com",//127.0.0.1",
       database: "knex_test"
     },
     pool: pool,
