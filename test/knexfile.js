@@ -118,19 +118,19 @@ var testConfigs = {
     seeds: seeds
   },
   
-  mssql: {
-    debug: false,
-    dialect: 'mssql',
-    connection: testConfig.mssql || {
-      user: "knex_test",
-      password: "knex_test",
-      server: "DEGD02.degdarwin.com", //127.0.0.1",
-      database: "knex_test"
-    },
-    pool: pool,
-    migrations: migrations,
-    seeds: seeds
-  }
+  // mssql: {
+  //   debug: false,
+  //   dialect: 'mssql',
+  //   connection: testConfig.mssql || {
+  //     user: "knex_test",
+  //     password: "knex_test",
+  //     server: "127.0.0.1",
+  //     database: "knex_test"
+  //   },
+  //   pool: pool,
+  //   migrations: migrations,
+  //   seeds: seeds
+  // }
 };
 
 // export only copy the specified dialects
