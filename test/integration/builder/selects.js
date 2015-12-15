@@ -115,7 +115,7 @@ module.exports = function(knex) {
           );
           tester(
             'mssql',
-            'select top (?) [id], [first_name] from [accounts] order by [id] asc',
+            'select top ? [id], [first_name] from [accounts] order by [id] asc',
             [1],
             { id: '1', first_name: 'Test' }
           );

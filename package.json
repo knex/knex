@@ -81,6 +81,7 @@
     "./lib/bin/cli.js": "./lib/util/noop.js",
     "./lib/seed/index.js": "./lib/util/noop.js",
     "pool2": "./lib/util/noop.js",
+    "mssql": false,
     "mysql": false,
     "mysql2": false,
     "mariasql": false,
