@@ -30,6 +30,7 @@
     "jshint": "^2.7.0",
     "mariasql": "^0.2.3",
     "mocha": "^2.2.4",
+    "mssql": "^2.3.2",
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
     "node-uuid": "~1.4.0",
@@ -67,7 +68,8 @@
     "mysql",
     "mariadb",
     "sqlite3",
-    "oracle"
+    "oracle",
+    "mssql"
   ],
   "author": {
     "name": "Tim Griesser",

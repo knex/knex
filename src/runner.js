@@ -25,7 +25,6 @@ assign(Runner.prototype, {
   // a single connection.
   run: function() {
     var runner = this
-
     return Promise.using(this.ensureConnection(), function(connection) {
       runner.connection = connection;
 

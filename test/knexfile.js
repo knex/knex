@@ -110,8 +110,21 @@ var testConfigs = {
 
   sqlite3: {
     dialect: 'sqlite3',
-    connection: {
+    connection: testConfig.sqlite3 || {
       filename: __dirname + '/test.sqlite3'
+    },
+    pool: pool,
+    migrations: migrations,
+    seeds: seeds
+  },
+  
+  mssql: {
+    dialect: 'mssql',
+    connection: testConfig.mssql || {
+      user: "knex_test",
+      password: "knex_test",
+      server: "127.0.0.1",
+      database: "knex_test"
     },
     pool: pool,
     migrations: migrations,
