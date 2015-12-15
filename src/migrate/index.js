@@ -169,10 +169,12 @@ export default class Migrator {
       return this._isLocked(trx)
         .then(isLocked => {
           if (isLocked) {
-            throw new Error("Migration table is are already locked");
+            throw new Error("Migration table is already locked");
           }
         })
         .then(() => this._lockMigrations(trx));
+    }).catch(err => {
+      throw new LockError(err.message);
     });
   }
 
@@ -185,9 +187,6 @@ export default class Migrator {
   // Run a batch of current migrations, in sequence.
   _runBatch(migrations, direction) {
     return this._getLock()
-    .catch(err => {
-      throw new LockError(err.message);
-    })
     .then(() => Promise.all(_.map(migrations, this._validateMigrationStructure, this)))
     .then(() => this._latestBatchNumber())
     .then(batchNo => {

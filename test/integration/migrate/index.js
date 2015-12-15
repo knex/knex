@@ -153,7 +153,7 @@ module.exports = function(knex) {
               });
           })
           .catch(function(error) {
-            expect(error).to.have.property('message', 'Migration table is are already locked');
+            expect(error).to.have.property('message', 'Migration table is already locked');
             return knex('knex_migrations_lock').select('*');
           })
           .then(function(data) {
