@@ -65,10 +65,10 @@ assign(QueryCompiler_MSSQL.prototype, {
     var join      = this.join();
     var where     = this.where();
     var order     = this.order();
-    var limit     = this.limit_();
+    var top       = this.top();
     var returning = this.single.returning;
     return {
-      sql: 'update ' + (limit ? limit + ' ' : '') + this.tableName +
+      sql: 'update ' + (top ? top + ' ' : '') + this.tableName +
         (join ? ' ' + join : '') +
         ' set ' + updates.join(', ') +
         (returning ? ' ' + this._returning('update', returning) : '') +
@@ -114,9 +114,9 @@ assign(QueryCompiler_MSSQL.prototype, {
       }
     }
     if (sql.length === 0) sql = ['*'];
-    var limit = this.limit_();
+    var top = this.top();
     return 'select ' + (distinct ? 'distinct ' : '') + 
-      (limit ? limit + ' ' : '') +
+      (top ? top + ' ' : '') +
       sql.join(', ') + (this.tableName ? ' from ' + this.tableName : '');
   },
 
@@ -163,10 +163,11 @@ assign(QueryCompiler_MSSQL.prototype, {
     };
   },
 
-  limit_: function() {
+  top: function() {
     var noLimit = !this.single.limit && this.single.limit !== 0;
-    if (noLimit) return '';
-    return 'top (' + this.formatter.parameter(this.single.limit) + ')';
+    var noOffset = !this.single.offset;
+    if (noLimit || !noOffset) return '';
+    return 'top ' + this.formatter.parameter(this.single.limit);
   },
 
   limit: function() {
@@ -174,10 +175,16 @@ assign(QueryCompiler_MSSQL.prototype, {
   },
   
   offset: function() {
-    if (!this.single.offset) return '';
-    return 'offset ' + this.formatter.parameter(this.single.offset) + ' rows';
+    var noLimit = !this.single.limit && this.single.limit !== 0;
+    var noOffset = !this.single.offset;
+    if (noOffset) return '';
+    var offset = 'offset ' + (noOffset ? '0' : this.formatter.parameter(this.single.offset)) + ' rows';
+    if (!noLimit) {
+      offset += ' fetch next ' + this.formatter.parameter(this.single.limit) + ' rows only';
+    }
+    return offset;
   },
-
+  
 })
 
 // Set the QueryBuilder & QueryCompiler on the client object,

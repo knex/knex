@@ -938,7 +938,7 @@ describe("QueryBuilder", function() {
         bindings: [25, 3]
       },
       mssql: {
-        sql: 'select * from [users] where [id] in (select top (?) [id] from [users] where [age] > ?)',
+        sql: 'select * from [users] where [id] in (select top ? [id] from [users] where [age] > ?)',
         bindings: [3, 25]
       },
       default: {
@@ -1244,7 +1244,7 @@ describe("QueryBuilder", function() {
         bindings: [10]
       },
       mssql: {
-        sql: 'select top (?) * from [users]',
+        sql: 'select top ? * from [users]',
         bindings: [10]
       },
       default: {
@@ -1265,7 +1265,7 @@ describe("QueryBuilder", function() {
         bindings: [0]
       },
       mssql: {
-        sql: 'select top (?) * from [users]',
+        sql: 'select top ? * from [users]',
         bindings: [0]
       },
       default: {
@@ -1286,8 +1286,8 @@ describe("QueryBuilder", function() {
         bindings: [15, 5]
       },
       mssql: {
-        sql: 'select top (?) * from [users] offset ? rows',
-        bindings: [10, 5]
+        sql: 'select * from [users] offset ? rows fetch next ? rows only',
+        bindings: [5, 10]
       },
       default: {
         sql: 'select * from "users" limit ? offset ?',
@@ -1307,7 +1307,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'select top (?) * from [users]',
+        sql: 'select top ? * from [users]',
         bindings: [1]
       },
       default: {
@@ -2154,7 +2154,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1, 5]
       },
       mssql: {
-        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc;select @@rowcount',
+        sql: 'update top ? [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc;select @@rowcount',
         bindings: ['foo', 'bar', 1, 5]
       },
       default: {
@@ -2189,7 +2189,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1, 1]
       },
       mssql: {
-        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
+        sql: 'update top ? [users] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1, 1]
       },
       default: {
@@ -2337,7 +2337,7 @@ describe("QueryBuilder", function() {
   // it("sql server limits and offsets", function() {
   //   $builder = $this.getSqlServerBuilder();
   //   $builder.select('*').from('users').limit(10).toSQL();
-  //   expect(chain.sql).to.equal('select top (10) * from [users]');
+  //   expect(chain.sql).to.equal('select top 10 * from [users]');
 
   //   $builder = $this.getSqlServerBuilder();
   //   $builder.select('*').from('users').offset(10).toSQL();
