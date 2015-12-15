@@ -12,7 +12,6 @@ var helpers        = require('../../helpers')
 
 var Transaction    = require('./transaction')
 var QueryCompiler  = require('./query/compiler')
-var JoinClause     = require('./query/joinclause')
 var SchemaCompiler = require('./schema/compiler')
 var TableCompiler  = require('./schema/tablecompiler')
 var ColumnCompiler = require('./schema/columncompiler')
@@ -34,15 +33,13 @@ assign(Client_MSSQL.prototype, {
   _driver: function() {
     return require('mssql');
   },
-  
+
   Transaction: Transaction,
-  
+
   Formatter: Formatter,
-  
+
   QueryCompiler: QueryCompiler,
-  
-  JoinClause: JoinClause,
-  
+
   SchemaCompiler: SchemaCompiler,
 
   TableCompiler: TableCompiler,
@@ -67,13 +64,13 @@ assign(Client_MSSQL.prototype, {
       });
     });
   },
-  
+
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection: function(connection, cb) {
     connection.close(cb);
   },
-  
+
   // Position the bindings for the query.
   positionBindings: function(sql) {
     var questionCount = -1
@@ -82,7 +79,7 @@ assign(Client_MSSQL.prototype, {
       return '@p' + questionCount
     })
   },
-  
+
   prepBindings: function(bindings) {
     return _.map(bindings, function(value) {
       if (value === undefined) {
@@ -91,7 +88,7 @@ assign(Client_MSSQL.prototype, {
       return value
     }, this)
   },
-  
+
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
   _stream: function(connection, obj, stream, options) {
@@ -116,7 +113,7 @@ assign(Client_MSSQL.prototype, {
         }
       }
       req.pipe(stream)
-      req.query(sql)        
+      req.query(sql)
     })
   },
 
@@ -143,7 +140,7 @@ assign(Client_MSSQL.prototype, {
         if (err) return rejecter(err)
         obj.response = recordset[0]
         resolver(obj)
-      })        
+      })
     })
   },
 
@@ -179,7 +176,7 @@ assign(Client_MSSQL.prototype, {
         return response
     }
   }
-  
+
 })
 
 // MSSQL Specific error handler
