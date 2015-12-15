@@ -167,7 +167,7 @@ assign(QueryCompiler_MSSQL.prototype, {
     var noLimit = !this.single.limit && this.single.limit !== 0;
     var noOffset = !this.single.offset;
     if (noLimit || !noOffset) return '';
-    return 'top ' + this.formatter.parameter(this.single.limit);
+    return 'top (' + this.formatter.parameter(this.single.limit) + ')';
   },
 
   limit: function() {

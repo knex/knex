@@ -12,7 +12,6 @@ var helpers        = require('../../helpers')
 
 var Transaction    = require('./transaction')
 var QueryCompiler  = require('./query/compiler')
-var JoinClause     = require('./query/joinclause')
 var SchemaCompiler = require('./schema/compiler')
 var TableCompiler  = require('./schema/tablecompiler')
 var ColumnCompiler = require('./schema/columncompiler')
@@ -40,8 +39,6 @@ assign(Client_MSSQL.prototype, {
   Formatter: Formatter,
   
   QueryCompiler: QueryCompiler,
-  
-  JoinClause: JoinClause,
   
   SchemaCompiler: SchemaCompiler,
 
