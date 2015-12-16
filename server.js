@@ -2,10 +2,13 @@ var connect = require('connect');
 var serveStatic = require('serve-static');
 connect().use(serveStatic(__dirname)).listen(3030);
 
-var knex = require('lib/client')({
-  dialect: 'sqlite3',
+var knex = require('./lib/index')({
+  dialect: 'mysql',
   connection: {
-    filename: './data.db'
+    host     : '127.0.0.1',
+    user     : 'root',
+    password : '',
+    database : 'db_intranet'
   }
 });
 
