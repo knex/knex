@@ -7,7 +7,6 @@ var Client_Oracle   = require('../oracle');
 var ColumnCompiler  = require('./schema/columncompiler');
 var ReturningHelper = require('../oracle/utils').ReturningHelper;
 var Promise         = require('../../promise');
-var helpers         = require('../../helpers');
 var stream          = require('stream');
 var async           = require('async');
 
