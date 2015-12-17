@@ -2074,11 +2074,6 @@ knex.schema.createTable('accounts', function() {
       Sometimes you may need to use a raw expression in a query. Raw query object may be injected pretty much
       anywhere you want, and using proper bindings can ensure your values are escaped properly, preventing SQL-injection attacks.
     </p>
-    <p>
-      With PostgreSQL <tt>?</tt> replacements are converted to <tt>$1..$n</tt> variables in prepared statements.
-      To prevent replacement one can use escape sequence <tt>\\?</tt> to use JSON operators or in string literals
-      e.g. <tt>knex.raw("(json_column->'json_field')::jsonb \\?& array['keyOne', 'keyWithQuestion\\?']")</tt>.
-    </p>
 
     <h3 id="Raw-Bindings">Raw Parameter Binding:</h3>
 
@@ -2108,6 +2103,14 @@ knex('users')
     thisGuy: 'Bob',
     otherGuy: 'Jay'
   }))
+</pre>
+
+    <p>
+      To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
+    </p>
+
+<pre class="display">
+knex.select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey'])
 </pre>
 
     <h3 id="Raw-Expressions">Raw Expressions:</h3>
@@ -2623,7 +2626,7 @@ $ knex seed:run
 <pre>
 <code class="js">exports.up = function(knex, Promise) { /* ... */ };
 exports.down = function(knex, Promise) { /* ... */ };
-exports.config {
+exports.config = {
   transaction: false
 };
 </code>

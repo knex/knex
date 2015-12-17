@@ -34,7 +34,7 @@ assign(Client_MySQL.prototype, {
   },
 
   QueryCompiler: QueryCompiler,
-  
+
   SchemaCompiler: SchemaCompiler,
 
   TableCompiler: TableCompiler,
@@ -119,7 +119,7 @@ assign(Client_MySQL.prototype, {
       default:
         return response
     }
-  }  
+  }
 
 })
 

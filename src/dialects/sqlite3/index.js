@@ -19,7 +19,7 @@ var SQLite3_DDL    = require('./schema/ddl')
 
 function Client_SQLite3(config) {
   Client.call(this, config)
-  if (!config.useNullAsDefault) {
+  if (_.isUndefined(config.useNullAsDefault)) {
     helpers.warn('sqlite does not support inserting default values. Set the `useNullAsDefault` flag to hide this warning. (see docs http://knexjs.org/#Builder-insert).');
   }
 }
@@ -33,7 +33,7 @@ assign(Client_SQLite3.prototype, {
 
   _driver: function() {
     return require('sqlite3')
-  },  
+  },
 
   SchemaCompiler: SchemaCompiler,
 
@@ -150,7 +150,7 @@ assign(Client_SQLite3.prototype, {
       min: 1,
       max: 1
     })
-  } 
+  }
 
 })
 

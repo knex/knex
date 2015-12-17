@@ -76,7 +76,7 @@ assign(Client_WebSQL.prototype, {
         stream.end()
       })
     })
-  },  
+  },
 
   processResponse: function(obj, runner) {
     var resp = obj.response;
@@ -100,7 +100,7 @@ assign(Client_WebSQL.prototype, {
       default:
         return resp;
     }
-  }  
+  }
 
 })
 
