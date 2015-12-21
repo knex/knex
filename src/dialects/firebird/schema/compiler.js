@@ -11,7 +11,20 @@ function SchemaCompiler_Firebird(client, builder) {
 inherits(SchemaCompiler_Firebird, SchemaCompiler)
 
 assign(SchemaCompiler_Firebird.prototype, {
-
+   
+  
+  dropTablePrefix: 'DROP TABLE ',
+  dropTableIfExists: function(tableName) {
+    var queryDrop = 'execute block ' +
+                    'as ' +
+                    'begin ' +
+                    '    if (exists(select 1 from RDB$RELATION_FIELDS where RDB$SYSTEM_FLAG=0 AND RDB$RELATION_NAME = UPPER(\'' + tableName + '\'))) then ' +
+                    '        execute statement \'drop table ' + tableName + '\' ' +
+                    '        WITH AUTONOMOUS TRANSACTION; ' + 
+                    'end; ';
+     
+    this.pushQuery(queryDrop);
+  },
   // Rename a table on the schema.
   renameTable: function(tableName, to) {
     this.pushQuery('rename table ' + this.formatter.wrap(tableName) + ' to ' + this.formatter.wrap(to));

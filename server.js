@@ -8,7 +8,7 @@ var knex = require('./lib/index')({
     host     : '127.0.0.1',
     user     : 'SYSDBA',
     password : 'masterkey',
-    database : 'D:/DATA/sanjose/SIE.FDB'
+    database : 'D:/data/lnag/SIE.FDB'
   }
 });
 /**
@@ -21,7 +21,10 @@ options.password = 'masterkey';
  */
 
 // Create a table
-knex.schema.createTable('users', function(table) {
+knex.schema
+.dropTableIfExists('accounts')
+.dropTableIfExists('users')
+.createTable('users', function(table) {
   table.increments('id');
   table.string('user_name');
 })
@@ -30,7 +33,7 @@ knex.schema.createTable('users', function(table) {
 .createTable('accounts', function(table) {
   table.increments('id');
   table.string('account_name');
-  table.integer('user_id').unsigned().references('users.id');
+  table.integer('user_id').references('users.id');
 })
 
 // Then query the table...

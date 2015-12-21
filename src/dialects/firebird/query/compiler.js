@@ -1,6 +1,7 @@
 
 // Firebird Query Compiler
 // ------
+var _             = require('lodash');
 var inherits      = require('inherits')
 var QueryCompiler = require('../../../query/compiler')
 var assign        = require('lodash/object/assign');
@@ -14,6 +15,86 @@ assign(QueryCompiler_Firebird.prototype, {
 
   _emptyInsertValue: '() values ()',
 
+  insert: function() {
+    var insertValues = this.single.insert || [];
+   
+    var sql = 'insert into ' + this.tableName + ' ';
+    var returning = this.single.returning;
+    var returningSql = (returning ? this._returning('insert', returning) + ' ' : '')
+    
+    if (Array.isArray(insertValues)) {
+      if (insertValues.length === 0) {
+        return ''
+      }
+    } else if (typeof insertValues === 'object' && _.isEmpty(insertValues)) {
+      return {
+        sql: sql + returningSql + this._emptyInsertValue,
+        returning: returning
+      };
+    }
+    
+    var insertData = this._prepInsert(insertValues);
+   
+    if (typeof insertData === 'string') {
+      sql += insertData;
+    } else  {
+      if (insertData.columns.length) {
+        sql += '(' + this.formatter.columnize(insertData.columns) 
+        sql += ') ' + returningSql + 'values ('
+        var i = -1
+        
+        console.log('insertData ------');
+        console.log(insertData.values.length);
+        console.log(insertData);
+        
+        while (++i < insertData.values.length) {
+          if (i !== 0) sql += '), ('
+          sql += this.formatter.parameterize(insertData.values[i])
+          
+        console.log('CONCATENATION');
+        console.log(insertData.values[i]);
+        console.log(this.formatter.parameterize(insertData.values[i]));
+        console.log(sql);
+            
+        }
+        sql += ')';
+      } else if (insertValues.length === 1 && insertValues[0]) {
+        sql += returningSql + this._emptyInsertValue
+      } else {
+        sql = ''
+      }
+    }
+    console.log(sql);
+    console.log(returning);
+    return {
+      sql: sql,
+      returning: returning
+    };
+  },
+  
+  
+  _returning: function(method, value) {
+      console.log('returning ----');
+      console.log(method);
+      
+    switch (method) {
+      case 'update':
+      case 'insert': return value ? 'output ' + this.columnizeWithPrefix('inserted.', value) : '';
+      case 'del': return value ? 'output ' + this.columnizeWithPrefix('deleted.', value) : '';
+      case 'rowcount': return value ? ';select @@rowcount' : '';
+    }
+  },
+  
+  columnizeWithPrefix: function(prefix, target) {
+    var columns = typeof target === 'string' ? [target] : target
+    var str = '', i = -1;
+    while (++i < columns.length) {
+      if (i > 0) str += ', '
+      str += prefix + this.wrap(columns[i])
+    }
+    return str
+  },
+  
   // Update method, including joins, wheres, order & limits.
   update: function() {
     var join    = this.join();
@@ -54,7 +135,6 @@ assign(QueryCompiler_Firebird.prototype, {
     var noLimit = !this.single.limit && this.single.limit !== 0;
     if (noLimit && !this.single.offset) return '';
 
-    // Workaround for offset only, see http://stackoverflow.com/questions/255517/mysql-offset-infinite-rows
     return 'limit ' + ((this.single.offset && noLimit) ? '18446744073709551615' : this.formatter.parameter(this.single.limit));
   }
 

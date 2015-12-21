@@ -18,33 +18,15 @@ inherits(TableCompiler_Firebird, TableCompiler);
 assign(TableCompiler_Firebird.prototype, {
 
   createQuery: function(columns, ifNot) {
-    var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
-    var client = this.client, conn = {}, 
-      sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
-
-    // Check if the connection settings are set.
-    if (client.connectionSettings) {
-      conn = client.connectionSettings;
-    }
-
-    var charset   = this.single.charset || conn.charset || '';
-    var collation = this.single.collate || conn.collate || '';
-    var engine    = this.single.engine  || '';
-
-    // var conn = builder.client.connectionSettings;
-    if (charset)   sql += ' default character set ' + charset;
-    if (collation) sql += ' collate ' + collation;
-    if (engine)    sql += ' engine = ' + engine;
-
-    if (this.single.comment) {
-      var comment = (this.single.comment || '');
-      if (comment.length > 60) helpers.warn('The max length for a table comment is 60 characters');
-      sql += " comment = '" + comment + "'";
-    }
-
-    this.pushQuery(sql);
+    var sql = 'create table ' + this.tableName() + ' (' + columns.sql.join(', ') + ')';
+    this.pushQuery({
+      // catch "name is already used by an existing object" for workaround for "if not exists"
+      sql: ifNot ? utils.wrapSqlWithCatch(sql, -955) : sql,
+      bindings: columns.bindings
+    });
+    if (this.single.comment) this.comment(this.single.comment);
   },
-
+  
   addColumnsPrefix: 'add ',
   
   dropColumnPrefix: 'drop ',

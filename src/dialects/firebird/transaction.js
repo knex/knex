@@ -18,7 +18,7 @@ assign(Transaction_Firebird.prototype, {
       .catch(function(err) {
         return err.errno === 1305
       }, function() {
-        helpers.warn('Transaction was implicitly committed, do not mix transactions and DDL with MySQL (#805)')
+        helpers.warn('Transaction was implicitly committed, do not mix transactions and DDL with Firebird (#805)')
       })
       .catch(function(err) {
         status = 2

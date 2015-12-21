@@ -43,21 +43,27 @@ assign(Client_Firebird.prototype, {
 
   Transaction: Transaction,
 
+
   wrapIdentifier: function(value) {
-    return (value !== '*' ? '`' + value.replace(/`/g, '``') + '`' : '*')
+    if (value === '*') return value;
+    var matched = value.match(/(.*?)(\[[0-9]\])/);
+    if (matched) return this.wrapIdentifier(matched[1]) + matched[2];
+    return '' + value.replace(/"/g, '""') + '';
   },
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection: function() {
     var client     = this
-    var connection = this.driver.createConnection(this.connectionSettings)
+    var driver     =  client.driver
+    var connectionSettings =  client.connectionSettings
+    
     return new Promise(function(resolver, rejecter) {
-      connection.connect(function(err) {
+     var connection = driver.attach(connectionSettings, function(err, db) {
         if (err) return rejecter(err)
-        connection.on('error', connectionErrorHandler.bind(null, client, connection))
-        connection.on('end', connectionErrorHandler.bind(null, client, connection))
-        resolver(connection)
+        db.on('error', connectionErrorHandler.bind(null, client, db))
+        db.on('end', connectionErrorHandler.bind(null, client, db))
+        resolver(db)
       });
     });
   },
@@ -65,10 +71,10 @@ assign(Client_Firebird.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection: function(connection, cb) {
-    connection.end(cb);
+    connection.detach(cb);
   },
 
-  // Grab a connection, run the query via the MySQL streaming interface,
+  // Grab a connection, run the query via the Firebird streaming interface,
   // and pass that through to the stream we've sent back to the client.
   _stream: function(connection, obj, stream, options) {
     options = options || {}

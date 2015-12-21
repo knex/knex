@@ -17,9 +17,9 @@ inherits(ColumnCompiler_Firebird, ColumnCompiler);
 
 assign(ColumnCompiler_Firebird.prototype, {
 
-  increments: 'int unsigned not null auto_increment primary key',
+  increments: 'int not null primary key',
 
-  bigincrements: 'bigint unsigned not null auto_increment primary key',
+  //bigincrements: 'bigint unsigned not null auto_increment primary key',
 
   bigint: 'bigint',
 
@@ -92,7 +92,7 @@ assign(ColumnCompiler_Firebird.prototype, {
   },
   
   unsigned: function() {
-    return 'unsigned'
+    return ''
   },
   
   first: function() {
@@ -105,7 +105,7 @@ assign(ColumnCompiler_Firebird.prototype, {
   
   comment: function(comment) {
     if (comment && comment.length > 255) {
-      helpers.warn('Your comment is longer than the max comment length for MySQL')
+      helpers.warn('Your comment is longer than the max comment length for Firebird')
     }
     return comment && "comment '" + comment + "'"
   }
