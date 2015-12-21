@@ -3,14 +3,22 @@ var serveStatic = require('serve-static');
 connect().use(serveStatic(__dirname)).listen(3030);
 
 var knex = require('./lib/index')({
-  dialect: 'mysql',
+  dialect: 'firebird',
   connection: {
     host     : '127.0.0.1',
-    user     : 'root',
-    password : '',
-    database : 'db_intranet'
+    user     : 'SYSDBA',
+    password : 'masterkey',
+    database : 'D:/DATA/sanjose/SIE.FDB'
   }
 });
+/**
+ * 
+options.host = '127.0.0.1';
+options.port = 3050;
+options.database = 'database.fdb';
+options.user = 'SYSDBA';
+options.password = 'masterkey';
+ */
 
 // Create a table
 knex.schema.createTable('users', function(table) {
