@@ -2519,12 +2519,15 @@ $ knex migrate:latest
 </pre>
 
     <p>
-      You can also pass the <tt>--env</tt> flag to select an alternative
-      environment:
+      You can also pass the <tt>--env</tt> flag or set <tt>NODE_ENV</tt> to select an alternative environment:
     </p>
 
 <pre>
 $ knex migrate:latest --env production
+
+# or
+
+$ NODE_ENV=production knex migrate:latest
 </pre>
 
     <p>
