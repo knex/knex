@@ -4,7 +4,7 @@
 var _             = require('lodash');
 var inherits      = require('inherits')
 var QueryCompiler = require('../../../query/compiler')
-var assign        = require('lodash/object/assign');
+var assign        = require('lodash/object/assign')
 
 function QueryCompiler_Firebird(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -21,7 +21,7 @@ assign(QueryCompiler_Firebird.prototype, {
     var sql = 'insert into ' + this.tableName + ' ';
     var returning = this.single.returning;
     var returningSql = (returning ? this._returning('insert', returning) + ' ' : '')
-    
+
     if (Array.isArray(insertValues)) {
       if (insertValues.length === 0) {
         return ''
@@ -53,7 +53,6 @@ assign(QueryCompiler_Firebird.prototype, {
           
         console.log('CONCATENATION');
         console.log(insertData.values[i]);
-        console.log(this.formatter.parameterize(insertData.values[i]));
         console.log(sql);
             
         }
@@ -74,12 +73,9 @@ assign(QueryCompiler_Firebird.prototype, {
   
   
   _returning: function(method, value) {
-      console.log('returning ----');
-      console.log(method);
-      
     switch (method) {
       case 'update':
-      case 'insert': return value ? 'output ' + this.columnizeWithPrefix('inserted.', value) : '';
+      case 'insert': return 'ROWID';
       case 'del': return value ? 'output ' + this.columnizeWithPrefix('deleted.', value) : '';
       case 'rowcount': return value ? ';select @@rowcount' : '';
     }

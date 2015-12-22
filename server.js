@@ -38,7 +38,7 @@ knex.schema
 
 // Then query the table...
 .then(function() {
-  return knex.insert({user_name: 'Tim'}).into('users');
+  return knex.insert({user_name: 'Tim', id: 1}).into('users');
 })
 
 // ...and using the insert id, insert into the other table.

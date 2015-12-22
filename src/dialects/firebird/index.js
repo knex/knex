@@ -11,6 +11,7 @@ var helpers        = require('../../helpers')
 var Transaction    = require('./transaction')
 var QueryCompiler  = require('./query/compiler')
 var SchemaCompiler = require('./schema/compiler')
+var Formatter      = require('./formatter')
 var TableCompiler  = require('./schema/tablecompiler')
 var ColumnCompiler = require('./schema/columncompiler')
 var pluck          = require('lodash/collection/pluck')
@@ -43,6 +44,7 @@ assign(Client_Firebird.prototype, {
 
   Transaction: Transaction,
 
+  Formatter: Formatter,
 
   wrapIdentifier: function(value) {
     if (value === '*') return value;
@@ -71,7 +73,13 @@ assign(Client_Firebird.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection: function(connection, cb) {
-    connection.detach(cb);
+    var client     = this
+    var driver     =  client.driver
+    var connectionSettings =  client.connectionSettings
+    
+    connection.attach(connectionSettings, function(err, cb) {
+        cb.detach();
+    });
   },
 
   // Grab a connection, run the query via the Firebird streaming interface,
