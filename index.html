@@ -2519,12 +2519,23 @@ $ knex migrate:latest
 </pre>
 
     <p>
-      You can also pass the <tt>--env</tt> flag to select an alternative
-      environment:
+      You can also pass the <tt>--env</tt> flag or set <tt>NODE_ENV</tt> to select an alternative environment:
     </p>
 
 <pre>
 $ knex migrate:latest --env production
+
+# or
+
+$ NODE_ENV=production knex migrate:latest
+</pre>
+
+    <p>
+      To rollback the last batch of migrations:
+    </p>
+
+<pre>
+$ knex migrate:rollback
 </pre>
 
     <h2 id="Seeds">Seed files</h2>
@@ -2626,7 +2637,7 @@ $ knex seed:run
 <pre>
 <code class="js">exports.up = function(knex, Promise) { /* ... */ };
 exports.down = function(knex, Promise) { /* ... */ };
-exports.config {
+exports.config = {
   transaction: false
 };
 </code>
