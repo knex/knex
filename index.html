@@ -1875,6 +1875,12 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       <br />
       Adds a <tt>created_at</tt> and <tt>updated_at</tt> column on the database,
       setting these each to <a href="#Schema-dateTime">dateTime</a> types.
+      <br />
+      When true is passed as the first argument a <tt>timestamp</tt> type is used.
+      <br />
+      Both colums default to being not null and the current timestamp when true
+      is passed as the second argument.
+      <br />
     </p>
 
     <p id="Schema-binary">
