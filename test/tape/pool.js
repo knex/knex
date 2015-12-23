@@ -4,26 +4,45 @@ var test   = require('tape')
 var Client = require('../../lib/dialects/sqlite3');
 var Pool2  = require('pool2')
 
-test('#822, pool config, max: 0 should skip pool construction', function(t) {
-  
-  var client = new Client({connection: {filename: ':memory:'}, pool: {max: 0}})
+test('instantiating the client should not create pool implicitly', function(t) {
 
-  t.equal(client.pool, undefined)
+  var client = new Client({connection: {filename: ':memory:'}, pool: {max: 1}})
 
-  client.destroy()
+  t.equal(client.pool, undefined, 'client.pool should be undefined')
 
-  t.end()
+  client.destroy(function(err) {
+    t.end(err)
+  })
 
 })
 
-test('#823, should not skip pool construction pool config is not defined', function(t) {
-  
-  var client = new Client({connection: {filename: ':memory:'}})
+test('pool may be created explicitly, after instantiating the client', function(t) {
+  var client = new Client({connection: {filename: ':memory:'}, pool: {max: 1}})
+  client.initializePool(client.config, function(err) {
+    if (err) {
+      t.end(err)
+    }
+    t.ok(client.pool instanceof Pool2, 'client.pool should be an instance of Pool2')
+    client.destroy(function(err) {
+      t.end(err)
+    })
+  })
+})
 
-  t.ok(client.pool instanceof Pool2)
-
-  client.destroy()
-
-  t.end()
-
+test('pool will be created implicitly, if necessary, upon attempting to acquire the first connection', function(t) {
+  var client = new Client({connection: {filename: ':memory:'}, pool: {max: 1}})
+  client.acquireConnection(function(err, connection) {
+    if (err) {
+      t.end(err)
+    }
+    t.ok(client.pool instanceof Pool2, 'client.pool should be an instance of Pool2')
+    client.releaseConnection(connection, function(err) {
+      if (err) {
+        t.end(err)
+      }
+      client.destroy(function(err) {
+        t.end(err)
+      })
+    })
+  })
 })

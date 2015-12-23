@@ -36,9 +36,6 @@ function Client(config = {}) {
   this.connectionSettings = cloneDeep(config.connection || {})
   if (this.driverName && config.connection) {
     this.initializeDriver()
-    if (!config.pool || (config.pool && config.pool.max !== 0)) {
-      this.initializePool(config)
-    }
   }
   this.valueForUndefined = this.raw('DEFAULT');
   if (config.useNullAsDefault) {
@@ -161,15 +158,30 @@ assign(Client.prototype, {
 
   Pool: Pool2,
 
-  initializePool: function(config) {
-    if (this.pool) this.destroy()
-    this.pool = new this.Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
-    this.pool.on('error', function(err) {
-      helpers.error('Pool2 - ' + err)
+  initializePool: function(config, callback) {
+    var client = this
+    var promise = Promise.try(function() {
+      return Promise.try(function() {
+        if (client.pool) {
+          return client.destroy()
+        }
+      })
+      .then(function() {
+        client.pool = new client.Pool(assign(client.poolDefaults(config.pool || {}), config.pool))
+        client.pool.on('error', function(err) {
+          helpers.error('Pool2 - ' + err)
+        })
+        client.pool.on('warn', function(msg) {
+          helpers.warn('Pool2 - ' + msg)
+        })
+      })
     })
-    this.pool.on('warn', function(msg) {
-      helpers.warn('Pool2 - ' + msg)
-    })
+    // Allow either a callback or promise interface for initialization.
+    if (typeof callback === 'function') {
+      promise.nodeify(callback)
+    } else {
+      return promise
+    }
   },
 
   poolDefaults: function(poolConfig) {
@@ -206,39 +218,59 @@ assign(Client.prototype, {
   },
 
   // Acquire a connection from the pool.
-  acquireConnection: function() {
+  acquireConnection: function(callback) {
     var client = this
-    return new Promise(function(resolver, rejecter) {
+    var promise = Promise.try(function() {
       if (!client.pool) {
-        return rejecter(new Error('There is no pool defined on the current client'))
+        if (!client.config.pool || (client.config.pool && client.config.pool.max !== 0)) {
+          return client.initializePool(client.config)
+        }
+        throw new Error('There is no pool defined on the current client')
       }
-      client.pool.acquire(function(err, connection) {
-        if (err) return rejecter(err)
+    })
+    .then(function() {
+      return Promise.fromNode(client.pool.acquire.bind(client.pool))
+      .then(function(connection) {
         debug('acquiring connection from pool: %s', connection.__knexUid)
-        resolver(connection)
+        return connection
       })
     })
+    // Allow either a callback or promise interface for initialization.
+    if (typeof callback === 'function') {
+      promise.nodeify(callback)
+    } else {
+      return promise
+    }
   },
 
   // Releases a connection back to the connection pool,
   // returning a promise resolved when the connection is released.
-  releaseConnection: function(connection) {
+  // A callback may also be used instead of a promise.
+  releaseConnection: function(connection, callback) {
     var pool = this.pool
-    return new Promise(function(resolver) {
+    var promise = new Promise(function(resolver) {
       debug('releasing connection to pool: %s', connection.__knexUid)
       pool.release(connection)
       resolver()
     })
+    // Allow either a callback or promise interface for releasing connections.
+    if (typeof callback === 'function') {
+      promise.nodeify(callback)
+    } else {
+      return promise
+    }
   },
 
   // Destroy the current connection pool for the client.
   destroy: function(callback) {
     var client = this
-    var promise = new Promise(function(resolver) {
-      if (!client.pool) return resolver()
-      client.pool.end(function() {
+    var promise = Promise.try(function() {
+      if (!client.pool) {
+        return
+      }
+      return Promise.fromNode(client.pool.end.bind(client.pool))
+      .then(function() {
         client.pool = undefined
-        resolver()
       })
     })
     // Allow either a callback or promise interface for destruction.

@@ -38,12 +38,14 @@ module.exports = function makeKnex(client) {
       return client.transaction(container, config)
     },
 
-    // Typically never needed, initializes the pool for a knex client.
-    initialize: function(config) {
-      return client.initialize(config)
+    // Initializes the pool for a knex client. Not normally required. Returns a
+    // promise, and may optionally be called with a callback.
+    initialize: function(config, callback) {
+      return client.initializePool(config, callback)
     },
 
-    // Convenience method for tearing down the pool.
+    // Convenience method for tearing down the pool. Returns a promise, and may
+    // optionally be called with a callback.
     destroy: function(callback) {
       return client.destroy(callback)
     }
