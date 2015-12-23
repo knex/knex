@@ -73,13 +73,7 @@ assign(Client_Firebird.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection: function(connection, cb) {
-    var client     = this
-    var driver     =  client.driver
-    var connectionSettings =  client.connectionSettings
-    
-    connection.attach(connectionSettings, function(err, cb) {
         cb.detach();
-    });
   },
 
   // Grab a connection, run the query via the Firebird streaming interface,
@@ -100,10 +94,10 @@ assign(Client_Firebird.prototype, {
     return new Promise(function(resolver, rejecter) {
       var sql = obj.sql
       if (!sql) return resolver()
-      if (obj.options) sql = assign({sql: sql}, obj.options)
+      
       connection.query(sql, obj.bindings, function(err, rows, fields) {
-        if (err) return rejecter(err)
-        obj.response = [rows, fields]
+        if (err) return rejecter(err)        
+        obj.response = obj.bindings
         resolver(obj)
       })
     })
@@ -125,7 +119,7 @@ assign(Client_Firebird.prototype, {
         if (method === 'pluck') return pluck(resp, obj.pluck)
         return method === 'first' ? resp[0] : resp
       case 'insert':
-        return [rows.insertId]
+        return response
       case 'del':
       case 'update':
       case 'counter':
