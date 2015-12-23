@@ -15,7 +15,7 @@ assign(Firebird_Formatter.prototype, {
   },
 
   parameter: function(value, notSetValue) {
-    return Formatter.prototype.parameter.call(this, this.client.driver.escape(value), notSetValue)
+    return Formatter.prototype.parameter.call(this, value, notSetValue)
   }
 
 })
