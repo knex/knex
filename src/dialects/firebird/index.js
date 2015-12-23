@@ -76,16 +76,6 @@ assign(Client_Firebird.prototype, {
         cb.detach();
   },
 
-  // Grab a connection, run the query via the Firebird streaming interface,
-  // and pass that through to the stream we've sent back to the client.
-  _stream: function(connection, obj, stream, options) {
-    options = options || {}
-    return new Promise(function(resolver, rejecter) {
-      stream.on('error', rejecter)
-      stream.on('end', resolver)
-      connection.query(obj.sql, obj.bindings).stream(options).pipe(stream)
-    })
-  },
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
@@ -96,8 +86,8 @@ assign(Client_Firebird.prototype, {
       if (!sql) return resolver()
       
       connection.query(sql, obj.bindings, function(err, rows, fields) {
-        if (err) return rejecter(err)        
-        obj.response = obj.bindings
+        if (err) return rejecter(err)
+        obj.response = [rows, fields, obj.bindings]
         resolver(obj)
       })
     })
@@ -110,6 +100,7 @@ assign(Client_Firebird.prototype, {
     var method   = obj.method
     var rows     = response[0]
     var fields   = response[1]
+    var bindings   = response[2]
     if (obj.output) return obj.output.call(runner, rows, fields)
     switch (method) {
       case 'select':
@@ -119,13 +110,13 @@ assign(Client_Firebird.prototype, {
         if (method === 'pluck') return pluck(resp, obj.pluck)
         return method === 'first' ? resp[0] : resp
       case 'insert':
-        return response
+        return bindings
       case 'del':
       case 'update':
       case 'counter':
         return rows.affectedRows
       default:
-        return response
+        return bindings
     }
   }
 

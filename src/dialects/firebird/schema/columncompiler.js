@@ -108,7 +108,11 @@ assign(ColumnCompiler_Firebird.prototype, {
       helpers.warn('Your comment is longer than the max comment length for Firebird')
     }
     return comment && "comment '" + comment + "'"
-  }
+  },
+  
+  varchar: function(length) {
+    return 'varchar(' + this._num(length, 255) + ')  CHARACTER SET UTF8';
+  },
 
 })
 
