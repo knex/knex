@@ -2,7 +2,6 @@
 // Firebird Table Builder & Compiler
 // -------
 var inherits      = require('inherits');
-var utils         = require('../utils');
 var TableCompiler = require('../../../schema/tablecompiler');
 var Promise       = require('../../../promise');
 var assign        = require('lodash/object/assign');
@@ -20,8 +19,7 @@ assign(TableCompiler_Firebird.prototype, {
   createQuery: function(columns, ifNot) {
     var sql = 'create table ' + this.tableName() + ' (' + columns.sql.join(', ') + ')';
     this.pushQuery({
-      // catch "name is already used by an existing object" for workaround for "if not exists"
-      sql: ifNot ? utils.wrapSqlWithCatch(sql, -955) : sql,
+      sql: sql,
       bindings: columns.bindings
     });
     if (this.single.comment) this.comment(this.single.comment);
