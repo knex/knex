@@ -16,7 +16,7 @@ inherits(TableCompiler_Firebird, TableCompiler);
 
 assign(TableCompiler_Firebird.prototype, {
 
-  createQuery: function(columns, ifNot) {
+  createQuery: function(columns) {
     var sql = 'create table ' + this.tableName() + ' (' + columns.sql.join(', ') + ')';
     this.pushQuery({
       sql: sql,
