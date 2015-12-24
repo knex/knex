@@ -34,6 +34,7 @@
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
     "node-uuid": "~1.4.0",
+    "node-firebird": "~0.7.2",
     "pg": "^4.3.0",
     "pg-query-stream": "^0.7.0",
     "rimraf": "2.x",
