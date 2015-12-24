@@ -43,8 +43,6 @@ assign(Client_SQLite3.prototype, {
 
   TableCompiler: TableCompiler,
 
-  SqlString: require('./query/string'),
-
   ddl: function(compiler, pragma, connection) {
     return new SQLite3_DDL(this, compiler, pragma, connection)
   },
