@@ -1,7 +1,6 @@
 
 // Firebird Query Compiler
 // ------
-var _             = require('lodash');
 var inherits      = require('inherits')
 var QueryCompiler = require('../../../query/compiler')
 var assign        = require('lodash/object/assign')

@@ -61,7 +61,7 @@ assign(Client_Firebird.prototype, {
     var connectionSettings =  client.connectionSettings
     
     return new Promise(function(resolver, rejecter) {
-     var connection = driver.attach(connectionSettings, function(err, db) {
+    driver.attach(connectionSettings, function(err, db) {
         if (err) return rejecter(err)
         db.on('error', connectionErrorHandler.bind(null, client, db))
         db.on('end', connectionErrorHandler.bind(null, client, db))

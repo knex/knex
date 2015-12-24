@@ -2,8 +2,8 @@
 // Firebird Table Builder & Compiler
 // -------
 var inherits      = require('inherits');
+var utils         = require('../utils');
 var TableCompiler = require('../../../schema/tablecompiler');
-var helpers       = require('../../../helpers');
 var Promise       = require('../../../promise');
 var assign        = require('lodash/object/assign');
 
