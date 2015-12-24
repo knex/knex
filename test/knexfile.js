@@ -129,7 +129,20 @@ var testConfigs = {
     pool: pool,
     migrations: migrations,
     seeds: seeds
-  }
+  },
+  
+  firebird: {
+    dialect: 'firebird',
+    connection: testConfig.firebird || {
+      host     : '127.0.0.1',
+      user     : 'SYSDBA',
+      password : 'masterkey',
+      database : __dirname + '/DATA.FDB'
+    },
+    pool: pool,
+    migrations: migrations,
+    seeds: seeds
+  },
 };
 
 // export only copy the specified dialects
