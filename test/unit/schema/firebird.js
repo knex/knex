@@ -42,7 +42,7 @@ describe("Firebird SchemaBuilder", function() {
     tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal("execute block as begin     if (exists(select 1 from RDB$RELATION_FIELDS where RDB$SYSTEM_FLAG=0 AND RDB$RELATION_NAME = UPPER('users'))) then         execute statement 'drop table users'         WITH AUTONOMOUS TRANSACTION; end;");
+    expect(tableSql[0].sql).to.equal("execute block as begin     if (exists(select 1 from RDB$RELATION_FIELDS where RDB$SYSTEM_FLAG=0 AND RDB$RELATION_NAME = UPPER(\'users\'))) then         execute statement \'drop table users\'         WITH AUTONOMOUS TRANSACTION; end;");
   });
 
   it('test drop column', function() {
@@ -197,3 +197,5 @@ describe("Firebird SchemaBuilder", function() {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('create table person (user_id int not null, account_id int not null)');
   });
+  
+});
