@@ -8,7 +8,7 @@ var EventEmitter = require('events').EventEmitter
 function Transaction_WebSQL(client, container) {
   helpers.warn('WebSQL transactions will run queries, but do not commit or rollback')
   var trx = this
-  this._promise = Promise.try(function() {
+  this._promise0 = Promise.try(function() {
     container(makeKnex(makeClient(trx, client)))
   })
 }
@@ -41,7 +41,7 @@ var promiseInterface = [
 // "then" method on the current `Target`
 promiseInterface.forEach(function(method) {
   Transaction_WebSQL.prototype[method] = function() {
-    return (this._promise = this._promise[method].apply(this._promise, arguments))
+    return (this._promise0 = this._promise0[method].apply(this._promise0, arguments))
   }
 })
 
