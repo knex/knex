@@ -23,7 +23,7 @@ function Transaction(client, container, config, outerTx) {
 
   debug('%s: Starting %s transaction', txid, outerTx ? 'nested' : 'top level')
 
-  this._promise = Promise.using(this.acquireConnection(client, config, txid), (connection) => {
+  this._promise0 = Promise.using(this.acquireConnection(client, config, txid), (connection) => {
     
     var trxClient = this.trxClient = makeTxClient(this, client, connection)
     var init      = client.transacting ? this.savepoint(connection) : this.begin(connection)
@@ -80,8 +80,12 @@ function Transaction(client, container, config, outerTx) {
     }
 
     // Push the current promise onto the queue of promises.
-    outerTx._childQueue.push(this._promise)
+    outerTx._childQueue.push(this._promise0)
   }
+
+  this._then = function _then() {
+    return this._promise0._then.apply(this._promise0, arguments);
+  };
 
 }
 inherits(Transaction, EventEmitter)
@@ -260,7 +264,7 @@ var promiseInterface = [
 // "then" method on the current `Target`
 promiseInterface.forEach(function(method) {
   Transaction.prototype[method] = function() {
-    return (this._promise = this._promise[method].apply(this._promise, arguments))
+    return (this._promise0 = this._promise0[method].apply(this._promise0, arguments))
   }
 })
 

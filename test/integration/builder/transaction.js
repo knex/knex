@@ -277,6 +277,24 @@ module.exports = function(knex) {
 
     });
 
+    it('#1052 - transaction promise mutating', function() {
+        var transactionReturning = knex.transaction(function(trx) {
+        return trx.insert({
+            first_name: 'foo',
+            last_name: 'baz',
+            email:'fbaz@example.com',
+            logins: 1,
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            created_at: new Date(),
+            updated_at: new Date()
+        }).into('accounts');
+        });
+        return Promise.all([transactionReturning, transactionReturning])
+        .spread(function (ret1, ret2) {
+            expect(ret1).to.equal(ret2);
+        });
+    });
+
   });
 
 };
