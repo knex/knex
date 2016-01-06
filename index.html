@@ -243,6 +243,8 @@
         <li>– <a href="#Migrations-CLI">Migrations</a></li>
         <li>– <a href="#Seeds-CLI">Seed files</a></li>
         <li>– <a href="#knexfile">knexfile.js</a></li>
+      <li><a href="#Migrations-files"><b>Migration files</b></li>
+        <li>- <a href="#Migrations-files"><b>files</b></li>
       <li><a href="#Migrations-API"><b>Migration API</b></li>
         <li>– <a href="#Migrations-make">make</a></li>
         <li>– <a href="#Migrations-latest">latest</a></li>
@@ -2619,6 +2621,36 @@ $ knex seed:run
 };
 </code>
 </pre>
+
+    <h2 id="Migrations-files">Migration files</h2>
+
+    <p>
+      A migration file is something that exposes <tt>up</tt>, <tt>down</tt> and <tt>config</tt> functions. Each of these methods will receive the <tt>knex</tt> instance, as well as a <tt>Promise</tt> implementation that you can use if needed. From these methods, return a Promise.
+    </p>
+    
+    <p>
+      Below is an example migration that uses <a href='#Schema-createTable'>createTable</a> to create your database tables.
+    </p>
+    
+<pre>
+<code class="js">exports.up = function(knex, Promise) {
+  return knex.schema
+    .createTable('snapshots', function(table) {
+      table.increments();
+      table.timestamps();
+      table.text('data');
+      table.string('slug');
+    })
+};
+
+exports.down = function(knex, Promise) {
+  return knex.schema
+    .dropTable('snapshots');
+};
+</code>
+</pre>
+
+
 
     <h3 id="Migrations-API">Migration API</h3>
 
