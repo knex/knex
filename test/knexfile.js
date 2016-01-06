@@ -47,7 +47,7 @@ var seeds = {
 };
 
 var testConfigs = {
-  
+
   maria: {
     dialect: 'maria',
     connection: testConfig.maria || {
@@ -112,6 +112,18 @@ var testConfigs = {
     dialect: 'sqlite3',
     connection: {
       filename: __dirname + '/test.sqlite3'
+    },
+    pool: pool,
+    migrations: migrations,
+    seeds: seeds
+  },
+
+  postgresbdr: {
+    dialect: 'postgresbdr',
+    connection: testConfig.postgres || {
+      adapter:  "postgresql",
+      database: "knex_test",
+      user:     "postgres"
     },
     pool: pool,
     migrations: migrations,

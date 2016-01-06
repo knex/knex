@@ -6,14 +6,16 @@ var MySQL_Client   = require('../../../lib/dialects/mysql')
 var PG_Client      = require('../../../lib/dialects/postgres')
 var Oracle_Client  = require('../../../lib/dialects/oracle')
 var SQLite3_Client = require('../../../lib/dialects/sqlite3')
+var PGBDR_Client = require('../../../lib/dialects/composite')
 var Client         = require('../../../lib/client')
 
 var clients = {
-  mysql:    new MySQL_Client({}),
-  postgres: new PG_Client({}),
-  oracle:   new Oracle_Client({}),
-  sqlite3:  new SQLite3_Client({}),
-  default:  new Client({})
+  mysql:      new MySQL_Client({}),
+  postgres:   new PG_Client({}),
+  oracle:     new Oracle_Client({}),
+  sqlite3:    new SQLite3_Client({}),
+  composite:  new PGBDR_Client({}),
+  default:    new Client({})
 }
 
 var useNullAsDefaultConfig = { useNullAsDefault: true };
@@ -22,6 +24,7 @@ var clientsWithNullAsDefault = {
   postgres: new PG_Client(useNullAsDefaultConfig),
   oracle:   new Oracle_Client(useNullAsDefaultConfig),
   sqlite3:  new SQLite3_Client(useNullAsDefaultConfig),
+  composite:  new PGBDR_Client(useNullAsDefaultConfig),
   default:  new Client(useNullAsDefaultConfig)
 }
 
@@ -29,7 +32,7 @@ function qb() {
   return clients.default.queryBuilder()
 }
 
-function raw(sql, bindings) { 
+function raw(sql, bindings) {
   return clients.default.raw(sql, bindings)
 }
 
@@ -39,7 +42,7 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
       expectedObj[key](sqlObj[key]);
     } else {
       try {
-        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);  
+        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);
       } catch (e) {
         e.stack = dialect + ': ' + e.stack
         throw e
@@ -2458,20 +2461,20 @@ describe("QueryBuilder", function() {
       }
     })
   })
-  
+
   it('has a modify method which accepts a function that can modify the query', function() {
-    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`, 
+    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`,
     // builder is bound to `this`
     var withBars = function(queryBuilder, table, fk) {
       if(!this || this !== queryBuilder) {
         throw 'Expected query builder passed as first argument and bound as `this` context';
       }
-      
+
       this
         .leftJoin('bars', table + '.' + fk, 'bars.id')
         .select('bars.*')
     };
-    
+
     testsql(qb().select('foo_id').from('foos').modify(withBars, 'foos', 'bar_id'), {
       mysql: {
         sql: 'select `foo_id`, `bars`.* from `foos` left join `bars` on `foos`.`bar_id` = `bars`.`id`'
