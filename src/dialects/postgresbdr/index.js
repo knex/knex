@@ -1,19 +1,24 @@
 
 // PostgreSQL Multi-Master BDR Client
 // -------
-var inherits     = require('inherits')
-var Client_PG    = require('../postgres')
-var assign       = require('lodash/object/assign');
-var async        = require('async');
-var Promise      = require('bluebird');
+var inherits      = require('inherits')
+var Client_PG     = require('../postgres')
+var assign        = require('lodash/object/assign');
+let BDRConnection = require('./bdr-connection');
+let Promise = require('bluebird');
 
 function Client_PGBDR(config) {
   var configs = config.connections.map(conf => {
     return {
-      connection: conf
+      connection: conf,
+      pool: {
+        max: 0
+      }
     }
   });
-  Client_PG.call(this, configs[0]);
+  Client_PG.call(this, {
+    connection: configs[0].connection
+  });
   this.clients = configs.map(config => new Client_PG(config));
 }
 inherits(Client_PGBDR, Client_PG)
@@ -22,28 +27,24 @@ assign(Client_PGBDR.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection: function() {
-    return Promise.all(this.clients.map(pgClient =>
-      pgClient.acquireRawConnection()
-    ));
+    let conn = new BDRConnection(this.clients);
+    return conn.init();
   },
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection: function(connection, cb) {
-    async.parallell(connection.map(elem =>
-      function(cb) {
-        Client_PG.prototype.destroyRawConnection(elem, cb);
-      }), cb)
+    connection.done();
   },
 
   _stream: function(connection, obj, stream, options) {
-    return Client_PG.prototype._stream.bind(this)(connection[0], obj, stream, options)
+    return connection.stream(obj, stream, options);
   },
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query: function(connection, obj) {
-    return Client_PG.prototype._query.bind(this)(connection[0], obj);
+    return connection.query(obj);
   },
 })
 
