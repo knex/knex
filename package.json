@@ -30,6 +30,7 @@
     "jshint": "^2.7.0",
     "mariasql": "^0.2.3",
     "mocha": "^2.2.4",
+    "mssql": "^2.3.2",
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
     "node-uuid": "~1.4.0",
@@ -51,7 +52,7 @@
     "test": "npm run babel && npm run jshint && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
     "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "jshint": "jshint --exclude=test/coverage/. test/. src/."
+    "jshint": "jshint test/. src/."
   },
   "bin": {
     "knex": "./lib/bin/cli.js"
@@ -67,7 +68,8 @@
     "mysql",
     "mariadb",
     "sqlite3",
-    "oracle"
+    "oracle",
+    "mssql"
   ],
   "author": {
     "name": "Tim Griesser",
@@ -79,6 +81,7 @@
     "./lib/bin/cli.js": "./lib/util/noop.js",
     "./lib/seed/index.js": "./lib/util/noop.js",
     "pool2": "./lib/util/noop.js",
+    "mssql": false,
     "mysql": false,
     "mysql2": false,
     "mariasql": false,

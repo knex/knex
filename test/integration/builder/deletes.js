@@ -35,6 +35,12 @@ module.exports = function(knex) {
             [1],
             1
           );
+          tester(
+            'mssql',
+            'delete from [accounts] where [id] = ?;select @@rowcount',
+            [1],
+            1
+          );
         });
     });
 
@@ -76,6 +82,22 @@ module.exports = function(knex) {
             'delete from "accounts" where "id" = ?',
             [2],
             1
+          );
+          tester(
+            'mssql',
+            'delete from [accounts] output deleted.* where [id] = ?',
+            [2],
+            [{
+              id: '2',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test2@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null
+            }]
           );
         });
     });

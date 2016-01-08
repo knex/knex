@@ -141,7 +141,7 @@ module.exports = function(knex) {
       t.equal(err.message, 'Rolled back')
     })
     .finally(function() {
-      t.equal(queryCount, knex.client.dialect === 'oracle' ? 1 : 3)
+      t.equal(queryCount, knex.client.dialect === 'oracle' || knex.client.dialect === 'mssql' ? 1 : 3)
     })
 
   })

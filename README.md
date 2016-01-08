@@ -21,6 +21,8 @@ For support and questions, join the #bookshelf channel on freenode IRC
 
 For an Object Relational Mapper, see: http://bookshelfjs.org
 
+To see the SQL that Knex will generate for a given query, see: [Knex Query Lab](http://michaelavila.com/knex-querylab/)
+
 ## Examples
 
 We have several examples [on the website](http://knexjs.org). Here is the first one to get you started:
