@@ -1,0 +1,48 @@
+
+// PostgreSQL Multi-Master BDR Client
+// -------
+var inherits     = require('inherits')
+var Client_PG    = require('../postgres')
+var assign       = require('lodash/object/assign');
+var async        = require('async');
+
+
+
+function Client_PGBDR(config) {
+  Client_PG.call(this, config)
+  this.rescues = [new Client_PG(config), new Client_PG(config)];
+}
+inherits(Client_PGBDR, Client_PG)
+
+assign(Client_PGBDR.prototype, {
+  // Get a raw connection, called by the `pool` whenever a new
+  // connection needs to be added to the pool.
+  acquireRawConnection: function() {
+    return Promise.all(this.rescues.map(pgClient =>
+      pgClient.acquireRawConnection()
+    ));
+  },
+
+  // Used to explicitly close a connection, called internally by the pool
+  // when a connection times out or the pool is shutdown.
+  destroyRawConnection: function(connection, cb) {
+    let self = this;
+    async.parallell(connection.map(elem =>
+      function(cb) {
+        Client_PG.prototype.destroyRawConnection(elem, cb);
+      }), cb)
+  },
+
+  _stream: function(connection, obj, stream, options) {
+    return Client_PG.prototype._stream.bind(this)(connection[0], obj, stream, options)
+  },
+
+  // Runs the query on the specified connection, providing the bindings
+  // and any other necessary prep work.
+  _query: function(connection, obj) {
+    console.log('vive la query!');
+    return Client_PG.prototype._query.bind(this)(connection[0], obj, stream);
+  },
+})
+
+module.exports = Client_PGBDR;

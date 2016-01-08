@@ -6,6 +6,7 @@ var MySQL_Client   = require('../../../lib/dialects/mysql')
 var PG_Client      = require('../../../lib/dialects/postgres')
 var Oracle_Client  = require('../../../lib/dialects/oracle')
 var SQLite3_Client = require('../../../lib/dialects/sqlite3')
+
 var MSSQL_Client   = require('../../../lib/dialects/mssql')
 var Client         = require('../../../lib/client')
 
