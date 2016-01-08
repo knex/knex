@@ -1,29 +1,31 @@
-let async        = require('async');
-let Promise      = require('bluebird');
+let async        = require('async')
+let Promise      = require('bluebird')
+let debug        = require('debug')('client_pgbdr')
 
 class BDRConnection {
-  constructor(clients) {
-    this.clients = clients;
-    this.pgConnections = clients.map(() => null);
-    setInterval(BDRConnection.prototype.init.bind(this), 5000)
+  constructor(clients, retryDelay, connectionTimeout) {
+    this.clients = clients
+    this.pgConnections = clients.map(() => null)
+    this.connectionTimeout = connectionTimeout
+    setInterval(BDRConnection.prototype.init.bind(this), retryDelay)
   }
 
   init() {
-    console.log('INITININITN')
-    let self = this;
+    var self = this;
+    debug('trying to set up connection with nodes')
     let promises = this.pgConnections.map((pgConnection, index) => {
       if(pgConnection !== null) {
-        return Promise.resolve(pgConnection);
+        debug(`node ${index} already connected`)
+        return Promise.resolve(pgConnection)
       }
-      return this.clients[index].acquireRawConnection()
+      return self.clients[index].acquireRawConnection()
       .timeout(
-        1000,
-        new Error('timeout')
+        self.connectionTimeout,
+        new Error(`node ${index} could not be reached (timeout)`)
       )
       .then(res => res)
       .catch(err => {
-        //console.log("BONDIEU");
-        console.log(err)
+        debug(`node ${index} could not be connected to`)
         return null;
       });
     });
@@ -36,36 +38,55 @@ class BDRConnection {
   }
 
   destroy(done) {
+    var self = this;
     async.parallell(connection.map((elem, index) =>
       function(cb) {
         if(elem === null) {
           return process.nextTick(cb);
         }
-        this.clients[index].destroyRawConnection(elem, cb);
+        self.clients[index].destroyRawConnection(elem, cb);
       }), done);
   }
 
   stream(obj, stream, options) {
-    return Client_PG.prototype._stream.bind(this)(connection.getValidConnection(), obj, stream, options)
-  }
-
-  // Runs the query on the specified connection, providing the bindings
-  // and any other necessary prep work.
-  query(obj) {
     let self = this;
     let index = this.pgConnections.findIndex(elem => elem !== null);
     if(index === -1) {
       throw new Error('all BDR nodes are down!!!!')
     }
-    console.log(`using index ${index}`);
+    debug(`new query stream on node ${index}`);
+    return this.clients[index]._stream(this.pgConnections[index], obj, stream, options)
+    .catch(err => {
+      if(err.code.search('ECONN') !== -1
+        || err.code === 'EPIPE' ) {
+         debug(`connection to node ${index} lost`)
+         self.pgConnections[index] = null
+         return self.stream(obj)
+      }
+
+      throw err;
+    });
+  }
+
+  query(obj) {
+    let self = this;
+    let index = this.pgConnections.findIndex(elem => elem !== null)
+    if(index === -1) {
+      throw new Error('all BDR nodes are down!!!!')
+    }
+    debug(`new query request on node ${index}`)
     return this.clients[index]._query(this.pgConnections[index], obj)
     .catch(err => {
-      console.log(`failed`);
-      // TODO catch error types
-      self.pgConnections[index] = null;
-      return self.query(obj);
+      if(err.code.search('ECONN') !== -1
+        || err.code === 'EPIPE' ) {
+         debug(`connection to node ${index} lost`)
+         self.pgConnections[index] = null
+         return self.query(obj)
+      }
+
+      throw err;
     });
   }
 }
 
-module.exports = BDRConnection;
+module.exports = BDRConnection
