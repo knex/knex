@@ -314,6 +314,40 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("and where betweens", function() {
+    testsql(qb().select('*').from('users').where('name', '=', 'user1').andWhereBetween('id', [1, 2]), {
+      mysql: {
+        sql: 'select * from `users` where `name` = ? and `id` between ? and ?',
+        bindings: ['user1', 1, 2]
+      },
+      mssql: {
+        sql: 'select * from [users] where [name] = ? and [id] between ? and ?',
+        bindings: ['user1', 1, 2]
+      },
+      default: {
+        sql: 'select * from "users" where "name" = ? and "id" between ? and ?',
+        bindings: ['user1', 1, 2]
+      }
+    });
+  });
+
+  it("and where not betweens", function() {
+    testsql(qb().select('*').from('users').where('name', '=', 'user1').andWhereNotBetween('id', [1, 2]), {
+      mysql: {
+        sql: 'select * from `users` where `name` = ? and `id` not between ? and ?',
+        bindings: ['user1', 1, 2]
+      },
+      mssql: {
+        sql: 'select * from [users] where [name] = ? and [id] not between ? and ?',
+        bindings: ['user1', 1, 2]
+      },
+      default: {
+        sql: 'select * from "users" where "name" = ? and "id" not between ? and ?',
+        bindings: ['user1', 1, 2]
+      }
+    });
+  });
+
   it("where betweens, alternate", function() {
     testsql(qb().select('*').from('users').where('id', 'BeTween', [1, 2]), {
       mysql: {

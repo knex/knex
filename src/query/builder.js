@@ -491,13 +491,13 @@ assign(Builder.prototype, {
     if (column instanceof Raw && arguments.length === 1) {
       return this._havingRaw(column);
     }
-    
+
     // Check if the column is a function, in which case it's
     // a having statement wrapped in parens.
     if (typeof column === 'function') {
       return this.havingWrapped(column);
     }
-    
+
     this._statements.push({
       grouping: 'having',
       type: 'havingBasic',
@@ -542,7 +542,7 @@ assign(Builder.prototype, {
     if (isNaN(val)) {
       helpers.warn('A valid integer must be provided to limit')
     } else {
-      this._single.limit = val;  
+      this._single.limit = val;
     }
     return this;
   },
@@ -799,15 +799,17 @@ Object.defineProperty(Builder.prototype, 'not', {
   }
 });
 
-Builder.prototype.select      = Builder.prototype.columns
-Builder.prototype.column      = Builder.prototype.columns
-Builder.prototype.andWhereNot = Builder.prototype.whereNot
-Builder.prototype.andWhere    = Builder.prototype.where
-Builder.prototype.andWhereRaw = Builder.prototype.whereRaw
-Builder.prototype.andHaving   = Builder.prototype.having
-Builder.prototype.from        = Builder.prototype.table
-Builder.prototype.into        = Builder.prototype.table
-Builder.prototype.del         = Builder.prototype.delete
+Builder.prototype.select             = Builder.prototype.columns
+Builder.prototype.column             = Builder.prototype.columns
+Builder.prototype.andWhereNot        = Builder.prototype.whereNot
+Builder.prototype.andWhere           = Builder.prototype.where
+Builder.prototype.andWhereRaw        = Builder.prototype.whereRaw
+Builder.prototype.andWhereBetween    = Builder.prototype.whereBetween
+Builder.prototype.andWhereNotBetween = Builder.prototype.whereNotBetween
+Builder.prototype.andHaving          = Builder.prototype.having
+Builder.prototype.from               = Builder.prototype.table
+Builder.prototype.into               = Builder.prototype.table
+Builder.prototype.del                = Builder.prototype.delete
 
 // Attach all of the top level promise methods that should be chainable.
 require('../interface')(Builder);

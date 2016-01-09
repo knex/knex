@@ -45,6 +45,8 @@ module.exports = [
   'orWhereNotNull',
   'whereBetween',
   'whereNotBetween',
+  'andWhereBetween',
+  'andWhereNotBetween',
   'orWhereBetween',
   'orWhereNotBetween',
   'groupBy',
