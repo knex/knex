@@ -32,6 +32,12 @@ module.exports = function(knex) {
             ['test100@example.com','User','Test',1],
             1
           );
+          tester(
+            'mssql',
+            'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? where [id] = ?;select @@rowcount',
+            ['test100@example.com','User','Test',1],
+            1
+          );
         });
     });
 
@@ -46,6 +52,12 @@ module.exports = function(knex) {
           tester(
             'mysql',
             'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
+            ['test100@example.com', null, 'Test', 1000],
+            0
+          );
+          tester(
+            'mssql',
+            'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? where [id] = ?;select @@rowcount',
             ['test100@example.com', null, 'Test', 1000],
             0
           );
@@ -136,6 +148,22 @@ module.exports = function(knex) {
           'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
           ['test100@example.com','UpdatedUser','UpdatedTest',1],
           1
+        );
+        tester(
+          'mssql',
+          'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? output inserted.* where [id] = ?',
+          ['test100@example.com','UpdatedUser','UpdatedTest',1],
+          [{
+            id: '1',
+            first_name: 'UpdatedUser',
+            last_name: 'UpdatedTest',
+            email: 'test100@example.com',
+            logins: 1,
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            created_at: d,
+            updated_at: d,
+            phone: null
+          }]
         );
       });
 

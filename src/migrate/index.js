@@ -9,6 +9,13 @@ var mkdirp   = require('mkdirp');
 var Promise  = require('../promise');
 var helpers  = require('../helpers');
 var assign   = require('lodash/object/assign');
+var inherits = require('inherits');
+
+function LockError(msg) {
+  this.name = 'MigrationLocked';
+  this.message = msg;
+}
+inherits(LockError, Error);
 
 // The new migration we're performing, typically called from the `knex.migrate`
 // interface on the main `knex` object. Passes the `knex` instance performing
@@ -70,6 +77,13 @@ export default class Migrator {
       })
   }
 
+  forceFreeMigrationsLock(config) {
+    this.config = this.setConfig(config);
+    var lockTable = this._getLockTableName();
+    return this.knex.schema.hasTable(lockTable)
+        .then(exist => exist && this._freeLock());
+  }
+
   // Creates a new migration, with a given name.
   make(name, config) {
     this.config = this.setConfig(config);
@@ -105,10 +119,13 @@ export default class Migrator {
   // dependent on the migration config settings.
   _ensureTable() {
     var table = this.config.tableName;
+    var lockTable = this._getLockTableName();
     return this.knex.schema.hasTable(table)
-      .then((exists) => {
-        if (!exists) return this._createMigrationTable(table);
-      });
+      .then(exists => !exists && this._createMigrationTable(table))
+      .then(() => this.knex.schema.hasTable(lockTable))
+      .then(exists => !exists && this._createMigrationLockTable(lockTable))
+      .then(() => this.knex(lockTable).select('*'))
+      .then(data => !data.length && this.knex(lockTable).insert({ is_locked: 0 }));
   }
 
   // Create the migration table, if it doesn't already exist.
@@ -121,22 +138,88 @@ export default class Migrator {
     });
   }
 
+  _createMigrationLockTable(tableName) {
+    return this.knex.schema.createTable(tableName, function(t) {
+      t.integer('is_locked');
+    });
+  }
+
+  _getLockTableName() {
+    return this.config.tableName + '_lock';
+  }
+
+  _isLocked(trx) {
+    var tableName = this._getLockTableName();
+    return this.knex(tableName)
+      .transacting(trx)
+      .forUpdate()
+      .select('*')
+      .then(data => data[0].is_locked);
+  }
+
+  _lockMigrations(trx) {
+    var tableName = this._getLockTableName();
+    return this.knex(tableName)
+      .transacting(trx)
+      .update({ is_locked: 1 });
+  }
+
+  _getLock() {
+    return this.knex.transaction(trx => {
+      return this._isLocked(trx)
+        .then(isLocked => {
+          if (isLocked) {
+            throw new Error("Migration table is already locked");
+          }
+        })
+        .then(() => this._lockMigrations(trx));
+    }).catch(err => {
+      throw new LockError(err.message);
+    });
+  }
+
+  _freeLock() {
+    var tableName = this._getLockTableName();
+    return this.knex(tableName)
+      .update({ is_locked: 0 });
+  }
+
   // Run a batch of current migrations, in sequence.
   _runBatch(migrations, direction) {
-    return Promise.all(_.map(migrations, this._validateMigrationStructure, this))
-      .then(() => this._latestBatchNumber())
-      .then((batchNo) => {
-        if (direction === 'up') batchNo++;
-        return batchNo;
-      })
-      .then((batchNo) => {
-        return this._waterfallBatch(batchNo, migrations, direction)
-      })
-      .catch((error) => {
+    return this._getLock()
+    .then(() => Promise.all(_.map(migrations, this._validateMigrationStructure, this)))
+    .then(() => this._latestBatchNumber())
+    .then(batchNo => {
+      if (direction === 'up') batchNo++;
+      return batchNo;
+    })
+    .then(batchNo => {
+      return this._waterfallBatch(batchNo, migrations, direction)
+    })
+    .then(() => this._freeLock())
+    .catch(error => {
+      var cleanupReady = Promise.resolve();
+
+      if (error instanceof LockError) {
+        // if locking error do not free the lock
+        helpers.warn('Cant take lock to run migrations: ' + error.message);
+        helpers.warn(
+          'If you are sue migrations are not running you can release ' +
+          'lock manually by deleting all the rows from migrations lock table: ' +
+          this._getLockTableName()
+        );
+      } else {
         helpers.warn('migrations failed with error: ' + error.message)
-        throw error
-      })
-  }
+        // If the error was not due to a locking issue, then
+        // remove the lock.
+        cleanupReady = this._freeLock();
+      }
+
+      return cleanupReady.finally(function() {
+        throw error;
+      });
+    });
+}
 
   // Validates some migrations by requiring and checking for an `up` and `down` function.
   _validateMigrationStructure(name) {
