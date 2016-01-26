@@ -1,5 +1,5 @@
 
-var Promise   = require('bluebird/js/main/promise')();
+var Promise   = require('bluebird');
 var deprecate = require('./helpers').deprecate
 
 // Incase we're using an older version of bluebird
