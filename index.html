@@ -1973,8 +1973,8 @@ knex.table('users')
       <b class="header">foreign</b><code>table.foreign(column))</code>
       <br />
       Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code>.
-      You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, ><tt>CASCADE</tt>,
-      <tt>SET NULL</tt>, <tt>NO ACTION</tt> for the operation.  Note, this is the same as <code>column.references(column)</column>
+      You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, <tt>CASCADE</tt>,
+      <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</column>
       but works for existing columns.
     </p>
 
