@@ -183,6 +183,8 @@
       <li>– <a href="#Schema-specificType">specificType</a></li>
       <li>– <a href="#Schema-index">index</a></li>
       <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
+      <li>– <a href="#Schema-foreign">Foreign</a></li>
+      <li>– <a href="#Schema-dropForeign">dropForeignx</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -1965,6 +1967,22 @@ knex.table('users')
       <br />
       Drops an index from a table. A default index name using the <tt>columns</tt> is used unless
       <tt>indexName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+    
+    <p id="Schema-foreign">
+      <b class="header">foreign</b><code>table.foreign(column))</code>
+      <br />
+      Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code>.
+      You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, ><tt>CASCADE</tt>,
+      <tt>SET NULL</tt>, <tt>NO ACTION</tt> for the operation.  Note, this is the same as <code>column.references(column)</column>
+      but works for existing columns.
+    </p>
+
+    <p id="Schema-dropForeign">
+      <b class="header">dropForeign</b><code>table.dropForeign(columns, [foreignKeyName])</code>
+      <br />
+      Drops a foreign key constraint from a table. A default foreign key name using the <tt>columns</tt> is used unless
+      <tt>foreignKeyName</tt> is specified (in which case <tt>columns</tt> is ignored).
     </p>
 
     <h3 id="Chainable">Chainable Methods:</h3>
