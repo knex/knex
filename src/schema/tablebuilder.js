@@ -128,6 +128,7 @@ var columnTypes = [
   'string',
   'timestamps',
   'json',
+  'jsonb',
   'uuid',
   'enu',
   'specificType'

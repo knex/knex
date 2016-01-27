@@ -34,6 +34,8 @@ assign(Client_PG.prototype, {
 
   SchemaCompiler: SchemaCompiler,
 
+  SqlString: require('./query/string'),
+
   TableCompiler: TableCompiler,
 
   dialect: 'postgresql',
@@ -42,7 +44,7 @@ assign(Client_PG.prototype, {
 
   _driver: function() {
     return require('pg')
-  },  
+  },
 
   wrapIdentifier: function(value) {
     if (value === '*') return value;
@@ -54,8 +56,8 @@ assign(Client_PG.prototype, {
   // Prep the bindings as needed by PostgreSQL.
   prepBindings: function(bindings, tz) {
     return _.map(bindings, function(binding) {
-      return utils.prepareValue(binding, tz)
-    });
+      return utils.prepareValue(binding, tz, this.valueForUndefined)
+    }, this);
   },
 
   // Get a raw connection, called by the `pool` whenever a new

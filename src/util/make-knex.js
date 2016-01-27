@@ -20,7 +20,7 @@ module.exports = function makeKnex(client) {
   }
 
   assign(knex, {
-    
+
     Promise: require('../promise'),
 
     // A new query builder instance
@@ -52,7 +52,7 @@ module.exports = function makeKnex(client) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.8.6'
+  knex.VERSION = knex.__knex__  = '0.9.0'
 
   // Hook up the "knex" object as an EventEmitter.
   var ee = new EventEmitter()
@@ -68,7 +68,7 @@ module.exports = function makeKnex(client) {
       return builder[method].apply(builder, arguments)
     }
   })
-  
+
   knex.client = client
 
   Object.defineProperties(knex, {
@@ -103,7 +103,7 @@ module.exports = function makeKnex(client) {
   client.on('start', function(obj) {
     knex.emit('start', obj)
   })
-  
+
   client.on('query', function(obj) {
     knex.emit('query', obj)
   })

@@ -1,4 +1,5 @@
 /*global after, before, describe, expect, it*/
+/*jshint -W030 */
 'use strict';
 
 var equal    = require('assert').equal;
@@ -9,6 +10,11 @@ var Promise  = require('../../../lib/promise');
 module.exports = function(knex) {
 
   require('rimraf').sync(path.join(__dirname, './migration'));
+
+  before(function() {
+    // make sure lock was not left from previous failed test run
+    return knex.migrate.forceFreeMigrationsLock({directory: 'test/integration/migrate/test'});
+  });
 
   describe('knex.migrate', function () {
 
@@ -28,10 +34,149 @@ module.exports = function(knex) {
 
     var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
 
+    describe('knex.migrate.status', function() {
+
+      beforeEach(function() {
+        // ignore errors from failed migrations
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function () {});
+      });
+
+      afterEach(function() {
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test'});
+      });
+
+      it('should create a migrations lock table', function() {
+        return knex.schema.hasTable('knex_migrations_lock').then(function(exists) {
+          expect(exists).to.equal(true);
+
+          return knex.schema.hasColumn('knex_migrations_lock', 'is_locked').then(function(exists) {
+            expect(exists).to.equal(true);
+          });
+        });
+      });
+
+      it('should return 0 if code matches DB', function() {
+        // Put in a couple dummy migrations. Needed
+        // since the migrations directory has a couple
+        // bad migrations that don't get loaded. This
+        // will simulate the DB and source being in sync.
+        return Promise.all([
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobar',
+            batch: 5,
+            migration_time: new Date()
+          }),
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobarbaz',
+            batch: 6,
+            migration_time: new Date()
+          })
+        ])
+        .spread(function(migration1, migration2) {
+          return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+            expect(migrationLevel).to.equal(0);
+          })
+          .then(function() {
+            // Cleanup the added migrations
+            return knex('knex_migrations')
+              .where('id', migration1[0])
+              .orWhere('id', migration2[0])
+              .del()
+          });
+
+        });
+
+      });
+
+      it('should return a negative number if the DB is behind', function() {
+        return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+          expect(migrationLevel).to.equal(-2);
+        });
+      });
+
+      it('should return a positive number if the DB is ahead', function() {
+        return Promise.all([
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobar',
+            batch: 5,
+            migration_time: new Date()
+          }),
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobar',
+            batch: 5,
+            migration_time: new Date()
+          }),
+          knex('knex_migrations').returning('id').insert({
+            name: 'foobarbaz',
+            batch: 6,
+            migration_time: new Date()
+          })
+        ])
+        .spread(function(migration1, migration2, migration3) {
+          return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+            expect(migrationLevel).to.equal(1);
+          })
+          .then(function() {
+            // Cleanup the added migrations
+            return knex('knex_migrations')
+              .where('id', migration1[0])
+              .orWhere('id', migration2[0])
+              .orWhere('id', migration3[0])
+              .del()
+          });
+        });
+      });
+
+    });
+
     describe('knex.migrate.latest', function() {
 
       before(function() {
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function() {});
+        // ignore errors from failed migrations
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function () {});
+      });
+
+      it('should remove the record in the lock table once finished', function() {
+        return knex('knex_migrations_lock').select('*').then(function(data) {
+          expect(data[0]).to.have.property('is_locked');
+          expect(data[0].is_locked).to.not.be.ok;
+        });
+      });
+
+      it('should throw error if the migrations are already running', function() {
+        return knex('knex_migrations_lock')
+          .update({ is_locked: 1 })
+          .then(function() {
+            return knex.migrate.latest({directory: 'test/integration/migrate/test'})
+              .then(function() {
+                throw new Error('then should not execute');
+              });
+          })
+          .catch(function(error) {
+            expect(error).to.have.property('message', 'Migration table is already locked');
+            return knex('knex_migrations_lock').select('*');
+          })
+          .then(function(data) {
+            expect(data[0].is_locked).to.equal(1);
+
+            // Clean up lock for other tests
+            return knex('knex_migrations_lock').update({ is_locked: 0 })
+          });
+      });
+
+      it('should release lock if non-locking related error is thrown', function() {
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'})
+          .then(function() {
+            throw new Error('then should not execute');
+          })
+          .catch(function(error) {
+            // This will fail because of the invalid migration
+            expect(error).to.have.property('message');
+            return knex('knex_migrations_lock').select('*')
+          })
+          .then(function(data) {
+            expect(data[0].is_locked).to.not.be.ok;
+          });
       });
 
       it('should run all migration files in the specified directory', function() {

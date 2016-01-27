@@ -10,5 +10,6 @@
   "undef": true,
   "trailing": true,
   "unused": true,
-  "predef": [ "-Promise", "before", "after" ]
+  "esnext": true,
+  "predef": [ "-Promise", "before", "after", "beforeEach", "afterEach" ]
 }

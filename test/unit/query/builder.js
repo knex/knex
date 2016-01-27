@@ -6,6 +6,7 @@ var MySQL_Client   = require('../../../lib/dialects/mysql')
 var PG_Client      = require('../../../lib/dialects/postgres')
 var Oracle_Client  = require('../../../lib/dialects/oracle')
 var SQLite3_Client = require('../../../lib/dialects/sqlite3')
+var MSSQL_Client   = require('../../../lib/dialects/mssql')
 var Client         = require('../../../lib/client')
 
 var clients = {
@@ -13,14 +14,25 @@ var clients = {
   postgres: new PG_Client({}),
   oracle:   new Oracle_Client({}),
   sqlite3:  new SQLite3_Client({}),
+  mssql:  new MSSQL_Client({}),
   default:  new Client({})
+}
+
+var useNullAsDefaultConfig = { useNullAsDefault: true };
+var clientsWithNullAsDefault = {
+  mysql:    new MySQL_Client(useNullAsDefaultConfig),
+  postgres: new PG_Client(useNullAsDefaultConfig),
+  oracle:   new Oracle_Client(useNullAsDefaultConfig),
+  sqlite3:  new SQLite3_Client(useNullAsDefaultConfig),
+  mssql:  new MSSQL_Client(useNullAsDefaultConfig),
+  default:  new Client(useNullAsDefaultConfig)
 }
 
 function qb() {
   return clients.default.queryBuilder()
 }
 
-function raw(sql, bindings) { 
+function raw(sql, bindings) {
   return clients.default.raw(sql, bindings)
 }
 
@@ -30,7 +42,7 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
       expectedObj[key](sqlObj[key]);
     } else {
       try {
-        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);  
+        expect(sqlObj[key]).to.deep.equal(expectedObj[key]);
       } catch (e) {
         e.stack = dialect + ': ' + e.stack
         throw e
@@ -39,10 +51,11 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
   });
 }
 
-function testsql(chain, valuesToCheck) {  
+function testsql(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
   Object.keys(valuesToCheck).forEach(function(key) {
     var newChain = chain.clone()
-        newChain.client = clients[key]
+        newChain.client = selectedClients[key]
     var sqlAndBindings = newChain.toSQL()
 
     var checkValue = valuesToCheck[key]
@@ -54,10 +67,11 @@ function testsql(chain, valuesToCheck) {
   })
 }
 
-function testquery(chain, valuesToCheck) {
+function testquery(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
   Object.keys(valuesToCheck).forEach(function(key) {
     var newChain = chain.clone()
-        newChain.client = clients[key]
+        newChain.client = selectedClients[key]
     var sqlString  = newChain.toQuery()
     var checkValue = valuesToCheck[key]
     expect(checkValue).to.equal(sqlString)
@@ -66,9 +80,27 @@ function testquery(chain, valuesToCheck) {
 
 describe("QueryBuilder", function() {
 
+  it("query \\\\? escaping", function() {
+    function createBuilder() {
+      return qb().select('*').from('users').where('id', '=', 1)
+        .whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey\\?']);
+    }
+
+    // need to test each platform separately because QueryBuilder.clone does only shallow copy
+    // and cached raw query strings are not re-evaluated when query builder client is changed
+    testquery(createBuilder(), {
+      mysql: 'select * from `users` where `id` = 1 and `jsonColumn` ? \'jsonKey?\''
+    });
+
+    testquery(createBuilder(), {
+      default: 'select * from "users" where "id" = 1 and "jsonColumn" ? \'jsonKey?\''
+    });
+  });
+
   it("basic select", function() {
     testsql(qb().select('*').from('users'), {
       mysql: 'select * from `users`',
+      mssql: 'select * from [users]',
       default: 'select * from "users"',
     });
   });
@@ -76,6 +108,7 @@ describe("QueryBuilder", function() {
   it("adding selects", function() {
     testsql(qb().select('foo').select('bar').select(['baz', 'boom']).from('users'), {
       mysql: 'select `foo`, `bar`, `baz`, `boom` from `users`',
+      mssql: 'select [foo], [bar], [baz], [boom] from [users]',
       default: 'select "foo", "bar", "baz", "boom" from "users"'
     });
   });
@@ -83,6 +116,7 @@ describe("QueryBuilder", function() {
   it("basic select distinct", function() {
     testsql(qb().distinct().select('foo', 'bar').from('users'), {
       mysql: {sql: 'select distinct `foo`, `bar` from `users`'},
+      mssql: {sql: 'select distinct [foo], [bar] from [users]'},
       default: {sql: 'select distinct "foo", "bar" from "users"'}
     });
   });
@@ -91,6 +125,7 @@ describe("QueryBuilder", function() {
     testsql(qb().select('foo as bar').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
       default: 'select "foo" as "bar" from "users"'
     });
   });
@@ -99,6 +134,7 @@ describe("QueryBuilder", function() {
     testsql(qb().select(' foo   as bar ').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
       default: 'select "foo" as "bar" from "users"'
     });
   });
@@ -107,6 +143,7 @@ describe("QueryBuilder", function() {
     testsql(qb().select(' foo   aS bar ').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
       default: 'select "foo" as "bar" from "users"'
     });
   });
@@ -114,6 +151,7 @@ describe("QueryBuilder", function() {
   it("basic table wrapping", function() {
     testsql(qb().select('*').from('public.users'), {
       mysql: 'select * from `public`.`users`',
+      mssql: 'select * from [public].[users]',
       default: 'select * from "public"."users"'
     });
   });
@@ -122,6 +160,7 @@ describe("QueryBuilder", function() {
     testsql(qb().withSchema('myschema').select('*').from('users'), {
       mysql: 'select * from `myschema`.`users`',
       postgres: 'select * from "myschema"."users"',
+      mssql: 'select * from [myschema].[users]',
       default: 'select * from "myschema"."users"'
     });
   });
@@ -130,6 +169,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1), {
       mysql: {
         sql: 'select * from `users` where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ?',
         bindings: [1]
       },
       default: {
@@ -141,6 +184,7 @@ describe("QueryBuilder", function() {
     testquery(qb().select('*').from('users').where('id', '=', 1), {
       mysql: 'select * from `users` where `id` = 1',
       postgres: 'select * from "users" where "id" = \'1\'',
+      mssql: 'select * from [users] where [id] = 1',
       default: 'select * from "users" where "id" = 1'
     });
   });
@@ -152,6 +196,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where not `id` = ?',
         bindings: [1]
       },
+      mssql: {
+        sql: 'select * from [users] where not [id] = ?',
+        bindings: [1]
+      },
       default: {
         sql: 'select * from "users" where not "id" = ?',
         bindings: [1]
@@ -161,6 +209,7 @@ describe("QueryBuilder", function() {
     testquery(qb().select('*').from('users').whereNot('id', '=', 1), {
       mysql: 'select * from `users` where not `id` = 1',
       postgres: 'select * from "users" where not "id" = \'1\'',
+      mssql: 'select * from [users] where not [id] = 1',
       default: 'select * from "users" where not "id" = 1'
     });
   });
@@ -169,6 +218,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').whereNot(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); }), {
       mysql: {
         sql: 'select * from `users` where not (`id` = ? or not `id` = ?)',
+        bindings: [1, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where not ([id] = ? or not [id] = ?)',
         bindings: [1, 3]
       },
       default: {
@@ -180,6 +233,7 @@ describe("QueryBuilder", function() {
     testquery(qb().select('*').from('users').whereNot(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); }), {
       mysql: 'select * from `users` where not (`id` = 1 or not `id` = 3)',
       postgres: 'select * from "users" where not ("id" = \'1\' or not "id" = \'3\')',
+      mssql: 'select * from [users] where not ([id] = 1 or not [id] = 3)',
       default: 'select * from "users" where not ("id" = 1 or not "id" = 3)'
     });
   });
@@ -188,6 +242,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').where(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); }), {
       mysql: {
         sql: 'select * from `users` where (`id` = ? or not `id` = ?)',
+        bindings: [1, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where ([id] = ? or not [id] = ?)',
         bindings: [1, 3]
       },
       default: {
@@ -199,6 +257,7 @@ describe("QueryBuilder", function() {
     testquery(qb().select('*').from('users').where(function() { this.where('id', '=', 1).orWhereNot('id', '=', 3); }), {
       mysql: 'select * from `users` where (`id` = 1 or not `id` = 3)',
       postgres: 'select * from "users" where ("id" = \'1\' or not "id" = \'3\')',
+      mssql: 'select * from [users] where ([id] = 1 or not [id] = 3)',
       default: 'select * from "users" where ("id" = 1 or not "id" = 3)'
     });
   });
@@ -210,6 +269,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where not `first_name` = ? and not `last_name` = ?',
         bindings: ['Test', 'User']
       },
+      mssql: {
+        sql: 'select * from [users] where not [first_name] = ? and not [last_name] = ?',
+        bindings: ['Test', 'User']
+      },
       default: {
         sql: 'select * from "users" where not "first_name" = ? and not "last_name" = ?',
         bindings: ['Test', 'User']
@@ -219,6 +282,7 @@ describe("QueryBuilder", function() {
     testquery(qb().select('*').from('users').whereNot({first_name: 'Test', last_name: 'User'}), {
       mysql: 'select * from `users` where not `first_name` = \'Test\' and not `last_name` = \'User\'',
       postgres: 'select * from "users" where not "first_name" = \'Test\' and not "last_name" = \'User\'',
+      mssql: 'select * from [users] where not [first_name] = \'Test\' and not [last_name] = \'User\'',
       default: 'select * from "users" where not "first_name" = \'Test\' and not "last_name" = \'User\''
     });
   });
@@ -228,6 +292,7 @@ describe("QueryBuilder", function() {
     testquery(qb().select('*').from('users').where(true), {
       mysql: 'select * from `users` where 1 = 1',
       sqlite3: 'select * from "users" where 1 = 1',
+      mssql: 'select * from [users] where 1 = 1',
       default: 'select * from "users" where 1 = 1'
     });
   });
@@ -236,6 +301,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').whereBetween('id', [1, 2]), {
       mysql: {
         sql: 'select * from `users` where `id` between ? and ?',
+        bindings: [1, 2]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] between ? and ?',
         bindings: [1, 2]
       },
       default: {
@@ -251,6 +320,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` between ? and ?',
         bindings: [1, 2]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] between ? and ?',
+        bindings: [1, 2]
+      },
       default: {
         sql: 'select * from "users" where "id" between ? and ?',
         bindings: [1, 2]
@@ -262,6 +335,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').whereNotBetween('id', [1, 2]), {
       mysql: {
         sql: 'select * from `users` where `id` not between ? and ?',
+        bindings: [1, 2]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] not between ? and ?',
         bindings: [1, 2]
       },
       default: {
@@ -277,6 +354,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` not between ? and ?',
         bindings: [1, 2]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] not between ? and ?',
+        bindings: [1, 2]
+      },
       default: {
         sql: 'select * from "users" where "id" not between ? and ?',
         bindings: [1, 2]
@@ -288,6 +369,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1).orWhere('email', '=', 'foo'), {
       mysql: {
         sql: 'select * from `users` where `id` = ? or `email` = ?',
+        bindings: [1, 'foo']
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or [email] = ?',
         bindings: [1, 'foo']
       },
       default: {
@@ -303,6 +388,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` = ? or `email` = ?',
         bindings: [1, 'foo']
       },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or [email] = ?',
+        bindings: [1, 'foo']
+      },
       default: {
         sql: 'select * from "users" where "id" = ? or "email" = ?',
         bindings: [1, 'foo']
@@ -314,6 +403,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').where(raw('LCASE("name")'), 'foo'), {
       mysql: {
         sql: 'select * from `users` where LCASE("name") = ?',
+        bindings: ['foo']
+      },
+      mssql: {
+        sql: 'select * from [users] where LCASE("name") = ?',
         bindings: ['foo']
       },
       default: {
@@ -329,6 +422,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where id = ? or email = ?',
         bindings: [1, 'foo']
       },
+      mssql: {
+        sql: 'select * from [users] where id = ? or email = ?',
+        bindings: [1, 'foo']
+      },
       default: {
         sql: 'select * from "users" where id = ? or email = ?',
         bindings: [1, 'foo']
@@ -340,6 +437,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1).orWhere(raw('email = ?', ['foo'])), {
       mysql: {
         sql: 'select * from `users` where `id` = ? or email = ?',
+        bindings: [1, 'foo']
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or email = ?',
         bindings: [1, 'foo']
       },
       default: {
@@ -355,6 +456,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` = ? or email = ?',
         bindings: [1, 'foo']
       },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or email = ?',
+        bindings: [1, 'foo']
+      },
       default: {
         sql: 'select * from "users" where "id" = ? or email = ?',
         bindings: [1, 'foo']
@@ -366,6 +471,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').whereIn('id', [1, 2, 3]), {
       mysql: {
         sql: 'select * from `users` where `id` in (?, ?, ?)',
+        bindings: [1, 2, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] in (?, ?, ?)',
         bindings: [1, 2, 3]
       },
       default: {
@@ -381,6 +490,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` = ? or `id` in (?, ?, ?)',
         bindings: [1, 1, 2, 3]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or [id] in (?, ?, ?)',
+        bindings: [1, 1, 2, 3]
+      },
       default: {
         sql: 'select * from "users" where "id" = ? or "id" in (?, ?, ?)',
         bindings: [1, 1, 2, 3]
@@ -394,6 +507,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` not in (?, ?, ?)',
         bindings: [1, 2, 3]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] not in (?, ?, ?)',
+        bindings: [1, 2, 3]
+      },
       default: {
         sql: 'select * from "users" where "id" not in (?, ?, ?)',
         bindings: [1, 2, 3]
@@ -405,6 +522,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1).or.not.whereIn('id', [1, 2, 3]), {
       mysql: {
         sql: 'select * from `users` where `id` = ? or `id` not in (?, ?, ?)',
+        bindings: [1, 1, 2, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or [id] not in (?, ?, ?)',
         bindings: [1, 1, 2, 3]
       },
       default: {
@@ -420,6 +541,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` = ? or `id` in (?, ?, ?)',
         bindings: [1, 4, 2, 3]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or [id] in (?, ?, ?)',
+        bindings: [1, 4, 2, 3]
+      },
       default: {
         sql: 'select * from "users" where "id" = ? or "id" in (?, ?, ?)',
         bindings: [1, 4, 2, 3]
@@ -433,6 +558,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` not in (?, ?, ?)',
         bindings: [1, 2, 3]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] not in (?, ?, ?)',
+        bindings: [1, 2, 3]
+      },
       default: {
         sql: 'select * from "users" where "id" not in (?, ?, ?)',
         bindings: [1, 2, 3]
@@ -444,6 +573,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1).or.not.whereIn('id', [1, 2, 3]), {
       mysql: {
         sql: 'select * from `users` where `id` = ? or `id` not in (?, ?, ?)',
+        bindings: [1, 1, 2, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or [id] not in (?, ?, ?)',
         bindings: [1, 1, 2, 3]
       },
       default: {
@@ -463,6 +596,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from "users" where 1 = ?',
         bindings: [0]
       },
+      mssql: {
+        sql: 'select * from [users] where 1 = ?',
+        bindings: [0]
+      },
       default: {
         sql: 'select * from "users" where 1 = ?',
         bindings: [0]
@@ -480,6 +617,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from "users" where 1 = ?',
         bindings: [1]
       },
+      mssql: {
+        sql: 'select * from [users] where 1 = ?',
+        bindings: [1]
+      },
       default: {
         sql: 'select * from "users" where 1 = ?',
         bindings: [1]
@@ -491,6 +632,7 @@ describe("QueryBuilder", function() {
     var partial = qb().table('test').where('id', '=', 1);
     testsql(partial, {
       mysql: 'select * from `test` where `id` = ?',
+      mssql: 'select * from [test] where [id] = ?',
       default: 'select * from "test" where "id" = ?'
     });
 
@@ -502,6 +644,10 @@ describe("QueryBuilder", function() {
     testsql(partial.where(subWhere), {
       mysql: {
         sql: 'select * from `test` where `id` = ? and (`id` = ? or `id` = ?)',
+        bindings: [1, 3, 4]
+      },
+      mssql: {
+        sql: 'select * from [test] where [id] = ? and ([id] = ? or [id] = ?)',
         bindings: [1, 3, 4]
       },
       default: {
@@ -524,6 +670,10 @@ describe("QueryBuilder", function() {
         sql: 'select * where `id` = (select `account_id` from `names` where `names`.`id` > ? or (`names`.`first_name` like ? and `names`.`id` > ?))',
         bindings: [1, 'Tim%', 10]
       },
+      mssql: {
+        sql: 'select * where [id] = (select [account_id] from [names] where [names].[id] > ? or ([names].[first_name] like ? and [names].[id] > ?))',
+        bindings: [1, 'Tim%', 10]
+      },
       default: {
         sql: 'select * where "id" = (select "account_id" from "names" where "names"."id" > ? or ("names"."first_name" like ? and "names"."id" > ?))',
         bindings: [1, 'Tim%', 10]
@@ -533,6 +683,7 @@ describe("QueryBuilder", function() {
     testquery(chain, {
       mysql: 'select * where `id` = (select `account_id` from `names` where `names`.`id` > 1 or (`names`.`first_name` like \'Tim%\' and `names`.`id` > 10))',
       postgres: 'select * where "id" = (select "account_id" from "names" where "names"."id" > \'1\' or ("names"."first_name" like \'Tim%\' and "names"."id" > \'10\'))',
+      mssql: 'select * where [id] = (select [account_id] from [names] where [names].[id] > 1 or ([names].[first_name] like \'Tim%\' and [names].[id] > 10))',
       default: 'select * where "id" = (select "account_id" from "names" where "names"."id" > 1 or ("names"."first_name" like \'Tim%\' and "names"."id" > 10))'
     });
   });
@@ -550,6 +701,10 @@ describe("QueryBuilder", function() {
         sql: 'select * where `id` = (select `account_id` from `names` where `names`.`id` > ? or (`names`.`first_name` like ? and `names`.`id` > ?))',
         bindings: [1, 'Tim%', 10]
       },
+      mssql: {
+        sql: 'select * where [id] = (select [account_id] from [names] where [names].[id] > ? or ([names].[first_name] like ? and [names].[id] > ?))',
+        bindings: [1, 'Tim%', 10]
+      },
       default: {
         sql: 'select * where "id" = (select "account_id" from "names" where "names"."id" > ? or ("names"."first_name" like ? and "names"."id" > ?))',
         bindings: [1, 'Tim%', 10]
@@ -560,6 +715,7 @@ describe("QueryBuilder", function() {
   it('should not do whereNull on where("foo", "<>", null) #76', function() {
     testquery(qb().where('foo', '<>', null), {
       mysql: 'select * where `foo` <> NULL',
+      mssql: 'select * where [foo] <> NULL',
       default: 'select * where "foo" <> NULL'
     });
   });
@@ -567,6 +723,7 @@ describe("QueryBuilder", function() {
   it('should expand where("foo", "!=") to - where id = "!="', function() {
     testquery(qb().where('foo', '!='), {
       mysql: 'select * where `foo` = \'!=\'',
+      mssql: 'select * where [foo] = \'!=\'',
       default: 'select * where "foo" = \'!=\''
     });
   });
@@ -578,6 +735,10 @@ describe("QueryBuilder", function() {
     testsql(chain, {
       mysql: {
         sql: 'select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+        bindings: [1, 2]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union select * from [users] where [id] = ?',
         bindings: [1, 2]
       },
       default: {
@@ -594,6 +755,10 @@ describe("QueryBuilder", function() {
     testsql(multipleArgumentsChain, {
       mysql: {
         sql: 'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+        bindings: [1, 2, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from [users] where [id] = ?',
         bindings: [1, 2, 3]
       },
       default: {
@@ -614,6 +779,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from `users` where `id` = ?',
         bindings: [1, 2, 3]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from [users] where [id] = ?',
+        bindings: [1, 2, 3]
+      },
       default: {
         sql: 'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
         bindings: [1, 2, 3]
@@ -630,6 +799,10 @@ describe("QueryBuilder", function() {
     testsql(wrappedChain, {
       mysql: {
         sql: 'select * from `users` where `id` in (select max(`id`) from `users` union (select min(`id`) from `users`))',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] in (select max([id]) from [users] union (select min([id]) from [users]))',
         bindings: []
       },
       default: {
@@ -649,6 +822,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` = ? union (select * from `users` where `id` = ?) union (select * from `users` where `id` = ?)',
         bindings: [1, 2, 3]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union (select * from [users] where [id] = ?) union (select * from [users] where [id] = ?)',
+        bindings: [1, 2, 3]
+      },
       default: {
         sql: 'select * from "users" where "id" = ? union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3]
@@ -665,6 +842,10 @@ describe("QueryBuilder", function() {
     testsql(arrayWrappedChain, {
       mysql: {
         sql: 'select * from `users` where `id` = ? union (select * from `users` where `id` = ?) union (select * from `users` where `id` = ?)',
+        bindings: [1, 2, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union (select * from [users] where [id] = ?) union (select * from [users] where [id] = ?)',
         bindings: [1, 2, 3]
       },
       default: {
@@ -692,6 +873,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ?',
         bindings: [1, 2]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
+        bindings: [1, 2]
+      },
       default: {
         sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
         bindings: [1, 2]
@@ -706,6 +891,10 @@ describe("QueryBuilder", function() {
     testsql(chain, {
       mysql: {
         sql: 'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+        bindings: [1, 2, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from [users] where [id] = ?',
         bindings: [1, 2, 3]
       },
       default: {
@@ -723,6 +912,10 @@ describe("QueryBuilder", function() {
     testsql(chain, {
       mysql: {
         sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? union all select * from `users` where `id` = ?',
+        bindings: [1, 2, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
         bindings: [1, 2, 3]
       },
       default: {
@@ -744,6 +937,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from "users" where "id" in (select * from (select "id" from "users" where "age" > ?) where rownum <= ?)',
         bindings: [25, 3]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] in (select top (?) [id] from [users] where [age] > ?)',
+        bindings: [3, 25]
+      },
       default: {
         sql: 'select * from "users" where "id" in (select "id" from "users" where "age" > ? limit ?)',
         bindings: [25, 3]
@@ -759,6 +956,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` not in (select `id` from `users` where `age` > ?)',
         bindings: [25]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] not in (select [id] from [users] where [age] > ?)',
+        bindings: [25]
+      },
       default: {
         sql: 'select * from "users" where "id" not in (select "id" from "users" where "age" > ?)',
         bindings: [25]
@@ -770,6 +971,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').whereNull('id'), {
       mysql: {
         sql: 'select * from `users` where `id` is null',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] is null',
         bindings: []
       },
       default: {
@@ -785,6 +990,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` = ? or `id` is null',
         bindings: [1]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or [id] is null',
+        bindings: [1]
+      },
       default: {
         sql: 'select * from "users" where "id" = ? or "id" is null',
         bindings: [1]
@@ -796,6 +1005,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').whereNotNull('id'), {
       mysql: {
         sql: 'select * from `users` where `id` is not null',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] is not null',
         bindings: []
       },
       default: {
@@ -811,6 +1024,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `id` > ? or `id` is not null',
         bindings: [1]
       },
+      mssql: {
+        sql: 'select * from [users] where [id] > ? or [id] is not null',
+        bindings: [1]
+      },
       default: {
         sql: 'select * from "users" where "id" > ? or "id" is not null',
         bindings: [1]
@@ -822,6 +1039,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').groupBy('id', 'email'), {
       mysql: {
         sql: 'select * from `users` group by `id`, `email`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] group by [id], [email]',
         bindings: []
       },
       default: {
@@ -837,6 +1058,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` order by `email` asc, `age` desc',
         bindings: []
       },
+      mssql: {
+        sql: 'select * from [users] order by [email] asc, [age] desc',
+        bindings: []
+      },
       default: {
         sql: 'select * from "users" order by "email" asc, "age" desc',
         bindings: []
@@ -848,6 +1073,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').groupByRaw('id, email'), {
       mysql: {
         sql: 'select * from `users` group by id, email',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] group by id, email',
         bindings: []
       },
       default: {
@@ -863,6 +1092,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` order by col NULLS LAST asc',
         bindings: []
       },
+      mssql: {
+        sql: 'select * from [users] order by col NULLS LAST asc',
+        bindings: []
+      },
       default: {
         sql: 'select * from "users" order by col NULLS LAST asc',
         bindings: []
@@ -874,6 +1107,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').orderBy(raw('col NULLS LAST'), 'desc'), {
       mysql: {
         sql: 'select * from `users` order by col NULLS LAST desc',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] order by col NULLS LAST desc',
         bindings: []
       },
       default: {
@@ -889,6 +1126,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` order by col NULLS LAST DESC',
         bindings: []
       },
+      mssql: {
+        sql: 'select * from [users] order by col NULLS LAST DESC',
+        bindings: []
+      },
       default: {
         sql: 'select * from "users" order by col NULLS LAST DESC',
         bindings: []
@@ -900,6 +1141,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').orderByRaw('col NULLS LAST ?', 'dEsc'), {
       mysql: {
         sql: 'select * from `users` order by col NULLS LAST ?',
+        bindings: ['dEsc']
+      },
+      mssql: {
+        sql: 'select * from [users] order by col NULLS LAST ?',
         bindings: ['dEsc']
       },
       default: {
@@ -915,6 +1160,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` order by `email` asc, `age` desc',
         bindings: []
       },
+      mssql: {
+        sql: 'select * from [users] order by [email] asc, [age] desc',
+        bindings: []
+      },
       default: {
         sql: 'select * from "users" order by "email" asc, "age" desc',
         bindings: []
@@ -925,6 +1174,7 @@ describe("QueryBuilder", function() {
   it("havings", function() {
     testsql(qb().select('*').from('users').having('email', '>', 1), {
       mysql: 'select * from `users` having `email` > ?',
+      mssql: 'select * from [users] having [email] > ?',
       default: 'select * from "users" having "email" > ?'
     });
   });
@@ -934,6 +1184,7 @@ describe("QueryBuilder", function() {
       this.where('email', '>', 1);
     }), {
       mysql: 'select * from `users` having (`email` > ?)',
+      mssql: 'select * from [users] having ([email] > ?)',
       default: 'select * from "users" having ("email" > ?)'
     });
   });
@@ -944,6 +1195,7 @@ describe("QueryBuilder", function() {
       this.orWhere('email', '=', 7);
     }), {
       mysql: 'select * from `users` having (`email` > ? or `email` = ?)',
+      mssql: 'select * from [users] having ([email] > ? or [email] = ?)',
       default: 'select * from "users" having ("email" > ? or "email" = ?)'
     });
   });
@@ -951,6 +1203,7 @@ describe("QueryBuilder", function() {
   it("grouped having", function() {
     testsql(qb().select('*').from('users').groupBy('email').having('email', '>', 1), {
       mysql: 'select * from `users` group by `email` having `email` > ?',
+      mssql: 'select * from [users] group by [email] having [email] > ?',
       default: 'select * from "users" group by "email" having "email" > ?'
     });
   });
@@ -959,6 +1212,7 @@ describe("QueryBuilder", function() {
     testsql(qb().select('email as foo_email').from('users').having('foo_email', '>', 1), {
       mysql: 'select `email` as `foo_email` from `users` having `foo_email` > ?',
       oracle: 'select "email" "foo_email" from "users" having "foo_email" > ?',
+      mssql: 'select [email] as [foo_email] from [users] having [foo_email] > ?',
       default: 'select "email" as "foo_email" from "users" having "foo_email" > ?'
     });
   });
@@ -966,6 +1220,7 @@ describe("QueryBuilder", function() {
   it("raw havings", function() {
     testsql(qb().select('*').from('users').having(raw('user_foo < user_bar')), {
       mysql: 'select * from `users` having user_foo < user_bar',
+      mssql: 'select * from [users] having user_foo < user_bar',
       default: 'select * from "users" having user_foo < user_bar'
     });
   });
@@ -973,6 +1228,7 @@ describe("QueryBuilder", function() {
   it("raw or havings", function() {
     testsql(qb().select('*').from('users').having('baz', '=', 1).orHaving(raw('user_foo < user_bar')), {
       mysql: 'select * from `users` having `baz` = ? or user_foo < user_bar',
+      mssql: 'select * from [users] having [baz] = ? or user_foo < user_bar',
       default: 'select * from "users" having "baz" = ? or user_foo < user_bar'
     });
   });
@@ -985,6 +1241,10 @@ describe("QueryBuilder", function() {
       },
       oracle: {
         sql: 'select * from (select * from "users") where rownum <= ?',
+        bindings: [10]
+      },
+      mssql: {
+        sql: 'select top (?) * from [users]',
         bindings: [10]
       },
       default: {
@@ -1004,6 +1264,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from (select * from "users") where rownum <= ?',
         bindings: [0]
       },
+      mssql: {
+        sql: 'select top (?) * from [users]',
+        bindings: [0]
+      },
       default: {
         sql: 'select * from "users" limit ?',
         bindings: [0]
@@ -1021,6 +1285,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
         bindings: [15, 5]
       },
+      mssql: {
+        sql: 'select * from [users] offset ? rows fetch next ? rows only',
+        bindings: [5, 10]
+      },
       default: {
         sql: 'select * from "users" limit ? offset ?',
         bindings: [10, 5]
@@ -1036,6 +1304,10 @@ describe("QueryBuilder", function() {
       },
       oracle: {
         sql: 'select * from (select * from "users") where rownum <= ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'select top (?) * from [users]',
         bindings: [1]
       },
       default: {
@@ -1063,6 +1335,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
         bindings: [10000000000005, 5]
       },
+      mssql: {
+        sql: 'select * from [users] offset ? rows',
+        bindings: [5]
+      },
       default: {
         sql: 'select * from "users" offset ?',
         bindings: [5]
@@ -1074,6 +1350,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').where('id', 1).orWhere('name', 'foo'), {
       mysql: {
         sql: 'select * from `users` where `id` = ? or `name` = ?',
+        bindings: [1, 'foo']
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or [name] = ?',
         bindings: [1, 'foo']
       },
       default: {
@@ -1091,6 +1371,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where `email` = ? or (`name` = ? and `age` = ?)',
         bindings: ['foo', 'bar', 25]
       },
+      mssql: {
+        sql: 'select * from [users] where [email] = ? or ([name] = ? and [age] = ?)',
+        bindings: ['foo', 'bar', 25]
+      },
       default: {
         sql: 'select * from "users" where "email" = ? or ("name" = ? and "age" = ?)',
         bindings: ['foo', 'bar', 25]
@@ -1104,6 +1388,10 @@ describe("QueryBuilder", function() {
     }), {
       mysql: {
         sql: 'select * from `users` where `email` = ? or `id` = (select max(id) from `users` where `email` = ?)',
+        bindings: ['foo', 'bar']
+      },
+      mssql: {
+        sql: 'select * from [users] where [email] = ? or [id] = (select max(id) from [users] where [email] = ?)',
         bindings: ['foo', 'bar']
       },
       default: {
@@ -1121,6 +1409,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `orders` where exists (select * from `products` where `products`.`id` = "orders"."id")',
         bindings: []
       },
+      mssql: {
+        sql: 'select * from [orders] where exists (select * from [products] where [products].[id] = "orders"."id")',
+        bindings: []
+      },
       default: {
         sql: 'select * from "orders" where exists (select * from "products" where "products"."id" = "orders"."id")',
         bindings: []
@@ -1132,6 +1424,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('orders').whereExists(qb().select('*').from('products').whereRaw('products.id = orders.id')), {
       mysql: {
         sql: 'select * from `orders` where exists (select * from `products` where products.id = orders.id)',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [orders] where exists (select * from [products] where products.id = orders.id)',
         bindings: []
       },
       default: {
@@ -1149,6 +1445,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `orders` where not exists (select * from `products` where `products`.`id` = "orders"."id")',
         bindings: []
       },
+      mssql: {
+        sql: 'select * from [orders] where not exists (select * from [products] where [products].[id] = "orders"."id")',
+        bindings: []
+      },
       default: {
         sql: 'select * from "orders" where not exists (select * from "products" where "products"."id" = "orders"."id")',
         bindings: []
@@ -1162,6 +1462,10 @@ describe("QueryBuilder", function() {
     }), {
       mysql: {
         sql: 'select * from `orders` where `id` = ? or exists (select * from `products` where `products`.`id` = "orders"."id")',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'select * from [orders] where [id] = ? or exists (select * from [products] where [products].[id] = "orders"."id")',
         bindings: [1]
       },
       default: {
@@ -1179,6 +1483,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `orders` where `id` = ? or not exists (select * from `products` where `products`.`id` = "orders"."id")',
         bindings: [1]
       },
+      mssql: {
+        sql: 'select * from [orders] where [id] = ? or not exists (select * from [products] where [products].[id] = "orders"."id")',
+        bindings: [1]
+      },
       default: {
         sql: 'select * from "orders" where "id" = ? or not exists (select * from "products" where "products"."id" = "orders"."id")',
         bindings: [1]
@@ -1190,6 +1498,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').join('contacts', 'users.id', '=', 'contacts.id').leftJoin('photos', 'users.id', '=', 'photos.id'), {
       mysql: {
         sql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` left join `photos` on `users`.`id` = `photos`.`id`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] left join [photos] on [users].[id] = [photos].[id]',
         bindings: []
       },
       default: {
@@ -1207,6 +1519,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` or `users`.`name` = `contacts`.`name`',
         bindings: []
       },
+      mssql: {
+        sql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] or [users].[name] = [contacts].[name]',
+        bindings: []
+      },
       default: {
         sql: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" or "users"."name" = "contacts"."name"',
         bindings: []
@@ -1218,6 +1534,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').join('contacts', 'users.id', raw(1)).leftJoin('photos', 'photos.title', '=', raw('?', ['My Photo'])), {
       mysql: {
         sql: 'select * from `users` inner join `contacts` on `users`.`id` = 1 left join `photos` on `photos`.`title` = ?',
+        bindings: ['My Photo']
+      },
+      mssql: {
+        sql: 'select * from [users] inner join [contacts] on [users].[id] = 1 left join [photos] on [photos].[title] = ?',
         bindings: ['My Photo']
       },
       default: {
@@ -1233,6 +1553,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `myschema`.`users` inner join `myschema`.`contacts` on `users`.`id` = `contacts`.`id` left join `myschema`.`photos` on `users`.`id` = `photos`.`id`',
         bindings: []
       },
+      mssql: {
+        sql: 'select * from [myschema].[users] inner join [myschema].[contacts] on [users].[id] = [contacts].[id] left join [myschema].[photos] on [users].[id] = [photos].[id]',
+        bindings: []
+      },
       default: {
         sql: 'select * from "myschema"."users" inner join "myschema"."contacts" on "users"."id" = "contacts"."id" left join "myschema"."photos" on "users"."id" = "photos"."id"',
         bindings: []
@@ -1245,6 +1569,10 @@ describe("QueryBuilder", function() {
         sql: 'select substr(foo, 6) from `users`',
         bindings: []
       },
+      mssql: {
+        sql: 'select substr(foo, 6) from [users]',
+        bindings: []
+      },
       default: {
         sql: 'select substr(foo, 6) from "users"',
         bindings: []
@@ -1252,10 +1580,14 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("aggregate functions", function() {
+  it("count", function() {
     testsql(qb().from('users').count(), {
       mysql: {
         sql: 'select count(*) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(*) from [users]',
         bindings: []
       },
       default: {
@@ -1265,10 +1597,31 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("aggregate alias", function() {
+  it("count distinct", function() {
+    testsql(qb().from('users').countDistinct(), {
+      mysql: {
+        sql: 'select count(distinct *) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct *) from [users]',
+        bindings: []
+      },
+      default: {
+        sql: 'select count(distinct *) from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count with alias", function() {
     testsql(qb().from('users').count('* as all'), {
       mysql: {
         sql: 'select count(*) as `all` from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(*) as [all] from [users]',
         bindings: []
       },
       oracle: {
@@ -1282,10 +1635,35 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("count distinct with alias", function() {
+    testsql(qb().from('users').countDistinct('* as all'), {
+      mysql: {
+        sql: 'select count(distinct *) as `all` from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct *) as [all] from [users]',
+        bindings: []
+      },
+      default: {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("max", function() {
     testsql(qb().from('users').max('id'), {
       mysql: {
         sql: 'select max(`id`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select max([id]) from [users]',
         bindings: []
       },
       default: {
@@ -1301,6 +1679,10 @@ describe("QueryBuilder", function() {
         sql: 'select max(`id`) from `users`',
         bindings: []
       },
+      mssql: {
+        sql: 'select max([id]) from [users]',
+        bindings: []
+      },
       default: {
         sql: 'select max("id") from "users"',
         bindings: []
@@ -1314,8 +1696,29 @@ describe("QueryBuilder", function() {
         sql: 'select sum(`id`) from `users`',
         bindings: []
       },
+      mssql: {
+        sql: 'select sum([id]) from [users]',
+        bindings: []
+      },
       default: {
         sql: 'select sum("id") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("sum distinct", function() {
+    testsql(qb().from('users').sumDistinct('id'), {
+      mysql: {
+        sql: 'select sum(distinct `id`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select sum(distinct [id]) from [users]',
+        bindings: []
+      },
+      default: {
+        sql: 'select sum(distinct "id") from "users"',
         bindings: []
       }
     });
@@ -1325,6 +1728,10 @@ describe("QueryBuilder", function() {
     testsql(qb().into('users').insert({'email': 'foo'}), {
       mysql: {
         sql: 'insert into `users` (`email`) values (?)',
+        bindings: ['foo']
+      },
+      mssql: {
+        sql: 'insert into [users] ([email]) values (?)',
         bindings: ['foo']
       },
       default: {
@@ -1348,11 +1755,42 @@ describe("QueryBuilder", function() {
         sql: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using ?, ?; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using ?, ?;end;',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
+      mssql: {
+        sql: 'insert into [users] ([email], [name]) values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
       default: {
         sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       }
     });
+  });
+
+  it("multiple inserts with partly undefined keys client with configuration nullAsDefault: true", function() {
+    testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
+      mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (NULL, 'dayle')",
+      sqlite3: 'insert into "users" ("email", "name") select \'foo\' as "email", \'taylor\' as "name" union all select NULL as "email", \'dayle\' as "name"',
+      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using NULL, \'dayle\';end;',
+      mssql: "insert into [users] ([email], [name]) values ('foo', 'taylor'), (NULL, 'dayle')",
+      default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (NULL, \'dayle\')'
+    }, clientsWithNullAsDefault);
+  });
+
+  it("multiple inserts with partly undefined keys", function() {
+    testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
+      mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
+      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using DEFAULT, \'dayle\';end;',
+      mssql: "insert into [users] ([email], [name]) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
+      default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (DEFAULT, \'dayle\')'
+    });
+  });
+
+  it("multiple inserts with partly undefined keys throw error with sqlite", function() {
+    expect(function () {
+      testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
+        sqlite3: ""
+      });
+    }).to.throw(TypeError)
   });
 
   it("multiple inserts with returning", function() {
@@ -1381,6 +1819,10 @@ describe("QueryBuilder", function() {
           expect(bindings[4]).to.equal('dayle');
           expect(bindings[5].toString()).to.equal('[object ReturningHelper:id]');
         }
+      },
+      mssql: {
+        sql: 'insert into [users] ([email], [name]) output inserted.[id] values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       default: {
         sql: 'insert into \"users\" (\"email\", \"name\") values (?, ?), (?, ?)',
@@ -1415,6 +1857,10 @@ describe("QueryBuilder", function() {
           expect(bindings[5].toString()).to.equal('[object ReturningHelper:id:name]');
         }
       },
+      mssql: {
+        sql: 'insert into [users] ([email], [name]) output inserted.[id], inserted.[name] values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
       default: {
         sql: 'insert into \"users\" (\"email\", \"name\") values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
@@ -1426,6 +1872,10 @@ describe("QueryBuilder", function() {
     testsql(qb().insert({'email': raw('CURRENT TIMESTAMP')}).into('users'), {
       mysql: {
         sql: 'insert into `users` (`email`) values (CURRENT TIMESTAMP)',
+        bindings: []
+      },
+      mssql: {
+        sql: 'insert into [users] ([email]) values (CURRENT TIMESTAMP)',
         bindings: []
       },
       default: {
@@ -1450,6 +1900,10 @@ describe("QueryBuilder", function() {
         sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
         bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
       },
+      mssql: {
+        sql: 'insert into [table] ([a], [b], [c]) values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
+        bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
+      },
       default: {
         sql: 'insert into "table" ("a", "b", "c") values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
         bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
@@ -1467,6 +1921,10 @@ describe("QueryBuilder", function() {
         sql: '',
         bindings: []
       },
+      mssql: {
+        sql: '',
+        bindings: []
+      },
       default: {
         sql: '',
         bindings: []
@@ -1481,6 +1939,10 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       oracle: {
+        sql: '',
+        bindings: []
+      },
+      mssql: {
         sql: '',
         bindings: []
       },
@@ -1512,6 +1974,10 @@ describe("QueryBuilder", function() {
           expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
         }
       },
+      mssql: {
+        sql: 'insert into [users] output inserted.[id] default values',
+        bindings: []
+      },
       default: {
         sql: 'insert into "users" default values',
         bindings: []
@@ -1537,6 +2003,10 @@ describe("QueryBuilder", function() {
   //       sql: "",
   //       bindings: []
   //     },
+  //     mssql: {
+  //       sql: '',
+  //       bindings: []
+  //     },
   //     default: {
   //       sql: '',
   //       bindings: []
@@ -1560,6 +2030,10 @@ describe("QueryBuilder", function() {
   //     },
   //     postgres: {
   //       sql: "",
+  //       bindings: []
+  //     },
+  //     mssql: {
+  //       sql: '',
   //       bindings: []
   //     },
   //     default: {
@@ -1593,6 +2067,10 @@ describe("QueryBuilder", function() {
   //       sql: "insert into \"users\" (\"undefined\") values (default), (default)",
   //       bindings: []
   //     },
+  //     mssql: {
+  //       sql: 'insert into [users] () values (), ()',
+  //       bindings: []
+  //     },
   //     default: {
   //       sql: 'insert into "users" default values',
   //       bindings: []
@@ -1623,6 +2101,10 @@ describe("QueryBuilder", function() {
   //       sql: 'insert into "users" ("id") values (default), (default) returning "id"',
   //       bindings: []
   //     },
+  //     mssql: {
+  //       sql: 'insert into [users] () values (), ()',
+  //       bindings: []
+  //     },
   //     default: {
   //       sql: 'not checked',
   //       bindings: []
@@ -1636,6 +2118,10 @@ describe("QueryBuilder", function() {
         sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
         bindings: ['foo', 'bar', 1]
       },
+      mssql: {
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+        bindings: ['foo', 'bar', 1]
+      },
       default: {
         sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
         bindings: ['foo', 'bar', 1]
@@ -1647,6 +2133,10 @@ describe("QueryBuilder", function() {
     testsql(qb().update({email: null, 'name': 'bar'}).table('users').where('id', 1), {
       mysql: {
         sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
+        bindings: [null, 'bar', 1]
+      },
+      mssql: {
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
         bindings: [null, 'bar', 1]
       },
       default: {
@@ -1663,6 +2153,10 @@ describe("QueryBuilder", function() {
         sql: 'update `users` set `email` = ?, `name` = ? where `id` = ? order by `foo` desc limit ?',
         bindings: ['foo', 'bar', 1, 5]
       },
+      mssql: {
+        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc;select @@rowcount',
+        bindings: ['foo', 'bar', 1, 5]
+      },
       default: {
         sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
         bindings: ['foo', 'bar', 1]
@@ -1674,6 +2168,10 @@ describe("QueryBuilder", function() {
     testsql(qb().from('users').join('orders', 'users.id', 'orders.user_id').where('users.id', '=', 1).update({'email': 'foo', 'name': 'bar'}), {
       mysql: {
         sql: 'update `users` inner join `orders` on `users`.`id` = `orders`.`user_id` set `email` = ?, `name` = ? where `users`.`id` = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      mssql: {
+        sql: 'update [users] inner join [orders] on [users].[id] = [orders].[user_id] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
       },
       default: {
@@ -1690,6 +2188,10 @@ describe("QueryBuilder", function() {
         sql: 'update `users` set `email` = ?, `name` = ? where `users`.`id` = ? limit ?',
         bindings: ['foo', 'bar', 1, 1]
       },
+      mssql: {
+        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
+        bindings: ['foo', 'bar', 1, 1]
+      },
       default: {
         sql: 'update "users" set "email" = ?, "name" = ? where "users"."id" = ?',
         bindings: ['foo', 'bar', 1]
@@ -1701,6 +2203,10 @@ describe("QueryBuilder", function() {
     testsql(qb().from('users').where('id', '=', 1).update({email: 'foo', name: 'bar'}), {
       mysql: {
         sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      mssql: {
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
       },
       default: {
@@ -1723,6 +2229,10 @@ describe("QueryBuilder", function() {
         sql: 'update `users` set `email` = foo, `name` = ? where `id` = ?',
         bindings: ['bar', 1]
       },
+      mssql: {
+        sql: 'update [users] set [email] = foo, [name] = ? where [id] = ?;select @@rowcount',
+        bindings: ['bar', 1]
+      },
       default: {
         sql: 'update "users" set "email" = foo, "name" = ? where "id" = ?',
         bindings: ['bar', 1]
@@ -1734,6 +2244,10 @@ describe("QueryBuilder", function() {
     testsql(qb().from('users').where('email', '=', 'foo').delete(), {
       mysql: {
         sql: 'delete from `users` where `email` = ?',
+        bindings: ['foo']
+      },
+      mssql: {
+        sql: 'delete from [users] where [email] = ?;select @@rowcount',
         bindings: ['foo']
       },
       default: {
@@ -1764,6 +2278,10 @@ describe("QueryBuilder", function() {
         sql: 'truncate table "users"',
         bindings: []
       },
+      mssql: {
+        sql: 'truncate table [users]',
+        bindings: []
+      },
       default: {
         sql: 'truncate "users"',
         bindings: []
@@ -1789,6 +2307,10 @@ describe("QueryBuilder", function() {
           expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
         }
       },
+      mssql: {
+        sql: 'insert into [users] ([email]) output inserted.[id] values (?)',
+        bindings: ['foo']
+      },
       default: {
         sql: 'insert into "users" ("email") values (?)',
         bindings: ['foo']
@@ -1799,6 +2321,7 @@ describe("QueryBuilder", function() {
   it("wrapping", function() {
     testsql(qb().select('*').from('users'), {
       mysql: 'select * from `users`',
+      mssql: 'select * from [users]',
       default: 'select * from "users"'
     });
   });
@@ -1806,6 +2329,7 @@ describe("QueryBuilder", function() {
   it("order by desc", function() {
     testsql(qb().select('*').from('users').orderBy('email', 'desc'), {
       mysql: 'select * from `users` order by `email` desc',
+      mssql: 'select * from [users] order by [email] desc',
       default: 'select * from "users" order by "email" desc'
     });
   });
@@ -1813,7 +2337,7 @@ describe("QueryBuilder", function() {
   // it("sql server limits and offsets", function() {
   //   $builder = $this.getSqlServerBuilder();
   //   $builder.select('*').from('users').limit(10).toSQL();
-  //   expect(chain.sql).to.equal('select top 10 * from [users]');
+  //   expect(chain.sql).to.equal('select top (10) * from [users]');
 
   //   $builder = $this.getSqlServerBuilder();
   //   $builder.select('*').from('users').offset(10).toSQL();
@@ -1831,6 +2355,7 @@ describe("QueryBuilder", function() {
   it("providing null or false as second parameter builds correctly", function() {
     testsql(qb().select('*').from('users').where('foo', null), {
       mysql: 'select * from `users` where `foo` is null',
+      mssql: 'select * from [users] where [foo] is null',
       default: 'select * from "users" where "foo" is null'
     });
   });
@@ -1847,6 +2372,10 @@ describe("QueryBuilder", function() {
   //     },
   //     oracle: {
   //       sql: 'select * from "foo" where "bar" = ? for update',
+  //       bindings: ['baz']
+  //     },
+  //     mssql: {
+  //       sql: 'select * from [foo] where [bar] = ? with (READCOMMITTEDLOCK)',
   //       bindings: ['baz']
   //     },
   //     default: {
@@ -1866,6 +2395,10 @@ describe("QueryBuilder", function() {
   //       sql: "select * from \"foo\" where \"bar\" = ? for share",
   //       bindings: ['baz']
   //     },
+  //     mssql: {
+  //       sql: 'select * from [foo] where [bar] = ? with (NOLOCK)',
+  //       bindings: ['baz']
+  //     },
   //     default: {
   //       sql: 'select * from "foo" where "bar" = ?',
   //       bindings: ['baz']
@@ -1877,6 +2410,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
       mysql: {
         sql: 'select * from `foo` where `bar` = ?',
+        bindings: ['baz']
+      },
+      mssql: {
+        sql: 'select * from [foo] where [bar] = ?',
         bindings: ['baz']
       },
       default: {
@@ -1907,6 +2444,10 @@ describe("QueryBuilder", function() {
         sql: 'insert into `entries` (`secret`, `sequence`) values (?, (select count(*) from `entries` where `secret` = ?))',
         bindings: [123, 123]
       },
+      mssql: {
+        sql: 'insert into [entries] ([secret], [sequence]) values (?, (select count(*) from [entries] where [secret] = ?))',
+        bindings: [123, 123]
+      },
       default: {
         sql: 'insert into "entries" ("secret", "sequence") values (?, (select count(*) from "entries" where "secret" = ?))',
         bindings: [123, 123]
@@ -1922,6 +2463,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `student` left outer join `student_languages` on `student`.`id` = `student_languages`.`student_id` and `student_languages`.`code` = ?',
         bindings: ['en_US']
       },
+      mssql: {
+        sql: 'select * from [student] left outer join [student_languages] on [student].[id] = [student_languages].[student_id] and [student_languages].[code] = ?',
+        bindings: ['en_US']
+      },
       default: {
         sql: 'select * from "student" left outer join "student_languages" on "student"."id" = "student_languages"."student_id" and "student_languages"."code" = ?',
         bindings: ['en_US']
@@ -1933,6 +2478,10 @@ describe("QueryBuilder", function() {
     testsql(qb().from('test').limit(null).offset(null), {
       mysql: {
         sql: 'select * from `test`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [test]',
         bindings: []
       },
       default: {
@@ -1955,6 +2504,10 @@ describe("QueryBuilder", function() {
         sql: 'delete from `word` where `page_id` in (select `id` from `page` where `chapter_id` in (select `id` from `chapter` where `book` = ?))',
         bindings: [1]
       },
+      mssql: {
+        sql: 'delete from [word] where [page_id] in (select [id] from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?));select @@rowcount',
+        bindings: [1]
+      },
       default: {
         sql: 'delete from "word" where "page_id" in (select "id" from "page" where "chapter_id" in (select "id" from "chapter" where "book" = ?))',
         bindings: [1]
@@ -1966,6 +2519,10 @@ describe("QueryBuilder", function() {
         sql: 'delete from `page` where `chapter_id` in (select `id` from `chapter` where `book` = ?)',
         bindings: [1]
       },
+      mssql: {
+        sql: 'delete from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?);select @@rowcount',
+        bindings: [1]
+      },
       default: {
         sql: 'delete from "page" where "chapter_id" in (select "id" from "chapter" where "book" = ?)',
         bindings: [1]
@@ -1975,6 +2532,10 @@ describe("QueryBuilder", function() {
     testsql(three, {
       mysql: {
         sql: 'delete from `chapter` where `book` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'delete from [chapter] where [book] = ?;select @@rowcount',
         bindings: [1]
       },
       default: {
@@ -1993,6 +2554,10 @@ describe("QueryBuilder", function() {
       })), {
       mysql: {
         sql: 'insert into recipients (recipient_id, email) select ?, ? where not exists (select 1 from `recipients` where `recipient_id` = ?)',
+        bindings: [1, 'foo@bar.com', 1]
+      },
+      mssql: {
+        sql: 'insert into recipients (recipient_id, email) select ?, ? where not exists (select 1 from [recipients] where [recipient_id] = ?)',
         bindings: [1, 'foo@bar.com', 1]
       },
       default: {
@@ -2014,6 +2579,10 @@ describe("QueryBuilder", function() {
         sql: 'update `tblPerson` inner join `tblPersonData` on `tblPersonData`.`PersonId` = `tblPerson`.`PersonId` set `tblPerson`.`City` = ? where `tblPersonData`.`DataId` = ? and `tblPerson`.`PersonId` = ?',
         bindings: ['Boonesville', 1, 5]
       },
+      mssql: {
+        sql: 'update [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] set [tblPerson].[City] = ? where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
+        bindings: ['Boonesville', 1, 5]
+      },
       default: {
         sql: 'update "tblPerson" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
         bindings: ['Boonesville', 1, 5]
@@ -2032,6 +2601,10 @@ describe("QueryBuilder", function() {
       //   sql: 'insert into `recipients` (recipient_id, email) select \'user\', \'user@foo.com\' where not exists (select 1 from `recipients` where `recipient_id` = ?)',
       //   bindings: [1]
       // },
+      // mssql: {
+      //   sql: 'insert into [recipients] (recipient_id, email) select \'user\', \'user@foo.com\' where not exists (select 1 from [recipients] where [recipient_id] = ?)',
+      //   bindings: [1]
+      // },
       default: {
         sql: 'insert into "recipients" (recipient_id, email) select \'user\', \'user@foo.com\' where not exists (select 1 from "recipients" where "recipient_id" = ?)',
         bindings: [1]
@@ -2043,6 +2616,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').where('name', 'LIKE', '%test%'), {
       mysql: {
         sql: 'select * from `users` where `name` LIKE ?',
+        bindings: ['%test%']
+      },
+      mssql: {
+        sql: 'select * from [users] where [name] LIKE ?',
         bindings: ['%test%']
       },
       default: {
@@ -2083,6 +2660,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `value` inner join `table` on `table`.`array_column[1]` = ?',
         bindings: [1]
       },
+      mssql: {
+        sql: 'select * from [value] inner join [table] on [table].[array_column[1]] = ?',
+        bindings: [1]
+      },
       postgres: {
         sql: 'select * from "value" inner join "table" on "table"."array_column"[1] = ?',
         bindings: [1]
@@ -2112,6 +2693,10 @@ describe("QueryBuilder", function() {
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) avg_sal_dept from "employee" "e" where "dept_no" = ?',
         bindings: ['e.dept_no']
       },
+      // mssql: {
+      //   sql: 'select [e].[lastname], [e].[salary], (select [avg(salary)] from [employee] where dept_no = e.dept_no) avg_sal_dept from [employee] as [e] where [dept_no] = ?',
+      //   bindings: ['e.dept_no']
+      // },
       default: {
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) avg_sal_dept from "employee" as "e" where "dept_no" = ?',
         bindings: ['e.dept_no']
@@ -2133,6 +2718,10 @@ describe("QueryBuilder", function() {
       oracle: {
         // TODO: Check if possible
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) "avg_sal_dept" from "employee" "e" where "dept_no" = ?',
+        bindings: ["e.dept_no"]
+      },
+      mssql: {
+        sql: 'select [e].[lastname], [e].[salary], (select [avg(salary)] from [employee] where dept_no = e.dept_no) as [avg_sal_dept] from [employee] as [e] where [dept_no] = ?',
         bindings: ["e.dept_no"]
       },
       default: {
@@ -2157,6 +2746,10 @@ describe("QueryBuilder", function() {
       oracle: {
         // TODO: Check if possible
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) "avg_sal_dept" from "employee" "e" where "dept_no" = ?',
+        bindings: ["e.dept_no"]
+      },
+      mssql: {
+        sql: 'select [e].[lastname], [e].[salary], (select [avg(salary)] from [employee] where dept_no = e.dept_no) as [avg_sal_dept] from [employee] as [e] where [dept_no] = ?',
         bindings: ["e.dept_no"]
       },
       default: {
@@ -2187,6 +2780,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from `places` where ST_DWithin((places.address).xy, ST_SetSRID(ST_MakePoint(?,?),?), ?) AND ST_Distance((places.address).xy, ST_SetSRID(ST_MakePoint(?,?),?)) > ? AND places.id IN ?',
         bindings: [-10, 10, 4326, 100000, -5, 5, 4326, 50000, [1,2,3] ]
       },
+      mssql: {
+        sql: 'select * from [places] where ST_DWithin((places.address).xy, ST_SetSRID(ST_MakePoint(?,?),?), ?) AND ST_Distance((places.address).xy, ST_SetSRID(ST_MakePoint(?,?),?)) > ? AND places.id IN ?',
+        bindings: [-10, 10, 4326, 100000, -5, 5, 4326, 50000, [1,2,3] ]
+      },
       default: {
         sql: 'select * from "places" where ST_DWithin((places.address).xy, ST_SetSRID(ST_MakePoint(?,?),?), ?) AND ST_Distance((places.address).xy, ST_SetSRID(ST_MakePoint(?,?),?)) > ? AND places.id IN ?',
         bindings: [-10, 10, 4326, 100000, -5, 5, 4326, 50000, [1,2,3] ]
@@ -2198,6 +2795,10 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('accounts').joinRaw('natural full join table1').where('id', 1), {
       mysql: {
         sql: 'select * from `accounts` natural full join table1 where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'select * from [accounts] natural full join table1 where [id] = ?',
         bindings: [1]
       },
       default: {
@@ -2214,6 +2815,9 @@ describe("QueryBuilder", function() {
       mysql: {
         sql: 'select * from `accounts` inner join `table1` on ST_Contains(buildings_pluto.geom, ST_Centroid(buildings_building.geom))'
       },
+      mssql: {
+        sql: 'select * from [accounts] inner join [table1] on ST_Contains(buildings_pluto.geom, ST_Centroid(buildings_building.geom))'
+      },
       default: {
         sql: 'select * from "accounts" inner join "table1" on ST_Contains(buildings_pluto.geom, ST_Centroid(buildings_building.geom))'
       }
@@ -2227,6 +2831,10 @@ describe("QueryBuilder", function() {
       mysql: {
         sql: 'select * from `accounts` inner join `table1` using `id`'
       },
+      mssql: {
+        //sql: 'select * from [accounts] inner join [table1] on [accounts].[id] = [table1].[id]'
+        sql: 'select * from [accounts] inner join [table1] using [id]'
+      },
       default: {
         sql: 'select * from "accounts" inner join "table1" using "id"'
       }
@@ -2239,6 +2847,10 @@ describe("QueryBuilder", function() {
     }), {
       mysql: {
         sql: 'insert into `votes` select * from `votes` where `id` = ?',
+        bindings: [99]
+      },
+      mssql: {
+        sql: 'insert into [votes] select * from [votes] where [id] = ?',
         bindings: [99]
       },
       default: {
@@ -2256,6 +2868,10 @@ describe("QueryBuilder", function() {
       },
       oracle: {
         sql: 'insert into "votes" select * from "votes" where "id" = ?',
+        bindings: [99]
+      },
+      mssql: {
+        sql: 'insert into [votes] select * from [votes] where [id] = ?',
         bindings: [99]
       },
       default: {
@@ -2280,6 +2896,10 @@ describe("QueryBuilder", function() {
           sql: 'select `A`.`nid` as `id` from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on `A`.`x` = `B`.`x`',
           bindings: []
         },
+        mssql: {
+          sql: 'select [A].[nid] as [id] from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on [A].[x] = [B].[x]',
+          bindings: []
+        },
         oracle: {
           sql: 'select "A"."nid" "id" from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on "A"."x" = "B"."x"',
           bindings: []
@@ -2298,6 +2918,10 @@ describe("QueryBuilder", function() {
     }), {
       mysql: {
         sql: 'insert into `entries` (`secret`, `sequence`) values (?, (select count(*) from `entries` where `secret` = ?))',
+        bindings: [123, 123]
+      },
+      mssql: {
+        sql: 'insert into [entries] ([secret], [sequence]) values (?, (select count(*) from [entries] where [secret] = ?))',
         bindings: [123, 123]
       },
       default: {
@@ -2322,6 +2946,10 @@ describe("QueryBuilder", function() {
           sql: 'select ?, "g"."f" from (select ? as f) "g" where "g"."secret" = ?',
           bindings: ['outer raw select', 'inner raw select', 123]
         },
+        mssql: {
+          sql: 'select ?, [g].[f] from (select ? as f) as [g] where [g].[secret] = ?',
+          bindings: ['outer raw select', 'inner raw select', 123]
+        },
         default: {
           sql: 'select ?, "g"."f" from (select ? as f) as "g" where "g"."secret" = ?',
           bindings: ['outer raw select', 'inner raw select', 123]
@@ -2336,6 +2964,10 @@ describe("QueryBuilder", function() {
       {
         mysql: {
           sql: 'select `id","name`, `id``name` from `test```',
+          bindings: []
+        },
+        mssql: {
+          sql: 'select [id","name], [id`name] from [test`]',
           bindings: []
         },
         default: {
@@ -2358,29 +2990,35 @@ describe("QueryBuilder", function() {
         sql: 'select * from `accounts` where `id` = ? and `name` in (?, ?, ?)',
         bindings: [1, 'a', 'b', 'c']
       },
+      mssql: {
+        sql: 'select * from [accounts] where [id] = ? and [name] in (?, ?, ?)',
+        bindings: [1, 'a', 'b', 'c']
+      },
       default: {
         sql: 'select * from "accounts" where "id" = ? and "name" in (?, ?, ?)',
         bindings: [1, 'a', 'b', 'c']
       }
     })
   })
-  
+
   it('has a modify method which accepts a function that can modify the query', function() {
-    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`, 
+    // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`,
     // builder is bound to `this`
     var withBars = function(queryBuilder, table, fk) {
       if(!this || this !== queryBuilder) {
         throw 'Expected query builder passed as first argument and bound as `this` context';
       }
-      
       this
         .leftJoin('bars', table + '.' + fk, 'bars.id')
         .select('bars.*')
     };
-    
+
     testsql(qb().select('foo_id').from('foos').modify(withBars, 'foos', 'bar_id'), {
       mysql: {
         sql: 'select `foo_id`, `bars`.* from `foos` left join `bars` on `foos`.`bar_id` = `bars`.`id`'
+      },
+      mssql: {
+        sql: 'select [foo_id], [bars].* from [foos] left join [bars] on [foos].[bar_id] = [bars].[id]'
       },
       default: {
         sql: 'select "foo_id", "bars".* from "foos" left join "bars" on "foos"."bar_id" = "bars"."id"'
@@ -2391,14 +3029,32 @@ describe("QueryBuilder", function() {
   it('Allows for empty where #749', function() {
     testsql(qb().select('foo').from('tbl').where(function() {}), {
       mysql:   'select `foo` from `tbl`',
+      mssql:   'select [foo] from [tbl]',
       default: 'select "foo" from "tbl"'
     })
   })
+
+  it("escapes single quotes properly", function() {
+    testquery(qb().select('*').from('users').where('last_name', 'O\'Brien'), {
+      postgres: 'select * from "users" where "last_name" = \'O\'\'Brien\'',
+      default: 'select * from "users" where "last_name" = \'O\\\'Brien\'',
+    });
+  });
+
+  it("escapes double quotes property", function(){
+    testquery(qb().select('*').from('players').where('name', 'Gerald "Ice" Williams'), {
+      postgres: 'select * from "players" where "name" = \'Gerald "Ice" Williams\'',
+      default: 'select * from "players" where "name" = \'Gerald \\"Ice\\" Williams\''
+    });
+  });
 
   it("allows join without operator and with value 0 #953", function() {
     testsql(qb().select('*').from('users').join('photos', 'photos.id', 0), {
       mysql: {
         sql: 'select * from `users` inner join `photos` on `photos`.`id` = 0'
+      },
+      mssql: {
+        sql: 'select * from [users] inner join [photos] on [photos].[id] = 0'
       },
       default: {
         sql: 'select * from "users" inner join "photos" on "photos"."id" = 0'
@@ -2411,10 +3067,48 @@ describe("QueryBuilder", function() {
       mysql: {
         sql: 'select * from `users` inner join `photos` on `photos`.`id` > 0'
       },
+      mssql: {
+        sql: 'select * from [users] inner join [photos] on [photos].[id] > 0'
+      },
       default: {
         sql: 'select * from "users" inner join "photos" on "photos"."id" > 0'
       }
     });
   });
 
+  it("where with date object", function () {
+    var date = new Date();
+    testsql(qb().select('*').from('users').where("birthday", ">=", date), {
+      mysql: {
+        sql: 'select * from `users` where `birthday` >= ?',
+        bindings: [date]
+      },
+      mssql: {
+        sql: 'select * from [users] where [birthday] >= ?',
+        bindings: [date]
+      },
+      default: {
+        sql: 'select * from "users" where "birthday" >= ?',
+        bindings: [date]
+      }
+    });
+  });
+
+  it("raw where with date object", function() {
+    var date = new Date();
+    testsql(qb().select('*').from('users').whereRaw("birthday >= ?", date), {
+      mysql: {
+        sql: 'select * from `users` where birthday >= ?',
+        bindings: [date]
+      },
+      mssql: {
+        sql: 'select * from [users] where birthday >= ?',
+        bindings: [date]
+      },
+      default: {
+        sql: 'select * from "users" where birthday >= ?',
+        bindings: [date]
+      }
+    });
+  });
 });

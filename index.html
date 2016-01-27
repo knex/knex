@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.8.6)</span>
+      Knex.js <span class="version">(0.9.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -45,6 +45,7 @@
       Upgrading
     </a>
     <ul class="toc_section">
+      <li>– <a href="#Upgrading-from0.8">0.8.x -> 0.9</a></li>
       <li>– <a href="#Upgrading-from0.7">0.7.x -> 0.8</a></li>
       <li>– <a href="#Upgrading-from0.6">0.6.x -> 0.7</a></li>
     </ul>
@@ -118,6 +119,7 @@
       <li>– <a href="#Builder-min">min</a></li>
       <li>– <a href="#Builder-max">max</a></li>
       <li>– <a href="#Builder-sum">sum</a></li>
+      <li>– <a href="#Builder-avg">avg</a></li>
       <li>– <a href="#Builder-increment">increment</a></li>
       <li>– <a href="#Builder-decrement">decrement</a></li>
       <li>– <a href="#Builder-truncate">truncate</a></li>
@@ -172,12 +174,15 @@
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
       <li>– <a href="#Schema-json">json</a></li>
+      <li>– <a href="#Schema-jsonb">jsonb</a></li>
       <li>– <a href="#Schema-uuid">uuid</a></li>
       <li>– <a href="#Schema-comment">comment</a></li>
       <li>– <a href="#Schema-engine">engine</a></li>
       <li>– <a href="#Schema-charset">charset</a></li>
       <li>– <a href="#Schema-collate">collate</a></li>
       <li>– <a href="#Schema-specificType">specificType</a></li>
+      <li>– <a href="#Schema-index">index</a></li>
+      <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -199,6 +204,7 @@
       Raw
     </a>
     <ul class="toc_section">
+      <li>– <a href="#Raw-Bindings">Raw Parameter Binding</a></li>
       <li>– <a href="#Raw-Expressions">Raw Expressions</a></li>
       <li>– <a href="#Raw-Queries">Raw Queries</a></li>
       <li>- <a href="#Raw-queries-wrapped">Wrapped Queries</a></li>
@@ -313,7 +319,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.8.6 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.9.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -324,6 +330,7 @@
 
     <h2 id="Upgrading">Upgrading</h2>
 
+    <h3 id="Upgrading-from0.7">Upgrading 0.8 -> 0.9</h3>
     <h3 id="Upgrading-from0.7">Upgrading 0.7 -> 0.8</h3>
 
     <p>
@@ -442,6 +449,23 @@ $ npm install oracle
       for the current database, you should use the instance returned from the initialize call throughout
       your library.
     </p>
+
+    <p>
+      You can even use knex without a connection, just for its query building features. Just pass in an empty object when
+      initializing the library. Specify a client if you are interested in a particular flavour of SQL.
+    </p>
+
+<pre>
+<code class="js">var knex = require('knex')({});
+var pg = require('knex')({client: 'pg'});
+
+knex('table').insert({a: 'b'}).returning('*').toString();
+// "insert into "table" ("a") values ('b')"
+
+pg('table').insert({a: 'b'}).returning('*').toString();
+// "insert into "table" ("a") values ('b') returning *"
+</code>
+</pre>
 
     <h3 id="Installation-debug">Debugging</h3>
 
@@ -1130,10 +1154,31 @@ knex('books').insert({title: 'Slaughterhouse Five'})
 knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
 </pre>
 
-
 <pre class="display">
 // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
 knex.insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], 'id').into('books')
+</pre>
+
+    <p>
+      If one prefers that undefined keys are replaced with <tt>NULL</tt> instead of <tt>DEFAULT</tt>
+      one may give <tt>useNullAsDefault</tt> configuration parameter in knex config.
+    </p>
+
+<pre>
+<code class="js">
+var knex = require('knex')({
+  client: 'mysql',
+  connection: {
+    host     : '127.0.0.1',
+    user     : 'your_database_user',
+    password : 'your_database_password',
+    database : 'myapp_test'
+  },
+  useNullAsDefault: true
+});
+knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
+// insert into `coords` (`x`, `y`) values (20, NULL), (NULL, 30), (10, 20)
+</code>
 </pre>
 
     <p id="Builder-returning">
@@ -1263,6 +1308,14 @@ knex('users').count('active')
 knex('users').count('active as a')
 </pre>
 
+    <p id="Builder-countDistinct">
+      Use <b>countDistinct</b> to add a distinct expression inside the aggregate function.
+    </p>
+
+<pre class="display">
+knex('users').countDistinct('active')
+</pre>
+
     <p id="Builder-min">
       <b class="header">min</b><code>.min(column)</code>
       <br />
@@ -1306,6 +1359,14 @@ knex('users').sum('products')
 knex('users').sum('products as p')
 </pre>
 
+    <p id="Builder-sumDistinct">
+      Use <b>sumDistinct</b> to add a distinct expression inside the aggregate function.
+    </p>
+
+<pre class="display">
+knex('users').sumDistinct('products')
+</pre>
+
     <p id="Builder-avg">
       <b class="header">avg</b><code>.avg(column)</code>
       <br />
@@ -1318,6 +1379,14 @@ knex('users').avg('age')
 
 <pre class="display">
 knex('users').avg('age as a')
+</pre>
+
+    <p id="Builder-avgDistinct">
+      Use <b>avgDistinct</b> to add a distinct expression inside the aggregate function.
+    </p>
+
+<pre class="display">
+knex('users').avgDistinct('age')
 </pre>
 
     <p id="Builder-increment">
@@ -1795,9 +1864,10 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       Adds a timestamp column, defaults to <tt>timestamptz</tt> in PostgreSQL, unless true
       is passed as the second argument.
       <br />
-      Note that the method for defaulting to the current datetime varies from one database to another.
-      For example: PostreSQL requires <tt>.defaultTo(knex.raw('now()'))</tt>,
-      but SQLite3 requires <tt>.defaultTo(knex.raw("date('now')"))</tt>.
+      For Example:
+<pre class="display">
+  table.timestamp('created_at').defaultTo(knex.fn.now());
+</pre>
     </p>
 
     <p id="Schema-timestamps">
@@ -1820,11 +1890,27 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
     </p>
 
     <p id="Schema-json">
-      <b class="header">json</b><code>table.json(name, [jsonb])</code>
+      <b class="header">json</b><code>table.json(name)</code>
       <br />
       Adds a json column, using the built-in <tt>json</tt> type in postgresql, defaulting to a text column
-      in older versions of postgresql or in unsupported databases. <tt>jsonb</tt> can be used by passing
-      <tt>true</tt> as the second argument.
+      in older versions of postgresql or in unsupported databases.
+      <br />
+      Note that when setting an array (or a value that could be an array) as the value of a <tt>json</tt> or
+      <tt>jsonb</tt> column, you should use <tt>JSON.stringify()</tt> to convert your value to a string prior to
+      passing it to the query builder, e.g.
+<pre class="display">
+knex.table('users')
+  .where({id: 1})
+  .update({json_data: JSON.stringify(mightBeAnArray)});
+</pre>
+      This is because postgresql has a native array type which uses a syntax incompatible with json; knex has no way
+      of knowing which syntax to use, and calling <tt>JSON.stringify()</tt> forces json-style syntax.
+    </p>
+
+    <p id="Schema-jsonb">
+      <b class="header">jsonb</b><code>table.jsonb(name)</code>
+      <br />
+      Adds a jsonb column. Works similar to <tt>table.json()</tt>, but uses native <tt>jsonb</tt> type if possible.
     </p>
 
     <p id="Schema-uuid">
@@ -1867,6 +1953,20 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       Sets a specific type for the column creation, if you'd like to add a column type that isn't supported here.
     </p>
 
+    <p id="Schema-index">
+      <b class="header">index</b><code>table.index(columns, [indexName], [indexType])</code>
+      <br />
+      Adds an index to a table over the given <tt>columns</tt>. A default index name using the columns is used unless
+      <tt>indexName</tt> is specified. The <tt>indexType</tt> can be optionally specified for PostgreSQL.
+    </p>
+
+    <p id="Schema-dropIndex">
+      <b class="header">dropIndex</b><code>table.dropIndex(columns, [indexName])</code>
+      <br />
+      Drops an index from a table. A default index name using the <tt>columns</tt> is used unless
+      <tt>indexName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+
     <h3 id="Chainable">Chainable Methods:</h3>
 
     <p>
@@ -1876,7 +1976,7 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
     <p id="Chainable-index">
       <b class="header">index</b><code>column.index([indexName], [indexType])</code>
       <br />
-      Specifies a field as an index. If an <tt>indexName</tt> is specified, it is used in places of the standard
+      Specifies a field as an index. If an <tt>indexName</tt> is specified, it is used in place of the standard
       index naming convention of <tt>tableName</tt>_<tt>columnName</tt>. The <tt>indexType</tt> can be optionally specified
       for PostgreSQL.
       No-op if this is chained off of a field that cannot be indexed.
@@ -1974,11 +2074,44 @@ knex.schema.createTable('accounts', function() {
       Sometimes you may need to use a raw expression in a query. Raw query object may be injected pretty much
       anywhere you want, and using proper bindings can ensure your values are escaped properly, preventing SQL-injection attacks.
     </p>
+
+    <h3 id="Raw-Bindings">Raw Parameter Binding:</h3>
+
     <p>
-      With PostgreSQL <tt>?</tt> replacements are converted to <tt>$1..$n</tt> variables in prepared statements.
-      To prevent replacement one can use escape sequence <tt>\\?</tt> to use JSON operators or in string literals
-      e.g. <tt>knex.raw("(json_column->'json_field')::jsonb \\?& array['keyOne', 'keyWithQuestion\\?']")</tt>.
+      One can paramterize sql given to <tt>knex.raw(sql, bindings)</tt>. Parameters can be positional
+      named. One can also choose if parameter should be treated as value or as sql identifier
+      e.g. in case of <tt>'TableName.ColumnName'</tt> reference.
     </p>
+
+<pre class="display">
+knex('users')
+  .select(knex.raw('count(*) as user_count, status'))
+  .where(knex.raw(1))
+  .orWhere(knex.raw('status <> ?', [1]))
+  .groupBy('status')
+</pre>
+<pre class="display">
+// positional bindings ? is interpret as value and ?? as identifier
+knex('users').where(knex.raw('?? = ?', ['user.name', 1]))
+</pre>
+
+<pre class="display">
+// named bindings :name is interpret as value and :name: as identifier
+knex('users')
+  .where(knex.raw(':name: = :thisGuy or :name: = :otherGuy', {
+    name: 'users.name',
+    thisGuy: 'Bob',
+    otherGuy: 'Jay'
+  }))
+</pre>
+
+    <p>
+      To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
+    </p>
+
+<pre class="display">
+knex.select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey'])
+</pre>
 
     <h3 id="Raw-Expressions">Raw Expressions:</h3>
 
@@ -2386,12 +2519,23 @@ $ knex migrate:latest
 </pre>
 
     <p>
-      You can also pass the <tt>--env</tt> flag to select an alternative
-      environment:
+      You can also pass the <tt>--env</tt> flag or set <tt>NODE_ENV</tt> to select an alternative environment:
     </p>
 
 <pre>
 $ knex migrate:latest --env production
+
+# or
+
+$ NODE_ENV=production knex migrate:latest
+</pre>
+
+    <p>
+      To rollback the last batch of migrations:
+    </p>
+
+<pre>
+$ knex migrate:rollback
 </pre>
 
     <h2 id="Seeds">Seed files</h2>
@@ -2491,10 +2635,9 @@ $ knex seed:run
     </p>
 
 <pre>
-<code class="js">
-exports.up = function(knex, Promise) { /* ... */ };
+<code class="js">exports.up = function(knex, Promise) { /* ... */ };
 exports.down = function(knex, Promise) { /* ... */ };
-exports.config {
+exports.config = {
   transaction: false
 };
 </code>
@@ -2515,6 +2658,22 @@ exports.config {
       <br />
       Runs all migrations that have not yet been run.
     </p>
+
+    <p>
+      If you need to run something only after all migrations have finished their
+      execution, you can do something like this:
+    </p>
+
+<pre>
+<code class="js">knex.migrate.latest()
+.then(function() {
+  return knex.seed.run();
+})
+.then(function() {
+  // migrations are finished
+});
+</code>
+</pre>
 
     <p id="Migrations-rollback">
       <b class="header">rollback</b><code>knex.migrate.rollback([config])</code>
@@ -2601,6 +2760,24 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.9.0</b> &mdash; <small><i>Nov 2, 2015</i></small><br />
+    </p>
+
+    <ul>
+      <li>Fix error when merging <tt>knex.raw</tt> instances without arguments. #853</li>
+      <li>Fix error that caused the connection to time out while streaming. #849</li>
+      <li>Correctly parse SSL query parameter for PostgreSQL. #852</li>
+      <li>Pass <tt>compress</tt> option to MySQL2. #843</li>
+      <li>Schema: Use <tt>timestamp with timezone</tt> by default for <tt>time</tt>, <tt>datetime</tt> and <tt>timestamp</tt> for Oracle. #876</li>
+      <li>Add <a href="#Builder-modify"><tt>QueryBuilder#modify</tt></a> #881</li>
+      <li>Add LiveScript and Early Gray support for seeds and migrations.</li>
+      <li>Add <a href="#Builder-withSchema"><tt>QueryBuilder#withSchema</tt></a> #518</li>
+      <li>Allow escaping of <tt>?</tt> in <tt>knex.raw</tt> queries. #946</li>
+      <li>Allow <tt>0</tt> in join clause. #953</li>
+      <li>Add migration config to allow disabling/enabling transactions per migration. #834</li>
+    </ul>
 
     <p>
       <b class="header">0.8.6</b> &mdash; <small><i>May 20, 2015</i></small><br />

@@ -25,7 +25,6 @@ assign(Runner.prototype, {
   // a single connection.
   run: function() {
     var runner = this
-
     return Promise.using(this.ensureConnection(), function(connection) {
       runner.connection = connection;
 
@@ -139,6 +138,7 @@ assign(Runner.prototype, {
     return Promise.try(function() {
       return runner.connection || runner.client.acquireConnection()
     }).disposer(function() {
+      if (runner.connection.__knex__disposed) return
       runner.client.releaseConnection(runner.connection)
     })
   }
