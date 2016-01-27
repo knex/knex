@@ -1968,13 +1968,13 @@ knex.table('users')
       Drops an index from a table. A default index name using the <tt>columns</tt> is used unless
       <tt>indexName</tt> is specified (in which case <tt>columns</tt> is ignored).
     </p>
-    
+
     <p id="Schema-foreign">
       <b class="header">foreign</b><code>table.foreign(column))</code>
       <br />
       Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code>.
       You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, <tt>CASCADE</tt>,
-      <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</column>
+      <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</code>
       but works for existing columns.
     </p>
 
@@ -2016,7 +2016,7 @@ knex.table('users')
     <p id="Chainable-references">
       <b class="header">references</b><code>column.references(column)</code>
       <br />
-      Sets the "column" that the current column references as a foreign key.
+      Sets the "column" that the current column references as a foreign key. "column" can either be "&lt;table&gt;.&lt;column&gt;" syntax, or just the column name followed up with a call to <a href="#Chainable-inTable">inTable</a> to specify the table.
     </p>
 
     <p id="Chainable-inTable">
