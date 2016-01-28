@@ -1,12 +1,13 @@
 
-var EventEmitter   = require('events').EventEmitter
-var assign         = require('lodash/object/assign');
+var EventEmitter    = require('events').EventEmitter
+var assign          = require('lodash/object/assign');
 
-var Migrator       = require('../migrate')
-var Seeder         = require('../seed')
-var FunctionHelper = require('../functionhelper')
-var QueryInterface = require('../query/methods')
-var helpers        = require('../helpers')
+var Migrator        = require('../migrate')
+var Seeder          = require('../seed')
+var FunctionHelper  = require('../functionhelper')
+var QueryInterface  = require('../query/methods')
+var helpers         = require('../helpers')
+var extendedMethods = {}
 
 module.exports = function makeKnex(client) {
 
@@ -25,11 +26,20 @@ module.exports = function makeKnex(client) {
 
     // A new query builder instance
     queryBuilder: function() {
-      return client.queryBuilder()
+      var clientInstance = client.queryBuilder()
+      Object.keys(extendedMethods).forEach(function (name) {
+        clientInstance[name] = extendedMethods[name]
+      })
+      return clientInstance
     },
 
     raw: function() {
       return client.raw.apply(client, arguments)
+    },
+
+    extend: function (name, callback) {
+      QueryInterface.push(name)
+      extendedMethods[name] = callback
     },
 
     // Runs a new transaction, taking a container and returning a promise
