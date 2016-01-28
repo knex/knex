@@ -2429,10 +2429,10 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
 <code class="js">knex.select('*')
   .from('users')
   .on('query', function(data) {
-  app.log(data);
+    app.log(data);
   })
   .then(function() {
-  // ...
+    // ...
   });
 </code>
 </pre>
@@ -2452,10 +2452,10 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
     app.log(error);
   })
   .then(function() {
-  // ...
+    // ...
   })
   .catch(function(error) {
-  // Same error object as the query-error event provides.
+    // Same error object as the query-error event provides.
   });
 </code>
 </pre>

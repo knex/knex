@@ -128,11 +128,11 @@ assign(Client.prototype, {
     if (typeof obj === 'string') obj = {sql: obj}
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
     debugQuery(obj.sql)
-    return this._query.call(this, connection, obj).catch(function(err) {
+    return this._query.call(this, connection, obj).catch((err) => {
       err.message = SqlString.format(obj.sql, obj.bindings) + ' - ' + err.message
       this.emit('query-error', err, obj)
       throw err
-    }.bind(this))
+    })
   },
 
   stream: function(connection, obj, stream, options) {
