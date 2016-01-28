@@ -130,8 +130,9 @@ assign(Client.prototype, {
     debugQuery(obj.sql)
     return this._query.call(this, connection, obj).catch(function(err) {
       err.message = SqlString.format(obj.sql, obj.bindings) + ' - ' + err.message
+      this.emit('query-error', err, obj)
       throw err
-    })
+    }.bind(this))
   },
 
   stream: function(connection, obj, stream, options) {
