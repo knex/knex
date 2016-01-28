@@ -231,6 +231,7 @@
       <li>&nbsp;&nbsp;– <a href="#Streams-pipe">pipe</a></li>
       <li><b><a href="#Interfaces-Events">Events</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Events-query">query</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-query-error">query</a></li>
       <li><b><a href="#Interfaces-Other">Other:</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toString">toString</a></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toSQL">toSQL</a></li>
@@ -2438,7 +2439,7 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
     <p id="Events-query">
       <b class="header">query</b>
       <br />
-      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all
+      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all queries throughout your application.
     </p>
 
 
@@ -2450,6 +2451,29 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
   })
   .then(function() {
     // ...
+  });
+</code>
+</pre>
+
+
+    <p id="Events-query-error">
+      <b class="header">query-error</b>
+      <br />
+      A <b>query-error</b> event is fired when an error occurs when running a query, providing the error object and data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all query errors throughout your application.
+    </p>
+
+
+<pre>
+<code class="js">knex.select(['NonExistentColumn'])
+  .from('users')
+  .on('query-error', function(error, obj) {
+    app.log(error);
+  })
+  .then(function() {
+    // ...
+  })
+  .catch(function(error) {
+    // Same error object as the query-error event provides.
   });
 </code>
 </pre>
