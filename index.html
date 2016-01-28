@@ -183,6 +183,8 @@
       <li>– <a href="#Schema-specificType">specificType</a></li>
       <li>– <a href="#Schema-index">index</a></li>
       <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
+      <li>– <a href="#Schema-foreign">Foreign</a></li>
+      <li>– <a href="#Schema-dropForeign">dropForeignx</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -229,6 +231,7 @@
       <li>&nbsp;&nbsp;– <a href="#Streams-pipe">pipe</a></li>
       <li><b><a href="#Interfaces-Events">Events</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Events-query">query</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-query-error">query</a></li>
       <li><b><a href="#Interfaces-Other">Other:</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toString">toString</a></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toSQL">toSQL</a></li>
@@ -1967,6 +1970,22 @@ knex.table('users')
       <tt>indexName</tt> is specified (in which case <tt>columns</tt> is ignored).
     </p>
 
+    <p id="Schema-foreign">
+      <b class="header">foreign</b><code>table.foreign(column))</code>
+      <br />
+      Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code>.
+      You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, <tt>CASCADE</tt>,
+      <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</code>
+      but works for existing columns.
+    </p>
+
+    <p id="Schema-dropForeign">
+      <b class="header">dropForeign</b><code>table.dropForeign(columns, [foreignKeyName])</code>
+      <br />
+      Drops a foreign key constraint from a table. A default foreign key name using the <tt>columns</tt> is used unless
+      <tt>foreignKeyName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+
     <h3 id="Chainable">Chainable Methods:</h3>
 
     <p>
@@ -1998,7 +2017,7 @@ knex.table('users')
     <p id="Chainable-references">
       <b class="header">references</b><code>column.references(column)</code>
       <br />
-      Sets the "column" that the current column references as a foreign key.
+      Sets the "column" that the current column references as a foreign key. "column" can either be "&lt;table&gt;.&lt;column&gt;" syntax, or just the column name followed up with a call to <a href="#Chainable-inTable">inTable</a> to specify the table.
     </p>
 
     <p id="Chainable-inTable">
@@ -2420,7 +2439,7 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
     <p id="Events-query">
       <b class="header">query</b>
       <br />
-      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all
+      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all queries throughout your application.
     </p>
 
 
@@ -2432,6 +2451,29 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
   })
   .then(function() {
     // ...
+  });
+</code>
+</pre>
+
+
+    <p id="Events-query-error">
+      <b class="header">query-error</b>
+      <br />
+      A <b>query-error</b> event is fired when an error occurs when running a query, providing the error object and data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all query errors throughout your application.
+    </p>
+
+
+<pre>
+<code class="js">knex.select(['NonExistentColumn'])
+  .from('users')
+  .on('query-error', function(error, obj) {
+    app.log(error);
+  })
+  .then(function() {
+    // ...
+  })
+  .catch(function(error) {
+    // Same error object as the query-error event provides.
   });
 </code>
 </pre>
