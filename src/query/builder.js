@@ -225,8 +225,17 @@ assign(Builder.prototype, {
     return this;
   },
   // Adds an `or where` clause to the query.
-  orWhere: function() {
-    return this._bool('or').where.apply(this, arguments);
+  orWhere: function orWhere() {
+    this._bool('or');
+    var obj = arguments[0];
+    if(_.isObject(obj) && !_.isFunction(obj) && !(obj instanceof Raw)) {
+      return this.whereWrapped(function() {
+        for(let key in obj) {
+          this.andWhere(key, obj[key]);
+        }
+      });
+    }
+    return this.where.apply(this, arguments);
   },
 
   // Adds an `not where` clause to the query.
