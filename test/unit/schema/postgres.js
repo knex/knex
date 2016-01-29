@@ -91,7 +91,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.dropPrimary();
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint users_pkey');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_pkey"');
   });
 
   it("drop unique", function() {
