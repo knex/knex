@@ -72,8 +72,9 @@ module.exports = function(Target) {
   // Creates a method which "coerces" to a promise, by calling a
   // "then" method on the current `Target`
   _.each(['bind', 'catch', 'finally', 'asCallback',
-    'spread', 'map', 'reduce', 'tap', 'thenReturn',
-    'return', 'yield', 'ensure', 'nodeify', 'exec'], function(method) {
+    'spread', 'map', 'reduce', 'tap', 'filter',
+    'thenReturn', 'return', 'yield', 'ensure',
+    'nodeify', 'exec'], function(method) {
     Target.prototype[method] = function() {
       var then = this.then();
       then = then[method].apply(then, arguments);
