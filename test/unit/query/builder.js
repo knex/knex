@@ -3109,4 +3109,33 @@ describe("QueryBuilder", function() {
       }
     });
   });
+
+  it('#965 - .raw accepts Array and Non-Array bindings', function() {
+    var expected = function(expectedBindings) {
+      return {
+        mysql:   {
+          sql:      'select * from `users` where username = ?',
+          bindings: expectedBindings
+        },
+        mssql:   {
+          sql:      'select * from [users] where username = ?',
+          bindings: expectedBindings
+        },
+        default: {
+          sql:      'select * from "users" where username = ?',
+          bindings: expectedBindings
+        }
+      };
+    };
+
+    //String
+    testsql(qb().select('*').from('users').where(raw('username = ?', 'knex')), expected(['knex']));
+    testsql(qb().select('*').from('users').where(raw('username = ?', ['knex'])), expected(['knex']));
+
+    //Number
+    testsql(qb().select('*').from('users').where(raw('username = ?', 0)), expected([0]));
+    testsql(qb().select('*').from('users').where(raw('username = ?', [1])), expected([1]));
+
+  });
+
 });
