@@ -224,6 +224,7 @@
       <li>&nbsp;&nbsp;– <a href="#Promises-reduce">reduce</a></li>
       <li>&nbsp;&nbsp;– <a href="#Promises-bind">bind</a></li>
       <li>&nbsp;&nbsp;– <a href="#Promises-return">return</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Promises-filter">filter</a></li>
       <li><b><a href="#Interfaces-Callbacks">Callbacks</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Interfaces-asCallback">asCallback</a></li>
       <li><b><a href="#Interfaces-Streams">Streams</a></b></li>
@@ -2356,6 +2357,28 @@ knex.insert(values).into('users')
   });
 
 knex.insert(values).into('users').return({inserted: true});
+</code>
+</pre>
+
+
+    <p id="Promises-filter">
+      <b class="header">filter</b><code>.filter(fn)</code>
+      <br />
+      A passthrough to <a href="http://bluebirdjs.com/docs/api/promise.filter.html">Bluebird's filter implementation</a> with the result set.
+    </p>
+
+
+<pre>
+<code class="js">
+  knex
+  .select()
+  .from('users')
+  .filter(function(row) {
+    return row.Id > 10;
+  })
+  .then(function(rows) {
+
+  });
 </code>
 </pre>
 
