@@ -17,7 +17,7 @@ function Raw(client) {
   // Todo: Deprecate
   this._wrappedBefore = undefined
   this._wrappedAfter  = undefined
-  this._debug         = client && client.options && client.options.debug
+  this._debug         = client && client.config && client.config.debug
 }
 inherits(Raw, EventEmitter)
 
