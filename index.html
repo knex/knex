@@ -1210,14 +1210,16 @@ knex('books')
       <br />
       Creates an <tt>update</tt> query, taking a hash of properties or a key/value pair
       to be updated based on the other query constraints. Resolves the promise / fulfills the
-      callback with the number of affected rows for the query.
+      callback with the number of affected rows for the query. If a key to be updated has value
+      <tt>undefined</tt> it is ignored.
     </p>
 
 <pre class="display">
 knex('books')
   .where('published_date', '<', 2000)
   .update({
-    status: 'archived'
+    status: 'archived',
+    thisKeyIsSkipped: undefined
   })
 </pre>
 
