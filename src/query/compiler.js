@@ -396,6 +396,7 @@ assign(QueryCompiler.prototype, {
 
   // "Preps" the update.
   _prepUpdate: function(data) {
+    data = _.omit(data, _.isUndefined)
     var vals   = []
     var sorted = Object.keys(data).sort()
     var i      = -1
