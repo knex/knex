@@ -146,11 +146,14 @@ assign(Runner.prototype, {
                   var additionalErrorInformation = {
                     timeoutStack: error.stack
                   }
+
                   if(runner.builder) {
                     additionalErrorInformation.sql = runner.builder.sql
                     additionalErrorInformation.bindings = runner.builder.bindings
                   }
+
                   assign(timeoutError, additionalErrorInformation)
+
                   rejecter(timeoutError)
             })
             .catch(rejecter)
