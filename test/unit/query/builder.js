@@ -2129,6 +2129,19 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("should not update columns undefined values", function() {
+    testsql(qb().update({'email': 'foo', 'name': undefined}).table('users').where('id', '=', 1), {
+      mysql: {
+        sql: 'update `users` set `email` = ? where `id` = ?',
+        bindings: ['foo', 1]
+      },
+      default: {
+        sql: 'update "users" set "email" = ? where "id" = ?',
+        bindings: ['foo', 1]
+      }
+    });
+  });
+
   it("should allow for 'null' updates", function() {
     testsql(qb().update({email: null, 'name': 'bar'}).table('users').where('id', 1), {
       mysql: {
