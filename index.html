@@ -60,6 +60,7 @@
       <li>&nbsp;&nbsp;– <a href="#Installation-client">client</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-debug">debug</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-pooling">pooling</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Installation-acquireConnectionTimeout">acquireConnectionTimeout</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-migrations">migrations</a></li>
     </ul>
 
@@ -503,6 +504,26 @@ pg('table').insert({a: 'b'}).returning('*').toString();
       If you ever need to explicitly teardown the connection pool, you may use <tt>knex.destroy([callback])</tt>.
       You may use <tt>knex.destroy</tt> by passing a callback, or by chaining as a promise, just not both.
     </p>
+
+
+    <h3 id="Installation-acquireConnectionTimeout">acquireConnectionTimeout</h3>
+
+    <p>
+      <tt>acquireConnectionTimeout</tt> defaults to 60000ms and is used to determine how long knex should wait before throwing a timeout error when acquiring a connection is not possible.
+      The most common cause for this is using up all the pool for transaction connections and then attempting to run queries outside of transactions while the pool is still full.
+      The error thrown will provide information on the query the connection was for to simplify the job of locating the culprit.
+    </p>
+
+<pre>
+<code class="js">var knex = require('knex')({
+  client: 'pg',
+  connection: {...},
+  pool: {...},
+  acquireConnectionTimeout: 10000
+  });
+</code>
+</pre>
+
 
     <h3 id="Installation-migrations">Migrations</h3>
 

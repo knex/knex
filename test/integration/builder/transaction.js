@@ -3,6 +3,8 @@
 'use strict';
 
 var Promise = testPromise;
+var Knex   = require('../../../knex');
+var _ = require('lodash');
 
 module.exports = function(knex) {
 
@@ -275,6 +277,41 @@ module.exports = function(knex) {
           .then(expectQueryEventToHaveBeenTriggered)
           .catch(expectQueryEventToHaveBeenTriggered);
 
+    });
+
+    it('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function(done) {
+      this.timeout(15000);
+      //To make this test easier, I'm changing the pool settings to max 1.
+      var knexConfig = _.clone(knex.client.config);
+      knexConfig.pool.min = 0;
+      knexConfig.pool.max = 1;
+      knexConfig.acquireConnectionTimeout = 10000;
+
+      var knexDb = new Knex(knexConfig);
+
+      //Create a transaction that will occupy the only available connection, and avoid trx.commit.
+     knexDb.transaction(function(trx) {
+        trx.raw('SELECT version()').then(function() {
+
+          //No connection is available, so try issuing a query without transaction.
+          //Since there is no available connection, it should throw a timeout error based on knex pool config.
+          knexDb.raw('select * FROM accounts WHERE username = ?', ['Test'])
+              .then(function(res) {
+                expect(res).to.not.exist();
+              })
+              .catch(function(error) {
+                expect(error.bindings).to.be.an('array');
+                expect(error.bindings[0]).to.equal('Test');
+                expect(error.sql).to.equal('select * FROM accounts WHERE username = ?');
+                expect(error.message).to.equal('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?');
+                trx.commit();
+              });
+        }).catch(trx.rollback);
+      })
+      .then(function() {
+           done();
+      })
+      .catch(done);
     });
 
   });
