@@ -291,7 +291,7 @@ module.exports = function(knex) {
 
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
      knexDb.transaction(function(trx) {
-        trx.raw('SELECT version()').then(function() {
+        trx.raw('SELECT 1 = 1').then(function() {
 
           //No connection is available, so try issuing a query without transaction.
           //Since there is no available connection, it should throw a timeout error based on knex pool config.
