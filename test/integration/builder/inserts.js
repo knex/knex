@@ -647,6 +647,37 @@ module.exports = function(knex) {
       });
     });
 
+
+    it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', function (done) {
+      this.timeout(20000);
+      var fiftyLengthString = 'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
+      knex.schema.dropTableIfExists('BatchInsert')
+          .then(function () {
+            return knex.schema.createTable('BatchInsert', function (table) {
+              for(var i = 0; i < 65; i++) {
+                table.string('Col' + i, 50);
+              }
+            })
+          })
+          .then(function () {
+            var items = [];
+
+            for(var i = 0; i < 5000; i++) {
+              var item = {};
+              for(var x = 0; x < 65; x++) {
+                item['Col' + x] = fiftyLengthString;
+              }
+              items.push(item);
+            }
+
+            return knex.batchInsert('BatchInsert', items, 1);
+          })
+          .then(function() {
+            done();
+          })
+          .catch(done);
+    });
+
   });
 
 };
