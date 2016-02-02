@@ -148,6 +148,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("allows alias with dots in the identifier name", function() {
+    testsql(qb().select('foo as bar.baz').from('users'), {
+      mysql: 'select `foo` as `bar.baz` from `users`',
+      oracle: 'select "foo" "bar.baz" from "users"',
+      mssql: 'select [foo] as [bar.baz] from [users]',
+      default: 'select "foo" as "bar.baz" from "users"'
+    });
+  });
+
   it("basic table wrapping", function() {
     testsql(qb().select('*').from('public.users'), {
       mysql: 'select * from `public`.`users`',
