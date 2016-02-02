@@ -59,7 +59,8 @@ TableCompiler_PG.prototype.index = function(columns, indexName, indexType) {
     ' (' + this.formatter.columnize(columns) + ')');
 };
 TableCompiler_PG.prototype.dropPrimary = function() {
-  this.pushQuery('alter table ' + this.tableName() + " drop constraint " + this.tableNameRaw + "_pkey");
+  let constraintName = this.formatter.wrap(this.tableNameRaw + '_pkey');
+  this.pushQuery('alter table ' + this.tableName() + " drop constraint " + constraintName);
 };
 TableCompiler_PG.prototype.dropIndex = function(columns, indexName) {
   indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
