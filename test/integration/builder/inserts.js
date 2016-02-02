@@ -654,7 +654,7 @@ module.exports = function(knex) {
       knex.schema.dropTableIfExists('BatchInsert')
           .then(function () {
             return knex.schema.createTable('BatchInsert', function (table) {
-              for(var i = 0; i < 65; i++) {
+              for(var i = 0; i < 30; i++) {
                 table.string('Col' + i, 50);
               }
             })
@@ -662,9 +662,9 @@ module.exports = function(knex) {
           .then(function () {
             var items = [];
 
-            for(var i = 0; i < 5000; i++) {
+            for(var i = 0; i < 2500; i++) {
               var item = {};
-              for(var x = 0; x < 65; x++) {
+              for(var x = 0; x < 30; x++) {
                 item['Col' + x] = fiftyLengthString;
               }
               items.push(item);
