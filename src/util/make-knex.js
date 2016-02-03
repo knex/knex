@@ -37,8 +37,7 @@ module.exports = function makeKnex(client) {
     batchInsert: function(table, batch, chunkSize) {
       chunkSize = _.isNumber(chunkSize) ? chunkSize : 1;
 
-      return new Promise((resolver, rejecter) => {
-        this.transaction((tr) => {
+      return this.transaction((tr) => {
 
           //Avoid unnecessary call
           if(chunkSize !== 1) {
@@ -50,11 +49,7 @@ module.exports = function makeKnex(client) {
           }))
           .then(tr.commit)
           .catch(tr.rollback)
-
         })
-        .then(resolver)
-        .catch(rejecter)
-      })
     },
 
     // Runs a new transaction, taking a container and returning a promise
