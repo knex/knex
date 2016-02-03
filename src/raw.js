@@ -27,7 +27,7 @@ assign(Raw.prototype, {
   set: function(sql, bindings) {    
     this._cached  = undefined
     this.sql      = sql
-    this.bindings = _.isObject(bindings) || _.isUndefined(bindings) ?  bindings : [bindings]
+    this.bindings = (_.isObject(bindings) || _.isUndefined(bindings)) ?  bindings : [bindings]
 
     return this
   },

@@ -2124,6 +2124,18 @@ knex('users')
   }))
 </pre>
 
+    <p>For simpler queries where one only has a single binding, <tt>.raw</tt> can accept said binding as its second parameter.</p>
+
+<pre class="display">
+knex('users')
+  .where(
+    knex.raw('LOWER("login") = ?', 'knex')
+  )
+  .orWhere(
+    knex.raw('accesslevel = ?', 1)
+  )
+</pre>
+
     <p>
       To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
     </p>
