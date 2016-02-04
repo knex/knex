@@ -157,6 +157,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("allows for subqueries to be used inside select", function() {
+    var subquery = qb().select('total').from('pets').as('pet_total');
+    testsql(qb().select(['name', subquery]).from('public.users'), {
+      mysql: 'select `name`, (select `total` from `pets`) as `pet_total` from `public`.`users`',
+      mssql: 'select [name], (select [total] from [pets]) as [pet_total] from [public].[users]',
+      default: 'select "name", (select "total" from "pets") as "pet_total" from "public"."users"'
+    });
+  });
+
   it("basic table wrapping", function() {
     testsql(qb().select('*').from('public.users'), {
       mysql: 'select * from `public`.`users`',
@@ -198,6 +207,14 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("where subquery", function() {
+    var subquery = qb().select('total').from('pets');
+    testsql(qb().select('*').from('users').where({ total: subquery }), {
+      mysql: 'select * from `users` where `total` = (select `total` from `pets`)',
+      mssql: 'select * from [users] where [total] = (select [total] from [pets])',
+      default: 'select * from "users" where "total" = (select "total" from "pets")'
+    });
+  });
 
   it("where not", function() {
     testsql(qb().select('*').from('users').whereNot('id', '=', 1), {
