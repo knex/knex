@@ -2134,6 +2134,9 @@ knex('users')
   .orWhere(
     knex.raw('accesslevel = ?', 1)
   )
+  .orWhere(
+    knex.raw('updtime = ?', new Date())
+  )
 </pre>
 
     <p>

@@ -3111,31 +3111,40 @@ describe("QueryBuilder", function() {
   });
 
   it('#965 - .raw accepts Array and Non-Array bindings', function() {
-    var expected = function(expectedBindings) {
+    var expected = function(fieldName, expectedBindings) {
       return {
         mysql:   {
-          sql:      'select * from `users` where username = ?',
+          sql:      'select * from `users` where ' + fieldName + ' = ?',
           bindings: expectedBindings
         },
         mssql:   {
-          sql:      'select * from [users] where username = ?',
+          sql:      'select * from [users] where ' + fieldName + ' = ?',
           bindings: expectedBindings
         },
         default: {
-          sql:      'select * from "users" where username = ?',
+          sql:      'select * from "users" where ' + fieldName + ' = ?',
           bindings: expectedBindings
         }
       };
     };
 
     //String
-    testsql(qb().select('*').from('users').where(raw('username = ?', 'knex')), expected(['knex']));
-    testsql(qb().select('*').from('users').where(raw('username = ?', ['knex'])), expected(['knex']));
+    testsql(qb().select('*').from('users').where(raw('username = ?', 'knex')), expected('username', ['knex']));
+    testsql(qb().select('*').from('users').where(raw('username = ?', ['knex'])), expected('username', ['knex']));
 
     //Number
-    testsql(qb().select('*').from('users').where(raw('username = ?', 0)), expected([0]));
-    testsql(qb().select('*').from('users').where(raw('username = ?', [1])), expected([1]));
+    testsql(qb().select('*').from('users').where(raw('isadmin = ?', 0)), expected('isadmin', [0]));
+    testsql(qb().select('*').from('users').where(raw('isadmin = ?', [1])), expected('isadmin', [1]));
 
+    //Date
+    var date = new Date(2016, 0, 5, 10, 19, 30, 599);
+    var sqlUpdTime = '2016-01-05 10:19:30.599';
+    testsql(qb().select('*').from('users').where(raw('updtime = ?', date)), expected('updtime', [date]));
+    testsql(qb().select('*').from('users').where(raw('updtime = ?', [date])), expected('updtime', [date]));
+    testquery(qb().select('*').from('users').where(raw('updtime = ?', date)), {
+      mysql: 'select * from `users` where updtime = \'' + sqlUpdTime + '\'',
+      default: 'select * from "users" where updtime = \'' + sqlUpdTime + '\''
+    });
   });
 
 });
