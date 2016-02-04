@@ -648,34 +648,38 @@ module.exports = function(knex) {
     });
 
 
-    it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', function (done) {
-      this.timeout(20000);
+    it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', function () {
       var fiftyLengthString = 'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
-      knex.schema.dropTableIfExists('BatchInsert')
+      var items             = [];
+      var amountOfItems     = 100;
+      var amountOfColumns   = 30;
+
+      for (var i = 0; i < amountOfItems; i++) {
+        var item = {};
+        for (var x = 0; x < amountOfColumns; x++) {
+          item['Col' + x] = fiftyLengthString;
+        }
+        items.push(item);
+      }
+
+      return knex.schema.dropTableIfExists('BatchInsert')
           .then(function () {
             return knex.schema.createTable('BatchInsert', function (table) {
-              for(var i = 0; i < 30; i++) {
+              for (var i = 0; i < amountOfColumns; i++) {
                 table.string('Col' + i, 50);
               }
             })
           })
           .then(function () {
-            var items = [];
-
-            for(var i = 0; i < 2500; i++) {
-              var item = {};
-              for(var x = 0; x < 30; x++) {
-                item['Col' + x] = fiftyLengthString;
-              }
-              items.push(item);
-            }
-
-            return knex.batchInsert('BatchInsert', items, 1);
+            return knex.batchInsert('BatchInsert', items, 30);
           })
-          .then(function() {
-            done();
+          .then(function () {
+            return knex('BatchInsert').count();
           })
-          .catch(done);
+          .then(function (result) {
+            var count = parseInt(_.first(result).count, 10);
+            expect(count).to.equal(amountOfItems);
+          })
     });
 
   });
