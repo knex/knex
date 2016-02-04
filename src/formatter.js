@@ -80,6 +80,9 @@ assign(Formatter.prototype, {
     if (typeof value === 'function') {
       return this.outputQuery(this.compileCallback(value), true);
     }
+    if (value instanceof QueryBuilder) {
+      return this.parameterize(value);
+    }
     raw = this.unwrapRaw(value);
     if (raw) return raw;
     if (typeof value === 'number') return value;
