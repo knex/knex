@@ -674,10 +674,10 @@ module.exports = function(knex) {
             return knex.batchInsert('BatchInsert', items, 30);
           })
           .then(function () {
-            return knex('BatchInsert').count();
+            return knex('BatchInsert').select();
           })
           .then(function (result) {
-            var count = parseInt(_.first(result).count, 10);
+            var count = result.length;
             expect(count).to.equal(amountOfItems);
           })
     });
