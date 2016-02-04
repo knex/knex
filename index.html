@@ -213,6 +213,14 @@
       <li>- <a href="#Raw-queries-wrapped">Wrapped Queries</a></li>
     </ul>
 
+
+    <a class="toc_title" href="#Utility">
+      Utility
+    </a>
+    <ul class="toc_section">
+      <li>- <a href="#Utility-BatchInsert">Batch Insert</a></li>
+    </ul>
+
     <a class="toc_title" href="#Interfaces">
       Interfaces
     </a>
@@ -2217,6 +2225,35 @@ knex.select('e.lastname', 'e.salary', subcolumn)
   .from('employee as e')
   .whereRaw('dept_no = e.dept_no')
 </pre>
+
+
+    <h2 id="Utility">Utility</h2>
+
+    <p>
+      A collection of utilities that the knex library provides for convenience.
+    </p>
+
+
+    <h3 id="Utility-BatchInsert">Batch Insert</h3>
+
+    <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction (which is automatically created), at a given <tt>chunkSize</tt>.</p>
+    <p>It's primarily designed to be used when you have thousands of rows to insert into a table.</p>
+    <p>By default, the <tt>chunkSize</tt> is set to 1.</p>
+
+<pre>
+<code class="js">
+  var rows = [{...}, {...}];
+  var chunkSize = 30;
+  knex.batchInsert('TableName', rows, chunkSize)
+  .then(function() {
+    ...
+  })
+  .catch(function(error) {
+    ...
+  });
+</code>
+</pre>
+
 
     <h2 id="Interfaces">Interfaces</h2>
 

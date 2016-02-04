@@ -7,6 +7,8 @@ var Seeder         = require('../seed')
 var FunctionHelper = require('../functionhelper')
 var QueryInterface = require('../query/methods')
 var helpers        = require('../helpers')
+var Promise        = require('../promise')
+var _              = require('lodash')
 
 module.exports = function makeKnex(client) {
 
@@ -30,6 +32,24 @@ module.exports = function makeKnex(client) {
 
     raw: function() {
       return client.raw.apply(client, arguments)
+    },
+
+    batchInsert: function(table, batch, chunkSize) {
+      chunkSize = _.isNumber(chunkSize) ? chunkSize : 1;
+
+      return this.transaction((tr) => {
+
+          //Avoid unnecessary call
+          if(chunkSize !== 1) {
+            batch = _.chunk(batch, chunkSize)
+          }
+
+          Promise.all(batch.map((items) => {
+            return tr(table).insert(items)
+          }))
+          .then(tr.commit)
+          .catch(tr.rollback)
+        })
     },
 
     // Runs a new transaction, taking a container and returning a promise
