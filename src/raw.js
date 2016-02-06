@@ -6,6 +6,7 @@ var EventEmitter  = require('events').EventEmitter
 var assign        = require('lodash/object/assign')
 var reduce        = require('lodash/collection/reduce')
 var isPlainObject = require('lodash/lang/isPlainObject')
+var _             = require('lodash');
 
 function Raw(client) {
   this.client   = client
@@ -26,7 +27,8 @@ assign(Raw.prototype, {
   set: function(sql, bindings) {    
     this._cached  = undefined
     this.sql      = sql
-    this.bindings = bindings
+    this.bindings = (_.isObject(bindings) || _.isUndefined(bindings)) ?  bindings : [bindings]
+
     return this
   },
 
