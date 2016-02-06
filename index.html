@@ -2118,7 +2118,7 @@ knex.schema.createTable('accounts', function() {
 });
 </pre>
 
-    <h2 id="Raw">Raw Queries</h2>
+    <h2 id="Raw">Raw</h2>
 
     <p>
       Sometimes you may need to use a raw expression in a query. Raw query object may be injected pretty much
@@ -2170,9 +2170,20 @@ knex('users')
   )
 </pre>
 
-    <p>
-      To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
-    </p>
+  <p>
+    Note that due to ambiguity, arrays must be passed as arguments within a containing array.
+  </p>
+
+<pre class="display">
+knex.raw('select * from users where id in (?)', [1, 2, 3]);
+// Error: Expected 3 bindings, saw 1
+
+knex.raw('select * from users where id in (?)', [[1, 2, 3]])
+</pre>
+
+  <p>
+    To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
+  </p>
 
 <pre class="display">
 knex.select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey'])
