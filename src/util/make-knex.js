@@ -7,6 +7,8 @@ var Seeder         = require('../seed')
 var FunctionHelper = require('../functionhelper')
 var QueryInterface = require('../query/methods')
 var helpers        = require('../helpers')
+var Promise        = require('../promise')
+var _              = require('lodash')
 
 module.exports = function makeKnex(client) {
 
@@ -20,7 +22,7 @@ module.exports = function makeKnex(client) {
   }
 
   assign(knex, {
-    
+
     Promise: require('../promise'),
 
     // A new query builder instance
@@ -30,6 +32,24 @@ module.exports = function makeKnex(client) {
 
     raw: function() {
       return client.raw.apply(client, arguments)
+    },
+
+    batchInsert: function(table, batch, chunkSize) {
+      chunkSize = _.isNumber(chunkSize) ? chunkSize : 1;
+
+      return this.transaction((tr) => {
+
+          //Avoid unnecessary call
+          if(chunkSize !== 1) {
+            batch = _.chunk(batch, chunkSize)
+          }
+
+          Promise.all(batch.map((items) => {
+            return tr(table).insert(items)
+          }))
+          .then(tr.commit)
+          .catch(tr.rollback)
+        })
     },
 
     // Runs a new transaction, taking a container and returning a promise
@@ -68,7 +88,7 @@ module.exports = function makeKnex(client) {
       return builder[method].apply(builder, arguments)
     }
   })
-  
+
   knex.client = client
 
   Object.defineProperties(knex, {
@@ -103,9 +123,13 @@ module.exports = function makeKnex(client) {
   client.on('start', function(obj) {
     knex.emit('start', obj)
   })
-  
+
   client.on('query', function(obj) {
     knex.emit('query', obj)
+  })
+
+  client.on('query-error', function(err, obj) {
+    knex.emit('query-error', err, obj)
   })
 
   client.makeKnex = function(client) {

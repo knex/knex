@@ -9,6 +9,8 @@ var EventEmitter = require('events').EventEmitter
 var Raw          = require('../raw')
 var helpers      = require('../helpers')
 var JoinClause   = require('./joinclause')
+var clone        = require('lodash/lang/clone');
+var isUndefined  = require('lodash/lang/isUndefined');
 var assign       = require('lodash/object/assign');
 
 // Typically called from `knex.builder`,
@@ -18,13 +20,13 @@ function Builder(client) {
   this.and         = this;
   this._single     = {};
   this._statements = [];
+  this._method    = 'select'
+  this._debug     = client.config && client.config.debug;
 
   // Internal flags used in the builder.
-  this._method    = 'select'
   this._joinFlag  = 'inner';
   this._boolFlag  = 'and';
   this._notFlag   = false;
-  this._debug     = client.config && client.config.debug;
 }
 inherits(Builder, EventEmitter);
 
@@ -40,13 +42,18 @@ assign(Builder.prototype, {
   },
 
   // Create a shallow clone of the current query builder.
-  // TODO: Test this!!
-  clone: function() {
-    var cloned            = new this.constructor(this.client);
-      cloned._method      = this._method;
-      cloned._single      = _.clone(this._single);
-      cloned._options     = _.clone(this._options);
-      cloned._statements  = this._statements.slice();
+  clone() {
+    const cloned        = new this.constructor(this.client);
+    cloned._method      = this._method;
+    cloned._single      = clone(this._single);
+    cloned._statements  = clone(this._statements);
+    cloned._debug       = this._debug;
+
+    // `_option` is assigned by the `Interface` mixin.
+    if (!isUndefined(this._options)) {
+      cloned._options = clone(this._options);
+    }
+
     return cloned;
   },
 
@@ -565,6 +572,21 @@ assign(Builder.prototype, {
     return this._aggregate('avg', column);
   },
 
+  // Retrieve the "count" of the distinct results of the query.
+  countDistinct: function(column) {
+    return this._aggregate('count', (column || '*'), true);
+  },
+
+  // Retrieve the sum of the distinct values of a given column.
+  sumDistinct: function(column) {
+    return this._aggregate('sum', column, true);
+  },
+
+  // Retrieve the vg of the distinct results of the query.
+  avgDistinct: function(column) {
+    return this._aggregate('avg', column, true);
+  },
+
   // Increments a column's value by the specified amount.
   increment: function(column, amount) {
     return this._counter(column, amount);
@@ -752,12 +774,13 @@ assign(Builder.prototype, {
   },
 
   // Helper for compiling any aggregate queries.
-  _aggregate: function(method, column) {
+  _aggregate: function(method, column, aggregateDistinct) {
     this._statements.push({
       grouping: 'columns',
       type: 'aggregate',
       method: method,
-      value: column
+      value: column,
+      aggregateDistinct: aggregateDistinct || false
     });
     return this;
   }

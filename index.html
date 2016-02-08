@@ -60,6 +60,7 @@
       <li>&nbsp;&nbsp;– <a href="#Installation-client">client</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-debug">debug</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-pooling">pooling</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Installation-acquireConnectionTimeout">acquireConnectionTimeout</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-migrations">migrations</a></li>
     </ul>
 
@@ -119,6 +120,7 @@
       <li>– <a href="#Builder-min">min</a></li>
       <li>– <a href="#Builder-max">max</a></li>
       <li>– <a href="#Builder-sum">sum</a></li>
+      <li>– <a href="#Builder-avg">avg</a></li>
       <li>– <a href="#Builder-increment">increment</a></li>
       <li>– <a href="#Builder-decrement">decrement</a></li>
       <li>– <a href="#Builder-truncate">truncate</a></li>
@@ -173,6 +175,7 @@
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
       <li>– <a href="#Schema-json">json</a></li>
+      <li>– <a href="#Schema-jsonb">jsonb</a></li>
       <li>– <a href="#Schema-uuid">uuid</a></li>
       <li>– <a href="#Schema-comment">comment</a></li>
       <li>– <a href="#Schema-engine">engine</a></li>
@@ -181,6 +184,8 @@
       <li>– <a href="#Schema-specificType">specificType</a></li>
       <li>– <a href="#Schema-index">index</a></li>
       <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
+      <li>– <a href="#Schema-foreign">Foreign</a></li>
+      <li>– <a href="#Schema-dropForeign">dropForeignx</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -202,9 +207,18 @@
       Raw
     </a>
     <ul class="toc_section">
+      <li>– <a href="#Raw-Bindings">Raw Parameter Binding</a></li>
       <li>– <a href="#Raw-Expressions">Raw Expressions</a></li>
       <li>– <a href="#Raw-Queries">Raw Queries</a></li>
       <li>- <a href="#Raw-queries-wrapped">Wrapped Queries</a></li>
+    </ul>
+
+
+    <a class="toc_title" href="#Utility">
+      Utility
+    </a>
+    <ul class="toc_section">
+      <li>- <a href="#Utility-BatchInsert">Batch Insert</a></li>
     </ul>
 
     <a class="toc_title" href="#Interfaces">
@@ -226,6 +240,7 @@
       <li>&nbsp;&nbsp;– <a href="#Streams-pipe">pipe</a></li>
       <li><b><a href="#Interfaces-Events">Events</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Events-query">query</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-query-error">query</a></li>
       <li><b><a href="#Interfaces-Other">Other:</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toString">toString</a></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toSQL">toSQL</a></li>
@@ -497,6 +512,26 @@ pg('table').insert({a: 'b'}).returning('*').toString();
       If you ever need to explicitly teardown the connection pool, you may use <tt>knex.destroy([callback])</tt>.
       You may use <tt>knex.destroy</tt> by passing a callback, or by chaining as a promise, just not both.
     </p>
+
+
+    <h3 id="Installation-acquireConnectionTimeout">acquireConnectionTimeout</h3>
+
+    <p>
+      <tt>acquireConnectionTimeout</tt> defaults to 60000ms and is used to determine how long knex should wait before throwing a timeout error when acquiring a connection is not possible.
+      The most common cause for this is using up all the pool for transaction connections and then attempting to run queries outside of transactions while the pool is still full.
+      The error thrown will provide information on the query the connection was for to simplify the job of locating the culprit.
+    </p>
+
+<pre>
+<code class="js">var knex = require('knex')({
+  client: 'pg',
+  connection: {...},
+  pool: {...},
+  acquireConnectionTimeout: 10000
+  });
+</code>
+</pre>
+
 
     <h3 id="Installation-migrations">Migrations</h3>
 
@@ -1151,10 +1186,31 @@ knex('books').insert({title: 'Slaughterhouse Five'})
 knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
 </pre>
 
-
 <pre class="display">
 // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
 knex.insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], 'id').into('books')
+</pre>
+
+    <p>
+      If one prefers that undefined keys are replaced with <tt>NULL</tt> instead of <tt>DEFAULT</tt>
+      one may give <tt>useNullAsDefault</tt> configuration parameter in knex config.
+    </p>
+
+<pre>
+<code class="js">
+var knex = require('knex')({
+  client: 'mysql',
+  connection: {
+    host     : '127.0.0.1',
+    user     : 'your_database_user',
+    password : 'your_database_password',
+    database : 'myapp_test'
+  },
+  useNullAsDefault: true
+});
+knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
+// insert into `coords` (`x`, `y`) values (20, NULL), (NULL, 30), (10, 20)
+</code>
 </pre>
 
     <p id="Builder-returning">
@@ -1183,14 +1239,16 @@ knex('books')
       <br />
       Creates an <tt>update</tt> query, taking a hash of properties or a key/value pair
       to be updated based on the other query constraints. Resolves the promise / fulfills the
-      callback with the number of affected rows for the query.
+      callback with the number of affected rows for the query. If a key to be updated has value
+      <tt>undefined</tt> it is ignored.
     </p>
 
 <pre class="display">
 knex('books')
   .where('published_date', '<', 2000)
   .update({
-    status: 'archived'
+    status: 'archived',
+    thisKeyIsSkipped: undefined
   })
 </pre>
 
@@ -1284,6 +1342,14 @@ knex('users').count('active')
 knex('users').count('active as a')
 </pre>
 
+    <p id="Builder-countDistinct">
+      Use <b>countDistinct</b> to add a distinct expression inside the aggregate function.
+    </p>
+
+<pre class="display">
+knex('users').countDistinct('active')
+</pre>
+
     <p id="Builder-min">
       <b class="header">min</b><code>.min(column)</code>
       <br />
@@ -1327,6 +1393,14 @@ knex('users').sum('products')
 knex('users').sum('products as p')
 </pre>
 
+    <p id="Builder-sumDistinct">
+      Use <b>sumDistinct</b> to add a distinct expression inside the aggregate function.
+    </p>
+
+<pre class="display">
+knex('users').sumDistinct('products')
+</pre>
+
     <p id="Builder-avg">
       <b class="header">avg</b><code>.avg(column)</code>
       <br />
@@ -1339,6 +1413,14 @@ knex('users').avg('age')
 
 <pre class="display">
 knex('users').avg('age as a')
+</pre>
+
+    <p id="Builder-avgDistinct">
+      Use <b>avgDistinct</b> to add a distinct expression inside the aggregate function.
+    </p>
+
+<pre class="display">
+knex('users').avgDistinct('age')
 </pre>
 
     <p id="Builder-increment">
@@ -1842,11 +1924,10 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
     </p>
 
     <p id="Schema-json">
-      <b class="header">json</b><code>table.json(name, [jsonb])</code>
+      <b class="header">json</b><code>table.json(name)</code>
       <br />
       Adds a json column, using the built-in <tt>json</tt> type in postgresql, defaulting to a text column
-      in older versions of postgresql or in unsupported databases. <tt>jsonb</tt> can be used by passing
-      <tt>true</tt> as the second argument.
+      in older versions of postgresql or in unsupported databases.
       <br />
       Note that when setting an array (or a value that could be an array) as the value of a <tt>json</tt> or
       <tt>jsonb</tt> column, you should use <tt>JSON.stringify()</tt> to convert your value to a string prior to
@@ -1858,6 +1939,12 @@ knex.table('users')
 </pre>
       This is because postgresql has a native array type which uses a syntax incompatible with json; knex has no way
       of knowing which syntax to use, and calling <tt>JSON.stringify()</tt> forces json-style syntax.
+    </p>
+
+    <p id="Schema-jsonb">
+      <b class="header">jsonb</b><code>table.jsonb(name)</code>
+      <br />
+      Adds a jsonb column. Works similar to <tt>table.json()</tt>, but uses native <tt>jsonb</tt> type if possible.
     </p>
 
     <p id="Schema-uuid">
@@ -1914,6 +2001,22 @@ knex.table('users')
       <tt>indexName</tt> is specified (in which case <tt>columns</tt> is ignored).
     </p>
 
+    <p id="Schema-foreign">
+      <b class="header">foreign</b><code>table.foreign(column))</code>
+      <br />
+      Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code>.
+      You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, <tt>CASCADE</tt>,
+      <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</code>
+      but works for existing columns.
+    </p>
+
+    <p id="Schema-dropForeign">
+      <b class="header">dropForeign</b><code>table.dropForeign(columns, [foreignKeyName])</code>
+      <br />
+      Drops a foreign key constraint from a table. A default foreign key name using the <tt>columns</tt> is used unless
+      <tt>foreignKeyName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+
     <h3 id="Chainable">Chainable Methods:</h3>
 
     <p>
@@ -1945,7 +2048,7 @@ knex.table('users')
     <p id="Chainable-references">
       <b class="header">references</b><code>column.references(column)</code>
       <br />
-      Sets the "column" that the current column references as a foreign key.
+      Sets the "column" that the current column references as a foreign key. "column" can either be "&lt;table&gt;.&lt;column&gt;" syntax, or just the column name followed up with a call to <a href="#Chainable-inTable">inTable</a> to specify the table.
     </p>
 
     <p id="Chainable-inTable">
@@ -2015,17 +2118,76 @@ knex.schema.createTable('accounts', function() {
 });
 </pre>
 
-    <h2 id="Raw">Raw Queries</h2>
+    <h2 id="Raw">Raw</h2>
 
     <p>
       Sometimes you may need to use a raw expression in a query. Raw query object may be injected pretty much
       anywhere you want, and using proper bindings can ensure your values are escaped properly, preventing SQL-injection attacks.
     </p>
+
+    <h3 id="Raw-Bindings">Raw Parameter Binding:</h3>
+
     <p>
-      With PostgreSQL <tt>?</tt> replacements are converted to <tt>$1..$n</tt> variables in prepared statements.
-      To prevent replacement one can use escape sequence <tt>\\?</tt> to use JSON operators or in string literals
-      e.g. <tt>knex.raw("(json_column->'json_field')::jsonb \\?& array['keyOne', 'keyWithQuestion\\?']")</tt>.
+      One can paramterize sql given to <tt>knex.raw(sql, bindings)</tt>. Parameters can be positional
+      named. One can also choose if parameter should be treated as value or as sql identifier
+      e.g. in case of <tt>'TableName.ColumnName'</tt> reference.
     </p>
+
+<pre class="display">
+knex('users')
+  .select(knex.raw('count(*) as user_count, status'))
+  .where(knex.raw(1))
+  .orWhere(knex.raw('status <> ?', [1]))
+  .groupBy('status')
+</pre>
+<pre class="display">
+// positional bindings ? is interpret as value and ?? as identifier
+knex('users').where(knex.raw('?? = ?', ['user.name', 1]))
+</pre>
+
+<pre class="display">
+// named bindings :name is interpret as value and :name: as identifier
+knex('users')
+  .where(knex.raw(':name: = :thisGuy or :name: = :otherGuy', {
+    name: 'users.name',
+    thisGuy: 'Bob',
+    otherGuy: 'Jay'
+  }))
+</pre>
+
+    <p>For simpler queries where one only has a single binding, <tt>.raw</tt> can accept said binding as its second parameter.</p>
+
+<pre class="display">
+knex('users')
+  .where(
+    knex.raw('LOWER("login") = ?', 'knex')
+  )
+  .orWhere(
+    knex.raw('accesslevel = ?', 1)
+  )
+  .orWhere(
+    knex.raw('updtime = ?', new Date())
+  )
+</pre>
+
+  <p>
+    Note that due to ambiguity, arrays must be passed as arguments within a containing array.
+  </p>
+
+<pre class="display">
+knex.raw('select * from users where id in (?)', [1, 2, 3]);
+// Error: Expected 3 bindings, saw 1
+
+knex.raw('select * from users where id in (?)', [[1, 2, 3]])
+</pre>
+
+  <p>
+    To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
+  </p>
+
+<pre class="display">
+knex.select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey'])
+</pre>
 
     <h3 id="Raw-Expressions">Raw Expressions:</h3>
 
@@ -2089,6 +2251,35 @@ knex.select('e.lastname', 'e.salary', subcolumn)
   .from('employee as e')
   .whereRaw('dept_no = e.dept_no')
 </pre>
+
+
+    <h2 id="Utility">Utility</h2>
+
+    <p>
+      A collection of utilities that the knex library provides for convenience.
+    </p>
+
+
+    <h3 id="Utility-BatchInsert">Batch Insert</h3>
+
+    <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction (which is automatically created), at a given <tt>chunkSize</tt>.</p>
+    <p>It's primarily designed to be used when you have thousands of rows to insert into a table.</p>
+    <p>By default, the <tt>chunkSize</tt> is set to 1.</p>
+
+<pre>
+<code class="js">
+  var rows = [{...}, {...}];
+  var chunkSize = 30;
+  knex.batchInsert('TableName', rows, chunkSize)
+  .then(function() {
+    ...
+  })
+  .catch(function(error) {
+    ...
+  });
+</code>
+</pre>
+
 
     <h2 id="Interfaces">Interfaces</h2>
 
@@ -2334,7 +2525,7 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
     <p id="Events-query">
       <b class="header">query</b>
       <br />
-      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all
+      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all queries throughout your application.
     </p>
 
 
@@ -2346,6 +2537,29 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
   })
   .then(function() {
     // ...
+  });
+</code>
+</pre>
+
+
+    <p id="Events-query-error">
+      <b class="header">query-error</b>
+      <br />
+      A <b>query-error</b> event is fired when an error occurs when running a query, providing the error object and data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all query errors throughout your application.
+    </p>
+
+
+<pre>
+<code class="js">knex.select(['NonExistentColumn'])
+  .from('users')
+  .on('query-error', function(error, obj) {
+    app.log(error);
+  })
+  .then(function() {
+    // ...
+  })
+  .catch(function(error) {
+    // Same error object as the query-error event provides.
   });
 </code>
 </pre>
@@ -2433,12 +2647,23 @@ $ knex migrate:latest
 </pre>
 
     <p>
-      You can also pass the <tt>--env</tt> flag to select an alternative
-      environment:
+      You can also pass the <tt>--env</tt> flag or set <tt>NODE_ENV</tt> to select an alternative environment:
     </p>
 
 <pre>
 $ knex migrate:latest --env production
+
+# or
+
+$ NODE_ENV=production knex migrate:latest
+</pre>
+
+    <p>
+      To rollback the last batch of migrations:
+    </p>
+
+<pre>
+$ knex migrate:rollback
 </pre>
 
     <h2 id="Seeds">Seed files</h2>
@@ -2540,7 +2765,7 @@ $ knex seed:run
 <pre>
 <code class="js">exports.up = function(knex, Promise) { /* ... */ };
 exports.down = function(knex, Promise) { /* ... */ };
-exports.config {
+exports.config = {
   transaction: false
 };
 </code>

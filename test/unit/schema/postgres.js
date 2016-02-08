@@ -91,7 +91,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.dropPrimary();
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint users_pkey');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_pkey"');
   });
 
   it("drop unique", function() {
@@ -452,7 +452,7 @@ describe("PostgreSQL SchemaBuilder", function() {
 
   it('adding jsonb', function() {
     tableSql = client.schemaBuilder().table('user', function(t) {
-      t.json('preferences', true);
+      t.jsonb('preferences');
     }).toSQL();
     expect(tableSql[0].sql).to.equal('alter table "user" add column "preferences" jsonb');
   });

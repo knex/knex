@@ -49,7 +49,6 @@ module.exports = function(knex) {
               details: ''
             }]
           );
-
           tester(
             'postgresql',
             'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc', [], [{
@@ -159,6 +158,43 @@ module.exports = function(knex) {
               updated_at: d,
               phone: null,
               details: null // Oracle implicitly converted '' to NULL
+            }]
+          );
+          tester(
+            'mssql',
+            'select [accounts].*, [test_table_two].[details] from [accounts] inner join [test_table_two] on [accounts].[id] = [test_table_two].[account_id] order by [accounts].[id] asc', [], [{
+              id: '1',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+            }, {
+              id: '2',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test2@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+            }, {
+              id: '3',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test3@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: ''
             }]
           );
         });
@@ -451,6 +487,76 @@ module.exports = function(knex) {
               details: null
             }]
           );
+          tester(
+            'mssql',
+            'select [accounts].*, [test_table_two].[details] from [accounts] left join [test_table_two] on [accounts].[id] = [test_table_two].[account_id] order by [accounts].[id] asc', [], [{
+              id: '1',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+            }, {
+              id: '2',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test2@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
+            }, {
+              id: '3',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test3@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: ''
+            }, {
+              id: '4',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test4@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: null
+            }, {
+              id: '5',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test5@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: null
+            }, {
+              id: '7',
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test6@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              details: null
+            }]
+          );
         });
     });
 
@@ -726,6 +832,94 @@ module.exports = function(knex) {
               json_data: null
             }]
           );
+          tester(
+            'mssql',
+            'select * from [accounts] left join [test_table_two] on [accounts].[id] = [test_table_two].[account_id] or [accounts].[email] = [test_table_two].[details] order by [accounts].[id] asc', [], [{
+              id: ['1', 1],
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              account_id: 1,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+              status: 0,
+              json_data: null
+            }, {
+              id: ['2', 2],
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test2@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              account_id: 2,
+              details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+              status: 1,
+              json_data: null
+            }, {
+              id: ['3', 3],
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test3@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              account_id: 3,
+              details: '',
+              status: 1,
+              json_data: null
+            }, {
+              id: ['4', null],
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test4@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              account_id: null,
+              details: null,
+              status: null,
+              json_data: null
+            }, {
+              id: ['5', null],
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test5@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              account_id: null,
+              details: null,
+              status: null,
+              json_data: null
+            }, {
+              id: ['7', null],
+              first_name: 'Test',
+              last_name: 'User',
+              email: 'test6@example.com',
+              logins: 2,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: d,
+              updated_at: d,
+              phone: null,
+              account_id: null,
+              details: null,
+              status: null,
+              json_data: null
+            }]
+          );
         });
     });
 
@@ -819,6 +1013,27 @@ module.exports = function(knex) {
               e2: 'test2@example.com'
             }, {
               e1: 'test@example.com',
+              e2: 'test2@example.com'
+            }]
+          );
+          tester(
+            'mssql',
+            'select top (?) [accounts].[email] as [e1], [a2].[email] as [e2] from [accounts] inner join [accounts] as [a2] on [a2].[email] <> [accounts].[email] where [a2].[email] = ? order by [e1] asc',
+            [5, 'test2@example.com'],
+            [{
+              e1: 'test@example.com',
+              e2: 'test2@example.com'
+            }, {
+              e1: 'test3@example.com',
+              e2: 'test2@example.com'
+            }, {
+              e1: 'test4@example.com',
+              e2: 'test2@example.com'
+            }, {
+              e1: 'test5@example.com',
+              e2: 'test2@example.com'
+            }, {
+              e1: 'test6@example.com',
               e2: 'test2@example.com'
             }]
           );
@@ -921,6 +1136,27 @@ module.exports = function(knex) {
               e2: 'test2@example.com'
             }]
           );
+          tester(
+            'mssql',
+            'select top (?) [accounts].[email] as [e1], [a2].[email] as [e2] from [accounts] inner join [accounts] as [a2] on [accounts].[email] <> [a2].[email] or [accounts].[id] = 2 where [a2].[email] = ? order by [e1] asc',
+            [5, 'test2@example.com'],
+            [{
+              e1: 'test@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test2@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test3@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test4@example.com',
+              e2: 'test2@example.com'
+            },{
+              e1: 'test5@example.com',
+              e2: 'test2@example.com'
+            }]
+          );
         });
     });
 
@@ -954,6 +1190,14 @@ module.exports = function(knex) {
           tester(
             'sqlite3',
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
+            [],
+            function (res) {
+              return res.length === 30;
+            }
+          );
+          tester(
+            'mssql',
+            'select [account_id] from [accounts] cross join [test_table_two] order by [account_id] asc',
             [],
             function (res) {
               return res.length === 30;
@@ -1020,6 +1264,16 @@ module.exports = function(knex) {
               email: 'test2@example.com'
             },{
               email: 'test3@example.com'
+            }]
+          );
+          tester(
+            'mssql',
+            'select top (?) [a1].[email], [a2].[email] from [accounts] as [a1] left join [accounts] as [a2] on [a1].[email] <> [a2].[email] where a1.id = 1',
+            [2],
+            [{
+              email: ['test@example.com', 'test2@example.com']
+            },{
+              email: ['test@example.com', 'test3@example.com']
             }]
           );
         });
