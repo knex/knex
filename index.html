@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.9.0)</span>
+      Knex.js <span class="version">(0.10.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -45,9 +45,7 @@
       Upgrading
     </a>
     <ul class="toc_section">
-      <li>– <a href="#Upgrading-from0.8">0.8.x -> 0.9</a></li>
-      <li>– <a href="#Upgrading-from0.7">0.7.x -> 0.8</a></li>
-      <li>– <a href="#Upgrading-from0.6">0.6.x -> 0.7</a></li>
+      <li>– <a href="#Upgrading-from0.9">0.9.x -> 0.10</a></li>
     </ul>
 
     <a class="toc_title" href="#Installation">
@@ -331,7 +329,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.9.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.10.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -342,7 +340,20 @@
 
     <h2 id="Upgrading">Upgrading</h2>
 
-    <h3 id="Upgrading-from0.7">Upgrading 0.8 -> 0.9</h3>
+    <h3 id="Upgrading-from0.9">Upgrading 0.9 -> 0.10</h3>
+
+    <p>
+      Knex will no longer interpret `undefined` values as `null` for `insert` or
+      `update`. See changelog for links to relevant issues.
+    </p>
+
+    <h3 id="Upgrading-from0.8">Upgrading 0.8 -> 0.9</h3>
+
+    <p>
+      There should be no major changes breaking the external API. If you encounter issues,
+      please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>.
+    </p>
+
     <h3 id="Upgrading-from0.7">Upgrading 0.7 -> 0.8</h3>
 
     <p>
@@ -2888,6 +2899,44 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.10.0</b> &mdash; <small><i>8 Feb, 2016</i></small><br />
+    </p>
+
+    <b>Breaking Changes:</b>
+    <ul>
+      <li>
+        `insert` and `update` now ignore `undefined` values. Back compatibility
+        is provided through the option `useNullAsDefault`. #1174, #1043
+      </li>
+    </ul>
+
+    <b>Other Changes:</b>
+    <ul>
+      <li>
+        Add <a href="#Builder-countDistinct"><tt>countDistinct</tt></a>,
+        <a href="#Builder-avgDistinct"><tt>avgDistinct</tt></a> and
+        <a href="Builder-sumDistinct"><tt>sumDistinct</tt></a>. #1046
+      </li>
+      <li>
+        Add <a href="Schema-jsonb"><tt>schema.jsonb</tt></a>. Deprecated <tt>schema.json(column, true)</tt>. #991
+      </li>
+      <li>Support binding identifiers with `??`. #1103</li>
+      <li>Restore `query` event when triggered by transactions. #855</li>
+      <li>Correct question mark escaping in rendered queries. #519, #1058</li>
+      <li>
+        Add per-dialect escaping, allowing quotes to be escaped correctly. #886
+      </li>
+      <li>Add MSSQL support. #1090</li>
+      <li>Add migration locking. #1094</li>
+      <li>Allow column aliases to contain `.`. #1181</li>
+      <li>Add `batchInsert`. #1182</li>
+      <li>
+        Support non-array arguments to
+        <a href="#Raw-Bindings"><tt>knex.raw</tt></a>.
+      </li>
+    </ul>
 
     <p>
       <b class="header">0.9.0</b> &mdash; <small><i>Nov 2, 2015</i></small><br />
