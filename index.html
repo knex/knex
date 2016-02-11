@@ -2275,7 +2275,7 @@ knex.select('e.lastname', 'e.salary', subcolumn)
 
     <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction (which is automatically created), at a given <tt>chunkSize</tt>.</p>
     <p>It's primarily designed to be used when you have thousands of rows to insert into a table.</p>
-    <p>By default, the <tt>chunkSize</tt> is set to 1.</p>
+    <p>By default, the <tt>chunkSize</tt> is set to 1000.</p>
 
 <pre>
 <code class="js">
