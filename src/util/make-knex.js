@@ -35,7 +35,7 @@ module.exports = function makeKnex(client) {
     },
 
     batchInsert: function(table, batch, chunkSize) {
-      chunkSize = _.isNumber(chunkSize) ? chunkSize : 1;
+      chunkSize = (_.isNumber(chunkSize) && chunkSize > 0) ? chunkSize : 1000;
 
       return this.transaction((tr) => {
 
@@ -44,11 +44,9 @@ module.exports = function makeKnex(client) {
             batch = _.chunk(batch, chunkSize)
           }
 
-          Promise.all(batch.map((items) => {
+          return Promise.all(batch.map((items) => {
             return tr(table).insert(items)
-          }))
-          .then(tr.commit)
-          .catch(tr.rollback)
+          }));
         })
     },
 
