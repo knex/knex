@@ -384,7 +384,7 @@
     </p>
 
 <pre>
-$ npm install knex@0.8 --save
+$ npm install knex --save
 
 # Then add one of the following (adding a --save) flag:
 $ npm install pg
@@ -2626,7 +2626,7 @@ $ npm install knex -g
 </pre>
 
     <p>
-      The 0.6 migrations use a <b>knexfile</b>, which specify various configuration settings for the module. To create a new
+      Migrations use a <b>knexfile</b>, which specify various configuration settings for the module. To create a new
       knexfile, run the following:
     </p>
 
@@ -2926,7 +2926,7 @@ $ npm test
       <li>Restore `query` event when triggered by transactions. #855</li>
       <li>Correct question mark escaping in rendered queries. #519, #1058</li>
       <li>
-        Add per-dialect escaping, allowing quotes to be escaped correctly. #886
+        Add per-dialect escaping, allowing quotes to be escaped correctly. #886, #1095
       </li>
       <li>Add MSSQL support. #1090</li>
       <li>Add migration locking. #1094</li>
@@ -2936,6 +2936,13 @@ $ npm test
         Support non-array arguments to
         <a href="#Raw-Bindings"><tt>knex.raw</tt></a>.
       </li>
+      <li>Global <tt>>query-error</tt> event. #1163</li>
+      <li>Add `batchInsert`. #1182</li>
+      <li>Better support for Mysql2 dialect options. #980</li>
+      <li>Support for <tt>acquireConnectionTimeout</tt> default 60 seconds preventing #1040 from happening. #1177</li>
+      <li>Fixed constraint name escaping when dropping a constraint. #1177</li>
+      <li>Show also <tt>.raw</tt> queries in debug output. #1169</li>
+      <li>Support for <tt>cli</tt> to use basic configuration without specific environment set. #1101</li>
     </ul>
 
     <p>
