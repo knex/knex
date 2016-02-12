@@ -8,7 +8,7 @@ var assign         = require('lodash/object/assign');
 
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment']
+  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment', 'updating']
 }
 inherits(ColumnCompiler_MySQL, ColumnCompiler);
 
@@ -83,12 +83,23 @@ assign(ColumnCompiler_MySQL.prototype, {
   // ------
 
   defaultTo: function(value) {
+    if (this.type === 'timestamp') {
+      if (value === undefined) {
+        return 'default CURRENT_TIMESTAMP';
+      } else if (value === 0) {
+        return 'default 0'; // default 0 throws an error when the NO_ZERO_DATE flag is enabled (which is true in TRADITIONAL mode).
+      }
+    }
     /*jshint unused: false*/
     var defaultVal = ColumnCompiler_MySQL.super_.prototype.defaultTo.apply(this, arguments);
     if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
       return defaultVal
     }
     return ''
+  },
+
+  updating: function () {
+    return (this.type === 'timestamp') ? 'on update CURRENT_TIMESTAMP' : '';
   },
   
   unsigned: function() {
