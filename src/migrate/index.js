@@ -196,7 +196,7 @@ export default class Migrator {
     .then(batchNo => {
       return this._waterfallBatch(batchNo, migrations, direction)
     })
-    .then(() => this._freeLock())
+    .then(retVal => this._freeLock().then(() => retVal))
     .catch(error => {
       var cleanupReady = Promise.resolve();
 
