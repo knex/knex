@@ -243,7 +243,10 @@ module.exports = function(knex) {
 
     describe('knex.migrate.rollback', function() {
       it('should delete the most recent batch from the migration log', function() {
-        return knex.migrate.rollback({directory: 'test/integration/migrate/test'}).then(function() {
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test'}).spread(function(batchNo, log) {
+          expect(batchNo).to.equal(1);
+          expect(log).to.have.length(2);
+          expect(log[0]).to.contain('test/integration/migrate/test');
           return knex('knex_migrations').select('*').then(function(data) {
             expect(data.length).to.equal(0);
           });
