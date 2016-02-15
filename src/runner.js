@@ -25,22 +25,32 @@ assign(Runner.prototype, {
   // a single connection.
   run: function() {
     var runner = this
-    return Promise.using(this.ensureConnection(), function(connection) {
-      runner.connection = connection;
 
+    return new Promise((resolver, rejecter) => {
       runner.client.emit('start', runner.builder)
       runner.builder.emit('start', runner.builder)
+
       var sql = runner.builder.toSQL();
 
       if (runner.builder._debug) {
         console.log(sql)
       }
 
-      if (_.isArray(sql)) {
-        return runner.queryArray(sql);
-      }
-      return runner.query(sql);
-
+      return runner._execSQL(sql)
+      .then(resolver)
+      .catch((error) => {
+          //TODO: -- Temporary check during test-phase. How to properly check this globally across all dialects?
+          if(error.message.toLowerCase().indexOf('this socket is closed') !== -1) {
+            //Socket closed, so kill connection and try one more time with a fresh connection.
+            runner.connection.__knex__disposed = true;
+            runner.client.pool.destroy(runner.connection);
+            runner.connection = null; //ensureConneciton will create a new connection
+            return runner._execSQL(sql)
+              .then(resolver)
+              .catch(rejecter)
+          }
+          rejecter(error)
+      })
     })
 
     // If there are any "error" listeners, we fire an error event
@@ -59,6 +69,18 @@ assign(Runner.prototype, {
       runner.builder.emit('end');
     })
 
+  },
+
+  _execSQL: function(sql) {
+    var runner = this
+    return Promise.using(this.ensureConnection(), function(connection) {
+      runner.connection = connection;
+
+      if (_.isArray(sql)) {
+        return runner.queryArray(sql);
+      }
+      return runner.query(sql);
+    })
   },
 
   // Stream the result set, by passing through to the dialect's streaming

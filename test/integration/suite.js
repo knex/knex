@@ -22,6 +22,7 @@ module.exports = function(knex) {
     require('./builder/transaction')(knex);
     require('./builder/deletes')(knex);
     require('./builder/additional')(knex);
+    require('./misc')(knex);
 
     describe('knex.destroy', function() {
       it('should allow destroying the pool with knex.destroy', function() {
