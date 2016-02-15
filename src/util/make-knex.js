@@ -34,8 +34,10 @@ module.exports = function makeKnex(client) {
       return client.raw.apply(client, arguments)
     },
 
-    batchInsert: function(table, batch, chunkSize) {
-      chunkSize = (_.isNumber(chunkSize) && chunkSize > 0) ? chunkSize : 1000;
+    batchInsert: function(table, batch, chunkSize = 1000) {
+      if (!_.isNumber(chunkSize) || chunkSize < 1) {
+        throw new TypeError("Invalid chunkSize: " + chunkSize);
+      }
 
       return this.transaction((tr) => {
 
