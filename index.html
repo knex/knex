@@ -199,6 +199,7 @@
       <li>– <a href="#Chainable-first">first</a></li>
       <li>– <a href="#Chainable-after">after</a></li>
       <li>– <a href="#Chainable-comment">comment</a></li>
+      <li>– <a href="#Chainable-collate">collate</a></li>
     </ul>
 
     <a class="toc_title" href="#Raw">
@@ -2123,9 +2124,24 @@ knex.table('users')
     </p>
 
 <pre>
-knex.schema.createTable('accounts', function() {
+knex.schema.createTable('accounts', function(t) {
   t.increments().primary();
-  t.string('email').unique();
+  t.string('email').unique().comment('This is the email field');
+});
+</pre>
+
+    <p id="Chainable-collate">
+      <b class="header">collate</b><code>column.collate(collation)</code>
+      <br />
+      Sets the collation for a column (only works in MySQL).
+      <br />
+      Here is a list of all available collations: <a href="https://dev.mysql.com/doc/refman/5.5/en/charset-charsets.html">https://dev.mysql.com/doc/refman/5.5/en/charset-charsets.html</a>
+    </p>
+
+<pre>
+knex.schema.createTable('users', function(t) {
+  t.increments();
+  t.string('email').unique().collate('utf8_unicode_ci');
 });
 </pre>
 
