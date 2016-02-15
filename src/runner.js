@@ -40,7 +40,7 @@ assign(Runner.prototype, {
       .then(resolver)
       .catch((error) => {
           //TODO: -- Temporary check during test-phase. How to properly check this globally across all dialects?
-          if(error.message.indexOf('socket') !== -1) {
+          if(error.message.toLowerCase().indexOf('this socket is closed') !== -1) {
             //Socket closed, so kill connection and try one more time with a fresh connection.
             runner.connection.__knex__disposed = true;
             runner.client.pool.destroy(runner.connection);
