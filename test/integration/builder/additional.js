@@ -255,6 +255,40 @@ module.exports = function(knex) {
       });
     });
 
+
+    it('.timeout() should throw TimeoutError', function() {
+      var dialect = knex.client.config.dialect;
+      var rows = _.times(dialect === 'sqlite3' ? 100 : 3000, function() {
+        return {
+          id: 1,
+          value: 'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw'
+        };
+      });
+
+      return knex.schema.dropTableIfExists('TimeoutTest')
+        .then(function() {
+          return knex.schema.createTable('TimeoutTest', function(table) {
+            table.integer('id');
+            table.string('value', 50);
+          });
+        })
+        .then(function() {
+          return knex('TimeoutTest')
+            .insert(rows)
+            .timeout(1);
+        })
+        .then(function() {
+          expect(true).to.equal(false);
+        })
+        .catch(function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 1,
+            name: 'TimeoutError',
+            message: 'Defined query timeout of 1ms exceeded when running query.'
+          });
+        });
+    });
+
   });
 
 };
