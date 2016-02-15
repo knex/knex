@@ -647,7 +647,6 @@ module.exports = function(knex) {
       });
     });
 
-
     it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', function () {
       var fiftyLengthString = 'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
       var items             = [];
@@ -682,6 +681,13 @@ module.exports = function(knex) {
           })
     });
 
+  });
+
+  it('should validate batchInsert batchSize parameter', function() {
+    expect(function () { knex.batchInsert('test', []) }).to.not.throw();
+    expect(function () { knex.batchInsert('test', [], null) }).to.throw(TypeError);
+    expect(function () { knex.batchInsert('test', [], 0) }).to.throw(TypeError);
+    expect(function () { knex.batchInsert('test', [], 'still no good') }).to.throw(TypeError);
   });
 
 };

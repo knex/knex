@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.9.0)</span>
+      Knex.js <span class="version">(0.10.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -45,9 +45,7 @@
       Upgrading
     </a>
     <ul class="toc_section">
-      <li>– <a href="#Upgrading-from0.8">0.8.x -> 0.9</a></li>
-      <li>– <a href="#Upgrading-from0.7">0.7.x -> 0.8</a></li>
-      <li>– <a href="#Upgrading-from0.6">0.6.x -> 0.7</a></li>
+      <li>– <a href="#Upgrading-from0.9">0.9.x -> 0.10</a></li>
     </ul>
 
     <a class="toc_title" href="#Installation">
@@ -331,7 +329,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.9.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.10.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -342,7 +340,20 @@
 
     <h2 id="Upgrading">Upgrading</h2>
 
-    <h3 id="Upgrading-from0.7">Upgrading 0.8 -> 0.9</h3>
+    <h3 id="Upgrading-from0.9">Upgrading 0.9 -> 0.10</h3>
+
+    <p>
+      Knex will no longer interpret `undefined` values as `null` for `insert` or
+      `update`. See changelog for links to relevant issues.
+    </p>
+
+    <h3 id="Upgrading-from0.8">Upgrading 0.8 -> 0.9</h3>
+
+    <p>
+      There should be no major changes breaking the external API. If you encounter issues,
+      please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>.
+    </p>
+
     <h3 id="Upgrading-from0.7">Upgrading 0.7 -> 0.8</h3>
 
     <p>
@@ -373,7 +384,7 @@
     </p>
 
 <pre>
-$ npm install knex@0.8 --save
+$ npm install knex --save
 
 # Then add one of the following (adding a --save) flag:
 $ npm install pg
@@ -2264,7 +2275,7 @@ knex.select('e.lastname', 'e.salary', subcolumn)
 
     <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction (which is automatically created), at a given <tt>chunkSize</tt>.</p>
     <p>It's primarily designed to be used when you have thousands of rows to insert into a table.</p>
-    <p>By default, the <tt>chunkSize</tt> is set to 1.</p>
+    <p>By default, the <tt>chunkSize</tt> is set to 1000.</p>
 
 <pre>
 <code class="js">
@@ -2615,7 +2626,7 @@ $ npm install knex -g
 </pre>
 
     <p>
-      The 0.6 migrations use a <b>knexfile</b>, which specify various configuration settings for the module. To create a new
+      Migrations use a <b>knexfile</b>, which specify various configuration settings for the module. To create a new
       knexfile, run the following:
     </p>
 
@@ -2888,6 +2899,51 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.10.0</b> &mdash; <small><i>15 Feb, 2016</i></small><br />
+    </p>
+
+    <b>Breaking Changes:</b>
+    <ul>
+      <li>
+        `insert` and `update` now ignore `undefined` values. Back compatibility
+        is provided through the option `useNullAsDefault`. #1174, #1043
+      </li>
+    </ul>
+
+    <b>Other Changes:</b>
+    <ul>
+      <li>
+        Add <a href="#Builder-countDistinct"><tt>countDistinct</tt></a>,
+        <a href="#Builder-avgDistinct"><tt>avgDistinct</tt></a> and
+        <a href="Builder-sumDistinct"><tt>sumDistinct</tt></a>. #1046
+      </li>
+      <li>
+        Add <a href="Schema-jsonb"><tt>schema.jsonb</tt></a>. Deprecated <tt>schema.json(column, true)</tt>. #991
+      </li>
+      <li>Support binding identifiers with `??`. #1103</li>
+      <li>Restore `query` event when triggered by transactions. #855</li>
+      <li>Correct question mark escaping in rendered queries. #519, #1058</li>
+      <li>
+        Add per-dialect escaping, allowing quotes to be escaped correctly. #886, #1095
+      </li>
+      <li>Add MSSQL support. #1090</li>
+      <li>Add migration locking. #1094</li>
+      <li>Allow column aliases to contain `.`. #1181</li>
+      <li>Add `batchInsert`. #1182</li>
+      <li>
+        Support non-array arguments to
+        <a href="#Raw-Bindings"><tt>knex.raw</tt></a>.
+      </li>
+      <li>Global <tt>>query-error</tt> event. #1163</li>
+      <li>Add `batchInsert`. #1182</li>
+      <li>Better support for Mysql2 dialect options. #980</li>
+      <li>Support for <tt>acquireConnectionTimeout</tt> default 60 seconds preventing #1040 from happening. #1177</li>
+      <li>Fixed constraint name escaping when dropping a constraint. #1177</li>
+      <li>Show also <tt>.raw</tt> queries in debug output. #1169</li>
+      <li>Support for <tt>cli</tt> to use basic configuration without specific environment set. #1101</li>
+    </ul>
 
     <p>
       <b class="header">0.9.0</b> &mdash; <small><i>Nov 2, 2015</i></small><br />

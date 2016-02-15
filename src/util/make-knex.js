@@ -34,8 +34,10 @@ module.exports = function makeKnex(client) {
       return client.raw.apply(client, arguments)
     },
 
-    batchInsert: function(table, batch, chunkSize) {
-      chunkSize = _.isNumber(chunkSize) ? chunkSize : 1;
+    batchInsert: function(table, batch, chunkSize = 1000) {
+      if (!_.isNumber(chunkSize) || chunkSize < 1) {
+        throw new TypeError("Invalid chunkSize: " + chunkSize);
+      }
 
       return this.transaction((tr) => {
 
@@ -44,11 +46,9 @@ module.exports = function makeKnex(client) {
             batch = _.chunk(batch, chunkSize)
           }
 
-          Promise.all(batch.map((items) => {
+          return Promise.all(batch.map((items) => {
             return tr(table).insert(items)
-          }))
-          .then(tr.commit)
-          .catch(tr.rollback)
+          }));
         })
     },
 
@@ -72,7 +72,7 @@ module.exports = function makeKnex(client) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.9.0'
+  knex.VERSION = knex.__knex__  = '0.10.0'
 
   // Hook up the "knex" object as an EventEmitter.
   var ee = new EventEmitter()

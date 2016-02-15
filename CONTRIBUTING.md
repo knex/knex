@@ -58,3 +58,17 @@ Once this is done, check it works by attempting to login:
 ```
 psql -h localhost -U postgres -d knex_test
 ```
+
+## Want to be Collaborator?
+
+There is always room for more collaborators. Be active on resolving github issues / sending pull requests / reviewing code and we will ask you to join.
+
+### Etiquette (/ˈɛtᵻkɛt/ or /ˈɛtᵻkɪt/, French: [e.ti.kɛt])
+
+Make pull requests for your changes, do not commit directly to master (release stuff / documentation changes are ok though).
+
+All the pull requests must be peer reviewed by other collaborator, so don't merge your request before that. If there is no response ping others.
+
+If you are going to add new feature to knex (not just a bugfix) it should be discussed first with others to agree on details.
+
+Join Gitter chat if you feel to chat outside of github issues.
