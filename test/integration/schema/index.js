@@ -41,7 +41,8 @@ module.exports = function(knex) {
             .dropTableIfExists('rename_column_foreign_test')
             .dropTableIfExists('rename_column_test')
             .dropTableIfExists('should_not_be_run')
-            .dropTableIfExists('timestamp_test')
+            .dropTableIfExists('timestamp_test1')
+            .dropTableIfExists('timestamp_test2')
         ]);
       });
 
@@ -243,13 +244,30 @@ module.exports = function(knex) {
 
       it('sets timestamps & defaults correctly', function () {
         return knex.schema
-          .createTable('timestamp_test', function (table) {
+          .createTable('timestamp_test1', function (table) {
             table.timestamp('created_at').defaultTo('1970-01-01 00:00:01');
             table.timestamp('modified_at').defaultTo().updating();
           }).testSql(function (tester) {
-            tester('mysql',['create table `timestamp_test` (`created_at` timestamp default \'1970-01-01 00:00:01\', `modified_at` timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP) default character set utf8']);
+            tester('mysql',['create table `timestamp_test1` (`created_at` timestamp default \'1970-01-01 00:00:01\', `modified_at` timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP) default character set utf8']);
           }).then(function () {
-            return knex.insert({created_at:null}).into('timestamp_test');
+            return knex.insert({created_at:null}).into('timestamp_test1');
+          });
+      });
+
+      it('sets timestamps & defaults correctly using non-TRADITIONAL SQL', function () {
+        console.warn('This test temporarily disables TRADITIONAL SQL mode');
+        return knex.raw('SET sql_mode=\'\'').then(function () {
+          return knex.schema
+            .createTable('timestamp_test2', function (table) {
+              table.timestamp('created_at').defaultTo(0);
+              table.timestamp('modified_at').defaultTo().updating();
+            }).testSql(function (tester) {
+              tester('mysql',['create table `timestamp_test2` (`created_at` timestamp default 0, `modified_at` timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP) default character set utf8']);
+            }).then(function () {
+              return knex.insert({created_at:null}).into('timestamp_test2');
+            });
+          }).then(function () {
+            return knex.raw('SET sql_mode=\'TRADITIONAL\'').then();
           });
       });
 
