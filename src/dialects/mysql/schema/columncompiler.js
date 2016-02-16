@@ -79,16 +79,15 @@ assign(ColumnCompiler_MySQL.prototype, {
     return length ? 'varbinary(' + this._num(length) + ')' : 'blob'
   },
 
+
+  NOW: 'CURRENT_TIMESTAMP',
+  
   // Modifiers
   // ------
 
   defaultTo: function(value) {
-    if (this.type === 'timestamp') {
-      if (value === undefined) {
-        return 'default CURRENT_TIMESTAMP';
-      } else if (value === 0) {
-        return 'default 0'; // default 0 throws an error when the NO_ZERO_DATE flag is enabled (which is true in TRADITIONAL mode).
-      }
+    if ((this.type === 'timestamp') && (value === 0)) {
+      return 'default 0'; // only allowed when the NO_ZERO_DATE flag isn't set.
     }
     /*jshint unused: false*/
     var defaultVal = ColumnCompiler_MySQL.super_.prototype.defaultTo.apply(this, arguments);

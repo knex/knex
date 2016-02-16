@@ -2082,9 +2082,15 @@ knex.table('users')
     </p>
 
     <p id="Chainable-defaultTo">
-      <b class="header">defaultTo</b><code>column.defaultTo(value)</code>
+      <b class="header">defaultTo</b><code>column.defaultTo([value])</code>
       <br />
       Sets the default value for the column on an insert.
+      <br />
+      An undefined value timestamps will set the default to NOW in the 
+      specific dialect:
+<pre>
+.timestamp('created_at').defaultTo();
+</pre>
     </p>
 
     <p id="Chainable-updating">
