@@ -5,6 +5,9 @@ var _               = require('lodash');
 var inherits        = require('inherits');
 var Client_Oracle   = require('../oracle');
 var ColumnCompiler  = require('./schema/columncompiler');
+var Formatter       = require('./formatter');
+var QueryBuilder    = require('./builder');
+var BlobHelper      = require('./utils').BlobHelper;
 var ReturningHelper = require('../oracle/utils').ReturningHelper;
 var Promise         = require('../../promise');
 var stream          = require('stream');
@@ -19,26 +22,24 @@ Client_Oracledb.prototype.driverName = 'oracledb';
 
 Client_Oracledb.prototype._driver = function() {
   var oracledb = require('oracledb');
-  oracledb.autoCommit = true;
   oracledb.fetchAsString = [oracledb.CLOB];
   return oracledb;
 };
 
 Client_Oracledb.prototype.ColumnCompiler = ColumnCompiler;
+Client_Oracledb.prototype.Formatter = Formatter;
+Client_Oracledb.prototype.QueryBuilder = QueryBuilder;
 
 Client_Oracledb.prototype.prepBindings = function(bindings) {
   return _.map(bindings, function (value) {
+    if (value instanceof BlobHelper && this.driver) {
+      return { type: this.driver.BLOB, dir: this.driver.BIND_OUT };
     // returning helper uses always ROWID as string
-    if (value instanceof ReturningHelper && this.driver) {
+    } else if (value instanceof ReturningHelper && this.driver) {
       return { type: this.driver.STRING, dir: this.driver.BIND_OUT };
     } else if (typeof value === 'boolean') {
       return value ? 1 : 0;
-    } else if (Buffer.isBuffer(value)) { 
-      var Stream = new stream.PassThrough();
-      Stream.end(value);
-      return Stream;
-    }
-    else if (value === undefined) {
+    } else if (value === undefined) {
       return this.valueForUndefined;
     }
     return value;
@@ -123,8 +124,8 @@ Client_Oracledb.prototype._query = function(connection, obj) {
 
   // convert ? params into positional bindings (:1)
   obj.sql = this.positionBindings(obj.sql);
-
-  obj.bindings = this.prepBindings(obj.bindings) || [];
+  var bindings = obj.bindings;
+  obj.bindings = this.prepBindings(bindings) || [];
 
   if (!obj.sql) throw new Error('The query is empty');
 
@@ -135,9 +136,34 @@ Client_Oracledb.prototype._query = function(connection, obj) {
     });
     return connection.executeAsync(obj.returningSql, rowIds);
   }).then(function (response) {
-    obj.response = response.rows;
-    obj.rowsAffected  = response.rows.rowsAffected;
-    return obj;
+    obj.response = response.rows || {};
+    obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
+    return new Promise(function (resolver, rejecter) {
+      var binds = _.map(obj.bindValues, function(out, index) {
+        return new Promise(function (resolver, rejecter) {
+          if (out instanceof BlobHelper) {
+            var blob = response.outBinds[index][0];
+            blob.on('error', function(err) {
+              rejecter(err);
+            });
+            blob.on('finish', function() {
+              resolver();
+            });
+            blob.write(out.value);
+            blob.end();
+          } else {
+            resolver();
+          }
+        });
+      });
+      Promise.all(binds).then(function() {
+        connection.commit(function(){
+          resolver(obj);
+        });
+      }, function(err) {
+        rejecter(err);
+      });
+    });
   });
 };
 
