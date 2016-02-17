@@ -6,12 +6,13 @@ var assert       = require('assert')
 var inherits     = require('inherits')
 var EventEmitter = require('events').EventEmitter
 
-var Raw          = require('../raw')
-var helpers      = require('../helpers')
-var JoinClause   = require('./joinclause')
-var clone        = require('lodash/lang/clone');
-var isUndefined  = require('lodash/lang/isUndefined');
-var assign       = require('lodash/object/assign');
+var Raw         = require('../raw')
+var helpers     = require('../helpers')
+var JoinClause  = require('./joinclause')
+var clone       = require('lodash/lang/clone');
+var isUndefined = require('lodash/lang/isUndefined');
+var isNumber    = require('lodash/lang/isNumber');
+var assign      = require('lodash/object/assign');
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
@@ -55,6 +56,13 @@ assign(Builder.prototype, {
     }
 
     return cloned;
+  },
+
+  timeout: function(ms) {
+    if(isNumber(ms) && ms > 0) {
+      this._timeout = ms;
+    }
+    return this;
   },
 
   // Select

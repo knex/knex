@@ -67,6 +67,7 @@
     </a>
     <ul class="toc_section">
       <li>– <a href="#Builder-main"><b>constructor</b></a></li>
+      <li>– <a href="#Builder-timeout">timeout</a></li>
       <li>– <a href="#Builder-select">select</a></li>
       <li>– <a href="#Builder-as">as</a></li>
       <li>– <a href="#Builder-column">column</a></li>
@@ -583,6 +584,15 @@ pg('table').insert({a: 'b'}).returning('*').toString();
       <a href="#Interfaces">interface methods</a>, to either convert toString, or execute the
       query with a <a href="#Interfaces-Promises">promise</a>, <a href="#Interfaces-Callbacks">callback</a>, or <a href="#Interfaces-Streams">stream</a>.
     </p>
+
+    <p id="Builder-timeout">
+      <b class="header">timeout</b><code>.timeout(ms)</code>
+      <br />
+      Sets a timeout for the query and will throw a <tt>TimeoutError</tt> if the timeout is exceeded.
+      The error contains information about the query, bindings, and the timeout that was set.
+      Useful for complex queries that you want to make sure are not taking too long to execute.
+    </p>
+
 
     <p id="Builder-select">
       <b class="header">select</b><code>.select([*columns])</code>

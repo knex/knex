@@ -11,12 +11,13 @@ var reduce  = require('lodash/collection/reduce');
 // have been gathered in the "QueryBuilder" and turns them into a
 // properly formatted / bound query string.
 function QueryCompiler(client, builder) {
-  this.client      = client
-  this.method      = builder._method || 'select';
-  this.options     = builder._options;
-  this.single      = builder._single;
-  this.grouped     = _.groupBy(builder._statements, 'grouping');
-  this.formatter   = client.formatter()
+  this.client    = client
+  this.method    = builder._method || 'select';
+  this.options   = builder._options;
+  this.single    = builder._single;
+  this.timeout   = builder._timeout || false;
+  this.grouped   = _.groupBy(builder._statements, 'grouping');
+  this.formatter = client.formatter()
 }
 
 var components = [
@@ -36,6 +37,7 @@ assign(QueryCompiler.prototype, {
     var defaults = {
       method: method,
       options: reduce(this.options, assign, {}),
+      timeout: this.timeout,
       bindings: this.formatter.bindings
     };
     if (_.isString(val)) {

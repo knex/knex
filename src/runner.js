@@ -113,10 +113,23 @@ assign(Runner.prototype, {
   query: Promise.method(function(obj) {
     this.builder.emit('query', assign({__knexUid: this.connection.__knexUid}, obj))
     var runner = this
-    return this.client.query(this.connection, obj)
+    var queryPromise = this.client.query(this.connection, obj)
+
+    if(obj.timeout) {
+      queryPromise = queryPromise.timeout(obj.timeout)
+    }
+
+    return queryPromise
       .then(function(resp) {
         return runner.client.processResponse(resp, runner)
-      });
+      }).catch(Promise.TimeoutError, error => {
+        throw assign(error, {
+          message:  `Defined query timeout of ${obj.timeout}ms exceeded when running query.`,
+          sql:      obj.sql,
+          bindings: obj.bindings,
+          timeout:  obj.timeout
+        });
+      })
   }),
 
   // In the case of the "schema builder" we call `queryArray`, which runs each
