@@ -45,3 +45,5 @@ assign(Oracledb_Compiler.prototype, {
     return res;
   }  
 });
+
+module.exports = Oracledb_Compiler;
