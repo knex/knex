@@ -2060,7 +2060,7 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       oracledb: {
-        sql: "insert into \"users\" (\"id\") values (default) returning ROWID into ?",
+        sql: "insert into \"users\" (\"id\") values (default) returning \"id\" into ?",
         bindings: function (bindings) {
           expect(bindings.length).to.equal(1);
           expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
@@ -2426,7 +2426,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo']
       },
       oracledb: {
-        sql: 'insert into "users" ("email") values (?) returning ROWID into ?',
+        sql: 'insert into "users" ("email") values (?) returning \"id\" into ?',
         bindings: function (bindings) {
           expect(bindings.length).to.equal(2);
           expect(bindings[0]).to.equal('foo');
