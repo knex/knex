@@ -694,6 +694,12 @@ var subquery = knex('users').where('votes', '>', 100).andWhere('status', 'active
 knex('accounts').where('id', 'in', subquery)
 </pre>
 
+<p class="title">.orWhere with an object automatically wraps the statement and creates an <tt>or (and - and - and)</tt> clause</p>
+
+<pre class="display">
+knex('users').where('id', 1).orWhere({votes: 100, user: 'knex'})
+</pre>
+
 
 
     <p id="Builder-whereNot">
