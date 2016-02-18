@@ -141,7 +141,7 @@ Client_Oracledb.prototype._query = function(connection, obj) {
     obj.response = response.rows || {};
     obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
     return new Promise(function (resolver, rejecter) {
-      var binds = _.map(obj.bindValues, function(out, index) {
+      var binds = _.map(bindings, function(out, index) {
         return new Promise(function (resolver, rejecter) {
           if (out instanceof BlobHelper) {
             var blob = response.outBinds[index][0];

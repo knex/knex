@@ -21,12 +21,12 @@ assign(Oracledb_Compiler.prototype, {
     }
     
     var returningValues = Array.isArray(returning) ? returning : [returning];
-    this.formatter.bindings.unshift(new ReturningHelper('ROWID'));
-    var returningClause = 'ROWID,';
-    var intoClause = ':1,';
-    returningValues.forEach(function(ret, index){
-      returningClause += '"' + ret.columnName + '",';
-      intoClause += ':' + (index + 2) + ',';
+    var returningClause = '';
+    var intoClause = '';
+    returningValues.forEach(function(ret) {
+      var columnName = ret.columnName || ret;
+      returningClause += '"' + columnName + '",';
+      intoClause += '?,';
     });
     returningClause = returningClause.slice(0,-1);
     intoClause = intoClause.slice(0,-1);
@@ -37,9 +37,7 @@ assign(Oracledb_Compiler.prototype, {
       }
       return false;
     });
-    if (!returningValues.length) {
-      returningValues.push(new ReturningHelper('ROWID'));
-    }
+    res.returning = returningValues.length;
     var returningHelper = new ReturningHelper(returningValues.join(':'));
     res.outParams = [returningHelper];
     return res;
