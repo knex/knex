@@ -50,6 +50,10 @@ function initKnex(env) {
   var defaultEnv  = 'development';
   var config      = require(env.configPath);
 
+  if (typeof config === 'function') {
+    config = config(environment || defaultEnv);
+  }
+
   if (!environment && typeof config[defaultEnv] === 'object') {
     environment = defaultEnv;
   }
