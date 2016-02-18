@@ -3169,4 +3169,23 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("#1118 orWhere({..}) generates or (and - and - and)", function() {
+    testsql(qb().select('*').from('users').where('id', '=', 1).orWhere({
+      email: 'foo',
+      id: 2
+    }), {
+      mysql: {
+        sql: 'select * from `users` where `id` = ? or (`email` = ? and `id` = ?)',
+        bindings: [1, 'foo', 2]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or ([email] = ? and [id] = ?)',
+        bindings: [1, 'foo', 2]
+      },
+      default: {
+        sql: 'select * from "users" where "id" = ? or ("email" = ? and "id" = ?)',
+        bindings: [1, 'foo', 2]
+      }
+    });
+  });
 });
