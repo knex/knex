@@ -11,7 +11,6 @@ var BlobHelper      = require('./utils').BlobHelper;
 var ReturningHelper = require('./utils').ReturningHelper;
 var Promise         = require('../../promise');
 var stream          = require('stream');
-var async           = require('async');
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
@@ -90,16 +89,17 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
             if (lobs.length === 0) {
               return resolve(results);
             }
-            async.each(lobs, function(lob, done) {
-              readStream(lob.stream, String, function(err, d) {
-                if (err) return done(err);
-                results.rows[lob.index][lob.key] = d;
-                done();
+            Promise.each(lobs, function(lob){
+              return new Promise(function(resolve, reject) {
+                readStream(lob.stream, String, function(err, d) {
+                  if (err) {
+                    return reject(err);
+                  }
+                  results.rows[lob.index][lob.key] = d;
+                  resolve(d);
+                });
               });
-            }, function(err) {
-              if (err) return reject(err);
-              return resolve(results);
-            });
+            }).then(resolve,reject);
           } else {
             return resolve(results);
           }
@@ -142,7 +142,7 @@ Client_Oracledb.prototype._query = function(connection, obj) {
       obj.response = response.rows || {};
       obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
 
-      var binds = _.map(bindings, function(out, index) {
+      Promise.each(bindings, function(out, index) {
         return new Promise(function(resolver, rejecter) {
           if (out instanceof BlobHelper) {
             var blob = response.outBinds[index][0];
@@ -161,14 +161,11 @@ Client_Oracledb.prototype._query = function(connection, obj) {
             resolver();
           }
         });
-      });
-      Promise.all(binds).then(function() {
+      }).then(function() { // Promise.all(binds)
         connection.commit(function() {
           resolver(obj);
         });
-      }, function(err) {
-        rejecter(err);
-      });
+      }, rejecter);
     });
   });
 };
