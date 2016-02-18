@@ -16,7 +16,6 @@ assign(Oracle_Formatter.prototype, {
     if (typeof value === 'function') {
       return this.outputQuery(this.compileCallback(value), true);
     } else if (value instanceof BlobHelper) {
-        this.bindings.push(value);
         return 'EMPTY_BLOB()';
     }
     return this.unwrapRaw(value, true) || '?';

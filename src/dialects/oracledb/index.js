@@ -7,7 +7,6 @@ var Client_Oracle   = require('../oracle');
 var QueryCompiler   = require('./query/compiler');
 var ColumnCompiler  = require('./schema/columncompiler');
 var Formatter       = require('./formatter');
-var QueryBuilder    = require('./builder');
 var BlobHelper      = require('./utils').BlobHelper;
 var ReturningHelper = require('../oracle/utils').ReturningHelper;
 var Promise         = require('../../promise');
@@ -30,7 +29,6 @@ Client_Oracledb.prototype._driver = function() {
 Client_Oracledb.prototype.QueryCompiler = QueryCompiler;
 Client_Oracledb.prototype.ColumnCompiler = ColumnCompiler;
 Client_Oracledb.prototype.Formatter = Formatter;
-Client_Oracledb.prototype.QueryBuilder = QueryBuilder;
 
 Client_Oracledb.prototype.prepBindings = function(bindings) {
   return _.map(bindings, function (value) {
@@ -131,18 +129,21 @@ Client_Oracledb.prototype._query = function(connection, obj) {
 
   if (!obj.sql) throw new Error('The query is empty');
 
-  return connection.executeAsync(obj.sql, obj.bindings).then(function(response) {
-    if (!obj.returning) return response;
-    var rowIds = obj.outParams.map(function (v, i) {
-      return response.outBinds[0][i];
-    });
-    return connection.executeAsync(obj.returningSql, rowIds);
-  }).then(function (response) {
-    obj.response = response.rows || {};
-    obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
-    return new Promise(function (resolver, rejecter) {
+  return new Promise(function(resolver, rejecter) {
+    connection.executeAsync(obj.sql, obj.bindings).then(function(response) {
+      if (!obj.returning || !obj.returningSql || !obj.outParams) {
+        return response;
+      }
+      var rowIds = obj.outParams.map(function(v, i) {
+        return response.outBinds[0][i];
+      });
+      return connection.executeAsync(obj.returningSql, rowIds);
+    }).then(function(response) {
+      obj.response = response.rows || {};
+      obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
+
       var binds = _.map(bindings, function(out, index) {
-        return new Promise(function (resolver, rejecter) {
+        return new Promise(function(resolver, rejecter) {
           if (out instanceof BlobHelper) {
             var blob = response.outBinds[index][0];
             blob.on('error', function(err) {
@@ -153,13 +154,16 @@ Client_Oracledb.prototype._query = function(connection, obj) {
             });
             blob.write(out.value);
             blob.end();
+          } else if (out instanceof ReturningHelper) {
+            obj.response[out.columnName] = response.outBinds[index][0];
+            resolver();
           } else {
             resolver();
           }
         });
       });
       Promise.all(binds).then(function() {
-        connection.commit(function(){
+        connection.commit(function() {
           resolver(obj);
         });
       }, function(err) {
