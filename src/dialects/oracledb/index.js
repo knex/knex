@@ -4,6 +4,7 @@
 var _               = require('lodash');
 var inherits        = require('inherits');
 var Client_Oracle   = require('../oracle');
+var QueryCompiler   = require('./query/compiler');
 var ColumnCompiler  = require('./schema/columncompiler');
 var Formatter       = require('./formatter');
 var QueryBuilder    = require('./builder');
@@ -26,6 +27,7 @@ Client_Oracledb.prototype._driver = function() {
   return oracledb;
 };
 
+Client_Oracledb.prototype.QueryCompiler = QueryCompiler;
 Client_Oracledb.prototype.ColumnCompiler = ColumnCompiler;
 Client_Oracledb.prototype.Formatter = Formatter;
 Client_Oracledb.prototype.QueryBuilder = QueryBuilder;
