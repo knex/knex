@@ -1,9 +1,9 @@
-var _ = require('lodash');
-var inherits = require('inherits');
-var assign = require('lodash/object/assign');
+var _               = require('lodash');
+var inherits        = require('inherits');
+var assign          = require('lodash/object/assign');
 var Oracle_Compiler = require('../../oracle/query/compiler');
-var ReturningHelper = require('../../oracle/utils').ReturningHelper;
-var BlobHelper = require('../utils').BlobHelper;
+var ReturningHelper = require('../utils').ReturningHelper;
+var BlobHelper      = require('../utils').BlobHelper;
 
 function Oracledb_Compiler(client, builder) {
   Oracle_Compiler.call(this, client, builder);
