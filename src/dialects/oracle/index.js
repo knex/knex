@@ -119,6 +119,35 @@ assign(Client_Oracle.prototype, {
     });
   },
 
+  // Ensures query is less than 2500 characters
+  // to bypass sqlplus command line limit by inserting new line(s)
+  _splitLongQuery: function _splitLongQuery(query) {
+    var updatedQuery = query.slice();
+    var COMMAND_LINE_LIMIT = 2500;
+
+    if (updatedQuery.length >= COMMAND_LINE_LIMIT) {
+      var iterations = _.floor(updatedQuery.length / COMMAND_LINE_LIMIT);
+      var splitQuery = updatedQuery.split('');
+      var indexToInsertNewline = 0;
+
+      for (var i = 0; i < iterations; i++) {
+        var currentSection = _.slice(
+          splitQuery,
+          indexToInsertNewline,
+          indexToInsertNewline + COMMAND_LINE_LIMIT - 1);
+
+        var indexOfLastSpaceInCurrentSection = _.lastIndexOf(currentSection, ' ');
+
+        indexToInsertNewline += indexOfLastSpaceInCurrentSection;
+
+        splitQuery.splice(indexToInsertNewline, 0, '\n');
+      }
+      updatedQuery = splitQuery.join('');
+    }
+
+    return updatedQuery;
+  },
+
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query: function(connection, obj) {
@@ -130,6 +159,7 @@ assign(Client_Oracle.prototype, {
 
     if (!obj.sql) throw new Error('The query is empty');
 
+    obj.sql = this._splitLongQuery(obj.sql);
     return connection.executeAsync(obj.sql, obj.bindings).then(function(response) {
       if (!obj.returning) return response
       var rowIds = obj.outParams.map(function (v, i) {
