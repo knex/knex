@@ -78,6 +78,178 @@ module.exports = function(knex) {
   
   })
 
+  test('sibling nested transactions - second created after first one commits', function (t) {
+    var secondTransactionCompleted = false
+    return knex.transaction(function (trx) {
+      return trx.transaction(function (trx1) {
+        return trx1.insert({id: 1, name: 'A'}).into('test_table')
+        .then(function () {
+          return trx1.insert({id: 2, name: 'B'}).into('test_table')
+        })
+      })
+      .then(function () {
+        return trx.transaction(function (trx2) {
+          return trx2('test_table').then(function (results) {
+            secondTransactionCompleted = true
+            t.equal(results.length, 2, 'First sibling transaction committed before starting the second one')
+          })
+        })
+      })
+    })
+    .finally(function () {
+      t.equal(secondTransactionCompleted, true, 'Second sibling transaction completed')
+    })
+  })
+
+  test('sibling nested transactions - both chained sibling transactions committed', function (t) {
+    return knex.transaction(function (trx) {
+      return trx.transaction(function (trx1) {
+        return trx1.insert({id: 1, name: 'A'}).into('test_table')
+      })
+      .then(function () {
+        return trx.transaction(function (trx2) {
+          return trx2.insert({id: 2, name: 'B'}).into('test_table')
+        })
+      })
+    })
+    .finally(function () {
+      return knex('test_table').then(function (results) {
+        t.equal(results.length, 2, 'Parent transaction inserted 2 records')
+      })
+    })
+  })
+
+  test('sibling nested transactions - second created after first one rolls back by returning a rejected promise', function (t) {
+    var secondTransactionCompleted = false
+    return knex.transaction(function (trx) {
+      return trx.transaction(function (trx1) {
+        return trx1.insert({id: 1, name: 'A'}).into('test_table')
+        .then(function () {
+          throw new Error('test rollback')
+        })
+      })
+      .catch(function (err) {
+        t.equal(err.message, 'test rollback', 'First sibling transaction rolled back before starting the second one')
+        return trx.transaction(function (trx2) {
+          return trx2('test_table').then(function () {
+            secondTransactionCompleted = true
+          })
+        })
+      })
+    })
+    .finally(function () {
+      t.equal(secondTransactionCompleted, true, 'Second sibling transaction completed')
+    })
+  })
+
+  test('sibling nested transactions - second commits data after first one rolls back by returning a rejected promise', function (t) {
+    return knex.transaction(function (trx) {
+      return trx.transaction(function (trx1) {
+        return trx1.insert({id: 1, name: 'A'}).into('test_table')
+        .then(function () {
+          throw new Error('test rollback')
+        })
+      })
+      .catch(function (err) {
+        t.equal(err.message, 'test rollback', 'First sibling transaction rolled back before starting the second one')
+        return trx.transaction(function (trx2) {
+          return trx2.insert([{id: 2, name: 'B'}, {id: 3, name: 'C'}]).into('test_table')
+        })
+      })
+    })
+    .finally(function () {
+      return knex('test_table').then(function (results) {
+        t.equal(results.length, 2, 'Parent transaction inserted two records')
+      })
+    })
+  })
+
+  test('sibling nested transactions - second created after first one rolls back by throwing', function (t) {
+    var secondTransactionCompleted = false
+    return knex.transaction(function (trx) {
+      return trx.transaction(function () {
+        throw new Error('test rollback')
+      })
+      .catch(function (err) {
+        t.equal(err.message, 'test rollback', 'First sibling transaction rolled back before starting the second one')
+        return trx.transaction(function (trx2) {
+          return trx2('test_table').then(function () {
+            secondTransactionCompleted = true
+          })
+        })
+      })
+    })
+    .finally(function () {
+      t.equal(secondTransactionCompleted, true, 'Second sibling transaction completed')
+    })
+  })
+
+  test('sibling nested transactions - second commits data after first one rolls back by throwing', function (t) {
+    return knex.transaction(function (trx) {
+      return trx.transaction(function () {
+        throw new Error('test rollback')
+      })
+      .catch(function (err) {
+        t.equal(err.message, 'test rollback', 'First sibling transaction rolled back before starting the second one')
+        return trx.transaction(function (trx2) {
+          return trx2.insert([{id: 1, name: 'A'}]).into('test_table')
+        })
+      })
+    })
+    .finally(function () {
+      return knex('test_table').then(function (results) {
+        t.equal(results.length, 1, 'Parent transaction inserted one record')
+      })
+    })
+  })
+
+  test('sibling nested transactions - first commits data even though second one rolls back by returning a rejected promise', function (t) {
+    var secondTransactionCompleted = false
+    return knex.transaction(function (trx) {
+      return trx.transaction(function (trx1) {
+        return trx1.insert({id: 1, name: 'A'}).into('test_table')
+      })
+      .then(function () {
+        return trx.transaction(function (trx2) {
+          return trx2.insert([{id: 2, name: 'B'}, {id: 3, name: 'C'}]).into('test_table')
+          .then(function () {
+            secondTransactionCompleted = true
+            throw new Error('test rollback')
+          })
+        })
+        .catch(function () {})
+      })
+    })
+    .finally(function () {
+      t.equal(secondTransactionCompleted, true, 'Second sibling transaction completed')
+      return knex('test_table').then(function (results) {
+        t.equal(results.length, 1, 'Parent transaction inserted one record')
+      })
+    })
+  })
+
+  test('sibling nested transactions - first commits data even though second one rolls back by throwing', function (t) {
+    var secondTransactionCompleted = false
+    return knex.transaction(function (trx) {
+      return trx.transaction(function (trx1) {
+        return trx1.insert({id: 1, name: 'A'}).into('test_table')
+      })
+      .then(function () {
+        return trx.transaction(function () {
+          secondTransactionCompleted = true
+          throw new Error('test rollback')
+        })
+        .catch(function () {})
+      })
+    })
+    .finally(function () {
+      t.equal(secondTransactionCompleted, true, 'Second sibling transaction completed')
+      return knex('test_table').then(function (results) {
+        t.equal(results.length, 1, 'Parent transaction inserted one record')
+      })
+    })
+  })
+
   test('#625 - streams/transactions', 'postgresql', function(t) {
 
     var cid, queryCount = 0;
