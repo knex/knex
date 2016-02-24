@@ -73,8 +73,9 @@ function Transaction(client, container, config, outerTx) {
     // settles (commit or rollback) and then we can continue.
     if (outerTx._childQueue.length > 0) {
 
+      var previousSibling = outerTx._childQueue[outerTx._childQueue.length - 1]
       this._queue = this._queue.then(function() {
-        return Promise.settle(outerTx._childQueue[outerTx._childQueue.length - 1])
+        return Promise.settle([previousSibling])
       })
 
     }
