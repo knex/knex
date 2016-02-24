@@ -63,7 +63,7 @@ function Transaction(client, container, config, outerTx) {
   this._childQueue = []
 
   // The queue is a noop unless we have child promises.
-  this._queue = this._queue || Promise.resolve(true)
+  this._queue = Promise.resolve(true)
 
   // If there's a wrapping transaction, we need to see if there are 
   // any current children in the pending queue.
@@ -74,9 +74,7 @@ function Transaction(client, container, config, outerTx) {
     if (outerTx._childQueue.length > 0) {
 
       var previousSibling = outerTx._childQueue[outerTx._childQueue.length - 1]
-      this._queue = this._queue.then(function() {
-        return Promise.settle([previousSibling])
-      })
+      this._queue = Promise.settle([previousSibling])
 
     }
 
