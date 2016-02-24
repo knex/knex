@@ -60,8 +60,6 @@ function Transaction(client, container, config, outerTx) {
 
   // If there is more than one child transaction,
   // we queue them, executing each when the previous completes.
-  this._childQueue = []
-
   // The queue is a noop unless we have child promises.
   this._queue = Promise.resolve(true)
 
@@ -71,15 +69,10 @@ function Transaction(client, container, config, outerTx) {
 
     // If there are other promises pending, we just wait until that one
     // settles (commit or rollback) and then we can continue.
-    if (outerTx._childQueue.length > 0) {
-
-      var previousSibling = outerTx._childQueue[outerTx._childQueue.length - 1]
-      this._queue = Promise.settle([previousSibling])
-
-    }
+    if (outerTx._lastChild) this._queue = Promise.settle([outerTx._lastChild])
 
     // Push the current promise onto the queue of promises.
-    outerTx._childQueue.push(this._promise)
+    outerTx._lastChild = this._promise
   }
 
 }
