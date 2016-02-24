@@ -58,23 +58,15 @@ function Transaction(client, container, config, outerTx) {
 
   this._completed  = false
 
-  // If there is more than one child transaction,
-  // we queue them, executing each when the previous completes.
-  // The queue is a noop unless we have child promises.
-  this._queue = Promise.resolve(true)
-
-  // If there's a wrapping transaction, we need to see if there are 
-  // any current children in the pending queue.
+  // If there's a wrapping transaction, we need to wait for any older sibling
+  // transactions to settle (commit or rollback) before we can start, and we
+  // need to register ourselves with the parent transaction so any younger
+  // siblings can wait for us to complete before they can start.
+  this._previousSibling = Promise.resolve(true);
   if (outerTx) {
-
-    // If there are other promises pending, we just wait until that one
-    // settles (commit or rollback) and then we can continue.
-    if (outerTx._lastChild) this._queue = Promise.settle([outerTx._lastChild])
-
-    // Push the current promise onto the queue of promises.
-    outerTx._lastChild = this._promise
+    if (outerTx._lastChild) this._previousSibling = outerTx._lastChild;
+    outerTx._lastChild = this._promise;
   }
-
 }
 inherits(Transaction, EventEmitter)
 
@@ -230,7 +222,7 @@ function makeTxClient(trx, client, connection) {
     })
   }
   trxClient.acquireConnection = function() {
-    return trx._queue.then(function() {
+    return Promise.settle([trx._previousSibling]).then(function () {
       return connection
     })
   }
