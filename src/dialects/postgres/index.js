@@ -19,6 +19,10 @@ function Client_PG(config) {
   if (config.returning) {
     this.defaultReturning = config.returning;
   }
+
+  if (config.searchPath) {
+    this.searchPath = config.searchPath;
+  }
 }
 inherits(Client_PG, Client)
 
@@ -38,7 +42,7 @@ assign(Client_PG.prototype, {
 
   _driver: function() {
     return require('pg')
-  },  
+  },
 
   wrapIdentifier: function(value) {
     if (value === '*') return value;
@@ -50,8 +54,8 @@ assign(Client_PG.prototype, {
   // Prep the bindings as needed by PostgreSQL.
   prepBindings: function(bindings, tz) {
     return _.map(bindings, function(binding) {
-      return utils.prepareValue(binding, tz)
-    });
+      return utils.prepareValue(binding, tz, this.valueForUndefined)
+    }, this);
   },
 
   // Get a raw connection, called by the `pool` whenever a new
@@ -72,6 +76,8 @@ assign(Client_PG.prototype, {
         }
         resolver(connection);
       });
+    }).tap(function setSearchPath(connection) {
+      return client.setSchemaSearchPath(connection);
     });
   },
 
@@ -93,12 +99,30 @@ assign(Client_PG.prototype, {
     });
   },
 
-  // Position the bindings for the query.
+  // Position the bindings for the query. The escape sequence for question mark
+  // is \? (e.g. knex.raw("\\?") since javascript requires '\' to be escaped too...)
   positionBindings: function(sql) {
     var questionCount = 0;
-    return sql.replace(/\?/g, function() {
-      questionCount++;
-      return '$' + questionCount;
+    return sql.replace(/(\\*)(\?)/g, function (match, escapes) {
+      if (escapes.length % 2) {
+        return '?';
+      } else {
+        questionCount++;
+        return '$' + questionCount;
+      }
+    });
+  },
+
+  setSchemaSearchPath: function(connection, searchPath) {
+    var path = (searchPath || this.searchPath);
+
+    if (!path) return Promise.resolve(true);
+
+    return new Promise(function(resolver, rejecter) {
+      connection.query('set search_path to ' + path, function(err) {
+        if (err) return rejecter(err);
+        resolver(true);
+      });
     });
   },
 

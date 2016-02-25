@@ -11,12 +11,13 @@ var reduce  = require('lodash/collection/reduce');
 // have been gathered in the "QueryBuilder" and turns them into a
 // properly formatted / bound query string.
 function QueryCompiler(client, builder) {
-  this.client      = client
-  this.method      = builder._method || 'select';
-  this.options     = builder._options;
-  this.single      = builder._single;
-  this.grouped     = _.groupBy(builder._statements, 'grouping');
-  this.formatter   = client.formatter()
+  this.client    = client
+  this.method    = builder._method || 'select';
+  this.options   = builder._options;
+  this.single    = builder._single;
+  this.timeout   = builder._timeout || false;
+  this.grouped   = _.groupBy(builder._statements, 'grouping');
+  this.formatter = client.formatter()
 }
 
 var components = [
@@ -36,6 +37,7 @@ assign(QueryCompiler.prototype, {
     var defaults = {
       method: method,
       options: reduce(this.options, assign, {}),
+      timeout: this.timeout,
       bindings: this.formatter.bindings
     };
     if (_.isString(val)) {
@@ -138,13 +140,14 @@ assign(QueryCompiler.prototype, {
   aggregate: function(stmt) {
     var val = stmt.value;
     var splitOn = val.toLowerCase().indexOf(' as ');
+    var distinct = stmt.aggregateDistinct ? 'distinct ' : '';
     // Allows us to speciy an alias for the aggregate types.
     if (splitOn !== -1) {
       var col = val.slice(0, splitOn);
       var alias = val.slice(splitOn + 4);
-      return stmt.method + '(' + this.formatter.wrap(col) + ') as ' + this.formatter.wrap(alias);
+      return stmt.method + '(' + distinct + this.formatter.wrap(col) + ') as ' + this.formatter.wrap(alias);
     }
-    return stmt.method + '(' + this.formatter.wrap(val) + ')';
+    return stmt.method + '(' + distinct + this.formatter.wrap(val) + ')';
   },
 
   // Compiles all each of the `join` clauses on the query,
@@ -153,19 +156,20 @@ assign(QueryCompiler.prototype, {
     var sql = '', i = -1, joins = this.grouped.join;
     if (!joins) return '';
     while (++i < joins.length) {
-      var join = joins[i]
+      var join = joins[i];
+      var table = join.schema ? `${join.schema}.${join.table}` : join.table;
       if (i > 0) sql += ' '
       if (join.joinType === 'raw') {
         sql += this.formatter.unwrapRaw(join.table)
       } else {
-        sql += join.joinType + ' join ' + this.formatter.wrap(join.table)
+        sql += join.joinType + ' join ' + this.formatter.wrap(table)
         var ii = -1
         while (++ii < join.clauses.length) {
           var clause = join.clauses[ii]
           sql += ' ' + (ii > 0 ? clause[0] : clause[1]) + ' '
           sql += this.formatter.wrap(clause[2])
-          if (clause[3]) sql += ' ' + this.formatter.operator(clause[3])
-          if (clause[4]) sql += ' ' + this.formatter.wrap(clause[4])
+          if (!_.isUndefined(clause[3])) sql += ' ' + this.formatter.operator(clause[3])
+          if (!_.isUndefined(clause[4])) sql += ' ' + this.formatter.wrap(clause[4])
         }
       }
     }
@@ -394,6 +398,7 @@ assign(QueryCompiler.prototype, {
 
   // "Preps" the update.
   _prepUpdate: function(data) {
+    data = _.omit(data, _.isUndefined)
     var vals   = []
     var sorted = Object.keys(data).sort()
     var i      = -1
@@ -425,7 +430,12 @@ Object.defineProperty(QueryCompiler.prototype, 'tableName', {
   get: function() {
     if(!this._tableName) {
       // Only call this.formatter.wrap() the first time this property is accessed.
-      this._tableName = this.single.table ? this.formatter.wrap(this.single.table) : '';
+      var tableName = this.single.table;
+      var schemaName = this.single.schema;
+
+      if (tableName && schemaName) tableName = `${schemaName}.${tableName}`;
+
+      this._tableName = tableName ? this.formatter.wrap(tableName) : '';
     }
     return this._tableName;
   }

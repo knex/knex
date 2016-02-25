@@ -8,6 +8,7 @@ var assign  = require('lodash/object/assign');
 function SchemaCompiler(client, builder) {
   this.builder   = builder
   this.client    = client
+  this.schema    = builder._schema;
   this.formatter = client.formatter()
   this.sequence  = []
 }
@@ -24,12 +25,13 @@ assign(SchemaCompiler.prototype, {
 
   alterTable: buildTable('alter'),
 
+  dropTablePrefix: 'drop table ',
   dropTable: function(tableName) {
-    this.pushQuery('drop table ' + this.formatter.wrap(tableName))
+    this.pushQuery(this.dropTablePrefix + this.formatter.wrap(prefixedTableName(this.schema, tableName)));
   },
 
   dropTableIfExists: function(tableName) {
-    this.pushQuery('drop table if exists ' + this.formatter.wrap(tableName));
+    this.pushQuery(this.dropTablePrefix + 'if exists ' + this.formatter.wrap(prefixedTableName(this.schema, tableName)));
   },
 
   raw: function(sql, bindings) {
@@ -49,12 +51,20 @@ assign(SchemaCompiler.prototype, {
 
 function buildTable(type) {
   return function(tableName, fn) {
-    var sql = this.client.tableBuilder(type, tableName, fn).toSQL();
+    var builder = this.client.tableBuilder(type, tableName, fn);
+    var sql;
+
+    builder.setSchema(this.schema);
+    sql = builder.toSQL();
+
     for (var i = 0, l = sql.length; i < l; i++) {
       this.sequence.push(sql[i]);
     }
   };
 }
 
+function prefixedTableName(prefix, table) {
+  return prefix ? `${prefix}.${table}` : table;
+}
 
 module.exports = SchemaCompiler;

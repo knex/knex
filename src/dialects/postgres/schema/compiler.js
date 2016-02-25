@@ -12,9 +12,19 @@ inherits(SchemaCompiler_PG, SchemaCompiler);
 
 // Check whether the current table
 SchemaCompiler_PG.prototype.hasTable = function(tableName) {
+  var sql = 'select * from information_schema.tables where table_name = ?';
+  var bindings = [tableName];
+
+  if (this.schema) {
+    sql += ' and table_schema = ?';
+    bindings.push(this.schema);
+  } else {
+    sql += ' and table_schema = current_schema';
+  }
+
   this.pushQuery({
-    sql: 'select * from information_schema.tables where table_name = ?',
-    bindings: [tableName],
+    sql: sql,
+    bindings: bindings,
     output: function(resp) {
       return resp.rows.length > 0;
     }
@@ -23,18 +33,33 @@ SchemaCompiler_PG.prototype.hasTable = function(tableName) {
 
 // Compile the query to determine if a column exists in a table.
 SchemaCompiler_PG.prototype.hasColumn = function(tableName, columnName) {
+  var sql = 'select * from information_schema.columns where table_name = ? and column_name = ?';
+  var bindings = [tableName, columnName];
+
+  if (this.schema) {
+    sql += ' and table_schema = ?';
+    bindings.push(this.schema);
+  } else {
+    sql += ' and table_schema = current_schema';
+  }
+
   this.pushQuery({
-    sql: 'select * from information_schema.columns where table_name = ? and column_name = ?',
-    bindings: [tableName, columnName],
+    sql: sql,
+    bindings: bindings,
     output: function(resp) {
       return resp.rows.length > 0;
     }
   });
 };
 
+SchemaCompiler_PG.prototype.qualifiedTableName = function(tableName) {
+  var name = this.schema ? `${this.schema}.${tableName}` : tableName;
+  return this.formatter.wrap(name);
+};
+
 // Compile a rename table command.
 SchemaCompiler_PG.prototype.renameTable = function(from, to) {
-  this.pushQuery('alter table ' + this.formatter.wrap(from) + ' rename to ' + this.formatter.wrap(to));
+  this.pushQuery('alter table ' + this.qualifiedTableName(from) + ' rename to ' + this.qualifiedTableName(to));
 };
 
 SchemaCompiler_PG.prototype.createSchema = function(schemaName) {

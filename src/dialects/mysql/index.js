@@ -34,7 +34,7 @@ assign(Client_MySQL.prototype, {
   },
 
   QueryCompiler: QueryCompiler,
-  
+
   SchemaCompiler: SchemaCompiler,
 
   TableCompiler: TableCompiler,

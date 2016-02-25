@@ -49,13 +49,14 @@ function initKnex(env) {
   var environment = commander.env || process.env.NODE_ENV;
   var defaultEnv  = 'development';
   var config      = require(env.configPath);
-  
+
   if (!environment && typeof config[defaultEnv] === 'object') {
     environment = defaultEnv;
   }
+
   if (environment) {
     console.log('Using environment:', chalk.magenta(environment));
-    config = config[environment];
+    config = config[environment] || config;
   }
 
   if (!config) {
@@ -71,7 +72,7 @@ function initKnex(env) {
 
 function invoke(env) {
 
-  var pending, filetypes = ['js', 'coffee'];
+  var pending, filetypes = ['js', 'coffee', 'eg', 'ls'];
 
   commander
     .version(
@@ -111,8 +112,9 @@ function invoke(env) {
     .description('       Create a named migration file.')
     .option('-x [' + filetypes.join('|') + ']', 'Specify the stub extension (default js)')
     .action(function(name) {
+      var instance = initKnex(env);
       var ext = (argv.x || env.configPath.split('.').pop()).toLowerCase();
-      pending = initKnex(env).migrate.make(name, {extension: ext}).then(function(name) {
+      pending = instance.migrate.make(name, {extension: ext}).then(function(name) {
         success(chalk.green('Created Migration: ' + name));
       }).catch(exit);
     });
@@ -155,8 +157,9 @@ function invoke(env) {
     .description('       Create a named seed file.')
     .option('-x [' + filetypes.join('|') + ']', 'Specify the stub extension (default js)')
     .action(function(name) {
+      var instance = initKnex(env);
       var ext = (argv.x || env.configPath.split('.').pop()).toLowerCase();
-      pending = initKnex(env).seed.make(name, {extension: ext}).then(function(name) {
+      pending = instance.seed.make(name, {extension: ext}).then(function(name) {
         success(chalk.green('Created seed file: ' + name));
       }).catch(exit);
     });

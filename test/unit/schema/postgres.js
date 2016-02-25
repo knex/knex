@@ -30,16 +30,36 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "id" serial primary key, add column "email" varchar(255)');
   });
 
+  it("alter table with schema", function() {
+    tableSql = client.schemaBuilder().withSchema('myschema').table('users', function(table) {
+      table.increments('id');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "myschema"."users" add column "id" serial primary key');
+  });
+
   it("drop table", function() {
     tableSql = client.schemaBuilder().dropTable('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table "users"');
   });
 
+  it("drop table with schema", function() {
+    tableSql = client.schemaBuilder().withSchema('myschema').dropTable('users').toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table "myschema"."users"');
+  });
+
   it("drop table if exists", function() {
     tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table if exists "users"');
+  });
+
+  it("drop table if exists with schema", function() {
+    tableSql = client.schemaBuilder().withSchema('myschema').dropTableIfExists('users').toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table if exists "myschema"."users"');
   });
 
   it("drop column", function() {
@@ -71,7 +91,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.dropPrimary();
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint users_pkey');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_pkey"');
   });
 
   it("drop unique", function() {
@@ -432,7 +452,7 @@ describe("PostgreSQL SchemaBuilder", function() {
 
   it('adding jsonb', function() {
     tableSql = client.schemaBuilder().table('user', function(t) {
-      t.json('preferences', true);
+      t.jsonb('preferences');
     }).toSQL();
     expect(tableSql[0].sql).to.equal('alter table "user" add column "preferences" jsonb');
   });

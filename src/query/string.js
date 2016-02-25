@@ -4,7 +4,11 @@ var SqlString = exports;
 var helpers   = require('../helpers')
 
 SqlString.escape = function(val, timeZone) {
-  if (val == null) {
+  // Cant do require on top of file beacuse Raw is not yet initialized when this file is
+  // executed for the first time
+  var Raw = require('../raw')
+
+  if (val === null || val === undefined) {
     return 'NULL';
   }
 
@@ -25,6 +29,10 @@ SqlString.escape = function(val, timeZone) {
     return SqlString.arrayToList(val, timeZone);
   }
 
+  if (val instanceof Raw) {
+    return val;
+  }
+
   if (typeof val === 'object') {
     try {
       val = JSON.stringify(val)
@@ -34,7 +42,7 @@ SqlString.escape = function(val, timeZone) {
     }
   }
 
-  val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
+  val = val.replace(/(\\\?)|[\0\n\r\b\t\\\'\x1a]/g, function(s) {
     switch(s) {
       case "\0": return "\\0";
       case "\n": return "\\n";
@@ -42,6 +50,8 @@ SqlString.escape = function(val, timeZone) {
       case "\b": return "\\b";
       case "\t": return "\\t";
       case "\x1a": return "\\Z";
+      case "\\?": return "?";
+      case "\'": return "''";
       default: return "\\"+s;
     }
   });
@@ -49,22 +59,25 @@ SqlString.escape = function(val, timeZone) {
 };
 
 SqlString.arrayToList = function(array, timeZone) {
+  var self = this;
   return array.map(function(v) {
     if (Array.isArray(v)) return '(' + SqlString.arrayToList(v, timeZone) + ')';
-    return SqlString.escape(v, timeZone);
+    return self.escape(v, timeZone);
   }).join(', ');
 };
 
 SqlString.format = function(sql, values, timeZone) {
+  var self = this;
   values = values == null ? [] : [].concat(values);
   var index = 0;
-  return sql.replace(/\?/g, function(match) {
+  return sql.replace(/\\?\?/g, function(match) {
+    if (match === '\\?') return match;
     if (index === values.length) {
       return match;
     }
     var value = values[index++];
-    return SqlString.escape(value, timeZone)
-  });
+    return self.escape(value, timeZone)
+  }).replace('\\?', '?');
 };
 
 SqlString.dateToString = function(date, timeZone) {

@@ -1,4 +1,5 @@
 
+var _              = require('lodash')
 var Promise        = require('./promise')
 var helpers        = require('./helpers')
 
@@ -38,6 +39,10 @@ function Client(config = {}) {
     if (!config.pool || (config.pool && config.pool.max !== 0)) {
       this.initializePool(config)
     }
+  }
+  this.valueForUndefined = this.raw('DEFAULT');
+  if (config.useNullAsDefault) {
+    this.valueForUndefined = null
   }
 }
 inherits(Client, EventEmitter)
@@ -104,6 +109,8 @@ assign(Client.prototype, {
     return new this.Runner(this, connection)
   },
 
+  SqlString: SqlString,
+
   Transaction: Transaction,
 
   transaction: function(container, config, outerTx) {
@@ -121,8 +128,9 @@ assign(Client.prototype, {
     if (typeof obj === 'string') obj = {sql: obj}
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
     debugQuery(obj.sql)
-    return this._query.call(this, connection, obj).catch(function(err) {
+    return this._query.call(this, connection, obj).catch((err) => {
       err.message = SqlString.format(obj.sql, obj.bindings) + ' - ' + err.message
+      this.emit('query-error', err, obj)
       throw err
     })
   },
@@ -132,6 +140,12 @@ assign(Client.prototype, {
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
     debugQuery(obj.sql)
     return this._stream.call(this, connection, obj, stream, options)
+  },
+
+  prepBindings: function(bindings) {
+    return _.map(bindings, function(binding) {
+      return binding === undefined ? this.valueForUndefined : binding
+    }, this);
   },
 
   wrapIdentifier: function(value) {

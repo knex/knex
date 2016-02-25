@@ -141,7 +141,7 @@ module.exports = function(knex) {
       t.equal(err.message, 'Rolled back')
     })
     .finally(function() {
-      t.equal(queryCount, knex.client.dialect === 'oracle' ? 1 : 3)
+      t.equal(queryCount, knex.client.dialect === 'oracle' || knex.client.dialect === 'mssql' ? 1 : 3)
     })
 
   })
@@ -167,5 +167,21 @@ module.exports = function(knex) {
       t.equal(e.message, 'Some Error')
     })
   })
+
+  if (knex.client.driverName === 'pg') {
+    tape('allows postgres ? operator in knex.raw() if no bindings given #519 and #888', function (t) {
+      t.plan(1)
+      knex.from('test_table_two')
+        .whereRaw("(json_data->'me')::jsonb \\?& array['keyOne', 'keyTwo']")
+        .where('id', '>', 1)
+        .then(function (result) {
+          t.equal(result.length, 0, "Table should have been empty")
+          return result
+        })
+        .finally(function () {
+          t.end()
+        });
+    })
+  }
 
 }

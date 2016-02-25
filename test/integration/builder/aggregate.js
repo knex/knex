@@ -49,6 +49,14 @@ module.exports = function(knex) {
               'SUM("LOGINS")': 10
             }]
           );
+          tester(
+            'mssql',
+            'select sum([logins]) from [accounts]',
+            [],
+            [{
+              '': 10
+            }]
+          );
       });
     });
 
@@ -59,6 +67,9 @@ module.exports = function(knex) {
         function checkResRange(key, resp) {
           return Math.abs(10/6 - +(resp[0][key])) < 0.001;
         }
+       function checkResRangeMssql(key, resp) {
+          return +(resp[0][key]) === 1;
+        }
 
         // mysql: 1.6667
         tester('mysql', 'select avg(`logins`) from `accounts`', [], checkResRange.bind(null, 'avg(`logins`)'));
@@ -68,6 +79,8 @@ module.exports = function(knex) {
         tester('postgresql', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'avg'));
         // oracle: 1.66666666666667
         tester('oracle', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'AVG("LOGINS")'));
+        // mssql: 1
+        tester('mssql', 'select avg([logins]) from [accounts]', [], checkResRangeMssql.bind(null, ''));
       });
 
     });
@@ -75,7 +88,7 @@ module.exports = function(knex) {
     it('has a count', function() {
 
       return knex('accounts').count('id').testSql(function(tester) {
-          tester(
+        tester(
           'mysql',
           'select count(`id`) from `accounts`',
           [],
@@ -105,6 +118,14 @@ module.exports = function(knex) {
           [],
           [{
             'COUNT("ID")': 6
+          }]
+        );
+        tester(
+          'mssql',
+          'select count([id]) from [accounts]',
+          [],
+          [{
+            '': 6
           }]
         );
       });
@@ -154,6 +175,69 @@ module.exports = function(knex) {
             'MIN("LOGINS")': 1
           }]
         );
+        tester(
+          'mssql',
+          'select count([id]), max([logins]), min([logins]) from [accounts]',
+          [],
+          [{
+            '': [6, 2, 1]
+          }]
+        );
+      });
+
+    });
+
+    it('has distinct modifier for aggregates', function() {
+
+      return knex('accounts').countDistinct('id').sumDistinct('logins').avgDistinct('logins').testSql(function(tester) {
+        tester(
+            'mysql',
+            'select count(distinct `id`), sum(distinct `logins`), avg(distinct `logins`) from `accounts`',
+            [],
+            [{
+              'count(distinct `id`)': 6,
+              'sum(distinct `logins`)': 3,
+              'avg(distinct `logins`)': 1.5
+            }]
+        );
+        tester(
+            'postgresql',
+            'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
+            [],
+            [{
+              count: '6',
+              sum: 3,
+              avg: 1.5
+            }]
+        );
+        tester(
+            'sqlite3',
+            'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
+            [],
+            [{
+              'count(distinct "id")': 6,
+              'sum(distinct "logins")': 3,
+              'avg(distinct "logins")': 1.5
+            }]
+        );
+        tester(
+            'oracle',
+            'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
+            [],
+            [{
+              'COUNT(DISTINCT "ID")': 6,
+              'SUM(DISTINCT "LOGINS")': 3,
+              'AVG(DISTINCT "LOGINS")': 1.5
+            }]
+        );
+        tester(
+            'mssql',
+            'select count(distinct [id]), sum(distinct [logins]), avg(distinct [logins]) from [accounts]',
+            [],
+            [{
+              '': [6, 3, 1]
+            }]
+        );
       });
 
     });
@@ -201,7 +285,16 @@ module.exports = function(knex) {
             'COUNT("ID")': 4
           }]
         );
-
+        tester(
+          'mssql',
+          'select count([id]) from [accounts] group by [logins]',
+          [],
+          [{
+            '': 2
+          },{
+            '': 4
+          }]
+        );
 
       }).then(function() {
         return knex('accounts').count('id').groupBy('first_name').testSql(function(tester) {
@@ -229,13 +322,20 @@ module.exports = function(knex) {
               'count("id")': 6
             }]
           );
-
           tester(
             'oracle',
             'select count("id") from "accounts" group by "first_name"',
             [],
             [{
               'COUNT("ID")': 6
+            }]
+          );
+          tester(
+            'mssql',
+            'select count([id]) from [accounts] group by [first_name]',
+            [],
+            [{
+              '': 6
             }]
           );
         });

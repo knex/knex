@@ -14,10 +14,15 @@ function TableBuilder(client, method, tableName, fn) {
   this.client      = client
   this._fn         = fn;
   this._method     = method;
+  this._schemaName = undefined;
   this._tableName  = tableName;
   this._statements = [];
   this._single     = {};
 }
+
+TableBuilder.prototype.setSchema = function(schemaName) {
+  this._schemaName = schemaName;
+};
 
 // Convert the current tableBuilder object "toSQL"
 // giving us additional methods if we're altering
@@ -123,6 +128,7 @@ var columnTypes = [
   'string',
   'timestamps',
   'json',
+  'jsonb',
   'uuid',
   'enu',
   'specificType'

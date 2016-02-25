@@ -25,7 +25,6 @@ assign(Runner.prototype, {
   // a single connection.
   run: function() {
     var runner = this
-
     return Promise.using(this.ensureConnection(), function(connection) {
       runner.connection = connection;
 
@@ -114,10 +113,23 @@ assign(Runner.prototype, {
   query: Promise.method(function(obj) {
     this.builder.emit('query', assign({__knexUid: this.connection.__knexUid}, obj))
     var runner = this
-    return this.client.query(this.connection, obj)
+    var queryPromise = this.client.query(this.connection, obj)
+
+    if(obj.timeout) {
+      queryPromise = queryPromise.timeout(obj.timeout)
+    }
+
+    return queryPromise
       .then(function(resp) {
         return runner.client.processResponse(resp, runner)
-      });
+      }).catch(Promise.TimeoutError, error => {
+        throw assign(error, {
+          message:  `Defined query timeout of ${obj.timeout}ms exceeded when running query.`,
+          sql:      obj.sql,
+          bindings: obj.bindings,
+          timeout:  obj.timeout
+        });
+      })
   }),
 
   // In the case of the "schema builder" we call `queryArray`, which runs each
@@ -136,9 +148,31 @@ assign(Runner.prototype, {
   // Check whether there's a transaction flag, and that it has a connection.
   ensureConnection: function() {
     var runner = this
+    var acquireConnectionTimeout = runner.client.config.acquireConnectionTimeout || 60000
     return Promise.try(function() {
-      return runner.connection || runner.client.acquireConnection()
+      return runner.connection || new Promise((resolver, rejecter) => {
+            runner.client.acquireConnection()
+            .timeout(acquireConnectionTimeout)
+            .then(resolver)
+            .catch(Promise.TimeoutError, (error) => {
+                  var timeoutError = new Error('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?')
+                  var additionalErrorInformation = {
+                    timeoutStack: error.stack
+                  }
+
+                  if(runner.builder) {
+                    additionalErrorInformation.sql = runner.builder.sql
+                    additionalErrorInformation.bindings = runner.builder.bindings
+                  }
+
+                  assign(timeoutError, additionalErrorInformation)
+
+                  rejecter(timeoutError)
+            })
+            .catch(rejecter)
+          })
     }).disposer(function() {
+      if (runner.connection.__knex__disposed) return
       runner.client.releaseConnection(runner.connection)
     })
   }

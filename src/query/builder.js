@@ -6,10 +6,13 @@ var assert       = require('assert')
 var inherits     = require('inherits')
 var EventEmitter = require('events').EventEmitter
 
-var Raw          = require('../raw')
-var helpers      = require('../helpers')
-var JoinClause   = require('./joinclause')
-var assign       = require('lodash/object/assign');
+var Raw         = require('../raw')
+var helpers     = require('../helpers')
+var JoinClause  = require('./joinclause')
+var clone       = require('lodash/lang/clone');
+var isUndefined = require('lodash/lang/isUndefined');
+var isNumber    = require('lodash/lang/isNumber');
+var assign      = require('lodash/object/assign');
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
@@ -18,13 +21,13 @@ function Builder(client) {
   this.and         = this;
   this._single     = {};
   this._statements = [];
+  this._method    = 'select'
+  this._debug     = client.config && client.config.debug;
 
   // Internal flags used in the builder.
-  this._method    = 'select'
   this._joinFlag  = 'inner';
   this._boolFlag  = 'and';
   this._notFlag   = false;
-  this._debug     = client.config && client.config.debug;
 }
 inherits(Builder, EventEmitter);
 
@@ -40,14 +43,26 @@ assign(Builder.prototype, {
   },
 
   // Create a shallow clone of the current query builder.
-  // TODO: Test this!!
-  clone: function() {
-    var cloned            = new this.constructor(this.client);
-      cloned._method      = this._method;
-      cloned._single      = _.clone(this._single);
-      cloned._options     = _.clone(this._options);
-      cloned._statements  = this._statements.slice();
+  clone() {
+    const cloned        = new this.constructor(this.client);
+    cloned._method      = this._method;
+    cloned._single      = clone(this._single);
+    cloned._statements  = clone(this._statements);
+    cloned._debug       = this._debug;
+
+    // `_option` is assigned by the `Interface` mixin.
+    if (!isUndefined(this._options)) {
+      cloned._options = clone(this._options);
+    }
+
     return cloned;
+  },
+
+  timeout: function(ms) {
+    if(isNumber(ms) && ms > 0) {
+      this._timeout = ms;
+    }
+    return this;
   },
 
   // Select
@@ -68,6 +83,12 @@ assign(Builder.prototype, {
   // without needing to compile the query in a where.
   as: function(column) {
     this._single.as = column;
+    return this;
+  },
+
+  // Prepends the `schemaName` on `tableName` defined by `.table` and `.join`.
+  withSchema: function(schemaName) {
+    this._single.schema = schemaName;
     return this;
   },
 
@@ -94,14 +115,15 @@ assign(Builder.prototype, {
   // function(table, first, operator, second)
   join: function(table, first) {
     var join;
+    var schema = this._single.schema;
     var joinType = this._joinType();
     if (typeof first === 'function') {
-      join = new JoinClause(table, joinType);
+      join = new JoinClause(table, joinType, schema);
       first.call(join, join);
     } else if (joinType === 'raw') {
       join = new JoinClause(this.client.raw(table, first), 'raw');
     } else {
-      join = new JoinClause(table, joinType);
+      join = new JoinClause(table, joinType, schema);
       if (arguments.length > 1) {
         join.on.apply(join, _.toArray(arguments).slice(1));
       }
@@ -211,8 +233,17 @@ assign(Builder.prototype, {
     return this;
   },
   // Adds an `or where` clause to the query.
-  orWhere: function() {
-    return this._bool('or').where.apply(this, arguments);
+  orWhere: function orWhere() {
+    this._bool('or');
+    var obj = arguments[0];
+    if(_.isObject(obj) && !_.isFunction(obj) && !(obj instanceof Raw)) {
+      return this.whereWrapped(function() {
+        for(let key in obj) {
+          this.andWhere(key, obj[key]);
+        }
+      });
+    }
+    return this.where.apply(this, arguments);
   },
 
   // Adds an `not where` clause to the query.
@@ -558,6 +589,21 @@ assign(Builder.prototype, {
     return this._aggregate('avg', column);
   },
 
+  // Retrieve the "count" of the distinct results of the query.
+  countDistinct: function(column) {
+    return this._aggregate('count', (column || '*'), true);
+  },
+
+  // Retrieve the sum of the distinct values of a given column.
+  sumDistinct: function(column) {
+    return this._aggregate('sum', column, true);
+  },
+
+  // Retrieve the vg of the distinct results of the query.
+  avgDistinct: function(column) {
+    return this._aggregate('avg', column, true);
+  },
+
   // Increments a column's value by the specified amount.
   increment: function(column, amount) {
     return this._counter(column, amount);
@@ -745,12 +791,13 @@ assign(Builder.prototype, {
   },
 
   // Helper for compiling any aggregate queries.
-  _aggregate: function(method, column) {
+  _aggregate: function(method, column, aggregateDistinct) {
     this._statements.push({
       grouping: 'columns',
       type: 'aggregate',
       method: method,
-      value: column
+      value: column,
+      aggregateDistinct: aggregateDistinct || false
     });
     return this;
   }

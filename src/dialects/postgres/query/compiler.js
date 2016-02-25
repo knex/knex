@@ -72,9 +72,20 @@ assign(QueryCompiler_PG.prototype, {
   // Compiles a columnInfo query
   columnInfo: function() {
     var column = this.single.columnInfo;
+
+    var sql = 'select * from information_schema.columns where table_name = ? and table_catalog = ?';
+    var bindings = [this.single.table, this.client.database()];
+
+    if (this.single.schema) {
+      sql += ' and table_schema = ?';
+      bindings.push(this.single.schema);
+    } else {
+      sql += ' and table_schema = current_schema';
+    }
+
     return {
-      sql: 'select * from information_schema.columns where table_name = ? and table_catalog = ?',
-      bindings: [this.single.table, this.client.database()],
+      sql: sql,
+      bindings: bindings,
       output: function(resp) {
         var out = _.reduce(resp.rows, function(columns, val) {
           columns[val.column_name] = {
