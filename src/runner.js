@@ -121,7 +121,7 @@ assign(Runner.prototype, {
 
     return queryPromise
       .then((resp) => {
-		    var processedResponse = this.client.processResponse(resp, runner);
+        var processedResponse = this.client.processResponse(resp, runner);
         this.client.emit('query-response', processedResponse, assign({__knexUid: this.connection.__knexUid}, obj), this.builder)
         return processedResponse;
       }).catch(Promise.TimeoutError, error => {
