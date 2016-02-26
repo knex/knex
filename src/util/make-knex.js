@@ -132,6 +132,10 @@ module.exports = function makeKnex(client) {
     knex.emit('query-error', err, obj)
   })
 
+  client.on('query-response', function(response, obj, builder) {
+    knex.emit('query-response', response, obj, builder)
+  })
+
   client.makeKnex = function(client) {
     return makeKnex(client)
   }

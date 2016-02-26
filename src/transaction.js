@@ -219,6 +219,11 @@ function makeTxClient(trx, client, connection) {
     client.emit('query-error', err, obj)
   })
 
+  trxClient.on('query-response', function(response, obj, builder) {
+    trx.emit('query-response', response, obj, builder)
+    client.emit('query-response', response, obj, builder)
+  })
+
   var _query = trxClient.query;
   trxClient.query  = function(conn, obj) {
     var completed = trx.isCompleted()

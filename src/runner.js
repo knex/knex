@@ -120,8 +120,10 @@ assign(Runner.prototype, {
     }
 
     return queryPromise
-      .then(function(resp) {
-        return runner.client.processResponse(resp, runner)
+      .then((resp) => {
+		    var processedResponse = this.client.processResponse(resp, runner);
+        this.client.emit('query-response', processedResponse, assign({__knexUid: this.connection.__knexUid}, obj), this.builder)
+        return processedResponse;
       }).catch(Promise.TimeoutError, error => {
         throw assign(error, {
           message:  `Defined query timeout of ${obj.timeout}ms exceeded when running query.`,

@@ -289,6 +289,25 @@ module.exports = function(knex) {
         });
     });
 
+
+    it('Event: query-response', function() {
+      var queryCount = 0;
+
+      knex.on('query-response', function(response, obj, builder) {
+        queryCount++;
+      });
+
+      return knex('accounts').select()
+      .then(function() {
+          return knex.transaction(function(tr) {
+            return tr('accounts').select(); //Transactions should emit the event as well
+          })
+        })
+      .then(function() {
+          expect(queryCount).to.equal(2);
+      })
+    });
+
   });
 
 };
