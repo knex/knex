@@ -295,7 +295,7 @@ module.exports = function(knex) {
 
       knex.on('query-response', function(response, obj, builder) {
         queryCount++;
-        expect(response.length).to.equal(0);
+        expect(response).to.be.an('array');
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
         expect(builder).to.be.an('object');
