@@ -1949,6 +1949,9 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       <b class="header">enum / enu</b><code>table.enu(col, values)</code>
       <br />
       Adds a enum column, (aliased to <tt>enu</tt>, as enum is a reserved word in javascript).
+      Note that the second argument is an array of values.
+      <br />
+      Example: <tt>table.enu('column', ['value1', 'value2'])</tt>
     </p>
 
     <p id="Schema-json">
