@@ -42,7 +42,7 @@ module.exports = function(knex) {
       }
       if (bindings) {
         if (Array.isArray(sql)) {
-          compareBindings(_.pluck(sql, 'bindings'), bindings);
+          compareBindings(_.map(sql, 'bindings'), bindings);
         } else {
           compareBindings(sql.bindings, bindings);
         }
