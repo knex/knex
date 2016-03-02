@@ -397,7 +397,7 @@ describe("SQLite SchemaBuilder", function() {
       'alter table "users" add column "created_at" datetime',
       'alter table "users" add column "updated_at" datetime'
     ];
-    deepEqual(expected, _.map(tableSql, 'sql'));
+    deepEqual(expected, _.pluck(tableSql, 'sql'));
   });
 
   it("adding binary", function() {

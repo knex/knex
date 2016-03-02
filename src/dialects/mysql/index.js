@@ -108,7 +108,7 @@ assign(Client_MySQL.prototype, {
       case 'pluck':
       case 'first':
         var resp = helpers.skim(rows)
-        if (method === 'pluck') return map(resp, obj.pluck)
+        if (method === 'pluck') return pluck(resp, obj.pluck)
         return method === 'first' ? resp[0] : resp
       case 'insert':
         return [rows.insertId]
