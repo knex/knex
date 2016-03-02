@@ -185,6 +185,8 @@
       <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
       <li>– <a href="#Schema-foreign">Foreign</a></li>
       <li>– <a href="#Schema-dropForeign">dropForeign</a></li>
+      <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
+      <li>– <a href="#Schema-dropPrimary">dropPrimary</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -2051,6 +2053,21 @@ knex.table('users')
       <br />
       Drops a foreign key constraint from a table. A default foreign key name using the <tt>columns</tt> is used unless
       <tt>foreignKeyName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+
+
+    <p id="Schema-dropUnique">
+      <b class="header">dropUnique</b><code>table.dropUnique(columns, [indexName])</code>
+      <br />
+      Drops a unique key constraint from a table. A default unique key name using the <tt>columns</tt> is used unless
+      <tt>indexName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+
+
+    <p id="Schema-dropPrimary">
+      <b class="header">dropPrimary</b><code>table.dropPrimary()</code>
+      <br />
+      Drops the primary key constraint on a table.
     </p>
 
     <h3 id="Chainable">Chainable Methods:</h3>
