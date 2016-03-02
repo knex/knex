@@ -68,7 +68,7 @@ module.exports = function(knex) {
     if (!_.isObject(resp[0])) return resp;
     return _.map(resp, function(val) {
       return _.reduce(val, function(memo, val, key) {
-        if (_.contains(['created_at', 'updated_at'], key)) {
+        if (_.includes(['created_at', 'updated_at'], key)) {
           memo[key] = d;
         } else {
           memo[key] = val;
