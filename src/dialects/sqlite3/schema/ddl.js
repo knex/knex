@@ -6,7 +6,7 @@
 // -------
 
 var Promise = require('../../../promise');
-import {assign, uniqueId, findWhere, map, omit} from 'lodash'
+import {assign, uniqueId, find, map, omit} from 'lodash'
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
@@ -23,7 +23,7 @@ function SQLite3_DDL(client, tableCompiler, pragma, connection) {
 assign(SQLite3_DDL.prototype, {
 
   getColumn: Promise.method(function(column) {
-    var currentCol = findWhere(this.pragma, {name: column});
+    var currentCol = find(this.pragma, {name: column});
     if (!currentCol) throw new Error('The column ' + column + ' is not in the ' + this.tableName + ' table');
     return currentCol;
   }),
