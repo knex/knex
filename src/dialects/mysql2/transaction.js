@@ -1,9 +1,10 @@
 
 var Transaction = require('../../transaction')
-var assign      = require('lodash/object/assign');
 var inherits    = require('inherits')
 var debug       = require('debug')('knex:tx')
 var helpers     = require('../../helpers')
+
+import {assign} from 'lodash'
 
 function Transaction_MySQL2() {
   Transaction.apply(this, arguments)

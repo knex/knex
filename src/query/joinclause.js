@@ -1,5 +1,5 @@
 
-var assign = require('lodash/object/assign');
+import {assign} from 'lodash'
 
 // JoinClause
 // -------

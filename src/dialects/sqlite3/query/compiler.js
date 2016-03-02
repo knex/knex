@@ -1,10 +1,9 @@
 
 // SQLite3 Query Builder & Compiler
 
-var _             = require('lodash')
 var inherits      = require('inherits')
 var QueryCompiler = require('../../../query/compiler')
-var assign        = require('lodash/object/assign');
+import {assign, isEmpty, isString, reduce} from 'lodash'
 
 function QueryCompiler_SQLite3(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -29,16 +28,16 @@ assign(QueryCompiler_SQLite3.prototype, {
       if (insertValues.length === 0) {
         return ''
       }
-      else if (insertValues.length === 1 && insertValues[0] && _.isEmpty(insertValues[0])) {
+      else if (insertValues.length === 1 && insertValues[0] && isEmpty(insertValues[0])) {
         return sql + this._emptyInsertValue
       }
-    } else if (typeof insertValues === 'object' && _.isEmpty(insertValues)) {
+    } else if (typeof insertValues === 'object' && isEmpty(insertValues)) {
       return sql + this._emptyInsertValue
     }
 
     var insertData = this._prepInsert(insertValues)
 
-    if (_.isString(insertData)) {
+    if (isString(insertData)) {
       return sql + insertData
     }
 
@@ -86,7 +85,7 @@ assign(QueryCompiler_SQLite3.prototype, {
       sql: 'PRAGMA table_info(' + this.single.table +')',
       output: function(resp) {
         var maxLengthRegex = /.*\((\d+)\)/
-        var out = _.reduce(resp, function (columns, val) {
+        var out = reduce(resp, function (columns, val) {
           var type = val.type
           var maxLength = (maxLength = type.match(maxLengthRegex)) && maxLength[1]
           type = maxLength ? type.split('(')[0] : type

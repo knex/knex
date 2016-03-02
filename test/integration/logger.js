@@ -35,7 +35,7 @@ module.exports = function(knex) {
 
       if (statement) {
         if (Array.isArray(sql)) {
-          expect(_.pluck(sql, 'sql')).to.eql(statement);
+          expect(_.map(sql, 'sql')).to.eql(statement);
         } else {
           expect(sql.sql).to.equal(statement);
         }

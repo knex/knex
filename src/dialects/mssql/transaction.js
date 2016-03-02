@@ -1,9 +1,10 @@
 
 var inherits    = require('inherits')
-var assign      = require('lodash/object/assign');
 var Promise     = require('../../promise')
 var Transaction = require('../../transaction')
 var debug       = require('debug')('knex:tx')
+
+import {assign} from 'lodash'
 
 function Transaction_MSSQL() {
   Transaction.apply(this, arguments)

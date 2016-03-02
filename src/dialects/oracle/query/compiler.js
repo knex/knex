@@ -1,11 +1,10 @@
 
 // Oracle Query Builder & Compiler
 // ------
-var _               = require('lodash');
+import {assign, isPlainObject, isEmpty, isString, map, reduce, compact} from 'lodash'
 var inherits        = require('inherits');
 var QueryCompiler   = require('../../../query/compiler');
 var helpers         = require('../../../helpers');
-var assign          = require('lodash/object/assign');
 var ReturningHelper = require('../utils').ReturningHelper;
 
 // Query Compiler
@@ -27,7 +26,7 @@ assign(QueryCompiler_Oracle.prototype, {
     var insertValues = this.single.insert || []
     var returning    = this.single.returning;
 
-    if (!Array.isArray(insertValues) && _.isPlainObject(this.single.insert)) {
+    if (!Array.isArray(insertValues) && isPlainObject(this.single.insert)) {
       insertValues = [this.single.insert]
     }
 
@@ -36,11 +35,11 @@ assign(QueryCompiler_Oracle.prototype, {
       returning = [returning];
     }
 
-    if (Array.isArray(insertValues) && insertValues.length === 1 && _.isEmpty(insertValues[0])) {
+    if (Array.isArray(insertValues) && insertValues.length === 1 && isEmpty(insertValues[0])) {
       return this._addReturningToSqlAndConvert('insert into ' + this.tableName + ' (' + this.formatter.wrap(this.single.returning) + ') values (default)', returning, this.tableName);
     }
 
-    if (_.isEmpty(this.single.insert) && typeof this.single.insert !== 'function') {
+    if (isEmpty(this.single.insert) && typeof this.single.insert !== 'function') {
       return '';
     }
 
@@ -48,7 +47,7 @@ assign(QueryCompiler_Oracle.prototype, {
 
     var sql = {};
 
-    if (_.isString(insertData)) {
+    if (isString(insertData)) {
       return this._addReturningToSqlAndConvert('insert into ' + this.tableName + ' ' + insertData, returning);
     }
 
@@ -59,7 +58,7 @@ assign(QueryCompiler_Oracle.prototype, {
     var insertDefaultsOnly = (insertData.columns.length === 0);
 
     sql.sql = 'begin ' +
-      _.map(insertData.values, function (value) {
+      map(insertData.values, (value) => {
           var returningHelper;
           var parameterizedValues = !insertDefaultsOnly ? this.formatter.parameterize(value) : '';
           var returningValues = Array.isArray(returning) ? returning : [returning];
@@ -86,7 +85,7 @@ assign(QueryCompiler_Oracle.prototype, {
             parameterizedValues +
             ((parameterizedValues && returning) ? ', ' : '') +
             (returning ? 'out ?' : '') + ';';
-      }, this).join(' ') +
+      }).join(' ') +
       'end;';
 
     if (returning) {
@@ -145,7 +144,7 @@ assign(QueryCompiler_Oracle.prototype, {
       sql: 'select COLUMN_NAME, DATA_TYPE, CHAR_COL_DECL_LENGTH, NULLABLE from USER_TAB_COLS where TABLE_NAME = :1',
       bindings: [this.single.table],
       output: function(resp) {
-        var out = _.reduce(resp, function(columns, val) {
+        var out = reduce(resp, function(columns, val) {
           columns[val.COLUMN_NAME] = {
             type: val.DATA_TYPE,
             maxLength: val.CHAR_COL_DECL_LENGTH,
@@ -159,10 +158,10 @@ assign(QueryCompiler_Oracle.prototype, {
   },
 
   select: function() {
-    var statements = _.map(components, function (component) {
+    var statements = map(components, (component) => {
       return this[component]();
-    }, this);
-    var query = _.compact(statements).join(' ');
+    });
+    var query = compact(statements).join(' ');
     return this._surroundQueryWithLimitAndOffset(query);
   },
 

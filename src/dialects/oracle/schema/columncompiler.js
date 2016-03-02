@@ -1,7 +1,6 @@
 
-var _              = require('lodash')
+import {assign, uniq, map} from 'lodash'
 var inherits       = require('inherits')
-var assign         = require('lodash/object/assign')
 var utils          = require('../utils')
 var Raw            = require('../../../raw')
 var ColumnCompiler = require('../../../schema/columncompiler')
@@ -71,7 +70,7 @@ assign(ColumnCompiler_Oracle.prototype, {
   text: 'clob',
 
   enu: function (allowed) {
-    allowed = _.uniq(allowed);
+    allowed = uniq(allowed);
     var maxLength = (allowed || []).reduce(function (maxLength, name) {
       return Math.max(maxLength, String(name).length);
     }, 1);
@@ -124,7 +123,7 @@ assign(ColumnCompiler_Oracle.prototype, {
     } else if (value instanceof Raw) {
       value = value.toQuery();
     } else if (Array.isArray(value)) {
-      value = _.map(value, function (v) {
+      value = map(value, function (v) {
         return "'" + v + "'";
       }).join(', ');
     } else {

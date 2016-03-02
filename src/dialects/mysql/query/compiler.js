@@ -3,7 +3,8 @@
 // ------
 var inherits      = require('inherits')
 var QueryCompiler = require('../../../query/compiler')
-var assign        = require('lodash/object/assign');
+
+import {assign} from 'lodash'
 
 function QueryCompiler_MySQL(client, builder) {
   QueryCompiler.call(this, client, builder)

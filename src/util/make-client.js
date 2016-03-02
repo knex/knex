@@ -1,6 +1,7 @@
 
-var assign   = require('lodash/object/assign');
 var inherits = require('inherits')
+
+import {assign} from 'lodash'
 
 // Ensure the client has fresh objects so we can tack onto
 // the prototypes without mutating them globally.

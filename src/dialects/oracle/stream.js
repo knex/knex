@@ -1,8 +1,9 @@
 
 /*jslint node:true, nomen: true*/
 var inherits = require('inherits')
-var merge    = require('lodash/object/merge')
 var Readable = require('stream').Readable
+
+import {merge} from 'lodash'
 
 function OracleQueryStream(connection, sql, bindings, options) {
   Readable.call(this, merge({}, {

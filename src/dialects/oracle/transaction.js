@@ -2,8 +2,9 @@
 var inherits    = require('inherits')
 var Promise     = require('../../promise')
 var Transaction = require('../../transaction')
-var assign      = require('lodash/object/assign');
 var debugTx     = require('debug')('knex:tx')
+
+import {assign} from 'lodash'
 
 function Oracle_Transaction(client, container, config, outerTx) {
   Transaction.call(this, client, container, config, outerTx)

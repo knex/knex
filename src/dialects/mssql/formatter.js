@@ -1,7 +1,8 @@
 
 var inherits        = require('inherits')
-var assign          = require('lodash/object/assign')
 var Formatter       = require('../../formatter')
+
+import {assign} from 'lodash'
 
 function MSSQL_Formatter(client) {
   Formatter.call(this, client)

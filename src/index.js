@@ -6,7 +6,8 @@ var Client         = require('./client')
 var makeClient      = require('./util/make-client')
 var makeKnex        = require('./util/make-knex')
 var parseConnection = require('./util/parse-connection')
-var assign          = require('lodash/object/assign')
+
+import {assign} from 'lodash'
 
 function Knex(config) {
   if (typeof config === 'string') {

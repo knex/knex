@@ -35,7 +35,7 @@ describe("SQLite SchemaBuilder", function() {
       'alter table "users" add column "id" integer not null primary key autoincrement',
       'alter table "users" add column "email" varchar(255)',
     ];
-    expect(expected).to.eql(_.pluck(tableSql, 'sql'));
+    expect(expected).to.eql(_.map(tableSql, 'sql'));
   });
 
   it("drop table", function() {
@@ -397,7 +397,7 @@ describe("SQLite SchemaBuilder", function() {
       'alter table "users" add column "created_at" datetime',
       'alter table "users" add column "updated_at" datetime'
     ];
-    deepEqual(expected, _.pluck(tableSql, 'sql'));
+    deepEqual(expected, _.map(tableSql, 'sql'));
   });
 
   it("adding binary", function() {

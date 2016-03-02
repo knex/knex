@@ -1,11 +1,9 @@
 
 // Query Compiler
 // -------
-var _       = require('lodash');
 var helpers = require('../helpers');
 var Raw     = require('../raw');
-var assign  = require('lodash/object/assign')
-var reduce  = require('lodash/collection/reduce');
+import {assign, reduce, groupBy, isString, compact, isEmpty, isUndefined, bind, map, omitBy} from 'lodash'
 
 // The "QueryCompiler" takes all of the query statements which
 // have been gathered in the "QueryBuilder" and turns them into a
@@ -16,7 +14,7 @@ function QueryCompiler(client, builder) {
   this.options   = builder._options;
   this.single    = builder._single;
   this.timeout   = builder._timeout || false;
-  this.grouped   = _.groupBy(builder._statements, 'grouping');
+  this.grouped   = groupBy(builder._statements, 'grouping');
   this.formatter = client.formatter()
 }
 
@@ -40,7 +38,7 @@ assign(QueryCompiler.prototype, {
       timeout: this.timeout,
       bindings: this.formatter.bindings
     };
-    if (_.isString(val)) {
+    if (isString(val)) {
       val = {sql: val};
     }
     if (method === 'select' && this.single.as) {
@@ -57,7 +55,7 @@ assign(QueryCompiler.prototype, {
     while (++i < components.length) {
       statements.push(this[components[i]](this));
     }
-    return _.compact(statements).join(' ');
+    return compact(statements).join(' ');
   },
 
   pluck: function() {
@@ -77,7 +75,7 @@ assign(QueryCompiler.prototype, {
       if (insertValues.length === 0) {
         return ''
       }
-    } else if (typeof insertValues === 'object' && _.isEmpty(insertValues)) {
+    } else if (typeof insertValues === 'object' && isEmpty(insertValues)) {
       return sql + this._emptyInsertValue
     }
 
@@ -168,8 +166,8 @@ assign(QueryCompiler.prototype, {
           var clause = join.clauses[ii]
           sql += ' ' + (ii > 0 ? clause[0] : clause[1]) + ' '
           sql += this.formatter.wrap(clause[2])
-          if (!_.isUndefined(clause[3])) sql += ' ' + this.formatter.operator(clause[3])
-          if (!_.isUndefined(clause[4])) sql += ' ' + this.formatter.wrap(clause[4])
+          if (!isUndefined(clause[3])) sql += ' ' + this.formatter.operator(clause[3])
+          if (!isUndefined(clause[4])) sql += ' ' + this.formatter.wrap(clause[4])
         }
       }
     }
@@ -342,7 +340,7 @@ assign(QueryCompiler.prototype, {
 
   whereBetween: function(statement) {
     return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'between') + ' ' +
-      _.map(statement.value, this.formatter.parameter, this.formatter).join(' and ');
+      map(statement.value, bind(this.formatter.parameter, this.formatter)).join(' and ');
   },
 
   // Compiles a "whereRaw" query.
@@ -398,7 +396,7 @@ assign(QueryCompiler.prototype, {
 
   // "Preps" the update.
   _prepUpdate: function(data) {
-    data = _.omit(data, _.isUndefined)
+    data = omitBy(data, isUndefined)
     var vals   = []
     var sorted = Object.keys(data).sort()
     var i      = -1

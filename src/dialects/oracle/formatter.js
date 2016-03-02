@@ -1,8 +1,9 @@
 
 var inherits        = require('inherits')
-var assign          = require('lodash/object/assign')
 var Formatter       = require('../../formatter')
 var ReturningHelper = require('./utils').ReturningHelper
+
+import {assign} from 'lodash'
 
 function Oracle_Formatter(client) {
   Formatter.call(this, client)

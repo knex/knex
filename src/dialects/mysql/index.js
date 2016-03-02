@@ -2,7 +2,6 @@
 // MySQL Client
 // -------
 var inherits       = require('inherits')
-var assign         = require('lodash/object/assign')
 
 var Client         = require('../../client')
 var Promise        = require('../../promise')
@@ -13,7 +12,8 @@ var QueryCompiler  = require('./query/compiler')
 var SchemaCompiler = require('./schema/compiler')
 var TableCompiler  = require('./schema/tablecompiler')
 var ColumnCompiler = require('./schema/columncompiler')
-var pluck          = require('lodash/collection/pluck')
+
+import {assign, map} from 'lodash'
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
@@ -108,7 +108,7 @@ assign(Client_MySQL.prototype, {
       case 'pluck':
       case 'first':
         var resp = helpers.skim(rows)
-        if (method === 'pluck') return pluck(resp, obj.pluck)
+        if (method === 'pluck') return map(resp, obj.pluck)
         return method === 'first' ? resp[0] : resp
       case 'insert':
         return [rows.insertId]

@@ -5,9 +5,7 @@ var inherits     = require('inherits')
 var Client_MySQL = require('../mysql')
 var Promise      = require('../../promise')
 var helpers      = require('../../helpers')
-var pick         = require('lodash/object/pick')
-var pluck        = require('lodash/collection/pluck')
-var assign       = require('lodash/object/assign');
+import {pick, map, assign} from 'lodash'
 var Transaction  = require('./transaction')
 
 var configOptions = [
@@ -84,7 +82,7 @@ assign(Client_MySQL2.prototype, {
       case 'pluck':
       case 'first':
         var resp = helpers.skim(rows)
-        if (method === 'pluck') return pluck(resp, obj.pluck)
+        if (method === 'pluck') return map(resp, obj.pluck)
         return method === 'first' ? resp[0] : resp
       case 'insert':
         return [rows.insertId]
