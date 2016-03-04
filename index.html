@@ -288,6 +288,7 @@
       <option value="pg">PostgreSQL</option>
       <option value="sqlite3">SQLite3</option>
       <option value="oracle">Oracle</option>
+      <option value="mssql">MSSQL</option>
     </select>
   </div>
 
@@ -3671,6 +3672,7 @@ $ npm test
   var mysql   = dialects.mysql = Knex({client: 'mysql'});
   var sqlite3 = dialects.sqlite3 = Knex({client: 'sqlite3'});
   var oracle  = dialects.oracle = Knex({client: 'oracle'});
+  var mssql   = dialects.mssql = Knex({client: 'mssql'});
 
   $(function() {
     var setDialect = function(dialect) {
