@@ -1245,7 +1245,7 @@ knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
 </pre>
 
     <p id="Builder-returning">
-      <b class="header">returning</b><code>.returning(column)</code>
+      <b class="header">returning</b><code>.returning(column) / .returning([column1, column2, ...])</code>
       <br />
       Only utilized by PostgreSQL databases, the returning method specifies which column should be returned
       by the <a href="#Builder-insert">insert</a> and <a href="#Builder-update">update</a> methods.
@@ -1268,6 +1268,13 @@ knex('books')
 knex('books')
   .returning('id')
   .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
+</pre>
+
+<pre class="display">
+// Returns [ { id: 1, title: 'Slaughterhouse Five' } ]
+knex('books')
+  .returning(['id','title'])
+  .insert({title: 'Slaughterhouse Five'})
 </pre>
 
     <p id="Builder-update">
