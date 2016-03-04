@@ -131,34 +131,29 @@ Client_Oracledb.prototype._query = function(connection, obj) {
 
   return new Promise(function(resolver, rejecter) {
     connection.executeAsync(obj.sql, obj.bindings).then(function(response) {
-      if (!obj.returning || !obj.returningSql || !obj.outParams) {
-        return response;
-      }
-      var rowIds = obj.outParams.map(function(v, i) {
-        return response.outBinds[0][i];
-      });
-      return connection.executeAsync(obj.returningSql, rowIds);
-    }).then(function(response) {
       obj.response = response.rows || {};
       obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
 
-      Promise.each(bindings, function(out, index) {
-        return new Promise(function(resolver, rejecter) {
+      var binds = _.filter(bindings, function(binding) {
+        return (binding instanceof BlobHelper || binding instanceof ReturningHelper);
+      });
+
+      Promise.each(binds, function(out, index) {
+        return new Promise(function(bindResolver, bindRejecter) {
           if (out instanceof BlobHelper) {
             var blob = response.outBinds[index][0];
+            obj.response[out.columnName] = out.value;
             blob.on('error', function(err) {
-              rejecter(err);
+              bindRejecter(err);
             });
             blob.on('finish', function() {
-              resolver();
+              bindResolver();
             });
             blob.write(out.value);
             blob.end();
           } else if (out instanceof ReturningHelper) {
             obj.response[out.columnName] = response.outBinds[index][0];
-            resolver();
-          } else {
-            resolver();
+            bindResolver();
           }
         });
       }).then(function() { // Promise.all(binds)

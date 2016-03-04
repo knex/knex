@@ -15,11 +15,10 @@ assign(Oracledb_Compiler.prototype, {
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
   insert: function() {
-    var insertValues = this.single.insert || []
+    var insertValues = this.single.insert || [];
     var returning    = this.single.returning;
-
     if (!Array.isArray(insertValues) && _.isPlainObject(this.single.insert)) {
-      insertValues = [this.single.insert]
+      insertValues = [this.single.insert];
     }
 
     // always wrap returning argument in array
@@ -111,15 +110,13 @@ assign(Oracledb_Compiler.prototype, {
     if (!returning) {
       return res;
     }
-
     var returningValues = Array.isArray(returning) ? returning : [returning];
     var returningClause = '';
     var intoClause = '';
-
-    // Buil returning and into clauses
+    // Build returning and into clauses
     _.each(returningValues, function(ret){
       var columnName = ret.columnName || ret;
-      returningClause += '"' + columnName + '",';    
+      returningClause += '"' + columnName + '",';
       intoClause += '?,';
       
       // add Helpers to bindings
