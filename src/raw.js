@@ -128,11 +128,15 @@ function replaceKeyBindings(raw) {
   var sql      = raw.sql, bindings = []
 
   var regex = new RegExp('(\\:\\w+\\:?)', 'g')
+  var emptyBindings = [];
   sql = raw.sql.replace(regex, function(full) {
     var key = full.trim();
     var isIdentifier = key[key.length - 1] === ':'
     var value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
-    if (value === undefined) return ''
+    if (value === undefined) {
+      emptyBindings.push(full);
+      return full;
+    }
     if (value && typeof value.toSQL === 'function') {
       var bindingSQL = value.toSQL()
       if (bindingSQL.bindings !== undefined) {
@@ -146,6 +150,10 @@ function replaceKeyBindings(raw) {
     bindings.push(value)
     return full.replace(key, '?')
   })
+
+  emptyBindings.map(function(binding) {
+    sql = sql.replace(new RegExp(` ${binding}|${binding} |${binding}`, 'g'), '');
+  });
 
   return {
     method: 'raw',
