@@ -8,7 +8,7 @@ var assign         = require('lodash/object/assign');
 
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment']
+  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment', 'collate']
 }
 inherits(ColumnCompiler_MySQL, ColumnCompiler);
 
@@ -108,6 +108,10 @@ assign(ColumnCompiler_MySQL.prototype, {
       helpers.warn('Your comment is longer than the max comment length for MySQL')
     }
     return comment && "comment '" + comment + "'"
+  },
+
+  collate: function(collation) {
+    return collation && "collate '" + collation + "'"
   }
 
 })

@@ -40,7 +40,7 @@ var helpers = {
 
   exit: function(msg) {
     console.log(chalk.red(msg))
-    process.exit()
+    process.exit(1)
   }
 
 };

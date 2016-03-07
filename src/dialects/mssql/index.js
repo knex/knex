@@ -20,6 +20,10 @@ var ColumnCompiler = require('./schema/columncompiler')
 // objects, which extend the base 'lib/query/builder' and
 // 'lib/query/compiler', respectively.
 function Client_MSSQL(config) {
+  //#1235 mssql module wants 'server', not 'host'. This is to enforce the same options object across all dialects.
+  if(config && config.connection && config.connection.host) {
+    config.connection.server = config.connection.host;
+  }
   Client.call(this, config);
 }
 inherits(Client_MSSQL, Client);

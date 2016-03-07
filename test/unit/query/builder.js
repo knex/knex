@@ -148,6 +148,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("allows alias with dots in the identifier name", function() {
+    testsql(qb().select('foo as bar.baz').from('users'), {
+      mysql: 'select `foo` as `bar.baz` from `users`',
+      oracle: 'select "foo" "bar.baz" from "users"',
+      mssql: 'select [foo] as [bar.baz] from [users]',
+      default: 'select "foo" as "bar.baz" from "users"'
+    });
+  });
+
   it("basic table wrapping", function() {
     testsql(qb().select('*').from('public.users'), {
       mysql: 'select * from `public`.`users`',
@@ -2129,6 +2138,19 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("should not update columns undefined values", function() {
+    testsql(qb().update({'email': 'foo', 'name': undefined}).table('users').where('id', '=', 1), {
+      mysql: {
+        sql: 'update `users` set `email` = ? where `id` = ?',
+        bindings: ['foo', 1]
+      },
+      default: {
+        sql: 'update "users" set "email" = ? where "id" = ?',
+        bindings: ['foo', 1]
+      }
+    });
+  });
+
   it("should allow for 'null' updates", function() {
     testsql(qb().update({email: null, 'name': 'bar'}).table('users').where('id', 1), {
       mysql: {
@@ -3036,15 +3058,13 @@ describe("QueryBuilder", function() {
 
   it("escapes single quotes properly", function() {
     testquery(qb().select('*').from('users').where('last_name', 'O\'Brien'), {
-      postgres: 'select * from "users" where "last_name" = \'O\'\'Brien\'',
-      default: 'select * from "users" where "last_name" = \'O\\\'Brien\'',
+      default: 'select * from "users" where "last_name" = \'O\'\'Brien\''
     });
   });
 
   it("escapes double quotes property", function(){
     testquery(qb().select('*').from('players').where('name', 'Gerald "Ice" Williams'), {
-      postgres: 'select * from "players" where "name" = \'Gerald "Ice" Williams\'',
-      default: 'select * from "players" where "name" = \'Gerald \\"Ice\\" Williams\''
+      default: 'select * from "players" where "name" = \'Gerald "Ice" Williams\''
     });
   });
 
@@ -3108,6 +3128,63 @@ describe("QueryBuilder", function() {
       default: {
         sql: 'select * from "users" where birthday >= ?',
         bindings: [date]
+      }
+    });
+  });
+
+  it('#965 - .raw accepts Array and Non-Array bindings', function() {
+    var expected = function(fieldName, expectedBindings) {
+      return {
+        mysql:   {
+          sql:      'select * from `users` where ' + fieldName + ' = ?',
+          bindings: expectedBindings
+        },
+        mssql:   {
+          sql:      'select * from [users] where ' + fieldName + ' = ?',
+          bindings: expectedBindings
+        },
+        default: {
+          sql:      'select * from "users" where ' + fieldName + ' = ?',
+          bindings: expectedBindings
+        }
+      };
+    };
+
+    //String
+    testsql(qb().select('*').from('users').where(raw('username = ?', 'knex')), expected('username', ['knex']));
+    testsql(qb().select('*').from('users').where(raw('username = ?', ['knex'])), expected('username', ['knex']));
+
+    //Number
+    testsql(qb().select('*').from('users').where(raw('isadmin = ?', 0)), expected('isadmin', [0]));
+    testsql(qb().select('*').from('users').where(raw('isadmin = ?', [1])), expected('isadmin', [1]));
+
+    //Date
+    var date = new Date(2016, 0, 5, 10, 19, 30, 599);
+    var sqlUpdTime = '2016-01-05 10:19:30.599';
+    testsql(qb().select('*').from('users').where(raw('updtime = ?', date)), expected('updtime', [date]));
+    testsql(qb().select('*').from('users').where(raw('updtime = ?', [date])), expected('updtime', [date]));
+    testquery(qb().select('*').from('users').where(raw('updtime = ?', date)), {
+      mysql: 'select * from `users` where updtime = \'' + sqlUpdTime + '\'',
+      default: 'select * from "users" where updtime = \'' + sqlUpdTime + '\''
+    });
+  });
+
+  it("#1118 orWhere({..}) generates or (and - and - and)", function() {
+    testsql(qb().select('*').from('users').where('id', '=', 1).orWhere({
+      email: 'foo',
+      id: 2
+    }), {
+      mysql: {
+        sql: 'select * from `users` where `id` = ? or (`email` = ? and `id` = ?)',
+        bindings: [1, 'foo', 2]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or ([email] = ? and [id] = ?)',
+        bindings: [1, 'foo', 2]
+      },
+      default: {
+        sql: 'select * from "users" where "id" = ? or ("email" = ? and "id" = ?)',
+        bindings: [1, 'foo', 2]
       }
     });
   });
