@@ -251,7 +251,7 @@ var promiseInterface = [
 ]
 
 // Creates a method which "coerces" to a promise, by calling a
-// "then" method on the current `Target`
+// "then" method on the current `Target`.
 promiseInterface.forEach(function(method) {
   Transaction.prototype[method] = function() {
     return (this._promise = this._promise[method].apply(this._promise, arguments))
