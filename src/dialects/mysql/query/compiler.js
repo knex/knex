@@ -69,5 +69,5 @@ assign(QueryCompiler_MySQL.prototype, {
 })
 
 // Set the QueryBuilder & QueryCompiler on the client object,
-// incase anyone wants to modify things to suit their own purposes.
+// in case anyone wants to modify things to suit their own purposes.
 module.exports = QueryCompiler_MySQL;

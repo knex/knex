@@ -32,11 +32,9 @@ function Transaction(client, container, config, outerTx) {
       return makeTransactor(this, connection, trxClient)
     })
     .then((transactor) => {
-
       var result = container(transactor)
 
-      // If we've returned a "thenable" from the transaction container,
-      // and it's got the transaction object we're running for this, assume
+      // If we've returned a "thenable" from the transaction container, assume
       // the rollback and commit are chained to this object's success / failure.
       if (result && result.then && typeof result.then === 'function') {
         result.then((val) => {
@@ -46,7 +44,6 @@ function Transaction(client, container, config, outerTx) {
           transactor.rollback(err)
         })
       }
-    
     })
     .catch((e) => this._rejecter(e))
 
@@ -251,7 +248,7 @@ var promiseInterface = [
 ]
 
 // Creates a method which "coerces" to a promise, by calling a
-// "then" method on the current `Target`
+// "then" method on the current `Target`.
 promiseInterface.forEach(function(method) {
   Transaction.prototype[method] = function() {
     return (this._promise = this._promise[method].apply(this._promise, arguments))
