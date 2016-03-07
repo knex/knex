@@ -32,7 +32,6 @@ function Transaction(client, container, config, outerTx) {
       return makeTransactor(this, connection, trxClient)
     })
     .then((transactor) => {
-
       var result = container(transactor)
 
       // If we've returned a "thenable" from the transaction container, assume
@@ -45,7 +44,6 @@ function Transaction(client, container, config, outerTx) {
           transactor.rollback(err)
         })
       }
-    
     })
     .catch((e) => this._rejecter(e))
 
