@@ -289,6 +289,29 @@ module.exports = function(knex) {
         });
     });
 
+
+    it('Event: query-response', function() {
+      var queryCount = 0;
+
+      knex.on('query-response', function(response, obj, builder) {
+        queryCount++;
+        expect(response).to.be.an('array');
+        expect(obj).to.be.an('object');
+        expect(obj.__knexUid).to.be.a('string');
+        expect(builder).to.be.an('object');
+      });
+
+      return knex('accounts').select()
+      .then(function() {
+          return knex.transaction(function(tr) {
+            return tr('accounts').select(); //Transactions should emit the event as well
+          })
+        })
+      .then(function() {
+          expect(queryCount).to.equal(2);
+      })
+    });
+
   });
 
 };

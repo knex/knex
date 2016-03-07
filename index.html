@@ -242,7 +242,8 @@
       <li>&nbsp;&nbsp;– <a href="#Streams-pipe">pipe</a></li>
       <li><b><a href="#Interfaces-Events">Events</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Events-query">query</a></li>
-      <li>&nbsp;&nbsp;– <a href="#Events-query-error">query</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-query-error">query-error</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-query-response">query-response</a></li>
       <li><b><a href="#Interfaces-Other">Other:</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toString">toString</a></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toSQL">toSQL</a></li>
@@ -2636,6 +2637,28 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
   })
   .catch(function(error) {
     // Same error object as the query-error event provides.
+  });
+</code>
+</pre>
+
+
+    <p id="Events-query-response">
+      <b class="header">query-response</b>
+      <br />
+      A <b>query-response</b> event is fired when a successful query has been run, providing the response of the query and data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>, and finally the query builder used for the query.
+    </p>
+
+
+<pre>
+<code class="js">knex.select('*')
+  .from('users')
+  .on('query-response', function(response, obj, builder) {
+      // ...
+  })
+  .then(function(response) {
+      // Same response as the emitted event
+  })
+  .catch(function(error) {
   });
 </code>
 </pre>
