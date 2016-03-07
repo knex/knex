@@ -32,10 +32,15 @@ function Transaction(client, container, config, outerTx) {
       return makeTransactor(this, connection, trxClient)
     })
     .then((transactor) => {
-      var result = container(transactor)
-
       // If we've returned a "thenable" from the transaction container, assume
       // the rollback and commit are chained to this object's success / failure.
+      // Directly thrown errors are treated as automatic rollbacks.
+      var result
+      try {
+        result = container(transactor)
+      } catch (err) {
+        result = Promise.reject(err)
+      }
       if (result && result.then && typeof result.then === 'function') {
         result.then((val) => {
           transactor.commit(val)
