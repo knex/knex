@@ -164,6 +164,15 @@ module.exports = function(knex) {
         });
       });
 
+      it('fails when setting foreign keys on incorrect table name', function() {
+        return knex.schema.createTable('undefined_inTable_parameter', function(table) {
+          var createInvalidInTableSchema = function() {
+            table.increments('id').references('id').inTable()
+          };
+          expect(createInvalidInTableSchema).to.throw(Error);
+        })
+      });
+
       it('allows for composite keys', function() {
         return knex.schema
           .createTable('composite_key_test', function(table) {

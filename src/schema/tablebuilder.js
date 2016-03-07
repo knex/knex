@@ -190,6 +190,9 @@ TableBuilder.prototype.foreign = function(column) {
         foreignData.references = pieces ? pieces[0] : tableColumn;
         return {
           on: function(tableName) {
+            if (typeof tableName === 'undefined') {
+              throw new Error("table name is of type 'undefined'. Please pass in a valid table name");
+            }
             foreignData.inTable = tableName;
             return returnObj;
           },
