@@ -3207,4 +3207,47 @@ describe("QueryBuilder", function() {
       }
     });
   });
+
+  it('#1228 Named bindings', function() {
+    testsql(qb().select('*').from('users').whereIn('id', raw('select (:test)', {test: [1,2,3]})), {
+      mysql: {
+        sql: 'select * from `users` where `id` in (select (?))',
+        bindings: [[1,2,3]]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] in (select (?))',
+        bindings: [[1,2,3]]
+      },
+      default: {
+        sql: 'select * from "users" where "id" in (select (?))',
+        bindings: [[1,2,3]]
+      }
+    });
+
+
+    var namedBindings = {
+      name:     'users.name',
+      thisGuy:  'Bob',
+      otherGuy: 'Jay'
+    };
+    //Had to do it this way as the 'raw' statement's .toQuery is called before testsql, meaning mssql and other dialects would always get the output of qb() default client
+    //as MySQL, which means testing the query per dialect won't work. [users].[name] would be `users`.`name` for mssql which is incorrect.
+    var mssql = clients.mssql;
+    var mysql = clients.mysql;
+    var defaultClient = clients.default;
+
+    var mssqlQb = mssql.queryBuilder().select('*').from('users').where(mssql.raw(':name: = :thisGuy or :name: = :otherGuy', namedBindings)).toSQL();
+    var mysqlQb = mysql.queryBuilder().select('*').from('users').where(mysql.raw(':name: = :thisGuy or :name: = :otherGuy', namedBindings)).toSQL();
+    var defaultQb = defaultClient.queryBuilder().select('*').from('users').where(defaultClient.raw(':name: = :thisGuy or :name: = :otherGuy', namedBindings)).toSQL();
+
+    expect(mssqlQb.sql).to.equal('select * from [users] where [users].[name] = ? or [users].[name] = ?');
+    expect(mssqlQb.bindings).to.deep.equal(['Bob', 'Jay']);
+
+    expect(mysqlQb.sql).to.equal('select * from `users` where `users`.`name` = ? or `users`.`name` = ?');
+    expect(mysqlQb.bindings).to.deep.equal(['Bob', 'Jay']);
+
+    expect(defaultQb.sql).to.equal('select * from "users" where "users"."name" = ? or "users"."name" = ?');
+    expect(defaultQb.bindings).to.deep.equal(['Bob', 'Jay']);
+
+  });
 });
