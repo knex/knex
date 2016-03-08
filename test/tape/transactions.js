@@ -313,7 +313,11 @@ module.exports = function(knex) {
       t.equal(err.message, 'Rolled back')
     })
     .finally(function() {
-      t.equal(queryCount, knex.client.dialect === 'oracle' || knex.client.dialect === 'mssql' ? 1 : 3)
+      // oracle & mssql: BEGIN & ROLLBACK not reported as queries
+      var expectedQueryCount =
+        knex.client.dialect === 'oracle' ||
+        knex.client.dialect === 'mssql' ? 1 : 3
+      t.equal(queryCount, expectedQueryCount)
     })
 
   })
