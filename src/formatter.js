@@ -167,9 +167,9 @@ var orderBys  = ['asc', 'desc'];
 
 // Turn this into a lookup map
 var operators = transform([
-  '=', '<', '>', '<=', '>=', '<>', '!=', 'like', 
-  'not like', 'between', 'ilike', '&', '|', '^', '<<', '>>', 
-  'rlike', 'regexp', 'not regexp', '~', '~*', '!~', '!~*', 
+  '=', '<', '>', '<=', '>=', '<>', '!=', 'like',
+  'not like', 'between', 'ilike', '&', '|', '^', '<<', '>>',
+  'rlike', 'regexp', 'not regexp', '~', '~*', '!~', '!~*',
   '#', '&&', '@>', '<@', '||'
 ], function(obj, key) {
   obj[key] = true

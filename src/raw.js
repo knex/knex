@@ -24,7 +24,7 @@ inherits(Raw, EventEmitter)
 
 assign(Raw.prototype, {
 
-  set: function(sql, bindings) {    
+  set: function(sql, bindings) {
     this._cached  = undefined
     this.sql      = sql
     this.bindings = (_.isObject(bindings) || _.isUndefined(bindings)) ?  bindings : [bindings]
@@ -49,7 +49,7 @@ assign(Raw.prototype, {
   toSQL: function() {
     if (this._cached) return this._cached
     if (Array.isArray(this.bindings)) {
-      this._cached = replaceRawArrBindings(this) 
+      this._cached = replaceRawArrBindings(this)
     } else if (this.bindings && isPlainObject(this.bindings)) {
       this._cached = replaceKeyBindings(this)
     } else {
@@ -84,11 +84,11 @@ function replaceRawArrBindings(raw) {
     }
 
     var value = values[index++]
-    
+
     if (value && typeof value.toSQL === 'function') {
       var bindingSQL = value.toSQL()
       if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)  
+        bindings = bindings.concat(bindingSQL.bindings)
       }
       return bindingSQL.sql
     }
@@ -125,7 +125,7 @@ function replaceKeyBindings(raw) {
     if (value && typeof value.toSQL === 'function') {
       var bindingSQL = value.toSQL()
       if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)  
+        bindings = bindings.concat(bindingSQL.bindings)
       }
       return full.replace(key, bindingSQL.sql)
     }

@@ -249,7 +249,7 @@ module.exports = function(knex) {
               tester('pg', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
               tester('sqlite3', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
               tester('oracle', ['create table "bool_test" ("one" number(1, 0) check ("one" in (\'0\', \'1\')), "two" number(1, 0) default \'0\' check ("two" in (\'0\', \'1\')), "three" number(1, 0) default \'1\' check ("three" in (\'0\', \'1\')), "four" number(1, 0) default \'1\' check ("four" in (\'0\', \'1\')), "five" number(1, 0) default \'0\' check ("five" in (\'0\', \'1\')))']);
-              tester('mssql', ['CREATE TABLE [bool_test] ([one] bit, [two] bit default \'0\', [three] bit default \'1\', [four] bit default \'1\', [five] bit default \'0\')']);              
+              tester('mssql', ['CREATE TABLE [bool_test] ([one] bit, [two] bit default \'0\', [three] bit default \'1\', [four] bit default \'1\', [five] bit default \'0\')']);
             }).then(function() {
               return knex.insert({one: false}).into('bool_test');
             });
@@ -348,11 +348,11 @@ module.exports = function(knex) {
           return knex.insert({parent_id_test: 1}).into('rename_column_test');
         });
       });
-      
+
       after(function () {
         return knex.schema.dropTable('rename_column_foreign_test').dropTable('rename_column_test');
       });
-      
+
       it('renames the column', function () {
         return knex.schema.table('rename_column_test', function (tbl) {
           return tbl.renameColumn('id_test', 'id');
@@ -364,7 +364,7 @@ module.exports = function(knex) {
           expect(exists).to.equal(true);
         });
       });
-      
+
       it('successfully renames a column referenced in a foreign key', function () {
         return knex.schema.table('rename_column_test', function (tbl) {
           tbl.renameColumn('parent_id_test', 'parent_id');

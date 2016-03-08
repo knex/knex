@@ -87,10 +87,10 @@ assign(SQLite3_DDL.prototype, {
 
   _doReplace: function (sql, from, to) {
     var matched = sql.match(/^CREATE TABLE (\S+) \((.*)\)/);
-    
+
     var tableName = matched[1],
         defs = matched[2];
-    
+
     if (!defs) { throw new Error('No column definitions in this statement!'); }
 
     var parens = 0, args = [ ], ptr = 0;
@@ -116,7 +116,7 @@ assign(SQLite3_DDL.prototype, {
       }
     }
     args.push(defs.slice(ptr, i));
-    
+
     args = args.map(function (item) {
       var split = item.split(' ');
 
@@ -128,10 +128,10 @@ assign(SQLite3_DDL.prototype, {
         }
         return ''; // for deletions
       }
-      
+
       // skip constraint name
       var idx = (/constraint/i.test(split[0]) ? 2 : 0);
-      
+
       // primary key and unique constraints have one or more
       // columns from this table listed between (); replace
       // one if it matches
@@ -140,7 +140,7 @@ assign(SQLite3_DDL.prototype, {
           return columns.replace(from, to);
         });
       }
-      
+
       // foreign keys have one or more columns from this table
       // listed between (); replace one if it matches
       // foreign keys also have a 'references' clause
@@ -151,7 +151,7 @@ assign(SQLite3_DDL.prototype, {
         // the quoted column names save us from having to do anything
         // other than a straight replace here
         split[0] = split[0].replace(from, to);
-        
+
         if (split[1].slice(0, tableName.length) === tableName) {
           split[1] = split[1].replace(/\(.*\)/, function (columns) {
             return columns.replace(from, to);
@@ -159,14 +159,14 @@ assign(SQLite3_DDL.prototype, {
         }
         return split.join(' references ');
       }
-      
+
       return item;
     });
     return sql.replace(/\(.*\)/, function () {
       return '(' + args.join(', ') + ')';
     }).replace(/,\s*([,)])/, '$1');
   },
-  
+
   // Boy, this is quite a method.
   renameColumn: Promise.method(function(from, to) {
     var currentCol;
@@ -206,8 +206,8 @@ assign(SQLite3_DDL.prototype, {
 
     return this.client.transaction(function(trx) {
       this.trx = trx
-      return this.getColumn(column).tap(function(col) { 
-        currentCol = col; 
+      return this.getColumn(column).tap(function(col) {
+        currentCol = col;
       })
       .bind(this)
       .then(this.getTableSql)

@@ -49,17 +49,17 @@ assign(Transaction_MSSQL.prototype, {
       .then(() => this._rejecter(error))
   },
 
-  // Acquire a connection and create a disposer - either using the one passed 
-  // via config or getting one off the client. The disposer will be called once 
+  // Acquire a connection and create a disposer - either using the one passed
+  // via config or getting one off the client. The disposer will be called once
   // the original promise is marked completed.
   acquireConnection: function(config) {
     var t = this
     var configConnection = config && config.connection
     return Promise.try(function() {
-      return (t.outerTx ? t.outerTx.conn : null) || configConnection || t.client.acquireConnection()  
+      return (t.outerTx ? t.outerTx.conn : null) || configConnection || t.client.acquireConnection()
     }).tap(function(conn) {
       if (!t.outerTx) {
-        t.conn = conn 
+        t.conn = conn
         conn.tx_ = conn.transaction()
       }
     }).disposer(function(conn) {
@@ -80,7 +80,7 @@ assign(Transaction_MSSQL.prototype, {
       }
     })
   }
-  
+
 })
 
 module.exports = Transaction_MSSQL

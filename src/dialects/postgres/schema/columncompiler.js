@@ -20,11 +20,11 @@ assign(ColumnCompiler_PG.prototype, {
   bigincrements: 'bigserial primary key',
   bigint: 'bigint',
   binary: 'bytea',
-  
+
   bit: function(column) {
     return column.length !== false ? 'bit(' + column.length + ')' : 'bit';
   },
-  
+
   bool: 'boolean',
 
   // Create the column definition for an enum type.

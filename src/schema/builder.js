@@ -17,23 +17,23 @@ inherits(SchemaBuilder, EventEmitter)
 // Each of the schema builder methods just add to the
 // "_sequence" array for consistency.
 _.each([
-  'createTable', 
-  'createTableIfNotExists', 
+  'createTable',
+  'createTableIfNotExists',
   'createSchema',
-  'createSchemaIfNotExists', 
-  'dropSchema', 
+  'createSchemaIfNotExists',
+  'dropSchema',
   'dropSchemaIfExists',
-  'createExtension', 
-  'createExtensionIfNotExists', 
+  'createExtension',
+  'createExtensionIfNotExists',
   'dropExtension',
-  'dropExtensionIfExists', 
-  'table', 
-  'alterTable', 
+  'dropExtensionIfExists',
+  'table',
+  'alterTable',
   'hasTable',
-  'hasColumn', 
-  'dropTable', 
-  'renameTable', 
-  'dropTableIfExists', 
+  'hasColumn',
+  'dropTable',
+  'renameTable',
+  'dropTableIfExists',
   'raw'
 ], function(method) {
   SchemaBuilder.prototype[method] = function() {

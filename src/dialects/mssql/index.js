@@ -43,7 +43,7 @@ assign(Client_MSSQL.prototype, {
   Formatter: Formatter,
 
   QueryCompiler: QueryCompiler,
-  
+
   SchemaCompiler: SchemaCompiler,
 
   TableCompiler: TableCompiler,

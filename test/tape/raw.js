@@ -72,9 +72,9 @@ test('allows for options in raw queries, #605', function(t) {
 })
 
 test('raw query strings with keys replace values', function(t) {
-  
+
   t.plan(2)
-  
+
   t.equal(raw('select :item from :place', {}).toSQL().sql, 'select from')
 
   t.equal(raw('select :item :cool 2 from :place', {}).toSQL().sql, 'select 2 from')
@@ -82,7 +82,7 @@ test('raw query strings with keys replace values', function(t) {
 })
 
 test('raw bindings are optional, #853', function(t) {
-  
+
   t.plan(2)
 
   var sql = raw('select * from ? where id=?', [raw('foo'), 4]).toSQL()
