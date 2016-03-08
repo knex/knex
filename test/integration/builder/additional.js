@@ -256,36 +256,50 @@ module.exports = function(knex) {
     });
 
 
-    it('.timeout() should throw TimeoutError', function() {
+    it('.timeout() should throw TimeoutError', function(done) {
       var dialect = knex.client.config.dialect;
-      var rows = _.times(dialect === 'sqlite3' ? 100 : 3000, function() {
-        return {
-          id: 1,
-          value: 'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw'
-        };
-      });
+      if(dialect === 'sqlite3') { return done(); } //TODO -- No built-in support for sleeps
+      var testQueries = {
+        'postgres': function() {
+          return knex.raw('SELECT pg_sleep(1)');
+        },
+        'mysql': function() {
+          return knex.raw('SELECT SLEEP(1)');
+        },
+        'mysql2': function() {
+          return knex.raw('SELECT SLEEP(1)');
+        },
+        maria: function() {
+          return knex.raw('SELECT SLEEP(1)');
+        },
+        mssql: function() {
+          return knex.raw('WAITFOR DELAY \'00:00:01\'');
+        },
+        oracle: function() {
+          return knex.raw('dbms_lock.sleep(1)');
+        },
+        'strong-oracle': function() {
+          return knex.raw('dbms_lock.sleep(1)');
+        }
+      };
 
-      return knex.schema.dropTableIfExists('TimeoutTest')
-        .then(function() {
-          return knex.schema.createTable('TimeoutTest', function(table) {
-            table.integer('id');
-            table.string('value', 50);
-          });
-        })
-        .then(function() {
-          return knex('TimeoutTest')
-            .insert(rows)
-            .timeout(1);
-        })
+      if(!testQueries.hasOwnProperty(dialect)) {
+        return done(new Error('Missing test query for dialect: ' + dialect));
+      }
+
+      var query = testQueries[dialect]();
+
+      return query.timeout(1)
         .then(function() {
           expect(true).to.equal(false);
         })
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 1,
-            name: 'TimeoutError',
+            name:    'TimeoutError',
             message: 'Defined query timeout of 1ms exceeded when running query.'
           });
+          done();
         });
     });
 
