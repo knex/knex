@@ -2049,9 +2049,10 @@ knex.table('users')
     </p>
 
     <p id="Schema-foreign">
-      <b class="header">foreign</b><code>table.foreign(column))</code>
+      <b class="header">foreign</b><code>table.foreign(columns)</code>
       <br />
-      Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code>.
+      Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code> or
+      multiple columns using <code>table.foreign(columns).references(columns)</code>.
       You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, <tt>CASCADE</tt>,
       <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</code>
       but works for existing columns.
