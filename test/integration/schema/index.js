@@ -41,6 +41,7 @@ module.exports = function(knex) {
             .dropTableIfExists('rename_column_foreign_test')
             .dropTableIfExists('rename_column_test')
             .dropTableIfExists('should_not_be_run')
+            .dropTableIfExists('invalid_inTable_param_test')
         ]);
       });
 
@@ -163,6 +164,20 @@ module.exports = function(knex) {
           tester('mssql', ['CREATE TABLE [test_foreign_table_two] ([id] int identity(1,1) not null primary key, [fkey_two] int, CONSTRAINT test_foreign_table_two_fkey_two_foreign FOREIGN KEY ([fkey_two]) REFERENCES [test_table_two] ([id]))']);
         });
       });
+
+      it('rejects setting foreign key where tableName is not typeof === string', function() {
+        return knex.schema.createTable('invalid_inTable_param_test', function(table) {
+          var createInvalidUndefinedInTableSchema = function() {
+            table.increments('id').references('id').inTable()
+          };
+          var createInvalidObjectInTableSchema = function () {
+            table.integer('another_id').references('id').inTable({tableName: 'this_should_fail'})
+          };
+          expect(createInvalidUndefinedInTableSchema).to.throw(TypeError);
+          expect(createInvalidObjectInTableSchema).to.throw(TypeError);
+        })
+      });
+
 
       it('allows for composite keys', function() {
         return knex.schema

@@ -190,6 +190,9 @@ TableBuilder.prototype.foreign = function(column) {
         foreignData.references = pieces ? pieces[0] : tableColumn;
         return {
           on: function(tableName) {
+            if (typeof tableName !== 'string') {
+              throw new TypeError(`Expected tableName to be a string, got: ${typeof tableName}`);
+            }
             foreignData.inTable = tableName;
             return returnObj;
           },
