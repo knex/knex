@@ -431,14 +431,6 @@ module.exports = function(knex) {
     });    
   });
 
-  test('#832 - exceptions in transaction container', function(t) {
-    return knex.transaction(function() {
-      throw new Error('Some Error')
-    }).catch(function(e) {
-      t.equal(e.message, 'Some Error', 'Transaction promise rejected with expected error')
-    })
-  })
-
   if (knex.client.driverName === 'pg') {
     tape('allows postgres ? operator in knex.raw() if no bindings given #519 and #888', function (t) {
       t.plan(1)
