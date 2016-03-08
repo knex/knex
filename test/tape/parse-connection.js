@@ -52,6 +52,6 @@ test('#852, ssl param with PG query string', function(t) {
     user: "user",
     password: "password",
     database: "database",
-    ssl: true    
+    ssl: true
   })
 })

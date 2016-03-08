@@ -7,7 +7,7 @@ var _ = require('lodash')
 module.exports = function(knex) {
 
   var client  = knex.client;
-  
+
   function compareBindings(gotBindings, wantedBindings) {
     if (Array.isArray(wantedBindings)) {
       expect(gotBindings.length).to.eql(wantedBindings.length);

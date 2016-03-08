@@ -61,13 +61,13 @@ assign(ColumnCompiler_Oracle.prototype, {
   },
 
   tinyint: 'smallint',
-  
+
   smallint: 'smallint',
-  
+
   mediumint: 'integer',
-  
+
   biginteger: 'number(20, 0)',
-  
+
   text: 'clob',
 
   enu: function (allowed) {
@@ -93,7 +93,7 @@ assign(ColumnCompiler_Oracle.prototype, {
   },
 
   bit: 'clob',
-  
+
   json: 'clob',
 
   bool: function () {

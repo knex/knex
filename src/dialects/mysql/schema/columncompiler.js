@@ -90,19 +90,19 @@ assign(ColumnCompiler_MySQL.prototype, {
     }
     return ''
   },
-  
+
   unsigned: function() {
     return 'unsigned'
   },
-  
+
   first: function() {
     return 'first'
   },
-  
+
   after: function(column) {
     return 'after ' + this.formatter.wrap(column)
   },
-  
+
   comment: function(comment) {
     if (comment && comment.length > 255) {
       helpers.warn('Your comment is longer than the max comment length for MySQL')

@@ -45,11 +45,11 @@ assign(ColumnCompiler_MSSQL.prototype, {
   varchar: function(length) {
     return 'nvarchar(' + this._num(length, 255) + ')';
   },
-  
+
   text: 'nvarchar(max)',
 
   mediumtext: 'nvarchar(max)',
-  
+
   longtext: 'nvarchar(max)',
 
   enu: 'nvarchar(100)',
@@ -67,7 +67,7 @@ assign(ColumnCompiler_MSSQL.prototype, {
   binary: function(length) {
     return length ? 'varbinary(' + this._num(length) + ')' : 'blob'
   },
-  
+
   bool: 'bit',
 
   // Modifiers
@@ -81,15 +81,15 @@ assign(ColumnCompiler_MSSQL.prototype, {
     }
     return ''
   },
-  
+
   first: function() {
     return 'first'
   },
-  
+
   after: function(column) {
     return 'after ' + this.formatter.wrap(column)
   },
-  
+
   comment: function(comment) {
     if (comment && comment.length > 255) {
       helpers.warn('Your comment is longer than the max comment length for MSSQL')

@@ -15,7 +15,7 @@ assign(QueryCompiler_SQLite3.prototype, {
 
   // The locks are not applicable in SQLite3
   forShare:  emptyStr,
-  
+
   forUpdate: emptyStr,
 
   // SQLite requires us to build the multi-row insert as a listing of select with
@@ -37,21 +37,21 @@ assign(QueryCompiler_SQLite3.prototype, {
     }
 
     var insertData = this._prepInsert(insertValues)
-    
+
     if (_.isString(insertData)) {
       return sql + insertData
     }
-    
+
     if (insertData.columns.length === 0) {
       return '';
     }
 
     sql += '(' + this.formatter.columnize(insertData.columns) + ')'
-    
+
     if (insertData.values.length === 1) {
       return sql + ' values (' + this.formatter.parameterize(insertData.values[0]) + ')'
     }
-    
+
     var blocks = []
     var i      = -1
     while (++i < insertData.values.length) {
@@ -106,8 +106,8 @@ assign(QueryCompiler_SQLite3.prototype, {
   limit: function() {
     var noLimit = !this.single.limit && this.single.limit !== 0
     if (noLimit && !this.single.offset) return ''
-  
-    // Workaround for offset only, 
+
+    // Workaround for offset only,
     // see http://stackoverflow.com/questions/10491492/sqllite-with-skip-offset-only-not-limit
     return 'limit ' + this.formatter.parameter(noLimit ? -1 : this.single.limit)
   }

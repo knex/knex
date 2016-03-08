@@ -64,7 +64,7 @@ assign(Runner.prototype, {
   // Stream the result set, by passing through to the dialect's streaming
   // capabilities. If the options are
   stream: function(options, handler) {
-    
+
     // If we specify stream(handler).then(...
     if (arguments.length === 1) {
       if (typeof options === 'function') {
@@ -78,7 +78,7 @@ assign(Runner.prototype, {
 
     // Lazy-load the "PassThrough" dependency.
     PassThrough = PassThrough || require('readable-stream').PassThrough;
-    
+
     var runner = this;
     var stream  = new PassThrough({objectMode: true});
     var promise = Promise.using(this.ensureConnection(), function(connection) {

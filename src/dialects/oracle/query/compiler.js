@@ -118,7 +118,7 @@ assign(QueryCompiler_Oracle.prototype, {
   forUpdate: function() {
     return 'for update';
   },
-  
+
   forShare: function() {
     // lock for share is not directly supported by oracle
     // use LOCK TABLE .. IN SHARE MODE; instead
@@ -191,7 +191,7 @@ assign(QueryCompiler_Oracle.prototype, {
     var offset = this.single.offset
     var hasLimit = (limit || limit === 0 || limit === '0');
     limit = +limit;
-    
+
     if (!hasLimit && !offset) return query;
     query = query || "";
 
