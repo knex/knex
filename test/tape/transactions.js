@@ -26,7 +26,7 @@ module.exports = function(knex) {
     })
     .then(function() {
       return knex.select('*').from('test_table').then(function(results) {
-        t.equal(results.length, 1)
+        t.equal(results.length, 1, 'One row inserted')
       })
     })
   })
@@ -310,14 +310,14 @@ module.exports = function(knex) {
       queryCount++
     })
     .catch(function(err) {
-      t.equal(err.message, 'Rolled back')
+      t.equal(err.message, 'Rolled back', 'Transaction promise rejected with expected error')
     })
     .finally(function() {
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedQueryCount =
         knex.client.dialect === 'oracle' ||
         knex.client.dialect === 'mssql' ? 1 : 3
-      t.equal(queryCount, expectedQueryCount)
+      t.equal(queryCount, expectedQueryCount, 'Expected number of transaction SQL queries executed')
     })
 
   })
@@ -340,7 +340,7 @@ module.exports = function(knex) {
     return knex.transaction(function() {
       throw new Error('Some Error')
     }).catch(function(e) {
-      t.equal(e.message, 'Some Error')
+      t.equal(e.message, 'Some Error', 'Transaction promise rejected with expected error')
     })
   })
 
