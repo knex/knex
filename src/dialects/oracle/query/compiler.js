@@ -105,9 +105,21 @@ assign(QueryCompiler_Oracle.prototype, {
   update: function() {
     var updates = this._prepUpdate(this.single.update);
     var where   = this.where();
-    return 'update ' + this.tableName +
+    var returning = this.single.returning;
+    var sql = 'update ' + this.tableName +
       ' set ' + updates.join(', ') +
       (where ? ' ' + where : '');
+
+    if (!returning) {
+      return sql;
+    }
+
+    // always wrap returning argument in array
+    if (returning && !Array.isArray(returning)) {
+      returning = [returning];
+    }
+
+    return this._addReturningToSqlAndConvert(sql, returning, this.tableName);
   },
 
   // Compiles a `truncate` query.
@@ -118,7 +130,7 @@ assign(QueryCompiler_Oracle.prototype, {
   forUpdate: function() {
     return 'for update';
   },
-  
+
   forShare: function() {
     // lock for share is not directly supported by oracle
     // use LOCK TABLE .. IN SHARE MODE; instead
@@ -191,7 +203,7 @@ assign(QueryCompiler_Oracle.prototype, {
     var offset = this.single.offset
     var hasLimit = (limit || limit === 0 || limit === '0');
     limit = +limit;
-    
+
     if (!hasLimit && !offset) return query;
     query = query || "";
 

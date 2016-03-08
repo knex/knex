@@ -2238,6 +2238,25 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("update method with returning on oracle", function() {
+    testsql(qb().from('users').where('id', '=', 1).update({email: 'foo', name: 'bar'}, '*'), {
+      oracle: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ? returning ROWID into ?',
+        bindings: function(bindings) {
+          expect(bindings.length).to.equal(4);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('bar');
+          expect(bindings[2]).to.equal(1);
+          expect(bindings[3].toString()).to.equal('[object ReturningHelper:*]');
+        }
+      },
+      default: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      }
+    });
+  });
+
   // TODO:
   // it("update method with joins on postgres", function() {
   //   chain = qb().from('users').join('orders', 'users.id', '=', 'orders.user_id').where('users.id', '=', 1).update({email: 'foo', name: 'bar'}).toSQL();
