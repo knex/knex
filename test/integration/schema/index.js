@@ -41,7 +41,7 @@ module.exports = function(knex) {
             .dropTableIfExists('rename_column_foreign_test')
             .dropTableIfExists('rename_column_test')
             .dropTableIfExists('should_not_be_run')
-            .dropTableIfExists('foreign_key_empty_inTable_test_parameter')
+            .dropTableIfExists('invalid_inTable_param_test')
         ]);
       });
 
@@ -166,7 +166,7 @@ module.exports = function(knex) {
       });
 
       it('rejects setting foreign key where tableName is not typeof === string', function() {
-        return knex.schema.createTable('foreign_key_empty_inTable_test_parameter', function(table) {
+        return knex.schema.createTable('invalid_inTable_param_test', function(table) {
           var createInvalidUndefinedInTableSchema = function() {
             table.increments('id').references('id').inTable()
           };
