@@ -1709,6 +1709,12 @@ knex.transaction(function(trx) {
 </pre>
 
   <p>
+    Throwing an error directly from the transaction handler function
+    automatically rolls back the transaction, same as returning a rejected
+    promise.
+  </p>
+
+  <p>
     Notice that if a promise is not returned within the handler, it is up to you to ensure <tt>trx.commit</tt>, or
     <tt>trx.rollback</tt> are called, otherwise the transaction connection will hang.
   </p>
