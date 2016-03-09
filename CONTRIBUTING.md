@@ -1,5 +1,11 @@
 ## How to contribute to Knex.js
 
+  1. Fork
+  2. `git clone`
+  3. `npm install`
+  4. `npm run babel`
+  5. `npm test`
+
 * Make changes in the `/src` directory and run `npm run babel` (runs once and
   then quits) or `npm run dev` (runs once and then watches for changes) to
   update the files in `/lib`. `npm test` will also do this.
