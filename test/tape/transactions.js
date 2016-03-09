@@ -13,8 +13,8 @@ module.exports = function(knex) {
         t.integer('id')
         t.string('name')
       })
-      .then(function() { 
-        t.end() 
+      .then(function() {
+        t.end()
       })
   })
 
@@ -349,7 +349,7 @@ module.exports = function(knex) {
 
     var cid, queryCount = 0;
 
-    return knex.transaction(function(tx) { 
+    return knex.transaction(function(tx) {
       async.eachSeries([
         'SET join_collapse_limit to 1',
         'SET enable_nestloop = off'
@@ -381,21 +381,21 @@ module.exports = function(knex) {
   })
 
   test('#785 - skipping extra transaction statements after commit / rollback', function(t) {
-    
+
     var queryCount = 0
 
-    return knex.transaction(function(trx) {    
+    return knex.transaction(function(trx) {
       knex('test_table')
         .transacting(trx)
         .insert({name: 'Inserted before rollback called.'})
-        .then(function() { 
+        .then(function() {
           trx.rollback(new Error('Rolled back'));
         })
         .then(function() {
           return knex('test_table')
             .transacting(trx)
             .insert({name: 'Inserted after rollback called.'})
-            .then(function(resp) { 
+            .then(function(resp) {
               t.error(resp)
             })
             .catch(function() {})
@@ -424,11 +424,11 @@ module.exports = function(knex) {
           t.increments('id').primary();
           t.string('name').unique().notNull();
         });
-      })  
+      })
     })
     .finally(function() {
       return knex.schema.dropTableIfExists('ages')
-    });    
+    });
   });
 
   if (knex.client.driverName === 'pg') {

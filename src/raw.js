@@ -7,6 +7,7 @@ var assign        = require('lodash/object/assign')
 var reduce        = require('lodash/collection/reduce')
 var isPlainObject = require('lodash/lang/isPlainObject')
 var _             = require('lodash');
+var isNumber      = require('lodash/lang/isNumber');
 
 function Raw(client) {
   this.client   = client
@@ -24,12 +25,19 @@ inherits(Raw, EventEmitter)
 
 assign(Raw.prototype, {
 
-  set: function(sql, bindings) {    
+  set: function(sql, bindings) {
     this._cached  = undefined
     this.sql      = sql
     this.bindings = (_.isObject(bindings) || _.isUndefined(bindings)) ?  bindings : [bindings]
 
     return this
+  },
+
+  timeout: function(ms) {
+    if(isNumber(ms) && ms > 0) {
+      this._timeout = ms;
+    }
+    return this;
   },
 
   // Wraps the current sql with `before` and `after`.
@@ -49,7 +57,7 @@ assign(Raw.prototype, {
   toSQL: function() {
     if (this._cached) return this._cached
     if (Array.isArray(this.bindings)) {
-      this._cached = replaceRawArrBindings(this) 
+      this._cached = replaceRawArrBindings(this)
     } else if (this.bindings && isPlainObject(this.bindings)) {
       this._cached = replaceKeyBindings(this)
     } else {
@@ -66,6 +74,9 @@ assign(Raw.prototype, {
       this._cached.sql = this._cached.sql + this._wrappedAfter
     }
     this._cached.options = reduce(this._options, assign, {})
+    if(this._timeout) {
+      this._cached.timeout = this._timeout;
+    }
     return this._cached
   }
 
@@ -84,11 +95,11 @@ function replaceRawArrBindings(raw) {
     }
 
     var value = values[index++]
-    
+
     if (value && typeof value.toSQL === 'function') {
       var bindingSQL = value.toSQL()
       if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)  
+        bindings = bindings.concat(bindingSQL.bindings)
       }
       return bindingSQL.sql
     }
@@ -125,7 +136,7 @@ function replaceKeyBindings(raw) {
     if (value && typeof value.toSQL === 'function') {
       var bindingSQL = value.toSQL()
       if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)  
+        bindings = bindings.concat(bindingSQL.bindings)
       }
       return full.replace(key, bindingSQL.sql)
     }

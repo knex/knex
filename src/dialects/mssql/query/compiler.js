@@ -39,7 +39,7 @@ assign(QueryCompiler_MSSQL.prototype, {
       sql += insertData;
     } else  {
       if (insertData.columns.length) {
-        sql += '(' + this.formatter.columnize(insertData.columns) 
+        sql += '(' + this.formatter.columnize(insertData.columns)
         sql += ') ' + returningSql + 'values ('
         var i = -1
         while (++i < insertData.values.length) {
@@ -58,7 +58,7 @@ assign(QueryCompiler_MSSQL.prototype, {
       returning: returning
     };
   },
-  
+
   // Compiles an `update` query, allowing for a return value.
   update: function() {
     var updates   = this._prepUpdate(this.single.update);
@@ -107,7 +107,7 @@ assign(QueryCompiler_MSSQL.prototype, {
         if (stmt.distinct) distinct = true
         if (stmt.type === 'aggregate') {
           sql.push(this.aggregate(stmt))
-        } 
+        }
         else if (stmt.value && stmt.value.length > 0) {
           sql.push(this.formatter.columnize(stmt.value))
         }
@@ -115,7 +115,7 @@ assign(QueryCompiler_MSSQL.prototype, {
     }
     if (sql.length === 0) sql = ['*'];
     var top = this.top();
-    return 'select ' + (distinct ? 'distinct ' : '') + 
+    return 'select ' + (distinct ? 'distinct ' : '') +
       (top ? top + ' ' : '') +
       sql.join(', ') + (this.tableName ? ' from ' + this.tableName : '');
   },
@@ -128,7 +128,7 @@ assign(QueryCompiler_MSSQL.prototype, {
       case 'rowcount': return value ? ';select @@rowcount' : '';
     }
   },
-  
+
   // Compiles a `truncate` query.
   truncate: function() {
     return 'truncate table ' + this.tableName;
@@ -173,7 +173,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   limit: function() {
     return '';
   },
-  
+
   offset: function() {
     var noLimit = !this.single.limit && this.single.limit !== 0;
     var noOffset = !this.single.offset;
@@ -184,7 +184,7 @@ assign(QueryCompiler_MSSQL.prototype, {
     }
     return offset;
   },
-  
+
 })
 
 // Set the QueryBuilder & QueryCompiler on the client object,

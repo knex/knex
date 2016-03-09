@@ -59,7 +59,7 @@ assign(QueryCompiler.prototype, {
     }
     return _.compact(statements).join(' ');
   },
-  
+
   pluck: function() {
     return {
       sql: this.select(),
@@ -86,7 +86,7 @@ assign(QueryCompiler.prototype, {
       sql += insertData;
     } else  {
       if (insertData.columns.length) {
-        sql += '(' + this.formatter.columnize(insertData.columns) 
+        sql += '(' + this.formatter.columnize(insertData.columns)
         sql += ') values ('
         var i = -1
         while (++i < insertData.values.length) {
@@ -126,14 +126,14 @@ assign(QueryCompiler.prototype, {
         if (stmt.distinct) distinct = true
         if (stmt.type === 'aggregate') {
           sql.push(this.aggregate(stmt))
-        } 
+        }
         else if (stmt.value && stmt.value.length > 0) {
           sql.push(this.formatter.columnize(stmt.value))
         }
       }
     }
     if (sql.length === 0) sql = ['*'];
-    return 'select ' + (distinct ? 'distinct ' : '') + 
+    return 'select ' + (distinct ? 'distinct ' : '') +
       sql.join(', ') + (this.tableName ? ' from ' + this.tableName : '');
   },
 
@@ -360,7 +360,7 @@ assign(QueryCompiler.prototype, {
     if (statement.not) return 'not ' + str;
     return str;
   },
-  
+
   _prepInsert: function(data) {
     var isRaw = this.formatter.rawOrFn(data);
     if (isRaw) return isRaw;

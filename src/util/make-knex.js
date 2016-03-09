@@ -25,7 +25,7 @@ module.exports = function makeKnex(client) {
 
     Promise: require('../promise'),
 
-    // A new query builder instance
+    // A new query builder instance.
     queryBuilder: function() {
       return client.queryBuilder()
     },
@@ -40,8 +40,7 @@ module.exports = function makeKnex(client) {
       }
 
       return this.transaction((tr) => {
-
-          //Avoid unnecessary call
+          // Avoid unnecessary call.
           if(chunkSize !== 1) {
             batch = _.chunk(batch, chunkSize)
           }

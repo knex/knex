@@ -16,8 +16,8 @@ module.exports = function(knex) {
       knex.raw('select * from generate_series(0, 10, 1)').pipe(w).on('finish', function () {
         console.log('finished');
         t.end()
-      });    
-    })    
+      });
+    })
   }
 
 }

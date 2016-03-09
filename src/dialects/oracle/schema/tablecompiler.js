@@ -18,7 +18,7 @@ assign(TableCompiler_Oracle.prototype, {
   // Compile a rename column command.
   renameColumn: function(from, to) {
     return this.pushQuery({
-      sql: 'alter table ' + this.tableName() + ' rename column ' + 
+      sql: 'alter table ' + this.tableName() + ' rename column ' +
         this.formatter.wrap(from) + ' to ' + this.formatter.wrap(to)
     });
   },

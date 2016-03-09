@@ -52,7 +52,7 @@ var aliases = {
   'sqlite'    : 'sqlite3'
 };
 
-// Doing this ensures Browserify works. Still need to figure out 
+// Doing this ensures Browserify works. Still need to figure out
 // the best way to do some of this.
 if (process.browser) {
   require('./dialects/websql/index.js')

@@ -508,13 +508,13 @@ assign(Builder.prototype, {
     if (column instanceof Raw && arguments.length === 1) {
       return this._havingRaw(column);
     }
-    
+
     // Check if the column is a function, in which case it's
     // a having statement wrapped in parens.
     if (typeof column === 'function') {
       return this.havingWrapped(column);
     }
-    
+
     this._statements.push({
       grouping: 'having',
       type: 'havingBasic',
@@ -559,7 +559,7 @@ assign(Builder.prototype, {
     if (isNaN(val)) {
       helpers.warn('A valid integer must be provided to limit')
     } else {
-      this._single.limit = val;  
+      this._single.limit = val;
     }
     return this;
   },

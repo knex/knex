@@ -45,7 +45,7 @@ assign(SchemaCompiler.prototype, {
       this[query.method].apply(this, query.args);
     }
     return this.sequence;
-  }  
+  }
 
 })
 

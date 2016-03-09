@@ -47,7 +47,7 @@ var seeds = {
 };
 
 var testConfigs = {
-  
+
   maria: {
     dialect: 'maria',
     connection: testConfig.maria || {
@@ -117,7 +117,7 @@ var testConfigs = {
     migrations: migrations,
     seeds: seeds
   },
-  
+
   mssql: {
     dialect: 'mssql',
     connection: testConfig.mssql || {

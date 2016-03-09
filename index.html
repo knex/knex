@@ -1209,7 +1209,7 @@ knex.select('*').from('users').whereNull('last_name').unionAll(function() {
     </p>
 
 <pre class="display">
-// Returns [1] in "mysql", "sqlite"; [] in "postgresql" unless the 'returning' parameter is set.
+// Returns [1] in "mysql", "sqlite", "oracle"; [] in "postgresql" unless the 'returning' parameter is set.
 knex('books').insert({title: 'Slaughterhouse Five'})
 </pre>
 
@@ -1248,13 +1248,13 @@ knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
     <p id="Builder-returning">
       <b class="header">returning</b><code>.returning(column) / .returning([column1, column2, ...])</code>
       <br />
-      Only utilized by PostgreSQL databases, the returning method specifies which column should be returned
+      Utilized by PostgreSQL, MySQL, and Oracle databases, the returning method specifies which column should be returned
       by the <a href="#Builder-insert">insert</a> and <a href="#Builder-update">update</a> methods.
       <br />
-	  Passed <tt>column</tt> parameter may be a string or an array of strings. When passed in a string,
-	  makes the SQL result be reported as an array of values from the specified column. When passed in an
-	  array of strings, makes the SQL result be reported as an array of objects, each containing a single
-	  property for each of the specified columns.
+      Passed <tt>column</tt> parameter may be a string or an array of strings. When passed in a string,
+      makes the SQL result be reported as an array of values from the specified column. When passed in an
+      array of strings, makes the SQL result be reported as an array of objects, each containing a single
+      property for each of the specified columns.
     </p>
 
 <pre class="display">
@@ -1297,7 +1297,7 @@ knex('books')
 </pre>
 
 <pre class="display">
-// Returns [1] in "mysql", "sqlite"; [] in "postgresql" unless the 'returning' parameter is set.
+// Returns [1] in "mysql", "sqlite", "oracle"; [] in "postgresql" unless the 'returning' parameter is set.
 knex('books').update('title', 'Slaughterhouse Five')
 </pre>
 
@@ -2055,9 +2055,10 @@ knex.table('users')
     </p>
 
     <p id="Schema-foreign">
-      <b class="header">foreign</b><code>table.foreign(column))</code>
+      <b class="header">foreign</b><code>table.foreign(columns)</code>
       <br />
-      Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code>.
+      Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code> or
+      multiple columns using <code>table.foreign(columns).references(columns)</code>.
       You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, <tt>CASCADE</tt>,
       <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</code>
       but works for existing columns.

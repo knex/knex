@@ -75,8 +75,8 @@ ColumnCompiler.prototype.getModifiers = function() {
 
 ColumnCompiler.prototype.increments    = 'integer not null primary key autoincrement';
 ColumnCompiler.prototype.bigincrements = 'integer not null primary key autoincrement';
-ColumnCompiler.prototype.integer       = 
-ColumnCompiler.prototype.smallint      = 
+ColumnCompiler.prototype.integer       =
+ColumnCompiler.prototype.smallint      =
 ColumnCompiler.prototype.mediumint     = 'integer';
 ColumnCompiler.prototype.biginteger    = 'bigint';
 ColumnCompiler.prototype.varchar       = function(length) {
