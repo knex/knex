@@ -18,7 +18,8 @@
     "pool2": "^1.1.0",
     "readable-stream": "^1.1.12",
     "tildify": "~1.0.0",
-    "v8flags": "^2.0.2"
+    "v8flags": "^2.0.2",
+    "webpack": "1.8.11"
   },
   "devDependencies": {
     "JSONStream": "^1.0.3",
@@ -54,9 +55,6 @@
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "jshint test/. src/.",
     "prepublish": "npm run build"
-  },
-  "bin": {
-    "knex": "./lib/bin/cli.js"
   },
   "repository": {
     "type": "git",
