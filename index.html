@@ -2224,18 +2224,27 @@ knex('users')
   .orWhere(knex.raw('status <> ?', [1]))
   .groupBy('status')
 </pre>
+
+    <p>
+      Positional bindings <tt>?</tt> are interpreted as values and <tt>??</tt> are interpreted as identifiers.
+    </p>
+
 <pre class="display">
-// positional bindings ? is interpret as value and ?? as identifier
 knex('users').where(knex.raw('?? = ?', ['user.name', 1]))
 </pre>
 
+    <p>
+      Named bindings such as <tt>:name</tt> are interpreted as values and <tt>:name:</tt> interpreted as identifiers.
+      Named bindings are processed so long as the value is anything other than <tt>undefined</tt>.
+    </p>
+
 <pre class="display">
-// named bindings :name is interpret as value and :name: as identifier
 knex('users')
-  .where(knex.raw(':name: = :thisGuy or :name: = :otherGuy', {
+  .where(knex.raw(':name: = :thisGuy or :name: = :otherGuy or :name: = :undefinedBinding', {
     name: 'users.name',
     thisGuy: 'Bob',
-    otherGuy: 'Jay'
+    otherGuy: 'Jay',
+    undefinedBinding: undefined
   }))
 </pre>
 
