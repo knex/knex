@@ -28,6 +28,15 @@ var clientsWithNullAsDefault = {
   default:  new Client(useNullAsDefaultConfig)
 }
 
+var valuesForUndefined = {
+  mysql: clients.mysql.valueForUndefined,
+  sqlite3: clients.sqlite3.valueForUndefined,
+  oracle: clients.oracle.valueForUndefined,
+  postgres: clients.postgres.valueForUndefined,
+  mssql: clients.mssql.valueForUndefined,
+  default: clients.default.valueForUndefined
+};
+
 function qb() {
   return clients.default.queryBuilder()
 }
@@ -1338,7 +1347,7 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select * from "users" offset ?',
-        bindings: [5]
+        bindings: ['5']
       },
       oracle: {
         sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
@@ -1896,10 +1905,17 @@ describe("QueryBuilder", function() {
 
   it("normalizes for missing keys in insert", function() {
     var data = [{a: 1}, {b: 2}, {a: 2, c: 3}];
+
+    //This is done because sqlite3 does not support valueForUndefined, and can't manipulate testsql to use 'clientsWithUseNullForUndefined'.
+    //But we still want to make sure that when `useNullAsDefault` is explicitly defined, that the query still works as expected. (Bindings being undefined)
+    //It's reset at the end of the test.
+    var previousValuesForUndefinedSqlite3 = clients.sqlite3.valueForUndefined;
+    clients.sqlite3.valueForUndefined = null;
+
     testsql(qb().insert(data).into('table'), {
       mysql: {
         sql: 'insert into `table` (`a`, `b`, `c`) values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-        bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
+        bindings: [1, valuesForUndefined.mysql, valuesForUndefined.mysql, valuesForUndefined.mysql, 2, valuesForUndefined.mysql, 2, valuesForUndefined.mysql, 3]
       },
       sqlite3: {
         sql: 'insert into "table" ("a", "b", "c") select ? as "a", ? as "b", ? as "c" union all select ? as "a", ? as "b", ? as "c" union all select ? as "a", ? as "b", ? as "c"',
@@ -1907,17 +1923,18 @@ describe("QueryBuilder", function() {
       },
       oracle: {
         sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
-        bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
+        bindings: [1, valuesForUndefined.oracle, valuesForUndefined.oracle, valuesForUndefined.oracle, 2, valuesForUndefined.oracle, 2, valuesForUndefined.oracle, 3]
       },
       mssql: {
         sql: 'insert into [table] ([a], [b], [c]) values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-        bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
+        bindings: [1, valuesForUndefined.mssql, valuesForUndefined.mssql, valuesForUndefined.mssql, 2, valuesForUndefined.mssql, 2, valuesForUndefined.mssql, 3]
       },
       default: {
         sql: 'insert into "table" ("a", "b", "c") values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-        bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
+        bindings: [1, valuesForUndefined.default, valuesForUndefined.default, valuesForUndefined.default, 2, valuesForUndefined.default, 2, valuesForUndefined.default, 3]
       }
     });
+    clients.sqlite3.valueForUndefined = previousValuesForUndefinedSqlite3;
   });
 
   it("empty insert should be a noop", function() {
@@ -2707,7 +2724,7 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select * from "value" inner join "table" on "table"."array_column"[1] = ?',
-        bindings: [1]
+        bindings: ['1']
       },
       default: {
         sql: 'select * from "value" inner join "table" on "table"."array_column[1]" = ?',
@@ -3248,6 +3265,39 @@ describe("QueryBuilder", function() {
 
     expect(defaultQb.sql).to.equal('select * from "users" where "users"."name" = ? or "users"."name" = ?');
     expect(defaultQb.bindings).to.deep.equal(['Bob', 'Jay']);
+  });
 
+  it('#1268 - valueForUndefined should be in toSQL(QueryCompiler)', function() {
+    testsql(qb().insert([{id: void 0, name: 'test', occupation: void 0}, {id: 1, name: void 0, occupation: 'none'}]).into('users'), {
+      mysql: {
+        sql: 'insert into `users` (`id`, `name`, `occupation`) values (?, ?, ?), (?, ?, ?)',
+        bindings: [valuesForUndefined.mysql, 'test', valuesForUndefined.mysql, 1, valuesForUndefined.mysql, 'none']
+      },
+      oracle: {
+        sql: 'begin execute immediate \'insert into "users" ("id", "name", "occupation") values (:1, :2, :3)\' using ?, ?, ?; execute immediate \'insert into "users" ("id", "name", "occupation") values (:1, :2, :3)\' using ?, ?, ?;end;',
+        bindings: [valuesForUndefined.oracle, 'test', valuesForUndefined.oracle, 1, valuesForUndefined.oracle, 'none']
+      },
+      mssql: {
+        sql: 'insert into [users] ([id], [name], [occupation]) values (?, ?, ?), (?, ?, ?)',
+        bindings: [valuesForUndefined.mssql, 'test', valuesForUndefined.mssql, 1, valuesForUndefined.mssql, 'none']
+      },
+      postgres: {
+        sql: 'insert into "users" ("id", "name", "occupation") values (?, ?, ?), (?, ?, ?)',
+        bindings: [valuesForUndefined.postgres, 'test', valuesForUndefined.postgres, '1', valuesForUndefined.postgres, 'none']
+      }
+    });
+
+    expect(function() {
+      clients.sqlite3.queryBuilder().insert([{id: void 0}]).into('users').toString();
+    })
+    .to
+    .throw(TypeError);
+
+    expect(function() {
+      clientsWithNullAsDefault.sqlite3.queryBuilder().insert([{id: void 0}]).into('users').toString();
+    })
+    .to
+    .not
+    .throw(TypeError);
   });
 });
