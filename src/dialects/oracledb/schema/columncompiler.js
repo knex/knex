@@ -1,5 +1,3 @@
-'use strict';
-
 var inherits              = require('inherits');
 var assign                = require('lodash/object/assign');
 var ColumnCompiler_Oracle = require('../../oracle/schema/columncompiler');

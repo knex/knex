@@ -1870,7 +1870,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       oracledb: {
-        sql: "begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;",
+        sql: "begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\" into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\" into :3' using ?, ?, out ?;end;",
         bindings: function(bindings) {
           expect(bindings.length).to.equal(6);
           expect(bindings[0]).to.equal('foo');
@@ -1919,15 +1919,17 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       oracledb: {
-        sql: "begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;",
+        sql: "begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\",\"name\" into :3, :4' using ?, ?, out ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\",\"name\" into :3, :4' using ?, ?, out ?, out ?;end;",
         bindings: function (bindings) {
-          expect(bindings.length).to.equal(6);
+          expect(bindings.length).to.equal(8);
           expect(bindings[0]).to.equal('foo');
           expect(bindings[1]).to.equal('taylor');
-          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id:name]');
-          expect(bindings[3]).to.equal('bar');
-          expect(bindings[4]).to.equal('dayle');
-          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id:name]');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3].toString()).to.equal('[object ReturningHelper:name]');
+          expect(bindings[4]).to.equal('bar');
+          expect(bindings[5]).to.equal('dayle');
+          expect(bindings[6].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[7].toString()).to.equal('[object ReturningHelper:name]');
         }
       },
       default: {
@@ -2060,7 +2062,7 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       oracledb: {
-        sql: "insert into \"users\" (\"id\") values (default) returning ROWID into ?",
+        sql: "insert into \"users\" (\"id\") values (default) returning \"id\" into ?",
         bindings: function (bindings) {
           expect(bindings.length).to.equal(1);
           expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
@@ -2426,7 +2428,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo']
       },
       oracledb: {
-        sql: 'insert into "users" ("email") values (?) returning ROWID into ?',
+        sql: 'insert into "users" ("email") values (?) returning \"id\" into ?',
         bindings: function (bindings) {
           expect(bindings.length).to.equal(2);
           expect(bindings[0]).to.equal('foo');
