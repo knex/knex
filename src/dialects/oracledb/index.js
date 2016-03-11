@@ -11,6 +11,7 @@ var BlobHelper      = require('./utils').BlobHelper;
 var ReturningHelper = require('./utils').ReturningHelper;
 var Promise         = require('../../promise');
 var stream          = require('stream');
+var helpers         = require('../../helpers');
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
@@ -49,13 +50,14 @@ Client_Oracledb.prototype.prepBindings = function(bindings) {
 // connection needs to be added to the pool.
 Client_Oracledb.prototype.acquireRawConnection = function() {
   var client = this;
-  return new Promise(function (resolver, rejecter) {
+  return new Promise(function(resolver, rejecter) {
     client.driver.getConnection({
       user: client.connectionSettings.user,
       password: client.connectionSettings.password,
       connectString: client.connectionSettings.host + '/' + client.connectionSettings.database
-    }, function (err, connection) {
-      if (err) return rejecter(err);
+    }, function(err, connection) {
+      if (err)
+        return rejecter(err);
       if (client.connectionSettings.prefetchRowCount) {
         connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount);
       }
@@ -69,40 +71,42 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
               return reject(err);
             }
             //handle clob as string for the moment
-          if (!err && results) {
-            var lobs = [];
-            if (results.rows) {
-              var data = results.rows;
-              if (Array.isArray(data)) {
-                for (var i = 0, n = data.length; i < n; i++) {
-                  // Iterate through the rows
-                  var row = data[i];
-                  for (var k in row) {
-                    var val = row[k];
-                    if (val instanceof stream.Readable) {
-                      lobs.push({index: i, key: k, stream: val});
+            if (results) {
+              var lobs = [];
+              if (results.rows) {
+                var data = results.rows;
+                if (Array.isArray(data)) {
+                  for (var i = 0, n = data.length; i < n; i++) {
+                    // Iterate through the rows
+                    var row = data[i];
+                    for (var k in row) {
+                      var val = row[k];
+                      if (val instanceof stream.Readable) {
+                        lobs.push({index: i, key: k, stream: val});
+                      }
                     }
                   }
                 }
               }
-            }
-            if (lobs.length === 0) {
+              if (lobs.length === 0) {
+                return resolve(results);
+              }
+              Promise.each(lobs, function(lob) {
+                return new Promise(function(resolve, reject) {
+                  readStream(lob.stream, String, function(err, d) {
+                    if (err) {
+                      return reject(err);
+                    }
+                    results.rows[lob.index][lob.key] = d;
+                    resolve(d);
+                  });
+                });
+              }).then(function() {
+                resolve(results);
+              }, reject);
+            } else {
               return resolve(results);
             }
-            Promise.each(lobs, function(lob){
-              return new Promise(function(resolve, reject) {
-                readStream(lob.stream, String, function(err, d) {
-                  if (err) {
-                    return reject(err);
-                  }
-                  results.rows[lob.index][lob.key] = d;
-                  resolve(d);
-                });
-              });
-            }).then(resolve,reject);
-          } else {
-            return resolve(results);
-          }
 
           });
         });
@@ -121,44 +125,59 @@ Client_Oracledb.prototype.destroyRawConnection = function(connection, cb) {
 // Runs the query on the specified connection, providing the bindings
 // and any other necessary prep work.
 Client_Oracledb.prototype._query = function(connection, obj) {
-
   // convert ? params into positional bindings (:1)
   obj.sql = this.positionBindings(obj.sql);
   var bindings = obj.bindings;
   obj.bindings = this.prepBindings(bindings) || [];
-
   if (!obj.sql) throw new Error('The query is empty');
-
   return new Promise(function(resolver, rejecter) {
     connection.executeAsync(obj.sql, obj.bindings).then(function(response) {
-      obj.response = response.rows || {};
+      // flatten outBinds
+      var outBinds = _.flatten(response.outBinds);
+      obj.response = response.rows || [];
       obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
 
-      var binds = _.filter(bindings, function(binding) {
-        return (binding instanceof BlobHelper || binding instanceof ReturningHelper);
-      });
+      if(!obj.returning) {
+        return resolver(obj);
+      }
+      var rowIds = [];
 
-      Promise.each(binds, function(out, index) {
-        return new Promise(function(bindResolver, bindRejecter) {
-          if (out instanceof BlobHelper) {
-            var blob = response.outBinds[index][0];
-            obj.response[out.columnName] = out.value;
-            blob.on('error', function(err) {
-              bindRejecter(err);
-            });
-            blob.on('finish', function() {
+      Promise.each(obj.returning, function(ret, line) {
+        var offset = line * obj.returning[0].length;
+        obj.response[line] = {};
+        return Promise.each(ret, function(out, index) {
+          return new Promise(function(bindResolver, bindRejecter) {
+            if (out instanceof BlobHelper) {
+              var blob = outBinds[index + offset];
+              if(out.returning) {
+                obj.response[line][out.columnName] = out.value;
+              }
+              blob.on('error', function(err) {
+                bindRejecter(err);
+              });
+              blob.on('finish', function() {
+                bindResolver();
+              });
+              blob.write(out.value);
+              blob.end();
+            } else if (obj.returning[line][index] === 'ROWID') {
+              rowIds.push(outBinds[index + offset]);
               bindResolver();
-            });
-            blob.write(out.value);
-            blob.end();
-          } else if (out instanceof ReturningHelper) {
-            obj.response[out.columnName] = response.outBinds[index][0];
-            bindResolver();
-          }
+            } else {
+              obj.response[line][out] = outBinds[index + offset];
+              bindResolver();
+            }
+          });
         });
       }).then(function() { // Promise.all(binds)
         connection.commit(function() {
-          resolver(obj);
+          if (!rowIds.length) {
+            return resolver(obj);
+          }
+          connection.executeAsync(obj.returningSql, rowIds).then(function(response) {
+            obj.response = response.rows;
+            resolver(obj);
+          }, rejecter);
         });
       }, rejecter);
     });
@@ -187,5 +206,43 @@ function readStream(stream, type, cb) {
     cb(null, data);
   });
 }
+
+// Process the response as returned from the query.
+Client_Oracledb.prototype.processResponse = function(obj, runner) {
+  var response = obj.response;
+  var method = obj.method;
+  if (obj.output)
+    return obj.output.call(runner, response);
+  switch (method) {
+    case 'select':
+    case 'pluck':
+    case 'first':
+      response = helpers.skim(response);
+      if (obj.method === 'pluck')
+        response = _.pluck(response, obj.pluck);
+      return obj.method === 'first' ? response[0] : response;
+    case 'insert':
+    case 'del':
+    case 'update':
+    case 'counter':
+      // check if there really is a response
+      var responseFlag = false;
+      _.each(response, function(val) {
+        if(!responseFlag && !_.isEmpty(val)) {
+          responseFlag = true;
+        }
+      });
+      if (obj.returning && responseFlag) {
+        return response;
+      } else if (obj.rowsAffected) {
+        return obj.rowsAffected;
+      } else {
+        return 1;
+      }
+      break;
+    default:
+      return response;
+  }
+};
 
 module.exports = Client_Oracledb;

@@ -8,7 +8,7 @@ function Oracledb_Formatter(client) {
 }
 inherits(Oracledb_Formatter, Oracle_Formatter);
 
-assign(Oracle_Formatter.prototype, {
+assign(Oracledb_Formatter.prototype, {
   
   // Checks whether a value is a function... if it is, we compile it
   // otherwise we check whether it's a raw
