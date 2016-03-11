@@ -55,7 +55,7 @@ module.exports = function(knex) {
         })
         .to.throw(TypeError);
         expect(function() {
-          knex.schema.createTable('callback_must_be_supplied', function(table){}).toString();
+          knex.schema.createTable('callback_must_be_supplied', function(){}).toString();
         })
         .to.not.throw(TypeError);
       });
@@ -276,7 +276,7 @@ module.exports = function(knex) {
         })
           .to.throw(TypeError);
         expect(function() {
-          knex.schema.createTable('callback_must_be_supplied', function(table){}).toString();
+          knex.schema.createTable('callback_must_be_supplied', function(){}).toString();
         })
           .to.not.throw(TypeError);
       });
