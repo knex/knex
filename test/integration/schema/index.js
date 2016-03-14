@@ -49,6 +49,17 @@ module.exports = function(knex) {
 
     describe('createTable', function() {
 
+      it('Callback function must be supplied', function() {
+        expect(function() {
+          knex.schema.createTable('callback_must_be_supplied').toString()
+        })
+        .to.throw(TypeError);
+        expect(function() {
+          knex.schema.createTable('callback_must_be_supplied', function(){}).toString();
+        })
+        .to.not.throw(TypeError);
+      });
+
       it('is possible to chain .catch', function() {
         return knex.schema
           .createTable('catch_test', function(t) {
@@ -258,6 +269,17 @@ module.exports = function(knex) {
     });
 
     describe('table', function() {
+
+      it('Callback function must be supplied', function() {
+        expect(function() {
+          knex.schema.createTable('callback_must_be_supplied').toString()
+        })
+          .to.throw(TypeError);
+        expect(function() {
+          knex.schema.createTable('callback_must_be_supplied', function(){}).toString();
+        })
+          .to.not.throw(TypeError);
+      });
 
       it('allows adding a field', function () {
         return knex.schema.table('test_table_two', function(t) {

@@ -18,6 +18,10 @@ function TableBuilder(client, method, tableName, fn) {
   this._tableName  = tableName;
   this._statements = [];
   this._single     = {};
+
+  if(!_.isFunction(this._fn)) {
+    throw new TypeError('A callback function must be supplied to calls against `.createTable` and `.table`')
+  }
 }
 
 TableBuilder.prototype.setSchema = function(schemaName) {
