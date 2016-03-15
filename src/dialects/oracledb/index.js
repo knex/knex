@@ -12,6 +12,7 @@ var ReturningHelper = require('./utils').ReturningHelper;
 var Promise         = require('../../promise');
 var stream          = require('stream');
 var helpers         = require('../../helpers');
+var oracledb        = require('oracledb');
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
@@ -21,8 +22,6 @@ inherits(Client_Oracledb, Client_Oracle);
 Client_Oracledb.prototype.driverName = 'oracledb';
 
 Client_Oracledb.prototype._driver = function() {
-  var oracledb = require('oracledb');
-  oracledb.fetchAsString = [oracledb.CLOB];
   return oracledb;
 };
 
@@ -93,7 +92,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
               }
               Promise.each(lobs, function(lob) {
                 return new Promise(function(resolve, reject) {
-                  readStream(lob.stream, String, function(err, d) {
+                  readStream(lob.stream, function(err, d) {
                     if (err) {
                       return reject(err);
                     }
@@ -141,9 +140,9 @@ Client_Oracledb.prototype._query = function(connection, obj) {
         return resolver(obj);
       }
       var rowIds = [];
-
-      Promise.each(obj.returning, function(ret, line) {
-        var offset = line * obj.returning[0].length;
+      var offset = 0;
+      Promise.each(obj.outBinding, function(ret, line) {
+        offset = offset + (obj.outBinding[line-1] ? obj.outBinding[line-1].length : 0);
         obj.response[line] = {};
         return Promise.each(ret, function(out, index) {
           return new Promise(function(bindResolver, bindRejecter) {
@@ -160,7 +159,7 @@ Client_Oracledb.prototype._query = function(connection, obj) {
               });
               blob.write(out.value);
               blob.end();
-            } else if (obj.returning[line][index] === 'ROWID') {
+            } else if (obj.outBinding[line][index] === 'ROWID') {
               rowIds.push(outBinds[index + offset]);
               bindResolver();
             } else {
@@ -185,21 +184,22 @@ Client_Oracledb.prototype._query = function(connection, obj) {
 };
 
 //handle clob
-function readStream(stream, type, cb) {
+function readStream(stream, cb) {
   var data = '';
-  if (type === String) {
+
+  if (stream.iLob.type === oracledb.CLOB) {
     stream.setEncoding('utf-8');
   } else {
-    data = new Buffer();
+    data = new Buffer(0);
   }
   stream.on('error', function(err) {
     cb(err);
   });
   stream.on('data', function(chunk) {
-    if (type === String) {
+    if (stream.iLob.type === oracledb.CLOB) {
       data += chunk;
     } else {
-      data = Buffer.concat(data, chunk);
+      data = Buffer.concat([data, chunk]);
     }
   });
   stream.on('end', function() {
@@ -211,8 +211,9 @@ function readStream(stream, type, cb) {
 Client_Oracledb.prototype.processResponse = function(obj, runner) {
   var response = obj.response;
   var method = obj.method;
-  if (obj.output)
+  if (obj.output) {
     return obj.output.call(runner, response);
+  }
   switch (method) {
     case 'select':
     case 'pluck':
@@ -225,14 +226,10 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
     case 'del':
     case 'update':
     case 'counter':
-      // check if there really is a response
-      var responseFlag = false;
-      _.each(response, function(val) {
-        if(!responseFlag && !_.isEmpty(val)) {
-          responseFlag = true;
+      if (obj.returning) {
+        if (obj.returning.length === 1 && obj.returning[0] !== '*') {
+          return _.flatten(_.map(response, _.values));
         }
-      });
-      if (obj.returning && responseFlag) {
         return response;
       } else if (obj.rowsAffected) {
         return obj.rowsAffected;
