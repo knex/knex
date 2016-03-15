@@ -1,5 +1,4 @@
 
-var _              = require('lodash')
 var Promise        = require('./promise')
 var helpers        = require('./helpers')
 
@@ -23,9 +22,8 @@ var inherits       = require('inherits')
 var EventEmitter   = require('events').EventEmitter
 var SqlString      = require('./query/string')
 
-var assign         = require('lodash/object/assign')
-var uniqueId       = require('lodash/utility/uniqueId')
-var cloneDeep      = require('lodash/lang/cloneDeep')
+import {assign, uniqueId, cloneDeep, map} from 'lodash'
+
 var debug          = require('debug')('knex:client')
 var debugQuery     = require('debug')('knex:query')
 
@@ -143,9 +141,9 @@ assign(Client.prototype, {
   },
 
   prepBindings: function(bindings) {
-    return _.map(bindings, function(binding) {
+    return map(bindings, (binding) => {
       return binding === undefined ? this.valueForUndefined : binding
-    }, this);
+    });
   },
 
   wrapIdentifier: function(value) {

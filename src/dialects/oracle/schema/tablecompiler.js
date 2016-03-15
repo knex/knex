@@ -3,7 +3,8 @@ var inherits      = require('inherits');
 var utils         = require('../utils');
 var TableCompiler = require('../../../schema/tablecompiler');
 var helpers       = require('../../../helpers');
-var assign        = require('lodash/object/assign');
+
+import {assign} from 'lodash'
 
 // Table Compiler
 // ------

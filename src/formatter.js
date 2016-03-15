@@ -1,8 +1,8 @@
 
 var QueryBuilder = require('./query/builder')
 var Raw          = require('./raw')
-var assign       = require('lodash/object/assign')
-var transform    = require('lodash/object/transform')
+
+import {assign, transform} from 'lodash'
 
 function Formatter(client) {
   this.client       = client

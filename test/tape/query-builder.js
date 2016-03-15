@@ -1,7 +1,7 @@
 'use strict';
 
 var tape         = require('tape')
-var omit         = require('lodash/object/omit')
+var omit         = require('lodash/omit')
 var QueryBuilder = require('../../lib/query/builder')
 var Client       = require('../../lib/client')
 

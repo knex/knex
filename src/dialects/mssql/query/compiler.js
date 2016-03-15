@@ -1,10 +1,10 @@
 
 // MSSQL Query Compiler
 // ------
-var _             = require('lodash');
 var inherits      = require('inherits')
 var QueryCompiler = require('../../../query/compiler')
-var assign        = require('lodash/object/assign');
+
+import {assign, isEmpty} from 'lodash'
 
 function QueryCompiler_MSSQL(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -27,7 +27,7 @@ assign(QueryCompiler_MSSQL.prototype, {
       if (insertValues.length === 0) {
         return ''
       }
-    } else if (typeof insertValues === 'object' && _.isEmpty(insertValues)) {
+    } else if (typeof insertValues === 'object' && isEmpty(insertValues)) {
       return {
         sql: sql + returningSql + this._emptyInsertValue,
         returning: returning

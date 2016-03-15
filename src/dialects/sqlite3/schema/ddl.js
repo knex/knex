@@ -5,9 +5,8 @@
 // columns and changing datatypes.
 // -------
 
-var _       = require('lodash');
 var Promise = require('../../../promise');
-var assign  = require('lodash/object/assign');
+import {assign, uniqueId, find, map, omit} from 'lodash'
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
@@ -17,14 +16,14 @@ function SQLite3_DDL(client, tableCompiler, pragma, connection) {
   this.tableCompiler = tableCompiler;
   this.pragma        = pragma;
   this.tableName     = this.tableCompiler.tableNameRaw;
-  this.alteredName   = _.uniqueId('_knex_temp_alter');
+  this.alteredName   = uniqueId('_knex_temp_alter');
   this.connection    = connection
 }
 
 assign(SQLite3_DDL.prototype, {
 
   getColumn: Promise.method(function(column) {
-    var currentCol = _.findWhere(this.pragma, {name: column});
+    var currentCol = find(this.pragma, {name: column});
     if (!currentCol) throw new Error('The column ' + column + ' is not in the ' + this.tableName + ' table');
     return currentCol;
   }),
@@ -70,7 +69,7 @@ assign(SQLite3_DDL.prototype, {
         if (memo % 20 === 0 || memo === result.length) {
           return ddl.trx.queryBuilder()
             .table(target)
-            .insert(_.map(batch, iterator))
+            .insert(map(batch, iterator))
             .then(function() { batch = []; })
             .thenReturn(memo);
         }
@@ -194,7 +193,7 @@ assign(SQLite3_DDL.prototype, {
             })
             .then(this.reinsertData(function(row) {
               row[to] = row[from];
-              return _.omit(row, from);
+              return omit(row, from);
             }))
             .then(this.dropTempTable)
         })
@@ -226,7 +225,7 @@ assign(SQLite3_DDL.prototype, {
             return this.trx.raw(newSql);
           })
           .then(this.reinsertData(function(row) {
-            return _.omit(row, column);
+            return omit(row, column);
           }))
           .then(this.dropTempTable);
       })

@@ -4,8 +4,9 @@
 
 var inherits       = require('inherits');
 var ColumnCompiler = require('../../../schema/columncompiler');
-var assign         = require('lodash/object/assign');
 var helpers        = require('../../../helpers');
+
+import {assign} from 'lodash'
 
 function ColumnCompiler_PG() {
   ColumnCompiler.apply(this, arguments);

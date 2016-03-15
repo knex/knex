@@ -4,7 +4,8 @@
 var inherits       = require('inherits')
 var ColumnCompiler = require('../../../schema/columncompiler')
 var helpers        = require('../../../helpers')
-var assign         = require('lodash/object/assign');
+
+import {assign} from 'lodash'
 
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);

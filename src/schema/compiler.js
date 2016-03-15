@@ -1,6 +1,7 @@
 
 var helpers = require('./helpers')
-var assign  = require('lodash/object/assign');
+
+import {assign} from 'lodash'
 
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of

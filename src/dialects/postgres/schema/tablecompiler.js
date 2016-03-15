@@ -1,9 +1,10 @@
 // PostgreSQL Table Builder & Compiler
 // -------
 
-var _             = require('lodash');
 var inherits      = require('inherits');
 var TableCompiler = require('../../../schema/tablecompiler');
+
+import {has} from 'lodash'
 
 function TableCompiler_PG() {
   TableCompiler.apply(this, arguments);
@@ -32,7 +33,7 @@ TableCompiler_PG.prototype.createQuery = function(columns, ifNot) {
     sql: createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')',
     bindings: columns.bindings
   });
-  var hasComment = _.has(this.single, 'comment');
+  var hasComment = has(this.single, 'comment');
   if (hasComment) this.comment(this.single.comment);
 };
 

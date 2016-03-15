@@ -6,9 +6,9 @@ var EventEmitter = require('events').EventEmitter
 var inherits     = require('inherits')
 
 var makeKnex     = require('./util/make-knex')
-var assign       = require('lodash/object/assign')
-var uniqueId     = require('lodash/utility/uniqueId')
 var debug        = require('debug')('knex:tx')
+
+import {assign, uniqueId} from 'lodash'
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.

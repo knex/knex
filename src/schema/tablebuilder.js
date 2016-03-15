@@ -7,7 +7,7 @@
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-var _ = require('lodash');
+import {extend, each, toArray, isString, isFunction} from 'lodash'
 var helpers = require('../helpers');
 
 function TableBuilder(client, method, tableName, fn) {
@@ -19,7 +19,7 @@ function TableBuilder(client, method, tableName, fn) {
   this._statements = [];
   this._single     = {};
 
-  if(!_.isFunction(this._fn)) {
+  if(!isFunction(this._fn)) {
     throw new TypeError('A callback function must be supplied to calls against `.createTable` and `.table`')
   }
 }
@@ -33,13 +33,13 @@ TableBuilder.prototype.setSchema = function(schemaName) {
 // rather than creating the table.
 TableBuilder.prototype.toSQL = function() {
   if (this._method === 'alter') {
-    _.extend(this, AlterMethods);
+    extend(this, AlterMethods);
   }
   this._fn.call(this, this);
   return this.client.tableCompiler(this).toSQL();
 };
 
-_.each([
+each([
 
   // Each of the index methods can be called individually, with the
   // column name to be used, e.g. table.unique('column').
@@ -53,7 +53,7 @@ _.each([
     this._statements.push({
       grouping: 'alterTable',
       method: method,
-      args: _.toArray(arguments)
+      args: toArray(arguments)
     });
     return this;
   };
@@ -62,7 +62,7 @@ _.each([
 // Warn if we're not in MySQL, since that's the only time these
 // three are supported.
 var specialMethods = ['engine', 'charset', 'collate'];
-_.each(specialMethods, function(method) {
+each(specialMethods, function(method) {
   TableBuilder.prototype[method] = function(value) {
     if (false) {
       helpers.warn('Knex only supports ' + method + ' statement with mysql.');
@@ -141,9 +141,9 @@ var columnTypes = [
 // For each of the column methods, create a new "ColumnBuilder" interface,
 // push it onto the "allStatements" stack, and then return the interface,
 // with which we can add indexes, etc.
-_.each(columnTypes, function(type) {
+each(columnTypes, function(type) {
   TableBuilder.prototype[type] = function() {
-    var args = _.toArray(arguments);
+    var args = toArray(arguments);
 
     // The "timestamps" call is really a compound call to set the
     // `created_at` and `updated_at` columns.
@@ -187,7 +187,7 @@ TableBuilder.prototype.foreign = function(column) {
   var returnObj = {
     references: function(tableColumn) {
       var pieces;
-      if (_.isString(tableColumn)) {
+      if (isString(tableColumn)) {
         pieces = tableColumn.split('.');
       }
       if (!pieces || pieces.length === 1) {
@@ -218,7 +218,7 @@ TableBuilder.prototype.foreign = function(column) {
       return returnObj;
     },
     _columnBuilder: function(builder) {
-      _.extend(builder, returnObj);
+      extend(builder, returnObj);
       returnObj = builder;
       return builder;
     }
@@ -253,7 +253,7 @@ AlterMethods.dropColumns = function() {
   this._statements.push({
     grouping: 'alterTable',
     method: 'dropColumn',
-    args: _.toArray(arguments)
+    args: toArray(arguments)
   });
   return this;
 };
