@@ -7,7 +7,7 @@
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-import {extend, each, toArray, isString} from 'lodash'
+import {extend, each, toArray, isString, isFunction} from 'lodash'
 var helpers = require('../helpers');
 
 function TableBuilder(client, method, tableName, fn) {
@@ -19,7 +19,7 @@ function TableBuilder(client, method, tableName, fn) {
   this._statements = [];
   this._single     = {};
 
-  if(!_.isFunction(this._fn)) {
+  if(!isFunction(this._fn)) {
     throw new TypeError('A callback function must be supplied to calls against `.createTable` and `.table`')
   }
 }
