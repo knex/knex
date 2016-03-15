@@ -74,7 +74,9 @@ assign(Raw.prototype, {
     if(this._timeout) {
       this._cached.timeout = this._timeout;
     }
-    this._cached.bindings = this.client.prepBindings(this._cached.bindings || []);
+    if(this.client && this.client.prepBindings) {
+      this._cached.bindings = this.client.prepBindings(this._cached.bindings || []);
+    }
     return this._cached
   }
 
