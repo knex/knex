@@ -67,7 +67,7 @@ test('allows for options in raw queries, #605', function(t) {
     sql: "select 'foo', 'bar';",
     options: {rowMode: "array"},
     method: 'raw',
-    bindings: undefined
+    bindings: []
   })
 })
 

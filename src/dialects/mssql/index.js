@@ -101,7 +101,6 @@ assign(Client_MSSQL.prototype, {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
-    obj.bindings = this.prepBindings(obj.bindings) || [];
     return new Promise(function(resolver, rejecter) {
       stream.on('error', rejecter);
       stream.on('end', resolver);
@@ -128,7 +127,6 @@ assign(Client_MSSQL.prototype, {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
-    obj.bindings = this.prepBindings(obj.bindings) || [];
     return new Promise(function(resolver, rejecter) {
       var sql = obj.sql
       if (!sql) return resolver()

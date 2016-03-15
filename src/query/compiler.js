@@ -45,9 +45,7 @@ assign(QueryCompiler.prototype, {
       defaults.as = this.single.as;
     }
 
-    if(this.client && this.client.prepBindings) {
-      defaults.bindings = this.client.prepBindings(defaults.bindings);
-    }
+    defaults.bindings = this.client.prepBindings(defaults.bindings || []);
 
     return assign(defaults, val);
   },

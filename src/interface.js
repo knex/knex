@@ -14,9 +14,6 @@ module.exports = function(Target) {
 
   // Format the query as sql, prepping bindings as necessary.
   Target.prototype._formatQuery = function(sql, bindings, tz) {
-    if (this.client && this.client.prepBindings) {
-      bindings = this.client.prepBindings(bindings, tz);
-    }
     return this.client.SqlString.format(sql, bindings, tz);
   };
 

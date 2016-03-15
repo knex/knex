@@ -125,8 +125,6 @@ assign(Client_Oracle.prototype, {
     // convert ? params into positional bindings (:1)
     obj.sql = this.positionBindings(obj.sql);
 
-    obj.bindings = this.prepBindings(obj.bindings) || [];
-
     if (!obj.sql) throw new Error('The query is empty');
 
     return connection.executeAsync(obj.sql, obj.bindings).then(function(response) {

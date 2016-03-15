@@ -61,7 +61,7 @@ assign(Raw.prototype, {
       this._cached = {
         method: 'raw',
         sql: this.sql,
-        bindings: this.bindings
+        bindings: _.isUndefined(this.bindings) ? void 0 : [this.bindings]
       }
     }
     if (this._wrappedBefore) {
@@ -74,6 +74,7 @@ assign(Raw.prototype, {
     if(this._timeout) {
       this._cached.timeout = this._timeout;
     }
+    this._cached.bindings = this.client.prepBindings(this._cached.bindings || []);
     return this._cached
   }
 
