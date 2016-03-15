@@ -95,7 +95,7 @@ export default class Migrator {
   // Lists all available migration versions, as a sorted array.
   _listAll(config) {
     this.config = this.setConfig(config);
-    return Promise.promisify(fs.readdir, fs)(this._absoluteConfigDir())
+    return Promise.promisify(fs.readdir, {context: fs})(this._absoluteConfigDir())
       .then((migrations) => {
         return filter(migrations, function(value) {
           var extension = path.extname(value);
@@ -108,7 +108,7 @@ export default class Migrator {
   // migration config settings.
   _ensureFolder() {
     var dir = this._absoluteConfigDir();
-    return Promise.promisify(fs.stat, fs)(dir)
+    return Promise.promisify(fs.stat, {context: fs})(dir)
       .catch(function() {
         return Promise.promisify(mkdirp)(dir);
       });
@@ -250,7 +250,7 @@ export default class Migrator {
   // Generates the stub template for the current migration, returning a compiled template.
   _generateStubTemplate() {
     var stubPath = this.config.stub || path.join(__dirname, 'stub', this.config.extension + '.stub');
-    return Promise.promisify(fs.readFile, fs)(stubPath).then(function(stub) {
+    return Promise.promisify(fs.readFile, {context: fs})(stubPath).then(function(stub) {
       return template(stub.toString(), null, {variable: 'd'});
     });
   }
@@ -262,7 +262,7 @@ export default class Migrator {
     var dir = this._absoluteConfigDir();
     if (name[0] === '-') name = name.slice(1);
     var filename  = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
-    return Promise.promisify(fs.writeFile, fs)(
+    return Promise.promisify(fs.writeFile, {context: fs})(
       path.join(dir, filename),
       tmpl(config.variables || {})
     ).return(path.join(dir, filename));

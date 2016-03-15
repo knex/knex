@@ -229,7 +229,7 @@ function makeTxClient(trx, client, connection) {
     })
   }
   trxClient.acquireConnection = function() {
-    return Promise.settle([trx._previousSibling]).then(function () {
+    return Promise.all([trx._previousSibling].map((p) => { p.reflect() })).then(function () {
       return connection
     })
   }

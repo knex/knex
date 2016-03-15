@@ -188,7 +188,7 @@ assign(Client.prototype, {
               return Promise.promisify(poolConfig.afterCreate)(connection)
             }
           })
-          .nodeify(callback)
+          .asCallback(callback)
       },
       dispose: function(connection, callback) {
         if (poolConfig.beforeDestroy) {
@@ -242,7 +242,7 @@ assign(Client.prototype, {
     })
     // Allow either a callback or promise interface for destruction.
     if (typeof callback === 'function') {
-      promise.nodeify(callback)
+      promise.asCallback(callback)
     } else {
       return promise
     }
