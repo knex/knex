@@ -5,7 +5,7 @@ import {isArray, map, clone, each} from 'lodash'
 module.exports = function(Target) {
 
   Target.prototype.toQuery = function(tz) {
-    var data = this.toSQL(this._method);
+    var data = this.toSQL(this._method, tz);
     if (!isArray(data)) data = [data];
     return map(data, (statement) => {
       return this._formatQuery(statement.sql, statement.bindings, tz);
