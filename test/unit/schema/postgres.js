@@ -442,6 +442,14 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz, add column "updated_at" timestamptz');
   });
 
+  it("adding timestamps with defaults", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.timestamps(false, true);
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz not null default CURRENT_TIMESTAMP, add column "updated_at" timestamptz not null default CURRENT_TIMESTAMP');
+  });
+
   it("adding binary", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.binary('foo');

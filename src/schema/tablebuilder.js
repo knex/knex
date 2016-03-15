@@ -148,12 +148,13 @@ each(columnTypes, function(type) {
     // The "timestamps" call is really a compound call to set the
     // `created_at` and `updated_at` columns.
     if (type === 'timestamps') {
-      if (args[0] === true) {
-        this.timestamp('created_at');
-        this.timestamp('updated_at');
-      } else {
-        this.datetime('created_at');
-        this.datetime('updated_at');
+      var col = (args[0] === true) ? 'timestamp' : 'datetime';
+      var createdAt = this[col]('created_at');
+      var updatedAt = this[col]('updated_at');
+      if (args[1] === true) {
+        var now = this.client.raw('CURRENT_TIMESTAMP');
+        createdAt.notNullable().defaultTo(now);
+        updatedAt.notNullable().defaultTo(now);
       }
       return;
     }
