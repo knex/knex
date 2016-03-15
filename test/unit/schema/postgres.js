@@ -499,4 +499,20 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(sql[0].sql).to.equal('drop extension if exists "test"');
   });
 
+  it('table inherits another table', function() {
+    tableSql = client.schemaBuilder().createTable('inheriteeTable', function(t) {
+      t.string('username');
+      t.inherits('inheritedTable');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('create table "inheriteeTable" ("username" varchar(255)) inherits ("inheritedTable")');
+  });
+
+  it('should warn on disallowed method', function() {
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('username');
+      t.engine('myISAM');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('create table "users" ("username" varchar(255))');
+  });
+
 });
