@@ -16,6 +16,13 @@ function LockError(msg) {
 }
 inherits(LockError, Error);
 
+const CONFIG_DEFAULT = Object.freeze({
+  extension: 'js',
+  tableName: 'knex_migrations',
+  directory: './migrations',
+  disableTransactions: false
+});
+
 // The new migration we're performing, typically called from the `knex.migrate`
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the migration.
@@ -349,11 +356,7 @@ export default class Migrator {
   }
 
   setConfig(config) {
-    return assign({
-      extension: 'js',
-      tableName: 'knex_migrations',
-      directory: './migrations'
-    }, this.config || {}, config);
+    return assign({}, CONFIG_DEFAULT, this.config || {}, config);
   }
 
 }
