@@ -180,6 +180,7 @@
       <li>– <a href="#Schema-engine">engine</a></li>
       <li>– <a href="#Schema-charset">charset</a></li>
       <li>– <a href="#Schema-collate">collate</a></li>
+      <li>– <a href="#Schema-inherits">inherits</a></li>
       <li>– <a href="#Schema-specificType">specificType</a></li>
       <li>– <a href="#Schema-index">index</a></li>
       <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
@@ -2038,6 +2039,13 @@ knex.table('users')
       <br />
       Sets the collation for the database table, only available within a <tt>createTable</tt> call, and only
       applicable to MySQL.
+    </p>
+
+    <p id="Schema-inherits">
+      <b class="header">inherits</b><code>table.inherits(val)</code>
+      <br />
+      Sets the tables that this table inherits, only available within a <tt>createTable</tt> call, and only
+      applicable to PostgreSQL.
     </p>
 
     <p id="Schema-specificType">

@@ -29,8 +29,10 @@ TableCompiler_PG.prototype.compileAdd = function(builder) {
 // Adds the "create" query to the query sequence.
 TableCompiler_PG.prototype.createQuery = function(columns, ifNot) {
   var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
+  var sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
+  if (this.single.inherits) sql += ' inherits (' + this.formatter.wrap(this.single.inherits) + ')';
   this.pushQuery({
-    sql: createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')',
+    sql: sql,
     bindings: columns.bindings
   });
   var hasComment = has(this.single, 'comment');

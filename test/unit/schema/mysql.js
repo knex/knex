@@ -488,6 +488,14 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)');
   });
 
+  it('sets myISAM engine', function() {
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('username');
+      t.engine('myISAM');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('create table `users` (`username` varchar(255)) engine = myISAM');
+  });
+
 });
 
 

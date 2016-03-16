@@ -59,18 +59,24 @@ each([
   };
 });
 
-// Warn if we're not in MySQL, since that's the only time these
-// three are supported.
-var specialMethods = ['engine', 'charset', 'collate'];
-each(specialMethods, function(method) {
-  TableBuilder.prototype[method] = function(value) {
-    if (false) {
-      helpers.warn('Knex only supports ' + method + ' statement with mysql.');
-    } if (this._method === 'alter') {
-      helpers.warn('Knex does not support altering the ' + method + ' outside of the create table, please use knex.raw statement.');
-    }
-    this._single[method] = value;
-  };
+// Warn for dialect-specific table methods, since that's the
+// only time these are supported.
+var specialMethods = {
+  mysql: ['engine', 'charset', 'collate'],
+  postgresql: ['inherits']
+};
+each(specialMethods, function(methods, dialect) {
+  each(methods, function(method) {
+    TableBuilder.prototype[method] = function(value) {
+      if (this.client.dialect !== dialect) {
+        helpers.warn('Knex only supports ' + method + ' statement with ' + dialect + '.');
+      }
+      if (this._method === 'alter') {
+        helpers.warn('Knex does not support altering the ' + method + ' outside of the create table, please use knex.raw statement.');
+      }
+      this._single[method] = value;
+    };
+  });
 });
 
 // Each of the column types that we can add, we create a new ColumnBuilder
