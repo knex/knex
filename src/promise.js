@@ -3,7 +3,7 @@ var Promise   = require('bluebird');
 var deprecate = require('./helpers').deprecate
 
 Promise.prototype.exec = function(cb) {
-  deprecate('.exec', '.nodeify or .asCallback')
+  deprecate('.exec', '.asCallback')
   return this.asCallback(cb)
 };
 
