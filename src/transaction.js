@@ -229,7 +229,7 @@ function makeTxClient(trx, client, connection) {
     })
   }
   trxClient.acquireConnection = function() {
-    return Promise.settle([trx._previousSibling]).then(function () {
+    return trx._previousSibling.reflect().then(function () {
       return connection
     })
   }
@@ -249,7 +249,7 @@ function completedError(trx, obj) {
 var promiseInterface = [
   'then', 'bind', 'catch', 'finally', 'asCallback',
   'spread', 'map', 'reduce', 'tap', 'thenReturn',
-  'return', 'yield', 'ensure', 'nodeify', 'exec'
+  'return', 'yield', 'ensure', 'exec', 'reflect'
 ]
 
 // Creates a method which "coerces" to a promise, by calling a

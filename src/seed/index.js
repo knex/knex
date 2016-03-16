@@ -38,7 +38,7 @@ Seeder.prototype.make = function(name, config) {
 // Lists all available seed files as a sorted array.
 Seeder.prototype._listAll = Promise.method(function(config) {
   this.config = this.setConfig(config);
-  return Promise.promisify(fs.readdir, fs)(this._absoluteConfigDir())
+  return Promise.promisify(fs.readdir, {context: fs})(this._absoluteConfigDir())
     .bind(this)
     .then(function(seeds) {
       return filter(seeds, function(value) {
@@ -58,7 +58,7 @@ Seeder.prototype._seedData = function() {
 // seed config settings.
 Seeder.prototype._ensureFolder = function() {
     var dir = this._absoluteConfigDir();
-    return Promise.promisify(fs.stat, fs)(dir)
+    return Promise.promisify(fs.stat, {context: fs})(dir)
       .catch(function() {
         return Promise.promisify(mkdirp)(dir);
       });
@@ -88,7 +88,7 @@ Seeder.prototype._validateSeedStructure = function(name) {
 // Generates the stub template for the current seed file, returning a compiled template.
 Seeder.prototype._generateStubTemplate = function() {
   var stubPath = this.config.stub || path.join(__dirname, 'stub', this.config.extension + '.stub');
-  return Promise.promisify(fs.readFile, fs)(stubPath).then(function(stub) {
+  return Promise.promisify(fs.readFile, {context: fs})(stubPath).then(function(stub) {
     return template(stub.toString(), null, {variable: 'd'});
   });
 };
@@ -101,7 +101,7 @@ Seeder.prototype._writeNewSeed = function(name) {
   return function(tmpl) {
     if (name[0] === '-') name = name.slice(1);
     var filename  = name + '.' + config.extension;
-    return Promise.promisify(fs.writeFile, fs)(
+    return Promise.promisify(fs.writeFile, {context: fs})(
       path.join(dir, filename),
       tmpl(config.variables || {})
     ).return(path.join(dir, filename));
