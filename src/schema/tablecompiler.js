@@ -201,7 +201,8 @@ TableCompiler.prototype.dropColumn = function () {
 TableCompiler.prototype._indexCommand = function (type, tableName, columns) {
   if (!isArray(columns)) columns = columns ? [columns] : [];
   var table = tableName.replace(/\.|-/g, '_');
-  return (table + '_' + columns.join('_') + '_' + type).toLowerCase();
+  var indexName = (table + '_' + columns.join('_') + '_' + type).toLowerCase();
+  return this.formatter.wrap(indexName);
 };
 
 module.exports = TableCompiler;
