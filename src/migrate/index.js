@@ -210,7 +210,7 @@ export default class Migrator {
         // if locking error do not free the lock
         helpers.warn('Cant take lock to run migrations: ' + error.message);
         helpers.warn(
-          'If you are sue migrations are not running you can release ' +
+          'If you are sure migrations are not running you can release ' +
           'lock manually by deleting all the rows from migrations lock table: ' +
           this._getLockTableName()
         );
