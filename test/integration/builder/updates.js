@@ -76,8 +76,8 @@ module.exports = function(knex) {
     });
 
     it('should increment a float', function() {
-      return knex('accounts').select('logins').where('id', 1.5).then(function(accounts) {
-        return knex('accounts').where('id', 1).increment('logins').then(function(rowsAffected) {
+      return knex('accounts').select('logins').where('id', 1).then(function(accounts) {
+        return knex('accounts').where('id', 1).increment('logins', 1.5).then(function(rowsAffected) {
           expect(rowsAffected).to.equal(1);
           return knex('accounts').select('logins').where('id', 1);
         }).then(function(accounts2) {
@@ -109,8 +109,8 @@ module.exports = function(knex) {
     });
 
     it('should decrement a float', function() {
-      return knex('accounts').select('logins').where('id', 1.5).then(function(accounts) {
-        return knex('accounts').where('id', 1).decrement('logins').then(function(rowsAffected) {
+      return knex('accounts').select('logins').where('id', 1).then(function(accounts) {
+        return knex('accounts').where('id', 1).decrement('logins', 1.5).then(function(rowsAffected) {
           expect(rowsAffected).to.equal(1);
           return knex('accounts').select('logins').where('id', 1);
         }).then(function(accounts2) {
