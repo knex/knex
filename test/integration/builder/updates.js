@@ -75,6 +75,17 @@ module.exports = function(knex) {
       });
     });
 
+    it('should increment a float', function() {
+      return knex('accounts').select('logins').where('id', 1.5).then(function(accounts) {
+        return knex('accounts').where('id', 1).increment('logins').then(function(rowsAffected) {
+          expect(rowsAffected).to.equal(1);
+          return knex('accounts').select('logins').where('id', 1);
+        }).then(function(accounts2) {
+          expect(accounts[0].logins + 1.5).to.equal(accounts2[0].logins);
+        });
+      });
+    });
+
     it('should increment a negative value', function() {
       return knex('accounts').select('logins').where('id', 1).then(function(accounts) {
         return knex('accounts').where('id', 1).increment('logins', -2).then(function(rowsAffected) {
@@ -93,6 +104,17 @@ module.exports = function(knex) {
           return knex('accounts').select('logins').where('id', 1);
         }).then(function(accounts2) {
           expect(accounts[0].logins - 1).to.equal(accounts2[0].logins);
+        });
+      });
+    });
+
+    it('should decrement a float', function() {
+      return knex('accounts').select('logins').where('id', 1.5).then(function(accounts) {
+        return knex('accounts').where('id', 1).decrement('logins').then(function(rowsAffected) {
+          expect(rowsAffected).to.equal(1);
+          return knex('accounts').select('logins').where('id', 1);
+        }).then(function(accounts2) {
+          expect(accounts[0].logins - 1.5).to.equal(accounts2[0].logins);
         });
       });
     });
