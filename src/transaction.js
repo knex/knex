@@ -96,10 +96,18 @@ assign(Transaction.prototype, {
 
   rollback: function(conn, error) {
     return this.query(conn, 'ROLLBACK;', 2, error)
+      .timeout(1000) //TODO: -- What's a reasonable timeout?
+      .catch(Promise.TimeoutError, () => {
+        this._resolver();
+      });
   },
 
   rollbackTo: function(conn, error) {
     return this.query(conn, 'ROLLBACK TO SAVEPOINT ' + this.txid, 2, error)
+      .timeout(1000) //TODO: -- What's a reasonable timeout?
+      .catch(Promise.TimeoutError, () => {
+        this._resolver();
+      });
   },
 
   query: function(conn, sql, status, value) {

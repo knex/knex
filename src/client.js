@@ -200,6 +200,9 @@ assign(Client.prototype, {
         } else if (connection !== void 0) {
           client.destroyRawConnection(connection, callback)
         }
+      },
+      ping: function(resource, callback) {
+        return client.ping(resource, callback);
       }
     }
   },

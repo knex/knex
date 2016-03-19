@@ -127,6 +127,10 @@ assign(Client_MySQL.prototype, {
       connection.__knex__disposed = true;
       client.pool.destroy(connection);
     }
+  },
+
+  ping: function(resource, callback) {
+    resource.query('SELECT 1', callback);
   }
 
 })
