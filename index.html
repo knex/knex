@@ -506,7 +506,14 @@ pg('table').insert({a: 'b'}).returning('*').toString();
     <h3 id="Installation-pooling">Pooling</h3>
 
     <p>
-      The client created by the configuration initializes a connection pool, using the <a href="https://github.com/myndzi/pool2">Pool2</a> library. This connection pool has a default setting of a <tt>min: 2, max: 10</tt> for the MySQL and PG libraries, and a single connection for sqlite3 (due to issues with utilizing multiple connections on a single file). To change the config settings for the pool, pass a <tt>pool</tt> option as one of the keys in the initialize block. Checkout the <a href="https://github.com/myndzi/pool2">Pool2</a> library for more information.
+      The client created by the configuration initializes a connection pool, using the <a href="https://github.com/myndzi/pool2">Pool2</a> library. This connection pool has a default setting of a <tt>min: 2, max: 10</tt> for the MySQL and PG libraries, and a single connection for sqlite3 (due to issues with utilizing multiple connections on a single file). To change the config settings for the pool, pass a <tt>pool</tt> option as one of the keys in the initialize block.
+    </p>
+    <p>
+      The default connection pool also applies a <tt>ping</tt> function to verify that a connection is still alive by running a <tt>SELECT 1</tt> query.
+      If you don't want this check you may supply your own ping function to overwrite knex's default behavior.
+    </p>
+    <p>
+      Checkout the <a href="https://github.com/myndzi/pool2">Pool2</a> library for more information.
     </p>
 
 <pre>
