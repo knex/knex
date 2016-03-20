@@ -20,7 +20,7 @@ assign(TableCompiler_MSSQL.prototype, {
 
   createAlterTableMethods: ['foreign', 'primary', 'unique'],
   createQuery: function (columns, ifNot) {
-    var createStatement = ifNot ? 'if object_id(\'' + this.tableName() + '\', \'U\') is not null CREATE TABLE ' : 'CREATE TABLE ';
+    var createStatement = ifNot ? 'if object_id(\'' + this.tableName() + '\', \'U\') is null CREATE TABLE ' : 'CREATE TABLE ';
     var sql = createStatement + this.tableName() + (this._formatting ? ' (\n    ' : ' (') + columns.sql.join(this._formatting ? ',\n    ' : ', ') + ')';
 
     if (this.single.comment) {
