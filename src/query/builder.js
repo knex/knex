@@ -812,15 +812,17 @@ Object.defineProperty(Builder.prototype, 'not', {
   }
 });
 
-Builder.prototype.select      = Builder.prototype.columns
-Builder.prototype.column      = Builder.prototype.columns
-Builder.prototype.andWhereNot = Builder.prototype.whereNot
-Builder.prototype.andWhere    = Builder.prototype.where
-Builder.prototype.andWhereRaw = Builder.prototype.whereRaw
-Builder.prototype.andHaving   = Builder.prototype.having
-Builder.prototype.from        = Builder.prototype.table
-Builder.prototype.into        = Builder.prototype.table
-Builder.prototype.del         = Builder.prototype.delete
+Builder.prototype.select             = Builder.prototype.columns
+Builder.prototype.column             = Builder.prototype.columns
+Builder.prototype.andWhereNot        = Builder.prototype.whereNot
+Builder.prototype.andWhere           = Builder.prototype.where
+Builder.prototype.andWhereRaw        = Builder.prototype.whereRaw
+Builder.prototype.andWhereBetween    = Builder.prototype.whereBetween
+Builder.prototype.andWhereNotBetween = Builder.prototype.whereNotBetween
+Builder.prototype.andHaving          = Builder.prototype.having
+Builder.prototype.from               = Builder.prototype.table
+Builder.prototype.into               = Builder.prototype.table
+Builder.prototype.del                = Builder.prototype.delete
 
 // Attach all of the top level promise methods that should be chainable.
 require('../interface')(Builder);
