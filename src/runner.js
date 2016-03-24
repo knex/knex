@@ -122,6 +122,7 @@ assign(Runner.prototype, {
     return queryPromise
       .then((resp) => {
         var processedResponse = this.client.processResponse(resp, runner);
+        this.builder.emit('query-response', processedResponse, assign({__knexUid: this.connection.__knexUid}, obj), this.builder)
         this.client.emit('query-response', processedResponse, assign({__knexUid: this.connection.__knexUid}, obj), this.builder)
         return processedResponse;
       }).catch(Promise.TimeoutError, error => {
@@ -132,6 +133,10 @@ assign(Runner.prototype, {
           timeout:  obj.timeout
         });
       })
+      .catch((error) => {
+        this.builder.emit('query-error', error, assign({__knexUid: this.connection.__knexUid}, obj))
+        throw error;
+      });
   }),
 
   // In the case of the "schema builder" we call `queryArray`, which runs each
