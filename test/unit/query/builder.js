@@ -148,6 +148,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("allows alias with dots in the identifier name", function() {
+    testsql(qb().select('foo as bar.baz').from('users'), {
+      mysql: 'select `foo` as `bar.baz` from `users`',
+      oracle: 'select "foo" "bar.baz" from "users"',
+      mssql: 'select [foo] as [bar.baz] from [users]',
+      default: 'select "foo" as "bar.baz" from "users"'
+    });
+  });
+
   it("basic table wrapping", function() {
     testsql(qb().select('*').from('public.users'), {
       mysql: 'select * from `public`.`users`',
@@ -2163,6 +2172,19 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("should not update columns undefined values", function() {
+    testsql(qb().update({'email': 'foo', 'name': undefined}).table('users').where('id', '=', 1), {
+      mysql: {
+        sql: 'update `users` set `email` = ? where `id` = ?',
+        bindings: ['foo', 1]
+      },
+      default: {
+        sql: 'update "users" set "email" = ? where "id" = ?',
+        bindings: ['foo', 1]
+      }
+    });
+  });
+
   it("should allow for 'null' updates", function() {
     testsql(qb().update({email: null, 'name': 'bar'}).table('users').where('id', 1), {
       mysql: {
@@ -2242,6 +2264,25 @@ describe("QueryBuilder", function() {
       mssql: {
         sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
+      },
+      default: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      }
+    });
+  });
+
+  it("update method with returning on oracle", function() {
+    testsql(qb().from('users').where('id', '=', 1).update({email: 'foo', name: 'bar'}, '*'), {
+      oracle: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ? returning ROWID into ?',
+        bindings: function(bindings) {
+          expect(bindings.length).to.equal(4);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('bar');
+          expect(bindings[2]).to.equal(1);
+          expect(bindings[3].toString()).to.equal('[object ReturningHelper:*]');
+        }
       },
       default: {
         sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
@@ -3070,15 +3111,13 @@ describe("QueryBuilder", function() {
 
   it("escapes single quotes properly", function() {
     testquery(qb().select('*').from('users').where('last_name', 'O\'Brien'), {
-      postgres: 'select * from "users" where "last_name" = \'O\'\'Brien\'',
-      default: 'select * from "users" where "last_name" = \'O\\\'Brien\'',
+      default: 'select * from "users" where "last_name" = \'O\'\'Brien\''
     });
   });
 
   it("escapes double quotes property", function(){
     testquery(qb().select('*').from('players').where('name', 'Gerald "Ice" Williams'), {
-      postgres: 'select * from "players" where "name" = \'Gerald "Ice" Williams\'',
-      default: 'select * from "players" where "name" = \'Gerald \\"Ice\\" Williams\''
+      default: 'select * from "players" where "name" = \'Gerald "Ice" Williams\''
     });
   });
 
@@ -3144,5 +3183,105 @@ describe("QueryBuilder", function() {
         bindings: [date]
       }
     });
+  });
+
+  it('#965 - .raw accepts Array and Non-Array bindings', function() {
+    var expected = function(fieldName, expectedBindings) {
+      return {
+        mysql:   {
+          sql:      'select * from `users` where ' + fieldName + ' = ?',
+          bindings: expectedBindings
+        },
+        mssql:   {
+          sql:      'select * from [users] where ' + fieldName + ' = ?',
+          bindings: expectedBindings
+        },
+        default: {
+          sql:      'select * from "users" where ' + fieldName + ' = ?',
+          bindings: expectedBindings
+        }
+      };
+    };
+
+    //String
+    testsql(qb().select('*').from('users').where(raw('username = ?', 'knex')), expected('username', ['knex']));
+    testsql(qb().select('*').from('users').where(raw('username = ?', ['knex'])), expected('username', ['knex']));
+
+    //Number
+    testsql(qb().select('*').from('users').where(raw('isadmin = ?', 0)), expected('isadmin', [0]));
+    testsql(qb().select('*').from('users').where(raw('isadmin = ?', [1])), expected('isadmin', [1]));
+
+    //Date
+    var date = new Date(2016, 0, 5, 10, 19, 30, 599);
+    var sqlUpdTime = '2016-01-05 10:19:30.599';
+    testsql(qb().select('*').from('users').where(raw('updtime = ?', date)), expected('updtime', [date]));
+    testsql(qb().select('*').from('users').where(raw('updtime = ?', [date])), expected('updtime', [date]));
+    testquery(qb().select('*').from('users').where(raw('updtime = ?', date)), {
+      mysql: 'select * from `users` where updtime = \'' + sqlUpdTime + '\'',
+      default: 'select * from "users" where updtime = \'' + sqlUpdTime + '\''
+    });
+  });
+
+  it("#1118 orWhere({..}) generates or (and - and - and)", function() {
+    testsql(qb().select('*').from('users').where('id', '=', 1).orWhere({
+      email: 'foo',
+      id: 2
+    }), {
+      mysql: {
+        sql: 'select * from `users` where `id` = ? or (`email` = ? and `id` = ?)',
+        bindings: [1, 'foo', 2]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? or ([email] = ? and [id] = ?)',
+        bindings: [1, 'foo', 2]
+      },
+      default: {
+        sql: 'select * from "users" where "id" = ? or ("email" = ? and "id" = ?)',
+        bindings: [1, 'foo', 2]
+      }
+    });
+  });
+
+  it('#1228 Named bindings', function() {
+    testsql(qb().select('*').from('users').whereIn('id', raw('select (:test)', {test: [1,2,3]})), {
+      mysql: {
+        sql: 'select * from `users` where `id` in (select (?))',
+        bindings: [[1,2,3]]
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] in (select (?))',
+        bindings: [[1,2,3]]
+      },
+      default: {
+        sql: 'select * from "users" where "id" in (select (?))',
+        bindings: [[1,2,3]]
+      }
+    });
+
+
+    var namedBindings = {
+      name:     'users.name',
+      thisGuy:  'Bob',
+      otherGuy: 'Jay'
+    };
+    //Had to do it this way as the 'raw' statement's .toQuery is called before testsql, meaning mssql and other dialects would always get the output of qb() default client
+    //as MySQL, which means testing the query per dialect won't work. [users].[name] would be `users`.`name` for mssql which is incorrect.
+    var mssql = clients.mssql;
+    var mysql = clients.mysql;
+    var defaultClient = clients.default;
+
+    var mssqlQb = mssql.queryBuilder().select('*').from('users').where(mssql.raw(':name: = :thisGuy or :name: = :otherGuy', namedBindings)).toSQL();
+    var mysqlQb = mysql.queryBuilder().select('*').from('users').where(mysql.raw(':name: = :thisGuy or :name: = :otherGuy', namedBindings)).toSQL();
+    var defaultQb = defaultClient.queryBuilder().select('*').from('users').where(defaultClient.raw(':name: = :thisGuy or :name: = :otherGuy', namedBindings)).toSQL();
+
+    expect(mssqlQb.sql).to.equal('select * from [users] where [users].[name] = ? or [users].[name] = ?');
+    expect(mssqlQb.bindings).to.deep.equal(['Bob', 'Jay']);
+
+    expect(mysqlQb.sql).to.equal('select * from `users` where `users`.`name` = ? or `users`.`name` = ?');
+    expect(mysqlQb.bindings).to.deep.equal(['Bob', 'Jay']);
+
+    expect(defaultQb.sql).to.equal('select * from "users" where "users"."name" = ? or "users"."name" = ?');
+    expect(defaultQb.bindings).to.deep.equal(['Bob', 'Jay']);
+
   });
 });

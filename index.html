@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.9.0)</span>
+      Knex.js <span class="version">(0.10.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -45,9 +45,7 @@
       Upgrading
     </a>
     <ul class="toc_section">
-      <li>– <a href="#Upgrading-from0.8">0.8.x -> 0.9</a></li>
-      <li>– <a href="#Upgrading-from0.7">0.7.x -> 0.8</a></li>
-      <li>– <a href="#Upgrading-from0.6">0.6.x -> 0.7</a></li>
+      <li>– <a href="#Upgrading-from0.9">0.9.x -> 0.10</a></li>
     </ul>
 
     <a class="toc_title" href="#Installation">
@@ -60,6 +58,7 @@
       <li>&nbsp;&nbsp;– <a href="#Installation-client">client</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-debug">debug</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-pooling">pooling</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Installation-acquireConnectionTimeout">acquireConnectionTimeout</a></li>
       <li>&nbsp;&nbsp;– <a href="#Installation-migrations">migrations</a></li>
     </ul>
 
@@ -68,6 +67,7 @@
     </a>
     <ul class="toc_section">
       <li>– <a href="#Builder-main"><b>constructor</b></a></li>
+      <li>– <a href="#Builder-timeout">timeout</a></li>
       <li>– <a href="#Builder-select">select</a></li>
       <li>– <a href="#Builder-as">as</a></li>
       <li>– <a href="#Builder-column">column</a></li>
@@ -76,7 +76,7 @@
 
       <li><b><a href="#Builder-wheres">Where Methods:</a></b></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-where">where</a></li>
-      <li>&nbsp;&nbsp;- <a href="#Builder-where">whereNot</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-whereNot">whereNot</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereIn">whereIn</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereNotIn">whereNotIn</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereNull">whereNull</a></li>
@@ -180,9 +180,14 @@
       <li>– <a href="#Schema-engine">engine</a></li>
       <li>– <a href="#Schema-charset">charset</a></li>
       <li>– <a href="#Schema-collate">collate</a></li>
+      <li>– <a href="#Schema-inherits">inherits</a></li>
       <li>– <a href="#Schema-specificType">specificType</a></li>
       <li>– <a href="#Schema-index">index</a></li>
       <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
+      <li>– <a href="#Schema-foreign">Foreign</a></li>
+      <li>– <a href="#Schema-dropForeign">dropForeign</a></li>
+      <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
+      <li>– <a href="#Schema-dropPrimary">dropPrimary</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -198,6 +203,7 @@
       <li>– <a href="#Chainable-first">first</a></li>
       <li>– <a href="#Chainable-after">after</a></li>
       <li>– <a href="#Chainable-comment">comment</a></li>
+      <li>– <a href="#Chainable-collate">collate</a></li>
     </ul>
 
     <a class="toc_title" href="#Raw">
@@ -208,6 +214,14 @@
       <li>– <a href="#Raw-Expressions">Raw Expressions</a></li>
       <li>– <a href="#Raw-Queries">Raw Queries</a></li>
       <li>- <a href="#Raw-queries-wrapped">Wrapped Queries</a></li>
+    </ul>
+
+
+    <a class="toc_title" href="#Utility">
+      Utility
+    </a>
+    <ul class="toc_section">
+      <li>- <a href="#Utility-BatchInsert">Batch Insert</a></li>
     </ul>
 
     <a class="toc_title" href="#Interfaces">
@@ -229,6 +243,8 @@
       <li>&nbsp;&nbsp;– <a href="#Streams-pipe">pipe</a></li>
       <li><b><a href="#Interfaces-Events">Events</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Events-query">query</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-query-error">query-error</a></li>
+      <li>&nbsp;&nbsp;– <a href="#Events-query-response">query-response</a></li>
       <li><b><a href="#Interfaces-Other">Other:</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toString">toString</a></li>
       <li>&nbsp;&nbsp;– <a href="#Other-toSQL">toSQL</a></li>
@@ -274,6 +290,7 @@
       <option value="pg">PostgreSQL</option>
       <option value="sqlite3">SQLite3</option>
       <option value="oracle">Oracle</option>
+      <option value="mssql">MSSQL</option>
     </select>
   </div>
 
@@ -319,7 +336,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.9.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.10.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -330,7 +347,20 @@
 
     <h2 id="Upgrading">Upgrading</h2>
 
-    <h3 id="Upgrading-from0.7">Upgrading 0.8 -> 0.9</h3>
+    <h3 id="Upgrading-from0.9">Upgrading 0.9 -> 0.10</h3>
+
+    <p>
+      Knex will no longer interpret `undefined` values as `null` for `insert` or
+      `update`. See changelog for links to relevant issues.
+    </p>
+
+    <h3 id="Upgrading-from0.8">Upgrading 0.8 -> 0.9</h3>
+
+    <p>
+      There should be no major changes breaking the external API. If you encounter issues,
+      please <a href="https://github.com/tgriesser/knex/issues">open a ticket</a>.
+    </p>
+
     <h3 id="Upgrading-from0.7">Upgrading 0.7 -> 0.8</h3>
 
     <p>
@@ -361,7 +391,7 @@
     </p>
 
 <pre>
-$ npm install knex@0.8 --save
+$ npm install knex --save
 
 # Then add one of the following (adding a --save) flag:
 $ npm install pg
@@ -501,6 +531,26 @@ pg('table').insert({a: 'b'}).returning('*').toString();
       You may use <tt>knex.destroy</tt> by passing a callback, or by chaining as a promise, just not both.
     </p>
 
+
+    <h3 id="Installation-acquireConnectionTimeout">acquireConnectionTimeout</h3>
+
+    <p>
+      <tt>acquireConnectionTimeout</tt> defaults to 60000ms and is used to determine how long knex should wait before throwing a timeout error when acquiring a connection is not possible.
+      The most common cause for this is using up all the pool for transaction connections and then attempting to run queries outside of transactions while the pool is still full.
+      The error thrown will provide information on the query the connection was for to simplify the job of locating the culprit.
+    </p>
+
+<pre>
+<code class="js">var knex = require('knex')({
+  client: 'pg',
+  connection: {...},
+  pool: {...},
+  acquireConnectionTimeout: 10000
+  });
+</code>
+</pre>
+
+
     <h3 id="Installation-migrations">Migrations</h3>
 
     <p>
@@ -539,6 +589,15 @@ pg('table').insert({a: 'b'}).returning('*').toString();
       <a href="#Interfaces">interface methods</a>, to either convert toString, or execute the
       query with a <a href="#Interfaces-Promises">promise</a>, <a href="#Interfaces-Callbacks">callback</a>, or <a href="#Interfaces-Streams">stream</a>.
     </p>
+
+    <p id="Builder-timeout">
+      <b class="header">timeout</b><code>.timeout(ms)</code>
+      <br />
+      Sets a timeout for the query and will throw a <tt>TimeoutError</tt> if the timeout is exceeded.
+      The error contains information about the query, bindings, and the timeout that was set.
+      Useful for complex queries that you want to make sure are not taking too long to execute.
+    </p>
+
 
     <p id="Builder-select">
       <b class="header">select</b><code>.select([*columns])</code>
@@ -649,6 +708,12 @@ knex('users').where('votes', '>', 100)
 var subquery = knex('users').where('votes', '>', 100).andWhere('status', 'active').orWhere('name', 'John').select('id');
 
 knex('accounts').where('id', 'in', subquery)
+</pre>
+
+<p class="title">.orWhere with an object automatically wraps the statement and creates an <tt>or (and - and - and)</tt> clause</p>
+
+<pre class="display">
+knex('users').where('id', 1).orWhere({votes: 100, user: 'knex'})
 </pre>
 
 
@@ -1145,7 +1210,7 @@ knex.select('*').from('users').whereNull('last_name').unionAll(function() {
     </p>
 
 <pre class="display">
-// Returns [1] in "mysql", "sqlite"; [] in "postgresql" unless the 'returning' parameter is set.
+// Returns [1] in "mysql", "sqlite", "oracle"; [] in "postgresql" unless the 'returning' parameter is set.
 knex('books').insert({title: 'Slaughterhouse Five'})
 </pre>
 
@@ -1182,10 +1247,15 @@ knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
 </pre>
 
     <p id="Builder-returning">
-      <b class="header">returning</b><code>.returning(column)</code>
+      <b class="header">returning</b><code>.returning(column) / .returning([column1, column2, ...])</code>
       <br />
-      Only utilitzed by PostgreSQL databases, the returning method specifies which column should be returned
+      Utilized by PostgreSQL, MySQL, and Oracle databases, the returning method specifies which column should be returned
       by the <a href="#Builder-insert">insert</a> and <a href="#Builder-update">update</a> methods.
+      <br />
+      Passed <tt>column</tt> parameter may be a string or an array of strings. When passed in a string,
+      makes the SQL result be reported as an array of values from the specified column. When passed in an
+      array of strings, makes the SQL result be reported as an array of objects, each containing a single
+      property for each of the specified columns.
     </p>
 
 <pre class="display">
@@ -1202,24 +1272,33 @@ knex('books')
   .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
 </pre>
 
+<pre class="display">
+// Returns [ { id: 1, title: 'Slaughterhouse Five' } ]
+knex('books')
+  .returning(['id','title'])
+  .insert({title: 'Slaughterhouse Five'})
+</pre>
+
     <p id="Builder-update">
       <b class="header">update</b><code>.update(data, [returning]) / .update(key, value, [returning])</code>
       <br />
       Creates an <tt>update</tt> query, taking a hash of properties or a key/value pair
       to be updated based on the other query constraints. Resolves the promise / fulfills the
-      callback with the number of affected rows for the query.
+      callback with the number of affected rows for the query. If a key to be updated has value
+      <tt>undefined</tt> it is ignored.
     </p>
 
 <pre class="display">
 knex('books')
   .where('published_date', '<', 2000)
   .update({
-    status: 'archived'
+    status: 'archived',
+    thisKeyIsSkipped: undefined
   })
 </pre>
 
 <pre class="display">
-// Returns [1] in "mysql", "sqlite"; [] in "postgresql" unless the 'returning' parameter is set.
+// Returns [1] in "mysql", "sqlite", "oracle"; [] in "postgresql" unless the 'returning' parameter is set.
 knex('books').update('title', 'Slaughterhouse Five')
 </pre>
 
@@ -1631,6 +1710,12 @@ knex.transaction(function(trx) {
 </pre>
 
   <p>
+    Throwing an error directly from the transaction handler function
+    automatically rolls back the transaction, same as returning a rejected
+    promise.
+  </p>
+
+  <p>
     Notice that if a promise is not returned within the handler, it is up to you to ensure <tt>trx.commit</tt>, or
     <tt>trx.rollback</tt> are called, otherwise the transaction connection will hang.
   </p>
@@ -1875,6 +1960,12 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       <br />
       Adds a <tt>created_at</tt> and <tt>updated_at</tt> column on the database,
       setting these each to <a href="#Schema-dateTime">dateTime</a> types.
+      <br />
+      When true is passed as the first argument a <tt>timestamp</tt> type is used.
+      <br />
+      Both colums default to being not null and the current timestamp when true
+      is passed as the second argument.
+      <br />
     </p>
 
     <p id="Schema-binary">
@@ -1887,6 +1978,9 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       <b class="header">enum / enu</b><code>table.enu(col, values)</code>
       <br />
       Adds a enum column, (aliased to <tt>enu</tt>, as enum is a reserved word in javascript).
+      Note that the second argument is an array of values.
+      <br />
+      Example: <tt>table.enu('column', ['value1', 'value2'])</tt>
     </p>
 
     <p id="Schema-json">
@@ -1947,6 +2041,13 @@ knex.table('users')
       applicable to MySQL.
     </p>
 
+    <p id="Schema-inherits">
+      <b class="header">inherits</b><code>table.inherits(val)</code>
+      <br />
+      Sets the tables that this table inherits, only available within a <tt>createTable</tt> call, and only
+      applicable to PostgreSQL.
+    </p>
+
     <p id="Schema-specificType">
       <b class="header">specificType</b><code>table.specificType(column, value)</code>
       <br />
@@ -1965,6 +2066,38 @@ knex.table('users')
       <br />
       Drops an index from a table. A default index name using the <tt>columns</tt> is used unless
       <tt>indexName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+
+    <p id="Schema-foreign">
+      <b class="header">foreign</b><code>table.foreign(columns)</code>
+      <br />
+      Adds a foreign key constraint to a table for an existing column using <code>table.foreign(column).references(column)</code> or
+      multiple columns using <code>table.foreign(columns).references(columns)</code>.
+      You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, <tt>CASCADE</tt>,
+      <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</code>
+      but works for existing columns.
+    </p>
+
+    <p id="Schema-dropForeign">
+      <b class="header">dropForeign</b><code>table.dropForeign(columns, [foreignKeyName])</code>
+      <br />
+      Drops a foreign key constraint from a table. A default foreign key name using the <tt>columns</tt> is used unless
+      <tt>foreignKeyName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+
+
+    <p id="Schema-dropUnique">
+      <b class="header">dropUnique</b><code>table.dropUnique(columns, [indexName])</code>
+      <br />
+      Drops a unique key constraint from a table. A default unique key name using the <tt>columns</tt> is used unless
+      <tt>indexName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+
+
+    <p id="Schema-dropPrimary">
+      <b class="header">dropPrimary</b><code>table.dropPrimary()</code>
+      <br />
+      Drops the primary key constraint on a table.
     </p>
 
     <h3 id="Chainable">Chainable Methods:</h3>
@@ -1998,7 +2131,7 @@ knex.table('users')
     <p id="Chainable-references">
       <b class="header">references</b><code>column.references(column)</code>
       <br />
-      Sets the "column" that the current column references as a foreign key.
+      Sets the "column" that the current column references as a foreign key. "column" can either be "&lt;table&gt;.&lt;column&gt;" syntax, or just the column name followed up with a call to <a href="#Chainable-inTable">inTable</a> to specify the table.
     </p>
 
     <p id="Chainable-inTable">
@@ -2062,13 +2195,28 @@ knex.table('users')
     </p>
 
 <pre>
-knex.schema.createTable('accounts', function() {
+knex.schema.createTable('accounts', function(t) {
   t.increments().primary();
-  t.string('email').unique();
+  t.string('email').unique().comment('This is the email field');
 });
 </pre>
 
-    <h2 id="Raw">Raw Queries</h2>
+    <p id="Chainable-collate">
+      <b class="header">collate</b><code>column.collate(collation)</code>
+      <br />
+      Sets the collation for a column (only works in MySQL).
+      <br />
+      Here is a list of all available collations: <a href="https://dev.mysql.com/doc/refman/5.5/en/charset-charsets.html">https://dev.mysql.com/doc/refman/5.5/en/charset-charsets.html</a>
+    </p>
+
+<pre>
+knex.schema.createTable('users', function(t) {
+  t.increments();
+  t.string('email').unique().collate('utf8_unicode_ci');
+});
+</pre>
+
+    <h2 id="Raw">Raw</h2>
 
     <p>
       Sometimes you may need to use a raw expression in a query. Raw query object may be injected pretty much
@@ -2090,24 +2238,59 @@ knex('users')
   .orWhere(knex.raw('status <> ?', [1]))
   .groupBy('status')
 </pre>
+
+    <p>
+      Positional bindings <tt>?</tt> are interpreted as values and <tt>??</tt> are interpreted as identifiers.
+    </p>
+
 <pre class="display">
-// positional bindings ? is interpret as value and ?? as identifier
 knex('users').where(knex.raw('?? = ?', ['user.name', 1]))
 </pre>
 
+    <p>
+      Named bindings such as <tt>:name</tt> are interpreted as values and <tt>:name:</tt> interpreted as identifiers.
+      Named bindings are processed so long as the value is anything other than <tt>undefined</tt>.
+    </p>
+
 <pre class="display">
-// named bindings :name is interpret as value and :name: as identifier
 knex('users')
-  .where(knex.raw(':name: = :thisGuy or :name: = :otherGuy', {
+  .where(knex.raw(':name: = :thisGuy or :name: = :otherGuy or :name: = :undefinedBinding', {
     name: 'users.name',
     thisGuy: 'Bob',
-    otherGuy: 'Jay'
+    otherGuy: 'Jay',
+    undefinedBinding: undefined
   }))
 </pre>
 
-    <p>
-      To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
-    </p>
+    <p>For simpler queries where one only has a single binding, <tt>.raw</tt> can accept said binding as its second parameter.</p>
+
+<pre class="display">
+knex('users')
+  .where(
+    knex.raw('LOWER("login") = ?', 'knex')
+  )
+  .orWhere(
+    knex.raw('accesslevel = ?', 1)
+  )
+  .orWhere(
+    knex.raw('updtime = ?', new Date())
+  )
+</pre>
+
+  <p>
+    Note that due to ambiguity, arrays must be passed as arguments within a containing array.
+  </p>
+
+<pre class="display">
+knex.raw('select * from users where id in (?)', [1, 2, 3]);
+// Error: Expected 3 bindings, saw 1
+
+knex.raw('select * from users where id in (?)', [[1, 2, 3]])
+</pre>
+
+  <p>
+    To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
+  </p>
 
 <pre class="display">
 knex.select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey'])
@@ -2175,6 +2358,35 @@ knex.select('e.lastname', 'e.salary', subcolumn)
   .from('employee as e')
   .whereRaw('dept_no = e.dept_no')
 </pre>
+
+
+    <h2 id="Utility">Utility</h2>
+
+    <p>
+      A collection of utilities that the knex library provides for convenience.
+    </p>
+
+
+    <h3 id="Utility-BatchInsert">Batch Insert</h3>
+
+    <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction (which is automatically created), at a given <tt>chunkSize</tt>.</p>
+    <p>It's primarily designed to be used when you have thousands of rows to insert into a table.</p>
+    <p>By default, the <tt>chunkSize</tt> is set to 1000.</p>
+
+<pre>
+<code class="js">
+  var rows = [{...}, {...}];
+  var chunkSize = 30;
+  knex.batchInsert('TableName', rows, chunkSize)
+  .then(function() {
+    ...
+  })
+  .catch(function(error) {
+    ...
+  });
+</code>
+</pre>
+
 
     <h2 id="Interfaces">Interfaces</h2>
 
@@ -2420,7 +2632,7 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
     <p id="Events-query">
       <b class="header">query</b>
       <br />
-      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all
+      A <b>query</b> event is fired just before a query takes place, providing data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all queries throughout your application.
     </p>
 
 
@@ -2432,6 +2644,51 @@ var stream = knex.select('*').from('users').where(knex.raw('id = ?', [1])).strea
   })
   .then(function() {
     // ...
+  });
+</code>
+</pre>
+
+
+    <p id="Events-query-error">
+      <b class="header">query-error</b>
+      <br />
+      A <b>query-error</b> event is fired when an error occurs when running a query, providing the error object and data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>. Useful for logging all query errors throughout your application.
+    </p>
+
+
+<pre>
+<code class="js">knex.select(['NonExistentColumn'])
+  .from('users')
+  .on('query-error', function(error, obj) {
+    app.log(error);
+  })
+  .then(function() {
+    // ...
+  })
+  .catch(function(error) {
+    // Same error object as the query-error event provides.
+  });
+</code>
+</pre>
+
+
+    <p id="Events-query-response">
+      <b class="header">query-response</b>
+      <br />
+      A <b>query-response</b> event is fired when a successful query has been run, providing the response of the query and data about the query, including the connection's <tt>__cid</tt> property and any other information about the query as described in <a href="#Other-toSQL">toSQL</a>, and finally the query builder used for the query.
+    </p>
+
+
+<pre>
+<code class="js">knex.select('*')
+  .from('users')
+  .on('query-response', function(response, obj, builder) {
+      // ...
+  })
+  .then(function(response) {
+      // Same response as the emitted event
+  })
+  .catch(function(error) {
   });
 </code>
 </pre>
@@ -2487,7 +2744,7 @@ $ npm install knex -g
 </pre>
 
     <p>
-      The 0.6 migrations use a <b>knexfile</b>, which specify various configuration settings for the module. To create a new
+      Migrations use a <b>knexfile</b>, which specify various configuration settings for the module. To create a new
       knexfile, run the following:
     </p>
 
@@ -2623,10 +2880,19 @@ $ knex seed:run
     <h3 id="Migrations-API">Migration API</h3>
 
     <p>
-      <tt>knex.migrate</tt> is the class utilized by the knex migrations cli. Each method
-      takes an optional <tt>config</tt> object, which may specify specifies the <tt>database</tt>,
-      <tt>directory</tt>, <tt>extension</tt>, and <tt>tableName</tt> for the migrations.
+      <tt>knex.migrate</tt> is the class utilized by the knex migrations cli.
     </p>
+
+    <p>
+      Each method takes an optional <tt>config</tt> object, which may specify the following properties:
+    </p>
+
+    <ul>
+      <li><tt>directory</tt>: a relative path to the directory containing the migration files (default <tt>./migrations</tt>)</li>
+      <li><tt>extension</tt>: the file extension used for the generated migration files (default <tt>js</tt>)</li>
+      <li><tt>tableName</tt>: the table name used for storing the migration state (default <tt>knex_migrations</tt>)</li>
+      <li><tt>disableTransactions</tt>: don't run migrations inside transactions (default <tt>false</tt>)</li>
+    </ul>
 
     <h4 id="Migrations-API-transactions">Transactions in migrations</h4>
 
@@ -2760,6 +3026,51 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.10.0</b> &mdash; <small><i>15 Feb, 2016</i></small><br />
+    </p>
+
+    <b>Breaking Changes:</b>
+    <ul>
+      <li>
+        `insert` and `update` now ignore `undefined` values. Back compatibility
+        is provided through the option `useNullAsDefault`. #1174, #1043
+      </li>
+    </ul>
+
+    <b>Other Changes:</b>
+    <ul>
+      <li>
+        Add <a href="#Builder-countDistinct"><tt>countDistinct</tt></a>,
+        <a href="#Builder-avgDistinct"><tt>avgDistinct</tt></a> and
+        <a href="#Builder-sumDistinct"><tt>sumDistinct</tt></a>. #1046
+      </li>
+      <li>
+        Add <a href="#Schema-jsonb"><tt>schema.jsonb</tt></a>. Deprecated <tt>schema.json(column, true)</tt>. #991
+      </li>
+      <li>Support binding identifiers with `??`. #1103</li>
+      <li>Restore `query` event when triggered by transactions. #855</li>
+      <li>Correct question mark escaping in rendered queries. #519, #1058</li>
+      <li>
+        Add per-dialect escaping, allowing quotes to be escaped correctly. #886, #1095
+      </li>
+      <li>Add MSSQL support. #1090</li>
+      <li>Add migration locking. #1094</li>
+      <li>Allow column aliases to contain `.`. #1181</li>
+      <li>Add `batchInsert`. #1182</li>
+      <li>
+        Support non-array arguments to
+        <a href="#Raw-Bindings"><tt>knex.raw</tt></a>.
+      </li>
+      <li>Global <tt>>query-error</tt> event. #1163</li>
+      <li>Add `batchInsert`. #1182</li>
+      <li>Better support for Mysql2 dialect options. #980</li>
+      <li>Support for <tt>acquireConnectionTimeout</tt> default 60 seconds preventing #1040 from happening. #1177</li>
+      <li>Fixed constraint name escaping when dropping a constraint. #1177</li>
+      <li>Show also <tt>.raw</tt> queries in debug output. #1169</li>
+      <li>Support for <tt>cli</tt> to use basic configuration without specific environment set. #1101</li>
+    </ul>
 
     <p>
       <b class="header">0.9.0</b> &mdash; <small><i>Nov 2, 2015</i></small><br />
@@ -3430,6 +3741,7 @@ $ npm test
   var mysql   = dialects.mysql = Knex({client: 'mysql'});
   var sqlite3 = dialects.sqlite3 = Knex({client: 'sqlite3'});
   var oracle  = dialects.oracle = Knex({client: 'oracle'});
+  var mssql   = dialects.mssql = Knex({client: 'mssql'});
 
   $(function() {
     var setDialect = function(dialect) {

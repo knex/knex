@@ -2,8 +2,9 @@
 var inherits    = require('inherits')
 var Promise     = require('../../promise')
 var Transaction = require('../../transaction')
-var assign      = require('lodash/object/assign');
 var debugTx     = require('debug')('knex:tx')
+
+import {assign} from 'lodash'
 
 function Oracle_Transaction(client, container, config, outerTx) {
   Transaction.call(this, client, container, config, outerTx)
@@ -26,7 +27,7 @@ assign(Oracle_Transaction.prototype, {
 
   release: function(conn, value) {
     return this._resolver(value)
-  },  
+  },
 
   rollback: function(conn, err) {
     this._completed = true
@@ -39,7 +40,7 @@ assign(Oracle_Transaction.prototype, {
   acquireConnection: function(config) {
     var t = this
     return Promise.try(function() {
-      return config.connection || t.client.acquireConnection()  
+      return config.connection || t.client.acquireConnection()
     }).tap(function(connection) {
       if (!t.outerTx) {
         connection.setAutoCommit(false)

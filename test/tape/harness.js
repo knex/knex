@@ -4,9 +4,9 @@ var Promise = require('bluebird')
 var debug   = require('debug')('knex:tests')
 
 module.exports = function(tableName, knex) {
-  
+
   return function(name, dialects, cb) {
-    
+
     if (arguments.length === 2) {
       cb = dialects
     } else {
@@ -20,9 +20,9 @@ module.exports = function(tableName, knex) {
     }
 
     return tape(name, function(t) {
-      
+
       var hasPlanned = false
-      
+
       t.on('plan', function() { hasPlanned = true })
 
       var disposable = Promise.resolve(true).disposer(function() {

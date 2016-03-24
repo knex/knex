@@ -255,6 +255,77 @@ module.exports = function(knex) {
       });
     });
 
+
+    it('.timeout() should throw TimeoutError', function(done) {
+      var dialect = knex.client.config.dialect;
+      if(dialect === 'sqlite3') { return done(); } //TODO -- No built-in support for sleeps
+      var testQueries = {
+        'postgres': function() {
+          return knex.raw('SELECT pg_sleep(1)');
+        },
+        'mysql': function() {
+          return knex.raw('SELECT SLEEP(1)');
+        },
+        'mysql2': function() {
+          return knex.raw('SELECT SLEEP(1)');
+        },
+        maria: function() {
+          return knex.raw('SELECT SLEEP(1)');
+        },
+        mssql: function() {
+          return knex.raw('WAITFOR DELAY \'00:00:01\'');
+        },
+        oracle: function() {
+          return knex.raw('dbms_lock.sleep(1)');
+        },
+        'strong-oracle': function() {
+          return knex.raw('dbms_lock.sleep(1)');
+        }
+      };
+
+      if(!testQueries.hasOwnProperty(dialect)) {
+        return done(new Error('Missing test query for dialect: ' + dialect));
+      }
+
+      var query = testQueries[dialect]();
+
+      return query.timeout(1)
+        .then(function() {
+          expect(true).to.equal(false);
+        })
+        .catch(function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 1,
+            name:    'TimeoutError',
+            message: 'Defined query timeout of 1ms exceeded when running query.'
+          });
+          done();
+        });
+    });
+
+
+    it('Event: query-response', function() {
+      var queryCount = 0;
+
+      knex.on('query-response', function(response, obj, builder) {
+        queryCount++;
+        expect(response).to.be.an('array');
+        expect(obj).to.be.an('object');
+        expect(obj.__knexUid).to.be.a('string');
+        expect(builder).to.be.an('object');
+      });
+
+      return knex('accounts').select()
+      .then(function() {
+          return knex.transaction(function(tr) {
+            return tr('accounts').select(); //Transactions should emit the event as well
+          })
+        })
+      .then(function() {
+          expect(queryCount).to.equal(2);
+      })
+    });
+
   });
 
 };

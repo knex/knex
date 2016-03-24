@@ -1,5 +1,4 @@
 
-var _              = require('lodash')
 var Promise        = require('./promise')
 var helpers        = require('./helpers')
 
@@ -23,9 +22,8 @@ var inherits       = require('inherits')
 var EventEmitter   = require('events').EventEmitter
 var SqlString      = require('./query/string')
 
-var assign         = require('lodash/object/assign')
-var uniqueId       = require('lodash/utility/uniqueId')
-var cloneDeep      = require('lodash/lang/cloneDeep')
+import {assign, uniqueId, cloneDeep, map} from 'lodash'
+
 var debug          = require('debug')('knex:client')
 var debugQuery     = require('debug')('knex:query')
 
@@ -128,8 +126,9 @@ assign(Client.prototype, {
     if (typeof obj === 'string') obj = {sql: obj}
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
     debugQuery(obj.sql)
-    return this._query.call(this, connection, obj).catch(function(err) {
+    return this._query.call(this, connection, obj).catch((err) => {
       err.message = SqlString.format(obj.sql, obj.bindings) + ' - ' + err.message
+      this.emit('query-error', err, obj)
       throw err
     })
   },
@@ -142,9 +141,9 @@ assign(Client.prototype, {
   },
 
   prepBindings: function(bindings) {
-    return _.map(bindings, function(binding) {
+    return map(bindings, (binding) => {
       return binding === undefined ? this.valueForUndefined : binding
-    }, this);
+    });
   },
 
   wrapIdentifier: function(value) {
@@ -189,7 +188,7 @@ assign(Client.prototype, {
               return Promise.promisify(poolConfig.afterCreate)(connection)
             }
           })
-          .nodeify(callback)
+          .asCallback(callback)
       },
       dispose: function(connection, callback) {
         if (poolConfig.beforeDestroy) {
@@ -243,7 +242,7 @@ assign(Client.prototype, {
     })
     // Allow either a callback or promise interface for destruction.
     if (typeof callback === 'function') {
-      promise.nodeify(callback)
+      promise.asCallback(callback)
     } else {
       return promise
     }

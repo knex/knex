@@ -1,8 +1,9 @@
 
-var assign   = require('lodash/object/assign');
 var inherits = require('inherits')
 
-// Ensure the client has fresh objects so we can tack onto 
+import {assign} from 'lodash'
+
+// Ensure the client has fresh objects so we can tack onto
 // the prototypes without mutating them globally.
 module.exports = function makeClient(ParentClient) {
 
@@ -14,12 +15,12 @@ module.exports = function makeClient(ParentClient) {
     ParentClient.call(this, config)
   }
   inherits(Client, ParentClient)
-  
+
   function Formatter(client) {
     Formatter.super_.call(this, client)
   }
   inherits(Formatter, ParentClient.prototype.Formatter)
-  
+
   function QueryBuilder(client) {
     QueryBuilder.super_.call(this, client)
   }

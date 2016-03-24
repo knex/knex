@@ -1,10 +1,9 @@
 
 // SQLite3 Query Builder & Compiler
 
-var _             = require('lodash')
 var inherits      = require('inherits')
 var QueryCompiler = require('../../../query/compiler')
-var assign        = require('lodash/object/assign');
+import {assign, isEmpty, isString, reduce} from 'lodash'
 
 function QueryCompiler_SQLite3(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -15,7 +14,7 @@ assign(QueryCompiler_SQLite3.prototype, {
 
   // The locks are not applicable in SQLite3
   forShare:  emptyStr,
-  
+
   forUpdate: emptyStr,
 
   // SQLite requires us to build the multi-row insert as a listing of select with
@@ -29,29 +28,29 @@ assign(QueryCompiler_SQLite3.prototype, {
       if (insertValues.length === 0) {
         return ''
       }
-      else if (insertValues.length === 1 && insertValues[0] && _.isEmpty(insertValues[0])) {
+      else if (insertValues.length === 1 && insertValues[0] && isEmpty(insertValues[0])) {
         return sql + this._emptyInsertValue
       }
-    } else if (typeof insertValues === 'object' && _.isEmpty(insertValues)) {
+    } else if (typeof insertValues === 'object' && isEmpty(insertValues)) {
       return sql + this._emptyInsertValue
     }
 
     var insertData = this._prepInsert(insertValues)
-    
-    if (_.isString(insertData)) {
+
+    if (isString(insertData)) {
       return sql + insertData
     }
-    
+
     if (insertData.columns.length === 0) {
       return '';
     }
 
     sql += '(' + this.formatter.columnize(insertData.columns) + ')'
-    
+
     if (insertData.values.length === 1) {
       return sql + ' values (' + this.formatter.parameterize(insertData.values[0]) + ')'
     }
-    
+
     var blocks = []
     var i      = -1
     while (++i < insertData.values.length) {
@@ -86,7 +85,7 @@ assign(QueryCompiler_SQLite3.prototype, {
       sql: 'PRAGMA table_info(' + this.single.table +')',
       output: function(resp) {
         var maxLengthRegex = /.*\((\d+)\)/
-        var out = _.reduce(resp, function (columns, val) {
+        var out = reduce(resp, function (columns, val) {
           var type = val.type
           var maxLength = (maxLength = type.match(maxLengthRegex)) && maxLength[1]
           type = maxLength ? type.split('(')[0] : type
@@ -106,8 +105,8 @@ assign(QueryCompiler_SQLite3.prototype, {
   limit: function() {
     var noLimit = !this.single.limit && this.single.limit !== 0
     if (noLimit && !this.single.offset) return ''
-  
-    // Workaround for offset only, 
+
+    // Workaround for offset only,
     // see http://stackoverflow.com/questions/10491492/sqllite-with-skip-offset-only-not-limit
     return 'limit ' + this.formatter.parameter(noLimit ? -1 : this.single.limit)
   }

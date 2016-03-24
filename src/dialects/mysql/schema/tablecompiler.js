@@ -5,7 +5,8 @@ var inherits      = require('inherits');
 var TableCompiler = require('../../../schema/tablecompiler');
 var helpers       = require('../../../helpers');
 var Promise       = require('../../../promise');
-var assign        = require('lodash/object/assign');
+
+import {assign} from 'lodash'
 
 // Table Compiler
 // ------
@@ -19,7 +20,7 @@ assign(TableCompiler_MySQL.prototype, {
 
   createQuery: function(columns, ifNot) {
     var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
-    var client = this.client, conn = {}, 
+    var client = this.client, conn = {},
       sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
 
     // Check if the connection settings are set.
@@ -46,7 +47,7 @@ assign(TableCompiler_MySQL.prototype, {
   },
 
   addColumnsPrefix: 'add ',
-  
+
   dropColumnPrefix: 'drop ',
 
   // Compiles the comment on the table.
@@ -63,7 +64,7 @@ assign(TableCompiler_MySQL.prototype, {
     var compiler = this;
     var table    = this.tableName();
     var wrapped  = this.formatter.wrap(from) + ' ' + this.formatter.wrap(to);
-    
+
     this.pushQuery({
       sql: 'show fields from ' + table + ' where field = ' +
         this.formatter.parameter(from),
@@ -116,7 +117,7 @@ assign(TableCompiler_MySQL.prototype, {
 
   dropFKRefs: function (runner, refs) {
     var formatter = this.client.formatter();
-    
+
     return Promise.all(refs.map(function (ref) {
       var constraintName = formatter.wrap(ref.CONSTRAINT_NAME);
       var tableName  = formatter.wrap(ref.TABLE_NAME);
@@ -127,7 +128,7 @@ assign(TableCompiler_MySQL.prototype, {
   },
   createFKRefs: function (runner, refs) {
     var formatter = this.client.formatter();
-    
+
     return Promise.all(refs.map(function (ref) {
       var tableName  = formatter.wrap(ref.TABLE_NAME);
       var keyName    = formatter.wrap(ref.CONSTRAINT_NAME);
@@ -136,37 +137,37 @@ assign(TableCompiler_MySQL.prototype, {
       var inTable    = formatter.wrap(ref.REFERENCED_TABLE_NAME);
       var onUpdate   = ' ON UPDATE ' + ref.UPDATE_RULE;
       var onDelete   = ' ON DELETE ' + ref.DELETE_RULE;
-      
+
       return runner.query({
-        sql: 'alter table ' + tableName + ' add constraint ' + keyName + ' ' + 
+        sql: 'alter table ' + tableName + ' add constraint ' + keyName + ' ' +
           'foreign key (' + column + ') references ' + inTable + ' (' + references + ')' + onUpdate + onDelete
       });
     }));
   },
   index: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + " add index " + indexName + "(" + this.formatter.columnize(columns) + ")");
   },
 
   primary: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('primary', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('primary', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + " add primary key " + indexName + "(" + this.formatter.columnize(columns) + ")");
   },
 
   unique: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + " add unique " + indexName + "(" + this.formatter.columnize(columns) + ")");
   },
 
   // Compile a drop index command.
   dropIndex: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + ' drop index ' + indexName);
   },
 
   // Compile a drop foreign key command.
   dropForeign: function(columns, indexName) {
-    indexName = indexName || this._indexCommand('foreign', this.tableNameRaw, columns);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
     this.pushQuery('alter table ' + this.tableName() + ' drop foreign key ' + indexName);
   },
 
@@ -177,7 +178,7 @@ assign(TableCompiler_MySQL.prototype, {
 
   // Compile a drop unique key command.
   dropUnique: function(column, indexName) {
-    indexName = indexName || this._indexCommand('unique', this.tableNameRaw, column);
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, column);
     this.pushQuery('alter table ' + this.tableName() + ' drop index ' + indexName);
   }
 

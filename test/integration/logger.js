@@ -7,7 +7,7 @@ var _ = require('lodash')
 module.exports = function(knex) {
 
   var client  = knex.client;
-  
+
   function compareBindings(gotBindings, wantedBindings) {
     if (Array.isArray(wantedBindings)) {
       expect(gotBindings.length).to.eql(wantedBindings.length);
@@ -35,14 +35,14 @@ module.exports = function(knex) {
 
       if (statement) {
         if (Array.isArray(sql)) {
-          expect(_.pluck(sql, 'sql')).to.eql(statement);
+          expect(_.map(sql, 'sql')).to.eql(statement);
         } else {
           expect(sql.sql).to.equal(statement);
         }
       }
       if (bindings) {
         if (Array.isArray(sql)) {
-          compareBindings(_.pluck(sql, 'bindings'), bindings);
+          compareBindings(_.map(sql, 'bindings'), bindings);
         } else {
           compareBindings(sql.bindings, bindings);
         }
@@ -68,7 +68,7 @@ module.exports = function(knex) {
     if (!_.isObject(resp[0])) return resp;
     return _.map(resp, function(val) {
       return _.reduce(val, function(memo, val, key) {
-        if (_.contains(['created_at', 'updated_at'], key)) {
+        if (_.includes(['created_at', 'updated_at'], key)) {
           memo[key] = d;
         } else {
           memo[key] = val;
