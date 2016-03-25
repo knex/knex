@@ -184,8 +184,8 @@ TableBuilder.prototype.comment = function(value) {
 // Set a foreign key on the table, calling
 // `table.foreign('column_name').references('column').on('table').onDelete()...
 // Also called from the ColumnBuilder context when chaining.
-TableBuilder.prototype.foreign = function(column) {
-  var foreignData = {column: column};
+TableBuilder.prototype.foreign = function(column, keyName) {
+  var foreignData = {column: column, keyName: keyName};
   this._statements.push({
     grouping: 'alterTable',
     method: 'foreign',
@@ -214,6 +214,10 @@ TableBuilder.prototype.foreign = function(column) {
       }
       foreignData.inTable = pieces[0];
       foreignData.references = pieces[1];
+      return returnObj;
+    },
+    withKeyName: function withKeyName(keyName) {
+      foreignData.keyName = keyName;
       return returnObj;
     },
     onUpdate: function(statement) {

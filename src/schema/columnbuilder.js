@@ -51,7 +51,7 @@ each(['index', 'primary', 'unique'], function(method) {
 // Specify that the current column "references" a column,
 // which may be tableName.column or just "column"
 ColumnBuilder.prototype.references = function(value) {
-  return this._tableBuilder.foreign.call(this._tableBuilder, this._args[0], this)
+  return this._tableBuilder.foreign.call(this._tableBuilder, this._args[0], undefined, this)
     ._columnBuilder(this)
     .references(value);
 };
