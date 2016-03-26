@@ -4,8 +4,8 @@ var SqlString = exports;
 var helpers   = require('../helpers')
 
 SqlString.escape = function(val, timeZone) {
-  // Can't do require on top of file because Raw is not yet initialized when this file is
-  // executed for the first time
+  // Can't do require on top of file because Raw has not yet been initialized
+  // when this file is executed for the first time.
   var Raw = require('../raw')
 
   if (val === null || val === undefined) {
