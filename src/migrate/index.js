@@ -69,9 +69,8 @@ export default class Migrator {
 
   }
 
-  // Retrieves and returns the current migration version
-  // we're on, as a promise. If there aren't any migrations run yet,
-  // return "none" as the value for the `currentVersion`.
+  // Retrieves and returns the current migration version we're on, as a promise.
+  // If no migrations have been run yet, return "none".
   currentVersion(config) {
     this.config = this.setConfig(config);
     return this._listCompleted(config)
@@ -111,8 +110,8 @@ export default class Migrator {
       })
   }
 
-  // Ensures a folder for the migrations exist, dependent on the
-  // migration config settings.
+  // Ensures a folder for the migrations exist, dependent on the migration
+  // config settings.
   _ensureFolder() {
     var dir = this._absoluteConfigDir();
     return Promise.promisify(fs.stat, {context: fs})(dir)
@@ -121,8 +120,8 @@ export default class Migrator {
       });
   }
 
-  // Ensures that the proper table has been created,
-  // dependent on the migration config settings.
+  // Ensures that a proper table has been created, dependent on the migration
+  // config settings.
   _ensureTable() {
     var table = this.config.tableName;
     var lockTable = this._getLockTableName();
@@ -207,17 +206,16 @@ export default class Migrator {
       var cleanupReady = Promise.resolve();
 
       if (error instanceof LockError) {
-        // if locking error do not free the lock
-        helpers.warn('Cant take lock to run migrations: ' + error.message);
+        // If locking error do not free the lock.
+        helpers.warn('Can\'t take lock to run migrations: ' + error.message);
         helpers.warn(
-          'If you are sure migrations are not running you can release ' +
-          'lock manually by deleting all the rows from migrations lock table: ' +
-          this._getLockTableName()
+          'If you are sure migrations are not running you can release the ' +
+          'lock manually by deleting all the rows from migrations lock ' +
+          'table: ' + this._getLockTableName()
         );
       } else {
         helpers.warn('migrations failed with error: ' + error.message)
-        // If the error was not due to a locking issue, then
-        // remove the lock.
+        // If the error was not due to a locking issue, then remove the lock.
         cleanupReady = this._freeLock();
       }
 
@@ -227,7 +225,8 @@ export default class Migrator {
     });
 }
 
-  // Validates some migrations by requiring and checking for an `up` and `down` function.
+  // Validates some migrations by requiring and checking for an `up` and `down`
+  // function.
   _validateMigrationStructure(name) {
     var migration = require(path.join(this._absoluteConfigDir(), name));
     if (typeof migration.up !== 'function' || typeof migration.down !== 'function') {
@@ -236,7 +235,8 @@ export default class Migrator {
     return name;
   }
 
-  // Lists all migrations that have been completed for the current db, as an array.
+  // Lists all migrations that have been completed for the current db, as an
+  // array.
   _listCompleted() {
     var tableName = this.config.tableName
     return this._ensureTable(tableName)
@@ -244,9 +244,8 @@ export default class Migrator {
       .then((migrations) => map(migrations, 'name'))
   }
 
-  // Gets the migration list from the specified migration directory,
-  // as well as the list of completed migrations to check what
-  // should be run.
+  // Gets the migration list from the specified migration directory, as well as
+  // the list of completed migrations to check what should be run.
   _migrationData() {
     return Promise.all([
       this._listAll(),
@@ -254,7 +253,8 @@ export default class Migrator {
     ]);
   }
 
-  // Generates the stub template for the current migration, returning a compiled template.
+  // Generates the stub template for the current migration, returning a compiled
+  // template.
   _generateStubTemplate() {
     var stubPath = this.config.stub || path.join(__dirname, 'stub', this.config.extension + '.stub');
     return Promise.promisify(fs.readFile, {context: fs})(stubPath).then(function(stub) {
@@ -275,8 +275,8 @@ export default class Migrator {
     ).return(path.join(dir, filename));
   }
 
-  // Get the last batch of migrations, by name, ordered by insert id
-  // in reverse order.
+  // Get the last batch of migrations, by name, ordered by insert id in reverse
+  // order.
   _getLastBatch() {
     var tableName = this.config.tableName;
     return this.knex(tableName)
@@ -294,9 +294,9 @@ export default class Migrator {
       });
   }
 
-  // If transaction conf for a single migration is defined, use that.
+  // If transaction config for a single migration is defined, use that.
   // Otherwise, rely on the common config. This allows enabling/disabling
-  // transaction for a single migration by will, regardless of the common
+  // transaction for a single migration at will, regardless of the common
   // config.
   _useTransaction(migration, allTransactionsDisabled) {
     var singleTransactionValue = get(migration, 'config.transaction');
@@ -306,8 +306,8 @@ export default class Migrator {
       !allTransactionsDisabled;
   }
 
-  // Runs a batch of `migrations` in a specified `direction`,
-  // saving the appropriate database information as the migrations are run.
+  // Runs a batch of `migrations` in a specified `direction`, saving the
+  // appropriate database information as the migrations are run.
   _waterfallBatch(batchNo, migrations, direction) {
     var knex = this.knex;
     var {tableName, disableTransactions} = this.config
@@ -318,7 +318,7 @@ export default class Migrator {
       var name  = migration;
       migration = require(directory + '/' + name);
 
-      // We're going to run each of the migrations in the current "up"
+      // We're going to run each of the migrations in the current "up".
       current = current.then(() => {
         if (this._useTransaction(migration, disableTransactions)) {
           return this._transaction(migration, direction, name)
@@ -381,14 +381,14 @@ function warnPromise(value, name, fn) {
   return value;
 }
 
-// Ensure that we have 2 places for each of the date segments
+// Ensure that we have 2 places for each of the date segments.
 function padDate(segment) {
   segment = segment.toString();
   return segment[1] ? segment : '0' + segment;
 }
 
-// Get a date object in the correct format, without requiring
-// a full out library like "moment.js".
+// Get a date object in the correct format, without requiring a full out library
+// like "moment.js".
 function yyyymmddhhmmss() {
   var d = new Date();
   return d.getFullYear().toString() +
