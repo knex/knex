@@ -29,7 +29,7 @@ assign(QueryCompiler.prototype, {
   _emptyInsertValue: 'default values',
 
   // Collapse the builder into a single object
-  toSQL: function(method) {
+  toSQL: function(method, tz) {
     method = method || this.method
     var val = this[method]()
     var defaults = {
@@ -44,6 +44,9 @@ assign(QueryCompiler.prototype, {
     if (method === 'select' && this.single.as) {
       defaults.as = this.single.as;
     }
+
+    defaults.bindings = this.client.prepBindings(defaults.bindings || [], tz);
+
     return assign(defaults, val);
   },
 

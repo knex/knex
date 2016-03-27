@@ -34,8 +34,8 @@ assign(Builder.prototype, {
   },
 
   // Convert the current query "toSQL"
-  toSQL: function(method) {
-    return this.client.queryCompiler(this).toSQL(method || this._method);
+  toSQL: function(method, tz) {
+    return this.client.queryCompiler(this).toSQL(method || this._method, tz);
   },
 
   // Create a shallow clone of the current query builder.

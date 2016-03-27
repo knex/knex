@@ -51,7 +51,7 @@ assign(Raw.prototype, {
   },
 
   // Returns the raw sql for the query.
-  toSQL: function() {
+  toSQL: function(method, tz) {
     if (this._cached) return this._cached
     if (Array.isArray(this.bindings)) {
       this._cached = replaceRawArrBindings(this)
@@ -61,7 +61,7 @@ assign(Raw.prototype, {
       this._cached = {
         method: 'raw',
         sql: this.sql,
-        bindings: this.bindings
+        bindings: isUndefined(this.bindings) ? void 0 : [this.bindings]
       }
     }
     if (this._wrappedBefore) {
@@ -73,6 +73,9 @@ assign(Raw.prototype, {
     this._cached.options = reduce(this._options, assign, {})
     if(this._timeout) {
       this._cached.timeout = this._timeout;
+    }
+    if(this.client && this.client.prepBindings) {
+      this._cached.bindings = this.client.prepBindings(this._cached.bindings || [], tz);
     }
     return this._cached
   }
