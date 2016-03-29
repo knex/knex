@@ -56,7 +56,7 @@
     "prepublish": "npm run build"
   },
   "bin": {
-    "knex": "./lib/bin/cli.js"
+    "knex": "./bin/cli.js"
   },
   "repository": {
     "type": "git",
@@ -94,6 +94,7 @@
   },
   "files": [
     "README.md",
+    "bin/*",
     "src/*",
     "lib/*",
     "build/*",
