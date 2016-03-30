@@ -200,6 +200,13 @@ assign(Client.prototype, {
         } else if (connection !== void 0) {
           client.destroyRawConnection(connection, callback)
         }
+      },
+      ping: function(connection, callback) {
+        if (client.ping) {
+          client.ping(connection, callback)
+        } else {
+          process.nextTick(callback)
+        }
       }
     }
   },

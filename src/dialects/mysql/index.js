@@ -119,6 +119,15 @@ assign(Client_MySQL.prototype, {
       default:
         return response
     }
+  },
+
+  // ping method for pool to validate connection.
+  ping: function(connection, callback) {
+    try {
+      connection.ping(callback)
+    } catch (err) {
+      process.nextTick(callback.bind(null, err))
+    }
   }
 
 })

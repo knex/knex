@@ -115,6 +115,28 @@ assign(Client_MariaSQL.prototype, {
       default:
         return response;
     }
+  },
+
+  // ping method for pool to validate connection.
+  ping: function(connection, callback) {
+    if (connection.connecting) {
+      var listener = function(err) {
+        connection.removeListener('close', listener)
+        connection.removeListener('error', listener)
+        connection.removeListener('end', listener)
+        connection.removeListener('ready', listener)
+
+        callback(err)
+      }
+      connection.on('close', listener)
+      connection.on('error', listener)
+      connection.on('end', listener)
+      connection.on('ready', listener)
+    } else if (connection.connected) {
+      process.nextTick(callback)
+    } else {
+      process.nextTick(callback.bind(null, new Error('Not connected to database')))
+    }
   }
 
 })
