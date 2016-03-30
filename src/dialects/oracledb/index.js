@@ -1,21 +1,24 @@
 
 // Oracledb Client
 // -------
-var _               = require('lodash');
-var inherits        = require('inherits');
-var Client_Oracle   = require('../oracle');
-var QueryCompiler   = require('./query/compiler');
-var ColumnCompiler  = require('./schema/columncompiler');
-var Formatter       = require('./formatter');
-var BlobHelper      = require('./utils').BlobHelper;
+var _ = require('lodash');
+var inherits = require('inherits');
+var Client_Oracle = require('../oracle');
+var QueryCompiler = require('./query/compiler');
+var ColumnCompiler = require('./schema/columncompiler');
+var Formatter = require('./formatter');
+var BlobHelper = require('./utils').BlobHelper;
 var ReturningHelper = require('./utils').ReturningHelper;
-var Promise         = require('../../promise');
-var stream          = require('stream');
-var helpers         = require('../../helpers');
-var oracledb        = require('oracledb');
+var Promise = require('../../promise');
+var stream = require('stream');
+var helpers = require('../../helpers');
+var oracledb = require('oracledb');
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
+  // Node.js only have 4 background threads by default, oracledb needs one by connection
+  process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || 1;
+  process.env.UV_THREADPOOL_SIZE += this.driver.poolMax;
 }
 inherits(Client_Oracledb, Client_Oracle);
 
@@ -30,12 +33,12 @@ Client_Oracledb.prototype.ColumnCompiler = ColumnCompiler;
 Client_Oracledb.prototype.Formatter = Formatter;
 
 Client_Oracledb.prototype.prepBindings = function(bindings) {
-  return _.map(bindings, function (value) {
+  return _.map(bindings, function(value) {
     if (value instanceof BlobHelper && this.driver) {
-      return { type: this.driver.BLOB, dir: this.driver.BIND_OUT };
-    // returning helper uses always ROWID as string
+      return {type: this.driver.BLOB, dir: this.driver.BIND_OUT};
+      // returning helper uses always ROWID as string
     } else if (value instanceof ReturningHelper && this.driver) {
-      return { type: this.driver.STRING, dir: this.driver.BIND_OUT };
+      return {type: this.driver.STRING, dir: this.driver.BIND_OUT};
     } else if (typeof value === 'boolean') {
       return value ? 1 : 0;
     } else if (value === undefined) {
@@ -60,53 +63,118 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
       if (client.connectionSettings.prefetchRowCount) {
         connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount);
       }
-      connection.executeAsync = function(sql, bindParams) {
+
+      connection.state = 0;
+      connection.commitAsync = function() {
         var self = this;
-        return new Promise(function(resolve, reject) {
-          var options = {};
-          options.outFormat = client.driver.OBJECT;
-          self.execute(sql, bindParams || [], options, function(err, results) {
+        return new Promise(function(commitResolve, commitReject) {
+          if(connection.state === 1) {
+            return commitResolve();
+          }
+          self.commit(function(err) {
+            connection.state = 1;
             if (err) {
-              return reject(err);
+              return commitReject(err);
             }
-            //handle clob as string for the moment
-            if (results) {
-              var lobs = [];
-              if (results.rows) {
-                var data = results.rows;
-                if (Array.isArray(data)) {
-                  for (var i = 0, n = data.length; i < n; i++) {
-                    // Iterate through the rows
-                    var row = data[i];
-                    for (var k in row) {
-                      var val = row[k];
-                      if (val instanceof stream.Readable) {
-                        lobs.push({index: i, key: k, stream: val});
-                      }
+            commitResolve();
+          });
+        });
+      };
+      var fetchAsync = function(sql, bindParams, options, cb) {
+        options = options || {};
+        options.outFormat = client.driver.OBJECT;
+
+        if (options.resultSet) {
+          connection.execute(sql, bindParams || [], options, function(err, result) {
+            if (err) {
+              return cb(err);
+            }
+            connection.commit(function(err) {
+              connection.state = 1;
+              if (err) {
+                return cb(err);
+              }
+
+              var fetchResult = {rows: [], resultSet: result.resultSet};
+              var numRows = 100;
+              var fetchRowsFromRS = function(connection, resultSet, numRows) {
+                resultSet.getRows(numRows, function(err, rows) {
+                  if (err) {
+                    resultSet.close(function() {
+                      return cb(err);
+                    });
+                  } else if (rows.length === 0) {
+                    return cb(null, fetchResult);
+                  } else if (rows.length > 0) {
+                    if (rows.length === numRows) {
+                      fetchResult.rows = fetchResult.rows.concat(rows);
+                      fetchRowsFromRS(connection, resultSet, numRows);
+                    } else {
+                      fetchResult.rows = fetchResult.rows.concat(rows);
+                      return cb(null, fetchResult);
+                    }
+                  }
+                });
+              };
+              fetchRowsFromRS(connection, result.resultSet, numRows);
+            });
+          });
+        } else {
+          connection.execute(sql, bindParams || [], options, cb);
+        }
+      };
+      connection.executeAsync = function(sql, bindParams, options) {
+        connection.state = 0;
+        // Read all lob
+        return new Promise(function(resultResolve, resultReject) {
+          fetchAsync(sql, bindParams, options, function(err, results) {
+            if (err) {
+              return resultReject(err);
+            }
+            // Collect LOBs to read
+            var lobs = [];
+            if (results.rows) {
+              if (Array.isArray(results.rows)) {
+                for (var i = 0; i < results.rows.length; i++) {
+                  // Iterate through the rows
+                  var row = results.rows[i];
+                  for (var column in row) {
+                    if (row[column] instanceof stream.Readable) {
+                      lobs.push({index: i, key: column, stream: row[column]});
                     }
                   }
                 }
               }
-              if (lobs.length === 0) {
-                return resolve(results);
-              }
-              Promise.each(lobs, function(lob) {
-                return new Promise(function(resolve, reject) {
-                  readStream(lob.stream, function(err, d) {
-                    if (err) {
-                      return reject(err);
-                    }
-                    results.rows[lob.index][lob.key] = d;
-                    resolve(d);
-                  });
-                });
-              }).then(function() {
-                resolve(results);
-              }, reject);
-            } else {
-              return resolve(results);
             }
+            Promise.each(lobs, function(lob) {
+              return new Promise(function(lobResolve, lobReject) {
 
+                readStream(lob.stream, function(err, d) {
+                  if (err) {
+                    if (results.resultSet) {
+                      results.resultSet.close(function() {
+                        return lobReject(err);
+                      });
+                    }
+                    return lobReject(err);
+                  }
+                  results.rows[lob.index][lob.key] = d;
+                  lobResolve();
+                });
+              });
+            }).then(function() {
+              if (results.resultSet) {
+                results.resultSet.close(function(err) {
+                  if (err) {
+                    return resultReject(err);
+                  }
+                  return resultResolve(results);
+                });
+              }
+              resultResolve(results);
+            }, function(err) {
+              resultReject(err);
+            });
           });
         });
       };
@@ -126,29 +194,66 @@ Client_Oracledb.prototype.destroyRawConnection = function(connection, cb) {
 Client_Oracledb.prototype._query = function(connection, obj) {
   // convert ? params into positional bindings (:1)
   obj.sql = this.positionBindings(obj.sql);
-  var bindings = obj.bindings;
-  obj.bindings = this.prepBindings(bindings) || [];
-  if (!obj.sql) throw new Error('The query is empty');
+  // var bindings = obj.bindings;
+  obj.bindings = this.prepBindings(obj.bindings) || [];
+
   return new Promise(function(resolver, rejecter) {
-    connection.executeAsync(obj.sql, obj.bindings).then(function(response) {
+    if (!obj.sql) {
+      return resolver();
+    }
+    var options = {autoCommit: false};
+    if (obj.method === 'select') {
+      options.resultSet = true;
+    }
+    connection.executeAsync(obj.sql, obj.bindings, options).then(function(response) {
       // flatten outBinds
       var outBinds = _.flatten(response.outBinds);
       obj.response = response.rows || [];
       obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
+      if (obj.method === 'update') {
+        var modifiedRowsCount = obj.rowsAffected.length || obj.rowsAffected;
+        var updatedObjOutBinding = [];
+        var updatedOutBinds = [];
+        var returningSqlIn = ' where ROWID in (';
+        var returningSqlOrderBy = ') order by case ROWID ';
 
-      if(!obj.returning) {
+        for (var i = 0; i < modifiedRowsCount; i++) {
+          if (obj.returning[0] === '*') {
+            returningSqlIn += ':' + (i + 1) + ', ';
+            returningSqlOrderBy += 'when CHARTOROWID(:' + (i + 1) + ') then ' + i + ' ';
+          }
+
+          updatedObjOutBinding.push(obj.outBinding[0]);
+          var offset = 0;
+          _.each(obj.outBinding[0], function(value, index) {
+            offset = index * modifiedRowsCount;
+            updatedOutBinds.push(outBinds[i + offset]);
+          });
+
+        }
+        outBinds = updatedOutBinds;
+        obj.outBinding = updatedObjOutBinding;
+        if (obj.returning[0] === '*') {
+          obj.returning = obj.returning.slice(0, -1);
+          returningSqlIn = returningSqlIn.slice(0, -2);
+          returningSqlOrderBy = returningSqlOrderBy.slice(0, -1);
+          obj.returningSql += returningSqlIn + returningSqlOrderBy + ' end';
+        }
+      }
+
+      if (!obj.returning && outBinds.length === 0) {
         return resolver(obj);
       }
       var rowIds = [];
       var offset = 0;
       Promise.each(obj.outBinding, function(ret, line) {
-        offset = offset + (obj.outBinding[line-1] ? obj.outBinding[line-1].length : 0);
         obj.response[line] = {};
+        offset = offset + (obj.outBinding[line - 1] ? obj.outBinding[line - 1].length : 0);
         return Promise.each(ret, function(out, index) {
           return new Promise(function(bindResolver, bindRejecter) {
             if (out instanceof BlobHelper) {
               var blob = outBinds[index + offset];
-              if(out.returning) {
+              if (out.returning) {
                 obj.response[line][out.columnName] = out.value;
               }
               blob.on('error', function(err) {
@@ -168,17 +273,22 @@ Client_Oracledb.prototype._query = function(connection, obj) {
             }
           });
         });
-      }).then(function() { // Promise.all(binds)
-        connection.commit(function() {
-          if (!rowIds.length) {
-            return resolver(obj);
+      })
+        .then(function() {
+          return connection.commitAsync();
+        }).then(function() {
+          if (obj.returningSql) {
+            return connection.executeAsync(obj.returningSql, rowIds, {resultSet: true})
+              .then(function(response) {
+                obj.response = response.rows;
+                return obj;
+              }, rejecter);
           }
-          connection.executeAsync(obj.returningSql, rowIds).then(function(response) {
-            obj.response = response.rows;
-            resolver(obj);
-          }, rejecter);
+          return obj;
+        }, rejecter)
+        .then(function(obj) {
+          resolver(obj);
         });
-      }, rejecter);
     });
   });
 };
