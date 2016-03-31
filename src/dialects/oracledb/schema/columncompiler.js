@@ -1,6 +1,7 @@
 var inherits              = require('inherits');
-var assign                = require('lodash/object/assign');
 var ColumnCompiler_Oracle = require('../../oracle/schema/columncompiler');
+
+import {assign} from 'lodash';
 
 function ColumnCompiler_Oracledb() {
   ColumnCompiler_Oracle.apply(this, arguments);

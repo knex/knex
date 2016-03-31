@@ -3,9 +3,9 @@
 // Used for designating column definitions
 // during the table "create" / "alter" statements.
 // -------
-var _       = require('lodash');
 var Raw     = require('../raw');
 var helpers = require('./helpers')
+import {groupBy, first, tail, has, isObject} from 'lodash'
 
 function ColumnCompiler(client, tableCompiler, columnBuilder) {
   this.client        = client
@@ -13,7 +13,7 @@ function ColumnCompiler(client, tableCompiler, columnBuilder) {
   this.columnBuilder = columnBuilder
   this.args          = columnBuilder._args;
   this.type          = columnBuilder._type.toLowerCase();
-  this.grouped       = _.groupBy(columnBuilder._statements, 'grouping');
+  this.grouped       = groupBy(columnBuilder._statements, 'grouping');
   this.modified      = columnBuilder._modifiers;
   this.isIncrements  = (this.type.indexOf('increments') !== -1);
   this.formatter     = client.formatter();
@@ -42,7 +42,7 @@ ColumnCompiler.prototype.compileColumn = function() {
 
 // Assumes the autoincrementing key is named `id` if not otherwise specified.
 ColumnCompiler.prototype.getColumnName = function() {
-  var value = _.first(this.args);
+  var value = first(this.args);
   if (value) return value;
   if (this.isIncrements) {
     return 'id';
@@ -53,7 +53,7 @@ ColumnCompiler.prototype.getColumnName = function() {
 
 ColumnCompiler.prototype.getColumnType = function() {
   var type = this[this.type];
-  return typeof type === 'function' ? type.apply(this, _.rest(this.args)) : type;
+  return typeof type === 'function' ? type.apply(this, tail(this.args)) : type;
 };
 
 ColumnCompiler.prototype.getModifiers = function() {
@@ -61,7 +61,7 @@ ColumnCompiler.prototype.getModifiers = function() {
   if (this.type.indexOf('increments') === -1) {
     for (var i = 0, l = this.modifiers.length; i < l; i++) {
       var modifier = this.modifiers[i];
-      if (_.has(this.modified, modifier)) {
+      if (has(this.modified, modifier)) {
         var val = this[modifier].apply(this, this.modified[modifier]);
         if (val) modifiers.push(val);
       }
@@ -75,8 +75,8 @@ ColumnCompiler.prototype.getModifiers = function() {
 
 ColumnCompiler.prototype.increments    = 'integer not null primary key autoincrement';
 ColumnCompiler.prototype.bigincrements = 'integer not null primary key autoincrement';
-ColumnCompiler.prototype.integer       = 
-ColumnCompiler.prototype.smallint      = 
+ColumnCompiler.prototype.integer       =
+ColumnCompiler.prototype.smallint      =
 ColumnCompiler.prototype.mediumint     = 'integer';
 ColumnCompiler.prototype.biginteger    = 'bigint';
 ColumnCompiler.prototype.varchar       = function(length) {
@@ -125,7 +125,7 @@ ColumnCompiler.prototype.defaultTo = function(value) {
   } else if (this.type === 'bool') {
     if (value === 'false') value = 0;
     value = "'" + (value ? 1 : 0) + "'";
-  } else if (this.type === 'json' && _.isObject(value)) {
+  } else if (this.type === 'json' && isObject(value)) {
     return JSON.stringify(value);
   } else {
     value = "'" + value + "'";

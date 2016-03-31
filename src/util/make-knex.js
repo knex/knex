@@ -1,12 +1,13 @@
 
 var EventEmitter   = require('events').EventEmitter
-var assign         = require('lodash/object/assign');
 
 var Migrator       = require('../migrate')
 var Seeder         = require('../seed')
 var FunctionHelper = require('../functionhelper')
 var QueryInterface = require('../query/methods')
 var helpers        = require('../helpers')
+var Promise        = require('../promise')
+import {assign, isNumber, chunk} from 'lodash'
 
 module.exports = function makeKnex(client) {
 
@@ -23,13 +24,30 @@ module.exports = function makeKnex(client) {
 
     Promise: require('../promise'),
 
-    // A new query builder instance
+    // A new query builder instance.
     queryBuilder: function() {
       return client.queryBuilder()
     },
 
     raw: function() {
       return client.raw.apply(client, arguments)
+    },
+
+    batchInsert: function(table, batch, chunkSize = 1000) {
+      if (!isNumber(chunkSize) || chunkSize < 1) {
+        throw new TypeError("Invalid chunkSize: " + chunkSize);
+      }
+
+      return this.transaction((tr) => {
+          // Avoid unnecessary call.
+          if(chunkSize !== 1) {
+            batch = chunk(batch, chunkSize)
+          }
+
+          return Promise.all(batch.map((items) => {
+            return tr(table).insert(items)
+          }));
+        })
     },
 
     // Runs a new transaction, taking a container and returning a promise
@@ -52,7 +70,7 @@ module.exports = function makeKnex(client) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.9.0'
+  knex.VERSION = knex.__knex__  = '0.10.0'
 
   // Hook up the "knex" object as an EventEmitter.
   var ee = new EventEmitter()
@@ -106,6 +124,14 @@ module.exports = function makeKnex(client) {
 
   client.on('query', function(obj) {
     knex.emit('query', obj)
+  })
+
+  client.on('query-error', function(err, obj) {
+    knex.emit('query-error', err, obj)
+  })
+
+  client.on('query-response', function(response, obj, builder) {
+    knex.emit('query-response', response, obj, builder)
   })
 
   client.makeKnex = function(client) {

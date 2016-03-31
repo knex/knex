@@ -3,7 +3,8 @@
 // -------
 var inherits       = require('inherits');
 var SchemaCompiler = require('../../../schema/compiler');
-var assign         = require('lodash/object/assign');
+
+import {assign} from 'lodash'
 
 function SchemaCompiler_MySQL(client, builder) {
   SchemaCompiler.call(this, client, builder)

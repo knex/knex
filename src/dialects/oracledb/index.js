@@ -12,19 +12,21 @@ var ReturningHelper = require('./utils').ReturningHelper;
 var Promise = require('../../promise');
 var stream = require('stream');
 var helpers = require('../../helpers');
-var oracledb = require('oracledb');
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
   // Node.js only have 4 background threads by default, oracledb needs one by connection
-  process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || 1;
-  process.env.UV_THREADPOOL_SIZE += this.driver.poolMax;
+  if (this.driver) {
+    process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || 1;
+    process.env.UV_THREADPOOL_SIZE += this.driver.poolMax;
+  }
 }
 inherits(Client_Oracledb, Client_Oracle);
 
 Client_Oracledb.prototype.driverName = 'oracledb';
 
 Client_Oracledb.prototype._driver = function() {
+  var oracledb = require('oracledb');
   return oracledb;
 };
 
@@ -216,6 +218,10 @@ Client_Oracledb.prototype._query = function(connection, obj) {
         var updatedOutBinds = [];
         var returningSqlIn = ' where ROWID in (';
         var returningSqlOrderBy = ') order by case ROWID ';
+        var updateOutBinds = function(value, index) {
+          OutBindsOffset = index * modifiedRowsCount;
+          updatedOutBinds.push(outBinds[i + OutBindsOffset]);
+        };
 
         for (var i = 0; i < modifiedRowsCount; i++) {
           if (obj.returning[0] === '*') {
@@ -224,11 +230,8 @@ Client_Oracledb.prototype._query = function(connection, obj) {
           }
 
           updatedObjOutBinding.push(obj.outBinding[0]);
-          var offset = 0;
-          _.each(obj.outBinding[0], function(value, index) {
-            offset = index * modifiedRowsCount;
-            updatedOutBinds.push(outBinds[i + offset]);
-          });
+          var OutBindsOffset = 0;
+          _.each(obj.outBinding[0], updateOutBinds);
 
         }
         outBinds = updatedOutBinds;
@@ -295,6 +298,7 @@ Client_Oracledb.prototype._query = function(connection, obj) {
 
 //handle clob
 function readStream(stream, cb) {
+  var oracledb = require('oracledb');
   var data = '';
 
   if (stream.iLob.type === oracledb.CLOB) {

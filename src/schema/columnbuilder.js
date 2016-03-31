@@ -1,5 +1,5 @@
 
-var _ = require('lodash');
+import {extend, each, toArray} from 'lodash'
 
 // The chainable interface off the original "column" method.
 function ColumnBuilder(client, tableBuilder, type, args) {
@@ -14,7 +14,7 @@ function ColumnBuilder(client, tableBuilder, type, args) {
   // If we're altering the table, extend the object
   // with the available "alter" methods.
   if (tableBuilder._method === 'alter') {
-    _.extend(this, AlterMethods);
+    extend(this, AlterMethods);
   }
 }
 
@@ -22,27 +22,27 @@ function ColumnBuilder(client, tableBuilder, type, args) {
 var modifiers = [
   'default', 'defaultsTo', 'defaultTo', 'unsigned',
   'nullable', 'notNull', 'notNullable',
-  'first', 'after', 'comment'
+  'first', 'after', 'comment', 'collate'
 ];
 
 // If we call any of the modifiers (index or otherwise) on the chainable, we pretend
 // as though we're calling `table.method(column)` directly.
-_.each(modifiers, function(method) {
+each(modifiers, function(method) {
   ColumnBuilder.prototype[method] = function() {
     if (aliasMethod[method]) {
       method = aliasMethod[method];
     }
     if (method === 'notNullable') return this.nullable(false);
-    this._modifiers[method] = _.toArray(arguments);
+    this._modifiers[method] = toArray(arguments);
     return this;
   };
 });
 
-_.each(['index', 'primary', 'unique'], function(method) {
+each(['index', 'primary', 'unique'], function(method) {
   ColumnBuilder.prototype[method] = function() {
     if (this._type.toLowerCase().indexOf('increments') === -1) {
       this._tableBuilder[method].apply(this._tableBuilder,
-        [this._args[0]].concat(_.toArray(arguments)));
+        [this._args[0]].concat(toArray(arguments)));
     }
     return this;
   };

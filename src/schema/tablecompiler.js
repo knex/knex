@@ -1,9 +1,9 @@
 
 // Table Compiler
 // -------
-var _ = require('lodash');
 var helpers = require('./helpers');
 var normalizeArr = require('../helpers').normalizeArr
+import {groupBy, reduce, map, first, tail, isEmpty, indexOf, isArray} from 'lodash'
 
 function TableCompiler(client, tableBuilder) {
   this.client = client
@@ -11,7 +11,7 @@ function TableCompiler(client, tableBuilder) {
   this.schemaNameRaw = tableBuilder._schemaName;
   this.tableNameRaw = tableBuilder._tableName;
   this.single = tableBuilder._single;
-  this.grouped = _.groupBy(tableBuilder._statements, 'grouping');
+  this.grouped = groupBy(tableBuilder._statements, 'grouping');
   this.formatter = client.formatter();
   this.sequence = [];
   this._formatting = client.config && client.config.formatting
@@ -84,7 +84,7 @@ TableCompiler.prototype.foreign = function (foreignData) {
 
 // Get all of the column sql & bindings individually for building the table queries.
 TableCompiler.prototype.getColumnTypes = function (columns) {
-  return _.reduce(_.map(columns, _.first), function (memo, column) {
+  return reduce(map(columns, first), function (memo, column) {
     memo.sql.push(column.sql);
     memo.bindings.concat(column.bindings);
     return memo;
@@ -93,8 +93,8 @@ TableCompiler.prototype.getColumnTypes = function (columns) {
 
 // Adds all of the additional queries from the "column"
 TableCompiler.prototype.columnQueries = function (columns) {
-  var queries = _.reduce(_.map(columns, _.rest), function (memo, column) {
-    if (!_.isEmpty(column)) return memo.concat(column);
+  var queries = reduce(map(columns, tail), function (memo, column) {
+    if (!isEmpty(column)) return memo.concat(column);
     return memo;
   }, []);
   for (var i = 0, l = queries.length; i < l; i++) {
@@ -108,9 +108,9 @@ TableCompiler.prototype.addColumnsPrefix = 'add column ';
 // All of the columns to "add" for the query
 TableCompiler.prototype.addColumns = function (columns) {
   if (columns.sql.length > 0) {
-    var columnSql = _.map(columns.sql, function (column) {
+    var columnSql = map(columns.sql, (column) => {
       return this.addColumnsPrefix + column;
-    }, this);
+    });
     this.pushQuery({
       sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + columnSql.join(', '),
       bindings: columns.bindings
@@ -158,7 +158,7 @@ TableCompiler.prototype.alterTableForCreate = function (columnTypes) {
   this.grouped.alterTable = [];
   for (var i = 0, l = alterTable.length; i < l; i++) {
     var statement = alterTable[i];
-    if (_.indexOf(this.createAlterTableMethods, statement.method) < 0) {
+    if (indexOf(this.createAlterTableMethods, statement.method) < 0) {
       this.grouped.alterTable.push(statement);
       continue;
     }
@@ -189,9 +189,9 @@ TableCompiler.prototype.dropForeign = function () {
 TableCompiler.prototype.dropColumnPrefix = 'drop column ';
 TableCompiler.prototype.dropColumn = function () {
   var columns = normalizeArr.apply(null, arguments);
-  var drops = _.map(_.isArray(columns) ? columns : [columns], function (column) {
+  var drops = map(isArray(columns) ? columns : [columns], (column) => {
     return this.dropColumnPrefix + this.formatter.wrap(column);
-  }, this);
+  });
   this.pushQuery((this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + drops.join(', '));
 };
 
@@ -199,9 +199,10 @@ TableCompiler.prototype.dropColumn = function () {
 // convention of the table name, followed by the columns, followed by an
 // index type, such as primary or index, which makes the index unique.
 TableCompiler.prototype._indexCommand = function (type, tableName, columns) {
-  if (!_.isArray(columns)) columns = columns ? [columns] : [];
+  if (!isArray(columns)) columns = columns ? [columns] : [];
   var table = tableName.replace(/\.|-/g, '_');
-  return (table + '_' + columns.join('_') + '_' + type).toLowerCase();
+  var indexName = (table + '_' + columns.join('_') + '_' + type).toLowerCase();
+  return this.formatter.wrap(indexName);
 };
 
 module.exports = TableCompiler;

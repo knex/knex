@@ -1,7 +1,8 @@
 var inherits = require('inherits');
-var assign = require('lodash/object/assign');
 var Oracle_Formatter = require('../oracle/formatter');
 var BlobHelper = require('./utils').BlobHelper;
+
+import {assign} from 'lodash';
 
 function Oracledb_Formatter(client) {
   Oracle_Formatter.call(this, client);

@@ -1,6 +1,5 @@
 var _ = require('lodash');
 var inherits = require('inherits');
-var assign = require('lodash/object/assign');
 var Oracle_Compiler = require('../../oracle/query/compiler');
 var ReturningHelper = require('../utils').ReturningHelper;
 var BlobHelper = require('../utils').BlobHelper;
@@ -10,7 +9,7 @@ function Oracledb_Compiler(client, builder) {
 }
 inherits(Oracledb_Compiler, Oracle_Compiler);
 
-assign(Oracledb_Compiler.prototype, {
+_.assign(Oracledb_Compiler.prototype, {
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
   insert: function() {
@@ -44,14 +43,14 @@ assign(Oracledb_Compiler.prototype, {
     sql.returning = returning;
     sql.sql = 'begin ' +
       _.map(insertData.values, function(value, index) {
-        var parameterizedValues = !insertDefaultsOnly ? this.formatter.parameterize(value) : '';
-        var subSql = 'insert into ' + this.tableName;
+        var parameterizedValues = !insertDefaultsOnly ? self.formatter.parameterize(value) : '';
+        var subSql = 'insert into ' + self.tableName;
 
         if (insertDefaultsOnly) {
           // no columns given so only the default value
-          subSql += ' (' + this.formatter.wrap(this.single.returning) + ') values (default)';
+          subSql += ' (' + self.formatter.wrap(self.single.returning) + ') values (default)';
         } else {
-          subSql += ' (' + this.formatter.columnize(insertData.columns) + ') values (' + parameterizedValues + ')';
+          subSql += ' (' + self.formatter.columnize(insertData.columns) + ') values (' + parameterizedValues + ')';
         }
 
         var returningClause = '';
@@ -91,11 +90,11 @@ assign(Oracledb_Compiler.prototype, {
 
         // pre bind position because subSql is an execute immediate parameter
         // later position binding will only convert the ? params
-        subSql = this.formatter.client.positionBindings(subSql);
+        subSql = self.formatter.client.positionBindings(subSql);
         return 'execute immediate \'' + subSql.replace(/'/g, "''") +
           ((parameterizedValues || value) ? '\' using' : '') + usingClause +
           ((parameterizedValues && outClause) ? ',' : '') + outClause + ';';
-      }, this).join(' ') + 'end;';
+      }, self).join(' ') + 'end;';
 
     sql.outBinding = outBinding;
     if (returning[0] === '*') {

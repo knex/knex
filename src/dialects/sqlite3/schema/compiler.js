@@ -1,9 +1,10 @@
 
 // SQLite3: Column Builder & Compiler
 // -------
-var _        = require('lodash');
 var inherits = require('inherits');
 var SchemaCompiler   = require('../../../schema/compiler');
+
+import {some} from 'lodash'
 
 // Schema Compiler
 // -------
@@ -28,7 +29,7 @@ SchemaCompiler_SQLite3.prototype.hasColumn = function(tableName, column) {
   this.pushQuery({
     sql: 'PRAGMA table_info(' + this.formatter.wrap(tableName) + ')',
     output: function(resp) {
-      return _.some(resp, {name: column});
+      return some(resp, {name: column});
     }
   });
 };

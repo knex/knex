@@ -9,11 +9,11 @@ test('it should parse the connection string', function(t) {
     client: 'mysql',
     connection: "mysql://user:password@example.com/dbname"
   })
-  t.deepEqual(knexObj.client.config.connection, { 
-    database: 'dbname', 
-    host: 'example.com', 
-    password: 'password', 
-    user: 'user' 
+  t.deepEqual(knexObj.client.config.connection, {
+    database: 'dbname',
+    host: 'example.com',
+    password: 'password',
+    user: 'user'
   })
   knexObj.destroy()
 })

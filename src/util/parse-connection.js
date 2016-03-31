@@ -14,7 +14,7 @@ export default function parseConnectionString(str) {
       connection: {
         filename: str
       }
-    }  
+    }
   }
   if (protocol.slice(-1) === ':') {
     protocol = protocol.slice(0, -1);
@@ -22,7 +22,7 @@ export default function parseConnectionString(str) {
   return {
     client: protocol,
     connection: protocol === 'postgres' ? parsePG(str) : connectionObject(parsed)
-  }  
+  }
 }
 
 function connectionObject(parsed) {

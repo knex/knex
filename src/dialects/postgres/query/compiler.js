@@ -1,11 +1,11 @@
 
 // PostgreSQL Query Builder & Compiler
 // ------
-var _        = require('lodash');
 var inherits = require('inherits');
 
 var QueryCompiler = require('../../../query/compiler');
-var assign        = require('lodash/object/assign');
+
+import {assign, reduce} from 'lodash'
 
 function QueryCompiler_PG(client, builder) {
   QueryCompiler.call(this, client, builder);
@@ -87,7 +87,7 @@ assign(QueryCompiler_PG.prototype, {
       sql: sql,
       bindings: bindings,
       output: function(resp) {
-        var out = _.reduce(resp.rows, function(columns, val) {
+        var out = reduce(resp.rows, function(columns, val) {
           columns[val.column_name] = {
             type: val.data_type,
             maxLength: val.character_maximum_length,
