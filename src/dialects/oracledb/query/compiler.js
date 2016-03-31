@@ -137,12 +137,14 @@ _.assign(Oracledb_Compiler.prototype, {
       }
       self.formatter.bindings.push(new ReturningHelper(columnName));
     });
+    res.sql = sql;
 
     // strip last comma
     returningClause = returningClause.slice(0, -1);
     intoClause = intoClause.slice(0, -1);
-
-    res.sql = sql + ' returning ' + returningClause + ' into ' + intoClause;
+    if (returningClause && intoClause) {
+      res.sql += ' returning ' + returningClause + ' into ' + intoClause;
+    }
     res.outBinding = [outBinding];
     if(returning[0] === '*') {
       res.returningSql = 'select * from ' + this.tableName + ' where ROWID = :1';
