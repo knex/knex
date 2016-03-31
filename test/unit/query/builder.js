@@ -37,6 +37,7 @@ var valuesForUndefined = {
   oracle: clients.oracle.valueForUndefined,
   postgres: clients.postgres.valueForUndefined,
   mssql: clients.mssql.valueForUndefined,
+  oracledb: clients.oracledb.valueForUndefined,
   default: clients.default.valueForUndefined
 };
 
@@ -2036,7 +2037,7 @@ describe("QueryBuilder", function() {
       },
       oracledb: {
         sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
-        bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
+        bindings: [1, valuesForUndefined.oracledb, valuesForUndefined.oracledb, valuesForUndefined.oracledb, 2, valuesForUndefined.oracledb, 2, valuesForUndefined.oracledb, 3]
       },
       default: {
         sql: 'insert into "table" ("a", "b", "c") values (?, ?, ?), (?, ?, ?), (?, ?, ?)',

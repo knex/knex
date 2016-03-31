@@ -94,7 +94,7 @@ _.assign(Oracledb_Compiler.prototype, {
         return 'execute immediate \'' + subSql.replace(/'/g, "''") +
           ((parameterizedValues || value) ? '\' using' : '') + usingClause +
           ((parameterizedValues && outClause) ? ',' : '') + outClause + ';';
-      }, self).join(' ') + 'end;';
+      }).join(' ') + 'end;';
 
     sql.outBinding = outBinding;
     if (returning[0] === '*') {

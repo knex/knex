@@ -4923,19 +4923,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Promise = __webpack_require__(9);
 	var stream = __webpack_require__(94);
 	var helpers = __webpack_require__(3);
-	var oracledb = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"oracledb\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 
 	function Client_Oracledb() {
 	  Client_Oracle.apply(this, arguments);
 	  // Node.js only have 4 background threads by default, oracledb needs one by connection
-	  process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || 1;
-	  process.env.UV_THREADPOOL_SIZE += this.driver.poolMax;
+	  if (this.driver) {
+	    process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || 1;
+	    process.env.UV_THREADPOOL_SIZE += this.driver.poolMax;
+	  }
 	}
 	inherits(Client_Oracledb, Client_Oracle);
 
 	Client_Oracledb.prototype.driverName = 'oracledb';
 
 	Client_Oracledb.prototype._driver = function () {
+	  var oracledb = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"oracledb\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 	  return oracledb;
 	};
 
@@ -5126,6 +5128,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var updatedOutBinds = [];
 	        var returningSqlIn = ' where ROWID in (';
 	        var returningSqlOrderBy = ') order by case ROWID ';
+	        var updateOutBinds = function updateOutBinds(value, index) {
+	          OutBindsOffset = index * modifiedRowsCount;
+	          updatedOutBinds.push(outBinds[i + OutBindsOffset]);
+	        };
 
 	        for (var i = 0; i < modifiedRowsCount; i++) {
 	          if (obj.returning[0] === '*') {
@@ -5134,11 +5140,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 
 	          updatedObjOutBinding.push(obj.outBinding[0]);
-	          var offset = 0;
-	          _.each(obj.outBinding[0], function (value, index) {
-	            offset = index * modifiedRowsCount;
-	            updatedOutBinds.push(outBinds[i + offset]);
-	          });
+	          var OutBindsOffset = 0;
+	          _.each(obj.outBinding[0], updateOutBinds);
 	        }
 	        outBinds = updatedOutBinds;
 	        obj.outBinding = updatedObjOutBinding;
@@ -5201,6 +5204,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	//handle clob
 	function readStream(stream, cb) {
+	  var oracledb = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"oracledb\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 	  var data = '';
 
 	  if (stream.iLob.type === oracledb.CLOB) {
@@ -6729,10 +6733,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 	var escapeStringRegexp = __webpack_require__(98);
-	var ansiStyles = __webpack_require__(99);
-	var stripAnsi = __webpack_require__(100);
-	var hasAnsi = __webpack_require__(102);
-	var supportsColor = __webpack_require__(101);
+	var ansiStyles = __webpack_require__(100);
+	var stripAnsi = __webpack_require__(99);
+	var hasAnsi = __webpack_require__(101);
+	var supportsColor = __webpack_require__(102);
 	var defineProps = Object.defineProperties;
 	var isSimpleWindowsTerm = process.platform === 'win32' && !/^xterm/i.test(process.env.TERM);
 
@@ -9284,7 +9288,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _ = __webpack_require__(1);
 	var inherits = __webpack_require__(52);
-	var assign = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"lodash/object/assign\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 	var Oracle_Compiler = __webpack_require__(71);
 	var ReturningHelper = __webpack_require__(81).ReturningHelper;
 	var BlobHelper = __webpack_require__(81).BlobHelper;
@@ -9294,7 +9297,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	inherits(Oracledb_Compiler, Oracle_Compiler);
 
-	assign(Oracledb_Compiler.prototype, {
+	_.assign(Oracledb_Compiler.prototype, {
 	  // Compiles an "insert" query, allowing for multiple
 	  // inserts using a single query statement.
 	  insert: function insert() {
@@ -9327,14 +9330,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var insertDefaultsOnly = insertData.columns.length === 0;
 	    sql.returning = returning;
 	    sql.sql = 'begin ' + _.map(insertData.values, function (value, index) {
-	      var parameterizedValues = !insertDefaultsOnly ? this.formatter.parameterize(value) : '';
-	      var subSql = 'insert into ' + this.tableName;
+	      var parameterizedValues = !insertDefaultsOnly ? self.formatter.parameterize(value) : '';
+	      var subSql = 'insert into ' + self.tableName;
 
 	      if (insertDefaultsOnly) {
 	        // no columns given so only the default value
-	        subSql += ' (' + this.formatter.wrap(this.single.returning) + ') values (default)';
+	        subSql += ' (' + self.formatter.wrap(self.single.returning) + ') values (default)';
 	      } else {
-	        subSql += ' (' + this.formatter.columnize(insertData.columns) + ') values (' + parameterizedValues + ')';
+	        subSql += ' (' + self.formatter.columnize(insertData.columns) + ') values (' + parameterizedValues + ')';
 	      }
 
 	      var returningClause = '';
@@ -9374,9 +9377,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      // pre bind position because subSql is an execute immediate parameter
 	      // later position binding will only convert the ? params
-	      subSql = this.formatter.client.positionBindings(subSql);
+	      subSql = self.formatter.client.positionBindings(subSql);
 	      return 'execute immediate \'' + subSql.replace(/'/g, "''") + (parameterizedValues || value ? '\' using' : '') + usingClause + (parameterizedValues && outClause ? ',' : '') + outClause + ';';
-	    }, this).join(' ') + 'end;';
+	    }, self).join(' ') + 'end;';
 
 	    sql.outBinding = outBinding;
 	    if (returning[0] === '*') {
@@ -9526,8 +9529,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
+	var _lodash = __webpack_require__(1);
+
 	var inherits = __webpack_require__(52);
-	var assign = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"lodash/object/assign\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 	var ColumnCompiler_Oracle = __webpack_require__(74);
 
 	function ColumnCompiler_Oracledb() {
@@ -9536,7 +9540,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	inherits(ColumnCompiler_Oracledb, ColumnCompiler_Oracle);
 
-	assign(ColumnCompiler_Oracledb.prototype, {
+	(0, _lodash.assign)(ColumnCompiler_Oracledb.prototype, {
 
 	  time: 'timestamp with local time zone',
 
@@ -9558,8 +9562,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
+	var _lodash = __webpack_require__(1);
+
 	var inherits = __webpack_require__(52);
-	var assign = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"lodash/object/assign\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 	var Oracle_Formatter = __webpack_require__(69);
 	var BlobHelper = __webpack_require__(81).BlobHelper;
 
@@ -9568,7 +9573,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	inherits(Oracledb_Formatter, Oracle_Formatter);
 
-	assign(Oracledb_Formatter.prototype, {
+	(0, _lodash.assign)(Oracledb_Formatter.prototype, {
 
 	  // Checks whether a value is a function... if it is, we compile it
 	  // otherwise we check whether it's a raw
@@ -12944,6 +12949,18 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+	var ansiRegex = __webpack_require__(126)();
+
+	module.exports = function (str) {
+		return typeof str === 'string' ? str.replace(ansiRegex, '') : str;
+	};
+
+
+/***/ },
+/* 100 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
 
 	function assembleStyles () {
@@ -13010,22 +13027,20 @@ return /******/ (function(modules) { // webpackBootstrap
 		get: assembleStyles
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(126)(module)))
-
-/***/ },
-/* 100 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	var ansiRegex = __webpack_require__(127)();
-
-	module.exports = function (str) {
-		return typeof str === 'string' ? str.replace(ansiRegex, '') : str;
-	};
-
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(127)(module)))
 
 /***/ },
 /* 101 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var ansiRegex = __webpack_require__(128);
+	var re = new RegExp(ansiRegex().source); // remove the `g` flag
+	module.exports = re.test.bind(re);
+
+
+/***/ },
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -13080,16 +13095,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
-
-/***/ },
-/* 102 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	var ansiRegex = __webpack_require__(128);
-	var re = new RegExp(ansiRegex().source); // remove the `g` flag
-	module.exports = re.test.bind(re);
-
 
 /***/ },
 /* 103 */
@@ -13624,7 +13629,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	}(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(126)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(127)(module), (function() { return this; }())))
 
 /***/ },
 /* 104 */
@@ -16778,6 +16783,16 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 126 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+	module.exports = function () {
+		return /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+	};
+
+
+/***/ },
+/* 127 */
+/***/ function(module, exports, __webpack_require__) {
+
 	module.exports = function(module) {
 		if(!module.webpackPolyfill) {
 			module.deprecate = function() {};
@@ -16788,16 +16803,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return module;
 	}
-
-
-/***/ },
-/* 127 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	module.exports = function () {
-		return /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
-	};
 
 
 /***/ },
