@@ -77,8 +77,17 @@ assign(TableCompiler_MySQL.prototype, {
               if (!refs.length) { return; }
               return compiler.dropFKRefs(runner, refs);
             }).then(function () {
+              let sql = `alter table ${table} change ${wrapped} ${column.Type}`;
+
+              if(String(column.Null).toUpperCase() !== 'YES') {
+                sql += ` NOT NULL`
+              }
+              if(column.Default !== void 0 && column.Default !== null) {
+                sql += ` DEFAULT '${column.Default}'`
+              }
+
               return runner.query({
-                sql: 'alter table ' + table + ' change ' + wrapped + ' ' + column.Type
+                sql: sql
               });
             }).then(function () {
               if (!refs.length) { return; }

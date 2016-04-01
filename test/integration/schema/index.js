@@ -438,6 +438,33 @@ module.exports = function(knex) {
           tbl.renameColumn('id', 'id_new');
         });
       });
+
+      it('#933 - .renameColumn should not drop null or default value', function() {
+        return knex.transaction(function (tr) {
+          var getColInfo = function() { return tr('renameColTest').columnInfo()};
+          return tr.schema.dropTableIfExists('renameColTest')
+            .createTable('renameColTest', function (table) {
+              table.integer('colnameint').defaultTo(1);
+              table.string('colnamestring').defaultTo('knex').notNullable();
+            })
+            .then(getColInfo)
+            .then(function (colInfo) {
+              expect(String(colInfo.colnameint.defaultValue)).to.contain('1');
+              expect(colInfo.colnamestring.defaultValue).to.contain('knex'); //Using contain because of different response per dialect. IE mysql 'knex', postgres 'knex::character varying'
+              expect(colInfo.colnamestring.nullable).to.equal(false);
+              return tr.schema.table('renameColTest', function (table) {
+                table.renameColumn('colnameint', 'colnameintchanged');
+                table.renameColumn('colnamestring', 'colnamestringchanged');
+              })
+            })
+            .then(getColInfo)
+            .then(function (columnInfo) {
+              expect(String(columnInfo.colnameintchanged.defaultValue)).to.contain('1');
+              expect(columnInfo.colnamestringchanged.defaultValue).to.contain('knex');
+              expect(columnInfo.colnamestringchanged.nullable).to.equal(false);
+            });
+        });
+      });
     });
 
   });
