@@ -107,6 +107,11 @@ TableCompiler_SQLite3.prototype.renameColumn = function(from, to) {
   });
 };
 
+
+TableCompiler_SQLite3.prototype.setNullable = function() {
+  throw new Error('.setNullable is not supported for SQLite.');
+};
+
 TableCompiler_SQLite3.prototype.dropColumn = function(column) {
   var compiler = this;
   this.pushQuery({

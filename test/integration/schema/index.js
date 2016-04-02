@@ -467,5 +467,44 @@ module.exports = function(knex) {
       });
     });
 
+    if(knex.client.dialect !== 'sqlite3') {
+      //Not supported by sqlite3
+      describe('setNullable', function() {
+
+
+        it('setNullable true & false', function() {
+          var tableName = 'setNullableTest';
+          var columnName = 'colname';
+          var getColInfo = function() { return knex(tableName).columnInfo(columnName); };
+
+          return knex.schema.dropTableIfExists(tableName)
+            .createTable(tableName, function(table) {
+              table.string(columnName).notNullable();
+            })
+            .then(getColInfo)
+            .then(function(columnInfo) {
+              expect(columnInfo.nullable).to.equal(false);
+              return knex.schema.table(tableName, function(table) {
+                table.setNullable(columnName, true);
+              });
+            })
+            .then(function() {
+              return getColInfo();
+            })
+            .then(function(columnInfo) {
+              expect(columnInfo.nullable).to.equal(true);
+              return knex.schema.table(tableName, function(table) {
+                table.setNullable(columnName, false);
+              });
+            })
+            .then(getColInfo)
+            .then(function(columnInfo) {
+              expect(columnInfo.nullable).to.equal(false);
+            });
+        });
+
+      });
+    }
+
   });
 };

@@ -18,6 +18,15 @@ TableCompiler_PG.prototype.renameColumn = function(from, to) {
   });
 };
 
+
+TableCompiler_PG.prototype.setNullable = function (column, nullable) {
+  let constraintAction = nullable ? 'drop not null' : 'set not null';
+  let sql = `alter table ${this.tableName()} alter column ${this.formatter.wrap(column)} ${constraintAction}`;
+  return this.pushQuery({
+    sql: sql
+  });
+};
+
 TableCompiler_PG.prototype.compileAdd = function(builder) {
   var table = this.formatter.wrap(builder);
   var columns = this.prefixArray('add column', this.getColumns(builder));
