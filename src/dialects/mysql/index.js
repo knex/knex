@@ -55,8 +55,8 @@ assign(Client_MySQL.prototype, {
     return new Promise(function(resolver, rejecter) {
       connection.connect(function(err) {
         if (err) return rejecter(err)
-        connection.on('error', connectionErrorHandler.bind(null, client, connection))
-        connection.on('end', connectionErrorHandler.bind(null, client, connection))
+        connection.on('error', client._connectionErrorHandler.bind(null, client, connection))
+        connection.on('end', client._connectionErrorHandler.bind(null, client, connection))
         resolver(connection)
       });
     });
@@ -119,17 +119,16 @@ assign(Client_MySQL.prototype, {
       default:
         return response
     }
+  },
+
+  // MySQL Specific error handler
+  _connectionErrorHandler: (client, connection, err) => {
+    if(connection && err && err.fatal && !connection.__knex__disposed) {
+      connection.__knex__disposed = true;
+      client.pool.destroy(connection);
+    }
   }
 
 })
-
-// MySQL Specific error handler
-function connectionErrorHandler(client, connection, err) {
-  if (connection && err && err.fatal) {
-    if (connection.__knex__disposed) return
-    connection.__knex__disposed = true
-    client.pool.destroy(connection)
-  }
-}
 
 module.exports = Client_MySQL
