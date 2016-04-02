@@ -18,8 +18,7 @@ TableCompiler_PG.prototype.renameColumn = function(from, to) {
   });
 };
 
-
-TableCompiler_PG.prototype.setNullable = function (column, nullable) {
+TableCompiler_PG.prototype._setNullableState = function (column, nullable) {
   let constraintAction = nullable ? 'drop not null' : 'set not null';
   let sql = `alter table ${this.tableName()} alter column ${this.formatter.wrap(column)} ${constraintAction}`;
   return this.pushQuery({

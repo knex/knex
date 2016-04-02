@@ -208,7 +208,7 @@ TableCompiler.prototype._indexCommand = function (type, tableName, columns) {
 
 //Default implementation of setNullable. Overwrite on dialect-specific tablecompiler when needed
 //(See postgres/mssql for reference)
-TableCompiler.prototype.setNullable = function(column, nullable) {
+TableCompiler.prototype._setNullableState = function(column, nullable) {
   let tableName = this.tableName();
   let columnName = this.formatter.columnize(column);
   return this.pushQuery({
@@ -227,6 +227,15 @@ TableCompiler.prototype.setNullable = function(column, nullable) {
         });
     }
   });
+};
+
+
+TableCompiler.prototype.setNullable = function(column) {
+  return this._setNullableState(column, true);
+};
+
+TableCompiler.prototype.dropNullable = function(column) {
+  return this._setNullableState(column, false);
 };
 
 module.exports = TableCompiler;

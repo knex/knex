@@ -485,7 +485,7 @@ module.exports = function(knex) {
             .then(function(columnInfo) {
               expect(columnInfo.nullable).to.equal(false);
               return knex.schema.table(tableName, function(table) {
-                table.setNullable(columnName, true);
+                table.setNullable(columnName);
               });
             })
             .then(function() {
@@ -494,7 +494,7 @@ module.exports = function(knex) {
             .then(function(columnInfo) {
               expect(columnInfo.nullable).to.equal(true);
               return knex.schema.table(tableName, function(table) {
-                table.setNullable(columnName, false);
+                table.dropNullable(columnName);
               });
             })
             .then(getColInfo)

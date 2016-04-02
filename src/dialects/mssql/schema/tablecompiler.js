@@ -49,7 +49,7 @@ assign(TableCompiler_MSSQL.prototype, {
     this.pushQuery('exec sp_rename ' + this.formatter.parameter(this.tableName() + '.' + from) + ', ' + this.formatter.parameter(to) + ', \'COLUMN\'');
   },
 
-  setNullable: function (column, nullable) {
+  _setNullableState: function (column, nullable) {
     let tableName = this.tableName();
     let columnName = this.formatter.columnize(column);
     return this.pushQuery({
