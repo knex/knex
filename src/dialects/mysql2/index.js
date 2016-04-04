@@ -95,6 +95,10 @@ assign(Client_MySQL2.prototype, {
       default:
         return response
     }
+  },
+
+  ping: function(resource, callback) {
+    resource.query('SELECT 1', callback);
   }
 
 })

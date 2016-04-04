@@ -99,6 +99,10 @@ assign(Client_WebSQL.prototype, {
       default:
         return resp;
     }
+  },
+
+  ping: function(resource, callback) {
+    callback();
   }
 
 })

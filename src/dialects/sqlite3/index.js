@@ -148,6 +148,10 @@ assign(Client_SQLite3.prototype, {
       min: 1,
       max: 1
     })
+  },
+
+  ping: function(resource, callback) {
+    resource.each('SELECT 1', callback);
   }
 
 })
