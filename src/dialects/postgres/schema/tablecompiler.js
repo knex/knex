@@ -11,6 +11,8 @@ function TableCompiler_PG() {
 }
 inherits(TableCompiler_PG, TableCompiler);
 
+TableCompiler_PG.prototype.alterColumnPrefix = 'alter column';
+
 // Compile a rename column command.
 TableCompiler_PG.prototype.renameColumn = function(from, to) {
   return this.pushQuery({

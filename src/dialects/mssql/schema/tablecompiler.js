@@ -37,6 +37,8 @@ assign(TableCompiler_MSSQL.prototype, {
 
   dropColumnPrefix: 'DROP COLUMN ',
 
+  alterColumnPrefix: 'alter column',
+
   // Compiles the comment on the table.
   comment: function () {
   },
@@ -47,27 +49,6 @@ assign(TableCompiler_MSSQL.prototype, {
   // Renames a column on the table.
   renameColumn: function (from, to) {
     this.pushQuery('exec sp_rename ' + this.formatter.parameter(this.tableName() + '.' + from) + ', ' + this.formatter.parameter(to) + ', \'COLUMN\'');
-  },
-
-  _setNullableState: function (column, nullable) {
-    let tableName = this.tableName();
-    let columnName = this.formatter.columnize(column);
-    return this.pushQuery({
-      sql: 'SELECT 1',
-      output: () => {
-        return this.client.queryBuilder().from(this.tableNameRaw).columnInfo(column)
-          .then((columnInfo) => {
-            if(isEmpty(columnInfo)) {
-              throw new Error(`.setNullable: Column ${columnName} does not exist in table ${tableName}.`)
-            }
-            let nullableType = nullable ? 'null' : 'not null';
-            let columnType = columnInfo.type + (columnInfo.maxLength ? `(${columnInfo.maxLength})` : '');
-            let defaultValue = (columnInfo.defaultValue !== null && columnInfo.defaultValue !== void 0) ? `default '${columnInfo.defaultValue}'` : '';
-            let sql = `alter table ${tableName} alter column ${columnName} ${columnType} ${nullableType} ${defaultValue}`;
-            return this.client.raw(sql);
-          });
-      }
-    });
   },
 
   dropFKRefs: function (runner, refs) {

@@ -17,6 +17,8 @@ function TableCompiler(client, tableBuilder) {
   this._formatting = client.config && client.config.formatting
 }
 
+TableCompiler.prototype.alterColumnPrefix = 'modify column';
+
 TableCompiler.prototype.pushQuery = helpers.pushQuery
 
 TableCompiler.prototype.pushAdditional = helpers.pushAdditional
@@ -211,6 +213,7 @@ TableCompiler.prototype._indexCommand = function (type, tableName, columns) {
 TableCompiler.prototype._setNullableState = function(column, nullable) {
   let tableName = this.tableName();
   let columnName = this.formatter.columnize(column);
+  let alterColumnPrefix = this.alterColumnPrefix;
   return this.pushQuery({
     sql: 'SELECT 1',
     output: () => {
@@ -222,7 +225,7 @@ TableCompiler.prototype._setNullableState = function(column, nullable) {
           let nullableType = nullable ? 'null' : 'not null';
           let columnType = columnInfo.type + (columnInfo.maxLength ? `(${columnInfo.maxLength})` : '');
           let defaultValue = (columnInfo.defaultValue !== null && columnInfo.defaultValue !== void 0) ? `default '${columnInfo.defaultValue}'` : '';
-          let sql = `alter table ${tableName} modify column ${columnName} ${columnType} ${nullableType} ${defaultValue}`;
+          let sql = `alter table ${tableName} ${alterColumnPrefix} ${columnName} ${columnType} ${nullableType} ${defaultValue}`;
           return this.client.raw(sql);
         });
     }

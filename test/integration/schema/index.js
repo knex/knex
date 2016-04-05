@@ -469,11 +469,11 @@ module.exports = function(knex) {
 
     if(knex.client.dialect !== 'sqlite3') {
       //Not supported by sqlite3
-      describe('setNullable', function() {
+      describe('Alter Nullable state', function() {
 
 
-        it('setNullable true & false', function() {
-          var tableName = 'setNullableTest';
+        it('.setNullable & .dropNullable', function() {
+          var tableName = 'nullableTest';
           var columnName = 'colname';
           var getColInfo = function() { return knex(tableName).columnInfo(columnName); };
 

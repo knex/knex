@@ -108,8 +108,9 @@ TableCompiler_SQLite3.prototype.renameColumn = function(from, to) {
 };
 
 
-TableCompiler_SQLite3.prototype._setNullableState = function() {
-  throw new Error('.setNullable is not supported for SQLite.');
+TableCompiler_SQLite3.prototype._setNullableState = function(column, nullable) {
+  let fnCalled = nullable ? '.setNullable' : '.dropNullable';
+  throw new Error(`${fnCalled} is not supported for SQLite.`);
 };
 
 TableCompiler_SQLite3.prototype.dropColumn = function(column) {
