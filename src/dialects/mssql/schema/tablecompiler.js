@@ -6,7 +6,7 @@ var TableCompiler = require('../../../schema/tablecompiler');
 var helpers = require('../../../helpers');
 var Promise = require('../../../promise');
 
-import {assign, isEmpty} from 'lodash'
+import {assign} from 'lodash'
 
 // Table Compiler
 // ------
