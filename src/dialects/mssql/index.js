@@ -178,6 +178,10 @@ assign(Client_MSSQL.prototype, {
       default:
         return response
     }
+  },
+
+  ping: function(resource, callback) {
+    resource.query('SELECT 1', callback);
   }
 
 })

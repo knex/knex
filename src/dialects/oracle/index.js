@@ -168,6 +168,10 @@ assign(Client_Oracle.prototype, {
       default:
         return response;
     }
+  },
+
+  ping: function(resource, callback) {
+    resource.execute('SELECT 1', [], callback);
   }
 
 })

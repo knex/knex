@@ -190,6 +190,10 @@ assign(Client_PG.prototype, {
     }
   },
 
+  ping: function(resource, callback) {
+    resource.query('SELECT 1', [], callback);
+  }
+
 
 })
 
