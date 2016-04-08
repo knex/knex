@@ -47,7 +47,7 @@ _.assign(Oracledb_Compiler.prototype, {
         var subSql = 'insert into ' + self.tableName;
 
         if (insertDefaultsOnly) {
-          // no columns given so only the default value
+          // No columns given so only the default value
           subSql += ' (' + self.formatter.wrap(self.single.returning) + ') values (default)';
         } else {
           subSql += ' (' + self.formatter.columnize(insertData.columns) + ') values (' + parameterizedValues + ')';
@@ -72,14 +72,14 @@ _.assign(Oracledb_Compiler.prototype, {
           intoClause += ' ?,';
           outClause += ' out ?,';
 
-          // add Helpers to bindings
+          // Add Helpers to bindings
           if (ret instanceof BlobHelper) {
             return self.formatter.bindings.push(ret);
           }
           self.formatter.bindings.push(new ReturningHelper(columnName));
         });
 
-        // strip last comma
+        // Strip last comma
         returningClause = returningClause.slice(0, -1);
         intoClause = intoClause.slice(0, -1);
         outClause = outClause.slice(0, -1);
@@ -88,7 +88,7 @@ _.assign(Oracledb_Compiler.prototype, {
           subSql += ' returning ' + returningClause + ' into' + intoClause;
         }
 
-        // pre bind position because subSql is an execute immediate parameter
+        // Pre bind position because subSql is an execute immediate parameter
         // later position binding will only convert the ? params
         subSql = self.formatter.client.positionBindings(subSql);
         return 'execute immediate \'' + subSql.replace(/'/g, "''") +
@@ -100,14 +100,16 @@ _.assign(Oracledb_Compiler.prototype, {
     if (returning[0] === '*') {
       returning = returning.slice(0, -1);
 
-      // generate select statement with special order by to keep the order because 'in (..)' may change the order
-      sql.returningSql = 'select * from ' + this.tableName +
-        ' where ROWID in (' + outBinding.map(function(v, i) {
+      // Generate select statement with special order by to keep the order because 'in (..)' may change the order
+      sql.returningSql = function() {
+        return 'select * from ' + self.tableName +
+        ' where ROWID in (' + this.outBinding.map(function(v, i) {
           return ':' + (i + 1);
         }).join(', ') + ')' +
-        ' order by case ROWID ' + outBinding.map(function(v, i) {
+        ' order by case ROWID ' + this.outBinding.map(function(v, i) {
           return 'when CHARTOROWID(:' + (i + 1) + ') then ' + i;
         }).join(' ') + ' end';
+      };
     }
 
     return sql;
@@ -131,7 +133,7 @@ _.assign(Oracledb_Compiler.prototype, {
       returningClause += '"' + columnName + '",';
       intoClause += '?,';
 
-      // add Helpers to bindings
+      // Add Helpers to bindings
       if (ret instanceof BlobHelper) {
         return self.formatter.bindings.push(ret);
       }
@@ -139,7 +141,7 @@ _.assign(Oracledb_Compiler.prototype, {
     });
     res.sql = sql;
 
-    // strip last comma
+    // Strip last comma
     returningClause = returningClause.slice(0, -1);
     intoClause = intoClause.slice(0, -1);
     if (returningClause && intoClause) {
@@ -147,7 +149,9 @@ _.assign(Oracledb_Compiler.prototype, {
     }
     res.outBinding = [outBinding];
     if(returning[0] === '*') {
-      res.returningSql = 'select * from ' + this.tableName + ' where ROWID = :1';
+      res.returningSql = function() {
+        return 'select * from ' + self.tableName + ' where ROWID = :1';
+      };
     }
     res.returning = returning;
 
@@ -161,7 +165,7 @@ _.assign(Oracledb_Compiler.prototype, {
     if (!Array.isArray(params) && _.isPlainObject(paramValues)) {
       params = [params];
     }
-    // always wrap returning argument in array
+    // Always wrap returning argument in array
     if (returning && !Array.isArray(returning)) {
       returning = [returning];
     }
@@ -178,7 +182,7 @@ _.assign(Oracledb_Compiler.prototype, {
         if (value instanceof Buffer) {
           values[key] = new BlobHelper(key, value);
 
-          // delete blob duplicate in returning
+          // Delete blob duplicate in returning
           var blobIndex = outBinding[index].indexOf(key);
           if (blobIndex >= 0) {
             outBinding[index].splice(blobIndex, 1);
@@ -206,6 +210,11 @@ _.assign(Oracledb_Compiler.prototype, {
 
     var returningClause = '';
     var intoClause = '';
+
+    if (_.isEmpty(this.single.update) && typeof this.single.update !== 'function') {
+      return '';
+    }
+
     // Build returning and into clauses
     _.each(outBinding, function(out) {
       _.each(out, function(ret) {
@@ -213,14 +222,14 @@ _.assign(Oracledb_Compiler.prototype, {
         returningClause += '"' + columnName + '",';
         intoClause += ' ?,';
 
-        // add Helpers to bindings
+        // Add Helpers to bindings
         if (ret instanceof BlobHelper) {
           return self.formatter.bindings.push(ret);
         }
         self.formatter.bindings.push(new ReturningHelper(columnName));
       });
     });
-    // strip last comma
+    // Strip last comma
     returningClause = returningClause.slice(0, -1);
     intoClause = intoClause.slice(0, -1);
 
@@ -231,7 +240,28 @@ _.assign(Oracledb_Compiler.prototype, {
       sql.sql += ' returning ' + returningClause + ' into' + intoClause;
     }
     if (returning[0] === '*') {
-      sql.returningSql = 'select * from ' + this.tableName;
+
+      sql.returningSql = function() {
+
+        var sql = 'select * from ' + self.tableName;
+        var modifiedRowsCount = this.rowsAffected.length || this.rowsAffected;
+        var returningSqlIn = ' where ROWID in (';
+        var returningSqlOrderBy = ') order by case ROWID ';
+
+        // Needs special order by because in(...) change result order
+        for (var i = 0; i < modifiedRowsCount; i++) {
+          if (this.returning[0] === '*') {
+            returningSqlIn += ':' + (i + 1) + ', ';
+            returningSqlOrderBy += 'when CHARTOROWID(:' + (i + 1) + ') then ' + i + ' ';
+          }
+        }
+        if (this.returning[0] === '*') {
+          this.returning = this.returning.slice(0, -1);
+          returningSqlIn = returningSqlIn.slice(0, -2);
+          returningSqlOrderBy = returningSqlOrderBy.slice(0, -1);
+        }
+        return sql += returningSqlIn + returningSqlOrderBy + ' end';
+      };
     }
 
     return sql;
