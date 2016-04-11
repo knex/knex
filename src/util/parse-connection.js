@@ -37,7 +37,11 @@ function connectionObject(parsed) {
     connection.database = db
   }
   if (parsed.hostname) {
-    connection.host = parsed.hostname;
+    if (parsed.protocol.indexOf('mssql') === 0) {
+      connection.server = parsed.hostname;
+    } else {
+      connection.host = parsed.hostname;
+    }
   }
   if (parsed.port) {
     connection.port = parsed.port;
