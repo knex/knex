@@ -2,12 +2,11 @@
 // WebSQL
 // -------
 var inherits       = require('inherits')
-var _              = require('lodash')
 
 var Transaction    = require('./transaction')
 var Client_SQLite3 = require('../sqlite3')
 var Promise        = require('../../promise')
-var assign         = require('lodash/object/assign')
+import {assign, map, uniqueId, clone} from 'lodash'
 
 function Client_WebSQL(config) {
   Client_SQLite3.call(this, config);
@@ -32,7 +31,7 @@ assign(Client_WebSQL.prototype, {
         /*jslint browser: true*/
         var db = openDatabase(client.name, client.version, client.displayName, client.estimatedSize);
         db.transaction(function(t) {
-          t.__knexUid = _.uniqueId('__knexUid');
+          t.__knexUid = uniqueId('__knexUid');
           resolve(t);
         });
       } catch (e) {
@@ -87,9 +86,9 @@ assign(Client_WebSQL.prototype, {
       case 'select':
         var results = [];
         for (var i = 0, l = resp.rows.length; i < l; i++) {
-          results[i] = _.clone(resp.rows.item(i));
+          results[i] = clone(resp.rows.item(i));
         }
-        if (obj.method === 'pluck') results = _.pluck(results, obj.pluck);
+        if (obj.method === 'pluck') results = map(results, obj.pluck);
         return obj.method === 'first' ? results[0] : results;
       case 'insert':
         return [resp.insertId];
@@ -100,6 +99,10 @@ assign(Client_WebSQL.prototype, {
       default:
         return resp;
     }
+  },
+
+  ping: function(resource, callback) {
+    callback();
   }
 
 })

@@ -3,9 +3,9 @@
 
 var fs       = require('fs');
 var path     = require('path');
-var _        = require('lodash');
 var mkdirp   = require('mkdirp');
 var Promise  = require('../promise');
+import {filter, includes, map, bind, template, each, extend} from 'lodash'
 
 // The new seeds we're performing, typically called from the `knex.seed`
 // interface on the main `knex` object. Passes the `knex` instance performing
@@ -38,12 +38,12 @@ Seeder.prototype.make = function(name, config) {
 // Lists all available seed files as a sorted array.
 Seeder.prototype._listAll = Promise.method(function(config) {
   this.config = this.setConfig(config);
-  return Promise.promisify(fs.readdir, fs)(this._absoluteConfigDir())
+  return Promise.promisify(fs.readdir, {context: fs})(this._absoluteConfigDir())
     .bind(this)
     .then(function(seeds) {
-      return _.filter(seeds, function(value) {
+      return filter(seeds, function(value) {
         var extension = path.extname(value);
-        return _.contains(['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls'], extension);
+        return includes(['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls'], extension);
       }).sort();
     });
 });
@@ -58,7 +58,7 @@ Seeder.prototype._seedData = function() {
 // seed config settings.
 Seeder.prototype._ensureFolder = function() {
     var dir = this._absoluteConfigDir();
-    return Promise.promisify(fs.stat, fs)(dir)
+    return Promise.promisify(fs.stat, {context: fs})(dir)
       .catch(function() {
         return Promise.promisify(mkdirp)(dir);
       });
@@ -66,7 +66,7 @@ Seeder.prototype._ensureFolder = function() {
 
 // Run seed files, in sequence.
 Seeder.prototype._runSeeds = function(seeds) {
-  return Promise.all(_.map(seeds, this._validateSeedStructure, this))
+  return Promise.all(map(seeds, bind(this._validateSeedStructure, this)))
     .bind(this)
     .then(function(seeds) {
       return Promise.bind(this)
@@ -88,8 +88,8 @@ Seeder.prototype._validateSeedStructure = function(name) {
 // Generates the stub template for the current seed file, returning a compiled template.
 Seeder.prototype._generateStubTemplate = function() {
   var stubPath = this.config.stub || path.join(__dirname, 'stub', this.config.extension + '.stub');
-  return Promise.promisify(fs.readFile, fs)(stubPath).then(function(stub) {
-    return _.template(stub.toString(), null, {variable: 'd'});
+  return Promise.promisify(fs.readFile, {context: fs})(stubPath).then(function(stub) {
+    return template(stub.toString(), null, {variable: 'd'});
   });
 };
 
@@ -101,7 +101,7 @@ Seeder.prototype._writeNewSeed = function(name) {
   return function(tmpl) {
     if (name[0] === '-') name = name.slice(1);
     var filename  = name + '.' + config.extension;
-    return Promise.promisify(fs.writeFile, fs)(
+    return Promise.promisify(fs.writeFile, {context: fs})(
       path.join(dir, filename),
       tmpl(config.variables || {})
     ).return(path.join(dir, filename));
@@ -114,7 +114,7 @@ Seeder.prototype._waterfallBatch = function(seeds) {
   var seedDirectory = this._absoluteConfigDir();
   var current   = Promise.bind({failed: false, failedOn: 0});
   var log       = [];
-  _.each(seeds, function(seed) {
+  each(seeds, function(seed) {
     var name  = path.join(seedDirectory, seed);
     seed = require(name);
 
@@ -134,7 +134,7 @@ Seeder.prototype._absoluteConfigDir = function() {
 };
 
 Seeder.prototype.setConfig = function(config) {
-  return _.extend({
+  return extend({
     extension: 'js',
     directory: './seeds'
   }, this.config || {}, config);

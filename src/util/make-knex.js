@@ -1,6 +1,5 @@
 
 var EventEmitter   = require('events').EventEmitter
-var assign         = require('lodash/object/assign');
 
 var Migrator       = require('../migrate')
 var Seeder         = require('../seed')
@@ -8,7 +7,7 @@ var FunctionHelper = require('../functionhelper')
 var QueryInterface = require('../query/methods')
 var helpers        = require('../helpers')
 var Promise        = require('../promise')
-var _              = require('lodash')
+import {assign, isNumber, chunk} from 'lodash'
 
 module.exports = function makeKnex(client) {
 
@@ -25,7 +24,7 @@ module.exports = function makeKnex(client) {
 
     Promise: require('../promise'),
 
-    // A new query builder instance
+    // A new query builder instance.
     queryBuilder: function() {
       return client.queryBuilder()
     },
@@ -34,14 +33,15 @@ module.exports = function makeKnex(client) {
       return client.raw.apply(client, arguments)
     },
 
-    batchInsert: function(table, batch, chunkSize) {
-      chunkSize = (_.isNumber(chunkSize) && chunkSize > 0) ? chunkSize : 1000;
+    batchInsert: function(table, batch, chunkSize = 1000) {
+      if (!isNumber(chunkSize) || chunkSize < 1) {
+        throw new TypeError("Invalid chunkSize: " + chunkSize);
+      }
 
       return this.transaction((tr) => {
-
-          //Avoid unnecessary call
+          // Avoid unnecessary call.
           if(chunkSize !== 1) {
-            batch = _.chunk(batch, chunkSize)
+            batch = chunk(batch, chunkSize)
           }
 
           return Promise.all(batch.map((items) => {
@@ -128,6 +128,10 @@ module.exports = function makeKnex(client) {
 
   client.on('query-error', function(err, obj) {
     knex.emit('query-error', err, obj)
+  })
+
+  client.on('query-response', function(response, obj, builder) {
+    knex.emit('query-response', response, obj, builder)
   })
 
   client.makeKnex = function(client) {

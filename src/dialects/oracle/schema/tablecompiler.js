@@ -3,7 +3,8 @@ var inherits      = require('inherits');
 var utils         = require('../utils');
 var TableCompiler = require('../../../schema/tablecompiler');
 var helpers       = require('../../../helpers');
-var assign        = require('lodash/object/assign');
+
+import {assign} from 'lodash'
 
 // Table Compiler
 // ------
@@ -18,7 +19,7 @@ assign(TableCompiler_Oracle.prototype, {
   // Compile a rename column command.
   renameColumn: function(from, to) {
     return this.pushQuery({
-      sql: 'alter table ' + this.tableName() + ' rename column ' + 
+      sql: 'alter table ' + this.tableName() + ' rename column ' +
         this.formatter.wrap(from) + ' to ' + this.formatter.wrap(to)
     });
   },

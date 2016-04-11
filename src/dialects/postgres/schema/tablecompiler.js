@@ -1,9 +1,10 @@
 // PostgreSQL Table Builder & Compiler
 // -------
 
-var _             = require('lodash');
 var inherits      = require('inherits');
 var TableCompiler = require('../../../schema/tablecompiler');
+
+import {has} from 'lodash'
 
 function TableCompiler_PG() {
   TableCompiler.apply(this, arguments);
@@ -28,11 +29,13 @@ TableCompiler_PG.prototype.compileAdd = function(builder) {
 // Adds the "create" query to the query sequence.
 TableCompiler_PG.prototype.createQuery = function(columns, ifNot) {
   var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
+  var sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
+  if (this.single.inherits) sql += ' inherits (' + this.formatter.wrap(this.single.inherits) + ')';
   this.pushQuery({
-    sql: createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')',
+    sql: sql,
     bindings: columns.bindings
   });
-  var hasComment = _.has(this.single, 'comment');
+  var hasComment = has(this.single, 'comment');
   if (hasComment) this.comment(this.single.comment);
 };
 
@@ -49,12 +52,12 @@ TableCompiler_PG.prototype.primary = function(columns) {
   this.pushQuery('alter table ' + this.tableName() + " add primary key (" + this.formatter.columnize(columns) + ")");
 };
 TableCompiler_PG.prototype.unique = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
   this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + indexName +
     ' unique (' + this.formatter.columnize(columns) + ')');
 };
 TableCompiler_PG.prototype.index = function(columns, indexName, indexType) {
-  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
   this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + (indexType && (' using ' + indexType) || '') +
     ' (' + this.formatter.columnize(columns) + ')');
 };
@@ -63,15 +66,15 @@ TableCompiler_PG.prototype.dropPrimary = function() {
   this.pushQuery('alter table ' + this.tableName() + " drop constraint " + constraintName);
 };
 TableCompiler_PG.prototype.dropIndex = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
   this.pushQuery('drop index ' + indexName);
 };
 TableCompiler_PG.prototype.dropUnique = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
   this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
 };
 TableCompiler_PG.prototype.dropForeign = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('foreign', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
   this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
 };
 

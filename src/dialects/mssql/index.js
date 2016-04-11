@@ -1,9 +1,10 @@
 
 // MSSQL Client
 // -------
-var _              = require('lodash')
+import {map, flatten, values} from 'lodash'
 var inherits       = require('inherits')
-var assign         = require('lodash/object/assign')
+
+import {assign} from 'lodash'
 
 var Formatter      = require('./formatter')
 var Client         = require('../../client')
@@ -20,6 +21,10 @@ var ColumnCompiler = require('./schema/columncompiler')
 // objects, which extend the base 'lib/query/builder' and
 // 'lib/query/compiler', respectively.
 function Client_MSSQL(config) {
+  //#1235 mssql module wants 'server', not 'host'. This is to enforce the same options object across all dialects.
+  if(config && config.connection && config.connection.host) {
+    config.connection.server = config.connection.host;
+  }
   Client.call(this, config);
 }
 inherits(Client_MSSQL, Client);
@@ -39,7 +44,7 @@ assign(Client_MSSQL.prototype, {
   Formatter: Formatter,
 
   QueryCompiler: QueryCompiler,
-  
+
   SchemaCompiler: SchemaCompiler,
 
   TableCompiler: TableCompiler,
@@ -81,12 +86,12 @@ assign(Client_MSSQL.prototype, {
   },
 
   prepBindings: function(bindings) {
-    return _.map(bindings, function(value) {
+    return map(bindings, (value) => {
       if (value === undefined) {
         return this.valueForUndefined
       }
       return value
-    }, this)
+    })
   },
 
   // Grab a connection, run the query via the MSSQL streaming interface,
@@ -96,7 +101,6 @@ assign(Client_MSSQL.prototype, {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
-    obj.bindings = this.prepBindings(obj.bindings) || [];
     return new Promise(function(resolver, rejecter) {
       stream.on('error', rejecter);
       stream.on('end', resolver);
@@ -123,7 +127,6 @@ assign(Client_MSSQL.prototype, {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
-    obj.bindings = this.prepBindings(obj.bindings) || [];
     return new Promise(function(resolver, rejecter) {
       var sql = obj.sql
       if (!sql) return resolver()
@@ -155,7 +158,7 @@ assign(Client_MSSQL.prototype, {
       case 'pluck':
       case 'first':
         response = helpers.skim(response)
-        if (method === 'pluck') return _.pluck(response, obj.pluck)
+        if (method === 'pluck') return map(response, obj.pluck)
         return method === 'first' ? response[0] : response
       case 'insert':
       case 'del':
@@ -169,12 +172,16 @@ assign(Client_MSSQL.prototype, {
             return response;
           }
           // return an array with values if only one returning value was specified
-          return _.flatten(_.map(response, _.values));
+          return flatten(map(response, values));
         }
         return response;
       default:
         return response
     }
+  },
+
+  ping: function(resource, callback) {
+    resource.query('SELECT 1', callback);
   }
 
 })

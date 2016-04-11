@@ -1,7 +1,7 @@
 
-var _       = require('lodash')
 var Promise = require('./promise')
-var assign  = require('lodash/object/assign');
+
+import {assign, isArray} from 'lodash'
 
 var PassThrough;
 
@@ -36,7 +36,7 @@ assign(Runner.prototype, {
         console.log(sql)
       }
 
-      if (_.isArray(sql)) {
+      if (isArray(sql)) {
         return runner.queryArray(sql);
       }
       return runner.query(sql);
@@ -64,7 +64,7 @@ assign(Runner.prototype, {
   // Stream the result set, by passing through to the dialect's streaming
   // capabilities. If the options are
   stream: function(options, handler) {
-    
+
     // If we specify stream(handler).then(...
     if (arguments.length === 1) {
       if (typeof options === 'function') {
@@ -78,14 +78,14 @@ assign(Runner.prototype, {
 
     // Lazy-load the "PassThrough" dependency.
     PassThrough = PassThrough || require('readable-stream').PassThrough;
-    
+
     var runner = this;
     var stream  = new PassThrough({objectMode: true});
     var promise = Promise.using(this.ensureConnection(), function(connection) {
       runner.connection = connection;
       var sql = runner.builder.toSQL()
       var err = new Error('The stream may only be used with a single query statement.');
-      if (_.isArray(sql)) {
+      if (isArray(sql)) {
         if (hasHandler) throw err;
         stream.emit('error', err);
       }
@@ -113,9 +113,29 @@ assign(Runner.prototype, {
   query: Promise.method(function(obj) {
     this.builder.emit('query', assign({__knexUid: this.connection.__knexUid}, obj))
     var runner = this
-    return this.client.query(this.connection, obj)
-      .then(function(resp) {
-        return runner.client.processResponse(resp, runner)
+    var queryPromise = this.client.query(this.connection, obj)
+
+    if(obj.timeout) {
+      queryPromise = queryPromise.timeout(obj.timeout)
+    }
+
+    return queryPromise
+      .then((resp) => {
+        var processedResponse = this.client.processResponse(resp, runner);
+        this.builder.emit('query-response', processedResponse, assign({__knexUid: this.connection.__knexUid}, obj), this.builder)
+        this.client.emit('query-response', processedResponse, assign({__knexUid: this.connection.__knexUid}, obj), this.builder)
+        return processedResponse;
+      }).catch(Promise.TimeoutError, error => {
+        throw assign(error, {
+          message:  `Defined query timeout of ${obj.timeout}ms exceeded when running query.`,
+          sql:      obj.sql,
+          bindings: obj.bindings,
+          timeout:  obj.timeout
+        });
+      })
+      .catch((error) => {
+        this.builder.emit('query-error', error, assign({__knexUid: this.connection.__knexUid}, obj))
+        throw error;
       });
   }),
 

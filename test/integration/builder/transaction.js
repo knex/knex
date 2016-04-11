@@ -146,12 +146,11 @@ module.exports = function(knex) {
         expect(__knexUid).to.equal(obj.__knexUid);
       })
       .catch(function(msg) {
-        if (knex.client.dialect === 'oracle' || knex.client.dialect === 'mssql') {
-          // oracle start transaction /rollback are no queries
-          expect(count).to.equal(2);
-        } else {
-          expect(count).to.equal(4);
-        }
+        // oracle & mssql: BEGIN & ROLLBACK not reported as queries
+        var expectedCount =
+          knex.client.dialect === 'oracle' ||
+          knex.client.dialect === 'mssql' ? 2 : 4;
+        expect(count).to.equal(expectedCount);
         expect(msg).to.equal(err);
         return knex('accounts').where('id', id).select('first_name');
       })

@@ -1,7 +1,7 @@
 
-var _            = require('lodash')
 var inherits     = require('inherits')
 var EventEmitter = require('events').EventEmitter
+import {each, toArray} from 'lodash'
 
 // Constructor for the builder instance, typically called from
 // `knex.builder`, accepting the current `knex` instance,
@@ -16,31 +16,31 @@ inherits(SchemaBuilder, EventEmitter)
 
 // Each of the schema builder methods just add to the
 // "_sequence" array for consistency.
-_.each([
-  'createTable', 
-  'createTableIfNotExists', 
+each([
+  'createTable',
+  'createTableIfNotExists',
   'createSchema',
-  'createSchemaIfNotExists', 
-  'dropSchema', 
+  'createSchemaIfNotExists',
+  'dropSchema',
   'dropSchemaIfExists',
-  'createExtension', 
-  'createExtensionIfNotExists', 
+  'createExtension',
+  'createExtensionIfNotExists',
   'dropExtension',
-  'dropExtensionIfExists', 
-  'table', 
-  'alterTable', 
+  'dropExtensionIfExists',
+  'table',
+  'alterTable',
   'hasTable',
-  'hasColumn', 
-  'dropTable', 
-  'renameTable', 
-  'dropTableIfExists', 
+  'hasColumn',
+  'dropTable',
+  'renameTable',
+  'dropTableIfExists',
   'raw'
 ], function(method) {
   SchemaBuilder.prototype[method] = function() {
     if (method === 'table') method = 'alterTable';
     this._sequence.push({
       method: method,
-      args: _.toArray(arguments)
+      args: toArray(arguments)
     });
     return this;
   }

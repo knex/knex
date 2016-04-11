@@ -4,8 +4,9 @@
 
 var inherits       = require('inherits');
 var ColumnCompiler = require('../../../schema/columncompiler');
-var assign         = require('lodash/object/assign');
 var helpers        = require('../../../helpers');
+
+import {assign} from 'lodash'
 
 function ColumnCompiler_PG() {
   ColumnCompiler.apply(this, arguments);
@@ -20,11 +21,11 @@ assign(ColumnCompiler_PG.prototype, {
   bigincrements: 'bigserial primary key',
   bigint: 'bigint',
   binary: 'bytea',
-  
+
   bit: function(column) {
     return column.length !== false ? 'bit(' + column.length + ')' : 'bit';
   },
-  
+
   bool: 'boolean',
 
   // Create the column definition for an enum type.

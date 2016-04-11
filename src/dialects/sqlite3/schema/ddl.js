@@ -5,9 +5,8 @@
 // columns and changing datatypes.
 // -------
 
-var _       = require('lodash');
 var Promise = require('../../../promise');
-var assign  = require('lodash/object/assign');
+import {assign, uniqueId, find, map, omit} from 'lodash'
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
@@ -17,14 +16,14 @@ function SQLite3_DDL(client, tableCompiler, pragma, connection) {
   this.tableCompiler = tableCompiler;
   this.pragma        = pragma;
   this.tableName     = this.tableCompiler.tableNameRaw;
-  this.alteredName   = _.uniqueId('_knex_temp_alter');
+  this.alteredName   = uniqueId('_knex_temp_alter');
   this.connection    = connection
 }
 
 assign(SQLite3_DDL.prototype, {
 
   getColumn: Promise.method(function(column) {
-    var currentCol = _.findWhere(this.pragma, {name: column});
+    var currentCol = find(this.pragma, {name: column});
     if (!currentCol) throw new Error('The column ' + column + ' is not in the ' + this.tableName + ' table');
     return currentCol;
   }),
@@ -70,7 +69,7 @@ assign(SQLite3_DDL.prototype, {
         if (memo % 20 === 0 || memo === result.length) {
           return ddl.trx.queryBuilder()
             .table(target)
-            .insert(_.map(batch, iterator))
+            .insert(map(batch, iterator))
             .then(function() { batch = []; })
             .thenReturn(memo);
         }
@@ -87,10 +86,10 @@ assign(SQLite3_DDL.prototype, {
 
   _doReplace: function (sql, from, to) {
     var matched = sql.match(/^CREATE TABLE (\S+) \((.*)\)/);
-    
+
     var tableName = matched[1],
         defs = matched[2];
-    
+
     if (!defs) { throw new Error('No column definitions in this statement!'); }
 
     var parens = 0, args = [ ], ptr = 0;
@@ -116,7 +115,7 @@ assign(SQLite3_DDL.prototype, {
       }
     }
     args.push(defs.slice(ptr, i));
-    
+
     args = args.map(function (item) {
       var split = item.split(' ');
 
@@ -128,10 +127,10 @@ assign(SQLite3_DDL.prototype, {
         }
         return ''; // for deletions
       }
-      
+
       // skip constraint name
       var idx = (/constraint/i.test(split[0]) ? 2 : 0);
-      
+
       // primary key and unique constraints have one or more
       // columns from this table listed between (); replace
       // one if it matches
@@ -140,7 +139,7 @@ assign(SQLite3_DDL.prototype, {
           return columns.replace(from, to);
         });
       }
-      
+
       // foreign keys have one or more columns from this table
       // listed between (); replace one if it matches
       // foreign keys also have a 'references' clause
@@ -151,7 +150,7 @@ assign(SQLite3_DDL.prototype, {
         // the quoted column names save us from having to do anything
         // other than a straight replace here
         split[0] = split[0].replace(from, to);
-        
+
         if (split[1].slice(0, tableName.length) === tableName) {
           split[1] = split[1].replace(/\(.*\)/, function (columns) {
             return columns.replace(from, to);
@@ -159,14 +158,14 @@ assign(SQLite3_DDL.prototype, {
         }
         return split.join(' references ');
       }
-      
+
       return item;
     });
     return sql.replace(/\(.*\)/, function () {
       return '(' + args.join(', ') + ')';
     }).replace(/,\s*([,)])/, '$1');
   },
-  
+
   // Boy, this is quite a method.
   renameColumn: Promise.method(function(from, to) {
     var currentCol;
@@ -194,7 +193,7 @@ assign(SQLite3_DDL.prototype, {
             })
             .then(this.reinsertData(function(row) {
               row[to] = row[from];
-              return _.omit(row, from);
+              return omit(row, from);
             }))
             .then(this.dropTempTable)
         })
@@ -206,8 +205,8 @@ assign(SQLite3_DDL.prototype, {
 
     return this.client.transaction(function(trx) {
       this.trx = trx
-      return this.getColumn(column).tap(function(col) { 
-        currentCol = col; 
+      return this.getColumn(column).tap(function(col) {
+        currentCol = col;
       })
       .bind(this)
       .then(this.getTableSql)
@@ -226,7 +225,7 @@ assign(SQLite3_DDL.prototype, {
             return this.trx.raw(newSql);
           })
           .then(this.reinsertData(function(row) {
-            return _.omit(row, column);
+            return omit(row, column);
           }))
           .then(this.dropTempTable);
       })

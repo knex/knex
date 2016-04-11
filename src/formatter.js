@@ -1,8 +1,8 @@
 
 var QueryBuilder = require('./query/builder')
 var Raw          = require('./raw')
-var assign       = require('lodash/object/assign')
-var transform    = require('lodash/object/transform')
+
+import {assign, transform} from 'lodash'
 
 function Formatter(client) {
   this.client       = client
@@ -167,9 +167,9 @@ var orderBys  = ['asc', 'desc'];
 
 // Turn this into a lookup map
 var operators = transform([
-  '=', '<', '>', '<=', '>=', '<>', '!=', 'like', 
-  'not like', 'between', 'ilike', '&', '|', '^', '<<', '>>', 
-  'rlike', 'regexp', 'not regexp', '~', '~*', '!~', '!~*', 
+  '=', '<', '>', '<=', '>=', '<>', '!=', 'like',
+  'not like', 'between', 'ilike', '&', '|', '^', '<<', '>>',
+  'rlike', 'regexp', 'not regexp', '~', '~*', '!~', '!~*',
   '#', '&&', '@>', '<@', '||'
 ], function(obj, key) {
   obj[key] = true
