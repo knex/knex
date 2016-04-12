@@ -283,7 +283,7 @@ Client_Oracledb.prototype._query = function(connection, obj) {
         .then(function(obj) {
           resolver(obj);
         });
-    });
+    }, rejecter);
   });
 };
 
