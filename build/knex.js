@@ -4931,7 +4931,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  ping: function ping(resource, callback) {
-	    resource.execute('SELECT 1', [], callback);
+	    resource.execute('SELECT 1 FROM DUAL', [], callback);
 	  }
 
 	});
@@ -4951,15 +4951,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _ = __webpack_require__(1);
 	var inherits = __webpack_require__(52);
 	var Client_Oracle = __webpack_require__(33);
-	var QueryCompiler = __webpack_require__(78);
-	var ColumnCompiler = __webpack_require__(79);
-	var Formatter = __webpack_require__(80);
-	var BlobHelper = __webpack_require__(81).BlobHelper;
-	var ReturningHelper = __webpack_require__(81).ReturningHelper;
+	var QueryCompiler = __webpack_require__(88);
+	var ColumnCompiler = __webpack_require__(89);
+	var Formatter = __webpack_require__(90);
+	var BlobHelper = __webpack_require__(91).BlobHelper;
+	var ReturningHelper = __webpack_require__(91).ReturningHelper;
 	var Promise = __webpack_require__(9);
 	var stream = __webpack_require__(95);
 	var helpers = __webpack_require__(3);
-	var Transaction = __webpack_require__(82);
+	var Transaction = __webpack_require__(92);
 
 	function Client_Oracledb() {
 	  Client_Oracle.apply(this, arguments);
@@ -5227,7 +5227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }, rejecter).then(function (obj) {
 	        resolver(obj);
 	      });
-	    });
+	    }, rejecter);
 	  });
 	};
 
@@ -5307,12 +5307,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var inherits = __webpack_require__(52);
 	var Client = __webpack_require__(4);
 	var Promise = __webpack_require__(9);
-	var utils = __webpack_require__(83);
+	var utils = __webpack_require__(78);
 
-	var QueryCompiler = __webpack_require__(84);
-	var ColumnCompiler = __webpack_require__(85);
-	var TableCompiler = __webpack_require__(86);
-	var SchemaCompiler = __webpack_require__(87);
+	var QueryCompiler = __webpack_require__(79);
+	var ColumnCompiler = __webpack_require__(80);
+	var TableCompiler = __webpack_require__(81);
+	var SchemaCompiler = __webpack_require__(82);
 	var PGQueryStream;
 
 	function Client_PG(config) {
@@ -5521,11 +5521,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Client = __webpack_require__(4);
 	var helpers = __webpack_require__(3);
 
-	var QueryCompiler = __webpack_require__(88);
-	var SchemaCompiler = __webpack_require__(89);
-	var ColumnCompiler = __webpack_require__(90);
-	var TableCompiler = __webpack_require__(91);
-	var SQLite3_DDL = __webpack_require__(92);
+	var QueryCompiler = __webpack_require__(83);
+	var SchemaCompiler = __webpack_require__(84);
+	var ColumnCompiler = __webpack_require__(85);
+	var TableCompiler = __webpack_require__(86);
+	var SQLite3_DDL = __webpack_require__(87);
 
 	function Client_SQLite3(config) {
 	  Client.call(this, config);
@@ -6770,8 +6770,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 	var escapeStringRegexp = __webpack_require__(99);
-	var ansiStyles = __webpack_require__(100);
-	var stripAnsi = __webpack_require__(101);
+	var ansiStyles = __webpack_require__(101);
+	var stripAnsi = __webpack_require__(100);
 	var hasAnsi = __webpack_require__(102);
 	var supportsColor = __webpack_require__(103);
 	var defineProps = Object.defineProperties;
@@ -9332,11 +9332,1049 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
 
+	function dateToString(date) {
+	  function pad(number, digits) {
+	    number = number.toString();
+	    while (number.length < digits) {
+	      number = "0" + number;
+	    }
+	    return number;
+	  }
+
+	  var offset = -date.getTimezoneOffset();
+	  var ret = pad(date.getFullYear(), 4) + '-' + pad(date.getMonth() + 1, 2) + '-' + pad(date.getDate(), 2) + 'T' + pad(date.getHours(), 2) + ':' + pad(date.getMinutes(), 2) + ':' + pad(date.getSeconds(), 2) + '.' + pad(date.getMilliseconds(), 3);
+
+	  if (offset < 0) {
+	    ret += "-";
+	    offset *= -1;
+	  } else {
+	    ret += "+";
+	  }
+
+	  return ret + pad(Math.floor(offset / 60), 2) + ":" + pad(offset % 60, 2);
+	}
+
+	var prepareObject;
+	var arrayString;
+
+	// converts values from javascript types
+	// to their 'raw' counterparts for use as a postgres parameter
+	// note: you can override this function to provide your own conversion mechanism
+	// for complex types, etc...
+	var prepareValue = function prepareValue(val, seen, valueForUndefined) {
+	  if (val instanceof Buffer) {
+	    return val;
+	  }
+	  if (val instanceof Date) {
+	    return dateToString(val);
+	  }
+	  if (Array.isArray(val)) {
+	    return arrayString(val);
+	  }
+	  if (val === null) {
+	    return null;
+	  }
+	  if (val === undefined) {
+	    return valueForUndefined;
+	  }
+	  if (typeof val === 'object') {
+	    return prepareObject(val, seen);
+	  }
+	  return val.toString();
+	};
+
+	prepareObject = function prepareObject(val, seen) {
+	  if (val && typeof val.toPostgres === 'function') {
+	    seen = seen || [];
+	    if (seen.indexOf(val) !== -1) {
+	      throw new Error('circular reference detected while preparing "' + val + '" for query');
+	    }
+	    seen.push(val);
+
+	    return prepareValue(val.toPostgres(prepareValue), seen);
+	  }
+	  return JSON.stringify(val);
+	};
+
+	// convert a JS array to a postgres array literal
+	// uses comma separator so won't work for types like box that use
+	// a different array separator.
+	arrayString = function arrayString(val) {
+	  return '{' + val.map(function (elem) {
+	    if (elem === null || elem === undefined) {
+	      return 'NULL';
+	    }
+	    if (Array.isArray(elem)) {
+	      return arrayString(elem);
+	    }
+	    return JSON.stringify(prepareValue(elem));
+	  }).join(',') + '}';
+	};
+
+	function normalizeQueryConfig(config, values, callback) {
+	  //can take in strings or config objects
+	  config = typeof config === 'string' ? { text: config } : config;
+	  if (values) {
+	    if (typeof values === 'function') {
+	      config.callback = values;
+	    } else {
+	      config.values = values;
+	    }
+	  }
+	  if (callback) {
+	    config.callback = callback;
+	  }
+	  return config;
+	}
+
+	module.exports = {
+	  prepareValue: prepareValue,
+	  normalizeQueryConfig: normalizeQueryConfig
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
+
+/***/ },
+/* 79 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	// PostgreSQL Query Builder & Compiler
+	// ------
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	var inherits = __webpack_require__(52);
+
+	var QueryCompiler = __webpack_require__(18);
+
+	function QueryCompiler_PG(client, builder) {
+	  QueryCompiler.call(this, client, builder);
+	}
+	inherits(QueryCompiler_PG, QueryCompiler);
+
+	(0, _lodash.assign)(QueryCompiler_PG.prototype, {
+
+	  // Compiles a truncate query.
+	  truncate: function truncate() {
+	    return 'truncate ' + this.tableName + ' restart identity';
+	  },
+
+	  // is used if the an array with multiple empty values supplied
+	  _defaultInsertValue: 'default',
+
+	  // Compiles an `insert` query, allowing for multiple
+	  // inserts using a single query statement.
+	  insert: function insert() {
+	    var sql = QueryCompiler.prototype.insert.call(this);
+	    if (sql === '') return sql;
+	    var returning = this.single.returning;
+	    return {
+	      sql: sql + this._returning(returning),
+	      returning: returning
+	    };
+	  },
+
+	  // Compiles an `update` query, allowing for a return value.
+	  update: function update() {
+	    var updateData = this._prepUpdate(this.single.update);
+	    var wheres = this.where();
+	    var returning = this.single.returning;
+	    return {
+	      sql: 'update ' + this.tableName + ' set ' + updateData.join(', ') + (wheres ? ' ' + wheres : '') + this._returning(returning),
+	      returning: returning
+	    };
+	  },
+
+	  // Compiles an `update` query, allowing for a return value.
+	  del: function del() {
+	    var sql = QueryCompiler.prototype.del.apply(this, arguments);
+	    var returning = this.single.returning;
+	    return {
+	      sql: sql + this._returning(returning),
+	      returning: returning
+	    };
+	  },
+
+	  _returning: function _returning(value) {
+	    return value ? ' returning ' + this.formatter.columnize(value) : '';
+	  },
+
+	  forUpdate: function forUpdate() {
+	    return 'for update';
+	  },
+
+	  forShare: function forShare() {
+	    return 'for share';
+	  },
+
+	  // Compiles a columnInfo query
+	  columnInfo: function columnInfo() {
+	    var column = this.single.columnInfo;
+
+	    var sql = 'select * from information_schema.columns where table_name = ? and table_catalog = ?';
+	    var bindings = [this.single.table, this.client.database()];
+
+	    if (this.single.schema) {
+	      sql += ' and table_schema = ?';
+	      bindings.push(this.single.schema);
+	    } else {
+	      sql += ' and table_schema = current_schema';
+	    }
+
+	    return {
+	      sql: sql,
+	      bindings: bindings,
+	      output: function output(resp) {
+	        var out = (0, _lodash.reduce)(resp.rows, function (columns, val) {
+	          columns[val.column_name] = {
+	            type: val.data_type,
+	            maxLength: val.character_maximum_length,
+	            nullable: val.is_nullable === 'YES',
+	            defaultValue: val.column_default
+	          };
+	          return columns;
+	        }, {});
+	        return column && out[column] || out;
+	      }
+	    };
+	  }
+
+	});
+
+	module.exports = QueryCompiler_PG;
+
+/***/ },
+/* 80 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	// PostgreSQL Column Compiler
+	// -------
+
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	var inherits = __webpack_require__(52);
+	var ColumnCompiler = __webpack_require__(24);
+	var helpers = __webpack_require__(3);
+
+	function ColumnCompiler_PG() {
+	  ColumnCompiler.apply(this, arguments);
+	  this.modifiers = ['nullable', 'defaultTo', 'comment'];
+	}
+	inherits(ColumnCompiler_PG, ColumnCompiler);
+
+	(0, _lodash.assign)(ColumnCompiler_PG.prototype, {
+
+	  // Types
+	  // ------
+	  bigincrements: 'bigserial primary key',
+	  bigint: 'bigint',
+	  binary: 'bytea',
+
+	  bit: function bit(column) {
+	    return column.length !== false ? 'bit(' + column.length + ')' : 'bit';
+	  },
+
+	  bool: 'boolean',
+
+	  // Create the column definition for an enum type.
+	  // Using method "2" here: http://stackoverflow.com/a/10984951/525714
+	  enu: function enu(allowed) {
+	    return 'text check (' + this.formatter.wrap(this.args[0]) + " in ('" + allowed.join("', '") + "'))";
+	  },
+
+	  double: 'double precision',
+	  floating: 'real',
+	  increments: 'serial primary key',
+	  json: function json(jsonb) {
+	    if (jsonb) helpers.deprecate('json(true)', 'jsonb()');
+	    return jsonColumn(this.client, jsonb);
+	  },
+	  jsonb: function jsonb() {
+	    return jsonColumn(this.client, true);
+	  },
+	  smallint: 'smallint',
+	  tinyint: 'smallint',
+	  datetime: function datetime(without) {
+	    return without ? 'timestamp' : 'timestamptz';
+	  },
+	  timestamp: function timestamp(without) {
+	    return without ? 'timestamp' : 'timestamptz';
+	  },
+	  uuid: 'uuid',
+
+	  // Modifiers:
+	  // ------
+	  comment: function comment(_comment) {
+	    this.pushAdditional(function () {
+	      this.pushQuery('comment on column ' + this.tableCompiler.tableName() + '.' + this.formatter.wrap(this.args[0]) + " is " + (_comment ? "'" + _comment + "'" : 'NULL'));
+	    }, _comment);
+	  }
+
+	});
+
+	function jsonColumn(client, jsonb) {
+	  if (!client.version || parseFloat(client.version) >= 9.2) return jsonb ? 'jsonb' : 'json';
+	  return 'text';
+	}
+
+	module.exports = ColumnCompiler_PG;
+
+/***/ },
+/* 81 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// PostgreSQL Table Builder & Compiler
+	// -------
+
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	var inherits = __webpack_require__(52);
+	var TableCompiler = __webpack_require__(22);
+
+	function TableCompiler_PG() {
+	  TableCompiler.apply(this, arguments);
+	}
+	inherits(TableCompiler_PG, TableCompiler);
+
+	// Compile a rename column command.
+	TableCompiler_PG.prototype.renameColumn = function (from, to) {
+	  return this.pushQuery({
+	    sql: 'alter table ' + this.tableName() + ' rename ' + this.formatter.wrap(from) + ' to ' + this.formatter.wrap(to)
+	  });
+	};
+
+	TableCompiler_PG.prototype.compileAdd = function (builder) {
+	  var table = this.formatter.wrap(builder);
+	  var columns = this.prefixArray('add column', this.getColumns(builder));
+	  return this.pushQuery({
+	    sql: 'alter table ' + table + ' ' + columns.join(', ')
+	  });
+	};
+
+	// Adds the "create" query to the query sequence.
+	TableCompiler_PG.prototype.createQuery = function (columns, ifNot) {
+	  var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
+	  var sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
+	  if (this.single.inherits) sql += ' inherits (' + this.formatter.wrap(this.single.inherits) + ')';
+	  this.pushQuery({
+	    sql: sql,
+	    bindings: columns.bindings
+	  });
+	  var hasComment = (0, _lodash.has)(this.single, 'comment');
+	  if (hasComment) this.comment(this.single.comment);
+	};
+
+	// Compiles the comment on the table.
+	TableCompiler_PG.prototype.comment = function (comment) {
+	  /*jshint unused: false*/
+	  this.pushQuery('comment on table ' + this.tableName() + ' is ' + "'" + (this.single.comment || '') + "'");
+	};
+
+	// Indexes:
+	// -------
+
+	TableCompiler_PG.prototype.primary = function (columns) {
+	  this.pushQuery('alter table ' + this.tableName() + " add primary key (" + this.formatter.columnize(columns) + ")");
+	};
+	TableCompiler_PG.prototype.unique = function (columns, indexName) {
+	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
+	  this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + indexName + ' unique (' + this.formatter.columnize(columns) + ')');
+	};
+	TableCompiler_PG.prototype.index = function (columns, indexName, indexType) {
+	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+	  this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + (indexType && ' using ' + indexType || '') + ' (' + this.formatter.columnize(columns) + ')');
+	};
+	TableCompiler_PG.prototype.dropPrimary = function () {
+	  var constraintName = this.formatter.wrap(this.tableNameRaw + '_pkey');
+	  this.pushQuery('alter table ' + this.tableName() + " drop constraint " + constraintName);
+	};
+	TableCompiler_PG.prototype.dropIndex = function (columns, indexName) {
+	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+	  this.pushQuery('drop index ' + indexName);
+	};
+	TableCompiler_PG.prototype.dropUnique = function (columns, indexName) {
+	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
+	  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
+	};
+	TableCompiler_PG.prototype.dropForeign = function (columns, indexName) {
+	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
+	  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
+	};
+
+	module.exports = TableCompiler_PG;
+
+/***/ },
+/* 82 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// PostgreSQL Schema Compiler
+	// -------
+
+	'use strict';
+
+	var inherits = __webpack_require__(52);
+	var SchemaCompiler = __webpack_require__(20);
+
+	function SchemaCompiler_PG() {
+	  SchemaCompiler.apply(this, arguments);
+	}
+	inherits(SchemaCompiler_PG, SchemaCompiler);
+
+	// Check whether the current table
+	SchemaCompiler_PG.prototype.hasTable = function (tableName) {
+	  var sql = 'select * from information_schema.tables where table_name = ?';
+	  var bindings = [tableName];
+
+	  if (this.schema) {
+	    sql += ' and table_schema = ?';
+	    bindings.push(this.schema);
+	  } else {
+	    sql += ' and table_schema = current_schema';
+	  }
+
+	  this.pushQuery({
+	    sql: sql,
+	    bindings: bindings,
+	    output: function output(resp) {
+	      return resp.rows.length > 0;
+	    }
+	  });
+	};
+
+	// Compile the query to determine if a column exists in a table.
+	SchemaCompiler_PG.prototype.hasColumn = function (tableName, columnName) {
+	  var sql = 'select * from information_schema.columns where table_name = ? and column_name = ?';
+	  var bindings = [tableName, columnName];
+
+	  if (this.schema) {
+	    sql += ' and table_schema = ?';
+	    bindings.push(this.schema);
+	  } else {
+	    sql += ' and table_schema = current_schema';
+	  }
+
+	  this.pushQuery({
+	    sql: sql,
+	    bindings: bindings,
+	    output: function output(resp) {
+	      return resp.rows.length > 0;
+	    }
+	  });
+	};
+
+	SchemaCompiler_PG.prototype.qualifiedTableName = function (tableName) {
+	  var name = this.schema ? this.schema + '.' + tableName : tableName;
+	  return this.formatter.wrap(name);
+	};
+
+	// Compile a rename table command.
+	SchemaCompiler_PG.prototype.renameTable = function (from, to) {
+	  this.pushQuery('alter table ' + this.qualifiedTableName(from) + ' rename to ' + this.qualifiedTableName(to));
+	};
+
+	SchemaCompiler_PG.prototype.createSchema = function (schemaName) {
+	  this.pushQuery('create schema ' + this.formatter.wrap(schemaName));
+	};
+
+	SchemaCompiler_PG.prototype.createSchemaIfNotExists = function (schemaName) {
+	  this.pushQuery('create schema if not exists ' + this.formatter.wrap(schemaName));
+	};
+
+	SchemaCompiler_PG.prototype.dropSchema = function (schemaName) {
+	  this.pushQuery('drop schema ' + this.formatter.wrap(schemaName));
+	};
+
+	SchemaCompiler_PG.prototype.dropSchemaIfExists = function (schemaName) {
+	  this.pushQuery('drop schema if exists ' + this.formatter.wrap(schemaName));
+	};
+
+	SchemaCompiler_PG.prototype.dropExtension = function (extensionName) {
+	  this.pushQuery('drop extension ' + this.formatter.wrap(extensionName));
+	};
+
+	SchemaCompiler_PG.prototype.dropExtensionIfExists = function (extensionName) {
+	  this.pushQuery('drop extension if exists ' + this.formatter.wrap(extensionName));
+	};
+
+	SchemaCompiler_PG.prototype.createExtension = function (extensionName) {
+	  this.pushQuery('create extension ' + this.formatter.wrap(extensionName));
+	};
+
+	SchemaCompiler_PG.prototype.createExtensionIfNotExists = function (extensionName) {
+	  this.pushQuery('create extension if not exists ' + this.formatter.wrap(extensionName));
+	};
+
+	module.exports = SchemaCompiler_PG;
+
+/***/ },
+/* 83 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	// SQLite3 Query Builder & Compiler
+
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	var inherits = __webpack_require__(52);
+	var QueryCompiler = __webpack_require__(18);
+
+	function QueryCompiler_SQLite3(client, builder) {
+	  QueryCompiler.call(this, client, builder);
+	}
+	inherits(QueryCompiler_SQLite3, QueryCompiler);
+
+	(0, _lodash.assign)(QueryCompiler_SQLite3.prototype, {
+
+	  // The locks are not applicable in SQLite3
+	  forShare: emptyStr,
+
+	  forUpdate: emptyStr,
+
+	  // SQLite requires us to build the multi-row insert as a listing of select with
+	  // unions joining them together. So we'll build out this list of columns and
+	  // then join them all together with select unions to complete the queries.
+	  insert: function insert() {
+	    var insertValues = this.single.insert || [];
+	    var sql = 'insert into ' + this.tableName + ' ';
+
+	    if (Array.isArray(insertValues)) {
+	      if (insertValues.length === 0) {
+	        return '';
+	      } else if (insertValues.length === 1 && insertValues[0] && (0, _lodash.isEmpty)(insertValues[0])) {
+	        return sql + this._emptyInsertValue;
+	      }
+	    } else if (typeof insertValues === 'object' && (0, _lodash.isEmpty)(insertValues)) {
+	      return sql + this._emptyInsertValue;
+	    }
+
+	    var insertData = this._prepInsert(insertValues);
+
+	    if ((0, _lodash.isString)(insertData)) {
+	      return sql + insertData;
+	    }
+
+	    if (insertData.columns.length === 0) {
+	      return '';
+	    }
+
+	    sql += '(' + this.formatter.columnize(insertData.columns) + ')';
+
+	    if (insertData.values.length === 1) {
+	      return sql + ' values (' + this.formatter.parameterize(insertData.values[0]) + ')';
+	    }
+
+	    var blocks = [];
+	    var i = -1;
+	    while (++i < insertData.values.length) {
+	      var i2 = -1,
+	          block = blocks[i] = [];
+	      var current = insertData.values[i];
+	      while (++i2 < insertData.columns.length) {
+	        block.push(this.formatter.alias(this.formatter.parameter(current[i2]), this.formatter.wrap(insertData.columns[i2])));
+	      }
+	      blocks[i] = block.join(', ');
+	    }
+	    return sql + ' select ' + blocks.join(' union all select ');
+	  },
+
+	  // Compile a truncate table statement into SQL.
+	  truncate: function truncate() {
+	    var table = this.tableName;
+	    return {
+	      sql: 'delete from ' + table,
+	      output: function output() {
+	        return this.query({ sql: 'delete from sqlite_sequence where name = ' + table })['catch'](function () {});
+	      }
+	    };
+	  },
+
+	  // Compiles a `columnInfo` query
+	  columnInfo: function columnInfo() {
+	    var column = this.single.columnInfo;
+	    return {
+	      sql: 'PRAGMA table_info(' + this.single.table + ')',
+	      output: function output(resp) {
+	        var maxLengthRegex = /.*\((\d+)\)/;
+	        var out = (0, _lodash.reduce)(resp, function (columns, val) {
+	          var type = val.type;
+	          var maxLength = (maxLength = type.match(maxLengthRegex)) && maxLength[1];
+	          type = maxLength ? type.split('(')[0] : type;
+	          columns[val.name] = {
+	            type: type.toLowerCase(),
+	            maxLength: maxLength,
+	            nullable: !val.notnull,
+	            defaultValue: val.dflt_value
+	          };
+	          return columns;
+	        }, {});
+	        return column && out[column] || out;
+	      }
+	    };
+	  },
+
+	  limit: function limit() {
+	    var noLimit = !this.single.limit && this.single.limit !== 0;
+	    if (noLimit && !this.single.offset) return '';
+
+	    // Workaround for offset only,
+	    // see http://stackoverflow.com/questions/10491492/sqllite-with-skip-offset-only-not-limit
+	    return 'limit ' + this.formatter.parameter(noLimit ? -1 : this.single.limit);
+	  }
+
+	});
+
+	function emptyStr() {
+	  return '';
+	}
+
+	module.exports = QueryCompiler_SQLite3;
+
+/***/ },
+/* 84 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	// SQLite3: Column Builder & Compiler
+	// -------
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	// Schema Compiler
+	// -------
+
+	var inherits = __webpack_require__(52);
+	var SchemaCompiler = __webpack_require__(20);
+
+	function SchemaCompiler_SQLite3() {
+	  SchemaCompiler.apply(this, arguments);
+	}
+	inherits(SchemaCompiler_SQLite3, SchemaCompiler);
+
+	// Compile the query to determine if a table exists.
+	SchemaCompiler_SQLite3.prototype.hasTable = function (tableName) {
+	  this.pushQuery({
+	    sql: "select * from sqlite_master where type = 'table' and name = " + this.formatter.parameter(tableName),
+	    output: function output(resp) {
+	      return resp.length > 0;
+	    }
+	  });
+	};
+
+	// Compile the query to determine if a column exists.
+	SchemaCompiler_SQLite3.prototype.hasColumn = function (tableName, column) {
+	  this.pushQuery({
+	    sql: 'PRAGMA table_info(' + this.formatter.wrap(tableName) + ')',
+	    output: function output(resp) {
+	      return (0, _lodash.some)(resp, { name: column });
+	    }
+	  });
+	};
+
+	// Compile a rename table command.
+	SchemaCompiler_SQLite3.prototype.renameTable = function (from, to) {
+	  this.pushQuery('alter table ' + this.formatter.wrap(from) + ' rename to ' + this.formatter.wrap(to));
+	};
+
+	module.exports = SchemaCompiler_SQLite3;
+
+/***/ },
+/* 85 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var inherits = __webpack_require__(52);
+	var ColumnCompiler = __webpack_require__(24);
+
+	// Column Compiler
+	// -------
+
+	function ColumnCompiler_SQLite3() {
+	  this.modifiers = ['nullable', 'defaultTo'];
+	  ColumnCompiler.apply(this, arguments);
+	}
+	inherits(ColumnCompiler_SQLite3, ColumnCompiler);
+
+	// Types
+	// -------
+
+	ColumnCompiler_SQLite3.prototype.double = ColumnCompiler_SQLite3.prototype.decimal = ColumnCompiler_SQLite3.prototype.floating = 'float';
+	ColumnCompiler_SQLite3.prototype.timestamp = 'datetime';
+
+	module.exports = ColumnCompiler_SQLite3;
+
+/***/ },
+/* 86 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	// Table Compiler
+	// -------
+
+	var inherits = __webpack_require__(52);
+	var TableCompiler = __webpack_require__(22);
+
+	function TableCompiler_SQLite3() {
+	  TableCompiler.apply(this, arguments);
+	  this.primaryKey = void 0;
+	}
+	inherits(TableCompiler_SQLite3, TableCompiler);
+
+	// Create a new table.
+	TableCompiler_SQLite3.prototype.createQuery = function (columns, ifNot) {
+	  var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
+	  var sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ');
+
+	  // SQLite forces primary keys to be added when the table is initially created
+	  // so we will need to check for a primary key commands and add the columns
+	  // to the table's declaration here so they can be created on the tables.
+	  sql += this.foreignKeys() || '';
+	  sql += this.primaryKeys() || '';
+	  sql += ')';
+
+	  this.pushQuery(sql);
+	};
+
+	TableCompiler_SQLite3.prototype.addColumns = function (columns) {
+	  for (var i = 0, l = columns.sql.length; i < l; i++) {
+	    this.pushQuery({
+	      sql: 'alter table ' + this.tableName() + ' add column ' + columns.sql[i],
+	      bindings: columns.bindings[i]
+	    });
+	  }
+	};
+
+	// Compile a drop unique key command.
+	TableCompiler_SQLite3.prototype.dropUnique = function (columns, indexName) {
+	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
+	  this.pushQuery('drop index ' + indexName);
+	};
+
+	TableCompiler_SQLite3.prototype.dropIndex = function (columns, indexName) {
+	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+	  this.pushQuery('drop index ' + indexName);
+	};
+
+	// Compile a unique key command.
+	TableCompiler_SQLite3.prototype.unique = function (columns, indexName) {
+	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
+	  columns = this.formatter.columnize(columns);
+	  this.pushQuery('create unique index ' + indexName + ' on ' + this.tableName() + ' (' + columns + ')');
+	};
+
+	// Compile a plain index key command.
+	TableCompiler_SQLite3.prototype.index = function (columns, indexName) {
+	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+	  columns = this.formatter.columnize(columns);
+	  this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + ' (' + columns + ')');
+	};
+
+	TableCompiler_SQLite3.prototype.primary = TableCompiler_SQLite3.prototype.foreign = function () {
+	  if (this.method !== 'create' && this.method !== 'createIfNot') {
+	    console.warn('SQLite3 Foreign & Primary keys may only be added on create');
+	  }
+	};
+
+	TableCompiler_SQLite3.prototype.primaryKeys = function () {
+	  var pks = (0, _lodash.filter)(this.grouped.alterTable || [], { method: 'primary' });
+	  if (pks.length > 0 && pks[0].args.length > 0) {
+	    var args = Array.isArray(pks[0].args[0]) ? pks[0].args[0] : pks[0].args;
+	    return ', primary key (' + this.formatter.columnize(args) + ')';
+	  }
+	};
+
+	TableCompiler_SQLite3.prototype.foreignKeys = function () {
+	  var sql = '';
+	  var foreignKeys = (0, _lodash.filter)(this.grouped.alterTable || [], { method: 'foreign' });
+	  for (var i = 0, l = foreignKeys.length; i < l; i++) {
+	    var foreign = foreignKeys[i].args[0];
+	    var column = this.formatter.columnize(foreign.column);
+	    var references = this.formatter.columnize(foreign.references);
+	    var foreignTable = this.formatter.wrap(foreign.inTable);
+	    sql += ', foreign key(' + column + ') references ' + foreignTable + '(' + references + ')';
+	    if (foreign.onDelete) sql += ' on delete ' + foreign.onDelete;
+	    if (foreign.onUpdate) sql += ' on update ' + foreign.onUpdate;
+	  }
+	  return sql;
+	};
+
+	TableCompiler_SQLite3.prototype.createTableBlock = function () {
+	  return this.getColumns().concat().join(',');
+	};
+
+	// Compile a rename column command... very complex in sqlite
+	TableCompiler_SQLite3.prototype.renameColumn = function (from, to) {
+	  var compiler = this;
+	  this.pushQuery({
+	    sql: 'PRAGMA table_info(' + this.tableName() + ')',
+	    output: function output(pragma) {
+	      return compiler.client.ddl(compiler, pragma, this.connection).renameColumn(from, to);
+	    }
+	  });
+	};
+
+	TableCompiler_SQLite3.prototype.dropColumn = function (column) {
+	  var compiler = this;
+	  this.pushQuery({
+	    sql: 'PRAGMA table_info(' + this.tableName() + ')',
+	    output: function output(pragma) {
+	      return compiler.client.ddl(compiler, pragma, this.connection).dropColumn(column);
+	    }
+	  });
+	};
+
+	module.exports = TableCompiler_SQLite3;
+
+/***/ },
+/* 87 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	// SQLite3_DDL
+	//
+	// All of the SQLite3 specific DDL helpers for renaming/dropping
+	// columns and changing datatypes.
+	// -------
+
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	// So altering the schema in SQLite3 is a major pain.
+	// We have our own object to deal with the renaming and altering the types
+	// for sqlite3 things.
+	var Promise = __webpack_require__(9);
+	function SQLite3_DDL(client, tableCompiler, pragma, connection) {
+	  this.client = client;
+	  this.tableCompiler = tableCompiler;
+	  this.pragma = pragma;
+	  this.tableName = this.tableCompiler.tableNameRaw;
+	  this.alteredName = (0, _lodash.uniqueId)('_knex_temp_alter');
+	  this.connection = connection;
+	}
+
+	(0, _lodash.assign)(SQLite3_DDL.prototype, {
+
+	  getColumn: Promise.method(function (column) {
+	    var currentCol = (0, _lodash.find)(this.pragma, { name: column });
+	    if (!currentCol) throw new Error('The column ' + column + ' is not in the ' + this.tableName + ' table');
+	    return currentCol;
+	  }),
+
+	  getTableSql: function getTableSql() {
+	    return this.trx.raw('SELECT name, sql FROM sqlite_master WHERE type="table" AND name="' + this.tableName + '"');
+	  },
+
+	  renameTable: Promise.method(function () {
+	    return this.trx.raw('ALTER TABLE "' + this.tableName + '" RENAME TO "' + this.alteredName + '"');
+	  }),
+
+	  dropOriginal: function dropOriginal() {
+	    return this.trx.raw('DROP TABLE "' + this.tableName + '"');
+	  },
+
+	  dropTempTable: function dropTempTable() {
+	    return this.trx.raw('DROP TABLE "' + this.alteredName + '"');
+	  },
+
+	  copyData: function copyData() {
+	    return this.trx.raw('SELECT * FROM "' + this.tableName + '"').bind(this).then(this.insertChunked(20, this.alteredName));
+	  },
+
+	  reinsertData: function reinsertData(iterator) {
+	    return function () {
+	      return this.trx.raw('SELECT * FROM "' + this.alteredName + '"').bind(this).then(this.insertChunked(20, this.tableName, iterator));
+	    };
+	  },
+
+	  insertChunked: function insertChunked(amount, target, iterator) {
+	    iterator = iterator || function (noop) {
+	      return noop;
+	    };
+	    return function (result) {
+	      var batch = [];
+	      var ddl = this;
+	      return Promise.reduce(result, function (memo, row) {
+	        memo++;
+	        batch.push(row);
+	        if (memo % 20 === 0 || memo === result.length) {
+	          return ddl.trx.queryBuilder().table(target).insert((0, _lodash.map)(batch, iterator)).then(function () {
+	            batch = [];
+	          }).thenReturn(memo);
+	        }
+	        return memo;
+	      }, 0);
+	    };
+	  },
+
+	  createTempTable: function createTempTable(createTable) {
+	    return function () {
+	      return this.trx.raw(createTable.sql.replace(this.tableName, this.alteredName));
+	    };
+	  },
+
+	  _doReplace: function _doReplace(sql, from, to) {
+	    var matched = sql.match(/^CREATE TABLE (\S+) \((.*)\)/);
+
+	    var tableName = matched[1],
+	        defs = matched[2];
+
+	    if (!defs) {
+	      throw new Error('No column definitions in this statement!');
+	    }
+
+	    var parens = 0,
+	        args = [],
+	        ptr = 0;
+	    for (var i = 0, x = defs.length; i < x; i++) {
+	      switch (defs[i]) {
+	        case '(':
+	          parens++;
+	          break;
+	        case ')':
+	          parens--;
+	          break;
+	        case ',':
+	          if (parens === 0) {
+	            args.push(defs.slice(ptr, i));
+	            ptr = i + 1;
+	          }
+	          break;
+	        case ' ':
+	          if (ptr === i) {
+	            ptr = i + 1;
+	          }
+	          break;
+	      }
+	    }
+	    args.push(defs.slice(ptr, i));
+
+	    args = args.map(function (item) {
+	      var split = item.split(' ');
+
+	      if (split[0] === from) {
+	        // column definition
+	        if (to) {
+	          split[0] = to;
+	          return split.join(' ');
+	        }
+	        return ''; // for deletions
+	      }
+
+	      // skip constraint name
+	      var idx = /constraint/i.test(split[0]) ? 2 : 0;
+
+	      // primary key and unique constraints have one or more
+	      // columns from this table listed between (); replace
+	      // one if it matches
+	      if (/primary|unique/i.test(split[idx])) {
+	        return item.replace(/\(.*\)/, function (columns) {
+	          return columns.replace(from, to);
+	        });
+	      }
+
+	      // foreign keys have one or more columns from this table
+	      // listed between (); replace one if it matches
+	      // foreign keys also have a 'references' clause
+	      // which may reference THIS table; if it does, replace
+	      // column references in that too!
+	      if (/foreign/.test(split[idx])) {
+	        split = item.split(/ references /i);
+	        // the quoted column names save us from having to do anything
+	        // other than a straight replace here
+	        split[0] = split[0].replace(from, to);
+
+	        if (split[1].slice(0, tableName.length) === tableName) {
+	          split[1] = split[1].replace(/\(.*\)/, function (columns) {
+	            return columns.replace(from, to);
+	          });
+	        }
+	        return split.join(' references ');
+	      }
+
+	      return item;
+	    });
+	    return sql.replace(/\(.*\)/, function () {
+	      return '(' + args.join(', ') + ')';
+	    }).replace(/,\s*([,)])/, '$1');
+	  },
+
+	  // Boy, this is quite a method.
+	  renameColumn: Promise.method(function (from, to) {
+	    var currentCol;
+
+	    return this.client.transaction((function (trx) {
+	      this.trx = trx;
+	      return this.getColumn(from).bind(this).tap(function (col) {
+	        currentCol = col;
+	      }).then(this.getTableSql).then(function (sql) {
+	        var a = this.client.wrapIdentifier(from);
+	        var b = this.client.wrapIdentifier(to);
+	        var createTable = sql[0];
+	        var newSql = this._doReplace(createTable.sql, a, b);
+	        if (sql === newSql) {
+	          throw new Error('Unable to find the column to change');
+	        }
+	        return Promise.bind(this).then(this.createTempTable(createTable)).then(this.copyData).then(this.dropOriginal).then(function () {
+	          return this.trx.raw(newSql);
+	        }).then(this.reinsertData(function (row) {
+	          row[to] = row[from];
+	          return (0, _lodash.omit)(row, from);
+	        })).then(this.dropTempTable);
+	      });
+	    }).bind(this), { connection: this.connection });
+	  }),
+
+	  dropColumn: Promise.method(function (column) {
+	    var currentCol;
+
+	    return this.client.transaction((function (trx) {
+	      this.trx = trx;
+	      return this.getColumn(column).tap(function (col) {
+	        currentCol = col;
+	      }).bind(this).then(this.getTableSql).then(function (sql) {
+	        var createTable = sql[0];
+	        var a = this.client.wrapIdentifier(column);
+	        var newSql = this._doReplace(createTable.sql, a, '');
+	        if (sql === newSql) {
+	          throw new Error('Unable to find the column to change');
+	        }
+	        return Promise.bind(this).then(this.createTempTable(createTable)).then(this.copyData).then(this.dropOriginal).then(function () {
+	          return this.trx.raw(newSql);
+	        }).then(this.reinsertData(function (row) {
+	          return (0, _lodash.omit)(row, column);
+	        })).then(this.dropTempTable);
+	      });
+	    }).bind(this), { connection: this.connection });
+	  })
+
+	});
+
+	module.exports = SQLite3_DDL;
+
+/***/ },
+/* 88 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
+
 	var _ = __webpack_require__(1);
 	var inherits = __webpack_require__(52);
 	var Oracle_Compiler = __webpack_require__(71);
-	var ReturningHelper = __webpack_require__(81).ReturningHelper;
-	var BlobHelper = __webpack_require__(81).BlobHelper;
+	var ReturningHelper = __webpack_require__(91).ReturningHelper;
+	var BlobHelper = __webpack_require__(91).BlobHelper;
 
 	function Oracledb_Compiler(client, builder) {
 	  Oracle_Compiler.call(this, client, builder);
@@ -9602,7 +10640,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
-/* 79 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9635,7 +10673,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ColumnCompiler_Oracledb;
 
 /***/ },
-/* 80 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9644,7 +10682,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var inherits = __webpack_require__(52);
 	var Oracle_Formatter = __webpack_require__(69);
-	var BlobHelper = __webpack_require__(81).BlobHelper;
+	var BlobHelper = __webpack_require__(91).BlobHelper;
 
 	function Oracledb_Formatter(client) {
 	  Oracle_Formatter.call(this, client);
@@ -9669,7 +10707,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Oracledb_Formatter;
 
 /***/ },
-/* 81 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9690,7 +10728,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Utils;
 
 /***/ },
-/* 82 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9749,1044 +10787,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 	module.exports = Oracle_Transaction;
-
-/***/ },
-/* 83 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
-
-	function dateToString(date) {
-	  function pad(number, digits) {
-	    number = number.toString();
-	    while (number.length < digits) {
-	      number = "0" + number;
-	    }
-	    return number;
-	  }
-
-	  var offset = -date.getTimezoneOffset();
-	  var ret = pad(date.getFullYear(), 4) + '-' + pad(date.getMonth() + 1, 2) + '-' + pad(date.getDate(), 2) + 'T' + pad(date.getHours(), 2) + ':' + pad(date.getMinutes(), 2) + ':' + pad(date.getSeconds(), 2) + '.' + pad(date.getMilliseconds(), 3);
-
-	  if (offset < 0) {
-	    ret += "-";
-	    offset *= -1;
-	  } else {
-	    ret += "+";
-	  }
-
-	  return ret + pad(Math.floor(offset / 60), 2) + ":" + pad(offset % 60, 2);
-	}
-
-	var prepareObject;
-	var arrayString;
-
-	// converts values from javascript types
-	// to their 'raw' counterparts for use as a postgres parameter
-	// note: you can override this function to provide your own conversion mechanism
-	// for complex types, etc...
-	var prepareValue = function prepareValue(val, seen, valueForUndefined) {
-	  if (val instanceof Buffer) {
-	    return val;
-	  }
-	  if (val instanceof Date) {
-	    return dateToString(val);
-	  }
-	  if (Array.isArray(val)) {
-	    return arrayString(val);
-	  }
-	  if (val === null) {
-	    return null;
-	  }
-	  if (val === undefined) {
-	    return valueForUndefined;
-	  }
-	  if (typeof val === 'object') {
-	    return prepareObject(val, seen);
-	  }
-	  return val.toString();
-	};
-
-	prepareObject = function prepareObject(val, seen) {
-	  if (val && typeof val.toPostgres === 'function') {
-	    seen = seen || [];
-	    if (seen.indexOf(val) !== -1) {
-	      throw new Error('circular reference detected while preparing "' + val + '" for query');
-	    }
-	    seen.push(val);
-
-	    return prepareValue(val.toPostgres(prepareValue), seen);
-	  }
-	  return JSON.stringify(val);
-	};
-
-	// convert a JS array to a postgres array literal
-	// uses comma separator so won't work for types like box that use
-	// a different array separator.
-	arrayString = function arrayString(val) {
-	  return '{' + val.map(function (elem) {
-	    if (elem === null || elem === undefined) {
-	      return 'NULL';
-	    }
-	    if (Array.isArray(elem)) {
-	      return arrayString(elem);
-	    }
-	    return JSON.stringify(prepareValue(elem));
-	  }).join(',') + '}';
-	};
-
-	function normalizeQueryConfig(config, values, callback) {
-	  //can take in strings or config objects
-	  config = typeof config === 'string' ? { text: config } : config;
-	  if (values) {
-	    if (typeof values === 'function') {
-	      config.callback = values;
-	    } else {
-	      config.values = values;
-	    }
-	  }
-	  if (callback) {
-	    config.callback = callback;
-	  }
-	  return config;
-	}
-
-	module.exports = {
-	  prepareValue: prepareValue,
-	  normalizeQueryConfig: normalizeQueryConfig
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
-
-/***/ },
-/* 84 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	// PostgreSQL Query Builder & Compiler
-	// ------
-	'use strict';
-
-	var _lodash = __webpack_require__(1);
-
-	var inherits = __webpack_require__(52);
-
-	var QueryCompiler = __webpack_require__(18);
-
-	function QueryCompiler_PG(client, builder) {
-	  QueryCompiler.call(this, client, builder);
-	}
-	inherits(QueryCompiler_PG, QueryCompiler);
-
-	(0, _lodash.assign)(QueryCompiler_PG.prototype, {
-
-	  // Compiles a truncate query.
-	  truncate: function truncate() {
-	    return 'truncate ' + this.tableName + ' restart identity';
-	  },
-
-	  // is used if the an array with multiple empty values supplied
-	  _defaultInsertValue: 'default',
-
-	  // Compiles an `insert` query, allowing for multiple
-	  // inserts using a single query statement.
-	  insert: function insert() {
-	    var sql = QueryCompiler.prototype.insert.call(this);
-	    if (sql === '') return sql;
-	    var returning = this.single.returning;
-	    return {
-	      sql: sql + this._returning(returning),
-	      returning: returning
-	    };
-	  },
-
-	  // Compiles an `update` query, allowing for a return value.
-	  update: function update() {
-	    var updateData = this._prepUpdate(this.single.update);
-	    var wheres = this.where();
-	    var returning = this.single.returning;
-	    return {
-	      sql: 'update ' + this.tableName + ' set ' + updateData.join(', ') + (wheres ? ' ' + wheres : '') + this._returning(returning),
-	      returning: returning
-	    };
-	  },
-
-	  // Compiles an `update` query, allowing for a return value.
-	  del: function del() {
-	    var sql = QueryCompiler.prototype.del.apply(this, arguments);
-	    var returning = this.single.returning;
-	    return {
-	      sql: sql + this._returning(returning),
-	      returning: returning
-	    };
-	  },
-
-	  _returning: function _returning(value) {
-	    return value ? ' returning ' + this.formatter.columnize(value) : '';
-	  },
-
-	  forUpdate: function forUpdate() {
-	    return 'for update';
-	  },
-
-	  forShare: function forShare() {
-	    return 'for share';
-	  },
-
-	  // Compiles a columnInfo query
-	  columnInfo: function columnInfo() {
-	    var column = this.single.columnInfo;
-
-	    var sql = 'select * from information_schema.columns where table_name = ? and table_catalog = ?';
-	    var bindings = [this.single.table, this.client.database()];
-
-	    if (this.single.schema) {
-	      sql += ' and table_schema = ?';
-	      bindings.push(this.single.schema);
-	    } else {
-	      sql += ' and table_schema = current_schema';
-	    }
-
-	    return {
-	      sql: sql,
-	      bindings: bindings,
-	      output: function output(resp) {
-	        var out = (0, _lodash.reduce)(resp.rows, function (columns, val) {
-	          columns[val.column_name] = {
-	            type: val.data_type,
-	            maxLength: val.character_maximum_length,
-	            nullable: val.is_nullable === 'YES',
-	            defaultValue: val.column_default
-	          };
-	          return columns;
-	        }, {});
-	        return column && out[column] || out;
-	      }
-	    };
-	  }
-
-	});
-
-	module.exports = QueryCompiler_PG;
-
-/***/ },
-/* 85 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	// PostgreSQL Column Compiler
-	// -------
-
-	'use strict';
-
-	var _lodash = __webpack_require__(1);
-
-	var inherits = __webpack_require__(52);
-	var ColumnCompiler = __webpack_require__(24);
-	var helpers = __webpack_require__(3);
-
-	function ColumnCompiler_PG() {
-	  ColumnCompiler.apply(this, arguments);
-	  this.modifiers = ['nullable', 'defaultTo', 'comment'];
-	}
-	inherits(ColumnCompiler_PG, ColumnCompiler);
-
-	(0, _lodash.assign)(ColumnCompiler_PG.prototype, {
-
-	  // Types
-	  // ------
-	  bigincrements: 'bigserial primary key',
-	  bigint: 'bigint',
-	  binary: 'bytea',
-
-	  bit: function bit(column) {
-	    return column.length !== false ? 'bit(' + column.length + ')' : 'bit';
-	  },
-
-	  bool: 'boolean',
-
-	  // Create the column definition for an enum type.
-	  // Using method "2" here: http://stackoverflow.com/a/10984951/525714
-	  enu: function enu(allowed) {
-	    return 'text check (' + this.formatter.wrap(this.args[0]) + " in ('" + allowed.join("', '") + "'))";
-	  },
-
-	  double: 'double precision',
-	  floating: 'real',
-	  increments: 'serial primary key',
-	  json: function json(jsonb) {
-	    if (jsonb) helpers.deprecate('json(true)', 'jsonb()');
-	    return jsonColumn(this.client, jsonb);
-	  },
-	  jsonb: function jsonb() {
-	    return jsonColumn(this.client, true);
-	  },
-	  smallint: 'smallint',
-	  tinyint: 'smallint',
-	  datetime: function datetime(without) {
-	    return without ? 'timestamp' : 'timestamptz';
-	  },
-	  timestamp: function timestamp(without) {
-	    return without ? 'timestamp' : 'timestamptz';
-	  },
-	  uuid: 'uuid',
-
-	  // Modifiers:
-	  // ------
-	  comment: function comment(_comment) {
-	    this.pushAdditional(function () {
-	      this.pushQuery('comment on column ' + this.tableCompiler.tableName() + '.' + this.formatter.wrap(this.args[0]) + " is " + (_comment ? "'" + _comment + "'" : 'NULL'));
-	    }, _comment);
-	  }
-
-	});
-
-	function jsonColumn(client, jsonb) {
-	  if (!client.version || parseFloat(client.version) >= 9.2) return jsonb ? 'jsonb' : 'json';
-	  return 'text';
-	}
-
-	module.exports = ColumnCompiler_PG;
-
-/***/ },
-/* 86 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// PostgreSQL Table Builder & Compiler
-	// -------
-
-	'use strict';
-
-	var _lodash = __webpack_require__(1);
-
-	var inherits = __webpack_require__(52);
-	var TableCompiler = __webpack_require__(22);
-
-	function TableCompiler_PG() {
-	  TableCompiler.apply(this, arguments);
-	}
-	inherits(TableCompiler_PG, TableCompiler);
-
-	// Compile a rename column command.
-	TableCompiler_PG.prototype.renameColumn = function (from, to) {
-	  return this.pushQuery({
-	    sql: 'alter table ' + this.tableName() + ' rename ' + this.formatter.wrap(from) + ' to ' + this.formatter.wrap(to)
-	  });
-	};
-
-	TableCompiler_PG.prototype.compileAdd = function (builder) {
-	  var table = this.formatter.wrap(builder);
-	  var columns = this.prefixArray('add column', this.getColumns(builder));
-	  return this.pushQuery({
-	    sql: 'alter table ' + table + ' ' + columns.join(', ')
-	  });
-	};
-
-	// Adds the "create" query to the query sequence.
-	TableCompiler_PG.prototype.createQuery = function (columns, ifNot) {
-	  var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
-	  var sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
-	  if (this.single.inherits) sql += ' inherits (' + this.formatter.wrap(this.single.inherits) + ')';
-	  this.pushQuery({
-	    sql: sql,
-	    bindings: columns.bindings
-	  });
-	  var hasComment = (0, _lodash.has)(this.single, 'comment');
-	  if (hasComment) this.comment(this.single.comment);
-	};
-
-	// Compiles the comment on the table.
-	TableCompiler_PG.prototype.comment = function (comment) {
-	  /*jshint unused: false*/
-	  this.pushQuery('comment on table ' + this.tableName() + ' is ' + "'" + (this.single.comment || '') + "'");
-	};
-
-	// Indexes:
-	// -------
-
-	TableCompiler_PG.prototype.primary = function (columns) {
-	  this.pushQuery('alter table ' + this.tableName() + " add primary key (" + this.formatter.columnize(columns) + ")");
-	};
-	TableCompiler_PG.prototype.unique = function (columns, indexName) {
-	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-	  this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + indexName + ' unique (' + this.formatter.columnize(columns) + ')');
-	};
-	TableCompiler_PG.prototype.index = function (columns, indexName, indexType) {
-	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
-	  this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + (indexType && ' using ' + indexType || '') + ' (' + this.formatter.columnize(columns) + ')');
-	};
-	TableCompiler_PG.prototype.dropPrimary = function () {
-	  var constraintName = this.formatter.wrap(this.tableNameRaw + '_pkey');
-	  this.pushQuery('alter table ' + this.tableName() + " drop constraint " + constraintName);
-	};
-	TableCompiler_PG.prototype.dropIndex = function (columns, indexName) {
-	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
-	  this.pushQuery('drop index ' + indexName);
-	};
-	TableCompiler_PG.prototype.dropUnique = function (columns, indexName) {
-	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-	  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
-	};
-	TableCompiler_PG.prototype.dropForeign = function (columns, indexName) {
-	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
-	  this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
-	};
-
-	module.exports = TableCompiler_PG;
-
-/***/ },
-/* 87 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// PostgreSQL Schema Compiler
-	// -------
-
-	'use strict';
-
-	var inherits = __webpack_require__(52);
-	var SchemaCompiler = __webpack_require__(20);
-
-	function SchemaCompiler_PG() {
-	  SchemaCompiler.apply(this, arguments);
-	}
-	inherits(SchemaCompiler_PG, SchemaCompiler);
-
-	// Check whether the current table
-	SchemaCompiler_PG.prototype.hasTable = function (tableName) {
-	  var sql = 'select * from information_schema.tables where table_name = ?';
-	  var bindings = [tableName];
-
-	  if (this.schema) {
-	    sql += ' and table_schema = ?';
-	    bindings.push(this.schema);
-	  } else {
-	    sql += ' and table_schema = current_schema';
-	  }
-
-	  this.pushQuery({
-	    sql: sql,
-	    bindings: bindings,
-	    output: function output(resp) {
-	      return resp.rows.length > 0;
-	    }
-	  });
-	};
-
-	// Compile the query to determine if a column exists in a table.
-	SchemaCompiler_PG.prototype.hasColumn = function (tableName, columnName) {
-	  var sql = 'select * from information_schema.columns where table_name = ? and column_name = ?';
-	  var bindings = [tableName, columnName];
-
-	  if (this.schema) {
-	    sql += ' and table_schema = ?';
-	    bindings.push(this.schema);
-	  } else {
-	    sql += ' and table_schema = current_schema';
-	  }
-
-	  this.pushQuery({
-	    sql: sql,
-	    bindings: bindings,
-	    output: function output(resp) {
-	      return resp.rows.length > 0;
-	    }
-	  });
-	};
-
-	SchemaCompiler_PG.prototype.qualifiedTableName = function (tableName) {
-	  var name = this.schema ? this.schema + '.' + tableName : tableName;
-	  return this.formatter.wrap(name);
-	};
-
-	// Compile a rename table command.
-	SchemaCompiler_PG.prototype.renameTable = function (from, to) {
-	  this.pushQuery('alter table ' + this.qualifiedTableName(from) + ' rename to ' + this.qualifiedTableName(to));
-	};
-
-	SchemaCompiler_PG.prototype.createSchema = function (schemaName) {
-	  this.pushQuery('create schema ' + this.formatter.wrap(schemaName));
-	};
-
-	SchemaCompiler_PG.prototype.createSchemaIfNotExists = function (schemaName) {
-	  this.pushQuery('create schema if not exists ' + this.formatter.wrap(schemaName));
-	};
-
-	SchemaCompiler_PG.prototype.dropSchema = function (schemaName) {
-	  this.pushQuery('drop schema ' + this.formatter.wrap(schemaName));
-	};
-
-	SchemaCompiler_PG.prototype.dropSchemaIfExists = function (schemaName) {
-	  this.pushQuery('drop schema if exists ' + this.formatter.wrap(schemaName));
-	};
-
-	SchemaCompiler_PG.prototype.dropExtension = function (extensionName) {
-	  this.pushQuery('drop extension ' + this.formatter.wrap(extensionName));
-	};
-
-	SchemaCompiler_PG.prototype.dropExtensionIfExists = function (extensionName) {
-	  this.pushQuery('drop extension if exists ' + this.formatter.wrap(extensionName));
-	};
-
-	SchemaCompiler_PG.prototype.createExtension = function (extensionName) {
-	  this.pushQuery('create extension ' + this.formatter.wrap(extensionName));
-	};
-
-	SchemaCompiler_PG.prototype.createExtensionIfNotExists = function (extensionName) {
-	  this.pushQuery('create extension if not exists ' + this.formatter.wrap(extensionName));
-	};
-
-	module.exports = SchemaCompiler_PG;
-
-/***/ },
-/* 88 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	// SQLite3 Query Builder & Compiler
-
-	'use strict';
-
-	var _lodash = __webpack_require__(1);
-
-	var inherits = __webpack_require__(52);
-	var QueryCompiler = __webpack_require__(18);
-
-	function QueryCompiler_SQLite3(client, builder) {
-	  QueryCompiler.call(this, client, builder);
-	}
-	inherits(QueryCompiler_SQLite3, QueryCompiler);
-
-	(0, _lodash.assign)(QueryCompiler_SQLite3.prototype, {
-
-	  // The locks are not applicable in SQLite3
-	  forShare: emptyStr,
-
-	  forUpdate: emptyStr,
-
-	  // SQLite requires us to build the multi-row insert as a listing of select with
-	  // unions joining them together. So we'll build out this list of columns and
-	  // then join them all together with select unions to complete the queries.
-	  insert: function insert() {
-	    var insertValues = this.single.insert || [];
-	    var sql = 'insert into ' + this.tableName + ' ';
-
-	    if (Array.isArray(insertValues)) {
-	      if (insertValues.length === 0) {
-	        return '';
-	      } else if (insertValues.length === 1 && insertValues[0] && (0, _lodash.isEmpty)(insertValues[0])) {
-	        return sql + this._emptyInsertValue;
-	      }
-	    } else if (typeof insertValues === 'object' && (0, _lodash.isEmpty)(insertValues)) {
-	      return sql + this._emptyInsertValue;
-	    }
-
-	    var insertData = this._prepInsert(insertValues);
-
-	    if ((0, _lodash.isString)(insertData)) {
-	      return sql + insertData;
-	    }
-
-	    if (insertData.columns.length === 0) {
-	      return '';
-	    }
-
-	    sql += '(' + this.formatter.columnize(insertData.columns) + ')';
-
-	    if (insertData.values.length === 1) {
-	      return sql + ' values (' + this.formatter.parameterize(insertData.values[0]) + ')';
-	    }
-
-	    var blocks = [];
-	    var i = -1;
-	    while (++i < insertData.values.length) {
-	      var i2 = -1,
-	          block = blocks[i] = [];
-	      var current = insertData.values[i];
-	      while (++i2 < insertData.columns.length) {
-	        block.push(this.formatter.alias(this.formatter.parameter(current[i2]), this.formatter.wrap(insertData.columns[i2])));
-	      }
-	      blocks[i] = block.join(', ');
-	    }
-	    return sql + ' select ' + blocks.join(' union all select ');
-	  },
-
-	  // Compile a truncate table statement into SQL.
-	  truncate: function truncate() {
-	    var table = this.tableName;
-	    return {
-	      sql: 'delete from ' + table,
-	      output: function output() {
-	        return this.query({ sql: 'delete from sqlite_sequence where name = ' + table })['catch'](function () {});
-	      }
-	    };
-	  },
-
-	  // Compiles a `columnInfo` query
-	  columnInfo: function columnInfo() {
-	    var column = this.single.columnInfo;
-	    return {
-	      sql: 'PRAGMA table_info(' + this.single.table + ')',
-	      output: function output(resp) {
-	        var maxLengthRegex = /.*\((\d+)\)/;
-	        var out = (0, _lodash.reduce)(resp, function (columns, val) {
-	          var type = val.type;
-	          var maxLength = (maxLength = type.match(maxLengthRegex)) && maxLength[1];
-	          type = maxLength ? type.split('(')[0] : type;
-	          columns[val.name] = {
-	            type: type.toLowerCase(),
-	            maxLength: maxLength,
-	            nullable: !val.notnull,
-	            defaultValue: val.dflt_value
-	          };
-	          return columns;
-	        }, {});
-	        return column && out[column] || out;
-	      }
-	    };
-	  },
-
-	  limit: function limit() {
-	    var noLimit = !this.single.limit && this.single.limit !== 0;
-	    if (noLimit && !this.single.offset) return '';
-
-	    // Workaround for offset only,
-	    // see http://stackoverflow.com/questions/10491492/sqllite-with-skip-offset-only-not-limit
-	    return 'limit ' + this.formatter.parameter(noLimit ? -1 : this.single.limit);
-	  }
-
-	});
-
-	function emptyStr() {
-	  return '';
-	}
-
-	module.exports = QueryCompiler_SQLite3;
-
-/***/ },
-/* 89 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	// SQLite3: Column Builder & Compiler
-	// -------
-	'use strict';
-
-	var _lodash = __webpack_require__(1);
-
-	// Schema Compiler
-	// -------
-
-	var inherits = __webpack_require__(52);
-	var SchemaCompiler = __webpack_require__(20);
-
-	function SchemaCompiler_SQLite3() {
-	  SchemaCompiler.apply(this, arguments);
-	}
-	inherits(SchemaCompiler_SQLite3, SchemaCompiler);
-
-	// Compile the query to determine if a table exists.
-	SchemaCompiler_SQLite3.prototype.hasTable = function (tableName) {
-	  this.pushQuery({
-	    sql: "select * from sqlite_master where type = 'table' and name = " + this.formatter.parameter(tableName),
-	    output: function output(resp) {
-	      return resp.length > 0;
-	    }
-	  });
-	};
-
-	// Compile the query to determine if a column exists.
-	SchemaCompiler_SQLite3.prototype.hasColumn = function (tableName, column) {
-	  this.pushQuery({
-	    sql: 'PRAGMA table_info(' + this.formatter.wrap(tableName) + ')',
-	    output: function output(resp) {
-	      return (0, _lodash.some)(resp, { name: column });
-	    }
-	  });
-	};
-
-	// Compile a rename table command.
-	SchemaCompiler_SQLite3.prototype.renameTable = function (from, to) {
-	  this.pushQuery('alter table ' + this.formatter.wrap(from) + ' rename to ' + this.formatter.wrap(to));
-	};
-
-	module.exports = SchemaCompiler_SQLite3;
-
-/***/ },
-/* 90 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var inherits = __webpack_require__(52);
-	var ColumnCompiler = __webpack_require__(24);
-
-	// Column Compiler
-	// -------
-
-	function ColumnCompiler_SQLite3() {
-	  this.modifiers = ['nullable', 'defaultTo'];
-	  ColumnCompiler.apply(this, arguments);
-	}
-	inherits(ColumnCompiler_SQLite3, ColumnCompiler);
-
-	// Types
-	// -------
-
-	ColumnCompiler_SQLite3.prototype.double = ColumnCompiler_SQLite3.prototype.decimal = ColumnCompiler_SQLite3.prototype.floating = 'float';
-	ColumnCompiler_SQLite3.prototype.timestamp = 'datetime';
-
-	module.exports = ColumnCompiler_SQLite3;
-
-/***/ },
-/* 91 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _lodash = __webpack_require__(1);
-
-	// Table Compiler
-	// -------
-
-	var inherits = __webpack_require__(52);
-	var TableCompiler = __webpack_require__(22);
-
-	function TableCompiler_SQLite3() {
-	  TableCompiler.apply(this, arguments);
-	  this.primaryKey = void 0;
-	}
-	inherits(TableCompiler_SQLite3, TableCompiler);
-
-	// Create a new table.
-	TableCompiler_SQLite3.prototype.createQuery = function (columns, ifNot) {
-	  var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
-	  var sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ');
-
-	  // SQLite forces primary keys to be added when the table is initially created
-	  // so we will need to check for a primary key commands and add the columns
-	  // to the table's declaration here so they can be created on the tables.
-	  sql += this.foreignKeys() || '';
-	  sql += this.primaryKeys() || '';
-	  sql += ')';
-
-	  this.pushQuery(sql);
-	};
-
-	TableCompiler_SQLite3.prototype.addColumns = function (columns) {
-	  for (var i = 0, l = columns.sql.length; i < l; i++) {
-	    this.pushQuery({
-	      sql: 'alter table ' + this.tableName() + ' add column ' + columns.sql[i],
-	      bindings: columns.bindings[i]
-	    });
-	  }
-	};
-
-	// Compile a drop unique key command.
-	TableCompiler_SQLite3.prototype.dropUnique = function (columns, indexName) {
-	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-	  this.pushQuery('drop index ' + indexName);
-	};
-
-	TableCompiler_SQLite3.prototype.dropIndex = function (columns, indexName) {
-	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
-	  this.pushQuery('drop index ' + indexName);
-	};
-
-	// Compile a unique key command.
-	TableCompiler_SQLite3.prototype.unique = function (columns, indexName) {
-	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-	  columns = this.formatter.columnize(columns);
-	  this.pushQuery('create unique index ' + indexName + ' on ' + this.tableName() + ' (' + columns + ')');
-	};
-
-	// Compile a plain index key command.
-	TableCompiler_SQLite3.prototype.index = function (columns, indexName) {
-	  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
-	  columns = this.formatter.columnize(columns);
-	  this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + ' (' + columns + ')');
-	};
-
-	TableCompiler_SQLite3.prototype.primary = TableCompiler_SQLite3.prototype.foreign = function () {
-	  if (this.method !== 'create' && this.method !== 'createIfNot') {
-	    console.warn('SQLite3 Foreign & Primary keys may only be added on create');
-	  }
-	};
-
-	TableCompiler_SQLite3.prototype.primaryKeys = function () {
-	  var pks = (0, _lodash.filter)(this.grouped.alterTable || [], { method: 'primary' });
-	  if (pks.length > 0 && pks[0].args.length > 0) {
-	    var args = Array.isArray(pks[0].args[0]) ? pks[0].args[0] : pks[0].args;
-	    return ', primary key (' + this.formatter.columnize(args) + ')';
-	  }
-	};
-
-	TableCompiler_SQLite3.prototype.foreignKeys = function () {
-	  var sql = '';
-	  var foreignKeys = (0, _lodash.filter)(this.grouped.alterTable || [], { method: 'foreign' });
-	  for (var i = 0, l = foreignKeys.length; i < l; i++) {
-	    var foreign = foreignKeys[i].args[0];
-	    var column = this.formatter.columnize(foreign.column);
-	    var references = this.formatter.columnize(foreign.references);
-	    var foreignTable = this.formatter.wrap(foreign.inTable);
-	    sql += ', foreign key(' + column + ') references ' + foreignTable + '(' + references + ')';
-	    if (foreign.onDelete) sql += ' on delete ' + foreign.onDelete;
-	    if (foreign.onUpdate) sql += ' on update ' + foreign.onUpdate;
-	  }
-	  return sql;
-	};
-
-	TableCompiler_SQLite3.prototype.createTableBlock = function () {
-	  return this.getColumns().concat().join(',');
-	};
-
-	// Compile a rename column command... very complex in sqlite
-	TableCompiler_SQLite3.prototype.renameColumn = function (from, to) {
-	  var compiler = this;
-	  this.pushQuery({
-	    sql: 'PRAGMA table_info(' + this.tableName() + ')',
-	    output: function output(pragma) {
-	      return compiler.client.ddl(compiler, pragma, this.connection).renameColumn(from, to);
-	    }
-	  });
-	};
-
-	TableCompiler_SQLite3.prototype.dropColumn = function (column) {
-	  var compiler = this;
-	  this.pushQuery({
-	    sql: 'PRAGMA table_info(' + this.tableName() + ')',
-	    output: function output(pragma) {
-	      return compiler.client.ddl(compiler, pragma, this.connection).dropColumn(column);
-	    }
-	  });
-	};
-
-	module.exports = TableCompiler_SQLite3;
-
-/***/ },
-/* 92 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	// SQLite3_DDL
-	//
-	// All of the SQLite3 specific DDL helpers for renaming/dropping
-	// columns and changing datatypes.
-	// -------
-
-	'use strict';
-
-	var _lodash = __webpack_require__(1);
-
-	// So altering the schema in SQLite3 is a major pain.
-	// We have our own object to deal with the renaming and altering the types
-	// for sqlite3 things.
-	var Promise = __webpack_require__(9);
-	function SQLite3_DDL(client, tableCompiler, pragma, connection) {
-	  this.client = client;
-	  this.tableCompiler = tableCompiler;
-	  this.pragma = pragma;
-	  this.tableName = this.tableCompiler.tableNameRaw;
-	  this.alteredName = (0, _lodash.uniqueId)('_knex_temp_alter');
-	  this.connection = connection;
-	}
-
-	(0, _lodash.assign)(SQLite3_DDL.prototype, {
-
-	  getColumn: Promise.method(function (column) {
-	    var currentCol = (0, _lodash.find)(this.pragma, { name: column });
-	    if (!currentCol) throw new Error('The column ' + column + ' is not in the ' + this.tableName + ' table');
-	    return currentCol;
-	  }),
-
-	  getTableSql: function getTableSql() {
-	    return this.trx.raw('SELECT name, sql FROM sqlite_master WHERE type="table" AND name="' + this.tableName + '"');
-	  },
-
-	  renameTable: Promise.method(function () {
-	    return this.trx.raw('ALTER TABLE "' + this.tableName + '" RENAME TO "' + this.alteredName + '"');
-	  }),
-
-	  dropOriginal: function dropOriginal() {
-	    return this.trx.raw('DROP TABLE "' + this.tableName + '"');
-	  },
-
-	  dropTempTable: function dropTempTable() {
-	    return this.trx.raw('DROP TABLE "' + this.alteredName + '"');
-	  },
-
-	  copyData: function copyData() {
-	    return this.trx.raw('SELECT * FROM "' + this.tableName + '"').bind(this).then(this.insertChunked(20, this.alteredName));
-	  },
-
-	  reinsertData: function reinsertData(iterator) {
-	    return function () {
-	      return this.trx.raw('SELECT * FROM "' + this.alteredName + '"').bind(this).then(this.insertChunked(20, this.tableName, iterator));
-	    };
-	  },
-
-	  insertChunked: function insertChunked(amount, target, iterator) {
-	    iterator = iterator || function (noop) {
-	      return noop;
-	    };
-	    return function (result) {
-	      var batch = [];
-	      var ddl = this;
-	      return Promise.reduce(result, function (memo, row) {
-	        memo++;
-	        batch.push(row);
-	        if (memo % 20 === 0 || memo === result.length) {
-	          return ddl.trx.queryBuilder().table(target).insert((0, _lodash.map)(batch, iterator)).then(function () {
-	            batch = [];
-	          }).thenReturn(memo);
-	        }
-	        return memo;
-	      }, 0);
-	    };
-	  },
-
-	  createTempTable: function createTempTable(createTable) {
-	    return function () {
-	      return this.trx.raw(createTable.sql.replace(this.tableName, this.alteredName));
-	    };
-	  },
-
-	  _doReplace: function _doReplace(sql, from, to) {
-	    var matched = sql.match(/^CREATE TABLE (\S+) \((.*)\)/);
-
-	    var tableName = matched[1],
-	        defs = matched[2];
-
-	    if (!defs) {
-	      throw new Error('No column definitions in this statement!');
-	    }
-
-	    var parens = 0,
-	        args = [],
-	        ptr = 0;
-	    for (var i = 0, x = defs.length; i < x; i++) {
-	      switch (defs[i]) {
-	        case '(':
-	          parens++;
-	          break;
-	        case ')':
-	          parens--;
-	          break;
-	        case ',':
-	          if (parens === 0) {
-	            args.push(defs.slice(ptr, i));
-	            ptr = i + 1;
-	          }
-	          break;
-	        case ' ':
-	          if (ptr === i) {
-	            ptr = i + 1;
-	          }
-	          break;
-	      }
-	    }
-	    args.push(defs.slice(ptr, i));
-
-	    args = args.map(function (item) {
-	      var split = item.split(' ');
-
-	      if (split[0] === from) {
-	        // column definition
-	        if (to) {
-	          split[0] = to;
-	          return split.join(' ');
-	        }
-	        return ''; // for deletions
-	      }
-
-	      // skip constraint name
-	      var idx = /constraint/i.test(split[0]) ? 2 : 0;
-
-	      // primary key and unique constraints have one or more
-	      // columns from this table listed between (); replace
-	      // one if it matches
-	      if (/primary|unique/i.test(split[idx])) {
-	        return item.replace(/\(.*\)/, function (columns) {
-	          return columns.replace(from, to);
-	        });
-	      }
-
-	      // foreign keys have one or more columns from this table
-	      // listed between (); replace one if it matches
-	      // foreign keys also have a 'references' clause
-	      // which may reference THIS table; if it does, replace
-	      // column references in that too!
-	      if (/foreign/.test(split[idx])) {
-	        split = item.split(/ references /i);
-	        // the quoted column names save us from having to do anything
-	        // other than a straight replace here
-	        split[0] = split[0].replace(from, to);
-
-	        if (split[1].slice(0, tableName.length) === tableName) {
-	          split[1] = split[1].replace(/\(.*\)/, function (columns) {
-	            return columns.replace(from, to);
-	          });
-	        }
-	        return split.join(' references ');
-	      }
-
-	      return item;
-	    });
-	    return sql.replace(/\(.*\)/, function () {
-	      return '(' + args.join(', ') + ')';
-	    }).replace(/,\s*([,)])/, '$1');
-	  },
-
-	  // Boy, this is quite a method.
-	  renameColumn: Promise.method(function (from, to) {
-	    var currentCol;
-
-	    return this.client.transaction((function (trx) {
-	      this.trx = trx;
-	      return this.getColumn(from).bind(this).tap(function (col) {
-	        currentCol = col;
-	      }).then(this.getTableSql).then(function (sql) {
-	        var a = this.client.wrapIdentifier(from);
-	        var b = this.client.wrapIdentifier(to);
-	        var createTable = sql[0];
-	        var newSql = this._doReplace(createTable.sql, a, b);
-	        if (sql === newSql) {
-	          throw new Error('Unable to find the column to change');
-	        }
-	        return Promise.bind(this).then(this.createTempTable(createTable)).then(this.copyData).then(this.dropOriginal).then(function () {
-	          return this.trx.raw(newSql);
-	        }).then(this.reinsertData(function (row) {
-	          row[to] = row[from];
-	          return (0, _lodash.omit)(row, from);
-	        })).then(this.dropTempTable);
-	      });
-	    }).bind(this), { connection: this.connection });
-	  }),
-
-	  dropColumn: Promise.method(function (column) {
-	    var currentCol;
-
-	    return this.client.transaction((function (trx) {
-	      this.trx = trx;
-	      return this.getColumn(column).tap(function (col) {
-	        currentCol = col;
-	      }).bind(this).then(this.getTableSql).then(function (sql) {
-	        var createTable = sql[0];
-	        var a = this.client.wrapIdentifier(column);
-	        var newSql = this._doReplace(createTable.sql, a, '');
-	        if (sql === newSql) {
-	          throw new Error('Unable to find the column to change');
-	        }
-	        return Promise.bind(this).then(this.createTempTable(createTable)).then(this.copyData).then(this.dropOriginal).then(function () {
-	          return this.trx.raw(newSql);
-	        }).then(this.reinsertData(function (row) {
-	          return (0, _lodash.omit)(row, column);
-	        })).then(this.dropTempTable);
-	      });
-	    }).bind(this), { connection: this.connection });
-	  })
-
-	});
-
-	module.exports = SQLite3_DDL;
 
 /***/ },
 /* 93 */
@@ -11168,8 +11168,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict'
 
 	var base64 = __webpack_require__(121)
-	var ieee754 = __webpack_require__(116)
-	var isArray = __webpack_require__(117)
+	var ieee754 = __webpack_require__(117)
+	var isArray = __webpack_require__(116)
 
 	exports.Buffer = Buffer
 	exports.SlowBuffer = SlowBuffer
@@ -13088,6 +13088,18 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+	var ansiRegex = __webpack_require__(128)();
+
+	module.exports = function (str) {
+		return typeof str === 'string' ? str.replace(ansiRegex, '') : str;
+	};
+
+
+/***/ },
+/* 101 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
 
 	function assembleStyles () {
@@ -13154,26 +13166,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		get: assembleStyles
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(127)(module)))
-
-/***/ },
-/* 101 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	var ansiRegex = __webpack_require__(128)();
-
-	module.exports = function (str) {
-		return typeof str === 'string' ? str.replace(ansiRegex, '') : str;
-	};
-
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(129)(module)))
 
 /***/ },
 /* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var ansiRegex = __webpack_require__(129);
+	var ansiRegex = __webpack_require__(127);
 	var re = new RegExp(ansiRegex().source); // remove the `g` flag
 	module.exports = re.test.bind(re);
 
@@ -13768,7 +13768,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	}(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(127)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(129)(module), (function() { return this; }())))
 
 /***/ },
 /* 105 */
@@ -16260,6 +16260,17 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 116 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var toString = {}.toString;
+
+	module.exports = Array.isArray || function (arr) {
+	  return toString.call(arr) == '[object Array]';
+	};
+
+
+/***/ },
+/* 117 */
+/***/ function(module, exports, __webpack_require__) {
+
 	exports.read = function (buffer, offset, isLE, mLen, nBytes) {
 	  var e, m
 	  var eLen = nBytes * 8 - mLen - 1
@@ -16344,17 +16355,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  buffer[offset + i - d] |= s * 128
 	}
-
-
-/***/ },
-/* 117 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var toString = {}.toString;
-
-	module.exports = Array.isArray || function (arr) {
-	  return toString.call(arr) == '[object Array]';
-	};
 
 
 /***/ },
@@ -16922,16 +16922,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = function(module) {
-		if(!module.webpackPolyfill) {
-			module.deprecate = function() {};
-			module.paths = [];
-			// module.parent = undefined by default
-			module.children = [];
-			module.webpackPolyfill = 1;
-		}
-		return module;
-	}
+	'use strict';
+	module.exports = function () {
+		return /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+	};
 
 
 /***/ },
@@ -16948,10 +16942,16 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 129 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-	module.exports = function () {
-		return /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
-	};
+	module.exports = function(module) {
+		if(!module.webpackPolyfill) {
+			module.deprecate = function() {};
+			module.paths = [];
+			// module.parent = undefined by default
+			module.children = [];
+			module.webpackPolyfill = 1;
+		}
+		return module;
+	}
 
 
 /***/ },
