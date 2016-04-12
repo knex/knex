@@ -97,7 +97,6 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
       var fetchAsync = function(sql, bindParams, options, cb) {
         options = options || {};
         options.outFormat = client.driver.OBJECT;
-
         if (options.resultSet) {
           connection.execute(sql, bindParams || [], options, function(err, result) {
             if (err) {
@@ -236,7 +235,9 @@ Client_Oracledb.prototype._query = function(connection, obj) {
       }
 
       if (!obj.returning && outBinds.length === 0) {
-        return resolver(obj);
+        return connection.commitAsync().then(function() {
+          resolver(obj);
+        });
       }
       var rowIds = [];
       var offset = 0;
@@ -336,7 +337,7 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
           return _.flatten(_.map(response, _.values));
         }
         return response;
-      } else if (obj.rowsAffected) {
+      } else if (!_.isUndefined(obj.rowsAffected)) {
         return obj.rowsAffected;
       } else {
         return 1;
