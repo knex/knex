@@ -181,7 +181,7 @@ assign(Client_MSSQL.prototype, {
   },
 
   ping: function(resource, callback) {
-    resource.query('SELECT 1', callback);
+    resource.request().query('SELECT 1', callback);
   }
 
 })
