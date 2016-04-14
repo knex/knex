@@ -75,7 +75,12 @@ assign(Client_MySQL.prototype, {
     return new Promise(function(resolver, rejecter) {
       stream.on('error', rejecter)
       stream.on('end', resolver)
-      connection.query(obj.sql, obj.bindings).stream(options).pipe(stream)
+      connection.query(obj.sql, obj.bindings)
+        .stream(options)
+        .on('error', function(err) {
+          stream.emit('error', err)
+        })
+        .pipe(stream)
     })
   },
 
