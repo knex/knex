@@ -62,15 +62,22 @@ assign(Client_MariaSQL.prototype, {
       connection.query(sql.sql, sql.bindings)
         .on('result', function(res) {
           res
-            .on('error', rejecter)
+            .on('error', function(err) {
+              stream.emit('error', err);
+              rejecter(err);
+            })
             .on('end', function() {
+              stream.emit('end');
               resolver(res.info);
             })
             .on('data', function (data) {
               stream.write(handleRow(data, res.info.metadata));
             })
         })
-        .on('error', rejecter);
+        .on('error', function(err) {
+          stream.emit(err);
+          rejecter(err);
+        });
     });
   },
 
