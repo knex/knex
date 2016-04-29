@@ -72,7 +72,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
       connection.commitAsync = function() {
         var self = this;
         return new Promise(function(commitResolve, commitReject) {
-          if (asyncConnection.isTransaction) {
+          if (connection.isTransaction) {
             return commitResolve();
           }
           self.commit(function(err) {
