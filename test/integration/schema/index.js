@@ -268,6 +268,7 @@ module.exports = function(knex) {
       });
 
       it('accepts table names starting with numeric values', function() {
+        this.timeout(10000);
         return knex.schema
           .createTable('10_test_table', function(table) {
             table.bigIncrements('id');
