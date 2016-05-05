@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.10.0)</span>
+      Knex.js <span class="version">(0.11.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -45,7 +45,7 @@
       Upgrading
     </a>
     <ul class="toc_section">
-      <li>– <a href="#Upgrading-from0.9">0.9.x -> 0.10</a></li>
+      <li>– <a href="#Upgrading-from0.10">0.10.x -> 0.11</a></li>
     </ul>
 
     <a class="toc_title" href="#Installation">
@@ -336,7 +336,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.10.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.11.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -346,6 +346,12 @@
     </p>
 
     <h2 id="Upgrading">Upgrading</h2>
+
+    <h3 id="Upgrading-from0.10">Upgrading 0.10 -> 0.11</h3>
+
+    <p>
+      Knex treats `orWhere` with multiple keyed arguments differently. See Changelog.
+    </p>
 
     <h3 id="Upgrading-from0.9">Upgrading 0.9 -> 0.10</h3>
 
@@ -3035,6 +3041,60 @@ $ npm test
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.11.0</b> &mdash; <small><i>5 May, 2016</i></small><br />
+    </p>
+
+    <b>Breaking Changes:</b>
+    <ul>
+      <li>
+        <tt>QueryBuilder#orWhere</tt> joins multiple arguments with
+        <tt>AND</tt>. #1164
+      </li>
+    </ul>
+
+    <b>Other Changes:</b>
+    <ul>
+      <li>Collate for columns. (MySQL) #1147</li>
+      <li>
+        Add <tt>QueryBuilder#timeout</tt>, <tt>Raw#timeout</tt>. #1201 #1260
+      </li>
+      <li>Exit with error code when appropriate. #1238</li>
+      <li>
+        MSSQL connection accepts <tt>host</tt> as an alias for <tt>server</tt>
+        in accordance with other dialects. #1239
+      </li>
+      <li>Add <tt>query-response</tt> event. #1231</li>
+      <li>Correct behaviour of sibling nested transactions. #1226</li>
+      <li>Support <tt>RETURNING</tt> with <tt>UPDATE</tt>. (Oracle) #1253<li>
+      <li>
+        Throwing callbacks from transactions automatically rolls them back.
+        #1257
+      </li>
+      <li>
+        Fixes to named <tt>Raw</tt> bindings. #1251
+      </li>
+      <li>
+        <tt>timestamps</tt> accepts an argument to set `NOT NULL` and default to current timestamp.
+      </li>
+      <li>Add <tt>TableBuilder#inherits</tt> for PostgreSQL. #601<li>
+      <li>Wrap index names. #1289<li>
+      <li>Restore coffeescript knexfiles and configurations. #1292</li>
+      <li>
+        Add <tt>andWhereBetween</tt> and <tt>andWhereNotBetween</tt> #1132
+      </li>
+      <li> Fix <tt>valueForUndefined</tt> failure. #1269<li>
+      <li>
+        <tt>renameColumn</tt> no longer drops default value or nullability.
+        #1326
+      </li>
+      <li>Correct MySQL2 error handling. #1315</li>
+      <li>Fix MSSQL <tt>createTableIfNotExists</tt>. #1362</li>
+      <li>Fix MSSQL URL parsing. #1342</li>
+      <li>Update Lodash to 4.6.0 #1242</li>
+      <li>Update Bluebird to 3.3.4 #1279</li>
+    </ul>
+
+    <p>
       <b class="header">0.10.0</b> &mdash; <small><i>15 Feb, 2016</i></small><br />
     </p>
 
@@ -3070,7 +3130,7 @@ $ npm test
         Support non-array arguments to
         <a href="#Raw-Bindings"><tt>knex.raw</tt></a>.
       </li>
-      <li>Global <tt>>query-error</tt> event. #1163</li>
+      <li>Global <tt>query-error</tt> event. #1163</li>
       <li>Add `batchInsert`. #1182</li>
       <li>Better support for Mysql2 dialect options. #980</li>
       <li>Support for <tt>acquireConnectionTimeout</tt> default 60 seconds preventing #1040 from happening. #1177</li>
