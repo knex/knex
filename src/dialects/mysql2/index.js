@@ -5,9 +5,7 @@ var inherits     = require('inherits')
 var Client_MySQL = require('../mysql')
 var Promise      = require('../../promise')
 var helpers      = require('../../helpers')
-var pick         = require('lodash/object/pick')
-var pluck        = require('lodash/collection/pluck')
-var assign       = require('lodash/object/assign');
+import {pick, map, assign} from 'lodash'
 var Transaction  = require('./transaction')
 
 var configOptions = [
@@ -64,10 +62,12 @@ assign(Client_MySQL2.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection: function() {
+    var client = this;
     var connection = this.driver.createConnection(pick(this.connectionSettings, configOptions))
     return new Promise(function(resolver, rejecter) {
       connection.connect(function(err) {
         if (err) return rejecter(err)
+        connection.on('error', client._connectionErrorHandler.bind(null, client, connection))
         resolver(connection)
       })
     })
@@ -84,7 +84,7 @@ assign(Client_MySQL2.prototype, {
       case 'pluck':
       case 'first':
         var resp = helpers.skim(rows)
-        if (method === 'pluck') return pluck(resp, obj.pluck)
+        if (method === 'pluck') return map(resp, obj.pluck)
         return method === 'first' ? resp[0] : resp
       case 'insert':
         return [rows.insertId]
@@ -95,6 +95,10 @@ assign(Client_MySQL2.prototype, {
       default:
         return response
     }
+  },
+
+  ping: function(resource, callback) {
+    resource.query('SELECT 1', callback);
   }
 
 })

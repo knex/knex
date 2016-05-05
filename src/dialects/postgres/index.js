@@ -1,12 +1,11 @@
 
 // PostgreSQL
 // -------
-var _              = require('lodash')
+import {assign, map, extend} from 'lodash'
 var inherits       = require('inherits')
 var Client         = require('../../client')
 var Promise        = require('../../promise')
 var utils          = require('./utils')
-var assign         = require('lodash/object/assign')
 
 var QueryCompiler  = require('./query/compiler')
 var ColumnCompiler = require('./schema/columncompiler')
@@ -53,9 +52,9 @@ assign(Client_PG.prototype, {
 
   // Prep the bindings as needed by PostgreSQL.
   prepBindings: function(bindings, tz) {
-    return _.map(bindings, function(binding) {
+    return map(bindings, (binding) => {
       return utils.prepareValue(binding, tz, this.valueForUndefined)
-    }, this);
+    });
   },
 
   // Get a raw connection, called by the `pool` whenever a new
@@ -94,7 +93,7 @@ assign(Client_PG.prototype, {
     return new Promise(function(resolver, rejecter) {
       connection.query('select version();', function(err, resp) {
         if (err) return rejecter(err);
-        resolver(/^PostgreSQL (.*?) /.exec(resp.rows[0].version)[1]);
+        resolver(/^PostgreSQL (.*?)( |$)/.exec(resp.rows[0].version)[1]);
       });
     });
   },
@@ -144,7 +143,7 @@ assign(Client_PG.prototype, {
   // and any other necessary prep work.
   _query: function(connection, obj) {
     var sql = obj.sql = this.positionBindings(obj.sql)
-    if (obj.options) sql = _.extend({text: sql}, obj.options);
+    if (obj.options) sql = extend({text: sql}, obj.options);
     return new Promise(function(resolver, rejecter) {
       connection.query(sql, obj.bindings, function(err, response) {
         if (err) return rejecter(err);
@@ -162,7 +161,7 @@ assign(Client_PG.prototype, {
     var returning = obj.returning;
     if (resp.command === 'SELECT') {
       if (obj.method === 'first') return resp.rows[0];
-      if (obj.method === 'pluck') return _.pluck(resp.rows, obj.pluck);
+      if (obj.method === 'pluck') return map(resp.rows, obj.pluck);
       return resp.rows;
     }
     if (returning) {
@@ -190,6 +189,10 @@ assign(Client_PG.prototype, {
       this.pool.destroy(connection);
     }
   },
+
+  ping: function(resource, callback) {
+    resource.query('SELECT 1', [], callback);
+  }
 
 
 })

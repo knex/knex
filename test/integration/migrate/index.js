@@ -246,7 +246,8 @@ module.exports = function(knex) {
         return knex.migrate.rollback({directory: 'test/integration/migrate/test'}).spread(function(batchNo, log) {
           expect(batchNo).to.equal(1);
           expect(log).to.have.length(2);
-          expect(log[0]).to.contain('test/integration/migrate/test');
+          var migrationPath = ['test', 'integration', 'migrate', 'test'].join(path.sep); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
+          expect(log[0]).to.contain(migrationPath);
           return knex('knex_migrations').select('*').then(function(data) {
             expect(data.length).to.equal(0);
           });

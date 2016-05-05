@@ -1,13 +1,13 @@
 
-var _     = require('lodash')
+import {map, pick, keys} from 'lodash'
 var chalk = require('chalk')
 
 var helpers = {
 
   // Pick off the attributes from only the current layer of the object.
   skim: function(data) {
-    return _.map(data, function(obj) {
-      return _.pick(obj, _.keys(obj));
+    return map(data, (obj) => {
+      return pick(obj, keys(obj));
     });
   },
 
@@ -40,7 +40,7 @@ var helpers = {
 
   exit: function(msg) {
     console.log(chalk.red(msg))
-    process.exit()
+    process.exit(1)
   }
 
 };

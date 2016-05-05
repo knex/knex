@@ -1,7 +1,8 @@
 
-var _        = require('lodash');
-var inherits = require('inherits');
-var TableCompiler   = require('../../../schema/tablecompiler');
+var inherits      = require('inherits');
+var TableCompiler = require('../../../schema/tablecompiler');
+
+import {filter} from 'lodash'
 
 // Table Compiler
 // -------
@@ -38,25 +39,25 @@ TableCompiler_SQLite3.prototype.addColumns = function(columns) {
 
 // Compile a drop unique key command.
 TableCompiler_SQLite3.prototype.dropUnique = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
   this.pushQuery('drop index ' + indexName);
 };
 
 TableCompiler_SQLite3.prototype.dropIndex = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
   this.pushQuery('drop index ' + indexName);
 };
 
 // Compile a unique key command.
 TableCompiler_SQLite3.prototype.unique = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('unique', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
   columns = this.formatter.columnize(columns);
   this.pushQuery('create unique index ' + indexName + ' on ' + this.tableName() + ' (' + columns + ')');
 };
 
 // Compile a plain index key command.
 TableCompiler_SQLite3.prototype.index = function(columns, indexName) {
-  indexName = indexName || this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
   columns = this.formatter.columnize(columns);
   this.pushQuery('create index ' + indexName + ' on ' + this.tableName() + ' (' + columns + ')');
 };
@@ -69,7 +70,7 @@ TableCompiler_SQLite3.prototype.foreign = function() {
 };
 
 TableCompiler_SQLite3.prototype.primaryKeys = function() {
-  var pks = _.where(this.grouped.alterTable || [], {method: 'primary'});
+  var pks = filter(this.grouped.alterTable || [], {method: 'primary'});
   if (pks.length > 0 && pks[0].args.length > 0) {
     var args = Array.isArray(pks[0].args[0]) ? pks[0].args[0] : pks[0].args;
     return ', primary key (' + this.formatter.columnize(args) + ')';
@@ -78,7 +79,7 @@ TableCompiler_SQLite3.prototype.primaryKeys = function() {
 
 TableCompiler_SQLite3.prototype.foreignKeys = function() {
   var sql = '';
-  var foreignKeys = _.where(this.grouped.alterTable || [], {method: 'foreign'});
+  var foreignKeys = filter(this.grouped.alterTable || [], {method: 'foreign'});
   for (var i = 0, l = foreignKeys.length; i < l; i++) {
     var foreign       = foreignKeys[i].args[0];
     var column        = this.formatter.columnize(foreign.column);

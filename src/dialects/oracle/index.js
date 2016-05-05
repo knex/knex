@@ -1,15 +1,14 @@
 
 // Oracle Client
 // -------
-var _                 = require('lodash')
-var inherits          = require('inherits')
-var assign            = require('lodash/object/assign')
+import {assign, map, flatten, values} from 'lodash'
 
-var Formatter         = require('./formatter')
-var Client            = require('../../client')
-var Promise           = require('../../promise')
-var helpers           = require('../../helpers')
-var SqlString         = require('../../query/string')
+var inherits  = require('inherits')
+var Formatter = require('./formatter')
+var Client    = require('../../client')
+var Promise   = require('../../promise')
+var helpers   = require('../../helpers')
+var SqlString = require('../../query/string')
 
 var Transaction       = require('./transaction')
 var QueryCompiler     = require('./query/compiler')
@@ -53,7 +52,7 @@ assign(Client_Oracle.prototype, {
   TableCompiler: TableCompiler,
 
   prepBindings: function(bindings) {
-    return _.map(bindings, function(value) {
+    return map(bindings, (value) => {
       // returning helper uses always ROWID as string
       if (value instanceof ReturningHelper && this.driver) {
         return new this.driver.OutParam(this.driver.OCCISTRING)
@@ -68,7 +67,7 @@ assign(Client_Oracle.prototype, {
         return this.valueForUndefined
       }
       return value
-    }, this)
+    })
   },
 
   // Get a raw connection, called by the `pool` whenever a new
@@ -126,8 +125,6 @@ assign(Client_Oracle.prototype, {
     // convert ? params into positional bindings (:1)
     obj.sql = this.positionBindings(obj.sql);
 
-    obj.bindings = this.prepBindings(obj.bindings) || [];
-
     if (!obj.sql) throw new Error('The query is empty');
 
     return connection.executeAsync(obj.sql, obj.bindings).then(function(response) {
@@ -153,7 +150,7 @@ assign(Client_Oracle.prototype, {
       case 'pluck':
       case 'first':
         response = helpers.skim(response);
-        if (obj.method === 'pluck') response = _.pluck(response, obj.pluck);
+        if (obj.method === 'pluck') response = map(response, obj.pluck);
         return obj.method === 'first' ? response[0] : response;
       case 'insert':
       case 'del':
@@ -164,12 +161,16 @@ assign(Client_Oracle.prototype, {
             return response;
           }
           // return an array with values if only one returning value was specified
-          return _.flatten(_.map(response, _.values));
+          return flatten(map(response, values));
         }
         return response.updateCount;
       default:
         return response;
     }
+  },
+
+  ping: function(resource, callback) {
+    resource.execute('SELECT 1', [], callback);
   }
 
 })

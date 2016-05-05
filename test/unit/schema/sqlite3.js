@@ -35,7 +35,7 @@ describe("SQLite SchemaBuilder", function() {
       'alter table "users" add column "id" integer not null primary key autoincrement',
       'alter table "users" add column "email" varchar(255)',
     ];
-    expect(expected).to.eql(_.pluck(tableSql, 'sql'));
+    expect(expected).to.eql(_.map(tableSql, 'sql'));
   });
 
   it("drop table", function() {
@@ -57,7 +57,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index users_foo_unique');
+    equal(tableSql[0].sql, 'drop index "users_foo_unique"');
   });
 
   it("drop unique, custom", function() {
@@ -66,7 +66,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index foo');
+    equal(tableSql[0].sql, 'drop index "foo"');
   });
 
   it("drop index", function() {
@@ -75,7 +75,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index users_foo_index');
+    equal(tableSql[0].sql, 'drop index "users_foo_index"');
   });
 
   it("drop index, custom", function() {
@@ -84,7 +84,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index foo');
+    equal(tableSql[0].sql, 'drop index "foo"');
   });
 
   it("rename table", function() {
@@ -160,7 +160,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create unique index users_foo_unique on "users" ("foo")');
+    equal(tableSql[0].sql, 'create unique index "users_foo_unique" on "users" ("foo")');
   });
 
   it("adding unique key with specific name", function() {
@@ -169,7 +169,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create unique index bar on "users" ("foo")');
+    equal(tableSql[0].sql, 'create unique index "bar" on "users" ("foo")');
   });
 
   it("adding index", function() {
@@ -178,7 +178,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create index baz on "users" ("foo", "bar")');
+    equal(tableSql[0].sql, 'create index "baz" on "users" ("foo", "bar")');
   });
 
   it("adding incrementing id", function() {
@@ -397,7 +397,7 @@ describe("SQLite SchemaBuilder", function() {
       'alter table "users" add column "created_at" datetime',
       'alter table "users" add column "updated_at" datetime'
     ];
-    deepEqual(expected, _.pluck(tableSql, 'sql'));
+    deepEqual(expected, _.map(tableSql, 'sql'));
   });
 
   it("adding binary", function() {
@@ -421,24 +421,24 @@ describe("SQLite SchemaBuilder", function() {
     equal(2, tableSql.length);
     equal(tableSql[0].sql, 'create table "users" ("user_id" varchar(36), foreign key("user_id") references "user"("id") on delete CASCADE)');
   });
-  
+
   describe('SQLite3_DDL.prototype._doReplace', function () {
     it('should not change a query that has no matches', function () {
       return client.schemaBuilder().table('foo', function() {
-        
+
         var doReplace = SQLite3_DDL.prototype._doReplace;
-        
+
         var sql1 = 'CREATE TABLE "foo" ("id" integer not null primary key autoincrement, '+
               '"parent_id_test" integer, foreign key("parent_id") references "foo"("id"))';
         var sql2 = 'CREATE TABLE "foo" ("id" integer not null primary key autoincrement, '+
               '"parent_id_test" integer, foreign key("parent_id") references "bar"("id"))';
-        
+
         var sql1b = 'CREATE TABLE "foo" ("id_foo" integer not null primary key autoincrement, '+
               '"parent_id_test" integer, foreign key("parent_id") references "foo"("id_foo"))';
         var sql2b = 'CREATE TABLE "foo" ("id_foo" integer not null primary key autoincrement, '+
               '"parent_id_test" integer, foreign key("parent_id") references "bar"("id"))';
-        
-        
+
+
         expect(doReplace(sql1, '"bar"', '"lar"')).to.equal(sql1);
         expect(doReplace(sql1, '"id"', '"id_foo"')).to.equal(sql1b);
         expect(doReplace(sql2, '"id"', '"id_foo"')).to.equal(sql2b);

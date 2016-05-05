@@ -67,17 +67,17 @@ test('allows for options in raw queries, #605', function(t) {
     sql: "select 'foo', 'bar';",
     options: {rowMode: "array"},
     method: 'raw',
-    bindings: undefined
+    bindings: []
   })
 })
 
-test('raw query strings with keys replace values', function(t) {
+test('undefined named bindings are ignored', function(t) {
   
   t.plan(2)
   
-  t.equal(raw('select :item from :place', {}).toSQL().sql, 'select from')
+  t.equal(raw('select :item from :place', {}).toSQL().sql, 'select :item from :place')
 
-  t.equal(raw('select :item :cool 2 from :place', {}).toSQL().sql, 'select 2 from')
+  t.equal(raw('select :item :cool 2 from :place', {item: 'col1'}).toSQL().sql, 'select ? :cool 2 from :place')
 
 })
 
@@ -92,3 +92,9 @@ test('raw bindings are optional, #853', function(t) {
   t.deepEqual(sql.bindings, [4])
 
 })
+
+test('raw with no client should still be able to run', function(t) {
+  t.plan(1)
+
+  t.equal(new Raw().set('select * from ?', [raw('table')]).toSQL().sql, 'select * from table')
+});

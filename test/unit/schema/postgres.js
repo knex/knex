@@ -99,7 +99,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.dropUnique('foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint users_foo_unique');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_foo_unique"');
   });
 
   it("drop unique, custom", function() {
@@ -107,7 +107,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.dropUnique(null, 'foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint foo');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "foo"');
   });
 
   it("drop index", function() {
@@ -115,7 +115,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.dropIndex('foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('drop index users_foo_index');
+    expect(tableSql[0].sql).to.equal('drop index "users_foo_index"');
   });
 
   it("drop index, custom", function() {
@@ -123,7 +123,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.dropIndex(null, 'foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('drop index foo');
+    expect(tableSql[0].sql).to.equal('drop index "foo"');
   });
 
   it("drop foreign", function() {
@@ -131,7 +131,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.dropForeign('foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint users_foo_foreign');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_foo_foreign"');
   });
 
   it("drop foreign", function() {
@@ -139,7 +139,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.dropForeign(null, 'foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint foo');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "foo"');
   });
 
   it("drop timestamps", function() {
@@ -177,7 +177,7 @@ describe("PostgreSQL SchemaBuilder", function() {
     tableSql = client.schemaBuilder().createTable('accounts', function(table) {
       table.integer('account_id').references('users.id');
     }).toSQL();
-    expect(tableSql[1].sql).to.equal('alter table "accounts" add constraint accounts_account_id_foreign foreign key ("account_id") references "users" ("id")');
+    expect(tableSql[1].sql).to.equal('alter table "accounts" add constraint "accounts_account_id_foreign" foreign key ("account_id") references "users" ("id")');
   });
 
   it("adds foreign key with onUpdate and onDelete", function() {
@@ -186,8 +186,8 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.integer('account_id').notNull().references('id').inTable('accounts').onUpdate('cascade');
     }).toSQL();
     equal(3, tableSql.length);
-    expect(tableSql[1].sql).to.equal('alter table "person" add constraint person_user_id_foreign foreign key ("user_id") references "users" ("id") on delete SET NULL');
-    expect(tableSql[2].sql).to.equal('alter table "person" add constraint person_account_id_foreign foreign key ("account_id") references "accounts" ("id") on update cascade');
+    expect(tableSql[1].sql).to.equal('alter table "person" add constraint "person_user_id_foreign" foreign key ("user_id") references "users" ("id") on delete SET NULL');
+    expect(tableSql[2].sql).to.equal('alter table "person" add constraint "person_account_id_foreign" foreign key ("account_id") references "accounts" ("id") on update cascade');
   });
 
   it("adding unique key", function() {
@@ -195,7 +195,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.unique('foo', 'bar');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add constraint bar unique ("foo")');
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "bar" unique ("foo")');
   });
 
   it("adding unique key fluently", function() {
@@ -204,7 +204,7 @@ describe("PostgreSQL SchemaBuilder", function() {
     }).toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal('create table "users" ("email" varchar(255))');
-    expect(tableSql[1].sql).to.equal('alter table "users" add constraint users_email_unique unique ("email")');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_email_unique" unique ("email")');
   });
 
   it("adding index without value", function() {
@@ -212,7 +212,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.index(['foo', 'bar']);
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create index users_foo_bar_index on "users" ("foo", "bar")');
+    expect(tableSql[0].sql).to.equal('create index "users_foo_bar_index" on "users" ("foo", "bar")');
   });
 
   it("adding index", function() {
@@ -220,7 +220,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.index(['foo', 'bar'], 'baz');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create index baz on "users" ("foo", "bar")');
+    expect(tableSql[0].sql).to.equal('create index "baz" on "users" ("foo", "bar")');
   });
 
   it("adding index fluently", function() {
@@ -229,7 +229,7 @@ describe("PostgreSQL SchemaBuilder", function() {
     }).toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add column "name" varchar(255)');
-    expect(tableSql[1].sql).to.equal('create index users_name_index on "users" ("name")');
+    expect(tableSql[1].sql).to.equal('create index "users_name_index" on "users" ("name")');
   });
 
   it("adding index with an index type", function() {
@@ -237,7 +237,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.index(['foo', 'bar'], 'baz', 'gist');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create index baz on "users" using gist ("foo", "bar")');
+    expect(tableSql[0].sql).to.equal('create index "baz" on "users" using gist ("foo", "bar")');
   });
 
   it("adding index with an index type fluently", function() {
@@ -246,7 +246,7 @@ describe("PostgreSQL SchemaBuilder", function() {
     }).toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add column "name" varchar(255)');
-    expect(tableSql[1].sql).to.equal('create index baz on "users" using gist ("name")');
+    expect(tableSql[1].sql).to.equal('create index "baz" on "users" using gist ("name")');
   });
 
   it("adding index with an index type and default name fluently", function() {
@@ -255,7 +255,7 @@ describe("PostgreSQL SchemaBuilder", function() {
     }).toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add column "name" varchar(255)');
-    expect(tableSql[1].sql).to.equal('create index users_name_index on "users" using gist ("name")');
+    expect(tableSql[1].sql).to.equal('create index "users_name_index" on "users" using gist ("name")');
   });
 
   it("adding incrementing id", function() {
@@ -442,6 +442,14 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz, add column "updated_at" timestamptz');
   });
 
+  it("adding timestamps with defaults", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.timestamps(false, true);
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz not null default CURRENT_TIMESTAMP, add column "updated_at" timestamptz not null default CURRENT_TIMESTAMP');
+  });
+
   it("adding binary", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.binary('foo');
@@ -489,6 +497,22 @@ describe("PostgreSQL SchemaBuilder", function() {
   it('allows dropping an extension only if it exists', function() {
     var sql = client.schemaBuilder().dropExtensionIfExists('test').toSQL();
     expect(sql[0].sql).to.equal('drop extension if exists "test"');
+  });
+
+  it('table inherits another table', function() {
+    tableSql = client.schemaBuilder().createTable('inheriteeTable', function(t) {
+      t.string('username');
+      t.inherits('inheritedTable');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('create table "inheriteeTable" ("username" varchar(255)) inherits ("inheritedTable")');
+  });
+
+  it('should warn on disallowed method', function() {
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('username');
+      t.engine('myISAM');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('create table "users" ("username" varchar(255))');
   });
 
 });

@@ -7,7 +7,7 @@
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-var _ = require('lodash');
+import {extend, each, toArray, isString, isFunction} from 'lodash'
 var helpers = require('../helpers');
 
 function TableBuilder(client, method, tableName, fn) {
@@ -18,6 +18,10 @@ function TableBuilder(client, method, tableName, fn) {
   this._tableName  = tableName;
   this._statements = [];
   this._single     = {};
+
+  if(!isFunction(this._fn)) {
+    throw new TypeError('A callback function must be supplied to calls against `.createTable` and `.table`')
+  }
 }
 
 TableBuilder.prototype.setSchema = function(schemaName) {
@@ -29,13 +33,13 @@ TableBuilder.prototype.setSchema = function(schemaName) {
 // rather than creating the table.
 TableBuilder.prototype.toSQL = function() {
   if (this._method === 'alter') {
-    _.extend(this, AlterMethods);
+    extend(this, AlterMethods);
   }
   this._fn.call(this, this);
   return this.client.tableCompiler(this).toSQL();
 };
 
-_.each([
+each([
 
   // Each of the index methods can be called individually, with the
   // column name to be used, e.g. table.unique('column').
@@ -49,24 +53,30 @@ _.each([
     this._statements.push({
       grouping: 'alterTable',
       method: method,
-      args: _.toArray(arguments)
+      args: toArray(arguments)
     });
     return this;
   };
 });
 
-// Warn if we're not in MySQL, since that's the only time these
-// three are supported.
-var specialMethods = ['engine', 'charset', 'collate'];
-_.each(specialMethods, function(method) {
-  TableBuilder.prototype[method] = function(value) {
-    if (false) {
-      helpers.warn('Knex only supports ' + method + ' statement with mysql.');
-    } if (this._method === 'alter') {
-      helpers.warn('Knex does not support altering the ' + method + ' outside of the create table, please use knex.raw statement.');
-    }
-    this._single[method] = value;
-  };
+// Warn for dialect-specific table methods, since that's the
+// only time these are supported.
+var specialMethods = {
+  mysql: ['engine', 'charset', 'collate'],
+  postgresql: ['inherits']
+};
+each(specialMethods, function(methods, dialect) {
+  each(methods, function(method) {
+    TableBuilder.prototype[method] = function(value) {
+      if (this.client.dialect !== dialect) {
+        helpers.warn('Knex only supports ' + method + ' statement with ' + dialect + '.');
+      }
+      if (this._method === 'alter') {
+        helpers.warn('Knex does not support altering the ' + method + ' outside of the create table, please use knex.raw statement.');
+      }
+      this._single[method] = value;
+    };
+  });
 });
 
 // Each of the column types that we can add, we create a new ColumnBuilder
@@ -137,19 +147,20 @@ var columnTypes = [
 // For each of the column methods, create a new "ColumnBuilder" interface,
 // push it onto the "allStatements" stack, and then return the interface,
 // with which we can add indexes, etc.
-_.each(columnTypes, function(type) {
+each(columnTypes, function(type) {
   TableBuilder.prototype[type] = function() {
-    var args = _.toArray(arguments);
+    var args = toArray(arguments);
 
     // The "timestamps" call is really a compound call to set the
     // `created_at` and `updated_at` columns.
     if (type === 'timestamps') {
-      if (args[0] === true) {
-        this.timestamp('created_at');
-        this.timestamp('updated_at');
-      } else {
-        this.datetime('created_at');
-        this.datetime('updated_at');
+      var col = (args[0] === true) ? 'timestamp' : 'datetime';
+      var createdAt = this[col]('created_at');
+      var updatedAt = this[col]('updated_at');
+      if (args[1] === true) {
+        var now = this.client.raw('CURRENT_TIMESTAMP');
+        createdAt.notNullable().defaultTo(now);
+        updatedAt.notNullable().defaultTo(now);
       }
       return;
     }
@@ -183,13 +194,16 @@ TableBuilder.prototype.foreign = function(column) {
   var returnObj = {
     references: function(tableColumn) {
       var pieces;
-      if (_.isString(tableColumn)) {
+      if (isString(tableColumn)) {
         pieces = tableColumn.split('.');
       }
       if (!pieces || pieces.length === 1) {
         foreignData.references = pieces ? pieces[0] : tableColumn;
         return {
           on: function(tableName) {
+            if (typeof tableName !== 'string') {
+              throw new TypeError(`Expected tableName to be a string, got: ${typeof tableName}`);
+            }
             foreignData.inTable = tableName;
             return returnObj;
           },
@@ -211,7 +225,7 @@ TableBuilder.prototype.foreign = function(column) {
       return returnObj;
     },
     _columnBuilder: function(builder) {
-      _.extend(builder, returnObj);
+      extend(builder, returnObj);
       returnObj = builder;
       return builder;
     }
@@ -246,7 +260,7 @@ AlterMethods.dropColumns = function() {
   this._statements.push({
     grouping: 'alterTable',
     method: 'dropColumn',
-    args: _.toArray(arguments)
+    args: toArray(arguments)
   });
   return this;
 };

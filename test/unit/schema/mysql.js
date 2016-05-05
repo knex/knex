@@ -20,6 +20,16 @@ describe(dialect + " SchemaBuilder", function() {
   var tableSql;
   var equal = require('assert').equal;
 
+  it('basic create table with column collate', function() {
+    tableSql = client.schemaBuilder().createTable('users', function (table) {
+      table.increments('id');
+      table.string('email').collate('utf8_unicode_ci');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255) collate \'utf8_unicode_ci\')');
+  });
+
   it('test basic create table with charset and collate', function() {
     tableSql = client.schemaBuilder().createTable('users', function(table) {
       table.increments('id');
@@ -99,7 +109,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop index users_foo_unique');
+    expect(tableSql[0].sql).to.equal('alter table `users` drop index `users_foo_unique`');
   });
 
   it('test drop unique, custom', function() {
@@ -108,7 +118,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop index foo');
+    expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
   });
 
   it('test drop index', function() {
@@ -117,7 +127,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop index users_foo_index');
+    expect(tableSql[0].sql).to.equal('alter table `users` drop index `users_foo_index`');
   });
 
   it('test drop index, custom', function() {
@@ -126,7 +136,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop index foo');
+    expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
   });
 
   it('test drop foreign', function() {
@@ -135,7 +145,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop foreign key users_foo_foreign');
+    expect(tableSql[0].sql).to.equal('alter table `users` drop foreign key `users_foo_foreign`');
   });
 
   it('test drop foreign, custom', function() {
@@ -144,7 +154,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` drop foreign key foo');
+    expect(tableSql[0].sql).to.equal('alter table `users` drop foreign key `foo`');
   });
 
   it('test drop timestamps', function() {
@@ -169,7 +179,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add primary key bar(`foo`)');
+    expect(tableSql[0].sql).to.equal('alter table `users` add primary key `bar`(`foo`)');
   });
 
   it('test adding unique key', function() {
@@ -178,7 +188,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add unique bar(`foo`)');
+    expect(tableSql[0].sql).to.equal('alter table `users` add unique `bar`(`foo`)');
   });
 
   it('test adding index', function() {
@@ -187,7 +197,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add index baz(`foo`, `bar`)');
+    expect(tableSql[0].sql).to.equal('alter table `users` add index `baz`(`foo`, `bar`)');
   });
 
   it('test adding foreign key', function() {
@@ -196,7 +206,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add constraint users_foo_id_foreign foreign key (`foo_id`) references `orders` (`id`)');
+    expect(tableSql[0].sql).to.equal('alter table `users` add constraint `users_foo_id_foreign` foreign key (`foo_id`) references `orders` (`id`)');
   });
 
   it("adds foreign key with onUpdate and onDelete", function() {
@@ -205,8 +215,8 @@ describe(dialect + " SchemaBuilder", function() {
       table.integer('account_id').notNull().references('id').inTable('accounts').onUpdate('cascade');
     }).toSQL();
     equal(3, tableSql.length);
-    expect(tableSql[1].sql).to.equal('alter table `person` add constraint person_user_id_foreign foreign key (`user_id`) references `users` (`id`) on delete SET NULL');
-    expect(tableSql[2].sql).to.equal('alter table `person` add constraint person_account_id_foreign foreign key (`account_id`) references `accounts` (`id`) on update cascade');
+    expect(tableSql[1].sql).to.equal('alter table `person` add constraint `person_user_id_foreign` foreign key (`user_id`) references `users` (`id`) on delete SET NULL');
+    expect(tableSql[2].sql).to.equal('alter table `person` add constraint `person_account_id_foreign` foreign key (`account_id`) references `accounts` (`id`) on update cascade');
   });
 
   it('test adding incrementing id', function() {
@@ -466,7 +476,7 @@ describe(dialect + " SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `composite_key_test` drop index composite_key_test_column_a_column_b_unique');
+    expect(tableSql[0].sql).to.equal('alter table `composite_key_test` drop index `composite_key_test_column_a_column_b_unique`');
   });
 
   it('allows default as alias for defaultTo', function() {
@@ -476,6 +486,14 @@ describe(dialect + " SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)');
+  });
+
+  it('sets myISAM engine', function() {
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('username');
+      t.engine('myISAM');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('create table `users` (`username` varchar(255)) engine = myISAM');
   });
 
 });

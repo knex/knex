@@ -2,13 +2,13 @@
 // MariaSQL Client
 // -------
 var inherits      = require('inherits')
-var assign        = require('lodash/object/assign')
 var Client_MySQL  = require('../mysql')
 var Promise       = require('../../promise')
 var SqlString     = require('../../query/string')
 var helpers       = require('../../helpers')
-var pluck         = require('lodash/collection/pluck')
 var Transaction   = require('./transaction')
+
+import {assign, map} from 'lodash'
 
 function Client_MariaSQL(config) {
   Client_MySQL.call(this, config)
@@ -104,7 +104,7 @@ assign(Client_MariaSQL.prototype, {
       case 'pluck':
       case 'first':
         var resp = helpers.skim(rows);
-        if (method === 'pluck') return pluck(resp, obj.pluck);
+        if (method === 'pluck') return map(resp, obj.pluck);
         return method === 'first' ? resp[0] : resp;
       case 'insert':
         return [data.insertId];
@@ -115,6 +115,10 @@ assign(Client_MariaSQL.prototype, {
       default:
         return response;
     }
+  },
+
+  ping: function(resource, callback) {
+    resource.query('SELECT 1', callback);
   }
 
 })
