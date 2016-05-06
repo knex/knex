@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.11.0)</span>
+      Knex.js <span class="version">(0.11.1)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -336,7 +336,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.11.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.11.1 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -3041,6 +3041,14 @@ $ npm test
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.11.1</b> &mdash; <small><i>6 May, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Fix error in CLI command `migrate:make`. #1386</li>
+    </ul>
+
+    <p>
       <b class="header">0.11.0</b> &mdash; <small><i>5 May, 2016</i></small><br />
     </p>
 
@@ -3065,7 +3073,7 @@ $ npm test
       </li>
       <li>Add <tt>query-response</tt> event. #1231</li>
       <li>Correct behaviour of sibling nested transactions. #1226</li>
-      <li>Support <tt>RETURNING</tt> with <tt>UPDATE</tt>. (Oracle) #1253<li>
+      <li>Support <tt>RETURNING</tt> with <tt>UPDATE</tt>. (Oracle) #1253</li>
       <li>
         Throwing callbacks from transactions automatically rolls them back.
         #1257
@@ -3076,13 +3084,13 @@ $ npm test
       <li>
         <tt>timestamps</tt> accepts an argument to set `NOT NULL` and default to current timestamp.
       </li>
-      <li>Add <tt>TableBuilder#inherits</tt> for PostgreSQL. #601<li>
-      <li>Wrap index names. #1289<li>
+      <li>Add <tt>TableBuilder#inherits</tt> for PostgreSQL. #601</li>
+      <li>Wrap index names. #1289</li>
       <li>Restore coffeescript knexfiles and configurations. #1292</li>
       <li>
         Add <tt>andWhereBetween</tt> and <tt>andWhereNotBetween</tt> #1132
       </li>
-      <li> Fix <tt>valueForUndefined</tt> failure. #1269<li>
+      <li> Fix <tt>valueForUndefined</tt> failure. #1269</li>
       <li>
         <tt>renameColumn</tt> no longer drops default value or nullability.
         #1326
