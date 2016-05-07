@@ -5,6 +5,7 @@
 var MySQL_Client   = require('../../../lib/dialects/mysql')
 var PG_Client      = require('../../../lib/dialects/postgres')
 var Oracle_Client  = require('../../../lib/dialects/oracle')
+var Oracledb_Client  = require('../../../lib/dialects/oracledb')
 var SQLite3_Client = require('../../../lib/dialects/sqlite3')
 var MSSQL_Client   = require('../../../lib/dialects/mssql')
 var Client         = require('../../../lib/client')
@@ -13,6 +14,7 @@ var clients = {
   mysql:    new MySQL_Client({}),
   postgres: new PG_Client({}),
   oracle:   new Oracle_Client({}),
+  oracledb:   new Oracledb_Client({}),  
   sqlite3:  new SQLite3_Client({}),
   mssql:  new MSSQL_Client({}),
   default:  new Client({})
@@ -23,6 +25,7 @@ var clientsWithNullAsDefault = {
   mysql:    new MySQL_Client(useNullAsDefaultConfig),
   postgres: new PG_Client(useNullAsDefaultConfig),
   oracle:   new Oracle_Client(useNullAsDefaultConfig),
+  oracledb:   new Oracledb_Client(useNullAsDefaultConfig),  
   sqlite3:  new SQLite3_Client(useNullAsDefaultConfig),
   mssql:  new MSSQL_Client(useNullAsDefaultConfig),
   default:  new Client(useNullAsDefaultConfig)
@@ -34,6 +37,7 @@ var valuesForUndefined = {
   oracle: clients.oracle.valueForUndefined,
   postgres: clients.postgres.valueForUndefined,
   mssql: clients.mssql.valueForUndefined,
+  oracledb: clients.oracledb.valueForUndefined,
   default: clients.default.valueForUndefined
 };
 
@@ -135,6 +139,7 @@ describe("QueryBuilder", function() {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
       mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
       default: 'select "foo" as "bar" from "users"'
     });
   });
@@ -144,6 +149,7 @@ describe("QueryBuilder", function() {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
       mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
       default: 'select "foo" as "bar" from "users"'
     });
   });
@@ -153,6 +159,7 @@ describe("QueryBuilder", function() {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
       mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
       default: 'select "foo" as "bar" from "users"'
     });
   });
@@ -993,6 +1000,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from [users] where [id] in (select top (?) [id] from [users] where [age] > ?)',
         bindings: [3, 25]
       },
+      oracledb: {
+        sql: 'select * from "users" where "id" in (select * from (select "id" from "users" where "age" > ?) where rownum <= ?)',
+        bindings: [25, 3]
+      },
       default: {
         sql: 'select * from "users" where "id" in (select "id" from "users" where "age" > ? limit ?)',
         bindings: [25, 3]
@@ -1265,6 +1276,7 @@ describe("QueryBuilder", function() {
       mysql: 'select `email` as `foo_email` from `users` having `foo_email` > ?',
       oracle: 'select "email" "foo_email" from "users" having "foo_email" > ?',
       mssql: 'select [email] as [foo_email] from [users] having [foo_email] > ?',
+      oracledb: 'select "email" "foo_email" from "users" having "foo_email" > ?',
       default: 'select "email" as "foo_email" from "users" having "foo_email" > ?'
     });
   });
@@ -1299,6 +1311,10 @@ describe("QueryBuilder", function() {
         sql: 'select top (?) * from [users]',
         bindings: [10]
       },
+      oracledb: {
+        sql: 'select * from (select * from "users") where rownum <= ?',
+        bindings: [10]
+      },
       default: {
         sql: 'select * from "users" limit ?',
         bindings: [10]
@@ -1318,6 +1334,10 @@ describe("QueryBuilder", function() {
       },
       mssql: {
         sql: 'select top (?) * from [users]',
+        bindings: [0]
+      },
+      oracledb: {
+        sql: 'select * from (select * from "users") where rownum <= ?',
         bindings: [0]
       },
       default: {
@@ -1341,6 +1361,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from [users] offset ? rows fetch next ? rows only',
         bindings: [5, 10]
       },
+      oracledb: {
+        sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
+        bindings: [15, 5]
+      },
       default: {
         sql: 'select * from "users" limit ? offset ?',
         bindings: [10, 5]
@@ -1360,6 +1384,10 @@ describe("QueryBuilder", function() {
       },
       mssql: {
         sql: 'select top (?) * from [users]',
+        bindings: [1]
+      },
+      oracledb: {
+        sql: 'select * from (select * from "users") where rownum <= ?',
         bindings: [1]
       },
       default: {
@@ -1390,6 +1418,10 @@ describe("QueryBuilder", function() {
       mssql: {
         sql: 'select * from [users] offset ? rows',
         bindings: [5]
+      },
+      oracledb: {
+        sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
+        bindings: [10000000000005, 5]
       },
       default: {
         sql: 'select * from "users" offset ?',
@@ -1680,6 +1712,10 @@ describe("QueryBuilder", function() {
         sql: 'select count(*) "all" from "users"',
         bindings: []
       },
+      oracledb: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: []
+      },
       default: {
         sql: 'select count(*) as "all" from "users"',
         bindings: []
@@ -1699,6 +1735,10 @@ describe("QueryBuilder", function() {
       },
       mssql: {
         sql: 'select count(distinct *) as [all] from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct *) "all" from "users"',
         bindings: []
       },
       default: {
@@ -1811,6 +1851,10 @@ describe("QueryBuilder", function() {
         sql: 'insert into [users] ([email], [name]) values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
+      oracledb: {
+        sql: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using ?, ?; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using ?, ?;end;',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
       default: {
         sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
@@ -1824,6 +1868,7 @@ describe("QueryBuilder", function() {
       sqlite3: 'insert into "users" ("email", "name") select \'foo\' as "email", \'taylor\' as "name" union all select NULL as "email", \'dayle\' as "name"',
       oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using NULL, \'dayle\';end;',
       mssql: "insert into [users] ([email], [name]) values ('foo', 'taylor'), (NULL, 'dayle')",
+      oracledb: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using NULL, \'dayle\';end;',
       default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (NULL, \'dayle\')'
     }, clientsWithNullAsDefault);
   });
@@ -1833,6 +1878,7 @@ describe("QueryBuilder", function() {
       mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
       oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using DEFAULT, \'dayle\';end;',
       mssql: "insert into [users] ([email], [name]) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
+      oracledb: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using DEFAULT, \'dayle\';end;',
       default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (DEFAULT, \'dayle\')'
     });
   });
@@ -1876,6 +1922,18 @@ describe("QueryBuilder", function() {
         sql: 'insert into [users] ([email], [name]) output inserted.[id] values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\" into :3' using ?, ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\" into :3' using ?, ?, out ?;end;",
+        bindings: function(bindings) {
+          expect(bindings.length).to.equal(6);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3]).to.equal('bar');
+          expect(bindings[4]).to.equal('dayle');
+          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },
       default: {
         sql: 'insert into \"users\" (\"email\", \"name\") values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
@@ -1912,6 +1970,20 @@ describe("QueryBuilder", function() {
       mssql: {
         sql: 'insert into [users] ([email], [name]) output inserted.[id], inserted.[name] values (?, ?), (?, ?)',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\",\"name\" into :3, :4' using ?, ?, out ?, out ?; execute immediate 'insert into \"users\" (\"email\", \"name\") values (:1, :2) returning \"id\",\"name\" into :3, :4' using ?, ?, out ?, out ?;end;",
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(8);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3].toString()).to.equal('[object ReturningHelper:name]');
+          expect(bindings[4]).to.equal('bar');
+          expect(bindings[5]).to.equal('dayle');
+          expect(bindings[6].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[7].toString()).to.equal('[object ReturningHelper:name]');
+        }
       },
       default: {
         sql: 'insert into \"users\" (\"email\", \"name\") values (?, ?), (?, ?)',
@@ -1963,6 +2035,10 @@ describe("QueryBuilder", function() {
         sql: 'insert into [table] ([a], [b], [c]) values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
         bindings: [1, valuesForUndefined.mssql, valuesForUndefined.mssql, valuesForUndefined.mssql, 2, valuesForUndefined.mssql, 2, valuesForUndefined.mssql, 3]
       },
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
+        bindings: [1, valuesForUndefined.oracledb, valuesForUndefined.oracledb, valuesForUndefined.oracledb, 2, valuesForUndefined.oracledb, 2, valuesForUndefined.oracledb, 3]
+      },
       default: {
         sql: 'insert into "table" ("a", "b", "c") values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
         bindings: [1, valuesForUndefined.default, valuesForUndefined.default, valuesForUndefined.default, 2, valuesForUndefined.default, 2, valuesForUndefined.default, 3]
@@ -1982,6 +2058,10 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       mssql: {
+        sql: '',
+        bindings: []
+      },
+      oracledb: {
         sql: '',
         bindings: []
       },
@@ -2006,6 +2086,10 @@ describe("QueryBuilder", function() {
         sql: '',
         bindings: []
       },
+      oracledb: {
+        sql: '',
+        bindings: []
+      },      
       default: {
         sql: '',
         bindings: []
@@ -2038,6 +2122,13 @@ describe("QueryBuilder", function() {
         sql: 'insert into [users] output inserted.[id] default values',
         bindings: []
       },
+      oracledb: {
+        sql: "insert into \"users\" (\"id\") values (default) returning \"id\" into ?",
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(1);
+          expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },  
       default: {
         sql: 'insert into "users" default values',
         bindings: []
@@ -2067,6 +2158,10 @@ describe("QueryBuilder", function() {
   //       sql: '',
   //       bindings: []
   //     },
+  //     oracledb: {
+  //       sql: "",
+  //       bindings: []
+  //     },       
   //     default: {
   //       sql: '',
   //       bindings: []
@@ -2085,6 +2180,10 @@ describe("QueryBuilder", function() {
   //       bindings: []
   //     },
   //     oracle: {
+  //       sql: "",
+  //       bindings: []
+  //     },
+  //     oracledb: {
   //       sql: "",
   //       bindings: []
   //     },
@@ -2121,6 +2220,12 @@ describe("QueryBuilder", function() {
   //       sql: "begin execute immediate 'insert into \"users\" (\"undefined\") values (default); execute immediate 'insert into \"users\" (\"undefined\") values (default);end;",
   //       bindings: []
   //     },
+  //     oracledb: {
+  //       // This does not work
+  //       // It's not possible to insert default value without knowing at least one column
+  //       sql: "begin execute immediate 'insert into \"users\" (\"undefined\") values (default); execute immediate 'insert into \"users\" (\"undefined\") values (default);end;",
+  //       bindings: []
+  //     },
   //     postgres: {
   //       // This does not work
   //       // Postgres does not support inserting multiple default values without specifying a column
@@ -2150,6 +2255,14 @@ describe("QueryBuilder", function() {
   //       bindings: []
   //     },
   //     oracle: {
+  //       sql: "begin execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
+  //       bindings: function (bindings) {
+  //         expect(bindings.length).to.equal(2);
+  //         expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
+  //         expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
+  //       }
+  //     },
+  //     oracledb: {
   //       sql: "begin execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
   //       bindings: function (bindings) {
   //         expect(bindings.length).to.equal(2);
@@ -2374,6 +2487,10 @@ describe("QueryBuilder", function() {
         sql: 'truncate table [users]',
         bindings: []
       },
+      oracledb: {
+        sql: 'truncate table "users"',
+        bindings: []
+      },
       default: {
         sql: 'truncate "users"',
         bindings: []
@@ -2403,6 +2520,14 @@ describe("QueryBuilder", function() {
         sql: 'insert into [users] ([email]) output inserted.[id] values (?)',
         bindings: ['foo']
       },
+      oracledb: {
+        sql: 'insert into "users" ("email") values (?) returning \"id\" into ?',
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(2);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },   
       default: {
         sql: 'insert into "users" ("email") values (?)',
         bindings: ['foo']
@@ -2468,6 +2593,10 @@ describe("QueryBuilder", function() {
   //     },
   //     mssql: {
   //       sql: 'select * from [foo] where [bar] = ? with (READCOMMITTEDLOCK)',
+  //       bindings: ['baz']
+  //     },
+  //     oracledb: {
+  //       sql: 'select * from "foo" where "bar" = ? for update',
   //       bindings: ['baz']
   //     },
   //     default: {
@@ -2789,6 +2918,10 @@ describe("QueryBuilder", function() {
       //   sql: 'select [e].[lastname], [e].[salary], (select [avg(salary)] from [employee] where dept_no = e.dept_no) avg_sal_dept from [employee] as [e] where [dept_no] = ?',
       //   bindings: ['e.dept_no']
       // },
+      oracledb: {
+        sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) avg_sal_dept from "employee" "e" where "dept_no" = ?',
+        bindings: ['e.dept_no']
+      },
       default: {
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) avg_sal_dept from "employee" as "e" where "dept_no" = ?',
         bindings: ['e.dept_no']
@@ -2814,6 +2947,11 @@ describe("QueryBuilder", function() {
       },
       mssql: {
         sql: 'select [e].[lastname], [e].[salary], (select [avg(salary)] from [employee] where dept_no = e.dept_no) as [avg_sal_dept] from [employee] as [e] where [dept_no] = ?',
+        bindings: ["e.dept_no"]
+      },
+      oracledb: {
+        // TODO: Check if possible
+        sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) "avg_sal_dept" from "employee" "e" where "dept_no" = ?',
         bindings: ["e.dept_no"]
       },
       default: {
@@ -2842,6 +2980,11 @@ describe("QueryBuilder", function() {
       },
       mssql: {
         sql: 'select [e].[lastname], [e].[salary], (select [avg(salary)] from [employee] where dept_no = e.dept_no) as [avg_sal_dept] from [employee] as [e] where [dept_no] = ?',
+        bindings: ["e.dept_no"]
+      },
+      oracledb: {
+        // TODO: Check if possible
+        sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) "avg_sal_dept" from "employee" "e" where "dept_no" = ?',
         bindings: ["e.dept_no"]
       },
       default: {
@@ -2966,6 +3109,10 @@ describe("QueryBuilder", function() {
         sql: 'insert into [votes] select * from [votes] where [id] = ?',
         bindings: [99]
       },
+      oracledb: {
+        sql: 'insert into "votes" select * from "votes" where "id" = ?',
+        bindings: [99]
+      },
       default: {
         sql: 'insert into "votes" select * from "votes" where "id" = ?',
         bindings: [99]
@@ -2993,6 +3140,10 @@ describe("QueryBuilder", function() {
           bindings: []
         },
         oracle: {
+          sql: 'select "A"."nid" "id" from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on "A"."x" = "B"."x"',
+          bindings: []
+        },
+        oracledb: {
           sql: 'select "A"."nid" "id" from nidmap2 AS A inner join (SELECT MIN(nid) AS location_id FROM nidmap2) AS B on "A"."x" = "B"."x"',
           bindings: []
         },
@@ -3040,6 +3191,10 @@ describe("QueryBuilder", function() {
         },
         mssql: {
           sql: 'select ?, [g].[f] from (select ? as f) as [g] where [g].[secret] = ?',
+          bindings: ['outer raw select', 'inner raw select', 123]
+        },
+        oracledb: {
+          sql: 'select ?, "g"."f" from (select ? as f) "g" where "g"."secret" = ?',
           bindings: ['outer raw select', 'inner raw select', 123]
         },
         default: {
