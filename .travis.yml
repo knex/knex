@@ -8,6 +8,7 @@ node_js:
   - '0.12'
   - '4'
   - '5'
+  - '6'
 
 before_script:
   - psql -c 'create database knex_test;' -U postgres
