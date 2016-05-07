@@ -1358,7 +1358,7 @@ knex.transaction(function(trx) {
 </pre>
 
     <p id="Builder-forUpdate">
-      <b class="header">forUpdate</b><code>.transacting(t).forUpdate()</code>
+      <b class="header">forUpdate</b><code>.transacting(t).forUpdate([tables], [nowait])</code>
       <br />
       Dynamically added after a <a href="#Builder-transacting">transaction</a> is specified,
       the <tt>forUpdate</tt> adds a <tt>FOR UPDATE</tt> in PostgreSQL and MySQL during a select statement.
@@ -1371,8 +1371,15 @@ knex('tableName')
   .select('*')
 </pre>
 
+<pre class="display">
+knex('tableName')
+  .transacting(trx)
+  .forUpdate('tableName', true)
+  .select('*')
+</pre>
+
     <p id="Builder-forShare">
-      <b class="header">forShare</b><code>.transacting(t).forShare()</code>
+      <b class="header">forShare</b><code>.transacting(t).forShare([tables], [nowait])</code>
       <br />
       Dynamically added after a <a href="#Builder-transacting">transaction</a> is specified,
       the <tt>forShare</tt> adds a <tt>FOR SHARE</tt> in PostgreSQL and a <tt>LOCK IN SHARE MODE</tt>
@@ -1383,6 +1390,13 @@ knex('tableName')
 knex('tableName')
   .transacting(trx)
   .forShare()
+  .select('*')
+</pre>
+
+<pre class="display">
+knex('tableName')
+  .transacting(trx)
+  .forShare('tableName', true)
   .select('*')
 </pre>
 

@@ -707,12 +707,16 @@ assign(Builder.prototype, {
   // Set a lock for update constraint.
   forUpdate: function() {
     this._single.lock = 'forUpdate';
+    this._single.of = _.filter(arguments, _.isString);
+    this._single.noWait = _.isBoolean(_.last(arguments)) ? _.last(arguments) : false;
     return this;
   },
 
   // Set a lock for share constraint.
   forShare: function() {
     this._single.lock = 'forShare';
+    this._single.of = _.filter(arguments, _.isString);
+    this._single.noWait = _.isBoolean(_.last(arguments)) ? _.last(arguments) : false;
     return this;
   },
 
