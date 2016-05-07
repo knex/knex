@@ -89,7 +89,7 @@ Seeder.prototype._validateSeedStructure = function(name) {
 Seeder.prototype._generateStubTemplate = function() {
   var stubPath = this.config.stub || path.join(__dirname, 'stub', this.config.extension + '.stub');
   return Promise.promisify(fs.readFile, {context: fs})(stubPath).then(function(stub) {
-    return template(stub.toString(), null, {variable: 'd'});
+    return template(stub.toString(), {variable: 'd'});
   });
 };
 
