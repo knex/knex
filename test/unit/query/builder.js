@@ -536,6 +536,19 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("multi column where ins", function() {
+    testsql(qb().select('*').from('users').whereIn(['a', 'b'], [[1, 2], [3, 4], [5, 6]]), {
+      mysql: {
+        sql: 'select * from `users` where (`a`, `b`) in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      default: {
+        sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      }
+    });
+  });
+
   it("orWhereIn", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1).orWhereIn('id', [1, 2, 3]), {
       mysql: {
@@ -995,6 +1008,25 @@ describe("QueryBuilder", function() {
       },
       default: {
         sql: 'select * from "users" where "id" in (select "id" from "users" where "age" > ? limit ?)',
+        bindings: [25, 3]
+      }
+    });
+  });
+
+  it("sub select multi column where ins", function() {
+    testsql(qb().select('*').from('users').whereIn(['id_a', 'id_b'], function(qb) {
+      qb.select('id_a', 'id_b').from('users').where('age', '>', 25).limit(3);
+    }), {
+      mysql: {
+        sql: 'select * from `users` where (`id_a`, `id_b`) in (select `id_a`, `id_b` from `users` where `age` > ? limit ?)',
+        bindings: [25, 3]
+      },
+      oracle: {
+        sql: 'select * from "users" where ("id_a", "id_b") in (select * from (select "id_a", "id_b" from "users" where "age" > ?) where rownum <= ?)',
+        bindings: [25, 3]
+      },
+      default: {
+        sql: 'select * from "users" where ("id_a", "id_b") in (select "id_a", "id_b" from "users" where "age" > ? limit ?)',
         bindings: [25, 3]
       }
     });

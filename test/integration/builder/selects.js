@@ -550,7 +550,7 @@ module.exports = function(knex) {
           .select()
           .testSql(function(tester) {
             tester('mysql',
-              'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?),(?, ?))',
+              'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?), (?, ?))',
               [1,1,1,2],
               [{
                 column_a: 1,
@@ -603,7 +603,7 @@ module.exports = function(knex) {
           .select()
           .testSql(function(tester) {
             tester('mysql',
-              'select * from `composite_key_test` where `status` = ? and (`column_a`, `column_b`) in ((?, ?),(?, ?))',
+              'select * from `composite_key_test` where `status` = ? and (`column_a`, `column_b`) in ((?, ?), (?, ?))',
               [1,1,1,1,2],
               [{
                 column_a: 1,

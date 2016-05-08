@@ -3,6 +3,7 @@ var QueryBuilder = require('./query/builder')
 var Raw          = require('./raw')
 
 import {assign, transform} from 'lodash'
+const { isArray } = Array;
 
 function Formatter(client) {
   this.client       = client
@@ -26,13 +27,36 @@ assign(Formatter.prototype, {
   // a "joining" value is specified (e.g. ' and ')
   parameterize(values, notSetValue) {
     if (typeof values === 'function') return this.parameter(values);
-    values  = Array.isArray(values) ? values : [values];
+    values  = isArray(values) ? values : [values];
     var str = '', i = -1;
     while (++i < values.length) {
       if (i > 0) str += ', '
       str += this.parameter(values[i] === undefined ? notSetValue : values[i])
     }
     return str;
+  },
+
+  // Formats `values` into a parenthesized list of parameters for a `VALUES`
+  // clause.
+  //
+  // [1, 2]                  -> '(?, ?)'
+  // [[1, 2], [3, 4]]        -> '((?, ?), (?, ?))'
+  // knex('table')           -> '(select * from "table")'
+  // knex.raw('select ?', 1) -> '(select ?)'
+  //
+  values(values) {
+    if (isArray(values)) {
+      if (isArray(values[0])) {
+        return `(${values.map(value => `(${this.parameterize(value)})`).join(', ')})`;
+      }
+      return `(${this.parameterize(values)})`;
+    }
+
+    if (values instanceof Raw) {
+      return `(${this.parameter(values)})`;
+    }
+
+    return this.parameter(values);
   },
 
   // Checks whether a value is a function... if it is, we compile it

@@ -3,7 +3,12 @@
 // -------
 var helpers = require('../helpers');
 var Raw     = require('../raw');
-import {assign, reduce, groupBy, isString, compact, isEmpty, isUndefined, bind, map, omitBy} from 'lodash'
+import {
+  assign, bind, compact, groupBy, isEmpty, isString, isUndefined, map, omitBy,
+  reduce
+} from 'lodash';
+
+const { isArray } = Array;
 
 // The "QueryCompiler" takes all of the query statements which
 // have been gathered in the "QueryBuilder" and turns them into a
@@ -305,19 +310,15 @@ assign(QueryCompiler.prototype, {
   // ------
 
   whereIn(statement) {
-    if (Array.isArray(statement.column)) return this.multiWhereIn(statement);
-    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'in ') +
-      this.wrap(this.formatter.parameterize(statement.value));
-  },
-
-  multiWhereIn(statement) {
-    var i = -1, sql = '(' + this.formatter.columnize(statement.column) + ') '
-    sql += this._not(statement, 'in ') + '(('
-    while (++i < statement.value.length) {
-      if (i !== 0) sql += '),('
-      sql += this.formatter.parameterize(statement.value[i])
+    let columns = null;
+    if (isArray(statement.column)) {
+      columns = `(${this.formatter.columnize(statement.column)})`
+    } else {
+      columns = this.formatter.wrap(statement.column);
     }
-    return sql + '))'
+
+    const values = this.formatter.values(statement.value);
+    return `${columns} ${this._not(statement, 'in ')}${values}`;
   },
 
   whereNull(statement) {
