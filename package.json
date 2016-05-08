@@ -27,7 +27,7 @@
     "chai": "^2.3.0",
     "coveralls": "~2.11.1",
     "istanbul": "~0.3.0",
-    "jshint": "^2.7.0",
+    "jshint": "^2.9.2",
     "mariasql": "^0.2.3",
     "mocha": "^2.2.4",
     "mssql": "^2.3.2",

@@ -1,15 +1,15 @@
 {
   "asi": true,
-  "eqnull": true,
   "browser": false,
   "eqeqeq" : true,
-  "newcap": false,
-  "node": true,
-  "strict": true,
-  "newcap": true,
-  "undef": true,
-  "trailing": true,
-  "unused": true,
+  "eqnull": true,
   "esnext": true,
-  "predef": [ "-Promise", "before", "after", "beforeEach", "afterEach" ]
+  "laxbreak": true,
+  "newcap": true,
+  "node": true,
+  "predef": [ "-Promise", "before", "after", "beforeEach", "afterEach" ],
+  "strict": false,
+  "trailing": true,
+  "undef": true,
+  "unused": true
 }
