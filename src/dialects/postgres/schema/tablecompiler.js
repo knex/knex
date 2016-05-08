@@ -11,10 +11,20 @@ function TableCompiler_PG() {
 }
 inherits(TableCompiler_PG, TableCompiler);
 
+TableCompiler_PG.prototype.alterColumnPrefix = 'alter column';
+
 // Compile a rename column command.
 TableCompiler_PG.prototype.renameColumn = function(from, to) {
   return this.pushQuery({
     sql: 'alter table ' + this.tableName() + ' rename '+ this.formatter.wrap(from) + ' to ' + this.formatter.wrap(to)
+  });
+};
+
+TableCompiler_PG.prototype._setNullableState = function (column, nullable) {
+  let constraintAction = nullable ? 'drop not null' : 'set not null';
+  let sql = `alter table ${this.tableName()} alter column ${this.formatter.wrap(column)} ${constraintAction}`;
+  return this.pushQuery({
+    sql: sql
   });
 };
 

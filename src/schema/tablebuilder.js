@@ -248,6 +248,26 @@ var AlterMethods = {
 
   dropTimestamps: function() {
     return this.dropColumns(['created_at', 'updated_at']);
+  },
+
+  setNullable: function(column) {
+    this._statements.push({
+      grouping: 'alterTable',
+      method: 'setNullable',
+      args: [column]
+    });
+
+    return this;
+  },
+
+  dropNullable: function(column) {
+    this._statements.push({
+      grouping: 'alterTable',
+      method: 'dropNullable',
+      args: [column]
+    });
+
+    return this;
   }
 
   // TODO: changeType

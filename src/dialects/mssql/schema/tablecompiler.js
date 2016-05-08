@@ -37,6 +37,8 @@ assign(TableCompiler_MSSQL.prototype, {
 
   dropColumnPrefix: 'DROP COLUMN ',
 
+  alterColumnPrefix: 'alter column',
+
   // Compiles the comment on the table.
   comment: function () {
   },

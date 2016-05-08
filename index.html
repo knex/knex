@@ -188,6 +188,8 @@
       <li>– <a href="#Schema-dropForeign">dropForeign</a></li>
       <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
       <li>– <a href="#Schema-dropPrimary">dropPrimary</a></li>
+      <li>– <a href="#Schema-setNullable">setNullable</a></li>
+      <li>– <a href="#Schema-dropNullable">dropNullable</a></li>
       <li><a href="#Chainable"><b>Chainable:</b></li>
       <li>– <a href="#Chainable-index">index</a></li>
       <li>– <a href="#Chainable-primary">primary</a></li>
@@ -2111,6 +2113,20 @@ knex.table('users')
       <b class="header">dropPrimary</b><code>table.dropPrimary()</code>
       <br />
       Drops the primary key constraint on a table.
+    </p>
+
+
+    <p id="Schema-setNullable">
+      <b class="header">setNullable</b><code>table.setNullable(column)</code>
+      <br />
+      Alters a columns nullable constraint to allow null.
+    </p>
+
+
+    <p id="Schema-dropNullable">
+      <b class="header">dropNullable</b><code>table.dropNullable(column)</code>
+      <br />
+      Alters a columns nullable constraint to disallow null.
     </p>
 
     <h3 id="Chainable">Chainable Methods:</h3>

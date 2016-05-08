@@ -444,5 +444,20 @@ describe("SQLite SchemaBuilder", function() {
         expect(doReplace(sql2, '"id"', '"id_foo"')).to.equal(sql2b);
       }).toSQL();
     });
+
   });
+
+
+  it('.setNullable and .dropNullable should throw error', function() {
+    //.setNullable and .dropNullable are not supported in SQLite
+    var call = function(fnName) {
+      return function() {
+        client.schemaBuilder().table('foo', function(table) {
+          table[fnName]('column');
+        }).toSQL();
+      };
+    };
+    expect(call('setNullable')).to.throw(Error);
+    expect(call('dropNullable')).to.throw(Error);
+  })
 });
