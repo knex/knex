@@ -158,7 +158,9 @@ assign(Runner.prototype, {
     var acquireConnectionTimeout = runner.client.config.acquireConnectionTimeout || 60000
     return Promise.try(function() {
       return runner.connection || new Promise((resolver, rejecter) => {
-            runner.client.acquireConnection()
+            var acquireConnection = runner.client.acquireConnection()
+
+            acquireConnection.completed
             .timeout(acquireConnectionTimeout)
             .then(resolver)
             .catch(Promise.TimeoutError, (error) => {
@@ -173,6 +175,9 @@ assign(Runner.prototype, {
                   }
 
                   assign(timeoutError, additionalErrorInformation)
+
+                  // Let the pool know that this request for a connection timed out
+                  acquireConnection.abort('Knex: Timeout acquiring a connection.')
 
                   rejecter(timeoutError)
             })

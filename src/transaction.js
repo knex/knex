@@ -143,7 +143,7 @@ assign(Transaction.prototype, {
   acquireConnection: function(client, config, txid) {
     var configConnection = config && config.connection
     return Promise.try(function() {
-      return configConnection || client.acquireConnection()
+      return configConnection || client.acquireConnection().completed
     })
     .disposer(function(connection) {
       if (!configConnection) {
