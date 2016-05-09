@@ -1818,6 +1818,27 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("multiple inserts with CURRENT_TIMESTAMP in subquery bindings", function() {
+    testsql(qb().from('users').insert([{email: 'foo', deleted_at: raw('CURRENT_TIMESTAMP')}, {email: 'bar', deleted_at: raw('CURRENT_TIMESTAMP')}]), {
+      sqlite3: {
+        sql: 'insert into "users" ("deleted_at", "email") select CURRENT_TIMESTAMP as "deleted_at", ? as "email" union all select CURRENT_TIMESTAMP as "deleted_at", ? as "email"',
+        bindings: ['foo', 'bar']
+      },
+      oracle: {
+        sql: 'begin execute immediate \'insert into "users" ("deleted_at", "email") values (:1, :2)\' using CURRENT_TIMESTAMP, ?; execute immediate \'insert into "users" ("deleted_at", "email") values (:1, :2)\' using CURRENT_TIMESTAMP, ?;end;',
+        bindings: ['foo', 'bar']
+      },
+      mssql: {
+        sql: 'insert into [users] ([deleted_at], [email]) values (CURRENT_TIMESTAMP, ?), (CURRENT_TIMESTAMP, ?)',
+        bindings: ['foo', 'bar']
+      },
+      default: {
+        sql: 'insert into "users" ("deleted_at", "email") values (CURRENT_TIMESTAMP, ?), (CURRENT_TIMESTAMP, ?)',
+        bindings: ['foo', 'bar']
+      }
+    });
+  });
+
   it("multiple inserts with partly undefined keys client with configuration nullAsDefault: true", function() {
     testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
       mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (NULL, 'dayle')",

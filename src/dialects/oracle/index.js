@@ -100,9 +100,13 @@ assign(Client_Oracle.prototype, {
   },
 
   // Position the bindings for the query.
-  positionBindings: function(sql) {
-    var questionCount = 0
-    return sql.replace(/\?/g, function() {
+  positionBindings: function(sql, opt) {
+    var replaceExpression = /\?/g;
+    if (opt && opt.isMultipleInsert) {
+      replaceExpression = /\?|CURRENT_TIMESTAMP/g;
+    }
+    var questionCount = 0;
+    return sql.replace(replaceExpression, function () {
       questionCount += 1
       return ':' + questionCount
     })

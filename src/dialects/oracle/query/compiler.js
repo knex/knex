@@ -79,7 +79,7 @@ assign(QueryCompiler_Oracle.prototype, {
 
           // pre bind position because subSql is an execute immediate parameter
           // later position binding will only convert the ? params
-          subSql = this.formatter.client.positionBindings(subSql);
+          subSql = this.formatter.client.positionBindings(subSql, {isMultipleInsert: true});
           return 'execute immediate \'' + subSql.replace(/'/g, "''") +
             ((parameterizedValues || returning) ? '\' using ' : '') +
             parameterizedValues +
