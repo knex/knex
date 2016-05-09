@@ -647,40 +647,58 @@ module.exports = function(knex) {
       });
     });
 
-    it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', function () {
+
+    describe('batchInsert', function() {
       var fiftyLengthString = 'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
       var items             = [];
       var amountOfItems     = 100;
       var amountOfColumns   = 30;
-
-      for (var i = 0; i < amountOfItems; i++) {
+      for(var i = 0; i < amountOfItems; i++) {
         var item = {};
-        for (var x = 0; x < amountOfColumns; x++) {
+        for(var x = 0; x < amountOfColumns; x++) {
           item['Col' + x] = fiftyLengthString;
         }
         items.push(item);
       }
 
-      return knex.schema.dropTableIfExists('BatchInsert')
-          .then(function () {
-            return knex.schema.createTable('BatchInsert', function (table) {
-              for (var i = 0; i < amountOfColumns; i++) {
+      beforeEach(function() {
+        return knex.schema.dropTableIfExists('BatchInsert')
+          .then(function() {
+            return knex.schema.createTable('BatchInsert', function(table) {
+              for(var i = 0; i < amountOfColumns; i++) {
                 table.string('Col' + i, 50);
               }
             })
-          })
-          .then(function () {
-            return knex.batchInsert('BatchInsert', items, 30);
-          })
-          .then(function () {
+          });
+      });
+
+      it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', function() {
+        return knex.batchInsert('BatchInsert', items, 30)
+          .returning(['Col1', 'Col2'])
+          .then(function (result) {
+            result.forEach(function(item) {
+              expect(item.Col1).to.equal(fiftyLengthString);
+              expect(item.Col2).to.equal(fiftyLengthString);
+            });
             return knex('BatchInsert').select();
           })
           .then(function (result) {
             var count = result.length;
             expect(count).to.equal(amountOfItems);
-          })
-    });
+          });
+      });
 
+      it('knex.batchInsert with specified transaction', function() {
+        return knex.transaction(function(tr) {
+          knex.batchInsert('BatchInsert', items, 30)
+          .returning(['Col1', 'Col2'])
+          .transacting(tr)
+          .then(tr.commit)
+          .catch(tr.rollback);
+        })
+      });
+
+    });
   });
 
   it('should validate batchInsert batchSize parameter', function() {

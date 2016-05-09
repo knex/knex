@@ -8,6 +8,7 @@ var QueryInterface = require('../query/methods')
 var helpers        = require('../helpers')
 var Promise        = require('../promise')
 import {assign, isNumber, chunk} from 'lodash'
+import BatchInsert from './batchInsert';
 
 module.exports = function makeKnex(client) {
 
@@ -34,20 +35,7 @@ module.exports = function makeKnex(client) {
     },
 
     batchInsert: function(table, batch, chunkSize = 1000) {
-      if (!isNumber(chunkSize) || chunkSize < 1) {
-        throw new TypeError("Invalid chunkSize: " + chunkSize);
-      }
-
-      return this.transaction((tr) => {
-          // Avoid unnecessary call.
-          if(chunkSize !== 1) {
-            batch = chunk(batch, chunkSize)
-          }
-
-          return Promise.all(batch.map((items) => {
-            return tr(table).insert(items)
-          }));
-        })
+      return new BatchInsert(this, table, batch, chunkSize);
     },
 
     // Runs a new transaction, taking a container and returning a promise
