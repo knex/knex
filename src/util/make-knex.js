@@ -6,8 +6,7 @@ var Seeder         = require('../seed')
 var FunctionHelper = require('../functionhelper')
 var QueryInterface = require('../query/methods')
 var helpers        = require('../helpers')
-var Promise        = require('../promise')
-import {assign, isNumber, chunk} from 'lodash'
+import {assign} from 'lodash'
 import BatchInsert from './batchInsert';
 
 module.exports = function makeKnex(client) {
