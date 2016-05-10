@@ -712,4 +712,33 @@ module.exports = function(knex) {
     expect(function () { knex.batchInsert('test', [], 'still no good') }).to.throw(TypeError);
   });
 
+  it('should replace undefined keys in multi insert with DEFAULT', function() {
+    if (knex.client.dialect === 'sqlite3') {
+      return true;
+    }
+    return knex('accounts')
+      .insert([{
+        last_name: 'First Item',
+        email:'single-test1@example.com',
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date()
+      }, {
+        last_name: 'Second Item',
+        email:'double-test1@example.com',
+        logins: 2,
+        created_at: new Date(),
+        updated_at: new Date()
+      }])
+      .then(function () {
+        return knex('accounts').whereIn('email', [
+          'single-test1@example.com',
+          'double-test1@example.com'
+        ]).orderBy('email', 'desc');
+      })
+      .then(function (results) {
+        expect(results[0].logins).to.equal(1);
+        expect(results[1].about).to.equal(null);
+      });
+  });
 };
