@@ -2382,15 +2382,29 @@ knex.select('e.lastname', 'e.salary', subcolumn)
 
     <h3 id="Utility-BatchInsert">Batch Insert</h3>
 
-    <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction (which is automatically created), at a given <tt>chunkSize</tt>.</p>
+    <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction <i>(which is automatically created unless explicitly given a transaction using <a href="#Builder-transacting">transacting</a>)</i>, at a given <tt>chunkSize</tt>.</p>
     <p>It's primarily designed to be used when you have thousands of rows to insert into a table.</p>
     <p>By default, the <tt>chunkSize</tt> is set to 1000.</p>
+
+    <p>BatchInsert also allows for <a href="#Builder-returning">returning values</a> and supplying transactions using <a href="#Builder-transacting">transacting</a>.</p>
 
 <pre>
 <code class="js">
   var rows = [{...}, {...}];
   var chunkSize = 30;
   knex.batchInsert('TableName', rows, chunkSize)
+  .returning('id')
+  .then(function(ids) {
+    ...
+  })
+  .catch(function(error) {
+    ...
+  });
+
+  knex.transaction(function(tr) {
+    return knex.batchInsert('TableName', rows, chunkSize)
+    .transacting(tr)
+  })
   .then(function() {
     ...
   })
