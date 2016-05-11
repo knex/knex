@@ -169,7 +169,11 @@ assign(QueryCompiler.prototype, {
         var ii = -1
         while (++ii < join.clauses.length) {
           var clause = join.clauses[ii]
-          sql += ' ' + (ii > 0 ? clause.bool : 'on') + ' '
+          if (ii > 0) {
+            sql += ' ' + clause.bool + ' ';
+          } else {
+            sql += ' ' + (clause.type === 'onUsing' ? 'using' : 'on') + ' ';
+          }
           var val = this[clause.type].call(this, clause);
           if (val) {
             sql += val;
@@ -336,6 +340,10 @@ assign(QueryCompiler.prototype, {
 
   onRaw(clause) {
     return this.formatter.unwrapRaw(clause.value);
+  },
+
+  onUsing(clause) {
+    return this.formatter.wrap(clause.column);
   },
 
   // Where Clause
