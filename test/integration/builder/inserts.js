@@ -649,6 +649,7 @@ module.exports = function(knex) {
 
 
     describe('batchInsert', function() {
+      var dialect = String(knex.client.dialect).toUpperCase();
       var fiftyLengthString = 'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
       var items             = [];
       var amountOfItems     = 100;
@@ -676,10 +677,13 @@ module.exports = function(knex) {
         return knex.batchInsert('BatchInsert', items, 30)
           .returning(['Col1', 'Col2'])
           .then(function (result) {
-            result.forEach(function(item) {
-              expect(item.Col1).to.equal(fiftyLengthString);
-              expect(item.Col2).to.equal(fiftyLengthString);
-            });
+            //Returning only supported by some dialects.
+            if(['POSTGRES', 'MYSQL', 'MYSQL2', 'ORACLE'].indexOf(dialect) !== -1) {
+              result.forEach(function(item) {
+                expect(item.Col1).to.equal(fiftyLengthString);
+                expect(item.Col2).to.equal(fiftyLengthString);
+              });
+            }
             return knex('BatchInsert').select();
           })
           .then(function (result) {
