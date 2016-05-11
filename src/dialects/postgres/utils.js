@@ -34,7 +34,7 @@ var arrayString;
 // to their 'raw' counterparts for use as a postgres parameter
 // note: you can override this function to provide your own conversion mechanism
 // for complex types, etc...
-var prepareValue = function (val, seen, valueForUndefined) {
+var prepareValue = function (val, seen /*, valueForUndefined*/) {
   if (val instanceof Buffer) {
     return val;
   }
@@ -46,9 +46,6 @@ var prepareValue = function (val, seen, valueForUndefined) {
   }
   if (val === null) {
     return null;
-  }
-  if (val === undefined) {
-    return valueForUndefined;
   }
   if (typeof val === 'object') {
     return prepareObject(val, seen);

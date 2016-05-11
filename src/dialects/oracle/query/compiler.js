@@ -60,7 +60,7 @@ assign(QueryCompiler_Oracle.prototype, {
     sql.sql = 'begin ' +
       map(insertData.values, (value) => {
           var returningHelper;
-          var parameterizedValues = !insertDefaultsOnly ? this.formatter.parameterize(value) : '';
+          var parameterizedValues = !insertDefaultsOnly ? this.formatter.parameterize(value, this.client.valueForUndefined) : '';
           var returningValues = Array.isArray(returning) ? returning : [returning];
           var subSql = 'insert into ' + this.tableName + ' ';
 
@@ -79,11 +79,14 @@ assign(QueryCompiler_Oracle.prototype, {
 
           // pre bind position because subSql is an execute immediate parameter
           // later position binding will only convert the ? params
+
           subSql = this.formatter.client.positionBindings(subSql);
+
+          var parameterizedValuesWithoutDefault = parameterizedValues.replace('DEFAULT, ', '').replace(', DEFAULT', '');
           return 'execute immediate \'' + subSql.replace(/'/g, "''") +
-            ((parameterizedValues || returning) ? '\' using ' : '') +
-            parameterizedValues +
-            ((parameterizedValues && returning) ? ', ' : '') +
+            ((parameterizedValuesWithoutDefault || returning) ? '\' using ' : '') +
+            parameterizedValuesWithoutDefault +
+            ((parameterizedValuesWithoutDefault && returning) ? ', ' : '') +
             (returning ? 'out ?' : '') + ';';
       }).join(' ') +
       'end;';

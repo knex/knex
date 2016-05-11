@@ -3,7 +3,7 @@
 
 var inherits      = require('inherits')
 var QueryCompiler = require('../../../query/compiler')
-import {assign, isEmpty, isString, reduce} from 'lodash'
+import {assign, isEmpty, isString, reduce, each} from 'lodash'
 
 function QueryCompiler_SQLite3(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -47,8 +47,17 @@ assign(QueryCompiler_SQLite3.prototype, {
 
     sql += '(' + this.formatter.columnize(insertData.columns) + ')'
 
+    // backwards compatible error
+    each(insertData.values, bindings => {
+      each(bindings, binding => {
+        if (binding === undefined && this.client.valueForUndefined !== null) {
+          throw new TypeError("`sqlite` does not support inserting default values. Specify values explicitly or use the `useNullAsDefault` config flag. (see docs http://knexjs.org/#Builder-insert).");
+        }
+      });
+    });
+
     if (insertData.values.length === 1) {
-      return sql + ' values (' + this.formatter.parameterize(insertData.values[0]) + ')'
+      return sql + ' values (' + this.formatter.parameterize(insertData.values[0], this.client.valueForUndefined) + ')'
     }
 
     var blocks = []
@@ -56,6 +65,7 @@ assign(QueryCompiler_SQLite3.prototype, {
     while (++i < insertData.values.length) {
       var i2 = -1, block = blocks[i] = []
       var current = insertData.values[i]
+      current = current === undefined ? this.client.valueForUndefined : current
       while (++i2 < insertData.columns.length) {
         block.push(this.formatter.alias(
           this.formatter.parameter(current[i2]),
