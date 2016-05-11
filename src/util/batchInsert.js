@@ -57,12 +57,8 @@ export default class BatchInsert {
     return this._getTransaction()
       .then((transaction) => {
         return Promise.all(this.batch.map((items) => {
-          let insertBatchItems = transaction(this.tableName)
-            .insert(items);
-          if(this._returning) {
-            insertBatchItems.returning(this._returning);
-          }
-          return insertBatchItems;
+          return transaction(this.tableName)
+            .insert(items, this._returning);
         }))
           .then((result) => {
             if(this._autoTransaction) {

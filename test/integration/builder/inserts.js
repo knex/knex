@@ -678,7 +678,7 @@ module.exports = function(knex) {
           .returning(['Col1', 'Col2'])
           .then(function (result) {
             //Returning only supported by some dialects.
-            if(['POSTGRES', 'MYSQL', 'MYSQL2', 'ORACLE'].indexOf(dialect) !== -1) {
+            if(['POSTGRES', 'ORACLE'].indexOf(dialect) !== -1) {
               result.forEach(function(item) {
                 expect(item.Col1).to.equal(fiftyLengthString);
                 expect(item.Col2).to.equal(fiftyLengthString);
