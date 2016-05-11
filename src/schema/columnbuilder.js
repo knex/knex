@@ -22,7 +22,7 @@ function ColumnBuilder(client, tableBuilder, type, args) {
 var modifiers = [
   'default', 'defaultsTo', 'defaultTo', 'unsigned',
   'nullable', 'notNull', 'notNullable',
-  'first', 'after', 'comment', 'collate'
+  'first', 'after', 'comment', 'collate', 'updating'
 ];
 
 // If we call any of the modifiers (index or otherwise) on the chainable, we pretend

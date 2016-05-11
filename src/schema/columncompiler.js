@@ -106,6 +106,8 @@ ColumnCompiler.prototype.specifictype = function(type) {
   return type;
 };
 
+ColumnCompiler.prototype.NOW = 'CURRENT_TIMESTAMP'; // Override in the dialect if required
+
 // Modifiers
 // -------
 
@@ -117,7 +119,11 @@ ColumnCompiler.prototype.notNullable = function() {
 };
 ColumnCompiler.prototype.defaultTo = function(value) {
   if (value === void 0) {
-    return '';
+    if (this.type === 'timestamp') { 
+      value = this.NOW; 
+    } else { 
+      return ''; 
+    }
   } else if (value === null) {
     value = "null";
   } else if (value instanceof Raw) {

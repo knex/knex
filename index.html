@@ -197,6 +197,7 @@
       <li>– <a href="#Chainable-onDelete">onDelete</a></li>
       <li>– <a href="#Chainable-onUpdate">onUpdate</a></li>
       <li>– <a href="#Chainable-defaultTo">defaultTo</a></li>
+      <li>– <a href="#Chainable-updating">updating</a></li>
       <li>– <a href="#Chainable-unsigned">unsigned</a></li>
       <li>– <a href="#Chainable-notNullable">notNullable</a></li>
       <li>– <a href="#Chainable-nullable">nullable</a></li>
@@ -2166,9 +2167,29 @@ knex.table('users')
     </p>
 
     <p id="Chainable-defaultTo">
-      <b class="header">defaultTo</b><code>column.defaultTo(value)</code>
+      <b class="header">defaultTo</b><code>column.defaultTo([value])</code>
       <br />
       Sets the default value for the column on an insert.
+      <br />
+      An undefined value timestamps will set the default to NOW in the 
+      specific dialect:
+<pre>
+.timestamp('created_at').defaultTo();
+</pre>
+    </p>
+
+    <p id="Chainable-updating">
+      <b class="header">updating</b><code>timestamp_column.updating()</code>
+      <br />
+      Sets the 'on update CURRENT_TIMESTAMP' flag for timestamps in MySQL.
+<pre>
+knex.schema.createTable('example', function (table) {
+  table.timestamp('created_at').defaultTo('1970-01-01 00:00:01');
+  table.timestamp('modified_at').defaultTo().updating();
+}).then(function () {
+  knex('example').insert({created_at:null});
+});
+</pre>
     </p>
 
     <p id="Chainable-unsigned">

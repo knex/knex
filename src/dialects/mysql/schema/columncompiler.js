@@ -9,7 +9,7 @@ import {assign} from 'lodash'
 
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment', 'collate']
+  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment', 'collate', 'updating']
 }
 inherits(ColumnCompiler_MySQL, ColumnCompiler);
 
@@ -80,10 +80,16 @@ assign(ColumnCompiler_MySQL.prototype, {
     return length ? 'varbinary(' + this._num(length) + ')' : 'blob'
   },
 
+
+  NOW: 'CURRENT_TIMESTAMP',
+  
   // Modifiers
   // ------
 
   defaultTo: function(value) {
+    if ((this.type === 'timestamp') && (value === 0)) {
+      return 'default 0'; // only allowed when the NO_ZERO_DATE flag isn't set.
+    }
     /*jshint unused: false*/
     var defaultVal = ColumnCompiler_MySQL.super_.prototype.defaultTo.apply(this, arguments);
     if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
@@ -92,6 +98,10 @@ assign(ColumnCompiler_MySQL.prototype, {
     return ''
   },
 
+  updating: function () {
+    return (this.type === 'timestamp') ? 'on update CURRENT_TIMESTAMP' : '';
+  },
+  
   unsigned: function() {
     return 'unsigned'
   },

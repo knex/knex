@@ -488,12 +488,39 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)');
   });
 
+  it('treats defaultTo(0) as default 0 for timestamps', function () {
+    tableSql = client.schemaBuilder().createTable('timestamp_test', function (t) {
+      t.timestamp('frozen_at').defaultTo(0);
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('create table `timestamp_test` (`frozen_at` timestamp default 0)');
+  });
+
+  it('treats defaultTo() as default CURRENT_TIMESTAMP for timestamps', function () {
+    tableSql = client.schemaBuilder().createTable('timestamp_test', function (t) {
+      t.timestamp('created_at').defaultTo();
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('create table `timestamp_test` (`created_at` timestamp default CURRENT_TIMESTAMP)');
+  });
+
+  it('treats updating() as on update CURRENT_TIMESTAMP for timestamps', function () {
+    tableSql = client.schemaBuilder().createTable('timestamp_test', function (t) {
+      t.timestamp('modified_at').defaultTo().updating();
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('create table `timestamp_test` (`modified_at` timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP)');
+
   it('sets myISAM engine', function() {
     tableSql = client.schemaBuilder().createTable('users', function(t) {
       t.string('username');
       t.engine('myISAM');
     }).toSQL();
     expect(tableSql[0].sql).to.equal('create table `users` (`username` varchar(255)) engine = myISAM');
+
   });
 
 });
