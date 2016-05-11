@@ -45,7 +45,7 @@ export default class BatchInsert {
   }
 
   _getTransaction() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if(this._transaction) {
         return resolve(this._transaction);
       }
