@@ -331,7 +331,7 @@ assign(QueryCompiler.prototype, {
   },
 
   onBasic(clause) {
-    return this.formatter.wrap(clause.column) + ' ' + this.formatter.operator(clause.operator) + ' ' + this.formatter.parameter(clause.value);
+    return this.formatter.wrap(clause.column) + ' ' + this.formatter.operator(clause.operator) + ' ' + this.formatter.wrap(clause.value);
   },
 
   onRaw(clause) {
