@@ -315,7 +315,7 @@ assign(QueryCompiler.prototype, {
     var self = this;
 
     var wrapJoin = new JoinClause();
-    clause.value.call(wrapJoin);
+    clause.value.call(wrapJoin, wrapJoin);
 
     var sql = '';
     wrapJoin.clauses.forEach(function(wrapClause, ii) {
