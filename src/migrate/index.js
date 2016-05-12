@@ -314,6 +314,7 @@ export default class Migrator {
     var directory = this._absoluteConfigDir()
     var current   = Promise.bind({failed: false, failedOn: 0});
     var log       = [];
+    var ignoreErrors = knex.client.config.migrations.ignoreErrors || [];
     each(migrations, (migration) => {
       var name  = migration;
       migration = require(directory + '/' + name);
@@ -337,6 +338,14 @@ export default class Migrator {
         if (direction === 'down') {
           return knex(tableName).where({name: name}).del();
         }
+      })
+      .catch(e => {
+        e.migrationName = name;
+        if (ignoreErrors.indexOf(e.code) > -1) {
+          log.push(e);
+          return Promise.resolve();
+        }
+        throw e;
       });
     })
 
