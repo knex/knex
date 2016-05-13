@@ -110,16 +110,6 @@ assign(Client_SQLite3.prototype, {
     })
   },
 
-  prepBindings: function(bindings) {
-    return map(bindings, (binding) => {
-      if (binding === undefined && this.valueForUndefined !== null) {
-        throw new TypeError("`sqlite` does not support inserting default values. Specify values explicitly or use the `useNullAsDefault` config flag. (see docs http://knexjs.org/#Builder-insert).");
-      } else {
-        return binding
-      }
-    });
-  },
-
   // Ensures the response is returned in the same format as other clients.
   processResponse: function(obj, runner) {
     var ctx      = obj.context;

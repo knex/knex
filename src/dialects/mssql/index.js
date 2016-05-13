@@ -85,15 +85,6 @@ assign(Client_MSSQL.prototype, {
     })
   },
 
-  prepBindings: function(bindings) {
-    return map(bindings, (value) => {
-      if (value === undefined) {
-        return this.valueForUndefined
-      }
-      return value
-    })
-  },
-
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
   _stream: function(connection, obj, stream, options) {

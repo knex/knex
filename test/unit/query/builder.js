@@ -28,15 +28,6 @@ var clientsWithNullAsDefault = {
   default:  new Client(useNullAsDefaultConfig)
 }
 
-var valuesForUndefined = {
-  mysql: clients.mysql.valueForUndefined,
-  sqlite3: clients.sqlite3.valueForUndefined,
-  oracle: clients.oracle.valueForUndefined,
-  postgres: clients.postgres.valueForUndefined,
-  mssql: clients.mssql.valueForUndefined,
-  default: clients.default.valueForUndefined
-};
-
 function qb() {
   return clients.default.queryBuilder()
 }
@@ -1831,7 +1822,7 @@ describe("QueryBuilder", function() {
   it("multiple inserts with partly undefined keys", function() {
     testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
       mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
-      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using DEFAULT, \'dayle\';end;',
+      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (DEFAULT, :1)\' using \'dayle\';end;',
       mssql: "insert into [users] ([email], [name]) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
       default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (DEFAULT, \'dayle\')'
     });
@@ -1948,24 +1939,24 @@ describe("QueryBuilder", function() {
 
     testsql(qb().insert(data).into('table'), {
       mysql: {
-        sql: 'insert into `table` (`a`, `b`, `c`) values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-        bindings: [1, valuesForUndefined.mysql, valuesForUndefined.mysql, valuesForUndefined.mysql, 2, valuesForUndefined.mysql, 2, valuesForUndefined.mysql, 3]
+        sql: 'insert into `table` (`a`, `b`, `c`) values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3]
       },
       sqlite3: {
         sql: 'insert into "table" ("a", "b", "c") select ? as "a", ? as "b", ? as "c" union all select ? as "a", ? as "b", ? as "c" union all select ? as "a", ? as "b", ? as "c"',
         bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
       },
       oracle: {
-        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
-        bindings: [1, valuesForUndefined.oracle, valuesForUndefined.oracle, valuesForUndefined.oracle, 2, valuesForUndefined.oracle, 2, valuesForUndefined.oracle, 3]
+        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, DEFAULT, DEFAULT)' using ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (DEFAULT, :1, DEFAULT)' using ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, DEFAULT, :2)' using ?, ?;end;",
+        bindings: [1, 2, 2, 3]
       },
       mssql: {
-        sql: 'insert into [table] ([a], [b], [c]) values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-        bindings: [1, valuesForUndefined.mssql, valuesForUndefined.mssql, valuesForUndefined.mssql, 2, valuesForUndefined.mssql, 2, valuesForUndefined.mssql, 3]
+        sql: 'insert into [table] ([a], [b], [c]) values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3]
       },
       default: {
-        sql: 'insert into "table" ("a", "b", "c") values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-        bindings: [1, valuesForUndefined.default, valuesForUndefined.default, valuesForUndefined.default, 2, valuesForUndefined.default, 2, valuesForUndefined.default, 3]
+        sql: 'insert into "table" ("a", "b", "c") values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3]
       }
     });
     clients.sqlite3.valueForUndefined = previousValuesForUndefinedSqlite3;
@@ -3304,20 +3295,20 @@ describe("QueryBuilder", function() {
   it('#1268 - valueForUndefined should be in toSQL(QueryCompiler)', function() {
     testsql(qb().insert([{id: void 0, name: 'test', occupation: void 0}, {id: 1, name: void 0, occupation: 'none'}]).into('users'), {
       mysql: {
-        sql: 'insert into `users` (`id`, `name`, `occupation`) values (?, ?, ?), (?, ?, ?)',
-        bindings: [valuesForUndefined.mysql, 'test', valuesForUndefined.mysql, 1, valuesForUndefined.mysql, 'none']
+        sql: 'insert into `users` (`id`, `name`, `occupation`) values (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: ['test', 1, 'none']
       },
       oracle: {
-        sql: 'begin execute immediate \'insert into "users" ("id", "name", "occupation") values (:1, :2, :3)\' using ?, ?, ?; execute immediate \'insert into "users" ("id", "name", "occupation") values (:1, :2, :3)\' using ?, ?, ?;end;',
-        bindings: [valuesForUndefined.oracle, 'test', valuesForUndefined.oracle, 1, valuesForUndefined.oracle, 'none']
+        sql: 'begin execute immediate \'insert into "users" ("id", "name", "occupation") values (DEFAULT, :1, DEFAULT)\' using ?; execute immediate \'insert into "users" ("id", "name", "occupation") values (:1, DEFAULT, :2)\' using ?, ?;end;',
+        bindings: ['test', 1, 'none']
       },
       mssql: {
-        sql: 'insert into [users] ([id], [name], [occupation]) values (?, ?, ?), (?, ?, ?)',
-        bindings: [valuesForUndefined.mssql, 'test', valuesForUndefined.mssql, 1, valuesForUndefined.mssql, 'none']
+        sql: 'insert into [users] ([id], [name], [occupation]) values (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: ['test', 1, 'none']
       },
       postgres: {
-        sql: 'insert into "users" ("id", "name", "occupation") values (?, ?, ?), (?, ?, ?)',
-        bindings: [valuesForUndefined.postgres, 'test', valuesForUndefined.postgres, '1', valuesForUndefined.postgres, 'none']
+        sql: 'insert into "users" ("id", "name", "occupation") values (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: ['test', '1', 'none']
       }
     });
 
