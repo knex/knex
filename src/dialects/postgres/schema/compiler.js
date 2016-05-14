@@ -59,7 +59,7 @@ SchemaCompiler_PG.prototype.qualifiedTableName = function(tableName) {
 
 // Compile a rename table command.
 SchemaCompiler_PG.prototype.renameTable = function(from, to) {
-  this.pushQuery('alter table ' + this.qualifiedTableName(from) + ' rename to ' + this.qualifiedTableName(to));
+  this.pushQuery('alter table ' + this.qualifiedTableName(from) + ' rename to ' + this.formatter.wrap(to));
 };
 
 SchemaCompiler_PG.prototype.createSchema = function(schemaName) {
