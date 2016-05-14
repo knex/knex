@@ -20,6 +20,15 @@ assign(JoinClause.prototype, {
 
   // Adds an "on" clause to the current join object.
   on: function(first, operator, second) {
+    if (typeof first === 'function') {
+      this.clauses.push({
+        type: 'onWrapped',
+        value: first,
+        bool: this._bool()
+      });
+      return this;
+    }
+
     var data, bool = this._bool()
     switch (arguments.length) {
       case 1:  {
@@ -31,12 +40,12 @@ assign(JoinClause.prototype, {
           }
           return this;
         } else {
-          data = [bool, 'on', first]
+          data = {type: 'onRaw', value: first, bool: bool};
         }
         break;
       }
-      case 2:  data = [bool, 'on', first, '=', operator]; break;
-      default: data = [bool, 'on', first, operator, second];
+      case 2:  data = {type: 'onBasic', column: first, operator: '=', value: operator, bool: bool}; break;
+      default: data = {type: 'onBasic', column: first, operator: operator, value: second, bool: bool};
     }
     this.clauses.push(data);
     return this;
@@ -44,7 +53,7 @@ assign(JoinClause.prototype, {
 
   // Adds a "using" clause to the current join.
   using: function(column) {
-    return this.clauses.push([this._bool(), 'using', column]);
+    return this.clauses.push({type: 'onUsing', column: column, bool: this._bool()});
   },
 
   // Adds an "and on" clause to the current join object.

@@ -934,6 +934,19 @@ knex.select('*').from('users').join('accounts', function() {
 </pre>
 
     <p>
+      For nested join statements, specify a function as first argument of <tt>on</tt>, <tt>orOn</tt> or <tt>andOn</tt>
+    </p>
+
+<pre class="display">
+knex.select('*').from('users').join('accounts', function() {
+  this.on(function() {
+    this.on('accounts.id', '=', 'users.account_id')
+    this.orOn('accounts.owner_id', '=', 'users.id')
+  })
+})
+</pre>
+
+    <p>
       It is also possible to use an object to represent the join syntax.
     </p>
 
@@ -945,9 +958,9 @@ knex.select('*').from('users').join('accounts', {'accounts.id': 'users.account_i
 <p>
   If you need to use a literal value (string, number, or boolean) in a join instead of a column, use <tt>knex.raw</tt>.</p>
 
-  <pre class="display">
-  knex.select('*').from('users').join('accounts', 'accounts.type', knex.raw('?', ['admin']))
-  </pre>
+<pre class="display">
+knex.select('*').from('users').join('accounts', 'accounts.type', knex.raw('?', ['admin']))
+</pre>
 
     <p id="Builder-innerJoin">
       <b class="header">innerJoin</b><code>.innerJoin(column, ~mixed~)</code>

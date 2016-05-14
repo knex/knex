@@ -1573,6 +1573,28 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("complex join with nest conditional statements", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on(function(qb) {
+        qb.on('users.id', '=', 'contacts.id')
+        qb.orOn('users.name', '=', 'contacts.name');
+      });
+    }), {
+      mysql: {
+        sql: 'select * from `users` inner join `contacts` on (`users`.`id` = `contacts`.`id` or `users`.`name` = `contacts`.`name`)',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] inner join [contacts] on ([users].[id] = [contacts].[id] or [users].[name] = [contacts].[name])',
+        bindings: []
+      },
+      default: {
+        sql: 'select * from "users" inner join "contacts" on ("users"."id" = "contacts"."id" or "users"."name" = "contacts"."name")',
+        bindings: []
+      }
+    });
+  });
+
   it("joins with raw", function() {
     testsql(qb().select('*').from('users').join('contacts', 'users.id', raw(1)).leftJoin('photos', 'photos.title', '=', raw('?', ['My Photo'])), {
       mysql: {
@@ -1606,6 +1628,7 @@ describe("QueryBuilder", function() {
       }
     });
   });
+
   it("raw expressions in select", function() {
     testsql(qb().select(raw('substr(foo, 6)')).from('users'), {
       mysql: {
