@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.11.1)</span>
+      Knex.js <span class="version">(0.11.2)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -336,7 +336,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.11.1 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.11.2 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -3053,6 +3053,17 @@ $ npm test
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.11.2</b> &mdash; <small><i>14 May, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Prevent crash on <tt>knex seed:make</tt>. #1389</li>
+      <li>Improvements to <tt>batchInsert</tt>. #1391</li>
+      <li>Improvements to inserting <tt>DEFAULT</tt> with <tt>undefined</tt> binding. #1396</li>
+      <li>Correct generated code for adding/dropping multiple columns. (MSSQL) #1401</li>
+    </ul>
 
     <p>
       <b class="header">0.11.1</b> &mdash; <small><i>6 May, 2016</i></small><br />
