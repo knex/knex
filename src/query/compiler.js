@@ -1,8 +1,10 @@
 
 // Query Compiler
 // -------
-var helpers = require('../helpers');
-var Raw     = require('../raw');
+var helpers    = require('../helpers');
+var Raw        = require('../raw');
+var JoinClause = require('./joinclause');
+
 import {assign, reduce, groupBy, isString, compact, isEmpty, isUndefined, bind, map, omitBy} from 'lodash'
 
 // The "QueryCompiler" takes all of the query statements which
@@ -167,10 +169,15 @@ assign(QueryCompiler.prototype, {
         var ii = -1
         while (++ii < join.clauses.length) {
           var clause = join.clauses[ii]
-          sql += ' ' + (ii > 0 ? clause[0] : clause[1]) + ' '
-          sql += this.formatter.wrap(clause[2])
-          if (!isUndefined(clause[3])) sql += ' ' + this.formatter.operator(clause[3])
-          if (!isUndefined(clause[4])) sql += ' ' + this.formatter.wrap(clause[4])
+          if (ii > 0) {
+            sql += ' ' + clause.bool + ' ';
+          } else {
+            sql += ' ' + (clause.type === 'onUsing' ? 'using' : 'on') + ' ';
+          }
+          var val = this[clause.type].call(this, clause);
+          if (val) {
+            sql += val;
+          }
         }
       }
     }
@@ -299,6 +306,44 @@ assign(QueryCompiler.prototype, {
       ' ' + counter.amount);
     this.single.update = toUpdate;
     return this.update();
+  },
+
+  // On Clause
+  // ------
+
+  onWrapped(clause) {
+    var self = this;
+
+    var wrapJoin = new JoinClause();
+    clause.value.call(wrapJoin, wrapJoin);
+
+    var sql = '';
+    wrapJoin.clauses.forEach(function(wrapClause, ii) {
+      if (ii > 0) {
+        sql += ' ' + wrapClause.bool + ' ';
+      }
+      var val = self[wrapClause.type](wrapClause);
+      if (val) {
+        sql += val;
+      }
+    });
+
+    if (sql.length) {
+      return '(' + sql + ')';
+    }
+    return '';
+  },
+
+  onBasic(clause) {
+    return this.formatter.wrap(clause.column) + ' ' + this.formatter.operator(clause.operator) + ' ' + this.formatter.wrap(clause.value);
+  },
+
+  onRaw(clause) {
+    return this.formatter.unwrapRaw(clause.value);
+  },
+
+  onUsing(clause) {
+    return this.formatter.wrap(clause.column);
   },
 
   // Where Clause
