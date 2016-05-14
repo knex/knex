@@ -6,8 +6,8 @@ var Seeder         = require('../seed')
 var FunctionHelper = require('../functionhelper')
 var QueryInterface = require('../query/methods')
 var helpers        = require('../helpers')
-var Promise        = require('../promise')
-import {assign, isNumber, chunk} from 'lodash'
+import {assign} from 'lodash'
+import BatchInsert from './batchInsert';
 
 module.exports = function makeKnex(client) {
 
@@ -34,20 +34,7 @@ module.exports = function makeKnex(client) {
     },
 
     batchInsert: function(table, batch, chunkSize = 1000) {
-      if (!isNumber(chunkSize) || chunkSize < 1) {
-        throw new TypeError("Invalid chunkSize: " + chunkSize);
-      }
-
-      return this.transaction((tr) => {
-          // Avoid unnecessary call.
-          if(chunkSize !== 1) {
-            batch = chunk(batch, chunkSize)
-          }
-
-          return Promise.all(batch.map((items) => {
-            return tr(table).insert(items)
-          }));
-        })
+      return new BatchInsert(this, table, batch, chunkSize);
     },
 
     // Runs a new transaction, taking a container and returning a promise
@@ -70,7 +57,7 @@ module.exports = function makeKnex(client) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.11.1'
+  knex.VERSION = knex.__knex__  = '0.11.2'
 
   // Hook up the "knex" object as an EventEmitter.
   var ee = new EventEmitter()

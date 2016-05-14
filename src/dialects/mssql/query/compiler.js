@@ -44,7 +44,7 @@ assign(QueryCompiler_MSSQL.prototype, {
         var i = -1
         while (++i < insertData.values.length) {
           if (i !== 0) sql += '), ('
-          sql += this.formatter.parameterize(insertData.values[i])
+          sql += this.formatter.parameterize(insertData.values[i], this.client.valueForUndefined)
         }
         sql += ')';
       } else if (insertValues.length === 1 && insertValues[0]) {

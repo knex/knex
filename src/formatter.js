@@ -12,7 +12,7 @@ function Formatter(client) {
 assign(Formatter.prototype, {
 
   // Accepts a string or array of columns to wrap as appropriate.
-  columnize: function(target) {
+  columnize(target) {
     var columns = typeof target === 'string' ? [target] : target
     var str = '', i = -1;
     while (++i < columns.length) {
@@ -24,7 +24,7 @@ assign(Formatter.prototype, {
 
   // Turns a list of values into a list of ?'s, joining them with commas unless
   // a "joining" value is specified (e.g. ' and ')
-  parameterize: function(values, notSetValue) {
+  parameterize(values, notSetValue) {
     if (typeof values === 'function') return this.parameter(values);
     values  = Array.isArray(values) ? values : [values];
     var str = '', i = -1;
@@ -37,14 +37,14 @@ assign(Formatter.prototype, {
 
   // Checks whether a value is a function... if it is, we compile it
   // otherwise we check whether it's a raw
-  parameter: function(value) {
+  parameter(value) {
     if (typeof value === 'function') {
       return this.outputQuery(this.compileCallback(value), true);
     }
     return this.unwrapRaw(value, true) || '?';
   },
 
-  unwrapRaw: function(value, isParameter) {
+  unwrapRaw(value, isParameter) {
     var query;
     if (value instanceof QueryBuilder) {
       query = this.client.queryCompiler(value).toSQL()
@@ -66,7 +66,7 @@ assign(Formatter.prototype, {
     }
   },
 
-  rawOrFn: function(value, method) {
+  rawOrFn(value, method) {
     if (typeof value === 'function') {
       return this.outputQuery(this.compileCallback(value, method));
     }
@@ -75,7 +75,7 @@ assign(Formatter.prototype, {
 
   // Puts the appropriate wrapper around a value depending on the database
   // engine, unless it's a knex.raw value, in which case it's left alone.
-  wrap: function(value) {
+  wrap(value) {
     var raw;
     if (typeof value === 'function') {
       return this.outputQuery(this.compileCallback(value), true);
@@ -86,16 +86,16 @@ assign(Formatter.prototype, {
     return this._wrapString(value + '');
   },
 
-  wrapAsIdentifier: function wrapAsIdentifier(value) {
+  wrapAsIdentifier(value) {
     return this.client.wrapIdentifier((value || '').trim());
   },
 
-  alias: function(first, second) {
+  alias(first, second) {
     return first + ' as ' + second;
   },
 
   // The operator method takes a value and returns something or other.
-  operator: function(value) {
+  operator(value) {
     var raw = this.unwrapRaw(value);
     if (raw) return raw;
     if (operators[(value || '').toLowerCase()] !== true) {
@@ -105,14 +105,14 @@ assign(Formatter.prototype, {
   },
 
   // Specify the direction of the ordering.
-  direction: function(value) {
+  direction(value) {
     var raw = this.unwrapRaw(value);
     if (raw) return raw;
     return orderBys.indexOf((value || '').toLowerCase()) !== -1 ? value : 'asc';
   },
 
   // Compiles a callback using the query builder.
-  compileCallback: function(callback, method) {
+  compileCallback(callback, method) {
     var client = this.client;
 
     // Build the callback
@@ -128,7 +128,7 @@ assign(Formatter.prototype, {
   },
 
   // Ensures the query is aliased if necessary.
-  outputQuery: function(compiled, isParameter) {
+  outputQuery(compiled, isParameter) {
     var sql = compiled.sql || '';
     if (sql) {
       if (compiled.method === 'select' && (isParameter || compiled.as)) {
@@ -140,7 +140,7 @@ assign(Formatter.prototype, {
   },
 
   // Coerce to string to prevent strange errors when it's not a string.
-  _wrapString: function(value) {
+  _wrapString(value) {
     var segments, asIndex = value.toLowerCase().indexOf(' as ');
     if (asIndex !== -1) {
       var first  = value.slice(0, asIndex)

@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.11.1)</span>
+      Knex.js <span class="version">(0.11.2)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -336,7 +336,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.11.1 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.11.2 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -2382,15 +2382,29 @@ knex.select('e.lastname', 'e.salary', subcolumn)
 
     <h3 id="Utility-BatchInsert">Batch Insert</h3>
 
-    <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction (which is automatically created), at a given <tt>chunkSize</tt>.</p>
+    <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction <i>(which is automatically created unless explicitly given a transaction using <a href="#Builder-transacting">transacting</a>)</i>, at a given <tt>chunkSize</tt>.</p>
     <p>It's primarily designed to be used when you have thousands of rows to insert into a table.</p>
     <p>By default, the <tt>chunkSize</tt> is set to 1000.</p>
+
+    <p>BatchInsert also allows for <a href="#Builder-returning">returning values</a> and supplying transactions using <a href="#Builder-transacting">transacting</a>.</p>
 
 <pre>
 <code class="js">
   var rows = [{...}, {...}];
   var chunkSize = 30;
   knex.batchInsert('TableName', rows, chunkSize)
+  .returning('id')
+  .then(function(ids) {
+    ...
+  })
+  .catch(function(error) {
+    ...
+  });
+
+  knex.transaction(function(tr) {
+    return knex.batchInsert('TableName', rows, chunkSize)
+    .transacting(tr)
+  })
   .then(function() {
     ...
   })
@@ -3035,10 +3049,21 @@ $ npm test
     <p id="faq-nonode">
       <b class="header">Can I use Knex outside of Node.js</b><br />
       Yes. While the WebSQL spec is deprecated, there is still an adapter that provides support.
-      Checkout the <a href="https://github.com/tgriesser/knex/tree/master/browser">browser builds</a> for more details</a>.
+      Checkout the <a href="https://github.com/tgriesser/knex/tree/master/build">browser builds</a> for more details</a>.
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+    <p>
+      <b class="header">0.11.2</b> &mdash; <small><i>14 May, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Prevent crash on <tt>knex seed:make</tt>. #1389</li>
+      <li>Improvements to <tt>batchInsert</tt>. #1391</li>
+      <li>Improvements to inserting <tt>DEFAULT</tt> with <tt>undefined</tt> binding. #1396</li>
+      <li>Correct generated code for adding/dropping multiple columns. (MSSQL) #1401</li>
+    </ul>
 
     <p>
       <b class="header">0.11.1</b> &mdash; <small><i>6 May, 2016</i></small><br />
