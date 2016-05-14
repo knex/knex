@@ -37,6 +37,27 @@ assign(TableCompiler_MSSQL.prototype, {
 
   dropColumnPrefix: 'DROP COLUMN ',
 
+  // Compiles column add.  Multiple columns need only one ADD clause (not one ADD per column) so core addColumns doesn't work.  #1348
+  addColumns : function (columns) {
+    if (columns.sql.length > 0) {
+      this.pushQuery({
+        sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + this.addColumnsPrefix + columns.sql.join(', '),
+        bindings: columns.bindings
+      });
+    }
+  },
+
+  // Compiles column drop.  Multiple columns need only one DROP clause (not one DROP per column) so core dropColumn doesn't work.  #1348
+  dropColumn: function () {
+    var _this2 = this;
+    var columns = helpers.normalizeArr.apply(null, arguments);
+
+    var drops = (Array.isArray(columns) ? columns : [columns]).map(function (column) {
+      return _this2.formatter.wrap(column);
+    });
+    this.pushQuery((this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + this.dropColumnPrefix + drops.join(', '));
+  },
+
   // Compiles the comment on the table.
   comment: function () {
   },
