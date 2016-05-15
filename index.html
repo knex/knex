@@ -1987,22 +1987,22 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
     </p>
 
     <p id="Schema-dateTime">
-      <b class="header">dateTime</b><code>table.dateTime(name)</code>
+      <b class="header">dateTime</b><code>table.dateTime(name, [fsp])</code>
       <br />
-      Adds a dateTime column.
+      Adds a dateTime column, with optional fractional seconds part for MySQL.
     </p>
 
     <p id="Schema-time">
-      <b class="header">time</b><code>table.time(name)</code>
+      <b class="header">time</b><code>table.time(name, [fsp])</code>
       <br />
-      Adds a time column.
+      Adds a time column, with optional fractional seconds part for MySQL.
     </p>
 
     <p id="Schema-timestamp">
       <b class="header">timestamp</b><code>table.timestamp(name, [standard])</code>
       <br />
       Adds a timestamp column, defaults to <tt>timestamptz</tt> in PostgreSQL, unless true
-      is passed as the second argument.
+      is passed as the second argument. In MySQL the second argument can be used to set the fractional seconds part.
       <br />
       For Example:
 <pre class="display">
