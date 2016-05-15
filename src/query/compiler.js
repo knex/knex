@@ -393,7 +393,7 @@ assign(QueryCompiler.prototype, {
 
   // Compiles a "whereRaw" query.
   whereRaw(statement) {
-    return this.formatter.unwrapRaw(statement.value);
+    return this._not(statement, '') + this.formatter.unwrapRaw(statement.value);
   },
 
   wrap(str) {

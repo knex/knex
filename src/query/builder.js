@@ -269,6 +269,7 @@ assign(Builder.prototype, {
       grouping: 'where',
       type: 'whereRaw',
       value: raw,
+      not: this._not(),
       bool: this._bool()
     });
     return this;
