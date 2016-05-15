@@ -28,6 +28,7 @@
     "coveralls": "~2.11.1",
     "istanbul": "~0.3.0",
     "jshint": "^2.9.2",
+    "json-loader": "^0.5.4",
     "mariasql": "^0.2.3",
     "mocha": "^2.2.4",
     "mssql": "^2.3.2",
@@ -42,7 +43,8 @@
     "sqlite3": "^3.0.5",
     "tap-spec": "^4.0.0",
     "tape": "^4.0.0",
-    "through": "^2.3.4"
+    "through": "^2.3.4",
+    "webpack": "^1.13.0"
   },
   "scripts": {
     "dev": "babel -L -D -w src/ --out-dir lib/",
