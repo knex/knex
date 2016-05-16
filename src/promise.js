@@ -1,10 +1,10 @@
 
-var Promise   = require('bluebird');
-var deprecate = require('./helpers').deprecate
+import Promise from 'bluebird';
+import { deprecate } from './helpers';
 
 Promise.prototype.exec = function(cb) {
   deprecate('.exec', '.asCallback')
   return this.asCallback(cb)
 };
 
-module.exports = Promise;
+export default Promise;

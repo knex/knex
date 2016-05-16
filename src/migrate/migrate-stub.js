@@ -3,11 +3,11 @@
 // Used for now in browser builds, where filesystem access isn't
 // available. Maybe we can eventually do websql migrations
 // with jsonp and a json migration api.
-var StubMigrate = module.exports = function() {};
+const StubMigrate = module.exports = function() {};
 
-var Promise = require('bluebird');
+import Promise from 'bluebird';
 
-var noSuchMethod = Promise.method(function() {
+const noSuchMethod = Promise.method(function() {
   throw new Error("Migrations are not supported");
 });
 

@@ -1,6 +1,6 @@
 
-var inherits = require('inherits');
-var ColumnCompiler = require('../../../schema/columncompiler');
+import inherits from 'inherits';
+import ColumnCompiler from '../../../schema/columncompiler';
 
 // Column Compiler
 // -------
@@ -19,4 +19,4 @@ ColumnCompiler_SQLite3.prototype.decimal =
 ColumnCompiler_SQLite3.prototype.floating = 'float';
 ColumnCompiler_SQLite3.prototype.timestamp = 'datetime';
 
-module.exports = ColumnCompiler_SQLite3;
+export default ColumnCompiler_SQLite3;

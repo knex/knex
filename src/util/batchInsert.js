@@ -1,4 +1,4 @@
-'use strict';
+
 
 import {isNumber, isString, isArray, chunk, flatten} from 'lodash';
 import Promise from '../promise';
@@ -19,7 +19,6 @@ export default class BatchInsert {
     this._returning       = void 0;
     this._transaction     = null;
     this._autoTransaction = true;
-    
   }
 
   /**
@@ -34,8 +33,10 @@ export default class BatchInsert {
   }
 
   /**
-   * User may supply their own transaction.
-   * If this is the case, autoTransaction = false, meaning we don't automatically commit/rollback the transaction. The responsibility instead falls on the user.
+   * User may supply their own transaction. If this is the case,
+   * `autoTransaction = false`, meaning we don't automatically commit/rollback
+   * the transaction. The responsibility instead falls on the user.
+   *
    * @param transaction
    */
   transacting(transaction) {

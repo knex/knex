@@ -2,6 +2,8 @@
 
 'use strict';
 
+require('source-map-support').install();
+
 global.sinon = require("sinon");
 
 var chai = global.chai = require("chai");
