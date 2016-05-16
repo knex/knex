@@ -1,5 +1,5 @@
 {
-  "name": "knex",
+  "name": "knex-oracledb",
   "version": "0.11.1",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
@@ -54,11 +54,10 @@
     "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "jshint test/. src/.",
-    "prepublish": "npm run build",
-    "postinstall": "npm run build"
+    "prepublish": "npm run build"
   },
   "bin": {
-    "knex": "./bin/cli.js"
+    "knex": "./lib/bin/cli.js"
   },
   "repository": {
     "type": "git",
@@ -96,7 +95,6 @@
   },
   "files": [
     "README.md",
-    "bin/*",
     "src/*",
     "lib/*",
     "build/*",
