@@ -136,8 +136,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
-	var EventEmitter = __webpack_require__(38).EventEmitter;
+	var inherits = __webpack_require__(52);
+	var EventEmitter = __webpack_require__(39).EventEmitter;
 
 	function Raw(client) {
 	  this.client = client;
@@ -304,7 +304,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var chalk = __webpack_require__(40);
+	var chalk = __webpack_require__(41);
 
 	var helpers = {
 
@@ -379,12 +379,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ColumnCompiler = __webpack_require__(24);
 
 	var Pool2 = __webpack_require__(25);
-	var inherits = __webpack_require__(51);
-	var EventEmitter = __webpack_require__(38).EventEmitter;
+	var inherits = __webpack_require__(52);
+	var EventEmitter = __webpack_require__(39).EventEmitter;
 	var SqlString = __webpack_require__(26);
 
-	var debug = __webpack_require__(52)('knex:client');
-	var debugQuery = __webpack_require__(52)('knex:query');
+	var debug = __webpack_require__(53)('knex:client');
+	var debugQuery = __webpack_require__(53)('knex:query');
 
 	// The base client provides the general structure
 	// for a dialect specific client object.
@@ -639,7 +639,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Ensure the client has fresh objects so we can tack onto
 	// the prototypes without mutating them globally.
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 
 	module.exports = function makeClient(ParentClient) {
 
@@ -714,7 +714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var EventEmitter = __webpack_require__(38).EventEmitter;
+	var EventEmitter = __webpack_require__(39).EventEmitter;
 
 	var Migrator = __webpack_require__(25);
 	var Seeder = __webpack_require__(25);
@@ -786,7 +786,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // The `__knex__` is used if you need to duck-type check whether this
 	  // is a knex builder, without a full on `instanceof` check.
-	  knex.VERSION = knex.__knex__ = '0.11.1';
+	  knex.VERSION = knex.__knex__ = '0.10.0';
 
 	  // Hook up the "knex" object as an EventEmitter.
 	  var ee = new EventEmitter();
@@ -870,11 +870,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _url = __webpack_require__(39);
+	var _url = __webpack_require__(40);
 
 	var _url2 = _interopRequireDefault(_url);
 
-	var _pgConnectionString = __webpack_require__(41);
+	var _pgConnectionString = __webpack_require__(42);
 
 	function parseConnectionString(str) {
 	  var parsed = _url2['default'].parse(str);
@@ -911,11 +911,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    connection.database = db;
 	  }
 	  if (parsed.hostname) {
-	    if (parsed.protocol.indexOf('mssql') === 0) {
-	      connection.server = parsed.hostname;
-	    } else {
-	      connection.host = parsed.hostname;
-	    }
+	    connection.host = parsed.hostname;
 	  }
 	  if (parsed.port) {
 	    connection.port = parsed.port;
@@ -943,9 +939,10 @@ return /******/ (function(modules) { // webpackBootstrap
 		"./mysql/index.js": 31,
 		"./mysql2/index.js": 32,
 		"./oracle/index.js": 33,
-		"./postgres/index.js": 34,
-		"./sqlite3/index.js": 35,
-		"./strong-oracle/index.js": 36,
+		"./oracledb/index.js": 34,
+		"./postgres/index.js": 35,
+		"./sqlite3/index.js": 36,
+		"./strong-oracle/index.js": 37,
 		"./websql/index.js": 10
 	};
 	function webpackContext(req) {
@@ -989,10 +986,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 
-	var Transaction = __webpack_require__(37);
-	var Client_SQLite3 = __webpack_require__(35);
+	var Transaction = __webpack_require__(38);
+	var Client_SQLite3 = __webpack_require__(36);
 	var Promise = __webpack_require__(9);
 
 	function Client_WebSQL(config) {
@@ -1335,7 +1332,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var hasHandler = typeof handler === 'function';
 
 	    // Lazy-load the "PassThrough" dependency.
-	    PassThrough = PassThrough || __webpack_require__(89).PassThrough;
+	    PassThrough = PassThrough || __webpack_require__(96).PassThrough;
 
 	    var runner = this;
 	    var stream = new PassThrough({ objectMode: true });
@@ -1637,11 +1634,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Acts as a facade for a Promise, keeping the internal state
 	// and managing any child transactions.
 	var Promise = __webpack_require__(9);
-	var EventEmitter = __webpack_require__(38).EventEmitter;
-	var inherits = __webpack_require__(51);
+	var EventEmitter = __webpack_require__(39).EventEmitter;
+	var inherits = __webpack_require__(52);
 
 	var makeKnex = __webpack_require__(6);
-	var debug = __webpack_require__(52)('knex:tx');
+	var debug = __webpack_require__(53)('knex:tx');
 
 	function Transaction(client, container, config, outerTx) {
 	  var _this = this;
@@ -1908,13 +1905,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// Typically called from `knex.builder`,
 	// start a new query building chain.
-	var assert = __webpack_require__(87);
-	var inherits = __webpack_require__(51);
-	var EventEmitter = __webpack_require__(38).EventEmitter;
+	var assert = __webpack_require__(93);
+	var inherits = __webpack_require__(52);
+	var EventEmitter = __webpack_require__(39).EventEmitter;
 
 	var Raw = __webpack_require__(2);
 	var helpers = __webpack_require__(3);
-	var JoinClause = __webpack_require__(53);
+	var JoinClause = __webpack_require__(54);
 	function Builder(client) {
 	  this.client = client;
 	  this.and = this;
@@ -3189,8 +3186,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	// and pulling out the `client` and `grammar` from the current
 	// knex instance.
 
-	var inherits = __webpack_require__(51);
-	var EventEmitter = __webpack_require__(38).EventEmitter;
+	var inherits = __webpack_require__(52);
+	var EventEmitter = __webpack_require__(39).EventEmitter;
 	function SchemaBuilder(client) {
 	  this.client = client;
 	  this._sequence = [];
@@ -3240,7 +3237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// gathered in the "SchemaBuilder" and turns them into an array of
 	// properly formatted / bound query strings.
 
-	var helpers = __webpack_require__(54);
+	var helpers = __webpack_require__(55);
 
 	function SchemaCompiler(client, builder) {
 	  this.builder = builder;
@@ -3540,7 +3537,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var helpers = __webpack_require__(54);
+	var helpers = __webpack_require__(55);
 	var normalizeArr = __webpack_require__(3).normalizeArr;
 
 	function TableCompiler(client, tableBuilder) {
@@ -3853,7 +3850,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _lodash = __webpack_require__(1);
 
 	var Raw = __webpack_require__(2);
-	var helpers = __webpack_require__(54);
+	var helpers = __webpack_require__(55);
 
 	function ColumnCompiler(client, tableCompiler, columnBuilder) {
 	  this.client = client;
@@ -4134,7 +4131,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	  return false;
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
 /* 27 */
@@ -4177,12 +4174,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var Client_MySQL = __webpack_require__(31);
 	var Promise = __webpack_require__(9);
 	var SqlString = __webpack_require__(26);
 	var helpers = __webpack_require__(3);
-	var Transaction = __webpack_require__(55);
+	var Transaction = __webpack_require__(56);
 
 	function Client_MariaSQL(config) {
 	  Client_MySQL.call(this, config);
@@ -4198,7 +4195,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Transaction: Transaction,
 
 	  _driver: function _driver() {
-	    return __webpack_require__(42);
+	    return __webpack_require__(43);
 	  },
 
 	  // Get a raw connection, called by the `pool` whenever a new
@@ -4333,18 +4330,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 
-	var Formatter = __webpack_require__(56);
+	var Formatter = __webpack_require__(57);
 	var Client = __webpack_require__(4);
 	var Promise = __webpack_require__(9);
 	var helpers = __webpack_require__(3);
 
-	var Transaction = __webpack_require__(57);
-	var QueryCompiler = __webpack_require__(58);
-	var SchemaCompiler = __webpack_require__(59);
-	var TableCompiler = __webpack_require__(60);
-	var ColumnCompiler = __webpack_require__(61);
+	var Transaction = __webpack_require__(58);
+	var QueryCompiler = __webpack_require__(59);
+	var SchemaCompiler = __webpack_require__(60);
+	var TableCompiler = __webpack_require__(61);
+	var ColumnCompiler = __webpack_require__(62);
 
 	// Always initialize with the "QueryBuilder" and "QueryCompiler"
 	// objects, which extend the base 'lib/query/builder' and
@@ -4365,7 +4362,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  driverName: 'mssql',
 
 	  _driver: function _driver() {
-	    return __webpack_require__(43);
+	    return __webpack_require__(44);
 	  },
 
 	  Transaction: Transaction,
@@ -4512,7 +4509,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  ping: function ping(resource, callback) {
-	    resource.request().query('SELECT 1', callback);
+	    resource.query('SELECT 1', callback);
 	  }
 
 	});
@@ -4542,17 +4539,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Always initialize with the "QueryBuilder" and "QueryCompiler"
 	// objects, which extend the base 'lib/query/builder' and
 	// 'lib/query/compiler', respectively.
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 
 	var Client = __webpack_require__(4);
 	var Promise = __webpack_require__(9);
 	var helpers = __webpack_require__(3);
 
-	var Transaction = __webpack_require__(62);
-	var QueryCompiler = __webpack_require__(63);
-	var SchemaCompiler = __webpack_require__(64);
-	var TableCompiler = __webpack_require__(65);
-	var ColumnCompiler = __webpack_require__(66);
+	var Transaction = __webpack_require__(63);
+	var QueryCompiler = __webpack_require__(64);
+	var SchemaCompiler = __webpack_require__(65);
+	var TableCompiler = __webpack_require__(66);
+	var ColumnCompiler = __webpack_require__(67);
 
 	function Client_MySQL(config) {
 	  Client.call(this, config);
@@ -4566,7 +4563,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  driverName: 'mysql',
 
 	  _driver: function _driver() {
-	    return __webpack_require__(44);
+	    return __webpack_require__(45);
 	  },
 
 	  QueryCompiler: QueryCompiler,
@@ -4684,12 +4681,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var Client_MySQL = __webpack_require__(31);
 	var Promise = __webpack_require__(9);
 	var helpers = __webpack_require__(3);
 
-	var Transaction = __webpack_require__(76);
+	var Transaction = __webpack_require__(68);
 
 	var configOptions = ['isServer', 'stream', 'host', 'port', 'localAddress', 'socketPath', 'user', 'password', 'passwordSha1', 'database', 'connectTimeout', 'insecureAuth', 'supportBigNumbers', 'bigNumberStrings', 'decimalNumbers', 'dateStrings', 'debug', 'trace', 'stringifyObjects', 'timezone', 'flags', 'queryFormat', 'pool', 'ssl', 'multipleStatements', 'namedPlaceholders', 'typeCast', 'charsetNumber', 'compress'];
 
@@ -4769,21 +4766,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
-	var Formatter = __webpack_require__(67);
+	var inherits = __webpack_require__(52);
+	var Formatter = __webpack_require__(69);
 	var Client = __webpack_require__(4);
 	var Promise = __webpack_require__(9);
 	var helpers = __webpack_require__(3);
 	var SqlString = __webpack_require__(26);
 
-	var Transaction = __webpack_require__(68);
-	var QueryCompiler = __webpack_require__(69);
-	var SchemaCompiler = __webpack_require__(70);
-	var ColumnBuilder = __webpack_require__(71);
-	var ColumnCompiler = __webpack_require__(72);
-	var TableCompiler = __webpack_require__(73);
-	var OracleQueryStream = __webpack_require__(74);
-	var ReturningHelper = __webpack_require__(75).ReturningHelper;
+	var Transaction = __webpack_require__(70);
+	var QueryCompiler = __webpack_require__(71);
+	var SchemaCompiler = __webpack_require__(72);
+	var ColumnBuilder = __webpack_require__(73);
+	var ColumnCompiler = __webpack_require__(74);
+	var TableCompiler = __webpack_require__(75);
+	var OracleQueryStream = __webpack_require__(76);
+	var ReturningHelper = __webpack_require__(77).ReturningHelper;
 
 	// Always initialize with the "QueryBuilder" and "QueryCompiler"
 	// objects, which extend the base 'lib/query/builder' and
@@ -4800,7 +4797,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  driverName: 'oracle',
 
 	  _driver: function _driver() {
-	    return __webpack_require__(45);
+	    return __webpack_require__(47);
 	  },
 
 	  Transaction: Transaction,
@@ -4899,6 +4896,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return connection.executeAsync(obj.returningSql, rowIds);
 	    }).then(function (response) {
 	      obj.response = response;
+	      obj.rowsAffected = response.updateCount;
 	      return obj;
 	    });
 	  },
@@ -4926,7 +4924,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          // return an array with values if only one returning value was specified
 	          return (0, _lodash.flatten)((0, _lodash.map)(response, _lodash.values));
 	        }
-	        return response.updateCount;
+	        return obj.rowsAffected;
 	      default:
 	        return response;
 	    }
@@ -4939,10 +4937,364 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 	module.exports = Client_Oracle;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
 /* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process, Buffer) {
+	// Oracledb Client
+	// -------
+	'use strict';
+
+	var _ = __webpack_require__(1);
+	var inherits = __webpack_require__(52);
+	var Client_Oracle = __webpack_require__(33);
+	var QueryCompiler = __webpack_require__(78);
+	var ColumnCompiler = __webpack_require__(79);
+	var Formatter = __webpack_require__(80);
+	var BlobHelper = __webpack_require__(81).BlobHelper;
+	var ReturningHelper = __webpack_require__(81).ReturningHelper;
+	var Promise = __webpack_require__(9);
+	var stream = __webpack_require__(95);
+	var helpers = __webpack_require__(3);
+	var Transaction = __webpack_require__(82);
+
+	function Client_Oracledb() {
+	  Client_Oracle.apply(this, arguments);
+	  // Node.js only have 4 background threads by default, oracledb needs one by connection
+	  if (this.driver) {
+	    process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || 1;
+	    process.env.UV_THREADPOOL_SIZE += this.driver.poolMax;
+	  }
+	}
+	inherits(Client_Oracledb, Client_Oracle);
+
+	Client_Oracledb.prototype.driverName = 'oracledb';
+
+	Client_Oracledb.prototype._driver = function () {
+	  var oracledb = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"oracledb\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	  return oracledb;
+	};
+
+	Client_Oracledb.prototype.QueryCompiler = QueryCompiler;
+	Client_Oracledb.prototype.ColumnCompiler = ColumnCompiler;
+	Client_Oracledb.prototype.Formatter = Formatter;
+	Client_Oracledb.prototype.Transaction = Transaction;
+
+	Client_Oracledb.prototype.prepBindings = function (bindings) {
+	  var self = this;
+	  return _.map(bindings, function (value) {
+	    if (value instanceof BlobHelper && self.driver) {
+	      return { type: self.driver.BLOB, dir: self.driver.BIND_OUT };
+	      // Returning helper always use ROWID as string
+	    } else if (value instanceof ReturningHelper && self.driver) {
+	        return { type: self.driver.STRING, dir: self.driver.BIND_OUT };
+	      } else if (typeof value === 'boolean') {
+	        return value ? 1 : 0;
+	      } else if (value === undefined) {
+	        return self.valueForUndefined;
+	      }
+	    return value;
+	  });
+	};
+
+	// Get a raw connection, called by the `pool` whenever a new
+	// connection needs to be added to the pool.
+	Client_Oracledb.prototype.acquireRawConnection = function () {
+	  var client = this;
+	  var asyncConnection = new Promise(function (resolver, rejecter) {
+	    client.driver.getConnection({
+	      user: client.connectionSettings.user,
+	      password: client.connectionSettings.password,
+	      connectString: client.connectionSettings.host + '/' + client.connectionSettings.database
+	    }, function (err, connection) {
+	      if (err) return rejecter(err);
+	      if (client.connectionSettings.prefetchRowCount) {
+	        connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount);
+	      }
+
+	      connection.commitAsync = function () {
+	        var self = this;
+	        return new Promise(function (commitResolve, commitReject) {
+	          if (asyncConnection.isTransaction) {
+	            return commitResolve();
+	          }
+	          self.commit(function (err) {
+	            if (err) {
+	              return commitReject(err);
+	            }
+	            commitResolve();
+	          });
+	        });
+	      };
+	      connection.rollbackAsync = function () {
+	        var self = this;
+	        return new Promise(function (rollbackResolve, rollbackReject) {
+	          self.rollback(function (err) {
+	            if (err) {
+	              return rollbackReject(err);
+	            }
+	            rollbackResolve();
+	          });
+	        });
+	      };
+	      var fetchAsync = function fetchAsync(sql, bindParams, options, cb) {
+	        options = options || {};
+	        options.outFormat = client.driver.OBJECT;
+
+	        if (options.resultSet) {
+	          connection.execute(sql, bindParams || [], options, function (err, result) {
+	            if (err) {
+	              return cb(err);
+	            }
+	            var fetchResult = { rows: [], resultSet: result.resultSet };
+	            var numRows = 100;
+	            var fetchRowsFromRS = function fetchRowsFromRS(connection, resultSet, numRows) {
+	              resultSet.getRows(numRows, function (err, rows) {
+	                if (err) {
+	                  resultSet.close(function () {
+	                    return cb(err);
+	                  });
+	                } else if (rows.length === 0) {
+	                  return cb(null, fetchResult);
+	                } else if (rows.length > 0) {
+	                  if (rows.length === numRows) {
+	                    fetchResult.rows = fetchResult.rows.concat(rows);
+	                    fetchRowsFromRS(connection, resultSet, numRows);
+	                  } else {
+	                    fetchResult.rows = fetchResult.rows.concat(rows);
+	                    return cb(null, fetchResult);
+	                  }
+	                }
+	              });
+	            };
+	            fetchRowsFromRS(connection, result.resultSet, numRows);
+	          });
+	        } else {
+	          connection.execute(sql, bindParams || [], options, cb);
+	        }
+	      };
+	      connection.executeAsync = function (sql, bindParams, options) {
+	        // Read all lob
+	        return new Promise(function (resultResolve, resultReject) {
+	          fetchAsync(sql, bindParams, options, function (err, results) {
+	            if (err) {
+	              return resultReject(err);
+	            }
+	            // Collect LOBs to read
+	            var lobs = [];
+	            if (results.rows) {
+	              if (Array.isArray(results.rows)) {
+	                for (var i = 0; i < results.rows.length; i++) {
+	                  // Iterate through the rows
+	                  var row = results.rows[i];
+	                  for (var column in row) {
+	                    if (row[column] instanceof stream.Readable) {
+	                      lobs.push({ index: i, key: column, stream: row[column] });
+	                    }
+	                  }
+	                }
+	              }
+	            }
+	            Promise.each(lobs, function (lob) {
+	              return new Promise(function (lobResolve, lobReject) {
+
+	                readStream(lob.stream, function (err, d) {
+	                  if (err) {
+	                    if (results.resultSet) {
+	                      results.resultSet.close(function () {
+	                        return lobReject(err);
+	                      });
+	                    }
+	                    return lobReject(err);
+	                  }
+	                  results.rows[lob.index][lob.key] = d;
+	                  lobResolve();
+	                });
+	              });
+	            }).then(function () {
+	              if (results.resultSet) {
+	                results.resultSet.close(function (err) {
+	                  if (err) {
+	                    return resultReject(err);
+	                  }
+	                  return resultResolve(results);
+	                });
+	              }
+	              resultResolve(results);
+	            }, function (err) {
+	              resultReject(err);
+	            });
+	          });
+	        });
+	      };
+	      resolver(connection);
+	    });
+	  });
+	  return asyncConnection;
+	};
+
+	// Used to explicitly close a connection, called internally by the pool
+	// when a connection times out or the pool is shutdown.
+	Client_Oracledb.prototype.destroyRawConnection = function (connection, cb) {
+	  connection.release(cb);
+	};
+
+	// Runs the query on the specified connection, providing the bindings
+	// and any other necessary prep work.
+	Client_Oracledb.prototype._query = function (connection, obj) {
+	  // Convert ? params into positional bindings (:1)
+	  obj.sql = this.positionBindings(obj.sql);
+	  obj.bindings = this.prepBindings(obj.bindings) || [];
+
+	  return new Promise(function (resolver, rejecter) {
+	    if (!obj.sql) {
+	      return rejecter(new Error('The query is empty'));
+	    }
+	    var options = { autoCommit: false };
+	    if (obj.method === 'select') {
+	      options.resultSet = true;
+	    }
+	    connection.executeAsync(obj.sql, obj.bindings, options).then(function (response) {
+	      // Flatten outBinds
+	      var outBinds = _.flatten(response.outBinds);
+	      obj.response = response.rows || [];
+	      obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
+
+	      if (obj.method === 'update') {
+	        var modifiedRowsCount = obj.rowsAffected.length || obj.rowsAffected;
+	        var updatedObjOutBinding = [];
+	        var updatedOutBinds = [];
+	        var updateOutBinds = function updateOutBinds(value, index) {
+	          OutBindsOffset = index * modifiedRowsCount;
+	          updatedOutBinds.push(outBinds[i + OutBindsOffset]);
+	        };
+
+	        for (var i = 0; i < modifiedRowsCount; i++) {
+	          updatedObjOutBinding.push(obj.outBinding[0]);
+	          var OutBindsOffset = 0;
+	          _.each(obj.outBinding[0], updateOutBinds);
+	        }
+	        outBinds = updatedOutBinds;
+	        obj.outBinding = updatedObjOutBinding;
+	      }
+
+	      if (!obj.returning && outBinds.length === 0) {
+	        return resolver(obj);
+	      }
+	      var rowIds = [];
+	      var offset = 0;
+	      Promise.each(obj.outBinding, function (ret, line) {
+	        offset = offset + (obj.outBinding[line - 1] ? obj.outBinding[line - 1].length : 0);
+	        return Promise.each(ret, function (out, index) {
+	          return new Promise(function (bindResolver, bindRejecter) {
+	            if (out instanceof BlobHelper) {
+	              var blob = outBinds[index + offset];
+	              if (out.returning) {
+	                obj.response[line] = obj.response[line] || {};
+	                obj.response[line][out.columnName] = out.value;
+	              }
+	              blob.on('error', function (err) {
+	                bindRejecter(err);
+	              });
+	              blob.on('finish', function () {
+	                bindResolver();
+	              });
+	              blob.write(out.value);
+	              blob.end();
+	            } else if (obj.outBinding[line][index] === 'ROWID') {
+	              rowIds.push(outBinds[index + offset]);
+	              bindResolver();
+	            } else {
+	              obj.response[line] = obj.response[line] || {};
+	              obj.response[line][out] = outBinds[index + offset];
+	              bindResolver();
+	            }
+	          });
+	        });
+	      }).then(function () {
+	        return connection.commitAsync();
+	      }).then(function () {
+	        if (obj.returningSql) {
+	          return connection.executeAsync(obj.returningSql(), rowIds, { resultSet: true }).then(function (response) {
+	            obj.response = response.rows;
+	            return obj;
+	          }, rejecter);
+	        }
+	        return obj;
+	      }, rejecter).then(function (obj) {
+	        resolver(obj);
+	      });
+	    });
+	  });
+	};
+
+	// Handle clob
+	function readStream(stream, cb) {
+	  var oracledb = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"oracledb\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	  var data = '';
+
+	  if (stream.iLob.type === oracledb.CLOB) {
+	    stream.setEncoding('utf-8');
+	  } else {
+	    data = new Buffer(0);
+	  }
+	  stream.on('error', function (err) {
+	    cb(err);
+	  });
+	  stream.on('data', function (chunk) {
+	    if (stream.iLob.type === oracledb.CLOB) {
+	      data += chunk;
+	    } else {
+	      data = Buffer.concat([data, chunk]);
+	    }
+	  });
+	  stream.on('end', function () {
+	    cb(null, data);
+	  });
+	}
+
+	// Process the response as returned from the query.
+	Client_Oracledb.prototype.processResponse = function (obj, runner) {
+	  var response = obj.response;
+	  var method = obj.method;
+	  if (obj.output) {
+	    return obj.output.call(runner, response);
+	  }
+	  switch (method) {
+	    case 'select':
+	    case 'pluck':
+	    case 'first':
+	      response = helpers.skim(response);
+	      if (obj.method === 'pluck') response = _.pluck(response, obj.pluck);
+	      return obj.method === 'first' ? response[0] : response;
+	    case 'insert':
+	    case 'del':
+	    case 'update':
+	    case 'counter':
+	      if (obj.returning) {
+	        if (obj.returning.length === 1 && obj.returning[0] !== '*') {
+	          return _.flatten(_.map(response, _.values));
+	        }
+	        return response;
+	      } else if (obj.rowsAffected) {
+	        return obj.rowsAffected;
+	      } else {
+	        return 1;
+	      }
+	      break;
+	    default:
+	      return response;
+	  }
+	};
+
+	module.exports = Client_Oracledb;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11), __webpack_require__(94).Buffer))
+
+/***/ },
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {
@@ -4952,15 +5304,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var Client = __webpack_require__(4);
 	var Promise = __webpack_require__(9);
-	var utils = __webpack_require__(77);
+	var utils = __webpack_require__(83);
 
-	var QueryCompiler = __webpack_require__(78);
-	var ColumnCompiler = __webpack_require__(79);
-	var TableCompiler = __webpack_require__(80);
-	var SchemaCompiler = __webpack_require__(81);
+	var QueryCompiler = __webpack_require__(84);
+	var ColumnCompiler = __webpack_require__(85);
+	var TableCompiler = __webpack_require__(86);
+	var SchemaCompiler = __webpack_require__(87);
 	var PGQueryStream;
 
 	function Client_PG(config) {
@@ -4990,7 +5342,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  driverName: 'pg',
 
 	  _driver: function _driver() {
-	    return __webpack_require__(47);
+	    return __webpack_require__(48);
 	  },
 
 	  wrapIdentifier: function wrapIdentifier(value) {
@@ -5078,7 +5430,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  _stream: function _stream(connection, obj, stream, options) {
-	    PGQueryStream = process.browser ? undefined : __webpack_require__(48);
+	    PGQueryStream = process.browser ? undefined : __webpack_require__(49);
 	    var sql = obj.sql = this.positionBindings(obj.sql);
 	    return new Promise(function (resolver, rejecter) {
 	      var queryStream = connection.query(new PGQueryStream(sql, obj.bindings, options));
@@ -5152,7 +5504,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -5164,16 +5516,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var Promise = __webpack_require__(9);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 
 	var Client = __webpack_require__(4);
 	var helpers = __webpack_require__(3);
 
-	var QueryCompiler = __webpack_require__(82);
-	var SchemaCompiler = __webpack_require__(83);
-	var ColumnCompiler = __webpack_require__(84);
-	var TableCompiler = __webpack_require__(85);
-	var SQLite3_DDL = __webpack_require__(86);
+	var QueryCompiler = __webpack_require__(88);
+	var SchemaCompiler = __webpack_require__(89);
+	var ColumnCompiler = __webpack_require__(90);
+	var TableCompiler = __webpack_require__(91);
+	var SQLite3_DDL = __webpack_require__(92);
 
 	function Client_SQLite3(config) {
 	  Client.call(this, config);
@@ -5190,7 +5542,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  driverName: 'sqlite3',
 
 	  _driver: function _driver() {
-	    return __webpack_require__(49);
+	    return __webpack_require__(50);
 	  },
 
 	  SchemaCompiler: SchemaCompiler,
@@ -5321,7 +5673,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Client_SQLite3;
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -5329,7 +5681,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// -------
 	'use strict';
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var Client_Oracle = __webpack_require__(33);
 
 	function Client_StrongOracle() {
@@ -5338,7 +5690,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	inherits(Client_StrongOracle, Client_Oracle);
 
 	Client_StrongOracle.prototype._driver = function () {
-	  return __webpack_require__(50)();
+	  return __webpack_require__(51)();
 	};
 
 	Client_StrongOracle.prototype.driverName = 'strong-oracle';
@@ -5346,7 +5698,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Client_StrongOracle;
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5354,8 +5706,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var makeKnex = __webpack_require__(6);
 	var Promise = __webpack_require__(9);
 	var helpers = __webpack_require__(3);
-	var inherits = __webpack_require__(51);
-	var EventEmitter = __webpack_require__(38).EventEmitter;
+	var inherits = __webpack_require__(52);
+	var EventEmitter = __webpack_require__(39).EventEmitter;
 
 	function Transaction_WebSQL(client, container) {
 	  helpers.warn('WebSQL transactions will run queries, but do not commit or rollback');
@@ -5396,7 +5748,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Transaction_WebSQL;
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -5700,7 +6052,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -5724,7 +6076,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 	// USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-	var punycode = __webpack_require__(97);
+	var punycode = __webpack_require__(104);
 
 	exports.parse = urlParse;
 	exports.resolve = urlResolve;
@@ -5796,7 +6148,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      'gopher:': true,
 	      'file:': true
 	    },
-	    querystring = __webpack_require__(91);
+	    querystring = __webpack_require__(98);
 
 	function urlParse(url, parseQueryString, slashesDenoteHost) {
 	  if (url && isObject(url) && url instanceof Url) return url;
@@ -6413,15 +6765,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
-	var escapeStringRegexp = __webpack_require__(92);
-	var ansiStyles = __webpack_require__(93);
-	var stripAnsi = __webpack_require__(94);
-	var hasAnsi = __webpack_require__(95);
-	var supportsColor = __webpack_require__(96);
+	var escapeStringRegexp = __webpack_require__(99);
+	var ansiStyles = __webpack_require__(100);
+	var stripAnsi = __webpack_require__(101);
+	var hasAnsi = __webpack_require__(102);
+	var supportsColor = __webpack_require__(103);
 	var defineProps = Object.defineProperties;
 	var isSimpleWindowsTerm = process.platform === 'win32' && !/^xterm/i.test(process.env.TERM);
 
@@ -6536,12 +6888,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var url = __webpack_require__(39);
+	var url = __webpack_require__(40);
 
 	//Parse method copied from https://github.com/brianc/node-postgres
 	//Copyright (c) 2010-2014 Brian Carlson (brian.m.carlson@gmail.com)
@@ -6604,12 +6956,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 42 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* (ignored) */
-
-/***/ },
 /* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -6661,6 +7007,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* (ignored) */
+
+/***/ },
+/* 52 */
+/***/ function(module, exports, __webpack_require__) {
+
 	if (typeof Object.create === 'function') {
 	  // implementation from standard node.js 'util' module
 	  module.exports = function inherits(ctor, superCtor) {
@@ -6687,7 +7039,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -6697,7 +7049,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Expose `debug()` as the module.
 	 */
 
-	exports = module.exports = __webpack_require__(90);
+	exports = module.exports = __webpack_require__(97);
 	exports.log = log;
 	exports.formatArgs = formatArgs;
 	exports.save = save;
@@ -6861,7 +7213,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6957,7 +7309,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = JoinClause;
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6988,7 +7340,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6996,8 +7348,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _lodash = __webpack_require__(1);
 
 	var Transaction = __webpack_require__(16);
-	var inherits = __webpack_require__(51);
-	var debug = __webpack_require__(52)('knex:tx');
+	var inherits = __webpack_require__(52);
+	var debug = __webpack_require__(53)('knex:tx');
 	var helpers = __webpack_require__(3);
 
 	function Transaction_Maria() {
@@ -7033,14 +7385,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Transaction_Maria;
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var Formatter = __webpack_require__(15);
 
 	function MSSQL_Formatter(client) {
@@ -7067,17 +7419,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = MSSQL_Formatter;
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var Promise = __webpack_require__(9);
 	var Transaction = __webpack_require__(16);
-	var debug = __webpack_require__(52)('knex:tx');
+	var debug = __webpack_require__(53)('knex:tx');
 
 	function Transaction_MSSQL() {
 	  Transaction.apply(this, arguments);
@@ -7172,7 +7524,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Transaction_MSSQL;
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7182,7 +7534,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var QueryCompiler = __webpack_require__(18);
 
 	function QueryCompiler_MSSQL(client, builder) {
@@ -7362,7 +7714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = QueryCompiler_MSSQL;
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7372,7 +7724,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var SchemaCompiler = __webpack_require__(20);
 
 	function SchemaCompiler_MSSQL(client, builder) {
@@ -7422,7 +7774,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = SchemaCompiler_MSSQL;
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7435,7 +7787,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Table Compiler
 	// ------
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var TableCompiler = __webpack_require__(22);
 	var helpers = __webpack_require__(3);
 	var Promise = __webpack_require__(9);
@@ -7449,7 +7801,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  createAlterTableMethods: ['foreign', 'primary', 'unique'],
 	  createQuery: function createQuery(columns, ifNot) {
-	    var createStatement = ifNot ? 'if object_id(\'' + this.tableName() + '\', \'U\') is null CREATE TABLE ' : 'CREATE TABLE ';
+	    var createStatement = ifNot ? 'if object_id(\'' + this.tableName() + '\', \'U\') is not null CREATE TABLE ' : 'CREATE TABLE ';
 	    var sql = createStatement + this.tableName() + (this._formatting ? ' (\n    ' : ' (') + columns.sql.join(this._formatting ? ',\n    ' : ', ') + ')';
 
 	    if (this.single.comment) {
@@ -7555,7 +7907,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = TableCompiler_MSSQL;
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7565,7 +7917,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var ColumnCompiler = __webpack_require__(24);
 	var helpers = __webpack_require__(3);
 
@@ -7665,7 +8017,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ColumnCompiler_MSSQL;
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7673,8 +8025,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _lodash = __webpack_require__(1);
 
 	var Transaction = __webpack_require__(16);
-	var inherits = __webpack_require__(51);
-	var debug = __webpack_require__(52)('knex:tx');
+	var inherits = __webpack_require__(52);
+	var debug = __webpack_require__(53)('knex:tx');
 	var helpers = __webpack_require__(3);
 
 	function Transaction_MySQL() {
@@ -7710,7 +8062,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Transaction_MySQL;
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7720,7 +8072,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var QueryCompiler = __webpack_require__(18);
 
 	function QueryCompiler_MySQL(client, builder) {
@@ -7786,7 +8138,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = QueryCompiler_MySQL;
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7796,7 +8148,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var SchemaCompiler = __webpack_require__(20);
 
 	function SchemaCompiler_MySQL(client, builder) {
@@ -7836,7 +8188,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = SchemaCompiler_MySQL;
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7849,7 +8201,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Table Compiler
 	// ------
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var TableCompiler = __webpack_require__(22);
 	var helpers = __webpack_require__(3);
 	var Promise = __webpack_require__(9);
@@ -8033,7 +8385,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = TableCompiler_MySQL;
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -8043,7 +8395,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var ColumnCompiler = __webpack_require__(24);
 	var helpers = __webpack_require__(3);
 
@@ -8160,16 +8512,61 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ColumnCompiler_MySQL;
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var Transaction = __webpack_require__(16);
+	var inherits = __webpack_require__(52);
+	var debug = __webpack_require__(53)('knex:tx');
+	var helpers = __webpack_require__(3);
+
+	function Transaction_MySQL2() {
+	  Transaction.apply(this, arguments);
+	}
+	inherits(Transaction_MySQL2, Transaction);
+
+	(0, _lodash.assign)(Transaction_MySQL2.prototype, {
+
+	  query: function query(conn, sql, status, value) {
+	    var t = this;
+	    var q = this.trxClient.query(conn, sql)['catch'](function (err) {
+	      return err.code === 'ER_SP_DOES_NOT_EXIST';
+	    }, function () {
+	      helpers.warn('Transaction was implicitly committed, do not mix transactions and DDL with MySQL (#805)');
+	    })['catch'](function (err) {
+	      status = 2;
+	      value = err;
+	      t._completed = true;
+	      debug('%s error running transaction query', t.txid);
+	    }).tap(function () {
+	      if (status === 1) t._resolver(value);
+	      if (status === 2) t._rejecter(value);
+	    });
+	    if (status === 1 || status === 2) {
+	      t._completed = true;
+	    }
+	    return q;
+	  }
+
+	});
+
+	module.exports = Transaction_MySQL2;
+
+/***/ },
+/* 69 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	var inherits = __webpack_require__(52);
 	var Formatter = __webpack_require__(15);
-	var ReturningHelper = __webpack_require__(75).ReturningHelper;
+	var ReturningHelper = __webpack_require__(77).ReturningHelper;
 
 	function Oracle_Formatter(client) {
 	  Formatter.call(this, client);
@@ -8197,17 +8594,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Oracle_Formatter;
 
 /***/ },
-/* 68 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var Promise = __webpack_require__(9);
 	var Transaction = __webpack_require__(16);
-	var debugTx = __webpack_require__(52)('knex:tx');
+	var debugTx = __webpack_require__(53)('knex:tx');
 
 	function Oracle_Transaction(client, container, config, outerTx) {
 	  Transaction.call(this, client, container, config, outerTx);
@@ -8260,7 +8657,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Oracle_Transaction;
 
 /***/ },
-/* 69 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -8270,10 +8667,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var QueryCompiler = __webpack_require__(18);
 	var helpers = __webpack_require__(3);
-	var ReturningHelper = __webpack_require__(75).ReturningHelper;
+	var ReturningHelper = __webpack_require__(77).ReturningHelper;
 
 	// Query Compiler
 	// -------
@@ -8492,7 +8889,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = QueryCompiler_Oracle;
 
 /***/ },
-/* 70 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -8500,9 +8897,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	// -------
 	'use strict';
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var SchemaCompiler = __webpack_require__(20);
-	var utils = __webpack_require__(75);
+	var utils = __webpack_require__(77);
 
 	function SchemaCompiler_Oracle() {
 	  SchemaCompiler.apply(this, arguments);
@@ -8561,14 +8958,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = SchemaCompiler_Oracle;
 
 /***/ },
-/* 71 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var ColumnBuilder = __webpack_require__(23);
 
 	function ColumnBuilder_Oracle() {
@@ -8586,15 +8983,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ColumnBuilder_Oracle;
 
 /***/ },
-/* 72 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
-	var utils = __webpack_require__(75);
+	var inherits = __webpack_require__(52);
+	var utils = __webpack_require__(77);
 	var Raw = __webpack_require__(2);
 	var ColumnCompiler = __webpack_require__(24);
 
@@ -8724,7 +9121,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ColumnCompiler_Oracle;
 
 /***/ },
-/* 73 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8734,8 +9131,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Table Compiler
 	// ------
 
-	var inherits = __webpack_require__(51);
-	var utils = __webpack_require__(75);
+	var inherits = __webpack_require__(52);
+	var utils = __webpack_require__(77);
 	var TableCompiler = __webpack_require__(22);
 	var helpers = __webpack_require__(3);
 
@@ -8830,7 +9227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = TableCompiler_Oracle;
 
 /***/ },
-/* 74 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {
@@ -8839,8 +9236,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
-	var Readable = __webpack_require__(98).Readable;
+	var inherits = __webpack_require__(52);
+	var Readable = __webpack_require__(95).Readable;
 
 	function OracleQueryStream(connection, sql, bindings, options) {
 	  Readable.call(this, (0, _lodash.merge)({}, {
@@ -8889,7 +9286,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
-/* 75 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8897,7 +9294,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var helpers = __webpack_require__(3);
 
 	function generateCombinedName(postfix, name, subNames) {
-	  var crypto = __webpack_require__(99);
+	  var crypto = __webpack_require__(105);
 	  var limit = 30;
 	  if (!Array.isArray(subNames)) subNames = subNames ? [subNames] : [];
 	  var table = name.replace(/\.|-/g, '_');
@@ -8930,52 +9327,431 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 76 */
+/* 78 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
+
+	var _ = __webpack_require__(1);
+	var inherits = __webpack_require__(52);
+	var Oracle_Compiler = __webpack_require__(71);
+	var ReturningHelper = __webpack_require__(81).ReturningHelper;
+	var BlobHelper = __webpack_require__(81).BlobHelper;
+
+	function Oracledb_Compiler(client, builder) {
+	  Oracle_Compiler.call(this, client, builder);
+	}
+	inherits(Oracledb_Compiler, Oracle_Compiler);
+
+	_.assign(Oracledb_Compiler.prototype, {
+	  // Compiles an "insert" query, allowing for multiple
+	  // inserts using a single query statement.
+	  insert: function insert() {
+	    var self = this;
+	    var outBindPrep = this._prepOutbindings(this.single.insert, this.single.returning);
+	    var outBinding = outBindPrep.outBinding;
+	    var returning = outBindPrep.returning;
+	    var insertValues = outBindPrep.values;
+
+	    if (Array.isArray(insertValues) && insertValues.length === 1 && _.isEmpty(insertValues[0])) {
+	      return this._addReturningToSqlAndConvert('insert into ' + this.tableName + ' (' + this.formatter.wrap(this.single.returning) + ') values (default)', outBinding[0], this.tableName, returning);
+	    }
+
+	    if (_.isEmpty(this.single.insert) && typeof this.single.insert !== 'function') {
+	      return '';
+	    }
+
+	    var insertData = this._prepInsert(insertValues);
+
+	    var sql = {};
+
+	    if (_.isString(insertData)) {
+	      return this._addReturningToSqlAndConvert('insert into ' + this.tableName + ' ' + insertData, outBinding[0], this.tableName, returning);
+	    }
+
+	    if (insertData.values.length === 1) {
+	      return this._addReturningToSqlAndConvert('insert into ' + this.tableName + ' (' + this.formatter.columnize(insertData.columns) + ') values (' + this.formatter.parameterize(insertData.values[0]) + ')', outBinding[0], this.tableName, returning);
+	    }
+
+	    var insertDefaultsOnly = insertData.columns.length === 0;
+	    sql.returning = returning;
+	    sql.sql = 'begin ' + _.map(insertData.values, function (value, index) {
+	      var parameterizedValues = !insertDefaultsOnly ? self.formatter.parameterize(value) : '';
+	      var subSql = 'insert into ' + self.tableName;
+
+	      if (insertDefaultsOnly) {
+	        // No columns given so only the default value
+	        subSql += ' (' + self.formatter.wrap(self.single.returning) + ') values (default)';
+	      } else {
+	        subSql += ' (' + self.formatter.columnize(insertData.columns) + ') values (' + parameterizedValues + ')';
+	      }
+
+	      var returningClause = '';
+	      var intoClause = '';
+	      var usingClause = '';
+	      var outClause = '';
+
+	      _.each(value, function (val) {
+	        if (!(val instanceof BlobHelper)) {
+	          usingClause += ' ?,';
+	        }
+	      });
+	      usingClause = usingClause.slice(0, -1);
+
+	      // Build returning and into clauses
+	      _.each(outBinding[index], function (ret) {
+	        var columnName = ret.columnName || ret;
+	        returningClause += '"' + columnName + '",';
+	        intoClause += ' ?,';
+	        outClause += ' out ?,';
+
+	        // Add Helpers to bindings
+	        if (ret instanceof BlobHelper) {
+	          return self.formatter.bindings.push(ret);
+	        }
+	        self.formatter.bindings.push(new ReturningHelper(columnName));
+	      });
+
+	      // Strip last comma
+	      returningClause = returningClause.slice(0, -1);
+	      intoClause = intoClause.slice(0, -1);
+	      outClause = outClause.slice(0, -1);
+
+	      if (returningClause && intoClause) {
+	        subSql += ' returning ' + returningClause + ' into' + intoClause;
+	      }
+
+	      // Pre bind position because subSql is an execute immediate parameter
+	      // later position binding will only convert the ? params
+	      subSql = self.formatter.client.positionBindings(subSql);
+	      return 'execute immediate \'' + subSql.replace(/'/g, "''") + (parameterizedValues || value ? '\' using' : '') + usingClause + (parameterizedValues && outClause ? ',' : '') + outClause + ';';
+	    }).join(' ') + 'end;';
+
+	    sql.outBinding = outBinding;
+	    if (returning[0] === '*') {
+	      returning = returning.slice(0, -1);
+
+	      // Generate select statement with special order by to keep the order because 'in (..)' may change the order
+	      sql.returningSql = function () {
+	        return 'select * from ' + self.tableName + ' where ROWID in (' + this.outBinding.map(function (v, i) {
+	          return ':' + (i + 1);
+	        }).join(', ') + ')' + ' order by case ROWID ' + this.outBinding.map(function (v, i) {
+	          return 'when CHARTOROWID(:' + (i + 1) + ') then ' + i;
+	        }).join(' ') + ' end';
+	      };
+	    }
+
+	    return sql;
+	  },
+
+	  _addReturningToSqlAndConvert: function _addReturningToSqlAndConvert(sql, outBinding, tableName, returning) {
+	    var self = this;
+	    var res = {
+	      sql: sql
+	    };
+
+	    if (!outBinding) {
+	      return res;
+	    }
+	    var returningValues = Array.isArray(outBinding) ? outBinding : [outBinding];
+	    var returningClause = '';
+	    var intoClause = '';
+	    // Build returning and into clauses
+	    _.each(returningValues, function (ret) {
+	      var columnName = ret.columnName || ret;
+	      returningClause += '"' + columnName + '",';
+	      intoClause += '?,';
+
+	      // Add Helpers to bindings
+	      if (ret instanceof BlobHelper) {
+	        return self.formatter.bindings.push(ret);
+	      }
+	      self.formatter.bindings.push(new ReturningHelper(columnName));
+	    });
+	    res.sql = sql;
+
+	    // Strip last comma
+	    returningClause = returningClause.slice(0, -1);
+	    intoClause = intoClause.slice(0, -1);
+	    if (returningClause && intoClause) {
+	      res.sql += ' returning ' + returningClause + ' into ' + intoClause;
+	    }
+	    res.outBinding = [outBinding];
+	    if (returning[0] === '*') {
+	      res.returningSql = function () {
+	        return 'select * from ' + self.tableName + ' where ROWID = :1';
+	      };
+	    }
+	    res.returning = returning;
+
+	    return res;
+	  },
+
+	  _prepOutbindings: function _prepOutbindings(paramValues, paramReturning) {
+	    var result = {};
+	    var params = paramValues || [];
+	    var returning = paramReturning || [];
+	    if (!Array.isArray(params) && _.isPlainObject(paramValues)) {
+	      params = [params];
+	    }
+	    // Always wrap returning argument in array
+	    if (returning && !Array.isArray(returning)) {
+	      returning = [returning];
+	    }
+
+	    var outBinding = [];
+	    // Handle Buffer value as Blob
+	    _.each(params, function (values, index) {
+	      if (returning[0] === '*') {
+	        outBinding[index] = ['ROWID'];
+	      } else {
+	        outBinding[index] = _.clone(returning);
+	      }
+	      _.each(values, function (value, key) {
+	        if (value instanceof Buffer) {
+	          values[key] = new BlobHelper(key, value);
+
+	          // Delete blob duplicate in returning
+	          var blobIndex = outBinding[index].indexOf(key);
+	          if (blobIndex >= 0) {
+	            outBinding[index].splice(blobIndex, 1);
+	            values[key].returning = true;
+	          }
+	          outBinding[index].push(values[key]);
+	        }
+	      });
+	    });
+	    result.returning = returning;
+	    result.outBinding = outBinding;
+	    result.values = params;
+	    return result;
+	  },
+
+	  update: function update() {
+	    var self = this;
+	    var sql = {};
+	    var outBindPrep = this._prepOutbindings(this.single.update, this.single.returning);
+	    var outBinding = outBindPrep.outBinding;
+	    var returning = outBindPrep.returning;
+
+	    var updates = this._prepUpdate(this.single.update);
+	    var where = this.where();
+
+	    var returningClause = '';
+	    var intoClause = '';
+
+	    if (_.isEmpty(this.single.update) && typeof this.single.update !== 'function') {
+	      return '';
+	    }
+
+	    // Build returning and into clauses
+	    _.each(outBinding, function (out) {
+	      _.each(out, function (ret) {
+	        var columnName = ret.columnName || ret;
+	        returningClause += '"' + columnName + '",';
+	        intoClause += ' ?,';
+
+	        // Add Helpers to bindings
+	        if (ret instanceof BlobHelper) {
+	          return self.formatter.bindings.push(ret);
+	        }
+	        self.formatter.bindings.push(new ReturningHelper(columnName));
+	      });
+	    });
+	    // Strip last comma
+	    returningClause = returningClause.slice(0, -1);
+	    intoClause = intoClause.slice(0, -1);
+
+	    sql.outBinding = outBinding;
+	    sql.returning = returning;
+	    sql.sql = 'update ' + this.tableName + ' set ' + updates.join(', ') + (where ? ' ' + where : '');
+	    if (outBinding.length && !_.isEmpty(outBinding[0])) {
+	      sql.sql += ' returning ' + returningClause + ' into' + intoClause;
+	    }
+	    if (returning[0] === '*') {
+
+	      sql.returningSql = function () {
+
+	        var sql = 'select * from ' + self.tableName;
+	        var modifiedRowsCount = this.rowsAffected.length || this.rowsAffected;
+	        var returningSqlIn = ' where ROWID in (';
+	        var returningSqlOrderBy = ') order by case ROWID ';
+
+	        // Needs special order by because in(...) change result order
+	        for (var i = 0; i < modifiedRowsCount; i++) {
+	          if (this.returning[0] === '*') {
+	            returningSqlIn += ':' + (i + 1) + ', ';
+	            returningSqlOrderBy += 'when CHARTOROWID(:' + (i + 1) + ') then ' + i + ' ';
+	          }
+	        }
+	        if (this.returning[0] === '*') {
+	          this.returning = this.returning.slice(0, -1);
+	          returningSqlIn = returningSqlIn.slice(0, -2);
+	          returningSqlOrderBy = returningSqlOrderBy.slice(0, -1);
+	        }
+	        return sql += returningSqlIn + returningSqlOrderBy + ' end';
+	      };
+	    }
+
+	    return sql;
+	  }
+
+	});
+
+	module.exports = Oracledb_Compiler;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
+
+/***/ },
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var _lodash = __webpack_require__(1);
 
-	var Transaction = __webpack_require__(16);
-	var inherits = __webpack_require__(51);
-	var debug = __webpack_require__(52)('knex:tx');
-	var helpers = __webpack_require__(3);
+	var inherits = __webpack_require__(52);
+	var ColumnCompiler_Oracle = __webpack_require__(74);
 
-	function Transaction_MySQL2() {
-	  Transaction.apply(this, arguments);
+	function ColumnCompiler_Oracledb() {
+	  ColumnCompiler_Oracle.apply(this, arguments);
 	}
-	inherits(Transaction_MySQL2, Transaction);
 
-	(0, _lodash.assign)(Transaction_MySQL2.prototype, {
+	inherits(ColumnCompiler_Oracledb, ColumnCompiler_Oracle);
 
-	  query: function query(conn, sql, status, value) {
-	    var t = this;
-	    var q = this.trxClient.query(conn, sql)['catch'](function (err) {
-	      return err.code === 'ER_SP_DOES_NOT_EXIST';
-	    }, function () {
-	      helpers.warn('Transaction was implicitly committed, do not mix transactions and DDL with MySQL (#805)');
-	    })['catch'](function (err) {
-	      status = 2;
-	      value = err;
-	      t._completed = true;
-	      debug('%s error running transaction query', t.txid);
-	    }).tap(function () {
-	      if (status === 1) t._resolver(value);
-	      if (status === 2) t._rejecter(value);
-	    });
-	    if (status === 1 || status === 2) {
-	      t._completed = true;
-	    }
-	    return q;
+	(0, _lodash.assign)(ColumnCompiler_Oracledb.prototype, {
+
+	  time: 'timestamp with local time zone',
+
+	  datetime: function datetime(without) {
+	    return without ? 'timestamp' : 'timestamp with local time zone';
+	  },
+
+	  timestamp: function timestamp(without) {
+	    return without ? 'timestamp' : 'timestamp with local time zone';
 	  }
 
 	});
 
-	module.exports = Transaction_MySQL2;
+	module.exports = ColumnCompiler_Oracledb;
 
 /***/ },
-/* 77 */
+/* 80 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	var inherits = __webpack_require__(52);
+	var Oracle_Formatter = __webpack_require__(69);
+	var BlobHelper = __webpack_require__(81).BlobHelper;
+
+	function Oracledb_Formatter(client) {
+	  Oracle_Formatter.call(this, client);
+	}
+	inherits(Oracledb_Formatter, Oracle_Formatter);
+
+	(0, _lodash.assign)(Oracledb_Formatter.prototype, {
+
+	  // Checks whether a value is a function... if it is, we compile it
+	  // otherwise we check whether it's a raw
+	  parameter: function parameter(value) {
+	    if (typeof value === 'function') {
+	      return this.outputQuery(this.compileCallback(value), true);
+	    } else if (value instanceof BlobHelper) {
+	      return 'EMPTY_BLOB()';
+	    }
+	    return this.unwrapRaw(value, true) || '?';
+	  }
+
+	});
+
+	module.exports = Oracledb_Formatter;
+
+/***/ },
+/* 81 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Utils = __webpack_require__(77);
+
+	function BlobHelper(columnName, value) {
+	  this.columnName = columnName;
+	  this.value = value;
+	  this.returning = false;
+	}
+
+	BlobHelper.prototype.toString = function () {
+	  return '[object BlobHelper:' + this.columnName + ']';
+	};
+
+	Utils.BlobHelper = BlobHelper;
+	module.exports = Utils;
+
+/***/ },
+/* 82 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
+	var inherits = __webpack_require__(52);
+	var Promise = __webpack_require__(9);
+	var Transaction = __webpack_require__(16);
+	var debugTx = __webpack_require__(53)('knex:tx');
+
+	function Oracle_Transaction(client, container, config, outerTx) {
+	  Transaction.call(this, client, container, config, outerTx);
+	}
+	inherits(Oracle_Transaction, Transaction);
+
+	(0, _lodash.assign)(Oracle_Transaction.prototype, {
+	  // disable autocommit to allow correct behavior (default is true)
+	  begin: function begin() {
+	    return Promise.resolve();
+	  },
+	  commit: function commit(conn, value) {
+	    this._completed = true;
+	    return conn.commitAsync()['return'](value).then(this._resolver, this._rejecter);
+	  },
+	  release: function release(conn, value) {
+	    return this._resolver(value);
+	  },
+	  rollback: function rollback(conn, err) {
+	    this._completed = true;
+	    debugTx('%s: rolling back', this.txid);
+	    return conn.rollbackAsync()['throw'](err || new Error('Rollback'))['catch'](this._rejecter);
+	  },
+	  acquireConnection: function acquireConnection(config) {
+	    var t = this;
+	    return Promise['try'](function () {
+	      return t.client.acquireConnection().then(function (cnx) {
+	        cnx.isTransaction = true;
+	        return cnx;
+	      });
+	    }).disposer(function (connection) {
+	      debugTx('%s: releasing connection', t.txid);
+	      connection.isTransaction = false;
+	      connection.commitAsync().then(function (err) {
+	        if (err) {
+	          this._rejecter(err);
+	        }
+	        if (!config.connection) {
+	          t.client.releaseConnection(connection);
+	        } else {
+	          debugTx('%s: not releasing external connection', t.txid);
+	        }
+	      });
+	    });
+	  }
+	});
+
+	module.exports = Oracle_Transaction;
+
+/***/ },
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
@@ -9079,10 +9855,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  prepareValue: prepareValue,
 	  normalizeQueryConfig: normalizeQueryConfig
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
-/* 78 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -9092,7 +9868,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 
 	var QueryCompiler = __webpack_require__(18);
 
@@ -9193,7 +9969,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = QueryCompiler_PG;
 
 /***/ },
-/* 79 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -9204,7 +9980,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var ColumnCompiler = __webpack_require__(24);
 	var helpers = __webpack_require__(3);
 
@@ -9272,7 +10048,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ColumnCompiler_PG;
 
 /***/ },
-/* 80 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// PostgreSQL Table Builder & Compiler
@@ -9282,7 +10058,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var TableCompiler = __webpack_require__(22);
 
 	function TableCompiler_PG() {
@@ -9358,7 +10134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = TableCompiler_PG;
 
 /***/ },
-/* 81 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// PostgreSQL Schema Compiler
@@ -9366,7 +10142,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var SchemaCompiler = __webpack_require__(20);
 
 	function SchemaCompiler_PG() {
@@ -9461,7 +10237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = SchemaCompiler_PG;
 
 /***/ },
-/* 82 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -9471,7 +10247,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var QueryCompiler = __webpack_require__(18);
 
 	function QueryCompiler_SQLite3(client, builder) {
@@ -9586,7 +10362,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = QueryCompiler_SQLite3;
 
 /***/ },
-/* 83 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -9599,7 +10375,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Schema Compiler
 	// -------
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var SchemaCompiler = __webpack_require__(20);
 
 	function SchemaCompiler_SQLite3() {
@@ -9635,12 +10411,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = SchemaCompiler_SQLite3;
 
 /***/ },
-/* 84 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var ColumnCompiler = __webpack_require__(24);
 
 	// Column Compiler
@@ -9661,7 +10437,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ColumnCompiler_SQLite3;
 
 /***/ },
-/* 85 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9671,7 +10447,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Table Compiler
 	// -------
 
-	var inherits = __webpack_require__(51);
+	var inherits = __webpack_require__(52);
 	var TableCompiler = __webpack_require__(22);
 
 	function TableCompiler_SQLite3() {
@@ -9786,7 +10562,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = TableCompiler_SQLite3;
 
 /***/ },
-/* 86 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -10013,7 +10789,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = SQLite3_DDL;
 
 /***/ },
-/* 87 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// http://wiki.commonjs.org/wiki/Unit_Testing/1.0
@@ -10043,7 +10819,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// when used in node, this will actually load the util module we depend on
 	// versus loading the builtin util module as happens otherwise
 	// this is a bug in node module loading as far as I am concerned
-	var util = __webpack_require__(105);
+	var util = __webpack_require__(115);
 
 	var pSlice = Array.prototype.slice;
 	var hasOwn = Object.prototype.hasOwnProperty;
@@ -10378,7 +11154,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 88 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer, global) {/*!
@@ -10391,9 +11167,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict'
 
-	var base64 = __webpack_require__(110)
-	var ieee754 = __webpack_require__(106)
-	var isArray = __webpack_require__(109)
+	var base64 = __webpack_require__(121)
+	var ieee754 = __webpack_require__(116)
+	var isArray = __webpack_require__(117)
 
 	exports.Buffer = Buffer
 	exports.SlowBuffer = SlowBuffer
@@ -11930,23 +12706,156 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return i
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer, (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer, (function() { return this; }())))
 
 /***/ },
-/* 89 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(100);
-	exports.Stream = __webpack_require__(98);
-	exports.Readable = exports;
-	exports.Writable = __webpack_require__(101);
-	exports.Duplex = __webpack_require__(102);
-	exports.Transform = __webpack_require__(103);
-	exports.PassThrough = __webpack_require__(104);
+	// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	module.exports = Stream;
+
+	var EE = __webpack_require__(39).EventEmitter;
+	var inherits = __webpack_require__(52);
+
+	inherits(Stream, EE);
+	Stream.Readable = __webpack_require__(96);
+	Stream.Writable = __webpack_require__(106);
+	Stream.Duplex = __webpack_require__(107);
+	Stream.Transform = __webpack_require__(108);
+	Stream.PassThrough = __webpack_require__(109);
+
+	// Backwards-compat with node 0.4.x
+	Stream.Stream = Stream;
+
+
+
+	// old-style streams.  Note that the pipe method (the only relevant
+	// part of this class) is overridden in the Readable class.
+
+	function Stream() {
+	  EE.call(this);
+	}
+
+	Stream.prototype.pipe = function(dest, options) {
+	  var source = this;
+
+	  function ondata(chunk) {
+	    if (dest.writable) {
+	      if (false === dest.write(chunk) && source.pause) {
+	        source.pause();
+	      }
+	    }
+	  }
+
+	  source.on('data', ondata);
+
+	  function ondrain() {
+	    if (source.readable && source.resume) {
+	      source.resume();
+	    }
+	  }
+
+	  dest.on('drain', ondrain);
+
+	  // If the 'end' option is not supplied, dest.end() will be called when
+	  // source gets the 'end' or 'close' events.  Only dest.end() once.
+	  if (!dest._isStdio && (!options || options.end !== false)) {
+	    source.on('end', onend);
+	    source.on('close', onclose);
+	  }
+
+	  var didOnEnd = false;
+	  function onend() {
+	    if (didOnEnd) return;
+	    didOnEnd = true;
+
+	    dest.end();
+	  }
+
+
+	  function onclose() {
+	    if (didOnEnd) return;
+	    didOnEnd = true;
+
+	    if (typeof dest.destroy === 'function') dest.destroy();
+	  }
+
+	  // don't leave dangling pipes when there are errors.
+	  function onerror(er) {
+	    cleanup();
+	    if (EE.listenerCount(this, 'error') === 0) {
+	      throw er; // Unhandled stream error in pipe.
+	    }
+	  }
+
+	  source.on('error', onerror);
+	  dest.on('error', onerror);
+
+	  // remove all the event listeners that were added.
+	  function cleanup() {
+	    source.removeListener('data', ondata);
+	    dest.removeListener('drain', ondrain);
+
+	    source.removeListener('end', onend);
+	    source.removeListener('close', onclose);
+
+	    source.removeListener('error', onerror);
+	    dest.removeListener('error', onerror);
+
+	    source.removeListener('end', cleanup);
+	    source.removeListener('close', cleanup);
+
+	    dest.removeListener('close', cleanup);
+	  }
+
+	  source.on('end', cleanup);
+	  source.on('close', cleanup);
+
+	  dest.on('close', cleanup);
+
+	  dest.emit('pipe', source);
+
+	  // Allow for unix-like usage: A.pipe(B).pipe(C)
+	  return dest;
+	};
 
 
 /***/ },
-/* 90 */
+/* 96 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(110);
+	exports.Stream = __webpack_require__(95);
+	exports.Readable = exports;
+	exports.Writable = __webpack_require__(111);
+	exports.Duplex = __webpack_require__(112);
+	exports.Transform = __webpack_require__(113);
+	exports.PassThrough = __webpack_require__(114);
+
+
+/***/ },
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -11962,7 +12871,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.disable = disable;
 	exports.enable = enable;
 	exports.enabled = enabled;
-	exports.humanize = __webpack_require__(111);
+	exports.humanize = __webpack_require__(122);
 
 	/**
 	 * The currently active debug mode names, and names to skip.
@@ -12149,17 +13058,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 91 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	exports.decode = exports.parse = __webpack_require__(107);
-	exports.encode = exports.stringify = __webpack_require__(108);
+	exports.decode = exports.parse = __webpack_require__(118);
+	exports.encode = exports.stringify = __webpack_require__(119);
 
 
 /***/ },
-/* 92 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12176,40 +13085,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 93 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
-	var colorConvert = __webpack_require__(113);
 
-	function wrapAnsi16(fn, offset) {
-		return function () {
-			var code = fn.apply(colorConvert, arguments);
-			return '\u001b[' + (code + offset) + 'm';
-		};
-	}
-
-	function wrapAnsi256(fn, offset) {
-		return function () {
-			var code = fn.apply(colorConvert, arguments);
-			return '\u001b[' + (38 + offset) + ';5;' + code + 'm';
-		};
-	}
-
-	function wrapAnsi16m(fn, offset) {
-		return function () {
-			var rgb = fn.apply(colorConvert, arguments);
-			return '\u001b[' + (38 + offset) + ';2;' +
-				rgb[0] + ';' + rgb[1] + ';' + rgb[2] + 'm';
-		};
-	}
-
-	function assembleStyles() {
+	function assembleStyles () {
 		var styles = {
-			modifier: {
+			modifiers: {
 				reset: [0, 0],
-				// 21 isn't widely supported and 22 does the same thing
-				bold: [1, 22],
+				bold: [1, 22], // 21 isn't widely supported and 22 does the same thing
 				dim: [2, 22],
 				italic: [3, 23],
 				underline: [4, 24],
@@ -12217,7 +13102,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				hidden: [8, 28],
 				strikethrough: [9, 29]
 			},
-			color: {
+			colors: {
 				black: [30, 39],
 				red: [31, 39],
 				green: [32, 39],
@@ -12228,7 +13113,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				white: [37, 39],
 				gray: [90, 39]
 			},
-			bgColor: {
+			bgColors: {
 				bgBlack: [40, 49],
 				bgRed: [41, 49],
 				bgGreen: [42, 49],
@@ -12241,7 +13126,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		};
 
 		// fix humans
-		styles.color.grey = styles.color.gray;
+		styles.colors.grey = styles.colors.gray;
 
 		Object.keys(styles).forEach(function (groupName) {
 			var group = styles[groupName];
@@ -12261,48 +13146,6 @@ return /******/ (function(modules) { // webpackBootstrap
 			});
 		});
 
-		function rgb2rgb(r, g, b) {
-			return [r, g, b];
-		}
-
-		styles.color.close = '\u001b[39m';
-		styles.bgColor.close = '\u001b[49m';
-
-		styles.color.ansi = {};
-		styles.color.ansi256 = {};
-		styles.color.ansi16m = {
-			rgb: wrapAnsi16m(rgb2rgb, 0)
-		};
-
-		styles.bgColor.ansi = {};
-		styles.bgColor.ansi256 = {};
-		styles.bgColor.ansi16m = {
-			rgb: wrapAnsi16m(rgb2rgb, 10)
-		};
-
-		for (var key in colorConvert) {
-			if (!colorConvert.hasOwnProperty(key) || typeof colorConvert[key] !== 'object') {
-				continue;
-			}
-
-			var suite = colorConvert[key];
-
-			if ('ansi16' in suite) {
-				styles.color.ansi[key] = wrapAnsi16(suite.ansi16, 0);
-				styles.bgColor.ansi[key] = wrapAnsi16(suite.ansi16, 10);
-			}
-
-			if ('ansi256' in suite) {
-				styles.color.ansi256[key] = wrapAnsi256(suite.ansi256, 0);
-				styles.bgColor.ansi256[key] = wrapAnsi256(suite.ansi256, 10);
-			}
-
-			if ('rgb' in suite) {
-				styles.color.ansi16m[key] = wrapAnsi16m(suite.rgb, 0);
-				styles.bgColor.ansi16m[key] = wrapAnsi16m(suite.rgb, 10);
-			}
-		}
-
 		return styles;
 	}
 
@@ -12311,14 +13154,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		get: assembleStyles
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(124)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(127)(module)))
 
 /***/ },
-/* 94 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var ansiRegex = __webpack_require__(114)();
+	var ansiRegex = __webpack_require__(128)();
 
 	module.exports = function (str) {
 		return typeof str === 'string' ? str.replace(ansiRegex, '') : str;
@@ -12326,17 +13169,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 95 */
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var ansiRegex = __webpack_require__(114);
+	var ansiRegex = __webpack_require__(129);
 	var re = new RegExp(ansiRegex().source); // remove the `g` flag
 	module.exports = re.test.bind(re);
 
 
 /***/ },
-/* 96 */
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -12393,7 +13236,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
-/* 97 */
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/*! https://mths.be/punycode v1.3.2 by @mathias */
@@ -12925,146 +13768,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	}(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(124)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(127)(module), (function() { return this; }())))
 
 /***/ },
-/* 98 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-	module.exports = Stream;
-
-	var EE = __webpack_require__(38).EventEmitter;
-	var inherits = __webpack_require__(51);
-
-	inherits(Stream, EE);
-	Stream.Readable = __webpack_require__(89);
-	Stream.Writable = __webpack_require__(116);
-	Stream.Duplex = __webpack_require__(117);
-	Stream.Transform = __webpack_require__(118);
-	Stream.PassThrough = __webpack_require__(119);
-
-	// Backwards-compat with node 0.4.x
-	Stream.Stream = Stream;
-
-
-
-	// old-style streams.  Note that the pipe method (the only relevant
-	// part of this class) is overridden in the Readable class.
-
-	function Stream() {
-	  EE.call(this);
-	}
-
-	Stream.prototype.pipe = function(dest, options) {
-	  var source = this;
-
-	  function ondata(chunk) {
-	    if (dest.writable) {
-	      if (false === dest.write(chunk) && source.pause) {
-	        source.pause();
-	      }
-	    }
-	  }
-
-	  source.on('data', ondata);
-
-	  function ondrain() {
-	    if (source.readable && source.resume) {
-	      source.resume();
-	    }
-	  }
-
-	  dest.on('drain', ondrain);
-
-	  // If the 'end' option is not supplied, dest.end() will be called when
-	  // source gets the 'end' or 'close' events.  Only dest.end() once.
-	  if (!dest._isStdio && (!options || options.end !== false)) {
-	    source.on('end', onend);
-	    source.on('close', onclose);
-	  }
-
-	  var didOnEnd = false;
-	  function onend() {
-	    if (didOnEnd) return;
-	    didOnEnd = true;
-
-	    dest.end();
-	  }
-
-
-	  function onclose() {
-	    if (didOnEnd) return;
-	    didOnEnd = true;
-
-	    if (typeof dest.destroy === 'function') dest.destroy();
-	  }
-
-	  // don't leave dangling pipes when there are errors.
-	  function onerror(er) {
-	    cleanup();
-	    if (EE.listenerCount(this, 'error') === 0) {
-	      throw er; // Unhandled stream error in pipe.
-	    }
-	  }
-
-	  source.on('error', onerror);
-	  dest.on('error', onerror);
-
-	  // remove all the event listeners that were added.
-	  function cleanup() {
-	    source.removeListener('data', ondata);
-	    dest.removeListener('drain', ondrain);
-
-	    source.removeListener('end', onend);
-	    source.removeListener('close', onclose);
-
-	    source.removeListener('error', onerror);
-	    dest.removeListener('error', onerror);
-
-	    source.removeListener('end', cleanup);
-	    source.removeListener('close', cleanup);
-
-	    dest.removeListener('close', cleanup);
-	  }
-
-	  source.on('end', cleanup);
-	  source.on('close', cleanup);
-
-	  dest.on('close', cleanup);
-
-	  dest.emit('pipe', source);
-
-	  // Allow for unix-like usage: A.pipe(B).pipe(C)
-	  return dest;
-	};
-
-
-/***/ },
-/* 99 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(Buffer) {var rng = __webpack_require__(120)
+	/* WEBPACK VAR INJECTION */(function(Buffer) {var rng = __webpack_require__(123)
 
 	function error () {
 	  var m = [].slice.call(arguments).join(' ')
@@ -13075,9 +13785,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ].join('\n'))
 	}
 
-	exports.createHash = __webpack_require__(121)
+	exports.createHash = __webpack_require__(124)
 
-	exports.createHmac = __webpack_require__(122)
+	exports.createHmac = __webpack_require__(125)
 
 	exports.randomBytes = function(size, callback) {
 	  if (callback && callback.call) {
@@ -13098,7 +13808,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return ['sha1', 'sha256', 'sha512', 'md5', 'rmd160']
 	}
 
-	var p = __webpack_require__(123)(exports)
+	var p = __webpack_require__(126)(exports)
 	exports.pbkdf2 = p.pbkdf2
 	exports.pbkdf2Sync = p.pbkdf2Sync
 
@@ -13118,10 +13828,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	})
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
-/* 100 */
+/* 106 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(111)
+
+
+/***/ },
+/* 107 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(112)
+
+
+/***/ },
+/* 108 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(113)
+
+
+/***/ },
+/* 109 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(114)
+
+
+/***/ },
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -13148,17 +13886,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Readable;
 
 	/*<replacement>*/
-	var isArray = __webpack_require__(115);
+	var isArray = __webpack_require__(130);
 	/*</replacement>*/
 
 
 	/*<replacement>*/
-	var Buffer = __webpack_require__(88).Buffer;
+	var Buffer = __webpack_require__(94).Buffer;
 	/*</replacement>*/
 
 	Readable.ReadableState = ReadableState;
 
-	var EE = __webpack_require__(38).EventEmitter;
+	var EE = __webpack_require__(39).EventEmitter;
 
 	/*<replacement>*/
 	if (!EE.listenerCount) EE.listenerCount = function(emitter, type) {
@@ -13166,18 +13904,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	/*</replacement>*/
 
-	var Stream = __webpack_require__(98);
+	var Stream = __webpack_require__(95);
 
 	/*<replacement>*/
-	var util = __webpack_require__(130);
-	util.inherits = __webpack_require__(51);
+	var util = __webpack_require__(134);
+	util.inherits = __webpack_require__(52);
 	/*</replacement>*/
 
 	var StringDecoder;
 
 
 	/*<replacement>*/
-	var debug = __webpack_require__(112);
+	var debug = __webpack_require__(120);
 	if (debug && debug.debuglog) {
 	  debug = debug.debuglog('stream');
 	} else {
@@ -13189,7 +13927,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	util.inherits(Readable, Stream);
 
 	function ReadableState(options, stream) {
-	  var Duplex = __webpack_require__(102);
+	  var Duplex = __webpack_require__(112);
 
 	  options = options || {};
 
@@ -13250,14 +13988,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.encoding = null;
 	  if (options.encoding) {
 	    if (!StringDecoder)
-	      StringDecoder = __webpack_require__(125).StringDecoder;
+	      StringDecoder = __webpack_require__(131).StringDecoder;
 	    this.decoder = new StringDecoder(options.encoding);
 	    this.encoding = options.encoding;
 	  }
 	}
 
 	function Readable(options) {
-	  var Duplex = __webpack_require__(102);
+	  var Duplex = __webpack_require__(112);
 
 	  if (!(this instanceof Readable))
 	    return new Readable(options);
@@ -13360,7 +14098,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// backwards compatibility.
 	Readable.prototype.setEncoding = function(enc) {
 	  if (!StringDecoder)
-	    StringDecoder = __webpack_require__(125).StringDecoder;
+	    StringDecoder = __webpack_require__(131).StringDecoder;
 	  this._readableState.decoder = new StringDecoder(enc);
 	  this._readableState.encoding = enc;
 	  return this;
@@ -14079,7 +14817,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
-/* 101 */
+/* 111 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -14110,18 +14848,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Writable;
 
 	/*<replacement>*/
-	var Buffer = __webpack_require__(88).Buffer;
+	var Buffer = __webpack_require__(94).Buffer;
 	/*</replacement>*/
 
 	Writable.WritableState = WritableState;
 
 
 	/*<replacement>*/
-	var util = __webpack_require__(130);
-	util.inherits = __webpack_require__(51);
+	var util = __webpack_require__(134);
+	util.inherits = __webpack_require__(52);
 	/*</replacement>*/
 
-	var Stream = __webpack_require__(98);
+	var Stream = __webpack_require__(95);
 
 	util.inherits(Writable, Stream);
 
@@ -14132,7 +14870,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function WritableState(options, stream) {
-	  var Duplex = __webpack_require__(102);
+	  var Duplex = __webpack_require__(112);
 
 	  options = options || {};
 
@@ -14220,7 +14958,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function Writable(options) {
-	  var Duplex = __webpack_require__(102);
+	  var Duplex = __webpack_require__(112);
 
 	  // Writable ctor is applied to Duplexes, though they're not
 	  // instanceof Writable, they're instanceof Readable.
@@ -14563,7 +15301,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
-/* 102 */
+/* 112 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -14604,12 +15342,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	/*<replacement>*/
-	var util = __webpack_require__(130);
-	util.inherits = __webpack_require__(51);
+	var util = __webpack_require__(134);
+	util.inherits = __webpack_require__(52);
 	/*</replacement>*/
 
-	var Readable = __webpack_require__(100);
-	var Writable = __webpack_require__(101);
+	var Readable = __webpack_require__(110);
+	var Writable = __webpack_require__(111);
 
 	util.inherits(Duplex, Readable);
 
@@ -14659,7 +15397,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
-/* 103 */
+/* 113 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -14728,11 +15466,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = Transform;
 
-	var Duplex = __webpack_require__(102);
+	var Duplex = __webpack_require__(112);
 
 	/*<replacement>*/
-	var util = __webpack_require__(130);
-	util.inherits = __webpack_require__(51);
+	var util = __webpack_require__(134);
+	util.inherits = __webpack_require__(52);
 	/*</replacement>*/
 
 	util.inherits(Transform, Duplex);
@@ -14874,7 +15612,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 104 */
+/* 114 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -14904,11 +15642,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = PassThrough;
 
-	var Transform = __webpack_require__(103);
+	var Transform = __webpack_require__(113);
 
 	/*<replacement>*/
-	var util = __webpack_require__(130);
-	util.inherits = __webpack_require__(51);
+	var util = __webpack_require__(134);
+	util.inherits = __webpack_require__(52);
 	/*</replacement>*/
 
 	util.inherits(PassThrough, Transform);
@@ -14926,7 +15664,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 105 */
+/* 115 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -15454,7 +16192,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(126);
+	exports.isBuffer = __webpack_require__(132);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -15498,7 +16236,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(51);
+	exports.inherits = __webpack_require__(52);
 
 	exports._extend = function(origin, add) {
 	  // Don't do anything if add isn't an object
@@ -15519,7 +16257,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(11)))
 
 /***/ },
-/* 106 */
+/* 116 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -15609,7 +16347,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 107 */
+/* 117 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var toString = {}.toString;
+
+	module.exports = Array.isArray || function (arr) {
+	  return toString.call(arr) == '[object Array]';
+	};
+
+
+/***/ },
+/* 118 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -15695,7 +16444,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 108 */
+/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -15765,18 +16514,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 109 */
+/* 120 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toString = {}.toString;
-
-	module.exports = Array.isArray || function (arr) {
-	  return toString.call(arr) == '[object Array]';
-	};
-
+	/* (ignored) */
 
 /***/ },
-/* 110 */
+/* 121 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -15906,7 +16650,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 111 */
+/* 122 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -16037,147 +16781,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 112 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* (ignored) */
-
-/***/ },
-/* 113 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var conversions = __webpack_require__(128);
-	var route = __webpack_require__(129);
-
-	var convert = {};
-
-	var models = Object.keys(conversions);
-
-	function wrapRaw(fn) {
-		var wrappedFn = function (args) {
-			if (args === undefined || args === null) {
-				return args;
-			}
-
-			if (arguments.length > 1) {
-				args = Array.prototype.slice.call(arguments);
-			}
-
-			return fn(args);
-		};
-
-		// preserve .conversion property if there is one
-		if ('conversion' in fn) {
-			wrappedFn.conversion = fn.conversion;
-		}
-
-		return wrappedFn;
-	}
-
-	function wrapRounded(fn) {
-		var wrappedFn = function (args) {
-			if (args === undefined || args === null) {
-				return args;
-			}
-
-			if (arguments.length > 1) {
-				args = Array.prototype.slice.call(arguments);
-			}
-
-			var result = fn(args);
-
-			// we're assuming the result is an array here.
-			// see notice in conversions.js; don't use box types
-			// in conversion functions.
-			if (typeof result === 'object') {
-				for (var len = result.length, i = 0; i < len; i++) {
-					result[i] = Math.round(result[i]);
-				}
-			}
-
-			return result;
-		};
-
-		// preserve .conversion property if there is one
-		if ('conversion' in fn) {
-			wrappedFn.conversion = fn.conversion;
-		}
-
-		return wrappedFn;
-	}
-
-	models.forEach(function (fromModel) {
-		convert[fromModel] = {};
-
-		var routes = route(fromModel);
-		var routeModels = Object.keys(routes);
-
-		routeModels.forEach(function (toModel) {
-			var fn = routes[toModel];
-
-			convert[fromModel][toModel] = wrapRounded(fn);
-			convert[fromModel][toModel].raw = wrapRaw(fn);
-		});
-	});
-
-	module.exports = convert;
-
-
-/***/ },
-/* 114 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	module.exports = function () {
-		return /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
-	};
-
-
-/***/ },
-/* 115 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = Array.isArray || function (arr) {
-	  return Object.prototype.toString.call(arr) == '[object Array]';
-	};
-
-
-/***/ },
-/* 116 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(101)
-
-
-/***/ },
-/* 117 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(102)
-
-
-/***/ },
-/* 118 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(103)
-
-
-/***/ },
-/* 119 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(104)
-
-
-/***/ },
-/* 120 */
+/* 123 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, Buffer) {(function() {
 	  var g = ('undefined' === typeof window ? global : window) || {}
 	  _crypto = (
-	    g.crypto || g.msCrypto || __webpack_require__(127)
+	    g.crypto || g.msCrypto || __webpack_require__(133)
 	  )
 	  module.exports = function(size) {
 	    // Modern Browsers
@@ -16201,16 +16811,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}())
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(94).Buffer))
 
 /***/ },
-/* 121 */
+/* 124 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(132)
+	/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(136)
 
-	var md5 = toConstructor(__webpack_require__(131))
-	var rmd160 = toConstructor(__webpack_require__(134))
+	var md5 = toConstructor(__webpack_require__(135))
+	var rmd160 = toConstructor(__webpack_require__(138))
 
 	function toConstructor (fn) {
 	  return function () {
@@ -16238,13 +16848,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return createHash(alg)
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
-/* 122 */
+/* 125 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(121)
+	/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(124)
 
 	var zeroBuffer = new Buffer(128)
 	zeroBuffer.fill(0)
@@ -16288,13 +16898,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
-/* 123 */
+/* 126 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var pbkdf2Export = __webpack_require__(133)
+	var pbkdf2Export = __webpack_require__(137)
 
 	module.exports = function (crypto, exports) {
 	  exports = exports || {}
@@ -16309,7 +16919,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 124 */
+/* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function(module) {
@@ -16325,7 +16935,36 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 125 */
+/* 128 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	module.exports = function () {
+		return /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+	};
+
+
+/***/ },
+/* 129 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	module.exports = function () {
+		return /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+	};
+
+
+/***/ },
+/* 130 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = Array.isArray || function (arr) {
+	  return Object.prototype.toString.call(arr) == '[object Array]';
+	};
+
+
+/***/ },
+/* 131 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -16349,7 +16988,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 	// USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-	var Buffer = __webpack_require__(88).Buffer;
+	var Buffer = __webpack_require__(94).Buffer;
 
 	var isBufferEncoding = Buffer.isEncoding
 	  || function(encoding) {
@@ -16552,7 +17191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 126 */
+/* 132 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function isBuffer(arg) {
@@ -16563,717 +17202,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 127 */
+/* 133 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* (ignored) */
 
 /***/ },
-/* 128 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* MIT license */
-	var cssKeywords = __webpack_require__(135);
-
-	// NOTE: conversions should only return primitive values (i.e. arrays, or
-	//       values that give correct `typeof` results).
-	//       do not use box values types (i.e. Number(), String(), etc.)
-
-	var reverseKeywords = {};
-	for (var key in cssKeywords) {
-		if (cssKeywords.hasOwnProperty(key)) {
-			reverseKeywords[cssKeywords[key].join()] = key;
-		}
-	}
-
-	var convert = module.exports = {
-		rgb: {},
-		hsl: {},
-		hsv: {},
-		hwb: {},
-		cmyk: {},
-		xyz: {},
-		lab: {},
-		lch: {},
-		hex: {},
-		keyword: {},
-		ansi16: {},
-		ansi256: {}
-	};
-
-	convert.rgb.hsl = function (rgb) {
-		var r = rgb[0] / 255;
-		var g = rgb[1] / 255;
-		var b = rgb[2] / 255;
-		var min = Math.min(r, g, b);
-		var max = Math.max(r, g, b);
-		var delta = max - min;
-		var h;
-		var s;
-		var l;
-
-		if (max === min) {
-			h = 0;
-		} else if (r === max) {
-			h = (g - b) / delta;
-		} else if (g === max) {
-			h = 2 + (b - r) / delta;
-		} else if (b === max) {
-			h = 4 + (r - g) / delta;
-		}
-
-		h = Math.min(h * 60, 360);
-
-		if (h < 0) {
-			h += 360;
-		}
-
-		l = (min + max) / 2;
-
-		if (max === min) {
-			s = 0;
-		} else if (l <= 0.5) {
-			s = delta / (max + min);
-		} else {
-			s = delta / (2 - max - min);
-		}
-
-		return [h, s * 100, l * 100];
-	};
-
-	convert.rgb.hsv = function (rgb) {
-		var r = rgb[0];
-		var g = rgb[1];
-		var b = rgb[2];
-		var min = Math.min(r, g, b);
-		var max = Math.max(r, g, b);
-		var delta = max - min;
-		var h;
-		var s;
-		var v;
-
-		if (max === 0) {
-			s = 0;
-		} else {
-			s = (delta / max * 1000) / 10;
-		}
-
-		if (max === min) {
-			h = 0;
-		} else if (r === max) {
-			h = (g - b) / delta;
-		} else if (g === max) {
-			h = 2 + (b - r) / delta;
-		} else if (b === max) {
-			h = 4 + (r - g) / delta;
-		}
-
-		h = Math.min(h * 60, 360);
-
-		if (h < 0) {
-			h += 360;
-		}
-
-		v = ((max / 255) * 1000) / 10;
-
-		return [h, s, v];
-	};
-
-	convert.rgb.hwb = function (rgb) {
-		var r = rgb[0];
-		var g = rgb[1];
-		var b = rgb[2];
-		var h = convert.rgb.hsl(rgb)[0];
-		var w = 1 / 255 * Math.min(r, Math.min(g, b));
-
-		b = 1 - 1 / 255 * Math.max(r, Math.max(g, b));
-
-		return [h, w * 100, b * 100];
-	};
-
-	convert.rgb.cmyk = function (rgb) {
-		var r = rgb[0] / 255;
-		var g = rgb[1] / 255;
-		var b = rgb[2] / 255;
-		var c;
-		var m;
-		var y;
-		var k;
-
-		k = Math.min(1 - r, 1 - g, 1 - b);
-		c = (1 - r - k) / (1 - k) || 0;
-		m = (1 - g - k) / (1 - k) || 0;
-		y = (1 - b - k) / (1 - k) || 0;
-
-		return [c * 100, m * 100, y * 100, k * 100];
-	};
-
-	convert.rgb.keyword = function (rgb) {
-		return reverseKeywords[rgb.join()];
-	};
-
-	convert.keyword.rgb = function (keyword) {
-		return cssKeywords[keyword];
-	};
-
-	convert.rgb.xyz = function (rgb) {
-		var r = rgb[0] / 255;
-		var g = rgb[1] / 255;
-		var b = rgb[2] / 255;
-
-		// assume sRGB
-		r = r > 0.04045 ? Math.pow(((r + 0.055) / 1.055), 2.4) : (r / 12.92);
-		g = g > 0.04045 ? Math.pow(((g + 0.055) / 1.055), 2.4) : (g / 12.92);
-		b = b > 0.04045 ? Math.pow(((b + 0.055) / 1.055), 2.4) : (b / 12.92);
-
-		var x = (r * 0.4124) + (g * 0.3576) + (b * 0.1805);
-		var y = (r * 0.2126) + (g * 0.7152) + (b * 0.0722);
-		var z = (r * 0.0193) + (g * 0.1192) + (b * 0.9505);
-
-		return [x * 100, y * 100, z * 100];
-	};
-
-	convert.rgb.lab = function (rgb) {
-		var xyz = convert.rgb.xyz(rgb);
-		var x = xyz[0];
-		var y = xyz[1];
-		var z = xyz[2];
-		var l;
-		var a;
-		var b;
-
-		x /= 95.047;
-		y /= 100;
-		z /= 108.883;
-
-		x = x > 0.008856 ? Math.pow(x, 1 / 3) : (7.787 * x) + (16 / 116);
-		y = y > 0.008856 ? Math.pow(y, 1 / 3) : (7.787 * y) + (16 / 116);
-		z = z > 0.008856 ? Math.pow(z, 1 / 3) : (7.787 * z) + (16 / 116);
-
-		l = (116 * y) - 16;
-		a = 500 * (x - y);
-		b = 200 * (y - z);
-
-		return [l, a, b];
-	};
-
-	convert.hsl.rgb = function (hsl) {
-		var h = hsl[0] / 360;
-		var s = hsl[1] / 100;
-		var l = hsl[2] / 100;
-		var t1;
-		var t2;
-		var t3;
-		var rgb;
-		var val;
-
-		if (s === 0) {
-			val = l * 255;
-			return [val, val, val];
-		}
-
-		if (l < 0.5) {
-			t2 = l * (1 + s);
-		} else {
-			t2 = l + s - l * s;
-		}
-
-		t1 = 2 * l - t2;
-
-		rgb = [0, 0, 0];
-		for (var i = 0; i < 3; i++) {
-			t3 = h + 1 / 3 * -(i - 1);
-			if (t3 < 0) {
-				t3++;
-			}
-			if (t3 > 1) {
-				t3--;
-			}
-
-			if (6 * t3 < 1) {
-				val = t1 + (t2 - t1) * 6 * t3;
-			} else if (2 * t3 < 1) {
-				val = t2;
-			} else if (3 * t3 < 2) {
-				val = t1 + (t2 - t1) * (2 / 3 - t3) * 6;
-			} else {
-				val = t1;
-			}
-
-			rgb[i] = val * 255;
-		}
-
-		return rgb;
-	};
-
-	convert.hsl.hsv = function (hsl) {
-		var h = hsl[0];
-		var s = hsl[1] / 100;
-		var l = hsl[2] / 100;
-		var sv;
-		var v;
-
-		if (l === 0) {
-			// no need to do calc on black
-			// also avoids divide by 0 error
-			return [0, 0, 0];
-		}
-
-		l *= 2;
-		s *= (l <= 1) ? l : 2 - l;
-		v = (l + s) / 2;
-		sv = (2 * s) / (l + s);
-
-		return [h, sv * 100, v * 100];
-	};
-
-	convert.hsv.rgb = function (hsv) {
-		var h = hsv[0] / 60;
-		var s = hsv[1] / 100;
-		var v = hsv[2] / 100;
-		var hi = Math.floor(h) % 6;
-
-		var f = h - Math.floor(h);
-		var p = 255 * v * (1 - s);
-		var q = 255 * v * (1 - (s * f));
-		var t = 255 * v * (1 - (s * (1 - f)));
-		v *= 255;
-
-		switch (hi) {
-			case 0:
-				return [v, t, p];
-			case 1:
-				return [q, v, p];
-			case 2:
-				return [p, v, t];
-			case 3:
-				return [p, q, v];
-			case 4:
-				return [t, p, v];
-			case 5:
-				return [v, p, q];
-		}
-	};
-
-	convert.hsv.hsl = function (hsv) {
-		var h = hsv[0];
-		var s = hsv[1] / 100;
-		var v = hsv[2] / 100;
-		var sl;
-		var l;
-
-		l = (2 - s) * v;
-		sl = s * v;
-		sl /= (l <= 1) ? l : 2 - l;
-		sl = sl || 0;
-		l /= 2;
-
-		return [h, sl * 100, l * 100];
-	};
-
-	// http://dev.w3.org/csswg/css-color/#hwb-to-rgb
-	convert.hwb.rgb = function (hwb) {
-		var h = hwb[0] / 360;
-		var wh = hwb[1] / 100;
-		var bl = hwb[2] / 100;
-		var ratio = wh + bl;
-		var i;
-		var v;
-		var f;
-		var n;
-
-		// wh + bl cant be > 1
-		if (ratio > 1) {
-			wh /= ratio;
-			bl /= ratio;
-		}
-
-		i = Math.floor(6 * h);
-		v = 1 - bl;
-		f = 6 * h - i;
-
-		if ((i & 0x01) !== 0) {
-			f = 1 - f;
-		}
-
-		n = wh + f * (v - wh); // linear interpolation
-
-		var r;
-		var g;
-		var b;
-		switch (i) {
-			default:
-			case 6:
-			case 0: r = v; g = n; b = wh; break;
-			case 1: r = n; g = v; b = wh; break;
-			case 2: r = wh; g = v; b = n; break;
-			case 3: r = wh; g = n; b = v; break;
-			case 4: r = n; g = wh; b = v; break;
-			case 5: r = v; g = wh; b = n; break;
-		}
-
-		return [r * 255, g * 255, b * 255];
-	};
-
-	convert.cmyk.rgb = function (cmyk) {
-		var c = cmyk[0] / 100;
-		var m = cmyk[1] / 100;
-		var y = cmyk[2] / 100;
-		var k = cmyk[3] / 100;
-		var r;
-		var g;
-		var b;
-
-		r = 1 - Math.min(1, c * (1 - k) + k);
-		g = 1 - Math.min(1, m * (1 - k) + k);
-		b = 1 - Math.min(1, y * (1 - k) + k);
-
-		return [r * 255, g * 255, b * 255];
-	};
-
-	convert.xyz.rgb = function (xyz) {
-		var x = xyz[0] / 100;
-		var y = xyz[1] / 100;
-		var z = xyz[2] / 100;
-		var r;
-		var g;
-		var b;
-
-		r = (x * 3.2406) + (y * -1.5372) + (z * -0.4986);
-		g = (x * -0.9689) + (y * 1.8758) + (z * 0.0415);
-		b = (x * 0.0557) + (y * -0.2040) + (z * 1.0570);
-
-		// assume sRGB
-		r = r > 0.0031308
-			? ((1.055 * Math.pow(r, 1.0 / 2.4)) - 0.055)
-			: r *= 12.92;
-
-		g = g > 0.0031308
-			? ((1.055 * Math.pow(g, 1.0 / 2.4)) - 0.055)
-			: g *= 12.92;
-
-		b = b > 0.0031308
-			? ((1.055 * Math.pow(b, 1.0 / 2.4)) - 0.055)
-			: b *= 12.92;
-
-		r = Math.min(Math.max(0, r), 1);
-		g = Math.min(Math.max(0, g), 1);
-		b = Math.min(Math.max(0, b), 1);
-
-		return [r * 255, g * 255, b * 255];
-	};
-
-	convert.xyz.lab = function (xyz) {
-		var x = xyz[0];
-		var y = xyz[1];
-		var z = xyz[2];
-		var l;
-		var a;
-		var b;
-
-		x /= 95.047;
-		y /= 100;
-		z /= 108.883;
-
-		x = x > 0.008856 ? Math.pow(x, 1 / 3) : (7.787 * x) + (16 / 116);
-		y = y > 0.008856 ? Math.pow(y, 1 / 3) : (7.787 * y) + (16 / 116);
-		z = z > 0.008856 ? Math.pow(z, 1 / 3) : (7.787 * z) + (16 / 116);
-
-		l = (116 * y) - 16;
-		a = 500 * (x - y);
-		b = 200 * (y - z);
-
-		return [l, a, b];
-	};
-
-	convert.lab.xyz = function (lab) {
-		var l = lab[0];
-		var a = lab[1];
-		var b = lab[2];
-		var x;
-		var y;
-		var z;
-		var y2;
-
-		if (l <= 8) {
-			y = (l * 100) / 903.3;
-			y2 = (7.787 * (y / 100)) + (16 / 116);
-		} else {
-			y = 100 * Math.pow((l + 16) / 116, 3);
-			y2 = Math.pow(y / 100, 1 / 3);
-		}
-
-		x = x / 95.047 <= 0.008856
-			? x = (95.047 * ((a / 500) + y2 - (16 / 116))) / 7.787
-			: 95.047 * Math.pow((a / 500) + y2, 3);
-		z = z / 108.883 <= 0.008859
-			? z = (108.883 * (y2 - (b / 200) - (16 / 116))) / 7.787
-			: 108.883 * Math.pow(y2 - (b / 200), 3);
-
-		return [x, y, z];
-	};
-
-	convert.lab.lch = function (lab) {
-		var l = lab[0];
-		var a = lab[1];
-		var b = lab[2];
-		var hr;
-		var h;
-		var c;
-
-		hr = Math.atan2(b, a);
-		h = hr * 360 / 2 / Math.PI;
-
-		if (h < 0) {
-			h += 360;
-		}
-
-		c = Math.sqrt(a * a + b * b);
-
-		return [l, c, h];
-	};
-
-	convert.lch.lab = function (lch) {
-		var l = lch[0];
-		var c = lch[1];
-		var h = lch[2];
-		var a;
-		var b;
-		var hr;
-
-		hr = h / 360 * 2 * Math.PI;
-		a = c * Math.cos(hr);
-		b = c * Math.sin(hr);
-
-		return [l, a, b];
-	};
-
-	convert.rgb.ansi16 = function (args) {
-		var r = args[0];
-		var g = args[1];
-		var b = args[2];
-		var value = 1 in arguments ? arguments[1] : convert.rgb.hsv(args)[2]; // hsv -> ansi16 optimization
-
-		value = Math.round(value / 50);
-
-		if (value === 0) {
-			return 30;
-		}
-
-		var ansi = 30
-			+ ((Math.round(b / 255) << 2)
-			| (Math.round(g / 255) << 1)
-			| Math.round(r / 255));
-
-		if (value === 2) {
-			ansi += 60;
-		}
-
-		return ansi;
-	};
-
-	convert.hsv.ansi16 = function (args) {
-		// optimization here; we already know the value and don't need to get
-		// it converted for us.
-		return convert.rgb.ansi16(convert.hsv.rgb(args), args[2]);
-	};
-
-	convert.rgb.ansi256 = function (args) {
-		var r = args[0];
-		var g = args[1];
-		var b = args[2];
-
-		// we use the extended greyscale palette here, with the exception of
-		// black and white. normal palette only has 4 greyscale shades.
-		if (r === g && g === b) {
-			if (r < 8) {
-				return 16;
-			}
-
-			if (r > 248) {
-				return 231;
-			}
-
-			return Math.round(((r - 8) / 247) * 24) + 232;
-		}
-
-		var ansi = 16
-			+ (36 * Math.round(r / 255 * 5))
-			+ (6 * Math.round(g / 255 * 5))
-			+ Math.round(b / 255 * 5);
-
-		return ansi;
-	};
-
-	convert.ansi16.rgb = function (args) {
-		var color = args % 10;
-
-		// handle greyscale
-		if (color === 0 || color === 7) {
-			if (args > 50) {
-				color += 3.5;
-			}
-
-			color = color / 10.5 * 255;
-
-			return [color, color, color];
-		}
-
-		var mult = (~~(args > 50) + 1) * 0.5;
-		var r = ((color & 1) * mult) * 255;
-		var g = (((color >> 1) & 1) * mult) * 255;
-		var b = (((color >> 2) & 1) * mult) * 255;
-
-		return [r, g, b];
-	};
-
-	convert.ansi256.rgb = function (args) {
-		// handle greyscale
-		if (args >= 232) {
-			var c = (args - 232) * 10 + 8;
-			return [c, c, c];
-		}
-
-		args -= 16;
-
-		var rem;
-		var r = Math.floor(args / 36) / 5 * 255;
-		var g = Math.floor((rem = args % 36) / 6) / 5 * 255;
-		var b = (rem % 6) / 5 * 255;
-
-		return [r, g, b];
-	};
-
-	convert.rgb.hex = function (args) {
-		var integer = ((Math.round(args[0]) & 0xFF) << 16)
-			+ ((Math.round(args[1]) & 0xFF) << 8)
-			+ (Math.round(args[2]) & 0xFF);
-
-		var string = integer.toString(16).toUpperCase();
-		return '000000'.substring(string.length) + string;
-	};
-
-	convert.hex.rgb = function (args) {
-		var match = args.toString(16).match(/[a-f0-9]{6}/i);
-		if (!match) {
-			return [0, 0, 0];
-		}
-
-		var integer = parseInt(match[0], 16);
-		var r = (integer >> 16) & 0xFF;
-		var g = (integer >> 8) & 0xFF;
-		var b = integer & 0xFF;
-
-		return [r, g, b];
-	};
-
-
-/***/ },
-/* 129 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var conversions = __webpack_require__(128);
-
-	/*
-		this function routes a model to all other models.
-
-		all functions that are routed have a property `.conversion` attached
-		to the returned synthetic function. This property is an array
-		of strings, each with the steps in between the 'from' and 'to'
-		color models (inclusive).
-
-		conversions that are not possible simply are not included.
-	*/
-
-	// https://jsperf.com/object-keys-vs-for-in-with-closure/3
-	var models = Object.keys(conversions);
-
-	function buildGraph() {
-		var graph = {};
-
-		for (var len = models.length, i = 0; i < len; i++) {
-			graph[models[i]] = {
-				// http://jsperf.com/1-vs-infinity
-				// micro-opt, but this is simple.
-				distance: -1,
-				parent: null
-			};
-		}
-
-		return graph;
-	}
-
-	// https://en.wikipedia.org/wiki/Breadth-first_search
-	function deriveBFS(fromModel) {
-		var graph = buildGraph();
-		var queue = [fromModel]; // unshift -> queue -> pop
-
-		graph[fromModel].distance = 0;
-
-		while (queue.length) {
-			var current = queue.pop();
-			var adjacents = Object.keys(conversions[current]);
-
-			for (var len = adjacents.length, i = 0; i < len; i++) {
-				var adjacent = adjacents[i];
-				var node = graph[adjacent];
-
-				if (node.distance === -1) {
-					node.distance = graph[current].distance + 1;
-					node.parent = current;
-					queue.unshift(adjacent);
-				}
-			}
-		}
-
-		return graph;
-	}
-
-	function link(from, to) {
-		return function (args) {
-			return to(from(args));
-		};
-	}
-
-	function wrapConversion(toModel, graph) {
-		var path = [graph[toModel].parent, toModel];
-		var fn = conversions[graph[toModel].parent][toModel];
-
-		var cur = graph[toModel].parent;
-		while (graph[cur].parent) {
-			path.unshift(graph[cur].parent);
-			fn = link(conversions[graph[cur].parent][cur], fn);
-			cur = graph[cur].parent;
-		}
-
-		fn.conversion = path;
-		return fn;
-	}
-
-	module.exports = function (fromModel) {
-		var graph = deriveBFS(fromModel);
-		var conversion = {};
-
-		var models = Object.keys(graph);
-		for (var len = models.length, i = 0; i < len; i++) {
-			var toModel = models[i];
-			var node = graph[toModel];
-
-			if (node.parent === null) {
-				// no possible conversion, or this node is the source model.
-				continue;
-			}
-
-			conversion[toModel] = wrapConversion(toModel, graph);
-		}
-
-		return conversion;
-	};
-
-
-
-/***/ },
-/* 130 */
+/* 134 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {// Copyright Joyent, Inc. and other Node contributors.
@@ -17384,10 +17319,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Object.prototype.toString.call(o);
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
-/* 131 */
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -17399,7 +17334,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * See http://pajhome.org.uk/crypt/md5 for more info.
 	 */
 
-	var helpers = __webpack_require__(136);
+	var helpers = __webpack_require__(139);
 
 	/*
 	 * Calculate the MD5 of an array of little-endian words, and a bit length
@@ -17548,7 +17483,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 132 */
+/* 136 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var exports = module.exports = function (alg) {
@@ -17557,16 +17492,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return new Alg()
 	}
 
-	var Buffer = __webpack_require__(88).Buffer
-	var Hash   = __webpack_require__(137)(Buffer)
+	var Buffer = __webpack_require__(94).Buffer
+	var Hash   = __webpack_require__(140)(Buffer)
 
-	exports.sha1 = __webpack_require__(138)(Buffer, Hash)
-	exports.sha256 = __webpack_require__(139)(Buffer, Hash)
-	exports.sha512 = __webpack_require__(140)(Buffer, Hash)
+	exports.sha1 = __webpack_require__(141)(Buffer, Hash)
+	exports.sha256 = __webpack_require__(142)(Buffer, Hash)
+	exports.sha512 = __webpack_require__(143)(Buffer, Hash)
 
 
 /***/ },
-/* 133 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {module.exports = function(crypto) {
@@ -17654,10 +17589,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
-/* 134 */
+/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {
@@ -17866,167 +17801,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
-/* 135 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = {
-		aliceblue: [240, 248, 255],
-		antiquewhite: [250, 235, 215],
-		aqua: [0, 255, 255],
-		aquamarine: [127, 255, 212],
-		azure: [240, 255, 255],
-		beige: [245, 245, 220],
-		bisque: [255, 228, 196],
-		black: [0, 0, 0],
-		blanchedalmond: [255, 235, 205],
-		blue: [0, 0, 255],
-		blueviolet: [138, 43, 226],
-		brown: [165, 42, 42],
-		burlywood: [222, 184, 135],
-		cadetblue: [95, 158, 160],
-		chartreuse: [127, 255, 0],
-		chocolate: [210, 105, 30],
-		coral: [255, 127, 80],
-		cornflowerblue: [100, 149, 237],
-		cornsilk: [255, 248, 220],
-		crimson: [220, 20, 60],
-		cyan: [0, 255, 255],
-		darkblue: [0, 0, 139],
-		darkcyan: [0, 139, 139],
-		darkgoldenrod: [184, 134, 11],
-		darkgray: [169, 169, 169],
-		darkgreen: [0, 100, 0],
-		darkgrey: [169, 169, 169],
-		darkkhaki: [189, 183, 107],
-		darkmagenta: [139, 0, 139],
-		darkolivegreen: [85, 107, 47],
-		darkorange: [255, 140, 0],
-		darkorchid: [153, 50, 204],
-		darkred: [139, 0, 0],
-		darksalmon: [233, 150, 122],
-		darkseagreen: [143, 188, 143],
-		darkslateblue: [72, 61, 139],
-		darkslategray: [47, 79, 79],
-		darkslategrey: [47, 79, 79],
-		darkturquoise: [0, 206, 209],
-		darkviolet: [148, 0, 211],
-		deeppink: [255, 20, 147],
-		deepskyblue: [0, 191, 255],
-		dimgray: [105, 105, 105],
-		dimgrey: [105, 105, 105],
-		dodgerblue: [30, 144, 255],
-		firebrick: [178, 34, 34],
-		floralwhite: [255, 250, 240],
-		forestgreen: [34, 139, 34],
-		fuchsia: [255, 0, 255],
-		gainsboro: [220, 220, 220],
-		ghostwhite: [248, 248, 255],
-		gold: [255, 215, 0],
-		goldenrod: [218, 165, 32],
-		gray: [128, 128, 128],
-		green: [0, 128, 0],
-		greenyellow: [173, 255, 47],
-		grey: [128, 128, 128],
-		honeydew: [240, 255, 240],
-		hotpink: [255, 105, 180],
-		indianred: [205, 92, 92],
-		indigo: [75, 0, 130],
-		ivory: [255, 255, 240],
-		khaki: [240, 230, 140],
-		lavender: [230, 230, 250],
-		lavenderblush: [255, 240, 245],
-		lawngreen: [124, 252, 0],
-		lemonchiffon: [255, 250, 205],
-		lightblue: [173, 216, 230],
-		lightcoral: [240, 128, 128],
-		lightcyan: [224, 255, 255],
-		lightgoldenrodyellow: [250, 250, 210],
-		lightgray: [211, 211, 211],
-		lightgreen: [144, 238, 144],
-		lightgrey: [211, 211, 211],
-		lightpink: [255, 182, 193],
-		lightsalmon: [255, 160, 122],
-		lightseagreen: [32, 178, 170],
-		lightskyblue: [135, 206, 250],
-		lightslategray: [119, 136, 153],
-		lightslategrey: [119, 136, 153],
-		lightsteelblue: [176, 196, 222],
-		lightyellow: [255, 255, 224],
-		lime: [0, 255, 0],
-		limegreen: [50, 205, 50],
-		linen: [250, 240, 230],
-		magenta: [255, 0, 255],
-		maroon: [128, 0, 0],
-		mediumaquamarine: [102, 205, 170],
-		mediumblue: [0, 0, 205],
-		mediumorchid: [186, 85, 211],
-		mediumpurple: [147, 112, 219],
-		mediumseagreen: [60, 179, 113],
-		mediumslateblue: [123, 104, 238],
-		mediumspringgreen: [0, 250, 154],
-		mediumturquoise: [72, 209, 204],
-		mediumvioletred: [199, 21, 133],
-		midnightblue: [25, 25, 112],
-		mintcream: [245, 255, 250],
-		mistyrose: [255, 228, 225],
-		moccasin: [255, 228, 181],
-		navajowhite: [255, 222, 173],
-		navy: [0, 0, 128],
-		oldlace: [253, 245, 230],
-		olive: [128, 128, 0],
-		olivedrab: [107, 142, 35],
-		orange: [255, 165, 0],
-		orangered: [255, 69, 0],
-		orchid: [218, 112, 214],
-		palegoldenrod: [238, 232, 170],
-		palegreen: [152, 251, 152],
-		paleturquoise: [175, 238, 238],
-		palevioletred: [219, 112, 147],
-		papayawhip: [255, 239, 213],
-		peachpuff: [255, 218, 185],
-		peru: [205, 133, 63],
-		pink: [255, 192, 203],
-		plum: [221, 160, 221],
-		powderblue: [176, 224, 230],
-		purple: [128, 0, 128],
-		rebeccapurple: [102, 51, 153],
-		red: [255, 0, 0],
-		rosybrown: [188, 143, 143],
-		royalblue: [65, 105, 225],
-		saddlebrown: [139, 69, 19],
-		salmon: [250, 128, 114],
-		sandybrown: [244, 164, 96],
-		seagreen: [46, 139, 87],
-		seashell: [255, 245, 238],
-		sienna: [160, 82, 45],
-		silver: [192, 192, 192],
-		skyblue: [135, 206, 235],
-		slateblue: [106, 90, 205],
-		slategray: [112, 128, 144],
-		slategrey: [112, 128, 144],
-		snow: [255, 250, 250],
-		springgreen: [0, 255, 127],
-		steelblue: [70, 130, 180],
-		tan: [210, 180, 140],
-		teal: [0, 128, 128],
-		thistle: [216, 191, 216],
-		tomato: [255, 99, 71],
-		turquoise: [64, 224, 208],
-		violet: [238, 130, 238],
-		wheat: [245, 222, 179],
-		white: [255, 255, 255],
-		whitesmoke: [245, 245, 245],
-		yellow: [255, 255, 0],
-		yellowgreen: [154, 205, 50]
-	};
-
-
-
-/***/ },
-/* 136 */
+/* 139 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {var intSize = 4;
@@ -18064,10 +17842,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = { hash: hash };
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(88).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94).Buffer))
 
 /***/ },
-/* 137 */
+/* 140 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function (Buffer) {
@@ -18150,7 +17928,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 138 */
+/* 141 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -18162,7 +17940,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * See http://pajhome.org.uk/crypt/md5 for details.
 	 */
 
-	var inherits = __webpack_require__(105).inherits
+	var inherits = __webpack_require__(115).inherits
 
 	module.exports = function (Buffer, Hash) {
 
@@ -18294,7 +18072,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 139 */
+/* 142 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -18306,7 +18084,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 */
 
-	var inherits = __webpack_require__(105).inherits
+	var inherits = __webpack_require__(115).inherits
 
 	module.exports = function (Buffer, Hash) {
 
@@ -18447,10 +18225,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 140 */
+/* 143 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var inherits = __webpack_require__(105).inherits
+	var inherits = __webpack_require__(115).inherits
 
 	module.exports = function (Buffer, Hash) {
 	  var K = [
