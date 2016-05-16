@@ -54,7 +54,8 @@
     "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "jshint": "jshint test/. src/.",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "postinstall": "npm run build"
   },
   "bin": {
     "knex": "./bin/cli.js"
