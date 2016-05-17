@@ -146,10 +146,12 @@ module.exports = function(knex) {
         expect(__knexUid).to.equal(obj.__knexUid);
       })
       .catch(function(msg) {
-        // oracle & mssql: BEGIN & ROLLBACK not reported as queries
+        // oracle & mssql & sqlanywhere:
+	// BEGIN & ROLLBACK not reported as queries
         var expectedCount =
           knex.client.dialect === 'oracle' ||
-          knex.client.dialect === 'mssql' ? 2 : 4;
+          knex.client.dialect === 'mssql' ||
+          knex.client.dialect === 'sqlanywhere' ? 2 : 4;
         expect(count).to.equal(expectedCount);
         expect(msg).to.equal(err);
         return knex('accounts').where('id', id).select('first_name');
@@ -223,7 +225,8 @@ module.exports = function(knex) {
           if (!__knexUid) __knexUid = obj.__knexUid;
           expect(__knexUid).to.equal(obj.__knexUid);
         }).then(function() {
-          if (knex.client.dialect === 'mssql') {
+          if (knex.client.dialect === 'mssql' ||
+              knex.client.dialect === 'sqlanywhere' ) {
             expect(count).to.equal(3);
           } else {
             expect(count).to.equal(5);
@@ -287,9 +290,11 @@ module.exports = function(knex) {
 
       var knexDb = new Knex(knexConfig);
 
+      var rawQuery = knex.client.dialect === 'sqlanywhere' ? 'SELECT 1' : 'SELECT 1 = 1';
+
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
      return knexDb.transaction(function(trx) {
-       trx.raw('SELECT 1 = 1').then(function () {
+       trx.raw(rawQuery).then(function () {
          //No connection is available, so try issuing a query without transaction.
          //Since there is no available connection, it should throw a timeout error based on `aquireConnectionTimeout` from the knex config.
          return knexDb.raw('select * FROM accounts WHERE username = ?', ['Test'])

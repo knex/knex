@@ -289,8 +289,8 @@ export default class Migrator {
   // Returns the latest batch number.
   _latestBatchNumber() {
     return this.knex(this.config.tableName)
-      .max('batch as max_batch').then(function(obj) {
-        return (obj[0].max_batch || 0);
+	  .max('batch as max_batch').then(function(obj) {
+        return (obj.length > 0 ? (obj[0].max_batch || 0) : 0);
       });
   }
 

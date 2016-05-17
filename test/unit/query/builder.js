@@ -7,12 +7,14 @@ var PG_Client      = require('../../../lib/dialects/postgres')
 var Oracle_Client  = require('../../../lib/dialects/oracle')
 var SQLite3_Client = require('../../../lib/dialects/sqlite3')
 var MSSQL_Client   = require('../../../lib/dialects/mssql')
+var Sqlanywhere_Client  = require('../../../lib/dialects/sqlanywhere')
 var Client         = require('../../../lib/client')
 
 var clients = {
   mysql:    new MySQL_Client({}),
   postgres: new PG_Client({}),
   oracle:   new Oracle_Client({}),
+  sqlanywhere:   new Sqlanywhere_Client({}),
   sqlite3:  new SQLite3_Client({}),
   mssql:  new MSSQL_Client({}),
   default:  new Client({})
@@ -23,6 +25,7 @@ var clientsWithNullAsDefault = {
   mysql:    new MySQL_Client(useNullAsDefaultConfig),
   postgres: new PG_Client(useNullAsDefaultConfig),
   oracle:   new Oracle_Client(useNullAsDefaultConfig),
+  sqlanywhere:   new Sqlanywhere_Client(useNullAsDefaultConfig),
   sqlite3:  new SQLite3_Client(useNullAsDefaultConfig),
   mssql:  new MSSQL_Client(useNullAsDefaultConfig),
   default:  new Client(useNullAsDefaultConfig)

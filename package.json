@@ -72,6 +72,7 @@
     "mariadb",
     "sqlite3",
     "oracle",
+    "sqlanywhere",
     "mssql"
   ],
   "author": {
@@ -90,6 +91,7 @@
     "mariasql": false,
     "pg": false,
     "pg-query-stream": false,
+    "sqlanywhere": false,
     "oracle": false,
     "strong-oracle": false,
     "sqlite3": false
