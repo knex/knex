@@ -743,7 +743,7 @@ assign(Builder.prototype, {
 
   // Helper for the incrementing/decrementing queries.
   _counter: function(column, amount, symbol) {
-    var amt = parseInt(amount, 10);
+    var amt = parseFloat(amount);
     if (isNaN(amt)) amt = 1;
     this._method = 'counter';
     this._single.counter = {
