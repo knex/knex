@@ -5,6 +5,7 @@ var Promise      = require('./promise')
 var EventEmitter = require('events').EventEmitter
 var inherits     = require('inherits')
 
+var noop         = require('./util/noop')
 var makeKnex     = require('./util/make-knex')
 var debug        = require('debug')('knex:tx')
 
@@ -143,7 +144,7 @@ assign(Transaction.prototype, {
   acquireConnection: function(client, config, txid) {
     var configConnection = config && config.connection
     return Promise.try(function() {
-      return configConnection || client.acquireConnection()
+      return configConnection || client.acquireConnection().completed
     })
     .disposer(function(connection) {
       if (!configConnection) {
@@ -236,10 +237,13 @@ function makeTxClient(trx, client, connection) {
       return _stream.call(trxClient, conn, obj, stream, options)
     })
   }
-  trxClient.acquireConnection = function() {
-    return trx._previousSibling.reflect().then(function () {
-      return connection
-    })
+  trxClient.acquireConnection = function () {
+    return {
+      completed: trx._previousSibling.reflect().then(function () {
+        return connection
+      }),
+      abort: noop
+    }
   }
   trxClient.releaseConnection = function() {
     return Promise.resolve()

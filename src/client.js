@@ -208,16 +208,26 @@ assign(Client.prototype, {
   // Acquire a connection from the pool.
   acquireConnection: function() {
     var client = this
-    return new Promise(function(resolver, rejecter) {
+    var request = null
+    var completed = new Promise(function(resolver, rejecter) {
       if (!client.pool) {
         return rejecter(new Error('There is no pool defined on the current client'))
       }
-      client.pool.acquire(function(err, connection) {
+      request = client.pool.acquire(function(err, connection) {
         if (err) return rejecter(err)
-        debug('acquiring connection from pool: %s', connection.__knexUid)
+        debug('acquired connection from pool: %s', connection.__knexUid)
         resolver(connection)
       })
     })
+    var abort = function(reason) {
+      if (request && !request.fulfilled) {
+        request.abort(reason)
+      }
+    }
+    return {
+      completed: completed,
+      abort: abort
+    }
   },
 
   // Releases a connection back to the connection pool,
