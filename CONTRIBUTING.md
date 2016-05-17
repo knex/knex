@@ -32,6 +32,7 @@ You can optionally specify which dialects to test using the `DB` environment var
 * maria
 * oracle
 * mssql
+* sqlanywhere
 
 ```bash
 $ DB='postgres mysql' npm test

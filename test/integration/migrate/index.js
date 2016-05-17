@@ -73,7 +73,10 @@ module.exports = function(knex) {
           })
         ])
         .spread(function(migration1, migration2) {
+          console.log( migration1 );
+          console.log( migration2 );
           return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+            console.log( migrationLevel );
             expect(migrationLevel).to.equal(0);
           })
           .then(function() {
@@ -225,7 +228,7 @@ module.exports = function(knex) {
           // MySQL / Oracle commit transactions implicit for most common
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
           // so we need to check for dialect
-          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'mariadb' || knex.client.dialect === 'oracle') {
+          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'mariadb' || knex.client.dialect === 'oracle' || knex.client.dialect === 'sqlanywhere') {
             expect(exists).to.equal(true);
           } else {
             expect(exists).to.equal(false);
@@ -332,7 +335,7 @@ module.exports = function(knex) {
           // MySQL / Oracle commit transactions implicit for most common
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
           // so we need to check for dialect
-          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'mariadb' || knex.client.dialect === 'oracle') {
+          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'mariadb' || knex.client.dialect === 'oracle' || knex.client.dialect === 'sqlanywhere') {
             expect(exists).to.equal(true);
           } else {
             expect(exists).to.equal(false);

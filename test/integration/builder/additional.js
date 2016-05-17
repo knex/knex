@@ -17,6 +17,7 @@ module.exports = function(knex) {
           tester('postgresql', 'truncate "test_table_two" restart identity');
           tester('sqlite3', "delete from \"test_table_two\"");
           tester('oracle', "truncate table \"test_table_two\"");
+          tester('sqlanywhere', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
         })
         .then(function() {
@@ -39,7 +40,8 @@ module.exports = function(knex) {
         postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';",
         oracle: "select TABLE_NAME from USER_TABLES",
-        mssql: "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'"
+        mssql: "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'",
+        sqlanywhere: "select TABLE_NAME from SYS.SYSTABLE"
       };
       return knex.raw(tables[knex.client.dialect]).testSql(function(tester) {
         tester(knex.client.dialect, tables[knex.client.dialect]);
@@ -119,6 +121,23 @@ module.exports = function(knex) {
             }
           }
         );
+        tester(
+          'sqlanywhere',
+          "select COLUMN_NAME, DOMAIN_NAME, WIDTH, NULLS, \"DEFAULT\" from SYS.SYSTABCOL C join SYS.SYSTAB T on C.TABLE_ID = T.TABLE_ID join SYS.SYSDOMAIN D on C.DOMAIN_ID = D.DOMAIN_ID where TABLE_NAME = ?",
+          ['datatype_test'],
+          {
+            "enum_value": {
+              nullable: true,
+              maxLength: 1,
+              type: "varchar"
+            },
+            "uuid": {
+              nullable: false,
+              maxLength: 36,
+              type: "char"
+            }
+          }
+        );
         tester('mssql',
           'select * from information_schema.columns where table_name = ? and table_schema = \'dbo\'',
           ['datatype_test'], {
@@ -171,6 +190,16 @@ module.exports = function(knex) {
             "type": "CHAR"
           }
         );
+        tester(
+          'sqlanywhere',
+          'select COLUMN_NAME, DOMAIN_NAME, WIDTH, NULLS, "DEFAULT" from SYS.SYSTABCOL C join SYS.SYSTAB T on C.TABLE_ID = T.TABLE_ID join SYS.SYSDOMAIN D on C.DOMAIN_ID = D.DOMAIN_ID where TABLE_NAME = ?',
+          ['datatype_test'],
+          {
+            "maxLength": 36,
+            "nullable": false,
+            "type": "char"
+          }
+        );
         tester('mssql',
           'select * from information_schema.columns where table_name = ? and table_schema = \'dbo\'',
           null, {
@@ -205,6 +234,7 @@ module.exports = function(knex) {
           tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
           tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
+          tester('sqlanywhere', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
         });
       }).then(function() {
@@ -242,6 +272,7 @@ module.exports = function(knex) {
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
           tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
           tester('oracle', ['alter table "accounts" drop ("first_name")']);
+          tester('sqlanywhere', ['alter table "accounts" drop "first_name"']);
           tester('mssql', ["ALTER TABLE [accounts] DROP COLUMN [first_name]"]);
         });
       }).then(function() {
@@ -277,6 +308,9 @@ module.exports = function(knex) {
         },
         oracle: function() {
           return knex.raw('dbms_lock.sleep(1)');
+        },
+        sqlanywhere: function() {
+          return knex.raw('WAITFOR DELAY \'00:00:01\'');
         },
         'strong-oracle': function() {
           return knex.raw('dbms_lock.sleep(1)');

@@ -129,6 +129,21 @@ var testConfigs = {
     pool: pool,
     migrations: migrations,
     seeds: seeds
+  },
+    
+  sqlanywhere: {
+    dialect: 'sqlanywhere',
+    connection: testConfig.sqlanywhere || {
+      uid: "knex_test",
+      pwd: "knex_test",
+      dbn: "knex_test",
+      dbf: __dirname + '/knex_test.db',
+      autostart: "YES",
+      start: "dbeng17"
+    },
+    pool: pool,
+    migrations: migrations,
+    seeds: seeds
   }
 };
 
