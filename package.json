@@ -1,5 +1,5 @@
 {
-  "name": "knex",
+  "name": "knex-oracledb",
   "version": "0.11.1",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
