@@ -66,7 +66,7 @@ TableCompiler.prototype.alter = function () {
 
 TableCompiler.prototype.foreign = function (foreignData) {
   if (foreignData.inTable && foreignData.references) {
-    var keyName = this._indexCommand('foreign', this.tableNameRaw, foreignData.column);
+    var keyName = this.formatter.wrap(foreignData.keyName) || this._indexCommand('foreign', this.tableNameRaw, foreignData.column);
     var column = this.formatter.columnize(foreignData.column);
     var references = this.formatter.columnize(foreignData.references);
     var inTable = this.formatter.wrap(foreignData.inTable);
