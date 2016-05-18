@@ -75,7 +75,6 @@ assign(ColumnCompiler_MSSQL.prototype, {
   // ------
 
   defaultTo(value) {
-    /*jshint unused: false*/
     const defaultVal = ColumnCompiler_MSSQL.super_.prototype.defaultTo.apply(this, arguments);
     if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
       return defaultVal

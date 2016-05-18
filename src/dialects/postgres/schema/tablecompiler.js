@@ -43,7 +43,6 @@ TableCompiler_PG.prototype.createQuery = function(columns, ifNot) {
 
 // Compiles the comment on the table.
 TableCompiler_PG.prototype.comment = function(comment) {
-  /*jshint unused: false*/
   this.pushQuery(`comment on table ${this.tableName()} is '${this.single.comment || ''}'`);
 };
 

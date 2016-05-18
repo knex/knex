@@ -65,7 +65,6 @@ assign(JoinClause.prototype, {
 
   // Adds an "or on" clause to the current join object.
   orOn(first, operator, second) {
-    /*jshint unused: false*/
     return this._bool('or').on.apply(this, arguments);
   },
 

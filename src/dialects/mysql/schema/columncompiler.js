@@ -84,7 +84,6 @@ assign(ColumnCompiler_MySQL.prototype, {
   // ------
 
   defaultTo(value) {
-    /*jshint unused: false*/
     const defaultVal = ColumnCompiler_MySQL.super_.prototype.defaultTo.apply(this, arguments);
     if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
       return defaultVal
