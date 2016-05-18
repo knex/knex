@@ -40,7 +40,7 @@ assign(Oracle_Transaction.prototype, {
   acquireConnection(config) {
     const t = this
     return Promise.try(() =>
-      config.connection || t.client.acquireConnection()
+      config.connection || t.client.acquireConnection().completed
     ).tap(connection => {
       if (!t.outerTx) {
         connection.setAutoCommit(false)

@@ -4,11 +4,14 @@
 import Promise from './promise';
 import { EventEmitter } from 'events';
 import inherits from 'inherits';
+import Debug from 'debug'
 
 import makeKnex from './util/make-knex';
-const debug = require('debug')('knex:tx')
+import noop from './util/noop';
 
-import { assign, uniqueId } from 'lodash'
+const debug = Debug('knex:tx');
+
+import { assign, uniqueId } from 'lodash';
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
@@ -16,10 +19,10 @@ function Transaction(client, container, config, outerTx) {
 
   const txid = this.txid = uniqueId('trx')
 
-  this.client = client
-  this.outerTx = outerTx
+  this.client    = client
+  this.outerTx   = outerTx
   this.trxClient = undefined;
-  this._debug = client.config && client.config.debug
+  this._debug    = client.config && client.config.debug
 
   debug('%s: Starting %s transaction', txid, outerTx ? 'nested' : 'top level')
 
@@ -58,7 +61,7 @@ function Transaction(client, container, config, outerTx) {
     })
   })
 
-  this._completed = false
+  this._completed  = false
 
   // If there's a wrapping transaction, we need to wait for any older sibling
   // transactions to settle (commit or rollback) before we can start, and we
@@ -114,7 +117,7 @@ assign(Transaction.prototype, {
     const q = this.trxClient.query(conn, sql)
       .catch((err) => {
         status = 2
-        value = err
+        value  = err
         this._completed = true
         debug('%s error running transaction query', this.txid)
       })
@@ -144,7 +147,7 @@ assign(Transaction.prototype, {
   // the original promise is marked completed.
   acquireConnection(client, config, txid) {
     const configConnection = config && config.connection
-    return Promise.try(() => configConnection || client.acquireConnection())
+    return Promise.try(() => configConnection || client.acquireConnection().completed)
     .disposer(function(connection) {
       if (!configConnection) {
         debug('%s: releasing connection', txid)
@@ -188,10 +191,10 @@ function makeTransactor(trx, connection, trxClient) {
 function makeTxClient(trx, client, connection) {
 
   const trxClient = Object.create(client.constructor.prototype)
-  trxClient.config = client.config
-  trxClient.driver = client.driver
+  trxClient.config             = client.config
+  trxClient.driver             = client.driver
   trxClient.connectionSettings = client.connectionSettings
-  trxClient.transacting = true
+  trxClient.transacting        = true
 
   trxClient.on('query', function(arg) {
     trx.emit('query', arg)
@@ -209,7 +212,7 @@ function makeTxClient(trx, client, connection) {
   })
 
   const _query = trxClient.query;
-  trxClient.query = function(conn, obj) {
+  trxClient.query  = function(conn, obj) {
     const completed = trx.isCompleted()
     return Promise.try(function() {
       if (conn !== connection) throw new Error('Invalid connection for transaction query.')
@@ -226,10 +229,15 @@ function makeTxClient(trx, client, connection) {
       return _stream.call(trxClient, conn, obj, stream, options)
     })
   }
-  trxClient.acquireConnection = () =>
-    trx._previousSibling.reflect().then(() => connection)
-  
-  trxClient.releaseConnection = () => Promise.resolve()
+  trxClient.acquireConnection = function () {
+    return {
+      completed: trx._previousSibling.reflect().then(() => connection),
+      abort: noop
+    }
+  }
+  trxClient.releaseConnection = function() {
+    return Promise.resolve()
+  }
 
   return trxClient
 }

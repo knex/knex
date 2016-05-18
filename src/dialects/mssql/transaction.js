@@ -59,7 +59,7 @@ assign(Transaction_MSSQL.prototype, {
     return Promise.try(() => {
       return (t.outerTx ? t.outerTx.conn : null) ||
         configConnection ||
-        t.client.acquireConnection();
+        t.client.acquireConnection().completed;
     }).tap(function(conn) {
       if (!t.outerTx) {
         t.conn = conn

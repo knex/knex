@@ -164,31 +164,37 @@ assign(Runner.prototype, {
   ensureConnection() {
     const runner = this
     const acquireConnectionTimeout = runner.client.config.acquireConnectionTimeout || 60000;
-    return Promise.try(() =>
-      runner.connection || new Promise((resolver, rejecter) => {
-        runner.client.acquireConnection()
-        .timeout(acquireConnectionTimeout)
-        .then(resolver)
-        .catch(Promise.TimeoutError, (error) => {
-          const timeoutError = new Error(
-            'Knex: Timeout acquiring a connection. The pool is probably full. ' +
-            'Are you missing a .transacting(trx) call?'
-          );
-          const additionalErrorInformation = {
-            timeoutStack: error.stack
-          }
+    return Promise.try(() => {
+      return runner.connection || new Promise((resolver, rejecter) => {
+        const acquireConnection = runner.client.acquireConnection();
 
-          if(runner.builder) {
-            additionalErrorInformation.sql = runner.builder.sql;
-            additionalErrorInformation.bindings = runner.builder.bindings;
-          }
+        acquireConnection.completed
+          .timeout(acquireConnectionTimeout)
+          .then(resolver)
+          .catch(Promise.TimeoutError, (error) => {
+            const timeoutError = new Error(
+              'Knex: Timeout acquiring a connection. The pool is probably full. ' +
+              'Are you missing a .transacting(trx) call?'
+            );
+            const additionalErrorInformation = {
+              timeoutStack: error.stack
+            }
 
-          assign(timeoutError, additionalErrorInformation);
-          rejecter(timeoutError);
-        })
-        .catch(rejecter)
+            if(runner.builder) {
+              additionalErrorInformation.sql = runner.builder.sql;
+              additionalErrorInformation.bindings = runner.builder.bindings;
+            }
+
+            assign(timeoutError, additionalErrorInformation)
+
+            // Let the pool know that this request for a connection timed out
+            acquireConnection.abort('Knex: Timeout acquiring a connection.')
+
+            rejecter(timeoutError)
+          })
+          .catch(rejecter)
       })
-    ).disposer(function() {
+    }).disposer(function() {
       if (runner.connection.__knex__disposed) return
       runner.client.releaseConnection(runner.connection)
     })
