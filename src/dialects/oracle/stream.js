@@ -3,7 +3,7 @@
 import inherits from 'inherits';
 import { Readable } from 'stream';
 
-import {merge} from 'lodash'
+import { merge } from 'lodash'
 
 function OracleQueryStream(connection, sql, bindings, options) {
   Readable.call(this, merge({}, {

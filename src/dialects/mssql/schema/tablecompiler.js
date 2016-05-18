@@ -7,7 +7,7 @@ import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
 import Promise from '../../../promise';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 // Table Compiler
 // ------

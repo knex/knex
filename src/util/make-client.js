@@ -1,7 +1,7 @@
 
 import inherits from 'inherits';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 // Ensure the client has fresh objects so we can tack onto
 // the prototypes without mutating them globally.

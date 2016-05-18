@@ -5,7 +5,7 @@ import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
 import * as helpers from '../../../helpers';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function ColumnCompiler_MSSQL() {
   ColumnCompiler.apply(this, arguments);

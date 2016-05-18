@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import SchemaCompiler from '../../../schema/compiler';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function SchemaCompiler_MSSQL(client, builder) {
   SchemaCompiler.call(this, client, builder)

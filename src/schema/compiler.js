@@ -1,7 +1,7 @@
 
-import {pushQuery, pushAdditional} from './helpers';
+import { pushQuery, pushAdditional } from './helpers';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of

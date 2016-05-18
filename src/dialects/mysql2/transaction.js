@@ -4,7 +4,7 @@ import inherits from 'inherits';
 const debug = require('debug')('knex:tx')
 import * as helpers from '../../helpers';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function Transaction_MySQL2() {
   Transaction.apply(this, arguments)

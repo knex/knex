@@ -1,5 +1,5 @@
 
-import {isString, tail} from 'lodash'
+import { isString, tail } from 'lodash'
 
 // Push a new query onto the compiled "sequence" stack,
 // creating a new formatter, returning the compiler.

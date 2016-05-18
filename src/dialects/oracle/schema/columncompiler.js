@@ -1,5 +1,5 @@
 
-import {assign, uniq, map} from 'lodash'
+import { assign, uniq, map } from 'lodash'
 import inherits from 'inherits';
 import * as utils from '../utils';
 import Raw from '../../../raw';

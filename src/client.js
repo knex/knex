@@ -22,7 +22,7 @@ import inherits from 'inherits';
 import { EventEmitter } from 'events';
 import SqlString from './query/string';
 
-import {assign, uniqueId, cloneDeep} from 'lodash'
+import { assign, uniqueId, cloneDeep } from 'lodash'
 
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')

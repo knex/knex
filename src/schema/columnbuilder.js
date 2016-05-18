@@ -1,5 +1,5 @@
 
-import {extend, each, toArray} from 'lodash'
+import { extend, each, toArray } from 'lodash'
 
 // The chainable interface off the original "column" method.
 export default function ColumnBuilder(client, tableBuilder, type, args) {

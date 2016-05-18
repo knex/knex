@@ -13,7 +13,7 @@ import SchemaCompiler from './schema/compiler';
 import TableCompiler from './schema/tablecompiler';
 import ColumnCompiler from './schema/columncompiler';
 
-import {assign, map} from 'lodash'
+import { assign, map } from 'lodash'
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and

@@ -2,7 +2,7 @@
 import inherits from 'inherits';
 import Formatter from '../../formatter';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function MSSQL_Formatter(client) {
   Formatter.call(this, client)

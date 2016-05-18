@@ -1,6 +1,6 @@
 
 import * as helpers from './helpers';
-import {isArray, map, clone, each} from 'lodash'
+import { isArray, map, clone, each } from 'lodash'
 
 export default function(Target) {
 

@@ -4,7 +4,7 @@
 import Promise from '../../promise';
 
 import inherits from 'inherits';
-import {isUndefined, map, assign} from 'lodash'
+import { isUndefined, map, assign } from 'lodash'
 
 import Client from '../../client';
 import * as helpers from '../../helpers';

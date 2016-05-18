@@ -4,7 +4,7 @@ import Promise from '../../promise';
 import Transaction from '../../transaction';
 const debug = require('debug')('knex:tx')
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function Transaction_MSSQL() {
   Transaction.apply(this, arguments)

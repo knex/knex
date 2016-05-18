@@ -1,6 +1,6 @@
 
 import url from 'url'
-import {parse as parsePG} from 'pg-connection-string'
+import { parse as parsePG } from 'pg-connection-string'
 
 export default function parseConnectionString(str) {
   const parsed = url.parse(str)

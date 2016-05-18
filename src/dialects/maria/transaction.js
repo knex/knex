@@ -1,7 +1,7 @@
 
 import inherits from 'inherits';
 import Debug from 'debug';
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 import Transaction from '../../transaction';
 import * as helpers from '../../helpers';
 

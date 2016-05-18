@@ -5,7 +5,7 @@ import inherits from 'inherits';
 import Client_MySQL from '../mysql';
 import Promise from '../../promise';
 import * as helpers from '../../helpers';
-import {pick, map, assign} from 'lodash'
+import { pick, map, assign } from 'lodash'
 import Transaction from './transaction';
 
 const configOptions = [

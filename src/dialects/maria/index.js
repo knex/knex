@@ -8,7 +8,7 @@ import SqlString from '../../query/string';
 import * as helpers from '../../helpers';
 import Transaction from './transaction';
 
-import {assign, map} from 'lodash'
+import { assign, map } from 'lodash'
 
 function Client_MariaSQL(config) {
   Client_MySQL.call(this, config)

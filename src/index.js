@@ -7,7 +7,7 @@ import makeClient from './util/make-client';
 import makeKnex from './util/make-knex';
 import parseConnection from './util/parse-connection';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 // The client names we'll allow in the `{name: lib}` pairing.
 const aliases = {

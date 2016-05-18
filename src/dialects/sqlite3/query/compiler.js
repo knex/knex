@@ -3,7 +3,7 @@
 
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
-import {assign, each, isEmpty, isString, noop, reduce} from 'lodash'
+import { assign, each, isEmpty, isString, noop, reduce } from 'lodash'
 
 function QueryCompiler_SQLite3(client, builder) {
   QueryCompiler.call(this, client, builder)

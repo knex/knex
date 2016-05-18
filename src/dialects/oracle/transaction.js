@@ -4,7 +4,7 @@ import Promise from '../../promise';
 import Transaction from '../../transaction';
 const debugTx = require('debug')('knex:tx')
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function Oracle_Transaction(client, container, config, outerTx) {
   Transaction.call(this, client, container, config, outerTx)

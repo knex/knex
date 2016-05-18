@@ -1,7 +1,7 @@
 
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
-import {each, toArray} from 'lodash'
+import { each, toArray } from 'lodash'
 
 // Constructor for the builder instance, typically called from
 // `knex.builder`, accepting the current `knex` instance,

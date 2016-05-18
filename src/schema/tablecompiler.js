@@ -4,7 +4,7 @@
 // -------
 import { pushAdditional, pushQuery } from './helpers';
 import * as helpers from '../helpers';
-import {groupBy, reduce, map, first, tail, isEmpty, indexOf, isArray} from 'lodash'
+import { groupBy, reduce, map, first, tail, isEmpty, indexOf, isArray } from 'lodash'
 
 function TableCompiler(client, tableBuilder) {
   this.client = client

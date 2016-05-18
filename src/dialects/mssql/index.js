@@ -1,7 +1,7 @@
 
 // MSSQL Client
 // -------
-import {assign, map, flatten, values} from 'lodash'
+import { assign, map, flatten, values } from 'lodash'
 import inherits from 'inherits';
 
 import Formatter from './formatter';

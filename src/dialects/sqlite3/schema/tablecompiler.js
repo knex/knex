@@ -2,7 +2,7 @@ import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
 
-import {filter} from 'lodash'
+import { filter } from 'lodash'
 
 // Table Compiler
 // -------

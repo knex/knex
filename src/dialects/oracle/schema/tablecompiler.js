@@ -5,7 +5,7 @@ import * as utils from '../utils';
 import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 // Table Compiler
 // ------

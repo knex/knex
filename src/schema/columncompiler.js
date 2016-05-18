@@ -5,7 +5,7 @@
 // -------
 import Raw from '../raw';
 import * as helpers from './helpers';
-import {groupBy, first, tail, has, isObject} from 'lodash'
+import { groupBy, first, tail, has, isObject } from 'lodash'
 
 function ColumnCompiler(client, tableCompiler, columnBuilder) {
   this.client = client

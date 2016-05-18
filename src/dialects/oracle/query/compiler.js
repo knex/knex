@@ -2,7 +2,7 @@
 
 // Oracle Query Builder & Compiler
 // ------
-import {assign, isPlainObject, isEmpty, isString, map, reduce, compact} from 'lodash'
+import { assign, isPlainObject, isEmpty, isString, map, reduce, compact } from 'lodash'
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 import * as helpers from '../../../helpers';

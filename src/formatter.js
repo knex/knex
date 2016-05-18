@@ -2,7 +2,7 @@
 import QueryBuilder from './query/builder';
 import Raw from './raw';
 
-import {assign, transform} from 'lodash'
+import { assign, transform } from 'lodash'
 
 // Valid values for the `order by` clause generation.
 const orderBys = ['asc', 'desc'];

@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
-import {assign, reduce, isPlainObject, isObject, isUndefined, isNumber} from 'lodash'
+import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
 
 function Raw(client) {
   this.client = client

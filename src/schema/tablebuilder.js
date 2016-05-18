@@ -7,7 +7,7 @@
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-import {extend, each, toArray, isString, isFunction} from 'lodash'
+import { extend, each, toArray, isString, isFunction } from 'lodash'
 import * as helpers from '../helpers';
 
 function TableBuilder(client, method, tableName, fn) {

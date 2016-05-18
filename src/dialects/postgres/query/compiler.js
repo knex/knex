@@ -5,7 +5,7 @@ import inherits from 'inherits';
 
 import QueryCompiler from '../../../query/compiler';
 
-import {assign, reduce} from 'lodash'
+import { assign, reduce } from 'lodash'
 
 function QueryCompiler_PG(client, builder) {
   QueryCompiler.call(this, client, builder);

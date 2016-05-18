@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function QueryCompiler_MySQL(client, builder) {
   QueryCompiler.call(this, client, builder)

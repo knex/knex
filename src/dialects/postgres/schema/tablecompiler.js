@@ -6,7 +6,7 @@
 import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
 
-import {has} from 'lodash'
+import { has } from 'lodash'
 
 function TableCompiler_PG() {
   TableCompiler.apply(this, arguments);

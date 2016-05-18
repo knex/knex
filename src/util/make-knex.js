@@ -6,7 +6,7 @@ import Seeder from '../seed';
 import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
 import * as helpers from '../helpers';
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 import BatchInsert from './batchInsert';
 
 export default function makeKnex(client) {

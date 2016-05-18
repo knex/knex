@@ -1,4 +1,4 @@
-import {assign, isArray} from 'lodash'
+import { assign, isArray } from 'lodash'
 import Promise from './promise';
 import * as helpers from './helpers';
 

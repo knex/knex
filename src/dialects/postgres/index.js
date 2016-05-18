@@ -1,7 +1,7 @@
 
 // PostgreSQL
 // -------
-import {assign, map, extend} from 'lodash'
+import { assign, map, extend } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
 import Promise from '../../promise';

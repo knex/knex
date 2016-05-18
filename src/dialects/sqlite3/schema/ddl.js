@@ -6,7 +6,7 @@
 // -------
 
 import Promise from '../../../promise';
-import {assign, uniqueId, find, identity, map, omit} from 'lodash'
+import { assign, uniqueId, find, identity, map, omit } from 'lodash'
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types

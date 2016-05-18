@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import SchemaCompiler from '../../../schema/compiler';
 
-import {some} from 'lodash'
+import { some } from 'lodash'
 
 // Schema Compiler
 // -------

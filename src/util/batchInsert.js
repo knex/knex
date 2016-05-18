@@ -1,6 +1,6 @@
 
 
-import {isNumber, isString, isArray, chunk, flatten} from 'lodash';
+import { isNumber, isString, isArray, chunk, flatten } from 'lodash';
 import Promise from '../promise';
 
 export default class BatchInsert {

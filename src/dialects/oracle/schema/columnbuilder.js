@@ -2,7 +2,7 @@
 import inherits from 'inherits';
 import ColumnBuilder from '../../../schema/columnbuilder';
 
-import {toArray} from 'lodash'
+import { toArray } from 'lodash'
 
 function ColumnBuilder_Oracle() {
   ColumnBuilder.apply(this, arguments);

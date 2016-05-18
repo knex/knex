@@ -3,7 +3,7 @@ import Transaction from '../../transaction';
 import inherits from 'inherits';
 import Debug from 'debug';
 import * as helpers from '../../helpers';
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 const debug = Debug('knex:tx');
 

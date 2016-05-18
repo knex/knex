@@ -8,7 +8,7 @@ import inherits from 'inherits';
 import makeKnex from './util/make-knex';
 const debug = require('debug')('knex:tx')
 
-import {assign, uniqueId} from 'lodash'
+import { assign, uniqueId } from 'lodash'
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
