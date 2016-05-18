@@ -24,8 +24,8 @@ import SqlString from './query/string';
 
 import {assign, uniqueId, cloneDeep} from 'lodash'
 
-const debug          = require('debug')('knex:client')
-const debugQuery     = require('debug')('knex:query')
+const debug = require('debug')('knex:client')
+const debugQuery = require('debug')('knex:query')
 
 // The base client provides the general structure
 // for a dialect specific client object.

@@ -7,11 +7,11 @@ import {assign} from 'lodash'
 // The "JoinClause" is an object holding any necessary info about a join,
 // including the type, and any associated tables & columns being joined.
 function JoinClause(table, type, schema) {
-  this.schema   = schema;
-  this.table    = table;
+  this.schema = schema;
+  this.table = table;
   this.joinType = type;
-  this.and      = this;
-  this.clauses  = [];
+  this.and = this;
+  this.clauses = [];
 }
 
 assign(JoinClause.prototype, {

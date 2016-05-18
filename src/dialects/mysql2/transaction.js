@@ -1,7 +1,7 @@
 
 import Transaction from '../../transaction';
 import inherits from 'inherits';
-const debug       = require('debug')('knex:tx')
+const debug = require('debug')('knex:tx')
 import * as helpers from '../../helpers';
 
 import {assign} from 'lodash'
@@ -24,7 +24,7 @@ assign(Transaction_MySQL2.prototype, {
       })
       .catch(function(err) {
         status = 2
-        value  = err
+        value = err
         t._completed = true
         debug('%s error running transaction query', t.txid)
       })

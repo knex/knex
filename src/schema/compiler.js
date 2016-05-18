@@ -7,11 +7,11 @@ import {assign} from 'lodash'
 // gathered in the "SchemaBuilder" and turns them into an array of
 // properly formatted / bound query strings.
 function SchemaCompiler(client, builder) {
-  this.builder   = builder
-  this.client    = client
-  this.schema    = builder._schema;
+  this.builder = builder
+  this.client = client
+  this.schema = builder._schema;
   this.formatter = client.formatter()
-  this.sequence  = []
+  this.sequence = []
 }
 
 assign(SchemaCompiler.prototype, {

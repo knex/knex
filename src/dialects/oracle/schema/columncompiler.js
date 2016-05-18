@@ -26,8 +26,8 @@ assign(ColumnCompiler_Oracle.prototype, {
       const triggerName = this.tableCompiler._indexCommand(
         'trg', this.tableCompiler.tableNameRaw, this.getColumnName()
       );
-      const tableName    = this.tableCompiler.tableName();
-      const columnName   = this.formatter.wrap(this.getColumnName());
+      const tableName = this.tableCompiler.tableName();
+      const columnName = this.formatter.wrap(this.getColumnName());
       const createTriggerSQL =
         `create or replace trigger ${triggerName} before insert on ${tableName}` +
         ` for each row` +

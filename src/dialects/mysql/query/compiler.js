@@ -17,11 +17,11 @@ assign(QueryCompiler_MySQL.prototype, {
 
   // Update method, including joins, wheres, order & limits.
   update() {
-    const join    = this.join();
+    const join = this.join();
     const updates = this._prepUpdate(this.single.update);
-    const where   = this.where();
-    const order   = this.order();
-    const limit   = this.limit();
+    const where = this.where();
+    const order = this.order();
+    const limit = this.limit();
     return `update ${this.tableName}` +
       (join ? ` ${join}` : '') +
       ' set ' + updates.join(', ') +

@@ -11,7 +11,7 @@ import {filter, includes, map, bind, template, each, extend} from 'lodash'
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the seeds.
 function Seeder(knex) {
-  this.knex   = knex;
+  this.knex = knex;
   this.config = this.setConfig(knex.client.config.seeds);
 }
 
@@ -99,7 +99,7 @@ Seeder.prototype._writeNewSeed = function(name) {
   const dir = this._absoluteConfigDir();
   return function(tmpl) {
     if (name[0] === '-') name = name.slice(1);
-    const filename  = name + '.' + config.extension;
+    const filename = name + '.' + config.extension;
     return Promise.promisify(fs.writeFile, {context: fs})(
       path.join(dir, filename),
       tmpl(config.variables || {})
@@ -109,12 +109,12 @@ Seeder.prototype._writeNewSeed = function(name) {
 
 // Runs a batch of seed files.
 Seeder.prototype._waterfallBatch = function(seeds) {
-  const { knex }      = this;
+  const { knex } = this;
   const seedDirectory = this._absoluteConfigDir();
-  let current   = Promise.bind({failed: false, failedOn: 0});
-  const log       = [];
+  let current = Promise.bind({failed: false, failedOn: 0});
+  const log = [];
   each(seeds, function(seed) {
-    const name  = path.join(seedDirectory, seed);
+    const name = path.join(seedDirectory, seed);
     seed = require(name);
 
     // Run each seed file.

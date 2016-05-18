@@ -37,8 +37,8 @@ assign(QueryCompiler_PG.prototype, {
   // Compiles an `update` query, allowing for a return value.
   update() {
     const updateData = this._prepUpdate(this.single.update);
-    const wheres     = this.where();
-    const { returning }  = this.single;
+    const wheres = this.where();
+    const { returning } = this.single;
     return {
       sql: `update ${this.tableName} set ${updateData.join(', ')}` +
       (wheres ? ` ${wheres}` : '') +
@@ -50,7 +50,7 @@ assign(QueryCompiler_PG.prototype, {
   // Compiles an `update` query, allowing for a return value.
   del() {
     const sql = QueryCompiler.prototype.del.apply(this, arguments);
-    const { returning }  = this.single;
+    const { returning } = this.single;
     return {
       sql: sql + this._returning(returning),
       returning

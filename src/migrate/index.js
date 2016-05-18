@@ -34,7 +34,7 @@ const CONFIG_DEFAULT = Object.freeze({
 export default class Migrator {
 
   constructor(knex) {
-    this.knex   = knex
+    this.knex = knex
     this.config = this.setConfig(knex.client.config.migrations);
   }
 
@@ -268,7 +268,7 @@ export default class Migrator {
     const { config } = this;
     const dir = this._absoluteConfigDir();
     if (name[0] === '-') name = name.slice(1);
-    const filename  = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
+    const filename = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
     return Promise.promisify(fs.writeFile, {context: fs})(
       path.join(dir, filename),
       tmpl(config.variables || {})
@@ -310,10 +310,10 @@ export default class Migrator {
     const { knex } = this;
     const {tableName, disableTransactions} = this.config
     const directory = this._absoluteConfigDir()
-    let current   = Promise.bind({failed: false, failedOn: 0});
-    const log       = [];
+    let current = Promise.bind({failed: false, failedOn: 0});
+    const log = [];
     each(migrations, (migration) => {
-      const name  = migration;
+      const name = migration;
       migration = require(directory + '/' + name);
 
       // We're going to run each of the migrations in the current "up".

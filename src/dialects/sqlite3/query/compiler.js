@@ -68,7 +68,7 @@ assign(QueryCompiler_SQLite3.prototype, {
     }
 
     const blocks = []
-    let i      = -1
+    let i = -1
     while (++i < insertData.values.length) {
       let i2 = -1;
       const block = blocks[i] = [];

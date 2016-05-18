@@ -28,7 +28,7 @@ export default function(Target) {
   Target.prototype.options = function(opts) {
     this._options = this._options || [];
     this._options.push(clone(opts) || {});
-    this._cached  = undefined
+    this._cached = undefined
     return this;
   };
 

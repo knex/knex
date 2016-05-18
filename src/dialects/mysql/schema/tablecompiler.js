@@ -30,9 +30,9 @@ assign(TableCompiler_MySQL.prototype, {
       conn = client.connectionSettings;
     }
 
-    const charset   = this.single.charset || conn.charset || '';
+    const charset = this.single.charset || conn.charset || '';
     const collation = this.single.collate || conn.collate || '';
-    const engine    = this.single.engine  || '';
+    const engine = this.single.engine  || '';
 
     // var conn = builder.client.connectionSettings;
     if (charset)   sql += ` default character set ${charset}`;
@@ -64,8 +64,8 @@ assign(TableCompiler_MySQL.prototype, {
   // Renames a column on the table.
   renameColumn(from, to) {
     const compiler = this;
-    const table    = this.tableName();
-    const wrapped  = this.formatter.wrap(from) + ' ' + this.formatter.wrap(to);
+    const table = this.tableName();
+    const wrapped = this.formatter.wrap(from) + ' ' + this.formatter.wrap(to);
 
     this.pushQuery({
       sql: `show fields from ${table} where field = ` +
@@ -131,7 +131,7 @@ assign(TableCompiler_MySQL.prototype, {
 
     return Promise.all(refs.map(function (ref) {
       const constraintName = formatter.wrap(ref.CONSTRAINT_NAME);
-      const tableName  = formatter.wrap(ref.TABLE_NAME);
+      const tableName = formatter.wrap(ref.TABLE_NAME);
       return runner.query({
         sql: `alter table ${tableName} drop foreign key ${constraintName}`
       });
@@ -141,13 +141,13 @@ assign(TableCompiler_MySQL.prototype, {
     const formatter = this.client.formatter();
 
     return Promise.all(refs.map(function (ref) {
-      const tableName  = formatter.wrap(ref.TABLE_NAME);
-      const keyName    = formatter.wrap(ref.CONSTRAINT_NAME);
-      const column     = formatter.columnize(ref.COLUMN_NAME);
+      const tableName = formatter.wrap(ref.TABLE_NAME);
+      const keyName = formatter.wrap(ref.CONSTRAINT_NAME);
+      const column = formatter.columnize(ref.COLUMN_NAME);
       const references = formatter.columnize(ref.REFERENCED_COLUMN_NAME);
-      const inTable    = formatter.wrap(ref.REFERENCED_TABLE_NAME);
-      const onUpdate   = ` ON UPDATE ${ref.UPDATE_RULE}`;
-      const onDelete   = ` ON DELETE ${ref.DELETE_RULE}`;
+      const inTable = formatter.wrap(ref.REFERENCED_TABLE_NAME);
+      const onUpdate = ` ON UPDATE ${ref.UPDATE_RULE}`;
+      const onDelete = ` ON DELETE ${ref.DELETE_RULE}`;
 
       return runner.query({
         sql: `alter table ${tableName} add constraint ${keyName} ` +

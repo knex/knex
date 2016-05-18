@@ -14,12 +14,12 @@ import {
 // have been gathered in the "QueryBuilder" and turns them into a
 // properly formatted / bound query string.
 function QueryCompiler(client, builder) {
-  this.client    = client
-  this.method    = builder._method || 'select';
-  this.options   = builder._options;
-  this.single    = builder._single;
-  this.timeout   = builder._timeout || false;
-  this.grouped   = groupBy(builder._statements, 'grouping');
+  this.client = client
+  this.method = builder._method || 'select';
+  this.options = builder._options;
+  this.single = builder._single;
+  this.timeout = builder._timeout || false;
+  this.grouped = groupBy(builder._statements, 'grouping');
   this.formatter = client.formatter()
 }
 
@@ -111,9 +111,9 @@ assign(QueryCompiler.prototype, {
   // Compiles the "update" query.
   update() {
     // Make sure tableName is processed by the formatter first.
-    const { tableName }  = this;
+    const { tableName } = this;
     const updateData = this._prepUpdate(this.single.update);
-    const wheres     = this.where();
+    const wheres = this.where();
     return `update ${tableName}` +
       ' set ' + updateData.join(', ') +
       (wheres ? ` ${wheres}` : '');
@@ -284,7 +284,7 @@ assign(QueryCompiler.prototype, {
   // Compiles a `delete` query.
   del() {
     // Make sure tableName is processed by the formatter first.
-    const { tableName }  = this;
+    const { tableName } = this;
     const wheres = this.where();
     return `delete from ${tableName}` +
       (wheres ? ` ${wheres}` : '');
@@ -424,13 +424,13 @@ assign(QueryCompiler.prototype, {
     const isRaw = this.formatter.rawOrFn(data);
     if (isRaw) return isRaw;
     let columns = [];
-    const values  = [];
+    const values = [];
     if (!Array.isArray(data)) data = data ? [data] : [];
     let i = -1
     while (++i < data.length) {
       if (data[i] == null) break;
       if (i === 0) columns = Object.keys(data[i]).sort()
-      const row  = new Array(columns.length)
+      const row = new Array(columns.length)
       const keys = Object.keys(data[i])
       let j = -1
       while (++j < keys.length) {
@@ -438,7 +438,7 @@ assign(QueryCompiler.prototype, {
         let idx = columns.indexOf(key);
         if (idx === -1) {
           columns = columns.concat(key).sort()
-          idx     = columns.indexOf(key)
+          idx = columns.indexOf(key)
           let k = -1
           while (++k < values.length) {
             values[k].splice(idx, 0, undefined)
@@ -458,9 +458,9 @@ assign(QueryCompiler.prototype, {
   // "Preps" the update.
   _prepUpdate(data) {
     data = omitBy(data, isUndefined)
-    const vals   = []
+    const vals = []
     const sorted = Object.keys(data).sort()
-    let i      = -1
+    let i = -1
     while (++i < sorted.length) {
       vals.push(
         this.formatter.wrap(sorted[i]) +

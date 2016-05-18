@@ -75,9 +75,9 @@ assign(Client_MySQL2.prototype, {
 
   processResponse(obj, runner) {
     const { response } = obj
-    const { method }   = obj
-    const rows     = response[0]
-    const fields   = response[1]
+    const { method } = obj
+    const rows = response[0]
+    const fields = response[1]
     if (obj.output) return obj.output.call(runner, rows, fields)
     switch (method) {
       case 'select':

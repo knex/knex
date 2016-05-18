@@ -7,24 +7,24 @@ import { EventEmitter } from 'events';
 import {assign, reduce, isPlainObject, isObject, isUndefined, isNumber} from 'lodash'
 
 function Raw(client) {
-  this.client   = client
+  this.client = client
 
-  this.sql      = ''
+  this.sql = ''
   this.bindings = []
-  this._cached  = undefined
+  this._cached = undefined
 
   // Todo: Deprecate
   this._wrappedBefore = undefined
-  this._wrappedAfter  = undefined
-  this._debug         = client && client.config && client.config.debug
+  this._wrappedAfter = undefined
+  this._debug = client && client.config && client.config.debug
 }
 inherits(Raw, EventEmitter)
 
 assign(Raw.prototype, {
 
   set(sql, bindings) {
-    this._cached  = undefined
-    this.sql      = sql
+    this._cached = undefined
+    this.sql = sql
     this.bindings = (isObject(bindings) || isUndefined(bindings)) ?  bindings : [bindings]
 
     return this
@@ -39,9 +39,9 @@ assign(Raw.prototype, {
 
   // Wraps the current sql with `before` and `after`.
   wrap(before, after) {
-    this._cached        = undefined
+    this._cached = undefined
     this._wrappedBefore = before
-    this._wrappedAfter  = after
+    this._wrappedAfter = after
     return this
   },
 
@@ -84,10 +84,10 @@ assign(Raw.prototype, {
 
 function replaceRawArrBindings(raw) {
   const expectedBindings = raw.bindings.length
-  const values           = raw.bindings
-  const { client }           = raw
-  let index            = 0;
-  let bindings         = []
+  const values = raw.bindings
+  const { client } = raw
+  let index = 0;
+  let bindings = []
 
   const sql = raw.sql.replace(/\\?\?\??/g, function(match) {
     if (match === '\\?') {
@@ -123,9 +123,9 @@ function replaceRawArrBindings(raw) {
 }
 
 function replaceKeyBindings(raw) {
-  const values   = raw.bindings
-  const { client }   = raw
-  let { sql }      = raw, bindings = []
+  const values = raw.bindings
+  const { client } = raw
+  let { sql } = raw, bindings = []
 
   const regex = new RegExp('(\\:\\w+\\:?)', 'g')
   sql = raw.sql.replace(regex, function(full) {

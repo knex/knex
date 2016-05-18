@@ -8,9 +8,9 @@ import {each, toArray} from 'lodash'
 // and pulling out the `client` and `grammar` from the current
 // knex instance.
 function SchemaBuilder(client) {
-  this.client    = client
+  this.client = client
   this._sequence = []
-  this._debug    = client.config && client.config.debug
+  this._debug = client.config && client.config.debug
 }
 inherits(SchemaBuilder, EventEmitter)
 

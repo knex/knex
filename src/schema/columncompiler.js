@@ -8,16 +8,16 @@ import * as helpers from './helpers';
 import {groupBy, first, tail, has, isObject} from 'lodash'
 
 function ColumnCompiler(client, tableCompiler, columnBuilder) {
-  this.client        = client
+  this.client = client
   this.tableCompiler = tableCompiler
   this.columnBuilder = columnBuilder
-  this.args          = columnBuilder._args;
-  this.type          = columnBuilder._type.toLowerCase();
-  this.grouped       = groupBy(columnBuilder._statements, 'grouping');
-  this.modified      = columnBuilder._modifiers;
-  this.isIncrements  = (this.type.indexOf('increments') !== -1);
-  this.formatter     = client.formatter();
-  this.sequence      = [];
+  this.args = columnBuilder._args;
+  this.type = columnBuilder._type.toLowerCase();
+  this.grouped = groupBy(columnBuilder._statements, 'grouping');
+  this.modified = columnBuilder._modifiers;
+  this.isIncrements = (this.type.indexOf('increments') !== -1);
+  this.formatter = client.formatter();
+  this.sequence = [];
 }
 
 ColumnCompiler.prototype.pushQuery = helpers.pushQuery
@@ -73,13 +73,13 @@ ColumnCompiler.prototype.getModifiers = function() {
 // Types
 // ------
 
-ColumnCompiler.prototype.increments    = 'integer not null primary key autoincrement';
+ColumnCompiler.prototype.increments = 'integer not null primary key autoincrement';
 ColumnCompiler.prototype.bigincrements = 'integer not null primary key autoincrement';
 ColumnCompiler.prototype.integer       =
 ColumnCompiler.prototype.smallint      =
-ColumnCompiler.prototype.mediumint     = 'integer';
-ColumnCompiler.prototype.biginteger    = 'bigint';
-ColumnCompiler.prototype.varchar       = function(length) {
+ColumnCompiler.prototype.mediumint = 'integer';
+ColumnCompiler.prototype.biginteger = 'bigint';
+ColumnCompiler.prototype.varchar = function(length) {
   return `varchar(${this._num(length, 255)})`;
 };
 ColumnCompiler.prototype.text = 'text';

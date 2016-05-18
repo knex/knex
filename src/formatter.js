@@ -5,7 +5,7 @@ import Raw from './raw';
 import {assign, transform} from 'lodash'
 
 // Valid values for the `order by` clause generation.
-const orderBys  = ['asc', 'desc'];
+const orderBys = ['asc', 'desc'];
 
 // Turn this into a lookup map
 const operators = transform([
@@ -18,8 +18,8 @@ const operators = transform([
 }, {});
 
 function Formatter(client) {
-  this.client       = client
-  this.bindings     = []
+  this.client = client
+  this.bindings = []
 }
 
 assign(Formatter.prototype, {
@@ -39,7 +39,7 @@ assign(Formatter.prototype, {
   // a "joining" value is specified (e.g. ' and ')
   parameterize(values, notSetValue) {
     if (typeof values === 'function') return this.parameter(values);
-    values  = Array.isArray(values) ? values : [values];
+    values = Array.isArray(values) ? values : [values];
     let str = '', i = -1;
     while (++i < values.length) {
       if (i > 0) str += ', '
@@ -128,7 +128,7 @@ assign(Formatter.prototype, {
     const { client } = this;
 
     // Build the callback
-    const builder  = client.queryBuilder();
+    const builder = client.queryBuilder();
     callback.call(builder, builder);
 
     // Compile the callback, using the current formatter (to track all bindings).
@@ -155,7 +155,7 @@ assign(Formatter.prototype, {
   _wrapString(value) {
     const asIndex = value.toLowerCase().indexOf(' as ');
     if (asIndex !== -1) {
-      const first  = value.slice(0, asIndex)
+      const first = value.slice(0, asIndex)
       const second = value.slice(asIndex + 4)
       return this.alias(this.wrap(first), this.wrapAsIdentifier(second))
     }

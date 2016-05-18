@@ -142,7 +142,7 @@ assign(Client_MSSQL.prototype, {
   processResponse(obj, runner) {
     if (obj == null) return;
     let { response } = obj
-    const { method }   = obj
+    const { method } = obj
     if (obj.output) return obj.output.call(runner, response)
     switch (method) {
       case 'select':

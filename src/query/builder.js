@@ -16,17 +16,17 @@ import {
 // Typically called from `knex.builder`,
 // start a new query building chain.
 function Builder(client) {
-  this.client      = client
-  this.and         = this;
-  this._single     = {};
+  this.client = client
+  this.and = this;
+  this._single = {};
   this._statements = [];
-  this._method    = 'select'
-  this._debug     = client.config && client.config.debug;
+  this._method = 'select'
+  this._debug = client.config && client.config.debug;
 
   // Internal flags used in the builder.
-  this._joinFlag  = 'inner';
-  this._boolFlag  = 'and';
-  this._notFlag   = false;
+  this._joinFlag = 'inner';
+  this._boolFlag = 'and';
+  this._notFlag = false;
 }
 inherits(Builder, EventEmitter);
 
@@ -43,11 +43,11 @@ assign(Builder.prototype, {
 
   // Create a shallow clone of the current query builder.
   clone() {
-    const cloned        = new this.constructor(this.client);
-    cloned._method      = this._method;
-    cloned._single      = clone(this._single);
-    cloned._statements  = clone(this._statements);
-    cloned._debug       = this._debug;
+    const cloned = new this.constructor(this.client);
+    cloned._method = this._method;
+    cloned._single = clone(this._single);
+    cloned._statements = clone(this._statements);
+    cloned._debug = this._debug;
 
     // `_option` is assigned by the `Interface` mixin.
     if (!isUndefined(this._options)) {
@@ -186,7 +186,7 @@ assign(Builder.prototype, {
     // are explicitly two arguments passed, so it's not possible to
     // do where('key', '!=') and have that turn into where key != null
     if (arguments.length === 2) {
-      value    = operator;
+      value = operator;
       operator = '=';
 
       // If the value is null, and it's a two argument query,
@@ -818,17 +818,17 @@ Object.defineProperty(Builder.prototype, 'not', {
   }
 });
 
-Builder.prototype.select             = Builder.prototype.columns
-Builder.prototype.column             = Builder.prototype.columns
-Builder.prototype.andWhereNot        = Builder.prototype.whereNot
-Builder.prototype.andWhere           = Builder.prototype.where
-Builder.prototype.andWhereRaw        = Builder.prototype.whereRaw
-Builder.prototype.andWhereBetween    = Builder.prototype.whereBetween
+Builder.prototype.select = Builder.prototype.columns
+Builder.prototype.column = Builder.prototype.columns
+Builder.prototype.andWhereNot = Builder.prototype.whereNot
+Builder.prototype.andWhere = Builder.prototype.where
+Builder.prototype.andWhereRaw = Builder.prototype.whereRaw
+Builder.prototype.andWhereBetween = Builder.prototype.whereBetween
 Builder.prototype.andWhereNotBetween = Builder.prototype.whereNotBetween
-Builder.prototype.andHaving          = Builder.prototype.having
-Builder.prototype.from               = Builder.prototype.table
-Builder.prototype.into               = Builder.prototype.table
-Builder.prototype.del                = Builder.prototype.delete
+Builder.prototype.andHaving = Builder.prototype.having
+Builder.prototype.from = Builder.prototype.table
+Builder.prototype.into = Builder.prototype.table
+Builder.prototype.del = Builder.prototype.delete
 
 // Attach all of the top level promise methods that should be chainable.
 require('../interface')(Builder);

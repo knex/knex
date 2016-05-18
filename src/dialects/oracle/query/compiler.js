@@ -29,7 +29,7 @@ assign(QueryCompiler_Oracle.prototype, {
   // inserts using a single query statement.
   insert() {
     let insertValues = this.single.insert || []
-    let { returning }    = this.single;
+    let { returning } = this.single;
 
     if (!Array.isArray(insertValues) && isPlainObject(this.single.insert)) {
       insertValues = [this.single.insert]
@@ -109,7 +109,7 @@ assign(QueryCompiler_Oracle.prototype, {
   // Update method, including joins, wheres, order & limits.
   update() {
     const updates = this._prepUpdate(this.single.update);
-    const where   = this.where();
+    const where = this.where();
     let { returning } = this.single;
     const sql = `update ${this.tableName}` +
       ' set ' + updates.join(', ') +

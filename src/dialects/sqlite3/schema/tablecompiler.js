@@ -89,10 +89,10 @@ TableCompiler_SQLite3.prototype.foreignKeys = function() {
   let sql = '';
   const foreignKeys = filter(this.grouped.alterTable || [], {method: 'foreign'});
   for (let i = 0, l = foreignKeys.length; i < l; i++) {
-    const foreign       = foreignKeys[i].args[0];
-    const column        = this.formatter.columnize(foreign.column);
-    const references    = this.formatter.columnize(foreign.references);
-    const foreignTable  = this.formatter.wrap(foreign.inTable);
+    const foreign = foreignKeys[i].args[0];
+    const column = this.formatter.columnize(foreign.column);
+    const references = this.formatter.columnize(foreign.references);
+    const foreignTable = this.formatter.wrap(foreign.inTable);
     sql += `, foreign key(${column}) references ${foreignTable}(${references})`;
     if (foreign.onDelete) sql += ` on delete ${foreign.onDelete}`;
     if (foreign.onUpdate) sql += ` on update ${foreign.onUpdate}`;

@@ -6,7 +6,7 @@ import { EventEmitter } from 'events';
 import inherits from 'inherits';
 
 import makeKnex from './util/make-knex';
-const debug        = require('debug')('knex:tx')
+const debug = require('debug')('knex:tx')
 
 import {assign, uniqueId} from 'lodash'
 
@@ -16,17 +16,17 @@ function Transaction(client, container, config, outerTx) {
 
   const txid = this.txid = uniqueId('trx')
 
-  this.client    = client
-  this.outerTx   = outerTx
+  this.client = client
+  this.outerTx = outerTx
   this.trxClient = undefined;
-  this._debug    = client.config && client.config.debug
+  this._debug = client.config && client.config.debug
 
   debug('%s: Starting %s transaction', txid, outerTx ? 'nested' : 'top level')
 
   this._promise = Promise.using(this.acquireConnection(client, config, txid), (connection) => {
 
     const trxClient = this.trxClient = makeTxClient(this, client, connection)
-    const init      = client.transacting ? this.savepoint(connection) : this.begin(connection)
+    const init = client.transacting ? this.savepoint(connection) : this.begin(connection)
 
     init.then(() => {
       return makeTransactor(this, connection, trxClient)
@@ -58,7 +58,7 @@ function Transaction(client, container, config, outerTx) {
     })
   })
 
-  this._completed  = false
+  this._completed = false
 
   // If there's a wrapping transaction, we need to wait for any older sibling
   // transactions to settle (commit or rollback) before we can start, and we
@@ -114,7 +114,7 @@ assign(Transaction.prototype, {
     const q = this.trxClient.query(conn, sql)
       .catch((err) => {
         status = 2
-        value  = err
+        value = err
         this._completed = true
         debug('%s error running transaction query', this.txid)
       })
@@ -187,11 +187,11 @@ function makeTransactor(trx, connection, trxClient) {
 // connection and does not release back into the pool.
 function makeTxClient(trx, client, connection) {
 
-  const trxClient                = Object.create(client.constructor.prototype)
-  trxClient.config             = client.config
-  trxClient.driver             = client.driver
+  const trxClient = Object.create(client.constructor.prototype)
+  trxClient.config = client.config
+  trxClient.driver = client.driver
   trxClient.connectionSettings = client.connectionSettings
-  trxClient.transacting        = true
+  trxClient.transacting = true
 
   trxClient.on('query', function(arg) {
     trx.emit('query', arg)
@@ -209,7 +209,7 @@ function makeTxClient(trx, client, connection) {
   })
 
   const _query = trxClient.query;
-  trxClient.query  = function(conn, obj) {
+  trxClient.query = function(conn, obj) {
     const completed = trx.isCompleted()
     return Promise.try(function() {
       if (conn !== connection) throw new Error('Invalid connection for transaction query.')

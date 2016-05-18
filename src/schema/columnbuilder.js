@@ -3,12 +3,12 @@ import {extend, each, toArray} from 'lodash'
 
 // The chainable interface off the original "column" method.
 export default function ColumnBuilder(client, tableBuilder, type, args) {
-  this.client        = client
-  this._single       = {};
-  this._modifiers    = {};
-  this._statements   = [];
-  this._type         = columnAlias[type] || type;
-  this._args         = args;
+  this.client = client
+  this._single = {};
+  this._modifiers = {};
+  this._statements = [];
+  this._type = columnAlias[type] || type;
+  this._args = args;
   this._tableBuilder = tableBuilder;
 
   // If we're altering the table, extend the object

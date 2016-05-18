@@ -8,7 +8,7 @@ let PassThrough;
 // and runs through each of the query statements, calling any additional
 // "output" method provided alongside the query and bindings.
 function Runner(client, builder) {
-  this.client  = client
+  this.client = client
   this.builder = builder
   this.queries = []
 
@@ -79,7 +79,7 @@ assign(Runner.prototype, {
     PassThrough = PassThrough || require('readable-stream').PassThrough;
 
     const runner = this;
-    const stream  = new PassThrough({objectMode: true});
+    const stream = new PassThrough({objectMode: true});
     const promise = Promise.using(this.ensureConnection(), function(connection) {
       runner.connection = connection;
       const sql = runner.builder.toSQL()

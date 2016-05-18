@@ -11,13 +11,13 @@ import {extend, each, toArray, isString, isFunction} from 'lodash'
 import * as helpers from '../helpers';
 
 function TableBuilder(client, method, tableName, fn) {
-  this.client      = client
-  this._fn         = fn;
-  this._method     = method;
+  this.client = client
+  this._fn = fn;
+  this._method = method;
   this._schemaName = undefined;
-  this._tableName  = tableName;
+  this._tableName = tableName;
   this._statements = [];
-  this._single     = {};
+  this._single = {};
 
   if(!isFunction(this._fn)) {
     throw new TypeError(
@@ -170,7 +170,7 @@ each(columnTypes, function(type) {
       }
       return;
     }
-    const builder       = this.client.columnBuilder(this, type, args);
+    const builder = this.client.columnBuilder(this, type, args);
 
     this._statements.push({
       grouping: 'columns',

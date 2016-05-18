@@ -50,7 +50,7 @@ assign(Client_MySQL.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    const client     = this
+    const client = this
     const connection = this.driver.createConnection(this.connectionSettings)
     return new Promise(function(resolver, rejecter) {
       connection.connect(function(err) {
@@ -99,9 +99,9 @@ assign(Client_MySQL.prototype, {
   processResponse(obj, runner) {
     if (obj == null) return;
     const { response } = obj
-    const { method }   = obj
-    const rows     = response[0]
-    const fields   = response[1]
+    const { method } = obj
+    const rows = response[0]
+    const fields = response[1]
     if (obj.output) return obj.output.call(runner, rows, fields)
     switch (method) {
       case 'select':

@@ -8,8 +8,8 @@ import path from 'path';
 import chalk from 'chalk';
 import tildify from 'tildify';
 import commander from 'commander';
-const argv      = require('minimist')(process.argv.slice(2));
-const fs        = Promise.promisifyAll(require('fs'));
+const argv = require('minimist')(process.argv.slice(2));
+const fs = Promise.promisifyAll(require('fs'));
 const cliPkg = require('../../package');
 
 function exit(text) {
@@ -47,8 +47,8 @@ function initKnex(env) {
   }
 
   let environment = commander.env || process.env.NODE_ENV;
-  const defaultEnv  = 'development';
-  let config      = require(env.configPath);
+  const defaultEnv = 'development';
+  let config = require(env.configPath);
 
   if (!environment && typeof config[defaultEnv] === 'object') {
     environment = defaultEnv;

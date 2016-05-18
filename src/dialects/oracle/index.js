@@ -138,7 +138,7 @@ assign(Client_Oracle.prototype, {
   // Process the response as returned from the query.
   processResponse(obj, runner) {
     let { response } = obj;
-    const { method }   = obj;
+    const { method } = obj;
     if (obj.output) return obj.output.call(runner, response);
     switch (method) {
       case 'select':

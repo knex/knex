@@ -3,7 +3,7 @@ import url from 'url'
 import {parse as parsePG} from 'pg-connection-string'
 
 export default function parseConnectionString(str) {
-  const parsed   = url.parse(str)
+  const parsed = url.parse(str)
   let { protocol } = parsed
   if (protocol && protocol.indexOf('maria') === 0) {
     protocol = 'maria'

@@ -13,11 +13,11 @@ export default class BatchInsert {
       throw new TypeError(`Invalid batch: Expected array, got ${typeof batch}`)
     }
 
-    this.client           = client;
-    this.tableName        = tableName;
-    this.batch            = chunk(batch, chunkSize);
-    this._returning       = void 0;
-    this._transaction     = null;
+    this.client = client;
+    this.tableName = tableName;
+    this.batch = chunk(batch, chunkSize);
+    this._returning = void 0;
+    this._transaction = null;
     this._autoTransaction = true;
   }
 
@@ -40,7 +40,7 @@ export default class BatchInsert {
    * @param transaction
    */
   transacting(transaction) {
-    this._transaction     = transaction;
+    this._transaction = transaction;
     this._autoTransaction = false;
     return this;
   }

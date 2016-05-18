@@ -92,10 +92,10 @@ SqlString.dateToString = function(date, timeZone) {
     }
   }
 
-  const year   = dt.getFullYear();
-  const month  = zeroPad(dt.getMonth() + 1, 2);
-  const day    = zeroPad(dt.getDate(), 2);
-  const hour   = zeroPad(dt.getHours(), 2);
+  const year = dt.getFullYear();
+  const month = zeroPad(dt.getMonth() + 1, 2);
+  const day = zeroPad(dt.getDate(), 2);
+  const hour = zeroPad(dt.getHours(), 2);
   const minute = zeroPad(dt.getMinutes(), 2);
   const second = zeroPad(dt.getSeconds(), 2);
   const millisecond = zeroPad(dt.getMilliseconds(), 3);

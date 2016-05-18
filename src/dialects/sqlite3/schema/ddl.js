@@ -12,12 +12,12 @@ import {assign, uniqueId, find, identity, map, omit} from 'lodash'
 // We have our own object to deal with the renaming and altering the types
 // for sqlite3 things.
 function SQLite3_DDL(client, tableCompiler, pragma, connection) {
-  this.client        = client
+  this.client = client
   this.tableCompiler = tableCompiler;
-  this.pragma        = pragma;
-  this.tableName     = this.tableCompiler.tableNameRaw;
-  this.alteredName   = uniqueId('_knex_temp_alter');
-  this.connection    = connection
+  this.pragma = pragma;
+  this.tableName = this.tableCompiler.tableNameRaw;
+  this.alteredName = uniqueId('_knex_temp_alter');
+  this.connection = connection
 }
 
 assign(SQLite3_DDL.prototype, {

@@ -92,7 +92,7 @@ assign(Client_SQLite3.prototype, {
 
         // We need the context here, as it contains
         // the "this.lastID" or "this.changes"
-        obj.context  = this;
+        obj.context = this;
         return resolver(obj)
       })
     })
@@ -115,7 +115,7 @@ assign(Client_SQLite3.prototype, {
 
   // Ensures the response is returned in the same format as other clients.
   processResponse(obj, runner) {
-    const ctx      = obj.context;
+    const ctx = obj.context;
     let { response } = obj;
     if (obj.output) return obj.output.call(runner, response)
     switch (obj.method) {

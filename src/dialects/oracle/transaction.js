@@ -2,7 +2,7 @@
 import inherits from 'inherits';
 import Promise from '../../promise';
 import Transaction from '../../transaction';
-const debugTx     = require('debug')('knex:tx')
+const debugTx = require('debug')('knex:tx')
 
 import {assign} from 'lodash'
 

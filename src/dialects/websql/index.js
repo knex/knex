@@ -11,9 +11,9 @@ import {assign, map, uniqueId, clone} from 'lodash'
 
 function Client_WebSQL(config) {
   Client_SQLite3.call(this, config);
-  this.name          = config.name || 'knex_database';
-  this.version       = config.version || '1.0';
-  this.displayName   = config.displayName || this.name;
+  this.name = config.name || 'knex_database';
+  this.version = config.version || '1.0';
+  this.displayName = config.displayName || this.name;
   this.estimatedSize = config.estimatedSize || 5 * 1024 * 1024;
 }
 inherits(Client_WebSQL, Client_SQLite3);

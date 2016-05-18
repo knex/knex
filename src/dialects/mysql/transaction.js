@@ -25,7 +25,7 @@ assign(Transaction_MySQL.prototype, {
       })
       .catch(function(err) {
         status = 2
-        value  = err
+        value = err
         t._completed = true
         debug('%s error running transaction query', t.txid)
       })

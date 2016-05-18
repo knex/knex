@@ -3,7 +3,7 @@ import * as helpers from '../../helpers';
 
 function generateCombinedName(postfix, name, subNames) {
   const crypto = require('crypto');
-  const limit  = 30;
+  const limit = 30;
   if (!Array.isArray(subNames)) subNames = subNames ? [subNames] : [];
   const table = name.replace(/\.|-/g, '_');
   const subNamesPart = subNames.join('_');

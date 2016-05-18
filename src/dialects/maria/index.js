@@ -77,7 +77,7 @@ assign(Client_MariaSQL.prototype, {
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query(connection, obj) {
-    const tz  = this.connectionSettings.timezone || 'local';
+    const tz = this.connectionSettings.timezone || 'local';
     return new Promise(function(resolver, rejecter) {
       if (!obj.sql) return resolver()
       const sql = SqlString.format(obj.sql, obj.bindings, tz);
@@ -95,9 +95,9 @@ assign(Client_MariaSQL.prototype, {
   // Process the response as returned from the query.
   processResponse(obj, runner) {
     const { response } = obj;
-    const { method }   = obj;
-    const rows     = response[0];
-    const data     = response[1];
+    const { method } = obj;
+    const rows = response[0];
+    const data = response[1];
     if (obj.output) return obj.output.call(runner, rows/*, fields*/);
     switch (method) {
       case 'select':
