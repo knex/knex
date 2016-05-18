@@ -1,9 +1,9 @@
 
 // SQLite3 Query Builder & Compiler
 
-var inherits      = require('inherits')
-var QueryCompiler = require('../../../query/compiler')
-import {assign, isEmpty, isString, reduce, each} from 'lodash'
+import inherits from 'inherits';
+import QueryCompiler from '../../../query/compiler';
+import { assign, each, isEmpty, isString, noop, reduce } from 'lodash'
 
 function QueryCompiler_SQLite3(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -20,9 +20,9 @@ assign(QueryCompiler_SQLite3.prototype, {
   // SQLite requires us to build the multi-row insert as a listing of select with
   // unions joining them together. So we'll build out this list of columns and
   // then join them all together with select unions to complete the queries.
-  insert: function() {
-    var insertValues = this.single.insert || []
-    var sql = 'insert into ' + this.tableName + ' '
+  insert() {
+    const insertValues = this.single.insert || []
+    let sql = `insert into ${this.tableName} `
 
     if (Array.isArray(insertValues)) {
       if (insertValues.length === 0) {
@@ -35,7 +35,7 @@ assign(QueryCompiler_SQLite3.prototype, {
       return sql + this._emptyInsertValue
     }
 
-    var insertData = this._prepInsert(insertValues)
+    const insertData = this._prepInsert(insertValues)
 
     if (isString(insertData)) {
       return sql + insertData
@@ -45,26 +45,34 @@ assign(QueryCompiler_SQLite3.prototype, {
       return '';
     }
 
-    sql += '(' + this.formatter.columnize(insertData.columns) + ')'
+    sql += `(${this.formatter.columnize(insertData.columns)})`
 
     // backwards compatible error
-    each(insertData.values, bindings => {
-      each(bindings, binding => {
-        if (binding === undefined && this.client.valueForUndefined !== null) {
-          throw new TypeError("`sqlite` does not support inserting default values. Specify values explicitly or use the `useNullAsDefault` config flag. (see docs http://knexjs.org/#Builder-insert).");
-        }
+    if (this.client.valueForUndefined !== null) {
+      each(insertData.values, bindings => {
+        each(bindings, binding => {
+          if (binding === undefined) throw new TypeError(
+            '`sqlite` does not support inserting default values. Specify ' +
+            'values explicitly or use the `useNullAsDefault` config flag. ' +
+            '(see docs http://knexjs.org/#Builder-insert).'
+          );
+        });
       });
-    });
-
-    if (insertData.values.length === 1) {
-      return sql + ' values (' + this.formatter.parameterize(insertData.values[0], this.client.valueForUndefined) + ')'
     }
 
-    var blocks = []
-    var i      = -1
+    if (insertData.values.length === 1) {
+      const parameters = this.formatter.parameterize(
+        insertData.values[0], this.client.valueForUndefined
+      );
+      return sql + ` values (${parameters})`
+    }
+
+    const blocks = []
+    let i = -1
     while (++i < insertData.values.length) {
-      var i2 = -1, block = blocks[i] = []
-      var current = insertData.values[i]
+      let i2 = -1;
+      const block = blocks[i] = [];
+      let current = insertData.values[i]
       current = current === undefined ? this.client.valueForUndefined : current
       while (++i2 < insertData.columns.length) {
         block.push(this.formatter.alias(
@@ -78,30 +86,32 @@ assign(QueryCompiler_SQLite3.prototype, {
   },
 
   // Compile a truncate table statement into SQL.
-  truncate: function() {
-    var table = this.tableName
+  truncate() {
+    const table = this.tableName
     return {
-      sql: 'delete from ' + table,
-      output: function() {
-        return this.query({sql: 'delete from sqlite_sequence where name = ' + table}).catch(function() {})
+      sql: `delete from ${table}`,
+      output() {
+        return this.query({
+          sql: `delete from sqlite_sequence where name = ${table}`
+        }).catch(noop)
       }
     }
   },
 
   // Compiles a `columnInfo` query
-  columnInfo: function() {
-    var column = this.single.columnInfo
+  columnInfo() {
+    const column = this.single.columnInfo
     return {
-      sql: 'PRAGMA table_info(' + this.single.table +')',
-      output: function(resp) {
-        var maxLengthRegex = /.*\((\d+)\)/
-        var out = reduce(resp, function (columns, val) {
-          var type = val.type
-          var maxLength = (maxLength = type.match(maxLengthRegex)) && maxLength[1]
+      sql: `PRAGMA table_info(${this.single.table})`,
+      output(resp) {
+        const maxLengthRegex = /.*\((\d+)\)/
+        const out = reduce(resp, function (columns, val) {
+          let { type } = val
+          let maxLength = (maxLength = type.match(maxLengthRegex)) && maxLength[1]
           type = maxLength ? type.split('(')[0] : type
           columns[val.name] = {
             type: type.toLowerCase(),
-            maxLength: maxLength,
+            maxLength,
             nullable: !val.notnull,
             defaultValue: val.dflt_value
           }
@@ -112,13 +122,13 @@ assign(QueryCompiler_SQLite3.prototype, {
     }
   },
 
-  limit: function() {
-    var noLimit = !this.single.limit && this.single.limit !== 0
+  limit() {
+    const noLimit = !this.single.limit && this.single.limit !== 0
     if (noLimit && !this.single.offset) return ''
 
     // Workaround for offset only,
     // see http://stackoverflow.com/questions/10491492/sqllite-with-skip-offset-only-not-limit
-    return 'limit ' + this.formatter.parameter(noLimit ? -1 : this.single.limit)
+    return `limit ${this.formatter.parameter(noLimit ? -1 : this.single.limit)}`
   }
 
 })
@@ -128,4 +138,4 @@ function emptyStr() {
 }
 
 
-module.exports = QueryCompiler_SQLite3
+export default QueryCompiler_SQLite3

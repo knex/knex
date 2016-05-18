@@ -1,10 +1,10 @@
 
 // MySQL Schema Compiler
 // -------
-var inherits       = require('inherits');
-var SchemaCompiler = require('../../../schema/compiler');
+import inherits from 'inherits';
+import SchemaCompiler from '../../../schema/compiler';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function SchemaCompiler_MySQL(client, builder) {
   SchemaCompiler.call(this, client, builder)
@@ -14,26 +14,26 @@ inherits(SchemaCompiler_MySQL, SchemaCompiler)
 assign(SchemaCompiler_MySQL.prototype, {
 
   // Rename a table on the schema.
-  renameTable: function(tableName, to) {
-    this.pushQuery('rename table ' + this.formatter.wrap(tableName) + ' to ' + this.formatter.wrap(to));
+  renameTable(tableName, to) {
+    this.pushQuery(`rename table ${this.formatter.wrap(tableName)} to ${this.formatter.wrap(to)}`);
   },
 
   // Check whether a table exists on the query.
-  hasTable: function(tableName) {
+  hasTable(tableName) {
     this.pushQuery({
-      sql: 'show tables like ' + this.formatter.parameter(tableName),
-      output: function(resp) {
+      sql: `show tables like ${this.formatter.parameter(tableName)}`,
+      output(resp) {
         return resp.length > 0;
       }
     });
   },
 
   // Check whether a column exists on the schema.
-  hasColumn: function(tableName, column) {
+  hasColumn(tableName, column) {
     this.pushQuery({
-      sql: 'show columns from ' + this.formatter.wrap(tableName) +
+      sql: `show columns from ${this.formatter.wrap(tableName)}` +
         ' like ' + this.formatter.parameter(column),
-      output: function(resp) {
+      output(resp) {
         return resp.length > 0;
       }
     });
@@ -41,4 +41,4 @@ assign(SchemaCompiler_MySQL.prototype, {
 
 })
 
-module.exports = SchemaCompiler_MySQL;
+export default SchemaCompiler_MySQL;

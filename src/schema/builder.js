@@ -1,16 +1,16 @@
 
-var inherits     = require('inherits')
-var EventEmitter = require('events').EventEmitter
-import {each, toArray} from 'lodash'
+import inherits from 'inherits';
+import { EventEmitter } from 'events';
+import { each, toArray } from 'lodash'
 
 // Constructor for the builder instance, typically called from
 // `knex.builder`, accepting the current `knex` instance,
 // and pulling out the `client` and `grammar` from the current
 // knex instance.
 function SchemaBuilder(client) {
-  this.client    = client
+  this.client = client
   this._sequence = []
-  this._debug    = client.config && client.config.debug
+  this._debug = client.config && client.config.debug
 }
 inherits(SchemaBuilder, EventEmitter)
 
@@ -39,7 +39,7 @@ each([
   SchemaBuilder.prototype[method] = function() {
     if (method === 'table') method = 'alterTable';
     this._sequence.push({
-      method: method,
+      method,
       args: toArray(arguments)
     });
     return this;
@@ -61,4 +61,4 @@ SchemaBuilder.prototype.toSQL = function() {
   return this.client.schemaCompiler(this).toSQL()
 }
 
-module.exports = SchemaBuilder
+export default SchemaBuilder

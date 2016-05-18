@@ -1,24 +1,28 @@
 
 // SQLite3
 // -------
-var Promise        = require('../../promise')
+import Promise from '../../promise';
 
-var inherits       = require('inherits')
-import {isUndefined, map, assign} from 'lodash'
+import inherits from 'inherits';
+import { isUndefined, map, assign } from 'lodash'
 
-var Client         = require('../../client')
-var helpers        = require('../../helpers')
+import Client from '../../client';
+import * as helpers from '../../helpers';
 
-var QueryCompiler  = require('./query/compiler')
-var SchemaCompiler = require('./schema/compiler')
-var ColumnCompiler = require('./schema/columncompiler')
-var TableCompiler  = require('./schema/tablecompiler')
-var SQLite3_DDL    = require('./schema/ddl')
+import QueryCompiler from './query/compiler';
+import SchemaCompiler from './schema/compiler';
+import ColumnCompiler from './schema/columncompiler';
+import TableCompiler from './schema/tablecompiler';
+import SQLite3_DDL from './schema/ddl';
 
 function Client_SQLite3(config) {
   Client.call(this, config)
   if (isUndefined(config.useNullAsDefault)) {
-    helpers.warn('sqlite does not support inserting default values. Set the `useNullAsDefault` flag to hide this warning. (see docs http://knexjs.org/#Builder-insert).');
+    helpers.warn(
+      'sqlite does not support inserting default values. Set the ' +
+      '`useNullAsDefault` flag to hide this warning. ' +
+      '(see docs http://knexjs.org/#Builder-insert).'
+    );
   }
 }
 inherits(Client_SQLite3, Client)
@@ -29,44 +33,45 @@ assign(Client_SQLite3.prototype, {
 
   driverName: 'sqlite3',
 
-  _driver: function() {
+  _driver() {
     return require('sqlite3')
   },
 
-  SchemaCompiler: SchemaCompiler,
+  SchemaCompiler,
 
-  QueryCompiler: QueryCompiler,
+  QueryCompiler,
 
-  ColumnCompiler: ColumnCompiler,
+  ColumnCompiler,
 
-  TableCompiler: TableCompiler,
+  TableCompiler,
 
-  ddl: function(compiler, pragma, connection) {
+  ddl(compiler, pragma, connection) {
     return new SQLite3_DDL(this, compiler, pragma, connection)
   },
 
   // Get a raw connection from the database, returning a promise with the connection object.
-  acquireRawConnection: function() {
-    var client = this;
+  acquireRawConnection() {
+    const client = this;
     return new Promise(function(resolve, reject) {
-      var db = new client.driver.Database(client.connectionSettings.filename, function(err) {
+      const db = new client.driver.Database(client.connectionSettings.filename, function(err) {
         if (err) return reject(err)
         resolve(db)
       })
     })
   },
 
-  // Used to explicitly close a connection, called internally by the pool
-  // when a connection times out or the pool is shutdown.
-  destroyRawConnection: function(connection, cb) {
+  // Used to explicitly close a connection, called internally by the pool when
+  // a connection times out or the pool is shutdown.
+  destroyRawConnection(connection, cb) {
     connection.close()
     cb()
   },
 
-  // Runs the query on the specified connection, providing the bindings and any other necessary prep work.
-  _query: function(connection, obj) {
-    var method = obj.method;
-    var callMethod;
+  // Runs the query on the specified connection, providing the bindings and any
+  // other necessary prep work.
+  _query(connection, obj) {
+    const { method } = obj;
+    let callMethod;
     switch (method) {
       case 'insert':
       case 'update':
@@ -79,7 +84,7 @@ assign(Client_SQLite3.prototype, {
     }
     return new Promise(function(resolver, rejecter) {
       if (!connection || !connection[callMethod]) {
-        return rejecter(new Error('Error calling ' + callMethod + ' on connection.'))
+        return rejecter(new Error(`Error calling ${callMethod} on connection.`))
       }
       connection[callMethod](obj.sql, obj.bindings, function(err, response) {
         if (err) return rejecter(err)
@@ -87,20 +92,18 @@ assign(Client_SQLite3.prototype, {
 
         // We need the context here, as it contains
         // the "this.lastID" or "this.changes"
-        obj.context  = this;
+        obj.context = this;
         return resolver(obj)
       })
     })
   },
 
-  _stream: function(connection, sql, stream) {
-    var client = this;
+  _stream(connection, sql, stream) {
+    const client = this;
     return new Promise(function(resolver, rejecter) {
       stream.on('error', rejecter)
       stream.on('end', resolver)
-      return client._query(connection, sql).then(function(obj) {
-        return obj.response
-      }).map(function(row) {
+      return client._query(connection, sql).then(obj => obj.response).map(function(row) {
         stream.write(row)
       }).catch(function(err) {
         stream.emit('error', err)
@@ -111,9 +114,9 @@ assign(Client_SQLite3.prototype, {
   },
 
   // Ensures the response is returned in the same format as other clients.
-  processResponse: function(obj, runner) {
-    var ctx      = obj.context;
-    var response = obj.response;
+  processResponse(obj, runner) {
+    const ctx = obj.context;
+    let { response } = obj;
     if (obj.output) return obj.output.call(runner, response)
     switch (obj.method) {
       case 'select':
@@ -133,17 +136,17 @@ assign(Client_SQLite3.prototype, {
     }
   },
 
-  poolDefaults: function(config) {
+  poolDefaults(config) {
     return assign(Client.prototype.poolDefaults.call(this, config), {
       min: 1,
       max: 1
     })
   },
 
-  ping: function(resource, callback) {
+  ping(resource, callback) {
     resource.each('SELECT 1', callback);
   }
 
 })
 
-module.exports = Client_SQLite3
+export default Client_SQLite3
