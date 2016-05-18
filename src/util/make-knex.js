@@ -121,7 +121,7 @@ export default function makeKnex(client) {
     knex.emit('query-response', response, obj, builder)
   })
 
-  client.makeKnex = client => makeKnex(client)
+  client.makeKnex = makeKnex
 
   return knex
 }
