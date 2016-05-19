@@ -134,11 +134,11 @@ module.exports = function(knex) {
             table.integer('main').notNullable().primary();
             table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
           }).testSql(function(tester) {
-            tester('mysql', ['create table `test_table_three` (`main` int not null, `paragraph` text) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key `test_table_three_main_primary`(`main`)']);
-            tester('pg', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
+            tester('mysql', ['create table `test_table_three` (`main` int not null, `paragraph` text) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key `test_table_three_pkey`(`main`)']);
+            tester('pg', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
             tester('sqlite3', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', primary key ("main"))']);
-            tester('oracle', ['create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add primary key ("main")']);
-            tester('mssql', ['CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), CONSTRAINT [test_table_three_main_primary] PRIMARY KEY ([main]))']);
+            tester('oracle', ['create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
+            tester('mssql', ['CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))']);
           });
       });
 
@@ -470,23 +470,29 @@ module.exports = function(knex) {
 
     //Unit tests checks SQL -- This will test running those queries, no hard assertions here.
     it('#1430 - .primary() & .dropPrimary() same for all dialects', function() {
+      if(/sqlite/i.test(knex.client.dialect)) {
+        return Promise.resolve();
+      }
       var constraintName = 'testconstraintname';
       var tableName = 'primarytest';
       return knex.transaction(function(tr) {
-        return tr.schema.createTable(tableName, function(table) {
-          table.string('test').primary(constraintName);
-          table.string('test2');
-        })
+        return tr.schema.dropTableIfExists(tableName)
         .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test').primary(constraintName);
+              table.string('test2');
+            })
+          })
+          .then(function() {
             return tr.schema.table(tableName, function(table) {
               table.dropPrimary(constraintName);
             })
           })
-        .then(function() {
+          .then(function() {
             return tr.schema.table(tableName, function(table) {
               table.primary(['test', 'test2'], constraintName)
             })
-          })
+          });
       });
     });
 

@@ -161,7 +161,7 @@ assign(TableCompiler_MySQL.prototype, {
   },
 
   primary(columns, constraintName) {
-    constraintName = constraintName ? this.formatter.wrap(constraintName) : this._indexCommand('primary', this.tableNameRaw, columns);
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
     this.pushQuery(`alter table ${this.tableName()} add primary key ${constraintName}(${this.formatter.columnize(columns)})`);
   },
 

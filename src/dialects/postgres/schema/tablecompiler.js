@@ -50,7 +50,7 @@ TableCompiler_PG.prototype.comment = function(comment) {
 // -------
 
 TableCompiler_PG.prototype.primary = function(columns, constraintName) {
-  constraintName = constraintName ? this.formatter.wrap(constraintName) : this._indexCommand('primary', this.tableNameRaw, columns);
+  constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
   this.pushQuery(`alter table ${this.tableName()} add constraint ${constraintName} primary key (${this.formatter.columnize(columns)})`);
 };
 TableCompiler_PG.prototype.unique = function(columns, indexName) {

@@ -65,7 +65,7 @@ assign(TableCompiler_Oracle.prototype, {
   },
 
   primary(columns, constraintName) {
-    constraintName = constraintName ? this.formatter.wrap(constraintName) : this._indexCommand('primary', this.tableNameRaw, columns);
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
     this.pushQuery(`alter table ${this.tableName()} add constraint ${constraintName} primary key (${this.formatter.columnize(columns)})`);
   },
 
