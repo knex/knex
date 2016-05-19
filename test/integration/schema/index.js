@@ -467,5 +467,28 @@ module.exports = function(knex) {
       });
     });
 
+
+    //Unit tests checks SQL -- This will test running those queries, no hard assertions here.
+    it('#1430 - .primary() & .dropPrimary() same for all dialects', function() {
+      var constraintName = 'testconstraintname';
+      var tableName = 'primarytest';
+      return knex.transaction(function(tr) {
+        return tr.schema.createTable(tableName, function(table) {
+          table.string('test').primary(constraintName);
+          table.string('test2');
+        })
+        .then(function() {
+            return tr.schema.table(tableName, function(table) {
+              table.dropPrimary(constraintName);
+            })
+          })
+        .then(function() {
+            return tr.schema.table(tableName, function(table) {
+              table.primary(['test', 'test2'], constraintName)
+            })
+          })
+      });
+    });
+
   });
 };

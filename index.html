@@ -2121,9 +2121,9 @@ knex.table('users')
 
 
     <p id="Schema-dropPrimary">
-      <b class="header">dropPrimary</b><code>table.dropPrimary()</code>
+      <b class="header">dropPrimary</b><code>table.dropPrimary(constraintName)</code>
       <br />
-      Drops the primary key constraint on a table.
+      Drops the primary key constraint on a table. Defaults to <tt>tablename_pkey</tt> unless <tt>constraintName</tt> is specified.
     </p>
 
     <h3 id="Chainable">Chainable Methods:</h3>
@@ -2142,10 +2142,11 @@ knex.table('users')
     </p>
 
     <p id="Chainable-primary">
-      <b class="header">primary</b><code>column.primary()</code>
+      <b class="header">primary</b><code>column.primary(constraintName)</code> / <code>table.primary(['column1', 'column2'], constraintName)</code>
       <br />
-      Sets the field as the primary key for the table.
-      To create a compound primary key, pass an array of column names: <code>table.primary(['column1', 'column2'])</code>.
+      When called on a single column it will set that column as the primary key for a table.
+      To create a compound primary key, pass an array of column names: <code>table.primary(['column1', 'column2'])</code>
+      <i>Constraint name defaults to <tt>tablename_pkey</tt> unless <tt>constraintName</tt> is specified.</i>
     </p>
 
     <p id="Chainable-unique">

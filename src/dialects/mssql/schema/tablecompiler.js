@@ -103,12 +103,12 @@ assign(TableCompiler_MSSQL.prototype, {
     this.pushQuery(`CREATE INDEX ${indexName} ON ${this.tableName()} (${this.formatter.columnize(columns)})`);
   },
 
-  primary (columns, indexName) {
-    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('primary', this.tableNameRaw, columns);
+  primary (columns, constraintName) {
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this._indexCommand('primary', this.tableNameRaw, columns);
     if (!this.forCreate) {
-      this.pushQuery(`ALTER TABLE ${this.tableName()} ADD PRIMARY KEY (${this.formatter.columnize(columns)})`);
+      this.pushQuery(`ALTER TABLE ${this.tableName()} ADD CONSTRAINT ${constraintName} PRIMARY KEY (${this.formatter.columnize(columns)})`);
     } else {
-      this.pushQuery(`CONSTRAINT ${indexName} PRIMARY KEY (${this.formatter.columnize(columns)})`);
+      this.pushQuery(`CONSTRAINT ${constraintName} PRIMARY KEY (${this.formatter.columnize(columns)})`);
     }
   },
 
