@@ -83,7 +83,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop primary key');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_pkey"');
   });
 
   it('test drop unique', function() {
@@ -161,7 +161,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add primary key ("foo")');
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "bar" primary key ("foo")');
   });
 
   it('test adding unique key', function() {

@@ -161,7 +161,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.primary('foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add primary key ("foo")');
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "users_foo_primary" primary key ("foo")');
   });
 
   it("adding primary key fluently", function() {
@@ -170,7 +170,7 @@ describe("PostgreSQL SchemaBuilder", function() {
     }).toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal('create table "users" ("name" varchar(255))');
-    expect(tableSql[1].sql).to.equal('alter table "users" add primary key ("name")');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_name_primary" primary key ("name")');
   });
 
   it("adding foreign key", function() {

@@ -161,7 +161,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD PRIMARY KEY ([foo])');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD CONSTRAINT [bar] PRIMARY KEY ([foo])');
   });
 
   it('test adding unique key', function() {
