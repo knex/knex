@@ -25,6 +25,8 @@ export default function Knex(config) {
   let Dialect;
   if (arguments.length === 0 || (!config.client && !config.dialect)) {
     Dialect = makeClient(Client)
+  } else if ((typeof config.client === 'object') && (config.client.prototype instanceof Client)) {
+    Dialect = makeClient(config.client)
   } else {
     const clientName = config.client || config.dialect
     Dialect = makeClient(require(`./dialects/${aliases[clientName] || clientName}/index.js`))
