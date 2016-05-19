@@ -171,6 +171,7 @@
       <li>– <a href="#Schema-time">time</a></li>
       <li>– <a href="#Schema-timestamp">timestamp</a></li>
       <li>– <a href="#Schema-timestamps">timestamps</a></li>
+      <li>– <a href="#Schema-dropTimestamps">dropTimestamps</a></li>
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
       <li>– <a href="#Schema-json">json</a></li>
@@ -1992,6 +1993,13 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       Both colums default to being not null and the current timestamp when true
       is passed as the second argument.
       <br />
+    </p>
+
+    <p id="Schema-dropTimestamps">
+      <b class="header">dropTimestamps</b><code>table.dropTimestamps()</code>
+      <br />
+      Drops the columns <tt>created_at</tt> and <tt>updated_at</tt> from the table,
+      which can be created via <a href="#Schema-timestamps">timestamps</a>.
     </p>
 
     <p id="Schema-binary">
