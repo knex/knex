@@ -19,6 +19,10 @@ export default class BatchInsert {
     this._returning = void 0;
     this._transaction = null;
     this._autoTransaction = true;
+
+    if (client.transacting) {
+      this.transacting(client);
+    }
   }
 
   /**

@@ -702,6 +702,15 @@ module.exports = function(knex) {
         })
       });
 
+      it('transaction.batchInsert using specified transaction', function() {
+        return knex.transaction(function(tr) {
+          tr.batchInsert('BatchInsert', items, 30)
+          .returning(['Col1', 'Col2'])
+          .then(tr.commit)
+          .catch(tr.rollback);
+        })
+      });
+
     });
 
     it('should validate batchInsert batchSize parameter', function() {
