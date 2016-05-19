@@ -492,7 +492,6 @@ describe("Oracle SchemaBuilder", function() {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "composite_key_test" drop constraint "ckt_unique"');
   });
-
   it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
     tableSql = client.schemaBuilder().table('users', function(t) {
       t.primary(['test1', 'test2'], 'testconstraintname');
@@ -505,5 +504,4 @@ describe("Oracle SchemaBuilder", function() {
 
     expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test")');
   });
-
 });
