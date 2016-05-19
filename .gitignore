@@ -7,7 +7,8 @@ node_modules
 test.sqlite3
 npm-debug.log
 tmp
-lib
+lib/
+build/
 
 # Testing for the knex cli:
 bin/migrations-folder
