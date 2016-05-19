@@ -184,7 +184,7 @@ function invoke(env) {
 }
 
 var cli = new Liftoff({
-  name: 'knex',
+  name: 'knex-oracledb',
   extensions: interpret.jsVariants,
   v8flags: require('v8flags')
 });
