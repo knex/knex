@@ -57,7 +57,7 @@
     "prepublish": "npm run build"
   },
   "bin": {
-    "knex": "./lib/bin/cli.js"
+    "knex-oracledb": "./lib/bin/cli.js"
   },
   "repository": {
     "type": "git",
