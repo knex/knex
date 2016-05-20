@@ -195,6 +195,7 @@ function makeTxClient(trx, client, connection) {
   trxClient.driver             = client.driver
   trxClient.connectionSettings = client.connectionSettings
   trxClient.transacting        = true
+  trxClient.valueForUndefined  = client.valueForUndefined
 
   trxClient.on('query', function(arg) {
     trx.emit('query', arg)
