@@ -49,8 +49,9 @@ TableCompiler_PG.prototype.comment = function(comment) {
 // Indexes:
 // -------
 
-TableCompiler_PG.prototype.primary = function(columns) {
-  this.pushQuery(`alter table ${this.tableName()} add primary key (${this.formatter.columnize(columns)})`);
+TableCompiler_PG.prototype.primary = function(columns, constraintName) {
+  constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
+  this.pushQuery(`alter table ${this.tableName()} add constraint ${constraintName} primary key (${this.formatter.columnize(columns)})`);
 };
 TableCompiler_PG.prototype.unique = function(columns, indexName) {
   indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
@@ -62,8 +63,8 @@ TableCompiler_PG.prototype.index = function(columns, indexName, indexType) {
   this.pushQuery(`create index ${indexName} on ${this.tableName()}${indexType && (` using ${indexType}`) || ''}` +
     ' (' + this.formatter.columnize(columns) + ')');
 };
-TableCompiler_PG.prototype.dropPrimary = function() {
-  const constraintName = this.formatter.wrap(this.tableNameRaw + '_pkey');
+TableCompiler_PG.prototype.dropPrimary = function(constraintName) {
+  constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(this.tableNameRaw + '_pkey');
   this.pushQuery(`alter table ${this.tableName()} drop constraint ${constraintName}`);
 };
 TableCompiler_PG.prototype.dropIndex = function(columns, indexName) {

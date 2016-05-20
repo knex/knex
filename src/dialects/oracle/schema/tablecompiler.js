@@ -64,12 +64,14 @@ assign(TableCompiler_Oracle.prototype, {
     return this.formatter.wrap(utils.generateCombinedName(type, tableName, columns));
   },
 
-  primary(columns) {
-    this.pushQuery(`alter table ${this.tableName()} add primary key (${this.formatter.columnize(columns)})`);
+  primary(columns, constraintName) {
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
+    this.pushQuery(`alter table ${this.tableName()} add constraint ${constraintName} primary key (${this.formatter.columnize(columns)})`);
   },
 
-  dropPrimary() {
-    this.pushQuery(`alter table ${this.tableName()} drop primary key`);
+  dropPrimary(constraintName) {
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(this.tableNameRaw + '_pkey');
+    this.pushQuery(`alter table ${this.tableName()} drop constraint ${constraintName}`);
   },
 
   index(columns, indexName) {

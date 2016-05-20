@@ -160,9 +160,9 @@ assign(TableCompiler_MySQL.prototype, {
     this.pushQuery(`alter table ${this.tableName()} add index ${indexName}(${this.formatter.columnize(columns)})`);
   },
 
-  primary(columns, indexName) {
-    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('primary', this.tableNameRaw, columns);
-    this.pushQuery(`alter table ${this.tableName()} add primary key ${indexName}(${this.formatter.columnize(columns)})`);
+  primary(columns, constraintName) {
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
+    this.pushQuery(`alter table ${this.tableName()} add primary key ${constraintName}(${this.formatter.columnize(columns)})`);
   },
 
   unique(columns, indexName) {
