@@ -136,12 +136,6 @@ assign(Transaction.prototype, {
     return this
   },
 
-  _skipping(sql) {
-    return Promise.reject(new Error(
-      `Transaction ${this.txid} has already been released skipping: ${sql}`
-    ));
-  },
-
   // Acquire a connection and create a disposer - either using the one passed
   // via config or getting one off the client. The disposer will be called once
   // the original promise is marked completed.
