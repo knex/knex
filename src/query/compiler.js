@@ -310,9 +310,12 @@ assign(QueryCompiler.prototype, {
   counter() {
     const { counter } = this.single;
     const toUpdate = {};
-    toUpdate[counter.column] = this.client.raw(this.formatter.wrap(counter.column) +
-      ' ' + (counter.symbol || '+') +
-      ' ' + counter.amount);
+    Object.keys(counter).forEach((column) => {
+      let columnCounter = counter[column];
+      toUpdate[column] = this.client.raw(this.formatter.wrap(column) +
+        ' ' + (columnCounter.symbol || '+') +
+        ' ' + columnCounter.amount);
+    });
     this.single.update = toUpdate;
     return this.update();
   },
