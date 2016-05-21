@@ -647,7 +647,9 @@ assign(Builder.prototype, {
     this._method = 'insert';
     if (!isEmpty(returning)) this.returning(returning);
     let obj = this._single.insert || [];
-    obj = concat(obj, isArray(values) ? values : [values]);
+    if(!isEmpty(values)) {
+      obj = concat(obj, isArray(values) ? values : [values]);
+    }
     this._single.insert = obj;
     return this;
   },
