@@ -1,11 +1,11 @@
 
-var inherits = require('inherits')
+import inherits from 'inherits';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 // Ensure the client has fresh objects so we can tack onto
 // the prototypes without mutating them globally.
-module.exports = function makeClient(ParentClient) {
+export default function makeClient(ParentClient) {
 
   if (typeof ParentClient.prototype === 'undefined') {
     throw new Error('A valid parent client must be passed to makeClient')
@@ -57,14 +57,14 @@ module.exports = function makeClient(ParentClient) {
   inherits(ColumnCompiler, ParentClient.prototype.ColumnCompiler)
 
   assign(Client.prototype, {
-    Formatter:      Formatter,
-    QueryBuilder:   QueryBuilder,
-    SchemaBuilder:  SchemaBuilder,
-    SchemaCompiler: SchemaCompiler,
-    TableBuilder:   TableBuilder,
-    TableCompiler:  TableCompiler,
-    ColumnBuilder:  ColumnBuilder,
-    ColumnCompiler: ColumnCompiler
+    Formatter,
+    QueryBuilder,
+    SchemaBuilder,
+    SchemaCompiler,
+    TableBuilder,
+    TableCompiler,
+    ColumnBuilder,
+    ColumnCompiler
   })
 
   return Client

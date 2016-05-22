@@ -1,17 +1,16 @@
 
 // PostgreSQL
 // -------
-import {assign, map, extend} from 'lodash'
-var inherits       = require('inherits')
-var Client         = require('../../client')
-var Promise        = require('../../promise')
-var utils          = require('./utils')
+import { assign, map, extend } from 'lodash'
+import inherits from 'inherits';
+import Client from '../../client';
+import Promise from '../../promise';
+import * as utils from './utils';
 
-var QueryCompiler  = require('./query/compiler')
-var ColumnCompiler = require('./schema/columncompiler')
-var TableCompiler  = require('./schema/tablecompiler')
-var SchemaCompiler = require('./schema/compiler')
-var PGQueryStream;
+import QueryCompiler from './query/compiler';
+import ColumnCompiler from './schema/columncompiler';
+import TableCompiler from './schema/tablecompiler';
+import SchemaCompiler from './schema/compiler';
 
 function Client_PG(config) {
   Client.apply(this, arguments)
@@ -27,31 +26,31 @@ inherits(Client_PG, Client)
 
 assign(Client_PG.prototype, {
 
-  QueryCompiler: QueryCompiler,
+  QueryCompiler,
 
-  ColumnCompiler: ColumnCompiler,
+  ColumnCompiler,
 
-  SchemaCompiler: SchemaCompiler,
+  SchemaCompiler,
 
-  TableCompiler: TableCompiler,
+  TableCompiler,
 
   dialect: 'postgresql',
 
   driverName: 'pg',
 
-  _driver: function() {
+  _driver() {
     return require('pg')
   },
 
-  wrapIdentifier: function(value) {
+  wrapIdentifier(value) {
     if (value === '*') return value;
-    var matched = value.match(/(.*?)(\[[0-9]\])/);
+    const matched = value.match(/(.*?)(\[[0-9]\])/);
     if (matched) return this.wrapIdentifier(matched[1]) + matched[2];
-    return '"' + value.replace(/"/g, '""') + '"';
+    return `"${value.replace(/"/g, '""')}"`;
   },
 
   // Prep the bindings as needed by PostgreSQL.
-  prepBindings: function(bindings, tz) {
+  prepBindings(bindings, tz) {
     return map(bindings, (binding) => {
       return utils.prepareValue(binding, tz, this.valueForUndefined)
     });
@@ -59,10 +58,10 @@ assign(Client_PG.prototype, {
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
-  acquireRawConnection: function() {
-    var client = this;
+  acquireRawConnection() {
+    const client = this;
     return new Promise(function(resolver, rejecter) {
-      var connection = new client.driver.Client(client.connectionSettings);
+      const connection = new client.driver.Client(client.connectionSettings);
       connection.connect(function(err, connection) {
         if (err) return rejecter(err);
         connection.on('error', client.__endConnection.bind(client, connection));
@@ -82,14 +81,14 @@ assign(Client_PG.prototype, {
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
-  destroyRawConnection: function(connection, cb) {
+  destroyRawConnection(connection, cb) {
     connection.end()
     cb()
   },
 
   // In PostgreSQL, we need to do a version check to do some feature
   // checking on the database.
-  checkVersion: function(connection) {
+  checkVersion(connection) {
     return new Promise(function(resolver, rejecter) {
       connection.query('select version();', function(err, resp) {
         if (err) return rejecter(err);
@@ -100,36 +99,36 @@ assign(Client_PG.prototype, {
 
   // Position the bindings for the query. The escape sequence for question mark
   // is \? (e.g. knex.raw("\\?") since javascript requires '\' to be escaped too...)
-  positionBindings: function(sql) {
-    var questionCount = 0;
+  positionBindings(sql) {
+    let questionCount = 0;
     return sql.replace(/(\\*)(\?)/g, function (match, escapes) {
       if (escapes.length % 2) {
         return '?';
       } else {
         questionCount++;
-        return '$' + questionCount;
+        return `$${questionCount}`;
       }
     });
   },
 
-  setSchemaSearchPath: function(connection, searchPath) {
-    var path = (searchPath || this.searchPath);
+  setSchemaSearchPath(connection, searchPath) {
+    const path = (searchPath || this.searchPath);
 
     if (!path) return Promise.resolve(true);
 
     return new Promise(function(resolver, rejecter) {
-      connection.query('set search_path to ' + path, function(err) {
+      connection.query(`set search_path to ${path}`, function(err) {
         if (err) return rejecter(err);
         resolver(true);
       });
     });
   },
 
-  _stream: function(connection, obj, stream, options) {
-    PGQueryStream = process.browser ? undefined : require('pg-query-stream');
-    var sql = obj.sql = this.positionBindings(obj.sql)
+  _stream(connection, obj, stream, options) {
+    const PGQueryStream = process.browser ? undefined : require('pg-query-stream');
+    const sql = obj.sql = this.positionBindings(obj.sql)
     return new Promise(function(resolver, rejecter) {
-      var queryStream = connection.query(new PGQueryStream(sql, obj.bindings, options));
+      const queryStream = connection.query(new PGQueryStream(sql, obj.bindings, options));
       queryStream.on('error', rejecter);
       // 'error' is not propagated by .pipe, but it breaks the pipe
       stream.on('error', rejecter);
@@ -141,8 +140,8 @@ assign(Client_PG.prototype, {
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
-  _query: function(connection, obj) {
-    var sql = obj.sql = this.positionBindings(obj.sql)
+  _query(connection, obj) {
+    let sql = obj.sql = this.positionBindings(obj.sql)
     if (obj.options) sql = extend({text: sql}, obj.options);
     return new Promise(function(resolver, rejecter) {
       connection.query(sql, obj.bindings, function(err, response) {
@@ -154,20 +153,20 @@ assign(Client_PG.prototype, {
   },
 
   // Ensures the response is returned in the same format as other clients.
-  processResponse: function(obj, runner) {
-    var resp = obj.response;
+  processResponse(obj, runner) {
+    const resp = obj.response;
     if (obj.output) return obj.output.call(runner, resp);
     if (obj.method === 'raw') return resp;
-    var returning = obj.returning;
+    const { returning } = obj;
     if (resp.command === 'SELECT') {
       if (obj.method === 'first') return resp.rows[0];
       if (obj.method === 'pluck') return map(resp.rows, obj.pluck);
       return resp.rows;
     }
     if (returning) {
-      var returns = [];
-      for (var i = 0, l = resp.rows.length; i < l; i++) {
-        var row = resp.rows[i];
+      const returns = [];
+      for (let i = 0, l = resp.rows.length; i < l; i++) {
+        const row = resp.rows[i];
         if (returning === '*' || Array.isArray(returning)) {
           returns[i] = row;
         } else {
@@ -182,7 +181,7 @@ assign(Client_PG.prototype, {
     return resp;
   },
 
-  __endConnection: function(connection) {
+  __endConnection(connection) {
     if (!connection || connection.__knex__disposed) return;
     if (this.pool) {
       connection.__knex__disposed = true;
@@ -190,11 +189,11 @@ assign(Client_PG.prototype, {
     }
   },
 
-  ping: function(resource, callback) {
+  ping(resource, callback) {
     resource.query('SELECT 1', [], callback);
   }
 
 
 })
 
-module.exports = Client_PG
+export default Client_PG

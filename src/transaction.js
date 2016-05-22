@@ -1,20 +1,23 @@
 
 // Transaction
 // -------
-var Promise      = require('./promise')
-var EventEmitter = require('events').EventEmitter
-var inherits     = require('inherits')
+import Promise from './promise';
+import { EventEmitter } from 'events';
+import inherits from 'inherits';
+import Debug from 'debug'
 
-var makeKnex     = require('./util/make-knex')
-var debug        = require('debug')('knex:tx')
+import makeKnex from './util/make-knex';
+import noop from './util/noop';
 
-import {assign, uniqueId} from 'lodash'
+const debug = Debug('knex:tx');
+
+import { assign, uniqueId } from 'lodash';
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
 function Transaction(client, container, config, outerTx) {
 
-  var txid = this.txid = uniqueId('trx')
+  const txid = this.txid = uniqueId('trx')
 
   this.client    = client
   this.outerTx   = outerTx
@@ -25,8 +28,8 @@ function Transaction(client, container, config, outerTx) {
 
   this._promise = Promise.using(this.acquireConnection(client, config, txid), (connection) => {
 
-    var trxClient = this.trxClient = makeTxClient(this, client, connection)
-    var init      = client.transacting ? this.savepoint(connection) : this.begin(connection)
+    const trxClient = this.trxClient = makeTxClient(this, client, connection)
+    const init = client.transacting ? this.savepoint(connection) : this.begin(connection)
 
     init.then(() => {
       return makeTransactor(this, connection, trxClient)
@@ -35,7 +38,7 @@ function Transaction(client, container, config, outerTx) {
       // If we've returned a "thenable" from the transaction container, assume
       // the rollback and commit are chained to this object's success / failure.
       // Directly thrown errors are treated as automatic rollbacks.
-      var result
+      let result
       try {
         result = container(transactor)
       } catch (err) {
@@ -74,27 +77,27 @@ inherits(Transaction, EventEmitter)
 
 assign(Transaction.prototype, {
 
-  isCompleted: function() {
+  isCompleted() {
     return this._completed || this.outerTx && this.outerTx.isCompleted() || false
   },
 
-  begin: function(conn) {
+  begin(conn) {
     return this.query(conn, 'BEGIN;')
   },
 
-  savepoint: function(conn) {
-    return this.query(conn, 'SAVEPOINT ' + this.txid + ';')
+  savepoint(conn) {
+    return this.query(conn, `SAVEPOINT ${this.txid};`)
   },
 
-  commit: function(conn, value) {
+  commit(conn, value) {
     return this.query(conn, 'COMMIT;', 1, value)
   },
 
-  release: function(conn, value) {
-    return this.query(conn, 'RELEASE SAVEPOINT ' + this.txid + ';', 1, value)
+  release(conn, value) {
+    return this.query(conn, `RELEASE SAVEPOINT ${this.txid};`, 1, value)
   },
 
-  rollback: function(conn, error) {
+  rollback(conn, error) {
     return this.query(conn, 'ROLLBACK;', 2, error)
       .timeout(5000)
       .catch(Promise.TimeoutError, () => {
@@ -102,16 +105,16 @@ assign(Transaction.prototype, {
       });
   },
 
-  rollbackTo: function(conn, error) {
-    return this.query(conn, 'ROLLBACK TO SAVEPOINT ' + this.txid, 2, error)
+  rollbackTo(conn, error) {
+    return this.query(conn, `ROLLBACK TO SAVEPOINT ${this.txid}`, 2, error)
       .timeout(5000)
       .catch(Promise.TimeoutError, () => {
         this._resolver();
       });
   },
 
-  query: function(conn, sql, status, value) {
-    var q = this.trxClient.query(conn, sql)
+  query(conn, sql, status, value) {
+    const q = this.trxClient.query(conn, sql)
       .catch((err) => {
         status = 2
         value  = err
@@ -128,23 +131,17 @@ assign(Transaction.prototype, {
     return q;
   },
 
-  debug: function(enabled) {
+  debug(enabled) {
     this._debug = arguments.length ? enabled : true;
     return this
-  },
-
-  _skipping: function(sql) {
-    return Promise.reject(new Error('Transaction ' + this.txid + ' has already been released skipping: ' + sql))
   },
 
   // Acquire a connection and create a disposer - either using the one passed
   // via config or getting one off the client. The disposer will be called once
   // the original promise is marked completed.
-  acquireConnection: function(client, config, txid) {
-    var configConnection = config && config.connection
-    return Promise.try(function() {
-      return configConnection || client.acquireConnection()
-    })
+  acquireConnection(client, config, txid) {
+    const configConnection = config && config.connection
+    return Promise.try(() => configConnection || client.acquireConnection().completed)
     .disposer(function(connection) {
       if (!configConnection) {
         debug('%s: releasing connection', txid)
@@ -157,36 +154,26 @@ assign(Transaction.prototype, {
 
 })
 
-// The transactor is a full featured knex object, with a "commit",
-// a "rollback" and a "savepoint" function. The "savepoint" is just
-// sugar for creating a new transaction. If the rollback is run
-// inside a savepoint, it rolls back to the last savepoint - otherwise
-// it rolls back the transaction.
+// The transactor is a full featured knex object, with a "commit", a "rollback"
+// and a "savepoint" function. The "savepoint" is just sugar for creating a new
+// transaction. If the rollback is run inside a savepoint, it rolls back to the
+// last savepoint - otherwise it rolls back the transaction.
 function makeTransactor(trx, connection, trxClient) {
 
-  var transactor = makeKnex(trxClient)
+  const transactor = makeKnex(trxClient);
 
-  transactor.transaction = function(container, options) {
-    return new trxClient.Transaction(trxClient, container, options, trx)
-  }
-  transactor.savepoint = function(container, options) {
-    return transactor.transaction(container, options)
-  }
+  transactor.transaction = (container, options) =>
+    new trxClient.Transaction(trxClient, container, options, trx);
+
+  transactor.savepoint = (container, options) =>
+    transactor.transaction(container, options);
 
   if (trx.client.transacting) {
-    transactor.commit = function(value) {
-      return trx.release(connection, value)
-    }
-    transactor.rollback = function(error) {
-      return trx.rollbackTo(connection, error);
-    }
+    transactor.commit = value => trx.release(connection, value)
+    transactor.rollback = error => trx.rollbackTo(connection, error)
   } else {
-    transactor.commit = function(value) {
-      return trx.commit(connection, value)
-    }
-    transactor.rollback = function(error) {
-      return trx.rollback(connection, error)
-    }
+    transactor.commit = value => trx.commit(connection, value)
+    transactor.rollback = error => trx.rollback(connection, error)
   }
 
   return transactor
@@ -197,11 +184,12 @@ function makeTransactor(trx, connection, trxClient) {
 // connection and does not release back into the pool.
 function makeTxClient(trx, client, connection) {
 
-  var trxClient                = Object.create(client.constructor.prototype)
+  const trxClient = Object.create(client.constructor.prototype)
   trxClient.config             = client.config
   trxClient.driver             = client.driver
   trxClient.connectionSettings = client.connectionSettings
   trxClient.transacting        = true
+  trxClient.valueForUndefined  = client.valueForUndefined
 
   trxClient.on('query', function(arg) {
     trx.emit('query', arg)
@@ -218,28 +206,29 @@ function makeTxClient(trx, client, connection) {
     client.emit('query-response', response, obj, builder)
   })
 
-  var _query = trxClient.query;
+  const _query = trxClient.query;
   trxClient.query  = function(conn, obj) {
-    var completed = trx.isCompleted()
+    const completed = trx.isCompleted()
     return Promise.try(function() {
       if (conn !== connection) throw new Error('Invalid connection for transaction query.')
       if (completed) completedError(trx, obj)
       return _query.call(trxClient, conn, obj)
     })
   }
-  var _stream = trxClient.stream
+  const _stream = trxClient.stream
   trxClient.stream = function(conn, obj, stream, options) {
-    var completed = trx.isCompleted()
+    const completed = trx.isCompleted()
     return Promise.try(function() {
       if (conn !== connection) throw new Error('Invalid connection for transaction query.')
       if (completed) completedError(trx, obj)
       return _stream.call(trxClient, conn, obj, stream, options)
     })
   }
-  trxClient.acquireConnection = function() {
-    return trx._previousSibling.reflect().then(function () {
-      return connection
-    })
+  trxClient.acquireConnection = function () {
+    return {
+      completed: trx._previousSibling.reflect().then(() => connection),
+      abort: noop
+    }
   }
   trxClient.releaseConnection = function() {
     return Promise.resolve()
@@ -249,12 +238,12 @@ function makeTxClient(trx, client, connection) {
 }
 
 function completedError(trx, obj) {
-  var sql = typeof obj === 'string' ? obj : obj && obj.sql
+  const sql = typeof obj === 'string' ? obj : obj && obj.sql
   debug('%s: Transaction completed: %s', trx.id, sql)
   throw new Error('Transaction query already complete, run with DEBUG=knex:tx for more info')
 }
 
-var promiseInterface = [
+const promiseInterface = [
   'then', 'bind', 'catch', 'finally', 'asCallback',
   'spread', 'map', 'reduce', 'tap', 'thenReturn',
   'return', 'yield', 'ensure', 'exec', 'reflect'
@@ -268,4 +257,4 @@ promiseInterface.forEach(function(method) {
   }
 })
 
-module.exports = Transaction;
+export default Transaction;

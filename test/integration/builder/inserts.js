@@ -702,6 +702,15 @@ module.exports = function(knex) {
         })
       });
 
+      it('transaction.batchInsert using specified transaction', function() {
+        return knex.transaction(function(tr) {
+          tr.batchInsert('BatchInsert', items, 30)
+          .returning(['Col1', 'Col2'])
+          .then(tr.commit)
+          .catch(tr.rollback);
+        })
+      });
+
     });
 
     it('should validate batchInsert batchSize parameter', function() {
@@ -742,5 +751,31 @@ module.exports = function(knex) {
           return knex('accounts').delete().whereIn('id', results.map(function (row) { return row.id }));
         });
     });
+
+    it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function() {
+      if (knex.client.dialect === 'sqlite3') {
+        return true;
+      }
+      return knex.transaction(function(trx) {
+        return trx('accounts')
+          .insert({
+            last_name: 'First Item',
+            email:'findme@example.com',
+            logins: undefined,
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            created_at: new Date(),
+            updated_at: new Date()
+          })
+          .then(function (results) {
+            return trx('accounts').where('email', 'findme@example.com');
+          })
+          .then(function (results) {
+            expect(results[0].logins).to.equal(1);
+            // cleanup to prevent needs for too much changes to other tests
+            return trx('accounts').delete().where('id', results[0].id);
+          });
+      });
+    });
+
   });
 };

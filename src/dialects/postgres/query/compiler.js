@@ -1,11 +1,11 @@
 
 // PostgreSQL Query Builder & Compiler
 // ------
-var inherits = require('inherits');
+import inherits from 'inherits';
 
-var QueryCompiler = require('../../../query/compiler');
+import QueryCompiler from '../../../query/compiler';
 
-import {assign, reduce} from 'lodash'
+import { assign, reduce } from 'lodash'
 
 function QueryCompiler_PG(client, builder) {
   QueryCompiler.call(this, client, builder);
@@ -15,8 +15,8 @@ inherits(QueryCompiler_PG, QueryCompiler);
 assign(QueryCompiler_PG.prototype, {
 
   // Compiles a truncate query.
-  truncate: function() {
-    return 'truncate ' + this.tableName + ' restart identity';
+  truncate() {
+    return `truncate ${this.tableName} restart identity`;
   },
 
   // is used if the an array with multiple empty values supplied
@@ -24,57 +24,57 @@ assign(QueryCompiler_PG.prototype, {
 
   // Compiles an `insert` query, allowing for multiple
   // inserts using a single query statement.
-  insert: function() {
-    var sql = QueryCompiler.prototype.insert.call(this)
+  insert() {
+    const sql = QueryCompiler.prototype.insert.call(this)
     if (sql === '') return sql;
-    var returning = this.single.returning;
+    const { returning } = this.single;
     return {
       sql: sql + this._returning(returning),
-      returning: returning
+      returning
     };
   },
 
   // Compiles an `update` query, allowing for a return value.
-  update: function() {
-    var updateData = this._prepUpdate(this.single.update);
-    var wheres     = this.where();
-    var returning  = this.single.returning;
+  update() {
+    const updateData = this._prepUpdate(this.single.update);
+    const wheres = this.where();
+    const { returning } = this.single;
     return {
-      sql: 'update ' + this.tableName + ' set ' + updateData.join(', ') +
-      (wheres ? ' ' + wheres : '') +
+      sql: `update ${this.tableName} set ${updateData.join(', ')}` +
+      (wheres ? ` ${wheres}` : '') +
       this._returning(returning),
-      returning: returning
+      returning
     };
   },
 
   // Compiles an `update` query, allowing for a return value.
-  del: function() {
-    var sql = QueryCompiler.prototype.del.apply(this, arguments);
-    var returning  = this.single.returning;
+  del() {
+    const sql = QueryCompiler.prototype.del.apply(this, arguments);
+    const { returning } = this.single;
     return {
       sql: sql + this._returning(returning),
-      returning: returning
+      returning
     };
   },
 
-  _returning: function(value) {
-    return value ? ' returning ' + this.formatter.columnize(value) : '';
+  _returning(value) {
+    return value ? ` returning ${this.formatter.columnize(value)}` : '';
   },
 
-  forUpdate: function() {
+  forUpdate() {
     return 'for update';
   },
 
-  forShare: function() {
+  forShare() {
     return 'for share';
   },
 
   // Compiles a columnInfo query
-  columnInfo: function() {
-    var column = this.single.columnInfo;
+  columnInfo() {
+    const column = this.single.columnInfo;
 
-    var sql = 'select * from information_schema.columns where table_name = ? and table_catalog = ?';
-    var bindings = [this.single.table, this.client.database()];
+    let sql = 'select * from information_schema.columns where table_name = ? and table_catalog = ?';
+    const bindings = [this.single.table, this.client.database()];
 
     if (this.single.schema) {
       sql += ' and table_schema = ?';
@@ -84,10 +84,10 @@ assign(QueryCompiler_PG.prototype, {
     }
 
     return {
-      sql: sql,
-      bindings: bindings,
-      output: function(resp) {
-        var out = reduce(resp.rows, function(columns, val) {
+      sql,
+      bindings,
+      output(resp) {
+        const out = reduce(resp.rows, function(columns, val) {
           columns[val.column_name] = {
             type: val.data_type,
             maxLength: val.character_maximum_length,
@@ -103,4 +103,4 @@ assign(QueryCompiler_PG.prototype, {
 
 })
 
-module.exports = QueryCompiler_PG;
+export default QueryCompiler_PG;

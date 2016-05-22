@@ -1,11 +1,11 @@
 
-var helpers = require('./helpers')
-import {isArray, map, clone, each} from 'lodash'
+import * as helpers from './helpers';
+import { isArray, map, clone, each } from 'lodash'
 
-module.exports = function(Target) {
+export default function(Target) {
 
   Target.prototype.toQuery = function(tz) {
-    var data = this.toSQL(this._method, tz);
+    let data = this.toSQL(this._method, tz);
     if (!isArray(data)) data = [data];
     return map(data, (statement) => {
       return this._formatQuery(statement.sql, statement.bindings, tz);
@@ -19,7 +19,7 @@ module.exports = function(Target) {
 
   // Create a new instance of the `Runner`, passing in the current object.
   Target.prototype.then = function(/* onFulfilled, onRejected */) {
-    var result = this.client.runner(this).run()
+    const result = this.client.runner(this).run()
     return result.then.apply(result, arguments);
   };
 
@@ -28,7 +28,7 @@ module.exports = function(Target) {
   Target.prototype.options = function(opts) {
     this._options = this._options || [];
     this._options.push(clone(opts) || {});
-    this._cached  = undefined
+    this._cached = undefined
     return this;
   };
 
@@ -48,7 +48,7 @@ module.exports = function(Target) {
   Target.prototype.transacting = function(t) {
     if (t && t.client) {
       if (!t.client.transacting) {
-        helpers.warn('Invalid transaction value: ' + t.client)
+        helpers.warn(`Invalid transaction value: ${t.client}`)
       } else {
         this.client = t.client
       }
@@ -72,10 +72,10 @@ module.exports = function(Target) {
     'spread', 'map', 'reduce', 'tap', 'thenReturn',
     'return', 'yield', 'ensure', 'exec', 'reflect'], function(method) {
     Target.prototype[method] = function() {
-      var then = this.then();
+      let then = this.then();
       then = then[method].apply(then, arguments);
       return then;
     };
   });
 
-};
+}

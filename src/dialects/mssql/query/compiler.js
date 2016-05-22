@@ -1,10 +1,10 @@
 
 // MSSQL Query Compiler
 // ------
-var inherits      = require('inherits')
-var QueryCompiler = require('../../../query/compiler')
+import inherits from 'inherits';
+import QueryCompiler from '../../../query/compiler';
 
-import {assign, isEmpty} from 'lodash'
+import { assign, isEmpty } from 'lodash'
 
 function QueryCompiler_MSSQL(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -17,11 +17,13 @@ assign(QueryCompiler_MSSQL.prototype, {
 
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
-  insert: function() {
-    var insertValues = this.single.insert || [];
-    var sql = 'insert into ' + this.tableName + ' ';
-    var returning = this.single.returning;
-    var returningSql = (returning ? this._returning('insert', returning) + ' ' : '')
+  insert() {
+    const insertValues = this.single.insert || [];
+    let sql = `insert into ${this.tableName} `;
+    const { returning } = this.single;
+    const returningSql = returning
+      ? this._returning('insert', returning) + ' '
+      : '';
 
     if (Array.isArray(insertValues)) {
       if (insertValues.length === 0) {
@@ -30,21 +32,23 @@ assign(QueryCompiler_MSSQL.prototype, {
     } else if (typeof insertValues === 'object' && isEmpty(insertValues)) {
       return {
         sql: sql + returningSql + this._emptyInsertValue,
-        returning: returning
+        returning
       };
     }
 
-    var insertData = this._prepInsert(insertValues);
+    const insertData = this._prepInsert(insertValues);
     if (typeof insertData === 'string') {
       sql += insertData;
     } else  {
       if (insertData.columns.length) {
-        sql += '(' + this.formatter.columnize(insertData.columns)
-        sql += ') ' + returningSql + 'values ('
-        var i = -1
+        sql += `(${this.formatter.columnize(insertData.columns)}`
+        sql += `) ${returningSql}values (`
+        let i = -1
         while (++i < insertData.values.length) {
           if (i !== 0) sql += '), ('
-          sql += this.formatter.parameterize(insertData.values[i], this.client.valueForUndefined)
+          sql += this.formatter.parameterize(
+            insertData.values[i], this.client.valueForUndefined
+          )
         }
         sql += ')';
       } else if (insertValues.length === 1 && insertValues[0]) {
@@ -54,41 +58,41 @@ assign(QueryCompiler_MSSQL.prototype, {
       }
     }
     return {
-      sql: sql,
-      returning: returning
+      sql,
+      returning
     };
   },
 
   // Compiles an `update` query, allowing for a return value.
-  update: function() {
-    var updates   = this._prepUpdate(this.single.update);
-    var join      = this.join();
-    var where     = this.where();
-    var order     = this.order();
-    var top       = this.top();
-    var returning = this.single.returning;
+  update() {
+    const updates = this._prepUpdate(this.single.update);
+    const join = this.join();
+    const where = this.where();
+    const order = this.order();
+    const top = this.top();
+    const { returning } = this.single;
     return {
-      sql: 'update ' + (top ? top + ' ' : '') + this.tableName +
-        (join ? ' ' + join : '') +
+      sql: `update ${top ? top + ' ' : ''}${this.tableName}` +
+        (join ? ` ${join}` : '') +
         ' set ' + updates.join(', ') +
-        (returning ? ' ' + this._returning('update', returning) : '') +
-        (where ? ' ' + where : '') +
-        (order ? ' ' + order : '') +
+        (returning ? ` ${this._returning('update', returning)}` : '') +
+        (where ? ` ${where}` : '') +
+        (order ? ` ${order}` : '') +
         (!returning ? this._returning('rowcount', '@@rowcount') : ''),
       returning: returning || '@@rowcount'
     };
   },
 
   // Compiles a `delete` query.
-  del: function() {
+  del() {
     // Make sure tableName is processed by the formatter first.
-    var tableName  = this.tableName;
-    var wheres = this.where();
-    var returning = this.single.returning;
+    const { tableName } = this;
+    const wheres = this.where();
+    const { returning } = this.single;
     return {
-      sql: 'delete from ' + tableName +
-        (returning ? ' ' + this._returning('del', returning) : '') +
-        (wheres ? ' ' + wheres : '') +
+      sql: `delete from ${tableName}` +
+        (returning ? ` ${this._returning('del', returning)}` : '') +
+        (wheres ? ` ${wheres}` : '') +
         (!returning ? this._returning('rowcount', '@@rowcount') : ''),
       returning: returning || '@@rowcount'
     };
@@ -96,14 +100,14 @@ assign(QueryCompiler_MSSQL.prototype, {
 
 
   // Compiles the columns in the query, specifying if an item was distinct.
-  columns: function() {
-    var distinct = false;
+  columns() {
+    let distinct = false;
     if (this.onlyUnions()) return ''
-    var columns = this.grouped.columns || []
-    var i = -1, sql = [];
+    const columns = this.grouped.columns || []
+    let i = -1, sql = [];
     if (columns) {
       while (++i < columns.length) {
-        var stmt = columns[i];
+        const stmt = columns[i];
         if (stmt.distinct) distinct = true
         if (stmt.type === 'aggregate') {
           sql.push(this.aggregate(stmt))
@@ -114,42 +118,54 @@ assign(QueryCompiler_MSSQL.prototype, {
       }
     }
     if (sql.length === 0) sql = ['*'];
-    var top = this.top();
-    return 'select ' + (distinct ? 'distinct ' : '') +
+    const top = this.top();
+    return `select ${distinct ? 'distinct ' : ''}` +
       (top ? top + ' ' : '') +
-      sql.join(', ') + (this.tableName ? ' from ' + this.tableName : '');
+      sql.join(', ') + (this.tableName ? ` from ${this.tableName}` : '');
   },
 
-  _returning: function(method, value) {
+  _returning(method, value) {
     switch (method) {
       case 'update':
-      case 'insert': return value ? 'output ' + this.formatter.columnizeWithPrefix('inserted.', value) : '';
-      case 'del': return value ? 'output ' + this.formatter.columnizeWithPrefix('deleted.', value) : '';
-      case 'rowcount': return value ? ';select @@rowcount' : '';
+      case 'insert':
+        return value
+          ? `output ${this.formatter.columnizeWithPrefix('inserted.', value)}`
+          : '';
+      case 'del':
+        return value
+          ? `output ${this.formatter.columnizeWithPrefix('deleted.', value)}`
+          : '';
+      case 'rowcount':
+        return value
+          ? ';select @@rowcount'
+          : '';
     }
   },
 
   // Compiles a `truncate` query.
-  truncate: function() {
-    return 'truncate table ' + this.tableName;
+  truncate() {
+    return `truncate table ${this.tableName}`;
   },
 
-  forUpdate: function() {
+  forUpdate() {
     return 'with (READCOMMITTEDLOCK)';
   },
 
-  forShare: function() {
+  forShare() {
     return 'with (NOLOCK)';
   },
 
   // Compiles a `columnInfo` query.
-  columnInfo: function() {
-    var column = this.single.columnInfo;
+  columnInfo() {
+    const column = this.single.columnInfo;
+    const sql =
+      `select * from information_schema.columns` +
+      `where table_name = ? and table_schema = 'dbo'`;
     return {
-      sql: 'select * from information_schema.columns where table_name = ? and table_schema = \'dbo\'',
+      sql,
       bindings: [this.single.table],
-      output: function(resp) {
-        var out = resp.reduce(function(columns, val) {
+      output(resp) {
+        const out = resp.reduce(function(columns, val) {
           columns[val.COLUMN_NAME] = {
             defaultValue: val.COLUMN_DEFAULT,
             type: val.DATA_TYPE,
@@ -163,24 +179,24 @@ assign(QueryCompiler_MSSQL.prototype, {
     };
   },
 
-  top: function() {
-    var noLimit = !this.single.limit && this.single.limit !== 0;
-    var noOffset = !this.single.offset;
+  top() {
+    const noLimit = !this.single.limit && this.single.limit !== 0;
+    const noOffset = !this.single.offset;
     if (noLimit || !noOffset) return '';
-    return 'top (' + this.formatter.parameter(this.single.limit) + ')';
+    return `top (${this.formatter.parameter(this.single.limit)})`;
   },
 
-  limit: function() {
+  limit() {
     return '';
   },
 
-  offset: function() {
-    var noLimit = !this.single.limit && this.single.limit !== 0;
-    var noOffset = !this.single.offset;
+  offset() {
+    const noLimit = !this.single.limit && this.single.limit !== 0;
+    const noOffset = !this.single.offset;
     if (noOffset) return '';
-    var offset = 'offset ' + (noOffset ? '0' : this.formatter.parameter(this.single.offset)) + ' rows';
+    let offset = `offset ${noOffset ? '0' : this.formatter.parameter(this.single.offset)} rows`;
     if (!noLimit) {
-      offset += ' fetch next ' + this.formatter.parameter(this.single.limit) + ' rows only';
+      offset += ` fetch next ${this.formatter.parameter(this.single.limit)} rows only`;
     }
     return offset;
   },
@@ -189,4 +205,4 @@ assign(QueryCompiler_MSSQL.prototype, {
 
 // Set the QueryBuilder & QueryCompiler on the client object,
 // in case anyone wants to modify things to suit their own purposes.
-module.exports = QueryCompiler_MSSQL;
+export default QueryCompiler_MSSQL;

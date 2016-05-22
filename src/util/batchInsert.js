@@ -1,6 +1,6 @@
-'use strict';
 
-import {isNumber, isString, isArray, chunk, flatten} from 'lodash';
+
+import { isNumber, isString, isArray, chunk, flatten } from 'lodash';
 import Promise from '../promise';
 
 export default class BatchInsert {
@@ -13,13 +13,16 @@ export default class BatchInsert {
       throw new TypeError(`Invalid batch: Expected array, got ${typeof batch}`)
     }
 
-    this.client           = client;
-    this.tableName        = tableName;
-    this.batch            = chunk(batch, chunkSize);
-    this._returning       = void 0;
-    this._transaction     = null;
+    this.client = client;
+    this.tableName = tableName;
+    this.batch = chunk(batch, chunkSize);
+    this._returning = void 0;
+    this._transaction = null;
     this._autoTransaction = true;
-    
+
+    if (client.transacting) {
+      this.transacting(client);
+    }
   }
 
   /**
@@ -34,12 +37,14 @@ export default class BatchInsert {
   }
 
   /**
-   * User may supply their own transaction.
-   * If this is the case, autoTransaction = false, meaning we don't automatically commit/rollback the transaction. The responsibility instead falls on the user.
+   * User may supply their own transaction. If this is the case,
+   * `autoTransaction = false`, meaning we don't automatically commit/rollback
+   * the transaction. The responsibility instead falls on the user.
+   *
    * @param transaction
    */
   transacting(transaction) {
-    this._transaction     = transaction;
+    this._transaction = transaction;
     this._autoTransaction = false;
     return this;
   }

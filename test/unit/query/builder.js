@@ -3348,4 +3348,27 @@ describe("QueryBuilder", function() {
     .not
     .throw(TypeError);
   });
+
+
+  it('#1402 - raw should take "not" into consideration in querybuilder', function() {
+    testsql(qb().from('testtable').whereNot(raw('is_active')), {
+      mysql: {
+        sql: 'select * from `testtable` where not is_active',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select * from "testtable" where not is_active',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [testtable] where not is_active',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "testtable" where not is_active',
+        bindings: []
+      }
+    })
+  });
+
 });

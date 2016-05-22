@@ -1,9 +1,9 @@
 
-import {assign, uniq, map} from 'lodash'
-var inherits       = require('inherits')
-var utils          = require('../utils')
-var Raw            = require('../../../raw')
-var ColumnCompiler = require('../../../schema/columncompiler')
+import { assign, uniq, map } from 'lodash'
+import inherits from 'inherits';
+import * as utils from '../utils';
+import Raw from '../../../raw';
+import ColumnCompiler from '../../../schema/columncompiler';
 
 // Column Compiler
 // -------
@@ -17,46 +17,51 @@ inherits(ColumnCompiler_Oracle, ColumnCompiler);
 assign(ColumnCompiler_Oracle.prototype, {
 
   // helper function for pushAdditional in increments() and bigincrements()
-  _createAutoIncrementTriggerAndSequence: function () {
+  _createAutoIncrementTriggerAndSequence () {
     // TODO Add warning that sequence etc is created
     this.pushAdditional(function () {
-      var sequenceName = this.tableCompiler._indexCommand('seq', this.tableCompiler.tableNameRaw);
-      var triggerName  = this.tableCompiler._indexCommand('trg', this.tableCompiler.tableNameRaw, this.getColumnName());
-      var tableName    = this.tableCompiler.tableName();
-      var columnName   = this.formatter.wrap(this.getColumnName());
-      var createTriggerSQL = 'create or replace trigger ' + triggerName + ' before insert on ' + tableName +
-        ' for each row' +
-        ' when (new.' + columnName + ' is null) ' +
-        ' begin' +
-        ' select ' + sequenceName + '.nextval into :new.' + columnName + ' from dual;' +
-        ' end;';
-      this.pushQuery(utils.wrapSqlWithCatch('create sequence ' + sequenceName, -955));
+      const sequenceName = this.tableCompiler._indexCommand(
+        'seq', this.tableCompiler.tableNameRaw
+      );
+      const triggerName = this.tableCompiler._indexCommand(
+        'trg', this.tableCompiler.tableNameRaw, this.getColumnName()
+      );
+      const tableName = this.tableCompiler.tableName();
+      const columnName = this.formatter.wrap(this.getColumnName());
+      const createTriggerSQL =
+        `create or replace trigger ${triggerName} before insert on ${tableName}` +
+        ` for each row` +
+        ` when (new.${columnName} is null) ` +
+        ` begin` +
+        ` select ${sequenceName}.nextval into :new.${columnName} from dual;` +
+        ` end;`;
+      this.pushQuery(utils.wrapSqlWithCatch(`create sequence ${sequenceName}`, -955));
       this.pushQuery(createTriggerSQL);
     });
   },
 
-  increments: function () {
+  increments () {
     this._createAutoIncrementTriggerAndSequence();
     return 'integer not null primary key';
   },
 
-  bigincrements: function () {
+  bigincrements () {
     this._createAutoIncrementTriggerAndSequence();
     return 'number(20, 0) not null primary key';
   },
 
-  floating: function(precision) {
-    var parsedPrecision = this._num(precision, 0);
-    return 'float' + (parsedPrecision ? '(' + parsedPrecision + ')' : '');
+  floating(precision) {
+    const parsedPrecision = this._num(precision, 0);
+    return `float${parsedPrecision ? `(${parsedPrecision})` : ''}`;
   },
 
-  double: function(precision, scale) {
+  double(precision, scale) {
     // if (!precision) return 'number'; // TODO: Check If default is ok
-    return 'number(' + this._num(precision, 8) + ', ' + this._num(scale, 2) + ')';
+    return `number(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
   },
 
-  integer: function(length) {
-      return length ? 'number(' + this._num(length, 11) + ')' : 'integer';
+  integer(length) {
+    return length ? `number(${this._num(length, 11)})` : 'integer';
   },
 
   tinyint: 'smallint',
@@ -69,25 +74,25 @@ assign(ColumnCompiler_Oracle.prototype, {
 
   text: 'clob',
 
-  enu: function (allowed) {
+  enu (allowed) {
     allowed = uniq(allowed);
-    var maxLength = (allowed || []).reduce(function (maxLength, name) {
-      return Math.max(maxLength, String(name).length);
-    }, 1);
+    const maxLength = (allowed || []).reduce((maxLength, name) =>
+      Math.max(maxLength, String(name).length)
+    , 1);
 
     // implicitly add the enum values as checked values
     this.columnBuilder._modifiers.checkIn = [allowed];
 
-    return "varchar2(" + maxLength + ")";
+    return `varchar2(${maxLength})`;
   },
 
   time: 'timestamp with time zone',
 
-  datetime: function(without) {
+  datetime(without) {
     return without ? 'timestamp' : 'timestamp with time zone';
   },
 
-  timestamp: function(without) {
+  timestamp(without) {
     return without ? 'timestamp' : 'timestamp with time zone';
   },
 
@@ -95,27 +100,27 @@ assign(ColumnCompiler_Oracle.prototype, {
 
   json: 'clob',
 
-  bool: function () {
+  bool () {
     // implicitly add the check for 0 and 1
     this.columnBuilder._modifiers.checkIn = [[0, 1]];
     return 'number(1, 0)';
   },
 
-  varchar: function(length) {
-    return 'varchar2(' + this._num(length, 255) + ')';
+  varchar(length) {
+    return `varchar2(${this._num(length, 255)})`;
   },
 
   // Modifiers
   // ------
 
-  comment: function(comment) {
+  comment(comment) {
     this.pushAdditional(function() {
-      this.pushQuery('comment on column ' + this.tableCompiler.tableName() + '.' +
+      this.pushQuery(`comment on column ${this.tableCompiler.tableName()}.` +
         this.formatter.wrap(this.args[0]) + " is '" + (comment || '')+ "'");
     }, comment);
   },
 
-  checkIn: function (value) {
+  checkIn (value) {
     // TODO: Maybe accept arguments also as array
     // TODO: value(s) should be escaped properly
     if (value === undefined) {
@@ -123,15 +128,13 @@ assign(ColumnCompiler_Oracle.prototype, {
     } else if (value instanceof Raw) {
       value = value.toQuery();
     } else if (Array.isArray(value)) {
-      value = map(value, function (v) {
-        return "'" + v + "'";
-      }).join(', ');
+      value = map(value, v => `'${v}'`).join(', ');
     } else {
-      value = "'" + value + "'";
+      value = `'${value}'`;
     }
-    return 'check (' + this.formatter.wrap(this.args[0]) + ' in (' + value + '))';
+    return `check (${this.formatter.wrap(this.args[0])} in (${value}))`;
   }
 
 });
 
-module.exports = ColumnCompiler_Oracle;
+export default ColumnCompiler_Oracle;

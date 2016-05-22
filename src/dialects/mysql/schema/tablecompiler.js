@@ -1,12 +1,13 @@
+/* eslint max-len:0 no-console:0*/
 
 // MySQL Table Builder & Compiler
 // -------
-var inherits      = require('inherits');
-var TableCompiler = require('../../../schema/tablecompiler');
-var helpers       = require('../../../helpers');
-var Promise       = require('../../../promise');
+import inherits from 'inherits';
+import TableCompiler from '../../../schema/tablecompiler';
+import * as helpers from '../../../helpers';
+import Promise from '../../../promise';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 // Table Compiler
 // ------
@@ -18,29 +19,30 @@ inherits(TableCompiler_MySQL, TableCompiler);
 
 assign(TableCompiler_MySQL.prototype, {
 
-  createQuery: function(columns, ifNot) {
-    var createStatement = ifNot ? 'create table if not exists ' : 'create table ';
-    var client = this.client, conn = {},
-      sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
+  createQuery(columns, ifNot) {
+    const createStatement = ifNot ? 'create table if not exists ' : 'create table ';
+    const { client } = this;
+    let conn = {};
+    let sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
 
     // Check if the connection settings are set.
     if (client.connectionSettings) {
       conn = client.connectionSettings;
     }
 
-    var charset   = this.single.charset || conn.charset || '';
-    var collation = this.single.collate || conn.collate || '';
-    var engine    = this.single.engine  || '';
+    const charset = this.single.charset || conn.charset || '';
+    const collation = this.single.collate || conn.collate || '';
+    const engine = this.single.engine  || '';
 
     // var conn = builder.client.connectionSettings;
-    if (charset)   sql += ' default character set ' + charset;
-    if (collation) sql += ' collate ' + collation;
-    if (engine)    sql += ' engine = ' + engine;
+    if (charset)   sql += ` default character set ${charset}`;
+    if (collation) sql += ` collate ${collation}`;
+    if (engine)    sql += ` engine = ${engine}`;
 
     if (this.single.comment) {
-      var comment = (this.single.comment || '');
+      const comment = (this.single.comment || '');
       if (comment.length > 60) helpers.warn('The max length for a table comment is 60 characters');
-      sql += " comment = '" + comment + "'";
+      sql += ` comment = '${comment}'`;
     }
 
     this.pushQuery(sql);
@@ -51,29 +53,29 @@ assign(TableCompiler_MySQL.prototype, {
   dropColumnPrefix: 'drop ',
 
   // Compiles the comment on the table.
-  comment: function(comment) {
-    this.pushQuery('alter table ' + this.tableName() + " comment = '" + comment + "'");
+  comment(comment) {
+    this.pushQuery(`alter table ${this.tableName()} comment = '${comment}'`);
   },
 
-  changeType: function() {
+  changeType() {
     // alter table + table + ' modify ' + wrapped + '// type';
   },
 
   // Renames a column on the table.
-  renameColumn: function(from, to) {
-    var compiler = this;
-    var table    = this.tableName();
-    var wrapped  = this.formatter.wrap(from) + ' ' + this.formatter.wrap(to);
+  renameColumn(from, to) {
+    const compiler = this;
+    const table = this.tableName();
+    const wrapped = this.formatter.wrap(from) + ' ' + this.formatter.wrap(to);
 
     this.pushQuery({
-      sql: 'show fields from ' + table + ' where field = ' +
+      sql: `show fields from ${table} where field = ` +
         this.formatter.parameter(from),
-      output: function(resp) {
-        var column = resp[0];
-        var runner = this;
+      output(resp) {
+        const column = resp[0];
+        const runner = this;
         return compiler.getFKRefs(runner).get(0)
-          .then(function (refs) {
-            return Promise.try(function () {
+          .then(refs =>
+            Promise.try(function () {
               if (!refs.length) { return; }
               return compiler.dropFKRefs(runner, refs);
             }).then(function () {
@@ -87,7 +89,7 @@ assign(TableCompiler_MySQL.prototype, {
               }
 
               return runner.query({
-                sql: sql
+                sql
               });
             }).then(function () {
               if (!refs.length) { return; }
@@ -100,15 +102,15 @@ assign(TableCompiler_MySQL.prototype, {
                 }
                 return ref;
               }));
-            });
-          });
+            })
+          );
       }
     });
   },
 
-  getFKRefs: function (runner) {
-    var formatter = this.client.formatter();
-    var sql = 'SELECT KCU.CONSTRAINT_NAME, KCU.TABLE_NAME, KCU.COLUMN_NAME, '+
+  getFKRefs (runner) {
+    const formatter = this.client.formatter();
+    const sql = 'SELECT KCU.CONSTRAINT_NAME, KCU.TABLE_NAME, KCU.COLUMN_NAME, '+
               '       KCU.REFERENCED_TABLE_NAME, KCU.REFERENCED_COLUMN_NAME, '+
               '       RC.UPDATE_RULE, RC.DELETE_RULE '+
               'FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS KCU '+
@@ -119,78 +121,78 @@ assign(TableCompiler_MySQL.prototype, {
               '  AND RC.CONSTRAINT_SCHEMA = ' + formatter.parameter(this.client.database());
 
     return runner.query({
-      sql: sql,
+      sql,
       bindings: formatter.bindings
     });
   },
 
-  dropFKRefs: function (runner, refs) {
-    var formatter = this.client.formatter();
+  dropFKRefs (runner, refs) {
+    const formatter = this.client.formatter();
 
     return Promise.all(refs.map(function (ref) {
-      var constraintName = formatter.wrap(ref.CONSTRAINT_NAME);
-      var tableName  = formatter.wrap(ref.TABLE_NAME);
+      const constraintName = formatter.wrap(ref.CONSTRAINT_NAME);
+      const tableName = formatter.wrap(ref.TABLE_NAME);
       return runner.query({
-        sql: 'alter table ' + tableName + ' drop foreign key ' + constraintName
+        sql: `alter table ${tableName} drop foreign key ${constraintName}`
       });
     }));
   },
-  createFKRefs: function (runner, refs) {
-    var formatter = this.client.formatter();
+  createFKRefs (runner, refs) {
+    const formatter = this.client.formatter();
 
     return Promise.all(refs.map(function (ref) {
-      var tableName  = formatter.wrap(ref.TABLE_NAME);
-      var keyName    = formatter.wrap(ref.CONSTRAINT_NAME);
-      var column     = formatter.columnize(ref.COLUMN_NAME);
-      var references = formatter.columnize(ref.REFERENCED_COLUMN_NAME);
-      var inTable    = formatter.wrap(ref.REFERENCED_TABLE_NAME);
-      var onUpdate   = ' ON UPDATE ' + ref.UPDATE_RULE;
-      var onDelete   = ' ON DELETE ' + ref.DELETE_RULE;
+      const tableName = formatter.wrap(ref.TABLE_NAME);
+      const keyName = formatter.wrap(ref.CONSTRAINT_NAME);
+      const column = formatter.columnize(ref.COLUMN_NAME);
+      const references = formatter.columnize(ref.REFERENCED_COLUMN_NAME);
+      const inTable = formatter.wrap(ref.REFERENCED_TABLE_NAME);
+      const onUpdate = ` ON UPDATE ${ref.UPDATE_RULE}`;
+      const onDelete = ` ON DELETE ${ref.DELETE_RULE}`;
 
       return runner.query({
-        sql: 'alter table ' + tableName + ' add constraint ' + keyName + ' ' +
+        sql: `alter table ${tableName} add constraint ${keyName} ` +
           'foreign key (' + column + ') references ' + inTable + ' (' + references + ')' + onUpdate + onDelete
       });
     }));
   },
-  index: function(columns, indexName) {
+  index(columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + " add index " + indexName + "(" + this.formatter.columnize(columns) + ")");
+    this.pushQuery(`alter table ${this.tableName()} add index ${indexName}(${this.formatter.columnize(columns)})`);
   },
 
-  primary: function(columns, indexName) {
-    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('primary', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + " add primary key " + indexName + "(" + this.formatter.columnize(columns) + ")");
+  primary(columns, constraintName) {
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
+    this.pushQuery(`alter table ${this.tableName()} add primary key ${constraintName}(${this.formatter.columnize(columns)})`);
   },
 
-  unique: function(columns, indexName) {
+  unique(columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + " add unique " + indexName + "(" + this.formatter.columnize(columns) + ")");
+    this.pushQuery(`alter table ${this.tableName()} add unique ${indexName}(${this.formatter.columnize(columns)})`);
   },
 
   // Compile a drop index command.
-  dropIndex: function(columns, indexName) {
+  dropIndex(columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + ' drop index ' + indexName);
+    this.pushQuery(`alter table ${this.tableName()} drop index ${indexName}`);
   },
 
   // Compile a drop foreign key command.
-  dropForeign: function(columns, indexName) {
+  dropForeign(columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + ' drop foreign key ' + indexName);
+    this.pushQuery(`alter table ${this.tableName()} drop foreign key ${indexName}`);
   },
 
   // Compile a drop primary key command.
-  dropPrimary: function() {
-    this.pushQuery('alter table ' + this.tableName() + ' drop primary key');
+  dropPrimary() {
+    this.pushQuery(`alter table ${this.tableName()} drop primary key`);
   },
 
   // Compile a drop unique key command.
-  dropUnique: function(column, indexName) {
+  dropUnique(column, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, column);
-    this.pushQuery('alter table ' + this.tableName() + ' drop index ' + indexName);
+    this.pushQuery(`alter table ${this.tableName()} drop index ${indexName}`);
   }
 
 })
 
-module.exports = TableCompiler_MySQL;
+export default TableCompiler_MySQL;

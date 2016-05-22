@@ -1,14 +1,14 @@
 
 // MySQL2 Client
 // -------
-var inherits     = require('inherits')
-var Client_MySQL = require('../mysql')
-var Promise      = require('../../promise')
-var helpers      = require('../../helpers')
-import {pick, map, assign} from 'lodash'
-var Transaction  = require('./transaction')
+import inherits from 'inherits';
+import Client_MySQL from '../mysql';
+import Promise from '../../promise';
+import * as helpers from '../../helpers';
+import { pick, map, assign } from 'lodash'
+import Transaction from './transaction';
 
-var configOptions = [
+const configOptions = [
   'isServer',
   'stream',
   'host',
@@ -53,17 +53,17 @@ assign(Client_MySQL2.prototype, {
   // The "dialect", for reference elsewhere.
   driverName: 'mysql2',
 
-  Transaction: Transaction,
+  Transaction,
 
-  _driver: function() {
+  _driver() {
     return require('mysql2')
   },
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
-  acquireRawConnection: function() {
-    var client = this;
-    var connection = this.driver.createConnection(pick(this.connectionSettings, configOptions))
+  acquireRawConnection() {
+    const client = this;
+    const connection = this.driver.createConnection(pick(this.connectionSettings, configOptions))
     return new Promise(function(resolver, rejecter) {
       connection.connect(function(err) {
         if (err) return rejecter(err)
@@ -73,19 +73,20 @@ assign(Client_MySQL2.prototype, {
     })
   },
 
-  processResponse: function(obj, runner) {
-    var response = obj.response
-    var method   = obj.method
-    var rows     = response[0]
-    var fields   = response[1]
+  processResponse(obj, runner) {
+    const { response } = obj
+    const { method } = obj
+    const rows = response[0]
+    const fields = response[1]
     if (obj.output) return obj.output.call(runner, rows, fields)
     switch (method) {
       case 'select':
       case 'pluck':
-      case 'first':
-        var resp = helpers.skim(rows)
+      case 'first': {
+        const resp = helpers.skim(rows)
         if (method === 'pluck') return map(resp, obj.pluck)
         return method === 'first' ? resp[0] : resp
+      }
       case 'insert':
         return [rows.insertId]
       case 'del':
@@ -97,10 +98,10 @@ assign(Client_MySQL2.prototype, {
     }
   },
 
-  ping: function(resource, callback) {
+  ping(resource, callback) {
     resource.query('SELECT 1', callback);
   }
 
 })
 
-module.exports = Client_MySQL2;
+export default Client_MySQL2;

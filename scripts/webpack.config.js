@@ -23,6 +23,12 @@ module.exports = {
     libraryTarget: 'umd'
   },
 
+  module: {
+    loaders: [{
+      test: /\.json$/, loader: 'json-loader'
+    }]
+  },
+
   externals: externals,
 
   plugins: plugins

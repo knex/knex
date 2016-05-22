@@ -1,19 +1,19 @@
 
 // MySQL Client
 // -------
-var inherits       = require('inherits')
+import inherits from 'inherits';
 
-var Client         = require('../../client')
-var Promise        = require('../../promise')
-var helpers        = require('../../helpers')
+import Client from '../../client';
+import Promise from '../../promise';
+import * as helpers from '../../helpers';
 
-var Transaction    = require('./transaction')
-var QueryCompiler  = require('./query/compiler')
-var SchemaCompiler = require('./schema/compiler')
-var TableCompiler  = require('./schema/tablecompiler')
-var ColumnCompiler = require('./schema/columncompiler')
+import Transaction from './transaction';
+import QueryCompiler from './query/compiler';
+import SchemaCompiler from './schema/compiler';
+import TableCompiler from './schema/tablecompiler';
+import ColumnCompiler from './schema/columncompiler';
 
-import {assign, map} from 'lodash'
+import { assign, map } from 'lodash'
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
@@ -29,29 +29,29 @@ assign(Client_MySQL.prototype, {
 
   driverName: 'mysql',
 
-  _driver: function() {
+  _driver() {
     return require('mysql')
   },
 
-  QueryCompiler: QueryCompiler,
+  QueryCompiler,
 
-  SchemaCompiler: SchemaCompiler,
+  SchemaCompiler,
 
-  TableCompiler: TableCompiler,
+  TableCompiler,
 
-  ColumnCompiler: ColumnCompiler,
+  ColumnCompiler,
 
-  Transaction: Transaction,
+  Transaction,
 
-  wrapIdentifier: function(value) {
-    return (value !== '*' ? '`' + value.replace(/`/g, '``') + '`' : '*')
+  wrapIdentifier(value) {
+    return (value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*')
   },
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
-  acquireRawConnection: function() {
-    var client     = this
-    var connection = this.driver.createConnection(this.connectionSettings)
+  acquireRawConnection() {
+    const client = this
+    const connection = this.driver.createConnection(this.connectionSettings)
     return new Promise(function(resolver, rejecter) {
       connection.connect(function(err) {
         if (err) return rejecter(err)
@@ -64,13 +64,13 @@ assign(Client_MySQL.prototype, {
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
-  destroyRawConnection: function(connection, cb) {
+  destroyRawConnection(connection, cb) {
     connection.end(cb);
   },
 
   // Grab a connection, run the query via the MySQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
-  _stream: function(connection, obj, stream, options) {
+  _stream(connection, obj, stream, options) {
     options = options || {}
     return new Promise(function(resolver, rejecter) {
       stream.on('error', rejecter)
@@ -81,12 +81,12 @@ assign(Client_MySQL.prototype, {
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
-  _query: function(connection, obj) {
+  _query(connection, obj) {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     return new Promise(function(resolver, rejecter) {
-      var sql = obj.sql
+      let { sql } = obj
       if (!sql) return resolver()
-      if (obj.options) sql = assign({sql: sql}, obj.options)
+      if (obj.options) sql = assign({sql}, obj.options)
       connection.query(sql, obj.bindings, function(err, rows, fields) {
         if (err) return rejecter(err)
         obj.response = [rows, fields]
@@ -96,20 +96,21 @@ assign(Client_MySQL.prototype, {
   },
 
   // Process the response as returned from the query.
-  processResponse: function(obj, runner) {
+  processResponse(obj, runner) {
     if (obj == null) return;
-    var response = obj.response
-    var method   = obj.method
-    var rows     = response[0]
-    var fields   = response[1]
+    const { response } = obj
+    const { method } = obj
+    const rows = response[0]
+    const fields = response[1]
     if (obj.output) return obj.output.call(runner, rows, fields)
     switch (method) {
       case 'select':
       case 'pluck':
-      case 'first':
-        var resp = helpers.skim(rows)
+      case 'first': {
+        const resp = helpers.skim(rows)
         if (method === 'pluck') return map(resp, obj.pluck)
         return method === 'first' ? resp[0] : resp
+      }
       case 'insert':
         return [rows.insertId]
       case 'del':
@@ -129,10 +130,10 @@ assign(Client_MySQL.prototype, {
     }
   },
 
-  ping: function(resource, callback) {
+  ping(resource, callback) {
     resource.query('SELECT 1', callback);
   }
 
 })
 
-module.exports = Client_MySQL
+export default Client_MySQL
