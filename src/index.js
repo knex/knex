@@ -40,6 +40,9 @@ export default function Knex(config) {
 // Expose Client on the main Knex namespace.
 Knex.Client = Client
 
+// Expose Knex version on the main Knex namespace.
+Knex.VERSION = require('../package.json').version
+
 // Run a "raw" query, though we can't do anything with it other than put
 // it in a query statement.
 Knex.raw = (sql, bindings) => new Raw({}).set(sql, bindings)
