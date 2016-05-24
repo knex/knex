@@ -143,6 +143,9 @@ assign(Client_MSSQL.prototype, {
   // sets a request input parameter. Detects bigints and sets type appropriately.
   _setReqInput(req, i, binding) {
     if (typeof binding == 'number' && (binding < -2147483648 || binding > 2147483647)) {
+      if (binding < -9007199254740991 || binding > 9007199254740991) {
+        throw new Error(`Bigint must be safe integer or must be passed as string, saw ${binding}`)
+      }
       req.input(`p${i}`, this.driver.BigInt, binding)
     } else {
       req.input(`p${i}`, binding)
