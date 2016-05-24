@@ -88,6 +88,7 @@ assign(Client_MSSQL.prototype, {
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream, options) {
+    const client = this;
     options = options || {}
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
@@ -104,7 +105,7 @@ assign(Client_MSSQL.prototype, {
       req.stream = true;
       if (obj.bindings) {
         for (let i = 0; i < obj.bindings.length; i++) {
-          req.input(`p${i}`, obj.bindings[i])
+          client._setReqInput(req, i, obj.bindings[i])
         }
       }
       req.pipe(stream)
@@ -115,6 +116,7 @@ assign(Client_MSSQL.prototype, {
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query(connection, obj) {
+    const client = this;
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
@@ -127,7 +129,7 @@ assign(Client_MSSQL.prototype, {
       req.multiple = true;
       if (obj.bindings) {
         for (let i = 0; i < obj.bindings.length; i++) {
-          req.input(`p${i}`, obj.bindings[i])
+          client._setReqInput(req, i, obj.bindings[i])
         }
       }
       req.query(sql, function(err, recordset) {
@@ -136,6 +138,15 @@ assign(Client_MSSQL.prototype, {
         resolver(obj)
       })
     })
+  },
+
+  // sets a request input parameter. Detects bigints and sets type appropriately.
+  _setReqInput(req, i, binding) {
+    if (typeof binding == 'number' && (binding < -2147483648 || binding > 2147483647)) {
+      req.input(`p${i}`, this.driver.BigInt, binding)
+    } else {
+      req.input(`p${i}`, binding)
+    }
   },
 
   // Process the response as returned from the query.
