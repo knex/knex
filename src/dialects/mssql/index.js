@@ -87,7 +87,7 @@ assign(Client_MSSQL.prototype, {
 
   prepBindings(bindings) {
     return map(bindings, (value) => {
-    if ( typeof value === 'number' && value >= 2147483647 || value <= -2147483648){
+    if ( typeof value === 'number' && (value <= -2147483648 || value >= 2147483647)){
       return value.toString()
     }
     return value
