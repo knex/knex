@@ -145,7 +145,15 @@ assign(Runner.prototype, {
         }
 
         return cancelQuery
+          .catch((cancelError) => {
+            // cancellation failed
+            throw assign(cancelError, {
+              message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,
+              sql, bindings, timeout
+            });
+          })
           .then(() => {
+            // cancellation succeeded, rethrow timeout error
             throw assign(error, {
               message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
               sql, bindings, timeout

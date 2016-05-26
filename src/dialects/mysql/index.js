@@ -136,17 +136,26 @@ assign(Client_MySQL.prototype, {
 
   canCancelQuery: true,
   cancelQuery(connectionToKill) {
-    return this.acquireConnection().completed
-      .then((conn) => {
-        return this.query(conn, {
-          method: 'raw',
-          sql: 'KILL ?',
-          bindings: [connectionToKill.threadId],
-          options: {},
-        })
-        .finally(() => {
-          this.releaseConnection(conn)
-        });
+    const acquiringConn = this.acquireConnection().completed
+    let conn = undefined;
+
+    // Error out if we can't acquire connection in time.
+    // Purposely not putting timeout on `KILL QUERY` execution because erroring
+    // early there would release the `connectionToKill` back to the pool with
+    // a `KILL QUERY` command yet to finish.
+    return acquiringConn
+      .timeout(100)
+      .then((conn) => this.query(conn, {
+        method: 'raw',
+        sql: 'KILL QUERY ?',
+        bindings: [connectionToKill.threadId],
+        options: {},
+      }))
+      .finally(() => {
+        // NOT returning this promise because we want to release the connection
+        // in a non-blocking fashion
+        acquiringConn
+          .then((conn) => this.releaseConnection(conn));
       });
   }
 

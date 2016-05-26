@@ -2,9 +2,10 @@
 
 'use strict';
 
-module.exports = function(knex) {
+var Knex   = require('../../../knex');
+var _ = require('lodash');
 
-  var _ = require('lodash');
+module.exports = function(knex) {
 
   describe('Additional', function () {
 
@@ -342,10 +343,12 @@ module.exports = function(knex) {
 
       var query = testQueries[dialect]();
 
-      var addTimeout = () => query.timeout(1, {cancel: true})
+      function addTimeout() {
+        return query.timeout(1, {cancel: true});
+      }
 
-      // Only mysql query cancelling supported for now
-      if (!dialect.startsWith("mysql")) {
+      // Only mysql/mariadb query cancelling supported for now
+      if (!dialect.startsWith("mysql") && !dialect.startsWith("mariasql")) {
         expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
         return;
       }
@@ -370,6 +373,32 @@ module.exports = function(knex) {
               var sleepProcess = _.find(processes, {Info: 'SELECT SLEEP(10)'});
               expect(sleepProcess).to.equal(undefined);
             });
+        });
+    });
+
+
+    it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
+      // Only mysql/mariadb query cancelling supported for now
+      var dialect = knex.client.config.dialect;
+      if (!dialect.startsWith("mysql") && !dialect.startsWith("mariasql")) { return; }
+
+      //To make this test easier, I'm changing the pool settings to max 1.
+      var knexConfig = _.clone(knex.client.config);
+      knexConfig.pool.min = 0;
+      knexConfig.pool.max = 1;
+
+      var knexDb = new Knex(knexConfig);
+
+      return knexDb.raw('SELECT SLEEP(1)')
+        .timeout(1, {cancel: true})
+        .then(function() {
+          throw new Error("Shouldn't have gotten here.");
+        }, function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 1,
+            name:    'TimeoutError',
+            message: 'After query timeout of 1ms exceeded, cancelling of query failed.'
+          });
         });
     });
 
