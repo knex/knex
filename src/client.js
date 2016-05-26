@@ -262,6 +262,11 @@ assign(Client.prototype, {
 
   toString() {
     return '[object KnexClient]'
+  },
+
+  canCancelQuery: false,
+  cancelQuery() {
+    throw new Error("Query cancelling not supported for this dialect")
   }
 
 })

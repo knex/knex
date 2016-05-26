@@ -19,6 +19,7 @@ function QueryCompiler(client, builder) {
   this.options = builder._options;
   this.single = builder._single;
   this.timeout = builder._timeout || false;
+  this.cancelOnTimeout = builder._cancelOnTimeout || false;
   this.grouped = groupBy(builder._statements, 'grouping');
   this.formatter = client.formatter()
 }
@@ -41,6 +42,7 @@ assign(QueryCompiler.prototype, {
       method,
       options: reduce(this.options, assign, {}),
       timeout: this.timeout,
+      cancelOnTimeout: this.cancelOnTimeout,
       bindings: this.formatter.bindings
     };
     if (isString(val)) {

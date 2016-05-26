@@ -132,6 +132,22 @@ assign(Client_MySQL.prototype, {
 
   ping(resource, callback) {
     resource.query('SELECT 1', callback);
+  },
+
+  canCancelQuery: true,
+  cancelQuery(connectionToKill) {
+    return this.acquireConnection().completed
+      .then((conn) => {
+        return this.query(conn, {
+          method: 'raw',
+          sql: 'KILL ?',
+          bindings: [connectionToKill.threadId],
+          options: {},
+        })
+        .finally(() => {
+          this.releaseConnection(conn)
+        });
+      });
   }
 
 })

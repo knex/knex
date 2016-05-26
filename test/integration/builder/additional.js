@@ -256,9 +256,9 @@ module.exports = function(knex) {
     });
 
 
-    it('.timeout() should throw TimeoutError', function(done) {
+    it('.timeout() should throw TimeoutError', function() {
       var dialect = knex.client.config.dialect;
-      if(dialect === 'sqlite3') { return done(); } //TODO -- No built-in support for sleeps
+      if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
       var testQueries = {
         'postgres': function() {
           return knex.raw('SELECT pg_sleep(1)');
@@ -284,7 +284,7 @@ module.exports = function(knex) {
       };
 
       if(!testQueries.hasOwnProperty(dialect)) {
-        return done(new Error('Missing test query for dialect: ' + dialect));
+        throw new Error('Missing test query for dialect: ' + dialect);
       }
 
       var query = testQueries[dialect]();
@@ -299,7 +299,77 @@ module.exports = function(knex) {
             name:    'TimeoutError',
             message: 'Defined query timeout of 1ms exceeded when running query.'
           });
-          done();
+        })
+    });
+
+
+    it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
+      var dialect = knex.client.config.dialect;
+      if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+
+      // There's unexpected behavior caused by knex releasing a connection back
+      // to the pool because of a timeout when a long query is still running.
+      // A subsequent query will acquire the connection (still in-use) and hang
+      // until the first query finishes. Setting a sleep time longer than the
+      // mocha timeout exposes this behavior.
+      var testQueries = {
+        'postgres': function() {
+          return knex.raw('SELECT pg_sleep(10)');
+        },
+        'mysql': function() {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        'mysql2': function() {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        maria: function() {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        mssql: function() {
+          return knex.raw('WAITFOR DELAY \'00:00:10\'');
+        },
+        oracle: function() {
+          return knex.raw('dbms_lock.sleep(10)');
+        },
+        'strong-oracle': function() {
+          return knex.raw('dbms_lock.sleep(10)');
+        }
+      };
+
+      if(!testQueries.hasOwnProperty(dialect)) {
+        throw new Error('Missing test query for dialect: ' + dialect);
+      }
+
+      var query = testQueries[dialect]();
+
+      var addTimeout = () => query.timeout(1, {cancel: true})
+
+      // Only mysql query cancelling supported for now
+      if (!dialect.startsWith("mysql")) {
+        expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
+        return;
+      }
+
+      return addTimeout()
+        .then(function() {
+          expect(true).to.equal(false);
+        })
+        .catch(function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 1,
+            name:    'TimeoutError',
+            message: 'Defined query timeout of 1ms exceeded when running query.'
+          });
+
+          // Ensure sleep command is removed.
+          // This query will hang if a connection gets released back to the pool
+          // too early.
+          return knex.raw('SHOW PROCESSLIST')
+            .then(function(results) {
+              var processes = results[0];
+              var sleepProcess = _.find(processes, {Info: 'SELECT SLEEP(10)'});
+              expect(sleepProcess).to.equal(undefined);
+            });
         });
     });
 

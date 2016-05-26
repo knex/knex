@@ -57,9 +57,16 @@ assign(Builder.prototype, {
     return cloned;
   },
 
-  timeout(ms) {
+  timeout(ms, {cancel} = {}) {
     if(isNumber(ms) && ms > 0) {
       this._timeout = ms;
+      if (cancel) {
+        if (this.client.canCancelQuery) {
+          this._cancelOnTimeout = true;
+        } else {
+          throw new Error("Query cancelling not supported for this dialect");
+        }
+      }
     }
     return this;
   },
