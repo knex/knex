@@ -25,7 +25,7 @@ git add -u
 npm run build
 git add -A build
 
-npm test
+#npm test
 
 update_version 'package.json' $next_version
 
