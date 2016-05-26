@@ -17,6 +17,9 @@ import ColumnCompiler from './schema/columncompiler';
 
 const { isArray } = Array;
 
+const SQL_INT4 = { MIN : -2147483648, MAX: 2147483647}
+const SQL_BIGINT_SAFE = { MIN : -9007199254740991, MAX: 9007199254740991}
+
 // Always initialize with the "QueryBuilder" and "QueryCompiler" objects, which
 // extend the base 'lib/query/builder' and 'lib/query/compiler', respectively.
 function Client_MSSQL(config) {
@@ -142,8 +145,8 @@ assign(Client_MSSQL.prototype, {
 
   // sets a request input parameter. Detects bigints and sets type appropriately.
   _setReqInput(req, i, binding) {
-    if (typeof binding == 'number' && (binding < -2147483648 || binding > 2147483647)) {
-      if (binding < -9007199254740991 || binding > 9007199254740991) {
+    if (typeof binding == 'number' && (binding < SQL_INT4.MIN || binding > SQL_INT4.MAX)) {
+      if (binding < SQL_BIGINT_SAFE.MIN || binding > SQL_BIGINT_SAFE.MAX) {
         throw new Error(`Bigint must be safe integer or must be passed as string, saw ${binding}`)
       }
       req.input(`p${i}`, this.driver.BigInt, binding)
