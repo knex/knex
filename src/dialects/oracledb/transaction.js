@@ -28,8 +28,10 @@ assign(Oracle_Transaction.prototype, {
     var self = this;
     this._completed = true;
     debugTx('%s: rolling back', this.txid);
-    return conn.rollbackAsync().timeout(5000).catch(Promise.TimeoutError, function() {
-      self._resolver();
+    return conn.rollbackAsync().timeout(5000).catch(Promise.TimeoutError, function(e) {
+      self._rejecter(e);
+    }).then(function() {
+      self._rejecter(err);
     });
   },
   acquireConnection: function(config) {
