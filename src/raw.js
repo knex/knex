@@ -34,11 +34,8 @@ assign(Raw.prototype, {
     if(isNumber(ms) && ms > 0) {
       this._timeout = ms;
       if (cancel) {
-        if (this.client.canCancelQuery) {
-          this._cancelOnTimeout = true;
-        } else {
-          throw new Error("Query cancelling not supported for this dialect");
-        }
+        this.client.assertCanCancelQuery();
+        this._cancelOnTimeout = true;
       }
     }
     return this;

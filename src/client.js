@@ -265,6 +265,13 @@ assign(Client.prototype, {
   },
 
   canCancelQuery: false,
+
+  assertCanCancelQuery() {
+    if (!this.canCancelQuery) {
+      throw new Error("Query cancelling not supported for this dialect");
+    }
+  },
+
   cancelQuery() {
     throw new Error("Query cancelling not supported for this dialect")
   }

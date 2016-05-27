@@ -135,6 +135,7 @@ assign(Client_MySQL.prototype, {
   },
 
   canCancelQuery: true,
+
   cancelQuery(connectionToKill) {
     const acquiringConn = this.acquireConnection().completed
     let conn = undefined;
