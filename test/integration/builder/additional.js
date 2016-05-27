@@ -348,7 +348,7 @@ module.exports = function(knex) {
       }
 
       // Only mysql/mariadb query cancelling supported for now
-      if (!dialect.startsWith("mysql") && !dialect.startsWith("maria")) {
+      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
         expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
         return;
       }
@@ -380,7 +380,7 @@ module.exports = function(knex) {
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
       // Only mysql/mariadb query cancelling supported for now
       var dialect = knex.client.config.dialect;
-      if (!dialect.startsWith("mysql") && !dialect.startsWith("maria")) { return; }
+      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) { return; }
 
       //To make this test easier, I'm changing the pool settings to max 1.
       var knexConfig = _.clone(knex.client.config);
