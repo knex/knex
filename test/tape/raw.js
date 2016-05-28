@@ -71,16 +71,6 @@ test('allows for options in raw queries, #605', function(t) {
   })
 })
 
-test('undefined named bindings are ignored', function(t) {
-  
-  t.plan(2)
-  
-  t.equal(raw('select :item from :place', {}).toSQL().sql, 'select :item from :place')
-
-  t.equal(raw('select :item :cool 2 from :place', {item: 'col1'}).toSQL().sql, 'select ? :cool 2 from :place')
-
-})
-
 test('raw bindings are optional, #853', function(t) {
   
   t.plan(2)
