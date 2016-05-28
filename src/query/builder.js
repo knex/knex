@@ -57,9 +57,13 @@ assign(Builder.prototype, {
     return cloned;
   },
 
-  timeout(ms) {
+  timeout(ms, {cancel} = {}) {
     if(isNumber(ms) && ms > 0) {
       this._timeout = ms;
+      if (cancel) {
+        this.client.assertCanCancelQuery();
+        this._cancelOnTimeout = true;
+      }
     }
     return this;
   },

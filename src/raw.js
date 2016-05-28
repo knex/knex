@@ -30,9 +30,13 @@ assign(Raw.prototype, {
     return this
   },
 
-  timeout(ms) {
+  timeout(ms, {cancel} = {}) {
     if(isNumber(ms) && ms > 0) {
       this._timeout = ms;
+      if (cancel) {
+        this.client.assertCanCancelQuery();
+        this._cancelOnTimeout = true;
+      }
     }
     return this;
   },
@@ -73,6 +77,9 @@ assign(Raw.prototype, {
     this._cached.options = reduce(this._options, assign, {})
     if(this._timeout) {
       this._cached.timeout = this._timeout;
+      if (this._cancelOnTimeout) {
+        this._cached.cancelOnTimeout = this._cancelOnTimeout;
+      }
     }
     if(this.client && this.client.prepBindings) {
       this._cached.bindings = this.client.prepBindings(this._cached.bindings || [], tz);
