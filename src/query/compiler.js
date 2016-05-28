@@ -48,11 +48,20 @@ assign(QueryCompiler.prototype, {
     if (isString(val)) {
       val = {sql: val};
     }
-    if (method === 'select' && this.single.as) {
-      defaults.as = this.single.as;
+
+    defaults.bindings = defaults.bindings || [];
+
+    if (method === 'select') {
+      if(this.single.as) {
+        defaults.as = this.single.as;
+      }
+
+      if(helpers.containsUndefined(defaults.bindings)) {
+        throw new Error(`Undefined binding(s) detected when compiling SELECT query: ${val.sql}`);
+      }
     }
 
-    defaults.bindings = this.client.prepBindings(defaults.bindings || [], tz);
+    defaults.bindings = this.client.prepBindings(defaults.bindings, tz);
 
     return assign(defaults, val);
   },

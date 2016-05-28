@@ -2,6 +2,7 @@
 // Raw
 // -------
 import inherits from 'inherits';
+import * as helpers from './helpers';
 import { EventEmitter } from 'events';
 
 import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
@@ -82,7 +83,11 @@ assign(Raw.prototype, {
       }
     }
     if(this.client && this.client.prepBindings) {
-      this._cached.bindings = this.client.prepBindings(this._cached.bindings || [], tz);
+      this._cached.bindings = this._cached.bindings || [];
+      if(helpers.containsUndefined(this._cached.bindings)) {
+        throw new Error(`Undefined binding(s) detected when compiling RAW query: ${this._cached.sql}`);
+      }
+      this._cached.bindings = this.client.prepBindings(this._cached.bindings, tz);
     }
     return this._cached
   }
@@ -105,9 +110,7 @@ function replaceRawArrBindings(raw) {
 
     if (value && typeof value.toSQL === 'function') {
       const bindingSQL = value.toSQL()
-      if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)
-      }
+      bindings = bindings.concat(bindingSQL.bindings)
       return bindingSQL.sql
     }
 
@@ -140,13 +143,12 @@ function replaceKeyBindings(raw) {
     const isIdentifier = key[key.length - 1] === ':'
     const value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
     if (value === undefined) {
+      bindings.push(value);
       return full;
     }
     if (value && typeof value.toSQL === 'function') {
       const bindingSQL = value.toSQL()
-      if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)
-      }
+      bindings = bindings.concat(bindingSQL.bindings)
       return full.replace(key, bindingSQL.sql)
     }
     if (isIdentifier) {
