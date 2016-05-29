@@ -17,6 +17,9 @@ import ColumnCompiler from './schema/columncompiler';
 
 const { isArray } = Array;
 
+const SQL_INT4 = { MIN : -2147483648, MAX: 2147483647}
+const SQL_BIGINT_SAFE = { MIN : -9007199254740991, MAX: 9007199254740991}
+
 // Always initialize with the "QueryBuilder" and "QueryCompiler" objects, which
 // extend the base 'lib/query/builder' and 'lib/query/compiler', respectively.
 function Client_MSSQL(config) {
@@ -88,6 +91,7 @@ assign(Client_MSSQL.prototype, {
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream, options) {
+    const client = this;
     options = options || {}
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
@@ -104,7 +108,7 @@ assign(Client_MSSQL.prototype, {
       req.stream = true;
       if (obj.bindings) {
         for (let i = 0; i < obj.bindings.length; i++) {
-          req.input(`p${i}`, obj.bindings[i])
+          client._setReqInput(req, i, obj.bindings[i])
         }
       }
       req.pipe(stream)
@@ -115,6 +119,7 @@ assign(Client_MSSQL.prototype, {
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query(connection, obj) {
+    const client = this;
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
@@ -127,7 +132,7 @@ assign(Client_MSSQL.prototype, {
       req.multiple = true;
       if (obj.bindings) {
         for (let i = 0; i < obj.bindings.length; i++) {
-          req.input(`p${i}`, obj.bindings[i])
+          client._setReqInput(req, i, obj.bindings[i])
         }
       }
       req.query(sql, function(err, recordset) {
@@ -136,6 +141,18 @@ assign(Client_MSSQL.prototype, {
         resolver(obj)
       })
     })
+  },
+
+  // sets a request input parameter. Detects bigints and sets type appropriately.
+  _setReqInput(req, i, binding) {
+    if (typeof binding == 'number' && (binding < SQL_INT4.MIN || binding > SQL_INT4.MAX)) {
+      if (binding < SQL_BIGINT_SAFE.MIN || binding > SQL_BIGINT_SAFE.MAX) {
+        throw new Error(`Bigint must be safe integer or must be passed as string, saw ${binding}`)
+      }
+      req.input(`p${i}`, this.driver.BigInt, binding)
+    } else {
+      req.input(`p${i}`, binding)
+    }
   },
 
   // Process the response as returned from the query.
