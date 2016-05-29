@@ -19,6 +19,7 @@ Promise.longStackTraces();
 
 describe('Query Building Tests', function() {
   require('./unit/query/builder')
+  require('./unit/client/client')
   require('./unit/schema/mysql')('mysql')
   require('./unit/schema/mysql')('maria')
   require('./unit/schema/mysql')('mysql2')
