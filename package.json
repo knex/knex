@@ -58,7 +58,7 @@
     "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
     "prepublish": "npm run build",
     "tape": "node test/tape/index.js | tap-spec",
-    "test": "npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape"
+    "test": "npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 30000 -b -R spec test/index.js && npm run tape"
   },
   "bin": {
     "knex": "./lib/bin/cli.js"
