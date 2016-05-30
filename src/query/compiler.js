@@ -212,7 +212,7 @@ assign(QueryCompiler.prototype, {
     let i = -1;
     while (++i < wheres.length) {
       const stmt = wheres[i]
-      if(helpers.containsUndefined(stmt.value)) {
+      if(stmt.hasOwnProperty('value') && helpers.containsUndefined(stmt.value)) {
         this._undefinedInWhereClause = true;
       }
       const val = this[stmt.type](stmt)
