@@ -1,6 +1,6 @@
 /* eslint no-console:0 */
 
-import { map, pick, keys } from 'lodash'
+import { map, pick, keys, isFunction, isUndefined, isObject, isArray } from 'lodash'
 import chalk from 'chalk';
 
 // Pick off the attributes from only the current layer of the object.
@@ -42,4 +42,29 @@ export function warn(msg) {
 export function exit(msg) {
   console.log(chalk.red(msg))
   process.exit(1)
+}
+
+export function containsUndefined(mixed) {
+  let argContainsUndefined = false;
+
+  if(mixed && isFunction(mixed.toSQL)) {
+    //Any QueryBuilder or Raw will automatically be validated during compile.
+    return argContainsUndefined;
+  }
+
+  if(isArray(mixed)) {
+    for(let i = 0; i < mixed.length; i++) {
+      if(argContainsUndefined) break;
+      argContainsUndefined = this.containsUndefined(mixed[i]);
+    }
+  } else if(isObject(mixed)) {
+    for(const key in mixed) {
+      if(argContainsUndefined) break;
+      argContainsUndefined = this.containsUndefined(mixed[key]);
+    }
+  } else {
+    argContainsUndefined = isUndefined(mixed);
+  }
+
+  return argContainsUndefined;
 }

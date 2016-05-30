@@ -698,6 +698,20 @@ knex.withSchema('public').select('*').from('users')
       constructing subqueries. In most places existing knex queries may be used to compose sub-queries, etc. Take a look at a few of the examples for each method for instruction on use:
     </p>
 
+    <p>
+      <b>Important:</b> Supplying knex with an <tt>undefined</tt> value to any of the <tt>where</tt> functions will cause knex to throw an error during sql compilation.
+      This is both for yours and our sake. Knex cannot know what to do with undefined values in a where clause, and generally it would be a programmatic error to supply one to begin with.
+      The error will throw a message containing the type of query and the compiled query-string. Example:
+    </p>
+
+  <pre class="display">
+    knex('accounts')
+    .where('login', undefined)
+    .select()
+    .toSQL();
+    //Undefined binding(s) detected when compiling SELECT query: select * from "accounts" where "login" = ?
+  </pre>
+
     <p id="Builder-where">
       <b class="header">where</b><code>.where(~mixed~)</code>
     </p>
