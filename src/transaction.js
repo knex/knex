@@ -52,6 +52,7 @@ function Transaction(client, container, config, outerTx) {
           transactor.rollback(err)
         })
       }
+      return null;
     })
     .catch((e) => this._rejecter(e))
 
