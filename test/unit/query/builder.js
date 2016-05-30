@@ -3373,7 +3373,6 @@ describe("QueryBuilder", function() {
 
 
   it('Any undefined binding in a SELECT query should throw an error', function() {
-    var expectedErrorMessageContains = 'Undefined binding(s) detected when compiling SELECT query:'; //This test is not for asserting correct queries
     var qbuilders = [
       qb().from('accounts').where({Login: void 0}).select(),
       qb().from('accounts').where('Login', void 0).select(),
@@ -3407,7 +3406,7 @@ describe("QueryBuilder", function() {
         });
         expect(true).to.equal(false, 'Expected to throw error in compilation about undefined bindings.');
       } catch(error) {
-        expect(error.message).to.contain(expectedErrorMessageContains); //This test is not for asserting correct queries
+        expect(error.message).to.contain('Undefined binding(s) detected when compiling ' + qbuilder._method.toUpperCase() + ' query:'); //This test is not for asserting correct queries
       }
     });
   });
