@@ -36,6 +36,8 @@ assign(QueryCompiler.prototype, {
 
   // Collapse the builder into a single object
   toSQL(method, tz) {
+    this._undefinedInWhereClause = false;
+
     method = method || this.method
     let val = this[method]()
     const defaults = {
@@ -55,10 +57,10 @@ assign(QueryCompiler.prototype, {
       if(this.single.as) {
         defaults.as = this.single.as;
       }
+    }
 
-      if(helpers.containsUndefined(defaults.bindings)) {
-        throw new Error(`Undefined binding(s) detected when compiling SELECT query: ${val.sql}`);
-      }
+    if(this._undefinedInWhereClause) {
+      throw new Error(`Undefined binding(s) detected when compiling ${method.toUpperCase()} query: ${val.sql}`);
     }
 
     defaults.bindings = this.client.prepBindings(defaults.bindings, tz);
@@ -210,6 +212,9 @@ assign(QueryCompiler.prototype, {
     let i = -1;
     while (++i < wheres.length) {
       const stmt = wheres[i]
+      if(helpers.containsUndefined(stmt.value)) {
+        this._undefinedInWhereClause = true;
+      }
       const val = this[stmt.type](stmt)
       if (val) {
         if (sql.length === 0) {
