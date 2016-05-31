@@ -159,8 +159,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   columnInfo() {
     const column = this.single.columnInfo;
     const sql =
-      `select * from information_schema.columns` +
-      `where table_name = ? and table_schema = 'dbo'`;
+      `select * from information_schema.columns where table_name = ? and table_schema = 'dbo'`;
     return {
       sql,
       bindings: [this.single.table],
