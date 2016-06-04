@@ -172,7 +172,7 @@ function makeTransactor(trx, connection, trxClient) {
   
   var transactor = makeKnex(trxClient)
 
-  transactor.transaction = function(container, options) {
+    transactor.transaction = function(container, options) {
     return new trxClient.Transaction(trxClient, container, options, trx)
   }  
   transactor.savepoint = function(container, options) {
