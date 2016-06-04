@@ -1,8 +1,9 @@
 
-var inherits        = require('inherits')
-var assign          = require('lodash/object/assign')
-var Formatter       = require('../../formatter')
-var ReturningHelper = require('./utils').ReturningHelper
+import inherits from 'inherits';
+import Formatter from '../../formatter';
+import { ReturningHelper } from './utils';
+
+import { assign } from 'lodash'
 
 function Oracle_Formatter(client) {
   Formatter.call(this, client)
@@ -11,11 +12,11 @@ inherits(Oracle_Formatter, Formatter)
 
 assign(Oracle_Formatter.prototype, {
 
-  alias: function(first, second) {
+  alias(first, second) {
     return first + ' ' + second;
   },
 
-  parameter: function(value, notSetValue) {
+  parameter(value, notSetValue) {
     // Returning helper uses always ROWID as string
     if (value instanceof ReturningHelper && this.client.driver) {
       value = new this.client.driver.OutParam(this.client.driver.OCCISTRING)
@@ -28,4 +29,4 @@ assign(Oracle_Formatter.prototype, {
 
 })
 
-module.exports = Oracle_Formatter
+export default Oracle_Formatter

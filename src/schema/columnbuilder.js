@@ -1,25 +1,25 @@
 
-var _ = require('lodash');
+import { extend, each, toArray } from 'lodash'
 
 // The chainable interface off the original "column" method.
-function ColumnBuilder(client, tableBuilder, type, args) {
-  this.client        = client
-  this._single       = {};
-  this._modifiers    = {};
-  this._statements   = [];
-  this._type         = columnAlias[type] || type;
-  this._args         = args;
+export default function ColumnBuilder(client, tableBuilder, type, args) {
+  this.client = client
+  this._single = {};
+  this._modifiers = {};
+  this._statements = [];
+  this._type = columnAlias[type] || type;
+  this._args = args;
   this._tableBuilder = tableBuilder;
 
   // If we're altering the table, extend the object
   // with the available "alter" methods.
   if (tableBuilder._method === 'alter') {
-    _.extend(this, AlterMethods);
+    extend(this, AlterMethods);
   }
 }
 
 // All of the modifier methods that can be used to modify the current query.
-var modifiers = [
+const modifiers = [
   'default', 'defaultsTo', 'defaultTo', 'unsigned',
   'nullable', 'notNull', 'notNullable',
   'first', 'after', 'comment', 'collate'
@@ -27,22 +27,22 @@ var modifiers = [
 
 // If we call any of the modifiers (index or otherwise) on the chainable, we pretend
 // as though we're calling `table.method(column)` directly.
-_.each(modifiers, function(method) {
+each(modifiers, function(method) {
   ColumnBuilder.prototype[method] = function() {
     if (aliasMethod[method]) {
       method = aliasMethod[method];
     }
     if (method === 'notNullable') return this.nullable(false);
-    this._modifiers[method] = _.toArray(arguments);
+    this._modifiers[method] = toArray(arguments);
     return this;
   };
 });
 
-_.each(['index', 'primary', 'unique'], function(method) {
+each(['index', 'primary', 'unique'], function(method) {
   ColumnBuilder.prototype[method] = function() {
     if (this._type.toLowerCase().indexOf('increments') === -1) {
       this._tableBuilder[method].apply(this._tableBuilder,
-        [this._args[0]].concat(_.toArray(arguments)));
+        [this._args[0]].concat(toArray(arguments)));
     }
     return this;
   };
@@ -56,7 +56,7 @@ ColumnBuilder.prototype.references = function(value) {
     .references(value);
 };
 
-var AlterMethods = {};
+const AlterMethods = {};
 
 // Specify that the column is to be dropped. This takes precedence
 // over all other rules for the column.
@@ -77,19 +77,17 @@ AlterMethods.alterType = function(type) {
 };
 
 // Aliases for convenience.
-var aliasMethod = {
+const aliasMethod = {
   default:    'defaultTo',
   defaultsTo: 'defaultTo',
   notNull:    'notNullable'
 };
 
 // Alias a few methods for clarity when processing.
-var columnAlias = {
+const columnAlias = {
   'float'  : 'floating',
   'enum'   : 'enu',
   'boolean': 'bool',
   'string' : 'varchar',
   'bigint' : 'bigInteger'
 };
-
-module.exports = ColumnBuilder;

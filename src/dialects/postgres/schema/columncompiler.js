@@ -2,10 +2,11 @@
 // PostgreSQL Column Compiler
 // -------
 
-var inherits       = require('inherits');
-var ColumnCompiler = require('../../../schema/columncompiler');
-var assign         = require('lodash/object/assign');
-var helpers        = require('../../../helpers');
+import inherits from 'inherits';
+import ColumnCompiler from '../../../schema/columncompiler';
+import * as helpers from '../../../helpers';
+
+import { assign } from 'lodash'
 
 function ColumnCompiler_PG() {
   ColumnCompiler.apply(this, arguments);
@@ -20,45 +21,45 @@ assign(ColumnCompiler_PG.prototype, {
   bigincrements: 'bigserial primary key',
   bigint: 'bigint',
   binary: 'bytea',
-  
-  bit: function(column) {
-    return column.length !== false ? 'bit(' + column.length + ')' : 'bit';
+
+  bit(column) {
+    return column.length !== false ? `bit(${column.length})` : 'bit';
   },
-  
+
   bool: 'boolean',
 
   // Create the column definition for an enum type.
   // Using method "2" here: http://stackoverflow.com/a/10984951/525714
-  enu: function(allowed) {
-    return 'text check (' + this.formatter.wrap(this.args[0]) + " in ('" + allowed.join("', '")  + "'))";
+  enu(allowed) {
+    return `text check (${this.formatter.wrap(this.args[0])} in ('${allowed.join("', '")}'))`;
   },
 
   double: 'double precision',
   floating: 'real',
   increments: 'serial primary key',
-  json: function(jsonb) {
+  json(jsonb) {
     if (jsonb) helpers.deprecate('json(true)', 'jsonb()')
     return jsonColumn(this.client, jsonb);
   },
-  jsonb: function() {
+  jsonb() {
     return jsonColumn(this.client, true);
   },
   smallint: 'smallint',
   tinyint:  'smallint',
-  datetime: function(without) {
+  datetime(without) {
     return without ? 'timestamp' : 'timestamptz';
   },
-  timestamp: function(without) {
+  timestamp(without) {
     return without ? 'timestamp' : 'timestamptz';
   },
   uuid: 'uuid',
 
   // Modifiers:
   // ------
-  comment: function(comment) {
+  comment(comment) {
     this.pushAdditional(function() {
-      this.pushQuery('comment on column ' + this.tableCompiler.tableName() + '.' +
-        this.formatter.wrap(this.args[0]) + " is " + (comment ? "'" + comment + "'" : 'NULL'));
+      this.pushQuery(`comment on column ${this.tableCompiler.tableName()}.` +
+        this.formatter.wrap(this.args[0]) + " is " + (comment ? `'${comment}'` : 'NULL'));
     }, comment);
   }
 
@@ -69,4 +70,4 @@ function jsonColumn(client, jsonb) {
   return 'text';
 }
 
-module.exports = ColumnCompiler_PG;
+export default ColumnCompiler_PG;

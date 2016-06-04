@@ -1,8 +1,9 @@
 
 /*jslint node:true, nomen: true*/
-var inherits = require('inherits')
-var merge    = require('lodash/object/merge')
-var Readable = require('stream').Readable
+import inherits from 'inherits';
+import { Readable } from 'stream';
+
+import { merge } from 'lodash'
 
 function OracleQueryStream(connection, sql, bindings, options) {
   Readable.call(this, merge({}, {
@@ -14,7 +15,7 @@ function OracleQueryStream(connection, sql, bindings, options) {
 inherits(OracleQueryStream, Readable)
 
 OracleQueryStream.prototype._read = function() {
-  var pushNull = () => {
+  const pushNull = () => {
     process.nextTick(() => {
       this.push(null)
     })
@@ -25,7 +26,7 @@ OracleQueryStream.prototype._read = function() {
       if (rows.length === 0) {
         pushNull()
       } else {
-        for (var i = 0; i < rows.length; i++) {
+        for (let i = 0; i < rows.length; i++) {
           if (rows[i]) {
             this.push(rows[i])
           } else {
@@ -46,4 +47,4 @@ OracleQueryStream.prototype._read = function() {
   }
 }
 
-module.exports = OracleQueryStream
+export default OracleQueryStream

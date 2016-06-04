@@ -1,9 +1,11 @@
 
-var Transaction = require('../../transaction')
-var assign      = require('lodash/object/assign');
-var inherits    = require('inherits')
-var debug       = require('debug')('knex:tx')
-var helpers     = require('../../helpers')
+import Transaction from '../../transaction';
+import inherits from 'inherits';
+import Debug from 'debug';
+import * as helpers from '../../helpers';
+import { assign } from 'lodash'
+
+const debug = Debug('knex:tx');
 
 function Transaction_MySQL() {
   Transaction.apply(this, arguments)
@@ -12,17 +14,18 @@ inherits(Transaction_MySQL, Transaction)
 
 assign(Transaction_MySQL.prototype, {
 
-  query: function(conn, sql, status, value) {
-    var t = this
-    var q = this.trxClient.query(conn, sql)
-      .catch(function(err) {
-        return err.errno === 1305
-      }, function() {
-        helpers.warn('Transaction was implicitly committed, do not mix transactions and DDL with MySQL (#805)')
+  query(conn, sql, status, value) {
+    const t = this
+    const q = this.trxClient.query(conn, sql)
+      .catch(err => err.errno === 1305, function() {
+        helpers.warn(
+          'Transaction was implicitly committed, do not mix transactions and ' +
+          'DDL with MySQL (#805)'
+        )
       })
       .catch(function(err) {
         status = 2
-        value  = err
+        value = err
         t._completed = true
         debug('%s error running transaction query', t.txid)
       })
@@ -38,4 +41,4 @@ assign(Transaction_MySQL.prototype, {
 
 })
 
-module.exports = Transaction_MySQL
+export default Transaction_MySQL

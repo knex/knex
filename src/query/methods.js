@@ -1,7 +1,7 @@
 
 // All properties we can use to start a query chain
 // from the `knex` object, e.g. `knex.select('*').from(...`
-module.exports = [
+export default [
   'select',
   'as',
   'columns',
@@ -45,6 +45,8 @@ module.exports = [
   'orWhereNotNull',
   'whereBetween',
   'whereNotBetween',
+  'andWhereBetween',
+  'andWhereNotBetween',
   'orWhereBetween',
   'orWhereNotBetween',
   'groupBy',

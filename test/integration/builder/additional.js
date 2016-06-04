@@ -2,9 +2,10 @@
 
 'use strict';
 
-module.exports = function(knex) {
+var Knex   = require('../../../knex');
+var _ = require('lodash');
 
-  var _ = require('lodash');
+module.exports = function(knex) {
 
   describe('Additional', function () {
 
@@ -258,35 +259,194 @@ module.exports = function(knex) {
 
     it('.timeout() should throw TimeoutError', function() {
       var dialect = knex.client.config.dialect;
-      var rows = _.times(dialect === 'sqlite3' ? 100 : 3000, function() {
-        return {
-          id: 1,
-          value: 'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw'
-        };
-      });
+      if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+      var testQueries = {
+        'postgres': function() {
+          return knex.raw('SELECT pg_sleep(1)');
+        },
+        'mysql': function() {
+          return knex.raw('SELECT SLEEP(1)');
+        },
+        'mysql2': function() {
+          return knex.raw('SELECT SLEEP(1)');
+        },
+        maria: function() {
+          return knex.raw('SELECT SLEEP(1)');
+        },
+        mssql: function() {
+          return knex.raw('WAITFOR DELAY \'00:00:01\'');
+        },
+        oracle: function() {
+          return knex.raw('dbms_lock.sleep(1)');
+        },
+        'strong-oracle': function() {
+          return knex.raw('dbms_lock.sleep(1)');
+        }
+      };
 
-      return knex.schema.dropTableIfExists('TimeoutTest')
-        .then(function() {
-          return knex.schema.createTable('TimeoutTest', function(table) {
-            table.integer('id');
-            table.string('value', 50);
-          });
-        })
-        .then(function() {
-          return knex('TimeoutTest')
-            .insert(rows)
-            .timeout(1);
-        })
+      if(!testQueries.hasOwnProperty(dialect)) {
+        throw new Error('Missing test query for dialect: ' + dialect);
+      }
+
+      var query = testQueries[dialect]();
+
+      return query.timeout(1)
         .then(function() {
           expect(true).to.equal(false);
         })
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 1,
-            name: 'TimeoutError',
+            name:    'TimeoutError',
             message: 'Defined query timeout of 1ms exceeded when running query.'
           });
+        })
+    });
+
+
+    it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
+      var dialect = knex.client.config.dialect;
+      if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+
+      // There's unexpected behavior caused by knex releasing a connection back
+      // to the pool because of a timeout when a long query is still running.
+      // A subsequent query will acquire the connection (still in-use) and hang
+      // until the first query finishes. Setting a sleep time longer than the
+      // mocha timeout exposes this behavior.
+      var testQueries = {
+        'postgres': function() {
+          return knex.raw('SELECT pg_sleep(10)');
+        },
+        'mysql': function() {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        'mysql2': function() {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        maria: function() {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        mssql: function() {
+          return knex.raw('WAITFOR DELAY \'00:00:10\'');
+        },
+        oracle: function() {
+          return knex.raw('dbms_lock.sleep(10)');
+        },
+        'strong-oracle': function() {
+          return knex.raw('dbms_lock.sleep(10)');
+        }
+      };
+
+      if(!testQueries.hasOwnProperty(dialect)) {
+        throw new Error('Missing test query for dialect: ' + dialect);
+      }
+
+      var query = testQueries[dialect]();
+
+      function addTimeout() {
+        return query.timeout(1, {cancel: true});
+      }
+
+      // Only mysql/mariadb query cancelling supported for now
+      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
+        expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
+        return;
+      }
+
+      return addTimeout()
+        .then(function() {
+          expect(true).to.equal(false);
+        })
+        .catch(function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 1,
+            name:    'TimeoutError',
+            message: 'Defined query timeout of 1ms exceeded when running query.'
+          });
+
+          // Ensure sleep command is removed.
+          // This query will hang if a connection gets released back to the pool
+          // too early.
+          return knex.raw('SHOW PROCESSLIST')
+            .then(function(results) {
+              var processes = results[0];
+              var sleepProcess = _.find(processes, {Info: 'SELECT SLEEP(10)'});
+              expect(sleepProcess).to.equal(undefined);
+            });
         });
+    });
+
+
+    it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
+      // Only mysql/mariadb query cancelling supported for now
+      var dialect = knex.client.config.dialect;
+      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) { return; }
+
+      //To make this test easier, I'm changing the pool settings to max 1.
+      var knexConfig = _.clone(knex.client.config);
+      knexConfig.pool.min = 0;
+      knexConfig.pool.max = 1;
+
+      var knexDb = new Knex(knexConfig);
+
+      return knexDb.raw('SELECT SLEEP(1)')
+        .timeout(1, {cancel: true})
+        .then(function() {
+          throw new Error("Shouldn't have gotten here.");
+        }, function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 1,
+            name:    'TimeoutError',
+            message: 'After query timeout of 1ms exceeded, cancelling of query failed.'
+          });
+        });
+    });
+
+
+    it('Event: query-response', function() {
+      var queryCount = 0;
+
+      var onQueryResponse = function(response, obj, builder) {
+        queryCount++;
+        expect(response).to.be.an('array');
+        expect(obj).to.be.an('object');
+        expect(obj.__knexUid).to.be.a('string');
+        expect(builder).to.be.an('object');
+      };
+      knex.on('query-response', onQueryResponse);
+
+      return knex('accounts').select()
+        .on('query-response', onQueryResponse)
+        .then(function() {
+          return knex.transaction(function(tr) {
+            return tr('accounts').select().on('query-response', onQueryResponse); //Transactions should emit the event as well
+          })
+        })
+        .then(function() {
+          expect(queryCount).to.equal(4);
+        })
+    });
+
+
+    it('Event: query-error', function() {
+      var queryCount = 0;
+      var onQueryError = function(error, obj) {
+        queryCount++;
+        expect(obj).to.be.an('object');
+        expect(obj.__knexUid).to.be.a('string');
+        expect(error).to.be.an('object');
+      };
+
+      knex.on('query-error', onQueryError);
+
+      return knex.raw('Broken query')
+        .on('query-error', onQueryError)
+        .then(function() {
+          expect(true).to.equal(false); //Should not be resolved
+        })
+        .catch(function() {
+          expect(queryCount).to.equal(2);
+        })
     });
 
   });

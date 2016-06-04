@@ -1,9 +1,11 @@
+/* eslint max-len:0 */
 
-var inherits      = require('inherits');
-var utils         = require('../utils');
-var TableCompiler = require('../../../schema/tablecompiler');
-var helpers       = require('../../../helpers');
-var assign        = require('lodash/object/assign');
+import inherits from 'inherits';
+import * as utils from '../utils';
+import TableCompiler from '../../../schema/tablecompiler';
+import * as helpers from '../../../helpers';
+
+import { assign } from 'lodash'
 
 // Table Compiler
 // ------
@@ -16,24 +18,24 @@ inherits(TableCompiler_Oracle, TableCompiler);
 assign(TableCompiler_Oracle.prototype, {
 
   // Compile a rename column command.
-  renameColumn: function(from, to) {
+  renameColumn(from, to) {
     return this.pushQuery({
-      sql: 'alter table ' + this.tableName() + ' rename column ' + 
+      sql: `alter table ${this.tableName()} rename column ` +
         this.formatter.wrap(from) + ' to ' + this.formatter.wrap(to)
     });
   },
 
-  compileAdd: function(builder) {
-    var table = this.formatter.wrap(builder);
-    var columns = this.prefixArray('add column', this.getColumns(builder));
+  compileAdd(builder) {
+    const table = this.formatter.wrap(builder);
+    const columns = this.prefixArray('add column', this.getColumns(builder));
     return this.pushQuery({
-      sql: 'alter table ' + table + ' ' + columns.join(', ')
+      sql: `alter table ${table} ${columns.join(', ')}`
     });
   },
 
   // Adds the "create" query to the query sequence.
-  createQuery: function(columns, ifNot) {
-    var sql = 'create table ' + this.tableName() + ' (' + columns.sql.join(', ') + ')';
+  createQuery(columns, ifNot) {
+    const sql = `create table ${this.tableName()} (${columns.sql.join(', ')})`;
     this.pushQuery({
       // catch "name is already used by an existing object" for workaround for "if not exists"
       sql: ifNot ? utils.wrapSqlWithCatch(sql, -955) : sql,
@@ -43,60 +45,62 @@ assign(TableCompiler_Oracle.prototype, {
   },
 
   // Compiles the comment on the table.
-  comment: function(comment) {
-    this.pushQuery('comment on table ' + this.tableName() + ' is ' + "'" + (comment || '') + "'");
+  comment(comment) {
+    this.pushQuery(`comment on table ${this.tableName()} is '${comment || ''}'`);
   },
 
   addColumnsPrefix: 'add ',
 
-  dropColumn: function() {
-    var columns = helpers.normalizeArr.apply(null, arguments);
-    this.pushQuery('alter table ' + this.tableName() + ' drop (' + this.formatter.columnize(columns) + ')');
+  dropColumn() {
+    const columns = helpers.normalizeArr.apply(null, arguments);
+    this.pushQuery(`alter table ${this.tableName()} drop (${this.formatter.columnize(columns)})`);
   },
 
-  changeType: function() {
+  changeType() {
     // alter table + table + ' modify ' + wrapped + '// type';
   },
 
-  _indexCommand: function(type, tableName, columns) {
+  _indexCommand(type, tableName, columns) {
     return this.formatter.wrap(utils.generateCombinedName(type, tableName, columns));
   },
 
-  primary: function(columns) {
-    this.pushQuery('alter table ' + this.tableName() + " add primary key (" + this.formatter.columnize(columns) + ")");
+  primary(columns, constraintName) {
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
+    this.pushQuery(`alter table ${this.tableName()} add constraint ${constraintName} primary key (${this.formatter.columnize(columns)})`);
   },
 
-  dropPrimary: function() {
-    this.pushQuery('alter table ' + this.tableName() + ' drop primary key');
+  dropPrimary(constraintName) {
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(this.tableNameRaw + '_pkey');
+    this.pushQuery(`alter table ${this.tableName()} drop constraint ${constraintName}`);
   },
 
-  index: function(columns, indexName) {
+  index(columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
-    this.pushQuery('create index ' + indexName + ' on ' + this.tableName() +
+    this.pushQuery(`create index ${indexName} on ${this.tableName()}` +
       ' (' + this.formatter.columnize(columns) + ')');
   },
 
-  dropIndex: function(columns, indexName) {
+  dropIndex(columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
-    this.pushQuery('drop index ' + indexName);
+    this.pushQuery(`drop index ${indexName}`);
   },
 
-  unique: function(columns, indexName) {
+  unique(columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + ' add constraint ' + indexName +
+    this.pushQuery(`alter table ${this.tableName()} add constraint ${indexName}` +
       ' unique (' + this.formatter.columnize(columns) + ')');
   },
 
-  dropUnique: function(columns, indexName) {
+  dropUnique(columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
+    this.pushQuery(`alter table ${this.tableName()} drop constraint ${indexName}`);
   },
 
-  dropForeign: function(columns, indexName) {
+  dropForeign(columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
-    this.pushQuery('alter table ' + this.tableName() + ' drop constraint ' + indexName);
+    this.pushQuery(`alter table ${this.tableName()} drop constraint ${indexName}`);
   }
 
 })
 
-module.exports = TableCompiler_Oracle;
+export default TableCompiler_Oracle;

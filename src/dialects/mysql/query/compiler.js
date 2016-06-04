@@ -1,9 +1,10 @@
 
 // MySQL Query Compiler
 // ------
-var inherits      = require('inherits')
-var QueryCompiler = require('../../../query/compiler')
-var assign        = require('lodash/object/assign');
+import inherits from 'inherits';
+import QueryCompiler from '../../../query/compiler';
+
+import { assign } from 'lodash'
 
 function QueryCompiler_MySQL(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -15,36 +16,36 @@ assign(QueryCompiler_MySQL.prototype, {
   _emptyInsertValue: '() values ()',
 
   // Update method, including joins, wheres, order & limits.
-  update: function() {
-    var join    = this.join();
-    var updates = this._prepUpdate(this.single.update);
-    var where   = this.where();
-    var order   = this.order();
-    var limit   = this.limit();
-    return 'update ' + this.tableName +
-      (join ? ' ' + join : '') +
+  update() {
+    const join = this.join();
+    const updates = this._prepUpdate(this.single.update);
+    const where = this.where();
+    const order = this.order();
+    const limit = this.limit();
+    return `update ${this.tableName}` +
+      (join ? ` ${join}` : '') +
       ' set ' + updates.join(', ') +
-      (where ? ' ' + where : '') +
-      (order ? ' ' + order : '') +
-      (limit ? ' ' + limit : '');
+      (where ? ` ${where}` : '') +
+      (order ? ` ${order}` : '') +
+      (limit ? ` ${limit}` : '');
   },
 
-  forUpdate: function() {
+  forUpdate() {
     return 'for update';
   },
 
-  forShare: function() {
+  forShare() {
     return 'lock in share mode';
   },
 
   // Compiles a `columnInfo` query.
-  columnInfo: function() {
-    var column = this.single.columnInfo;
+  columnInfo() {
+    const column = this.single.columnInfo;
     return {
       sql: 'select * from information_schema.columns where table_name = ? and table_schema = ?',
       bindings: [this.single.table, this.client.database()],
-      output: function(resp) {
-        var out = resp.reduce(function(columns, val) {
+      output(resp) {
+        const out = resp.reduce(function(columns, val) {
           columns[val.COLUMN_NAME] = {
             defaultValue: val.COLUMN_DEFAULT,
             type: val.DATA_TYPE,
@@ -58,16 +59,20 @@ assign(QueryCompiler_MySQL.prototype, {
     };
   },
 
-  limit: function() {
-    var noLimit = !this.single.limit && this.single.limit !== 0;
+  limit() {
+    const noLimit = !this.single.limit && this.single.limit !== 0;
     if (noLimit && !this.single.offset) return '';
 
-    // Workaround for offset only, see http://stackoverflow.com/questions/255517/mysql-offset-infinite-rows
-    return 'limit ' + ((this.single.offset && noLimit) ? '18446744073709551615' : this.formatter.parameter(this.single.limit));
+    // Workaround for offset only.
+    // see: http://stackoverflow.com/questions/255517/mysql-offset-infinite-rows
+    const limit = (this.single.offset && noLimit)
+      ? '18446744073709551615'
+      : this.formatter.parameter(this.single.limit)
+    return `limit ${limit}`;
   }
 
 })
 
 // Set the QueryBuilder & QueryCompiler on the client object,
-// incase anyone wants to modify things to suit their own purposes.
-module.exports = QueryCompiler_MySQL;
+// in case anyone wants to modify things to suit their own purposes.
+export default QueryCompiler_MySQL;

@@ -2,6 +2,8 @@
 
 'use strict';
 
+require('source-map-support').install();
+
 global.sinon = require("sinon");
 
 var chai = global.chai = require("chai");
@@ -22,9 +24,9 @@ describe('Query Building Tests', function() {
   require('./unit/schema/mysql')('mysql2')
   require('./unit/schema/postgres')
   require('./unit/schema/sqlite3')
-  require('./unit/schema/oracle')  
-  require('./unit/schema/mssql')  
-  require('./unit/schema/firebird')  
+  require('./unit/schema/oracle')
+  require('./unit/schema/mssql')
+  require('./unit/schema/firebird')
 })
 
 describe('Integration Tests', function() {

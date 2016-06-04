@@ -1,10 +1,10 @@
 
 import url from 'url'
-import {parse as parsePG} from 'pg-connection-string'
+import { parse as parsePG } from 'pg-connection-string'
 
 export default function parseConnectionString(str) {
-  var parsed   = url.parse(str)
-  var protocol = parsed.protocol
+  const parsed = url.parse(str)
+  let { protocol } = parsed
   if (protocol && protocol.indexOf('maria') === 0) {
     protocol = 'maria'
   }
@@ -14,7 +14,7 @@ export default function parseConnectionString(str) {
       connection: {
         filename: str
       }
-    }  
+    }
   }
   if (protocol.slice(-1) === ':') {
     protocol = protocol.slice(0, -1);
@@ -22,12 +22,12 @@ export default function parseConnectionString(str) {
   return {
     client: protocol,
     connection: protocol === 'postgres' ? parsePG(str) : connectionObject(parsed)
-  }  
+  }
 }
 
 function connectionObject(parsed) {
-  var connection = {};
-  var db = parsed.pathname;
+  const connection = {};
+  let db = parsed.pathname;
   if (db[0] === '/') {
     db = db.slice(1)
   }
@@ -37,13 +37,17 @@ function connectionObject(parsed) {
     connection.database = db
   }
   if (parsed.hostname) {
-    connection.host = parsed.hostname;
+    if (parsed.protocol.indexOf('mssql') === 0) {
+      connection.server = parsed.hostname;
+    } else {
+      connection.host = parsed.hostname;
+    }
   }
   if (parsed.port) {
     connection.port = parsed.port;
   }
   if (parsed.auth) {
-    var idx = parsed.auth.indexOf(':');
+    const idx = parsed.auth.indexOf(':');
     if (idx !== -1) {
       connection.user = parsed.auth.slice(0, idx);
       if (idx < parsed.auth.length - 1) {

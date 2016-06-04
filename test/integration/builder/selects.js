@@ -694,8 +694,13 @@ module.exports = function(knex) {
     it('Retains array bindings, #228', function() {
       var raw  = knex.raw('select * from table t where t.id = ANY( ?::int[] )', [[1, 2, 3]]);
       var raw2 = knex.raw('select "stored_procedure"(?, ?, ?)', [1, 2, ['a', 'b', 'c']]);
-      expect(raw.toSQL().bindings).to.eql([[1, 2, 3]]);
-      expect(raw2.toSQL().bindings).to.eql([1, 2, ['a', 'b', 'c']]);
+      var expected1 = [[1, 2, 3]];
+      var expected2 = [1, 2, ['a', 'b', 'c']];
+      expect(raw.toSQL().bindings).to.eql(knex.client.prepBindings(expected1));
+      expect(raw2.toSQL().bindings).to.eql(knex.client.prepBindings(expected2));
+      //Also expect raw's bindings to not have been modified by calling .toSQL() (preserving original bindings)
+      expect(raw.bindings).to.eql(expected1);
+      expect(raw2.bindings).to.eql(expected2);
     });
 
     it('always returns the response object from raw', function() {

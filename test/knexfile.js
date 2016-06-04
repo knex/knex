@@ -21,7 +21,7 @@ var pool = {
 
 var mysqlPool = _.extend({}, pool, {
   afterCreate: function(connection, callback) {
-    Promise.promisify(connection.query, connection)("SET sql_mode='TRADITIONAL';", []).then(function() {
+    Promise.promisify(connection.query, {context: connection})("SET sql_mode='TRADITIONAL';", []).then(function() {
       callback(null, connection);
     });
   }
@@ -47,7 +47,7 @@ var seeds = {
 };
 
 var testConfigs = {
-  
+
   maria: {
     dialect: 'maria',
     connection: testConfig.maria || {
@@ -117,7 +117,7 @@ var testConfigs = {
     migrations: migrations,
     seeds: seeds
   },
-  
+
   mssql: {
     dialect: 'mssql',
     connection: testConfig.mssql || {
