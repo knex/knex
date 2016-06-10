@@ -165,7 +165,7 @@ assign(Client_Oracle.prototype, {
   },
 
   ping(resource, callback) {
-    resource.execute('SELECT 1', [], callback);
+    resource.execute('SELECT 1 FROM DUAL', [], callback);
   }
 
 })
