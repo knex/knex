@@ -1,7 +1,7 @@
 {
-  "name": "knex",
-  "version": "0.11.5",
-  "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
+  "name": "knex-firebird",
+  "version": "0.0.9",
+  "description": "Knex for including support for firebird",
   "main": "knex.js",
   "dependencies": {
     "bluebird": "^3.3.4",
@@ -37,7 +37,8 @@
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
     "node-uuid": "~1.4.0",
-    "pg": "^4.5.5",
+    "node-firebird": "~0.7.2",
+    "pg": "^4.3.0",
     "pg-query-stream": "^0.7.0",
     "rimraf": "2.x",
     "sinon": "^1.10.0",
@@ -65,7 +66,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tgriesser/knex.git"
+    "url": "git://github.com/FraGoTe/knex.git"
   },
   "keywords": [
     "sql",
@@ -75,12 +76,10 @@
     "mariadb",
     "sqlite3",
     "oracle",
-    "mssql"
+    "mssql",
+    "firebird"
   ],
-  "author": {
-    "name": "Tim Griesser",
-    "web": "https://github.com/tgriesser"
-  },
+  "author": "Francis Gonzales (https://github.com/FraGoTe)",
   "browser": {
     "bluebird/js/main/promise": "./lib/util/bluebird.js",
     "./lib/migrate/index.js": "./lib/util/noop.js",
@@ -95,7 +94,8 @@
     "pg-query-stream": false,
     "oracle": false,
     "strong-oracle": false,
-    "sqlite3": false
+    "sqlite3": false,
+    "firebird": false
   },
   "files": [
     "README.md",
@@ -105,5 +105,13 @@
     "knex.js",
     "LICENSE"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FraGoTe/knex/issues"
+  },
+  "homepage": "https://github.com/FraGoTe/knex#readme",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  }
 }
