@@ -1,5 +1,5 @@
 # .travis.yml
-sudo: false
+sudo: required
 
 language: node_js
 
@@ -10,18 +10,40 @@ node_js:
   - '5'
   - '6'
 
+env:
+  global:
+    - ORACLE_COOKIE=sqldev
+    - ORACLE_FILE=oracle11g/xe/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
+    - ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe
+    - ORACLE_SID=XE
+    - CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
+  matrix:
+    - DIALECT=oracle
+    - DIALECT=all
+
+before_install:
+  - if [ ${DIALECT} = "oracle" ]; then
+        wget 'https://github.com/cbandy/travis-oracle/archive/v2.0.1.tar.gz';
+        mkdir -p .travis/oracle;
+        tar x -C .travis/oracle --strip-components=1 -f v2.0.1.tar.gz;
+        .travis/oracle/download.sh;
+        .travis/oracle/install.sh;
+    fi
+
 before_script:
   - psql -c 'create database knex_test;' -U postgres
   - mysql -e 'create database knex_test;'
+  - if [ ${DIALECT} = "oracle" ]; then
+        { echo "CREATE USER williamgueiros IDENTIFIED BY tiger;";
+          echo "GRANT CONNECT, RESOURCE to williamgueiros;";
+        } | "$ORACLE_HOME/bin/sqlplus" -L -S / AS SYSDBA;
+    fi
 
 after_script:
   - npm run-script coveralls
 
 notifications:
   email: false
-
-env:
-  - CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
 
 addons:
   postgresql: '9.4'
