@@ -3584,38 +3584,5 @@ describe("QueryBuilder", function() {
       }
     });
   });
-  
-  it("test BLOB insert", function() {
-    var testBuffer = new Buffer('test BLOB');
-
-    var data = {a: 1, b: 2, c: 3, blobfoo: testBuffer};
-    testsql(qb().insert(data).into('table'), {
-      oracledb: {
-        sql: "insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (?, ?, EMPTY_BLOB(), ?) returning \"blobfoo\" into ?"
-      }
-    });
-  });
-
-  it("test multiple BLOB insert", function() {
-    var testBuffer = new Buffer('test BLOB');
-    var data = [{a: 1, b: 2, c: 3, blobfoo: testBuffer}, {a: 4, b: 5, c: 6, blobfoo: testBuffer}];
-
-    testsql(qb().insert(data).into('table'), {
-      oracledb: {
-        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (:1, :2, EMPTY_BLOB(), :3) returning \"blobfoo\" into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (:1, :2, EMPTY_BLOB(), :3) returning \"blobfoo\" into :4' using ?, ?, ?, out ?;end;"
-      }
-    });
-  });
-
-  it("test BLOB insert with partly undefined values", function() {
-    var testBuffer = new Buffer('test BLOB');
-    var data = [{a: 1, blobfoo: testBuffer}, {b: 2, blobfoo: testBuffer}, {a: 2, c: 3, blobfoo: testBuffer}];
-
-    testsql(qb().insert(data).into('table'), {
-      oracledb: {
-        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (:1, DEFAULT, EMPTY_BLOB(), DEFAULT) returning \"blobfoo\" into :2' using ?, out ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (DEFAULT, :1, EMPTY_BLOB(), DEFAULT) returning \"blobfoo\" into :2' using ?, out ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (:1, DEFAULT, EMPTY_BLOB(), :2) returning \"blobfoo\" into :3' using ?, ?, out ?;end;"
-      }
-    });
-  });
 
 });

@@ -504,13 +504,4 @@ describe("Oracle SchemaBuilder", function() {
     expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test")');
   });
 
-  it('add binary for later tests', function() {
-    tableSql = client.schemaBuilder().table('users', function() {
-      this.binary('blobfoo');
-    }).toSQL();
-
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "blobfoo" blob');
-  });
-
 });
