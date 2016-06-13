@@ -1,10 +1,10 @@
 
-var inherits    = require('inherits')
-var Promise     = require('../../promise')
-var Transaction = require('../../transaction')
-var debug       = require('debug')('knex:tx')
+import inherits from 'inherits';
+import Promise from '../../promise';
+import Transaction from '../../transaction';
+const debug = require('debug')('knex:tx')
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function Transaction_MSSQL() {
   Transaction.apply(this, arguments)
@@ -13,51 +13,53 @@ inherits(Transaction_MSSQL, Transaction)
 
 assign(Transaction_MSSQL.prototype, {
 
-  begin: function(conn) {
+  begin(conn) {
     debug('%s: begin', this.txid)
     return conn.tx_.begin()
       .then(this._resolver, this._rejecter)
   },
 
-  savepoint: function(conn) {
+  savepoint(conn) {
     debug('%s: savepoint at', this.txid)
     return Promise.resolve()
-      .then(() => this.query(conn, 'SAVE TRANSACTION ' + this.txid))
+      .then(() => this.query(conn, `SAVE TRANSACTION ${this.txid}`))
   },
 
-  commit: function(conn, value) {
+  commit(conn, value) {
     this._completed = true
     debug('%s: commit', this.txid)
     return conn.tx_.commit()
       .then(() => this._resolver(value), this._rejecter)
   },
 
-  release: function(conn, value) {
+  release(conn, value) {
     return this._resolver(value)
   },
 
-  rollback: function(conn, error) {
+  rollback(conn, error) {
     this._completed = true
     debug('%s: rolling back', this.txid)
     return conn.tx_.rollback()
       .then(() => this._rejecter(error))
   },
 
-  rollbackTo: function(conn, error) {
+  rollbackTo(conn, error) {
     debug('%s: rolling backTo', this.txid)
     return Promise.resolve()
-      .then(() => this.query(conn, 'ROLLBACK TRANSACTION ' + this.txid, 2, error))
+      .then(() => this.query(conn, `ROLLBACK TRANSACTION ${this.txid}`, 2, error))
       .then(() => this._rejecter(error))
   },
 
   // Acquire a connection and create a disposer - either using the one passed
   // via config or getting one off the client. The disposer will be called once
   // the original promise is marked completed.
-  acquireConnection: function(config) {
-    var t = this
-    var configConnection = config && config.connection
-    return Promise.try(function() {
-      return (t.outerTx ? t.outerTx.conn : null) || configConnection || t.client.acquireConnection()
+  acquireConnection(config) {
+    const t = this
+    const configConnection = config && config.connection
+    return Promise.try(() => {
+      return (t.outerTx ? t.outerTx.conn : null) ||
+        configConnection ||
+        t.client.acquireConnection().completed;
     }).tap(function(conn) {
       if (!t.outerTx) {
         t.conn = conn
@@ -84,4 +86,4 @@ assign(Transaction_MSSQL.prototype, {
 
 })
 
-module.exports = Transaction_MSSQL
+export default Transaction_MSSQL

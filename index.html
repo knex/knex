@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.10.0)</span>
+      Knex.js <span class="version">(0.11.5)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -45,7 +45,7 @@
       Upgrading
     </a>
     <ul class="toc_section">
-      <li>– <a href="#Upgrading-from0.9">0.9.x -> 0.10</a></li>
+      <li>– <a href="#Upgrading-from0.10">0.10.x -> 0.11</a></li>
     </ul>
 
     <a class="toc_title" href="#Installation">
@@ -171,6 +171,7 @@
       <li>– <a href="#Schema-time">time</a></li>
       <li>– <a href="#Schema-timestamp">timestamp</a></li>
       <li>– <a href="#Schema-timestamps">timestamps</a></li>
+      <li>– <a href="#Schema-dropTimestamps">dropTimestamps</a></li>
       <li>– <a href="#Schema-binary">binary</a></li>
       <li>– <a href="#Schema-enum">enum / enu</a></li>
       <li>– <a href="#Schema-json">json</a></li>
@@ -303,7 +304,7 @@
     </p>
 
     <p>
-      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MySQL</b>, <b>MariaDB</b>, <b>SQLite3</b>, and <b>Oracle</b> designed to be flexible,
+      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MSSQL</b>, <b>MySQL</b>, <b>MariaDB</b>, <b>SQLite3</b>, and <b>Oracle</b> designed to be flexible,
       portable, and fun to use. It features both traditional node style <a href="#Interfaces-Callbacks">callbacks</a>
       as well as a <a href="#Interfaces-Promises">promise</a> interface for cleaner async flow control, <a href="#Interfaces-Streams">a stream interface</a>, full featured <a href="#Builder">query</a> and <a href="#Schema">schema</a> builders, <a href="#Transactions"><b>transaction support (with savepoints)</b></a>, connection <a href="#Installation-pooling">pooling</a> and standardized responses between
       different query clients and dialects.
@@ -336,7 +337,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.10.0 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.11.5 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -346,6 +347,12 @@
     </p>
 
     <h2 id="Upgrading">Upgrading</h2>
+
+    <h3 id="Upgrading-from0.10">Upgrading 0.10 -> 0.11</h3>
+
+    <p>
+      Knex treats `orWhere` with multiple keyed arguments differently. See Changelog.
+    </p>
 
     <h3 id="Upgrading-from0.9">Upgrading 0.9 -> 0.10</h3>
 
@@ -387,7 +394,7 @@
 
     <p>
       The primary target environment for Knex is Node.js, you will need to install the <tt>knex</tt> library,
-      and then install the appropriate database library: <tt><a href="https://github.com/brianc/node-postgres">pg</a></tt> for PostgreSQL, <tt><a href="https://github.com/felixge/node-mysql">mysql</a></tt> for MySQL or MariaDB, or <a href="https://github.com/mapbox/node-sqlite3"><tt>sqlite3</tt></a> for SQLite3.
+      and then install the appropriate database library: <tt><a href="https://github.com/brianc/node-postgres">pg</a></tt> for PostgreSQL, <tt><a href="https://github.com/felixge/node-mysql">mysql</a></tt> for MySQL or MariaDB, <a href="https://github.com/mapbox/node-sqlite3"><tt>sqlite3</tt></a> for SQLite3, or <a href="https://github.com/patriksimek/node-mssql"><tt>mssql</tt></a> for MSSQL.
     </p>
 
 <pre>
@@ -401,6 +408,7 @@ $ npm install mysql2
 $ npm install mariasql
 $ npm install strong-oracle
 $ npm install oracle
+$ npm install mssql
 </pre>
 
     <h3 id="Installation-browser">Browser</h3>
@@ -598,13 +606,26 @@ pg('table').insert({a: 'b'}).returning('*').toString();
     </p>
 
     <p id="Builder-timeout">
-      <b class="header">timeout</b><code>.timeout(ms)</code>
+      <b class="header">timeout</b><code>.timeout(ms, options={cancel: boolean})</code>
       <br />
       Sets a timeout for the query and will throw a <tt>TimeoutError</tt> if the timeout is exceeded.
       The error contains information about the query, bindings, and the timeout that was set.
       Useful for complex queries that you want to make sure are not taking too long to execute.
+      <br /><br />
+      Optional second argument for passing options:
+
+      <ul>
+        <li><b>cancel</b>: if <tt>true</tt>, cancel query if timeout is reached. <b>NOTE:</b> only supported in MySQL and MariaDB for now.</li>
+      </ul>
     </p>
 
+<pre class="display">
+knex.select().from('books').timeout(1000)
+</pre>
+
+<pre class="display">
+knex.select().from('books').timeout(1000, {cancel: true}) // MySQL and MariaDB only
+</pre>
 
     <p id="Builder-select">
       <b class="header">select</b><code>.select([*columns])</code>
@@ -677,6 +698,20 @@ knex.withSchema('public').select('*').from('users')
       Several methods exist to assist in dynamic where clauses. In many places functions may be used in place of values,
       constructing subqueries. In most places existing knex queries may be used to compose sub-queries, etc. Take a look at a few of the examples for each method for instruction on use:
     </p>
+
+    <p>
+      <b>Important:</b> Supplying knex with an <tt>undefined</tt> value to any of the <tt>where</tt> functions will cause knex to throw an error during sql compilation.
+      This is both for yours and our sake. Knex cannot know what to do with undefined values in a where clause, and generally it would be a programmatic error to supply one to begin with.
+      The error will throw a message containing the type of query and the compiled query-string. Example:
+    </p>
+
+  <pre class="display">
+    knex('accounts')
+    .where('login', undefined)
+    .select()
+    .toSQL();
+    //Undefined binding(s) detected when compiling SELECT query: select * from "accounts" where "login" = ?
+  </pre>
 
     <p id="Builder-where">
       <b class="header">where</b><code>.where(~mixed~)</code>
@@ -928,6 +963,19 @@ knex.select('*').from('users').join('accounts', function() {
 </pre>
 
     <p>
+      For nested join statements, specify a function as first argument of <tt>on</tt>, <tt>orOn</tt> or <tt>andOn</tt>
+    </p>
+
+<pre class="display">
+knex.select('*').from('users').join('accounts', function() {
+  this.on(function() {
+    this.on('accounts.id', '=', 'users.account_id')
+    this.orOn('accounts.owner_id', '=', 'users.id')
+  })
+})
+</pre>
+
+    <p>
       It is also possible to use an object to represent the join syntax.
     </p>
 
@@ -939,9 +987,9 @@ knex.select('*').from('users').join('accounts', {'accounts.id': 'users.account_i
 <p>
   If you need to use a literal value (string, number, or boolean) in a join instead of a column, use <tt>knex.raw</tt>.</p>
 
-  <pre class="display">
-  knex.select('*').from('users').join('accounts', 'accounts.type', knex.raw('?', ['admin']))
-  </pre>
+<pre class="display">
+knex.select('*').from('users').join('accounts', 'accounts.type', knex.raw('?', ['admin']))
+</pre>
 
     <p id="Builder-innerJoin">
       <b class="header">innerJoin</b><code>.innerJoin(column, ~mixed~)</code>
@@ -1256,7 +1304,7 @@ knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
     <p id="Builder-returning">
       <b class="header">returning</b><code>.returning(column) / .returning([column1, column2, ...])</code>
       <br />
-      Utilized by PostgreSQL, MySQL, and Oracle databases, the returning method specifies which column should be returned
+      Utilized by PostgreSQL, MSSQL, and Oracle databases, the returning method specifies which column should be returned
       by the <a href="#Builder-insert">insert</a> and <a href="#Builder-update">update</a> methods.
       <br />
       Passed <tt>column</tt> parameter may be a string or an array of strings. When passed in a string,
@@ -1975,6 +2023,13 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
       <br />
     </p>
 
+    <p id="Schema-dropTimestamps">
+      <b class="header">dropTimestamps</b><code>table.dropTimestamps()</code>
+      <br />
+      Drops the columns <tt>created_at</tt> and <tt>updated_at</tt> from the table,
+      which can be created via <a href="#Schema-timestamps">timestamps</a>.
+    </p>
+
     <p id="Schema-binary">
       <b class="header">binary</b><code>table.binary(name, [length])</code>
       <br />
@@ -2102,9 +2157,9 @@ knex.table('users')
 
 
     <p id="Schema-dropPrimary">
-      <b class="header">dropPrimary</b><code>table.dropPrimary()</code>
+      <b class="header">dropPrimary</b><code>table.dropPrimary([constraintName])</code>
       <br />
-      Drops the primary key constraint on a table.
+      Drops the primary key constraint on a table. Defaults to <tt>tablename_pkey</tt> unless <tt>constraintName</tt> is specified.
     </p>
 
     <h3 id="Chainable">Chainable Methods:</h3>
@@ -2123,10 +2178,11 @@ knex.table('users')
     </p>
 
     <p id="Chainable-primary">
-      <b class="header">primary</b><code>column.primary()</code>
+      <b class="header">primary</b><code>column.primary([constraintName])</code> / <code>table.primary(columns, [constraintName])</code>
       <br />
-      Sets the field as the primary key for the table.
-      To create a compound primary key, pass an array of column names: <code>table.primary(['column1', 'column2'])</code>.
+      When called on a single column it will set that column as the primary key for a table.
+      To create a compound primary key, pass an array of column names: <code>table.primary(['column1', 'column2'])</code>
+      <i>Constraint name defaults to <tt>tablename_pkey</tt> unless <tt>constraintName</tt> is specified.</i>
     </p>
 
     <p id="Chainable-unique">
@@ -2376,15 +2432,29 @@ knex.select('e.lastname', 'e.salary', subcolumn)
 
     <h3 id="Utility-BatchInsert">Batch Insert</h3>
 
-    <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction (which is automatically created), at a given <tt>chunkSize</tt>.</p>
+    <p>The <tt>batchInsert</tt> utility will insert a batch of rows wrapped inside a transaction <i>(which is automatically created unless explicitly given a transaction using <a href="#Builder-transacting">transacting</a>)</i>, at a given <tt>chunkSize</tt>.</p>
     <p>It's primarily designed to be used when you have thousands of rows to insert into a table.</p>
     <p>By default, the <tt>chunkSize</tt> is set to 1000.</p>
+
+    <p>BatchInsert also allows for <a href="#Builder-returning">returning values</a> and supplying transactions using <a href="#Builder-transacting">transacting</a>.</p>
 
 <pre>
 <code class="js">
   var rows = [{...}, {...}];
   var chunkSize = 30;
   knex.batchInsert('TableName', rows, chunkSize)
+  .returning('id')
+  .then(function(ids) {
+    ...
+  })
+  .catch(function(error) {
+    ...
+  });
+
+  knex.transaction(function(tr) {
+    return knex.batchInsert('TableName', rows, chunkSize)
+    .transacting(tr)
+  })
   .then(function() {
     ...
   })
@@ -3029,10 +3099,118 @@ $ npm test
     <p id="faq-nonode">
       <b class="header">Can I use Knex outside of Node.js</b><br />
       Yes. While the WebSQL spec is deprecated, there is still an adapter that provides support.
-      Checkout the <a href="https://github.com/tgriesser/knex/tree/master/browser">browser builds</a> for more details</a>.
+      Checkout the <a href="https://github.com/tgriesser/knex/tree/master/build">browser builds</a> for more details</a>.
     </p>
 
     <h2 id="changelog">Change Log</h2>
+
+
+    <p>
+      <b class="header">0.11.5</b> &mdash; <small><i>26 May, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Bugfix: Using <tt>Raw</tt> or <tt>QueryBuilder</tt> as a binding to <tt>Raw</tt> now works as intended.</li>
+    </ul>
+
+
+    <p>
+      <b class="header">0.11.4</b> &mdash; <small><i>22 May, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Bugfix: Inconsistency of <tt>.primary()</tt> and <tt>.dropPrimary()</tt> between dialects #1430</li>
+      <li>Feature: Allow using custom Client/Dialect (you can pass your own client in knex config) #1428</li>
+      <li>Docs: Add documentation for .dropTimestamps #1432</li>
+      <li>Bugfix: Fixed passing undefined fields for insert/update inside transaction #1423</li>
+      <li>Feature: <tt>batchInsert</tt> with existing transaction #1354</li>
+      <li>Build: eslint instead of jshint #1416</li>
+      <li>Bugfix: Pooled connections not releasing #1382</li>
+      <li>Bugfix: Support passing <tt>knex.raw</tt> to <tt>.whereNot</tt> #1402</li>
+      <li>Docs: Fixed list of dialects which supports <tt>.returning</tt> #1398</li>
+      <li>Bugfix: rename table does not fail anymore even with schema defined #1403</li>
+    </ul>
+
+    <p>
+      <b class="header">0.11.3</b> &mdash; <small><i>14 May, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Support nested joins. #1397</li>
+    </ul>
+
+    <p>
+      <b class="header">0.11.2</b> &mdash; <small><i>14 May, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Prevent crash on <tt>knex seed:make</tt>. #1389</li>
+      <li>Improvements to <tt>batchInsert</tt>. #1391</li>
+      <li>Improvements to inserting <tt>DEFAULT</tt> with <tt>undefined</tt> binding. #1396</li>
+      <li>Correct generated code for adding/dropping multiple columns. (MSSQL) #1401</li>
+    </ul>
+
+    <p>
+      <b class="header">0.11.1</b> &mdash; <small><i>6 May, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Fix error in CLI command `migrate:make`. #1386</li>
+    </ul>
+
+    <p>
+      <b class="header">0.11.0</b> &mdash; <small><i>5 May, 2016</i></small><br />
+    </p>
+
+    <b>Breaking Changes:</b>
+    <ul>
+      <li>
+        <tt>QueryBuilder#orWhere</tt> joins multiple arguments with
+        <tt>AND</tt>. #1164
+      </li>
+    </ul>
+
+    <b>Other Changes:</b>
+    <ul>
+      <li>Collate for columns. (MySQL) #1147</li>
+      <li>
+        Add <tt>QueryBuilder#timeout</tt>, <tt>Raw#timeout</tt>. #1201 #1260
+      </li>
+      <li>Exit with error code when appropriate. #1238</li>
+      <li>
+        MSSQL connection accepts <tt>host</tt> as an alias for <tt>server</tt>
+        in accordance with other dialects. #1239
+      </li>
+      <li>Add <tt>query-response</tt> event. #1231</li>
+      <li>Correct behaviour of sibling nested transactions. #1226</li>
+      <li>Support <tt>RETURNING</tt> with <tt>UPDATE</tt>. (Oracle) #1253</li>
+      <li>
+        Throwing callbacks from transactions automatically rolls them back.
+        #1257
+      </li>
+      <li>
+        Fixes to named <tt>Raw</tt> bindings. #1251
+      </li>
+      <li>
+        <tt>timestamps</tt> accepts an argument to set `NOT NULL` and default to current timestamp.
+      </li>
+      <li>Add <tt>TableBuilder#inherits</tt> for PostgreSQL. #601</li>
+      <li>Wrap index names. #1289</li>
+      <li>Restore coffeescript knexfiles and configurations. #1292</li>
+      <li>
+        Add <tt>andWhereBetween</tt> and <tt>andWhereNotBetween</tt> #1132
+      </li>
+      <li> Fix <tt>valueForUndefined</tt> failure. #1269</li>
+      <li>
+        <tt>renameColumn</tt> no longer drops default value or nullability.
+        #1326
+      </li>
+      <li>Correct MySQL2 error handling. #1315</li>
+      <li>Fix MSSQL <tt>createTableIfNotExists</tt>. #1362</li>
+      <li>Fix MSSQL URL parsing. #1342</li>
+      <li>Update Lodash to 4.6.0 #1242</li>
+      <li>Update Bluebird to 3.3.4 #1279</li>
+    </ul>
 
     <p>
       <b class="header">0.10.0</b> &mdash; <small><i>15 Feb, 2016</i></small><br />
@@ -3070,7 +3248,7 @@ $ npm test
         Support non-array arguments to
         <a href="#Raw-Bindings"><tt>knex.raw</tt></a>.
       </li>
-      <li>Global <tt>>query-error</tt> event. #1163</li>
+      <li>Global <tt>query-error</tt> event. #1163</li>
       <li>Add `batchInsert`. #1182</li>
       <li>Better support for Mysql2 dialect options. #980</li>
       <li>Support for <tt>acquireConnectionTimeout</tt> default 60 seconds preventing #1040 from happening. #1177</li>

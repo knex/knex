@@ -1,10 +1,11 @@
 
-var Transaction = require('../../transaction')
-var inherits    = require('inherits')
-var debug       = require('debug')('knex:tx')
-var helpers     = require('../../helpers')
+import inherits from 'inherits';
+import Debug from 'debug';
+import { assign } from 'lodash'
+import Transaction from '../../transaction';
+import * as helpers from '../../helpers';
 
-import {assign} from 'lodash'
+const debug = Debug('knex:tx');
 
 function Transaction_Maria() {
   Transaction.apply(this, arguments)
@@ -13,17 +14,18 @@ inherits(Transaction_Maria, Transaction)
 
 assign(Transaction_Maria.prototype, {
 
-  query: function(conn, sql, status, value) {
-    var t = this
-    var q = this.trxClient.query(conn, sql)
-      .catch(function(err) {
-        return err.code === 1305
-      }, function() {
-        helpers.warn('Transaction was implicitly committed, do not mix transactions and DDL with MariaDB (#805)')
+  query(conn, sql, status, value) {
+    const t = this
+    const q = this.trxClient.query(conn, sql)
+      .catch(err => err.code === 1305, () => {
+        helpers.warn(
+          'Transaction was implicitly committed, do not mix transactions and ' +
+          'DDL with MariaDB (#805)'
+        );
       })
       .catch(function(err) {
         status = 2
-        value  = err
+        value = err
         t._completed = true
         debug('%s error running transaction query', t.txid)
       })
@@ -39,4 +41,4 @@ assign(Transaction_Maria.prototype, {
 
 })
 
-module.exports = Transaction_Maria
+export default Transaction_Maria

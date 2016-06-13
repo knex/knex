@@ -17,6 +17,19 @@ test('parses standard connections', function(t) {
   })
 })
 
+test('parses standard connections without password', function(t) {
+  t.plan(1)
+  t.deepEqual(parseConnection('mysql://username@path.to.some-url:3306/testdb'), {
+    client: 'mysql',
+    connection: {
+      user: 'username',
+      host: 'path.to.some-url',
+      port: '3306',
+      database: 'testdb'
+    }
+  })
+})
+
 test('parses maria connections, aliasing database to db', function(t) {
   t.plan(3)
   var maria = {
@@ -32,6 +45,21 @@ test('parses maria connections, aliasing database to db', function(t) {
   t.deepEqual(parseConnection('maria://username:pass@path.to.some-url:6000/testdb'), maria)
   t.deepEqual(parseConnection('mariasql://username:pass@path.to.some-url:6000/testdb'), maria)
   t.deepEqual(parseConnection('mariadb://username:pass@path.to.some-url:6000/testdb'), maria)
+})
+
+test('parses mssql connections, aliasing host to server', function(t) {
+  t.plan(1)
+  var mssql = {
+    client: 'mssql',
+    connection: {
+      user: 'username',
+      password: 'pass',
+      server: 'path.to.some-url',
+      port: '6000',
+      database: 'testdb'
+    }
+  }
+  t.deepEqual(parseConnection('mssql://username:pass@path.to.some-url:6000/testdb'), mssql)
 })
 
 test('assume a path is mysql', function(t) {

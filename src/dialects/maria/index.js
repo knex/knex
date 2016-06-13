@@ -1,14 +1,14 @@
 
 // MariaSQL Client
 // -------
-var inherits      = require('inherits')
-var Client_MySQL  = require('../mysql')
-var Promise       = require('../../promise')
-var SqlString     = require('../../query/string')
-var helpers       = require('../../helpers')
-var Transaction   = require('./transaction')
+import inherits from 'inherits';
+import Client_MySQL from '../mysql';
+import Promise from '../../promise';
+import SqlString from '../../query/string';
+import * as helpers from '../../helpers';
+import Transaction from './transaction';
 
-import {assign, map} from 'lodash'
+import { assign, map } from 'lodash'
 
 function Client_MariaSQL(config) {
   Client_MySQL.call(this, config)
@@ -21,16 +21,16 @@ assign(Client_MariaSQL.prototype, {
 
   driverName: 'mariasql',
 
-  Transaction: Transaction,
+  Transaction,
 
-  _driver: function() {
+  _driver() {
     return require('mariasql')
   },
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
-  acquireRawConnection: function() {
-    var connection = new this.driver();
+  acquireRawConnection() {
+    const connection = new this.driver();
     connection.connect(assign({metadata: true}, this.connectionSettings));
     return new Promise(function(resolver, rejecter) {
       connection
@@ -45,19 +45,19 @@ assign(Client_MariaSQL.prototype, {
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
-  destroyRawConnection: function(connection, cb) {
+  destroyRawConnection(connection, cb) {
     connection.end()
     cb()
   },
 
   // Return the database for the MariaSQL client.
-  database: function() {
+  database() {
     return this.connectionSettings.db;
   },
 
   // Grab a connection, run the query via the MariaSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
-  _stream: function(connection, sql, stream) {
+  _stream(connection, sql, stream) {
     return new Promise(function(resolver, rejecter) {
       connection.query(sql.sql, sql.bindings)
         .on('result', function(res) {
@@ -76,11 +76,11 @@ assign(Client_MariaSQL.prototype, {
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
-  _query: function(connection, obj) {
-    var tz  = this.connectionSettings.timezone || 'local';
+  _query(connection, obj) {
+    const tz = this.connectionSettings.timezone || 'local';
     return new Promise(function(resolver, rejecter) {
       if (!obj.sql) return resolver()
-      var sql = SqlString.format(obj.sql, obj.bindings, tz);
+      const sql = SqlString.format(obj.sql, obj.bindings, tz);
       connection.query(sql, function (err, rows) {
         if (err) {
           return rejecter(err);
@@ -93,19 +93,20 @@ assign(Client_MariaSQL.prototype, {
   },
 
   // Process the response as returned from the query.
-  processResponse: function(obj, runner) {
-    var response = obj.response;
-    var method   = obj.method;
-    var rows     = response[0];
-    var data     = response[1];
+  processResponse(obj, runner) {
+    const { response } = obj;
+    const { method } = obj;
+    const rows = response[0];
+    const data = response[1];
     if (obj.output) return obj.output.call(runner, rows/*, fields*/);
     switch (method) {
       case 'select':
       case 'pluck':
-      case 'first':
-        var resp = helpers.skim(rows);
+      case 'first': {
+        const resp = helpers.skim(rows);
         if (method === 'pluck') return map(resp, obj.pluck);
         return method === 'first' ? resp[0] : resp;
+      }
       case 'insert':
         return [data.insertId];
       case 'del':
@@ -117,7 +118,7 @@ assign(Client_MariaSQL.prototype, {
     }
   },
 
-  ping: function(resource, callback) {
+  ping(resource, callback) {
     resource.query('SELECT 1', callback);
   }
 
@@ -136,21 +137,21 @@ function parseType(value, type) {
 }
 
 function handleRow(row, metadata) {
-  var keys = Object.keys(metadata);
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    var type = metadata[key].type;
+  const keys = Object.keys(metadata);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const { type } = metadata[key];
     row[key] = parseType(row[key], type);
   }
   return row;
 }
 
 function handleRows(rows, metadata) {
-  for (var i = 0; i < rows.length; i++) {
-    var row = rows[i];
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
     handleRow(row, metadata);
   }
   return rows;
 }
 
-module.exports = Client_MariaSQL
+export default Client_MariaSQL

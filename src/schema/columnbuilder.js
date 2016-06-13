@@ -1,14 +1,14 @@
 
-import {extend, each, toArray} from 'lodash'
+import { extend, each, toArray } from 'lodash'
 
 // The chainable interface off the original "column" method.
-function ColumnBuilder(client, tableBuilder, type, args) {
-  this.client        = client
-  this._single       = {};
-  this._modifiers    = {};
-  this._statements   = [];
-  this._type         = columnAlias[type] || type;
-  this._args         = args;
+export default function ColumnBuilder(client, tableBuilder, type, args) {
+  this.client = client
+  this._single = {};
+  this._modifiers = {};
+  this._statements = [];
+  this._type = columnAlias[type] || type;
+  this._args = args;
   this._tableBuilder = tableBuilder;
 
   // If we're altering the table, extend the object
@@ -19,7 +19,7 @@ function ColumnBuilder(client, tableBuilder, type, args) {
 }
 
 // All of the modifier methods that can be used to modify the current query.
-var modifiers = [
+const modifiers = [
   'default', 'defaultsTo', 'defaultTo', 'unsigned',
   'nullable', 'notNull', 'notNullable',
   'first', 'after', 'comment', 'collate'
@@ -56,7 +56,7 @@ ColumnBuilder.prototype.references = function(value) {
     .references(value);
 };
 
-var AlterMethods = {};
+const AlterMethods = {};
 
 // Specify that the column is to be dropped. This takes precedence
 // over all other rules for the column.
@@ -77,19 +77,17 @@ AlterMethods.alterType = function(type) {
 };
 
 // Aliases for convenience.
-var aliasMethod = {
+const aliasMethod = {
   default:    'defaultTo',
   defaultsTo: 'defaultTo',
   notNull:    'notNullable'
 };
 
 // Alias a few methods for clarity when processing.
-var columnAlias = {
+const columnAlias = {
   'float'  : 'floating',
   'enum'   : 'enu',
   'boolean': 'bool',
   'string' : 'varchar',
   'bigint' : 'bigInteger'
 };
-
-module.exports = ColumnBuilder;

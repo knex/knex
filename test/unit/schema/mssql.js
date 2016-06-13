@@ -30,7 +30,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [id] int identity(1,1) not null primary key, ADD [email] nvarchar(255)');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [id] int identity(1,1) not null primary key, [email] nvarchar(255)');
   });
 
   it('test drop table', function() {
@@ -62,7 +62,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], DROP COLUMN [bar]');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], [bar]');
   });
 
   it('drops multiple columns as multiple arguments', function() {
@@ -71,7 +71,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], DROP COLUMN [bar]');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], [bar]');
   });
 
   it('test drop primary', function() {
@@ -143,7 +143,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [created_at], DROP COLUMN [updated_at]');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [created_at], [updated_at]');
   });
 
   it('test rename table', function() {
@@ -161,7 +161,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD PRIMARY KEY ([foo])');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD CONSTRAINT [bar] PRIMARY KEY ([foo])');
   });
 
   it('test adding unique key', function() {
@@ -421,7 +421,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [created_at] datetime, ADD [updated_at] datetime');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [created_at] datetime, [updated_at] datetime');
   });
 
   it('test adding binary', function() {
@@ -430,7 +430,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] blob');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] varbinary(max)');
   });
 
   it('test adding decimal', function() {
@@ -440,6 +440,16 @@ describe("MSSQL SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(2, 6)');
+  });
+
+  it('test adding multiple columns, #1348', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.integer('foo');
+      this.integer('baa');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] int, [baa] int');
   });
 
   it('is possible to set raw statements in defaultTo, #146', function() {
@@ -467,6 +477,20 @@ describe("MSSQL SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('CREATE TABLE [default_raw_test] ([created_at] datetime default GETDATE())');
+  });
+
+
+  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.primary(['test1', 'test2'], 'testconstraintname');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD CONSTRAINT [testconstraintname] PRIMARY KEY ([test1], [test2])');
+
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('test').primary('testconstraintname');
+    }).toSQL();
+
+    expect(tableSql[0].sql).to.equal('CREATE TABLE [users] ([test] nvarchar(255), CONSTRAINT [testconstraintname] PRIMARY KEY ([test]))');
   });
 
 });

@@ -1,5 +1,4 @@
 /*global after, before, describe, expect, it*/
-/*jshint -W030 */
 'use strict';
 
 var equal    = require('assert').equal;
