@@ -1,10 +1,10 @@
 
-var inherits    = require('inherits')
-var Promise     = require('../../promise')
-var Transaction = require('../../transaction')
-var debugTx     = require('debug')('knex:tx')
+import inherits from 'inherits';
+import Promise from '../../promise';
+import Transaction from '../../transaction';
+const debugTx = require('debug')('knex:tx')
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function Oracle_Transaction(client, container, config, outerTx) {
   Transaction.call(this, client, container, config, outerTx)
@@ -14,22 +14,22 @@ inherits(Oracle_Transaction, Transaction)
 assign(Oracle_Transaction.prototype, {
 
   // disable autocommit to allow correct behavior (default is true)
-  begin: function() {
+  begin() {
     return Promise.resolve()
   },
 
-  commit: function(conn, value) {
+  commit(conn, value) {
     this._completed = true
     return conn.commitAsync()
       .return(value)
       .then(this._resolver, this._rejecter)
   },
 
-  release: function(conn, value) {
+  release(conn, value) {
     return this._resolver(value)
   },
 
-  rollback: function(conn, err) {
+  rollback(conn, err) {
     this._completed = true
     debugTx('%s: rolling back', this.txid)
     return conn.rollbackAsync()
@@ -37,15 +37,15 @@ assign(Oracle_Transaction.prototype, {
       .catch(this._rejecter)
   },
 
-  acquireConnection: function(config) {
-    var t = this
-    return Promise.try(function() {
-      return config.connection || t.client.acquireConnection()
-    }).tap(function(connection) {
+  acquireConnection(config) {
+    const t = this
+    return Promise.try(() =>
+      config.connection || t.client.acquireConnection().completed
+    ).tap(connection => {
       if (!t.outerTx) {
         connection.setAutoCommit(false)
       }
-    }).disposer(function(connection) {
+    }).disposer(connection => {
       debugTx('%s: releasing connection', t.txid)
       connection.setAutoCommit(true)
       if (!config.connection) {
@@ -58,4 +58,4 @@ assign(Oracle_Transaction.prototype, {
 
 })
 
-module.exports = Oracle_Transaction
+export default Oracle_Transaction

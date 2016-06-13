@@ -83,7 +83,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop primary key');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_pkey"');
   });
 
   it('test drop unique', function() {
@@ -161,7 +161,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add primary key ("foo")');
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "bar" primary key ("foo")');
   });
 
   it('test adding unique key', function() {
@@ -491,6 +491,26 @@ describe("Oracle SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "composite_key_test" drop constraint "ckt_unique"');
+  });
+
+  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.primary(['test1', 'test2'], 'testconstraintname');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('test').primary('testconstraintname');
+    }).toSQL();
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test")');
+  });
+
+  it('add binary for later tests', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.binary('blobfoo');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "blobfoo" blob');
   });
 
 });

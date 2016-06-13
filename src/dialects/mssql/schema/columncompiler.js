@@ -1,11 +1,11 @@
 
 // MySQL Column Compiler
 // -------
-var inherits       = require('inherits')
-var ColumnCompiler = require('../../../schema/columncompiler')
-var helpers        = require('../../../helpers')
+import inherits from 'inherits';
+import ColumnCompiler from '../../../schema/columncompiler';
+import * as helpers from '../../../helpers';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function ColumnCompiler_MSSQL() {
   ColumnCompiler.apply(this, arguments);
@@ -24,27 +24,27 @@ assign(ColumnCompiler_MSSQL.prototype, {
 
   bigint: 'bigint',
 
-  double: function(precision, scale) {
+  double(precision, scale) {
     if (!precision) return 'double'
-    return 'double(' + this._num(precision, 8) + ', ' + this._num(scale, 2) + ')'
+    return `double(${this._num(precision, 8)}, ${this._num(scale, 2)})`
   },
 
-  integer: function(length) {
-    length = length ? '(' + this._num(length, 11) + ')' : ''
-    return 'int' + length
+  integer(length) {
+    length = length ? `(${this._num(length, 11)})` : ''
+    return `int${length}`
   },
 
   mediumint: 'mediumint',
 
   smallint: 'smallint',
 
-  tinyint: function(length) {
-    length = length ? '(' + this._num(length, 1) + ')' : ''
-    return 'tinyint' + length
+  tinyint(length) {
+    length = length ? `(${this._num(length, 1)})` : ''
+    return `tinyint${length}`
   },
 
-  varchar: function(length) {
-    return 'nvarchar(' + this._num(length, 255) + ')';
+  varchar(length) {
+    return `nvarchar(${this._num(length, 255)})`;
   },
 
   text: 'nvarchar(max)',
@@ -61,12 +61,12 @@ assign(ColumnCompiler_MSSQL.prototype, {
 
   timestamp: 'datetime',
 
-  bit: function(length) {
-    return length ? 'bit(' + this._num(length) + ')' : 'bit'
+  bit(length) {
+    return length ? `bit(${this._num(length)})` : 'bit'
   },
 
-  binary: function(length) {
-    return length ? 'varbinary(' + this._num(length) + ')' : 'blob'
+  binary(length) {
+    return length ? `varbinary(${this._num(length)})` : 'blob'
   },
 
   bool: 'bit',
@@ -74,24 +74,23 @@ assign(ColumnCompiler_MSSQL.prototype, {
   // Modifiers
   // ------
 
-  defaultTo: function(value) {
-    /*jshint unused: false*/
-    var defaultVal = ColumnCompiler_MSSQL.super_.prototype.defaultTo.apply(this, arguments);
+  defaultTo(value) {
+    const defaultVal = ColumnCompiler_MSSQL.super_.prototype.defaultTo.apply(this, arguments);
     if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
       return defaultVal
     }
     return ''
   },
 
-  first: function() {
+  first() {
     return 'first'
   },
 
-  after: function(column) {
-    return 'after ' + this.formatter.wrap(column)
+  after(column) {
+    return `after ${this.formatter.wrap(column)}`
   },
 
-  comment: function(comment) {
+  comment(comment) {
     if (comment && comment.length > 255) {
       helpers.warn('Your comment is longer than the max comment length for MSSQL')
     }
@@ -100,4 +99,4 @@ assign(ColumnCompiler_MSSQL.prototype, {
 
 })
 
-module.exports = ColumnCompiler_MSSQL;
+export default ColumnCompiler_MSSQL;

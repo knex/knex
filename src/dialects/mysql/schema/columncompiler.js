@@ -1,11 +1,11 @@
 
 // MySQL Column Compiler
 // -------
-var inherits       = require('inherits')
-var ColumnCompiler = require('../../../schema/columncompiler')
-var helpers        = require('../../../helpers')
+import inherits from 'inherits';
+import ColumnCompiler from '../../../schema/columncompiler';
+import * as helpers from '../../../helpers';
 
-import {assign} from 'lodash'
+import { assign } from 'lodash'
 
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
@@ -24,26 +24,26 @@ assign(ColumnCompiler_MySQL.prototype, {
 
   bigint: 'bigint',
 
-  double: function(precision, scale) {
+  double(precision, scale) {
     if (!precision) return 'double'
-    return 'double(' + this._num(precision, 8) + ', ' + this._num(scale, 2) + ')'
+    return `double(${this._num(precision, 8)}, ${this._num(scale, 2)})`
   },
 
-  integer: function(length) {
-    length = length ? '(' + this._num(length, 11) + ')' : ''
-    return 'int' + length
+  integer(length) {
+    length = length ? `(${this._num(length, 11)})` : ''
+    return `int${length}`
   },
 
   mediumint: 'mediumint',
 
   smallint: 'smallint',
 
-  tinyint: function(length) {
-    length = length ? '(' + this._num(length, 1) + ')' : ''
-    return 'tinyint' + length
+  tinyint(length) {
+    length = length ? `(${this._num(length, 1)})` : ''
+    return `tinyint${length}`
   },
 
-  text: function(column) {
+  text(column) {
     switch (column) {
       case 'medium':
       case 'mediumtext':
@@ -56,65 +56,64 @@ assign(ColumnCompiler_MySQL.prototype, {
     }
   },
 
-  mediumtext: function() {
+  mediumtext() {
     return this.text('medium')
   },
 
-  longtext: function() {
+  longtext() {
     return this.text('long')
   },
 
-  enu: function(allowed) {
-    return "enum('" + allowed.join("', '")  + "')"
+  enu(allowed) {
+    return `enum('${allowed.join("', '")}')`
   },
 
   datetime: 'datetime',
 
   timestamp: 'timestamp',
 
-  bit: function(length) {
-    return length ? 'bit(' + this._num(length) + ')' : 'bit'
+  bit(length) {
+    return length ? `bit(${this._num(length)})` : 'bit'
   },
 
-  binary: function(length) {
-    return length ? 'varbinary(' + this._num(length) + ')' : 'blob'
+  binary(length) {
+    return length ? `varbinary(${this._num(length)})` : 'blob'
   },
 
   // Modifiers
   // ------
 
-  defaultTo: function(value) {
-    /*jshint unused: false*/
-    var defaultVal = ColumnCompiler_MySQL.super_.prototype.defaultTo.apply(this, arguments);
+  defaultTo(value) {
+    const defaultVal = ColumnCompiler_MySQL.super_.prototype.defaultTo.apply(this, arguments);
     if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
       return defaultVal
     }
     return ''
   },
 
-  unsigned: function() {
+  unsigned() {
     return 'unsigned'
   },
 
-  first: function() {
+  first() {
     return 'first'
   },
 
-  after: function(column) {
-    return 'after ' + this.formatter.wrap(column)
+  after(column) {
+    return `after ${this.formatter.wrap(column)}`
   },
 
-  comment: function(comment) {
+  comment(comment) {
     if (comment && comment.length > 255) {
       helpers.warn('Your comment is longer than the max comment length for MySQL')
     }
-    return comment && "comment '" + comment + "'"
+    return comment && `comment '${comment}'`
   },
 
-  collate: function(collation) {
-    return collation && "collate '" + collation + "'"
+  collate(collation) {
+    return collation && `collate '${collation}'`
   }
 
 })
 
-module.exports = ColumnCompiler_MySQL;
+export default ColumnCompiler_MySQL;

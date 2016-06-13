@@ -31,16 +31,6 @@ var clientsWithNullAsDefault = {
   default:  new Client(useNullAsDefaultConfig)
 }
 
-var valuesForUndefined = {
-  mysql: clients.mysql.valueForUndefined,
-  sqlite3: clients.sqlite3.valueForUndefined,
-  oracle: clients.oracle.valueForUndefined,
-  postgres: clients.postgres.valueForUndefined,
-  mssql: clients.mssql.valueForUndefined,
-  oracledb: clients.oracledb.valueForUndefined,
-  default: clients.default.valueForUndefined
-};
-
 function qb() {
   return clients.default.queryBuilder()
 }
@@ -1614,6 +1604,28 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("complex join with nest conditional statements", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on(function(qb) {
+        qb.on('users.id', '=', 'contacts.id')
+        qb.orOn('users.name', '=', 'contacts.name');
+      });
+    }), {
+      mysql: {
+        sql: 'select * from `users` inner join `contacts` on (`users`.`id` = `contacts`.`id` or `users`.`name` = `contacts`.`name`)',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] inner join [contacts] on ([users].[id] = [contacts].[id] or [users].[name] = [contacts].[name])',
+        bindings: []
+      },
+      default: {
+        sql: 'select * from "users" inner join "contacts" on ("users"."id" = "contacts"."id" or "users"."name" = "contacts"."name")',
+        bindings: []
+      }
+    });
+  });
+
   it("joins with raw", function() {
     testsql(qb().select('*').from('users').join('contacts', 'users.id', raw(1)).leftJoin('photos', 'photos.title', '=', raw('?', ['My Photo'])), {
       mysql: {
@@ -1647,6 +1659,7 @@ describe("QueryBuilder", function() {
       }
     });
   });
+
   it("raw expressions in select", function() {
     testsql(qb().select(raw('substr(foo, 6)')).from('users'), {
       mysql: {
@@ -1876,9 +1889,9 @@ describe("QueryBuilder", function() {
   it("multiple inserts with partly undefined keys", function() {
     testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
       mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
-      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using DEFAULT, \'dayle\';end;',
+      oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (DEFAULT, :1)\' using \'dayle\';end;',
       mssql: "insert into [users] ([email], [name]) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
-      oracledb: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using DEFAULT, \'dayle\';end;',
+      oracledb: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (DEFAULT, :1)\' using \'dayle\';end;',
       default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (DEFAULT, \'dayle\')'
     });
   });
@@ -2020,28 +2033,28 @@ describe("QueryBuilder", function() {
 
     testsql(qb().insert(data).into('table'), {
       mysql: {
-        sql: 'insert into `table` (`a`, `b`, `c`) values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-        bindings: [1, valuesForUndefined.mysql, valuesForUndefined.mysql, valuesForUndefined.mysql, 2, valuesForUndefined.mysql, 2, valuesForUndefined.mysql, 3]
+        sql: 'insert into `table` (`a`, `b`, `c`) values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3]
       },
       sqlite3: {
         sql: 'insert into "table" ("a", "b", "c") select ? as "a", ? as "b", ? as "c" union all select ? as "a", ? as "b", ? as "c" union all select ? as "a", ? as "b", ? as "c"',
         bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
       },
       oracle: {
-        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
-        bindings: [1, valuesForUndefined.oracle, valuesForUndefined.oracle, valuesForUndefined.oracle, 2, valuesForUndefined.oracle, 2, valuesForUndefined.oracle, 3]
+        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, DEFAULT, DEFAULT)' using ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (DEFAULT, :1, DEFAULT)' using ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, DEFAULT, :2)' using ?, ?;end;",
+        bindings: [1, 2, 2, 3]
       },
       mssql: {
-        sql: 'insert into [table] ([a], [b], [c]) values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-        bindings: [1, valuesForUndefined.mssql, valuesForUndefined.mssql, valuesForUndefined.mssql, 2, valuesForUndefined.mssql, 2, valuesForUndefined.mssql, 3]
+        sql: 'insert into [table] ([a], [b], [c]) values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3]
       },
       oracledb: {
-        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
-        bindings: [1, valuesForUndefined.oracledb, valuesForUndefined.oracledb, valuesForUndefined.oracledb, 2, valuesForUndefined.oracledb, 2, valuesForUndefined.oracledb, 3]
+        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, DEFAULT, DEFAULT)' using ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (DEFAULT, :1, DEFAULT)' using ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, DEFAULT, :2)' using ?, ?;end;",
+        bindings: [1, 2, 2, 3]
       },
       default: {
-        sql: 'insert into "table" ("a", "b", "c") values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-        bindings: [1, valuesForUndefined.default, valuesForUndefined.default, valuesForUndefined.default, 2, valuesForUndefined.default, 2, valuesForUndefined.default, 3]
+        sql: 'insert into "table" ("a", "b", "c") values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3]
       }
     });
     clients.sqlite3.valueForUndefined = previousValuesForUndefinedSqlite3;
@@ -3459,20 +3472,20 @@ describe("QueryBuilder", function() {
   it('#1268 - valueForUndefined should be in toSQL(QueryCompiler)', function() {
     testsql(qb().insert([{id: void 0, name: 'test', occupation: void 0}, {id: 1, name: void 0, occupation: 'none'}]).into('users'), {
       mysql: {
-        sql: 'insert into `users` (`id`, `name`, `occupation`) values (?, ?, ?), (?, ?, ?)',
-        bindings: [valuesForUndefined.mysql, 'test', valuesForUndefined.mysql, 1, valuesForUndefined.mysql, 'none']
+        sql: 'insert into `users` (`id`, `name`, `occupation`) values (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: ['test', 1, 'none']
       },
       oracle: {
-        sql: 'begin execute immediate \'insert into "users" ("id", "name", "occupation") values (:1, :2, :3)\' using ?, ?, ?; execute immediate \'insert into "users" ("id", "name", "occupation") values (:1, :2, :3)\' using ?, ?, ?;end;',
-        bindings: [valuesForUndefined.oracle, 'test', valuesForUndefined.oracle, 1, valuesForUndefined.oracle, 'none']
+        sql: 'begin execute immediate \'insert into "users" ("id", "name", "occupation") values (DEFAULT, :1, DEFAULT)\' using ?; execute immediate \'insert into "users" ("id", "name", "occupation") values (:1, DEFAULT, :2)\' using ?, ?;end;',
+        bindings: ['test', 1, 'none']
       },
       mssql: {
-        sql: 'insert into [users] ([id], [name], [occupation]) values (?, ?, ?), (?, ?, ?)',
-        bindings: [valuesForUndefined.mssql, 'test', valuesForUndefined.mssql, 1, valuesForUndefined.mssql, 'none']
+        sql: 'insert into [users] ([id], [name], [occupation]) values (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: ['test', 1, 'none']
       },
       postgres: {
-        sql: 'insert into "users" ("id", "name", "occupation") values (?, ?, ?), (?, ?, ?)',
-        bindings: [valuesForUndefined.postgres, 'test', valuesForUndefined.postgres, '1', valuesForUndefined.postgres, 'none']
+        sql: 'insert into "users" ("id", "name", "occupation") values (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: ['test', '1', 'none']
       }
     });
 
@@ -3489,4 +3502,120 @@ describe("QueryBuilder", function() {
     .not
     .throw(TypeError);
   });
+
+
+  it('#1402 - raw should take "not" into consideration in querybuilder', function() {
+    testsql(qb().from('testtable').whereNot(raw('is_active')), {
+      mysql: {
+        sql: 'select * from `testtable` where not is_active',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select * from "testtable" where not is_active',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [testtable] where not is_active',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "testtable" where not is_active',
+        bindings: []
+      }
+    })
+  });
+
+
+  it('Any undefined binding in a SELECT query should throw an error', function() {
+    var qbuilders = [
+      qb().from('accounts').where({Login: void 0}).select(),
+      qb().from('accounts').where('Login', void 0).select(),
+      qb().from('accounts').where('Login', '>=', void 0).select(),
+      qb().from('accounts').whereIn('Login', ['test', 'val', void 0]).select(),
+      qb().from('accounts').where({Login: ['1', '2', '3', void 0]}),
+      qb().from('accounts').where({Login: {Test: '123', Value: void 0}}),
+      qb().from('accounts').where({Login: ['1', ['2', [void 0]]]}),
+      qb().from('accounts').update({test: '1', test2: void 0}).where({abc: 'test', cba: void 0})
+    ];
+    qbuilders.forEach(function(qbuilder) {
+      try {
+        //Must be present, but makes no difference since it throws.
+        testsql(qbuilder, {
+          mysql: {
+            sql: '',
+            bindings: []
+          },
+          oracle: {
+            sql: '',
+            bindings: []
+          },
+          mssql: {
+            sql: '',
+            bindings: []
+          },
+          postgres: {
+            sql: '',
+            bindings: []
+          }
+        });
+        expect(true).to.equal(false, 'Expected to throw error in compilation about undefined bindings.');
+      } catch(error) {
+        expect(error.message).to.contain('Undefined binding(s) detected when compiling ' + qbuilder._method.toUpperCase() + ' query:'); //This test is not for asserting correct queries
+      }
+    });
+  });
+
+
+  it('Any undefined binding in a RAW query should throw an error', function() {
+    var expectedErrorMessageContains = 'Undefined binding(s) detected when compiling RAW query:'; //This test is not for asserting correct queries
+    var raws = [
+      raw('?', [undefined]),
+      raw(':col = :value', {col: 'test', value: void 0}),
+      raw('? = ?', ['test', void 0]),
+      raw('? = ?', ['test', {test: void 0}]),
+      raw('?', [['test', void 0]])
+    ];
+    raws.forEach(function(raw) {
+      try {
+        raw = raw.toSQL();
+        expect(true).to.equal(false, 'Expected to throw error in compilation about undefined bindings.');
+      } catch(error) {
+        expect(error.message).to.contain(expectedErrorMessageContains); //This test is not for asserting correct queries
+      }
+    });
+  });
+  
+  it("test BLOB insert", function() {
+    var testBuffer = new Buffer('test BLOB');
+
+    var data = {a: 1, b: 2, c: 3, blobfoo: testBuffer};
+    testsql(qb().insert(data).into('table'), {
+      oracledb: {
+        sql: "insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (?, ?, EMPTY_BLOB(), ?) returning \"blobfoo\" into ?"
+      }
+    });
+  });
+
+  it("test multiple BLOB insert", function() {
+    var testBuffer = new Buffer('test BLOB');
+    var data = [{a: 1, b: 2, c: 3, blobfoo: testBuffer}, {a: 4, b: 5, c: 6, blobfoo: testBuffer}];
+
+    testsql(qb().insert(data).into('table'), {
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (:1, :2, EMPTY_BLOB(), :3) returning \"blobfoo\" into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (:1, :2, EMPTY_BLOB(), :3) returning \"blobfoo\" into :4' using ?, ?, ?, out ?;end;"
+      }
+    });
+  });
+
+  it("test BLOB insert with partly undefined values", function() {
+    var testBuffer = new Buffer('test BLOB');
+    var data = [{a: 1, blobfoo: testBuffer}, {b: 2, blobfoo: testBuffer}, {a: 2, c: 3, blobfoo: testBuffer}];
+
+    testsql(qb().insert(data).into('table'), {
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (:1, DEFAULT, EMPTY_BLOB(), DEFAULT) returning \"blobfoo\" into :2' using ?, out ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (DEFAULT, :1, EMPTY_BLOB(), DEFAULT) returning \"blobfoo\" into :2' using ?, out ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"blobfoo\", \"c\") values (:1, DEFAULT, EMPTY_BLOB(), :2) returning \"blobfoo\" into :3' using ?, ?, out ?;end;"
+      }
+    });
+  });
+
 });

@@ -1,35 +1,38 @@
+/* globals openDatabase:false */
 
 // WebSQL
 // -------
-var inherits       = require('inherits')
+import inherits from 'inherits';
 
-var Transaction    = require('./transaction')
-var Client_SQLite3 = require('../sqlite3')
-var Promise        = require('../../promise')
-import {assign, map, uniqueId, clone} from 'lodash'
+import Transaction from './transaction';
+import Client_SQLite3 from '../sqlite3';
+import Promise from '../../promise';
+import { assign, map, uniqueId, clone } from 'lodash'
 
 function Client_WebSQL(config) {
   Client_SQLite3.call(this, config);
-  this.name          = config.name || 'knex_database';
-  this.version       = config.version || '1.0';
-  this.displayName   = config.displayName || this.name;
+  this.name = config.name || 'knex_database';
+  this.version = config.version || '1.0';
+  this.displayName = config.displayName || this.name;
   this.estimatedSize = config.estimatedSize || 5 * 1024 * 1024;
 }
 inherits(Client_WebSQL, Client_SQLite3);
 
 assign(Client_WebSQL.prototype, {
 
-  Transaction: Transaction,
+  Transaction,
 
   dialect: 'websql',
 
   // Get a raw connection from the database, returning a promise with the connection object.
-  acquireConnection: function() {
-    var client = this;
+  acquireConnection() {
+    const client = this;
     return new Promise(function(resolve, reject) {
       try {
         /*jslint browser: true*/
-        var db = openDatabase(client.name, client.version, client.displayName, client.estimatedSize);
+        const db = openDatabase(
+          client.name, client.version, client.displayName, client.estimatedSize
+        );
         db.transaction(function(t) {
           t.__knexUid = uniqueId('__knexUid');
           resolve(t);
@@ -42,13 +45,13 @@ assign(Client_WebSQL.prototype, {
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
-  releaseConnection: function() {
+  releaseConnection() {
     return Promise.resolve()
   },
 
   // Runs the query on the specified connection,
   // providing the bindings and any other necessary prep work.
-  _query: function(connection, obj) {
+  _query(connection, obj) {
     return new Promise(function(resolver, rejecter) {
       if (!connection) return rejecter(new Error('No connection provided.'));
       connection.executeSql(obj.sql, obj.bindings, function(trx, response) {
@@ -60,36 +63,37 @@ assign(Client_WebSQL.prototype, {
     });
   },
 
-  _stream: function(connection, sql, stream) {
-    var client = this;
+  _stream(connection, sql, stream) {
+    const client = this;
     return new Promise(function(resolver, rejecter) {
       stream.on('error', rejecter)
       stream.on('end', resolver)
-      return client._query(connection, sql).then(function(obj) {
-        return client.processResponse(obj)
-      }).map(function(row) {
+      return client._query(connection, sql).then(obj =>
+        client.processResponse(obj)
+      ).map(row => {
         stream.write(row)
-      }).catch(function(err) {
+      }).catch(err => {
         stream.emit('error', err)
-      }).then(function() {
+      }).then(() => {
         stream.end()
       })
     })
   },
 
-  processResponse: function(obj, runner) {
-    var resp = obj.response;
+  processResponse(obj, runner) {
+    const resp = obj.response;
     if (obj.output) return obj.output.call(runner, resp);
     switch (obj.method) {
       case 'pluck':
       case 'first':
-      case 'select':
-        var results = [];
-        for (var i = 0, l = resp.rows.length; i < l; i++) {
+      case 'select': {
+        let results = [];
+        for (let i = 0, l = resp.rows.length; i < l; i++) {
           results[i] = clone(resp.rows.item(i));
         }
         if (obj.method === 'pluck') results = map(results, obj.pluck);
         return obj.method === 'first' ? results[0] : results;
+      }
       case 'insert':
         return [resp.insertId];
       case 'delete':
@@ -101,10 +105,10 @@ assign(Client_WebSQL.prototype, {
     }
   },
 
-  ping: function(resource, callback) {
+  ping(resource, callback) {
     callback();
   }
 
 })
 
-module.exports = Client_WebSQL;
+export default Client_WebSQL;
