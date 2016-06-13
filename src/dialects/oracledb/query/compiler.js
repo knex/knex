@@ -43,7 +43,7 @@ _.assign(Oracledb_Compiler.prototype, {
     sql.returning = returning;
     sql.sql = 'begin ' +
       _.map(insertData.values, function(value, index) {
-        var parameterizedValues = !insertDefaultsOnly ? self.formatter.parameterize(value) : '';
+        var parameterizedValues = !insertDefaultsOnly ? self.formatter.parameterize(value, self.client.valueForUndefined) : '';
         var subSql = 'insert into ' + self.tableName;
 
         if (insertDefaultsOnly) {
@@ -91,9 +91,10 @@ _.assign(Oracledb_Compiler.prototype, {
         // Pre bind position because subSql is an execute immediate parameter
         // later position binding will only convert the ? params
         subSql = self.formatter.client.positionBindings(subSql);
-        return 'execute immediate \'' + subSql.replace(/'/g, "''") +
-          ((parameterizedValues || value) ? '\' using' : '') + usingClause +
-          ((parameterizedValues && outClause) ? ',' : '') + outClause + ';';
+        var parameterizedValuesWithoutDefaultAndBlob = parameterizedValues.replace('DEFAULT, ', '').replace(', DEFAULT', '').replace('EMPTY_BLOB(), ', '').replace(', EMPTY_BLOB()', '');
+        return'execute immediate \'' + subSql.replace(/'/g, "''") +
+          ((parameterizedValuesWithoutDefaultAndBlob || value) ? '\' using ' : '') + parameterizedValuesWithoutDefaultAndBlob +
+          ((parameterizedValuesWithoutDefaultAndBlob && outClause) ? ',' : '') + outClause + ';';
       }).join(' ') + 'end;';
 
     sql.outBinding = outBinding;

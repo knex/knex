@@ -1891,7 +1891,7 @@ describe("QueryBuilder", function() {
       mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
       oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (DEFAULT, :1)\' using \'dayle\';end;',
       mssql: "insert into [users] ([email], [name]) values ('foo', 'taylor'), (DEFAULT, 'dayle')",
-      oracledb: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using DEFAULT, \'dayle\';end;',
+      oracledb: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (DEFAULT, :1)\' using \'dayle\';end;',
       default: 'insert into "users" ("email", "name") values (\'foo\', \'taylor\'), (DEFAULT, \'dayle\')'
     });
   });
@@ -2049,8 +2049,8 @@ describe("QueryBuilder", function() {
         bindings: [1, 2, 2, 3]
       },
       oracledb: {
-        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, :2, :3)' using ?, ?, ?;end;",
-        bindings: [1, valuesForUndefined.oracledb, valuesForUndefined.oracledb, valuesForUndefined.oracledb, 2, valuesForUndefined.oracledb, 2, valuesForUndefined.oracledb, 3]
+        sql: "begin execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, DEFAULT, DEFAULT)' using ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (DEFAULT, :1, DEFAULT)' using ?; execute immediate 'insert into \"table\" (\"a\", \"b\", \"c\") values (:1, DEFAULT, :2)' using ?, ?;end;",
+        bindings: [1, 2, 2, 3]
       },
       default: {
         sql: 'insert into "table" ("a", "b", "c") values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',

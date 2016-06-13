@@ -46,8 +46,6 @@ Client_Oracledb.prototype.prepBindings = function(bindings) {
       return {type: self.driver.STRING, dir: self.driver.BIND_OUT};
     } else if (typeof value === 'boolean') {
       return value ? 1 : 0;
-    } else if (value === undefined) {
-      return self.valueForUndefined;
     }
     return value;
   });
@@ -72,7 +70,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
       connection.commitAsync = function() {
         var self = this;
         return new Promise(function(commitResolve, commitReject) {
-          if (asyncConnection.isTransaction) {
+          if (connection.isTransaction) {
             return commitResolve();
           }
           self.commit(function(err) {

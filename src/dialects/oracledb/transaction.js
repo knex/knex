@@ -25,11 +25,14 @@ assign(Oracle_Transaction.prototype, {
     return this._resolver(value);
   },
   rollback: function(conn, err) {
+    var self = this;
     this._completed = true;
     debugTx('%s: rolling back', this.txid);
-    return conn.rollbackAsync()
-      .throw(err || new Error('Rollback'))
-      .catch(this._rejecter);
+    return conn.rollbackAsync().timeout(5000).catch(Promise.TimeoutError, function(e) {
+      self._rejecter(e);
+    }).then(function() {
+      self._rejecter(err);
+    });
   },
   acquireConnection: function(config) {
     var t = this;
