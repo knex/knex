@@ -53,6 +53,8 @@ function connectionObject(parsed) {
       if (idx < parsed.auth.length - 1) {
         connection.password = parsed.auth.slice(idx + 1);
       }
+    } else {
+      connection.user = parsed.auth;
     }
   }
   return connection

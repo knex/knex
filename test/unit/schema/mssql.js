@@ -430,7 +430,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] blob');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] varbinary(max)');
   });
 
   it('test adding decimal', function() {

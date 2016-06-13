@@ -66,7 +66,7 @@ assign(ColumnCompiler_MSSQL.prototype, {
   },
 
   binary(length) {
-    return length ? `varbinary(${this._num(length)})` : 'blob'
+    return length ? `varbinary(${this._num(length)})` : 'varbinary(max)'
   },
 
   bool: 'bit',
