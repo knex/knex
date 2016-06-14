@@ -26,7 +26,10 @@ assign(Raw.prototype, {
   set(sql, bindings) {
     this._cached = undefined
     this.sql = sql
-    this.bindings = ((isObject(bindings) && !bindings.toSQL) || isUndefined(bindings)) ?  bindings : [bindings]
+    this.bindings = (
+      (isObject(bindings) && !bindings.toSQL) ||
+      isUndefined(bindings)
+    ) ? bindings : [bindings]
 
     return this
   },
@@ -85,7 +88,10 @@ assign(Raw.prototype, {
     if(this.client && this.client.prepBindings) {
       this._cached.bindings = this._cached.bindings || [];
       if(helpers.containsUndefined(this._cached.bindings)) {
-        throw new Error(`Undefined binding(s) detected when compiling RAW query: ${this._cached.sql}`);
+        throw new Error(
+          `Undefined binding(s) detected when compiling RAW query: ` +
+          this._cached.sql
+        );
       }
       this._cached.bindings = this.client.prepBindings(this._cached.bindings, tz);
     }
