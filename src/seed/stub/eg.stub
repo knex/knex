@@ -3,7 +3,7 @@ seed = (knex, Promise) ->
   ;; Deletes ALL existing entries
   knex(.table_name).del()
   .then(() ->
-    Promise.join with
+    Promise.all with
       ;; Inserts seed entries
       knex(.table_name).insert with { id = 1, col-name = .row-value-1 }
       knex(.table_name).insert with { id = 2, col-name = .row-value-2 }
