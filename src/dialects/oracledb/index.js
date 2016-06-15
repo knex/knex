@@ -1,18 +1,18 @@
 
 // Oracledb Client
 // -------
-var _ = require('lodash');
-var inherits = require('inherits');
-var Client_Oracle = require('../oracle');
-var QueryCompiler = require('./query/compiler');
-var ColumnCompiler = require('./schema/columncompiler');
-var Formatter = require('./formatter');
-var BlobHelper = require('./utils').BlobHelper;
-var ReturningHelper = require('./utils').ReturningHelper;
-var Promise = require('../../promise');
-var stream = require('stream');
-var helpers = require('../../helpers');
-var Transaction = require('./transaction');
+const _ = require('lodash');
+const inherits = require('inherits');
+const Client_Oracle = require('../oracle');
+const QueryCompiler = require('./query/compiler');
+const ColumnCompiler = require('./schema/columncompiler');
+const Formatter = require('./formatter');
+const BlobHelper = require('./utils').BlobHelper;
+const ReturningHelper = require('./utils').ReturningHelper;
+const Promise = require('../../promise');
+const stream = require('stream');
+const helpers = require('../../helpers');
+const Transaction = require('./transaction');
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
@@ -27,7 +27,7 @@ inherits(Client_Oracledb, Client_Oracle);
 Client_Oracledb.prototype.driverName = 'oracledb';
 
 Client_Oracledb.prototype._driver = function() {
-  var oracledb = require('oracledb');
+  const oracledb = require('oracledb');
   return oracledb;
 };
 
@@ -37,7 +37,7 @@ Client_Oracledb.prototype.Formatter = Formatter;
 Client_Oracledb.prototype.Transaction = Transaction;
 
 Client_Oracledb.prototype.prepBindings = function(bindings) {
-  var self = this;
+  const self = this;
   return _.map(bindings, function(value) {
     if (value instanceof BlobHelper && self.driver) {
       return {type: self.driver.BLOB, dir: self.driver.BIND_OUT};
@@ -54,8 +54,8 @@ Client_Oracledb.prototype.prepBindings = function(bindings) {
 // Get a raw connection, called by the `pool` whenever a new
 // connection needs to be added to the pool.
 Client_Oracledb.prototype.acquireRawConnection = function() {
-  var client = this;
-  var asyncConnection = new Promise(function(resolver, rejecter) {
+  const client = this;
+  const asyncConnection = new Promise(function(resolver, rejecter) {
     client.driver.getConnection({
       user: client.connectionSettings.user,
       password: client.connectionSettings.password,
@@ -68,7 +68,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
       }
 
       connection.commitAsync = function() {
-        var self = this;
+        const self = this;
         return new Promise(function(commitResolve, commitReject) {
           if (connection.isTransaction) {
             return commitResolve();
@@ -82,7 +82,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
         });
       };
       connection.rollbackAsync = function() {
-        var self = this;
+        const self = this;
         return new Promise(function(rollbackResolve, rollbackReject) {
           self.rollback(function(err) {
             if (err) {
@@ -92,7 +92,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
           });
         });
       };
-      var fetchAsync = function(sql, bindParams, options, cb) {
+      const fetchAsync = function(sql, bindParams, options, cb) {
         options = options || {};
         options.outFormat = client.driver.OBJECT;
         if (options.resultSet) {
@@ -100,9 +100,9 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
             if (err) {
               return cb(err);
             }
-            var fetchResult = {rows: [], resultSet: result.resultSet};
-            var numRows = 100;
-            var fetchRowsFromRS = function(connection, resultSet, numRows) {
+            const fetchResult = {rows: [], resultSet: result.resultSet};
+            const numRows = 100;
+            const fetchRowsFromRS = function(connection, resultSet, numRows) {
               resultSet.getRows(numRows, function(err, rows) {
                 if (err) {
                   resultSet.close(function() {
@@ -135,13 +135,13 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
               return resultReject(err);
             }
             // Collect LOBs to read
-            var lobs = [];
+            const lobs = [];
             if (results.rows) {
               if (Array.isArray(results.rows)) {
-                for (var i = 0; i < results.rows.length; i++) {
+                for (let i = 0; i < results.rows.length; i++) {
                   // Iterate through the rows
-                  var row = results.rows[i];
-                  for (var column in row) {
+                  const row = results.rows[i];
+                  for (const column in row) {
                     if (row[column] instanceof stream.Readable) {
                       lobs.push({index: i, key: column, stream: row[column]});
                     }
@@ -204,29 +204,28 @@ Client_Oracledb.prototype._query = function(connection, obj) {
     if (!obj.sql) {
       return rejecter(new Error('The query is empty'));
     }
-    var options = {autoCommit: false};
+    const options = {autoCommit: false};
     if (obj.method === 'select') {
       options.resultSet = true;
     }
     connection.executeAsync(obj.sql, obj.bindings, options).then(function(response) {
       // Flatten outBinds
-      var outBinds = _.flatten(response.outBinds);
+      let outBinds = _.flatten(response.outBinds);
       obj.response = response.rows || [];
       obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
 
       if (obj.method === 'update') {
-        var modifiedRowsCount = obj.rowsAffected.length || obj.rowsAffected;
-        var updatedObjOutBinding = [];
-        var updatedOutBinds = [];
-        var updateOutBinds = function(value, index) {
-          OutBindsOffset = index * modifiedRowsCount;
+        const modifiedRowsCount = obj.rowsAffected.length || obj.rowsAffected;
+        const updatedObjOutBinding = [];
+        const updatedOutBinds = [];
+        const updateOutBinds = (i) => function(value, index) {
+          const OutBindsOffset = index * modifiedRowsCount;
           updatedOutBinds.push(outBinds[i + OutBindsOffset]);
         };
 
-        for (var i = 0; i < modifiedRowsCount; i++) {
+        for (let i = 0; i < modifiedRowsCount; i++) {
           updatedObjOutBinding.push(obj.outBinding[0]);
-          var OutBindsOffset = 0;
-          _.each(obj.outBinding[0], updateOutBinds);
+          _.each(obj.outBinding[0], updateOutBinds(i));
         }
         outBinds = updatedOutBinds;
         obj.outBinding = updatedObjOutBinding;
@@ -237,14 +236,14 @@ Client_Oracledb.prototype._query = function(connection, obj) {
           resolver(obj);
         });
       }
-      var rowIds = [];
-      var offset = 0;
+      const rowIds = [];
+      let offset = 0;
       Promise.each(obj.outBinding, function(ret, line) {
         offset = offset + (obj.outBinding[line - 1] ? obj.outBinding[line - 1].length : 0);
         return Promise.each(ret, function(out, index) {
           return new Promise(function(bindResolver, bindRejecter) {
             if (out instanceof BlobHelper) {
-              var blob = outBinds[index + offset];
+              const blob = outBinds[index + offset];
               if (out.returning) {
                 obj.response[line] = obj.response[line] || {};
                 obj.response[line][out.columnName] = out.value;
@@ -268,10 +267,10 @@ Client_Oracledb.prototype._query = function(connection, obj) {
           });
         });
       }).then(function() {
-          return connection.commitAsync();
-        }).then(function() {
+        return connection.commitAsync();
+      }).then(function() {
         if (obj.returningSql) {
-            return connection.executeAsync(obj.returningSql(), rowIds, {resultSet: true})
+          return connection.executeAsync(obj.returningSql(), rowIds, {resultSet: true})
             .then(function(response) {
               obj.response = response.rows;
               return obj;
@@ -288,8 +287,8 @@ Client_Oracledb.prototype._query = function(connection, obj) {
 
 // Handle clob
 function readStream(stream, cb) {
-  var oracledb = require('oracledb');
-  var data = '';
+  const oracledb = require('oracledb');
+  let data = '';
 
   if (stream.iLob.type === oracledb.CLOB) {
     stream.setEncoding('utf-8');
@@ -313,8 +312,8 @@ function readStream(stream, cb) {
 
 // Process the response as returned from the query.
 Client_Oracledb.prototype.processResponse = function(obj, runner) {
-  var response = obj.response;
-  var method = obj.method;
+  let response = obj.response;
+  const method = obj.method;
   if (obj.output) {
     return obj.output.call(runner, response);
   }
@@ -340,7 +339,6 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
       } else {
         return 1;
       }
-      break;
     default:
       return response;
   }
