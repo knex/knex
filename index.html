@@ -205,6 +205,7 @@
       <li>– <a href="#Chainable-after">after</a></li>
       <li>– <a href="#Chainable-comment">comment</a></li>
       <li>– <a href="#Chainable-collate">collate</a></li>
+      <li>– <a href="#Chainable-charset">charset</a></li>
     </ul>
 
     <a class="toc_title" href="#Raw">
@@ -2276,6 +2277,21 @@ knex.schema.createTable('accounts', function(t) {
 knex.schema.createTable('users', function(t) {
   t.increments();
   t.string('email').unique().collate('utf8_unicode_ci');
+});
+</pre>
+
+    <p id="Chainable-charset">
+      <b class="header">charset</b><code>column.charset(charset)</code>
+      <br />
+      Sets the charset for a column (only works in MySQL).
+      <br />
+      Here is a list of all available charsets: <a href="https://dev.mysql.com/doc/refman/5.5/en/charset-charsets.html">https://dev.mysql.com/doc/refman/5.5/en/charset-charsets.html</a>
+    </p>
+
+<pre>
+knex.schema.createTable('users', function(t) {
+  t.increments();
+  t.string('email').unique().charset('utf8');
 });
 </pre>
 
