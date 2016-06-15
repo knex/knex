@@ -37,7 +37,7 @@ assign(Oracle_Transaction.prototype, {
   acquireConnection: function(config) {
     const t = this;
     return Promise.try(function() {
-      return t.client.acquireConnection().then(function(cnx) {
+      return t.client.acquireConnection().completed.then(function(cnx) {
         cnx.isTransaction = true;
         return cnx;
       });
