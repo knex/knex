@@ -1,5 +1,5 @@
-var inherits              = require('inherits');
-var ColumnCompiler_Oracle = require('../../oracle/schema/columncompiler');
+const inherits              = require('inherits');
+const ColumnCompiler_Oracle = require('../../oracle/schema/columncompiler');
 
 import {assign} from 'lodash';
 

@@ -1,13 +1,13 @@
-var inherits = require('inherits');
-var Promise = require('../../promise');
-var Transaction = require('../../transaction');
-var debugTx = require('debug')('knex:tx');
-  import {assign} from
+const inherits = require('inherits');
+const Promise = require('../../promise');
+const Transaction = require('../../transaction');
+const debugTx = require('debug')('knex:tx');
+import {assign} from
 'lodash'
 
-  function Oracle_Transaction(client, container, config, outerTx) {
-    Transaction.call(this, client, container, config, outerTx);
-  }
+function Oracle_Transaction(client, container, config, outerTx) {
+  Transaction.call(this, client, container, config, outerTx);
+}
 inherits(Oracle_Transaction, Transaction);
 
 assign(Oracle_Transaction.prototype, {
@@ -25,7 +25,7 @@ assign(Oracle_Transaction.prototype, {
     return this._resolver(value);
   },
   rollback: function(conn, err) {
-    var self = this;
+    const self = this;
     this._completed = true;
     debugTx('%s: rolling back', this.txid);
     return conn.rollbackAsync().timeout(5000).catch(Promise.TimeoutError, function(e) {
@@ -35,7 +35,7 @@ assign(Oracle_Transaction.prototype, {
     });
   },
   acquireConnection: function(config) {
-    var t = this;
+    const t = this;
     return Promise.try(function() {
       return t.client.acquireConnection().then(function(cnx) {
         cnx.isTransaction = true;

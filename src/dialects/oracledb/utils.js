@@ -1,4 +1,4 @@
-var Utils = require('../oracle/utils');
+const Utils = require('../oracle/utils');
 
 function BlobHelper(columnName, value) {
   this.columnName = columnName;
