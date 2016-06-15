@@ -60,7 +60,10 @@ assign(QueryCompiler.prototype, {
     }
 
     if(this._undefinedInWhereClause) {
-      throw new Error(`Undefined binding(s) detected when compiling ${method.toUpperCase()} query: ${val.sql}`);
+      throw new Error(
+        `Undefined binding(s) detected when compiling ` +
+        `${method.toUpperCase()} query: ${val.sql}`
+      );
     }
 
     defaults.bindings = this.client.prepBindings(defaults.bindings, tz);

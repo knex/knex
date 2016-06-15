@@ -138,7 +138,6 @@ assign(Client_MySQL.prototype, {
 
   cancelQuery(connectionToKill) {
     const acquiringConn = this.acquireConnection().completed
-    let conn = undefined;
 
     // Error out if we can't acquire connection in time.
     // Purposely not putting timeout on `KILL QUERY` execution because erroring
