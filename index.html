@@ -3096,6 +3096,16 @@ $ npm test
       replacing with the path to your config file, and the config file is valid, the test suite should run properly.
     </p>
 
+    <p>
+      <b class="header">My tests are failing because slow DB connection and short test timeouts! How to extend test timeouts?</b><br />
+      Sometimes, e.g. when running CI on travis, test suite's default timeout of 5 seconds might be too short. In such cases an alternative test timeout 
+      value in milliseconds can be specified using the <tt>KNEX_TEST_TIMEOUT</tt> environment variable.
+    </p>
+<pre>
+$ export KNEX_TEST_TIMEOUT=30000
+$ npm test
+</pre>
+
     <p id="faq-nonode">
       <b class="header">Can I use Knex outside of Node.js</b><br />
       Yes. While the WebSQL spec is deprecated, there is still an adapter that provides support.
