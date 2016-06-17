@@ -3,6 +3,7 @@
 var Raw    = require('../../lib/raw');
 var Client = require('../../lib/client')
 var test   = require('tape')
+var _      = require('lodash');
 
 var client = new Client()
 function raw(sql, bindings) {
@@ -63,7 +64,7 @@ test('allows for options in raw queries, #605', function(t) {
     .options({ rowMode: "array" })
     .toSQL()
 
-  t.deepEqual(x, {
+  t.deepEqual(_.pick(x, ['sql', 'options', 'method', 'bindinds']), {
     sql: "select 'foo', 'bar';",
     options: {rowMode: "array"},
     method: 'raw',
@@ -72,7 +73,7 @@ test('allows for options in raw queries, #605', function(t) {
 })
 
 test('raw bindings are optional, #853', function(t) {
-  
+
   t.plan(2)
 
   var sql = raw('select * from ? where id=?', [raw('foo'), 4]).toSQL()
