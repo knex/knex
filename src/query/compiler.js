@@ -48,7 +48,7 @@ assign(QueryCompiler.prototype, {
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
       bindings: this.formatter.bindings,
-      uuid: uuid.v4()
+      __knexQueryId: uuid.v4()
     };
     if (isString(val)) {
       val = {sql: val};

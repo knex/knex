@@ -97,7 +97,7 @@ assign(Raw.prototype, {
       }
       this._cached.bindings = this.client.prepBindings(this._cached.bindings, tz);
     }
-    this._cached.uuid = uuid.v4();
+    this._cached.__knexQueryId = uuid.v4();
     return this._cached
   }
 
