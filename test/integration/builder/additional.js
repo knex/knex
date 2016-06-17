@@ -402,6 +402,28 @@ module.exports = function(knex) {
         });
     });
 
+    it('Event: query', function() {
+      var queryCount = 0;
+
+      var onQuery = function (obj) {
+        queryCount++;
+        expect(obj).to.be.an('object');
+        expect(obj.__knexUid).to.be.a('string');
+        expect(obj.__knexQueryUid).to.be.a('string');
+      };
+      knex.on('query', onQuery);
+
+      return knex('accounts').select()
+        .on('query', onQuery)
+        .then(function() {
+          return knex.transaction(function(tr) {
+            return tr('accounts').select().on('query', onQuery);
+          })
+        })
+        .then(function() {
+          expect(queryCount).to.equal(4);
+        })
+    })
 
     it('Event: query-response', function() {
       var queryCount = 0;
@@ -411,6 +433,7 @@ module.exports = function(knex) {
         expect(response).to.be.an('array');
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
+        expect(obj.__knexQueryUid).to.be.a('string');
         expect(builder).to.be.an('object');
       };
       knex.on('query-response', onQueryResponse);
@@ -434,6 +457,7 @@ module.exports = function(knex) {
         queryCount++;
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
+        expect(obj.__knexQueryUid).to.be.a('string');
         expect(error).to.be.an('object');
       };
 
