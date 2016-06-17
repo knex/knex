@@ -64,7 +64,7 @@ test('allows for options in raw queries, #605', function(t) {
     .options({ rowMode: "array" })
     .toSQL()
 
-  t.deepEqual(_.pick(x, ['sql', 'options', 'method', 'bindinds']), {
+  t.deepEqual(_.pick(x, ['sql', 'options', 'method', 'bindings']), {
     sql: "select 'foo', 'bar';",
     options: {rowMode: "array"},
     method: 'raw',
