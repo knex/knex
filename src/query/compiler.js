@@ -10,6 +10,8 @@ import {
   reduce
 } from 'lodash';
 
+import uuid from 'node-uuid';
+
 // The "QueryCompiler" takes all of the query statements which
 // have been gathered in the "QueryBuilder" and turns them into a
 // properly formatted / bound query string.
@@ -46,7 +48,7 @@ assign(QueryCompiler.prototype, {
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
       bindings: this.formatter.bindings,
-      uuid: 'fake-uuid-' + Date.now()
+      uuid: uuid.v4()
     };
     if (isString(val)) {
       val = {sql: val};

@@ -7,6 +7,8 @@ import { EventEmitter } from 'events';
 
 import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
 
+import uuid from 'node-uuid';
+
 function Raw(client) {
   this.client = client
 
@@ -95,6 +97,7 @@ assign(Raw.prototype, {
       }
       this._cached.bindings = this.client.prepBindings(this._cached.bindings, tz);
     }
+    this._cached.uuid = uuid.v4();
     return this._cached
   }
 
