@@ -45,7 +45,8 @@ assign(QueryCompiler.prototype, {
       options: reduce(this.options, assign, {}),
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
-      bindings: this.formatter.bindings
+      bindings: this.formatter.bindings,
+      uuid: 'fake-uuid-' + Date.now()
     };
     if (isString(val)) {
       val = {sql: val};
