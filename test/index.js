@@ -24,6 +24,7 @@ describe('Query Building Tests', function() {
   require('./unit/schema/sqlite3')
   require('./unit/schema/oracle')  
   require('./unit/schema/mssql')  
+  require('./unit/schema/firebird')  
 })
 
 describe('Integration Tests', function() {

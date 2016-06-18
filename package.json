@@ -1,18 +1,18 @@
 {
-  "name": "knex",
-  "version": "0.9.0",
-  "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
+  "name": "knex-firebird",
+  "version": "0.1.12",
+  "description": "Knex for including support for firebird",
   "main": "knex.js",
   "dependencies": {
     "babel": "^5.8.38",
-    "bluebird": "^2.9.24",
+    "bluebird": "^3.3.4",
     "chalk": "^1.0.0",
     "commander": "^2.2.0",
     "debug": "^2.1.3",
     "inherits": "~2.0.1",
     "interpret": "^0.6.5",
-    "liftoff": "~2.0.0",
-    "lodash": "^3.7.0",
+    "liftoff": "~2.2.0",
+    "lodash": "^4.6.0",
     "minimist": "~1.1.0",
     "mkdirp": "^0.5.0",
     "pg-connection-string": "^0.1.3",
@@ -25,42 +25,49 @@
     "JSONStream": "^1.0.3",
     "async": "^0.9.0",
     "babel": "^5.2.17",
+    "babel-eslint": "^5.0.0",
     "chai": "^2.3.0",
     "coveralls": "~2.11.1",
+    "eslint": "2.2.0",
+    "eslint-plugin-import": "^1.8.0",
     "istanbul": "~0.3.0",
-    "jshint": "^2.7.0",
+    "json-loader": "^0.5.4",
     "mariasql": "^0.2.3",
     "mocha": "^2.2.4",
     "mssql": "^2.3.2",
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
     "node-uuid": "~1.4.0",
+    "node-firebird": "~0.7.2",
     "pg": "^4.3.0",
     "pg-query-stream": "^0.7.0",
     "rimraf": "2.x",
     "sinon": "^1.10.0",
     "sinon-chai": "^2.5.0",
+    "source-map-support": "^0.4.0",
     "sqlite3": "^3.0.5",
     "tap-spec": "^4.0.0",
     "tape": "^4.0.0",
-    "through": "^2.3.4"
+    "through": "^2.3.4",
+    "webpack": "^1.13.0"
   },
   "scripts": {
-    "dev": "babel -L -D -w src/ --out-dir lib/",
-    "babel": "babel -L -D src/ --out-dir lib/",
+    "babel": "babel -L -D src/ --out-dir lib/ --source-maps=inline",
     "build": "./scripts/build.sh",
-    "tape": "node test/tape/index.js | tap-spec",
-    "test": "npm run babel && npm run jshint && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape",
-    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "jshint": "jshint test/. src/."
+    "dev": "babel -L -D -w src/ --out-dir lib/",
+    "lint": "eslint src/**",
+    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
+    "prepublish": "npm run build",
+    "tape": "node test/tape/index.js | tap-spec",
+    "test": "npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape && (npm run build && echo BUILD TEST OK || echo BUILD TEST FAILED)"
   },
   "bin": {
     "knex": "./lib/bin/cli.js"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tgriesser/knex.git"
+    "url": "git://github.com/FraGoTe/knex.git"
   },
   "keywords": [
     "sql",
@@ -70,12 +77,10 @@
     "mariadb",
     "sqlite3",
     "oracle",
-    "mssql"
+    "mssql",
+    "firebird"
   ],
-  "author": {
-    "name": "Tim Griesser",
-    "web": "https://github.com/tgriesser"
-  },
+  "author": "Francis Gonzales (https://github.com/FraGoTe)",
   "browser": {
     "bluebird/js/main/promise": "./lib/util/bluebird.js",
     "./lib/migrate/index.js": "./lib/util/noop.js",
@@ -90,7 +95,8 @@
     "pg-query-stream": false,
     "oracle": false,
     "strong-oracle": false,
-    "sqlite3": false
+    "sqlite3": false,
+    "firebird": false
   },
   "files": [
     "README.md",
@@ -100,5 +106,13 @@
     "knex.js",
     "LICENSE"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FraGoTe/knex/issues"
+  },
+  "homepage": "https://github.com/FraGoTe/knex#readme",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  }
 }
