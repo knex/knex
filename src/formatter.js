@@ -86,6 +86,10 @@ assign(Formatter.prototype, {
     return this._wrapString(value + '');
   },
 
+  wrapAsIdentifier: function wrapAsIdentifier(value) {
+    return this.client.wrapIdentifier((value || '').trim());
+  },
+
   alias: function(first, second) {
     return first + ' as ' + second;
   },
@@ -141,7 +145,7 @@ assign(Formatter.prototype, {
     if (asIndex !== -1) {
       var first  = value.slice(0, asIndex)
       var second = value.slice(asIndex + 4)
-      return this.alias(this.wrap(first), this.wrap(second))
+      return this.alias(this.wrap(first), this.wrapAsIdentifier(second))
     }
     var i = -1, wrapped = [];
     segments = value.split('.');
