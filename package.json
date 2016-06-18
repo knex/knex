@@ -4,6 +4,7 @@
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "dependencies": {
+    "babel": "^5.8.38",
     "bluebird": "^2.9.24",
     "chalk": "^1.0.0",
     "commander": "^2.2.0",
