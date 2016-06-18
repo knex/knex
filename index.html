@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.11.5)</span>
+      Knex.js <span class="version">(0.11.6)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -337,7 +337,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.11.5 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.11.6 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -3114,6 +3114,23 @@ $ npm test
 
     <h2 id="changelog">Change Log</h2>
 
+    <p>
+      <b class="header">0.11.6</b> &mdash; <small><i>18 Jun, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Allow cancellation on timeout (MySQL) #1454</li>
+      <li>Better bigint support. (MSSQL) #1445</li>
+      <li>More consistent handling of <tt>undefined</tt> values in <tt>QueryBuilder#where</tt> and <tt>Raw</tt>. #1459</li>
+      <li>Fix Webpack build. #1447</li>
+      <li>Fix code that triggered Bluebird warnings. #1460, #1489</li>
+      <li>Fix <tt>ping</tt> function. (Oracle) #1486</li>
+      <li>Fix <tt>columnInfo</tt>. (MSSQL) #1464</li>
+      <li>Fix <tt>ColumnCompiler#binary</tt>. (MSSQL) #1464</li>
+      <li>Allow connection strings that do not contain a password. #1473</li>
+      <li>Fix race condition in seed stubs. #1493</li>
+      <li>Give each query a UUID. #1510</li>
+    </ul>
 
     <p>
       <b class="header">0.11.5</b> &mdash; <small><i>26 May, 2016</i></small><br />
