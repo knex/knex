@@ -130,7 +130,7 @@ export default class Migrator {
 
   // Create the migration table, if it doesn't already exist.
   _createMigrationTable(tableName) {
-    return this.knex.schema.createTable(tableName, function(t) {
+    return this.knex.schema.createTableIfNotExists(tableName, function(t) {
       t.increments();
       t.string('name');
       t.integer('batch');
@@ -139,7 +139,7 @@ export default class Migrator {
   }
 
   _createMigrationLockTable(tableName) {
-    return this.knex.schema.createTable(tableName, function(t) {
+    return this.knex.schema.createTableIfNotExists(tableName, function(t) {
       t.integer('is_locked');
     });
   }
@@ -196,7 +196,7 @@ export default class Migrator {
     .then(batchNo => {
       return this._waterfallBatch(batchNo, migrations, direction)
     })
-    .then(() => this._freeLock())
+    .tap(() => this._freeLock())
     .catch(error => {
       var cleanupReady = Promise.resolve();
 
