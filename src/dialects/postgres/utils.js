@@ -50,9 +50,6 @@ const prepareValue = function (val, seen /*, valueForUndefined*/) {
   if (typeof val === 'object') {
     return prepareObject(val, seen);
   }
-  if (typeof val === 'undefined') {
-    throw new Error('SQL queries with undefined where clause option');
-  }
   return val.toString();
 };
 

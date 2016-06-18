@@ -8,7 +8,6 @@ import QueryInterface from '../query/methods';
 import * as helpers from '../helpers';
 import { assign } from 'lodash'
 import BatchInsert from './batchInsert';
-import Knex from "../index";
 
 export default function makeKnex(client) {
 
@@ -58,7 +57,7 @@ export default function makeKnex(client) {
 
   // The `__knex__` is used if you need to duck-type check whether this
   // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__ = Knex.VERSION;
+  knex.VERSION = knex.__knex__ = require('../../package.json').version;
 
   // Hook up the "knex" object as an EventEmitter.
   const ee = new EventEmitter()

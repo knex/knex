@@ -136,10 +136,29 @@ assign(Runner.prototype, {
         return processedResponse;
       }).catch(Promise.TimeoutError, error => {
         const { timeout, sql, bindings } = obj;
-        throw assign(error, {
-          message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
-          sql, bindings, timeout
-        });
+
+        let cancelQuery;
+        if (obj.cancelOnTimeout) {
+          cancelQuery = this.client.cancelQuery(this.connection);
+        } else {
+          cancelQuery = Promise.resolve();
+        }
+
+        return cancelQuery
+          .catch((cancelError) => {
+            // cancellation failed
+            throw assign(cancelError, {
+              message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,
+              sql, bindings, timeout
+            });
+          })
+          .then(() => {
+            // cancellation succeeded, rethrow timeout error
+            throw assign(error, {
+              message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
+              sql, bindings, timeout
+            });
+          });
       })
       .catch((error) => {
         this.builder.emit('query-error', error, assign({__knexUid: this.connection.__knexUid}, obj))

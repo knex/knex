@@ -18,6 +18,8 @@ global.d      = new Date();
 Promise.longStackTraces();
 
 describe('Query Building Tests', function() {
+  this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+
   require('./unit/query/builder')
   require('./unit/schema/mysql')('mysql')
   require('./unit/schema/mysql')('maria')
@@ -29,5 +31,7 @@ describe('Query Building Tests', function() {
 })
 
 describe('Integration Tests', function() {
+  this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+
   require('./integration')
 })

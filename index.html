@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.11.5)</span>
+      Knex.js <span class="version">(0.11.6)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -304,7 +304,7 @@
     </p>
 
     <p>
-      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MySQL</b>, <b>MariaDB</b>, <b>SQLite3</b>, and <b>Oracle</b> designed to be flexible,
+      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MSSQL</b>, <b>MySQL</b>, <b>MariaDB</b>, <b>SQLite3</b>, and <b>Oracle</b> designed to be flexible,
       portable, and fun to use. It features both traditional node style <a href="#Interfaces-Callbacks">callbacks</a>
       as well as a <a href="#Interfaces-Promises">promise</a> interface for cleaner async flow control, <a href="#Interfaces-Streams">a stream interface</a>, full featured <a href="#Builder">query</a> and <a href="#Schema">schema</a> builders, <a href="#Transactions"><b>transaction support (with savepoints)</b></a>, connection <a href="#Installation-pooling">pooling</a> and standardized responses between
       different query clients and dialects.
@@ -337,7 +337,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.11.5 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.11.6 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -394,7 +394,7 @@
 
     <p>
       The primary target environment for Knex is Node.js, you will need to install the <tt>knex</tt> library,
-      and then install the appropriate database library: <tt><a href="https://github.com/brianc/node-postgres">pg</a></tt> for PostgreSQL, <tt><a href="https://github.com/felixge/node-mysql">mysql</a></tt> for MySQL or MariaDB, or <a href="https://github.com/mapbox/node-sqlite3"><tt>sqlite3</tt></a> for SQLite3.
+      and then install the appropriate database library: <tt><a href="https://github.com/brianc/node-postgres">pg</a></tt> for PostgreSQL, <tt><a href="https://github.com/felixge/node-mysql">mysql</a></tt> for MySQL or MariaDB, <a href="https://github.com/mapbox/node-sqlite3"><tt>sqlite3</tt></a> for SQLite3, or <a href="https://github.com/patriksimek/node-mssql"><tt>mssql</tt></a> for MSSQL.
     </p>
 
 <pre>
@@ -408,6 +408,7 @@ $ npm install mysql2
 $ npm install mariasql
 $ npm install strong-oracle
 $ npm install oracle
+$ npm install mssql
 </pre>
 
     <h3 id="Installation-browser">Browser</h3>
@@ -605,13 +606,26 @@ pg('table').insert({a: 'b'}).returning('*').toString();
     </p>
 
     <p id="Builder-timeout">
-      <b class="header">timeout</b><code>.timeout(ms)</code>
+      <b class="header">timeout</b><code>.timeout(ms, options={cancel: boolean})</code>
       <br />
       Sets a timeout for the query and will throw a <tt>TimeoutError</tt> if the timeout is exceeded.
       The error contains information about the query, bindings, and the timeout that was set.
       Useful for complex queries that you want to make sure are not taking too long to execute.
+      <br /><br />
+      Optional second argument for passing options:
+
+      <ul>
+        <li><b>cancel</b>: if <tt>true</tt>, cancel query if timeout is reached. <b>NOTE:</b> only supported in MySQL and MariaDB for now.</li>
+      </ul>
     </p>
 
+<pre class="display">
+knex.select().from('books').timeout(1000)
+</pre>
+
+<pre class="display">
+knex.select().from('books').timeout(1000, {cancel: true}) // MySQL and MariaDB only
+</pre>
 
     <p id="Builder-select">
       <b class="header">select</b><code>.select([*columns])</code>
@@ -684,6 +698,20 @@ knex.withSchema('public').select('*').from('users')
       Several methods exist to assist in dynamic where clauses. In many places functions may be used in place of values,
       constructing subqueries. In most places existing knex queries may be used to compose sub-queries, etc. Take a look at a few of the examples for each method for instruction on use:
     </p>
+
+    <p>
+      <b>Important:</b> Supplying knex with an <tt>undefined</tt> value to any of the <tt>where</tt> functions will cause knex to throw an error during sql compilation.
+      This is both for yours and our sake. Knex cannot know what to do with undefined values in a where clause, and generally it would be a programmatic error to supply one to begin with.
+      The error will throw a message containing the type of query and the compiled query-string. Example:
+    </p>
+
+  <pre class="display">
+    knex('accounts')
+    .where('login', undefined)
+    .select()
+    .toSQL();
+    //Undefined binding(s) detected when compiling SELECT query: select * from "accounts" where "login" = ?
+  </pre>
 
     <p id="Builder-where">
       <b class="header">where</b><code>.where(~mixed~)</code>
@@ -3068,6 +3096,16 @@ $ npm test
       replacing with the path to your config file, and the config file is valid, the test suite should run properly.
     </p>
 
+    <p>
+      <b class="header">My tests are failing because slow DB connection and short test timeouts! How to extend test timeouts?</b><br />
+      Sometimes, e.g. when running CI on travis, test suite's default timeout of 5 seconds might be too short. In such cases an alternative test timeout 
+      value in milliseconds can be specified using the <tt>KNEX_TEST_TIMEOUT</tt> environment variable.
+    </p>
+<pre>
+$ export KNEX_TEST_TIMEOUT=30000
+$ npm test
+</pre>
+
     <p id="faq-nonode">
       <b class="header">Can I use Knex outside of Node.js</b><br />
       Yes. While the WebSQL spec is deprecated, there is still an adapter that provides support.
@@ -3076,6 +3114,23 @@ $ npm test
 
     <h2 id="changelog">Change Log</h2>
 
+    <p>
+      <b class="header">0.11.6</b> &mdash; <small><i>18 Jun, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Allow cancellation on timeout (MySQL) #1454</li>
+      <li>Better bigint support. (MSSQL) #1445</li>
+      <li>More consistent handling of <tt>undefined</tt> values in <tt>QueryBuilder#where</tt> and <tt>Raw</tt>. #1459</li>
+      <li>Fix Webpack build. #1447</li>
+      <li>Fix code that triggered Bluebird warnings. #1460, #1489</li>
+      <li>Fix <tt>ping</tt> function. (Oracle) #1486</li>
+      <li>Fix <tt>columnInfo</tt>. (MSSQL) #1464</li>
+      <li>Fix <tt>ColumnCompiler#binary</tt>. (MSSQL) #1464</li>
+      <li>Allow connection strings that do not contain a password. #1473</li>
+      <li>Fix race condition in seed stubs. #1493</li>
+      <li>Give each query a UUID. #1510</li>
+    </ul>
 
     <p>
       <b class="header">0.11.5</b> &mdash; <small><i>26 May, 2016</i></small><br />

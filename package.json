@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.11.5",
+  "version": "0.11.6",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "dependencies": {
@@ -55,10 +55,10 @@
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "dev": "babel -L -D -w src/ --out-dir lib/",
     "lint": "eslint src/**",
-    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
+    "plaintest": "mocha --check-leaks -b -R spec test/index.js && npm run tape",
     "prepublish": "npm run build",
     "tape": "node test/tape/index.js | tap-spec",
-    "test": "npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape"
+    "test": "npm run lint && npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -b -R spec test/index.js && npm run tape && (npm run build && echo BUILD TEST OK || echo BUILD TEST FAILED)"
   },
   "bin": {
     "knex": "./lib/bin/cli.js"

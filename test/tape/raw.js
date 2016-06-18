@@ -3,6 +3,7 @@
 var Raw    = require('../../lib/raw');
 var Client = require('../../lib/client')
 var test   = require('tape')
+var _      = require('lodash');
 
 var client = new Client()
 function raw(sql, bindings) {
@@ -63,7 +64,7 @@ test('allows for options in raw queries, #605', function(t) {
     .options({ rowMode: "array" })
     .toSQL()
 
-  t.deepEqual(x, {
+  t.deepEqual(_.pick(x, ['sql', 'options', 'method', 'bindings']), {
     sql: "select 'foo', 'bar';",
     options: {rowMode: "array"},
     method: 'raw',
@@ -71,18 +72,8 @@ test('allows for options in raw queries, #605', function(t) {
   })
 })
 
-test('undefined named bindings are ignored', function(t) {
-  
-  t.plan(2)
-  
-  t.equal(raw('select :item from :place', {}).toSQL().sql, 'select :item from :place')
-
-  t.equal(raw('select :item :cool 2 from :place', {item: 'col1'}).toSQL().sql, 'select ? :cool 2 from :place')
-
-})
-
 test('raw bindings are optional, #853', function(t) {
-  
+
   t.plan(2)
 
   var sql = raw('select * from ? where id=?', [raw('foo'), 4]).toSQL()

@@ -10,6 +10,8 @@ import {
   reduce
 } from 'lodash';
 
+import uuid from 'node-uuid';
+
 // The "QueryCompiler" takes all of the query statements which
 // have been gathered in the "QueryBuilder" and turns them into a
 // properly formatted / bound query string.
@@ -19,6 +21,7 @@ function QueryCompiler(client, builder) {
   this.options = builder._options;
   this.single = builder._single;
   this.timeout = builder._timeout || false;
+  this.cancelOnTimeout = builder._cancelOnTimeout || false;
   this.grouped = groupBy(builder._statements, 'grouping');
   this.formatter = client.formatter()
 }
@@ -35,22 +38,38 @@ assign(QueryCompiler.prototype, {
 
   // Collapse the builder into a single object
   toSQL(method, tz) {
+    this._undefinedInWhereClause = false;
+
     method = method || this.method
     let val = this[method]()
     const defaults = {
       method,
       options: reduce(this.options, assign, {}),
       timeout: this.timeout,
-      bindings: this.formatter.bindings
+      cancelOnTimeout: this.cancelOnTimeout,
+      bindings: this.formatter.bindings,
+      __knexQueryUid: uuid.v4()
     };
     if (isString(val)) {
       val = {sql: val};
     }
-    if (method === 'select' && this.single.as) {
-      defaults.as = this.single.as;
+
+    defaults.bindings = defaults.bindings || [];
+
+    if (method === 'select') {
+      if(this.single.as) {
+        defaults.as = this.single.as;
+      }
     }
 
-    defaults.bindings = this.client.prepBindings(defaults.bindings || [], tz);
+    if(this._undefinedInWhereClause) {
+      throw new Error(
+        `Undefined binding(s) detected when compiling ` +
+        `${method.toUpperCase()} query: ${val.sql}`
+      );
+    }
+
+    defaults.bindings = this.client.prepBindings(defaults.bindings, tz);
 
     return assign(defaults, val);
   },
@@ -199,6 +218,9 @@ assign(QueryCompiler.prototype, {
     let i = -1;
     while (++i < wheres.length) {
       const stmt = wheres[i]
+      if(stmt.hasOwnProperty('value') && helpers.containsUndefined(stmt.value)) {
+        this._undefinedInWhereClause = true;
+      }
       const val = this[stmt.type](stmt)
       if (val) {
         if (sql.length === 0) {
