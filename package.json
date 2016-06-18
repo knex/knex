@@ -1,9 +1,10 @@
 {
   "name": "knex-firebird",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Knex for including support for firebird",
   "main": "knex.js",
   "dependencies": {
+    "babel": "^5.8.38",
     "bluebird": "^3.3.4",
     "chalk": "^1.0.0",
     "commander": "^2.2.0",
