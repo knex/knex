@@ -38,6 +38,7 @@ git push origin master --tags
 echo "# Publishing docs"
 
 git checkout gh-pages
+git reset --hard origin/gh-pages
 git merge master
 git push origin gh-pages
 git checkout master
