@@ -12093,7 +12093,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = {
 		"name": "knex",
-		"version": "0.11.5",
+		"version": "0.11.6",
 		"description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
 		"main": "lib",
 		"dependencies": {
@@ -12107,6 +12107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			"lodash": "^4.6.0",
 			"minimist": "~1.1.0",
 			"mkdirp": "^0.5.0",
+			"node-uuid": "~1.4.0",
 			"pg-connection-string": "^0.1.3",
 			"pool2": "^1.1.0",
 			"readable-stream": "^1.1.12",
