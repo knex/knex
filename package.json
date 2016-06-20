@@ -95,7 +95,8 @@
     "pg-query-stream": false,
     "oracle": false,
     "strong-oracle": false,
-    "sqlite3": false
+    "sqlite3": false,
+    "oracledb": false
   },
   "files": [
     "README.md",
