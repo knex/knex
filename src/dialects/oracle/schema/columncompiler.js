@@ -38,7 +38,8 @@ assign(ColumnCompiler_Oracle.prototype, {
         ` while checking >= 1` +
         ` loop` +
         ` select ${sequenceName}.nextval into :new.${columnName} from dual;` +
-        ` select count(${columnName}) into checking from ${tableName} where ${columnName} = :new.${columnName};` +
+        ` select count(${columnName}) into checking from ${tableName}` +
+        ` where ${columnName} = :new.${columnName};` +
         ` end loop;` +
         ` end if;` +
         ` end;`;
