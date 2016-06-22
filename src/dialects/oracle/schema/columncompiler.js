@@ -31,9 +31,16 @@ assign(ColumnCompiler_Oracle.prototype, {
       const createTriggerSQL =
         `create or replace trigger ${triggerName} before insert on ${tableName}` +
         ` for each row` +
-        ` when (new.${columnName} is null) ` +
+        ` declare` +
+        ` checking number := 1;` +
         ` begin` +
+        ` if (:new.${columnName} is null) then` +
+        ` while checking >= 1` +
+        ` loop` +
         ` select ${sequenceName}.nextval into :new.${columnName} from dual;` +
+        ` select count(${columnName}) into checking from ${tableName} where ${columnName} = :new.${columnName};` +
+        ` end loop;` +
+        ` end if;` +
         ` end;`;
       this.pushQuery(utils.wrapSqlWithCatch(`create sequence ${sequenceName}`, -955));
       this.pushQuery(createTriggerSQL);
