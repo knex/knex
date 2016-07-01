@@ -3306,6 +3306,12 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it('escapes backslashes properly', function() {
+    testquery(qb().select('*').from('files').where('path', 'C:\\test.txt'), {
+      default: 'select * from "files" where "path" = \'C:\\\\test.txt\''
+    });
+  });
+
   it("allows join without operator and with value 0 #953", function() {
     testsql(qb().select('*').from('users').join('photos', 'photos.id', 0), {
       mysql: {

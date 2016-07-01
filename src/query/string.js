@@ -52,7 +52,7 @@ SqlString.escape = function(val, timeZone) {
       case "\x1a": return "\\Z";
       case "\\?": return "?";
       case "\'": return "''";
-      default: return `\${s}`;
+      default: return `\\${s}`;
     }
   });
   return `'${val}'`;
