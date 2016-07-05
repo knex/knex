@@ -57,12 +57,17 @@ Client_Oracledb.prototype.prepBindings = function(bindings) {
 // connection needs to be added to the pool.
 Client_Oracledb.prototype.acquireRawConnection = function() {
   var client = this;
+  var connectObject = {};
+  if (client.connectionSettings.connectString&&client.connectionSettings.externalAuth) {
+      connectObject.connectString = client.connectionSettings.connectString;
+      connectObject.externalAuth = client.connectionSettings.externalAuth;
+  } else {
+      connectObject.user = client.connectionSettings.user;
+      connectObject.password = client.connectionSettings.password;
+      connectObject.connectString = client.connectionSettings.host + '/' + client.connectionSettings.database;
+  }
   var asyncConnection = new Promise(function(resolver, rejecter) {
-    client.driver.getConnection({
-      user: client.connectionSettings.user,
-      password: client.connectionSettings.password,
-      connectString: client.connectionSettings.host + '/' + client.connectionSettings.database
-    }, function(err, connection) {
+    client.driver.getConnection(connectObject, function(err, connection) {
       if (err)
         return rejecter(err);
       if (client.connectionSettings.prefetchRowCount) {
