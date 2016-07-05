@@ -58,14 +58,20 @@ Client_Oracledb.prototype.prepBindings = function(bindings) {
 Client_Oracledb.prototype.acquireRawConnection = function() {
   var client = this;
   var connectObject = {};
-  if (client.connectionSettings.connectString&&client.connectionSettings.externalAuth) {
+  if (client.connectionSettings.connectString){
       connectObject.connectString = client.connectionSettings.connectString;
+
+  } else {
+      connectObject.connectString = client.connectionSettings.host + '/' + client.connectionSettings.database;
+  }
+
+  if (client.connectionSettings.externalAuth) {
       connectObject.externalAuth = client.connectionSettings.externalAuth;
   } else {
       connectObject.user = client.connectionSettings.user;
       connectObject.password = client.connectionSettings.password;
-      connectObject.connectString = client.connectionSettings.host + '/' + client.connectionSettings.database;
   }
+  
   var asyncConnection = new Promise(function(resolver, rejecter) {
     client.driver.getConnection(connectObject, function(err, connection) {
       if (err)
