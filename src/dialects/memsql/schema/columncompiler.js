@@ -27,6 +27,7 @@ extend(ColumnCompiler_MemSQL.prototype, {
   },
 
   json: 'json',
+  timestamp: 'timestamp(6)',
 
 })
 
