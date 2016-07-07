@@ -166,7 +166,7 @@ each(columnTypes, function(type) {
       if (args[1] === true) {
         const now = this.client.raw('CURRENT_TIMESTAMP');
         createdAt.notNullable().defaultTo(now);
-        updatedAt.notNullable().defaultTo(now);
+        updatedAt.notNullable().defaultTo(now).onUpdate(now);
       }
       return;
     }

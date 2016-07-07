@@ -128,6 +128,9 @@ ColumnCompiler.prototype.defaultTo = function(value) {
   }
   return `default ${value}`;
 };
+ColumnCompiler.prototype.onUpdate = function(value) {
+  return `on update ${value}`
+};
 ColumnCompiler.prototype._num = function(val, fallback) {
   if (val === undefined || val === null) return fallback;
   const number = parseInt(val, 10);
