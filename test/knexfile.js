@@ -117,6 +117,18 @@ var testConfigs = {
     seeds: seeds
   },
 
+  redshift: {
+    dialect: 'redshift',
+    connection: testConfig.redshift || {
+      adapter:  "postgresql",
+      database: "knex_test",
+      user:     "knex_test"
+    },
+    pool: pool,
+    migrations: migrations,
+    seeds: seeds
+  },
+
   sqlite3: {
     dialect: 'sqlite3',
     connection: testConfig.sqlite3 || {
