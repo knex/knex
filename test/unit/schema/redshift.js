@@ -110,20 +110,11 @@ describe("Redshift SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "foo"');
   });
 
-  it("drop index", function() {
+  it("drop index should be a no-op", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.dropIndex('foo');
     }).toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('drop index "users_foo_index"');
-  });
-
-  it("drop index, custom", function() {
-    tableSql = client.schemaBuilder().table('users', function(table) {
-      table.dropIndex(null, 'foo');
-    }).toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('drop index "foo"');
+    equal(0, tableSql.length);
   });
 
   it("drop foreign", function() {
@@ -207,55 +198,11 @@ describe("Redshift SchemaBuilder", function() {
     expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_email_unique" unique ("email")');
   });
 
-  it("adding index without value", function() {
-    tableSql = client.schemaBuilder().table('users', function(table) {
-      table.index(['foo', 'bar']);
-    }).toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create index "users_foo_bar_index" on "users" ("foo", "bar")');
-  });
-
-  it("adding index", function() {
+  it("adding index should be a no-op", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.index(['foo', 'bar'], 'baz');
     }).toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create index "baz" on "users" ("foo", "bar")');
-  });
-
-  it("adding index fluently", function() {
-    tableSql = client.schemaBuilder().table('users', function(table) {
-      table.string('name').index();
-    }).toSQL();
-    equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "name" varchar(255)');
-    expect(tableSql[1].sql).to.equal('create index "users_name_index" on "users" ("name")');
-  });
-
-  it("adding index with an index type", function() {
-     tableSql = client.schemaBuilder().table('users', function(table) {
-      table.index(['foo', 'bar'], 'baz', 'gist');
-    }).toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create index "baz" on "users" using gist ("foo", "bar")');
-  });
-
-  it("adding index with an index type fluently", function() {
-     tableSql = client.schemaBuilder().table('users', function(table) {
-      table.string('name').index('baz', 'gist');
-    }).toSQL();
-    equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "name" varchar(255)');
-    expect(tableSql[1].sql).to.equal('create index "baz" on "users" using gist ("name")');
-  });
-
-  it("adding index with an index type and default name fluently", function() {
-     tableSql = client.schemaBuilder().table('users', function(table) {
-      table.string('name').index(null, 'gist');
-    }).toSQL();
-    equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "name" varchar(255)');
-    expect(tableSql[1].sql).to.equal('create index "users_name_index" on "users" using gist ("name")');
+    equal(0, tableSql.length);
   });
 
   it("adding incrementing id", function() {
