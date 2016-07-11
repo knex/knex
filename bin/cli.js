@@ -190,23 +190,23 @@ function invoke(env) {
   });
 }
 
-var cli = new Liftoff({
-  name: 'knex',
-  extensions: interpret.jsVariants,
-  v8flags: require('v8flags')
-});
+// const cli = new Liftoff({
+//   name: 'knex',
+//   extensions: interpret.jsVariants,
+//   v8flags: require('v8flags')
+// });
 
-cli.on('require', function(name) {
-  console.log('Requiring external module', chalk.magenta(name));
-});
+// cli.on('require', function(name) {
+//   console.log('Requiring external module', chalk.magenta(name));
+// });
 
-cli.on('requireFail', function(name) {
-  console.log(chalk.red('Failed to load external module'), chalk.magenta(name));
-});
+// cli.on('requireFail', function(name) {
+//   console.log(chalk.red('Failed to load external module'), chalk.magenta(name));
+// });
 
-cli.launch({
-  cwd: argv.cwd,
-  configPath: argv.knexfile,
-  require: argv.require,
-  completion: argv.completion
-}, invoke);
+// cli.launch({
+//   cwd: argv.cwd,
+//   configPath: argv.knexfile,
+//   require: argv.require,
+//   completion: argv.completion
+// }, invoke);
