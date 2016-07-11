@@ -81,7 +81,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tgriesser/knex.git"
+    "url": "git://github.com/trevorsmith/knex.git"
   },
   "keywords": [
     "sql",
@@ -94,8 +94,8 @@
     "mssql"
   ],
   "author": {
-    "name": "Tim Griesser",
-    "web": "https://github.com/tgriesser"
+    "name": "Trevor Smith",
+    "web": "https://github.com/trevorsmith"
   },
   "browser": {
     "./lib/migrate/index.js": "./lib/util/noop.js",
