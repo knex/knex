@@ -76,9 +76,6 @@
     "debug_tape": "node-debug test/tape/index.js",
     "test": "npm run lint && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 10000 -b -R spec test/index.js && npm run tape"
   },
-  "bin": {
-    "knex": "./bin/cli.js"
-  },
   "repository": {
     "type": "git",
     "url": "git://github.com/trevorsmith/knex.git"
