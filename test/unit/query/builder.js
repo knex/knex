@@ -4055,5 +4055,4 @@ describe("QueryBuilder", function() {
       postgres: "select * from \"sometable\" where \"array_field\" && '{\"abc\",\"def\",{\"g\",2}}'"
     });
   })
-
 });
