@@ -146,7 +146,7 @@ function replaceKeyBindings(raw) {
   const { client } = raw
   let { sql } = raw, bindings = []
 
-  const regex = new RegExp(/\\?(:\w+:?)/, 'g')
+  const regex = /\\?(:\w+:?)/g
   sql = raw.sql.replace(regex, function(full, part) {
     if (full !== part) {
       return part
