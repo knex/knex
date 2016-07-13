@@ -9,7 +9,10 @@ import { assign } from 'lodash'
 
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment', 'collate', 'onUpdate']
+  this.modifiers = [
+    'unsigned', 'nullable', 'defaultTo', 'first', 'after',
+    'comment', 'collate', 'onUpdate'
+  ]
 }
 inherits(ColumnCompiler_MySQL, ColumnCompiler);
 

@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import ColumnCompiler from '../../mysql/schema/columncompiler';
 
-import { assign, extend } from 'lodash'
+import { extend } from 'lodash'
 
 function ColumnCompiler_MemSQL() {
   ColumnCompiler.apply(this, arguments);
