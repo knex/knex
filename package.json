@@ -98,7 +98,6 @@
   "files": [
     "README.md",
     "src/*",
-    "bin/*",
     "lib/*",
     "build/*",
     "knex.js",
