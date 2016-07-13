@@ -31,8 +31,8 @@
 
   <div id="sidebar" class="interface">
 
-    <a class="toc_title" href="#">
-      Knex.js <span class="version">(0.11.5)</span>
+    <a class="toc_title" href="#changelog">
+      Knex.js <span class="version">(0.11.7)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -185,7 +185,7 @@
       <li>– <a href="#Schema-specificType">specificType</a></li>
       <li>– <a href="#Schema-index">index</a></li>
       <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
-      <li>– <a href="#Schema-foreign">Foreign</a></li>
+      <li>– <a href="#Schema-foreign">foreign</a></li>
       <li>– <a href="#Schema-dropForeign">dropForeign</a></li>
       <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
       <li>– <a href="#Schema-dropPrimary">dropPrimary</a></li>
@@ -304,7 +304,7 @@
     </p>
 
     <p>
-      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MySQL</b>, <b>MariaDB</b>, <b>SQLite3</b>, and <b>Oracle</b> designed to be flexible,
+      <b>Knex.js</b> is a "batteries included" SQL query builder for <b>Postgres</b>, <b>MSSQL</b>, <b>MySQL</b>, <b>MariaDB</b>, <b>SQLite3</b>, and <b>Oracle</b> designed to be flexible,
       portable, and fun to use. It features both traditional node style <a href="#Interfaces-Callbacks">callbacks</a>
       as well as a <a href="#Interfaces-Promises">promise</a> interface for cleaner async flow control, <a href="#Interfaces-Streams">a stream interface</a>, full featured <a href="#Builder">query</a> and <a href="#Schema">schema</a> builders, <a href="#Transactions"><b>transaction support (with savepoints)</b></a>, connection <a href="#Installation-pooling">pooling</a> and standardized responses between
       different query clients and dialects.
@@ -337,7 +337,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.11.5 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.11.7 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -394,7 +394,7 @@
 
     <p>
       The primary target environment for Knex is Node.js, you will need to install the <tt>knex</tt> library,
-      and then install the appropriate database library: <tt><a href="https://github.com/brianc/node-postgres">pg</a></tt> for PostgreSQL, <tt><a href="https://github.com/felixge/node-mysql">mysql</a></tt> for MySQL or MariaDB, or <a href="https://github.com/mapbox/node-sqlite3"><tt>sqlite3</tt></a> for SQLite3.
+      and then install the appropriate database library: <tt><a href="https://github.com/brianc/node-postgres">pg</a></tt> for PostgreSQL, <tt><a href="https://github.com/felixge/node-mysql">mysql</a></tt> for MySQL or MariaDB, <a href="https://github.com/mapbox/node-sqlite3"><tt>sqlite3</tt></a> for SQLite3, or <a href="https://github.com/patriksimek/node-mssql"><tt>mssql</tt></a> for MSSQL.
     </p>
 
 <pre>
@@ -408,6 +408,7 @@ $ npm install mysql2
 $ npm install mariasql
 $ npm install strong-oracle
 $ npm install oracle
+$ npm install mssql
 </pre>
 
     <h3 id="Installation-browser">Browser</h3>
@@ -3095,6 +3096,16 @@ $ npm test
       replacing with the path to your config file, and the config file is valid, the test suite should run properly.
     </p>
 
+    <p>
+      <b class="header">My tests are failing because slow DB connection and short test timeouts! How to extend test timeouts?</b><br />
+      Sometimes, e.g. when running CI on travis, test suite's default timeout of 5 seconds might be too short. In such cases an alternative test timeout 
+      value in milliseconds can be specified using the <tt>KNEX_TEST_TIMEOUT</tt> environment variable.
+    </p>
+<pre>
+$ export KNEX_TEST_TIMEOUT=30000
+$ npm test
+</pre>
+
     <p id="faq-nonode">
       <b class="header">Can I use Knex outside of Node.js</b><br />
       Yes. While the WebSQL spec is deprecated, there is still an adapter that provides support.
@@ -3103,6 +3114,31 @@ $ npm test
 
     <h2 id="changelog">Change Log</h2>
 
+    <p>
+      <b class="header">0.11.7</b> &mdash; <small><i>19 Jun, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Add missing dependency. #1516
+    </ul>
+
+    <p>
+      <b class="header">0.11.6</b> &mdash; <small><i>18 Jun, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Allow cancellation on timeout (MySQL) #1454</li>
+      <li>Better bigint support. (MSSQL) #1445</li>
+      <li>More consistent handling of <tt>undefined</tt> values in <tt>QueryBuilder#where</tt> and <tt>Raw</tt>. #1459</li>
+      <li>Fix Webpack build. #1447</li>
+      <li>Fix code that triggered Bluebird warnings. #1460, #1489</li>
+      <li>Fix <tt>ping</tt> function. (Oracle) #1486</li>
+      <li>Fix <tt>columnInfo</tt>. (MSSQL) #1464</li>
+      <li>Fix <tt>ColumnCompiler#binary</tt>. (MSSQL) #1464</li>
+      <li>Allow connection strings that do not contain a password. #1473</li>
+      <li>Fix race condition in seed stubs. #1493</li>
+      <li>Give each query a UUID. #1510</li>
+    </ul>
 
     <p>
       <b class="header">0.11.5</b> &mdash; <small><i>26 May, 2016</i></small><br />

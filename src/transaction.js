@@ -46,12 +46,13 @@ function Transaction(client, container, config, outerTx) {
       }
       if (result && result.then && typeof result.then === 'function') {
         result.then((val) => {
-          transactor.commit(val)
+          return transactor.commit(val)
         })
         .catch((err) => {
-          transactor.rollback(err)
+          return transactor.rollback(err)
         })
       }
+      return null;
     })
     .catch((e) => this._rejecter(e))
 

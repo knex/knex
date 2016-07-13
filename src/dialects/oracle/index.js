@@ -130,7 +130,8 @@ assign(Client_Oracle.prototype, {
       return connection.executeAsync(obj.returningSql, rowIds)
     }).then(function(response) {
       obj.response = response;
-      return obj
+      obj.rowsAffected  = response.updateCount;
+      return obj;
     })
 
   },
@@ -158,14 +159,14 @@ assign(Client_Oracle.prototype, {
           // return an array with values if only one returning value was specified
           return flatten(map(response, values));
         }
-        return response.updateCount;
+        return obj.rowsAffected;
       default:
         return response;
     }
   },
 
   ping(resource, callback) {
-    resource.execute('SELECT 1', [], callback);
+    resource.execute('SELECT 1 FROM DUAL', [], callback);
   }
 
 })

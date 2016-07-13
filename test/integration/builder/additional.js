@@ -402,7 +402,6 @@ module.exports = function(knex) {
         });
     });
 
-
     it('Event: query-response', function() {
       var queryCount = 0;
 
@@ -411,6 +410,7 @@ module.exports = function(knex) {
         expect(response).to.be.an('array');
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
+        expect(obj.__knexQueryUid).to.be.a('string');
         expect(builder).to.be.an('object');
       };
       knex.on('query-response', onQueryResponse);
@@ -434,6 +434,7 @@ module.exports = function(knex) {
         queryCount++;
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
+        expect(obj.__knexQueryUid).to.be.a('string');
         expect(error).to.be.an('object');
       };
 

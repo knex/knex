@@ -10,6 +10,8 @@ import {
   reduce
 } from 'lodash';
 
+import uuid from 'node-uuid';
+
 // The "QueryCompiler" takes all of the query statements which
 // have been gathered in the "QueryBuilder" and turns them into a
 // properly formatted / bound query string.
@@ -45,7 +47,8 @@ assign(QueryCompiler.prototype, {
       options: reduce(this.options, assign, {}),
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
-      bindings: this.formatter.bindings
+      bindings: this.formatter.bindings,
+      __knexQueryUid: uuid.v4()
     };
     if (isString(val)) {
       val = {sql: val};
@@ -60,7 +63,10 @@ assign(QueryCompiler.prototype, {
     }
 
     if(this._undefinedInWhereClause) {
-      throw new Error(`Undefined binding(s) detected when compiling ${method.toUpperCase()} query: ${val.sql}`);
+      throw new Error(
+        `Undefined binding(s) detected when compiling ` +
+        `${method.toUpperCase()} query: ${val.sql}`
+      );
     }
 
     defaults.bindings = this.client.prepBindings(defaults.bindings, tz);

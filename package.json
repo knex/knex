@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.11.5",
+  "version": "0.11.7",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "dependencies": {
@@ -14,6 +14,7 @@
     "lodash": "^4.6.0",
     "minimist": "~1.1.0",
     "mkdirp": "^0.5.0",
+    "node-uuid": "~1.4.0",
     "pg-connection-string": "^0.1.3",
     "pool2": "^1.1.0",
     "readable-stream": "^1.1.12",
@@ -36,7 +37,6 @@
     "mssql": "^2.3.2",
     "mysql": "^2.6.2",
     "mysql2": "^0.15.5",
-    "node-uuid": "~1.4.0",
     "pg": "^4.5.5",
     "pg-query-stream": "^0.7.0",
     "rimraf": "2.x",
@@ -55,10 +55,10 @@
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "dev": "babel -L -D -w src/ --out-dir lib/",
     "lint": "eslint src/**",
-    "plaintest": "mocha --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
+    "plaintest": "mocha --check-leaks -b -R spec test/index.js && npm run tape",
     "prepublish": "npm run build",
     "tape": "node test/tape/index.js | tap-spec",
-    "test": "npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 5000 -b -R spec test/index.js && npm run tape && (npm run build && echo BUILD TEST OK || echo BUILD TEST FAILED)"
+    "test": "npm run lint && npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -b -R spec test/index.js && npm run tape && (npm run build && echo BUILD TEST OK || echo BUILD TEST FAILED)"
   },
   "bin": {
     "knex": "./lib/bin/cli.js"
@@ -95,7 +95,8 @@
     "pg-query-stream": false,
     "oracle": false,
     "strong-oracle": false,
-    "sqlite3": false
+    "sqlite3": false,
+    "oracledb": false
   },
   "files": [
     "README.md",
