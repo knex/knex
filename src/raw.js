@@ -146,8 +146,12 @@ function replaceKeyBindings(raw) {
   const { client } = raw
   let { sql } = raw, bindings = []
 
-  const regex = new RegExp('(\\:\\w+\\:?)', 'g')
-  sql = raw.sql.replace(regex, function(full) {
+  const regex = new RegExp(/\\?(:\w+:?)/, 'g')
+  sql = raw.sql.replace(regex, function(full, part) {
+    if (full !== part) {
+      return part
+    }
+
     const key = full.trim();
     const isIdentifier = key[key.length - 1] === ':'
     const value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]

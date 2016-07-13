@@ -3591,4 +3591,21 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it('Support escaping of named bindings', function() {
+    var namedBindings = { a: 'foo', b: 'bar', c: 'baz' };
+
+    var raws = [
+      [raw(':a: = :b OR :c', namedBindings), '"foo" = ? OR ?', [namedBindings.b, namedBindings.c]],
+      [raw(':a: = \\:b OR :c', namedBindings), '"foo" = :b OR ?', [namedBindings.c]],
+      [raw('\\:a: = :b OR :c', namedBindings), ':a: = ? OR ?', [namedBindings.b, namedBindings.c]],
+      [raw(':a: = \\:b OR \\:c', namedBindings), '"foo" = :b OR :c', []],
+      [raw('\\:a: = \\:b OR \\:c', namedBindings), ':a: = :b OR :c', []]
+    ];
+
+    raws.forEach(function(raw) {
+      var result = raw[0].toSQL();
+      expect(result.sql).to.equal(raw[1]);
+      expect(result.bindings).to.deep.equal(raw[2]);
+    })
+  })
 });
