@@ -61,7 +61,7 @@
     "test": "npm run lint && npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -b -R spec test/index.js && npm run tape && (npm run build && echo BUILD TEST OK || echo BUILD TEST FAILED)"
   },
   "bin": {
-    "knex": "./lib/bin/cli.js"
+    "knex": "./bin/cli.js"
   },
   "repository": {
     "type": "git",
@@ -101,6 +101,7 @@
   "files": [
     "README.md",
     "src/*",
+    "bin/*",
     "lib/*",
     "build/*",
     "knex.js",
