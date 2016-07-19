@@ -2352,11 +2352,22 @@ knex.raw('select * from users where id in (?)', [[1, 2, 3]])
 </pre>
 
   <p>
-    To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
+    To prevent replacement of <tt>?</tt> one can use the escape sequence <tt>\\?</tt>.
   </p>
 
 <pre class="display">
 knex.select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey'])
+</pre>
+
+ <p>
+    To prevent replacement of named bindings one can use the escape sequence <tt>\\:</tt>.
+  </p>
+
+<pre class="display">
+knex.select('*').from('users').whereRaw(":property: = '\\:value' OR \\:property: = :value", {
+  property: 'name',
+  value: 'Bob'
+})
 </pre>
 
     <h3 id="Raw-Expressions">Raw Expressions:</h3>
