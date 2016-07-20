@@ -76,11 +76,11 @@ describe("MSSQL SchemaBuilder", function() {
 
   it('test drop primary', function() {
     tableSql = client.schemaBuilder().table('users', function() {
-      this.dropPrimary();
+      this.dropPrimary('testconstraintname');
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP PRIMARY KEY');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP CONSTRAINT [testconstraintname]');
   });
 
   it('test drop unique', function() {
@@ -224,7 +224,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [name] nvarchar(255) after [foo]');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [name] nvarchar(255)');
   });
 
   it('test adding column on the first place', function() {
@@ -233,7 +233,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [first_name] nvarchar(255) first');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [first_name] nvarchar(255)');
   });
 
   it('test adding string', function() {
@@ -304,7 +304,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] mediumint');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] int');
   });
 
   it('test adding small integer', function() {
@@ -331,7 +331,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float(5, 2)');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(5, 2)');
   });
 
   it('test adding double', function() {
@@ -340,7 +340,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] double');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal');
   });
 
   it('test adding double specifying precision', function() {
@@ -349,7 +349,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] double(15, 8)');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(15, 8)');
   });
 
   it('test adding decimal', function() {
