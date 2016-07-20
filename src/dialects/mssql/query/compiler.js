@@ -158,11 +158,19 @@ assign(QueryCompiler_MSSQL.prototype, {
   // Compiles a `columnInfo` query.
   columnInfo() {
     const column = this.single.columnInfo;
-    const sql =
-      `select * from information_schema.columns where table_name = ? and table_schema = 'dbo'`;
+    let sql =`select * from information_schema.columns where table_name = ? and table_catalog = ?`;
+    let bindings = [this.single.table, this.client.database()];
+
+    if (this.single.schema) {
+      sql += ' and table_schema = ?';
+      bindings.push(this.single.schema);
+    } else {
+      sql += ` and table_schema = 'dbo'`;
+    }
+
     return {
       sql,
-      bindings: [this.single.table],
+      bindings: bindings,
       output(resp) {
         const out = resp.reduce(function(columns, val) {
           columns[val.COLUMN_NAME] = {
