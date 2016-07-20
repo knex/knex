@@ -22,6 +22,9 @@ export default function Knex(config) {
   if (typeof config === 'string') {
     return new Knex(assign(parseConnection(config), arguments[2]))
   }
+  if (config === undefined || config === null) {
+      config = {};
+  }
   let Dialect;
   if (arguments.length === 0 || (!config.client && !config.dialect)) {
     Dialect = makeClient(Client)
