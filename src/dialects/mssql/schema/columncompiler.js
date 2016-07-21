@@ -25,8 +25,13 @@ assign(ColumnCompiler_MSSQL.prototype, {
   bigint: 'bigint',
 
   double(precision, scale) {
-    if (!precision) return 'double'
-    return `double(${this._num(precision, 8)}, ${this._num(scale, 2)})`
+    if (!precision) return 'decimal'
+    return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`
+  },
+
+  floating(precision, scale) {
+    if (!precision) return 'decimal'
+    return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`
   },
 
   integer(length) {
@@ -34,7 +39,7 @@ assign(ColumnCompiler_MSSQL.prototype, {
     return `int${length}`
   },
 
-  mediumint: 'mediumint',
+  mediumint: 'int',
 
   smallint: 'smallint',
 
@@ -62,7 +67,10 @@ assign(ColumnCompiler_MSSQL.prototype, {
   timestamp: 'datetime',
 
   bit(length) {
-    return length ? `bit(${this._num(length)})` : 'bit'
+    if (length > 1) {
+      helpers.warn('Bit field is exactly 1 bit length for MSSQL');
+    }
+    return 'bit';
   },
 
   binary(length) {
@@ -83,11 +91,13 @@ assign(ColumnCompiler_MSSQL.prototype, {
   },
 
   first() {
-    return 'first'
+    helpers.warn('Column first modifier not available for MSSQL');
+    return '';
   },
 
   after(column) {
-    return `after ${this.formatter.wrap(column)}`
+    helpers.warn('Column after modifier not available for MSSQL');
+    return '';
   },
 
   comment(comment) {
