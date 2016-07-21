@@ -11157,7 +11157,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	module.exports = {
 		"name": "knex",
-		"version": "0.11.7",
+		"version": "0.11.8",
 		"description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
 		"main": "lib",
 		"dependencies": {
@@ -11177,6 +11177,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			"readable-stream": "^1.1.12",
 			"tildify": "~1.0.0",
 			"v8flags": "^2.0.2"
+		},
+		"bin": {
+			"knex": "./lib/bin/cli.js"
 		},
 		"repository": {
 			"type": "git",
