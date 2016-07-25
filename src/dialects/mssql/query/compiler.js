@@ -11,9 +11,21 @@ function QueryCompiler_MSSQL(client, builder) {
 }
 inherits(QueryCompiler_MSSQL, QueryCompiler)
 
+const components = [
+  'columns', 'join', 'lock', 'where', 'union', 'group',
+  'having', 'order', 'limit', 'offset'
+];
+
 assign(QueryCompiler_MSSQL.prototype, {
 
   _emptyInsertValue: 'default values',
+
+  select() {
+    const statements = components.map(component =>
+        this[component](this)
+    );
+    return compact(statements).join(' ');
+  },
 
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
