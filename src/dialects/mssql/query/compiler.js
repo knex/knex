@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, isEmpty } from 'lodash'
+import { assign, isEmpty, compact } from 'lodash'
 
 function QueryCompiler_MSSQL(client, builder) {
   QueryCompiler.call(this, client, builder)
