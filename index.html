@@ -1163,7 +1163,7 @@ knex.select('year', knex.raw('SUM(profit)')).from('sales').groupByRaw('year WITH
 </pre>
 
     <p id="Builder-orderBy">
-      <b class="header">orderBy</b><code>.orderBy(column | [*column], [direction])</code>
+      <b class="header">orderBy</b><code>.orderBy(column, [direction])</code>
       <br />
       Adds an <tt>order by</tt> clause to the query.
     </p>
