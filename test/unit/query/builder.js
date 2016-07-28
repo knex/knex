@@ -14,7 +14,7 @@ var clients = {
   mysql:    new MySQL_Client({}),
   postgres: new PG_Client({}),
   oracle:   new Oracle_Client({}),
-  oracledb:   new Oracledb_Client({}),  
+  oracledb:   new Oracledb_Client({}),
   sqlite3:  new SQLite3_Client({}),
   mssql:  new MSSQL_Client({}),
   default:  new Client({})
@@ -25,7 +25,7 @@ var clientsWithNullAsDefault = {
   mysql:    new MySQL_Client(useNullAsDefaultConfig),
   postgres: new PG_Client(useNullAsDefaultConfig),
   oracle:   new Oracle_Client(useNullAsDefaultConfig),
-  oracledb:   new Oracledb_Client(useNullAsDefaultConfig),  
+  oracledb:   new Oracledb_Client(useNullAsDefaultConfig),
   sqlite3:  new SQLite3_Client(useNullAsDefaultConfig),
   mssql:  new MSSQL_Client(useNullAsDefaultConfig),
   default:  new Client(useNullAsDefaultConfig)
@@ -3606,6 +3606,151 @@ describe("QueryBuilder", function() {
       var result = raw[0].toSQL();
       expect(result.sql).to.equal(raw[1]);
       expect(result.bindings).to.deep.equal(raw[2]);
-    })
-  })
+    });
+  });
+
+  it("wrapped 'with' clause select", function() {
+    testsql(qb().with('withClause', function() {
+      this.select('foo').from('users');
+    }).select('*').from('withClause'), {
+      mssql: 'with [withClause] as (select [foo] from [users]) select * from [withClause]',
+      sqlite3: 'with "withClause" as (select "foo" from "users") select * from "withClause"',
+      postgres: 'with "withClause" as (select "foo" from "users") select * from "withClause"',
+      oracle: 'with "withClause" as (select "foo" from "users") select * from "withClause"'
+    });
+  });
+
+  it("wrapped 'with' clause insert", function() {
+    testsql(qb().with('withClause', function() {
+      this.select('foo').from('users');
+    }).insert(raw('select * from "withClause"')).into('users'), {
+      mssql: 'with [withClause] as (select [foo] from [users]) insert into [users] select * from "withClause"',
+      sqlite3: 'with "withClause" as (select "foo" from "users") insert into "users" select * from "withClause"',
+      postgres: 'with "withClause" as (select "foo" from "users") insert into "users" select * from "withClause"'
+    });
+  });
+
+  it("wrapped 'with' clause multiple insert", function() {
+    testsql(qb().with('withClause', function() {
+      this.select('foo').from('users').where({name: 'bob'});
+    }).insert([{email: 'thisMail', name: 'sam'}, {email: 'thatMail', name: 'jack'}]).into('users'), {
+      mssql: {
+        sql: 'with [withClause] as (select [foo] from [users] where [name] = ?) insert into [users] ([email], [name]) values (?, ?), (?, ?)',
+        bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack']
+      },
+      sqlite3: {
+        sql: 'with "withClause" as (select "foo" from "users" where "name" = ?) insert into "users" ("email", "name") select ? as "email", ? as "name" union all select ? as "email", ? as "name"',
+        bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack']
+      },
+      postgres: {
+        sql: 'with "withClause" as (select "foo" from "users" where "name" = ?) insert into "users" ("email", "name") values (?, ?), (?, ?)',
+        bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack']
+      }
+    });
+  });
+
+  it("wrapped 'with' clause update", function() {
+    testsql(qb().with('withClause', function() {
+      this.select('foo').from('users');
+    }).update({foo: 'updatedFoo'}).where('email', '=', 'foo').from('users'), {
+      mssql: 'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?;select @@rowcount',
+      sqlite3: 'with "withClause" as (select "foo" from "users") update "users" set "foo" = ? where "email" = ?',
+      postgres: 'with "withClause" as (select "foo" from "users") update "users" set "foo" = ? where "email" = ?'
+    });
+  });
+
+  it("wrapped 'with' clause delete", function() {
+    testsql(qb().with('withClause', function() {
+      this.select('email').from('users');
+    }).del().where('foo', '=', 'updatedFoo').from('users'), {
+      mssql: 'with [withClause] as (select [email] from [users]) delete from [users] where [foo] = ?;select @@rowcount',
+      sqlite3: 'with "withClause" as (select "email" from "users") delete from "users" where "foo" = ?',
+      postgres: 'with "withClause" as (select "email" from "users") delete from "users" where "foo" = ?'
+    });
+  });
+
+  it("raw 'with' clause", function() {
+    testsql(qb().with('withRawClause', raw('select "foo" as "baz" from "users"')).select('*').from('withRawClause'), {
+      mssql: 'with [withRawClause] as (select "foo" as "baz" from "users") select * from [withRawClause]',
+      sqlite3: 'with "withRawClause" as (select "foo" as "baz" from "users") select * from "withRawClause"',
+      postgres: 'with "withRawClause" as (select "foo" as "baz" from "users") select * from "withRawClause"',
+      oracledb: 'with "withRawClause" as (select "foo" as "baz" from "users") select * from "withRawClause"',
+      oracle: 'with "withRawClause" as (select "foo" as "baz" from "users") select * from "withRawClause"'
+      });
+  });
+
+  it("chained wrapped 'with' clause", function() {
+    testsql(qb().with('firstWithClause', function() {
+      this.select('foo').from('users');
+    }).with('secondWithClause', function() {
+      this.select('bar').from('users');
+    }).select('*').from('secondWithClause'), {
+      mssql: 'with [firstWithClause] as (select [foo] from [users]), [secondWithClause] as (select [bar] from [users]) select * from [secondWithClause]',
+      sqlite3: 'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"',
+      postgres: 'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"',
+      oracledb: 'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"',
+      oracle: 'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"'
+    });
+  });
+
+  it("nested 'with' clause", function() {
+    testsql(qb().with('withClause', function() {
+      this.with('withSubClause', function() {
+        this.select('foo').as('baz').from('users');
+      }).select('*').from('withSubClause');
+    }).select('*').from('withClause'), {
+      mssql: 'with [withClause] as (with [withSubClause] as ((select [foo] from [users]) as [baz]) select * from [withSubClause]) select * from [withClause]',
+      sqlite3: 'with "withClause" as (with "withSubClause" as ((select "foo" from "users") as "baz") select * from "withSubClause") select * from "withClause"',
+      postgres: 'with "withClause" as (with "withSubClause" as ((select "foo" from "users") as "baz") select * from "withSubClause") select * from "withClause"',
+      oracledb: 'with "withClause" as (with "withSubClause" as ((select "foo" from "users") "baz") select * from "withSubClause") select * from "withClause"',
+      oracle: 'with "withClause" as (with "withSubClause" as ((select "foo" from "users") "baz") select * from "withSubClause") select * from "withClause"'
+    });
+  });
+
+  it("nested 'with' clause with bindings", function() {
+    testsql(qb().with('withClause', function() {
+      this.with('withSubClause', raw('select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?',
+      [1, 20])).select('*').from('withSubClause');
+    }).select('*').from('withClause').where({id: 10}), {
+      mssql: {
+          sql: 'with [withClause] as (with [withSubClause] as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from [withSubClause]) select * from [withClause] where [id] = ?',
+          bindings: [1, 20, 10]
+        },
+      sqlite3: {
+          sql: 'with "withClause" as (with "withSubClause" as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from "withSubClause") select * from "withClause" where "id" = ?',
+          bindings: [1, 20, 10]
+        },
+      postgres: {
+          sql: 'with "withClause" as (with "withSubClause" as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from "withSubClause") select * from "withClause" where "id" = ?',
+          bindings: ['1', '20', '10']
+        },
+      oracledb: {
+          sql: 'with "withClause" as (with "withSubClause" as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from "withSubClause") select * from "withClause" where "id" = ?',
+          bindings: [1, 20, 10]
+        },
+      oracle: {
+          sql: 'with "withClause" as (with "withSubClause" as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from "withSubClause") select * from "withClause" where "id" = ?',
+          bindings: [1, 20, 10]
+        }
+    });
+  });
+
+  it("nested and chained wrapped 'with' clause", function() {
+    testsql(qb().with('firstWithClause', function() {
+      this.with('firstWithSubClause', function() {
+        this.select('foo').as('foz').from('users');
+      }).select('*').from('firstWithSubClause');
+    }).with('secondWithClause', function() {
+      this.with('secondWithSubClause', function() {
+        this.select('bar').as('baz').from('users');
+      }).select('*').from('secondWithSubClause');
+    }).select('*').from('secondWithClause'), {
+      mssql: 'with [firstWithClause] as (with [firstWithSubClause] as ((select [foo] from [users]) as [foz]) select * from [firstWithSubClause]), [secondWithClause] as (with [secondWithSubClause] as ((select [bar] from [users]) as [baz]) select * from [secondWithSubClause]) select * from [secondWithClause]',
+      sqlite3: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+      postgres: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+      oracledb: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+      oracle: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"'
+    });
+  });
+
 });

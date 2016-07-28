@@ -40,7 +40,7 @@ assign(QueryCompiler_PG.prototype, {
     const wheres = this.where();
     const { returning } = this.single;
     return {
-      sql: `update ${this.tableName} set ${updateData.join(', ')}` +
+      sql: this.with() + `update ${this.tableName} set ${updateData.join(', ')}` +
       (wheres ? ` ${wheres}` : '') +
       this._returning(returning),
       returning

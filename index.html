@@ -73,6 +73,7 @@
       <li>– <a href="#Builder-column">column</a></li>
       <li>– <a href="#Builder-from">from</a></li>
       <li>– <a href="#Builder-withSchema">withSchema</a></li>
+      <li>– <a href="#Builder-with">with</a></li>
 
       <li><b><a href="#Builder-wheres">Where Methods:</a></b></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-where">where</a></li>
@@ -680,6 +681,22 @@ knex.column(['title', 'author', 'year']).select().from('books')
 
 <pre class="display">
 knex.select('*').from('users')
+</pre>
+
+    <p id="Builder-with">
+      <b class="header">with</b><code>.with(alias, callback|raw)</code>
+      <br />
+      Add a "with" clause to the query. "With" clauses are supported by PostgreSQL, Oracle, SQLite3 and MSSQL.
+    </p>
+
+<pre class="display">
+knex.with('with_alias', function() {
+    this.select('*').from('books').where('author', 'Test')
+}).select('*').from('with_alias')
+</pre>
+
+<pre class="display">
+knex.with('with_alias', knex.raw('select * from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
 </pre>
 
     <p id="Builder-withSchema">

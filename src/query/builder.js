@@ -68,6 +68,44 @@ assign(Builder.prototype, {
     return this;
   },
 
+  // With
+  // ------
+
+  with(alias, statement, bindings) {
+    if (typeof statement === 'function') {
+      return this.withWrapped(alias, statement);
+    }
+    // Allow a raw statement to be passed along to the query.
+    if (statement instanceof Raw && arguments.length >= 2) {
+      return this.withRaw(alias, statement, bindings);
+    }
+
+    return;
+  },
+
+  // Adds a raw `with` clause to the query.
+  withRaw(alias, sql, bindings) {
+    const raw = (sql instanceof Raw ? sql : this.client.raw(sql, bindings));
+    this._statements.push({
+      grouping: 'with',
+      type: 'withRaw',
+      alias: alias,
+      value: raw
+    });
+    return this;
+  },
+
+  // Helper for compiling any advanced `with` queries.
+  withWrapped(alias, callback) {
+    this._statements.push({
+      grouping: 'with',
+      type: 'withWrapped',
+      alias: alias,
+      value: callback
+    });
+    return this;
+  },
+
   // Select
   // ------
 
