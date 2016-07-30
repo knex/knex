@@ -47,12 +47,15 @@ export function exit(msg) {
 export function containsUndefined(mixed) {
   let argContainsUndefined = false;
 
+  if (isTypedArray(mixed))
+    return false;
+
   if(mixed && isFunction(mixed.toSQL)) {
     //Any QueryBuilder or Raw will automatically be validated during compile.
     return argContainsUndefined;
   }
 
-  if(isArray(mixed) || isTypedArray(mixed)) {
+  if(isArray(mixed)) {
     for(let i = 0; i < mixed.length; i++) {
       if(argContainsUndefined) break;
       argContainsUndefined = this.containsUndefined(mixed[i]);
