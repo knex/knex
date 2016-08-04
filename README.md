@@ -75,3 +75,11 @@ knex.schema.createTable('users', function(table) {
   console.error(e);
 });
 ```
+NOTE: When you are referencing knex in more than one files follow this method in order to reuse the existing connection pool. Failing this step makes knex wait forever till it gets timed out.
+
+```js
+// Initial reference (index.js / app.js)
+var knex = require('knex')(connection_object);
+
+// Subsequent references in other modules
+var knex = require('knex').knex;
