@@ -79,7 +79,9 @@ NOTE: When you are referencing knex in more than one files follow this method in
 
 ```js
 // Initial reference (index.js / app.js)
-var knex = require('knex')(connection_object);
+var Knex = require('knex');
+// Pass connection parameters
+Knex.knex({...});
 
 // Subsequent references in other modules
-var knex = require('knex').knex;
+var Knex = require('knex').knex;
