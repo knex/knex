@@ -2011,7 +2011,7 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
     </p>
 
     <p id="Schema-timestamps">
-      <b class="header">timestamps</b><code>table.timestamps()</code>
+      <b class="header">timestamps</b><code>table.timestamps([useTimestamps], [defaultToNow])</code>
       <br />
       Adds a <tt>created_at</tt> and <tt>updated_at</tt> column on the database,
       setting these each to <a href="#Schema-dateTime">dateTime</a> types.
