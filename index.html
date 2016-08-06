@@ -1776,7 +1776,7 @@ knex.transaction(function(trx) {
   </p>
 
     <h2 id="Schema">Schema Builder</h2>
-    These methods return <a href="http://knexjs.org/#Interfaces-Promises">promises</a>.
+    The <tt>knex.schema</tt> is <b>a getter function</b>, which returns a stateful object containing the query. Therefore, be sure to obtain a new instance of <tt>knex.schema</tt> for every new query. The methods below return <a href="http://knexjs.org/#Interfaces-Promises">promises</a>.
 
     <p id="Schema-withSchema">
       <b class="header">withSchema</b><code>knex.schema.withSchema([schemaName])</code>
