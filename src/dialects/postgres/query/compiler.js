@@ -9,6 +9,10 @@ import { assign, reduce } from 'lodash'
 
 function QueryCompiler_PG(client, builder) {
   QueryCompiler.call(this, client, builder);
+  
+  if (client.defaultReturning) {
+    builder._single.returning = client.defaultReturning;
+  }
 }
 inherits(QueryCompiler_PG, QueryCompiler);
 
