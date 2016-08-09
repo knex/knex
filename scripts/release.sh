@@ -22,8 +22,6 @@ fi
 next_ref="v$next_version"
 
 git add -u
-npm run build
-git add -A build
 
 npm test
 
