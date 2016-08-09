@@ -99,6 +99,7 @@
     "oracledb": false
   },
   "files": [
+    "CONTRIBUTING.md",
     "README.md",
     "src/*",
     "lib/*",

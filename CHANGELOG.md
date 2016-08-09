@@ -1,7 +1,8 @@
 
-# master - (unreleased)
+# 0.11.10 - 9 Aug, 2016
 
-- Added CHANGELOG.md for a [new documentation](https://github.com/knex/documentation) builder, #1615
+- Added CHANGELOG.md for a [new documentation](https://github.com/knex/documentation) builder coming soon, #1615
+- Minor documentation tweaks
 - PG: Fix Uint8Array being considered undefined, #1601
 - MSSQL: Make columnInfo schema dynamic, #1585
 
