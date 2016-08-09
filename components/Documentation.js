@@ -1,0 +1,49 @@
+import React, { Component } from 'react'
+
+import Section from './Section'
+import Container from './Container'
+import Changelog from './Changelog'
+
+import builder from '../sections/builder'
+import changelog from '../sections/changelog'
+import faq from '../sections/faq'
+import installation from '../sections/installation'
+import interfaces from '../sections/interfaces'
+import migrations from '../sections/migrations'
+import prelude from '../sections/prelude'
+import raw from '../sections/raw'
+import schema from '../sections/schema'
+import seeds from '../sections/seeds'
+import support from '../sections/support'
+import transactions from '../sections/transactions'
+import upgrading from '../sections/upgrading'
+import utility from '../sections/utility'
+
+const constants = {
+  projectUrl: 'https://github.com/tgriesser/knex',
+}
+
+// The "container" for the documentation,
+// we require all of the doc sections and render them
+export default class Documentation extends Component {
+  render() {
+    return (
+      <Container {...constants}>
+        <Section id="Prelude" content={prelude} />
+        <Section id="Upgrading" content={upgrading} />
+        <Section id="Installation" content={installation} />
+        <Section id="Builder" content={builder} />
+        <Section id="Transactions" content={transactions} />
+        <Section id="Schema" content={schema} />
+        <Section id="Raw" content={raw} />
+        <Section id="Utility" content={utility} />
+        <Section id="Interfaces" content={interfaces} />
+        <Section id="Migrations" content={migrations} />
+        <Section id="Seeds" content={seeds} />
+        <Section id="Support" content={support} />
+        <Section id="Faq" content={faq} />
+        <Changelog id="Changelog" content={changelog} />
+      </Container>
+    )
+  }
+}

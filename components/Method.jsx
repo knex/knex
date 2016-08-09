@@ -1,0 +1,41 @@
+import React, { Component, PropTypes } from 'react'
+
+export default class Method extends Component {
+
+  static contextTypes = {
+    section: PropTypes.string.isRequired,
+  };
+
+  static propTypes = {
+    example: PropTypes.string,
+    children: PropTypes.array,
+    description: PropTypes.string,
+    method: PropTypes.string.isRequired
+  };
+
+  render() {
+    const {
+      context: {section},
+      props: {method, example, children, description}
+    } = this
+
+    let methodContent = []
+
+    if (description) {
+      methodContent.push(<p key="description">{description}</p>)
+    }
+
+    if (children && children.length > 0) {
+      methodContent = methodContent.concat(children)
+    }
+
+    return (
+      <div id={`${section}-${method}`}>
+        <b>{method}</b>
+        {example && ` — `}
+        {example && <code>{example}</code>}
+        {methodContent}
+      </div>
+    )
+  }
+}
