@@ -3,7 +3,7 @@
 // -------
 import inherits from 'inherits';
 import Client_MySQL from '../mysql';
-import Promise from '../../promise';
+import Promise from 'bluebird';
 import SqlString from '../../query/string';
 import * as helpers from '../../helpers';
 import Transaction from './transaction';

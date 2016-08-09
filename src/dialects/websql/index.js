@@ -6,7 +6,7 @@ import inherits from 'inherits';
 
 import Transaction from './transaction';
 import Client_SQLite3 from '../sqlite3';
-import Promise from '../../promise';
+import Promise from 'bluebird';
 import { assign, map, uniqueId, clone } from 'lodash'
 
 function Client_WebSQL(config) {

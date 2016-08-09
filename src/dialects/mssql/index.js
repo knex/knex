@@ -6,7 +6,7 @@ import inherits from 'inherits';
 
 import Formatter from './formatter';
 import Client from '../../client';
-import Promise from '../../promise';
+import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 
 import Transaction from './transaction';

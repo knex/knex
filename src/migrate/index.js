@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
-import Promise from '../promise';
+import Promise from 'bluebird';
 import * as helpers from '../helpers';
 import {
   assign, bind, difference, each, filter, get, includes, isBoolean,

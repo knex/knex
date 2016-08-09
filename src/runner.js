@@ -1,5 +1,5 @@
 import { assign, isArray } from 'lodash'
-import Promise from './promise';
+import Promise from 'bluebird';
 import * as helpers from './helpers';
 
 let PassThrough;

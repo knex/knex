@@ -3,7 +3,7 @@
 // -------
 import inherits from 'inherits';
 import Client_MySQL from '../mysql';
-import Promise from '../../promise';
+import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 import { pick, map, assign } from 'lodash'
 import Transaction from './transaction';

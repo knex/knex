@@ -5,7 +5,7 @@
 // columns and changing datatypes.
 // -------
 
-import Promise from '../../../promise';
+import Promise from 'bluebird';
 import { assign, uniqueId, find, identity, map, omit } from 'lodash'
 
 // So altering the schema in SQLite3 is a major pain.

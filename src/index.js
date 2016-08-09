@@ -54,7 +54,7 @@ Knex.initialize = function(config) {
 }
 
 // Bluebird
-Knex.Promise = require('./promise')
+Knex.Promise = require('bluebird')
 
 // Doing this ensures Browserify works. Still need to figure out
 // the best way to do some of this.
