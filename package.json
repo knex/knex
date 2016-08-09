@@ -104,7 +104,8 @@
     "lib/*",
     "build/*",
     "knex.js",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "license": "MIT"
 }
