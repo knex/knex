@@ -11200,12 +11200,14 @@ return /******/ (function(modules) { // webpackBootstrap
 			"oracledb": false
 		},
 		"files": [
+			"CONTRIBUTING.md",
 			"README.md",
 			"src/*",
 			"lib/*",
 			"build/*",
 			"knex.js",
-			"LICENSE"
+			"LICENSE",
+			"CHANGELOG.md"
 		],
 		"license": "MIT"
 	};
