@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.11.9",
+  "version": "0.11.10",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "dependencies": {
@@ -99,12 +99,14 @@
     "oracledb": false
   },
   "files": [
+    "CONTRIBUTING.md",
     "README.md",
     "src/*",
     "lib/*",
     "build/*",
     "knex.js",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "license": "MIT"
 }
