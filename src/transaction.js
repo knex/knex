@@ -1,7 +1,7 @@
 
 // Transaction
 // -------
-import Promise from './promise';
+import Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import inherits from 'inherits';
 import Debug from 'debug'

@@ -153,7 +153,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('throws errors on the exec if uncaught in the last block', function(ok) {
+    it('throws errors on the asCallback if uncaught in the last block', function(ok) {
 
       var listeners = process.listeners('uncaughtException');
 
@@ -167,7 +167,7 @@ module.exports = function(knex) {
         ok();
       });
 
-      knex('accounts').select().exec(function() {
+      knex('accounts').select().asCallback(function() {
         console.log(this.undefinedVar.test);
       });
     });
