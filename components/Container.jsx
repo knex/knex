@@ -17,9 +17,14 @@ export default class Container extends Component {
     runKnex: PropTypes.func.isRequired
   };
 
-  state = {
-    language: 'mysql'
-  };
+  constructor() {
+    super()
+    let language = 'mysql'
+    try {
+      language = localStorage.knexLanguage
+    } catch (e) { } // eslint-disable-line
+    this.state = { language }
+  }
 
   registry = new Set();
 
@@ -28,6 +33,9 @@ export default class Container extends Component {
   };
 
   initKnex() {
+    try {
+      localStorage.knexLanguage = this.state.language
+    } catch (e) {} // eslint-disable-line
     this.knex = Knex({client: this.state.language})
     this.knex.client.transacting = true
     this.trx = this.knex

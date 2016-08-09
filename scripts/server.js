@@ -10,7 +10,7 @@ import ReactDOMServer from 'react-dom/server'
 
 import Documentation from '../components/Documentation'
 
-const changelog = fs.readFileSync(path.join(__dirname, '../sections/changelog.md'), 'utf-8')
+const changelog = fs.readFileSync(path.resolve('node_modules/knex/CHANGELOG.md'), 'utf-8')
 const development = process.env.NODE_ENV !== 'production'
 const port = process.env.PORT || 4000
 
