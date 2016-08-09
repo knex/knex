@@ -279,8 +279,12 @@ export default [
     type: "method",
     method: "timestamp",
     example: "table.timestamp(name, [standard])",
-    description: "Adds a timestamp column, defaults to timestamptz in PostgreSQL, unless true is passed as the second argument. For Example: table.timestamp('created_at').defaultTo(knex.fn.now());",
-    children: [    ]
+    description: "Adds a timestamp column, defaults to timestamptz in PostgreSQL, unless true is passed as the second argument. For Example:",
+    children: [{
+      type: 'code',
+      language: 'js',
+      content: `table.timestamp('created_at').defaultTo(knex.fn.now());`
+    }]
   },
   {
     type: "method",
@@ -307,15 +311,32 @@ export default [
     type: "method",
     method: "enum / enu",
     example: "table.enu(col, values)",
-    description: "Adds a enum column, (aliased to enu, as enum is a reserved word in javascript). Note that the second argument is an array of values. Example: table.enu('column', ['value1', 'value2'])",
-    children: [    ]
+    description: "Adds a enum column, (aliased to enu, as enum is a reserved word in javascript). Note that the second argument is an array of values. Example:",
+    children: [{
+      type: 'code',
+      language: 'js',
+      content: `table.enu('column', ['value1', 'value2'])`
+    }]
   },
   {
     type: "method",
     method: "json",
     example: "table.json(name)",
-    description: "Adds a json column, using the built-in json type in postgresql, defaulting to a text column in older versions of postgresql or in unsupported databases. Note that when setting an array (or a value that could be an array) as the value of a json or jsonb column, you should use JSON.stringify() to convert your value to a string prior to passing it to the query builder, e.g. knex.table('users') .where({id: 1}) .update({json_data: JSON.stringify(mightBeAnArray)}); This is because postgresql has a native array type which uses a syntax incompatible with json; knex has no way of knowing which syntax to use, and calling JSON.stringify() forces json-style syntax.",
-    children: [    ]
+    children: [{
+      type: 'text',
+      content: `Adds a json column, using the built-in json type in postgresql, defaulting to a text column in older versions of postgresql or in unsupported databases. Note that when setting an array (or a value that could be an array) as the value of a json or jsonb column, you should use JSON.stringify() to convert your value to a string prior to passing it to the query builder, e.g.`
+    }, {
+      type: 'code',
+      language: 'js',
+      content: `
+        knex.table('users')
+          .where({id: 1})
+          .update({json_data: JSON.stringify(mightBeAnArray)});
+      `
+    }, {
+      type: 'text',
+      content: 'This is because postgresql has a native array type which uses a syntax incompatible with json; knex has no way of knowing which syntax to use, and calling JSON.stringify() forces json-style syntax.'
+    }]
   },
   {
     type: "method",
@@ -391,7 +412,7 @@ export default [
     type: "method",
     method: "foreign",
     example: "table.foreign(columns)",
-    description: "Adds a foreign key constraint to a table for an existing column using table.foreign(column).references(column) or multiple columns using table.foreign(columns).references(columns). You can also chain onDelete and/or onUpdate to set the reference option (RESTRICT, CASCADE, SET NULL, NO ACTION) for the operation. Note, this is the same as column.references(column) but works for existing columns.",
+    description: "Adds a foreign key constraint to a table for an existing column using `table.foreign(column).references(column)` or multiple columns using `table.foreign(columns).references(columns)`. You can also chain onDelete and/or onUpdate to set the reference option (RESTRICT, CASCADE, SET NULL, NO ACTION) for the operation. Note, this is the same as column.references(column) but works for existing columns.",
     children: [    ]
   },
   {
@@ -436,7 +457,12 @@ export default [
     type: "method",
     method: "primary",
     example: "column.primary([constraintName])",
-    description: "When called on a single column it will set that column as the primary key for a table. To create a compound primary key, pass an array of column names: table.primary(['column1', 'column2']) Constraint name defaults to `tablename_pkey` unless `constraintName` is specified.",
+    description: `
+      When called on a single column it will set that column as the primary key for a table.
+      To create a compound primary key, pass an array of column names:
+      \`table.primary(['column1', 'column2'])\`.
+      Constraint name defaults to \`tablename_pkey\` unless \`constraintName\` is specified.
+    `,
     children: [    ]
   },
   {

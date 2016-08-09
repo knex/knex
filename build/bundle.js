@@ -60332,7 +60332,7 @@
 	  type: "method",
 	  method: "json",
 	  example: "table.json(name)",
-	  description: "Adds a json column, using the built-in json type in postgresql, defaulting to a text column in older versions of postgresql or in unsupported databases. Note that when setting an array (or a value that could be an array) as the value of a json or jsonb column, you should use JSON.stringify() to convert your value to a string prior to passing it to the query builder, e.g. knex.table('users') .where({id: 1}) .update({json_data: JSON.stringify(mightBeAnArray)}); This is because postgresql has a native array type which uses a syntax incompatible with json; knex has no way of knowing which syntax to use, and calling JSON.stringify() forces json-style syntax.",
+	  description: "Adds a json column, using the built-in json type in postgresql, defaulting to a text column in older versions of postgresql or in unsupported databases. Note that when setting an array (or a value that could be an array) as the value of a json or jsonb column, you should use JSON.stringify() to convert your value to a string prior to passing it to the query builder, e.g.\n      ```\n      knex.table('users')\n        .where({id: 1})\n        .update({json_data: JSON.stringify(mightBeAnArray)});\n      ```\n      This is because postgresql has a native array type which uses a syntax incompatible with json; knex has no way of knowing which syntax to use, and calling JSON.stringify() forces json-style syntax.\n    ",
 	  children: []
 	}, {
 	  type: "method",

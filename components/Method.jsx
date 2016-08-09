@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from 'react'
+import marked from '../util/marked'
 
 export default class Method extends Component {
 
@@ -22,7 +23,9 @@ export default class Method extends Component {
     let methodContent = []
 
     if (description) {
-      methodContent.push(<p key="description">{description}</p>)
+      methodContent.push(
+        <p key="description" dangerouslySetInnerHTML={{__html: marked(description)}} />
+      )
     }
 
     if (children && children.length > 0) {

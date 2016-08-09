@@ -10,6 +10,7 @@ import ReactDOMServer from 'react-dom/server'
 
 import Documentation from '../components/Documentation'
 
+const changelog = fs.readFileSync(path.join(__dirname, '../sections/changelog.md'), 'utf-8')
 const development = process.env.NODE_ENV !== 'production'
 const port = process.env.PORT || 4000
 
@@ -42,7 +43,7 @@ if (development) {
     let html
     try {
       html = ReactDOMServer.renderToString(
-        <Documentation />
+        <Documentation changelog={changelog} />
       )
     } catch (e) {
       html = `<pre>${e.stack.replace(new RegExp(__dirname, 'g'), '~')}</pre>`
@@ -59,7 +60,7 @@ if (development) {
 } else {
   fs.writeFileSync(
     path.join(__dirname, '../index.html'),
-    renderContent(ReactDOMServer.renderToString(<Documentation />))
+    renderContent(ReactDOMServer.renderToString(<Documentation changelog={changelog} />))
   )
 }
 

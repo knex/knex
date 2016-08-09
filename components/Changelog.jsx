@@ -1,19 +1,7 @@
 import React, { Component, PropTypes } from 'react'
 import {VERSION} from 'knex'
 import List from './List'
-import marked from 'marked'
-
-const renderer = new marked.Renderer()
-
-renderer.paragraph = function(text) {
-  return text
-}
-
-function mark(content) {
-  return marked(content.replace(/#(\d+)/g, function(match, d) {
-    return ` [${match}](https://github.com/tgriesser/knex/issues/${d})`
-  }), {renderer})
-}
+import marked from '../util/marked'
 
 export default class Changelog extends Component {
 
@@ -27,7 +15,7 @@ export default class Changelog extends Component {
             PropTypes.string,
             PropTypes.shape({
               title: PropTypes.string,
-              items: PropTypes.arrayOf(PropTypes.string)
+              changes: PropTypes.arrayOf(PropTypes.string)
             })
           ])
         ).isRequired
@@ -65,7 +53,7 @@ export default class Changelog extends Component {
     function titledList(change) {
       return [
         <b key={`${version}-title`}>{change.title}</b>,
-        <List key={`${version}-list`} content={change.items} marked={mark} />
+        <List key={`${version}-list`} content={change.changes} />
       ]
     }
 
@@ -73,12 +61,12 @@ export default class Changelog extends Component {
       if (changes[0].title) {
         changeItems = titledList(changes[0])
       } else {
-        changeItems = <p dangerouslySetInnerHTML={{__html: mark(changes[0])}} />
+        changeItems = <p dangerouslySetInnerHTML={{__html: marked(changes[0])}} />
       }
     } else if (changes[0].title) {
       changeItems = changes.map(titledList)
     } else {
-      changeItems = <List content={changes} marked={mark} />
+      changeItems = <List content={changes} />
     }
 
     return (

@@ -1,11 +1,10 @@
-import React, { Component } from 'react'
+import React, { Component, PropTypes } from 'react'
 
 import Section from './Section'
 import Container from './Container'
 import Changelog from './Changelog'
 
 import builder from '../sections/builder'
-import changelog from '../sections/changelog'
 import faq from '../sections/faq'
 import installation from '../sections/installation'
 import interfaces from '../sections/interfaces'
@@ -18,6 +17,7 @@ import support from '../sections/support'
 import transactions from '../sections/transactions'
 import upgrading from '../sections/upgrading'
 import utility from '../sections/utility'
+import parseChangeLog from '../util/parseChangeLog'
 
 const constants = {
   projectUrl: 'https://github.com/tgriesser/knex',
@@ -26,6 +26,11 @@ const constants = {
 // The "container" for the documentation,
 // we require all of the doc sections and render them
 export default class Documentation extends Component {
+
+  static propTypes = {
+    changelog: PropTypes.string.isRequired
+  };
+
   render() {
     return (
       <Container {...constants}>
@@ -42,7 +47,7 @@ export default class Documentation extends Component {
         <Section id="Seeds" content={seeds} />
         <Section id="Support" content={support} />
         <Section id="Faq" content={faq} />
-        <Changelog id="Changelog" content={changelog} />
+        <Changelog id="Changelog" content={parseChangeLog(this.props.changelog)} />
       </Container>
     )
   }

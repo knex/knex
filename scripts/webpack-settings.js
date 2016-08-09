@@ -53,6 +53,10 @@ export default {
   module: {
     loaders: [
       {
+        test: /\.md$/i,
+        loader: 'raw'
+      },
+      {
         test: /\.jsx?$/,
         loader: 'babel',
         query: {
@@ -68,10 +72,12 @@ export default {
         loader: 'json'
       },
       {
-        test: /\.jpe?g$|\.gif$|\.png|\.ico$/, loader: 'file?name=[name].[ext]'
+        test: /\.jpe?g$|\.gif$|\.png|\.ico$/,
+        loader: 'file?name=[name].[ext]'
       },
       {
-        test: /\.eot$|\.ttf$|\.svg$|\.woff2?$/, loader: 'file?name=[name].[ext]'
+        test: /\.eot$|\.ttf$|\.svg$|\.woff2?$/,
+        loader: 'file?name=[name].[ext]'
       },
     ],
   },

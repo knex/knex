@@ -37,6 +37,7 @@
     "node-static": "^0.7.8",
     "nodemon": "^1.10.0",
     "portfinder": "^1.0.6",
+    "raw-loader": "^0.5.1",
     "react": "^15.3.0",
     "react-dom": "^15.3.0",
     "style-loader": "^0.13.1",
