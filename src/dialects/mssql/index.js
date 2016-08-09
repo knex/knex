@@ -101,7 +101,9 @@ assign(Client_MSSQL.prototype, {
       stream.on('end', resolver);
       let { sql } = obj
       if (!sql) return resolver()
-      if (obj.options) ({ sql } = assign({sql}, obj.options))
+      if (obj.options) {
+        sql = assign({sql}, obj.options)
+      }
       const req = (connection.tx_ || connection).request();
       //req.verbose = true;
       req.multiple = true;
@@ -126,7 +128,9 @@ assign(Client_MSSQL.prototype, {
     return new Promise(function(resolver, rejecter) {
       let { sql } = obj
       if (!sql) return resolver()
-      if (obj.options) ({ sql } = assign({sql}, obj.options))
+      if (obj.options) {
+        sql = assign({sql}, obj.options)
+      }
       const req = (connection.tx_ || connection).request();
       // req.verbose = true;
       req.multiple = true;
