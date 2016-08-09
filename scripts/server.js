@@ -72,21 +72,21 @@ function renderContent(content) {
     <meta name="viewport" content="width=device-width">
     <link rel="canonical" href="http://knexjs.org" />
 
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicons/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" href="/assets/favicons/favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="/assets/favicons/favicon-16x16.png" sizes="16x16" />
-    <link rel="manifest" href="/assets/favicons/manifest.json" />
-    <link rel="mask-icon" href="/assets/favicons/safari-pinned-tab.svg" color="#e16426" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" href="assets/favicons/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="assets/favicons/favicon-16x16.png" sizes="16x16" />
+    <link rel="manifest" href="assets/favicons/manifest.json" />
+    <link rel="mask-icon" href="assets/favicons/safari-pinned-tab.svg" color="#e16426" />
     <meta name="theme-color" content="#ffffff" />
 
-    <link rel="stylesheet" href="/build/bundle.css" />
+    <link rel="stylesheet" href="build/bundle.css" />
     <title>Knex.js - A SQL Query Builder for Javascript</title>
   </head>
   <body>
     <div id="documentation">${content}</div>
   </body>
-  <script type="text/javascript" src="/build/bundle.js"></script>
-  <script type="text/javascript" src="/assets/ga.js"></script>
+  <script type="text/javascript" src="build/bundle.js"></script>
+  <script type="text/javascript" src="assets/ga.js"></script>
 </html>
 `
 }
