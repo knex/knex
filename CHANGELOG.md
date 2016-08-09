@@ -1,4 +1,9 @@
 
+# 0.12.0 - (unreleased)
+
+- Remove build / built files
+- Upgrade to Babel 6
+
 # 0.11.10 - 9 Aug, 2016
 
 - Added CHANGELOG.md for a [new documentation](https://github.com/knex/documentation) builder coming soon, #1615
