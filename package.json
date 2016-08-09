@@ -24,8 +24,13 @@
   "devDependencies": {
     "JSONStream": "^1.0.3",
     "async": "^0.9.0",
-    "babel": "^5.2.17",
+    "babel-cli": "^6.11.4",
     "babel-eslint": "^5.0.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-lodash": "^3.2.6",
+    "babel-plugin-transform-runtime": "^6.12.0",
+    "babel-preset-es2015": "^6.13.2",
+    "babel-preset-es2015-loose": "^7.0.0",
     "chai": "^2.3.0",
     "coveralls": "~2.11.1",
     "eslint": "2.2.0",
@@ -46,19 +51,18 @@
     "sqlite3": "^3.0.5",
     "tap-spec": "^4.0.0",
     "tape": "^4.0.0",
-    "through": "^2.3.4",
-    "webpack": "^1.13.0"
+    "through": "^2.3.4"
   },
   "scripts": {
-    "babel": "babel -L -D src/ --out-dir lib/ --source-maps=inline",
-    "build": "./scripts/build.sh",
+    "build": "npm run babel",
+    "babel": "babel src --out-dir lib",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "dev": "babel -L -D -w src/ --out-dir lib/",
+    "dev": "babel -w src --out-dir lib",
     "lint": "eslint src/**",
     "plaintest": "mocha --check-leaks -b -R spec test/index.js && npm run tape",
-    "prepublish": "npm run build",
+    "prepublish": "npm run babel",
     "tape": "node test/tape/index.js | tap-spec",
-    "test": "npm run lint && npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -b -R spec test/index.js && npm run tape && (npm run build && echo BUILD TEST OK || echo BUILD TEST FAILED)"
+    "test": "npm run lint && npm run babel && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -b -R spec test/index.js && npm run tape"
   },
   "bin": {
     "knex": "./lib/bin/cli.js"
@@ -103,7 +107,6 @@
     "README.md",
     "src/*",
     "lib/*",
-    "build/*",
     "knex.js",
     "LICENSE",
     "CHANGELOG.md"
