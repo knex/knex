@@ -1,6 +1,10 @@
 
 # master - (unreleased)
 
+- Added CHANGELOG.md for a [new documentation](https://github.com/knex/documentation) builder, #1615
+- PG: Fix Uint8Array being considered undefined, #1601
+- MSSQL: Make columnInfo schema dynamic, #1585
+
 # 0.11.9 - 21 Jul, 2016
 
 - Reverted knex client breaking change (commit b74cd69e906), fixes #1587
