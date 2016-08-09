@@ -16,9 +16,7 @@ export default class Runnable extends Component {
   };
 
   componentWillMount() {
-    if (typeof window !== 'undefined') {
-      this.runOutput()
-    }
+    this.runOutput()
   }
 
   componentDidMount() {
@@ -35,8 +33,10 @@ export default class Runnable extends Component {
 
   runOutput() {
     const output = this.context.runKnex(this.props.content)
+    this.didError = false
     if (output.error) {
       this.highlightedSQL = output.error
+      this.didError = true
     } else {
       this.highlightedSQL = sql(output)
     }
@@ -45,11 +45,12 @@ export default class Runnable extends Component {
   render() {
     const {props: {content}} = this
     const output = this.highlightedSQL || null
+
     return (
       <pre className="display">
         <code className="js hljs" dangerouslySetInnerHTML={{__html: js(dedent(content))}} />
         {output && <br />}
-        {output && 'Outputs:'}
+        {this.didError ? 'Error:' : 'Outputs:'}
         {output && <br />}
         {output && <code className="sql hljs" dangerouslySetInnerHTML={{__html: output}} />}
       </pre>

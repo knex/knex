@@ -167,21 +167,21 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
           <li>– <a href="#Schema-dropPrimary">dropPrimary</a></li>
           <li><a href="#Chainable"><b>Chainable:</b></a></li>
-          <li>– <a href="#Chainable-index">index</a></li>
-          <li>– <a href="#Chainable-primary">primary</a></li>
-          <li>– <a href="#Chainable-unique">unique</a></li>
-          <li>– <a href="#Chainable-references">references</a></li>
-          <li>– <a href="#Chainable-inTable">inTable</a></li>
-          <li>– <a href="#Chainable-onDelete">onDelete</a></li>
-          <li>– <a href="#Chainable-onUpdate">onUpdate</a></li>
-          <li>– <a href="#Chainable-defaultTo">defaultTo</a></li>
-          <li>– <a href="#Chainable-unsigned">unsigned</a></li>
-          <li>– <a href="#Chainable-notNullable">notNullable</a></li>
-          <li>– <a href="#Chainable-nullable">nullable</a></li>
-          <li>– <a href="#Chainable-first">first</a></li>
-          <li>– <a href="#Chainable-after">after</a></li>
-          <li>– <a href="#Chainable-comment">comment</a></li>
-          <li>– <a href="#Chainable-collate">collate</a></li>
+          <li>– <a href="#Schema-index">index</a></li>
+          <li>– <a href="#Schema-primary">primary</a></li>
+          <li>– <a href="#Schema-unique">unique</a></li>
+          <li>– <a href="#Schema-references">references</a></li>
+          <li>– <a href="#Schema-inTable">inTable</a></li>
+          <li>– <a href="#Schema-onDelete">onDelete</a></li>
+          <li>– <a href="#Schema-onUpdate">onUpdate</a></li>
+          <li>– <a href="#Schema-defaultTo">defaultTo</a></li>
+          <li>– <a href="#Schema-unsigned">unsigned</a></li>
+          <li>– <a href="#Schema-notNullable">notNullable</a></li>
+          <li>– <a href="#Schema-nullable">nullable</a></li>
+          <li>– <a href="#Schema-first">first</a></li>
+          <li>– <a href="#Schema-after">after</a></li>
+          <li>– <a href="#Schema-comment">comment</a></li>
+          <li>– <a href="#Schema-collate">collate</a></li>
         </ul>
 
         <a className="toc_title" href="#Raw">

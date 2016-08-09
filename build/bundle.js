@@ -23038,6 +23038,7 @@
 	    var fn = void 0;
 	    if (language === 'js') fn = _highlight.js;
 	    if (language === 'sql') fn = _highlight.sql;
+
 	    if (fn) {
 	      return _react2.default.createElement(
 	        'pre',
@@ -23047,10 +23048,11 @@
 	          dangerouslySetInnerHTML: { __html: fn((0, _dedent2.default)(content)) } })
 	      );
 	    }
+
 	    return _react2.default.createElement(
 	      'pre',
 	      null,
-	      _react2.default.createElement('code', { dangerouslySetInnerHTML: { __html: (0, _dedent2.default)(content) } })
+	      _react2.default.createElement('code', { dangerouslySetInnerHTML: { __html: '\n' + (0, _dedent2.default)(content) } })
 	    );
 	  };
 
@@ -24306,9 +24308,7 @@
 	  }
 
 	  Runnable.prototype.componentWillMount = function componentWillMount() {
-	    if (typeof window !== 'undefined') {
-	      this.runOutput();
-	    }
+	    this.runOutput();
 	  };
 
 	  Runnable.prototype.componentDidMount = function componentDidMount() {
@@ -24325,8 +24325,10 @@
 
 	  Runnable.prototype.runOutput = function runOutput() {
 	    var output = this.context.runKnex(this.props.content);
+	    this.didError = false;
 	    if (output.error) {
 	      this.highlightedSQL = output.error;
+	      this.didError = true;
 	    } else {
 	      this.highlightedSQL = (0, _highlight.sql)(output);
 	    }
@@ -24336,12 +24338,13 @@
 	    var content = this.props.content;
 
 	    var output = this.highlightedSQL || null;
+
 	    return _react2.default.createElement(
 	      'pre',
 	      { className: 'display' },
 	      _react2.default.createElement('code', { className: 'js hljs', dangerouslySetInnerHTML: { __html: (0, _highlight.js)((0, _dedent2.default)(content)) } }),
 	      output && _react2.default.createElement('br', null),
-	      output && 'Outputs:',
+	      this.didError ? 'Error:' : 'Outputs:',
 	      output && _react2.default.createElement('br', null),
 	      output && _react2.default.createElement('code', { className: 'sql hljs', dangerouslySetInnerHTML: { __html: output } })
 	    );
@@ -24433,16 +24436,18 @@
 	    this.knex = (0, _knex2.default)({ client: this.state.language });
 	    this.knex.client.transacting = true;
 	    this.trx = this.knex;
-	    window.knex = this.knex;
 	    this.registry.forEach(function (component) {
 	      return component.forceUpdate();
 	    });
+	    if (typeof window !== 'undefined') {
+	      window.knex = this.knex;
+	    }
 	  };
 
 	  Container.prototype.componentWillMount = function componentWillMount() {
+	    this.initKnex();
 	    if (typeof window !== 'undefined') {
 	      window.Knex = _knex2.default;
-	      this.initKnex();
 	    }
 	  };
 
@@ -57328,7 +57333,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-index' },
+	            { href: '#Schema-index' },
 	            'index'
 	          )
 	        ),
@@ -57338,7 +57343,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-primary' },
+	            { href: '#Schema-primary' },
 	            'primary'
 	          )
 	        ),
@@ -57348,7 +57353,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-unique' },
+	            { href: '#Schema-unique' },
 	            'unique'
 	          )
 	        ),
@@ -57358,7 +57363,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-references' },
+	            { href: '#Schema-references' },
 	            'references'
 	          )
 	        ),
@@ -57368,7 +57373,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-inTable' },
+	            { href: '#Schema-inTable' },
 	            'inTable'
 	          )
 	        ),
@@ -57378,7 +57383,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-onDelete' },
+	            { href: '#Schema-onDelete' },
 	            'onDelete'
 	          )
 	        ),
@@ -57388,7 +57393,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-onUpdate' },
+	            { href: '#Schema-onUpdate' },
 	            'onUpdate'
 	          )
 	        ),
@@ -57398,7 +57403,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-defaultTo' },
+	            { href: '#Schema-defaultTo' },
 	            'defaultTo'
 	          )
 	        ),
@@ -57408,7 +57413,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-unsigned' },
+	            { href: '#Schema-unsigned' },
 	            'unsigned'
 	          )
 	        ),
@@ -57418,7 +57423,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-notNullable' },
+	            { href: '#Schema-notNullable' },
 	            'notNullable'
 	          )
 	        ),
@@ -57428,7 +57433,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-nullable' },
+	            { href: '#Schema-nullable' },
 	            'nullable'
 	          )
 	        ),
@@ -57438,7 +57443,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-first' },
+	            { href: '#Schema-first' },
 	            'first'
 	          )
 	        ),
@@ -57448,7 +57453,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-after' },
+	            { href: '#Schema-after' },
 	            'after'
 	          )
 	        ),
@@ -57458,7 +57463,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-comment' },
+	            { href: '#Schema-comment' },
 	            'comment'
 	          )
 	        ),
@@ -57468,7 +57473,7 @@
 	          '– ',
 	          _react2.default.createElement(
 	            'a',
-	            { href: '#Chainable-collate' },
+	            { href: '#Schema-collate' },
 	            'collate'
 	          )
 	        )
@@ -58339,7 +58344,7 @@
 	  content: ["Several methods exist to assist in dynamic where clauses. In many places functions may be used in place of values, constructing subqueries. In most places existing knex queries may be used to compose sub-queries, etc. Take a look at a few of the examples for each method for instruction on use:", "**Important:** Supplying knex with an `undefined` value to any of the `where` functions will cause knex to throw an error during sql compilation. This is both for yours and our sake. Knex cannot know what to do with undefined values in a where clause, and generally it would be a programmatic error to supply one to begin with. The error will throw a message containing the type of query and the compiled query-string. Example:"]
 	}, {
 	  type: "runnable",
-	  content: "\n          knex('accounts')\n          .where('login', undefined)\n          .select()\n          .toSQL();\n          //Undefined binding(s) detected when compiling SELECT query: select * from \"accounts\" where \"login\" = ?\n      "
+	  content: "\n      knex('accounts')\n        .where('login', undefined)\n        .select()\n        .toSQL()\n    "
 	}, {
 	  type: "method",
 	  method: "where",
@@ -59524,7 +59529,7 @@
 	}, {
 	  type: "code",
 	  language: "js",
-	  content: "var pg = require('knex')({ client: 'pg', connection: process.env.PG_CONNECTION_STRING, searchPath: 'knex,public' });"
+	  content: "\n      var pg = require('knex')({\n        client: 'pg',\n        connection: process.env.PG_CONNECTION_STRING,\n        searchPath: 'knex,public'\n      });\n    "
 	}, {
 	  type: "info",
 	  content: "Note: When you use the SQLite3 adapter, there is a filename required, not a network connection. For example:"
@@ -60037,7 +60042,7 @@
 	  content: "For simpler queries where one only has a single binding, `.raw` can accept said binding as its second parameter."
 	}, {
 	  type: "runnable",
-	  content: "\n      knex('users')\n        .where(\n          knex.raw('LOWER(\"login\") = ?', 'knex')\n        )\n        .orWhere(\n          knex.raw('accesslevel = ?', 1)\n        )\n        .orWhere(\n          knex.raw('updtime = ?', new Date())\n        )\n    "
+	  content: "\n      knex('users')\n        .where(\n          knex.raw('LOWER(\"login\") = ?', 'knex')\n        )\n        .orWhere(\n          knex.raw('accesslevel = ?', 1)\n        )\n        .orWhere(\n          knex.raw('updtime = ?', new Date.UTC('01-01-2016'))\n        )\n    "
 	}, {
 	  type: "text",
 	  content: "Note that due to ambiguity, arrays must be passed as arguments within a containing array."
@@ -60115,7 +60120,7 @@
 	  href: "Schema"
 	}, {
 	  type: "text",
-	  content: "These methods return [promises](http://knexjs.org/#Interfaces-Promises)."
+	  content: "The `knex.schema` is a **getter function**, which returns a stateful object containing the query. Therefore be sure to obtain a new instance of the `knex.schema` for every query. These methods return [promises](http://knexjs.org/#Interfaces-Promises)."
 	}, {
 	  type: "method",
 	  method: "withSchema",

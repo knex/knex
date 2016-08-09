@@ -70,7 +70,7 @@ export default [
           knex.raw('accesslevel = ?', 1)
         )
         .orWhere(
-          knex.raw('updtime = ?', new Date())
+          knex.raw('updtime = ?', new Date.UTC('01-01-2016'))
         )
     `
   },

@@ -31,14 +31,16 @@ export default class Container extends Component {
     this.knex = Knex({client: this.state.language})
     this.knex.client.transacting = true
     this.trx = this.knex
-    window.knex = this.knex
     this.registry.forEach(component => component.forceUpdate())
+    if (typeof window !== 'undefined') {
+      window.knex = this.knex
+    }
   }
 
   componentWillMount() {
+    this.initKnex()
     if (typeof window !== 'undefined') {
       window.Knex = Knex
-      this.initKnex()
     }
   }
 

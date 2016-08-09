@@ -14,19 +14,17 @@ export default class Code extends Component {
     let fn
     if (language === 'js') fn = js
     if (language === 'sql') fn = sql
+
     if (fn) {
       return (
-        <pre>
-          <code
+        <pre><code
             className={`hljs ${language}`}
-            dangerouslySetInnerHTML={{ __html: fn(dedent(content)) }} />
-        </pre>
+            dangerouslySetInnerHTML={{ __html: fn(dedent(content)) }} /></pre>
       )
     }
+
     return (
-      <pre>
-        <code dangerouslySetInnerHTML={{__html: dedent(content)}} />
-      </pre>
+      <pre><code dangerouslySetInnerHTML={{__html: `\n` + dedent(content)}} /></pre>
     )
   }
 }

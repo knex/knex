@@ -77,7 +77,13 @@ export default [
   {
     type: "code",
     language: "js",
-    content: "var pg = require('knex')({ client: 'pg', connection: process.env.PG_CONNECTION_STRING, searchPath: 'knex,public' });"
+    content: `
+      var pg = require('knex')({
+        client: 'pg',
+        connection: process.env.PG_CONNECTION_STRING,
+        searchPath: 'knex,public'
+      });
+    `
   },
   {
     type: "info",

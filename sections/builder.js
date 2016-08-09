@@ -136,12 +136,11 @@ export default [
   {
     type: "runnable",
     content: `
-          knex('accounts')
-          .where('login', undefined)
-          .select()
-          .toSQL();
-          //Undefined binding(s) detected when compiling SELECT query: select * from \"accounts\" where \"login\" = ?
-      `
+      knex('accounts')
+        .where('login', undefined)
+        .select()
+        .toSQL()
+    `
   },
   {
     type: "method",
