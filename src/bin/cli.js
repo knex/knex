@@ -193,6 +193,7 @@ function invoke(env) {
 
 const cli = new Liftoff({
   name: 'knex',
+  moduleName: '@classdojo/knex',
   extensions: interpret.jsVariants,
   v8flags: require('v8flags')
 });
