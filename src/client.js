@@ -1,4 +1,5 @@
 
+import domain from "domain";
 import Promise from 'bluebird';
 import * as helpers from './helpers';
 
@@ -209,6 +210,7 @@ assign(Client.prototype, {
       if (!client.pool) {
         return rejecter(new Error('There is no pool defined on the current client'))
       }
+      client.emit("acquireConnection", domain.active);
       request = client.pool.acquire(function(err, connection) {
         if (err) return rejecter(err)
         debug('acquired connection from pool: %s', connection.__knexUid)
