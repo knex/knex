@@ -210,9 +210,9 @@ assign(Client.prototype, {
       if (!client.pool) {
         return rejecter(new Error('There is no pool defined on the current client'))
       }
-      client.emit("acquireConnection", domain.active);
       request = client.pool.acquire(function(err, connection) {
         if (err) return rejecter(err)
+        client.emit("acquireConnection", domain.active, connection);
         debug('acquired connection from pool: %s', connection.__knexUid)
         resolver(connection)
       })
@@ -232,6 +232,7 @@ assign(Client.prototype, {
   // returning a promise resolved when the connection is released.
   releaseConnection(connection) {
     const { pool } = this
+    this.emit("releaseConnection", domain.active, connection);
     return new Promise(function(resolver) {
       debug('releasing connection to pool: %s', connection.__knexUid)
       pool.release(connection)
