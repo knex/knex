@@ -27,8 +27,8 @@ function QueryCompiler(client, builder) {
 }
 
 const components = [
-  'columns', 'join', 'where', 'union', 'group',
-  'having', 'order', 'limit', 'offset', 'lock'
+  'columns', 'join', 'where', 'group', 'having',
+  'order', 'limit', 'offset', 'union', 'lock'
 ];
 
 assign(QueryCompiler.prototype, {
