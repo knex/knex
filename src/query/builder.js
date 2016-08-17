@@ -16,11 +16,12 @@ import {
 // Typically called from `knex.builder`,
 // start a new query building chain.
 function Builder(client) {
-  this.client = client
+  this.client = client;
+  this.readOnly = false;
   this.and = this;
   this._single = {};
   this._statements = [];
-  this._method = 'select'
+  this._method = 'select';
   this._debug = client.config && client.config.debug;
 
   // Internal flags used in the builder.
@@ -55,6 +56,12 @@ assign(Builder.prototype, {
     }
 
     return cloned;
+  },
+
+  // Set this query to readOnly, which allows it to use a read only db connection
+  readOnly() {
+    this.readOnly = true;
+    return this;
   },
 
   timeout(ms, {cancel} = {}) {

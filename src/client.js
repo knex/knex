@@ -31,12 +31,22 @@ const debugQuery = require('debug')('knex:query')
 // The base client provides the general structure
 // for a dialect specific client object.
 function Client(config = {}) {
-  this.config = config
-  this.connectionSettings = cloneDeep(config.connection || {})
-  if (this.driverName && config.connection) {
-    this.initializeDriver()
-    if (!config.pool || (config.pool && config.pool.max !== 0)) {
-      this.initializePool(config)
+  this.config = config;
+  this.connectionSettings = cloneDeep(config.connection || {});
+  if (this.driverName && (config.connection || config.cluster)) {
+    this.initializeDriver();
+
+    if (this.pool) this.destroy();
+    if (config.pool && config.cluster) {
+      throw new Error("Cannot specify both pool and cluster in config");
+    }
+
+    if (config.pool && config.pool.max !== 0) {
+      this.pool = this.initializePool();
+    }
+
+    if (config.cluster) {
+      this.pool = this.initializeCluster();
     }
   }
   this.valueForUndefined = this.raw('DEFAULT');
@@ -151,23 +161,28 @@ assign(Client.prototype, {
 
   initializeDriver() {
     try {
-      this.driver = this._driver()
+      this.driver = this._driver();
     } catch (e) {
-      helpers.exit(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
+      helpers.exit(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`);
     }
   },
 
   Pool: Pool2,
 
+  initializeCluster(config) {
+    
+
+  },
+
   initializePool(config) {
-    if (this.pool) this.destroy()
-    this.pool = new this.Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
-    this.pool.on('error', function(err) {
+    let pool = new this.Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
+    pool.on('error', function(err) {
       helpers.error(`Pool2 - ${err}`)
-    })
-    this.pool.on('warn', function(msg) {
+    });
+    pool.on('warn', function(msg) {
       helpers.warn(`Pool2 - ${msg}`)
-    })
+    });
+    return pool;
   },
 
   poolDefaults(poolConfig) {
@@ -203,14 +218,14 @@ assign(Client.prototype, {
   },
 
   // Acquire a connection from the pool.
-  acquireConnection() {
+  acquireConnection(capability) {
     const client = this
     let request = null
     const completed = new Promise(function(resolver, rejecter) {
       if (!client.pool) {
         return rejecter(new Error('There is no pool defined on the current client'))
       }
-      request = client.pool.acquire(function(err, connection) {
+      request = client.pool.acquire(capability, function(err, connection) {
         if (err) return rejecter(err)
         client.emit("acquireConnection", domain.active, connection);
         debug('acquired connection from pool: %s', connection.__knexUid)
@@ -242,25 +257,25 @@ assign(Client.prototype, {
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
-    const client = this
+    const client = this;
     const promise = new Promise(function(resolver) {
       if (!client.pool) return resolver()
       client.pool.end(function() {
-        client.pool = undefined
-        resolver()
+        client.pool = undefined;
+        resolver();
       })
     })
     // Allow either a callback or promise interface for destruction.
     if (typeof callback === 'function') {
-      promise.asCallback(callback)
+      promise.asCallback(callback);
     } else {
-      return promise
+      return promise;
     }
   },
 
   // Return the database being used by this client.
   database() {
-    return this.connectionSettings.database
+    return this.connectionSettings.database;
   },
 
   toString() {
