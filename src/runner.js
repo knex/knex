@@ -185,7 +185,8 @@ assign(Runner.prototype, {
     const acquireConnectionTimeout = runner.client.config.acquireConnectionTimeout || 60000;
     return Promise.try(() => {
       return runner.connection || new Promise((resolver, rejecter) => {
-        const acquireConnection = runner.client.acquireConnection();
+        const capability = runner.builder.readOnly ? "read" : "write";
+        const acquireConnection = runner.client.acquireConnection(capability);
 
         acquireConnection.completed
           .timeout(acquireConnectionTimeout)
