@@ -27,7 +27,7 @@ assign(Client_WebSQL.prototype, {
   // Get a raw connection from the database, returning a promise with the connection object.
   acquireConnection() {
     const client = this;
-    return new Promise(function(resolve, reject) {
+    const completed = new Promise(function(resolve, reject) {
       try {
         /*jslint browser: true*/
         const db = openDatabase(
@@ -41,6 +41,13 @@ assign(Client_WebSQL.prototype, {
         reject(e);
       }
     });
+    const abort = function(reason) {
+      // Do nothing, websql has no pool
+    }
+    return {
+      completed: completed,
+      abort: abort
+    };
   },
 
   // Used to explicitly close a connection, called internally by the pool
