@@ -345,4 +345,14 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
   }
 };
 
+Client_Oracledb.prototype._stream = function(connection, obj, stream, options) {
+  obj.sql = this.positionBindings(obj.sql);
+  return new Promise(function (resolver, rejecter) {
+    stream.on('error', rejecter);
+    stream.on('end', resolver);
+    const queryStream = connection.queryStream(obj.sql, obj.bindings || [])
+    queryStream.pipe(stream)
+  });
+};
+
 module.exports = Client_Oracledb;
