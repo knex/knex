@@ -22,7 +22,7 @@ module.exports = function(knex) {
 
   if (knex.client.driverName === 'oracledb') {
     tape('it streams properly in oracle', function(t) {
-      const writableStream = new stream.Writable({
+      var writableStream = new stream.Writable({
         objectMode: true
       });
       w._write = function(chunk, _, next) {
@@ -34,5 +34,4 @@ module.exports = function(knex) {
       });
     })
   }
-
 }
