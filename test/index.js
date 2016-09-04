@@ -29,6 +29,7 @@ describe('Query Building Tests', function() {
   require('./unit/schema/oracle')
   require('./unit/schema/mssql')
   require('./unit/schema/oracledb')
+  require('./unit/knexfile-test')
 })
 
 describe('Integration Tests', function() {
