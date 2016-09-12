@@ -161,9 +161,6 @@ assign(Client.prototype, {
   initializePool(config) {
     if (this.pool) this.destroy()
     this.pool = new this.Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
-    this.pool.on('error', function(err) {
-      helpers.error(`Pool2 - ${err}`)
-    })
     this.pool.on('warn', function(msg) {
       helpers.warn(`Pool2 - ${msg}`)
     })
