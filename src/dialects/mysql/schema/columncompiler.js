@@ -68,9 +68,17 @@ assign(ColumnCompiler_MySQL.prototype, {
     return `enum('${allowed.join("', '")}')`
   },
 
-  datetime: 'datetime',
+  time: function(fsp) {
+    return fsp ? 'time(' + this._num(fsp) + ')' : 'time'
+  },
 
-  timestamp: 'timestamp',
+  datetime: function(fsp) {
+    return fsp ? 'datetime(' + this._num(fsp) + ')' : 'datetime'
+  },
+
+  timestamp: function(fsp) {
+    return fsp ? 'timestamp(' + this._num(fsp) + ')' : 'timestamp'
+  },
 
   bit(length) {
     return length ? `bit(${this._num(length)})` : 'bit'

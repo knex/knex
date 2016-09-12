@@ -416,6 +416,15 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table `users` add `foo` datetime');
   });
 
+  it('uses the datetime column fractional seconds part', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.dateTime('foo', 6);
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` datetime(6)');
+  });
+
   it('test adding time', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.time('foo');
@@ -425,6 +434,15 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table `users` add `foo` time');
   });
 
+  it('uses the time column fractional seconds part', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.time('foo', 6);
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` time(6)');
+  });
+
   it('test adding time stamp', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.timestamp('foo');
@@ -432,6 +450,15 @@ describe(dialect + " SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table `users` add `foo` timestamp');
+  });
+
+  it('uses the timestamp column fractional seconds part', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.timestamp('foo', 6);
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` timestamp(6)');
   });
 
   it('test adding time stamps', function() {
