@@ -2172,89 +2172,6 @@ describe("QueryBuilder", function() {
   //   });
   // });
 
-  // it("insert with multiple array of empty values", function() {
-  //   testsql(qb().into('users').insert([{}, {}]), {
-  //     mysql: {
-  //       sql: 'insert into `users` () values (), ()',
-  //       bindings: []
-  //     },
-  //     sqlite3: {
-  //       // This does not work
-  //       // Not possible to insert multiple default value rows at once with sqlite
-  //       sql: 'insert into "users" () select  union all select ',
-  //       bindings: []
-  //     },
-  //     oracle: {
-  //       // This does not work
-  //       // It's not possible to insert default value without knowing at least one column
-  //       sql: "begin execute immediate 'insert into \"users\" (\"undefined\") values (default); execute immediate 'insert into \"users\" (\"undefined\") values (default);end;",
-  //       bindings: []
-  //     },
-  //     oracledb: {
-  //       // This does not work
-  //       // It's not possible to insert default value without knowing at least one column
-  //       sql: "begin execute immediate 'insert into \"users\" (\"undefined\") values (default); execute immediate 'insert into \"users\" (\"undefined\") values (default);end;",
-  //       bindings: []
-  //     },
-  //     postgres: {
-  //       // This does not work
-  //       // Postgres does not support inserting multiple default values without specifying a column
-  //       sql: "insert into \"users\" (\"undefined\") values (default), (default)",
-  //       bindings: []
-  //     },
-  //     mssql: {
-  //       sql: 'insert into [users] () values (), ()',
-  //       bindings: []
-  //     },
-  //     postgres: {
-  //       sql: 'insert into "users" default values',
-  //       bindings: []
-  //     }
-  //   });
-  // });
-
-  // it("insert with multiple empty values with returning", function() {
-  //   testsql(qb().into('users').insert([null, null], 'id'), {
-  //     mysql: {
-  //       sql: 'insert into `users` () values (), ()',
-  //       bindings: []
-  //     },
-  //     sqlite3: {
-  //       // It's not possible to insert multiple default value rows at once with sqlite
-  //       sql: 'insert into "users" () select  union all select ',
-  //       bindings: []
-  //     },
-  //     oracle: {
-  //       sql: "begin execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
-  //       bindings: function (bindings) {
-  //         expect(bindings.length).to.equal(2);
-  //         expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
-  //         expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
-  //       }
-  //     },
-  //     oracledb: {
-  //       sql: "begin execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"users\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
-  //       bindings: function (bindings) {
-  //         expect(bindings.length).to.equal(2);
-  //         expect(bindings[0].toString()).to.equal('[object ReturningHelper:id]');
-  //         expect(bindings[1].toString()).to.equal('[object ReturningHelper:id]');
-  //       }
-  //     },
-  //     postgres: {
-  //       sql: 'insert into "users" ("id") values (default), (default) returning "id"',
-  //       bindings: []
-  //     },
-  //     mssql: {
-  //       sql: 'insert into [users] () values (), ()',
-  //       bindings: []
-  //     },
-  //     postgres: {
-  //       sql: 'not checked',
-  //       bindings: []
-  //     }
-  //   });
-  // });
-
   it("update method", function() {
     testsql(qb().update({'email': 'foo', 'name': 'bar'}).table('users').where('id', '=', 1), {
       mysql: {
@@ -2509,24 +2426,6 @@ describe("QueryBuilder", function() {
     });
   });
 
-  // it("sql server limits and offsets", function() {
-  //   $builder = $this.getSqlServerBuilder();
-  //   $builder.select('*').from('users').limit(10).toSQL();
-  //   expect(chain.sql).to.equal('select top (10) * from [users]');
-
-  //   $builder = $this.getSqlServerBuilder();
-  //   $builder.select('*').from('users').offset(10).toSQL();
-  //   expect(chain.sql).to.equal('select * from (select *, row_number() over (order by (select 0)) as row_num from [users]) as temp_table where row_num >= 11');
-
-  //   $builder = $this.getSqlServerBuilder();
-  //   $builder.select('*').from('users').offset(10).limit(10).toSQL();
-  //   expect(chain.sql).to.equal('select * from (select *, row_number() over (order by (select 0)) as row_num from [users]) as temp_table where row_num between 11 and 20');
-
-  //   $builder = $this.getSqlServerBuilder();
-  //   $builder.select('*').from('users').offset(10).limit(10).orderBy('email', 'desc').toSQL();
-  //   expect(chain.sql).to.equal('select * from (select *, row_number() over (order by [email] desc) as row_num from [users]) as temp_table where row_num between 11 and 20');
-  // });
-
   it("providing null or false as second parameter builds correctly", function() {
     testsql(qb().select('*').from('users').where('foo', null), {
       mysql: 'select * from `users` where `foo` is null',
@@ -2601,18 +2500,6 @@ describe("QueryBuilder", function() {
       }
     });
   });
-
-  // it("SQLServer lock", function() {
-  //   $builder = $this.getSqlServerBuilder();
-  //   $builder.select('*').from('foo').where('bar', '=', 'baz').lock().toSQL();
-  //   expect(chain.sql).to.equal('select * from [foo] with(rowlock,updlock,holdlock) where [bar] = ?');
-  //   expect(chain.bindings).to.eql(array('baz'));
-
-  //   $builder = $this.getSqlServerBuilder();
-  //   $builder.select('*').from('foo').where('bar', '=', 'baz').lock(false).toSQL();
-  //   expect(chain.sql).to.equal('select * from [foo] with(rowlock,holdlock) where [bar] = ?');
-  //   expect(chain.bindings).to.eql(array('baz'));
-  // });
 
   it('allows insert values of sub-select, #121', function() {
     testsql(qb().table('entries').insert({
