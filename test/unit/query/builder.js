@@ -2785,7 +2785,7 @@ describe("QueryBuilder", function() {
       //   bindings: [1]
       // },
       postgres: {
-        sql: 'insert into "recipients" (recipient_id, email) select \'user\', \'user@foo.com\' where not exists (select 1 from "recipients" where "recipient_id" = ?)',
+        sql: 'insert into "recipients" (recipient_id, email) (select \'user\', \'user@foo.com\' where not exists (select 1 from "recipients" where "recipient_id" = ?))',
         bindings: [1]
       }
     });
@@ -3550,20 +3550,11 @@ describe("QueryBuilder", function() {
   })
 
   it("query \\\\? escaping", function() {
-    function createBuilder() {
-      return qb().select('*').from('users').where('id', '=', 1)
-        .whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey\\?']);
-    }
-
-    // need to test each platform separately because QueryBuilder.clone does only shallow copy
-    // and cached raw query strings are not re-evaluated when query builder client is changed
-    testquery(createBuilder(), {
-      mysql: 'select * from `users` where `id` = 1 and `jsonColumn` ? \'jsonKey?\''
-    });
-
-    testquery(createBuilder(), {
+    testquery(qb().select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey\\?']), {
+      mysql: 'select * from `users` where `id` = 1 and `jsonColumn` ? \'jsonKey?\'',
       postgres: 'select * from "users" where "id" = 1 and "jsonColumn" ? \'jsonKey?\''
     });
+
   });
 
 });

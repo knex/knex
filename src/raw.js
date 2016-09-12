@@ -6,15 +6,21 @@ import * as helpers from './helpers';
 import { EventEmitter } from 'events';
 
 import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
+import Formatter from './formatter'
 
 import uuid from 'node-uuid';
 
-function Raw(client) {
+const fakeClient = {
+  formatter() {
+    return new Formatter(fakeClient)
+  }
+}
+
+function Raw(client = fakeClient) {
   this.client = client
 
   this.sql = ''
   this.bindings = []
-  this._cached = undefined
 
   // Todo: Deprecate
   this._wrappedBefore = undefined
@@ -26,7 +32,6 @@ inherits(Raw, EventEmitter)
 assign(Raw.prototype, {
 
   set(sql, bindings) {
-    this._cached = undefined
     this.sql = sql
     this.bindings = (
       (isObject(bindings) && !bindings.toSQL) ||
@@ -37,7 +42,7 @@ assign(Raw.prototype, {
   },
 
   timeout(ms, {cancel} = {}) {
-    if(isNumber(ms) && ms > 0) {
+    if (isNumber(ms) && ms > 0) {
       this._timeout = ms;
       if (cancel) {
         this.client.assertCanCancelQuery();
@@ -49,7 +54,6 @@ assign(Raw.prototype, {
 
   // Wraps the current sql with `before` and `after`.
   wrap(before, after) {
-    this._cached = undefined
     this._wrappedBefore = before
     this._wrappedAfter = after
     return this
@@ -62,53 +66,56 @@ assign(Raw.prototype, {
 
   // Returns the raw sql for the query.
   toSQL(method, tz) {
-    if (this._cached) return this._cached
+    let obj
+    const formatter = this.client.formatter()
+
     if (Array.isArray(this.bindings)) {
-      this._cached = replaceRawArrBindings(this)
+      obj = replaceRawArrBindings(this, formatter)
     } else if (this.bindings && isPlainObject(this.bindings)) {
-      this._cached = replaceKeyBindings(this)
+      obj = replaceKeyBindings(this, formatter)
     } else {
-      this._cached = {
+      obj = {
         method: 'raw',
         sql: this.sql,
-        bindings: isUndefined(this.bindings) ? void 0 : [this.bindings]
+        bindings: isUndefined(this.bindings) ? [] : [this.bindings]
       }
     }
+
     if (this._wrappedBefore) {
-      this._cached.sql = this._wrappedBefore + this._cached.sql
+      obj.sql = this._wrappedBefore + obj.sql
     }
     if (this._wrappedAfter) {
-      this._cached.sql = this._cached.sql + this._wrappedAfter
+      obj.sql = obj.sql + this._wrappedAfter
     }
-    this._cached.options = reduce(this._options, assign, {})
-    if(this._timeout) {
-      this._cached.timeout = this._timeout;
+
+    obj.options = reduce(this._options, assign, {})
+
+    if (this._timeout) {
+      obj.timeout = this._timeout;
       if (this._cancelOnTimeout) {
-        this._cached.cancelOnTimeout = this._cancelOnTimeout;
+        obj.cancelOnTimeout = this._cancelOnTimeout;
       }
     }
-    if(this.client && this.client.prepBindings) {
-      this._cached.bindings = this._cached.bindings || [];
-      if(helpers.containsUndefined(this._cached.bindings)) {
-        throw new Error(
-          `Undefined binding(s) detected when compiling RAW query: ` +
-          this._cached.sql
-        );
-      }
-      this._cached.bindings = this.client.prepBindings(this._cached.bindings, tz);
+
+    obj.bindings = obj.bindings || [];
+    if (helpers.containsUndefined(obj.bindings)) {
+      throw new Error(
+        `Undefined binding(s) detected when compiling RAW query: ` +
+        obj.sql
+      );
     }
-    this._cached.__knexQueryUid = uuid.v4();
-    return this._cached
+
+    obj.__knexQueryUid = uuid.v4();
+
+    return obj
   }
 
 })
 
-function replaceRawArrBindings(raw) {
+function replaceRawArrBindings(raw, formatter) {
   const expectedBindings = raw.bindings.length
   const values = raw.bindings
-  const { client } = raw
   let index = 0;
-  let bindings = []
 
   const sql = raw.sql.replace(/\\?\?\??/g, function(match) {
     if (match === '\\?') {
@@ -117,17 +124,10 @@ function replaceRawArrBindings(raw) {
 
     const value = values[index++]
 
-    if (value && typeof value.toSQL === 'function') {
-      const bindingSQL = value.toSQL()
-      bindings = bindings.concat(bindingSQL.bindings)
-      return bindingSQL.sql
-    }
-
     if (match === '??') {
-      return client.formatter().columnize(value)
+      return formatter.columnize(value)
     }
-    bindings.push(value)
-    return '?'
+    return formatter.parameter(value)
   })
 
   if (expectedBindings !== index) {
@@ -137,14 +137,14 @@ function replaceRawArrBindings(raw) {
   return {
     method: 'raw',
     sql,
-    bindings
+    bindings: formatter.bindings
   }
 }
 
-function replaceKeyBindings(raw) {
+function replaceKeyBindings(raw, formatter) {
   const values = raw.bindings
-  const { client } = raw
-  let { sql } = raw, bindings = []
+
+  let { sql } = raw
 
   const regex = /\\?(:\w+:?)/g
   sql = raw.sql.replace(regex, function(full, part) {
@@ -155,26 +155,22 @@ function replaceKeyBindings(raw) {
     const key = full.trim();
     const isIdentifier = key[key.length - 1] === ':'
     const value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
+
     if (value === undefined) {
-      bindings.push(value);
+      formatter.bindings.push(value);
       return full;
     }
-    if (value && typeof value.toSQL === 'function') {
-      const bindingSQL = value.toSQL()
-      bindings = bindings.concat(bindingSQL.bindings)
-      return full.replace(key, bindingSQL.sql)
-    }
+
     if (isIdentifier) {
-      return full.replace(key, client.formatter().columnize(value))
+      return full.replace(key, formatter.columnize(value))
     }
-    bindings.push(value)
-    return full.replace(key, '?')
+    return full.replace(key, formatter.parameter(value))
   })
 
   return {
     method: 'raw',
     sql,
-    bindings
+    bindings: formatter.bindings
   }
 }
 

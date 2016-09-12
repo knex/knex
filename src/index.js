@@ -45,12 +45,9 @@ Knex.VERSION = require('../package.json').version
 
 // Run a "raw" query, though we can't do anything with it other than put
 // it in a query statement.
-Knex.raw = (sql, bindings) => new Raw({}).set(sql, bindings)
-
-// Create a new "knex" instance with the appropriate configured client.
-Knex.initialize = function(config) {
-  warn('knex.initialize is deprecated, pass your config object directly to the knex module')
-  return new Knex(config)
+Knex.raw = (sql, bindings) => {
+  warn('global Knex.raw is deprecated, use knex.raw (chain off an initialized knex object)')
+  return new Raw().set(sql, bindings)
 }
 
 // Bluebird
