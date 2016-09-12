@@ -3123,6 +3123,7 @@ describe("QueryBuilder", function() {
 
   it("escapes single quotes properly", function() {
     testquery(qb().select('*').from('users').where('last_name', 'O\'Brien'), {
+      mysql: 'select * from `users` where `last_name` = \'O\\\'Brien\'',
       postgres: 'select * from "users" where "last_name" = \'O\'\'Brien\''
     });
   });
@@ -3135,7 +3136,7 @@ describe("QueryBuilder", function() {
 
   it('escapes backslashes properly', function() {
     testquery(qb().select('*').from('files').where('path', 'C:\\test.txt'), {
-      postgres: 'select * from "files" where "path" = \'C:\\\\test.txt\''
+      postgres: 'select * from "files" where "path" = E\'C:\\\\test.txt\''
     });
   });
 
@@ -3437,7 +3438,7 @@ describe("QueryBuilder", function() {
   })
 
   it("query \\\\? escaping", function() {
-    testquery(qb().select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey\\?']), {
+    testquery(qb().select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey?']), {
       mysql: 'select * from `users` where `id` = 1 and `jsonColumn` ? \'jsonKey?\'',
       postgres: 'select * from "users" where "id" = 1 and "jsonColumn" ? \'jsonKey?\''
     });
