@@ -1,6 +1,6 @@
 
 import Raw from './raw';
-import { warn } from './helpers';
+import { error, warn } from './helpers';
 import Client from './client';
 
 import makeClient from './util/make-client';
@@ -29,7 +29,15 @@ export default function Knex(config) {
     Dialect = makeClient(config.client)
   } else {
     const clientName = config.client || config.dialect
-    Dialect = makeClient(require(`./dialects/${aliases[clientName] || clientName}/index.js`))
+    try {
+      Dialect = makeClient(require(`./dialects/${aliases[clientName] || clientName}/index.js`))
+    } catch (reason) {
+      error(`Client or dialect provided, "${clientName}", ` +
+        `to the knex configuration was not found. ` +
+        `Did you make a typo? ` +
+        `Example dialects: "maria", "pg", etc.`)
+      throw reason;
+    }
   }
   if (typeof config.connection === 'string') {
     config = assign({}, config, {connection: parseConnection(config.connection).connection})
