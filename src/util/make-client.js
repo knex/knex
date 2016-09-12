@@ -16,11 +16,6 @@ export default function makeClient(ParentClient) {
   }
   inherits(Client, ParentClient)
 
-  function Formatter(client) {
-    Formatter.super_.call(this, client)
-  }
-  inherits(Formatter, ParentClient.prototype.Formatter)
-
   function QueryBuilder(client) {
     QueryBuilder.super_.call(this, client)
   }
@@ -57,7 +52,6 @@ export default function makeClient(ParentClient) {
   inherits(ColumnCompiler, ParentClient.prototype.ColumnCompiler)
 
   assign(Client.prototype, {
-    Formatter,
     QueryBuilder,
     SchemaBuilder,
     SchemaCompiler,

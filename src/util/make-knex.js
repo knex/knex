@@ -94,7 +94,7 @@ export default function makeKnex(client) {
         )
         return VERSION
       }
-    }
+    },
 
     schema: {
       get() {

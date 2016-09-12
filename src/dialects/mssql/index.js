@@ -4,7 +4,6 @@
 import { assign, map, flatten, values } from 'lodash'
 import inherits from 'inherits';
 
-import Formatter from './formatter';
 import Client from '../../client';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
@@ -43,8 +42,6 @@ assign(Client_MSSQL.prototype, {
   },
 
   Transaction,
-
-  Formatter,
 
   QueryCompiler,
 

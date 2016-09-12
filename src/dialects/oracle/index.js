@@ -4,11 +4,11 @@
 import { assign, map, flatten, values } from 'lodash'
 
 import inherits from 'inherits';
-import Formatter from './formatter';
 import Client from '../../client';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 import {bufferToString} from '../../query/string';
+import Formatter from '../../formatter';
 
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
@@ -22,7 +22,7 @@ import { ReturningHelper } from './utils';
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
 // 'lib/query/compiler', respectively.
-function Client_Oracle(config) {
+export default function Client_Oracle(config) {
   Client.call(this, config)
 }
 inherits(Client_Oracle, Client)
@@ -39,7 +39,9 @@ assign(Client_Oracle.prototype, {
 
   Transaction,
 
-  Formatter,
+  formatter() {
+    return new Oracle_Formatter(this)
+  },
 
   QueryCompiler,
 
@@ -171,4 +173,21 @@ assign(Client_Oracle.prototype, {
 
 })
 
-export default Client_Oracle
+export class Oracle_Formatter extends Formatter {
+
+  alias(first, second) {
+    return first + ' ' + second;
+  }
+
+  parameter(value, notSetValue) {
+    // Returning helper uses always ROWID as string
+    if (value instanceof ReturningHelper && this.client.driver) {
+      value = new this.client.driver.OutParam(this.client.driver.OCCISTRING)
+    }
+    else if (typeof value === 'boolean') {
+      value = value ? 1 : 0
+    }
+    return super.parameter(value, notSetValue)
+  }
+
+}

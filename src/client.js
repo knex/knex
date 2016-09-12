@@ -47,10 +47,8 @@ inherits(Client, EventEmitter)
 
 assign(Client.prototype, {
 
-  Formatter,
-
   formatter() {
-    return new this.Formatter(this)
+    return new Formatter(this)
   },
 
   QueryBuilder,
