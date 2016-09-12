@@ -84,8 +84,3 @@ test('raw bindings are optional, #853', function(t) {
 
 })
 
-test('raw with no client should still be able to run', function(t) {
-  t.plan(1)
-
-  t.equal(new Raw().set('select * from ?', [raw('table')]).toSQL().sql, 'select * from table')
-});

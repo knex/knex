@@ -8,13 +8,8 @@ export default function(Target) {
     let data = this.toSQL(this._method, tz);
     if (!isArray(data)) data = [data];
     return map(data, (statement) => {
-      return this._formatQuery(statement.sql, statement.bindings, tz);
+      return this.client._formatQuery(statement.sql, statement.bindings, tz);
     }).join(';\n');
-  };
-
-  // Format the query as sql, prepping bindings as necessary.
-  Target.prototype._formatQuery = function(sql, bindings, tz) {
-    return this.client.SqlString.format(sql, bindings, tz);
   };
 
   // Create a new instance of the `Runner`, passing in the current object.
@@ -28,7 +23,6 @@ export default function(Target) {
   Target.prototype.options = function(opts) {
     this._options = this._options || [];
     this._options.push(clone(opts) || {});
-    this._cached = undefined
     return this;
   };
 
