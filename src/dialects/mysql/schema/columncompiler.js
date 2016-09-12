@@ -9,7 +9,8 @@ import { assign } from 'lodash'
 
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment', 'collate']
+  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment', 'collate',
+    'charset']
 }
 inherits(ColumnCompiler_MySQL, ColumnCompiler);
 
@@ -112,6 +113,10 @@ assign(ColumnCompiler_MySQL.prototype, {
 
   collate(collation) {
     return collation && `collate '${collation}'`
+  },
+
+  charset(charset) {
+    return charset && `character set '${charset}'`
   }
 
 })

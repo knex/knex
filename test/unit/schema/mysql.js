@@ -30,6 +30,16 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255) collate \'utf8_unicode_ci\')');
   });
 
+  it('basic create table with column charset', function() {
+    tableSql = client.schemaBuilder().createTable('users', function (table) {
+      table.increments('id');
+      table.string('email').charset('ascii');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255) character set \'ascii\')');
+  });
+
   it('test basic create table with charset and collate', function() {
     tableSql = client.schemaBuilder().createTable('users', function(table) {
       table.increments('id');
