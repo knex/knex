@@ -87,7 +87,6 @@
     "web": "https://github.com/tgriesser"
   },
   "browser": {
-    "bluebird/js/main/promise": "./lib/util/bluebird.js",
     "./lib/migrate/index.js": "./lib/util/noop.js",
     "./lib/bin/cli.js": "./lib/util/noop.js",
     "./lib/seed/index.js": "./lib/util/noop.js",
