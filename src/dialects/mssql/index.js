@@ -41,7 +41,9 @@ assign(Client_MSSQL.prototype, {
     return require('mssql');
   },
 
-  Transaction,
+  transaction() {
+    return new Transaction(this, ...arguments)
+  },
 
   QueryCompiler,
 

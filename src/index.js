@@ -11,11 +11,11 @@ import { assign } from 'lodash'
 
 // The client names we'll allow in the `{name: lib}` pairing.
 const aliases = {
-  'mariadb'   : 'maria',
-  'mariasql'  : 'maria',
-  'pg'        : 'postgres',
-  'postgresql': 'postgres',
-  'sqlite'    : 'sqlite3'
+  'mariadb' : 'maria',
+  'mariasql' : 'maria',
+  'pg' : 'postgres',
+  'postgresql' : 'postgres',
+  'sqlite' : 'sqlite3'
 };
 
 export default function Knex(config) {

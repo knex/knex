@@ -52,7 +52,6 @@ export default function makeClient(ParentClient) {
   inherits(ColumnCompiler, ParentClient.prototype.ColumnCompiler)
 
   assign(Client.prototype, {
-    QueryBuilder,
     SchemaBuilder,
     SchemaCompiler,
     TableBuilder,

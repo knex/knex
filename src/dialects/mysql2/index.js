@@ -53,7 +53,9 @@ assign(Client_MySQL2.prototype, {
   // The "dialect", for reference elsewhere.
   driverName: 'mysql2',
 
-  Transaction,
+  transaction() {
+    return new Transaction(this, ...arguments)
+  },
 
   _driver() {
     return require('mysql2')

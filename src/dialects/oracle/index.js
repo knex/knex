@@ -37,7 +37,9 @@ assign(Client_Oracle.prototype, {
     return require('oracle')
   },
 
-  Transaction,
+  transaction() {
+    return new Transaction(this, ...arguments)
+  },
 
   formatter() {
     return new Oracle_Formatter(this)

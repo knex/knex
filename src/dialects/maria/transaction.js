@@ -1,18 +1,10 @@
-
-import inherits from 'inherits';
 import Debug from 'debug';
-import { assign } from 'lodash'
 import Transaction from '../../transaction';
 import * as helpers from '../../helpers';
 
 const debug = Debug('knex:tx');
 
-function Transaction_Maria() {
-  Transaction.apply(this, arguments)
-}
-inherits(Transaction_Maria, Transaction)
-
-assign(Transaction_Maria.prototype, {
+export default class Transaction_Maria extends Transaction {
 
   query(conn, sql, status, value) {
     const t = this
@@ -39,6 +31,4 @@ assign(Transaction_Maria.prototype, {
     return q;
   }
 
-})
-
-export default Transaction_Maria
+}

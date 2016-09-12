@@ -20,7 +20,9 @@ assign(Client_MariaSQL.prototype, {
 
   driverName: 'mariasql',
 
-  Transaction,
+  transaction() {
+    return new Transaction(this, ...arguments)
+  },
 
   _driver() {
     return require('mariasql')

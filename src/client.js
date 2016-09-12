@@ -51,71 +51,48 @@ assign(Client.prototype, {
     return new Formatter(this)
   },
 
-  QueryBuilder,
-
   queryBuilder() {
-    return new this.QueryBuilder(this)
+    return new QueryBuilder(this)
   },
-
-  QueryCompiler,
 
   queryCompiler(builder) {
-    return new this.QueryCompiler(this, builder)
+    return new QueryCompiler(this, builder)
   },
-
-  SchemaBuilder,
 
   schemaBuilder() {
-    return new this.SchemaBuilder(this)
+    return new SchemaBuilder(this)
   },
-
-  SchemaCompiler,
 
   schemaCompiler(builder) {
-    return new this.SchemaCompiler(this, builder)
+    return new SchemaCompiler(this, builder)
   },
-
-  TableBuilder,
 
   tableBuilder(type, tableName, fn) {
-    return new this.TableBuilder(this, type, tableName, fn)
+    return new TableBuilder(this, type, tableName, fn)
   },
-
-  TableCompiler,
 
   tableCompiler(tableBuilder) {
-    return new this.TableCompiler(this, tableBuilder)
+    return new TableCompiler(this, tableBuilder)
   },
-
-  ColumnBuilder,
 
   columnBuilder(tableBuilder, type, args) {
-    return new this.ColumnBuilder(this, tableBuilder, type, args)
+    return new ColumnBuilder(this, tableBuilder, type, args)
   },
-
-  ColumnCompiler,
 
   columnCompiler(tableBuilder, columnBuilder) {
-    return new this.ColumnCompiler(this, tableBuilder, columnBuilder)
+    return new ColumnCompiler(this, tableBuilder, columnBuilder)
   },
-
-  Runner,
 
   runner(connection) {
-    return new this.Runner(this, connection)
+    return new Runner(this, connection)
   },
-
-  Transaction,
 
   transaction(container, config, outerTx) {
-    return new this.Transaction(this, container, config, outerTx)
+    return new Transaction(this, container, config, outerTx)
   },
 
-  Raw,
-
   raw() {
-    const raw = new this.Raw(this)
-    return raw.set.apply(raw, arguments)
+    return new Raw(this).set(...arguments)
   },
 
   _formatQuery(sql, bindings, timeZone) {

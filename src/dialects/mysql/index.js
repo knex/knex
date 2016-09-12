@@ -42,7 +42,9 @@ assign(Client_MySQL.prototype, {
 
   ColumnCompiler,
 
-  Transaction,
+  transaction() {
+    return new Transaction(this, ...arguments)
+  },
 
   _escapeBinding: makeEscape(),
 
