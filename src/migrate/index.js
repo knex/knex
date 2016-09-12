@@ -3,11 +3,11 @@
 import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
-import Promise from '../promise';
+import Promise from 'bluebird';
 import * as helpers from '../helpers';
 import {
-  assign, bind, chain, difference, each, filter, get, includes, isBoolean,
-  isEmpty, isUndefined, map, template
+  assign, bind, difference, each, filter, get, includes, isBoolean,
+  isEmpty, isUndefined, map, max, template
 } from 'lodash'
 import inherits from 'inherits';
 
@@ -78,7 +78,7 @@ export default class Migrator {
     this.config = this.setConfig(config);
     return this._listCompleted(config)
       .then((completed) => {
-        const val = chain(completed).map(value => value.split('_')[0]).max().value();
+        const val = max(map(completed, value => value.split('_')[0]));
         return (isUndefined(val) ? 'none' : val);
       })
   }

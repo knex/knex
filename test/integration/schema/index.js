@@ -480,7 +480,7 @@ module.exports = function(knex) {
         .then(function() {
             return tr.schema.createTable(tableName, function(table) {
               table.string('test').primary(constraintName);
-              table.string('test2');
+              table.string('test2').notNullable();
             })
           })
           .then(function() {

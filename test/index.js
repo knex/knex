@@ -11,7 +11,7 @@ var chai = global.chai = require("chai");
 chai.use(require("sinon-chai"));
 chai.should();
 
-var Promise   = global.testPromise = require('../lib/promise');
+var Promise   = global.testPromise = require('bluebird');
 global.expect = chai.expect;
 global.d      = new Date();
 

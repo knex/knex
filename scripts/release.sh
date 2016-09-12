@@ -22,9 +22,8 @@ fi
 next_ref="v$next_version"
 
 git add -u
-npm run build
-git add -A build
 
+npm run build
 npm test
 
 update_version 'package.json' $next_version

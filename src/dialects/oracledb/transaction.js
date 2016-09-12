@@ -1,5 +1,5 @@
 const inherits = require('inherits');
-const Promise = require('../../promise');
+const Promise = require('bluebird');
 const Transaction = require('../../transaction');
 const debugTx = require('debug')('knex:tx');
 import {assign} from

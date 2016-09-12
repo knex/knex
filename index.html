@@ -32,7 +32,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#changelog">
-      Knex.js <span class="version">(0.11.7)</span>
+      Knex.js <span class="version">(0.11.10)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
@@ -185,7 +185,7 @@
       <li>– <a href="#Schema-specificType">specificType</a></li>
       <li>– <a href="#Schema-index">index</a></li>
       <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
-      <li>– <a href="#Schema-foreign">Foreign</a></li>
+      <li>– <a href="#Schema-foreign">foreign</a></li>
       <li>– <a href="#Schema-dropForeign">dropForeign</a></li>
       <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
       <li>– <a href="#Schema-dropPrimary">dropPrimary</a></li>
@@ -337,7 +337,7 @@
     </p>
 
 
-    <h2>Latest Release: 0.11.7 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
+    <h2>Latest Release: 0.11.10 - <span class="small"><a href="#changelog">Change Log</a></span></h2>
 
     <p>
       Current Develop &mdash;
@@ -1776,7 +1776,7 @@ knex.transaction(function(trx) {
   </p>
 
     <h2 id="Schema">Schema Builder</h2>
-    These methods return <a href="http://knexjs.org/#Interfaces-Promises">promises</a>.
+    The <tt>knex.schema</tt> is <b>a getter function</b>, which returns a stateful object containing the query. Therefore, be sure to obtain a new instance of <tt>knex.schema</tt> for every new query. The methods below return <a href="http://knexjs.org/#Interfaces-Promises">promises</a>.
 
     <p id="Schema-withSchema">
       <b class="header">withSchema</b><code>knex.schema.withSchema([schemaName])</code>
@@ -2352,11 +2352,22 @@ knex.raw('select * from users where id in (?)', [[1, 2, 3]])
 </pre>
 
   <p>
-    To prevent replacement of <tt>?</tt> one can use escape sequence <tt>\\?</tt>.
+    To prevent replacement of <tt>?</tt> one can use the escape sequence <tt>\\?</tt>.
   </p>
 
 <pre class="display">
 knex.select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey'])
+</pre>
+
+ <p>
+    To prevent replacement of named bindings one can use the escape sequence <tt>\\:</tt>.
+  </p>
+
+<pre class="display">
+knex.select('*').from('users').whereRaw(":property: = '\\:value' OR \\:property: = :value", {
+  property: 'name',
+  value: 'Bob'
+})
 </pre>
 
     <h3 id="Raw-Expressions">Raw Expressions:</h3>
@@ -3098,7 +3109,7 @@ $ npm test
 
     <p>
       <b class="header">My tests are failing because slow DB connection and short test timeouts! How to extend test timeouts?</b><br />
-      Sometimes, e.g. when running CI on travis, test suite's default timeout of 5 seconds might be too short. In such cases an alternative test timeout 
+      Sometimes, e.g. when running CI on travis, test suite's default timeout of 5 seconds might be too short. In such cases an alternative test timeout
       value in milliseconds can be specified using the <tt>KNEX_TEST_TIMEOUT</tt> environment variable.
     </p>
 <pre>
@@ -3115,11 +3126,31 @@ $ npm test
     <h2 id="changelog">Change Log</h2>
 
     <p>
+      <b class="header">0.11.9</b> &mdash; <small><i>21 Jul, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Reverted knex client breaking change (commit b74cd69e906), fixes #1587</li>
+    </ul>
+
+    <p>
+      <b class="header">0.11.8</b> &mdash; <small><i>21 Jul, 2016</i></small><br />
+    </p>
+
+    <ul>
+      <li>Oracledb dialect #990</li>
+      <li>Documentation fix #1532 </li>
+      <li>Allow named bindings to be escaped. #1576</li>
+      <li>Several bugs with MS SQL schema creation and installing from gihub fix #1577</li>
+      <li>Fix incorrect escaping of backslashes in SqlString.escape #1545</li>
+    </ul>
+
+    <p>
       <b class="header">0.11.7</b> &mdash; <small><i>19 Jun, 2016</i></small><br />
     </p>
 
     <ul>
-      <li>Add missing dependency. #1516
+      <li>Add missing dependency. #1516</li>
     </ul>
 
     <p>

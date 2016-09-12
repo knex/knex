@@ -4,7 +4,7 @@
 import { assign, map, extend } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
-import Promise from '../../promise';
+import Promise from 'bluebird';
 import * as utils from './utils';
 
 import QueryCompiler from './query/compiler';

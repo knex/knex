@@ -5,7 +5,7 @@
 import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
-import Promise from '../../../promise';
+import Promise from 'bluebird';
 
 import { assign } from 'lodash'
 
@@ -104,7 +104,7 @@ assign(TableCompiler_MSSQL.prototype, {
   },
 
   primary (columns, constraintName) {
-    constraintName = constraintName ? this.formatter.wrap(constraintName) : this._indexCommand('primary', this.tableNameRaw, columns);
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
     if (!this.forCreate) {
       this.pushQuery(`ALTER TABLE ${this.tableName()} ADD CONSTRAINT ${constraintName} PRIMARY KEY (${this.formatter.columnize(columns)})`);
     } else {
@@ -134,8 +134,9 @@ assign(TableCompiler_MSSQL.prototype, {
   },
 
   // Compile a drop primary key command.
-  dropPrimary () {
-    this.pushQuery(`ALTER TABLE ${this.tableName()} DROP PRIMARY KEY`);
+  dropPrimary (constraintName) {
+    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
+    this.pushQuery(`ALTER TABLE ${this.tableName()} DROP CONSTRAINT ${constraintName}`);
   },
 
   // Compile a drop unique key command.

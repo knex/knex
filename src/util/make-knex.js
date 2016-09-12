@@ -22,7 +22,7 @@ export default function makeKnex(client) {
 
   assign(knex, {
 
-    Promise: require('../promise'),
+    Promise: require('bluebird'),
 
     // A new query builder instance.
     queryBuilder() {
