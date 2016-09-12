@@ -72,6 +72,9 @@ assign(Builder.prototype, {
   // ------
 
   with(alias, statement, bindings) {
+    if(typeof alias !== 'string') {
+      throw new Error('with() first argument must be a string');
+    }
     if (typeof statement === 'function') {
       return this.withWrapped(alias, statement);
     }
@@ -79,8 +82,7 @@ assign(Builder.prototype, {
     if (statement instanceof Raw && arguments.length >= 2) {
       return this.withRaw(alias, statement, bindings);
     }
-
-    return;
+    throw new Error('with() second argument must be a function or a raw');
   },
 
   // Adds a raw `with` clause to the query.
