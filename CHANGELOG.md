@@ -5,6 +5,9 @@
 - Upgrade to Babel 6, #1617
 - Reference Bluebird module directly, remove deprecated .exec method, #1618
 - Remove documentation files from main repo
+- Fix broken behavior on WebSQL build, #1638
+- Oracle id sequence now handles manual inserts, #906
+- Cleanup PG escaping, fix #1602, #1548
 
 # 0.11.10 - 9 Aug, 2016
 

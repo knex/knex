@@ -5,7 +5,6 @@ import { assign, map, extend } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
-import * as utils from './utils';
 
 import QueryCompiler from './query/compiler';
 import ColumnCompiler from './schema/columncompiler';
@@ -47,13 +46,6 @@ assign(Client_PG.prototype, {
     const matched = value.match(/(.*?)(\[[0-9]\])/);
     if (matched) return this.wrapIdentifier(matched[1]) + matched[2];
     return `"${value.replace(/"/g, '""')}"`;
-  },
-
-  // Prep the bindings as needed by PostgreSQL.
-  prepBindings(bindings, tz) {
-    return map(bindings, (binding) => {
-      return utils.prepareValue(binding, tz, this.valueForUndefined)
-    });
   },
 
   // Get a raw connection, called by the `pool` whenever a new
