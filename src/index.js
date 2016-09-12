@@ -40,8 +40,15 @@ export default function Knex(config) {
 // Expose Client on the main Knex namespace.
 Knex.Client = Client
 
-// Expose Knex version on the main Knex namespace.
-Knex.VERSION = require('../package.json').version
+Object.defineProperty(Knex, 'VERSION', {
+  get() {
+    warn(
+      'Knex.VERSION is deprecated, you can get the module version' +
+      "by running require('knex/package').version"
+    )
+    return '0.12.0'
+  }
+})
 
 // Run a "raw" query, though we can't do anything with it other than put
 // it in a query statement.
