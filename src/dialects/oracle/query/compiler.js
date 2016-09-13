@@ -164,10 +164,11 @@ assign(QueryCompiler_Oracle.prototype, {
   },
 
   select() {
+    let query = this.with();
     const statements = map(components, (component) => {
       return this[component]();
     });
-    const query = compact(statements).join(' ');
+    query += compact(statements).join(' ');
     return this._surroundQueryWithLimitAndOffset(query);
   },
 

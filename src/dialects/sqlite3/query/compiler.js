@@ -22,7 +22,7 @@ assign(QueryCompiler_SQLite3.prototype, {
   // then join them all together with select unions to complete the queries.
   insert() {
     const insertValues = this.single.insert || []
-    let sql = `insert into ${this.tableName} `
+    let sql = this.with() + `insert into ${this.tableName} `
 
     if (Array.isArray(insertValues)) {
       if (insertValues.length === 0) {

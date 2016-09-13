@@ -76,10 +76,13 @@ assign(QueryCompiler.prototype, {
   // the component compilers, trimming out the empties, and returning a
   // generated query string.
   select() {
+    let sql = this.with();
+
     const statements = components.map(component =>
       this[component](this)
     );
-    return compact(statements).join(' ');
+    sql += compact(statements).join(' ');
+    return sql;
   },
 
   pluck() {
@@ -93,8 +96,7 @@ assign(QueryCompiler.prototype, {
   // inserts using a single query statement.
   insert() {
     const insertValues = this.single.insert || [];
-    let sql = `insert into ${this.tableName} `;
-
+    let sql = this.with() + `insert into ${this.tableName} `;
     if (Array.isArray(insertValues)) {
       if (insertValues.length === 0) {
         return ''
@@ -131,7 +133,7 @@ assign(QueryCompiler.prototype, {
     const { tableName } = this;
     const updateData = this._prepUpdate(this.single.update);
     const wheres = this.where();
-    return `update ${tableName}` +
+    return this.with() + `update ${tableName}` +
       ' set ' + updateData.join(', ') +
       (wheres ? ` ${wheres}` : '');
   },
@@ -306,7 +308,7 @@ assign(QueryCompiler.prototype, {
     // Make sure tableName is processed by the formatter first.
     const { tableName } = this;
     const wheres = this.where();
-    return `delete from ${tableName}` +
+    return this.with() + `delete from ${tableName}` +
       (wheres ? ` ${wheres}` : '');
   },
 
@@ -432,6 +434,34 @@ assign(QueryCompiler.prototype, {
   wrap(str) {
     if (str.charAt(0) !== '(') return `(${str})`;
     return str;
+  },
+
+
+  // Compiles all `with` statements on the query.
+  with() {
+    if(!this.grouped.with || !this.grouped.with.length)  {
+      return '';
+    }
+    const withs = this.grouped.with;
+    if (!withs) return;
+    const sql = [];
+    let i = -1;
+    while (++i < withs.length) {
+      const stmt = withs[i]
+      const val = this[stmt.type](stmt)
+      sql.push(val);
+    }
+    return 'with ' + sql.join(', ') + ' ';
+  },
+
+  withWrapped(statement) {
+    const val = this.formatter.rawOrFn(statement.value);
+    return val && this.formatter.columnize(statement.alias) + ' as (' + val + ')' || '';
+  },
+
+  withRaw(statement) {
+    return this.formatter.columnize(statement.alias) + ' as (' +
+      this.formatter.unwrapRaw(statement.value) + ')';
   },
 
   // Determines whether to add a "not" prefix to the where clause.
