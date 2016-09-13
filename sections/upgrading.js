@@ -8,21 +8,15 @@ export default [
   {
     type: "heading",
     size: "md",
-    content: "Upgrading 0.10 -> 0.11",
-    href: "Upgrading-from0.10"
+    content: "Upgrading 0.11 -> 0.12",
+    href: "Upgrading-from0.11"
   },
   {
     type: "text",
-    content: "Knex treats `orWhere` with multiple keyed arguments differently. See Changelog."
-  },
-  {
-    type: "heading",
-    size: "md",
-    content: "Upgrading 0.9 -> 0.10",
-    href: "Upgrading-from0.9"
-  },
-  {
-    type: "text",
-    content: "Knex will no longer interpret `undefined` values as `null` for `insert` or `update`. See changelog for links to relevant issues."
+    content: [
+      "[generic-pool](https://github.com/coopernurse/node-pool) is swapped out for Pool2 for pooling management",
+      "Documentation pull requests should be sent to [knex/documentation](https://github.com/knex/documentation)",
+      "PG escaping should now be handled the same as it is by the driver"
+    ]
   }
 ]

@@ -21,8 +21,7 @@ export default class Sidebar extends Component {
           Upgrading
         </a>
         <ul className="toc_section">
-          <li>– <a href="#Upgrading-from0.10">0.10.x -> 0.11</a></li>
-          <li>– <a href="#Upgrading-from0.9">0.9.x -> 0.10</a></li>
+          <li>– <a href="#Upgrading-from0.11">0.11.x -> 0.12</a></li>
         </ul>
 
         <a className="toc_title" href="#Installation">
@@ -49,6 +48,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-as">as</a></li>
           <li>– <a href="#Builder-column">column</a></li>
           <li>– <a href="#Builder-from">from</a></li>
+          <li>– <a href="#Builder-with">with</a></li>
           <li>– <a href="#Builder-withSchema">withSchema</a></li>
 
           <li><b><a href="#Builder-wheres">Where Methods:</a></b></li>
