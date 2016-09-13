@@ -52,8 +52,8 @@ export default class Container extends Component {
 
   componentDidMount() {
     const next = localStorage.knexLanguage
-    if (next !== 'mysql') {
-      this.changeLanguage(localStorage.knexLanguage)
+    if (next && next !== 'mysql') {
+      this.changeLanguage(next)
     }
   }
 
