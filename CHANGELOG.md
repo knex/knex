@@ -8,9 +8,9 @@
 - Fix broken behavior on WebSQL build, #1638
 - Oracle id sequence now handles manual inserts, #906
 - Cleanup PG escaping, fix #1602, #1548
-- Pool2 error event is left unhandled, allowing the server to crash and restart rather than end up in a bad state
 - Added [`with`](#Builder-with) to builder for [common table expressions](https://www.postgresql.org/docs/9.4/static/queries-with.html), #1599
 - Fix #1619, pluck with explicit column names
+- Switching back to [generic-pool](https://github.com/coopernurse/node-pool) for pooling resource management
 
 # 0.11.10 - 9 Aug, 2016
 
