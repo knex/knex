@@ -8,7 +8,6 @@ import ip from 'ip'
 import path from 'path'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
-
 import Documentation from '../components/Documentation'
 
 const DOC_URL = 'https://rawgit.com/tgriesser/knex/master/CHANGELOG.md'
@@ -18,6 +17,9 @@ https.get(DOC_URL, (res) => {
   res.setEncoding('utf8')
   res.on('data', chunk => changelog += chunk)
   res.on('end', () => {
+
+    fs.writeFileSync(path.join(__dirname, '../build/CHANGELOG.md'), changelog)
+
     const development = process.env.NODE_ENV !== 'production'
     const port = process.env.PORT || 4000
 
@@ -46,7 +48,6 @@ https.get(DOC_URL, (res) => {
       app.get('/', function renderApp(req, res) {
         res.header('Access-Control-Allow-Origin', target)
         res.header('Access-Control-Allow-Headers', 'X-Requested-With')
-
         let html
         try {
           html = ReactDOMServer.renderToString(

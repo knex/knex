@@ -38,7 +38,7 @@ export default {
     extensions: ['', '.js', '.jsx'],
   },
 
-  devtool: options.debug ? 'source-map' : null,
+  devtool: 'source-map',
 
   entry: {
     bundle: options.debug ? devEntryBundle : entryFile,

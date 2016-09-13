@@ -34,7 +34,7 @@ function catchExec(name, err) {
 }
 
 function runCmd(name, cmd, options) {
-  exec(cmd, options)
+  return exec(cmd, options)
     .progress(childProcess => {
       listen(childProcess, name)
       processMap[name] = childProcess
@@ -58,6 +58,7 @@ const env = {
   NODE_ENV: 'production'
 }
 
-runCmd('webpack', `webpack --config scripts/webpack.config.js`, { env })
-
-runCmd('docs-server', 'babel-node scripts/server.js', { env })
+runCmd('docs-server', 'babel-node scripts/server.js', { env }).then(() => {
+  console.log('Building webpack for production'.cyan)
+  return runCmd('webpack', `webpack -p --config scripts/webpack.config.js`, { env })
+})

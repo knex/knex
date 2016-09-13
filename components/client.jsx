@@ -4,7 +4,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import Documentation from './Documentation'
 
-const changelog = require('knex/CHANGELOG.md')
+const changelog = require('../build/CHANGELOG.md')
 
 ReactDOM.render(
   <Documentation changelog={changelog} />,

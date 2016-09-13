@@ -3,3 +3,4 @@ npm-debug.log
 .idea
 .DS_Store
 .vagrant
+build/CHANGELOG.md
