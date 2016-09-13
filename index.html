@@ -2139,7 +2139,6 @@ knex.table('users')
       <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</code>
       but works for existing columns.
     <pre class="display">
-    knex.table('users');
     table.integer('user_id').unsigned();
     table.foreign('user_id').references('Items.user_id_in_items');
     </pre>
