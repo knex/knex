@@ -3558,7 +3558,7 @@ describe("QueryBuilder", function() {
         },
       postgres: {
           sql: 'with "withClause" as (with "withSubClause" as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from "withSubClause") select * from "withClause" where "id" = ?',
-          bindings: ['1', '20', '10']
+          bindings: [1, 20, 10]
         },
       oracledb: {
           sql: 'with "withClause" as (with "withSubClause" as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from "withSubClause") select * from "withClause" where "id" = ?',
