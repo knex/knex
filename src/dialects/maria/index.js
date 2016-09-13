@@ -3,8 +3,7 @@
 // -------
 import inherits from 'inherits';
 import Client_MySQL from '../mysql';
-import Promise from '../../promise';
-import SqlString from '../../query/string';
+import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 import Transaction from './transaction';
 
@@ -78,9 +77,9 @@ assign(Client_MariaSQL.prototype, {
   // and any other necessary prep work.
   _query(connection, obj) {
     const tz = this.connectionSettings.timezone || 'local';
-    return new Promise(function(resolver, rejecter) {
+    return new Promise((resolver, rejecter) => {
       if (!obj.sql) return resolver()
-      const sql = SqlString.format(obj.sql, obj.bindings, tz);
+      const sql = this._formatQuery(obj.sql, obj.bindings, tz)
       connection.query(sql, function (err, rows) {
         if (err) {
           return rejecter(err);

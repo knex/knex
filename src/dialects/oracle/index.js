@@ -6,9 +6,9 @@ import { assign, map, flatten, values } from 'lodash'
 import inherits from 'inherits';
 import Formatter from './formatter';
 import Client from '../../client';
-import Promise from '../../promise';
+import Promise from 'bluebird';
 import * as helpers from '../../helpers';
-import SqlString from '../../query/string';
+import {bufferToString} from '../../query/string';
 
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
@@ -61,7 +61,7 @@ assign(Client_Oracle.prototype, {
         return value ? 1 : 0
       }
       else if (Buffer.isBuffer(value)) {
-        return SqlString.bufferToString(value)
+        return bufferToString(value)
       }
       return value
     })

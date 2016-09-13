@@ -11,7 +11,7 @@ var chai = global.chai = require("chai");
 chai.use(require("sinon-chai"));
 chai.should();
 
-var Promise   = global.testPromise = require('../lib/promise');
+var Promise   = global.testPromise = require('bluebird');
 global.expect = chai.expect;
 global.d      = new Date();
 
@@ -33,6 +33,5 @@ describe('Query Building Tests', function() {
 
 describe('Integration Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-
   require('./integration')
 })

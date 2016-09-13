@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 
 import Client from '../../client';
-import Promise from '../../promise';
+import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 
 import Transaction from './transaction';
@@ -14,6 +14,7 @@ import TableCompiler from './schema/tablecompiler';
 import ColumnCompiler from './schema/columncompiler';
 
 import { assign, map } from 'lodash'
+import { makeEscape } from '../../query/string'
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
@@ -42,6 +43,8 @@ assign(Client_MySQL.prototype, {
   ColumnCompiler,
 
   Transaction,
+
+  _escapeBinding: makeEscape(),
 
   wrapIdentifier(value) {
     return (value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*')

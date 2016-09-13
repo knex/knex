@@ -4,13 +4,13 @@
 import { assign, map, extend } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
-import Promise from '../../promise';
-import * as utils from './utils';
+import Promise from 'bluebird';
 
 import QueryCompiler from './query/compiler';
 import ColumnCompiler from './schema/columncompiler';
 import TableCompiler from './schema/tablecompiler';
 import SchemaCompiler from './schema/compiler';
+import {makeEscape} from '../../query/string'
 
 function Client_PG(config) {
   Client.apply(this, arguments)
@@ -42,18 +42,48 @@ assign(Client_PG.prototype, {
     return require('pg')
   },
 
+  _escapeBinding: makeEscape({
+    escapeArray(val, esc) {
+      return '{' + val.map(esc).join(',') + '}'
+    },
+    escapeString(str) {
+      let hasBackslash = false
+      let escaped = '\''
+      for (let i = 0; i < str.length; i++) {
+        const c = str[i]
+        if (c === '\'') {
+          escaped += c + c
+        } else if (c === '\\') {
+          escaped += c + c
+          hasBackslash = true
+        } else {
+          escaped += c
+        }
+      }
+      escaped += '\''
+      if (hasBackslash === true) {
+        escaped = 'E' + escaped
+      }
+      return escaped
+    },
+    escapeObject(val, timezone, prepareValue, seen = []) {
+      if (val && typeof val.toPostgres === 'function') {
+        seen = seen || [];
+        if (seen.indexOf(val) !== -1) {
+          throw new Error(`circular reference detected while preparing "${val}" for query`);
+        }
+        seen.push(val);
+        return prepareValue(val.toPostgres(prepareValue), seen);
+      }
+      return JSON.stringify(val);
+    }
+  }),
+
   wrapIdentifier(value) {
     if (value === '*') return value;
     const matched = value.match(/(.*?)(\[[0-9]\])/);
     if (matched) return this.wrapIdentifier(matched[1]) + matched[2];
     return `"${value.replace(/"/g, '""')}"`;
-  },
-
-  // Prep the bindings as needed by PostgreSQL.
-  prepBindings(bindings, tz) {
-    return map(bindings, (binding) => {
-      return utils.prepareValue(binding, tz, this.valueForUndefined)
-    });
   },
 
   // Get a raw connection, called by the `pool` whenever a new

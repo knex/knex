@@ -69,8 +69,6 @@ assign(QueryCompiler.prototype, {
       );
     }
 
-    defaults.bindings = this.client.prepBindings(defaults.bindings, tz);
-
     return assign(defaults, val);
   },
 

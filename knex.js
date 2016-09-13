@@ -1,6 +1,6 @@
 // Knex.js
 // --------------
-//     (c) 2014 Tim Griesser
+//     (c) 2013-present Tim Griesser
 //     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
 //     http://knexjs.org

@@ -9,7 +9,7 @@ const ColumnCompiler = require('./schema/columncompiler');
 const Formatter = require('./formatter');
 const BlobHelper = require('./utils').BlobHelper;
 const ReturningHelper = require('./utils').ReturningHelper;
-const Promise = require('../../promise');
+const Promise = require('bluebird');
 const stream = require('stream');
 const helpers = require('../../helpers');
 const Transaction = require('./transaction');
@@ -59,7 +59,8 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
     client.driver.getConnection({
       user: client.connectionSettings.user,
       password: client.connectionSettings.password,
-      connectString: client.connectionSettings.host + '/' + client.connectionSettings.database
+      connectString: client.connectionSettings.connectString ||
+        (client.connectionSettings.host + '/' + client.connectionSettings.database)
     }, function(err, connection) {
       if (err)
         return rejecter(err);
