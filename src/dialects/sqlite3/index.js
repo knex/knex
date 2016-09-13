@@ -72,7 +72,11 @@ assign(Client_SQLite3.prototype, {
   // Used to explicitly close a connection, called internally by the pool when
   // a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.close()
+    connection.close((err) => {
+      if (err) {
+        this.emit('error', err)
+      }
+    })
   },
 
   // Runs the query on the specified connection, providing the bindings and any
@@ -146,7 +150,7 @@ assign(Client_SQLite3.prototype, {
 
   poolDefaults(config) {
     return assign(Client.prototype.poolDefaults.call(this, config), {
-      min: 1,
+      min: 0,
       max: 1
     })
   }

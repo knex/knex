@@ -199,7 +199,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
 // Used to explicitly close a connection, called internally by the pool
 // when a connection times out or the pool is shutdown.
 Client_Oracledb.prototype.destroyRawConnection = function(connection) {
-  connection.release();
+  connection.release()
 };
 
 // Runs the query on the specified connection, providing the bindings

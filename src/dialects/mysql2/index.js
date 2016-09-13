@@ -61,6 +61,10 @@ assign(Client_MySQL2.prototype, {
     return require('mysql2')
   },
 
+  validateConnection() {
+    return true
+  },
+
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {

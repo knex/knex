@@ -16,7 +16,7 @@ import TableCompiler from './schema/tablecompiler';
 import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 
-import {Pool} from 'generic-pool';
+import { Pool } from 'generic-pool';
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
@@ -25,6 +25,12 @@ import { assign, uniqueId, cloneDeep } from 'lodash'
 
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
+const debugPool = require('debug')('knex:pool')
+
+let id = 0
+function clientId() {
+  return `client${id++}`
+}
 
 // The base client provides the general structure
 // for a dialect specific client object.
@@ -34,6 +40,7 @@ function Client(config = {}) {
   if (this.driverName && config.connection) {
     this.initializeDriver()
     if (!config.pool || (config.pool && config.pool.max !== 0)) {
+      this.__cid = clientId()
       this.initializePool(config)
     }
   }
@@ -152,11 +159,15 @@ assign(Client.prototype, {
   },
 
   poolDefaults(poolConfig) {
+    const name = this.dialect + ':' + this.driverName + ':' + this.__cid
     return {
       min: 2,
       max: 10,
+      name: name,
       log(str, level) {
-        // console.log(`${level}:  ${str}`)
+        if (level === 'info') {
+          debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
+        }
       },
       create: (callback) => {
         this.acquireRawConnection()
@@ -170,12 +181,13 @@ assign(Client.prototype, {
       },
       destroy: (connection) => {
         if (poolConfig.beforeDestroy) {
-          poolConfig.beforeDestroy(connection, () => {
-            if (connection !== undefined) {
-              this.destroyRawConnection(connection)
-            }
-          })
-        } else if (connection !== void 0) {
+          helpers.warn(`
+            beforeDestroy is deprecated, please open an issue if you use this
+            to discuss alternative apis
+          `)
+          poolConfig.beforeDestroy(connection, function() {})
+        }
+        if (connection !== void 0) {
           this.destroyRawConnection(connection)
         }
       },

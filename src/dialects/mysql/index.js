@@ -78,18 +78,19 @@ assign(Client_MySQL.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
+    connection.removeAllListeners()
     connection.end()
   },
 
   validateConnection(connection) {
-    return connection.state === 'connected'
+    return connection.state === 'connected' || connection.state === 'authenticated'
   },
 
   // Grab a connection, run the query via the MySQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream, options) {
     options = options || {}
-    return new Promise(function(resolver, rejecter) {
+    return new Promise((resolver, rejecter) => {
       stream.on('error', rejecter)
       stream.on('end', resolver)
       connection.query(obj.sql, obj.bindings).stream(options).pipe(stream)

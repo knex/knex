@@ -36,7 +36,6 @@ assign(Client_MariaSQL.prototype, {
     return new Promise(function(resolver, rejecter) {
       connection
         .on('ready', function() {
-          connection.removeAllListeners('end');
           connection.removeAllListeners('error');
           resolver(connection);
         })
@@ -44,9 +43,14 @@ assign(Client_MariaSQL.prototype, {
     })
   },
 
+  validateConnection(connection) {
+    return connection.connected === true
+  },
+
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
+    connection.removeAllListeners()
     connection.end()
   },
 

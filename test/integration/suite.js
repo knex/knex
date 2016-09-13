@@ -10,6 +10,10 @@ module.exports = function(knex) {
     this.dialect    = knex.client.dialect;
     this.driverName = knex.client.driverName;
 
+    after(function() {
+      return knex.destroy()
+    })
+
     require('./schema')(knex);
     require('./migrate')(knex);
     require('./seed')(knex);
