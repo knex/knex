@@ -1324,8 +1324,21 @@ export default [
     type: "method",
     method: "modify",
     example: ".modify(fn, *arguments)",
-    description: "Allows encapsulating and re-using query snippets and common behaviors as functions. The callback function should receive the query builder as its first argument, followed by the rest of the (optional) parameters passed to modify. `var withUserName = function(queryBuilder, foreignKey) { queryBuilder .leftJoin('users', foreignKey, 'users.id') .select('users.user_name'); }; knex .table('articles') .select('title', 'body') .modify(withUserName, 'articles_user.id') .then(function(article) { console.log(article.user_name); });`",
-    children: [    ]
+    description: "Allows encapsulating and re-using query snippets and common behaviors as functions. The callback function should receive the query builder as its first argument, followed by the rest of the (optional) parameters passed to modify.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          var withUserName = function(queryBuilder, foreignKey) {
+            queryBuilder.leftJoin('users', foreignKey, 'users.id').select('users.user_name');
+          };
+          knex.table('articles').select('title', 'body').modify(withUserName, 'articles_user.id').then(function(article) {
+            console.log(article.user_name);
+          });
+        `
+      }
+    ]
   },
   {
     type: "method",
