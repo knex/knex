@@ -79,28 +79,28 @@ module.exports = function(knex) {
   }
 
   function makeTestSQL(builder) {
-    const tester = testSqlTester.bind(null, builder)
+    var tester = testSqlTester.bind(null, builder)
     return function(handler) {
       handler(tester)
       return this
     }
   }
 
-  const originalRaw = client.raw
-  const originalQueryBuilder = client.queryBuilder
-  const originalSchemaBuilder = client.schemaBuilder
+  var originalRaw = client.raw
+  var originalQueryBuilder = client.queryBuilder
+  var originalSchemaBuilder = client.schemaBuilder
   client.raw = function() {
-    const raw = originalRaw.apply(this, arguments)
+    var raw = originalRaw.apply(this, arguments)
     raw.testSql = makeTestSQL(raw)
     return raw
   }
   client.queryBuilder = function() {
-    const qb = originalQueryBuilder.apply(this, arguments)
+    var qb = originalQueryBuilder.apply(this, arguments)
     qb.testSql = makeTestSQL(qb)
     return qb
   }
   client.schemaBuilder = function() {
-    const sb = originalSchemaBuilder.apply(this, arguments)
+    var sb = originalSchemaBuilder.apply(this, arguments)
     sb.testSql = makeTestSQL(sb)
     return sb
   }
