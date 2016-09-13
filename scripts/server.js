@@ -1,5 +1,6 @@
 /* eslint no-console: 0 */
 import 'colors'
+import https from 'https'
 import fs from 'fs'
 import express from 'express'
 import httpProxy from 'http-proxy'
@@ -10,59 +11,69 @@ import ReactDOMServer from 'react-dom/server'
 
 import Documentation from '../components/Documentation'
 
-const changelog = fs.readFileSync(path.resolve('node_modules/knex/CHANGELOG.md'), 'utf-8')
-const development = process.env.NODE_ENV !== 'production'
-const port = process.env.PORT || 4000
+const DOC_URL = 'https://rawgit.com/tgriesser/knex/master/CHANGELOG.md'
 
-const app = express()
+https.get(DOC_URL, (res) => {
+  let changelog = ''
+  res.setEncoding('utf8')
+  res.on('data', chunk => changelog += chunk)
+  res.on('end', () => {
+    const development = process.env.NODE_ENV !== 'production'
+    const port = process.env.PORT || 4000
 
-if (development) {
-  const proxy = httpProxy.createProxyServer()
-  const webpackPort = process.env.WEBPACK_DEV_PORT
+    const app = express()
 
-  const target = `http://${ip.address()}:${webpackPort}`
+    if (development) {
+      const proxy = httpProxy.createProxyServer()
+      const webpackPort = process.env.WEBPACK_DEV_PORT
 
-  app.get('/assets/*', (req, res) => {
-    proxy.web(req, res, { target })
-  })
-  app.get('/build/*', (req, res) => {
-    proxy.web(req, res, { target })
-  })
+      const target = `http://${ip.address()}:${webpackPort}`
 
-  proxy.on('error', e => {
-    console.log('Could not connect to webpack proxy'.red)
-    console.log(e.toString().red)
-  })
+      app.get('/assets/*', (req, res) => {
+        proxy.web(req, res, { target })
+      })
+      app.get('/build/*', (req, res) => {
+        proxy.web(req, res, { target })
+      })
 
-  console.log('Prop data generation finished:'.green)
+      proxy.on('error', e => {
+        console.log('Could not connect to webpack proxy'.red)
+        console.log(e.toString().red)
+      })
 
-  app.get('/', function renderApp(req, res) {
-    res.header('Access-Control-Allow-Origin', target)
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With')
+      console.log('Prop data generation finished:'.green)
 
-    let html
-    try {
-      html = ReactDOMServer.renderToString(
-        <Documentation changelog={changelog} />
+      app.get('/', function renderApp(req, res) {
+        res.header('Access-Control-Allow-Origin', target)
+        res.header('Access-Control-Allow-Headers', 'X-Requested-With')
+
+        let html
+        try {
+          html = ReactDOMServer.renderToString(
+            <Documentation changelog={changelog} />
+          )
+        } catch (e) {
+          html = `<pre>${e.stack.replace(new RegExp(__dirname, 'g'), '~')}</pre>`
+        }
+        res.send(renderContent(html))
+      })
+
+      app.listen(port, () => {
+        console.log(`Server started at:`)
+        console.log(`- http://localhost:${port}`)
+        console.log(`- http://${ip.address()}:${port}`)
+      })
+
+    } else {
+      fs.writeFileSync(
+        path.join(__dirname, '../index.html'),
+        renderContent(ReactDOMServer.renderToString(<Documentation changelog={changelog} />))
       )
-    } catch (e) {
-      html = `<pre>${e.stack.replace(new RegExp(__dirname, 'g'), '~')}</pre>`
     }
-    res.send(renderContent(html))
-  })
 
-  app.listen(port, () => {
-    console.log(`Server started at:`)
-    console.log(`- http://localhost:${port}`)
-    console.log(`- http://${ip.address()}:${port}`)
   })
+})
 
-} else {
-  fs.writeFileSync(
-    path.join(__dirname, '../index.html'),
-    renderContent(ReactDOMServer.renderToString(<Documentation changelog={changelog} />))
-  )
-}
 
 function renderContent(content) {
   return `<!DOCTYPE HTML>

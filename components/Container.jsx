@@ -19,23 +19,21 @@ export default class Container extends Component {
 
   constructor() {
     super()
-    let language = 'mysql'
-    try {
-      language = localStorage.knexLanguage
-    } catch (e) { } // eslint-disable-line
-    this.state = { language }
+    this.state = {
+      language: 'mysql'
+    }
   }
 
   registry = new Set();
 
   changeLanguage = (language) => {
+    try {
+      localStorage.knexLanguage = language
+    } catch (e) {} // eslint-disable-line
     this.setState({ language }, this.initKnex)
   };
 
   initKnex() {
-    try {
-      localStorage.knexLanguage = this.state.language
-    } catch (e) {} // eslint-disable-line
     this.knex = Knex({client: this.state.language})
     this.knex.client.transacting = true
     this.trx = this.knex
@@ -49,6 +47,13 @@ export default class Container extends Component {
     this.initKnex()
     if (typeof window !== 'undefined') {
       window.Knex = Knex
+    }
+  }
+
+  componentDidMount() {
+    const next = localStorage.knexLanguage
+    if (next !== 'mysql') {
+      this.changeLanguage(localStorage.knexLanguage)
     }
   }
 

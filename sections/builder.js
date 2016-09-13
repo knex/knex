@@ -108,6 +108,28 @@ export default [
   },
   {
     type: "method",
+    method: "with",
+    example: ".with(alias, function|raw)",
+    description: "Add a \"with\" clause to the query. \"With\" clauses are supported by PostgreSQL, Oracle, SQLite3 and MSSQL.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.with('with_alias', knex.raw('select * from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.with('with_alias', (qb) => {
+            qb.select('*').from('books').where('author', 'Test')
+          }).select('*').from('with_alias')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "withSchema",
     example: ".withSchema([schemaName])",
     description: "Specifies the schema to be used as prefix of table name.",

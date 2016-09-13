@@ -96,6 +96,7 @@ export default class Changelog extends Component {
 
     return (
       <div id="changelog">
+        <h2>Change Log</h2>
         {log.map(this.renderLog)}
       </div>
     )

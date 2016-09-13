@@ -121,6 +121,7 @@ export default class Sidebar extends Component {
           Schema Builder
         </a>
         <ul className="toc_section">
+          <li>– <a href="#Schema-with">with</a></li>
           <li>– <a href="#Schema-withSchema">withSchema</a></li>
           <li>– <a href="#Schema-createTable">createTable</a></li>
           <li>– <a href="#Schema-createTableIfNotExists">createTableIfNotExists</a></li>

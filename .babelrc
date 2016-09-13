@@ -2,6 +2,7 @@
   "presets": ["es2015-loose", "stage-1", "react"],
   "plugins": [
     "transform-runtime",
-    "lodash"
+    "lodash",
+    "add-module-exports"
   ]
 }
