@@ -39,13 +39,21 @@ export default function Knex(config) {
 // Expose Client on the main Knex namespace.
 Knex.Client = Client
 
-Object.defineProperty(Knex, 'VERSION', {
-  get() {
-    warn(
-      'Knex.VERSION is deprecated, you can get the module version' +
-      "by running require('knex/package').version"
-    )
-    return '0.12.0'
+Object.defineProperties(Knex, {
+  VERSION: {
+    get() {
+      warn(
+        'Knex.VERSION is deprecated, you can get the module version' +
+        "by running require('knex/package').version"
+      )
+      return '0.12.0'
+    }
+  },
+  Promise: {
+    get() {
+      warn(`Knex.Promise is deprecated, either require bluebird or use the global Promise`)
+      return require('bluebird')
+    }
   }
 })
 
@@ -55,9 +63,6 @@ Knex.raw = (sql, bindings) => {
   warn('global Knex.raw is deprecated, use knex.raw (chain off an initialized knex object)')
   return new Raw().set(sql, bindings)
 }
-
-// Bluebird
-Knex.Promise = require('bluebird')
 
 // Doing this ensures Browserify works. Still need to figure out
 // the best way to do some of this.
