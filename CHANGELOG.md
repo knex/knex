@@ -1,5 +1,5 @@
 
-# 0.12.0 - (unreleased)
+# 0.12.0 - 13 Sep, 2016
 
 - Remove build / built files, #1616
 - Upgrade to Babel 6, #1617
@@ -9,6 +9,7 @@
 - Oracle id sequence now handles manual inserts, #906
 - Cleanup PG escaping, fix #1602, #1548
 - Pool2 error event is left unhandled, allowing the server to crash and restart rather than end up in a bad state
+- Added [`with`](#Builder-with) to builder for [common table expressions](https://www.postgresql.org/docs/9.4/static/queries-with.html), #1599
 
 # 0.11.10 - 9 Aug, 2016
 
