@@ -8,6 +8,7 @@ import Client from '../../client';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 
+import Formatter from '../../formatter'
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
 import SchemaCompiler from './schema/compiler';
@@ -41,17 +42,29 @@ assign(Client_MSSQL.prototype, {
     return require('mssql');
   },
 
+  formatter() {
+    return new MSSQL_Formatter(this)
+  },
+
   transaction() {
     return new Transaction(this, ...arguments)
   },
 
-  QueryCompiler,
+  queryCompiler() {
+    return new QueryCompiler(this, ...arguments)
+  },
 
-  SchemaCompiler,
+  schemaCompiler() {
+    return new SchemaCompiler(this, ...arguments)
+  },
 
-  TableCompiler,
+  tableCompiler() {
+    return new TableCompiler(this, ...arguments)
+  },
 
-  ColumnCompiler,
+  columnCompiler() {
+    return new ColumnCompiler(this, ...arguments)
+  },
 
   wrapIdentifier(value) {
     return (value !== '*' ? `[${value.replace(/\[/g, '\[')}]` : '*')
@@ -200,6 +213,21 @@ assign(Client_MSSQL.prototype, {
   }
 
 })
+
+class MSSQL_Formatter extends Formatter {
+
+  // Accepts a string or array of columns to wrap as appropriate.
+  columnizeWithPrefix(prefix, target) {
+    const columns = typeof target === 'string' ? [target] : target
+    let str = '', i = -1;
+    while (++i < columns.length) {
+      if (i > 0) str += ', '
+      str += prefix + this.wrap(columns[i])
+    }
+    return str
+  }
+
+}
 
 // MSSQL Specific error handler
 function connectionErrorHandler(client, connection, err) {

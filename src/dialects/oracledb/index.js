@@ -11,10 +11,8 @@ const Promise = require('bluebird');
 const stream = require('stream');
 const helpers = require('../../helpers');
 const Transaction = require('./transaction');
+const Client_Oracle = require('../oracle');
 const Oracle_Formatter = require('../oracle/formatter');
-const BlobHelper = require('./utils').BlobHelper;
-
-import Client_Oracle, {Oracle_Formatter} from '../oracle';
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
@@ -33,12 +31,18 @@ Client_Oracledb.prototype._driver = function() {
   return oracledb;
 };
 
-Client_Oracledb.prototype.QueryCompiler = QueryCompiler;
-Client_Oracledb.prototype.ColumnCompiler = ColumnCompiler;
+Client_Oracledb.prototype.queryCompiler = function() {
+  return new QueryCompiler(this, ...arguments)
+}
+Client_Oracledb.prototype.columnCompiler = function() {
+  return new ColumnCompiler(this, ...arguments)
+}
 Client_Oracledb.prototype.formatter = function() {
   return new Oracledb_Formatter(this)
-};
-Client_Oracledb.prototype.Transaction = Transaction;
+}
+Client_Oracledb.prototype.transaction = function() {
+  return new Transaction(this, ...arguments)
+}
 
 Client_Oracledb.prototype.prepBindings = function(bindings) {
   const self = this;

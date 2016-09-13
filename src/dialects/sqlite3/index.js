@@ -37,13 +37,21 @@ assign(Client_SQLite3.prototype, {
     return require('sqlite3')
   },
 
-  SchemaCompiler,
+  schemaCompiler() {
+    return new SchemaCompiler(this, ...arguments)
+  },
 
-  QueryCompiler,
+  queryCompiler() {
+    return new QueryCompiler(this, ...arguments)
+  },
 
-  ColumnCompiler,
+  columnCompiler() {
+    return new ColumnCompiler(this, ...arguments)
+  },
 
-  TableCompiler,
+  tableCompiler() {
+    return new TableCompiler(this, ...arguments)
+  },
 
   ddl(compiler, pragma, connection) {
     return new SQLite3_DDL(this, compiler, pragma, connection)

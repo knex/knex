@@ -78,12 +78,32 @@ module.exports = function(knex) {
     });
   }
 
-  client.Raw.prototype.testSql =
-  client.QueryBuilder.prototype.testSql =
-  client.SchemaBuilder.prototype.testSql = function Logger$testSql(handler) {
-    handler(testSqlTester.bind(null, this));
-    return this;
-  };
+  function makeTestSQL(builder) {
+    const tester = testSqlTester.bind(null, builder)
+    return function(handler) {
+      handler(tester)
+      return this
+    }
+  }
+
+  const originalRaw = client.raw
+  const originalQueryBuilder = client.queryBuilder
+  const originalSchemaBuilder = client.schemaBuilder
+  client.raw = function() {
+    const raw = originalRaw.apply(this, arguments)
+    raw.testSql = makeTestSQL(raw)
+    return raw
+  }
+  client.queryBuilder = function() {
+    const qb = originalQueryBuilder.apply(this, arguments)
+    qb.testSql = makeTestSQL(qb)
+    return qb
+  }
+  client.schemaBuilder = function() {
+    const sb = originalSchemaBuilder.apply(this, arguments)
+    sb.testSql = makeTestSQL(sb)
+    return sb
+  }
 
   return knex;
 }

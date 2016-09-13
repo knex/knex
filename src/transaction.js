@@ -162,11 +162,12 @@ function makeTransactor(trx, connection, trxClient) {
 
   const transactor = makeKnex(trxClient);
 
-  transactor.transaction = (container, options) =>
-    new trxClient.Transaction(trxClient, container, options, trx);
-
-  transactor.savepoint = (container, options) =>
-    transactor.transaction(container, options);
+  transactor.transaction = function(container, options) {
+    return trxClient.transaction(container, options, trx);
+  }
+  transactor.savepoint = function(container, options) {
+    return transactor.transaction(container, options);
+  }
 
   if (trx.client.transacting) {
     transactor.commit = value => trx.release(connection, value)

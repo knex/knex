@@ -34,13 +34,21 @@ assign(Client_MySQL.prototype, {
     return require('mysql')
   },
 
-  QueryCompiler,
+  queryCompiler() {
+    return new QueryCompiler(this, ...arguments)
+  },
 
-  SchemaCompiler,
+  schemaCompiler() {
+    return new SchemaCompiler(this, ...arguments)
+  },
 
-  TableCompiler,
+  tableCompiler() {
+    return new TableCompiler(this, ...arguments)
+  },
 
-  ColumnCompiler,
+  columnCompiler() {
+    return new ColumnCompiler(this, ...arguments)
+  },
 
   transaction() {
     return new Transaction(this, ...arguments)

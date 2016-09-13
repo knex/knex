@@ -8,7 +8,7 @@ import Client from '../../client';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 import {bufferToString} from '../../query/string';
-import Formatter from '../../formatter';
+import Formatter from './formatter';
 
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
@@ -42,18 +42,28 @@ assign(Client_Oracle.prototype, {
   },
 
   formatter() {
-    return new Oracle_Formatter(this)
+    return new Formatter(this)
   },
 
-  QueryCompiler,
+  queryCompiler() {
+    return new QueryCompiler(this, ...arguments)
+  },
 
-  SchemaCompiler,
+  schemaCompiler() {
+    return new SchemaCompiler(this, ...arguments)
+  },
 
-  ColumnBuilder,
+  columnBuilder() {
+    return new ColumnBuilder(this, ...arguments)
+  },
 
-  ColumnCompiler,
+  columnCompiler() {
+    return new ColumnCompiler(this, ...arguments)
+  },
 
-  TableCompiler,
+  tableCompiler() {
+    return new TableCompiler(this, ...arguments)
+  },
 
   prepBindings(bindings) {
     return map(bindings, (value) => {
@@ -174,22 +184,3 @@ assign(Client_Oracle.prototype, {
   }
 
 })
-
-export class Oracle_Formatter extends Formatter {
-
-  alias(first, second) {
-    return first + ' ' + second;
-  }
-
-  parameter(value, notSetValue) {
-    // Returning helper uses always ROWID as string
-    if (value instanceof ReturningHelper && this.client.driver) {
-      value = new this.client.driver.OutParam(this.client.driver.OCCISTRING)
-    }
-    else if (typeof value === 'boolean') {
-      value = value ? 1 : 0
-    }
-    return super.parameter(value, notSetValue)
-  }
-
-}

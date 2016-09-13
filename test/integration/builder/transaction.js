@@ -247,7 +247,6 @@ module.exports = function(knex) {
     });
 
     it('should allow for nested transactions', function() {
-
       return knex.transaction(function(trx) {
         return trx.select('*').from('accounts').then(function() {
           return trx.transaction(function() {

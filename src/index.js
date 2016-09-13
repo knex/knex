@@ -3,7 +3,6 @@ import Raw from './raw';
 import { warn } from './helpers';
 import Client from './client';
 
-import makeClient from './util/make-client';
 import makeKnex from './util/make-knex';
 import parseConnection from './util/parse-connection';
 
@@ -24,12 +23,12 @@ export default function Knex(config) {
   }
   let Dialect;
   if (arguments.length === 0 || (!config.client && !config.dialect)) {
-    Dialect = makeClient(Client)
+    Dialect = Client
   } else if (typeof config.client === 'function' && config.client.prototype instanceof Client) {
-    Dialect = makeClient(config.client)
+    Dialect = config.client
   } else {
     const clientName = config.client || config.dialect
-    Dialect = makeClient(require(`./dialects/${aliases[clientName] || clientName}/index.js`))
+    Dialect = require(`./dialects/${aliases[clientName] || clientName}/index.js`)
   }
   if (typeof config.connection === 'string') {
     config = assign({}, config, {connection: parseConnection(config.connection).connection})

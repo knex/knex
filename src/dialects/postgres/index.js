@@ -26,13 +26,21 @@ inherits(Client_PG, Client)
 
 assign(Client_PG.prototype, {
 
-  QueryCompiler,
+  queryCompiler() {
+    return new QueryCompiler(this, ...arguments)
+  },
 
-  ColumnCompiler,
+  columnCompiler() {
+    return new ColumnCompiler(this, ...arguments)
+  },
 
-  SchemaCompiler,
+  schemaCompiler() {
+    return new SchemaCompiler(this, ...arguments)
+  },
 
-  TableCompiler,
+  tableCompiler() {
+    return new TableCompiler(this, ...arguments)
+  },
 
   dialect: 'postgresql',
 
