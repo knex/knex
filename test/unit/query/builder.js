@@ -3616,6 +3616,7 @@ describe("QueryBuilder", function() {
       mssql: 'with [withClause] as (select [foo] from [users]) select * from [withClause]',
       sqlite3: 'with "withClause" as (select "foo" from "users") select * from "withClause"',
       postgres: 'with "withClause" as (select "foo" from "users") select * from "withClause"',
+      oracledb: 'with "withClause" as (select "foo" from "users") select * from "withClause"',
       oracle: 'with "withClause" as (select "foo" from "users") select * from "withClause"'
     });
   });
