@@ -126,15 +126,12 @@ export default function makeKnex(client) {
   client.on('start', function(obj) {
     knex.emit('start', obj)
   })
-
   client.on('query', function(obj) {
     knex.emit('query', obj)
   })
-
   client.on('query-error', function(err, obj) {
     knex.emit('query-error', err, obj)
   })
-
   client.on('query-response', function(response, obj, builder) {
     knex.emit('query-response', response, obj, builder)
   })

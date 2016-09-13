@@ -1,4 +1,3 @@
-
 import Promise from 'bluebird';
 import * as helpers from './helpers';
 
@@ -17,7 +16,7 @@ import TableCompiler from './schema/tablecompiler';
 import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 
-import Pool2 from 'pool2';
+import {Pool} from 'generic-pool';
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
@@ -152,21 +151,15 @@ assign(Client.prototype, {
     }
   },
 
-  initializePool(config) {
-    if (this.pool) this.destroy()
-    this.pool = new Pool2(assign(this.poolDefaults(config.pool || {}), config.pool))
-    this.pool.on('warn', function(msg) {
-      helpers.warn(`Pool2 - ${msg}`)
-    })
-  },
-
   poolDefaults(poolConfig) {
-    const client = this
     return {
       min: 2,
       max: 10,
-      acquire(callback) {
-        client.acquireRawConnection()
+      log(str, level) {
+        // console.log(`${level}:  ${str}`)
+      },
+      create: (callback) => {
+        this.acquireRawConnection()
           .tap(function(connection) {
             connection.__knexUid = uniqueId('__knexUid')
             if (poolConfig.afterCreate) {
@@ -175,32 +168,47 @@ assign(Client.prototype, {
           })
           .asCallback(callback)
       },
-      dispose(connection, callback) {
+      destroy: (connection) => {
         if (poolConfig.beforeDestroy) {
-          poolConfig.beforeDestroy(connection, function() {
+          poolConfig.beforeDestroy(connection, () => {
             if (connection !== undefined) {
-              client.destroyRawConnection(connection, callback)
+              this.destroyRawConnection(connection)
             }
           })
         } else if (connection !== void 0) {
-          client.destroyRawConnection(connection, callback)
+          this.destroyRawConnection(connection)
         }
       },
-      ping(resource, callback) {
-        return client.ping(resource, callback);
+      validate: (connection) => {
+        if (connection.__knex__disposed) {
+          helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
+          return false
+        }
+        return this.validateConnection(connection)
       }
     }
   },
 
+  initializePool(config) {
+    if (this.pool) {
+      helpers.warn('The pool has already been initialized')
+      return
+    }
+    this.pool = new Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
+  },
+
+  validateConnection(connection) {
+    return true
+  },
+
   // Acquire a connection from the pool.
   acquireConnection() {
-    const client = this
     let request = null
-    const completed = new Promise(function(resolver, rejecter) {
-      if (!client.pool) {
-        return rejecter(new Error('There is no pool defined on the current client'))
+    const completed = new Promise((resolver, rejecter) => {
+      if (!this.pool) {
+        return rejecter(new Error('Unable to acquire a connection'))
       }
-      request = client.pool.acquire(function(err, connection) {
+      request = this.pool.acquire(function(err, connection) {
         if (err) return rejecter(err)
         debug('acquired connection from pool: %s', connection.__knexUid)
         resolver(connection)
@@ -220,24 +228,27 @@ assign(Client.prototype, {
   // Releases a connection back to the connection pool,
   // returning a promise resolved when the connection is released.
   releaseConnection(connection) {
-    const { pool } = this
-    return new Promise(function(resolver) {
+    return new Promise((resolver) => {
       debug('releasing connection to pool: %s', connection.__knexUid)
-      pool.release(connection)
+      this.pool.release(connection)
       resolver()
     })
   },
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
-    const client = this
-    const promise = new Promise(function(resolver) {
-      if (!client.pool) return resolver()
-      client.pool.end(function() {
-        client.pool = undefined
-        resolver()
+    const promise = new Promise((resolver) => {
+      if (!this.pool) {
+        return resolver()
+      }
+      this.pool.drain(() => {
+        this.pool.destroyAllNow(() => {
+          this.pool = undefined
+          resolver()
+        })
       })
     })
+
     // Allow either a callback or promise interface for destruction.
     if (typeof callback === 'function') {
       promise.asCallback(callback)

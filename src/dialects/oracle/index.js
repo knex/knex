@@ -84,25 +84,22 @@ assign(Client_Oracle.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    const client = this
-    return new Promise(function(resolver, rejecter) {
-      client.driver.connect(client.connectionSettings,
-        function(err, connection) {
-          if (err) return rejecter(err)
-          Promise.promisifyAll(connection)
-          if (client.connectionSettings.prefetchRowCount) {
-            connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount)
-          }
-          resolver(connection)
-        })
+    return new Promise((resolver, rejecter) => {
+      this.driver.connect(this.connectionSettings, (err, connection) => {
+        if (err) return rejecter(err)
+        Promise.promisifyAll(connection)
+        if (this.connectionSettings.prefetchRowCount) {
+          connection.setPrefetchRowCount(this.connectionSettings.prefetchRowCount)
+        }
+        resolver(connection)
+      })
     })
   },
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
-  destroyRawConnection(connection, cb) {
+  destroyRawConnection(connection) {
     connection.close()
-    cb()
   },
 
   // Return the database for the Oracle client.
@@ -122,11 +119,16 @@ assign(Client_Oracle.prototype, {
   _stream(connection, obj, stream, options) {
     obj.sql = this.positionBindings(obj.sql);
     return new Promise(function (resolver, rejecter) {
-      stream.on('error', rejecter);
+      stream.on('error', (err) => {
+        if (isConnectionError(err)) {
+          connection.__knex__disposed = err
+        }
+        rejecter(err)
+      })
       stream.on('end', resolver);
       const queryStream = new OracleQueryStream(connection, obj.sql, obj.bindings, options);
       queryStream.pipe(stream)
-    });
+    })
   },
 
   // Runs the query on the specified connection, providing the bindings
@@ -146,6 +148,11 @@ assign(Client_Oracle.prototype, {
       obj.response = response;
       obj.rowsAffected  = response.updateCount;
       return obj;
+    }).catch(err => {
+      if (isConnectionError(err)) {
+        connection.__knex__disposed = err
+      }
+      throw err
     })
 
   },
@@ -177,10 +184,16 @@ assign(Client_Oracle.prototype, {
       default:
         return response;
     }
-  },
-
-  ping(resource, callback) {
-    resource.execute('SELECT 1 FROM DUAL', [], callback);
   }
 
 })
+
+// If the error is any of these, we'll assume we need to
+// mark the connection as failed
+const connectionErrors = [
+  'ORA-12514', 'NJS-040', 'NJS-024', 'NJS-003', 'NJS-024'
+]
+
+function isConnectionError(err) {
+  return connectionErrors.some(prefix => err.message.indexOf(prefix) === 0)
+}

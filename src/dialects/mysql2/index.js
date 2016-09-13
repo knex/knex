@@ -64,12 +64,15 @@ assign(Client_MySQL2.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    const client = this;
     const connection = this.driver.createConnection(pick(this.connectionSettings, configOptions))
-    return new Promise(function(resolver, rejecter) {
-      connection.connect(function(err) {
-        if (err) return rejecter(err)
-        connection.on('error', client._connectionErrorHandler.bind(null, client, connection))
+    return new Promise((resolver, rejecter) => {
+      connection.connect((err) => {
+        if (err) {
+          return rejecter(err)
+        }
+        connection.on('error', err => {
+          connection.__knex__disposed = err
+        })
         resolver(connection)
       })
     })
@@ -98,10 +101,6 @@ assign(Client_MySQL2.prototype, {
       default:
         return response
     }
-  },
-
-  ping(resource, callback) {
-    resource.query('SELECT 1', callback);
   }
 
 })

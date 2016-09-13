@@ -63,22 +63,26 @@ assign(Client_MySQL.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    const client = this
-    const connection = this.driver.createConnection(this.connectionSettings)
-    return new Promise(function(resolver, rejecter) {
-      connection.connect(function(err) {
+    return new Promise((resolver, rejecter) => {
+      const connection = this.driver.createConnection(this.connectionSettings)
+      connection.connect((err) => {
         if (err) return rejecter(err)
-        connection.on('error', client._connectionErrorHandler.bind(null, client, connection))
-        connection.on('end', client._connectionErrorHandler.bind(null, client, connection))
+        connection.on('error', err => {
+          connection.__knex__disposed = err
+        })
         resolver(connection)
-      });
-    });
+      })
+    })
   },
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
-  destroyRawConnection(connection, cb) {
-    connection.end(cb);
+  destroyRawConnection(connection) {
+    connection.end()
+  },
+
+  validateConnection(connection) {
+    return connection.state === 'connected'
   },
 
   // Grab a connection, run the query via the MySQL streaming interface,
@@ -133,18 +137,6 @@ assign(Client_MySQL.prototype, {
       default:
         return response
     }
-  },
-
-  // MySQL Specific error handler
-  _connectionErrorHandler: (client, connection, err) => {
-    if(connection && err && err.fatal && !connection.__knex__disposed) {
-      connection.__knex__disposed = true;
-      client.pool.destroy(connection);
-    }
-  },
-
-  ping(resource, callback) {
-    resource.query('SELECT 1', callback);
   },
 
   canCancelQuery: true,

@@ -6,6 +6,10 @@ var knexfile = require('../knexfile')
 
 Object.keys(knexfile).forEach(function(key) {
 
+  if (key === 'sqlite3') {
+    return
+  }
+
   require('./parse-connection')
   require('./raw')
   require('./query-builder')
@@ -22,6 +26,7 @@ Object.keys(knexfile).forEach(function(key) {
   // Tear down the knex connection
   tape(knex.client.driverName + ' - transactions: after', function(t) {
     knex.destroy().then(function() {
+      t.ok(true, 'Knex client destroyed')
       t.end()
     })
   })

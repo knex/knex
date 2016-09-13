@@ -112,10 +112,6 @@ assign(Client_WebSQL.prototype, {
       default:
         return resp;
     }
-  },
-
-  ping(resource, callback) {
-    callback();
   }
 
 })

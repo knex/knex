@@ -59,10 +59,11 @@ assign(Client_SQLite3.prototype, {
 
   // Get a raw connection from the database, returning a promise with the connection object.
   acquireRawConnection() {
-    const client = this;
-    return new Promise(function(resolve, reject) {
-      const db = new client.driver.Database(client.connectionSettings.filename, function(err) {
-        if (err) return reject(err)
+    return new Promise((resolve, reject) => {
+      const db = new this.driver.Database(this.connectionSettings.filename, (err) => {
+        if (err) {
+          return reject(err)
+        }
         resolve(db)
       })
     })
@@ -70,9 +71,8 @@ assign(Client_SQLite3.prototype, {
 
   // Used to explicitly close a connection, called internally by the pool when
   // a connection times out or the pool is shutdown.
-  destroyRawConnection(connection, cb) {
+  destroyRawConnection(connection) {
     connection.close()
-    cb()
   },
 
   // Runs the query on the specified connection, providing the bindings and any
@@ -149,10 +149,6 @@ assign(Client_SQLite3.prototype, {
       min: 1,
       max: 1
     })
-  },
-
-  ping(resource, callback) {
-    resource.each('SELECT 1', callback);
   }
 
 })
