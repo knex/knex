@@ -11,6 +11,7 @@
 - Added [`with`](#Builder-with) to builder for [common table expressions](https://www.postgresql.org/docs/9.4/static/queries-with.html), #1599
 - Fix #1619, pluck with explicit column names
 - Switching back to [generic-pool](https://github.com/coopernurse/node-pool) for pooling resource management
+- Removed index.html, please direct all PR's for docs against the files in [knex/documentation](https://github.com/knex/documentation)
 
 # 0.11.10 - 9 Aug, 2016
 
