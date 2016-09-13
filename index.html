@@ -2155,7 +2155,12 @@ knex.table('users')
       You can also chain <tt>onDelete</tt> and/or <tt>onUpdate</tt> to set the reference option (<tt>RESTRICT</tt>, <tt>CASCADE</tt>,
       <tt>SET NULL</tt>, <tt>NO ACTION</tt>) for the operation.  Note, this is the same as <code>column.references(column)</code>
       but works for existing columns.
+    <pre class="display">
+    table.integer('user_id').unsigned();
+    table.foreign('user_id').references('Items.user_id_in_items');
+    </pre>
     </p>
+
 
     <p id="Schema-dropForeign">
       <b class="header">dropForeign</b><code>table.dropForeign(columns, [foreignKeyName])</code>
