@@ -4,7 +4,6 @@
 import inherits from 'inherits';
 import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
-import SqlString from '../../query/string';
 import * as helpers from '../../helpers';
 import Transaction from './transaction';
 
@@ -21,7 +20,9 @@ assign(Client_MariaSQL.prototype, {
 
   driverName: 'mariasql',
 
-  Transaction,
+  transaction() {
+    return new Transaction(this, ...arguments)
+  },
 
   _driver() {
     return require('mariasql')
@@ -35,7 +36,6 @@ assign(Client_MariaSQL.prototype, {
     return new Promise(function(resolver, rejecter) {
       connection
         .on('ready', function() {
-          connection.removeAllListeners('end');
           connection.removeAllListeners('error');
           resolver(connection);
         })
@@ -43,11 +43,15 @@ assign(Client_MariaSQL.prototype, {
     })
   },
 
+  validateConnection(connection) {
+    return connection.connected === true
+  },
+
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
-  destroyRawConnection(connection, cb) {
+  destroyRawConnection(connection) {
+    connection.removeAllListeners()
     connection.end()
-    cb()
   },
 
   // Return the database for the MariaSQL client.
@@ -78,9 +82,9 @@ assign(Client_MariaSQL.prototype, {
   // and any other necessary prep work.
   _query(connection, obj) {
     const tz = this.connectionSettings.timezone || 'local';
-    return new Promise(function(resolver, rejecter) {
+    return new Promise((resolver, rejecter) => {
       if (!obj.sql) return resolver()
-      const sql = SqlString.format(obj.sql, obj.bindings, tz);
+      const sql = this._formatQuery(obj.sql, obj.bindings, tz)
       connection.query(sql, function (err, rows) {
         if (err) {
           return rejecter(err);
@@ -116,10 +120,6 @@ assign(Client_MariaSQL.prototype, {
       default:
         return response;
     }
-  },
-
-  ping(resource, callback) {
-    resource.query('SELECT 1', callback);
   }
 
 })

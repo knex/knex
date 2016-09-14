@@ -1,10 +1,17 @@
 
-# 0.12.0 - (unreleased)
+# 0.12.0 - 13 Sep, 2016
 
 - Remove build / built files, #1616
 - Upgrade to Babel 6, #1617
 - Reference Bluebird module directly, remove deprecated .exec method, #1618
 - Remove documentation files from main repo
+- Fix broken behavior on WebSQL build, #1638
+- Oracle id sequence now handles manual inserts, #906
+- Cleanup PG escaping, fix #1602, #1548
+- Added [`with`](#Builder-with) to builder for [common table expressions](https://www.postgresql.org/docs/9.4/static/queries-with.html), #1599
+- Fix #1619, pluck with explicit column names
+- Switching back to [generic-pool](https://github.com/coopernurse/node-pool) for pooling resource management
+- Removed index.html, please direct all PR's for docs against the files in [knex/documentation](https://github.com/knex/documentation)
 
 # 0.11.10 - 9 Aug, 2016
 

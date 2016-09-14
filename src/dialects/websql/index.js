@@ -20,7 +20,9 @@ inherits(Client_WebSQL, Client_SQLite3);
 
 assign(Client_WebSQL.prototype, {
 
-  Transaction,
+  transaction() {
+    return new Transaction(this, ...arguments)
+  },
 
   dialect: 'websql',
 
@@ -110,10 +112,6 @@ assign(Client_WebSQL.prototype, {
       default:
         return resp;
     }
-  },
-
-  ping(resource, callback) {
-    callback();
   }
 
 })

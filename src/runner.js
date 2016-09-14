@@ -214,7 +214,6 @@ assign(Runner.prototype, {
           .catch(rejecter)
       })
     }).disposer(function() {
-      if (runner.connection.__knex__disposed) return
       runner.client.releaseConnection(runner.connection)
     })
   }
