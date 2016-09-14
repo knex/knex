@@ -18,7 +18,7 @@ import SQLite3_DDL from './schema/ddl';
 function Client_SQLite3(config) {
   Client.call(this, config)
   if (isUndefined(config.useNullAsDefault)) {
-    helpers.warn(
+    this.log.warn(
       'sqlite does not support inserting default values. Set the ' +
       '`useNullAsDefault` flag to hide this warning. ' +
       '(see docs http://knexjs.org/#Builder-insert).'

@@ -1,6 +1,5 @@
 import { assign, isArray } from 'lodash'
 import Promise from 'bluebird';
-import * as helpers from './helpers';
 
 let PassThrough;
 
@@ -17,6 +16,12 @@ function Runner(client, builder) {
   this.connection = void 0
 }
 
+Object.defineProperty(Runner.prototype, 'log', {
+  get() {
+    return this.client.log
+  }
+})
+
 assign(Runner.prototype, {
 
   // "Run" the target, calling "toSQL" on the builder, returning
@@ -32,7 +37,7 @@ assign(Runner.prototype, {
       const sql = runner.builder.toSQL();
 
       if (runner.builder._debug) {
-        helpers.debugLog(sql)
+        this.log.debug(sql)
       }
 
       if (isArray(sql)) {

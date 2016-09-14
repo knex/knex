@@ -7,12 +7,20 @@ import { each, toArray } from 'lodash'
 // `knex.builder`, accepting the current `knex` instance,
 // and pulling out the `client` and `grammar` from the current
 // knex instance.
-function SchemaBuilder(client) {
+function SchemaBuilder(context) {
+  const {client} = context
+  this.context = context
   this.client = client
   this._sequence = []
   this._debug = client.config && client.config.debug
 }
 inherits(SchemaBuilder, EventEmitter)
+
+Object.defineProperty(SchemaBuilder.prototype, 'log', {
+  get() {
+    return this.client.log
+  }
+})
 
 // Each of the schema builder methods just add to the
 // "_sequence" array for consistency.

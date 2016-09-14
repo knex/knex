@@ -3,7 +3,6 @@
 // -------
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
-import * as helpers from '../../../helpers';
 
 import { assign } from 'lodash'
 
@@ -68,7 +67,7 @@ assign(ColumnCompiler_MSSQL.prototype, {
 
   bit(length) {
     if (length > 1) {
-      helpers.warn('Bit field is exactly 1 bit length for MSSQL');
+      this.log.warn('Bit field is exactly 1 bit length for MSSQL');
     }
     return 'bit';
   },
@@ -91,18 +90,18 @@ assign(ColumnCompiler_MSSQL.prototype, {
   },
 
   first() {
-    helpers.warn('Column first modifier not available for MSSQL');
+    this.log.warn('Column first modifier not available for MSSQL');
     return '';
   },
 
   after(column) {
-    helpers.warn('Column after modifier not available for MSSQL');
+    this.log.warn('Column after modifier not available for MSSQL');
     return '';
   },
 
   comment(comment) {
     if (comment && comment.length > 255) {
-      helpers.warn('Your comment is longer than the max comment length for MSSQL')
+      this.log.warn('Your comment is longer than the max comment length for MSSQL')
     }
     return ''
   }

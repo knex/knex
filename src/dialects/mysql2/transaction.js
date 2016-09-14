@@ -2,7 +2,6 @@
 import Transaction from '../../transaction';
 import inherits from 'inherits';
 const debug = require('debug')('knex:tx')
-import * as helpers from '../../helpers';
 
 import { assign } from 'lodash'
 
@@ -17,7 +16,7 @@ assign(Transaction_MySQL2.prototype, {
     const t = this
     const q = this.trxClient.query(conn, sql)
       .catch(err => err.code === 'ER_SP_DOES_NOT_EXIST', function() {
-        helpers.warn(
+        this.log.warn(
           'Transaction was implicitly committed, do not mix transactions and' +
           'DDL with MySQL (#805)'
         )

@@ -1,14 +1,16 @@
 
-import makeKnex from '../../util/make-knex';
 import Promise from 'bluebird';
-import * as helpers from '../../helpers';
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
+function makeKnex(value) {
+  return value
+}
+
 function Transaction_WebSQL(client, container) {
-  helpers.warn('WebSQL transactions will run queries, but do not commit or rollback')
+  client.log.warn('WebSQL transactions will run queries, but do not commit or rollback')
   const trx = this
-  this._promise = Promise.try(function() {
+  this._promise = Promise.try(() => {
     container(makeKnex(makeClient(trx, client)))
   })
 }

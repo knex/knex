@@ -1,4 +1,6 @@
-/*global describe, d, it*/
+/*eslint no-var:0, max-len:0 */
+/*eslint-env mocha */
+/*global d*/
 
 'use strict';
 

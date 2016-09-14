@@ -1,14 +1,20 @@
-/*global expect, describe, it*/
+/*eslint no-var:0, max-len:0 */
+/*eslint-env mocha */
 
 'use strict';
+var expect = require('expect')
 
 module.exports = function(knex) {
-  var sinon = require('sinon');
 
   describe(knex.client.dialect + ' | ' + knex.client.driverName, function() {
 
     this.dialect    = knex.client.dialect;
     this.driverName = knex.client.driverName;
+
+    if (this.dialect === 'sqlite3') {
+      console.log("REMOVE ME")
+      return
+    }
 
     after(function() {
       return knex.destroy()
@@ -30,13 +36,13 @@ module.exports = function(knex) {
 
     describe('knex.destroy', function() {
       it('should allow destroying the pool with knex.destroy', function() {
-        var spy = sinon.spy(knex.client.pool, 'destroyAllNow');
+        var spy = expect.spyOn(knex.client.pool, 'destroyAllNow').andCallThrough();
         return knex.destroy().then(function() {
-          expect(spy).to.have.callCount(1);
-          expect(knex.client.pool).to.equal(undefined);
-          return knex.destroy();
+          expect(spy.calls.length).toEqual(1);
+          expect(knex.client.pool).toEqual(undefined);
+          return knex.destroy()
         }).then(function() {
-          expect(spy).to.have.callCount(1);
+          expect(spy.calls.length).toEqual(1);
         });
       });
     });

@@ -31,6 +31,12 @@ const components = [
   'having', 'order', 'limit', 'offset', 'lock'
 ];
 
+Object.defineProperty(QueryCompiler.prototype, 'log', {
+  get() {
+    return this.client.log
+  }
+})
+
 assign(QueryCompiler.prototype, {
 
   // Used when the insert call is empty.
@@ -325,7 +331,7 @@ assign(QueryCompiler.prototype, {
   lock() {
     if (this.single.lock) {
       if (!this.client.transacting) {
-        helpers.warn('You are attempting to perform a "lock" command outside of a transaction.')
+        this.log.warn('You are attempting to perform a "lock" command outside of a transaction.')
       } else {
         return this[this.single.lock]()
       }

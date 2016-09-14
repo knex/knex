@@ -18,6 +18,12 @@ function TableCompiler(client, tableBuilder) {
   this._formatting = client.config && client.config.formatting
 }
 
+Object.defineProperty(TableCompiler.prototype, 'log', {
+  get() {
+    return this.client.log
+  }
+})
+
 TableCompiler.prototype.pushQuery = pushQuery
 
 TableCompiler.prototype.pushAdditional = pushAdditional
@@ -143,7 +149,7 @@ TableCompiler.prototype.alterTable = function () {
     if (this[statement.method]) {
       this[statement.method].apply(this, statement.args);
     } else {
-      helpers.error(`Debug: ${statement.method} does not exist`);
+      this.log.error(`Debug: ${statement.method} does not exist`);
     }
   }
   for (const item in this.single) {
@@ -167,7 +173,7 @@ TableCompiler.prototype.alterTableForCreate = function (columnTypes) {
       this[statement.method].apply(this, statement.args);
       columnTypes.sql.push(this.sequence[0].sql);
     } else {
-      helpers.error(`Debug: ${statement.method} does not exist`);
+      this.log.error(`Debug: ${statement.method} does not exist`);
     }
   }
   this.sequence = savedSequence;

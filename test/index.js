@@ -1,20 +1,13 @@
-/*global describe*/
+/*eslint-env mocha*/
+/*eslint no-var:0, max-len:0 */
 
 'use strict';
 
 require('source-map-support').install();
 
-global.sinon = require("sinon");
+global.d = new Date();
 
-var chai = global.chai = require("chai");
-
-chai.use(require("sinon-chai"));
-chai.should();
-
-var Promise   = global.testPromise = require('bluebird');
-global.expect = chai.expect;
-global.d      = new Date();
-
+var Promise = require('bluebird');
 Promise.longStackTraces();
 
 describe('Query Building Tests', function() {

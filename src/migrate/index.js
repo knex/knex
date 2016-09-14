@@ -4,16 +4,16 @@ import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
-import * as helpers from '../helpers';
 import {
   assign, bind, difference, each, filter, get, includes, isBoolean,
   isEmpty, isUndefined, map, max, template
 } from 'lodash'
 import inherits from 'inherits';
 
-function LockError(msg) {
+function LockError(err) {
   this.name = 'MigrationLocked';
-  this.message = msg;
+  this.message = err.msg;
+  this.stack = err.stack;
 }
 inherits(LockError, Error);
 
@@ -36,6 +36,10 @@ export default class Migrator {
   constructor(knex) {
     this.knex = knex
     this.config = this.setConfig(knex.client.config.migrations);
+  }
+
+  get log() {
+    return this.knex.client.log
   }
 
   // Migrators to the latest configuration.
@@ -206,14 +210,14 @@ export default class Migrator {
 
       if (error instanceof LockError) {
         // If locking error do not free the lock.
-        helpers.warn(`Can't take lock to run migrations: ${error.message}`);
-        helpers.warn(
+        this.log.warn(`Can't take lock to run migrations: ${error.message}`);
+        this.log.warn(
           'If you are sure migrations are not running you can release the ' +
           'lock manually by deleting all the rows from migrations lock ' +
           'table: ' + this._getLockTableName()
         );
       } else {
-        helpers.warn(`migrations failed with error: ${error.message}`)
+        this.log.warn(`migrations failed with error: ${error.message}`)
         // If the error was not due to a locking issue, then remove the lock.
         cleanupReady = this._freeLock();
       }
@@ -321,7 +325,7 @@ export default class Migrator {
         if (this._useTransaction(migration, disableTransactions)) {
           return this._transaction(migration, direction, name)
         }
-        return warnPromise(migration[direction](knex, Promise), name)
+        return warnPromise(this, migration[direction](knex, Promise), name)
       })
       .then(() => {
         log.push(path.join(directory, name));
@@ -343,7 +347,7 @@ export default class Migrator {
 
   _transaction(migration, direction, name) {
     return this.knex.transaction((trx) => {
-      return warnPromise(migration[direction](trx, Promise), name, () => {
+      return warnPromise(this, migration[direction](trx, Promise), name, () => {
         trx.commit()
       })
     })
@@ -371,9 +375,9 @@ function validateMigrationList(migrations) {
   }
 }
 
-function warnPromise(value, name, fn) {
+function warnPromise(obj, value, name, fn) {
   if (!value || typeof value.then !== 'function') {
-    helpers.warn(`migration ${name} did not return a promise`);
+    obj.log.warn(`migration ${name} did not return a promise`);
     if (fn && typeof fn === 'function') fn()
   }
   return value;

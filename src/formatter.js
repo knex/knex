@@ -127,7 +127,7 @@ export default class Formatter {
     const { client } = this;
 
     // Build the callback
-    const builder = client.queryBuilder();
+    const builder = client.queryBuilder({client});
     callback.call(builder, builder);
 
     // Compile the callback, using the current formatter (to track all bindings).

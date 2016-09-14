@@ -3,6 +3,7 @@
 'use strict';
 
 var _ = require('lodash')
+var expect = require('expect')
 
 module.exports = function(knex) {
 
@@ -10,16 +11,16 @@ module.exports = function(knex) {
 
   function compareBindings(gotBindings, wantedBindings) {
     if (Array.isArray(wantedBindings)) {
-      expect(gotBindings.length).to.eql(wantedBindings.length);
+      expect(gotBindings.length).toEqual(wantedBindings.length);
       wantedBindings.forEach(function (wantedBinding, index) {
         if (typeof wantedBinding === 'function') {
-          expect(wantedBinding(gotBindings[index])).to.eql(true);
+          expect(wantedBinding(gotBindings[index])).toEqual(true);
         } else {
-          expect(wantedBinding).to.eql(gotBindings[index]);
+          expect(wantedBinding).toEqual(gotBindings[index]);
         }
       });
     } else {
-      expect(gotBindings).to.eql(wantedBindings);
+      expect(gotBindings).toEqual(wantedBindings);
     }
   }
 
@@ -35,9 +36,9 @@ module.exports = function(knex) {
 
       if (statement) {
         if (Array.isArray(sql)) {
-          expect(_.map(sql, 'sql')).to.eql(statement);
+          expect(_.map(sql, 'sql')).toEqual(statement);
         } else {
-          expect(sql.sql).to.equal(statement);
+          expect(sql.sql).toEqual(statement);
         }
       }
       if (bindings) {
@@ -53,9 +54,9 @@ module.exports = function(knex) {
           var promise = oldThen.apply(this, []);
           promise = promise.tap(function(resp) {
             if (typeof returnval === 'function') {
-              expect(!!returnval(resp)).to.equal(true);
+              expect(!!returnval(resp)).toEqual(true);
             } else {
-              expect(stripDates(resp)).to.eql(returnval);
+              expect(stripDates(resp)).toEqual(returnval);
             }
           });
           return promise.then.apply(promise, arguments);

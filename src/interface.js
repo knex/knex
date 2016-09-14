@@ -1,5 +1,3 @@
-
-import * as helpers from './helpers';
 import { isArray, map, clone, each } from 'lodash'
 
 export default function(Target) {
@@ -41,8 +39,8 @@ export default function(Target) {
   // Set the transaction object for this query.
   Target.prototype.transacting = function(t) {
     if (t && t.client) {
-      if (!t.client.transacting) {
-        helpers.warn(`Invalid transaction value: ${t.client}`)
+      if (!t.isTransaction()) {
+        this.log.warn(`Invalid transaction value: ${t.client}`)
       } else {
         this.client = t.client
       }

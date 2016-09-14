@@ -3,6 +3,8 @@
   "plugins": [
     "lodash",
     "transform-runtime",
-    "add-module-exports"
+    "add-module-exports",
+    "transform-object-rest-spread",
+    "transform-async-to-generator",
   ]
 }

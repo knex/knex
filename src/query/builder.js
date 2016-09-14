@@ -15,8 +15,10 @@ import {
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
-function Builder(client) {
-  this.client = client
+function Builder(context) {
+  const {client} = context
+  this.__client = client
+  this.__context = context
   this.and = this;
   this._single = {};
   this._statements = [];
@@ -29,6 +31,19 @@ function Builder(client) {
   this._notFlag = false;
 }
 inherits(Builder, EventEmitter);
+
+Object.defineProperties(Builder.prototype, {
+  log: {
+    get() {
+      return this.client.log
+    }
+  },
+  client: {
+    get() {
+      return this.__client
+    }
+  }
+})
 
 assign(Builder.prototype, {
 
@@ -43,7 +58,7 @@ assign(Builder.prototype, {
 
   // Create a shallow clone of the current query builder.
   clone() {
-    const cloned = new this.constructor(this.client);
+    const cloned = new this.constructor(this.__context);
     cloned._method = this._method;
     cloned._single = clone(this._single);
     cloned._statements = clone(this._statements);
@@ -601,7 +616,7 @@ assign(Builder.prototype, {
   limit(value) {
     const val = parseInt(value, 10)
     if (isNaN(val)) {
-      helpers.warn('A valid integer must be provided to limit')
+      this.log.warn('A valid integer must be provided to limit')
     } else {
       this._single.limit = val;
     }
@@ -708,7 +723,7 @@ assign(Builder.prototype, {
     } else {
       const keys = Object.keys(values);
       if (this._single.update) {
-        helpers.warn('Update called multiple times with objects.')
+        this.log.warn('Update called multiple times with objects.')
       }
       let i = -1;
       while (++i < keys.length) {
@@ -770,7 +785,7 @@ assign(Builder.prototype, {
   fromJS(obj) {
     each(obj, (val, key) => {
       if (typeof this[key] !== 'function') {
-        helpers.warn(`Knex Error: unknown key ${key}`)
+        this.log.warn(`Knex Error: unknown key ${key}`)
       }
       if (Array.isArray(val)) {
         this[key].apply(this, val)

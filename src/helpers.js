@@ -1,7 +1,6 @@
 /* eslint no-console:0 */
 
 import { map, pick, keys, isFunction, isUndefined, isObject, isArray, isTypedArray } from 'lodash'
-import chalk from 'chalk';
 
 // Pick off the attributes from only the current layer of the object.
 export function skim(data) {
@@ -21,27 +20,9 @@ export function normalizeArr() {
   return args;
 }
 
-export function debugLog(msg) {
-  console.log(msg);
-}
-
-export function error(msg) {
-  console.log(chalk.red(`Knex:Error ${msg}`))
-}
-
-  // Used to signify deprecated functionality.
+// Used to signify deprecated functionality.
 export function deprecate(method, alternate) {
-  warn(`${method} is deprecated, please use ${alternate}`);
-}
-
-  // Used to warn about incorrect use, without error'ing
-export function warn(msg) {
-  console.log(chalk.yellow(`Knex:warning - ${msg}`))
-}
-
-export function exit(msg) {
-  console.log(chalk.red(msg))
-  process.exit(1)
+  return `${method} is deprecated, please use ${alternate}`
 }
 
 export function containsUndefined(mixed) {
@@ -50,18 +31,18 @@ export function containsUndefined(mixed) {
   if (isTypedArray(mixed))
     return false;
 
-  if(mixed && isFunction(mixed.toSQL)) {
-    //Any QueryBuilder or Raw will automatically be validated during compile.
+  if (mixed && isFunction(mixed.toSQL)) {
+    // Any QueryBuilder or Raw will automatically be validated during compile.
     return argContainsUndefined;
   }
 
-  if(isArray(mixed)) {
-    for(let i = 0; i < mixed.length; i++) {
-      if(argContainsUndefined) break;
+  if (isArray(mixed)) {
+    for (let i = 0; i < mixed.length; i++) {
+      if (argContainsUndefined) break;
       argContainsUndefined = this.containsUndefined(mixed[i]);
     }
-  } else if(isObject(mixed)) {
-    for(const key in mixed) {
+  } else if (isObject(mixed)) {
+    for (const key in mixed) {
       if(argContainsUndefined) break;
       argContainsUndefined = this.containsUndefined(mixed[key]);
     }

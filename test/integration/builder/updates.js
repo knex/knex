@@ -1,6 +1,9 @@
-/*global describe, expect, it, d*/
+/*eslint no-var:0, max-len:0 */
+/*eslint-env mocha */
 
 'use strict';
+
+var expect = require('expect')
 
 module.exports = function(knex) {
 
@@ -67,10 +70,10 @@ module.exports = function(knex) {
     it('should increment a value', function() {
       return knex('accounts').select('logins').where('id', 1).then(function(accounts) {
         return knex('accounts').where('id', 1).increment('logins').then(function(rowsAffected) {
-          expect(rowsAffected).to.equal(1);
+          expect(rowsAffected).toEqual(1);
           return knex('accounts').select('logins').where('id', 1);
         }).then(function(accounts2) {
-          expect(accounts[0].logins + 1).to.equal(accounts2[0].logins);
+          expect(accounts[0].logins + 1).toEqual(accounts2[0].logins);
         });
       });
     });
@@ -78,10 +81,10 @@ module.exports = function(knex) {
     it('should increment a negative value', function() {
       return knex('accounts').select('logins').where('id', 1).then(function(accounts) {
         return knex('accounts').where('id', 1).increment('logins', -2).then(function(rowsAffected) {
-          expect(rowsAffected).to.equal(1);
+          expect(rowsAffected).toEqual(1);
           return knex('accounts').select('logins').where('id', 1);
         }).then(function(accounts2) {
-          expect(accounts[0].logins - 2).to.equal(accounts2[0].logins);
+          expect(accounts[0].logins - 2).toEqual(accounts2[0].logins);
         });
       });
     });
@@ -89,10 +92,10 @@ module.exports = function(knex) {
     it('should decrement a value', function() {
       return knex('accounts').select('logins').where('id', 1).then(function(accounts) {
         return knex('accounts').where('id', 1).decrement('logins').then(function(rowsAffected) {
-          expect(rowsAffected).to.equal(1);
+          expect(rowsAffected).toEqual(1);
           return knex('accounts').select('logins').where('id', 1);
         }).then(function(accounts2) {
-          expect(accounts[0].logins - 1).to.equal(accounts2[0].logins);
+          expect(accounts[0].logins - 1).toEqual(accounts2[0].logins);
         });
       });
     });
@@ -100,10 +103,10 @@ module.exports = function(knex) {
     it('should decrement a negative value', function() {
       return knex('accounts').select('logins').where('id', 1).then(function(accounts) {
         return knex('accounts').where('id', 1).decrement('logins', -2).then(function(rowsAffected) {
-          expect(rowsAffected).to.equal(1);
+          expect(rowsAffected).toEqual(1);
           return knex('accounts').select('logins').where('id', 1);
         }).then(function(accounts2) {
-          expect(accounts[0].logins + 2).to.equal(accounts2[0].logins);
+          expect(accounts[0].logins + 2).toEqual(accounts2[0].logins);
         });
       });
     });

@@ -1,9 +1,12 @@
-/*global it, describe, expect*/
+/*eslint-env mocha*/
+/*eslint no-var:0, max-len:0 */
 
 'use strict';
 
+var expect = require('expect')
+var KnexContext = require('../../../lib/classes/KnexContext')
 var Oracle_Client = require('../../../lib/dialects/oracle');
-var client        = new Oracle_Client({})
+var client = new KnexContext(new Oracle_Client({}))
 
 describe("Oracle SchemaBuilder", function() {
 
@@ -17,9 +20,9 @@ describe("Oracle SchemaBuilder", function() {
     });
 
     equal(3, tableSql.toSQL().length);
-    expect(tableSql.toSQL()[0].sql).to.equal('create table "users" ("id" integer not null primary key, "email" varchar2(255))');
-    expect(tableSql.toSQL()[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
+    expect(tableSql.toSQL()[0].sql).toEqual('create table "users" ("id" integer not null primary key, "email" varchar2(255))');
+    expect(tableSql.toSQL()[1].sql).toEqual("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql.toSQL()[2].sql).toEqual("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
   });
 
   it('test basic create table if not exists', function() {
@@ -29,25 +32,25 @@ describe("Oracle SchemaBuilder", function() {
     });
 
     equal(3, tableSql.toSQL().length);
-    expect(tableSql.toSQL()[0].sql).to.equal("begin execute immediate 'create table \"users\" (\"id\" integer not null primary key, \"email\" varchar2(255))'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql.toSQL()[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
+    expect(tableSql.toSQL()[0].sql).toEqual("begin execute immediate 'create table \"users\" (\"id\" integer not null primary key, \"email\" varchar2(255))'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql.toSQL()[1].sql).toEqual("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql.toSQL()[2].sql).toEqual("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
   });
 
   it('test drop table', function() {
     tableSql = client.schemaBuilder().dropTable('users').toSQL();
 
     equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal('drop table "users"');
-    expect(tableSql[1].sql).to.equal("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
+    expect(tableSql[0].sql).toEqual('drop table "users"');
+    expect(tableSql[1].sql).toEqual("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
   });
 
   it('test drop table if exists', function() {
     tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
     equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal("begin execute immediate 'drop table \"users\"'; exception when others then if sqlcode != -942 then raise; end if; end;");
-    expect(tableSql[1].sql).to.equal("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
+    expect(tableSql[0].sql).toEqual("begin execute immediate 'drop table \"users\"'; exception when others then if sqlcode != -942 then raise; end if; end;");
+    expect(tableSql[1].sql).toEqual("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
   });
 
   it('test drop column', function() {
@@ -56,7 +59,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo")');
+    expect(tableSql[0].sql).toEqual('alter table "users" drop ("foo")');
   });
 
   it('drops multiple columns with an array', function() {
@@ -65,7 +68,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo", "bar")');
+    expect(tableSql[0].sql).toEqual('alter table "users" drop ("foo", "bar")');
   });
 
   it('drops multiple columns as multiple arguments', function() {
@@ -74,7 +77,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo", "bar")');
+    expect(tableSql[0].sql).toEqual('alter table "users" drop ("foo", "bar")');
   });
 
   it('test drop primary', function() {
@@ -83,7 +86,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_pkey"');
+    expect(tableSql[0].sql).toEqual('alter table "users" drop constraint "users_pkey"');
   });
 
   it('test drop unique', function() {
@@ -92,7 +95,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_foo_unique"');
+    expect(tableSql[0].sql).toEqual('alter table "users" drop constraint "users_foo_unique"');
   });
 
   it('test drop unique, custom', function() {
@@ -101,7 +104,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "foo"');
+    expect(tableSql[0].sql).toEqual('alter table "users" drop constraint "foo"');
   });
 
   it('test drop index', function() {
@@ -110,7 +113,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('drop index "users_foo_index"');
+    expect(tableSql[0].sql).toEqual('drop index "users_foo_index"');
   });
 
   it('test drop index, custom', function() {
@@ -119,7 +122,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('drop index "foo"');
+    expect(tableSql[0].sql).toEqual('drop index "foo"');
   });
 
   it('test drop foreign', function() {
@@ -128,7 +131,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_foo_foreign"');
+    expect(tableSql[0].sql).toEqual('alter table "users" drop constraint "users_foo_foreign"');
   });
 
   it('test drop foreign, custom', function() {
@@ -137,7 +140,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "foo"');
+    expect(tableSql[0].sql).toEqual('alter table "users" drop constraint "foo"');
   });
 
   it('test drop timestamps', function() {
@@ -146,13 +149,13 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop ("created_at", "updated_at")');
+    expect(tableSql[0].sql).toEqual('alter table "users" drop ("created_at", "updated_at")');
   });
 
   it("rename table", function() {
     tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('rename "users" to "foo"');
+    expect(tableSql[0].sql).toEqual('rename "users" to "foo"');
   });
 
   it('test adding primary key', function() {
@@ -161,7 +164,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "bar" primary key ("foo")');
+    expect(tableSql[0].sql).toEqual('alter table "users" add constraint "bar" primary key ("foo")');
   });
 
   it('test adding unique key', function() {
@@ -170,7 +173,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "bar" unique ("foo")');
+    expect(tableSql[0].sql).toEqual('alter table "users" add constraint "bar" unique ("foo")');
   });
 
   it('test adding index', function() {
@@ -179,7 +182,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create index "baz" on "users" ("foo", "bar")');
+    expect(tableSql[0].sql).toEqual('create index "baz" on "users" ("foo", "bar")');
   });
 
   it('test adding foreign key', function() {
@@ -188,7 +191,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "orders" ("id")');
+    expect(tableSql[0].sql).toEqual('alter table "users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "orders" ("id")');
   });
 
   it("adds foreign key with onUpdate and onDelete", function() {
@@ -197,8 +200,8 @@ describe("Oracle SchemaBuilder", function() {
       table.integer('account_id').notNull().references('id').inTable('accounts').onUpdate('cascade');
     }).toSQL();
     equal(3, tableSql.length);
-    expect(tableSql[1].sql).to.equal('alter table "person" add constraint "person_user_id_foreign" foreign key ("user_id") references "users" ("id") on delete SET NULL');
-    expect(tableSql[2].sql).to.equal('alter table "person" add constraint "person_account_id_foreign" foreign key ("account_id") references "accounts" ("id") on update cascade');
+    expect(tableSql[1].sql).toEqual('alter table "person" add constraint "person_user_id_foreign" foreign key ("user_id") references "users" ("id") on delete SET NULL');
+    expect(tableSql[2].sql).toEqual('alter table "person" add constraint "person_account_id_foreign" foreign key ("account_id") references "accounts" ("id") on update cascade');
   });
 
   it('test adding incrementing id', function() {
@@ -207,9 +210,9 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(3, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "id" integer not null primary key');
-    expect(tableSql[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
+    expect(tableSql[0].sql).toEqual('alter table "users" add "id" integer not null primary key');
+    expect(tableSql[1].sql).toEqual("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql[2].sql).toEqual("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
   });
 
   it('test adding big incrementing id', function() {
@@ -218,9 +221,9 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(3, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "id" number(20, 0) not null primary key');
-    expect(tableSql[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
+    expect(tableSql[0].sql).toEqual('alter table "users" add "id" number(20, 0) not null primary key');
+    expect(tableSql[1].sql).toEqual("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
+    expect(tableSql[2].sql).toEqual("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
   });
 
   it('test rename column', function() {
@@ -228,7 +231,7 @@ describe("Oracle SchemaBuilder", function() {
       this.renameColumn('foo', 'bar');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" rename column "foo" to "bar"');
+    expect(tableSql[0].sql).toEqual('alter table "users" rename column "foo" to "bar"');
   });
 
   it('test adding string', function() {
@@ -237,7 +240,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(255)');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" varchar2(255)');
   });
 
   it('uses the varchar column constraint', function() {
@@ -246,7 +249,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(100)');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" varchar2(100)');
   });
 
   it('chains notNull and defaultTo', function() {
@@ -254,7 +257,7 @@ describe("Oracle SchemaBuilder", function() {
       this.string('foo', 100).notNull().defaultTo('bar');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(100) default \'bar\' not null');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" varchar2(100) default \'bar\' not null');
   });
 
   it('allows for raw values in the default field', function() {
@@ -263,7 +266,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(100) default CURRENT TIMESTAMP null');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" varchar2(100) default CURRENT TIMESTAMP null');
   });
 
   it('test adding text', function() {
@@ -272,7 +275,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" clob');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" clob');
   });
 
   it('test adding big integer', function() {
@@ -281,7 +284,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" number(20, 0)');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" number(20, 0)');
   });
 
   it('test adding integer', function() {
@@ -290,7 +293,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" integer');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" integer');
   });
 
   it('test adding medium integer', function() {
@@ -299,7 +302,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" integer');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" integer');
   });
 
   it('test adding small integer', function() {
@@ -308,7 +311,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" smallint');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" smallint');
   });
 
   it('test adding tiny integer', function() {
@@ -317,7 +320,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" smallint');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" smallint');
   });
 
   it('test adding default float', function() {
@@ -326,7 +329,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" float');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" float');
   });
 
   it('test adding float with precision', function() {
@@ -335,7 +338,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" float(5)');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" float(5)');
   });
 
   it('test adding double', function() {
@@ -344,7 +347,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" number(8, 2)');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" number(8, 2)');
   });
 
   it('test adding double specifying precision', function() {
@@ -353,7 +356,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" number(15, 8)');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" number(15, 8)');
   });
 
   it('test adding decimal', function() {
@@ -362,7 +365,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" decimal(5, 2)');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" decimal(5, 2)');
   });
 
   it('test adding boolean', function() {
@@ -371,7 +374,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" number(1, 0) check ("foo" in (\'0\', \'1\'))');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" number(1, 0) check ("foo" in (\'0\', \'1\'))');
   });
 
   it('test adding enum', function() {
@@ -380,7 +383,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" varchar2(3) check ("foo" in (\'bar\', \'baz\'))');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" varchar2(3) check ("foo" in (\'bar\', \'baz\'))');
   });
 
   it('test adding date', function() {
@@ -389,7 +392,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" date');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" date');
   });
 
   it('test adding date time', function() {
@@ -398,7 +401,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with time zone');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" timestamp with time zone');
   });
 
   it('test adding date time without time zone', function() {
@@ -407,7 +410,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" timestamp');
   });
 
   it('test adding time', function() {
@@ -418,7 +421,7 @@ describe("Oracle SchemaBuilder", function() {
     // oracle does not support time
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with time zone');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" timestamp with time zone');
   });
 
   it('test adding time stamp', function() {
@@ -427,7 +430,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp with time zone');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" timestamp with time zone');
   });
 
   it('test adding time stamp without time zone', function() {
@@ -436,7 +439,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" timestamp');
   });
 
   it('test adding time stamps', function() {
@@ -445,7 +448,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "created_at" timestamp with time zone, add "updated_at" timestamp with time zone');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "created_at" timestamp with time zone, add "updated_at" timestamp with time zone');
   });
 
   it('test adding binary', function() {
@@ -454,7 +457,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" blob');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" blob');
   });
 
   it('test adding decimal', function() {
@@ -463,7 +466,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" decimal(2, 6)');
+    expect(tableSql[0].sql).toEqual('alter table "users" add "foo" decimal(2, 6)');
   });
 
   it('is possible to set raw statements in defaultTo, #146', function() {
@@ -472,7 +475,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create table "default_raw_test" ("created_at" timestamp with time zone default CURRENT_TIMESTAMP)');
+    expect(tableSql[0].sql).toEqual('create table "default_raw_test" ("created_at" timestamp with time zone default CURRENT_TIMESTAMP)');
   });
 
   it('allows dropping a unique compound index with too long generated name', function() {
@@ -481,7 +484,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "composite_key_test" drop constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk"');
+    expect(tableSql[0].sql).toEqual('alter table "composite_key_test" drop constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk"');
   });
 
   it('allows dropping a unique compound index with specified name', function() {
@@ -490,18 +493,18 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "composite_key_test" drop constraint "ckt_unique"');
+    expect(tableSql[0].sql).toEqual('alter table "composite_key_test" drop constraint "ckt_unique"');
   });
   it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
     tableSql = client.schemaBuilder().table('users', function(t) {
       t.primary(['test1', 'test2'], 'testconstraintname');
     }).toSQL();
-    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
+    expect(tableSql[0].sql).toEqual('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
 
     tableSql = client.schemaBuilder().createTable('users', function(t) {
       t.string('test').primary('testconstraintname');
     }).toSQL();
 
-    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test")');
+    expect(tableSql[1].sql).toEqual('alter table "users" add constraint "testconstraintname" primary key ("test")');
   });
 });

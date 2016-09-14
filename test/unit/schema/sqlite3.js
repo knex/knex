@@ -1,16 +1,19 @@
-/*global describe, expect, it*/
+/*eslint-env mocha*/
+/*eslint no-var:0, max-len:0 */
 
 'use strict';
 
 var tableSql;
 
+var expect = require('expect')
+var KnexContext = require('../../../lib/classes/KnexContext')
 var SQLite3_Client = require('../../../lib/dialects/sqlite3');
-var client         = new SQLite3_Client({})
-var SQLite3_DDL    = require('../../../lib/dialects/sqlite3/schema/ddl')
+var client = new KnexContext(new SQLite3_Client({}))
+var SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl')
 
-var _              = require('lodash');
-var equal          = require('assert').equal;
-var deepEqual      = require('assert').deepEqual;
+var _ = require('lodash');
+var equal = require('assert').equal;
+var deepEqual = require('assert').deepEqual;
 
 describe("SQLite SchemaBuilder", function() {
 
@@ -35,7 +38,7 @@ describe("SQLite SchemaBuilder", function() {
       'alter table "users" add column "id" integer not null primary key autoincrement',
       'alter table "users" add column "email" varchar(255)',
     ];
-    expect(expected).to.eql(_.map(tableSql, 'sql'));
+    expect(expected).toEqual(_.map(tableSql, 'sql'));
   });
 
   it("drop table", function() {
@@ -439,9 +442,9 @@ describe("SQLite SchemaBuilder", function() {
               '"parent_id_test" integer, foreign key("parent_id") references "bar"("id"))';
 
 
-        expect(doReplace(sql1, '"bar"', '"lar"')).to.equal(sql1);
-        expect(doReplace(sql1, '"id"', '"id_foo"')).to.equal(sql1b);
-        expect(doReplace(sql2, '"id"', '"id_foo"')).to.equal(sql2b);
+        expect(doReplace(sql1, '"bar"', '"lar"')).toEqual(sql1);
+        expect(doReplace(sql1, '"id"', '"id_foo"')).toEqual(sql1b);
+        expect(doReplace(sql2, '"id"', '"id_foo"')).toEqual(sql2b);
       }).toSQL();
     });
   });

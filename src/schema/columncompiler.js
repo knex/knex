@@ -20,6 +20,12 @@ function ColumnCompiler(client, tableCompiler, columnBuilder) {
   this.sequence = [];
 }
 
+Object.defineProperty(ColumnCompiler.prototype, 'log', {
+  get() {
+    return this.client.log
+  }
+})
+
 ColumnCompiler.prototype.pushQuery = helpers.pushQuery
 
 ColumnCompiler.prototype.pushAdditional = helpers.pushAdditional

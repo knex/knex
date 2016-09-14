@@ -1,9 +1,12 @@
-/*global describe, expect, it, d*/
+/*eslint no-var:0, max-len:0 */
+/*eslint-env mocha */
+/*global d*/
 
 'use strict';
 
 var uuid = require('node-uuid');
-var _    = require('lodash');
+var _ = require('lodash');
+var expect = require('expect');
 
 module.exports = function(knex) {
 
@@ -384,7 +387,7 @@ module.exports = function(knex) {
       return knex('datatype_test')
         .insert(x)
         .then(function() {
-          expect(x).to.eql([a, b]);
+          expect(x).toEqual([a, b]);
         });
     });
 
@@ -519,7 +522,7 @@ module.exports = function(knex) {
     //       });
     //     }).then(function () {
     //       return knex('test_default_table3').then(function (rows) {
-    //         expect(rows.length).to.equal(2);
+    //         expect(rows.length).toEqual(2);
     //       });
     //     });
     // });
@@ -576,11 +579,11 @@ module.exports = function(knex) {
           }]
         );
       }).then(function(rows) {
-        expect(rows.length).to.equal(1);
+        expect(rows.length).toEqual(1);
         if (knex.client.dialect === 'postgresql') {
-          expect(_.keys(rows[0]).length).to.equal(2);
-          expect(rows[0].account_id).to.equal(insertData.account_id);
-          expect(rows[0].details).to.equal(insertData.details);
+          expect(_.keys(rows[0]).length).toEqual(2);
+          expect(rows[0].account_id).toEqual(insertData.account_id);
+          expect(rows[0].details).toEqual(insertData.details);
         }
       });
     });
@@ -636,13 +639,13 @@ module.exports = function(knex) {
           }]
         );
       }).then(function(rows) {
-        expect(rows.length).to.equal(1);
+        expect(rows.length).toEqual(1);
         if (knex.client.dialect === 'postgresql') {
-          expect(_.keys(rows[0]).length).to.equal(5);
-          expect(rows[0].account_id).to.equal(insertData.account_id);
-          expect(rows[0].details).to.equal(insertData.details);
-          expect(rows[0].status).to.equal(insertData.status);
-          expect(rows[0].json_data).to.equal(null);
+          expect(_.keys(rows[0]).length).toEqual(5);
+          expect(rows[0].account_id).toEqual(insertData.account_id);
+          expect(rows[0].details).toEqual(insertData.details);
+          expect(rows[0].status).toEqual(insertData.status);
+          expect(rows[0].json_data).toEqual(null);
         }
       });
     });
@@ -680,15 +683,15 @@ module.exports = function(knex) {
             //Returning only supported by some dialects.
             if(['POSTGRES', 'ORACLE'].indexOf(dialect) !== -1) {
               result.forEach(function(item) {
-                expect(item.Col1).to.equal(fiftyLengthString);
-                expect(item.Col2).to.equal(fiftyLengthString);
+                expect(item.Col1).toEqual(fiftyLengthString);
+                expect(item.Col2).toEqual(fiftyLengthString);
               });
             }
             return knex('BatchInsert').select();
           })
           .then(function (result) {
             var count = result.length;
-            expect(count).to.equal(amountOfItems);
+            expect(count).toEqual(amountOfItems);
           });
       });
 
@@ -714,10 +717,10 @@ module.exports = function(knex) {
     });
 
     it('should validate batchInsert batchSize parameter', function() {
-      expect(function () { knex.batchInsert('test', []) }).to.not.throw();
-      expect(function () { knex.batchInsert('test', [], null) }).to.throw(TypeError);
-      expect(function () { knex.batchInsert('test', [], 0) }).to.throw(TypeError);
-      expect(function () { knex.batchInsert('test', [], 'still no good') }).to.throw(TypeError);
+      expect(function () { knex.batchInsert('test', []) }).toNotThrow();
+      expect(function () { knex.batchInsert('test', [], null) }).toThrow(TypeError);
+      expect(function () { knex.batchInsert('test', [], 0) }).toThrow(TypeError);
+      expect(function () { knex.batchInsert('test', [], 'still no good') }).toThrow(TypeError);
     });
 
     it('should replace undefined keys in multi insert with DEFAULT', function() {
@@ -745,8 +748,8 @@ module.exports = function(knex) {
           ]).orderBy('email', 'desc');
         })
         .then(function (results) {
-          expect(results[0].logins).to.equal(1);
-          expect(results[1].about).to.equal(null);
+          expect(results[0].logins).toEqual(1);
+          expect(results[1].about).toEqual(null);
           // cleanup to prevent needs for too much changes to other tests
           return knex('accounts').delete().whereIn('id', results.map(function (row) { return row.id }));
         });
@@ -770,7 +773,7 @@ module.exports = function(knex) {
             return trx('accounts').where('email', 'findme@example.com');
           })
           .then(function (results) {
-            expect(results[0].logins).to.equal(1);
+            expect(results[0].logins).toEqual(1);
             // cleanup to prevent needs for too much changes to other tests
             return trx('accounts').delete().where('id', results[0].id);
           });

@@ -1,10 +1,9 @@
 import Promise from 'bluebird';
-import * as helpers from './helpers';
+import consoleLogger from './util/consoleLogger'
 
 import Raw from './raw';
 import Runner from './runner';
 import Formatter from './formatter';
-import Transaction from './transaction';
 
 import QueryBuilder from './query/builder';
 import QueryCompiler from './query/compiler';
@@ -35,6 +34,7 @@ function clientId() {
 // The base client provides the general structure
 // for a dialect specific client object.
 function Client(config = {}) {
+  this.log = consoleLogger
   this.config = config
   this.connectionSettings = cloneDeep(config.connection || {})
   if (this.driverName && config.connection) {
@@ -57,16 +57,38 @@ assign(Client.prototype, {
     return new Formatter(this)
   },
 
-  queryBuilder() {
-    return new QueryBuilder(this)
+  format(fmt) {
+    let i = 1;
+    const args = arguments;
+    return fmt.replace(/%([%sILQ])/g, (_, type) => {
+      if ('%' == type) return '%';
+      const arg = args[i++];
+      switch (type) {
+        case 's': return String(arg == null ? '' : arg)
+        case 'I': return this.ident(arg)
+        case 'L': return this.literal(arg)
+      }
+    });
+  },
+
+  ident(value) {
+
+  },
+
+  literal(value) {
+
+  },
+
+  queryBuilder(context) {
+    return new QueryBuilder(context)
   },
 
   queryCompiler(builder) {
     return new QueryCompiler(this, builder)
   },
 
-  schemaBuilder() {
-    return new SchemaBuilder(this)
+  schemaBuilder(context) {
+    return new SchemaBuilder(context)
   },
 
   schemaCompiler(builder) {
@@ -91,10 +113,6 @@ assign(Client.prototype, {
 
   runner(connection) {
     return new Runner(this, connection)
-  },
-
-  transaction(container, config, outerTx) {
-    return new Transaction(this, container, config, outerTx)
   },
 
   raw() {
@@ -154,7 +172,8 @@ assign(Client.prototype, {
     try {
       this.driver = this._driver()
     } catch (e) {
-      helpers.exit(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
+      this.log.error(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
+      process.exit()
     }
   },
 
@@ -181,7 +200,7 @@ assign(Client.prototype, {
       },
       destroy: (connection) => {
         if (poolConfig.beforeDestroy) {
-          helpers.warn(`
+          this.log.warn(`
             beforeDestroy is deprecated, please open an issue if you use this
             to discuss alternative apis
           `)
@@ -193,7 +212,7 @@ assign(Client.prototype, {
       },
       validate: (connection) => {
         if (connection.__knex__disposed) {
-          helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
+          this.log.warn(`Connection Error: ${connection.__knex__disposed}`)
           return false
         }
         return this.validateConnection(connection)
@@ -203,7 +222,7 @@ assign(Client.prototype, {
 
   initializePool(config) {
     if (this.pool) {
-      helpers.warn('The pool has already been initialized')
+      this.log.warn('The pool has already been initialized')
       return
     }
     this.pool = new Pool(assign(this.poolDefaults(config.pool || {}), config.pool))

@@ -8,7 +8,6 @@
 // which is then compiled into sql.
 // ------
 import { extend, each, toArray, isString, isFunction } from 'lodash'
-import * as helpers from '../helpers';
 
 function TableBuilder(client, method, tableName, fn) {
   this.client = client
@@ -26,6 +25,13 @@ function TableBuilder(client, method, tableName, fn) {
     );
   }
 }
+
+Object.defineProperty(TableBuilder.prototype, 'log', {
+  get() {
+    return this.client.log
+  }
+})
+
 
 TableBuilder.prototype.setSchema = function(schemaName) {
   this._schemaName = schemaName;
@@ -72,10 +78,10 @@ each(specialMethods, function(methods, dialect) {
   each(methods, function(method) {
     TableBuilder.prototype[method] = function(value) {
       if (this.client.dialect !== dialect) {
-        helpers.warn(`Knex only supports ${method} statement with ${dialect}.`);
+        this.log.warn(`Knex only supports ${method} statement with ${dialect}.`);
       }
       if (this._method === 'alter') {
-        helpers.warn(
+        this.log.warn(
           `Knex does not support altering the ${method} outside of create ` +
           `table, please use knex.raw statement.`
         );

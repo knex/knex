@@ -1,8 +1,11 @@
-/*global describe, expect, it, testPromise, d*/
+/*global d*/
+/*eslint-env mocha*/
+/*eslint no-var:0, max-len:0 */
 'use strict';
 
-var assert  = require('assert')
-var Promise = testPromise;
+var expect = require('expect')
+var assert = require('assert')
+var Promise = require('bluebird');
 
 module.exports = function(knex) {
 
@@ -598,7 +601,7 @@ module.exports = function(knex) {
                 column_b: 2,
                 details: 'One, Two, Zero',
                 status: 0
-            }]);
+              }]);
             tester('postgresql',
               'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?))',
               [1,1,1,2],
@@ -732,11 +735,11 @@ module.exports = function(knex) {
       var raw2 = knex.raw('select "stored_procedure"(?, ?, ?)', [1, 2, ['a', 'b', 'c']]);
       var expected1 = [[1, 2, 3]];
       var expected2 = [1, 2, ['a', 'b', 'c']];
-      expect(raw.toSQL().bindings).to.eql(knex.client.prepBindings(expected1));
-      expect(raw2.toSQL().bindings).to.eql(knex.client.prepBindings(expected2));
+      expect(raw.toSQL().bindings).toEqual(knex.client.prepBindings(expected1));
+      expect(raw2.toSQL().bindings).toEqual(knex.client.prepBindings(expected2));
       //Also expect raw's bindings to not have been modified by calling .toSQL() (preserving original bindings)
-      expect(raw.bindings).to.eql(expected1);
-      expect(raw2.bindings).to.eql(expected2);
+      expect(raw.bindings).toEqual(expected1);
+      expect(raw2.bindings).toEqual(expected2);
     });
 
     it('always returns the response object from raw', function() {
