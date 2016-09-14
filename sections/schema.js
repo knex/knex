@@ -413,7 +413,16 @@ export default [
     method: "foreign",
     example: "table.foreign(columns)",
     description: "Adds a foreign key constraint to a table for an existing column using `table.foreign(column).references(column)` or multiple columns using `table.foreign(columns).references(columns)`. You can also chain onDelete and/or onUpdate to set the reference option (RESTRICT, CASCADE, SET NULL, NO ACTION) for the operation. Note, this is the same as column.references(column) but works for existing columns.",
-    children: [    ]
+    children: [{
+      type: 'code',
+      language: 'js',
+      content: `
+        knex.schema.table('users', function (table) {
+          table.integer('user_id').unsigned()
+          table.foreign('user_id').references('Items.user_id_in_items')
+        })
+      `
+    }]
   },
   {
     type: "method",
