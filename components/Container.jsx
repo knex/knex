@@ -82,11 +82,11 @@ export default class Container extends Component {
   }
 
   render() {
-    const {state: { language }, props: { children }} = this
+    const {state: { language }, props: { children, version }} = this
     return (
       <div>
         {/* Sidebar */}
-        <Sidebar sections={children} />
+        <Sidebar sections={children} version={version} />
 
         {/* Select Language */}
         <LanguageSelect

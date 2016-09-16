@@ -5,8 +5,9 @@ import ReactDOM from 'react-dom'
 import Documentation from './Documentation'
 
 const changelog = require('../build/CHANGELOG.md')
+const version = require('../build/version')
 
 ReactDOM.render(
-  <Documentation changelog={changelog} />,
+  <Documentation changelog={changelog} version={version} />,
   document.getElementById('documentation')
 )

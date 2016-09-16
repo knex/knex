@@ -4,3 +4,4 @@ npm-debug.log
 .DS_Store
 .vagrant
 build/CHANGELOG.md
+build/version.js

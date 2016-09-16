@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import {VERSION} from 'knex'
 
 export default class Sidebar extends Component {
   render() {
@@ -7,7 +6,7 @@ export default class Sidebar extends Component {
       <div id="sidebar" className="interface">
 
         <a className="toc_title" href="#changelog">
-          Knex.js <span className="version">({VERSION})</span>
+          Knex.js <span className="version">({this.props.version})</span>
         </a>
 
         <ul className="toc_section">

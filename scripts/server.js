@@ -9,6 +9,7 @@ import path from 'path'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import Documentation from '../components/Documentation'
+const {version} = require('knex/package')
 
 const DOC_URL = 'https://rawgit.com/tgriesser/knex/master/CHANGELOG.md'
 
@@ -18,6 +19,7 @@ https.get(DOC_URL, (res) => {
   res.on('data', chunk => changelog += chunk)
   res.on('end', () => {
 
+    fs.writeFileSync(path.join(__dirname, '../build/version.js'), `module.exports = "${version}"`)
     fs.writeFileSync(path.join(__dirname, '../build/CHANGELOG.md'), changelog)
 
     const development = process.env.NODE_ENV !== 'production'
@@ -51,7 +53,7 @@ https.get(DOC_URL, (res) => {
         let html
         try {
           html = ReactDOMServer.renderToString(
-            <Documentation changelog={changelog} />
+            <Documentation changelog={changelog} version={version} />
           )
         } catch (e) {
           html = `<pre>${e.stack.replace(new RegExp(__dirname, 'g'), '~')}</pre>`
@@ -68,7 +70,7 @@ https.get(DOC_URL, (res) => {
     } else {
       fs.writeFileSync(
         path.join(__dirname, '../index.html'),
-        renderContent(ReactDOMServer.renderToString(<Documentation changelog={changelog} />))
+        renderContent(ReactDOMServer.renderToString(<Documentation changelog={changelog} version={version} />))
       )
     }
 

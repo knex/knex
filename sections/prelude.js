@@ -1,6 +1,5 @@
-import {VERSION} from 'knex'
 
-export default [
+export default (version) => [
   {
     type: "text",
     content: [
@@ -19,7 +18,7 @@ export default [
   {
     type: "heading",
     size: "lg",
-    content: `Latest Release: ${VERSION} - <span class=\"small\">[Change Log](#changelog)</span>`
+    content: `Latest Release: ${version} - <span class=\"small\">[Change Log](#changelog)</span>`
   },
   {
     type: "text",

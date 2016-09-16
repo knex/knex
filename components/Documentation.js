@@ -28,13 +28,14 @@ const constants = {
 export default class Documentation extends Component {
 
   static propTypes = {
-    changelog: PropTypes.string.isRequired
+    changelog: PropTypes.string.isRequired,
+    version: PropTypes.string.isRequired
   };
 
   render() {
     return (
-      <Container {...constants}>
-        <Section id="Prelude" content={prelude} />
+      <Container {...constants} version={this.props.version}>
+        <Section id="Prelude" content={prelude(this.props.version)} />
         <Section id="Upgrading" content={upgrading} />
         <Section id="Installation" content={installation} />
         <Section id="Builder" content={builder} />
