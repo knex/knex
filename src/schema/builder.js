@@ -9,7 +9,7 @@ import { each, toArray } from 'lodash'
 // knex instance.
 function SchemaBuilder(context) {
   const {client} = context
-  this.context = context
+  this.__context = context
   this.client = client
   this._sequence = []
   this._debug = client.config && client.config.debug

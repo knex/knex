@@ -72,9 +72,10 @@ assign(TableCompiler_MySQL.prototype, {
       output(resp) {
         const column = resp[0];
         const runner = this;
-        return compiler.getFKRefs(runner).get(0)
-          .then(refs =>
-            Promise.try(function () {
+        return compiler.getFKRefs(runner)
+          .then(resp => {
+            const refs = resp[0]
+            return Promise.try(function () {
               if (!refs.length) { return; }
               return compiler.dropFKRefs(runner, refs);
             }).then(function () {
@@ -102,7 +103,7 @@ assign(TableCompiler_MySQL.prototype, {
                 return ref;
               }));
             })
-          );
+          });
       }
     });
   },

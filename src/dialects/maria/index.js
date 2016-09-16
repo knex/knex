@@ -5,7 +5,6 @@ import inherits from 'inherits';
 import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
-import Transaction from './transaction';
 
 import { assign, map } from 'lodash'
 
@@ -19,10 +18,6 @@ assign(Client_MariaSQL.prototype, {
   dialect: 'mariadb',
 
   driverName: 'mariasql',
-
-  transaction() {
-    return new Transaction(this, ...arguments)
-  },
 
   _driver() {
     return require('mariasql')
@@ -59,9 +54,36 @@ assign(Client_MariaSQL.prototype, {
     return this.connectionSettings.db;
   },
 
+  // Runs the query on the specified connection, providing the bindings
+  // and any other necessary prep work.
+  _query(context, connection, obj) {
+    const tz = this.connectionSettings.timezone || 'local';
+    return new Promise((resolver, rejecter) => {
+      if (!obj.sql) {
+        return resolver()
+      }
+      const sql = this._formatQuery(obj.sql, obj.bindings, tz)
+      connection.query(sql, (err, rows) => {
+        if (err) {
+          if (this._isTransactionError(err)) {
+            this.log.warn(
+              'Transaction was implicitly committed, do not mix transactions and ' +
+              `DDL with ${this.driverName} (#805)`
+            )
+            return resolver()
+          }
+          return rejecter(err);
+        }
+        handleRows(rows, rows.info.metadata)
+        obj.response = [rows, rows.info]
+        resolver(obj)
+      })
+    });
+  },
+
   // Grab a connection, run the query via the MariaSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
-  _stream(connection, sql, stream) {
+  _stream(context, connection, sql, stream) {
     return new Promise(function(resolver, rejecter) {
       connection.query(sql.sql, sql.bindings)
         .on('result', function(res) {
@@ -78,22 +100,8 @@ assign(Client_MariaSQL.prototype, {
     });
   },
 
-  // Runs the query on the specified connection, providing the bindings
-  // and any other necessary prep work.
-  _query(connection, obj) {
-    const tz = this.connectionSettings.timezone || 'local';
-    return new Promise((resolver, rejecter) => {
-      if (!obj.sql) return resolver()
-      const sql = this._formatQuery(obj.sql, obj.bindings, tz)
-      connection.query(sql, function (err, rows) {
-        if (err) {
-          return rejecter(err);
-        }
-        handleRows(rows, rows.info.metadata);
-        obj.response = [rows, rows.info];
-        resolver(obj);
-      })
-    });
+  _isTransactionError(err) {
+    return err.code === 1305
   },
 
   // Process the response as returned from the query.

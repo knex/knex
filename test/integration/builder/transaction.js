@@ -10,7 +10,7 @@ var expect = require('expect')
 
 module.exports = function(knex) {
 
-  describe.skip('Transactions', function() {
+  describe('Transactions', function() {
 
     it('can run with asCallback', function(ok) {
       knex.transaction(function(t) {
@@ -144,14 +144,12 @@ module.exports = function(knex) {
       })
       .on('query', function(obj) {
         count++;
-        if (!__knexUid) __knexUid = obj.__knexUid;
-        expect(__knexUid).toEqual(obj.__knexUid);
       })
       .catch(function(msg) {
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
         var expectedCount =
           knex.client.dialect === 'oracle' ||
-          knex.client.dialect === 'mssql' ? 2 : 4;
+          knex.client.dialect === 'mssql' ? 2 : 5;
         expect(count).toEqual(expectedCount);
         expect(msg).toEqual(err);
         return knex('accounts').where('id', id).select('first_name');
@@ -182,12 +180,10 @@ module.exports = function(knex) {
         })
         .on('query', function(obj) {
           count++;
-          if (!__knexUid) __knexUid = obj.__knexUid;
-          expect(__knexUid).toEqual(obj.__knexUid);
         })
         .catch(function(msg) {
           expect(msg).toEqual(err);
-          expect(count).toEqual(5);
+          expect(count).toEqual(7);
           return knex('test_schema_migrations').count('*');
         })
         .catch(function(e) {
@@ -222,13 +218,11 @@ module.exports = function(knex) {
         })
         .on('query', function(obj) {
           count++;
-          if (!__knexUid) __knexUid = obj.__knexUid;
-          expect(__knexUid).toEqual(obj.__knexUid);
         }).then(function() {
           if (knex.client.dialect === 'mssql') {
             expect(count).toEqual(3);
           } else {
-            expect(count).toEqual(5);
+            expect(count).toEqual(7);
           }
           return knex('accounts').where('id', id).select('first_name');
         }).then(function(resp) {
@@ -277,16 +271,16 @@ module.exports = function(knex) {
           .then(expectQueryEventToHaveBeenTriggered)
           .catch(expectQueryEventToHaveBeenTriggered);
 
-    });
+    })
 
-    it('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function() {
+    it.skip('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function() {
       //To make this test easier, I'm changing the pool settings to max 1.
-      var knexConfig = _.clone(knex.client.config);
-      knexConfig.pool.min = 0;
-      knexConfig.pool.max = 1;
-      knexConfig.acquireConnectionTimeout = 1000;
+      var knexConfig = _.clone(knex.client.config)
+      knexConfig.pool.min = 0
+      knexConfig.pool.max = 1
+      knexConfig.acquireConnectionTimeout = 1000
 
-      var knexDb = new Knex(knexConfig);
+      var knexDb = new Knex(knexConfig)
 
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
       return knexDb.transaction(function(trx) {
@@ -303,7 +297,7 @@ module.exports = function(knex) {
           expect(error.bindings[0]).toEqual('Test');
           expect(error.sql).toEqual('select * FROM accounts WHERE username = ?');
           expect(error.message).toEqual('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?');
-          trx.commit();//Test done
+          trx.commit() //Test done
         });
       });
     });

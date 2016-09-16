@@ -1,4 +1,5 @@
 import { isArray, map, clone, each } from 'lodash'
+import Bluebird from 'bluebird'
 
 export default function(Target) {
 
@@ -13,7 +14,7 @@ export default function(Target) {
   // Create a new instance of the `Runner`, passing in the current object.
   Target.prototype.then = function(/* onFulfilled, onRejected */) {
     const result = this.client.runner(this).run()
-    return result.then.apply(result, arguments);
+    return Bluebird.resolve(result.then.apply(result, arguments));
   };
 
   // Add additional "options" to the builder. Typically used for client specific
@@ -42,7 +43,7 @@ export default function(Target) {
       if (!t.isTransaction()) {
         this.log.warn(`Invalid transaction value: ${t.client}`)
       } else {
-        this.client = t.client
+        this.__context = t
       }
     }
     return this;

@@ -6,7 +6,6 @@ import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 import { pick, map, assign } from 'lodash'
-import Transaction from './transaction';
 
 const configOptions = [
   'isServer',
@@ -53,16 +52,16 @@ assign(Client_MySQL2.prototype, {
   // The "dialect", for reference elsewhere.
   driverName: 'mysql2',
 
-  transaction() {
-    return new Transaction(this, ...arguments)
-  },
-
   _driver() {
     return require('mysql2')
   },
 
   validateConnection() {
     return true
+  },
+
+  _isTransactionError(err) {
+    return err.code === 'ER_SP_DOES_NOT_EXIST'
   },
 
   // Get a raw connection, called by the `pool` whenever a new

@@ -1,12 +1,16 @@
-import Promise from 'bluebird'
 import EventEmitter from 'events'
-import dedent from 'dedent'
+import debug from 'debug'
 
 import Migrator from '../migrate'
 import Seeder from '../seed'
 import FunctionHelper from '../functionhelper'
 import BatchInsert from '../util/batchInsert'
-import {commit, rollback, transactionContainer} from '../util/transactionContainer'
+import mixinHooks from '../util/mixinHooks'
+import {
+  commitTransaction, rollbackTransaction, transactionContainer
+} from '../util/transactionContainer'
+
+const debugQuery = debug('knex:query')
 
 let id = 0
 function getTrxId() {
@@ -51,6 +55,7 @@ export default class KnexContext extends EventEmitter {
         parentContext.emit('start', obj)
       })
       this.on('query', (obj) => {
+        this.__executionLog.push(obj)
         parentContext.emit('query', obj)
       })
       this.on('query-error', (err, obj) => {
@@ -83,32 +88,35 @@ export default class KnexContext extends EventEmitter {
     return this.schemaBuilder()
   }
 
-  context(config) {
-
+  // Get the connection for the current context, if we're in a root context we
+  // get a random connection out of the pool, otherwise we get & cache the connection
+  // on this context.
+  async acquireConnection() {
+    if (this.isRootContext()) {
+      return this.client.acquireConnection()
+    }
+    if (!this.__connection) {
+      this.__connection = this.__parentContext.acquireConnection()
+      await this.executeHooks('beforeFirst')
+    }
+    return this.__connection
   }
 
-  commit() {
-    return Promise.resolve(true)
-    return new Promise((resolve, reject) => {
-      if (!this.isTransaction()) {
-        return reject(new Error(
-          this.__isTransaction === false ? COMPLETED_TRANSACTION : NON_TRANSACTION
-        ))
-      }
-      return commit(this, resolve)
-    })
+  context(config = {}) {
+    const ctx = new KnexContext(this.client, this)
+    function knexCtx() {
+      return knexCtx.table(...arguments)
+    }
+    knexCtx.__proto__ = ctx
+    return knexCtx
   }
 
-  rollback() {
-    return Promise.reject(new Error())
-    return new Promise((resolve, reject) => {
-      if (!this.isTransaction()) {
-        return reject(new Error(
-          this.__isTransaction === false ? COMPLETED_TRANSACTION : NON_TRANSACTION
-        ))
-      }
-      return rollback(this, resolve)
-    })
+  async commit() {
+    return commitTransaction(this)
+  }
+
+  async rollback() {
+    return rollbackTransaction(this)
   }
 
   isTransaction() {
@@ -134,6 +142,13 @@ export default class KnexContext extends EventEmitter {
       return
     }
     this.removeAllListeners()
+    if (this.__connection && this.__parentContext.isRootContext()) {
+      this.__connection.then(conn => {
+        debugQuery(`${conn.__knexUid} ...releasing (end)...`)
+        this.client.releaseConnection(conn)
+      })
+    }
+    this.__connection = null
   }
 
   // Typically never needed, initializes the pool for a knex client.
@@ -174,22 +189,30 @@ export default class KnexContext extends EventEmitter {
     const trx = new KnexContext(this.client, this, {isTransaction: trxId})
 
     function knexTrx() {
-      return trx.table(...arguments)
+      return knexTrx.table(...arguments)
     }
     knexTrx.__proto__ = trx
-    // knexTrx.hook('beforeFirst', () => {
-    //   if (this.isInTransaction()) {
-    //   }
-    // })
+
+    // Before the first query runs, we need to ensure the
+    // SQL statement for the BEGIN / SAVEPOINT is executed on
+    // the context's connection.
+    knexTrx.hookOnce('beforeFirst', async () => {
+      const sql = this.isInTransaction()
+        ? knexTrx.client.format(knexTrx.client.transaction.savepoint, trxId)
+        : knexTrx.client.transaction.begin
+
+      await knexTrx.client.query(knexTrx, sql)
+    })
 
     if (container) {
       return transactionContainer(knexTrx, container)
     }
+
     return knexTrx
   }
 
   raw() {
-    return this.client.raw(...arguments)
+    return this.client.__raw(this, ...arguments)
   }
 
   queryBuilder() {
@@ -448,10 +471,5 @@ export default class KnexContext extends EventEmitter {
 
 }
 
-const COMPLETED_TRANSACTION = dedent`
-  attempting to call commit/rollback multiple times on the same transaction object
-`
-const NON_TRANSACTION = dedent`
-  commit/rollback are only valid on a knex transaction object
-`
-
+// Mixin .hook, .hookOnce, etc.
+mixinHooks(KnexContext)

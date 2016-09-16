@@ -127,25 +127,25 @@ module.exports = function(knex) {
         status: 1
       }], 'id')
       .testSql(function(tester) {
-          tester(
-            'oracle',
-            "begin execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?;end;",
-            [
-              1,
-              'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-              0,
-              function (v) {return v.toString() === '[object ReturningHelper:id]';},
-              2,
-              'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-              1,
-              function (v) {return v.toString() === '[object ReturningHelper:id]';},
-              3,
-              '',
-              1,
-              function (v) {return v.toString() === '[object ReturningHelper:id]';}
-            ],
-            [1, 2, 3]
-          );
+        tester(
+          'oracle',
+          "begin execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?;end;",
+          [
+            1,
+            'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+            0,
+            function (v) {return v.toString() === '[object ReturningHelper:id]';},
+            2,
+            'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+            1,
+            function (v) {return v.toString() === '[object ReturningHelper:id]';},
+            3,
+            '',
+            1,
+            function (v) {return v.toString() === '[object ReturningHelper:id]';}
+          ],
+          [1, 2, 3]
+        );
       }).asCallback(function(err) {
         if (err) return ok(err);
         ok();
@@ -224,7 +224,6 @@ module.exports = function(knex) {
     });
 
     it('will fail when multiple inserts are made into a unique column', function() {
-
       return knex('accounts')
         .where('id', '>', 1)
         .orWhere('x', 2)
@@ -266,7 +265,7 @@ module.exports = function(knex) {
         })
         .then(function() {
           throw new Error('There should be a fail when multi-insert are made in unique col.');
-        }, function() {});
+        }, function() {})
 
     });
 

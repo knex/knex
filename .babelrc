@@ -1,10 +1,11 @@
 {
-  "presets": ["es2015-loose"],
+  // "presets": ["es2015-loose"],
   "plugins": [
     "lodash",
     "transform-runtime",
     "add-module-exports",
     "transform-object-rest-spread",
     "transform-async-to-generator",
+    "transform-es2015-modules-commonjs"
   ]
 }

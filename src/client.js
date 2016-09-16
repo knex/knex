@@ -24,6 +24,7 @@ import { assign, uniqueId, cloneDeep } from 'lodash'
 
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
+const debugValues = require('debug')('knex:values')
 const debugPool = require('debug')('knex:pool')
 
 let id = 0
@@ -52,6 +53,15 @@ function Client(config = {}) {
 inherits(Client, EventEmitter)
 
 assign(Client.prototype, {
+
+  transaction: {
+    begin: 'BEGIN',
+    savepoint: 'SAVEPOINT %s',
+    commit: 'COMMIT',
+    releaseSavepoint: 'RELEASE SAVEPOINT %s',
+    rollback: 'ROLLBACK',
+    rollbackSavepoint: 'ROLLBACK TO SAVEPOINT %s'
+  },
 
   formatter() {
     return new Formatter(this)
@@ -83,12 +93,20 @@ assign(Client.prototype, {
     return new QueryBuilder(context)
   },
 
-  queryCompiler(builder) {
-    return new QueryCompiler(this, builder)
-  },
-
   schemaBuilder(context) {
     return new SchemaBuilder(context)
+  },
+
+  raw() {
+    return this.__raw({client: this}, ...arguments)
+  },
+
+  __raw(context, ...rest) {
+    return new Raw(context).set(...rest)
+  },
+
+  queryCompiler(builder) {
+    return new QueryCompiler(this, builder)
   },
 
   schemaCompiler(builder) {
@@ -111,12 +129,8 @@ assign(Client.prototype, {
     return new ColumnCompiler(this, tableBuilder, columnBuilder)
   },
 
-  runner(connection) {
-    return new Runner(this, connection)
-  },
-
-  raw() {
-    return new Raw(this).set(...arguments)
+  runner(builder) {
+    return new Runner(builder)
   },
 
   _formatQuery(sql, bindings, timeZone) {
@@ -140,24 +154,58 @@ assign(Client.prototype, {
     }
   }),
 
-  query(connection, obj) {
-    if (typeof obj === 'string') obj = {sql: obj}
-    obj.bindings = this.prepBindings(obj.bindings)
-    debugQuery(obj.sql)
-    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
-    return this._query(connection, obj).catch((err) => {
+  async query(context, obj) {
+    if (typeof obj === 'string') {
+      obj = {sql: obj}
+    }
+    let connection
+    try {
+      connection = await context.acquireConnection()
+      obj.bindings = this.prepBindings(obj.bindings)
+
+      debugQuery(`${connection.__knexUid} - ${obj.sql}`)
+      debugValues(obj.bindings)
+
+      this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+      context.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+
+      return await this._query(context, connection, obj)
+    } catch (err) {
       err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message
       this.emit('query-error', err, assign({__knexUid: connection.__knexUid}, obj))
+      context.emit('query-error', err, assign({__knexUid: connection.__knexUid}, obj))
       throw err
-    })
+    } finally {
+      if (connection) {
+        if (context.isRootContext()) {
+          debugQuery(`${connection.__knexUid} ...releasing (query)...`)
+          this.releaseConnection(connection)
+        } else {
+          debugQuery(`${connection.__knexUid} ...keeping...`)
+        }
+      }
+    }
   },
 
-  stream(connection, obj, stream, options) {
-    if (typeof obj === 'string') obj = {sql: obj}
-    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
-    debugQuery(obj.sql)
-    obj.bindings = this.prepBindings(obj.bindings)
-    return this._stream(connection, obj, stream, options)
+  async stream(context, obj, passThroughStream, options) {
+    if (typeof obj === 'string') {
+      obj = {sql: obj}
+    }
+    let connection
+    try {
+      connection = await context.acquireConnection()
+      this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+      context.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+
+      debugQuery(obj.sql)
+
+      obj.bindings = this.prepBindings(obj.bindings)
+      return await this._stream(context, connection, obj, passThroughStream, options)
+    } finally {
+      if (connection && context.isRootContext()) {
+        this.releaseConnection(connection)
+      }
+    }
   },
 
   prepBindings(bindings) {
@@ -184,9 +232,7 @@ assign(Client.prototype, {
       max: 10,
       name: name,
       log(str, level) {
-        if (level === 'info') {
-          debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
-        }
+        debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
       },
       create: (callback) => {
         this.acquireRawConnection()
@@ -234,36 +280,25 @@ assign(Client.prototype, {
 
   // Acquire a connection from the pool.
   acquireConnection() {
-    let request = null
-    const completed = new Promise((resolver, rejecter) => {
+    return new Promise((resolver, rejecter) => {
       if (!this.pool) {
         return rejecter(new Error('Unable to acquire a connection'))
       }
-      request = this.pool.acquire(function(err, connection) {
-        if (err) return rejecter(err)
+      this.pool.acquire(function(err, connection) {
+        if (err) {
+          return rejecter(err)
+        }
         debug('acquired connection from pool: %s', connection.__knexUid)
         resolver(connection)
       })
     })
-    const abort = function(reason) {
-      if (request && !request.fulfilled) {
-        request.abort(reason)
-      }
-    }
-    return {
-      completed: completed,
-      abort: abort
-    }
   },
 
   // Releases a connection back to the connection pool,
   // returning a promise resolved when the connection is released.
   releaseConnection(connection) {
-    return new Promise((resolver) => {
-      debug('releasing connection to pool: %s', connection.__knexUid)
-      this.pool.release(connection)
-      resolver()
-    })
+    debug('releasing connection to pool: %s', connection.__knexUid)
+    this.pool.release(connection)
   },
 
   // Destroy the current connection pool for the client.

@@ -16,8 +16,7 @@ import {
 // Typically called from `knex.builder`,
 // start a new query building chain.
 function Builder(context) {
-  const {client} = context
-  this.__client = client
+  const { client } = context
   this.__context = context
   this.and = this;
   this._single = {};
@@ -40,7 +39,7 @@ Object.defineProperties(Builder.prototype, {
   },
   client: {
     get() {
-      return this.__client
+      return this.__context.client
     }
   }
 })

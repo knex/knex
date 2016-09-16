@@ -12,7 +12,7 @@ import inherits from 'inherits';
 
 function LockError(err) {
   this.name = 'MigrationLocked';
-  this.message = err.msg;
+  this.message = err.message;
   this.stack = err.stack;
 }
 inherits(LockError, Error);
@@ -44,7 +44,7 @@ export default class Migrator {
 
   // Migrators to the latest configuration.
   latest(config) {
-    this.config = this.setConfig(config);
+    this.config = this.setConfig(config)
     return this._migrationData()
       .tap(validateMigrationList)
       .spread((all, completed) => {
@@ -182,7 +182,7 @@ export default class Migrator {
         })
         .then(() => this._lockMigrations(trx));
     }).catch(err => {
-      throw new LockError(err.message);
+      throw new LockError(err);
     });
   }
 
@@ -303,9 +303,9 @@ export default class Migrator {
   _useTransaction(migration, allTransactionsDisabled) {
     const singleTransactionValue = get(migration, 'config.transaction');
 
-    return isBoolean(singleTransactionValue) ?
-      singleTransactionValue :
-      !allTransactionsDisabled;
+    return isBoolean(singleTransactionValue)
+      ? singleTransactionValue
+      : !allTransactionsDisabled
   }
 
   // Runs a batch of `migrations` in a specified `direction`, saving the

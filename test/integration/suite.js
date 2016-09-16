@@ -37,6 +37,7 @@ module.exports = function(knex) {
     describe('knex.destroy', function() {
       it('should allow destroying the pool with knex.destroy', function() {
         var spy = expect.spyOn(knex.client.pool, 'destroyAllNow').andCallThrough();
+        debugger
         return knex.destroy().then(function() {
           expect(spy.calls.length).toEqual(1);
           expect(knex.client.pool).toEqual(undefined);

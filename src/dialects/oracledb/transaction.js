@@ -1,5 +1,4 @@
 const Promise = require('bluebird');
-const Transaction = require('../../transaction');
 const debugTx = require('debug')('knex:tx');
 
 export default class Oracle_Transaction extends Transaction {
@@ -24,7 +23,10 @@ export default class Oracle_Transaction extends Transaction {
     const self = this;
     this._completed = true;
     debugTx('%s: rolling back', this.txid);
-    return conn.rollbackAsync().timeout(5000).catch(Promise.TimeoutError, function(e) {
+    return conn.rollbackAsync().timeout(5000).catch(function(e) {
+      if (!(e instanceof Promise.TimeoutError)) {
+        throw e
+      }
       self._rejecter(e);
     }).then(function() {
       self._rejecter(err);
@@ -34,7 +36,7 @@ export default class Oracle_Transaction extends Transaction {
   acquireConnection(config) {
     const t = this;
     return Promise.try(function() {
-      return t.client.acquireConnection().completed.then(function(cnx) {
+      return t.client.acquireConnection().then(function(cnx) {
         cnx.isTransaction = true;
         return cnx;
       });

@@ -17,6 +17,7 @@ import uuid from 'node-uuid';
 // properly formatted / bound query string.
 function QueryCompiler(client, builder) {
   this.client = client
+  this.context = builder.__context
   this.method = builder._method || 'select';
   this.options = builder._options;
   this.single = builder._single;
@@ -330,7 +331,7 @@ assign(QueryCompiler.prototype, {
   // Compiles the "locks".
   lock() {
     if (this.single.lock) {
-      if (!this.client.transacting) {
+      if (!this.context.isInTransaction()) {
         this.log.warn('You are attempting to perform a "lock" command outside of a transaction.')
       } else {
         return this[this.single.lock]()

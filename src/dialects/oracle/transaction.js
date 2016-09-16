@@ -1,6 +1,5 @@
 
 import Promise from 'bluebird';
-import Transaction from '../../transaction';
 const debugTx = require('debug')('knex:tx')
 
 export default class Oracle_Transaction extends Transaction {
@@ -32,7 +31,7 @@ export default class Oracle_Transaction extends Transaction {
   acquireConnection(config) {
     const t = this
     return Promise.try(() =>
-      config.connection || t.client.acquireConnection().completed
+      config.connection || t.client.acquireConnection()
     ).tap(connection => {
       if (!t.outerTx) {
         connection.setAutoCommit(false)

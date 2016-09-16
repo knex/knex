@@ -2,19 +2,23 @@
 /*eslint no-var:0, max-len:0 */
 'use strict';
 
-var equal    = require('assert').equal;
-var path     = require('path');
-var expect   = require('expect');
-var rimraf   = require('rimraf');
-var Promise  = require('bluebird');
+var equal = require('assert').equal;
+var path = require('path');
+var expect = require('expect');
+var rimraf = require('rimraf');
+var Promise = require('bluebird');
 
 module.exports = function(knex) {
 
   require('rimraf').sync(path.join(__dirname, './migration'));
 
   before(function() {
-    // make sure lock was not left from previous failed test run
-    return knex.migrate.forceFreeMigrationsLock({directory: 'test/integration/migrate/test'});
+    return knex.schema
+      .dropTableIfExists('knex_migrations')
+      .dropTableIfExists('knex_migrations_lock')
+      .then(() => {
+        return knex.migrate.forceFreeMigrationsLock({directory: 'test/integration/migrate/test'});
+      })
   });
 
   describe('knex.migrate', function () {
@@ -39,7 +43,9 @@ module.exports = function(knex) {
 
       beforeEach(function() {
         // ignore errors from failed migrations
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function () {});
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function (e) {
+          console.log(e.stack)
+        });
       });
 
       afterEach(function() {
@@ -221,7 +227,7 @@ module.exports = function(knex) {
         });
       });
 
-      it.skip('should not create column for invalid migration', function() {
+      it('should not create column for invalid migration', function() {
         return knex.schema.hasColumn('migration_test_1', 'transaction').then(function(exists) {
           // MySQL / Oracle commit transactions implicit for most common
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
@@ -328,7 +334,7 @@ module.exports = function(knex) {
         });
       });
 
-      it.skip('should not create column for invalid migration with transaction enabled', function() {
+      it('should not create column for invalid migration with transaction enabled', function() {
         return knex.schema.hasColumn('migration_test_trx_1', 'transaction').then(function(exists) {
           // MySQL / Oracle commit transactions implicit for most common
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),

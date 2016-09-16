@@ -10,7 +10,6 @@ import * as helpers from '../../helpers';
 import {bufferToString} from '../../query/string';
 import Formatter from './formatter';
 
-import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
 import SchemaCompiler from './schema/compiler';
 import ColumnBuilder from './schema/columnbuilder';
@@ -116,7 +115,7 @@ assign(Client_Oracle.prototype, {
     })
   },
 
-  _stream(connection, obj, stream, options) {
+  _stream(context, connection, obj, stream, options) {
     obj.sql = this.positionBindings(obj.sql);
     return new Promise(function (resolver, rejecter) {
       stream.on('error', (err) => {
@@ -133,7 +132,7 @@ assign(Client_Oracle.prototype, {
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
-  _query(connection, obj) {
+  _query(context, connection, obj) {
 
     // convert ? params into positional bindings (:1)
     obj.sql = this.positionBindings(obj.sql);

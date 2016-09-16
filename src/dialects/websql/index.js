@@ -4,7 +4,6 @@
 // -------
 import inherits from 'inherits';
 
-import Transaction from './transaction';
 import Client_SQLite3 from '../sqlite3';
 import Promise from 'bluebird';
 import { assign, map, uniqueId, clone } from 'lodash'
@@ -20,20 +19,24 @@ inherits(Client_WebSQL, Client_SQLite3);
 
 assign(Client_WebSQL.prototype, {
 
-  transaction() {
-    return new Transaction(this, ...arguments)
-  },
-
   dialect: 'websql',
+
+  transaction: {
+    begin: '',
+    savepoint: '',
+    commit: '',
+    releaseSavepoint: '',
+    rollback: '',
+    rollbackSavepoint: '',
+  },
 
   // Get a raw connection from the database, returning a promise with the connection object.
   acquireConnection() {
-    const client = this;
-    const completed = new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       try {
         /*jslint browser: true*/
         const db = openDatabase(
-          client.name, client.version, client.displayName, client.estimatedSize
+          this.name, this.version, this.displayName, this.estimatedSize
         );
         db.transaction(function(t) {
           t.__knexUid = uniqueId('__knexUid');
@@ -42,14 +45,7 @@ assign(Client_WebSQL.prototype, {
       } catch (e) {
         reject(e);
       }
-    });
-    const abort = function(reason) {
-      // Do nothing, websql has no pool
-    }
-    return {
-      completed: completed,
-      abort: abort
-    };
+    })
   },
 
   // Used to explicitly close a connection, called internally by the pool
@@ -60,7 +56,7 @@ assign(Client_WebSQL.prototype, {
 
   // Runs the query on the specified connection,
   // providing the bindings and any other necessary prep work.
-  _query(connection, obj) {
+  _query(context, connection, obj) {
     return new Promise(function(resolver, rejecter) {
       if (!connection) return rejecter(new Error('No connection provided.'));
       connection.executeSql(obj.sql, obj.bindings, function(trx, response) {
@@ -72,7 +68,7 @@ assign(Client_WebSQL.prototype, {
     });
   },
 
-  _stream(connection, sql, stream) {
+  _stream(context, connection, sql, stream) {
     const client = this;
     return new Promise(function(resolver, rejecter) {
       stream.on('error', rejecter)

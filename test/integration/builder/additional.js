@@ -8,7 +8,7 @@ var expect = require('expect')
 
 module.exports = function(knex) {
 
-  describe.skip('Additional', function () {
+  describe('Additional', function () {
 
     it('should truncate a table with truncate', function() {
 
@@ -257,7 +257,7 @@ module.exports = function(knex) {
     });
 
 
-    it('.timeout() should throw TimeoutError', function() {
+    it.skip('.timeout() should throw TimeoutError', function() {
       var dialect = knex.client.config.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
       var testQueries = {
@@ -304,7 +304,7 @@ module.exports = function(knex) {
     });
 
 
-    it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
+    it.skip('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
       var dialect = knex.client.config.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
 
@@ -377,7 +377,7 @@ module.exports = function(knex) {
     });
 
 
-    it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
+    it.skip('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
       // Only mysql/mariadb query cancelling supported for now
       var dialect = knex.client.config.dialect;
       if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
@@ -404,7 +404,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('Event: query-response', function() {
+    it.skip('Event: query-response', function() {
       var queryCount = 0;
 
       var onQueryResponse = function(response, obj, builder) {
@@ -430,7 +430,7 @@ module.exports = function(knex) {
     });
 
 
-    it('Event: query-error', function() {
+    it.skip('Event: query-error', function() {
       var queryCount = 0;
       var onQueryError = function(error, obj) {
         queryCount++;

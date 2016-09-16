@@ -7,5 +7,8 @@ export default {
   },
   warn(msg) {
     console.log(chalk.yellow(`Knex:warning - ${msg}`))
+  },
+  debug(msg) {
+    console.log(chalk.magenta(`Knex:debug ${msg}`))
   }
 }

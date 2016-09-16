@@ -15,8 +15,13 @@ const fakeClient = {
     return new Formatter(fakeClient)
   }
 }
+const fakeContext = {
+  client: fakeClient
+}
 
-function Raw(client = fakeClient) {
+function Raw(context = fakeContext) {
+  const {client} = context
+  this.__context = context
   this.client = client
 
   this.sql = ''

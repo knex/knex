@@ -1,69 +1,48 @@
 import { assign, isArray } from 'lodash'
 import Promise from 'bluebird';
-
-let PassThrough;
+import { PassThrough } from 'stream'
 
 // The "Runner" constructor takes a "builder" (query, schema, or raw)
 // and runs through each of the query statements, calling any additional
 // "output" method provided alongside the query and bindings.
-function Runner(client, builder) {
-  this.client = client
-  this.builder = builder
-  this.queries = []
+export default class Runner {
 
-  // The "connection" object is set on the runner when
-  // "run" is called.
-  this.connection = void 0
-}
+  constructor(builder) {
+    this.builder = builder
+    this.client = this.builder.client
+    this.context = builder.__context
+    this.queries = []
+  }
 
-Object.defineProperty(Runner.prototype, 'log', {
-  get() {
+  get log() {
     return this.client.log
   }
-})
-
-assign(Runner.prototype, {
 
   // "Run" the target, calling "toSQL" on the builder, returning
   // an object or array of queries to run, each of which are run on
   // a single connection.
-  run() {
-    const runner = this
-    return Promise.using(this.ensureConnection(), function(connection) {
-      runner.connection = connection;
-
-      runner.client.emit('start', runner.builder)
-      runner.builder.emit('start', runner.builder)
-      const sql = runner.builder.toSQL();
-
-      if (runner.builder._debug) {
+  async run() {
+    try {
+      this.context.emit('start', this.builder)
+      this.builder.emit('start', this.builder)
+      const sql = this.builder.toSQL()
+      if (this.builder._debug) {
         this.log.debug(sql)
       }
-
       if (isArray(sql)) {
-        return runner.queryArray(sql);
+        return await this.queryArray(sql)
       }
-      return runner.query(sql);
-
-    })
-
-    // If there are any "error" listeners, we fire an error event
-    // and then re-throw the error to be eventually handled by
-    // the promise chain. Useful if you're wrapping in a custom `Promise`.
-    .catch(function(err) {
-      if (runner.builder._events && runner.builder._events.error) {
-        runner.builder.emit('error', err);
+      return await this.query(sql)
+    } catch(err) {
+      if (this.builder._events && this.builder._events.error) {
+        // TODO: Deprecate?
+        this.builder.emit('error', err)
       }
-      throw err;
-    })
-
-    // Fire a single "end" event on the builder when
-    // all queries have successfully completed.
-    .tap(function() {
-      runner.builder.emit('end');
-    })
-
-  },
+      throw err
+    } finally {
+      this.builder.emit('end')
+    }
+  }
 
   // Stream the result set, by passing through to the dialect's streaming
   // capabilities. If the options are
@@ -80,73 +59,72 @@ assign(Runner.prototype, {
     // Determines whether we emit an error or throw here.
     const hasHandler = typeof handler === 'function';
 
-    // Lazy-load the "PassThrough" dependency.
-    PassThrough = PassThrough || require('readable-stream').PassThrough;
-
-    const runner = this;
-    const stream = new PassThrough({objectMode: true});
-    const promise = Promise.using(this.ensureConnection(), function(connection) {
-      runner.connection = connection;
-      const sql = runner.builder.toSQL()
-      const err = new Error('The stream may only be used with a single query statement.');
-      if (isArray(sql)) {
-        if (hasHandler) throw err;
-        stream.emit('error', err);
-      }
-      return runner.client.stream(runner.connection, sql, stream, options);
-    })
+    const passThroughStream = new PassThrough({objectMode: true})
+    const promise = this.runStream(hasHandler, passThroughStream, options)
 
     // If a function is passed to handle the stream, send the stream
     // there and return the promise, otherwise just return the stream
     // and the promise will take care of itsself.
     if (hasHandler) {
-      handler(stream);
+      handler(passThroughStream)
       return promise;
     }
-    return stream;
-  },
+    return passThroughStream;
+  }
+
+  async runStream(hasHandler, passThroughStream, options) {
+    const sql = this.builder.toSQL()
+    if (isArray(sql)) {
+      const err = new Error('The stream may only be used with a single query statement.')
+      if (hasHandler) {
+        throw err
+      }
+      passThroughStream.emit('error', err)
+      return
+    }
+    return this.client.stream(this.context, sql, passThroughStream, options)
+  }
 
   // Allow you to pipe the stream to a writable stream.
   pipe(writable, options) {
-    return this.stream(options).pipe(writable);
-  },
+    return this.stream(options).pipe(writable)
+  }
 
   // "Runs" a query, returning a promise. All queries specified by the builder are guaranteed
   // to run in sequence, and on the same connection, especially helpful when schema building
   // and dealing with foreign key constraints, etc.
-  query: Promise.method(function(obj) {
-    this.builder.emit('query', assign({__knexUid: this.connection.__knexUid}, obj))
-    const runner = this
-    let queryPromise = this.client.query(this.connection, obj)
+  async query(obj) {
+    const {client, builder, context} = this
 
-    if(obj.timeout) {
+    const toEmit = {__knexUid: 'something', ...obj}
+
+    builder.emit('query', toEmit)
+    context.emit('query', toEmit)
+
+    let queryPromise = client.query(context, obj)
+
+    if (obj.timeout) {
       queryPromise = queryPromise.timeout(obj.timeout)
     }
 
     return queryPromise
       .then((resp) => {
-        const processedResponse = this.client.processResponse(resp, runner);
-        this.builder.emit(
-          'query-response',
-          processedResponse,
-          assign({__knexUid: this.connection.__knexUid}, obj),
-          this.builder
-        );
-        this.client.emit(
-          'query-response',
-          processedResponse,
-          assign({__knexUid: this.connection.__knexUid}, obj),
-          this.builder
-        );
+        const processedResponse = client.processResponse(resp, this)
+        builder.emit('query-response', processedResponse, toEmit, builder)
+        context.emit('query-response', processedResponse, toEmit, builder)
         return processedResponse;
-      }).catch(Promise.TimeoutError, error => {
+      }).catch(error => {
+        if (!(error instanceof Promise.TimeoutError)) {
+          throw error
+        }
         const { timeout, sql, bindings } = obj;
 
         let cancelQuery;
         if (obj.cancelOnTimeout) {
-          cancelQuery = this.client.cancelQuery(this.connection);
+          console.log("MISSING CANCEL")
+          cancelQuery = Promise.resolve() // client.cancelQuery(connection)
         } else {
-          cancelQuery = Promise.resolve();
+          cancelQuery = Promise.resolve()
         }
 
         return cancelQuery
@@ -155,74 +133,38 @@ assign(Runner.prototype, {
             throw assign(cancelError, {
               message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,
               sql, bindings, timeout
-            });
+            })
           })
           .then(() => {
             // cancellation succeeded, rethrow timeout error
             throw assign(error, {
               message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
               sql, bindings, timeout
-            });
-          });
+            })
+          })
       })
       .catch((error) => {
-        this.builder.emit('query-error', error, assign({__knexUid: this.connection.__knexUid}, obj))
+        builder.emit('query-error', error, assign({__knexUid: 'something'}, obj))
+        context.emit('query-error', error, assign({__knexUid: 'something'}, obj))
         throw error;
-      });
-  }),
+      })
+  }
 
   // In the case of the "schema builder" we call `queryArray`, which runs each
   // of the queries in sequence.
-  queryArray(queries) {
-    return queries.length === 1 ? this.query(queries[0]) : Promise.bind(this)
-      .return(queries)
-      .reduce(function(memo, query) {
-        return this.query(query).then(function(resp) {
-          memo.push(resp)
-          return memo;
-        });
-      }, [])
-  },
-
-  // Check whether there's a transaction flag, and that it has a connection.
-  ensureConnection() {
-    const runner = this
-    const acquireConnectionTimeout = runner.client.config.acquireConnectionTimeout || 60000;
-    return Promise.try(() => {
-      return runner.connection || new Promise((resolver, rejecter) => {
-        const acquireConnection = runner.client.acquireConnection();
-
-        acquireConnection.completed
-          .timeout(acquireConnectionTimeout)
-          .then(resolver)
-          .catch(Promise.TimeoutError, (error) => {
-            const timeoutError = new Error(
-              'Knex: Timeout acquiring a connection. The pool is probably full. ' +
-              'Are you missing a .transacting(trx) call?'
-            );
-            const additionalErrorInformation = {
-              timeoutStack: error.stack
-            }
-
-            if(runner.builder) {
-              additionalErrorInformation.sql = runner.builder.sql;
-              additionalErrorInformation.bindings = runner.builder.bindings;
-            }
-
-            assign(timeoutError, additionalErrorInformation)
-
-            // Let the pool know that this request for a connection timed out
-            acquireConnection.abort('Knex: Timeout acquiring a connection.')
-
-            rejecter(timeoutError)
-          })
-          .catch(rejecter)
-      })
-    }).disposer(function() {
-      runner.client.releaseConnection(runner.connection)
-    })
+  async queryArray(queries) {
+    const executed = []
+    const context = this.context
+    const ctx = this.context = this.context.context()
+    try {
+      for (const query of queries) {
+        executed.push(await this.query(query))
+      }
+    } finally {
+      ctx.end()
+    }
+    this.context = context
+    return executed.length === 1 ? executed[0] : executed
   }
 
-})
-
-export default Runner;
+}
