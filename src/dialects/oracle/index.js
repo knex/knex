@@ -1,7 +1,7 @@
 
 // Oracle Client
 // -------
-import { assign, map, flatten, values } from 'lodash'
+import { map, assign, flatten, values } from 'lodash'
 
 import inherits from 'inherits';
 import Client from '../../client';
@@ -36,10 +36,6 @@ assign(Client_Oracle.prototype, {
     return require('oracle')
   },
 
-  transaction() {
-    return new Transaction(this, ...arguments)
-  },
-
   formatter() {
     return new Formatter(this)
   },
@@ -65,7 +61,7 @@ assign(Client_Oracle.prototype, {
   },
 
   prepBindings(bindings) {
-    return map(bindings, (value) => {
+    return bindings.map((value) => {
       // returning helper uses always ROWID as string
       if (value instanceof ReturningHelper && this.driver) {
         return new this.driver.OutParam(this.driver.OCCISTRING)
@@ -166,7 +162,7 @@ assign(Client_Oracle.prototype, {
       case 'pluck':
       case 'first':
         response = helpers.skim(response);
-        if (obj.method === 'pluck') response = map(response, obj.pluck);
+        if (obj.method === 'pluck') response = response.map(val => val[obj.pluck])
         return obj.method === 'first' ? response[0] : response;
       case 'insert':
       case 'del':

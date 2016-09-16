@@ -6,7 +6,7 @@ import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 
-import { assign, map } from 'lodash'
+import { assign } from 'lodash'
 
 function Client_MariaSQL(config) {
   Client_MySQL.call(this, config)
@@ -115,8 +115,8 @@ assign(Client_MariaSQL.prototype, {
       case 'select':
       case 'pluck':
       case 'first': {
-        const resp = helpers.skim(rows);
-        if (method === 'pluck') return map(resp, obj.pluck);
+        let resp = helpers.skim(rows);
+        if (method === 'pluck') resp = resp.map(val => val[obj.pluck])
         return method === 'first' ? resp[0] : resp;
       }
       case 'insert':

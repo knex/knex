@@ -13,12 +13,7 @@ module.exports = function(knex) {
   require('rimraf').sync(path.join(__dirname, './migration'));
 
   before(function() {
-    return knex.schema
-      .dropTableIfExists('knex_migrations')
-      .dropTableIfExists('knex_migrations_lock')
-      .then(() => {
-        return knex.migrate.forceFreeMigrationsLock({directory: 'test/integration/migrate/test'});
-      })
+    return knex.migrate.forceFreeMigrationsLock({directory: 'test/integration/migrate/test'});
   });
 
   describe('knex.migrate', function () {
@@ -43,9 +38,7 @@ module.exports = function(knex) {
 
       beforeEach(function() {
         // ignore errors from failed migrations
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function (e) {
-          console.log(e.stack)
-        });
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function () {});
       });
 
       afterEach(function() {

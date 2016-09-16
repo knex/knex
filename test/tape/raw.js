@@ -1,13 +1,15 @@
+/*eslint no-var:0, max-len:0 */
 'use strict';
 
+var KnexContext = require('../../lib/classes/KnexContext')
 var Raw    = require('../../lib/raw');
 var Client = require('../../lib/client')
 var test   = require('tape')
 var _      = require('lodash');
 
-var client = new Client()
+var context = new KnexContext(new Client())
 function raw(sql, bindings) {
-  return new Raw(client).set(sql, bindings)
+  return new Raw(context).set(sql, bindings)
 }
 
 test('allows for ?? to interpolate identifiers', function(t) {

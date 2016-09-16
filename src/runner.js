@@ -113,7 +113,8 @@ export default class Runner {
         builder.emit('query-response', processedResponse, toEmit, builder)
         context.emit('query-response', processedResponse, toEmit, builder)
         return processedResponse;
-      }).catch(error => {
+      })
+      .catch(error => {
         if (!(error instanceof Promise.TimeoutError)) {
           throw error
         }
@@ -121,8 +122,7 @@ export default class Runner {
 
         let cancelQuery;
         if (obj.cancelOnTimeout) {
-          console.log("MISSING CANCEL")
-          cancelQuery = Promise.resolve() // client.cancelQuery(connection)
+          cancelQuery = client.cancelQuery(context)
         } else {
           cancelQuery = Promise.resolve()
         }

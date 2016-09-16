@@ -12,7 +12,7 @@ import SchemaCompiler from './schema/compiler';
 import TableCompiler from './schema/tablecompiler';
 import ColumnCompiler from './schema/columncompiler';
 
-import { assign, map } from 'lodash'
+import { assign } from 'lodash'
 import { makeEscape } from '../../query/string'
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
@@ -135,8 +135,8 @@ assign(Client_MySQL.prototype, {
       case 'select':
       case 'pluck':
       case 'first': {
-        const resp = helpers.skim(rows)
-        if (method === 'pluck') return map(resp, obj.pluck)
+        let resp = helpers.skim(rows)
+        if (method === 'pluck') resp = resp.map(val => val[obj.pluck])
         return method === 'first' ? resp[0] : resp
       }
       case 'insert':

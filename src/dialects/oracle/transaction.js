@@ -2,7 +2,7 @@
 import Promise from 'bluebird';
 const debugTx = require('debug')('knex:tx')
 
-export default class Oracle_Transaction extends Transaction {
+export default class Oracle_Transaction {
 
   // disable autocommit to allow correct behavior (default is true)
   begin() {

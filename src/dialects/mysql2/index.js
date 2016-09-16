@@ -5,7 +5,7 @@ import inherits from 'inherits';
 import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
-import { pick, map, assign } from 'lodash'
+import { pick, assign } from 'lodash'
 
 const configOptions = [
   'isServer',
@@ -92,7 +92,7 @@ assign(Client_MySQL2.prototype, {
       case 'pluck':
       case 'first': {
         const resp = helpers.skim(rows)
-        if (method === 'pluck') return map(resp, obj.pluck)
+        if (method === 'pluck') return resp.map(val => val[obj.pluck])
         return method === 'first' ? resp[0] : resp
       }
       case 'insert':

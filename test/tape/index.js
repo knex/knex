@@ -1,6 +1,6 @@
 /*eslint no-var:0*/
 'use strict';
-// var wtf = require('wtfnode');
+
 var tape = require('tape')
 var makeKnex = require('../../knex')
 var knexfile = require('../knexfile')

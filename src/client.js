@@ -38,6 +38,7 @@ function Client(config = {}) {
   this.log = consoleLogger
   this.config = config
   this.connectionSettings = cloneDeep(config.connection || {})
+
   if (this.driverName && config.connection) {
     this.initializeDriver()
     if (!config.pool || (config.pool && config.pool.max !== 0)) {
@@ -45,6 +46,7 @@ function Client(config = {}) {
       this.initializePool(config)
     }
   }
+
   this.valueForUndefined = this.raw('DEFAULT');
   if (config.useNullAsDefault) {
     this.valueForUndefined = null

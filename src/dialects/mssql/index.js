@@ -112,8 +112,7 @@ assign(Client_MSSQL.prototype, {
 
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
-  _stream(context, connection, obj, stream, options) {
-    options = options || {}
+  _stream(context, connection, obj, stream) {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
@@ -122,11 +121,8 @@ assign(Client_MSSQL.prototype, {
         rejecter(err)
       });
       stream.on('end', resolver);
-      let { sql } = obj
+      const { sql } = obj
       if (!sql) return resolver()
-      if (obj.options) {
-        sql = assign({sql}, obj.options)
-      }
       const req = (connection.tx_ || connection).request();
       //req.verbose = true;
       req.multiple = true;
@@ -149,11 +145,8 @@ assign(Client_MSSQL.prototype, {
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
     return new Promise((resolver, rejecter) => {
-      let { sql } = obj
+      const { sql } = obj
       if (!sql) return resolver()
-      if (obj.options) {
-        sql = assign({sql}, obj.options)
-      }
       const req = (connection.tx_ || connection).request();
       // req.verbose = true;
       req.multiple = true;
@@ -195,7 +188,7 @@ assign(Client_MSSQL.prototype, {
       case 'pluck':
       case 'first':
         response = helpers.skim(response)
-        if (method === 'pluck') return map(response, obj.pluck)
+        if (method === 'pluck') response = response.map(val => val[obj.pluck])
         return method === 'first' ? response[0] : response
       case 'insert':
       case 'del':

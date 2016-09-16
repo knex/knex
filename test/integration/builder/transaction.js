@@ -160,7 +160,7 @@ module.exports = function(knex) {
     });
 
     it('should be able to run schema methods', function() {
-      var __knexUid, count = 0;
+      var count = 0;
       var err = new Error('error message');
       if (knex.client.dialect === 'postgresql') {
         return knex.transaction(function(trx) {

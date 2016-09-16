@@ -12,10 +12,7 @@ import {
 
 const debugQuery = debug('knex:query')
 
-let id = 0
-function getTrxId() {
-  return `trx${id++}`
-}
+let trxId = 0, ctxId = 0;
 
 export default class KnexContext extends EventEmitter {
 
@@ -45,6 +42,9 @@ export default class KnexContext extends EventEmitter {
     // Keep an execution log of all queries executed here, if the
     // current context is not the root.
     this.__executionLog = []
+
+    // Helpful in debugging to be able to identify the current context.
+    this.__contextId = `ctx${ctxId++}`
 
     // Events:
 
@@ -95,7 +95,7 @@ export default class KnexContext extends EventEmitter {
     if (this.isRootContext()) {
       return this.client.acquireConnection()
     }
-    if (!this.__connection) {
+    if (!this.__connection && this.__connection !== false) {
       this.__connection = this.__parentContext.acquireConnection()
       await this.executeHooks('beforeFirst')
     }
@@ -184,9 +184,9 @@ export default class KnexContext extends EventEmitter {
       config = {}
     }
 
-    const trxId = this.isInTransaction() ? getTrxId() : true
+    const transactionId = this.isInTransaction() ? `trx${trxId++}` : true
 
-    const trx = new KnexContext(this.client, this, {isTransaction: trxId})
+    const trx = new KnexContext(this.client, this, {isTransaction: transactionId})
 
     function knexTrx() {
       return knexTrx.table(...arguments)
@@ -198,7 +198,7 @@ export default class KnexContext extends EventEmitter {
     // the context's connection.
     knexTrx.hookOnce('beforeFirst', async () => {
       const sql = this.isInTransaction()
-        ? knexTrx.client.format(knexTrx.client.transaction.savepoint, trxId)
+        ? knexTrx.client.format(knexTrx.client.transaction.savepoint, transactionId)
         : knexTrx.client.transaction.begin
 
       await knexTrx.client.query(knexTrx, sql)
