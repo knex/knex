@@ -118,7 +118,7 @@ assign(Client_MSSQL.prototype, {
         rejecter(err)
       });
       stream.on('end', resolver);
-      let { sql } = obj
+      const { sql } = obj
       if (!sql) return resolver()
       const req = (connection.tx_ || connection).request();
       //req.verbose = true;
@@ -142,7 +142,7 @@ assign(Client_MSSQL.prototype, {
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
     return new Promise((resolver, rejecter) => {
-      let { sql } = obj
+      const { sql } = obj
       if (!sql) return resolver()
       const req = (connection.tx_ || connection).request();
       // req.verbose = true;

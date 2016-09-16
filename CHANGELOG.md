@@ -1,6 +1,7 @@
 
 # 0.12.1 - 16 Sep, 2016
 - Fix MSSQL sql execution error, #1669
+- Added DEBUG=knex:bindings for debugging query bindings, #1557
 
 # 0.12.0 - 13 Sep, 2016
 

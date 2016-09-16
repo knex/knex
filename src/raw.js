@@ -4,11 +4,14 @@
 import inherits from 'inherits';
 import * as helpers from './helpers';
 import { EventEmitter } from 'events';
+import debug from 'debug'
 
 import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
 import Formatter from './formatter'
 
 import uuid from 'node-uuid';
+
+const debugBindings = debug('knex:bindings')
 
 const fakeClient = {
   formatter() {
@@ -99,6 +102,7 @@ assign(Raw.prototype, {
 
     obj.bindings = obj.bindings || [];
     if (helpers.containsUndefined(obj.bindings)) {
+      debugBindings(obj.bindings)
       throw new Error(
         `Undefined binding(s) detected when compiling RAW query: ` +
         obj.sql

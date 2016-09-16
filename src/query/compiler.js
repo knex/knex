@@ -4,6 +4,7 @@
 import * as helpers from '../helpers';
 import Raw from '../raw';
 import JoinClause from './joinclause';
+import debug from 'debug'
 
 import {
   assign, bind, compact, groupBy, isEmpty, isString, isUndefined, map, omitBy,
@@ -11,6 +12,8 @@ import {
 } from 'lodash';
 
 import uuid from 'node-uuid';
+
+const debugBindings = debug('knex:bindings')
 
 // The "QueryCompiler" takes all of the query statements which
 // have been gathered in the "QueryBuilder" and turns them into a
@@ -63,6 +66,7 @@ assign(QueryCompiler.prototype, {
     }
 
     if(this._undefinedInWhereClause) {
+      debugBindings(defaults.bindings)
       throw new Error(
         `Undefined binding(s) detected when compiling ` +
         `${method.toUpperCase()} query: ${val.sql}`

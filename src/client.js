@@ -25,6 +25,7 @@ import { assign, uniqueId, cloneDeep } from 'lodash'
 
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
+const debugBindings = require('debug')('knex:bindings')
 const debugPool = require('debug')('knex:pool')
 
 let id = 0
@@ -127,6 +128,7 @@ assign(Client.prototype, {
     obj.bindings = this.prepBindings(obj.bindings)
     debugQuery(obj.sql)
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+    debugBindings(obj.bindings)
     return this._query(connection, obj).catch((err) => {
       err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message
       this.emit('query-error', err, assign({__knexUid: connection.__knexUid}, obj))
@@ -139,6 +141,7 @@ assign(Client.prototype, {
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
     debugQuery(obj.sql)
     obj.bindings = this.prepBindings(obj.bindings)
+    debugBindings(obj.bindings)
     return this._stream(connection, obj, stream, options)
   },
 
