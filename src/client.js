@@ -24,7 +24,7 @@ import { assign, uniqueId, cloneDeep } from 'lodash'
 
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
-const debugValues = require('debug')('knex:values')
+const debugBindings = require('debug')('knex:bindings')
 const debugPool = require('debug')('knex:pool')
 
 let id = 0
@@ -166,7 +166,7 @@ assign(Client.prototype, {
       obj.bindings = this.prepBindings(obj.bindings)
 
       debugQuery(`${connection.__knexUid} - ${obj.sql}`)
-      debugValues(obj.bindings)
+      debugBindings(obj.bindings)
 
       this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
       context.emit('query', assign({__knexUid: connection.__knexUid}, obj))
@@ -202,6 +202,9 @@ assign(Client.prototype, {
       debugQuery(obj.sql)
 
       obj.bindings = this.prepBindings(obj.bindings)
+
+      debugBindings(obj.bindings)
+
       return await this._stream(context, connection, obj, passThroughStream, options)
     } finally {
       if (connection && context.isRootContext()) {
