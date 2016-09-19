@@ -166,9 +166,11 @@ assign(Client.prototype, {
 
     let connection
     try {
-      connection = await context.isRootContext()
-        ? context.client.acquireConnection()
-        : context.getConnection()
+      connection = await (
+        context.isRootContext()
+          ? context.client.acquireConnection()
+          : context.getConnection()
+      )
 
       obj.bindings = this.prepBindings(obj.bindings)
 
@@ -211,9 +213,11 @@ assign(Client.prototype, {
 
     let connection
     try {
-      connection = await context.isRootContext()
-        ? context.client.acquireConnection()
-        : context.getConnection()
+      connection = await (
+        context.isRootContext()
+          ? context.client.acquireConnection()
+          : context.getConnection()
+      )
 
       this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
       context.emit('query', assign({__knexUid: connection.__knexUid}, obj))
