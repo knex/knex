@@ -218,6 +218,35 @@ assign(QueryCompiler.prototype, {
     return sql;
   },
 
+  onBetween(statement) {
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'between') + ' ' +
+      map(statement.value, bind(this.formatter.parameter, this.formatter)).join(' and ');
+  },
+
+  onNull(statement) {
+    return this.formatter.wrap(statement.column) + ' is ' + this._not(statement, 'null');
+  },
+
+  onExists(statement) {
+    return this._not(statement, 'exists') + ' (' + this.formatter.rawOrFn(statement.value) + ')';
+  },
+
+  onIn(statement) {
+    if (Array.isArray(statement.column)) return this.multiOnIn(statement);
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'in ') +
+      this.wrap(this.formatter.parameterize(statement.value));
+  },
+
+  multiOnIn(statement) {
+    let i = -1, sql = `(${this.formatter.columnize(statement.column)}) `
+    sql += this._not(statement, 'in ') + '(('
+    while (++i < statement.value.length) {
+      if (i !== 0) sql += '),('
+      sql += this.formatter.parameterize(statement.value[i])
+    }
+    return sql + '))'
+  },
+
   // Compiles all `where` statements on the query.
   where() {
     const wheres = this.grouped.where;
@@ -256,22 +285,64 @@ assign(QueryCompiler.prototype, {
     if (!havings) return '';
     const sql = ['having'];
     for (let i = 0, l = havings.length; i < l; i++) {
-      let str = '';
       const s = havings[i];
-      if (i !== 0) str = s.bool + ' ';
-      if (s.type === 'havingBasic') {
-        sql.push(str + this.formatter.columnize(s.column) + ' ' +
-          this.formatter.operator(s.operator) + ' ' + this.formatter.parameter(s.value));
-      } else {
-        if(s.type === 'whereWrapped'){
-          const val = this.whereWrapped(s)
-          if (val) sql.push(val)
-        } else {
-          sql.push(str + this.formatter.unwrapRaw(s.value));
+      const val = this[s.type](s);
+      if (val) {
+        if(sql.length === 0) {
+          sql[0] = 'where';
         }
+        if (sql.length > 1 || (sql.length === 1 && sql[0] !== 'having')) {
+          sql.push(s.bool)
+        }
+        sql.push(val)
       }
     }
     return sql.length > 1 ? sql.join(' ') : '';
+  },
+
+  havingRaw(statement) {
+    return this._not(statement, '') + this.formatter.unwrapRaw(statement.value);
+  },
+
+  havingWrapped(statement) {
+    const val = this.formatter.rawOrFn(statement.value, 'where')
+    return val && this._not(statement, '') + '(' + val.slice(6) + ')' || '';
+  },
+
+  havingBasic(statement) {
+    return this._not(statement, '') +
+      this.formatter.wrap(statement.column) + ' ' +
+      this.formatter.operator(statement.operator) + ' ' +
+      this.formatter.parameter(statement.value);
+  },
+
+  havingNull(statement) {
+    return this.formatter.wrap(statement.column) + ' is ' + this._not(statement, 'null');
+  },
+
+  havingExists(statement) {
+    return this._not(statement, 'exists') + ' (' + this.formatter.rawOrFn(statement.value) + ')';
+  },
+
+  havingBetween(statement) {
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'between') + ' ' +
+      map(statement.value, bind(this.formatter.parameter, this.formatter)).join(' and ');
+  },
+
+  havingIn(statement) {
+    if (Array.isArray(statement.column)) return this.multiHavingIn(statement);
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'in ') +
+      this.wrap(this.formatter.parameterize(statement.value));
+  },
+
+  multiHavingIn(statement) {
+    let i = -1, sql = `(${this.formatter.columnize(statement.column)}) `
+    sql += this._not(statement, 'in ') + '(('
+    while (++i < statement.value.length) {
+      if (i !== 0) sql += '),('
+      sql += this.formatter.parameterize(statement.value[i])
+    }
+    return sql + '))'
   },
 
   // Compile the "union" queries attached to the main query.
