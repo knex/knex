@@ -1,6 +1,5 @@
 import EventEmitter from 'events'
 import debug from 'debug'
-
 import Migrator from '../migrate'
 import Seeder from '../seed'
 import FunctionHelper from '../functionhelper'
@@ -38,6 +37,10 @@ export default class KnexContext extends EventEmitter {
     // Determine whether the current context is for a transaction, checked to
     // see whether .commit or .rollback are valid calls for this context.
     this.__isTransaction = config.isTransaction || null
+
+    // Set the "status" of the current transaction if we're in one.
+    // Statuses include "none", "pending", "fulfilled", "rejected".
+    this.__transactionStatus = config.isTransaction ? "pending" : "n/a"
 
     // Keep an execution log of all queries executed here, if the
     // current context is not the root.
@@ -103,7 +106,7 @@ export default class KnexContext extends EventEmitter {
   }
 
   context(config = {}) {
-    const ctx = new KnexContext(this.client, this)
+    const ctx = new KnexContext(this.client, this, {...config, isTransaction: false})
     function knexCtx() {
       return knexCtx.table(...arguments)
     }
@@ -130,6 +133,15 @@ export default class KnexContext extends EventEmitter {
     if (this.__parentContext) {
       return this.__parentContext.isInTransaction()
     }
+    return false
+  }
+
+  isTransactionComplete() {
+    if (!this.isTransaction()) {
+      this.log.warn('isTransactionComplete should not be called on a non-transaction context')
+      return true
+    }
+    return this.__transactionStatus !== "pending"
   }
 
   isRootContext() {
@@ -186,7 +198,7 @@ export default class KnexContext extends EventEmitter {
 
     const transactionId = this.isInTransaction() ? `trx${trxId++}` : true
 
-    const trx = new KnexContext(this.client, this, {isTransaction: transactionId})
+    const trx = new KnexContext(this.client, this, {...config, isTransaction: transactionId})
 
     function knexTrx() {
       return knexTrx.table(...arguments)

@@ -56,7 +56,9 @@ export async function commitTransaction(ctx) {
     const {__isTransaction: trxId, client} = ctx
     const {transaction: t} = client
     const sql = trxId === true ? t.commit : client.format(t.releaseSavepoint, trxId)
-    await ctx.client.query(ctx, sql)
+    const q = ctx.client.query(ctx, sql)
+    ctx.__transactionStatus = 'fulfilled'
+    await q
   }
   return cleanup(ctx)
 }
@@ -68,7 +70,9 @@ export async function rollbackTransaction(ctx) {
     const {__isTransaction: trxId, client} = ctx
     const {transaction: t} = client
     const sql = trxId === true ? t.rollback : client.format(t.rollbackSavepoint, trxId)
-    await ctx.client.query(ctx, sql)
+    const q = ctx.client.query(ctx, sql)
+    ctx.__transactionStatus = 'rejected'
+    await q
   }
   return cleanup(ctx)
 }
