@@ -91,20 +91,20 @@ assign(Client.prototype, {
 
   },
 
-  queryBuilder(context) {
-    return new QueryBuilder(context)
-  },
-
-  schemaBuilder(context) {
-    return new SchemaBuilder(context)
-  },
-
   raw() {
     return this.__raw({client: this}, ...arguments)
   },
 
   __raw(context, ...rest) {
     return new Raw(context).set(...rest)
+  },
+
+  queryBuilder(context) {
+    return new QueryBuilder(context)
+  },
+
+  schemaBuilder(context) {
+    return new SchemaBuilder(context)
   },
 
   queryCompiler(builder) {
@@ -157,9 +157,13 @@ assign(Client.prototype, {
   }),
 
   async query(context, obj) {
+
     if (typeof obj === 'string') {
       obj = {sql: obj}
     }
+
+    ensureValidContext(context, obj.sql)
+
     let connection
     try {
       connection = await context.acquireConnection()
@@ -190,9 +194,13 @@ assign(Client.prototype, {
   },
 
   async stream(context, obj, passThroughStream, options) {
+
     if (typeof obj === 'string') {
       obj = {sql: obj}
     }
+
+    ensureValidContext(context, obj.sql)
+
     let connection
     try {
       connection = await context.acquireConnection()
@@ -351,4 +359,15 @@ assign(Client.prototype, {
 
 })
 
+function ensureValidContext(context, sql) {
+  if (context.isTransaction() && context.isTransactionComplete()) {
+    throw new Error(
+      `Transaction has already been ${context.__transactionStatus}, ` +
+      `cannot execute query ${sql}`
+    )
+  }
+}
+
 export default Client
+
+

@@ -70,6 +70,10 @@ export default class KnexContext extends EventEmitter {
     }
   }
 
+  getExecutionLog() {
+    return this.__executionLog
+  }
+
   // Implemented as a getter to prevent re-assignment
   get log() {
     return this.client.log
@@ -98,10 +102,16 @@ export default class KnexContext extends EventEmitter {
     if (this.isRootContext()) {
       return this.client.acquireConnection()
     }
-    if (!this.__connection && this.__connection !== false) {
+    if (!this.__connection) {
+      if (this.__connection === false) {
+        throw new Error(
+          `Cannot acquire connection for closed context/transaction ${this.__contextId}`
+        )
+      }
       this.__connection = this.__parentContext.acquireConnection()
       await this.executeHooks('beforeFirst')
     }
+
     return this.__connection
   }
 

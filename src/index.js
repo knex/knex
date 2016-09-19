@@ -37,7 +37,7 @@ export default function Knex(config, additional = {}) {
   const ctx = new KnexContext(client)
 
   function knex() {
-    return ctx.queryBuilder().table(...arguments)
+    return knex.queryBuilder().table(...arguments)
   }
   knex.__proto__ = ctx
 

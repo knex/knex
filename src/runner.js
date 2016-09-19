@@ -98,14 +98,13 @@ export default class Runner {
 
     const toEmit = {__knexUid: 'something', ...obj}
 
-    builder.emit('query', toEmit)
-    context.emit('query', toEmit)
-
     let queryPromise = client.query(context, obj)
 
     if (obj.timeout) {
       queryPromise = queryPromise.timeout(obj.timeout)
     }
+
+    builder.emit('query', toEmit)
 
     return queryPromise
       .then((resp) => {

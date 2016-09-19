@@ -54,7 +54,7 @@ module.exports = function(knex) {
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedQueryCount =
         knex.client.dialect === 'oracle' ||
-        knex.client.dialect === 'mssql' ? 1 : 5
+        knex.client.dialect === 'mssql' ? 1 : 3
       t.equal(trxQueryCount, expectedQueryCount, 'Expected number of transaction SQL queries executed')
       t.equal(trxRejected, true, 'Transaction promise rejected')
       return knex.select('*').from('test_table').then(function (results) {
@@ -63,7 +63,7 @@ module.exports = function(knex) {
     })
   })
 
-  test('transaction rollback on error throw', function (t) {
+  test('transaction runs no queries if rejected immediately', function (t) {
     var testError = new Error('Boo!!!')
     var trxQueryCount = 0
     var trxRejected
@@ -80,9 +80,34 @@ module.exports = function(knex) {
     .finally(function () {
       // BEGIN, ROLLBACK
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
+      var expectedQueryCount = 0
+      t.equal(trxQueryCount, expectedQueryCount, 'Expected number of transaction SQL queries executed')
+      t.equal(trxRejected, true, 'Transaction promise rejected')
+    })
+  })
+
+  test('transaction rollback on error throw', function (t) {
+    var testError = new Error('Boo!!!')
+    var trxQueryCount = 0
+    var trxRejected
+    return knex.transaction(function (trx1) {
+      return trx1.select(trx1.raw(1)).then(function() {
+        throw testError
+      })
+    })
+    .on('query', function () {
+      ++trxQueryCount
+    })
+    .catch(function (err) {
+      t.equal(err, testError, 'Expected error reported')
+      trxRejected = true;
+    })
+    .finally(function () {
+      // BEGIN, ROLLBACK
+      // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedQueryCount =
         knex.client.dialect === 'oracle' ||
-        knex.client.dialect === 'mssql' ? 0 : 2
+        knex.client.dialect === 'mssql' ? 1 : 3
       t.equal(trxQueryCount, expectedQueryCount, 'Expected number of transaction SQL queries executed')
       t.equal(trxRejected, true, 'Transaction promise rejected')
     })
@@ -123,7 +148,7 @@ module.exports = function(knex) {
       var expectedTrx1QueryCount =
         knex.client.dialect === 'oracle' ||
         knex.client.dialect === 'mssql' ? 1 : 3
-      var expectedTrx2QueryCount = 5
+      var expectedTrx2QueryCount = 4
       expectedTrx1QueryCount += expectedTrx2QueryCount
       t.equal(trx1QueryCount, expectedTrx1QueryCount, 'Expected number of parent transaction SQL queries executed')
       t.equal(trx2QueryCount, expectedTrx2QueryCount, 'Expected number of nested transaction SQL queries executed')
@@ -142,9 +167,11 @@ module.exports = function(knex) {
     return knex.transaction(function (trx1) {
       return trx1.insert({id: 1, name: 'A'}).into('test_table').then(function () {
         // Nested transaction (savepoint)
-        return trx1.transaction(function () {  // trx2
-          // Roll back to savepoint
-          throw testError
+        return trx1.transaction(function (trx2) {  // trx2
+          return trx2.select(trx2.raw('1')).then(() => {
+            // Roll back to savepoint
+            throw testError
+          })
         })
         .on('query', function () {
           ++trx2QueryCount
@@ -159,12 +186,12 @@ module.exports = function(knex) {
     })
     .finally(function () {
       // trx1: BEGIN, INSERT, ROLLBACK
-      // trx2: SAVEPOINT, ROLLBACK TO SAVEPOINT
+      // trx2: SAVEPOINT, SELECT, ROLLBACK TO SAVEPOINT
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedTrx1QueryCount =
         knex.client.dialect === 'oracle' ||
-        knex.client.dialect === 'mssql' ? 1 : 5
-      var expectedTrx2QueryCount = 2
+        knex.client.dialect === 'mssql' ? 1 : 3
+      var expectedTrx2QueryCount = 3
       expectedTrx1QueryCount += expectedTrx2QueryCount
       t.equal(trx1QueryCount, expectedTrx1QueryCount, 'Expected number of parent transaction SQL queries executed')
       t.equal(trx2QueryCount, expectedTrx2QueryCount, 'Expected number of nested transaction SQL queries executed')
@@ -360,12 +387,15 @@ module.exports = function(knex) {
         knex.raw(request).transacting(tx).asCallback(cb);
       },
       function (err) {
-        if (err) return tx.rollback(err)
+        if (err) {
+          return tx.rollback(err)
+        }
         var stream = knex('test_table').transacting(tx).stream();
         stream.on('end', function () {
-          tx.commit();
-          t.equal(queryCount, 5, 'Five queries run')
-        });
+          tx.commit().then(() => {
+            t.equal(queryCount, 5, 'Five queries run')
+          })
+        })
         stream.pipe(JSONStream.stringify());
       })
     })
@@ -413,7 +443,7 @@ module.exports = function(knex) {
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedQueryCount =
         knex.client.dialect === 'oracle' ||
-        knex.client.dialect === 'mssql' ? 1 : 5
+        knex.client.dialect === 'mssql' ? 1 : 3
       t.equal(queryCount, expectedQueryCount, 'Expected number of transaction SQL queries executed')
     })
 

@@ -79,9 +79,10 @@ export async function rollbackTransaction(ctx) {
 
 function ensureTransaction(ctx) {
   if (!ctx.isTransaction()) {
-    throw new Error(
-      ctx.__isTransaction === false ? COMPLETED_TRANSACTION : NON_TRANSACTION
-    )
+    throw new Error(NON_TRANSACTION)
+  }
+  if (ctx.isTransactionComplete()) {
+    throw new Error(COMPLETED_TRANSACTION)
   }
 }
 
