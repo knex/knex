@@ -109,7 +109,7 @@ TableCompiler_SQLite3.prototype.renameColumn = function(from, to) {
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {
-      return compiler.client.ddl(compiler, pragma, this.connection).renameColumn(from, to);
+      return compiler.client.ddl(this.context, compiler, pragma).renameColumn(from, to);
     }
   });
 };
@@ -119,7 +119,7 @@ TableCompiler_SQLite3.prototype.dropColumn = function(column) {
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {
-      return compiler.client.ddl(compiler, pragma, this.connection).dropColumn(column);
+      return compiler.client.ddl(this.context, compiler, pragma).dropColumn(column);
     }
   });
 };

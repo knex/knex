@@ -11,11 +11,6 @@ module.exports = function(knex) {
     this.dialect    = knex.client.dialect;
     this.driverName = knex.client.driverName;
 
-    if (this.dialect === 'sqlite3') {
-      console.log("REMOVE ME")
-      return
-    }
-
     after(function() {
       return knex.destroy()
     })

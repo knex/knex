@@ -6,7 +6,7 @@
 require('source-map-support').install();
 
 process.on('unhandledRejection', function (err) {
-  console.log(err.stack)
+  console.log('Unhandled: \n' + err.stack)
 })
 
 global.d = new Date();

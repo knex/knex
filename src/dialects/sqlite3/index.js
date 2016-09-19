@@ -53,8 +53,8 @@ assign(Client_SQLite3.prototype, {
     return new TableCompiler(this, ...arguments)
   },
 
-  ddl(compiler, pragma, connection) {
-    return new SQLite3_DDL(this, compiler, pragma, connection)
+  ddl(context, compiler, pragma) {
+    return new SQLite3_DDL(context, compiler, pragma)
   },
 
   // Get a raw connection from the database, returning a promise with the connection object.
@@ -111,17 +111,17 @@ assign(Client_SQLite3.prototype, {
   },
 
   _stream(context, connection, sql, stream) {
-    const client = this;
-    return new Promise(function(resolver, rejecter) {
+    return new Promise((resolver, rejecter) => {
       stream.on('error', rejecter)
       stream.on('end', resolver)
-      return client._query(connection, sql).then(obj => obj.response).map(function(row) {
-        stream.write(row)
-      }).catch(function(err) {
-        stream.emit('error', err)
-      }).then(function() {
-        stream.end()
-      })
+      return this._query(context, connection, sql)
+        .then(obj => obj.response).map(function(row) {
+          stream.write(row)
+        }).catch(function(err) {
+          stream.emit('error', err)
+        }).then(function() {
+          stream.end()
+        })
     })
   },
 
