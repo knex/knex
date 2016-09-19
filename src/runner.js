@@ -22,6 +22,11 @@ export default class Runner {
   // an object or array of queries to run, each of which are run on
   // a single connection.
   async run() {
+    const isRoot = this.context.isRootContext()
+    const originalContext = this.context
+    if (isRoot) {
+      this.context = this.context.context()
+    }
     try {
       this.context.emit('start', this.builder)
       this.builder.emit('start', this.builder)
@@ -41,6 +46,10 @@ export default class Runner {
       throw err
     } finally {
       this.builder.emit('end')
+      if (isRoot) {
+        this.context.end()
+      }
+      this.context = originalContext
     }
   }
 
@@ -98,16 +107,7 @@ export default class Runner {
 
     const toEmit = {__knexUid: 'something', ...obj}
 
-    // If there's a timeout and we're cancelling on this timeout,
-    // we need to keep the same connection across multiple queries,
-    // and we'll standardize this with a "context"
-    const shouldCreateContext = obj.timeout && obj.cancelOnTimeout && context.isRootContext()
-
-    const finalContext = shouldCreateContext
-      ? context.context()
-      : context
-
-    let queryPromise = Promise.resolve(client.query(finalContext, obj))
+    let queryPromise = Promise.resolve(client.query(context, obj))
 
     if (obj.timeout) {
       queryPromise = queryPromise.timeout(obj.timeout)
@@ -119,7 +119,7 @@ export default class Runner {
       .then(resp => {
         const processedResponse = client.processResponse(resp, this)
         builder.emit('query-response', processedResponse, toEmit, builder)
-        finalContext.emit('query-response', processedResponse, toEmit, builder)
+        context.emit('query-response', processedResponse, toEmit, builder)
         return processedResponse;
       })
       .catch(error => {
@@ -131,7 +131,7 @@ export default class Runner {
         let cancelQuery
 
         if (obj.cancelOnTimeout) {
-          cancelQuery = client.cancelQuery(finalContext)
+          cancelQuery = client.cancelQuery(context)
         } else {
           cancelQuery = Promise.resolve()
         }
@@ -155,27 +155,15 @@ export default class Runner {
         builder.emit('query-error', error, assign({__knexUid: 'something'}, obj))
         throw error;
       })
-      .finally(() => {
-        if (shouldCreateContext) {
-          finalContext.end()
-        }
-      })
   }
 
   // In the case of the "schema builder" we call `queryArray`, which runs each
   // of the queries in sequence.
   async queryArray(queries) {
     const executed = []
-    const originalContext = this.context
-    const ctx = this.context = this.context.context()
-    try {
-      for (const query of queries) {
-        executed.push(await this.query(query))
-      }
-    } finally {
-      ctx.end()
+    for (const query of queries) {
+      executed.push(await this.query(query))
     }
-    this.context = originalContext
     return executed.length === 1 ? executed[0] : executed
   }
 
