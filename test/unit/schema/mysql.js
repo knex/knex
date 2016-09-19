@@ -5,9 +5,9 @@
 
 var expect = require('expect')
 var KnexContext = require('../../../lib/classes/KnexContext')
-var MySQL_Client  = require('../../../lib/dialects/mysql');
-var Maria_Client  = require('../../../lib/dialects/maria');
-var MySQL2_Client = require('../../../lib/dialects/mysql2');
+var MySQL_Client  = require('../../../lib/dialects/mysql')
+var Maria_Client  = require('../../../lib/dialects/maria')
+var MySQL2_Client = require('../../../lib/dialects/mysql2')
 
 module.exports = function(dialect) {
 

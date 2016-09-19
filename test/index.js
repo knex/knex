@@ -3,6 +3,7 @@
 
 'use strict';
 
+require('babel-register')
 require('source-map-support').install();
 
 process.on('unhandledRejection', function (err) {

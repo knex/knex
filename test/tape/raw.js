@@ -2,10 +2,10 @@
 'use strict';
 
 var KnexContext = require('../../lib/classes/KnexContext')
-var Raw    = require('../../lib/raw');
+var Raw = require('../../lib/raw');
 var Client = require('../../lib/client')
-var test   = require('tape')
-var _      = require('lodash');
+var test = require('tape')
+var _ = require('lodash');
 
 var context = new KnexContext(new Client())
 function raw(sql, bindings) {

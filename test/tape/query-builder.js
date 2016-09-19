@@ -1,11 +1,11 @@
 /*eslint no-var:0, max-len:0 */
 'use strict';
 
-var tape         = require('tape')
-var omit         = require('lodash/omit')
-var KnexContext  = require('../../lib/classes/KnexContext')
+var tape = require('tape')
+var omit = require('lodash/omit')
+var KnexContext = require('../../lib/classes/KnexContext')
 var QueryBuilder = require('../../lib/query/builder')
-var Client       = require('../../lib/client')
+var Client = require('../../lib/client')
 
 tape('accumulates multiple update calls #647', function(t) {
   t.plan(1)
