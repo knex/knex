@@ -1,12 +1,11 @@
 
 // Raw
 // -------
-import inherits from 'inherits';
 import * as helpers from './helpers';
 import { EventEmitter } from 'events';
 import debug from 'debug'
 
-import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
+import { isPlainObject, isObject } from 'lodash'
 import Formatter from './formatter'
 
 import uuid from 'node-uuid';
@@ -22,35 +21,36 @@ const fakeContext = {
   client: fakeClient
 }
 
-function Raw(context = fakeContext) {
-  const {client} = context
-  this.__context = context
-  this.client = client
+class Raw extends EventEmitter {
 
-  this.sql = ''
-  this.bindings = []
+  constructor(context = fakeContext) {
+    super()
+    const {client} = context
+    this.__context = context
+    this.client = client
 
-  // Todo: Deprecate
-  this._wrappedBefore = undefined
-  this._wrappedAfter = undefined
-  this._debug = client && client.config && client.config.debug
-}
-inherits(Raw, EventEmitter)
+    this.sql = ''
+    this.bindings = []
 
-assign(Raw.prototype, {
+    // Todo: Deprecate
+    this._wrappedBefore = undefined
+    this._wrappedAfter = undefined
+    this._debug = client && client.config && client.config.debug
+  }
 
   set(sql, bindings) {
     this.sql = sql
     this.bindings = (
       (isObject(bindings) && !bindings.toSQL) ||
-      isUndefined(bindings)
+      bindings === undefined
     ) ? bindings : [bindings]
 
     return this
-  },
+  }
 
-  timeout(ms, {cancel} = {}) {
-    if (isNumber(ms) && ms > 0) {
+  timeout(ms, config = {}) {
+    const { cancel } = config
+    if (typeof ms === 'number' && ms > 0) {
       this._timeout = ms;
       if (cancel) {
         this.client.assertCanCancelQuery();
@@ -58,19 +58,19 @@ assign(Raw.prototype, {
       }
     }
     return this;
-  },
+  }
 
   // Wraps the current sql with `before` and `after`.
   wrap(before, after) {
     this._wrappedBefore = before
     this._wrappedAfter = after
     return this
-  },
+  }
 
   // Calls `toString` on the Knex object.
   toString() {
     return this.toQuery()
-  },
+  }
 
   // Returns the raw sql for the query.
   toSQL(method, tz) {
@@ -85,7 +85,7 @@ assign(Raw.prototype, {
       obj = {
         method: 'raw',
         sql: this.sql,
-        bindings: isUndefined(this.bindings) ? [] : [this.bindings]
+        bindings: this.bindings === undefined ? [] : [this.bindings]
       }
     }
 
@@ -96,12 +96,12 @@ assign(Raw.prototype, {
       obj.sql = obj.sql + this._wrappedAfter
     }
 
-    obj.options = reduce(this._options, assign, {})
+    obj.options = (this._options || []).reduce((result, val) => ({...result, ...val}), {})
 
     if (this._timeout) {
       obj.timeout = this._timeout;
       if (this._cancelOnTimeout) {
-        obj.cancelOnTimeout = this._cancelOnTimeout;
+        obj.cancelOnTimeout = this._cancelOnTimeout
       }
     }
 
@@ -119,7 +119,7 @@ assign(Raw.prototype, {
     return obj
   }
 
-})
+}
 
 function replaceRawArrBindings(raw, formatter) {
   const expectedBindings = raw.bindings.length

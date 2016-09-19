@@ -97,27 +97,26 @@ assign(Client_PG.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    const client = this;
-    return new Promise(function(resolver, rejecter) {
-      const connection = new client.driver.Client(client.connectionSettings);
-      connection.connect(function(err, connection) {
+    return new Promise((resolver, rejecter) => {
+      const connection = new this.driver.Client(this.connectionSettings);
+      connection.connect((err, connection) => {
         if (err) {
           return rejecter(err);
         }
         connection.on('error', (err) => {
           connection.__knex__disposed = err
         })
-        if (!client.version) {
-          return client.checkVersion(connection).then(function(version) {
-            client.version = version;
+        if (!this.version) {
+          return this.checkVersion(connection).then((version) => {
+            this.version = version;
             resolver(connection);
-          });
+          })
         }
         resolver(connection);
-      });
-    }).tap(function setSearchPath(connection) {
-      return client.setSchemaSearchPath(connection);
-    });
+      })
+    }).tap((connection) => {
+      return this.setSchemaSearchPath(connection);
+    })
   },
 
   // Used to explicitly close a connection, called internally by the pool
@@ -133,8 +132,8 @@ assign(Client_PG.prototype, {
       connection.query('select version();', function(err, resp) {
         if (err) return rejecter(err);
         resolver(/^PostgreSQL (.*?)( |$)/.exec(resp.rows[0].version)[1]);
-      });
-    });
+      })
+    })
   },
 
   // Position the bindings for the query. The escape sequence for question mark
@@ -148,7 +147,7 @@ assign(Client_PG.prototype, {
         questionCount++;
         return `$${questionCount}`;
       }
-    });
+    })
   },
 
   setSchemaSearchPath(connection, searchPath) {
@@ -160,8 +159,8 @@ assign(Client_PG.prototype, {
       connection.query(`set search_path to ${path}`, function(err) {
         if (err) return rejecter(err);
         resolver(true);
-      });
-    });
+      })
+    })
   },
 
   _stream(context, connection, obj, stream, options) {
@@ -175,7 +174,7 @@ assign(Client_PG.prototype, {
       // 'end' IS propagated by .pipe, by default
       stream.on('end', resolver);
       queryStream.pipe(stream);
-    });
+    })
   },
 
   // Runs the query on the specified connection, providing the bindings
@@ -188,8 +187,8 @@ assign(Client_PG.prototype, {
         if (err) return rejecter(err);
         obj.response = response;
         resolver(obj);
-      });
-    });
+      })
+    })
   },
 
   // Ensures the response is returned in the same format as other clients.

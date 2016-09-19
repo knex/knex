@@ -166,7 +166,10 @@ assign(Client.prototype, {
 
     let connection
     try {
-      connection = await context.acquireConnection()
+      connection = await context.isRootContext()
+        ? context.client.acquireConnection()
+        : context.getConnection()
+
       obj.bindings = this.prepBindings(obj.bindings)
 
       debugQuery(`${connection.__knexUid} - ${obj.sql}`)
@@ -177,9 +180,14 @@ assign(Client.prototype, {
 
       return await this._query(context, connection, obj)
     } catch (err) {
-      err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message
-      this.emit('query-error', err, assign({__knexUid: connection.__knexUid}, obj))
-      context.emit('query-error', err, assign({__knexUid: connection.__knexUid}, obj))
+      const formattedSql = this._formatQuery(obj.sql, obj.bindings)
+      err.message = `${err.message} - ${formattedSql}`
+      err.sql = obj.sql
+      err.bindings = obj.bindings
+
+      // TODO: conn ident for errors... assign({__knexUid: connection.__knexUid}, obj)
+      this.emit('query-error', err, obj)
+      context.emit('query-error', err, obj)
       throw err
     } finally {
       if (connection) {
@@ -203,7 +211,10 @@ assign(Client.prototype, {
 
     let connection
     try {
-      connection = await context.acquireConnection()
+      connection = await context.isRootContext()
+        ? context.client.acquireConnection()
+        : context.getConnection()
+
       this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
       context.emit('query', assign({__knexUid: connection.__knexUid}, obj))
 
@@ -244,6 +255,7 @@ assign(Client.prototype, {
       min: 2,
       max: 10,
       name: name,
+      // returnToHead: true,
       log(str, level) {
         debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
       },
@@ -297,9 +309,23 @@ assign(Client.prototype, {
       if (!this.pool) {
         return rejecter(new Error('Unable to acquire a connection'))
       }
-      this.pool.acquire(function(err, connection) {
+      let rejected
+      const timeout = this.config.acquireConnectionTimeout || 60000
+      const t = setTimeout(() => {
+        rejected = true
+        rejecter(new Error(
+          `Knex: Timeout acquiring a connection. ` +
+          `The pool is probably full. ` +
+          `Are you missing a .transacting(trx) call?`
+        ))
+      }, timeout)
+      this.pool.acquire((err, connection) => {
+        clearTimeout(t)
         if (err) {
           return rejecter(err)
+        }
+        if (rejected) {
+          return this.releaseConnection(connection)
         }
         debug('acquired connection from pool: %s', connection.__knexUid)
         resolver(connection)

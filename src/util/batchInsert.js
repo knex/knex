@@ -1,15 +1,15 @@
 
-
-import { isNumber, isString, isArray, chunk, flatten } from 'lodash';
+import { chunk, flatten } from 'lodash';
 import Promise from 'bluebird';
 
 export default class BatchInsert {
+
   constructor(client, tableName, batch, chunkSize = 1000) {
-    if(!isNumber(chunkSize) || chunkSize < 1) {
+
+    if (typeof chunkSize !== 'number' || chunkSize < 1) {
       throw new TypeError(`Invalid chunkSize: ${chunkSize}`);
     }
-
-    if(!isArray(batch)) {
+    if (!Array.isArray(batch)) {
       throw new TypeError(`Invalid batch: Expected array, got ${typeof batch}`)
     }
 
@@ -30,7 +30,7 @@ export default class BatchInsert {
    * @param returning
    */
   returning(returning) {
-    if(isArray(returning) || isString(returning)) {
+    if (Array.isArray(returning) || typeof returning === 'string') {
       this._returning = returning;
     }
     return this;

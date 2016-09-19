@@ -20,12 +20,14 @@ export default class Seeder {
   }
 
   // Runs all seed files for the given environment.
-  async run(config) {
-    this.config = this.setConfig(config);
-    return this._seedData()
-      .spread((all) => {
-        return this._runSeeds(all);
-      });
+  run(config) {
+    return Promise.try(() => {
+      this.config = this.setConfig(config);
+      return this._seedData()
+        .spread((all) => {
+          return this._runSeeds(all);
+        });
+    })
   }
 
   // Creates a new seed file, with a given name.

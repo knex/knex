@@ -59,7 +59,10 @@ assign(Client_MySQL.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     return new Promise((resolver, rejecter) => {
-      const connection = this.driver.createConnection(this.connectionSettings)
+      const connection = this.driver.createConnection({
+        ...this.connectionSettings,
+        // debug: true // ['ComQueryPacket', 'RowDataPacket']
+      })
       connection.connect((err) => {
         if (err) return rejecter(err)
         connection.on('error', err => {
@@ -152,27 +155,40 @@ assign(Client_MySQL.prototype, {
 
   canCancelQuery: true,
 
-  cancelQuery(connectionToKill) {
+  cancelQuery(context) {
     const acquiringConn = this.acquireConnection()
 
     // Error out if we can't acquire connection in time.
     // Purposely not putting timeout on `KILL QUERY` execution because erroring
     // early there would release the `connectionToKill` back to the pool with
     // a `KILL QUERY` command yet to finish.
-    return acquiringConn
-      .timeout(100)
-      .then((conn) => this.query(conn, {
+    // .timeout(100)
+    return Promise.all([
+      acquiringConn,
+      context.getConnection()
+    ])
+    .timeout(100)
+    .then(([connection, connectionToKill]) => {
+      connectionToKill.__knex__disposed = new Error('Connection Destroyed By Timeout')
+
+      // TODO: Figure out how to make this more consistent
+      return this._query({}, connection, {
         method: 'raw',
         sql: 'KILL QUERY ?',
         bindings: [connectionToKill.threadId],
         options: {},
-      }))
-      .finally(() => {
-        // NOT returning this promise because we want to release the connection
-        // in a non-blocking fashion
-        acquiringConn
-          .then((conn) => this.releaseConnection(conn));
-      });
+      }).then((resp) => {
+        this.releaseConnection(connection)
+      })
+    })
+    .catch(Promise.TimeoutError, err => {
+      // NOT returning this promise because we want to release the connection
+      // in a non-blocking fashion
+      acquiringConn.then(conn => {
+        this.releaseConnection(conn)
+      })
+      throw err
+    })
   }
 
 })

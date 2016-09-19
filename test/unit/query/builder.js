@@ -1972,14 +1972,14 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it.skip("normalizes for missing keys in insert", function() {
+  it("normalizes for missing keys in insert", function() {
     var data = [{a: 1}, {b: 2}, {a: 2, c: 3}];
 
     //This is done because sqlite3 does not support valueForUndefined, and can't manipulate testsql to use 'clientsWithUseNullForUndefined'.
     //But we still want to make sure that when `useNullAsDefault` is explicitly defined, that the query still works as expected. (Bindings being undefined)
     //It's reset at the end of the test.
-    var previousValuesForUndefinedSqlite3 = clients.sqlite3.valueForUndefined;
-    clients.sqlite3.valueForUndefined = null;
+    var previousValuesForUndefinedSqlite3 = clients.sqlite3.client.valueForUndefined;
+    clients.sqlite3.client.valueForUndefined = null;
 
     testsql(qb => qb.insert(data).into('table'), {
       mysql: {
@@ -2007,7 +2007,7 @@ describe("QueryBuilder", function() {
         bindings: [1, 2, 2, 3]
       }
     });
-    clients.sqlite3.valueForUndefined = previousValuesForUndefinedSqlite3;
+    clients.sqlite3.client.valueForUndefined = previousValuesForUndefinedSqlite3;
   });
 
   it("empty insert should be a noop", function() {

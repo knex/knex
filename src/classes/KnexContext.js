@@ -98,9 +98,12 @@ export default class KnexContext extends EventEmitter {
   // Get the connection for the current context, if we're in a root context we
   // get a random connection out of the pool, otherwise we get & cache the connection
   // on this context.
-  async acquireConnection() {
+  async getConnection() {
     if (this.isRootContext()) {
-      return this.client.acquireConnection()
+      throw new Error(
+        `Cannot getConnection on the root knex instance, ` +
+        `create a context or transaction instead`
+      )
     }
     if (!this.__connection) {
       if (this.__connection === false) {
@@ -108,10 +111,13 @@ export default class KnexContext extends EventEmitter {
           `Cannot acquire connection for closed context/transaction ${this.__contextId}`
         )
       }
-      this.__connection = this.__parentContext.acquireConnection()
+      if (this.__parentContext.isRootContext()) {
+        this.__connection = this.client.acquireConnection()
+      } else {
+        this.__connection = this.__parentContext.getConnection()
+      }
       await this.executeHooks('beforeFirst')
     }
-
     return this.__connection
   }
 
@@ -170,7 +176,7 @@ export default class KnexContext extends EventEmitter {
         this.client.releaseConnection(conn)
       })
     }
-    this.__connection = null
+    this.__connection = false
   }
 
   // Typically never needed, initializes the pool for a knex client.

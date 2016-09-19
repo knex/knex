@@ -6,7 +6,7 @@ import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
 import {
   assign, bind, difference, each, filter, get, includes, isBoolean,
-  isEmpty, isUndefined, map, max, template
+  isEmpty, map, max, template
 } from 'lodash'
 import inherits from 'inherits';
 
@@ -83,7 +83,7 @@ export default class Migrator {
     return this._listCompleted(config)
       .then((completed) => {
         const val = max(map(completed, value => value.split('_')[0]));
-        return (isUndefined(val) ? 'none' : val);
+        return (val === undefined ? 'none' : val);
       })
   }
 

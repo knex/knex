@@ -51,13 +51,15 @@ assign(QueryCompiler_SQLite3.prototype, {
     if (this.client.valueForUndefined !== null) {
       each(insertData.values, bindings => {
         each(bindings, binding => {
-          if (binding === undefined) throw new TypeError(
-            '`sqlite` does not support inserting default values. Specify ' +
-            'values explicitly or use the `useNullAsDefault` config flag. ' +
-            '(see docs http://knexjs.org/#Builder-insert).'
-          );
-        });
-      });
+          if (binding === undefined) {
+            throw new TypeError(
+              '`sqlite` does not support inserting default values. Specify ' +
+              'values explicitly or use the `useNullAsDefault` config flag. ' +
+              '(see docs http://knexjs.org/#Builder-insert).'
+            )
+          }
+        })
+      })
     }
 
     if (insertData.values.length === 1) {

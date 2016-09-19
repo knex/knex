@@ -98,7 +98,16 @@ export default class Runner {
 
     const toEmit = {__knexUid: 'something', ...obj}
 
-    let queryPromise = client.query(context, obj)
+    // If there's a timeout and we're cancelling on this timeout,
+    // we need to keep the same connection across multiple queries,
+    // and we'll standardize this with a "context"
+    const shouldCreateContext = obj.timeout && obj.cancelOnTimeout && context.isRootContext()
+
+    const finalContext = shouldCreateContext
+      ? context.context()
+      : context
+
+    let queryPromise = Promise.resolve(client.query(finalContext, obj))
 
     if (obj.timeout) {
       queryPromise = queryPromise.timeout(obj.timeout)
@@ -107,10 +116,10 @@ export default class Runner {
     builder.emit('query', toEmit)
 
     return queryPromise
-      .then((resp) => {
+      .then(resp => {
         const processedResponse = client.processResponse(resp, this)
         builder.emit('query-response', processedResponse, toEmit, builder)
-        context.emit('query-response', processedResponse, toEmit, builder)
+        finalContext.emit('query-response', processedResponse, toEmit, builder)
         return processedResponse;
       })
       .catch(error => {
@@ -119,33 +128,37 @@ export default class Runner {
         }
         const { timeout, sql, bindings } = obj;
 
-        let cancelQuery;
+        let cancelQuery
+
         if (obj.cancelOnTimeout) {
-          cancelQuery = client.cancelQuery(context)
+          cancelQuery = client.cancelQuery(finalContext)
         } else {
           cancelQuery = Promise.resolve()
         }
 
-        return cancelQuery
-          .catch((cancelError) => {
-            // cancellation failed
-            throw assign(cancelError, {
-              message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,
-              sql, bindings, timeout
-            })
+        return cancelQuery.catch((cancelError) => {
+          // cancellation failed
+          throw assign(cancelError, {
+            message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,
+            sql, bindings, timeout
           })
-          .then(() => {
-            // cancellation succeeded, rethrow timeout error
-            throw assign(error, {
-              message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
-              sql, bindings, timeout
-            })
+        })
+        .then(() => {
+          // cancellation succeeded, rethrow timeout error
+          throw assign(error, {
+            message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
+            sql, bindings, timeout
           })
+        })
       })
       .catch((error) => {
         builder.emit('query-error', error, assign({__knexUid: 'something'}, obj))
-        context.emit('query-error', error, assign({__knexUid: 'something'}, obj))
         throw error;
+      })
+      .finally(() => {
+        if (shouldCreateContext) {
+          finalContext.end()
+        }
       })
   }
 
@@ -153,7 +166,7 @@ export default class Runner {
   // of the queries in sequence.
   async queryArray(queries) {
     const executed = []
-    const context = this.context
+    const originalContext = this.context
     const ctx = this.context = this.context.context()
     try {
       for (const query of queries) {
@@ -162,7 +175,7 @@ export default class Runner {
     } finally {
       ctx.end()
     }
-    this.context = context
+    this.context = originalContext
     return executed.length === 1 ? executed[0] : executed
   }
 

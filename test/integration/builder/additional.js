@@ -257,9 +257,9 @@ module.exports = function(knex) {
     });
 
 
-    it.skip('.timeout() should throw TimeoutError', function() {
+    it('.timeout() should throw TimeoutError', function() {
       var dialect = knex.client.config.dialect;
-      if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+      if (dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
       var testQueries = {
         'postgres': function() {
           return knex.raw('SELECT pg_sleep(1)');
@@ -304,9 +304,12 @@ module.exports = function(knex) {
     });
 
 
-    it.skip('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
+    it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
       var dialect = knex.client.config.dialect;
-      if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+
+      if(dialect === 'sqlite3') {
+        return //TODO -- No built-in support for sleeps
+      }
 
       // There's unexpected behavior caused by knex releasing a connection back
       // to the pool because of a timeout when a long query is still running.
@@ -337,7 +340,7 @@ module.exports = function(knex) {
         }
       };
 
-      if(!testQueries.hasOwnProperty(dialect)) {
+      if (!testQueries.hasOwnProperty(dialect)) {
         throw new Error('Missing test query for dialect: ' + dialect);
       }
 
@@ -349,7 +352,7 @@ module.exports = function(knex) {
 
       // Only mysql/mariadb query cancelling supported for now
       if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
-        expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
+        expect(addTimeout).toThrow("Query cancelling not supported for this dialect");
         return;
       }
 
@@ -360,7 +363,7 @@ module.exports = function(knex) {
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).toEqual({
             timeout: 1,
-            name:    'TimeoutError',
+            name: 'TimeoutError',
             message: 'Defined query timeout of 1ms exceeded when running query.'
           });
 
@@ -377,7 +380,7 @@ module.exports = function(knex) {
     });
 
 
-    it.skip('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
+    it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
       // Only mysql/mariadb query cancelling supported for now
       var dialect = knex.client.config.dialect;
       if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
@@ -404,7 +407,7 @@ module.exports = function(knex) {
         });
     });
 
-    it.skip('Event: query-response', function() {
+    it('Event: query-response', function() {
       var queryCount = 0;
 
       var onQueryResponse = function(response, obj, builder) {
@@ -430,7 +433,7 @@ module.exports = function(knex) {
     });
 
 
-    it.skip('Event: query-error', function() {
+    it('Event: query-error', function() {
       var queryCount = 0;
       var onQueryError = function(error, obj) {
         queryCount++;

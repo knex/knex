@@ -144,12 +144,14 @@ module.exports = function(knex) {
       })
       .on('query', function(obj) {
         count++;
+        if (!__knexUid) __knexUid = obj.__knexUid;
+        expect(__knexUid).toEqual(obj.__knexUid);
       })
       .catch(function(msg) {
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
         var expectedCount =
           knex.client.dialect === 'oracle' ||
-          knex.client.dialect === 'mssql' ? 2 : 5;
+          knex.client.dialect === 'mssql' ? 2 : 4;
         expect(count).toEqual(expectedCount);
         expect(msg).toEqual(err);
         return knex('accounts').where('id', id).select('first_name');
@@ -160,7 +162,7 @@ module.exports = function(knex) {
     });
 
     it('should be able to run schema methods', function() {
-      var count = 0;
+      var __knexUid, count = 0;
       var err = new Error('error message');
       if (knex.client.dialect === 'postgresql') {
         return knex.transaction(function(trx) {
@@ -180,14 +182,16 @@ module.exports = function(knex) {
         })
         .on('query', function(obj) {
           count++;
+          if (!__knexUid) __knexUid = obj.__knexUid;
+          expect(__knexUid).toEqual(obj.__knexUid);
         })
         .catch(function(msg) {
           expect(msg).toEqual(err);
-          expect(count).toEqual(7);
+          expect(count).toEqual(5);
           return knex('test_schema_migrations').count('*');
         })
         .catch(function(e) {
-          expect(e.message).toEqual('select count(*) from \"test_schema_migrations\" - relation "test_schema_migrations" does not exist');
+          expect(e.message).toEqual('relation "test_schema_migrations" does not exist - select count(*) from \"test_schema_migrations\"');
         });
       } else {
         var id = null;
@@ -218,11 +222,13 @@ module.exports = function(knex) {
         })
         .on('query', function(obj) {
           count++;
+          if (!__knexUid) __knexUid = obj.__knexUid;
+          expect(__knexUid).toEqual(obj.__knexUid);
         }).then(function() {
           if (knex.client.dialect === 'mssql') {
             expect(count).toEqual(3);
           } else {
-            expect(count).toEqual(7);
+            expect(count).toEqual(5);
           }
           return knex('accounts').where('id', id).select('first_name');
         }).then(function(resp) {
@@ -268,35 +274,35 @@ module.exports = function(knex) {
       knex.transaction(function(trx) {
         trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
       })
-          .then(expectQueryEventToHaveBeenTriggered)
-          .catch(expectQueryEventToHaveBeenTriggered);
+      .then(expectQueryEventToHaveBeenTriggered)
+      .catch(expectQueryEventToHaveBeenTriggered);
 
-    })
+    });
 
-    it.skip('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function() {
+    it('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function() {
       //To make this test easier, I'm changing the pool settings to max 1.
-      var knexConfig = _.clone(knex.client.config)
-      knexConfig.pool.min = 0
-      knexConfig.pool.max = 1
-      knexConfig.acquireConnectionTimeout = 1000
+      var knexConfig = _.clone(knex.client.config);
+      knexConfig.pool.min = 0;
+      knexConfig.pool.max = 1;
+      knexConfig.acquireConnectionTimeout = 1000;
 
-      var knexDb = new Knex(knexConfig)
+      var rootKnex = new Knex(knexConfig);
 
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
-      return knexDb.transaction(function(trx) {
+      return rootKnex.transaction(function(trx) {
         trx.raw('SELECT 1 = 1').then(function () {
           //No connection is available, so try issuing a query without transaction.
           //Since there is no available connection, it should throw a timeout error based on `aquireConnectionTimeout` from the knex config.
-          return knexDb.raw('select * FROM accounts WHERE username = ?', ['Test'])
+          return rootKnex.raw('select * FROM accounts WHERE username = ?', ['Test'])
         })
         .then(function () {
           //Should never reach this point
-          expect(false).to.be.ok();
+          expect(false).toEqual(false);
         }).catch(function (error) {
-          expect(error.bindings).to.be.an('array');
-          expect(error.bindings[0]).toEqual('Test');
+          expect(error.message).toContain('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?');
           expect(error.sql).toEqual('select * FROM accounts WHERE username = ?');
-          expect(error.message).toEqual('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?');
+          expect(error.bindings).toBeAn('array');
+          expect(error.bindings[0]).toEqual('Test');
           trx.commit() //Test done
         });
       });
