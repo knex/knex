@@ -101,7 +101,6 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-groupByRaw">groupByRaw</a></li>
           <li>– <a href="#Builder-orderBy">orderBy</a></li>
           <li>– <a href="#Builder-orderByRaw">orderByRaw</a></li>
-          <li>– <a href="#Builder-having">having</a></li>
           <li>– <a href="#Builder-offset">offset</a></li>
           <li>– <a href="#Builder-limit">limit</a></li>
           <li>– <a href="#Builder-union">union</a></li>
