@@ -87,14 +87,14 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-havingRaw">havingRaw</a></li>
 
           <li><b><a href="#Builder-on">On Methods:</a></b></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-onIn">onIn</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-onNotIn">onNotIn</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-onNull">onNull</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-onNotNull">onNotNull</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-onExists">onExists</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-onNotExists">onNotExists</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-onBetween">onBetween</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-onNotBetween">onNotBetween</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onIn">onIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotIn">onNotIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNull">onNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotNull">onNotNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onExists">onExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotExists">onNotExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onBetween">onBetween</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotBetween">onNotBetween</a></li>
 
           <li>– <a href="#Builder-distinct">distinct</a></li>
           <li>– <a href="#Builder-groupBy">groupBy</a></li>
