@@ -1201,7 +1201,19 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').having('email', '>', 1), {
       mysql: 'select * from `users` having `email` > ?',
       mssql: 'select * from [users] having [email] > ?',
-      postgres: 'select * from "users" having "email" > ?'
+      postgres: 'select * from "users" having "email" > ?',
+      oracledb: 'select * from "users" having "email" > ?',
+      oracle: 'select * from "users" having "email" > ?'
+    });
+  });
+
+  it("or having", function() {
+    testsql(qb().select('*').from('users').having('baz', '>', 5).orHaving('email', '=', 10), {
+      mysql: 'select * from `users` having `baz` > ? or `email` = ?',
+      mssql: 'select * from [users] having [baz] > ? or [email] = ?',
+      postgres: 'select * from "users" having "baz" > ? or "email" = ?',
+      oracledb: 'select * from "users" having "baz" > ? or "email" = ?',
+      oracle: 'select * from "users" having "baz" > ? or "email" = ?'
     });
   });
 
@@ -1211,7 +1223,9 @@ describe("QueryBuilder", function() {
     }), {
       mysql: 'select * from `users` having (`email` > ?)',
       mssql: 'select * from [users] having ([email] > ?)',
-      postgres: 'select * from "users" having ("email" > ?)'
+      postgres: 'select * from "users" having ("email" > ?)',
+      oracledb: 'select * from "users" having ("email" > ?)',
+      oracle: 'select * from "users" having ("email" > ?)'
     });
   });
 
@@ -1222,7 +1236,9 @@ describe("QueryBuilder", function() {
     }), {
       mysql: 'select * from `users` having (`email` > ? or `email` = ?)',
       mssql: 'select * from [users] having ([email] > ? or [email] = ?)',
-      postgres: 'select * from "users" having ("email" > ? or "email" = ?)'
+      postgres: 'select * from "users" having ("email" > ? or "email" = ?)',
+      oracledb: 'select * from "users" having ("email" > ? or "email" = ?)',
+      oracle: 'select * from "users" having ("email" > ? or "email" = ?)'
     });
   });
 
@@ -1230,7 +1246,9 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').groupBy('email').having('email', '>', 1), {
       mysql: 'select * from `users` group by `email` having `email` > ?',
       mssql: 'select * from [users] group by [email] having [email] > ?',
-      postgres: 'select * from "users" group by "email" having "email" > ?'
+      postgres: 'select * from "users" group by "email" having "email" > ?',
+      oracledb: 'select * from "users" group by "email" having "email" > ?',
+      oracle: 'select * from "users" group by "email" having "email" > ?'
     });
   });
 
@@ -1248,7 +1266,9 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').having(raw('user_foo < user_bar')), {
       mysql: 'select * from `users` having user_foo < user_bar',
       mssql: 'select * from [users] having user_foo < user_bar',
-      postgres: 'select * from "users" having user_foo < user_bar'
+      postgres: 'select * from "users" having user_foo < user_bar',
+      oracledb: 'select * from "users" having user_foo < user_bar',
+      oracle: 'select * from "users" having user_foo < user_bar'
     });
   });
 
@@ -1256,7 +1276,181 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').having('baz', '=', 1).orHaving(raw('user_foo < user_bar')), {
       mysql: 'select * from `users` having `baz` = ? or user_foo < user_bar',
       mssql: 'select * from [users] having [baz] = ? or user_foo < user_bar',
-      postgres: 'select * from "users" having "baz" = ? or user_foo < user_bar'
+      postgres: 'select * from "users" having "baz" = ? or user_foo < user_bar',
+      oracledb: 'select * from "users" having "baz" = ? or user_foo < user_bar',
+      oracle: 'select * from "users" having "baz" = ? or user_foo < user_bar'
+    });
+  });
+
+  it("having null", function() {
+    testsql(qb().select('*').from('users').havingNull('baz'), {
+      mysql: 'select * from `users` having `baz` is null',
+      mssql: 'select * from [users] having [baz] is null',
+      postgres: 'select * from "users" having "baz" is null',
+      oracledb: 'select * from "users" having "baz" is null',
+      oracle: 'select * from "users" having "baz" is null'
+    });
+  });
+
+  it("or having null", function() {
+    testsql(qb().select('*').from('users').havingNull('baz').orHavingNull('foo'), {
+      mysql: 'select * from `users` having `baz` is null or `foo` is null',
+      mssql: 'select * from [users] having [baz] is null or [foo] is null',
+      postgres: 'select * from "users" having "baz" is null or "foo" is null',
+      oracledb: 'select * from "users" having "baz" is null or "foo" is null',
+      oracle: 'select * from "users" having "baz" is null or "foo" is null'
+    });
+  });
+
+  it("having not null", function() {
+    testsql(qb().select('*').from('users').havingNotNull('baz'), {
+      mysql: 'select * from `users` having `baz` is not null',
+      mssql: 'select * from [users] having [baz] is not null',
+      postgres: 'select * from "users" having "baz" is not null',
+      oracledb: 'select * from "users" having "baz" is not null',
+      oracle: 'select * from "users" having "baz" is not null'
+    });
+  });
+
+  it("or having not null", function() {
+    testsql(qb().select('*').from('users').havingNotNull('baz').orHavingNotNull('foo'), {
+      mysql: 'select * from `users` having `baz` is not null or `foo` is not null',
+      mssql: 'select * from [users] having [baz] is not null or [foo] is not null',
+      postgres: 'select * from "users" having "baz" is not null or "foo" is not null',
+      oracledb: 'select * from "users" having "baz" is not null or "foo" is not null',
+      oracle: 'select * from "users" having "baz" is not null or "foo" is not null'
+    });
+  });
+
+  it("having exists", function() {
+    testsql(qb().select('*').from('users').havingExists(function() {
+      this.select('baz').from('users');
+    }), {
+      mysql: 'select * from `users` having exists (select `baz` from `users`)',
+      mssql: 'select * from [users] having exists (select [baz] from [users])',
+      postgres: 'select * from "users" having exists (select "baz" from "users")',
+      oracledb: 'select * from "users" having exists (select "baz" from "users")',
+      oracle: 'select * from "users" having exists (select "baz" from "users")'
+    });
+  });
+
+  it("or having exists", function() {
+    testsql(qb().select('*').from('users').havingExists(function() {
+      this.select('baz').from('users');
+    }).orHavingExists(function() {
+      this.select('foo').from('users');
+    }), {
+      mysql: 'select * from `users` having exists (select `baz` from `users`) or exists (select `foo` from `users`)',
+      mssql: 'select * from [users] having exists (select [baz] from [users]) or exists (select [foo] from [users])',
+      postgres: 'select * from "users" having exists (select "baz" from "users") or exists (select "foo" from "users")',
+      oracledb: 'select * from "users" having exists (select "baz" from "users") or exists (select "foo" from "users")',
+      oracle: 'select * from "users" having exists (select "baz" from "users") or exists (select "foo" from "users")'
+    });
+  });
+
+  it("having not exists", function() {
+    testsql(qb().select('*').from('users').havingNotExists(function() {
+      this.select('baz').from('users');
+    }), {
+      mysql: 'select * from `users` having not exists (select `baz` from `users`)',
+      mssql: 'select * from [users] having not exists (select [baz] from [users])',
+      postgres: 'select * from "users" having not exists (select "baz" from "users")',
+      oracledb: 'select * from "users" having not exists (select "baz" from "users")',
+      oracle: 'select * from "users" having not exists (select "baz" from "users")'
+    });
+  });
+
+  it("or having not exists", function() {
+    testsql(qb().select('*').from('users').havingNotExists(function() {
+      this.select('baz').from('users');
+    }).orHavingNotExists(function() {
+      this.select('foo').from('users');
+    }), {
+      mysql: 'select * from `users` having not exists (select `baz` from `users`) or not exists (select `foo` from `users`)',
+      mssql: 'select * from [users] having not exists (select [baz] from [users]) or not exists (select [foo] from [users])',
+      postgres: 'select * from "users" having not exists (select "baz" from "users") or not exists (select "foo" from "users")',
+      oracledb: 'select * from "users" having not exists (select "baz" from "users") or not exists (select "foo" from "users")',
+      oracle: 'select * from "users" having not exists (select "baz" from "users") or not exists (select "foo" from "users")'
+    });
+  });
+
+  it("having between", function() {
+    testsql(qb().select('*').from('users').havingBetween('baz', [5, 10]), {
+      mysql: 'select * from `users` having `baz` between ? and ?',
+      mssql: 'select * from [users] having [baz] between ? and ?',
+      postgres: 'select * from "users" having "baz" between ? and ?',
+      oracledb: 'select * from "users" having "baz" between ? and ?',
+      oracle: 'select * from "users" having "baz" between ? and ?'
+    });
+  });
+
+  it("or having between", function() {
+    testsql(qb().select('*').from('users').havingBetween('baz', [5, 10]).orHavingBetween('baz', [20, 30]), {
+      mysql: 'select * from `users` having `baz` between ? and ? or `baz` between ? and ?',
+      mssql: 'select * from [users] having [baz] between ? and ? or [baz] between ? and ?',
+      postgres: 'select * from "users" having "baz" between ? and ? or "baz" between ? and ?',
+      oracledb: 'select * from "users" having "baz" between ? and ? or "baz" between ? and ?',
+      oracle: 'select * from "users" having "baz" between ? and ? or "baz" between ? and ?'
+    });
+  });
+
+  it("having not between", function() {
+    testsql(qb().select('*').from('users').havingNotBetween('baz', [5, 10]), {
+      mysql: 'select * from `users` having `baz` not between ? and ?',
+      mssql: 'select * from [users] having [baz] not between ? and ?',
+      postgres: 'select * from "users" having "baz" not between ? and ?',
+      oracledb: 'select * from "users" having "baz" not between ? and ?',
+      oracle: 'select * from "users" having "baz" not between ? and ?'
+    });
+  });
+
+  it("or having not between", function() {
+    testsql(qb().select('*').from('users').havingNotBetween('baz', [5, 10]).orHavingNotBetween('baz', [20, 30]), {
+      mysql: 'select * from `users` having `baz` not between ? and ? or `baz` not between ? and ?',
+      mssql: 'select * from [users] having [baz] not between ? and ? or [baz] not between ? and ?',
+      postgres: 'select * from "users" having "baz" not between ? and ? or "baz" not between ? and ?',
+      oracledb: 'select * from "users" having "baz" not between ? and ? or "baz" not between ? and ?',
+      oracle: 'select * from "users" having "baz" not between ? and ? or "baz" not between ? and ?'
+    });
+  });
+
+  it("having in", function() {
+    testsql(qb().select('*').from('users').havingIn('baz', [5, 10, 37]), {
+      mysql: 'select * from `users` having `baz` in (?, ?, ?)',
+      mssql: 'select * from [users] having [baz] in (?, ?, ?)',
+      postgres: 'select * from "users" having "baz" in (?, ?, ?)',
+      oracledb: 'select * from "users" having "baz" in (?, ?, ?)',
+      oracle: 'select * from "users" having "baz" in (?, ?, ?)'
+    });
+  });
+
+  it("or having in", function() {
+    testsql(qb().select('*').from('users').havingIn('baz', [5, 10, 37]).orHavingIn('foo', ['Batman', 'Joker']), {
+      mysql: 'select * from `users` having `baz` in (?, ?, ?) or `foo` in (?, ?)',
+      mssql: 'select * from [users] having [baz] in (?, ?, ?) or [foo] in (?, ?)',
+      postgres: 'select * from "users" having "baz" in (?, ?, ?) or "foo" in (?, ?)',
+      oracledb: 'select * from "users" having "baz" in (?, ?, ?) or "foo" in (?, ?)',
+      oracle: 'select * from "users" having "baz" in (?, ?, ?) or "foo" in (?, ?)'
+    });
+  });
+
+  it("having not in", function() {
+    testsql(qb().select('*').from('users').havingNotIn('baz', [5, 10, 37]), {
+      mysql: 'select * from `users` having `baz` not in (?, ?, ?)',
+      mssql: 'select * from [users] having [baz] not in (?, ?, ?)',
+      postgres: 'select * from "users" having "baz" not in (?, ?, ?)',
+      oracledb: 'select * from "users" having "baz" not in (?, ?, ?)',
+      oracle: 'select * from "users" having "baz" not in (?, ?, ?)'
+    });
+  });
+
+  it("or having not in", function() {
+    testsql(qb().select('*').from('users').havingNotIn('baz', [5, 10, 37]).orHavingNotIn('foo', ['Batman', 'Joker']), {
+      mysql: 'select * from `users` having `baz` not in (?, ?, ?) or `foo` not in (?, ?)',
+      mssql: 'select * from [users] having [baz] not in (?, ?, ?) or [foo] not in (?, ?)',
+      postgres: 'select * from "users" having "baz" not in (?, ?, ?) or "foo" not in (?, ?)',
+      oracledb: 'select * from "users" having "baz" not in (?, ?, ?) or "foo" not in (?, ?)',
+      oracle: 'select * from "users" having "baz" not in (?, ?, ?) or "foo" not in (?, ?)'
     });
   });
 
@@ -1626,6 +1820,198 @@ describe("QueryBuilder", function() {
         sql: 'select * from "myschema"."users" inner join "myschema"."contacts" on "users"."id" = "contacts"."id" left join "myschema"."photos" on "users"."id" = "photos"."id"',
         bindings: []
       }
+    });
+  });
+
+  it("on null", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNull('contacts.address')
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is null',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[address] is null',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null'
+    });
+  });
+
+  it("or on null", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNull('contacts.address').orOnNull('contacts.phone')
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is null or `contacts`.`phone` is null',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[address] is null or [contacts].[phone] is null',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null or "contacts"."phone" is null',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null or "contacts"."phone" is null',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null or "contacts"."phone" is null'
+    });
+  });
+
+  it("on not null", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotNull('contacts.address')
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is not null',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[address] is not null',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null'
+    });
+  });
+
+  it("or on not null", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotNull('contacts.address').orOnNotNull('contacts.phone')
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is not null or `contacts`.`phone` is not null',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[address] is not null or [contacts].[phone] is not null',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null or "contacts"."phone" is not null',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null or "contacts"."phone" is not null',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null or "contacts"."phone" is not null'
+    });
+  });
+
+  it("on exists", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onExists(function(){this.select('*').from('foo')})
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and exists (select * from `foo`)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and exists (select * from [foo])',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo")',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo")',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo")'
+    });
+  });
+
+  it("or on exists", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onExists(function(){this.select('*').from('foo')}).orOnExists(function(){this.select('*').from('bar')})
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and exists (select * from `foo`) or exists (select * from `bar`)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and exists (select * from [foo]) or exists (select * from [bar])',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo") or exists (select * from "bar")',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo") or exists (select * from "bar")',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo") or exists (select * from "bar")'
+    });
+  });
+
+  it("on not exists", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotExists(function(){this.select('*').from('foo')})
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and not exists (select * from `foo`)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and not exists (select * from [foo])',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo")',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo")',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo")'
+    });
+  });
+
+  it("or on not exists", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotExists(function(){this.select('*').from('foo')}).orOnNotExists(function(){this.select('*').from('bar')})
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and not exists (select * from `foo`) or not exists (select * from `bar`)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and not exists (select * from [foo]) or not exists (select * from [bar])',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo") or not exists (select * from "bar")',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo") or not exists (select * from "bar")',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo") or not exists (select * from "bar")'
+    });
+  });
+
+  it("on between", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onBetween('contacts.id', [7, 15])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` between ? and ?',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] between ? and ?',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ?',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ?',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ?'
+    });
+  });
+
+  it("or on between", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onBetween('contacts.id', [7, 15]).orOnBetween('users.id', [9, 14])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` between ? and ? or `users`.`id` between ? and ?',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] between ? and ? or [users].[id] between ? and ?',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ? or "users"."id" between ? and ?',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ? or "users"."id" between ? and ?',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ? or "users"."id" between ? and ?'
+    });
+  });
+
+  it("on not between", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [7, 15])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not between ? and ?',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] not between ? and ?',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ?',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ?',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ?'
+    });
+  });
+
+  it("or on not between", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [7, 15]).orOnNotBetween('users.id', [9, 14])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not between ? and ? or `users`.`id` not between ? and ?',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] not between ? and ? or [users].[id] not between ? and ?',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ? or "users"."id" not between ? and ?',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ? or "users"."id" not between ? and ?',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ? or "users"."id" not between ? and ?'
+    });
+  });
+
+  it("on in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onIn('contacts.id', [7, 15, 23, 41])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` in (?, ?, ?, ?)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] in (?, ?, ?, ?)',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?)',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?)',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?)'
+    });
+  });
+
+  it("or on in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onIn('contacts.id', [7, 15, 23, 41]).orOnIn('users.id', [21, 37])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` in (?, ?, ?, ?) or `users`.`id` in (?, ?)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] in (?, ?, ?, ?) or [users].[id] in (?, ?)',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?) or "users"."id" in (?, ?)',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?) or "users"."id" in (?, ?)',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?) or "users"."id" in (?, ?)'
+    });
+  });
+
+  it("on not in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotIn('contacts.id', [7, 15, 23, 41])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not in (?, ?, ?, ?)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] not in (?, ?, ?, ?)',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?)',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?)',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?)'
+    });
+  });
+
+  it("or on not in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotIn('contacts.id', [7, 15, 23, 41]).orOnNotIn('users.id', [21, 37])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not in (?, ?, ?, ?) or `users`.`id` not in (?, ?)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] not in (?, ?, ?, ?) or [users].[id] not in (?, ?)',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?) or "users"."id" not in (?, ?)',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?) or "users"."id" not in (?, ?)',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?) or "users"."id" not in (?, ?)'
     });
   });
 

@@ -88,6 +88,18 @@
       <li>&nbsp;&nbsp;- <a href="#Builder-whereNotBetween">whereNotBetween</a></li>
       <li>&nbsp;&nbsp;- <a href="#Builder-whereRaw">whereRaw</a></li>
 
+      <li><b><a href="#Builder-havings">Having Methods:</a></b></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-having">having</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-havingIn">havingIn</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-havingNotIn">havingNotIn</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-havingNull">havingNull</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-havingNotNull">havingNotNull</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-havingExists">havingExists</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-havingNotExists">havingNotExists</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-havingBetween">havingBetween</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-havingNotBetween">havingNotBetween</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-havingRaw">havingRaw</a></li>
+
       <li><b><a href="#Builder-join">Join Methods:</a></b></li>
       <li>&nbsp;&nbsp;– <a href="#Builder-innerJoin">innerJoin</a></li>
       <li>&nbsp;&nbsp;– <a href="#Builder-leftJoin">leftJoin</a></li>
@@ -99,12 +111,21 @@
       <li>&nbsp;&nbsp;– <a href="#Builder-crossJoin">crossJoin</a></li>
       <li>&nbsp;&nbsp;– <a href="#Builder-joinRaw">joinRaw</a></li>
 
+      <li><b><a href="#Builder-on">On Methods:</a></b></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-onIn">onIn</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-onNotIn">onNotIn</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-onNull">onNull</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-onNotNull">onNotNull</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-onExists">onExists</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-onNotExists">onNotExists</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-onBetween">onBetween</a></li>
+      <li>&nbsp;&nbsp;- <a href="#Builder-onNotBetween">onNotBetween</a></li>
+
       <li>– <a href="#Builder-distinct">distinct</a></li>
       <li>– <a href="#Builder-groupBy">groupBy</a></li>
       <li>– <a href="#Builder-groupByRaw">groupByRaw</a></li>
       <li>– <a href="#Builder-orderBy">orderBy</a></li>
       <li>– <a href="#Builder-orderByRaw">orderByRaw</a></li>
-      <li>– <a href="#Builder-having">having</a></li>
       <li>– <a href="#Builder-offset">offset</a></li>
       <li>– <a href="#Builder-limit">limit</a></li>
       <li>– <a href="#Builder-union">union</a></li>
@@ -940,6 +961,118 @@ knex('users').whereNotBetween('votes', [1, 100])
 knex('users').whereRaw('id = ?', [1])
 </pre>
 
+  <h3 id="Builder-havings">Having Clauses</h3>
+
+  <p id="Builder-having">
+    <b class="header">having</b><code>.having(column, operator, value) / .orHaving</code>
+    <br />
+    Adds a <tt>having</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex('users')
+  .groupBy('count')
+  .orderBy('name', 'desc')
+  .having('count', '>', 100)
+</pre>
+
+  <p id="Builder-havingIn">
+    <b class="header">havingIn</b><code>.havingIn(column, values) / .orHavingIn</code>
+    <br />
+    Adds a <tt>havingIn</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex.select('*').from('users').havingIn('id', [5, 3, 10, 17])
+</pre>
+
+  <p id="Builder-havingNotIn">
+    <b class="header">havingNotIn</b><code>.havingNotIn(column, values) / .orHavingNotIn</code>
+    <br />
+    Adds a <tt>havingNotIn</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex.select('*').from('users').havingNotIn('id', [5, 3, 10, 17])
+</pre>
+
+  <p id="Builder-havingNull">
+    <b class="header">havingNull</b><code>.havingNull(column) / .orHavingNull</code>
+    <br />
+    Adds a <tt>havingNull</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex.select('*').from('users').havingNull('email')
+</pre>
+
+  <p id="Builder-havingNotNull">
+    <b class="header">havingNotNull</b><code>.havingNotNull(column) / .orHavingNotNull</code>
+    <br />
+    Adds a <tt>havingNotNull</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex.select('*').from('users').havingNotNull('email')
+</pre>
+
+  <p id="Builder-havingExists">
+    <b class="header">havingExists</b><code>.havingExists(builder | callback) / .orHavingExists</code>
+    <br />
+    Adds a <tt>havingExists</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex.select('*').from('users').havingExists(function() {
+    this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+  })
+</pre>
+
+  <p id="Builder-havingNotExists">
+    <b class="header">havingNotExists</b><code>.havingNotExists(builder | callback) / .orHavingNotExists</code>
+    <br />
+    Adds a <tt>havingNotExists</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex.select('*').from('users').havingNotExists(function() {
+    this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+  })
+</pre>
+
+  <p id="Builder-havingBetween">
+    <b class="header">havingBetween</b><code>.havingBetween(column, range) / .orHavingBetween</code>
+    <br />
+    Adds a <tt>havingBetween</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex.select('*').from('users').havingBetween('id', [5, 10])
+</pre>
+
+  <p id="Builder-havingNotBetween">
+    <b class="header">havingNotBetween</b><code>.havingNotBetween(column, range) / .orHavingNotBetween</code>
+    <br />
+    Adds a <tt>havingNotBetween</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex.select('*').from('users').havingNotBetween('id', [5, 10])
+</pre>
+
+  <p id="Builder-havingRaw">
+    <b class="header">havingRaw</b><code>.havingRaw(query, [bindings])</code>
+    <br />
+    Adds a <tt>havingRaw</tt> clause to the query.
+  </p>
+
+<pre class="display">
+  knex('users')
+  .groupBy('count')
+  .orderBy('name', 'desc')
+  .havingRaw('count > ?', [100])
+</pre>
+
   <h3>Join Methods</h3>
 
   <p>
@@ -1146,6 +1279,109 @@ knex.select('*').from('accounts').joinRaw('natural full join table1').where('id'
 knex.select('*').from('accounts').join(knex.raw('natural full join table1')).where('id', 1)
 </pre>
 
+    <h3 id="Builder-on">On Clauses</h3>
+
+    <p id="Builder-onIn">
+      <b class="header">onIn</b><code>.onIn(column, values) / .orOnIn</code>
+      <br />
+      Adds a <tt>onIn</tt> clause to the query.
+    </p>
+
+<pre class="display">
+  knex.select('*').from('users').join('contacts', function() {
+    this.on('users.id', '=', 'contacts.id').onIn('contacts.id', [7, 15, 23, 41])
+  })
+</pre>
+
+    <p id="Builder-onNotIn">
+      <b class="header">onNotIn</b><code>.onNotIn(column, values) / .orOnNotIn</code>
+      <br />
+      Adds a <tt>onNotIn</tt> clause to the query.
+    </p>
+
+<pre class="display">
+  knex.select('*').from('users').join('contacts', function() {
+    this.on('users.id', '=', 'contacts.id').onNotIn('contacts.id', [7, 15, 23, 41])
+  })
+</pre>
+
+    <p id="Builder-onNull">
+      <b class="header">onNull</b><code>.onNull(column) / .orOnNull</code>
+      <br />
+      Adds a <tt>onNull</tt> clause to the query.
+    </p>
+
+<pre class="display">
+  knex.select('*').from('users').join('contacts', function() {
+    this.on('users.id', '=', 'contacts.id').onNull('contacts.email')
+  })
+</pre>
+
+    <p id="Builder-onNotNull">
+      <b class="header">onNotNull</b><code>.onNotNull(column) / .orOnNotNull</code>
+      <br />
+      Adds a <tt>onNotNull</tt> clause to the query.
+    </p>
+
+<pre class="display">
+  knex.select('*').from('users').join('contacts', function() {
+    this.on('users.id', '=', 'contacts.id').onNotNull('contacts.email')
+  })
+</pre>
+
+    <p id="Builder-onExists">
+      <b class="header">onExists</b><code>.onExists(builder | callback) / .orOnExists</code>
+      <br />
+      Adds a <tt>onExists</tt> clause to the query.
+    </p>
+
+<pre class="display">
+  knex.select('*').from('users').join('contacts', function() {
+    this.on('users.id', '=', 'contacts.id').onExists(function() {
+      this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+    })
+  })
+</pre>
+
+    <p id="Builder-onNotExists">
+      <b class="header">onNotExists</b><code>.onNotExists(builder | callback) / .orOnNotExists</code>
+      <br />
+      Adds a <tt>onNotExists</tt> clause to the query.
+    </p>
+
+<pre class="display">
+  knex.select('*').from('users').join('contacts', function() {
+    this.on('users.id', '=', 'contacts.id').onNotExists(function() {
+      this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+    })
+  })
+</pre>
+
+    <p id="Builder-onBetween">
+      <b class="header">onBetween</b><code>.onBetween(column, range) / .orOnBetween</code>
+      <br />
+      Adds a <tt>onBetween</tt> clause to the query.
+    </p>
+
+<pre class="display">
+  knex.select('*').from('users').join('contacts', function() {
+    this.on('users.id', '=', 'contacts.id').onBetween('contacts.id', [5, 30])
+  })
+</pre>
+
+    <p id="Builder-onNotBetween">
+      <b class="header">onNotBetween</b><code>.onNotBetween(column,range) / .orOnNotBetween</code>
+      <br />
+      Adds a <tt>onNotBetween</tt> clause to the query.
+    </p>
+
+<pre class="display">
+  knex.select('*').from('users').join('contacts', function() {
+    this.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [5, 30])
+  })
+</pre>
+
+
     <p id="Builder-distinct">
       <b class="header">distinct</b><code>.distinct()</code>
       <br />
@@ -1198,33 +1434,6 @@ knex('users').orderBy('name', 'desc')
 <pre class="display">
 knex.select('*').from('table').orderByRaw('col NULLS LAST DESC')
 </pre>
-
-    <p id="Builder-having">
-      <b class="header">having</b><code>.having(column, operator, value)</code>
-      <br />
-      Adds a <tt>having</tt> clause to the query.
-    </p>
-
-<pre class="display">
-knex('users')
-  .groupBy('count')
-  .orderBy('name', 'desc')
-  .having('count', '>', 100)
-</pre>
-
-    <p id="Builder-havingRaw">
-      <b class="header">havingRaw</b><code>.havingRaw(column, operator, value)</code>
-      <br />
-      Adds a <tt>havingRaw</tt> clause to the query.
-    </p>
-
-<pre class="display">
-knex('users')
-  .groupBy('count')
-  .orderBy('name', 'desc')
-  .havingRaw('count > ?', [100])
-</pre>
-
 
     <p id="Builder-offset">
       <b class="header">offset</b><code>.offset(value)</code>

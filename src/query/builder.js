@@ -338,18 +338,6 @@ assign(Builder.prototype, {
     return this;
   },
 
-
-  // Helper for compiling any advanced `having` queries.
-  havingWrapped(callback) {
-    this._statements.push({
-      grouping: 'having',
-      type: 'whereWrapped',
-      value: callback,
-      bool: this._bool()
-    });
-    return this;
-  },
-
   // Adds a `where exists` clause to the query.
   whereExists(callback) {
     this._statements.push({
@@ -550,7 +538,7 @@ assign(Builder.prototype, {
   // Adds a `having` clause to the query.
   having(column, operator, value) {
     if (column instanceof Raw && arguments.length === 1) {
-      return this._havingRaw(column);
+      return this.havingRaw(column);
     }
 
     // Check if the column is a function, in which case it's
@@ -565,30 +553,152 @@ assign(Builder.prototype, {
       column,
       operator,
       value,
+      bool: this._bool(),
+      not: this._not()
+    });
+    return this;
+  },
+
+  orHaving: function orHaving() {
+    this._bool('or');
+    const obj = arguments[0];
+    if(isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
+      return this.havingWrapped(function() {
+        for(const key in obj) {
+          this.andHaving(key, obj[key]);
+        }
+      });
+    }
+    return this.having.apply(this, arguments);
+  },
+
+  // Helper for compiling any advanced `having` queries.
+  havingWrapped(callback) {
+    this._statements.push({
+      grouping: 'having',
+      type: 'havingWrapped',
+      value: callback,
+      bool: this._bool(),
+      not: this._not()
+    });
+    return this;
+  },
+
+  havingNull(column) {
+    this._statements.push({
+      grouping: 'having',
+      type: 'havingNull',
+      column,
+      not: this._not(),
       bool: this._bool()
     });
     return this;
   },
-  // Adds an `or having` clause to the query.
-  orHaving() {
-    return this._bool('or').having.apply(this, arguments);
+
+  orHavingNull(callback) {
+    return this._bool('or').havingNull(callback);
   },
-  havingRaw(sql, bindings) {
-    return this._havingRaw(sql, bindings);
+
+  havingNotNull(callback) {
+    return this._not(true).havingNull(callback);
   },
-  orHavingRaw(sql, bindings) {
-    return this._bool('or').havingRaw(sql, bindings);
+
+  orHavingNotNull(callback) {
+    return this._not(true)._bool('or').havingNull(callback);
   },
+
+  havingExists(callback) {
+    this._statements.push({
+      grouping: 'having',
+      type: 'havingExists',
+      value: callback,
+      not: this._not(),
+      bool: this._bool()
+    });
+    return this;
+  },
+
+  orHavingExists(callback) {
+    return this._bool('or').havingExists(callback);
+  },
+
+  havingNotExists(callback) {
+    return this._not(true).havingExists(callback);
+  },
+
+  orHavingNotExists(callback) {
+    return this._not(true)._bool('or').havingExists(callback);
+  },
+
+  havingBetween(column, values) {
+    assert(Array.isArray(values), 'The second argument to havingBetween must be an array.')
+    assert(values.length === 2, 'You must specify 2 values for the havingBetween clause')
+    this._statements.push({
+      grouping: 'having',
+      type: 'havingBetween',
+      column,
+      value: values,
+      not: this._not(),
+      bool: this._bool()
+    });
+    return this;
+  },
+
+  orHavingBetween(column, values) {
+    return this._bool('or').havingBetween(column, values);
+  },
+
+  havingNotBetween(column, values) {
+    return this._not(true).havingBetween(column, values);
+  },
+
+  orHavingNotBetween(column, values) {
+    return this._not(true)._bool('or').havingBetween(column, values);
+  },
+
+  havingIn(column, values) {
+    if (Array.isArray(values) && isEmpty(values)) return this.where(this._not());
+    this._statements.push({
+      grouping: 'having',
+      type: 'havingIn',
+      column,
+      value: values,
+      not: this._not(),
+      bool: this._bool()
+    });
+    return this;
+  },
+
+  // Adds a `or where in` clause to the query.
+  orHavingIn(column, values) {
+    return this._bool('or').havingIn(column, values);
+  },
+
+  // Adds a `where not in` clause to the query.
+  havingNotIn(column, values) {
+    return this._not(true).havingIn(column, values);
+  },
+
+  // Adds a `or where not in` clause to the query.
+  orHavingNotIn(column, values) {
+    return this._bool('or')._not(true).havingIn(column, values);
+  },
+
   // Adds a raw `having` clause to the query.
-  _havingRaw(sql, bindings) {
+  havingRaw(sql, bindings) {
     const raw = (sql instanceof Raw ? sql : this.client.raw(sql, bindings));
     this._statements.push({
       grouping: 'having',
       type: 'havingRaw',
       value: raw,
-      bool: this._bool()
+      bool: this._bool(),
+      not: this._not()
     });
     return this;
+  },
+
+  orHavingRaw(sql, bindings) {
+    return this._bool('or').havingRaw(sql, bindings);
   },
 
   // Only allow a single "offset" to be set for the current query.
@@ -870,6 +980,14 @@ Builder.prototype.andWhereRaw = Builder.prototype.whereRaw
 Builder.prototype.andWhereBetween = Builder.prototype.whereBetween
 Builder.prototype.andWhereNotBetween = Builder.prototype.whereNotBetween
 Builder.prototype.andHaving = Builder.prototype.having
+Builder.prototype.andHavingIn = Builder.prototype.havingIn
+Builder.prototype.andHavingNotIn = Builder.prototype.havingNotIn
+Builder.prototype.andHavingNull = Builder.prototype.havingNull
+Builder.prototype.andHavingNotNull = Builder.prototype.havingNotNull
+Builder.prototype.andHavingExists = Builder.prototype.havingExists
+Builder.prototype.andHavingNotExists = Builder.prototype.havingNotExists
+Builder.prototype.andHavingBetween = Builder.prototype.havingBetween
+Builder.prototype.andHavingNotBetween = Builder.prototype.havingNotBetween
 Builder.prototype.from = Builder.prototype.table
 Builder.prototype.into = Builder.prototype.table
 Builder.prototype.del = Builder.prototype.delete
