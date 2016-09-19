@@ -1,5 +1,5 @@
 {
-  // "presets": ["es2015-loose"],
+  "presets": ["es2015-loose"],
   "plugins": [
     "lodash",
     "transform-runtime",
