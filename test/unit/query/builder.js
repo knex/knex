@@ -1197,7 +1197,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or having", function() {
-    testsql(qb().select('*').from('users').having('baz', '>', 5).orHaving('email', '=', 10), {
+    testsql(qb => qb.select('*').from('users').having('baz', '>', 5).orHaving('email', '=', 10), {
       mysql: 'select * from `users` having `baz` > ? or `email` = ?',
       mssql: 'select * from [users] having [baz] > ? or [email] = ?',
       postgres: 'select * from "users" having "baz" > ? or "email" = ?',
@@ -1272,7 +1272,7 @@ describe("QueryBuilder", function() {
   });
 
   it("having null", function() {
-    testsql(qb().select('*').from('users').havingNull('baz'), {
+    testsql(qb => qb.select('*').from('users').havingNull('baz'), {
       mysql: 'select * from `users` having `baz` is null',
       mssql: 'select * from [users] having [baz] is null',
       postgres: 'select * from "users" having "baz" is null',
@@ -1282,7 +1282,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or having null", function() {
-    testsql(qb().select('*').from('users').havingNull('baz').orHavingNull('foo'), {
+    testsql(qb => qb.select('*').from('users').havingNull('baz').orHavingNull('foo'), {
       mysql: 'select * from `users` having `baz` is null or `foo` is null',
       mssql: 'select * from [users] having [baz] is null or [foo] is null',
       postgres: 'select * from "users" having "baz" is null or "foo" is null',
@@ -1292,7 +1292,7 @@ describe("QueryBuilder", function() {
   });
 
   it("having not null", function() {
-    testsql(qb().select('*').from('users').havingNotNull('baz'), {
+    testsql(qb => qb.select('*').from('users').havingNotNull('baz'), {
       mysql: 'select * from `users` having `baz` is not null',
       mssql: 'select * from [users] having [baz] is not null',
       postgres: 'select * from "users" having "baz" is not null',
@@ -1302,7 +1302,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or having not null", function() {
-    testsql(qb().select('*').from('users').havingNotNull('baz').orHavingNotNull('foo'), {
+    testsql(qb => qb.select('*').from('users').havingNotNull('baz').orHavingNotNull('foo'), {
       mysql: 'select * from `users` having `baz` is not null or `foo` is not null',
       mssql: 'select * from [users] having [baz] is not null or [foo] is not null',
       postgres: 'select * from "users" having "baz" is not null or "foo" is not null',
@@ -1312,7 +1312,7 @@ describe("QueryBuilder", function() {
   });
 
   it("having exists", function() {
-    testsql(qb().select('*').from('users').havingExists(function() {
+    testsql(qb => qb.select('*').from('users').havingExists(function() {
       this.select('baz').from('users');
     }), {
       mysql: 'select * from `users` having exists (select `baz` from `users`)',
@@ -1324,7 +1324,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or having exists", function() {
-    testsql(qb().select('*').from('users').havingExists(function() {
+    testsql(qb => qb.select('*').from('users').havingExists(function() {
       this.select('baz').from('users');
     }).orHavingExists(function() {
       this.select('foo').from('users');
@@ -1338,7 +1338,7 @@ describe("QueryBuilder", function() {
   });
 
   it("having not exists", function() {
-    testsql(qb().select('*').from('users').havingNotExists(function() {
+    testsql(qb => qb.select('*').from('users').havingNotExists(function() {
       this.select('baz').from('users');
     }), {
       mysql: 'select * from `users` having not exists (select `baz` from `users`)',
@@ -1350,7 +1350,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or having not exists", function() {
-    testsql(qb().select('*').from('users').havingNotExists(function() {
+    testsql(qb => qb.select('*').from('users').havingNotExists(function() {
       this.select('baz').from('users');
     }).orHavingNotExists(function() {
       this.select('foo').from('users');
@@ -1364,7 +1364,7 @@ describe("QueryBuilder", function() {
   });
 
   it("having between", function() {
-    testsql(qb().select('*').from('users').havingBetween('baz', [5, 10]), {
+    testsql(qb => qb.select('*').from('users').havingBetween('baz', [5, 10]), {
       mysql: 'select * from `users` having `baz` between ? and ?',
       mssql: 'select * from [users] having [baz] between ? and ?',
       postgres: 'select * from "users" having "baz" between ? and ?',
@@ -1374,7 +1374,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or having between", function() {
-    testsql(qb().select('*').from('users').havingBetween('baz', [5, 10]).orHavingBetween('baz', [20, 30]), {
+    testsql(qb => qb.select('*').from('users').havingBetween('baz', [5, 10]).orHavingBetween('baz', [20, 30]), {
       mysql: 'select * from `users` having `baz` between ? and ? or `baz` between ? and ?',
       mssql: 'select * from [users] having [baz] between ? and ? or [baz] between ? and ?',
       postgres: 'select * from "users" having "baz" between ? and ? or "baz" between ? and ?',
@@ -1384,7 +1384,7 @@ describe("QueryBuilder", function() {
   });
 
   it("having not between", function() {
-    testsql(qb().select('*').from('users').havingNotBetween('baz', [5, 10]), {
+    testsql(qb => qb.select('*').from('users').havingNotBetween('baz', [5, 10]), {
       mysql: 'select * from `users` having `baz` not between ? and ?',
       mssql: 'select * from [users] having [baz] not between ? and ?',
       postgres: 'select * from "users" having "baz" not between ? and ?',
@@ -1394,7 +1394,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or having not between", function() {
-    testsql(qb().select('*').from('users').havingNotBetween('baz', [5, 10]).orHavingNotBetween('baz', [20, 30]), {
+    testsql(qb => qb.select('*').from('users').havingNotBetween('baz', [5, 10]).orHavingNotBetween('baz', [20, 30]), {
       mysql: 'select * from `users` having `baz` not between ? and ? or `baz` not between ? and ?',
       mssql: 'select * from [users] having [baz] not between ? and ? or [baz] not between ? and ?',
       postgres: 'select * from "users" having "baz" not between ? and ? or "baz" not between ? and ?',
@@ -1404,7 +1404,7 @@ describe("QueryBuilder", function() {
   });
 
   it("having in", function() {
-    testsql(qb().select('*').from('users').havingIn('baz', [5, 10, 37]), {
+    testsql(qb => qb.select('*').from('users').havingIn('baz', [5, 10, 37]), {
       mysql: 'select * from `users` having `baz` in (?, ?, ?)',
       mssql: 'select * from [users] having [baz] in (?, ?, ?)',
       postgres: 'select * from "users" having "baz" in (?, ?, ?)',
@@ -1414,7 +1414,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or having in", function() {
-    testsql(qb().select('*').from('users').havingIn('baz', [5, 10, 37]).orHavingIn('foo', ['Batman', 'Joker']), {
+    testsql(qb => qb.select('*').from('users').havingIn('baz', [5, 10, 37]).orHavingIn('foo', ['Batman', 'Joker']), {
       mysql: 'select * from `users` having `baz` in (?, ?, ?) or `foo` in (?, ?)',
       mssql: 'select * from [users] having [baz] in (?, ?, ?) or [foo] in (?, ?)',
       postgres: 'select * from "users" having "baz" in (?, ?, ?) or "foo" in (?, ?)',
@@ -1424,7 +1424,7 @@ describe("QueryBuilder", function() {
   });
 
   it("having not in", function() {
-    testsql(qb().select('*').from('users').havingNotIn('baz', [5, 10, 37]), {
+    testsql(qb => qb.select('*').from('users').havingNotIn('baz', [5, 10, 37]), {
       mysql: 'select * from `users` having `baz` not in (?, ?, ?)',
       mssql: 'select * from [users] having [baz] not in (?, ?, ?)',
       postgres: 'select * from "users" having "baz" not in (?, ?, ?)',
@@ -1434,7 +1434,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or having not in", function() {
-    testsql(qb().select('*').from('users').havingNotIn('baz', [5, 10, 37]).orHavingNotIn('foo', ['Batman', 'Joker']), {
+    testsql(qb => qb.select('*').from('users').havingNotIn('baz', [5, 10, 37]).orHavingNotIn('foo', ['Batman', 'Joker']), {
       mysql: 'select * from `users` having `baz` not in (?, ?, ?) or `foo` not in (?, ?)',
       mssql: 'select * from [users] having [baz] not in (?, ?, ?) or [foo] not in (?, ?)',
       postgres: 'select * from "users" having "baz" not in (?, ?, ?) or "foo" not in (?, ?)',
@@ -1813,7 +1813,7 @@ describe("QueryBuilder", function() {
   });
 
   it("on null", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNull('contacts.address')
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is null',
@@ -1825,7 +1825,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or on null", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNull('contacts.address').orOnNull('contacts.phone')
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is null or `contacts`.`phone` is null',
@@ -1837,7 +1837,7 @@ describe("QueryBuilder", function() {
   });
 
   it("on not null", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNotNull('contacts.address')
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is not null',
@@ -1849,7 +1849,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or on not null", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNotNull('contacts.address').orOnNotNull('contacts.phone')
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is not null or `contacts`.`phone` is not null',
@@ -1861,7 +1861,7 @@ describe("QueryBuilder", function() {
   });
 
   it("on exists", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onExists(function(){this.select('*').from('foo')})
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and exists (select * from `foo`)',
@@ -1873,7 +1873,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or on exists", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onExists(function(){this.select('*').from('foo')}).orOnExists(function(){this.select('*').from('bar')})
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and exists (select * from `foo`) or exists (select * from `bar`)',
@@ -1885,7 +1885,7 @@ describe("QueryBuilder", function() {
   });
 
   it("on not exists", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNotExists(function(){this.select('*').from('foo')})
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and not exists (select * from `foo`)',
@@ -1897,7 +1897,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or on not exists", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNotExists(function(){this.select('*').from('foo')}).orOnNotExists(function(){this.select('*').from('bar')})
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and not exists (select * from `foo`) or not exists (select * from `bar`)',
@@ -1909,7 +1909,7 @@ describe("QueryBuilder", function() {
   });
 
   it("on between", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onBetween('contacts.id', [7, 15])
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` between ? and ?',
@@ -1921,7 +1921,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or on between", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onBetween('contacts.id', [7, 15]).orOnBetween('users.id', [9, 14])
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` between ? and ? or `users`.`id` between ? and ?',
@@ -1933,7 +1933,7 @@ describe("QueryBuilder", function() {
   });
 
   it("on not between", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [7, 15])
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not between ? and ?',
@@ -1945,7 +1945,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or on not between", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [7, 15]).orOnNotBetween('users.id', [9, 14])
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not between ? and ? or `users`.`id` not between ? and ?',
@@ -1957,7 +1957,7 @@ describe("QueryBuilder", function() {
   });
 
   it("on in", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onIn('contacts.id', [7, 15, 23, 41])
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` in (?, ?, ?, ?)',
@@ -1969,7 +1969,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or on in", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onIn('contacts.id', [7, 15, 23, 41]).orOnIn('users.id', [21, 37])
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` in (?, ?, ?, ?) or `users`.`id` in (?, ?)',
@@ -1981,7 +1981,7 @@ describe("QueryBuilder", function() {
   });
 
   it("on not in", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNotIn('contacts.id', [7, 15, 23, 41])
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not in (?, ?, ?, ?)',
@@ -1993,7 +1993,7 @@ describe("QueryBuilder", function() {
   });
 
   it("or on not in", function() {
-    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+    testsql(qb => qb.select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').onNotIn('contacts.id', [7, 15, 23, 41]).orOnNotIn('users.id', [21, 37])
     }), {
       mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not in (?, ?, ?, ?) or `users`.`id` not in (?, ?)',
