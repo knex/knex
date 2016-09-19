@@ -1,8 +1,7 @@
-
 import QueryBuilder from './query/builder';
 import Raw from './raw';
 
-import { assign, transform } from 'lodash'
+import { transform } from 'lodash'
 
 // Valid values for the `order by` clause generation.
 const orderBys = ['asc', 'desc'];
@@ -17,12 +16,12 @@ const operators = transform([
   result[key] = true
 }, {});
 
-function Formatter(client) {
-  this.client = client
-  this.bindings = []
-}
+export default class Formatter {
 
-assign(Formatter.prototype, {
+  constructor(client) {
+    this.client = client
+    this.bindings = []
+  }
 
   // Accepts a string or array of columns to wrap as appropriate.
   columnize(target) {
@@ -33,7 +32,7 @@ assign(Formatter.prototype, {
       str += this.wrap(columns[i])
     }
     return str
-  },
+  }
 
   // Turns a list of values into a list of ?'s, joining them with commas unless
   // a "joining" value is specified (e.g. ' and ')
@@ -46,7 +45,7 @@ assign(Formatter.prototype, {
       str += this.parameter(values[i] === undefined ? notSetValue : values[i])
     }
     return str;
-  },
+  }
 
   // Checks whether a value is a function... if it is, we compile it
   // otherwise we check whether it's a raw
@@ -55,7 +54,7 @@ assign(Formatter.prototype, {
       return this.outputQuery(this.compileCallback(value), true);
     }
     return this.unwrapRaw(value, true) || '?';
-  },
+  }
 
   unwrapRaw(value, isParameter) {
     let query;
@@ -77,14 +76,14 @@ assign(Formatter.prototype, {
     if (isParameter) {
       this.bindings.push(value);
     }
-  },
+  }
 
   rawOrFn(value, method) {
     if (typeof value === 'function') {
       return this.outputQuery(this.compileCallback(value, method));
     }
     return this.unwrapRaw(value) || '';
-  },
+  }
 
   // Puts the appropriate wrapper around a value depending on the database
   // engine, unless it's a knex.raw value, in which case it's left alone.
@@ -96,15 +95,15 @@ assign(Formatter.prototype, {
     if (raw) return raw;
     if (typeof value === 'number') return value;
     return this._wrapString(value + '');
-  },
+  }
 
   wrapAsIdentifier(value) {
     return this.client.wrapIdentifier((value || '').trim());
-  },
+  }
 
   alias(first, second) {
     return first + ' as ' + second;
-  },
+  }
 
   // The operator method takes a value and returns something or other.
   operator(value) {
@@ -114,14 +113,14 @@ assign(Formatter.prototype, {
       throw new TypeError(`The operator "${value}" is not permitted`);
     }
     return value;
-  },
+  }
 
   // Specify the direction of the ordering.
   direction(value) {
     const raw = this.unwrapRaw(value);
     if (raw) return raw;
     return orderBys.indexOf((value || '').toLowerCase()) !== -1 ? value : 'asc';
-  },
+  }
 
   // Compiles a callback using the query builder.
   compileCallback(callback, method) {
@@ -137,7 +136,7 @@ assign(Formatter.prototype, {
 
     // Return the compiled & parameterized sql.
     return compiler.toSQL(method || 'select');
-  },
+  }
 
   // Ensures the query is aliased if necessary.
   outputQuery(compiled, isParameter) {
@@ -149,7 +148,7 @@ assign(Formatter.prototype, {
       }
     }
     return sql;
-  },
+  }
 
   // Coerce to string to prevent strange errors when it's not a string.
   _wrapString(value) {
@@ -173,6 +172,4 @@ assign(Formatter.prototype, {
     return wrapped.join('.');
   }
 
-});
-
-export default Formatter;
+}

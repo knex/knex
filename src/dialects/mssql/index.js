@@ -4,11 +4,11 @@
 import { assign, map, flatten, values } from 'lodash'
 import inherits from 'inherits';
 
-import Formatter from './formatter';
 import Client from '../../client';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 
+import Formatter from '../../formatter'
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
 import SchemaCompiler from './schema/compiler';
@@ -42,17 +42,29 @@ assign(Client_MSSQL.prototype, {
     return require('mssql');
   },
 
-  Transaction,
+  formatter() {
+    return new MSSQL_Formatter(this)
+  },
 
-  Formatter,
+  transaction() {
+    return new Transaction(this, ...arguments)
+  },
 
-  QueryCompiler,
+  queryCompiler() {
+    return new QueryCompiler(this, ...arguments)
+  },
 
-  SchemaCompiler,
+  schemaCompiler() {
+    return new SchemaCompiler(this, ...arguments)
+  },
 
-  TableCompiler,
+  tableCompiler() {
+    return new TableCompiler(this, ...arguments)
+  },
 
-  ColumnCompiler,
+  columnCompiler() {
+    return new ColumnCompiler(this, ...arguments)
+  },
 
   wrapIdentifier(value) {
     return (value !== '*' ? `[${value.replace(/\[/g, '\[')}]` : '*')
@@ -61,22 +73,28 @@ assign(Client_MSSQL.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    const client = this;
-    const connection = new this.driver.Connection(this.connectionSettings);
-    return new Promise(function(resolver, rejecter) {
-      connection.connect(function(err) {
-        if (err) return rejecter(err);
-        connection.on('error', connectionErrorHandler.bind(null, client, connection));
-        connection.on('end', connectionErrorHandler.bind(null, client, connection));
+    return new Promise((resolver, rejecter) => {
+      const connection = new this.driver.Connection(this.connectionSettings);
+      connection.connect((err) => {
+        if (err) {
+          return rejecter(err)
+        }
+        connection.on('error', (err) => {
+          connection.__knex__disposed = err
+        })
         resolver(connection);
       });
     });
   },
 
+  validateConnection(connection) {
+    return connection.connected === true
+  },
+
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
-  destroyRawConnection(connection, cb) {
-    connection.close(cb);
+  destroyRawConnection(connection) {
+    connection.close()
   },
 
   // Position the bindings for the query.
@@ -91,13 +109,14 @@ assign(Client_MSSQL.prototype, {
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream, options) {
-    const client = this;
     options = options || {}
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
-    return new Promise(function(resolver, rejecter) {
-      stream.on('error', rejecter);
+    return new Promise((resolver, rejecter) => {
+      stream.on('error', (err) => {
+        rejecter(err)
+      });
       stream.on('end', resolver);
       let { sql } = obj
       if (!sql) return resolver()
@@ -110,7 +129,7 @@ assign(Client_MSSQL.prototype, {
       req.stream = true;
       if (obj.bindings) {
         for (let i = 0; i < obj.bindings.length; i++) {
-          client._setReqInput(req, i, obj.bindings[i])
+          this._setReqInput(req, i, obj.bindings[i])
         }
       }
       req.pipe(stream)
@@ -125,7 +144,7 @@ assign(Client_MSSQL.prototype, {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
-    return new Promise(function(resolver, rejecter) {
+    return new Promise((resolver, rejecter) => {
       let { sql } = obj
       if (!sql) return resolver()
       if (obj.options) {
@@ -139,8 +158,10 @@ assign(Client_MSSQL.prototype, {
           client._setReqInput(req, i, obj.bindings[i])
         }
       }
-      req.query(sql, function(err, recordset) {
-        if (err) return rejecter(err)
+      req.query(sql, (err, recordset) => {
+        if (err) {
+          return rejecter(err)
+        }
         obj.response = recordset[0]
         resolver(obj)
       })
@@ -194,21 +215,23 @@ assign(Client_MSSQL.prototype, {
       default:
         return response
     }
-  },
-
-  ping(resource, callback) {
-    resource.request().query('SELECT 1', callback);
   }
 
 })
 
-// MSSQL Specific error handler
-function connectionErrorHandler(client, connection, err) {
-  if (connection && err && err.fatal) {
-    if (connection.__knex__disposed) return;
-    connection.__knex__disposed = true;
-    client.pool.destroy(connection);
+class MSSQL_Formatter extends Formatter {
+
+  // Accepts a string or array of columns to wrap as appropriate.
+  columnizeWithPrefix(prefix, target) {
+    const columns = typeof target === 'string' ? [target] : target
+    let str = '', i = -1;
+    while (++i < columns.length) {
+      if (i > 0) str += ', '
+      str += prefix + this.wrap(columns[i])
+    }
+    return str
   }
+
 }
 
 export default Client_MSSQL

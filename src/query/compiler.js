@@ -86,9 +86,13 @@ assign(QueryCompiler.prototype, {
   },
 
   pluck() {
+    let toPluck = this.single.pluck
+    if (toPluck.indexOf('.') !== -1) {
+      toPluck = toPluck.split('.').slice(-1)[0]
+    }
     return {
       sql: this.select(),
-      pluck: this.single.pluck
+      pluck: toPluck
     };
   },
 

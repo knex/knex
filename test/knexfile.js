@@ -12,10 +12,6 @@ var pool = {
   afterCreate: function(connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined')
     callback(null, connection);
-  },
-  beforeDestroy: function(connection, continueFunc) {
-    assert.ok(typeof connection.__knexUid !== 'undefined')
-    continueFunc();
   }
 };
 
