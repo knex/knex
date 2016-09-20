@@ -183,5 +183,5 @@ pre code.hljs {
   margin-left: inherit;
   padding-left: 0px;
   max-width: 800px;
-  overflow-x: scroll;
+  overflow-x: auto;
 }
