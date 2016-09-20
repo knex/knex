@@ -754,6 +754,144 @@ export default [
     ]
   },
   {
+    type: "heading",
+    size: "md",
+    content: "OnClauses",
+    href: "Builder-on"
+  },
+  {
+    type: "method",
+    method: "onIn",
+    example: ".onIn(column, values)",
+    description: "Adds a onIn clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').join('contacts', function() {
+          this.on('users.id', '=', 'contacts.id').onIn('contacts.id', [7, 15, 23, 41])
+        })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "onNotIn",
+    example: ".onNotIn(column, values)",
+    description: "Adds a onNotIn clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').join('contacts', function() {
+          this.on('users.id', '=', 'contacts.id').onNotIn('contacts.id', [7, 15, 23, 41])
+        })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "onNull",
+    example: ".onNull(column)",
+    description: "Adds a onNull clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').join('contacts', function() {
+          this.on('users.id', '=', 'contacts.id').onNull('contacts.email')
+        })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "onNotNull",
+    example: ".onNotNull(column)",
+    description: "Adds a onNotNull clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').join('contacts', function() {
+          this.on('users.id', '=', 'contacts.id').onNotNull('contacts.email')
+        })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "onExists",
+    example: ".onExists(builder | callback)",
+    description: "Adds a onExists clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').join('contacts', function() {
+          this.on('users.id', '=', 'contacts.id').onExists(function() {
+            this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+          })
+        })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "onNotExists",
+    example: ".onNotExists(builder | callback)",
+    description: "Adds a onNotExists clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').join('contacts', function() {
+          this.on('users.id', '=', 'contacts.id').onNotExists(function() {
+            this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+          })
+        })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "onBetween",
+    example: ".onBetween(column, range)",
+    description: "Adds a onBetween clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').join('contacts', function() {
+          this.on('users.id', '=', 'contacts.id').onBetween('contacts.id', [5, 30])
+        })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "onNotBetween",
+    example: ".onNotBetween(column, range)",
+    description: "Adds a onNotBetween clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').join('contacts', function() {
+          this.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [5, 30])
+        })
+        `
+      }
+    ]
+  },
+  {
     type: "method",
     method: "distinct",
     example: ".distinct()",
@@ -827,6 +965,12 @@ export default [
     ]
   },
   {
+    type: "heading",
+    size: "md",
+    content: "Having Clauses",
+    href: "Builder-havings"
+  },
+  {
     type: "method",
     method: "having",
     example: ".having(column, operator, value)",
@@ -839,6 +983,122 @@ export default [
             .groupBy('count')
             .orderBy('name', 'desc')
             .having('count', '>', 100)
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "havingIn",
+    example: ".havingIn(column, values)",
+    description: "Adds a havingIn clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').havingIn('id', [5, 3, 10, 17])
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "havingNotIn",
+    example: ".havingNotIn(column, values)",
+    description: "Adds a havingNotIn clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').havingNotIn('id', [5, 3, 10, 17])
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "havingNull",
+    example: ".havingNull(column)",
+    description: "Adds a havingNull clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').havingNull('email')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "havingNotNull",
+    example: ".havingNotNull(column)",
+    description: "Adds a havingNotNull clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').havingNotNull('email')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "havingExists",
+    example: ".havingExists(builder | callback)",
+    description: "Adds a havingExists clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').havingExists(function() {
+          this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+        })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "havingNotExists",
+    example: ".havingNotExists(builder | callback)",
+    description: "Adds a havingNotExists clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('*').from('users').havingNotExists(function() {
+          this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+        })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "havingBetween",
+    example: ".havingBetween(column, range)",
+    description: "Adds a havingBetween clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').havingBetween('id', [5, 10])
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "havingNotBetween",
+    example: ".havingNotBetween(column, range)",
+    description: "Adds a havingNotBetween clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').havingNotBetween('id', [5, 10])
         `
       }
     ]

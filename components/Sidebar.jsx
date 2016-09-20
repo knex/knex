@@ -51,17 +51,17 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-withSchema">withSchema</a></li>
 
           <li><b><a href="#Builder-wheres">Where Methods:</a></b></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-where">where</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereNot">whereNot</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereIn">whereIn</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereNotIn">whereNotIn</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereNull">whereNull</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereNotNull">whereNotNull</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereExists">whereExists</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereNotExists">whereNotExists</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereBetween">whereBetween</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereNotBetween">whereNotBetween</a></li>
-          <li>&nbsp;&nbsp;- <a href="#Builder-whereRaw">whereRaw</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-where">where</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereNot">whereNot</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereIn">whereIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereNotIn">whereNotIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereNull">whereNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereNotNull">whereNotNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereExists">whereExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereNotExists">whereNotExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereBetween">whereBetween</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereNotBetween">whereNotBetween</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereRaw">whereRaw</a></li>
 
           <li><b><a href="#Builder-join">Join Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-innerJoin">innerJoin</a></li>
@@ -74,12 +74,33 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-crossJoin">crossJoin</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-joinRaw">joinRaw</a></li>
 
+          <li><b><a href="#Builder-havings">Having Methods:</a></b></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-having">having</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-havingIn">havingIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-havingNotIn">havingNotIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-havingNull">havingNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-havingNotNull">havingNotNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-havingExists">havingExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-havingNotExists">havingNotExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-havingBetween">havingBetween</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-havingNotBetween">havingNotBetween</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-havingRaw">havingRaw</a></li>
+
+          <li><b><a href="#Builder-on">On Methods:</a></b></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onIn">onIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotIn">onNotIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNull">onNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotNull">onNotNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onExists">onExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotExists">onNotExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onBetween">onBetween</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotBetween">onNotBetween</a></li>
+
           <li>– <a href="#Builder-distinct">distinct</a></li>
           <li>– <a href="#Builder-groupBy">groupBy</a></li>
           <li>– <a href="#Builder-groupByRaw">groupByRaw</a></li>
           <li>– <a href="#Builder-orderBy">orderBy</a></li>
           <li>– <a href="#Builder-orderByRaw">orderByRaw</a></li>
-          <li>– <a href="#Builder-having">having</a></li>
           <li>– <a href="#Builder-offset">offset</a></li>
           <li>– <a href="#Builder-limit">limit</a></li>
           <li>– <a href="#Builder-union">union</a></li>
