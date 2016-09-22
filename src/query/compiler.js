@@ -159,6 +159,9 @@ assign(QueryCompiler.prototype, {
         if (stmt.type === 'aggregate') {
           sql.push(this.aggregate(stmt))
         }
+        else if (stmt.type === 'analytic') {
+          sql.push(this.analytic(stmt));
+        }
         else if (stmt.value && stmt.value.length > 0) {
           sql.push(this.formatter.columnize(stmt.value))
         }
@@ -515,6 +518,35 @@ assign(QueryCompiler.prototype, {
     return str;
   },
 
+  analytic(stmt) {
+    let sql = '';
+    const self = this;
+    sql += stmt.method + '() over (';
+
+    if(stmt.raw) {
+      sql += stmt.raw;
+    } else {
+      if (stmt.partitions.length) {
+        sql += 'partition by ';
+        sql += map(stmt.partitions, function(partition) {
+          return self.formatter.columnize(partition);
+        }).join(', ') + ' ';
+      }
+
+      sql += 'order by ';
+      sql += map(stmt.order, function(order) {
+        return self.formatter.columnize(order);
+      }).join(', ');
+    }
+
+    sql += ')';
+
+    if(stmt.alias) {
+      sql += ' as ' + stmt.alias;
+    }
+
+    return sql;
+  },
 
   // Compiles all `with` statements on the query.
   with() {

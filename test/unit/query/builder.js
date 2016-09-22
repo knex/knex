@@ -3302,6 +3302,693 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it('dense_rank with string and no partition', function() {
+    testsql(qb().select('*').from('accounts').denseRank(null, 'email'), {
+      mssql: {
+        sql: 'select *, dense_rank() over (order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with array and no partition', function() {
+    testsql(qb().select('*').from('accounts').denseRank('test_alias', ['email', 'name']), {
+      mssql: {
+        sql: 'select *, dense_rank() over (order by [email], [name]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (order by "email", "name") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (order by "email", "name") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (order by "email", "name") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with array', function() {
+    testsql(qb().select('*').from('accounts').denseRank(null, ['email'], ['address', 'phone']), {
+      mssql: {
+        sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with string', function() {
+    testsql(qb().select('*').from('accounts').denseRank(null, 'email', 'address'), {
+      mssql: {
+        sql: 'select *, dense_rank() over (partition by [address] order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (partition by "address" order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (partition by "address" order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (partition by "address" order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with array and alias', function() {
+    testsql(qb().select('*').from('accounts').denseRank('test_alias', ['email'], ['address', 'phone']), {
+      mssql: {
+        sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with string and alias', function() {
+    testsql(qb().select('*').from('accounts').denseRank('test_alias', 'email', 'address'), {
+      mssql: {
+        sql: 'select *, dense_rank() over (partition by [address] order by [email]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with function', function() {
+    testsql(qb().select('*').from('accounts').denseRank(null, function() {
+      this.orderBy('email');
+    }), {
+      mssql: {
+        sql: 'select *, dense_rank() over (order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with function and alias', function() {
+    testsql(qb().select('*').from('accounts').denseRank('test_alias', function() {
+      this.orderBy('email').partitionBy('address');
+    }), {
+      mssql: {
+        sql: 'select *, dense_rank() over (partition by [address] order by [email]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with function and arrays', function() {
+    testsql(qb().select('*').from('accounts').denseRank('test_alias', function() {
+      this.orderBy(['email', 'name']).partitionBy(['address', 'phone']);
+    }), {
+      mssql: {
+        sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with function and chains', function() {
+    testsql(qb().select('*').from('accounts').denseRank('test_alias', function() {
+      this.orderBy('email').partitionBy('address').partitionBy('phone').orderBy('name');
+    }), {
+      mssql: {
+        sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('chained dense_rank ', function() {
+    testsql(qb().select('*').from('accounts').denseRank('first_alias', 'email').denseRank('second_alias', 'address'), {
+      mssql: {
+        sql: 'select *, dense_rank() over (order by [email]) as first_alias, dense_rank() over (order by [address]) as second_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (order by "email") as first_alias, dense_rank() over (order by "address") as second_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (order by "email") as first_alias, dense_rank() over (order by "address") as second_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (order by "email") as first_alias, dense_rank() over (order by "address") as second_alias from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with raw', function() {
+    testsql(qb().select('*').from('accounts').denseRank(null , raw('partition by address order by email')), {
+      mssql: {
+        sql: 'select *, dense_rank() over (partition by address order by email) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (partition by address order by email) from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (partition by address order by email) from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (partition by address order by email) from "accounts"'
+      }
+    });
+  });
+
+  it('dense_rank with raw and alias', function() {
+    testsql(qb().select('*').from('accounts').denseRank('test_alias' , raw('partition by address order by email')), {
+      mssql: {
+        sql: 'select *, dense_rank() over (partition by address order by email) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, dense_rank() over (partition by address order by email) as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (partition by address order by email) as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, dense_rank() over (partition by address order by email) as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('rank with string and no partition', function() {
+    testsql(qb().select('*').from('accounts').rank(null, 'email'), {
+      mssql: {
+        sql: 'select *, rank() over (order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('rank with array and alias', function() {
+    testsql(qb().select('*').from('accounts').rank('test_alias', ['email', 'name']), {
+      mssql: {
+        sql: 'select *, rank() over (order by [email], [name]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (order by "email", "name") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (order by "email", "name") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (order by "email", "name") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('rank with array', function() {
+    testsql(qb().select('*').from('accounts').rank(null, ['email'], ['address', 'phone']), {
+      mssql: {
+        sql: 'select *, rank() over (partition by [address], [phone] order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('rank with string', function() {
+    testsql(qb().select('*').from('accounts').rank(null, 'email', 'address'), {
+      mssql: {
+        sql: 'select *, rank() over (partition by [address] order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (partition by "address" order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (partition by "address" order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (partition by "address" order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('rank with array and alias', function() {
+    testsql(qb().select('*').from('accounts').rank('test_alias', ['email'], ['address', 'phone']), {
+      mssql: {
+        sql: 'select *, rank() over (partition by [address], [phone] order by [email]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('rank with string and alias', function() {
+    testsql(qb().select('*').from('accounts').rank('test_alias', 'email', 'address'), {
+      mssql: {
+        sql: 'select *, rank() over (partition by [address] order by [email]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('rank with function', function() {
+    testsql(qb().select('*').from('accounts').rank(null, function() {
+      this.orderBy('email');
+    }), {
+      mssql: {
+        sql: 'select *, rank() over (order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('rank with function and alias', function() {
+    testsql(qb().select('*').from('accounts').rank('test_alias', function() {
+      this.orderBy('email').partitionBy('address');
+    }), {
+      mssql: {
+        sql: 'select *, rank() over (partition by [address] order by [email]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('rank with function and arrays', function() {
+    testsql(qb().select('*').from('accounts').rank('test_alias', function() {
+      this.orderBy(['email', 'name']).partitionBy(['address', 'phone']);
+    }), {
+      mssql: {
+        sql: 'select *, rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('rank with function and chains', function() {
+    testsql(qb().select('*').from('accounts').rank('test_alias', function() {
+      this.orderBy('email').partitionBy('address').partitionBy('phone').orderBy('name');
+    }), {
+      mssql: {
+        sql: 'select *, rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('chained rank', function() {
+    testsql(qb().select('*').from('accounts').rank('first_alias', 'email').rank('second_alias', 'address'), {
+      mssql: {
+        sql: 'select *, rank() over (order by [email]) as first_alias, rank() over (order by [address]) as second_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (order by "email") as first_alias, rank() over (order by "address") as second_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (order by "email") as first_alias, rank() over (order by "address") as second_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (order by "email") as first_alias, rank() over (order by "address") as second_alias from "accounts"'
+      }
+    });
+  });
+
+  it('rank with raw', function() {
+    testsql(qb().select('*').from('accounts').rank(null , raw('partition by address order by email')), {
+      mssql: {
+        sql: 'select *, rank() over (partition by address order by email) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (partition by address order by email) from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (partition by address order by email) from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (partition by address order by email) from "accounts"'
+      }
+    });
+  });
+
+  it('rank with raw and alias', function() {
+    testsql(qb().select('*').from('accounts').rank('test_alias' , raw('partition by address order by email')), {
+      mssql: {
+        sql: 'select *, rank() over (partition by address order by email) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, rank() over (partition by address order by email) as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, rank() over (partition by address order by email) as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, rank() over (partition by address order by email) as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with string and no partition', function() {
+    testsql(qb().select('*').from('accounts').rowNumber(null, 'email'), {
+      mssql: {
+        sql: 'select *, row_number() over (order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with array and no partition', function() {
+    testsql(qb().select('*').from('accounts').rowNumber('test_alias', ['email', 'name']), {
+      mssql: {
+        sql: 'select *, row_number() over (order by [email], [name]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (order by "email", "name") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (order by "email", "name") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (order by "email", "name") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with array', function() {
+    testsql(qb().select('*').from('accounts').rowNumber(null, ['email'], ['address', 'phone']), {
+      mssql: {
+        sql: 'select *, row_number() over (partition by [address], [phone] order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with string', function() {
+    testsql(qb().select('*').from('accounts').rowNumber(null, 'email', 'address'), {
+      mssql: {
+        sql: 'select *, row_number() over (partition by [address] order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (partition by "address" order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (partition by "address" order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (partition by "address" order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with array and alias', function() {
+    testsql(qb().select('*').from('accounts').rowNumber('test_alias', ['email'], ['address', 'phone']), {
+      mssql: {
+        sql: 'select *, row_number() over (partition by [address], [phone] order by [email]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with string and alias', function() {
+    testsql(qb().select('*').from('accounts').rowNumber('test_alias', 'email', 'address'), {
+      mssql: {
+        sql: 'select *, row_number() over (partition by [address] order by [email]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with function', function() {
+    testsql(qb().select('*').from('accounts').rowNumber(null, function() {
+      this.orderBy('email');
+    }), {
+      mssql: {
+        sql: 'select *, row_number() over (order by [email]) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (order by "email") from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (order by "email") from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (order by "email") from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with function and alias', function() {
+    testsql(qb().select('*').from('accounts').rowNumber('test_alias', function() {
+      this.orderBy('email').partitionBy('address');
+    }), {
+      mssql: {
+        sql: 'select *, row_number() over (partition by [address] order by [email]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with function and arrays', function() {
+    testsql(qb().select('*').from('accounts').rowNumber('test_alias', function() {
+      this.orderBy(['email', 'name']).partitionBy(['address', 'phone']);
+    }), {
+      mssql: {
+        sql: 'select *, row_number() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with function and chains', function() {
+    testsql(qb().select('*').from('accounts').rowNumber('test_alias', function() {
+      this.orderBy('email').partitionBy('address').partitionBy('phone').orderBy('name');
+    }), {
+      mssql: {
+        sql: 'select *, row_number() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"'
+      }
+    });
+  });
+
+  it('chained row_number', function() {
+    testsql(qb().select('*').from('accounts').rowNumber('first_alias', 'email').rowNumber('second_alias', 'address'), {
+      mssql: {
+        sql: 'select *, row_number() over (order by [email]) as first_alias, row_number() over (order by [address]) as second_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (order by "email") as first_alias, row_number() over (order by "address") as second_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (order by "email") as first_alias, row_number() over (order by "address") as second_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (order by "email") as first_alias, row_number() over (order by "address") as second_alias from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with raw', function() {
+    testsql(qb().select('*').from('accounts').rowNumber(null , raw('partition by address order by email')), {
+      mssql: {
+        sql: 'select *, row_number() over (partition by address order by email) from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (partition by address order by email) from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (partition by address order by email) from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (partition by address order by email) from "accounts"'
+      }
+    });
+  });
+
+  it('row_number with raw and alias', function() {
+    testsql(qb().select('*').from('accounts').rowNumber('test_alias' , raw('partition by address order by email')), {
+      mssql: {
+        sql: 'select *, row_number() over (partition by address order by email) as test_alias from [accounts]'
+      },
+      postgres: {
+        sql: 'select *, row_number() over (partition by address order by email) as test_alias from "accounts"'
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (partition by address order by email) as test_alias from "accounts"'
+      },
+      oracle: {
+        sql: 'select *, row_number() over (partition by address order by email) as test_alias from "accounts"'
+      }
+    });
+  });
+
   it('allows sub-query function on insert, #427', function() {
     testsql(qb().into('votes').insert(function() {
       this.select('*').from('votes').where('id', 99);
