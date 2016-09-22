@@ -8,7 +8,6 @@ import { EventEmitter } from 'events';
 import Raw from '../raw';
 import * as helpers from '../helpers';
 import JoinClause from './joinclause';
-import Analytic from './analytic';
 import {
   assign, clone, each, isBoolean, isEmpty, isFunction, isNumber, isObject,
   isString, isUndefined, tail, toArray
@@ -899,68 +898,6 @@ assign(Builder.prototype, {
     return this;
   },
 
-  _analytic(alias, second, third) {
-    let analytic;
-    const { schema } = this._single;
-    const method = this._analyticMethod();
-    alias = typeof alias === 'string' ? alias : null;
-
-    assert(typeof second === 'function' ||
-      second instanceof Raw ||
-      Array.isArray(second) ||
-      typeof second === 'string',
-      `The second argument to an analytic function must be either a function, a raw,
-       an array of string or a single string.`
-    );
-
-    if(third) {
-      assert(Array.isArray(third) ||
-        typeof third === 'string',
-        'The third argument to an analytic function must be either a string or an array of string.'
-      );
-    }
-
-    if (typeof second === 'function') {
-      analytic = new Analytic(method, schema, alias);
-      second.call(analytic, analytic);
-    } else if (second instanceof Raw) {
-      const raw = second;
-      analytic = {
-        grouping: 'columns',
-        type: 'analytic',
-        method: method,
-        raw: raw,
-        alias: alias
-      };
-    } else {
-      const order = typeof second === 'string' ? [second] : second;
-      let partitions = third || [];
-      partitions = typeof partitions === 'string' ? [partitions] : partitions;
-      analytic = {
-        grouping: 'columns',
-        type: 'analytic',
-        method: method,
-        order: order,
-        alias: alias,
-        partitions: partitions
-      };
-    }
-    this._statements.push(analytic);
-    return this;
-  },
-
-  rank() {
-    return this._analyticMethod('rank')._analytic.apply(this, arguments);
-  },
-
-  denseRank() {
-    return this._analyticMethod('dense_rank')._analytic.apply(this, arguments);
-  },
-
-  rowNumber() {
-    return this._analyticMethod('row_number')._analytic.apply(this, arguments);
-  },
-
   // ----------------------------------------------------------------------
 
   // Helper for the incrementing/decrementing queries.
@@ -1007,14 +944,6 @@ assign(Builder.prototype, {
     const ret = this._joinFlag || 'inner';
     this._joinFlag = 'inner';
     return ret;
-  },
-
-  _analyticMethod (val) {
-    if (arguments.length === 1) {
-      this._analyticFlag = val;
-      return this;
-    }
-    return this._analyticFlag || 'row_number';
   },
 
   // Helper for compiling any aggregate queries.
