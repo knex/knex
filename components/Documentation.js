@@ -33,6 +33,7 @@ export default class Documentation extends Component {
   };
 
   render() {
+    const {props: {version, changelog}} = this
     return (
       <Container {...constants} version={this.props.version}>
         <Section id="Prelude" content={prelude(this.props.version)} />
@@ -48,7 +49,7 @@ export default class Documentation extends Component {
         <Section id="Seeds" content={seeds} />
         <Section id="Support" content={support} />
         <Section id="Faq" content={faq} />
-        <Changelog id="Changelog" content={parseChangeLog(this.props.changelog)} />
+        <Changelog id="Changelog" version={version} content={parseChangeLog(changelog)} />
       </Container>
     )
   }

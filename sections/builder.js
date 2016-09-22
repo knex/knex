@@ -304,7 +304,7 @@ export default [
     type: "method",
     method: "whereIn",
     example: ".whereIn(column, array|callback|builder) / .orWhereIn",
-    description: "Shorthand for .where('id', 'in', obj), the .whereIn and .orWhereIn methods add a \"where in\" clause to the query. Click the \"play\" button below to see the queries.",
+    description: "Shorthand for .where('id', 'in', obj), the .whereIn and .orWhereIn methods add a \"where in\" clause to the query.",
     children: [
       {
         type: "runnable",
@@ -330,16 +330,6 @@ export default [
 
           knex.select('name').from('users')
             .whereIn('account_id', subquery)
-        `
-      },
-      {
-        type: "runnable",
-        content: `
-          knex('users')
-            .where('name', '=', 'John')
-            .orWhere(function() {
-              this.where('votes', '>', 100).andWhere('title', '<>', 'Admin');
-            })
         `
       }
     ]

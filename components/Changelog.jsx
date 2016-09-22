@@ -1,11 +1,11 @@
 import React, { Component, PropTypes } from 'react'
-import {VERSION} from 'knex'
 import List from './List'
 import marked from '../util/marked'
 
 export default class Changelog extends Component {
 
   static propTypes = {
+    version: PropTypes.string.isRequired,
     content: PropTypes.arrayOf(
       PropTypes.shape({
         date: PropTypes.string.isRequired,
@@ -28,7 +28,7 @@ export default class Changelog extends Component {
   };
 
   componentWillMount() {
-    this.changes = prepareChangelog(this.props.content)
+    this.changes = prepareChangelog(this.props.content, this.props.version)
   }
 
   handleShowFull = (e) => {
@@ -78,7 +78,7 @@ export default class Changelog extends Component {
   };
 
   render() {
-    const {state: {showFull}, changes} = this
+    const {state: {showFull}, changes, props: {version}} = this
     let log = changes
 
     if (showFull) {
@@ -88,7 +88,7 @@ export default class Changelog extends Component {
     }
 
     // Don't include unreleased changes
-    const current = log.find(c => c.version === VERSION)
+    const current = log.find(c => c.version === version)
     const idx = log.indexOf(current)
     if (idx !== -1) {
       log = log.slice(idx)
@@ -103,8 +103,8 @@ export default class Changelog extends Component {
   }
 }
 
-function prepareChangelog(changelog) {
-  const [currentMajor, currentMinor] = VERSION.split('.')
+function prepareChangelog(changelog, version) {
+  const [currentMajor, currentMinor] = version.split('.')
   const list = []
   for (let i = 0; i < changelog.length; i++) {
     const current = changelog[i]
