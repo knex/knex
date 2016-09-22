@@ -58,9 +58,9 @@
   "scripts": {
     "build": "npm run babel",
     "debug_test": "node-debug _mocha -t 0 test/index.js",
-    "babel": "rm -rf ./lib && babel src --out-dir lib --copy-files",
+    "babel": "rimraf -rf ./lib && babel src --out-dir lib --copy-files",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "dev": "rm -rf ./lib && babel -w src --out-dir lib --copy-files",
+    "dev": "rimraf -rf ./lib && babel -w src --out-dir lib --copy-files",
     "lint": "eslint src/**",
     "plaintest": "mocha --check-leaks -b -R spec test/index.js && npm run tape",
     "prepublish": "npm run babel",
