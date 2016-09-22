@@ -35,7 +35,7 @@ assign(Client_SQLCordova.prototype, {
         /*jslint browser: true*/
         const db = window.sqlitePlugin.openDatabase({name: client.name, key: client.key, location: 'default', androidLockWorkaround: 1},
         function(sucess) {
-          console.log('Connection DB sucess');
+          //console.log('Connection DB sucess');
         },
         function(err) {
           if (err) {
