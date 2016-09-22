@@ -76,6 +76,7 @@ export default class Sidebar extends Component {
 
           <li><b><a href="#Builder-havings">Having Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-having">having</a></li>
+          {/*
           <li>&nbsp;&nbsp;– <a href="#Builder-havingIn">havingIn</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingNotIn">havingNotIn</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingNull">havingNull</a></li>
@@ -84,8 +85,10 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-havingNotExists">havingNotExists</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingBetween">havingBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingNotBetween">havingNotBetween</a></li>
+          */}
           <li>&nbsp;&nbsp;– <a href="#Builder-havingRaw">havingRaw</a></li>
 
+          {/*
           <li><b><a href="#Builder-on">On Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-onIn">onIn</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-onNotIn">onNotIn</a></li>
@@ -95,6 +98,7 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-onNotExists">onNotExists</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-onBetween">onBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-onNotBetween">onNotBetween</a></li>
+          */}
 
           <li>– <a href="#Builder-distinct">distinct</a></li>
           <li>– <a href="#Builder-groupBy">groupBy</a></li>

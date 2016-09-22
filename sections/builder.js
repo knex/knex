@@ -743,6 +743,7 @@ export default [
       }
     ]
   },
+  /*
   {
     type: "heading",
     size: "md",
@@ -881,6 +882,7 @@ export default [
       }
     ]
   },
+  */
   {
     type: "method",
     method: "distinct",
@@ -977,6 +979,7 @@ export default [
       }
     ]
   },
+  /*
   {
     type: "method",
     method: "havingIn",
@@ -1093,6 +1096,7 @@ export default [
       }
     ]
   },
+  */
   {
     type: "method",
     method: "havingRaw",
