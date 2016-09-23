@@ -35,7 +35,7 @@
     "babel-preset-es2015-loose": "^7.0.0",
     "chai": "^2.3.0",
     "coveralls": "~2.11.1",
-    "eslint": "2.2.0",
+    "eslint": "3.6.0",
     "eslint-plugin-import": "^1.8.0",
     "istanbul": "~0.3.0",
     "json-loader": "^0.5.4",
