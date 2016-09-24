@@ -24,7 +24,7 @@
     "v8flags": "^2.0.2"
   },
   "devDependencies": {
-    "JSONStream": "^1.0.3",
+    "JSONStream": "^1.2.1",
     "async": "^0.9.0",
     "babel-cli": "^6.11.4",
     "babel-eslint": "^5.0.0",
