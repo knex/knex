@@ -185,6 +185,7 @@
       <li>– <a href="#Schema-specificType">specificType</a></li>
       <li>– <a href="#Schema-index">index</a></li>
       <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
+      <li>– <a href="#Schema-unique">unique</a></li>
       <li>– <a href="#Schema-foreign">foreign</a></li>
       <li>– <a href="#Schema-dropForeign">dropForeign</a></li>
       <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
@@ -2128,6 +2129,12 @@ knex.table('users')
       <br />
       Drops an index from a table. A default index name using the <tt>columns</tt> is used unless
       <tt>indexName</tt> is specified (in which case <tt>columns</tt> is ignored).
+    </p>
+
+    <p id="Schema-unique">
+      <b class="header">unique</b><code>table.unique(columns)</code>
+      <br />
+      Adds an unique index to a table over the given <tt>columns</tt>.
     </p>
 
     <p id="Schema-foreign">
