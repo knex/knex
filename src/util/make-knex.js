@@ -1,80 +1,63 @@
 
-var EventEmitter   = require('events').EventEmitter
+import { EventEmitter } from 'events';
 
-var Migrator       = require('../migrate')
-var Seeder         = require('../seed')
-var FunctionHelper = require('../functionhelper')
-var QueryInterface = require('../query/methods')
-var helpers        = require('../helpers')
-var Promise        = require('../promise')
-import {assign, isNumber, chunk} from 'lodash'
+import Migrator from '../migrate';
+import Seeder from '../seed';
+import FunctionHelper from '../functionhelper';
+import QueryInterface from '../query/methods';
+import * as helpers from '../helpers';
+import { assign } from 'lodash'
+import BatchInsert from './batchInsert';
 
-module.exports = function makeKnex(client) {
+export default function makeKnex(client) {
 
   // The object we're potentially using to kick off an initial chain.
   function knex(tableName) {
-    var qb = knex.queryBuilder()
-    if (!tableName) {
-      helpers.warn('calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.')
-    }
+    const qb = knex.queryBuilder()
+    if (!tableName) helpers.warn(
+      'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
+    );
     return tableName ? qb.table(tableName) : qb
   }
 
   assign(knex, {
 
-    Promise: require('../promise'),
+    Promise: require('bluebird'),
 
     // A new query builder instance.
-    queryBuilder: function() {
+    queryBuilder() {
       return client.queryBuilder()
     },
 
-    raw: function() {
+    raw() {
       return client.raw.apply(client, arguments)
     },
 
-    batchInsert: function(table, batch, chunkSize = 1000) {
-      if (!isNumber(chunkSize) || chunkSize < 1) {
-        throw new TypeError("Invalid chunkSize: " + chunkSize);
-      }
-
-      return this.transaction((tr) => {
-          // Avoid unnecessary call.
-          if(chunkSize !== 1) {
-            batch = chunk(batch, chunkSize)
-          }
-
-          return Promise.all(batch.map((items) => {
-            return tr(table).insert(items)
-          }));
-        })
+    batchInsert(table, batch, chunkSize = 1000) {
+      return new BatchInsert(this, table, batch, chunkSize);
     },
 
     // Runs a new transaction, taking a container and returning a promise
     // for when the transaction is resolved.
-    transaction: function(container, config) {
+    transaction(container, config) {
       return client.transaction(container, config)
     },
 
     // Typically never needed, initializes the pool for a knex client.
-    initialize: function(config) {
+    initialize(config) {
       return client.initialize(config)
     },
 
     // Convenience method for tearing down the pool.
-    destroy: function(callback) {
+    destroy(callback) {
       return client.destroy(callback)
     }
 
   })
 
-  // The `__knex__` is used if you need to duck-type check whether this
-  // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__  = '0.10.0'
-
   // Hook up the "knex" object as an EventEmitter.
-  var ee = new EventEmitter()
-  for (var key in ee) {
+  const ee = new EventEmitter()
+  for (const key in ee) {
     knex[key] = ee[key]
   }
 
@@ -82,35 +65,57 @@ module.exports = function makeKnex(client) {
   // any other information is specified.
   QueryInterface.forEach(function(method) {
     knex[method] = function() {
-      var builder = knex.queryBuilder()
+      const builder = knex.queryBuilder()
       return builder[method].apply(builder, arguments)
     }
   })
 
   knex.client = client
 
+  const VERSION = '0.12.2'
+
   Object.defineProperties(knex, {
 
+    __knex__: {
+      get() {
+        helpers.warn(
+          'knex.__knex__ is deprecated, you can get the module version' +
+          "by running require('knex/package').version"
+        )
+        return VERSION
+      }
+    },
+
+    VERSION: {
+      get() {
+        helpers.warn(
+          'knex.VERSION is deprecated, you can get the module version' +
+          "by running require('knex/package').version"
+        )
+        return VERSION
+      }
+    },
+
     schema: {
-      get: function() {
+      get() {
         return client.schemaBuilder()
       }
     },
 
     migrate: {
-      get: function() {
+      get() {
         return new Migrator(knex)
       }
     },
 
     seed: {
-      get: function() {
+      get() {
         return new Seeder(knex)
       }
     },
 
     fn: {
-      get: function() {
+      get() {
         return new FunctionHelper(client)
       }
     }
@@ -121,22 +126,17 @@ module.exports = function makeKnex(client) {
   client.on('start', function(obj) {
     knex.emit('start', obj)
   })
-
   client.on('query', function(obj) {
     knex.emit('query', obj)
   })
-
   client.on('query-error', function(err, obj) {
     knex.emit('query-error', err, obj)
   })
-
   client.on('query-response', function(response, obj, builder) {
     knex.emit('query-response', response, obj, builder)
   })
 
-  client.makeKnex = function(client) {
-    return makeKnex(client)
-  }
+  client.makeKnex = makeKnex
 
   return knex
 }

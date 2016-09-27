@@ -1,15 +1,18 @@
 
-var helpers = require('../../helpers');
+import * as helpers from '../../helpers';
 
 function generateCombinedName(postfix, name, subNames) {
-  var crypto = require('crypto');
-  var limit  = 30;
+  const crypto = require('crypto');
+  const limit = 30;
   if (!Array.isArray(subNames)) subNames = subNames ? [subNames] : [];
-  var table = name.replace(/\.|-/g, '_');
-  var subNamesPart = subNames.join('_');
-  var result = (table + '_' + (subNamesPart.length ? subNamesPart + '_': '') + postfix).toLowerCase();
+  const table = name.replace(/\.|-/g, '_');
+  const subNamesPart = subNames.join('_');
+  let result = `${table}_${subNamesPart.length ? subNamesPart + '_': ''}${postfix}`.toLowerCase();
   if (result.length > limit) {
-    helpers.warn('Automatically generated name "' + result + '" exceeds ' + limit + ' character limit for Oracle. Using base64 encoded sha1 of that name instead.');
+    helpers.warn(
+      `Automatically generated name "${result}" exceeds ${limit} character ` +
+      `limit for Oracle. Using base64 encoded sha1 of that name instead.`
+    );
     // generates the sha1 of the name and encode it with base64
     result = crypto.createHash('sha1')
       .update(result)
@@ -20,7 +23,12 @@ function generateCombinedName(postfix, name, subNames) {
 }
 
 function wrapSqlWithCatch(sql, errorNumberToCatch) {
-  return "begin execute immediate '" + sql.replace(/'/g, "''") + "'; exception when others then if sqlcode != " + errorNumberToCatch + " then raise; end if; end;";
+  return (
+    `begin execute immediate '${sql.replace(/'/g, "''")}'; ` +
+    `exception when others then if sqlcode != ${errorNumberToCatch} then raise; ` +
+    `end if; ` +
+    `end;`
+  );
 }
 
 function ReturningHelper(columnName) {
@@ -28,11 +36,7 @@ function ReturningHelper(columnName) {
 }
 
 ReturningHelper.prototype.toString = function () {
-  return '[object ReturningHelper:' + this.columnName + ']';
+  return `[object ReturningHelper:${this.columnName}]`;
 }
 
-module.exports = {
-  generateCombinedName: generateCombinedName,
-  wrapSqlWithCatch: wrapSqlWithCatch,
-  ReturningHelper: ReturningHelper
-};
+export { generateCombinedName, wrapSqlWithCatch, ReturningHelper };

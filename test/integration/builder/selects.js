@@ -50,6 +50,42 @@ module.exports = function(knex) {
         });
     });
 
+    it('can pluck a qualified column name, #1619', function() {
+      return knex.pluck('accounts.id').from('accounts').orderBy('accounts.id')
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
+            [],
+            [1, 2, 3, 4, 5, 7]
+          );
+          tester(
+            'postgresql',
+            'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
+            [],
+            ['1', '2', '3', '4', '5', '7']
+          );
+          tester(
+            'sqlite3',
+            'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
+            [],
+            [1, 2, 3, 4, 5, 6]
+          );
+          tester(
+            'oracle',
+            'select  "accounts"."id" from "accounts" order by "accounts"."id" asc',
+            [],
+            [1, 2, 3, 4, 5, 7]
+          );
+          tester(
+            'mssql',
+            'select [accounts].[id] from [accounts] order by [accounts].[id] asc',
+            [],
+            ['1', '2', '3', '4', '5', '7']
+          );
+        });
+    });
+
     it('starts selecting at offset', function () {
       return knex.pluck('id').orderBy('id').from('accounts').offset(2)
         .testSql(function (tester) {
@@ -165,7 +201,7 @@ module.exports = function(knex) {
       })
     });
 
-    it('throws errors on the exec if uncaught in the last block', function(ok) {
+    it('throws errors on the asCallback if uncaught in the last block', function(ok) {
 
       var listeners = process.listeners('uncaughtException');
 
@@ -179,7 +215,7 @@ module.exports = function(knex) {
         ok();
       });
 
-      knex('accounts').select().exec(function() {
+      knex('accounts').select().asCallback(function() {
         console.log(this.undefinedVar.test);
       });
     });

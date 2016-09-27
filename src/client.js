@@ -1,31 +1,37 @@
+import Promise from 'bluebird';
+import * as helpers from './helpers';
 
-var Promise        = require('./promise')
-var helpers        = require('./helpers')
+import Raw from './raw';
+import Runner from './runner';
+import Formatter from './formatter';
+import Transaction from './transaction';
 
-var Raw            = require('./raw')
-var Runner         = require('./runner')
-var Formatter      = require('./formatter')
-var Transaction    = require('./transaction')
+import QueryBuilder from './query/builder';
+import QueryCompiler from './query/compiler';
 
-var QueryBuilder   = require('./query/builder')
-var QueryCompiler  = require('./query/compiler')
+import SchemaBuilder from './schema/builder';
+import SchemaCompiler from './schema/compiler';
+import TableBuilder from './schema/tablebuilder';
+import TableCompiler from './schema/tablecompiler';
+import ColumnBuilder from './schema/columnbuilder';
+import ColumnCompiler from './schema/columncompiler';
 
-var SchemaBuilder  = require('./schema/builder')
-var SchemaCompiler = require('./schema/compiler')
-var TableBuilder   = require('./schema/tablebuilder')
-var TableCompiler  = require('./schema/tablecompiler')
-var ColumnBuilder  = require('./schema/columnbuilder')
-var ColumnCompiler = require('./schema/columncompiler')
+import { Pool } from 'generic-pool';
+import inherits from 'inherits';
+import { EventEmitter } from 'events';
 
-var Pool2          = require('pool2')
-var inherits       = require('inherits')
-var EventEmitter   = require('events').EventEmitter
-var SqlString      = require('./query/string')
+import { makeEscape } from './query/string'
+import { assign, uniqueId, cloneDeep } from 'lodash'
 
-import {assign, uniqueId, cloneDeep, map} from 'lodash'
+const debug = require('debug')('knex:client')
+const debugQuery = require('debug')('knex:query')
+const debugBindings = require('debug')('knex:bindings')
+const debugPool = require('debug')('knex:pool')
 
-var debug          = require('debug')('knex:client')
-var debugQuery     = require('debug')('knex:query')
+let id = 0
+function clientId() {
+  return `client${id++}`
+}
 
 // The base client provides the general structure
 // for a dialect specific client object.
@@ -35,6 +41,7 @@ function Client(config = {}) {
   if (this.driverName && config.connection) {
     this.initializeDriver()
     if (!config.pool || (config.pool && config.pool.max !== 0)) {
+      this.__cid = clientId()
       this.initializePool(config)
     }
   }
@@ -47,141 +54,126 @@ inherits(Client, EventEmitter)
 
 assign(Client.prototype, {
 
-  Formatter: Formatter,
-
-  formatter: function() {
-    return new this.Formatter(this)
+  formatter() {
+    return new Formatter(this)
   },
 
-  QueryBuilder: QueryBuilder,
-
-  queryBuilder: function() {
-    return new this.QueryBuilder(this)
+  queryBuilder() {
+    return new QueryBuilder(this)
   },
 
-  QueryCompiler: QueryCompiler,
-
-  queryCompiler: function(builder) {
-    return new this.QueryCompiler(this, builder)
+  queryCompiler(builder) {
+    return new QueryCompiler(this, builder)
   },
 
-  SchemaBuilder: SchemaBuilder,
-
-  schemaBuilder: function() {
-    return new this.SchemaBuilder(this)
+  schemaBuilder() {
+    return new SchemaBuilder(this)
   },
 
-  SchemaCompiler: SchemaCompiler,
-
-  schemaCompiler: function(builder) {
-    return new this.SchemaCompiler(this, builder)
+  schemaCompiler(builder) {
+    return new SchemaCompiler(this, builder)
   },
 
-  TableBuilder: TableBuilder,
-
-  tableBuilder: function(type, tableName, fn) {
-    return new this.TableBuilder(this, type, tableName, fn)
+  tableBuilder(type, tableName, fn) {
+    return new TableBuilder(this, type, tableName, fn)
   },
 
-  TableCompiler: TableCompiler,
-
-  tableCompiler: function(tableBuilder) {
-    return new this.TableCompiler(this, tableBuilder)
+  tableCompiler(tableBuilder) {
+    return new TableCompiler(this, tableBuilder)
   },
 
-  ColumnBuilder: ColumnBuilder,
-
-  columnBuilder: function(tableBuilder, type, args) {
-    return new this.ColumnBuilder(this, tableBuilder, type, args)
+  columnBuilder(tableBuilder, type, args) {
+    return new ColumnBuilder(this, tableBuilder, type, args)
   },
 
-  ColumnCompiler: ColumnCompiler,
-
-  columnCompiler: function(tableBuilder, columnBuilder) {
-    return new this.ColumnCompiler(this, tableBuilder, columnBuilder)
+  columnCompiler(tableBuilder, columnBuilder) {
+    return new ColumnCompiler(this, tableBuilder, columnBuilder)
   },
 
-  Runner: Runner,
-
-  runner: function(connection) {
-    return new this.Runner(this, connection)
+  runner(connection) {
+    return new Runner(this, connection)
   },
 
-  SqlString: SqlString,
-
-  Transaction: Transaction,
-
-  transaction: function(container, config, outerTx) {
-    return new this.Transaction(this, container, config, outerTx)
+  transaction(container, config, outerTx) {
+    return new Transaction(this, container, config, outerTx)
   },
 
-  Raw: Raw,
-
-  raw: function() {
-    var raw = new this.Raw(this)
-    return raw.set.apply(raw, arguments)
+  raw() {
+    return new Raw(this).set(...arguments)
   },
 
-  query: function(connection, obj) {
+  _formatQuery(sql, bindings, timeZone) {
+    bindings = bindings == null ? [] : [].concat(bindings);
+    let index = 0;
+    return sql.replace(/\\?\?/g, (match) => {
+      if (match === '\\?') {
+        return '?'
+      }
+      if (index === bindings.length) {
+        return match
+      }
+      const value = bindings[index++];
+      return this._escapeBinding(value, {timeZone})
+    })
+  },
+
+  _escapeBinding: makeEscape({
+    escapeString(str) {
+      return `'${str.replace(/'/g, "''")}'`
+    }
+  }),
+
+  query(connection, obj) {
     if (typeof obj === 'string') obj = {sql: obj}
-    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+    obj.bindings = this.prepBindings(obj.bindings)
     debugQuery(obj.sql)
-    return this._query.call(this, connection, obj).catch((err) => {
-      err.message = SqlString.format(obj.sql, obj.bindings) + ' - ' + err.message
+    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+    debugBindings(obj.bindings)
+    return this._query(connection, obj).catch((err) => {
+      err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message
       this.emit('query-error', err, assign({__knexUid: connection.__knexUid}, obj))
       throw err
     })
   },
 
-  stream: function(connection, obj, stream, options) {
+  stream(connection, obj, stream, options) {
     if (typeof obj === 'string') obj = {sql: obj}
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
     debugQuery(obj.sql)
-    return this._stream.call(this, connection, obj, stream, options)
+    obj.bindings = this.prepBindings(obj.bindings)
+    debugBindings(obj.bindings)
+    return this._stream(connection, obj, stream, options)
   },
 
-  prepBindings: function(bindings) {
-    return map(bindings, (binding) => {
-      return binding === undefined ? this.valueForUndefined : binding
-    });
+  prepBindings(bindings) {
+    return bindings;
   },
 
-  wrapIdentifier: function(value) {
-    return (value !== '*' ? '"' + value.replace(/"/g, '""') + '"' : '*')
+  wrapIdentifier(value) {
+    return (value !== '*' ? `"${value.replace(/"/g, '""')}"` : '*')
   },
 
-  initializeDriver: function() {
+  initializeDriver() {
     try {
       this.driver = this._driver()
     } catch (e) {
-      helpers.exit('Knex: run\n$ npm install ' + this.driverName + ' --save' + '\n' + e.stack)
+      helpers.exit(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
     }
   },
 
-  Pool: Pool2,
-
-  initializePool: function(config) {
-    if (this.pool) this.destroy()
-    this.pool = new this.Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
-    this.pool.on('error', function(err) {
-      helpers.error('Pool2 - ' + err)
-    })
-    this.pool.on('warn', function(msg) {
-      helpers.warn('Pool2 - ' + msg)
-    })
-  },
-
-  poolDefaults: function(poolConfig) {
-    var dispose, client = this
-    if (poolConfig.destroy) {
-      helpers.deprecate('config.pool.destroy', 'config.pool.dispose')
-      dispose = poolConfig.destroy
-    }
+  poolDefaults(poolConfig) {
+    const name = this.dialect + ':' + this.driverName + ':' + this.__cid
     return {
       min: 2,
       max: 10,
-      acquire: function(callback) {
-        client.acquireRawConnection()
+      name: name,
+      log(str, level) {
+        if (level === 'info') {
+          debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
+        }
+      },
+      create: (callback) => {
+        this.acquireRawConnection()
           .tap(function(connection) {
             connection.__knexUid = uniqueId('__knexUid')
             if (poolConfig.afterCreate) {
@@ -190,59 +182,88 @@ assign(Client.prototype, {
           })
           .asCallback(callback)
       },
-      dispose: function(connection, callback) {
+      destroy: (connection) => {
         if (poolConfig.beforeDestroy) {
-          poolConfig.beforeDestroy(connection, function() {
-            if (connection !== undefined) {
-              client.destroyRawConnection(connection, callback)
-            }
-          })
-        } else if (connection !== void 0) {
-          client.destroyRawConnection(connection, callback)
+          helpers.warn(`
+            beforeDestroy is deprecated, please open an issue if you use this
+            to discuss alternative apis
+          `)
+          poolConfig.beforeDestroy(connection, function() {})
+        }
+        if (connection !== void 0) {
+          this.destroyRawConnection(connection)
         }
       },
-      ping: function(resource, callback) {
-        return client.ping(resource, callback);
+      validate: (connection) => {
+        if (connection.__knex__disposed) {
+          helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
+          return false
+        }
+        return this.validateConnection(connection)
       }
     }
   },
 
+  initializePool(config) {
+    if (this.pool) {
+      helpers.warn('The pool has already been initialized')
+      return
+    }
+    this.pool = new Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
+  },
+
+  validateConnection(connection) {
+    return true
+  },
+
   // Acquire a connection from the pool.
-  acquireConnection: function() {
-    var client = this
-    return new Promise(function(resolver, rejecter) {
-      if (!client.pool) {
-        return rejecter(new Error('There is no pool defined on the current client'))
+  acquireConnection() {
+    let request = null
+    const completed = new Promise((resolver, rejecter) => {
+      if (!this.pool) {
+        return rejecter(new Error('Unable to acquire a connection'))
       }
-      client.pool.acquire(function(err, connection) {
+      request = this.pool.acquire(function(err, connection) {
         if (err) return rejecter(err)
-        debug('acquiring connection from pool: %s', connection.__knexUid)
+        debug('acquired connection from pool: %s', connection.__knexUid)
         resolver(connection)
       })
     })
+    const abort = function(reason) {
+      if (request && !request.fulfilled) {
+        request.abort(reason)
+      }
+    }
+    return {
+      completed: completed,
+      abort: abort
+    }
   },
 
   // Releases a connection back to the connection pool,
   // returning a promise resolved when the connection is released.
-  releaseConnection: function(connection) {
-    var pool = this.pool
-    return new Promise(function(resolver) {
+  releaseConnection(connection) {
+    return new Promise((resolver) => {
       debug('releasing connection to pool: %s', connection.__knexUid)
-      pool.release(connection)
+      this.pool.release(connection)
       resolver()
     })
   },
 
   // Destroy the current connection pool for the client.
-  destroy: function(callback) {
-    var client = this
-    var promise = new Promise(function(resolver) {
-      if (!client.pool) return resolver()
-      client.pool.end(function() {
-        client.pool = undefined
-        resolver()
+  destroy(callback) {
+    const promise = new Promise((resolver) => {
+      if (!this.pool) {
+        return resolver()
+      }
+      this.pool.drain(() => {
+        this.pool.destroyAllNow(() => {
+          this.pool = undefined
+          resolver()
+        })
       })
     })
+
     // Allow either a callback or promise interface for destruction.
     if (typeof callback === 'function') {
       promise.asCallback(callback)
@@ -252,14 +273,26 @@ assign(Client.prototype, {
   },
 
   // Return the database being used by this client.
-  database: function() {
+  database() {
     return this.connectionSettings.database
   },
 
-  toString: function() {
+  toString() {
     return '[object KnexClient]'
+  },
+
+  canCancelQuery: false,
+
+  assertCanCancelQuery() {
+    if (!this.canCancelQuery) {
+      throw new Error("Query cancelling not supported for this dialect");
+    }
+  },
+
+  cancelQuery() {
+    throw new Error("Query cancelling not supported for this dialect")
   }
 
 })
 
-module.exports = Client
+export default Client

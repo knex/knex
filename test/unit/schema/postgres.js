@@ -161,7 +161,7 @@ describe("PostgreSQL SchemaBuilder", function() {
       table.primary('foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add primary key ("foo")');
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "users_pkey" primary key ("foo")');
   });
 
   it("adding primary key fluently", function() {
@@ -170,7 +170,7 @@ describe("PostgreSQL SchemaBuilder", function() {
     }).toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal('create table "users" ("name" varchar(255))');
-    expect(tableSql[1].sql).to.equal('alter table "users" add primary key ("name")');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_pkey" primary key ("name")');
   });
 
   it("adding foreign key", function() {
@@ -513,6 +513,19 @@ describe("PostgreSQL SchemaBuilder", function() {
       t.engine('myISAM');
     }).toSQL();
     expect(tableSql[0].sql).to.equal('create table "users" ("username" varchar(255))');
+  });
+
+  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.primary(['test1', 'test2'], 'testconstraintname');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
+
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('test').primary('testconstraintname');
+    }).toSQL();
+
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test")');
   });
 
 });

@@ -1,16 +1,15 @@
 #!/usr/bin/env node
-
-
-var Liftoff   = require('liftoff');
-var Promise   = require('bluebird');
+/* eslint no-console:0, no-var:0 */
+var Liftoff = require('liftoff');
+var Promise = require('bluebird');
 var interpret = require('interpret');
-var path      = require('path');
-var chalk     = require('chalk');
-var tildify   = require('tildify');
+var path = require('path');
+var chalk = require('chalk');
+var tildify = require('tildify');
 var commander = require('commander');
-var cliPkg    = require('../../package');
-var argv      = require('minimist')(process.argv.slice(2));
-var fs        = Promise.promisifyAll(require('fs'));
+var argv = require('minimist')(process.argv.slice(2));
+var fs = Promise.promisifyAll(require('fs'));
+var cliPkg = require('../package');
 
 function exit(text) {
   if (text instanceof Error) {
@@ -47,8 +46,8 @@ function initKnex(env) {
   }
 
   var environment = commander.env || process.env.NODE_ENV;
-  var defaultEnv  = 'development';
-  var config      = require(env.configPath);
+  var defaultEnv = 'development';
+  var config = require(env.configPath);
 
   if (!environment && typeof config[defaultEnv] === 'object') {
     environment = defaultEnv;
@@ -72,7 +71,8 @@ function initKnex(env) {
 
 function invoke(env) {
 
-  var pending, filetypes = ['js', 'coffee', 'eg', 'ls'];
+  var filetypes = ['js', 'coffee', 'eg', 'ls'];
+  var pending = null;
 
   commander
     .version(
@@ -88,34 +88,35 @@ function invoke(env) {
   commander
     .command('init')
     .description('        Create a fresh knexfile.')
-    .option('-x [' + filetypes.join('|') + ']', 'Specify the knexfile extension (default js)')
+    .option(`-x [${filetypes.join('|')}]`, 'Specify the knexfile extension (default js)')
     .action(function() {
       var type = (argv.x || 'js').toLowerCase();
       if (filetypes.indexOf(type) === -1) {
-        exit('Invalid filetype specified: ' + type);
+        exit(`Invalid filetype specified: ${type}`);
       }
       if (env.configPath) {
-        exit('Error: ' + env.configPath + ' already exists');
+        exit(`Error: ${env.configPath} already exists`);
       }
       checkLocalModule(env);
-      var stubPath = './knexfile.' + type;
-      pending = fs.readFileAsync(path.dirname(env.modulePath) + '/lib/migrate/stub/knexfile-' + type + '.stub')
-        .then(function(code) {
-          return fs.writeFileAsync(stubPath, code);
-        }).then(function() {
-          success(chalk.green('Created ' + stubPath));
-        }).catch(exit);
+      var stubPath = `./knexfile.${type}`;
+      pending = fs.readFileAsync(
+        path.dirname(env.modulePath) +
+        '/lib/migrate/stub/knexfile-' +
+        type + '.stub'
+      ).then(function(code) { return fs.writeFileAsync(stubPath, code) }).then(function() {
+        success(chalk.green(`Created ${stubPath}`));
+      }).catch(exit);
     });
 
   commander
     .command('migrate:make <name>')
     .description('       Create a named migration file.')
-    .option('-x [' + filetypes.join('|') + ']', 'Specify the stub extension (default js)')
+    .option(`-x [${filetypes.join('|')}]`, 'Specify the stub extension (default js)')
     .action(function(name) {
       var instance = initKnex(env);
       var ext = (argv.x || env.configPath.split('.').pop()).toLowerCase();
       pending = instance.migrate.make(name, {extension: ext}).then(function(name) {
-        success(chalk.green('Created Migration: ' + name));
+        success(chalk.green(`Created Migration: ${name}`));
       }).catch(exit);
     });
 
@@ -127,7 +128,10 @@ function invoke(env) {
         if (log.length === 0) {
           success(chalk.cyan('Already up to date'));
         }
-        success(chalk.green('Batch ' + batchNo + ' run: ' + log.length + ' migrations \n' + chalk.cyan(log.join('\n'))));
+        success(
+          chalk.green(`Batch ${batchNo} run: ${log.length} migrations \n`) +
+          chalk.cyan(log.join('\n'))
+        );
       }).catch(exit);
     });
 
@@ -139,7 +143,10 @@ function invoke(env) {
         if (log.length === 0) {
           success(chalk.cyan('Already at the base migration'));
         }
-        success(chalk.green('Batch ' + batchNo + ' rolled back: ' + log.length + ' migrations \n') + chalk.cyan(log.join('\n')));
+        success(
+          chalk.green(`Batch ${batchNo} rolled back: ${log.length} migrations \n`) +
+          chalk.cyan(log.join('\n'))
+        );
       }).catch(exit);
     });
 
@@ -155,12 +162,12 @@ function invoke(env) {
   commander
     .command('seed:make <name>')
     .description('       Create a named seed file.')
-    .option('-x [' + filetypes.join('|') + ']', 'Specify the stub extension (default js)')
+    .option(`-x [${filetypes.join('|')}]`, 'Specify the stub extension (default js)')
     .action(function(name) {
       var instance = initKnex(env);
       var ext = (argv.x || env.configPath.split('.').pop()).toLowerCase();
       pending = instance.seed.make(name, {extension: ext}).then(function(name) {
-        success(chalk.green('Created seed file: ' + name));
+        success(chalk.green(`Created seed file: ${name}`));
       }).catch(exit);
     });
 
@@ -172,7 +179,7 @@ function invoke(env) {
         if (log.length === 0) {
           success(chalk.cyan('No seed files exist'));
         }
-        success(chalk.green('Ran ' + log.length + ' seed files \n' + chalk.cyan(log.join('\n'))));
+        success(chalk.green(`Ran ${log.length} seed files \n${chalk.cyan(log.join('\n'))}`));
       }).catch(exit);
     });
 
