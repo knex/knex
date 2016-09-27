@@ -4,9 +4,9 @@
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import Debug from 'debug'
+import { TimeoutError } from 'tarn';
 
 import makeKnex from './util/make-knex';
-import noop from './util/noop';
 
 const debug = Debug('knex:tx');
 
@@ -142,6 +142,15 @@ export default class Transaction extends EventEmitter {
   acquireConnection(client, config, txid) {
     const configConnection = config && config.connection
     return Promise.try(() => configConnection || client.acquireConnection().completed)
+    .catch(TimeoutError, (error) => {
+      const timeoutError = new Error(
+        'Knex: Timeout acquiring a connection for a transaction. The pool is probably full. ' +
+        'Are you missing a .transacting(trx) call?'
+      )
+
+      timeoutError.timeoutStack = error.stack
+      return Promise.reject(timeoutError)
+    })
     .disposer(function(connection) {
       if (!configConnection) {
         debug('%s: releasing connection', txid)
@@ -228,7 +237,6 @@ function makeTxClient(trx, client, connection) {
   trxClient.acquireConnection = function () {
     return {
       completed: trx._previousSibling.reflect().then(() => connection),
-      abort: noop
     }
   }
   trxClient.releaseConnection = function() {

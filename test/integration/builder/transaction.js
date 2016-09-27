@@ -306,6 +306,52 @@ module.exports = function(knex) {
       });
     });
 
+    it('acquireConnectionTimeout should work for transactions also', function (done) {
+      var knexConfig = _.clone(knex.client.config);
+
+      knexConfig.pool.min = 0;
+      knexConfig.pool.max = 1;
+      knexConfig.acquireConnectionTimeout = 300;
+
+      var knexDb = new Knex(knexConfig);
+
+      // Create a transaction that will occupy the only available connection, and avoid trx.commit.
+      knexDb.transaction(function() {
+        // This transaction will fail after acquireConnectionTimeout because the outer transaction is keeping
+        // our only connection. Note that this is not save point, but simply another transaction. This code may
+        // not make sense, but the outer transaction is there simply to hog the connection.
+        return knexDb.transaction(function() {})
+      }).then(function () {
+        done(new Error('should not get here'));
+      }).catch(function (error) {
+        expect(error.message).to.equal('Knex: Timeout acquiring a connection for a transaction. The pool is probably full. Are you missing a .transacting(trx) call?');
+        done();
+      }).catch(done);
+    });
+
+    it('#1694 - Connections are not returned to the pool if acquireConnectionTimeout is triggered', function(done) {
+      var knexConfig = _.clone(knex.client.config);
+
+      knexConfig.pool.min = 0;
+      knexConfig.pool.max = 1;
+      knexConfig.acquireConnectionTimeout = 300;
+
+      var knexDb = new Knex(knexConfig);
+
+      // Create a transaction that will occupy the only available connection.
+      knexDb.transaction(function() {
+        // This query will fail after acquireConnectionTimeout because the transaction is keeping
+        // our only connection.
+        return knexDb.raw('select 1')
+      }).reflect().then(function () {
+        // Now the transaction is committed/rolled back and our only connection should be returned to the pool.
+        // Attempt to make a query.
+        return knexDb.raw('select 1')
+      }).then(function () {
+        done();
+      }).catch(done)
+    });
+
   });
 
 };

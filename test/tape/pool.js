@@ -2,7 +2,7 @@
 
 var test   = require('tape')
 var Client = require('../../lib/dialects/sqlite3');
-var Pool = require('generic-pool').Pool
+var Pool = require('tarn').Pool
 
 test('#822, pool config, max: 0 should skip pool construction', function(t) {
 

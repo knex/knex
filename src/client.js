@@ -16,7 +16,7 @@ import TableCompiler from './schema/tablecompiler';
 import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 
-import { Pool } from 'generic-pool';
+import { Pool } from 'tarn';
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
@@ -172,15 +172,14 @@ assign(Client.prototype, {
           debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
         }
       },
-      create: (callback) => {
-        this.acquireRawConnection()
+      create: () => {
+        return this.acquireRawConnection()
           .tap(function(connection) {
             connection.__knexUid = uniqueId('__knexUid')
             if (poolConfig.afterCreate) {
               return Promise.promisify(poolConfig.afterCreate)(connection)
             }
           })
-          .asCallback(callback)
       },
       destroy: (connection) => {
         if (poolConfig.beforeDestroy) {
@@ -209,7 +208,9 @@ assign(Client.prototype, {
       helpers.warn('The pool has already been initialized')
       return
     }
-    this.pool = new Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
+    this.pool = new Pool(assign(this.poolDefaults(config.pool || {}),
+      {acquireTimeoutMillis: config.acquireConnectionTimeout || 60000},
+      config.pool))
   },
 
   validateConnection(connection) {
@@ -218,25 +219,17 @@ assign(Client.prototype, {
 
   // Acquire a connection from the pool.
   acquireConnection() {
-    let request = null
-    const completed = new Promise((resolver, rejecter) => {
-      if (!this.pool) {
-        return rejecter(new Error('Unable to acquire a connection'))
+    if (!this.pool) {
+      return {
+        completed: Promise.reject(new Error('Unable to acquire a connection'))
       }
-      request = this.pool.acquire(function(err, connection) {
-        if (err) return rejecter(err)
-        debug('acquired connection from pool: %s', connection.__knexUid)
-        resolver(connection)
-      })
-    })
-    const abort = function(reason) {
-      if (request && !request.fulfilled) {
-        request.abort(reason)
+    } else {
+      return {
+        completed: this.pool.acquire().promise.then((connection) => {
+          debug('acquired connection from pool: %s', connection.__knexUid)
+          return connection
+        })
       }
-    }
-    return {
-      completed: completed,
-      abort: abort
     }
   },
 
@@ -252,17 +245,8 @@ assign(Client.prototype, {
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
-    const promise = new Promise((resolver) => {
-      if (!this.pool) {
-        return resolver()
-      }
-      this.pool.drain(() => {
-        this.pool.destroyAllNow(() => {
-          this.pool = undefined
-          resolver()
-        })
-      })
-    })
+    const promise = this.pool ? this.pool.destroy() : Promise.resolve()
+    this.pool = undefined
 
     // Allow either a callback or promise interface for destruction.
     if (typeof callback === 'function') {

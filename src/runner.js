@@ -1,6 +1,7 @@
 import { assign, isArray } from 'lodash'
 import Promise from 'bluebird';
 import * as helpers from './helpers';
+import { TimeoutError } from 'tarn';
 
 let PassThrough;
 
@@ -181,41 +182,37 @@ assign(Runner.prototype, {
 
   // Check whether there's a transaction flag, and that it has a connection.
   ensureConnection() {
-    const runner = this
-    const acquireConnectionTimeout = runner.client.config.acquireConnectionTimeout || 60000;
-    return Promise.try(() => {
-      return runner.connection || new Promise((resolver, rejecter) => {
-        const acquireConnection = runner.client.acquireConnection();
+    let connectionPromise = null
 
-        acquireConnection.completed
-          .timeout(acquireConnectionTimeout)
-          .then(resolver)
-          .catch(Promise.TimeoutError, (error) => {
-            const timeoutError = new Error(
-              'Knex: Timeout acquiring a connection. The pool is probably full. ' +
-              'Are you missing a .transacting(trx) call?'
-            );
-            const additionalErrorInformation = {
-              timeoutStack: error.stack
-            }
+    if (this.connection) {
+      connectionPromise = Promise.resolve(this.connection)
+    } else {
+      connectionPromise = this.client.acquireConnection().completed
+    }
 
-            if(runner.builder) {
-              additionalErrorInformation.sql = runner.builder.sql;
-              additionalErrorInformation.bindings = runner.builder.bindings;
-            }
+    return connectionPromise
+      .catch(TimeoutError, (error) => {
+        const timeoutError = new Error(
+          'Knex: Timeout acquiring a connection. The pool is probably full. ' +
+          'Are you missing a .transacting(trx) call?'
+        )
 
-            assign(timeoutError, additionalErrorInformation)
+        const additionalErrorInformation = {
+          timeoutStack: error.stack
+        }
 
-            // Let the pool know that this request for a connection timed out
-            acquireConnection.abort('Knex: Timeout acquiring a connection.')
+        if (this.builder) {
+          additionalErrorInformation.sql = this.builder.sql;
+          additionalErrorInformation.bindings = this.builder.bindings;
+        }
 
-            rejecter(timeoutError)
-          })
-          .catch(rejecter)
+        assign(timeoutError, additionalErrorInformation)
+
+        return Promise.reject(timeoutError)
       })
-    }).disposer(function() {
-      runner.client.releaseConnection(runner.connection)
-    })
+      .disposer(() => {
+        this.client.releaseConnection(this.connection)
+      })
   }
 
 })
