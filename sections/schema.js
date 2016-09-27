@@ -410,6 +410,24 @@ export default [
   },
   {
     type: "method",
+    method: "unique",
+    example: "table.unique(columns)",
+    description: "Adds an unique index to a table over the given `columns`",
+    children: [{
+      type: 'code',
+      language: 'js',
+      content: `
+        knex.schema.alterTable('users', function(t) {
+          t.unique('email')
+        })
+        knex.schema.alterTable('job', function(t) {
+          t.unique(['account_id', 'program_id'])
+        })
+      `
+    }]
+  },
+  {
+    type: "method",
     method: "foreign",
     example: "table.foreign(columns)",
     description: "Adds a foreign key constraint to a table for an existing column using `table.foreign(column).references(column)` or multiple columns using `table.foreign(columns).references(columns)`. You can also chain onDelete and/or onUpdate to set the reference option (RESTRICT, CASCADE, SET NULL, NO ACTION) for the operation. Note, this is the same as column.references(column) but works for existing columns.",
