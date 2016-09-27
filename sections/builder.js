@@ -1291,7 +1291,7 @@ export default [
     type: "method",
     method: "del / delete",
     example: ".del()",
-    description: "Aliased to del as delete is a reserved word in javascript, this method deletes one or more rows, based on other conditions specified in the query. Resolves the promise / fulfills the callback with the number of affected rows for the query.",
+    description: "Aliased to del as delete is a reserved word in JavaScript, this method deletes one or more rows, based on other conditions specified in the query. Resolves the promise / fulfills the callback with the number of affected rows for the query.",
     children: [
       {
         type: "runnable",

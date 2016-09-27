@@ -7,7 +7,7 @@ export default [
   },
   {
     type: "text",
-    content: "Knex can be used as an SQL query builder in both Node.JS and the browser, limited to WebSQL's constraints (like the inability to drop tables or read schemas). Composing SQL queries in the browser for execution on the server is highly discouraged, as this can be the cause of serious security vulnerabilities. The browser builds outside of WebSQL are primarily for learning purposes - for example, you can pop open the console and build queries on this page using the [pg](javascript:alert(pg)), [mysql](javascript:alert(mysql)), and [sqlite3](javascript:alert(sqlite3)) objects."
+    content: "Knex can be used as an SQL query builder in both Node.JS and the browser, limited to WebSQL's constraints (like the inability to drop tables or read schemas). Composing SQL queries in the browser for execution on the server is highly discouraged, as this can be the cause of serious security vulnerabilities. The browser builds outside of WebSQL are primarily for learning purposes - for example, you can pop open the console and build queries on this page using the <a href=\"javascript:alert(knex)\">knex</a> object."
   },
   {
     type: "heading",
@@ -43,7 +43,7 @@ export default [
   },
   {
     type: "text",
-    content: "Knex can be built using browserify or webpack, and a pre-built version can be found in the [build directory](https://github.com/tgriesser/knex/tree/master/build). View source on this page to see the browser build in-action."
+    content: "Knex can be built using a JavaScript build tool such as [browserify](http://browserify.org/) or [webpack](https://github.com/webpack/webpack). In fact, this documentation uses a webpack build which [includes knex](https://github.com/knex/documentation/blob/a4de1b2eb50d6699f126be8d134f3d1acc4fc69d/components/Container.jsx#L3). View source on this page to see the browser build in-action (the global `knex` variable)."
   },
   {
     type: "heading",

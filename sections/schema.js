@@ -311,7 +311,7 @@ export default [
     type: "method",
     method: "enum / enu",
     example: "table.enu(col, values)",
-    description: "Adds a enum column, (aliased to enu, as enum is a reserved word in javascript). Note that the second argument is an array of values. Example:",
+    description: "Adds a enum column, (aliased to enu, as enum is a reserved word in JavaScript). Note that the second argument is an array of values. Example:",
     children: [{
       type: 'code',
       language: 'js',
