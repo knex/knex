@@ -79,7 +79,9 @@ assign(Client_MySQL.prototype, {
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
     connection.removeAllListeners()
-    connection.end()
+    connection.end(err => {
+      if (err) connection.__knex__disposed = err
+    })
   },
 
   validateConnection(connection) {

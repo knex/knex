@@ -150,7 +150,7 @@ assign(Client_SQLite3.prototype, {
 
   poolDefaults(config) {
     return assign(Client.prototype.poolDefaults.call(this, config), {
-      min: 0,
+      min: 1,
       max: 1
     })
   }
