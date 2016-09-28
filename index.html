@@ -991,6 +991,19 @@ knex.select('*').from('users').join('accounts', {'accounts.id': 'users.account_i
 knex.select('*').from('users').join('accounts', 'accounts.type', knex.raw('?', ['admin']))
 </pre>
 
+<p>
+  You can also use subqueries for joining.
+</p>
+
+<pre class="display">
+var subquery = knex('contacts')
+  .avg('created')
+  .groupBy('user_id')
+  .as('averageContactAge')
+  
+knex.select('*').from('users').join(subquery, 'users.id', '=', 'averageContactAge.user_id')
+</pre>
+
     <p id="Builder-innerJoin">
       <b class="header">innerJoin</b><code>.innerJoin(column, ~mixed~)</code>
       <br>
