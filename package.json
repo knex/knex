@@ -19,7 +19,7 @@
     "pg-connection-string": "^0.1.3",
     "pool2": "^1.1.0",
     "readable-stream": "^1.1.12",
-    "tarn": "^0.1.4",
+    "tarn": "^0.1.5",
     "tildify": "~1.0.0",
     "v8flags": "^2.0.2"
   },
