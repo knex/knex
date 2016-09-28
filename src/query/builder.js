@@ -902,7 +902,7 @@ assign(Builder.prototype, {
 
   // Helper for the incrementing/decrementing queries.
   _counter(column, amount, symbol) {
-    let amt = parseInt(amount, 10);
+    let amt = parseFloat(amount);
     if (isNaN(amt)) amt = 1;
     this._method = 'counter';
     this._single.counter = {
