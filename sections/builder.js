@@ -944,14 +944,15 @@ export default [
   },
   {
     type: "method",
-    method: "orderByRaw",
+    method: "
+    ",
     example: ".orderByRaw(sql)",
     description: "Adds an order by raw clause to the query.",
     children: [
       {
         type: "runnable",
         content: `
-          knex.select('*').from('table').orderByRaw('col NULLS LAST DESC')
+          knex.select('*').from('table').orderByRaw('col DESC NULLS LAST')
         `
       }
     ]
