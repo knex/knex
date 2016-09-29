@@ -1,6 +1,6 @@
 
 import makeKnex from '../../util/make-knex';
-import Promise from '../../promise';
+import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 import inherits from 'inherits';
 import { EventEmitter } from 'events';

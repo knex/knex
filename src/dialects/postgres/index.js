@@ -4,13 +4,13 @@
 import { assign, map, extend } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
-import Promise from '../../promise';
-import * as utils from './utils';
+import Promise from 'bluebird';
 
 import QueryCompiler from './query/compiler';
 import ColumnCompiler from './schema/columncompiler';
 import TableCompiler from './schema/tablecompiler';
 import SchemaCompiler from './schema/compiler';
+import {makeEscape} from '../../query/string'
 
 function Client_PG(config) {
   Client.apply(this, arguments)
@@ -26,13 +26,21 @@ inherits(Client_PG, Client)
 
 assign(Client_PG.prototype, {
 
-  QueryCompiler,
+  queryCompiler() {
+    return new QueryCompiler(this, ...arguments)
+  },
 
-  ColumnCompiler,
+  columnCompiler() {
+    return new ColumnCompiler(this, ...arguments)
+  },
 
-  SchemaCompiler,
+  schemaCompiler() {
+    return new SchemaCompiler(this, ...arguments)
+  },
 
-  TableCompiler,
+  tableCompiler() {
+    return new TableCompiler(this, ...arguments)
+  },
 
   dialect: 'postgresql',
 
@@ -42,18 +50,48 @@ assign(Client_PG.prototype, {
     return require('pg')
   },
 
+  _escapeBinding: makeEscape({
+    escapeArray(val, esc) {
+      return '{' + val.map(esc).join(',') + '}'
+    },
+    escapeString(str) {
+      let hasBackslash = false
+      let escaped = '\''
+      for (let i = 0; i < str.length; i++) {
+        const c = str[i]
+        if (c === '\'') {
+          escaped += c + c
+        } else if (c === '\\') {
+          escaped += c + c
+          hasBackslash = true
+        } else {
+          escaped += c
+        }
+      }
+      escaped += '\''
+      if (hasBackslash === true) {
+        escaped = 'E' + escaped
+      }
+      return escaped
+    },
+    escapeObject(val, timezone, prepareValue, seen = []) {
+      if (val && typeof val.toPostgres === 'function') {
+        seen = seen || [];
+        if (seen.indexOf(val) !== -1) {
+          throw new Error(`circular reference detected while preparing "${val}" for query`);
+        }
+        seen.push(val);
+        return prepareValue(val.toPostgres(prepareValue), seen);
+      }
+      return JSON.stringify(val);
+    }
+  }),
+
   wrapIdentifier(value) {
     if (value === '*') return value;
     const matched = value.match(/(.*?)(\[[0-9]\])/);
     if (matched) return this.wrapIdentifier(matched[1]) + matched[2];
     return `"${value.replace(/"/g, '""')}"`;
-  },
-
-  // Prep the bindings as needed by PostgreSQL.
-  prepBindings(bindings, tz) {
-    return map(bindings, (binding) => {
-      return utils.prepareValue(binding, tz, this.valueForUndefined)
-    });
   },
 
   // Get a raw connection, called by the `pool` whenever a new
@@ -63,9 +101,12 @@ assign(Client_PG.prototype, {
     return new Promise(function(resolver, rejecter) {
       const connection = new client.driver.Client(client.connectionSettings);
       connection.connect(function(err, connection) {
-        if (err) return rejecter(err);
-        connection.on('error', client.__endConnection.bind(client, connection));
-        connection.on('end', client.__endConnection.bind(client, connection));
+        if (err) {
+          return rejecter(err);
+        }
+        connection.on('error', (err) => {
+          connection.__knex__disposed = err
+        })
         if (!client.version) {
           return client.checkVersion(connection).then(function(version) {
             client.version = version;
@@ -81,9 +122,8 @@ assign(Client_PG.prototype, {
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
-  destroyRawConnection(connection, cb) {
+  destroyRawConnection(connection) {
     connection.end()
-    cb()
   },
 
   // In PostgreSQL, we need to do a version check to do some feature
@@ -179,20 +219,7 @@ assign(Client_PG.prototype, {
       return resp.rowCount;
     }
     return resp;
-  },
-
-  __endConnection(connection) {
-    if (!connection || connection.__knex__disposed) return;
-    if (this.pool) {
-      connection.__knex__disposed = true;
-      this.pool.destroy(connection);
-    }
-  },
-
-  ping(resource, callback) {
-    resource.query('SELECT 1', [], callback);
   }
-
 
 })
 

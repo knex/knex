@@ -1,9 +1,8 @@
 
 // Transaction
 // -------
-import Promise from './promise';
+import Promise from 'bluebird';
 import { EventEmitter } from 'events';
-import inherits from 'inherits';
 import Debug from 'debug'
 
 import makeKnex from './util/make-knex';
@@ -11,92 +10,92 @@ import noop from './util/noop';
 
 const debug = Debug('knex:tx');
 
-import { assign, uniqueId } from 'lodash';
+import { uniqueId } from 'lodash';
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
-function Transaction(client, container, config, outerTx) {
+export default class Transaction extends EventEmitter {
 
-  const txid = this.txid = uniqueId('trx')
+  constructor(client, container, config, outerTx) {
+    super()
 
-  this.client    = client
-  this.outerTx   = outerTx
-  this.trxClient = undefined;
-  this._debug    = client.config && client.config.debug
+    const txid = this.txid = uniqueId('trx')
 
-  debug('%s: Starting %s transaction', txid, outerTx ? 'nested' : 'top level')
+    this.client    = client
+    this.outerTx   = outerTx
+    this.trxClient = undefined;
+    this._debug    = client.config && client.config.debug
 
-  this._promise = Promise.using(this.acquireConnection(client, config, txid), (connection) => {
+    debug('%s: Starting %s transaction', txid, outerTx ? 'nested' : 'top level')
 
-    const trxClient = this.trxClient = makeTxClient(this, client, connection)
-    const init = client.transacting ? this.savepoint(connection) : this.begin(connection)
+    this._promise = Promise.using(this.acquireConnection(client, config, txid), (connection) => {
 
-    init.then(() => {
-      return makeTransactor(this, connection, trxClient)
+      const trxClient = this.trxClient = makeTxClient(this, client, connection)
+      const init = client.transacting ? this.savepoint(connection) : this.begin(connection)
+
+      init.then(() => {
+        return makeTransactor(this, connection, trxClient)
+      })
+      .then((transactor) => {
+        // If we've returned a "thenable" from the transaction container, assume
+        // the rollback and commit are chained to this object's success / failure.
+        // Directly thrown errors are treated as automatic rollbacks.
+        let result
+        try {
+          result = container(transactor)
+        } catch (err) {
+          result = Promise.reject(err)
+        }
+        if (result && result.then && typeof result.then === 'function') {
+          result.then((val) => {
+            return transactor.commit(val)
+          })
+          .catch((err) => {
+            return transactor.rollback(err)
+          })
+        }
+        return null;
+      })
+      .catch((e) => this._rejecter(e))
+
+      return new Promise((resolver, rejecter) => {
+        this._resolver = resolver
+        this._rejecter = rejecter
+      })
     })
-    .then((transactor) => {
-      // If we've returned a "thenable" from the transaction container, assume
-      // the rollback and commit are chained to this object's success / failure.
-      // Directly thrown errors are treated as automatic rollbacks.
-      let result
-      try {
-        result = container(transactor)
-      } catch (err) {
-        result = Promise.reject(err)
-      }
-      if (result && result.then && typeof result.then === 'function') {
-        result.then((val) => {
-          return transactor.commit(val)
-        })
-        .catch((err) => {
-          return transactor.rollback(err)
-        })
-      }
-      return null;
-    })
-    .catch((e) => this._rejecter(e))
 
-    return new Promise((resolver, rejecter) => {
-      this._resolver = resolver
-      this._rejecter = rejecter
-    })
-  })
+    this._completed  = false
 
-  this._completed  = false
-
-  // If there's a wrapping transaction, we need to wait for any older sibling
-  // transactions to settle (commit or rollback) before we can start, and we
-  // need to register ourselves with the parent transaction so any younger
-  // siblings can wait for us to complete before they can start.
-  this._previousSibling = Promise.resolve(true);
-  if (outerTx) {
-    if (outerTx._lastChild) this._previousSibling = outerTx._lastChild;
-    outerTx._lastChild = this._promise;
+    // If there's a wrapping transaction, we need to wait for any older sibling
+    // transactions to settle (commit or rollback) before we can start, and we
+    // need to register ourselves with the parent transaction so any younger
+    // siblings can wait for us to complete before they can start.
+    this._previousSibling = Promise.resolve(true);
+    if (outerTx) {
+      if (outerTx._lastChild) this._previousSibling = outerTx._lastChild;
+      outerTx._lastChild = this._promise;
+    }
   }
-}
-inherits(Transaction, EventEmitter)
-
-assign(Transaction.prototype, {
 
   isCompleted() {
     return this._completed || this.outerTx && this.outerTx.isCompleted() || false
-  },
+  }
 
   begin(conn) {
     return this.query(conn, 'BEGIN;')
-  },
+  }
 
   savepoint(conn) {
     return this.query(conn, `SAVEPOINT ${this.txid};`)
-  },
+  }
 
   commit(conn, value) {
     return this.query(conn, 'COMMIT;', 1, value)
-  },
+  }
 
   release(conn, value) {
     return this.query(conn, `RELEASE SAVEPOINT ${this.txid};`, 1, value)
-  },
+  }
 
   rollback(conn, error) {
     return this.query(conn, 'ROLLBACK;', 2, error)
@@ -104,7 +103,7 @@ assign(Transaction.prototype, {
       .catch(Promise.TimeoutError, () => {
         this._resolver();
       });
-  },
+  }
 
   rollbackTo(conn, error) {
     return this.query(conn, `ROLLBACK TO SAVEPOINT ${this.txid}`, 2, error)
@@ -112,7 +111,7 @@ assign(Transaction.prototype, {
       .catch(Promise.TimeoutError, () => {
         this._resolver();
       });
-  },
+  }
 
   query(conn, sql, status, value) {
     const q = this.trxClient.query(conn, sql)
@@ -130,12 +129,12 @@ assign(Transaction.prototype, {
       this._completed = true
     }
     return q;
-  },
+  }
 
   debug(enabled) {
     this._debug = arguments.length ? enabled : true;
     return this
-  },
+  }
 
   // Acquire a connection and create a disposer - either using the one passed
   // via config or getting one off the client. The disposer will be called once
@@ -153,7 +152,7 @@ assign(Transaction.prototype, {
     })
   }
 
-})
+}
 
 // The transactor is a full featured knex object, with a "commit", a "rollback"
 // and a "savepoint" function. The "savepoint" is just sugar for creating a new
@@ -163,11 +162,12 @@ function makeTransactor(trx, connection, trxClient) {
 
   const transactor = makeKnex(trxClient);
 
-  transactor.transaction = (container, options) =>
-    new trxClient.Transaction(trxClient, container, options, trx);
-
-  transactor.savepoint = (container, options) =>
-    transactor.transaction(container, options);
+  transactor.transaction = function(container, options) {
+    return trxClient.transaction(container, options, trx);
+  }
+  transactor.savepoint = function(container, options) {
+    return transactor.transaction(container, options);
+  }
 
   if (trx.client.transacting) {
     transactor.commit = value => trx.release(connection, value)
@@ -257,5 +257,3 @@ promiseInterface.forEach(function(method) {
     return (this._promise = this._promise[method].apply(this._promise, arguments))
   }
 })
-
-export default Transaction;

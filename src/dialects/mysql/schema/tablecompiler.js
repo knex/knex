@@ -5,7 +5,7 @@
 import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
-import Promise from '../../../promise';
+import Promise from 'bluebird';
 
 import { assign } from 'lodash'
 

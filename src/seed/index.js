@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
-import Promise from '../promise';
+import Promise from 'bluebird';
 import { filter, includes, map, bind, template, each, extend } from 'lodash'
 
 // The new seeds we're performing, typically called from the `knex.seed`

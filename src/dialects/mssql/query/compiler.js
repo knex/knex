@@ -31,7 +31,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   // inserts using a single query statement.
   insert() {
     const insertValues = this.single.insert || [];
-    let sql = `insert into ${this.tableName} `;
+    let sql = this.with() + `insert into ${this.tableName} `;
     const { returning } = this.single;
     const returningSql = returning
       ? this._returning('insert', returning) + ' '
@@ -84,7 +84,7 @@ assign(QueryCompiler_MSSQL.prototype, {
     const top = this.top();
     const { returning } = this.single;
     return {
-      sql: `update ${top ? top + ' ' : ''}${this.tableName}` +
+      sql: this.with() + `update ${top ? top + ' ' : ''}${this.tableName}` +
         (join ? ` ${join}` : '') +
         ' set ' + updates.join(', ') +
         (returning ? ` ${this._returning('update', returning)}` : '') +
@@ -102,7 +102,7 @@ assign(QueryCompiler_MSSQL.prototype, {
     const wheres = this.where();
     const { returning } = this.single;
     return {
-      sql: `delete from ${tableName}` +
+      sql: this.with() + `delete from ${tableName}` +
         (returning ? ` ${this._returning('del', returning)}` : '') +
         (wheres ? ` ${wheres}` : '') +
         (!returning ? this._returning('rowcount', '@@rowcount') : ''),
@@ -170,11 +170,19 @@ assign(QueryCompiler_MSSQL.prototype, {
   // Compiles a `columnInfo` query.
   columnInfo() {
     const column = this.single.columnInfo;
-    const sql =
-      `select * from information_schema.columns where table_name = ? and table_schema = 'dbo'`;
+    let sql =`select * from information_schema.columns where table_name = ? and table_catalog = ?`;
+    const bindings = [this.single.table, this.client.database()];
+
+    if (this.single.schema) {
+      sql += ' and table_schema = ?';
+      bindings.push(this.single.schema);
+    } else {
+      sql += ` and table_schema = 'dbo'`;
+    }
+
     return {
       sql,
-      bindings: [this.single.table],
+      bindings: bindings,
       output(resp) {
         const out = resp.reduce(function(columns, val) {
           columns[val.COLUMN_NAME] = {

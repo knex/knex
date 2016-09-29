@@ -22,7 +22,7 @@ export default function makeKnex(client) {
 
   assign(knex, {
 
-    Promise: require('../promise'),
+    Promise: require('bluebird'),
 
     // A new query builder instance.
     queryBuilder() {
@@ -55,10 +55,6 @@ export default function makeKnex(client) {
 
   })
 
-  // The `__knex__` is used if you need to duck-type check whether this
-  // is a knex builder, without a full on `instanceof` check.
-  knex.VERSION = knex.__knex__ = require('../../package.json').version;
-
   // Hook up the "knex" object as an EventEmitter.
   const ee = new EventEmitter()
   for (const key in ee) {
@@ -76,7 +72,29 @@ export default function makeKnex(client) {
 
   knex.client = client
 
+  const VERSION = '0.12.2'
+
   Object.defineProperties(knex, {
+
+    __knex__: {
+      get() {
+        helpers.warn(
+          'knex.__knex__ is deprecated, you can get the module version' +
+          "by running require('knex/package').version"
+        )
+        return VERSION
+      }
+    },
+
+    VERSION: {
+      get() {
+        helpers.warn(
+          'knex.VERSION is deprecated, you can get the module version' +
+          "by running require('knex/package').version"
+        )
+        return VERSION
+      }
+    },
 
     schema: {
       get() {
@@ -108,15 +126,12 @@ export default function makeKnex(client) {
   client.on('start', function(obj) {
     knex.emit('start', obj)
   })
-
   client.on('query', function(obj) {
     knex.emit('query', obj)
   })
-
   client.on('query-error', function(err, obj) {
     knex.emit('query-error', err, obj)
   })
-
   client.on('query-response', function(response, obj, builder) {
     knex.emit('query-response', response, obj, builder)
   })

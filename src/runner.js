@@ -1,5 +1,5 @@
 import { assign, isArray } from 'lodash'
-import Promise from './promise';
+import Promise from 'bluebird';
 import * as helpers from './helpers';
 
 let PassThrough;
@@ -214,7 +214,6 @@ assign(Runner.prototype, {
           .catch(rejecter)
       })
     }).disposer(function() {
-      if (runner.connection.__knex__disposed) return
       runner.client.releaseConnection(runner.connection)
     })
   }

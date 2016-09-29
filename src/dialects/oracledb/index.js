@@ -3,16 +3,16 @@
 // -------
 const _ = require('lodash');
 const inherits = require('inherits');
-const Client_Oracle = require('../oracle');
 const QueryCompiler = require('./query/compiler');
 const ColumnCompiler = require('./schema/columncompiler');
-const Formatter = require('./formatter');
 const BlobHelper = require('./utils').BlobHelper;
 const ReturningHelper = require('./utils').ReturningHelper;
-const Promise = require('../../promise');
+const Promise = require('bluebird');
 const stream = require('stream');
 const helpers = require('../../helpers');
 const Transaction = require('./transaction');
+const Client_Oracle = require('../oracle');
+const Oracle_Formatter = require('../oracle/formatter');
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
@@ -31,19 +31,26 @@ Client_Oracledb.prototype._driver = function() {
   return oracledb;
 };
 
-Client_Oracledb.prototype.QueryCompiler = QueryCompiler;
-Client_Oracledb.prototype.ColumnCompiler = ColumnCompiler;
-Client_Oracledb.prototype.Formatter = Formatter;
-Client_Oracledb.prototype.Transaction = Transaction;
+Client_Oracledb.prototype.queryCompiler = function() {
+  return new QueryCompiler(this, ...arguments)
+}
+Client_Oracledb.prototype.columnCompiler = function() {
+  return new ColumnCompiler(this, ...arguments)
+}
+Client_Oracledb.prototype.formatter = function() {
+  return new Oracledb_Formatter(this)
+}
+Client_Oracledb.prototype.transaction = function() {
+  return new Transaction(this, ...arguments)
+}
 
 Client_Oracledb.prototype.prepBindings = function(bindings) {
-  const self = this;
-  return _.map(bindings, function(value) {
-    if (value instanceof BlobHelper && self.driver) {
-      return {type: self.driver.BLOB, dir: self.driver.BIND_OUT};
+  return _.map(bindings, (value) => {
+    if (value instanceof BlobHelper && this.driver) {
+      return {type: this.driver.BLOB, dir: this.driver.BIND_OUT};
       // Returning helper always use ROWID as string
-    } else if (value instanceof ReturningHelper && self.driver) {
-      return {type: self.driver.STRING, dir: self.driver.BIND_OUT};
+    } else if (value instanceof ReturningHelper && this.driver) {
+      return {type: this.driver.STRING, dir: this.driver.BIND_OUT};
     } else if (typeof value === 'boolean') {
       return value ? 1 : 0;
     }
@@ -56,24 +63,26 @@ Client_Oracledb.prototype.prepBindings = function(bindings) {
 Client_Oracledb.prototype.acquireRawConnection = function() {
   const client = this;
   const asyncConnection = new Promise(function(resolver, rejecter) {
-    client.driver.getConnection({
+
+    const oracleDbConfig = {
       user: client.connectionSettings.user,
       password: client.connectionSettings.password,
-      connectString: client.connectionSettings.host + '/' + client.connectionSettings.database
-    }, function(err, connection) {
-      if (err)
+      connectString: client.connectionSettings.connectString ||
+        (client.connectionSettings.host + '/' + client.connectionSettings.database)
+    }
+    if (client.connectionSettings.prefetchRowCount) {
+      oracleDbConfig.prefetchRows = client.connectionSettings.prefetchRowCount
+    }
+    client.driver.getConnection(oracleDbConfig, function(err, connection) {
+      if (err) {
         return rejecter(err);
-      if (client.connectionSettings.prefetchRowCount) {
-        connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount);
       }
-
       connection.commitAsync = function() {
-        const self = this;
-        return new Promise(function(commitResolve, commitReject) {
+        return new Promise((commitResolve, commitReject) => {
           if (connection.isTransaction) {
             return commitResolve();
           }
-          self.commit(function(err) {
+          this.commit(function(err) {
             if (err) {
               return commitReject(err);
             }
@@ -82,9 +91,8 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
         });
       };
       connection.rollbackAsync = function() {
-        const self = this;
-        return new Promise(function(rollbackResolve, rollbackReject) {
-          self.rollback(function(err) {
+        return new Promise((rollbackResolve, rollbackReject) => {
+          this.rollback(function(err) {
             if (err) {
               return rollbackReject(err);
             }
@@ -189,8 +197,8 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
 
 // Used to explicitly close a connection, called internally by the pool
 // when a connection times out or the pool is shutdown.
-Client_Oracledb.prototype.destroyRawConnection = function(connection, cb) {
-  connection.release(cb);
+Client_Oracledb.prototype.destroyRawConnection = function(connection) {
+  connection.release()
 };
 
 // Runs the query on the specified connection, providing the bindings
@@ -343,5 +351,20 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
       return response;
   }
 };
+
+class Oracledb_Formatter extends Oracle_Formatter {
+
+  // Checks whether a value is a function... if it is, we compile it
+  // otherwise we check whether it's a raw
+  parameter(value) {
+    if (typeof value === 'function') {
+      return this.outputQuery(this.compileCallback(value), true);
+    } else if (value instanceof BlobHelper) {
+      return 'EMPTY_BLOB()';
+    }
+    return this.unwrapRaw(value, true) || '?';
+  }
+
+}
 
 module.exports = Client_Oracledb;

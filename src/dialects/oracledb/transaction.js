@@ -1,30 +1,26 @@
-const inherits = require('inherits');
-const Promise = require('../../promise');
+const Promise = require('bluebird');
 const Transaction = require('../../transaction');
 const debugTx = require('debug')('knex:tx');
-import {assign} from
-'lodash'
 
-function Oracle_Transaction(client, container, config, outerTx) {
-  Transaction.call(this, client, container, config, outerTx);
-}
-inherits(Oracle_Transaction, Transaction);
+export default class Oracle_Transaction extends Transaction {
 
-assign(Oracle_Transaction.prototype, {
   // disable autocommit to allow correct behavior (default is true)
-  begin: function() {
+  begin() {
     return Promise.resolve();
-  },
-  commit: function(conn, value) {
+  }
+
+  commit(conn, value) {
     this._completed = true;
     return conn.commitAsync()
       .return(value)
       .then(this._resolver, this._rejecter);
-  },
-  release: function(conn, value) {
+  }
+
+  release(conn, value) {
     return this._resolver(value);
-  },
-  rollback: function(conn, err) {
+  }
+
+  rollback(conn, err) {
     const self = this;
     this._completed = true;
     debugTx('%s: rolling back', this.txid);
@@ -33,8 +29,9 @@ assign(Oracle_Transaction.prototype, {
     }).then(function() {
       self._rejecter(err);
     });
-  },
-  acquireConnection: function(config) {
+  }
+
+  acquireConnection(config) {
     const t = this;
     return Promise.try(function() {
       return t.client.acquireConnection().completed.then(function(cnx) {
@@ -57,6 +54,5 @@ assign(Oracle_Transaction.prototype, {
         });
     });
   }
-});
 
-module.exports = Oracle_Transaction;
+}

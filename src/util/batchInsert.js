@@ -1,7 +1,7 @@
 
 
 import { isNumber, isString, isArray, chunk, flatten } from 'lodash';
-import Promise from '../promise';
+import Promise from 'bluebird';
 
 export default class BatchInsert {
   constructor(client, tableName, batch, chunkSize = 1000) {

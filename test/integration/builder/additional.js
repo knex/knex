@@ -1,5 +1,5 @@
 /*global describe, expect, it*/
-
+/*eslint no-var:0, max-len:0 */
 'use strict';
 
 var Knex   = require('../../../knex');
@@ -121,8 +121,8 @@ module.exports = function(knex) {
           }
         );
         tester('mssql',
-          'select * from information_schema.columns where table_name = ? and table_schema = \'dbo\'',
-          ['datatype_test'], {
+          'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = \'dbo\'',
+          ['datatype_test', 'knex_test'], {
             "enum_value": {
               "defaultValue": null,
               "maxLength": 100,
@@ -173,7 +173,7 @@ module.exports = function(knex) {
           }
         );
         tester('mssql',
-          'select * from information_schema.columns where table_name = ? and table_schema = \'dbo\'',
+          'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = \'dbo\'',
           null, {
             "defaultValue": null,
             "maxLength": null,
@@ -185,7 +185,6 @@ module.exports = function(knex) {
 
     it('should allow renaming a column', function() {
       var countColumn
-      console.log(knex.client.dialect);
       switch (knex.client.dialect) {
         case 'oracle': countColumn = 'COUNT(*)'; break;
         case 'mssql': countColumn = ''; break;
@@ -380,7 +379,9 @@ module.exports = function(knex) {
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
       // Only mysql/mariadb query cancelling supported for now
       var dialect = knex.client.config.dialect;
-      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) { return; }
+      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
+        return;
+      }
 
       //To make this test easier, I'm changing the pool settings to max 1.
       var knexConfig = _.clone(knex.client.config);

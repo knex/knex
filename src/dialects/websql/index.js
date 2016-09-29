@@ -6,7 +6,7 @@ import inherits from 'inherits';
 
 import Transaction from './transaction';
 import Client_SQLite3 from '../sqlite3';
-import Promise from '../../promise';
+import Promise from 'bluebird';
 import { assign, map, uniqueId, clone } from 'lodash'
 
 function Client_WebSQL(config) {
@@ -20,14 +20,16 @@ inherits(Client_WebSQL, Client_SQLite3);
 
 assign(Client_WebSQL.prototype, {
 
-  Transaction,
+  transaction() {
+    return new Transaction(this, ...arguments)
+  },
 
   dialect: 'websql',
 
   // Get a raw connection from the database, returning a promise with the connection object.
   acquireConnection() {
     const client = this;
-    return new Promise(function(resolve, reject) {
+    const completed = new Promise(function(resolve, reject) {
       try {
         /*jslint browser: true*/
         const db = openDatabase(
@@ -41,6 +43,13 @@ assign(Client_WebSQL.prototype, {
         reject(e);
       }
     });
+    const abort = function(reason) {
+      // Do nothing, websql has no pool
+    }
+    return {
+      completed: completed,
+      abort: abort
+    };
   },
 
   // Used to explicitly close a connection, called internally by the pool
@@ -103,10 +112,6 @@ assign(Client_WebSQL.prototype, {
       default:
         return resp;
     }
-  },
-
-  ping(resource, callback) {
-    callback();
   }
 
 })
