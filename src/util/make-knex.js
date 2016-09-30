@@ -72,7 +72,7 @@ export default function makeKnex(client) {
 
   knex.client = client
 
-  const VERSION = '0.12.0'
+  const VERSION = '0.12.2'
 
   Object.defineProperties(knex, {
 
