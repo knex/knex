@@ -64,15 +64,27 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
   const client = this;
   const asyncConnection = new Promise(function(resolver, rejecter) {
 
-    const oracleDbConfig = {
-      user: client.connectionSettings.user,
-      password: client.connectionSettings.password,
-      connectString: client.connectionSettings.connectString ||
-        (client.connectionSettings.host + '/' + client.connectionSettings.database)
+    const oracleDbConfig = {};
+
+    // If external authentication dont have to worry about username/password
+    if (client.connectionSettings.externalAuth) {
+      oracleDbConfig.externalAuth = client.connectionSettings.externalAuth;
+    } else {
+      oracleDbConfig.user = client.connectionSettings.user;
+      oracleDbConfig.password = client.connectionSettings.password;
     }
+
+    // In the case of external authentication connection string will be given
+    if (client.connectionSettings.connectString){
+      oracleDbConfig.connectString = client.connectionSettings.connectString;
+    } else {
+      oracleDbConfig.connectString = client.connectionSettings.host + '/' + client.connectionSettings.database;
+    }
+
     if (client.connectionSettings.prefetchRowCount) {
       oracleDbConfig.prefetchRows = client.connectionSettings.prefetchRowCount
     }
+
     client.driver.getConnection(oracleDbConfig, function(err, connection) {
       if (err) {
         return rejecter(err);
