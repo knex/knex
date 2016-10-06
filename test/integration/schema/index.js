@@ -163,17 +163,47 @@ module.exports = function(knex) {
             .unsigned()
             .references('id')
             .inTable('test_table_two');
+          table.integer('fkey_three')
+            .unsigned()
+            .references('id')
+            .inTable('test_table_two')
+            .withKeyName('fk_fkey_three');
+          table.integer('fkey_four')
+            .unsigned()
+          table.foreign('fkey_four', 'fk_fkey_four').references('test_table_two.id')
         }).testSql(function(tester) {
-          tester('mysql', ['create table `test_foreign_table_two` (`id` int unsigned not null auto_increment primary key, `fkey_two` int unsigned) default character set utf8','alter table `test_foreign_table_two` add constraint `test_foreign_table_two_fkey_two_foreign` foreign key (`fkey_two`) references `test_table_two` (`id`)']);
-          tester('pg', ['create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer)','alter table "test_foreign_table_two" add constraint "test_foreign_table_two_fkey_two_foreign" foreign key ("fkey_two") references "test_table_two" ("id")']);
-          tester('sqlite3', ['create table "test_foreign_table_two" ("id" integer not null primary key autoincrement, "fkey_two" integer, foreign key("fkey_two") references "test_table_two"("id"))']);
+          tester('mysql', [
+            'create table `test_foreign_table_two` (`id` int unsigned not null auto_increment primary key, `fkey_two` int unsigned, `fkey_three` int unsigned, `fkey_four` int unsigned) default character set utf8',
+            'alter table `test_foreign_table_two` add constraint `test_foreign_table_two_fkey_two_foreign` foreign key (`fkey_two`) references `test_table_two` (`id`)',
+            'alter table `test_foreign_table_two` add constraint `fk_fkey_three` foreign key (`fkey_three`) references `test_table_two` (`id`)',
+            'alter table `test_foreign_table_two` add constraint `fk_fkey_four` foreign key (`fkey_four`) references `test_table_two` (`id`)'
+          ]);
+          tester('pg', [
+            'create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer, "fkey_three" integer)',
+            'alter table "test_foreign_table_two" add constraint "test_foreign_table_two_fkey_two_foreign" foreign key ("fkey_two") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_three" foreign key ("fkey_three") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_four" foreign key ("fkey_four") references "test_table_two" ("id")'
+          ]);
+          tester('sqlite3', [
+            'create table "test_foreign_table_two" ("id" integer not null primary key autoincrement, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer, ' +
+            'foreign key("fkey_two") references "test_table_two"("id"), ' +
+            'foreign key("fkey_three") references "test_table_two"("id"), ' +
+            'foreign key("fkey_four") references "test_table_two"("id"))'
+          ]);
           tester('oracle', [
-            'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer)',
+            'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer)',
             "begin execute immediate 'create sequence \"test_foreign_table_two_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;",
             "create or replace trigger \"test_foreign_table_two_id_trg\" before insert on \"test_foreign_table_two\" for each row when (new.\"id\" is null)  begin select \"test_foreign_table_two_seq\".nextval into :new.\"id\" from dual; end;",
-            'alter table "test_foreign_table_two" add constraint "q7TfvbIx3HUQbh+l+e5N+J+Guag" foreign key ("fkey_two") references "test_table_two" ("id")'
+            'alter table "test_foreign_table_two" add constraint "q7TfvbIx3HUQbh+l+e5N+J+Guag" foreign key ("fkey_two") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_three" foreign key ("fkey_three") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_four" foreign key ("fkey_four") references "test_table_two" ("id")'
           ]);
-          tester('mssql', ['CREATE TABLE [test_foreign_table_two] ([id] int identity(1,1) not null primary key, [fkey_two] int, CONSTRAINT [test_foreign_table_two_fkey_two_foreign] FOREIGN KEY ([fkey_two]) REFERENCES [test_table_two] ([id]))']);
+          tester('mssql', [
+            'CREATE TABLE [test_foreign_table_two] ([id] int identity(1,1) not null primary key, [fkey_two] int, [fkey_three] int, [fkey_four] int, ' +
+            'CONSTRAINT [test_foreign_table_two_fkey_two_foreign] FOREIGN KEY ([fkey_two]) REFERENCES [test_table_two] ([id]), ' +
+            'CONSTRAINT [fk_fkey_three] FOREIGN KEY ([fkey_three]) REFERENCES [test_table_two] ([id]), ' +
+            'CONSTRAINT [fk_fkey_four] FOREIGN KEY ([fkey_four]) REFERENCES [test_table_two] ([id]))'
+          ]);
         });
       });
 
