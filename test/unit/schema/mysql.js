@@ -496,6 +496,19 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('create table `users` (`username` varchar(255)) engine = myISAM');
   });
 
+  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.primary(['test1', 'test2'], 'testconstraintname');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('alter table `users` add primary key `testconstraintname`(`test1`, `test2`)');
+
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('test').primary('testconstraintname');
+    }).toSQL();
+
+    expect(tableSql[1].sql).to.equal('alter table `users` add primary key `testconstraintname`(`test`)');
+  });
+
 });
 
 

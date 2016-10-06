@@ -1,11 +1,14 @@
-# [knex.js](http://knexjs.org) [![Build Status](https://travis-ci.org/tgriesser/knex.svg?branch=master)](https://travis-ci.org/tgriesser/knex) [![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.svg?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
+# [knex.js](http://knexjs.org)
 
-Gitter chat
-[![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex "Gitter chat")
+[![npm version](http://img.shields.io/npm/v/knex.svg)](https://npmjs.org/package/knex)
+[![Build Status](https://travis-ci.org/tgriesser/knex.svg?branch=master)](https://travis-ci.org/tgriesser/knex)
+[![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.svg?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
+[![Dependencies Status](https://david-dm.org/tgriesser/knex.svg)](https://david-dm.org/tgriesser/knex)
+[![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex)
 
-A SQL query builder that is flexible, portable, and fun to use!
+> **A SQL query builder that is _flexible_, _portable_, and _fun_ to use!**
 
-A batteries-included, multi-dialect (MySQL, PostgreSQL, SQLite3, WebSQL, Oracle) query builder for
+A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, WebSQL, Oracle) query builder for
 Node.js and the Browser, featuring:
 
 - [transactions](http://knexjs.org/#Transactions)
@@ -17,7 +20,7 @@ Node.js and the Browser, featuring:
 
 [Read the full documentation to get started!](http://knexjs.org)
 
-For support and questions, join the #bookshelf channel on freenode IRC
+For support and questions, join the `#bookshelf` channel on freenode IRC
 
 For an Object Relational Mapper, see: http://bookshelfjs.org
 

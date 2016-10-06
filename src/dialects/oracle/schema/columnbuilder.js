@@ -1,8 +1,8 @@
 
-var inherits      = require('inherits');
-var ColumnBuilder = require('../../../schema/columnbuilder');
+import inherits from 'inherits';
+import ColumnBuilder from '../../../schema/columnbuilder';
 
-import {toArray} from 'lodash'
+import { toArray } from 'lodash'
 
 function ColumnBuilder_Oracle() {
   ColumnBuilder.apply(this, arguments);
@@ -16,4 +16,4 @@ ColumnBuilder_Oracle.prototype.checkIn = function () {
   return this;
 };
 
-module.exports = ColumnBuilder_Oracle
+export default ColumnBuilder_Oracle

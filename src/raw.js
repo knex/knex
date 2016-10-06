@@ -1,155 +1,180 @@
 
 // Raw
 // -------
-var inherits      = require('inherits')
-var EventEmitter  = require('events').EventEmitter
+import inherits from 'inherits';
+import * as helpers from './helpers';
+import { EventEmitter } from 'events';
+import debug from 'debug'
 
-import {assign, reduce, isPlainObject, isObject, isUndefined, isNumber} from 'lodash'
+import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
+import Formatter from './formatter'
 
-function Raw(client) {
-  this.client   = client
+import uuid from 'node-uuid';
 
-  this.sql      = ''
+const debugBindings = debug('knex:bindings')
+
+const fakeClient = {
+  formatter() {
+    return new Formatter(fakeClient)
+  }
+}
+
+function Raw(client = fakeClient) {
+  this.client = client
+
+  this.sql = ''
   this.bindings = []
-  this._cached  = undefined
 
   // Todo: Deprecate
   this._wrappedBefore = undefined
-  this._wrappedAfter  = undefined
-  this._debug         = client && client.config && client.config.debug
+  this._wrappedAfter = undefined
+  this._debug = client && client.config && client.config.debug
 }
 inherits(Raw, EventEmitter)
 
 assign(Raw.prototype, {
 
-  set: function(sql, bindings) {
-    this._cached  = undefined
-    this.sql      = sql
-    this.bindings = (isObject(bindings) || isUndefined(bindings)) ?  bindings : [bindings]
+  set(sql, bindings) {
+    this.sql = sql
+    this.bindings = (
+      (isObject(bindings) && !bindings.toSQL) ||
+      isUndefined(bindings)
+    ) ? bindings : [bindings]
 
     return this
   },
 
-  timeout: function(ms) {
-    if(isNumber(ms) && ms > 0) {
+  timeout(ms, {cancel} = {}) {
+    if (isNumber(ms) && ms > 0) {
       this._timeout = ms;
+      if (cancel) {
+        this.client.assertCanCancelQuery();
+        this._cancelOnTimeout = true;
+      }
     }
     return this;
   },
 
   // Wraps the current sql with `before` and `after`.
-  wrap: function(before, after) {
-    this._cached        = undefined
+  wrap(before, after) {
     this._wrappedBefore = before
-    this._wrappedAfter  = after
+    this._wrappedAfter = after
     return this
   },
 
   // Calls `toString` on the Knex object.
-  toString: function() {
+  toString() {
     return this.toQuery()
   },
 
   // Returns the raw sql for the query.
-  toSQL: function() {
-    if (this._cached) return this._cached
+  toSQL(method, tz) {
+    let obj
+    const formatter = this.client.formatter()
+
     if (Array.isArray(this.bindings)) {
-      this._cached = replaceRawArrBindings(this)
+      obj = replaceRawArrBindings(this, formatter)
     } else if (this.bindings && isPlainObject(this.bindings)) {
-      this._cached = replaceKeyBindings(this)
+      obj = replaceKeyBindings(this, formatter)
     } else {
-      this._cached = {
+      obj = {
         method: 'raw',
         sql: this.sql,
-        bindings: this.bindings
+        bindings: isUndefined(this.bindings) ? [] : [this.bindings]
       }
     }
+
     if (this._wrappedBefore) {
-      this._cached.sql = this._wrappedBefore + this._cached.sql
+      obj.sql = this._wrappedBefore + obj.sql
     }
     if (this._wrappedAfter) {
-      this._cached.sql = this._cached.sql + this._wrappedAfter
+      obj.sql = obj.sql + this._wrappedAfter
     }
-    this._cached.options = reduce(this._options, assign, {})
-    if(this._timeout) {
-      this._cached.timeout = this._timeout;
+
+    obj.options = reduce(this._options, assign, {})
+
+    if (this._timeout) {
+      obj.timeout = this._timeout;
+      if (this._cancelOnTimeout) {
+        obj.cancelOnTimeout = this._cancelOnTimeout;
+      }
     }
-    return this._cached
+
+    obj.bindings = obj.bindings || [];
+    if (helpers.containsUndefined(obj.bindings)) {
+      debugBindings(obj.bindings)
+      throw new Error(
+        `Undefined binding(s) detected when compiling RAW query: ` +
+        obj.sql
+      );
+    }
+
+    obj.__knexQueryUid = uuid.v4();
+
+    return obj
   }
 
 })
 
-function replaceRawArrBindings(raw) {
-  var expectedBindings = raw.bindings.length
-  var values           = raw.bindings
-  var client           = raw.client
-  var index            = 0;
-  var bindings         = []
+function replaceRawArrBindings(raw, formatter) {
+  const expectedBindings = raw.bindings.length
+  const values = raw.bindings
+  let index = 0;
 
-  var sql = raw.sql.replace(/\\?\?\??/g, function(match) {
+  const sql = raw.sql.replace(/\\?\?\??/g, function(match) {
     if (match === '\\?') {
       return match
     }
 
-    var value = values[index++]
-
-    if (value && typeof value.toSQL === 'function') {
-      var bindingSQL = value.toSQL()
-      if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)
-      }
-      return bindingSQL.sql
-    }
+    const value = values[index++]
 
     if (match === '??') {
-      return client.formatter().columnize(value)
+      return formatter.columnize(value)
     }
-    bindings.push(value)
-    return '?'
+    return formatter.parameter(value)
   })
 
   if (expectedBindings !== index) {
-    throw new Error('Expected ' + expectedBindings + ' bindings, saw ' + index)
+    throw new Error(`Expected ${expectedBindings} bindings, saw ${index}`)
   }
 
   return {
     method: 'raw',
-    sql: sql,
-    bindings: bindings
+    sql,
+    bindings: formatter.bindings
   }
 }
 
-function replaceKeyBindings(raw) {
-  var values   = raw.bindings
-  var client   = raw.client
-  var sql      = raw.sql, bindings = []
+function replaceKeyBindings(raw, formatter) {
+  const values = raw.bindings
 
-  var regex = new RegExp('(\\:\\w+\\:?)', 'g')
-  sql = raw.sql.replace(regex, function(full) {
-    var key = full.trim();
-    var isIdentifier = key[key.length - 1] === ':'
-    var value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
+  let { sql } = raw
+
+  const regex = /\\?(:\w+:?)/g
+  sql = raw.sql.replace(regex, function(full, part) {
+    if (full !== part) {
+      return part
+    }
+
+    const key = full.trim();
+    const isIdentifier = key[key.length - 1] === ':'
+    const value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
+
     if (value === undefined) {
+      formatter.bindings.push(value);
       return full;
     }
-    if (value && typeof value.toSQL === 'function') {
-      var bindingSQL = value.toSQL()
-      if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)
-      }
-      return full.replace(key, bindingSQL.sql)
-    }
+
     if (isIdentifier) {
-      return full.replace(key, client.formatter().columnize(value))
+      return full.replace(key, formatter.columnize(value))
     }
-    bindings.push(value)
-    return full.replace(key, '?')
+    return full.replace(key, formatter.parameter(value))
   })
 
   return {
     method: 'raw',
-    sql: sql,
-    bindings: bindings
+    sql,
+    bindings: formatter.bindings
   }
 }
 
@@ -157,4 +182,4 @@ function replaceKeyBindings(raw) {
 // promise API.
 require('./interface')(Raw)
 
-module.exports = Raw
+export default Raw

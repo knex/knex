@@ -19,7 +19,7 @@ describe("Oracle SchemaBuilder", function() {
     equal(3, tableSql.toSQL().length);
     expect(tableSql.toSQL()[0].sql).to.equal('create table "users" ("id" integer not null primary key, "email" varchar2(255))');
     expect(tableSql.toSQL()[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
+    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
   });
 
   it('test basic create table if not exists', function() {
@@ -31,7 +31,7 @@ describe("Oracle SchemaBuilder", function() {
     equal(3, tableSql.toSQL().length);
     expect(tableSql.toSQL()[0].sql).to.equal("begin execute immediate 'create table \"users\" (\"id\" integer not null primary key, \"email\" varchar2(255))'; exception when others then if sqlcode != -955 then raise; end if; end;");
     expect(tableSql.toSQL()[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
+    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
   });
 
   it('test drop table', function() {
@@ -83,7 +83,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" drop primary key');
+    expect(tableSql[0].sql).to.equal('alter table "users" drop constraint "users_pkey"');
   });
 
   it('test drop unique', function() {
@@ -161,7 +161,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add primary key ("foo")');
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "bar" primary key ("foo")');
   });
 
   it('test adding unique key', function() {
@@ -209,7 +209,7 @@ describe("Oracle SchemaBuilder", function() {
     equal(3, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add "id" integer not null primary key');
     expect(tableSql[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
+    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
   });
 
   it('test adding big incrementing id', function() {
@@ -220,7 +220,7 @@ describe("Oracle SchemaBuilder", function() {
     equal(3, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add "id" number(20, 0) not null primary key');
     expect(tableSql[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row when (new.\"id\" is null)  begin select \"users_seq\".nextval into :new.\"id\" from dual; end;");
+    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
   });
 
   it('test rename column', function() {
@@ -492,5 +492,16 @@ describe("Oracle SchemaBuilder", function() {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "composite_key_test" drop constraint "ckt_unique"');
   });
+  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.primary(['test1', 'test2'], 'testconstraintname');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
 
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('test').primary('testconstraintname');
+    }).toSQL();
+
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test")');
+  });
 });

@@ -1,13 +1,12 @@
 # .travis.yml
+language: node_js
 sudo: false
 
-language: node_js
-
 node_js:
-  - '0.10'
   - '0.12'
   - '4'
   - '5'
+  - '6'
 
 before_script:
   - psql -c 'create database knex_test;' -U postgres
@@ -20,7 +19,7 @@ notifications:
   email: false
 
 env:
-  - CXX=g++-4.8
+  - CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
 
 addons:
   postgresql: '9.4'

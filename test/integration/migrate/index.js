@@ -1,11 +1,10 @@
 /*global after, before, describe, expect, it*/
-/*jshint -W030 */
 'use strict';
 
 var equal    = require('assert').equal;
 var path     = require('path');
 var rimraf   = require('rimraf');
-var Promise  = require('../../../lib/promise');
+var Promise  = require('bluebird');
 
 module.exports = function(knex) {
 

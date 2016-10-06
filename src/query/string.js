@@ -1,127 +1,161 @@
-'use strict'
+/*eslint max-len: 0, no-var:0 */
 
-var SqlString = exports;
-var helpers   = require('../helpers')
+export const charsRegex = /[\0\b\t\n\r\x1a\"\'\\]/g; // eslint-disable-line no-control-regex
+export const charsMap = {
+  '\0': '\\0',
+  '\b': '\\b',
+  '\t': '\\t',
+  '\n': '\\n',
+  '\r': '\\r',
+  '\x1a': '\\Z',
+  '"': '\\"',
+  '\'': '\\\'',
+  '\\': '\\\\'
+}
 
-SqlString.escape = function(val, timeZone) {
-  // Cant do require on top of file beacuse Raw is not yet initialized when this file is
-  // executed for the first time
-  var Raw = require('../raw')
+function wrapEscape(escapeFn) {
+  return function finalEscape(val, ctx = {}) {
+    return escapeFn(val, finalEscape, ctx)
+  }
+}
 
-  if (val === null || val === undefined) {
-    return 'NULL';
+export function makeEscape(config = {}) {
+  const finalEscapeDate = config.escapeDate || dateToString
+  const finalEscapeArray = config.escapeArray || arrayToList
+  const finalEscapeBuffer = config.escapeBuffer || bufferToString
+  const finalEscapeString = config.escapeString || escapeString
+  const finalEscapeObject = config.escapeObject || escapeObject
+  const finalWrap = config.wrap || wrapEscape
+
+  function escapeFn(val, finalEscape, ctx) {
+    if (val === undefined || val === null) {
+      return 'NULL';
+    }
+    switch (typeof val) {
+      case 'boolean': return (val) ? 'true' : 'false';
+      case 'number': return val+'';
+      case 'object':
+        if (val instanceof Date) {
+          val = finalEscapeDate(val, finalEscape, ctx);
+        } else if (Array.isArray(val)) {
+          return finalEscapeArray(val, finalEscape, ctx)
+        } else if (Buffer.isBuffer(val)) {
+          return finalEscapeBuffer(val, finalEscape, ctx);
+        } else {
+          return finalEscapeObject(val, finalEscape, ctx)
+        }
+    }
+    return finalEscapeString(val, finalEscape, ctx)
   }
 
-  switch (typeof val) {
-    case 'boolean': return (val) ? 'true' : 'false';
-    case 'number': return val+'';
-  }
+  return finalWrap ? finalWrap(escapeFn) : escapeFn
+}
 
-  if (val instanceof Date) {
-    val = SqlString.dateToString(val, timeZone || 'local');
+export function escapeObject(val, finalEscape, ctx) {
+  if (typeof val.toSQL === 'function') {
+    return val.toSQL(ctx)
+  } else {
+    return JSON.stringify(val)
   }
+}
 
-  if (Buffer.isBuffer(val)) {
-    return SqlString.bufferToString(val);
-  }
-
-  if (Array.isArray(val)) {
-    return SqlString.arrayToList(val, timeZone);
-  }
-
-  if (val instanceof Raw) {
-    return val;
-  }
-
-  if (typeof val === 'object') {
-    try {
-      val = JSON.stringify(val)
-    } catch (e) {
-      helpers.warn(e)
-      val = val + ''
+export function arrayToList(array, finalEscape, ctx) {
+  var sql = '';
+  for (var i = 0; i < array.length; i++) {
+    var val = array[i];
+    if (Array.isArray(val)) {
+      sql += (i === 0 ? '' : ', ') + '(' + arrayToList(val, finalEscape, ctx) + ')';
+    } else {
+      sql += (i === 0 ? '' : ', ') + finalEscape(val, ctx);
     }
   }
+  return sql;
+}
 
-  val = val.replace(/(\\\?)|[\0\n\r\b\t\\\'\x1a]/g, function(s) {
-    switch(s) {
-      case "\0": return "\\0";
-      case "\n": return "\\n";
-      case "\r": return "\\r";
-      case "\b": return "\\b";
-      case "\t": return "\\t";
-      case "\x1a": return "\\Z";
-      case "\\?": return "?";
-      case "\'": return "''";
-      default: return "\\"+s;
-    }
-  });
-  return "'"+val+"'";
-};
+export function bufferToString(buffer) {
+  return "X" + escapeString(buffer.toString('hex'));
+}
 
-SqlString.arrayToList = function(array, timeZone) {
-  var self = this;
-  return array.map(function(v) {
-    if (Array.isArray(v)) return '(' + SqlString.arrayToList(v, timeZone) + ')';
-    return self.escape(v, timeZone);
-  }).join(', ');
-};
+export function escapeString(val, finalEscape, ctx) {
+  var chunkIndex = charsRegex.lastIndex = 0;
+  var escapedVal = '';
+  var match;
 
-SqlString.format = function(sql, values, timeZone) {
-  var self = this;
-  values = values == null ? [] : [].concat(values);
-  var index = 0;
-  return sql.replace(/\\?\?/g, function(match) {
-    if (match === '\\?') return match;
-    if (index === values.length) {
-      return match;
-    }
-    var value = values[index++];
-    return self.escape(value, timeZone)
-  }).replace('\\?', '?');
-};
+  while ((match = charsRegex.exec(val))) {
+    escapedVal += val.slice(chunkIndex, match.index) + charsMap[match[0]];
+    chunkIndex = charsRegex.lastIndex;
+  }
 
-SqlString.dateToString = function(date, timeZone) {
+  if (chunkIndex === 0) {
+    // Nothing was escaped
+    return "'" + val + "'";
+  }
+
+  if (chunkIndex < val.length) {
+    return "'" + escapedVal + val.slice(chunkIndex) + "'";
+  }
+
+  return "'" + escapedVal + "'";
+}
+
+export function dateToString(date, finalEscape, ctx) {
+  const timeZone = ctx.timeZone || 'local'
+
   var dt = new Date(date);
+  var year;
+  var month;
+  var day;
+  var hour;
+  var minute;
+  var second;
+  var millisecond;
 
-  if (timeZone !== 'local') {
+  if (timeZone === 'local') {
+    year  = dt.getFullYear();
+    month  = dt.getMonth() + 1;
+    day  = dt.getDate();
+    hour  = dt.getHours();
+    minute  = dt.getMinutes();
+    second  = dt.getSeconds();
+    millisecond  = dt.getMilliseconds();
+  } else {
     var tz = convertTimezone(timeZone);
 
-    dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
-    if (tz !== false) {
+    if (tz !== false && tz !== 0) {
       dt.setTime(dt.getTime() + (tz * 60000));
     }
+
+    year = dt.getUTCFullYear();
+    month = dt.getUTCMonth() + 1;
+    day = dt.getUTCDate();
+    hour = dt.getUTCHours();
+    minute = dt.getUTCMinutes();
+    second = dt.getUTCSeconds();
+    millisecond = dt.getUTCMilliseconds();
   }
 
-  var year   = dt.getFullYear();
-  var month  = zeroPad(dt.getMonth() + 1, 2);
-  var day    = zeroPad(dt.getDate(), 2);
-  var hour   = zeroPad(dt.getHours(), 2);
-  var minute = zeroPad(dt.getMinutes(), 2);
-  var second = zeroPad(dt.getSeconds(), 2);
-  var millisecond = zeroPad(dt.getMilliseconds(), 3);
-
-  return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
-};
-
-SqlString.bufferToString = function bufferToString(buffer) {
-  return "X'" + buffer.toString('hex') + "'";
+  // YYYY-MM-DD HH:mm:ss.mmm
+  return zeroPad(year, 4) + '-' + zeroPad(month, 2) + '-' + zeroPad(day, 2) + ' ' +
+    zeroPad(hour, 2) + ':' + zeroPad(minute, 2) + ':' + zeroPad(second, 2) + '.' +
+    zeroPad(millisecond, 3);
 }
+
 
 function zeroPad(number, length) {
   number = number.toString();
   while (number.length < length) {
     number = '0' + number;
   }
-
   return number;
 }
 
 function convertTimezone(tz) {
-  if (tz === "Z") return 0;
-
-  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
+  if (tz === 'Z') {
+    return 0;
+  }
+  const m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
   if (m) {
-    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+    return (m[1] == '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
   }
   return false;
 }
