@@ -144,6 +144,11 @@ describe("SQLite SchemaBuilder", function() {
     equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), "order_id" varchar(255), foreign key("order_id") references "orders"("id"), primary key ("foo"))');
   });
 
+  /*
+  // SQLite3 doesn't support named foreign keys
+  */
+  // it("adding foreign key with specific identifier");
+
   it("adding foreign key fluently", function() {
     tableSql = client.schemaBuilder().createTable('users', function(table) {
       table.string('foo').primary();
