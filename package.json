@@ -60,10 +60,19 @@
     "tape": "^4.0.0",
     "through": "^2.3.4"
   },
+  "buildDependencies": [
+    "babel-cli",
+    "babel-plugin-add-module-exports",
+    "babel-plugin-lodash",
+    "babel-plugin-transform-runtime",
+    "babel-preset-es2015",
+    "babel-preset-es2015-loose",
+    "rimraf"
+  ],
   "scripts": {
     "build": "npm run babel",
     "debug_test": "node-debug _mocha -t 0 test/index.js",
-    "babel": "rm -rf ./lib && babel src --out-dir lib --copy-files",
+    "babel": "rimraf ./lib && babel src --out-dir lib --copy-files",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "dev": "rm -rf ./lib && babel -w src --out-dir lib --copy-files",
     "lint": "eslint src/**",
@@ -71,9 +80,10 @@
     "debug_mochatest": "node-debug _mocha --check-leaks -t 0 -b -R spec test/index.js",
     "plaintest": "npm run mochatest && npm run tape",
     "prepublish": "npm run babel",
+    "postinstall": "node ./scripts/build.js lib \"npm run build\"",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node-debug test/tape/index.js",
-    "test": "npm run lint && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -b -R spec test/index.js && npm run tape"
+    "test": "npm run lint && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 10000 -b -R spec test/index.js && npm run tape"
   },
   "bin": {
     "knex": "./bin/cli.js"
