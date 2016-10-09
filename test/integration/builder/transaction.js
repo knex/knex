@@ -308,7 +308,7 @@ module.exports = function(knex) {
     });
 
     it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', function() {
-      const db = Knex({
+      var db = Knex({
         client: knex.client.driverName,
         pool: {
           min: 0,
