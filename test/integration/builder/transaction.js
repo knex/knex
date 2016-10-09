@@ -287,25 +287,44 @@ module.exports = function(knex) {
       var knexDb = new Knex(knexConfig);
 
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
-     return knexDb.transaction(function(trx) {
-       trx.raw('SELECT 1 = 1').then(function () {
-         //No connection is available, so try issuing a query without transaction.
-         //Since there is no available connection, it should throw a timeout error based on `aquireConnectionTimeout` from the knex config.
-         return knexDb.raw('select * FROM accounts WHERE username = ?', ['Test'])
-       })
-       .then(function () {
-         //Should never reach this point
-         expect(false).to.be.ok();
-       }).catch(function (error) {
-         expect(error.bindings).to.be.an('array');
-         expect(error.bindings[0]).to.equal('Test');
-         expect(error.sql).to.equal('select * FROM accounts WHERE username = ?');
-         expect(error.message).to.equal('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?');
-         trx.commit();//Test done
-       });
+      return knexDb.transaction(function(trx) {
+        trx.raw('SELECT 1 = 1').then(function () {
+          //No connection is available, so try issuing a query without transaction.
+          //Since there is no available connection, it should throw a timeout error based on `aquireConnectionTimeout` from the knex config.
+          return knexDb.raw('select * FROM accounts WHERE username = ?', ['Test'])
+        })
+        .then(function () {
+          //Should never reach this point
+          expect(false).to.be.ok();
+        })
+        .catch(function (error) {
+          expect(error.bindings).to.be.an('array');
+          expect(error.bindings[0]).to.equal('Test');
+          expect(error.sql).to.equal('select * FROM accounts WHERE username = ?');
+          expect(error.message).to.equal('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?');
+          trx.commit();//Test done
+        });
       });
     });
 
-  });
+    it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', () => {
+      const db = Knex({
+        client: knex.client.driverName,
+        pool: {
+          min: 0,
+          max: 1
+        },
+        connection: knex.client.connectionSettings,
+        acquireConnectionTimeout: 300
+      })
+      return db.transaction(function() {
+        return db.transaction(function() {})
+      }).then(function () {
+        throw new Error('should not get here')
+      }).catch((error) => {
+        // Should get here after 300 ms.
+      })
+    })
 
+  });
 };
