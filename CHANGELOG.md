@@ -4,7 +4,7 @@
 
 # 0.12.3 - 9 Oct, 2016
 - Fix #1703, #1694 - connections should be returned to pool if acquireConnectionTimeout is triggered
-- 
+- Fix #1710 regression in postgres array escaping
 
 # 0.12.2 - 27 Sep, 2016
 - Restore pool min: 1 for sqlite3, #1701
