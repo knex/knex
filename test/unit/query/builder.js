@@ -3975,7 +3975,7 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it('#1710, properly escapes arrays in where clauses in postgresql', () => {
+  it('#1710, properly escapes arrays in where clauses in postgresql', function() {
     testquery(qb().select('*').from('sometable').where('array_field', '&&', [7]), {
       postgres: `select * from "sometable" where "array_field" && '{7}'`
     });
