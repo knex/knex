@@ -321,7 +321,7 @@ module.exports = function(knex) {
         return db.transaction(function() {})
       }).then(function () {
         throw new Error('should not get here')
-      }).catch(Promise.TimeoutError, (error) => {})
+      }).catch(Promise.TimeoutError, function(error) {})
     })
 
   });
