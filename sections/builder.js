@@ -944,8 +944,7 @@ export default [
   },
   {
     type: "method",
-    method: "
-    ",
+    method: "orderByRaw",
     example: ".orderByRaw(sql)",
     description: "Adds an order by raw clause to the query.",
     children: [
