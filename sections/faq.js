@@ -38,6 +38,6 @@ export default [
   },
   {
     type: "text",
-    content: "**Can I use Knex outside of Node.js**  \nYes. While the WebSQL spec is deprecated, there is still an adapter that provides support. Checkout the [browser builds](https://github.com/tgriesser/knex/tree/master/build) for more details."
+    content: "**Can I use Knex outside of Node.js**  \nYes. While the WebSQL spec is deprecated, there is still an adapter that provides support. You will need to use a build tool like browserify or webpack for a browser build."
   }
 ]
