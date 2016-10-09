@@ -52,7 +52,7 @@ assign(Client_PG.prototype, {
 
   _escapeBinding: makeEscape({
     escapeArray(val, esc) {
-      return '{' + val.map(esc).join(',') + '}'
+      return "'{" + val.map(esc).join(',') + "}'"
     },
     escapeString(str) {
       let hasBackslash = false

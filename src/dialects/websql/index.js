@@ -57,12 +57,12 @@ assign(Client_WebSQL.prototype, {
   // Runs the query on the specified connection,
   // providing the bindings and any other necessary prep work.
   _query(context, connection, obj) {
-    return new Promise(function(resolver, rejecter) {
+    return new Promise((resolver, rejecter) => {
       if (!connection) return rejecter(new Error('No connection provided.'));
-      connection.executeSql(obj.sql, obj.bindings, function(trx, response) {
+      connection.executeSql(obj.sql, obj.bindings, (trx, response) => {
         obj.response = response;
         return resolver(obj);
-      }, function(trx, err) {
+      }, (trx, err) => {
         rejecter(err);
       });
     });
