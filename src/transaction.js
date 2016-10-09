@@ -6,7 +6,6 @@ import { EventEmitter } from 'events';
 import Debug from 'debug'
 
 import makeKnex from './util/make-knex';
-import noop from './util/noop';
 
 const debug = Debug('knex:tx');
 
