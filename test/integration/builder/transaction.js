@@ -307,7 +307,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', () => {
+    it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', function() {
       const db = Knex({
         client: knex.client.driverName,
         pool: {
@@ -321,9 +321,7 @@ module.exports = function(knex) {
         return db.transaction(function() {})
       }).then(function () {
         throw new Error('should not get here')
-      }).catch((error) => {
-        // Should get here after 300 ms.
-      })
+      }).catch(Promise.TimeoutError, (error) => {})
     })
 
   });
