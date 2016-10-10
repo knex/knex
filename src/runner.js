@@ -123,7 +123,7 @@ export default class Runner {
         return processedResponse;
       })
       .catch(error => {
-        if (!(error instanceof Promise.TimeoutError)) {
+        if (error.message !== 'operation timed out') {
           throw error
         }
         const { timeout, sql, bindings } = obj;
@@ -136,20 +136,21 @@ export default class Runner {
           cancelQuery = Promise.resolve()
         }
 
-        return cancelQuery.catch((cancelError) => {
-          // cancellation failed
-          throw assign(cancelError, {
-            message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,
-            sql, bindings, timeout
+        return cancelQuery
+          .catch((cancelError) => {
+            // cancellation failed
+            throw assign(cancelError, {
+              message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,
+              sql, bindings, timeout
+            })
           })
-        })
-        .then(() => {
-          // cancellation succeeded, rethrow timeout error
-          throw assign(error, {
-            message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
-            sql, bindings, timeout
+          .then(() => {
+            // cancellation succeeded, rethrow timeout error
+            throw assign(error, {
+              message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
+              sql, bindings, timeout
+            })
           })
-        })
       })
       .catch((error) => {
         builder.emit('query-error', error, assign({__knexUid: 'something'}, obj))

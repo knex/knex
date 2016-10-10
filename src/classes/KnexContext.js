@@ -228,7 +228,6 @@ export default class KnexContext extends EventEmitter {
       const sql = this.isInTransaction()
         ? knexTrx.client.format(knexTrx.client.transaction.savepoint, transactionId)
         : knexTrx.client.transaction.begin
-
       await knexTrx.client.query(knexTrx, sql)
     })
 

@@ -166,11 +166,9 @@ assign(Client.prototype, {
 
     let connection
     try {
-      connection = await (
-        context.isRootContext()
-          ? context.client.acquireConnection()
-          : context.getConnection()
-      )
+      connection = context.isRootContext()
+        ? await this.acquireConnection()
+        : await context.getConnection()
 
       obj.bindings = this.prepBindings(obj.bindings)
 
@@ -213,11 +211,10 @@ assign(Client.prototype, {
 
     let connection
     try {
-      connection = await (
-        context.isRootContext()
-          ? context.client.acquireConnection()
-          : context.getConnection()
-      )
+      connection = context.isRootContext()
+        ? await this.acquireConnection()
+        : await context.getConnection()
+
 
       this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
       context.emit('query', assign({__knexUid: connection.__knexUid}, obj))
@@ -325,7 +322,7 @@ assign(Client.prototype, {
       }, timeout)
       this.pool.acquire((err, connection) => {
         clearTimeout(t)
-        if (err) {
+        if (err && !rejected) {
           return rejecter(err)
         }
         if (rejected) {

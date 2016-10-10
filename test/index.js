@@ -28,7 +28,6 @@ describe('Query Building Tests', function() {
   require('./unit/schema/oracledb')
 })
 
-
 describe('Integration Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
   require('./integration')
