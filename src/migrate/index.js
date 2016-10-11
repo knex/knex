@@ -93,7 +93,10 @@ export default class Migrator {
   // Creates a new migration, with a given name.
   make(name, config) {
     this.config = this.setConfig(config);
-    if (!name) Promise.rejected(new Error('A name must be specified for the generated migration'));
+    if (!name) {
+      return Promise.reject(new Error('A name must be specified for the generated migration'));
+    }
+
     return this._ensureFolder(config)
       .then((val) => this._generateStubTemplate(val))
       .then((val) => this._writeNewMigration(name, val));

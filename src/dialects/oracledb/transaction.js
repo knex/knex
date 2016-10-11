@@ -34,7 +34,7 @@ export default class Oracle_Transaction extends Transaction {
   acquireConnection(config) {
     const t = this;
     return Promise.try(function() {
-      return t.client.acquireConnection().completed.then(function(cnx) {
+      return t.client.acquireConnection().then(function(cnx) {
         cnx.isTransaction = true;
         return cnx;
       });

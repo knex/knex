@@ -218,26 +218,31 @@ assign(Client.prototype, {
 
   // Acquire a connection from the pool.
   acquireConnection() {
-    let request = null
-    const completed = new Promise((resolver, rejecter) => {
+    return new Promise((resolver, rejecter) => {
       if (!this.pool) {
         return rejecter(new Error('Unable to acquire a connection'))
       }
-      request = this.pool.acquire(function(err, connection) {
-        if (err) return rejecter(err)
-        debug('acquired connection from pool: %s', connection.__knexUid)
-        resolver(connection)
+      let wasRejected = false
+      const t = setTimeout(() => {
+        wasRejected = true
+        rejecter(new Promise.TimeoutError(
+          'Knex: Timeout acquiring a connection. The pool is probably full. ' +
+          'Are you missing a .transacting(trx) call?'
+        ))
+      }, this.config.acquireConnectionTimeout || 60000)
+      this.pool.acquire((err, connection) => {
+        if (err) {
+          return rejecter(err)
+        }
+        clearTimeout(t)
+        if (wasRejected) {
+          this.pool.release(connection)
+        } else {
+          debug('acquired connection from pool: %s', connection.__knexUid)
+          resolver(connection)
+        }
       })
     })
-    const abort = function(reason) {
-      if (request && !request.fulfilled) {
-        request.abort(reason)
-      }
-    }
-    return {
-      completed: completed,
-      abort: abort
-    }
   },
 
   // Releases a connection back to the connection pool,
