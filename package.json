@@ -120,7 +120,8 @@
     "lib/*",
     "knex.js",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "scripts/*"
   ],
   "license": "MIT"
 }
