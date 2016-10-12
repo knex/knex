@@ -2,6 +2,9 @@
 # Master (Unreleased)
 - Add more having* methods / join clause on* methods  #1674
 
+# 0.12.4 - 12 Oct, 2016
+- Fix #1733, #920, incorrect postgres array bindings
+
 # 0.12.3 - 9 Oct, 2016
 - Fix #1703, #1694 - connections should be returned to pool if acquireConnectionTimeout is triggered
 - Fix #1710 regression in postgres array escaping
