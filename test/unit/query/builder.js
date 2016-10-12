@@ -3979,6 +3979,12 @@ describe("QueryBuilder", function() {
     testquery(qb().select('*').from('sometable').where('array_field', '&&', [7]), {
       postgres: "select * from \"sometable\" where \"array_field\" && '{7}'"
     });
+    testquery(qb().select('*').from('sometable').where('array_field', '&&', ['abc', 'def']), {
+      postgres: "select * from \"sometable\" where \"array_field\" && '{\"abc\",\"def\"}'"
+    });
+    testquery(qb().select('*').from('sometable').where('array_field', '&&', ['abc', 'def', ['g', 2]]), {
+      postgres: "select * from \"sometable\" where \"array_field\" && '{\"abc\",\"def\",{\"g\",2}}'"
+    });
   })
 
 });
