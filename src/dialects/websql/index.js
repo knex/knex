@@ -28,12 +28,11 @@ assign(Client_WebSQL.prototype, {
 
   // Get a raw connection from the database, returning a promise with the connection object.
   acquireConnection() {
-    const client = this;
-    const completed = new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       try {
         /*jslint browser: true*/
         const db = openDatabase(
-          client.name, client.version, client.displayName, client.estimatedSize
+          this.name, this.version, this.displayName, this.estimatedSize
         );
         db.transaction(function(t) {
           t.__knexUid = uniqueId('__knexUid');
@@ -43,13 +42,6 @@ assign(Client_WebSQL.prototype, {
         reject(e);
       }
     });
-    const abort = function(reason) {
-      // Do nothing, websql has no pool
-    }
-    return {
-      completed: completed,
-      abort: abort
-    };
   },
 
   // Used to explicitly close a connection, called internally by the pool
@@ -61,12 +53,12 @@ assign(Client_WebSQL.prototype, {
   // Runs the query on the specified connection,
   // providing the bindings and any other necessary prep work.
   _query(connection, obj) {
-    return new Promise(function(resolver, rejecter) {
+    return new Promise((resolver, rejecter) => {
       if (!connection) return rejecter(new Error('No connection provided.'));
-      connection.executeSql(obj.sql, obj.bindings, function(trx, response) {
+      connection.executeSql(obj.sql, obj.bindings, (trx, response) => {
         obj.response = response;
         return resolver(obj);
-      }, function(trx, err) {
+      }, (trx, err) => {
         rejecter(err);
       });
     });

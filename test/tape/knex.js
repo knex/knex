@@ -43,7 +43,7 @@ test('it should allow to use proprietary dialect', function(t) {
   knexObj.destroy()
 })
 
-test('it should use knex suppoted dialect', function(t) {
+test('it should use knex supported dialect', function(t) {
   t.plan(1)
   var knexObj = knex({
     client: 'postgres',

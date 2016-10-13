@@ -6,7 +6,6 @@ import { EventEmitter } from 'events';
 import Debug from 'debug'
 
 import makeKnex from './util/make-knex';
-import noop from './util/noop';
 
 const debug = Debug('knex:tx');
 
@@ -141,7 +140,7 @@ export default class Transaction extends EventEmitter {
   // the original promise is marked completed.
   acquireConnection(client, config, txid) {
     const configConnection = config && config.connection
-    return Promise.try(() => configConnection || client.acquireConnection().completed)
+    return Promise.try(() => configConnection || client.acquireConnection())
     .disposer(function(connection) {
       if (!configConnection) {
         debug('%s: releasing connection', txid)
@@ -225,11 +224,8 @@ function makeTxClient(trx, client, connection) {
       return _stream.call(trxClient, conn, obj, stream, options)
     })
   }
-  trxClient.acquireConnection = function () {
-    return {
-      completed: trx._previousSibling.reflect().then(() => connection),
-      abort: noop
-    }
+  trxClient.acquireConnection = function() {
+    return Promise.resolve(connection)
   }
   trxClient.releaseConnection = function() {
     return Promise.resolve()
