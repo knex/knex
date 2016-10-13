@@ -45,13 +45,12 @@ Client_Oracledb.prototype.transaction = function() {
 }
 
 Client_Oracledb.prototype.prepBindings = function(bindings) {
-  const self = this;
-  return _.map(bindings, function(value) {
-    if (value instanceof BlobHelper && self.driver) {
-      return {type: self.driver.BLOB, dir: self.driver.BIND_OUT};
+  return _.map(bindings, (value) => {
+    if (value instanceof BlobHelper && this.driver) {
+      return {type: this.driver.BLOB, dir: this.driver.BIND_OUT};
       // Returning helper always use ROWID as string
-    } else if (value instanceof ReturningHelper && self.driver) {
-      return {type: self.driver.STRING, dir: self.driver.BIND_OUT};
+    } else if (value instanceof ReturningHelper && this.driver) {
+      return {type: this.driver.STRING, dir: this.driver.BIND_OUT};
     } else if (typeof value === 'boolean') {
       return value ? 1 : 0;
     }
@@ -64,25 +63,30 @@ Client_Oracledb.prototype.prepBindings = function(bindings) {
 Client_Oracledb.prototype.acquireRawConnection = function() {
   const client = this;
   const asyncConnection = new Promise(function(resolver, rejecter) {
-    client.driver.getConnection({
+
+    const oracleDbConfig = {
       user: client.connectionSettings.user,
       password: client.connectionSettings.password,
       connectString: client.connectionSettings.connectString ||
         (client.connectionSettings.host + '/' + client.connectionSettings.database)
-    }, function(err, connection) {
-      if (err)
-        return rejecter(err);
-      if (client.connectionSettings.prefetchRowCount) {
-        connection.setPrefetchRowCount(client.connectionSettings.prefetchRowCount);
-      }
+    }
+    if (client.connectionSettings.prefetchRowCount) {
+      oracleDbConfig.prefetchRows = client.connectionSettings.prefetchRowCount
+    }
+    if (!_.isUndefined(client.connectionSettings.stmtCacheSize)) {
+      oracleDbConfig.stmtCacheSize = client.connectionSettings.stmtCacheSize;
+    }
 
+    client.driver.getConnection(oracleDbConfig, function(err, connection) {
+      if (err) {
+        return rejecter(err);
+      }
       connection.commitAsync = function() {
-        const self = this;
-        return new Promise(function(commitResolve, commitReject) {
+        return new Promise((commitResolve, commitReject) => {
           if (connection.isTransaction) {
             return commitResolve();
           }
-          self.commit(function(err) {
+          this.commit(function(err) {
             if (err) {
               return commitReject(err);
             }
@@ -91,9 +95,8 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
         });
       };
       connection.rollbackAsync = function() {
-        const self = this;
-        return new Promise(function(rollbackResolve, rollbackReject) {
-          self.rollback(function(err) {
+        return new Promise((rollbackResolve, rollbackReject) => {
+          this.rollback(function(err) {
             if (err) {
               return rollbackReject(err);
             }
@@ -331,14 +334,15 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
     case 'pluck':
     case 'first':
       response = helpers.skim(response);
-      if (obj.method === 'pluck')
-        response = _.pluck(response, obj.pluck);
+      if (obj.method === 'pluck') {
+        response = _.map(response, obj.pluck);
+      }
       return obj.method === 'first' ? response[0] : response;
     case 'insert':
     case 'del':
     case 'update':
     case 'counter':
-      if (obj.returning) {
+      if (obj.returning && !_.isEmpty(obj.returning)) {
         if (obj.returning.length === 1 && obj.returning[0] !== '*') {
           return _.flatten(_.map(response, _.values));
         }
