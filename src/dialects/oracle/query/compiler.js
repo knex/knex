@@ -146,13 +146,22 @@ assign(QueryCompiler_Oracle.prototype, {
   // Compiles a `columnInfo` query.
   columnInfo() {
     const column = this.single.columnInfo;
+    // Node oracle drivers doesn't support LONG type (which is data_default type)
+    const sql = `select * from xmltable( '/ROWSET/ROW'
+      passing dbms_xmlgen.getXMLType('
+      select char_col_decl_length, column_name, data_type, data_default, nullable
+      from user_tab_columns where table_name = ''${this.single.table}'' ')
+      columns
+      CHAR_COL_DECL_LENGTH number, COLUMN_NAME varchar2(200), DATA_TYPE varchar2(106),
+      DATA_DEFAULT clob, NULLABLE varchar2(1))`;
+
     return {
-      sql: 'select COLUMN_NAME, DATA_TYPE, CHAR_COL_DECL_LENGTH, NULLABLE from USER_TAB_COLS where TABLE_NAME = :1',
-      bindings: [this.single.table],
+      sql: sql,
       output(resp) {
         const out = reduce(resp, function(columns, val) {
           columns[val.COLUMN_NAME] = {
             type: val.DATA_TYPE,
+            defaultValue: val.DATA_DEFAULT,
             maxLength: val.CHAR_COL_DECL_LENGTH,
             nullable: (val.NULLABLE === 'Y')
           };

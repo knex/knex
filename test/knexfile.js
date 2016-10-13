@@ -92,6 +92,19 @@ var testConfigs = {
     migrations: migrations
   },
 
+  oracledb: {
+    client: 'oracledb',
+    connection: testConfig.oracle || {
+      adapter:  "oracle",
+      database: "knex_test",
+      user:     "oracle",
+      // https://github.com/oracle/node-oracledb/issues/525
+      stmtCacheSize : 0
+    },
+    pool: pool,
+    migrations: migrations
+  },
+
   postgres: {
     dialect: 'postgres',
     connection: testConfig.postgres || {

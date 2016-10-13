@@ -189,7 +189,8 @@ module.exports = function(knex) {
           return knex('test_schema_migrations').count('*');
         })
         .catch(function(e) {
-          expect(e.message).to.equal('select count(*) from \"test_schema_migrations\" - relation "test_schema_migrations" does not exist');
+          // https://www.postgresql.org/docs/8.2/static/errcodes-appendix.html
+          expect(e.code).to.equal('42P01');
         });
       } else {
         var id = null;
@@ -225,6 +226,8 @@ module.exports = function(knex) {
         }).then(function() {
           if (knex.client.dialect === 'mssql') {
             expect(count).to.equal(3);
+          } else if (knex.client.dialect === 'oracle') {
+            expect(count).to.equal(4);
           } else {
             expect(count).to.equal(5);
           }
@@ -288,7 +291,11 @@ module.exports = function(knex) {
 
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
      return knexDb.transaction(function(trx) {
-       trx.raw('SELECT 1 = 1').then(function () {
+       let sql = 'SELECT 1 = 1';
+       if (knex.client.dialect === 'oracle') {
+         sql = 'SELECT 1 FROM DUAL';
+       }
+       trx.raw(sql).then(function () {
          //No connection is available, so try issuing a query without transaction.
          //Since there is no available connection, it should throw a timeout error based on `aquireConnectionTimeout` from the knex config.
          return knexDb.raw('select * FROM accounts WHERE username = ?', ['Test'])
