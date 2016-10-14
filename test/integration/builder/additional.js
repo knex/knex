@@ -287,13 +287,13 @@ module.exports = function(knex) {
 
       var query = testQueries[dialect]();
 
-      return query.timeout(1)
+      return query.timeout(200)
         .then(function() {
           expect(true).to.equal(false);
         })
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
-            timeout: 1,
+            timeout: 200,
             name:    'TimeoutError',
             message: 'Defined query timeout of 1ms exceeded when running query.'
           });
@@ -338,7 +338,7 @@ module.exports = function(knex) {
       var query = testQueries[dialect]();
 
       function addTimeout() {
-        return query.timeout(1, {cancel: true});
+        return query.timeout(200, {cancel: true});
       }
 
       // Only mysql/mariadb query cancelling supported for now
@@ -353,7 +353,7 @@ module.exports = function(knex) {
         })
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
-            timeout: 1,
+            timeout: 200,
             name:    'TimeoutError',
             message: 'Defined query timeout of 1ms exceeded when running query.'
           });
