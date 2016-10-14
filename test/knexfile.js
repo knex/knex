@@ -5,7 +5,7 @@ var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
 var _          = require('lodash');
 var Promise    = require('bluebird');
 
-// excluding oracle and maria dialects from default integrations test
+// excluding oracle and mssql dialects from default integrations test
 var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres sqlite3").match(/\w+/g);
 
 var pool = {
@@ -94,10 +94,10 @@ var testConfigs = {
 
   oracledb: {
     client: 'oracledb',
-    connection: testConfig.oracle || {
-      adapter:  "oracle",
-      database: "knex_test",
-      user:     "oracle",
+    connection: testConfig.oracledb || {
+      user          : "travis",
+      password      : "travis",
+      connectString : "localhost/XE",
       // https://github.com/oracle/node-oracledb/issues/525
       stmtCacheSize : 0
     },
