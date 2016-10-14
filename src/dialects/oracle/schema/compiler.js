@@ -4,6 +4,7 @@
 import inherits from 'inherits';
 import SchemaCompiler from '../../../schema/compiler';
 import * as utils from '../utils';
+import Trigger from './trigger';
 
 function SchemaCompiler_Oracle() {
   SchemaCompiler.apply(this, arguments);
@@ -12,7 +13,8 @@ inherits(SchemaCompiler_Oracle, SchemaCompiler);
 
 // Rename a table on the schema.
 SchemaCompiler_Oracle.prototype.renameTable = function(tableName, to) {
-  this.pushQuery(`rename ${this.formatter.wrap(tableName)} to ${this.formatter.wrap(to)}`);
+  const renameTable = Trigger.renameTableAndAutoIncrementTrigger(tableName, to);
+  this.pushQuery(renameTable);
 };
 
 // Check whether a table exists on the query.
