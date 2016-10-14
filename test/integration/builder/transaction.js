@@ -292,7 +292,7 @@ module.exports = function(knex) {
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
 
       return knexDb.transaction(function(trx) {
-        let sql = 'SELECT 1 = 1';
+        var sql = 'SELECT 1 = 1';
         if (knex.client.dialect === 'oracle') {
           sql = 'SELECT 1 FROM DUAL';
         }
