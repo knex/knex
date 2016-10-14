@@ -295,7 +295,7 @@ module.exports = function(knex) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 200,
             name:    'TimeoutError',
-            message: 'Defined query timeout of 1ms exceeded when running query.'
+            message: 'Defined query timeout of 200ms exceeded when running query.'
           });
         })
     });
@@ -355,7 +355,7 @@ module.exports = function(knex) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 200,
             name:    'TimeoutError',
-            message: 'Defined query timeout of 1ms exceeded when running query.'
+            message: 'Defined query timeout of 200ms exceeded when running query.'
           });
 
           // Ensure sleep command is removed.
