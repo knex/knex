@@ -225,7 +225,7 @@ module.exports = function(knex) {
     });
 
     it('should allow dropping a column', function() {
-      var countColumn
+      var countColumn;
       switch (knex.client.dialect) {
         case 'oracle': countColumn = 'COUNT(*)'; break;
         case 'mssql': countColumn = ''; break;
@@ -242,6 +242,7 @@ module.exports = function(knex) {
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
           tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
           tester('oracle', ['alter table "accounts" drop ("first_name")']);
+          //tester('oracledb', ['alter table "accounts" drop ("first_name")']);
           tester('mssql', ["ALTER TABLE [accounts] DROP COLUMN [first_name]"]);
         });
       }).then(function() {
@@ -257,10 +258,10 @@ module.exports = function(knex) {
 
 
     it('.timeout() should throw TimeoutError', function() {
-      var dialect = knex.client.config.dialect;
+      var dialect = knex.client.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
       var testQueries = {
-        'postgres': function() {
+        'postgresql': function() {
           return knex.raw('SELECT pg_sleep(1)');
         },
         'mysql': function() {
@@ -269,17 +270,14 @@ module.exports = function(knex) {
         'mysql2': function() {
           return knex.raw('SELECT SLEEP(1)');
         },
-        maria: function() {
+        mariadb: function() {
           return knex.raw('SELECT SLEEP(1)');
         },
         mssql: function() {
           return knex.raw('WAITFOR DELAY \'00:00:01\'');
         },
         oracle: function() {
-          return knex.raw('dbms_lock.sleep(1)');
-        },
-        'strong-oracle': function() {
-          return knex.raw('dbms_lock.sleep(1)');
+          return knex.raw('begin dbms_lock.sleep(1); end;');
         }
       };
 
@@ -289,22 +287,22 @@ module.exports = function(knex) {
 
       var query = testQueries[dialect]();
 
-      return query.timeout(1)
+      return query.timeout(200)
         .then(function() {
           expect(true).to.equal(false);
         })
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
-            timeout: 1,
+            timeout: 200,
             name:    'TimeoutError',
-            message: 'Defined query timeout of 1ms exceeded when running query.'
+            message: 'Defined query timeout of 200ms exceeded when running query.'
           });
         })
     });
 
 
     it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
-      var dialect = knex.client.config.dialect;
+      var dialect = knex.client.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
 
       // There's unexpected behavior caused by knex releasing a connection back
@@ -313,7 +311,7 @@ module.exports = function(knex) {
       // until the first query finishes. Setting a sleep time longer than the
       // mocha timeout exposes this behavior.
       var testQueries = {
-        'postgres': function() {
+        'postgresql': function() {
           return knex.raw('SELECT pg_sleep(10)');
         },
         'mysql': function() {
@@ -322,17 +320,14 @@ module.exports = function(knex) {
         'mysql2': function() {
           return knex.raw('SELECT SLEEP(10)');
         },
-        maria: function() {
+        mariadb: function() {
           return knex.raw('SELECT SLEEP(10)');
         },
         mssql: function() {
           return knex.raw('WAITFOR DELAY \'00:00:10\'');
         },
         oracle: function() {
-          return knex.raw('dbms_lock.sleep(10)');
-        },
-        'strong-oracle': function() {
-          return knex.raw('dbms_lock.sleep(10)');
+          return knex.raw('begin dbms_lock.sleep(10); end;');
         }
       };
 
@@ -343,7 +338,7 @@ module.exports = function(knex) {
       var query = testQueries[dialect]();
 
       function addTimeout() {
-        return query.timeout(1, {cancel: true});
+        return query.timeout(200, {cancel: true});
       }
 
       // Only mysql/mariadb query cancelling supported for now
@@ -358,9 +353,9 @@ module.exports = function(knex) {
         })
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
-            timeout: 1,
+            timeout: 200,
             name:    'TimeoutError',
-            message: 'Defined query timeout of 1ms exceeded when running query.'
+            message: 'Defined query timeout of 200ms exceeded when running query.'
           });
 
           // Ensure sleep command is removed.
