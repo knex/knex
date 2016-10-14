@@ -277,7 +277,7 @@ module.exports = function(knex) {
           return knex.raw('WAITFOR DELAY \'00:00:01\'');
         },
         oracle: function() {
-          return knex.raw('dbms_lock.sleep(1)');
+          return knex.raw('begin dbms_lock.sleep(1); end;');
         }
       };
 
@@ -327,7 +327,7 @@ module.exports = function(knex) {
           return knex.raw('WAITFOR DELAY \'00:00:10\'');
         },
         oracle: function() {
-          return knex.raw('dbms_lock.sleep(10)');
+          return knex.raw('begin dbms_lock.sleep(10); end;');
         }
       };
 
