@@ -214,6 +214,9 @@ _.assign(Oracledb_Compiler.prototype, {
           }
           outBinding[index].push(values[key]);
         }
+        if(_.isUndefined(value)) {
+          delete params[index][key];
+        }
       });
     });
     result.returning = returning;

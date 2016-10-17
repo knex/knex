@@ -1,9 +1,9 @@
 
 import { assign, uniq, map } from 'lodash'
 import inherits from 'inherits';
-import * as utils from '../utils';
 import Raw from '../../../raw';
 import ColumnCompiler from '../../../schema/columncompiler';
+import Trigger from './trigger';
 
 // Column Compiler
 // -------
@@ -20,30 +20,8 @@ assign(ColumnCompiler_Oracle.prototype, {
   _createAutoIncrementTriggerAndSequence () {
     // TODO Add warning that sequence etc is created
     this.pushAdditional(function () {
-      const sequenceName = this.tableCompiler._indexCommand(
-        'seq', this.tableCompiler.tableNameRaw
-      );
-      const triggerName = this.tableCompiler._indexCommand(
-        'trg', this.tableCompiler.tableNameRaw, this.getColumnName()
-      );
-      const tableName = this.tableCompiler.tableName();
-      const columnName = this.formatter.wrap(this.getColumnName());
-      const createTriggerSQL =
-        `create or replace trigger ${triggerName} before insert on ${tableName}` +
-        ` for each row` +
-        ` declare` +
-        ` checking number := 1;` +
-        ` begin` +
-        ` if (:new.${columnName} is null) then` +
-        ` while checking >= 1` +
-        ` loop` +
-        ` select ${sequenceName}.nextval into :new.${columnName} from dual;` +
-        ` select count(${columnName}) into checking from ${tableName}` +
-        ` where ${columnName} = :new.${columnName};` +
-        ` end loop;` +
-        ` end if;` +
-        ` end;`;
-      this.pushQuery(utils.wrapSqlWithCatch(`create sequence ${sequenceName}`, -955));
+      const tableName = this.tableCompiler.tableNameRaw;
+      const createTriggerSQL = Trigger.createAutoIncrementTrigger(tableName);
       this.pushQuery(createTriggerSQL);
     });
   },
