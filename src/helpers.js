@@ -39,12 +39,12 @@ export function containsUndefined(mixed) {
   if (isArray(mixed)) {
     for (let i = 0; i < mixed.length; i++) {
       if (argContainsUndefined) break;
-      argContainsUndefined = this.containsUndefined(mixed[i]);
+      argContainsUndefined = containsUndefined(mixed[i]);
     }
   } else if (isObject(mixed)) {
     for (const key in mixed) {
       if(argContainsUndefined) break;
-      argContainsUndefined = this.containsUndefined(mixed[key]);
+      argContainsUndefined = containsUndefined(mixed[key]);
     }
   } else {
     argContainsUndefined = isUndefined(mixed);
