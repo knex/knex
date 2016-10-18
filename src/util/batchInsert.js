@@ -1,11 +1,9 @@
-
 import { chunk, flatten } from 'lodash';
 import Promise from 'bluebird';
 
 export default class BatchInsert {
 
-  constructor(client, tableName, batch, chunkSize = 1000) {
-
+  constructor(context, tableName, batch, chunkSize = 1000) {
     if (typeof chunkSize !== 'number' || chunkSize < 1) {
       throw new TypeError(`Invalid chunkSize: ${chunkSize}`);
     }
@@ -13,16 +11,34 @@ export default class BatchInsert {
       throw new TypeError(`Invalid batch: Expected array, got ${typeof batch}`)
     }
 
-    this.client = client;
-    this.tableName = tableName;
-    this.batch = chunk(batch, chunkSize);
-    this._returning = void 0;
-    this._transaction = null;
-    this._autoTransaction = true;
+    this.__context = context;
+    this.__tableName = tableName;
+    this.__batch = chunk(batch, chunkSize);
+    this.__returning = null;
+    this.__promise = null
 
-    if (client.transacting) {
-      this.transacting(client);
+    this.__deferredPromise = setTimeout(() => {
+      this.then()
+    }, 0)
+  }
+
+  get log() {
+    return this.__context.log
+  }
+
+  transacting(t) {
+    if (t && t.client) {
+      if (!t.isTransaction()) {
+        this.log.warn(`Invalid transaction value: ${t.client}`)
+      } else {
+        this.__context = t
+      }
     }
+    this.log.warn(
+      'BatchInsert.transacting is deprecated, ' +
+      'instead use trx.batchInsert on the transaction object.'
+    )
+    return this;
   }
 
   /**
@@ -30,53 +46,61 @@ export default class BatchInsert {
    * @param returning
    */
   returning(returning) {
+    if (this.__promise) {
+      throw new Error('Cannot call BatchInsert.returning after query has started')
+    }
     if (Array.isArray(returning) || typeof returning === 'string') {
-      this._returning = returning;
+      this.__returning = returning;
     }
     return this;
   }
 
-  /**
-   * User may supply their own transaction. If this is the case,
-   * `autoTransaction = false`, meaning we don't automatically commit/rollback
-   * the transaction. The responsibility instead falls on the user.
-   *
-   * @param transaction
-   */
-  transacting(transaction) {
-    this._transaction = transaction;
-    this._autoTransaction = false;
-    return this;
+  then() {
+    clearTimeout(this.__deferredPromise)
+    if (!this.__promise) {
+      this.__promise = this.__runBatchedQuery()
+    }
+    return this.__promise.then(...arguments)
   }
 
-  _getTransaction() {
-    return new Promise((resolve) => {
-      if(this._transaction) {
-        return resolve(this._transaction);
-      }
-      this.client.transaction((tr) => resolve(tr));
-    });
+  toString() {
+    clearTimeout(this.__deferredPromise)
+    return this.__batch.map(items => this.__makeChain(items).toString()).join(';\n')
   }
 
-  then(callback = function() {}) {
-    return this._getTransaction()
-      .then((transaction) => {
-        return Promise.all(this.batch.map((items) => {
-          return transaction(this.tableName)
-            .insert(items, this._returning);
-        }))
-          .then((result) => {
-            if(this._autoTransaction) {
-              transaction.commit();
-            }
-            return callback(flatten(result || []));
-          })
-          .catch((error) => {
-            if(this._autoTransaction) {
-              transaction.rollback(error);
-            }
-            throw error;
-          });
-      });
+  toSQL() {
+    clearTimeout(this.__deferredPromise)
+    return this.__batch.map(items => this.__makeChain(items).toSQL())
   }
+
+  __runBatchedQuery() {
+    const isInTransaction = this.__context.isInTransaction()
+    if (!isInTransaction) {
+      this.__context = this.__context.transaction()
+    }
+    const batched = this.__batch.map(items => this.__makeChain(items))
+    return Promise
+      .all(batched)
+      .then(async (result) => {
+        if (!isInTransaction) {
+          await this.__context.commit()
+        }
+        return flatten(result || [])
+      })
+      .catch(async (e) => {
+        if (!isInTransaction) {
+          await this.__context.rollback()
+        }
+        throw e
+      })
+  }
+
+  __makeChain(items) {
+    const chain = this.__context.insert(items).into(this.__tableName)
+    if (this.__returning) {
+      chain.returning(this.__returning)
+    }
+    return chain
+  }
+
 }
