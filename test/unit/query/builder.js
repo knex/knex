@@ -3970,4 +3970,28 @@ describe("QueryBuilder", function() {
     });
   })
 
+  it('is possible to create partial chains with asPartial', () => {
+    const base = qb().table('accounts').where('id', 1).asPartial()
+
+    expect(base.select('*').toString()).toEqual('select * from "accounts" where "id" = 1')
+
+    expect(base.update({a: 1}).toString()).toEqual('update "accounts" set "a" = 1 where "id" = 1')
+  })
+
+  it('does not permit calling .then on asPartial', () => {
+    return qb().table('accounts').where('id', 1).asPartial().then(() => {
+      throw new Error('Should not get here.')
+    }).catch(e => {
+      expect(e.message).toEqual('Cannot coerce a partial directly to a promise.')
+    })
+  })
+
+  it.skip('is not permitted to mutate the chain after .asPartial is called', () => {
+    expect(() => {
+      const chain = qb().table('accounts').where('id', 1)
+      const base = chain.asPartial()
+      chain.orWhere('id', 3)
+    }).toThrow('')
+  })
+
 });

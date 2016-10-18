@@ -1,21 +1,19 @@
 /* eslint no-console:0 */
 
-import { map, pick, keys, isFunction, isUndefined, isObject, isArray, isTypedArray } from 'lodash'
+import {
+  map, pick, keys, isFunction, isUndefined,
+  isObject, isTypedArray
+} from 'lodash'
 
 // Pick off the attributes from only the current layer of the object.
 export function skim(data) {
   return map(data, (obj) => pick(obj, keys(obj)));
 }
 
-// Check if the first argument is an array, otherwise uses all arguments as an
-// array.
-export function normalizeArr() {
-  const args = new Array(arguments.length);
-  for (let i = 0; i < args.length; i++) {
-    args[i] = arguments[i];
-  }
+// Check if the first argument is an array, otherwise uses all arguments as an array.
+export function normalizeArr(...args) {
   if (Array.isArray(args[0])) {
-    return args[0];
+    return args[0]
   }
   return args;
 }
@@ -28,15 +26,16 @@ export function deprecate(method, alternate) {
 export function containsUndefined(mixed) {
   let argContainsUndefined = false;
 
-  if (isTypedArray(mixed))
+  if (isTypedArray(mixed)) {
     return false;
+  }
 
   if (mixed && isFunction(mixed.toSQL)) {
     // Any QueryBuilder or Raw will automatically be validated during compile.
     return argContainsUndefined;
   }
 
-  if (isArray(mixed)) {
+  if (Array.isArray(mixed)) {
     for (let i = 0; i < mixed.length; i++) {
       if (argContainsUndefined) break;
       argContainsUndefined = containsUndefined(mixed[i]);

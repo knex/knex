@@ -1,9 +1,10 @@
 import { isArray, map, clone } from 'lodash'
 import Bluebird from 'bluebird'
+import asyncInterface from './mixins/asyncInterface'
 
-export default function(Target) {
+export default function(TargetClass) {
 
-  Target.prototype.toQuery = function(tz) {
+  TargetClass.prototype.toQuery = function(tz) {
     let data = this.toSQL(this._method, tz);
     if (!isArray(data)) data = [data];
     return map(data, (statement) => {
@@ -11,25 +12,16 @@ export default function(Target) {
     }).join(';\n');
   }
 
-  // Create a new instance of the `Runner`, passing in the current object.
-  Target.prototype.then = function(/* onFulfilled, onRejected */) {
-    if (!this._promise) {
-      const result = this.client.runner(this).run()
-      this._promise = Bluebird.resolve(result.then.apply(result, arguments));
-    }
-    return this._promise
-  }
-
   // Add additional "options" to the builder. Typically used for client specific
   // items, like the `mysql` and `sqlite3` drivers.
-  Target.prototype.options = function(opts) {
+  TargetClass.prototype.options = function(opts) {
     this._options = this._options || [];
     this._options.push(clone(opts) || {});
     return this;
   }
 
   // Sets an explicit "connnection" we wish to use for this query.
-  Target.prototype.connection = function(connection) {
+  TargetClass.prototype.connection = function(connection) {
     this.log.warn(
       '.connection is deprecated, please read the documentation about the new knex "contexts"' +
       'feature, and the associated .setConnection API'
@@ -48,13 +40,13 @@ export default function(Target) {
   }
 
   // Set a debug flag for the current schema query stack.
-  Target.prototype.debug = function(enabled) {
+  TargetClass.prototype.debug = function(enabled) {
     this._debug = arguments.length ? enabled : true;
     return this;
   }
 
   // Set the transaction object for this query.
-  Target.prototype.transacting = function(t) {
+  TargetClass.prototype.transacting = function(t) {
     if (t && t.client) {
       if (!t.isTransaction()) {
         this.log.warn(`Invalid transaction value: ${t.client}`)
@@ -66,55 +58,25 @@ export default function(Target) {
   }
 
   // Initializes a stream.
-  Target.prototype.stream = function(options) {
+  TargetClass.prototype.stream = function(options) {
     return this.client.runner(this).stream(options);
   }
 
   // Initialize a stream & pipe automatically.
-  Target.prototype.pipe = function(writable, options) {
+  TargetClass.prototype.pipe = function(writable, options) {
     return this.client.runner(this).pipe(writable, options);
   }
 
   // Proxied Bluebird api methods:
 
-  Target.prototype.bind = function bind() {
-    return this.then().bind(...arguments)
+  TargetClass.prototype.then = function(/* onFulfilled, onRejected */) {
+    if (!this.__promise) {
+      const result = this.client.runner(this).run()
+      this.__promise = Bluebird.resolve(result.then.apply(result, arguments));
+    }
+    return this.__promise
   }
-  Target.prototype.catch = function catch$() {
-    return this.then()['catch'](...arguments)
-  }
-  Target.prototype.finally = function finally$() {
-    return this.then()['finally'](...arguments)
-  }
-  Target.prototype.asCallback = function asCallback() {
-    return this.then().asCallback(...arguments)
-  }
-  Target.prototype.spread = function spread() {
-    return this.then().spread(...arguments)
-  }
-  Target.prototype.map = function map() {
-    return this.then().map(...arguments)
-  }
-  Target.prototype.reduce = function reduce() {
-    return this.then().reduce(...arguments)
-  }
-  Target.prototype.tap = function tap() {
-    return this.then().tap(...arguments)
-  }
-  Target.prototype.thenReturn = function thenReturn() {
-    return this.then().thenReturn(...arguments)
-  }
-  Target.prototype.return = function return$() {
-    return this.then()['return'](...arguments)
-  }
-  Target.prototype.yield = function yield$() {
-    return this.then()['yield'](...arguments)
-  }
-  Target.prototype.ensure = function ensure() {
-    return this.then().ensure(...arguments)
-  }
-  Target.prototype.reflect = function reflect() {
-    return this.then().reflect(...arguments)
-  }
+
+  asyncInterface(TargetClass)
 
 }

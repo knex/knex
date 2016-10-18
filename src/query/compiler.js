@@ -7,8 +7,7 @@ import JoinClause from './joinclause';
 import debug from 'debug'
 
 import {
-  assign, bind, compact, groupBy, isEmpty, isString, isUndefined, map, omitBy,
-  reduce
+  assign, bind, compact, groupBy, isEmpty, isString, isUndefined, map, omitBy, reduce
 } from 'lodash';
 
 import uuid from 'node-uuid';
@@ -632,7 +631,7 @@ QueryCompiler.prototype.first = QueryCompiler.prototype.select;
 // Implemented as a property to prevent ordering issues as described in #704.
 Object.defineProperty(QueryCompiler.prototype, 'tableName', {
   get() {
-    if(!this._tableName) {
+    if (!this._tableName) {
       // Only call this.formatter.wrap() the first time this property is accessed.
       let tableName = this.single.table;
       const schemaName = this.single.schema;

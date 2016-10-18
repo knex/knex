@@ -7,9 +7,6 @@ const debugTx = debug('knex:tx')
 
 export function transactionContainer(trxKnex, container) {
   const p = new Promise((resolve, reject) => {
-
-    // TODO: transaction timeout??
-
     trxKnex.savepoint = trxKnex.transaction
 
     const _commit = trxKnex.commit
@@ -46,6 +43,11 @@ export function transactionContainer(trxKnex, container) {
   trxKnex.on('query-response', function() {
     p.emit('query-response', ...arguments)
   })
+
+  p.timeout = function(value) {
+    return trxKnex.transactionTimeout(value)
+  }
+
   return p
 }
 

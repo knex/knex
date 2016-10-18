@@ -2,6 +2,9 @@ var warning = process.env['CI'] ? 2 : 1;
 
 module.exports = {
   "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
   "extends": [
     "eslint:recommended",
     "plugin:import/errors",
@@ -23,6 +26,7 @@ module.exports = {
     "import/parser": "babel-eslint"
   },
   "env": {
-    "node": true
+    "node": true,
+    "es6": true
   }
 };

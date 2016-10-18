@@ -3,7 +3,7 @@ import debug from 'debug'
 import Migrator from '../migrate'
 import Seeder from '../seed'
 import FunctionHelper from '../functionhelper'
-import BatchInsert from '../util/batchInsert'
+import BatchInsert from './KnexBatchInsert'
 import mixinHooks from '../util/mixinHooks'
 import {
   commitTransaction, rollbackTransaction, transactionContainer
@@ -230,9 +230,19 @@ export default class KnexContext extends EventEmitter {
     // SQL statement for the BEGIN / SAVEPOINT is executed on
     // the context's connection.
     knexTrx.hookOnce('beforeFirst', async () => {
-      const sql = this.isInTransaction()
+      const isInTransaction = this.isInTransaction()
+
+      // If the driver needs custom transaction behavior (oracle, etc),
+      // we allow transaction to be a function instead of a string.
+      if (typeof knexTrx.client.transaction === 'function') {
+        const transactionType = isInTransaction ? 'savepoint' : 'begin'
+        await knexTrx.client.transaction(this, transactionType, transactionId)
+      }
+
+      const sql = isInTransaction
         ? knexTrx.client.format(knexTrx.client.transaction.savepoint, transactionId)
         : knexTrx.client.transaction.begin
+
       await knexTrx.client.query(knexTrx, sql)
     })
 
@@ -241,6 +251,12 @@ export default class KnexContext extends EventEmitter {
     }
 
     return knexTrx
+  }
+
+  transactionTimeout(value) {
+    if (typeof value !== 'number' || isNaN(value)) {
+      throw new Error('transactionTimeout requires a valid numeric value')
+    }
   }
 
   raw() {

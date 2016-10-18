@@ -9,12 +9,14 @@ import Raw from '../raw'
 import * as helpers from '../helpers'
 import JoinClause from './joinclause'
 import { assign, clone } from 'lodash'
+import KnexPartial from '../classes/KnexPartial'
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
 function Builder(context) {
   const { client } = context
   this.__context = context
+
   this.and = this;
   this._single = {};
   this._statements = [];
@@ -26,6 +28,7 @@ function Builder(context) {
   this._joinFlag = 'inner';
   this._boolFlag = 'and';
   this._notFlag = false;
+  this.__isConvertedToPartial = false
 }
 inherits(Builder, EventEmitter);
 
@@ -53,8 +56,19 @@ assign(Builder.prototype, {
     return this.client.queryCompiler(this).toSQL(method || this._method, tz);
   },
 
+  asPartial() {
+    if (this.__promise) {
+      throw new Error('Cannot create a partial chain from a query which has already been executed.')
+    }
+    return new KnexPartial(this)
+  },
+
   // Create a shallow clone of the current query builder.
   clone() {
+    if (this.__promise) {
+      throw new Error('Cannot clone a query which has already been executed.')
+    }
+
     const cloned = new this.constructor(this.__context);
     cloned._method = this._method;
     cloned._single = clone(this._single);
@@ -127,7 +141,7 @@ assign(Builder.prototype, {
     if (!column) return this;
     this._statements.push({
       grouping: 'columns',
-      value: helpers.normalizeArr.apply(null, arguments)
+      value: helpers.normalizeArr(...arguments)
     });
     return this;
   },
@@ -157,7 +171,7 @@ assign(Builder.prototype, {
   distinct() {
     this._statements.push({
       grouping: 'columns',
-      value: helpers.normalizeArr.apply(null, arguments),
+      value: helpers.normalizeArr(...arguments),
       distinct: true
     });
     return this;
@@ -472,7 +486,7 @@ assign(Builder.prototype, {
     this._statements.push({
       grouping: 'group',
       type: 'groupByBasic',
-      value: helpers.normalizeArr.apply(null, arguments)
+      value: helpers.normalizeArr(...arguments)
     });
     return this;
   },
