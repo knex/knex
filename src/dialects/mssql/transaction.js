@@ -50,7 +50,7 @@ export default class Transaction_MSSQL extends Transaction {
     return Promise.try(() => {
       return (t.outerTx ? t.outerTx.conn : null) ||
         configConnection ||
-        t.client.acquireConnection().completed;
+        t.client.acquireConnection();
     }).tap(function(conn) {
       if (!t.outerTx) {
         t.conn = conn

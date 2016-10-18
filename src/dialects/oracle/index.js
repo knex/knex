@@ -16,7 +16,6 @@ import SchemaCompiler from './schema/compiler';
 import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 import TableCompiler from './schema/tablecompiler';
-import OracleQueryStream from './stream';
 import { ReturningHelper } from './utils';
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
@@ -126,8 +125,8 @@ assign(Client_Oracle.prototype, {
         rejecter(err)
       })
       stream.on('end', resolver);
-      const queryStream = new OracleQueryStream(connection, obj.sql, obj.bindings, options);
-      queryStream.pipe(stream)
+      const queryStream = connection.queryStream(obj.sql, obj.bindings, options);
+      queryStream.pipe(stream);
     })
   },
 

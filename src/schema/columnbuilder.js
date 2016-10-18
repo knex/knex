@@ -21,22 +21,29 @@ export default function ColumnBuilder(client, tableBuilder, type, args) {
 // All of the modifier methods that can be used to modify the current query.
 const modifiers = [
   'default', 'defaultsTo', 'defaultTo', 'unsigned',
-  'nullable', 'notNull', 'notNullable',
-  'first', 'after', 'comment', 'collate'
+  'nullable', 'first', 'after', 'comment', 'collate'
 ];
+
+// Aliases for convenience.
+const aliasMethod = {
+  default:    'defaultTo',
+  defaultsTo: 'defaultTo',
+};
 
 // If we call any of the modifiers (index or otherwise) on the chainable, we pretend
 // as though we're calling `table.method(column)` directly.
 each(modifiers, function(method) {
+  const key = aliasMethod[method] || method
   ColumnBuilder.prototype[method] = function() {
-    if (aliasMethod[method]) {
-      method = aliasMethod[method];
-    }
-    if (method === 'notNullable') return this.nullable(false);
-    this._modifiers[method] = toArray(arguments);
+    this._modifiers[key] = toArray(arguments);
     return this;
   };
 });
+
+ColumnBuilder.prototype.notNull =
+ColumnBuilder.prototype.notNullable = function notNullable() {
+  return this.nullable(false)
+}
 
 each(['index', 'primary', 'unique'], function(method) {
   ColumnBuilder.prototype[method] = function() {
@@ -76,12 +83,6 @@ AlterMethods.alterType = function(type) {
   return this;
 };
 
-// Aliases for convenience.
-const aliasMethod = {
-  default:    'defaultTo',
-  defaultsTo: 'defaultTo',
-  notNull:    'notNullable'
-};
 
 // Alias a few methods for clarity when processing.
 const columnAlias = {
