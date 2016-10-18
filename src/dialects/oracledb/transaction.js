@@ -33,6 +33,10 @@ export default class Oracle_Transaction {
     });
   }
 
+  savepoint(conn) {
+    return this.query(conn, `SAVEPOINT ${this.txid}`);
+  }
+
   acquireConnection(config) {
     const t = this;
     return Promise.try(function() {

@@ -4,6 +4,7 @@ import inherits from 'inherits';
 import * as utils from '../utils';
 import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
+import Trigger from './trigger';
 
 import { assign } from 'lodash'
 
@@ -19,10 +20,9 @@ assign(TableCompiler_Oracle.prototype, {
 
   // Compile a rename column command.
   renameColumn(from, to) {
-    return this.pushQuery({
-      sql: `alter table ${this.tableName()} rename column ` +
-        this.formatter.wrap(from) + ' to ' + this.formatter.wrap(to)
-    });
+    // Remove quotes around tableName
+    const tableName = this.tableName().slice(1, -1)
+    return this.pushQuery(Trigger.renameColumnTrigger(tableName, from, to));
   },
 
   compileAdd(builder) {

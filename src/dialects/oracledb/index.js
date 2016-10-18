@@ -69,6 +69,10 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
     if (client.connectionSettings.prefetchRowCount) {
       oracleDbConfig.prefetchRows = client.connectionSettings.prefetchRowCount
     }
+    if (!_.isUndefined(client.connectionSettings.stmtCacheSize)) {
+      oracleDbConfig.stmtCacheSize = client.connectionSettings.stmtCacheSize;
+    }
+
     client.driver.getConnection(oracleDbConfig, function(err, connection) {
       if (err) {
         return rejecter(err);
@@ -326,14 +330,15 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
     case 'pluck':
     case 'first':
       response = helpers.skim(response);
-      if (obj.method === 'pluck')
-        response = response.map(val => val[obj.pluck])
+      if (obj.method === 'pluck') {
+        response = _.map(response, obj.pluck);
+      }
       return obj.method === 'first' ? response[0] : response;
     case 'insert':
     case 'del':
     case 'update':
     case 'counter':
-      if (obj.returning) {
+      if (obj.returning && !_.isEmpty(obj.returning)) {
         if (obj.returning.length === 1 && obj.returning[0] !== '*') {
           return _.flatten(_.map(response, _.values));
         }
