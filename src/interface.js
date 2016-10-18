@@ -1,4 +1,4 @@
-import { isArray, map, clone, each } from 'lodash'
+import { isArray, map, clone } from 'lodash'
 import Bluebird from 'bluebird'
 
 export default function(Target) {
@@ -62,17 +62,59 @@ export default function(Target) {
     return this.client.runner(this).pipe(writable, options);
   }
 
-  // Creates a method which "coerces" to a promise, by calling a
-  // "then" method on the current `Target`
-  each([
-    'bind', 'catch', 'finally', 'asCallback',
-    'spread', 'map', 'reduce', 'tap', 'thenReturn',
-    'return', 'yield', 'ensure', 'reflect'], function(method) {
-    Target.prototype[method] = function() {
-      let then = this.then();
-      then = then[method].apply(then, arguments);
-      return then;
-    }
-  })
+  // Proxied Bluebird api methods:
+
+  Target.prototype.bind = function bind() {
+    const then = this.then()
+    return then.bind.apply(then, arguments)
+  }
+  Target.prototype.catch = function catch$() {
+    const then = this.then()
+    return then.catch.apply(then, arguments)
+  }
+  Target.prototype.finally = function finally$() {
+    const then = this.then()
+    return then.finally.apply(then, arguments)
+  }
+  Target.prototype.asCallback = function asCallback() {
+    const then = this.then()
+    return then.asCallback.apply(then, arguments)
+  }
+  Target.prototype.spread = function spread() {
+    const then = this.then()
+    return then.spread.apply(then, arguments)
+  }
+  Target.prototype.map = function map() {
+    const then = this.then()
+    return then.map.apply(then, arguments)
+  }
+  Target.prototype.reduce = function reduce() {
+    const then = this.then()
+    return then.reduce.apply(then, arguments)
+  }
+  Target.prototype.tap = function tap() {
+    const then = this.then()
+    return then.tap.apply(then, arguments)
+  }
+  Target.prototype.thenReturn = function thenReturn() {
+    const then = this.then()
+    return then.thenReturn.apply(then, arguments)
+  }
+  Target.prototype.return = function return$() {
+    const then = this.then()
+    return then.return.apply(then, arguments)
+  }
+  Target.prototype.yield = function yield$() {
+    const then = this.then()
+    return then.yield.apply(then, arguments)
+  }
+  Target.prototype.ensure = function ensure() {
+    const then = this.then()
+    return then.ensure.apply(then, arguments)
+  }
+  Target.prototype.reflect = function reflect() {
+    const then = this.then()
+    return then.reflect.apply(then, arguments)
+  }
 
 }

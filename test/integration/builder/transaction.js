@@ -293,12 +293,12 @@ module.exports = function(knex) {
         trx.raw('SELECT 1 = 1').then(function () {
           //No connection is available, so try issuing a query without transaction.
           //Since there is no available connection, it should throw a timeout error based on `acquireConnectionTimeout` from the knex config.
-          return rootKnex.raw('select * FROM accounts WHERE username = ?', ['Test'])
+          return rootKnex.raw('select * FROM accounts WHERE username = ?', ['Test']).then(function () {
+            //Should never reach this point
+            expect(false).toEqual(true);
+          })
         })
-        .then(function () {
-          //Should never reach this point
-          expect(false).toEqual(true);
-        }).catch(function (error) {
+        .catch(function (error) {
           expect(error.message).toContain('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?');
           expect(error.sql).toEqual('select * FROM accounts WHERE username = ?');
           expect(error.bindings).toBeAn('array');
@@ -322,10 +322,10 @@ module.exports = function(knex) {
         return t.raw('SELECT 1').then(() => {
           return db.transaction(function(t2) {
             return t2.raw('SELECT 2')
+          }).then(function () {
+            throw new Error('should not get here')
           })
         })
-      }).then(function () {
-        throw new Error('should not get here')
       }).catch(function(error) {
         expect(error.message).toContain('Knex: Timeout acquiring a connection.')
         db.destroy()

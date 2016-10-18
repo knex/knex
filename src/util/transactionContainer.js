@@ -94,6 +94,8 @@ function cleanup(ctx) {
       ctx.__connection.then(c => {
         debugTx('Releasing connection ' + c.__knexUid)
         ctx.client.releaseConnection(c)
+      }).catch(e => {
+        // Ignoring because this error will have been handled elsewhere
       })
     } else {
       debugTx('Skipping release, nested transaction')

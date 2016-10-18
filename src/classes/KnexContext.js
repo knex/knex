@@ -116,7 +116,9 @@ export default class KnexContext extends EventEmitter {
       } else {
         this.__connection = this.__parentContext.getConnection()
       }
-      await this.executeHooks('beforeFirst')
+      return this.__connection.then(conn => {
+        return this.executeHooks('beforeFirst').then(() => conn)
+      })
     }
     return this.__connection
   }
@@ -174,6 +176,9 @@ export default class KnexContext extends EventEmitter {
       this.__connection.then(conn => {
         debugQuery(`${conn.__knexUid} ...releasing (end)...`)
         this.client.releaseConnection(conn)
+      }).catch(e => {
+        // Ignoring error here, since this promise isn't returned and
+        // will have already been handled elsewhere
       })
     }
     this.__connection = false

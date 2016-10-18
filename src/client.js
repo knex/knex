@@ -215,7 +215,6 @@ assign(Client.prototype, {
         ? await this.acquireConnection()
         : await context.getConnection()
 
-
       this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
       context.emit('query', assign({__knexUid: connection.__knexUid}, obj))
 
@@ -306,14 +305,14 @@ assign(Client.prototype, {
 
   // Acquire a connection from the pool.
   acquireConnection() {
+    const timeout = this.config.acquireConnectionTimeout || 60000
     return new Promise((resolver, rejecter) => {
+      let timedOut = false
       if (!this.pool) {
         return rejecter(new Error('Unable to acquire a connection'))
       }
-      let rejected
-      const timeout = this.config.acquireConnectionTimeout || 60000
       const t = setTimeout(() => {
-        rejected = true
+        timedOut = true
         rejecter(new Error(
           `Knex: Timeout acquiring a connection. ` +
           `The pool is probably full. ` +
@@ -322,10 +321,10 @@ assign(Client.prototype, {
       }, timeout)
       this.pool.acquire((err, connection) => {
         clearTimeout(t)
-        if (err && !rejected) {
+        if (err && !timedOut) {
           return rejecter(err)
         }
-        if (rejected) {
+        if (timedOut) {
           return this.releaseConnection(connection)
         }
         debug('acquired connection from pool: %s', connection.__knexUid)
