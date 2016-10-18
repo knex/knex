@@ -12,7 +12,7 @@ inherits(Oracledb_Compiler, Oracle_Compiler);
 _.assign(Oracledb_Compiler.prototype, {
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
-  insert: function() {
+  insert() {
     const self = this;
     const outBindPrep = this._prepOutbindings(this.single.insert, this.single.returning);
     const outBinding = outBindPrep.outBinding;
@@ -139,7 +139,7 @@ _.assign(Oracledb_Compiler.prototype, {
     return sql;
   },
 
-  _addReturningToSqlAndConvert: function(sql, outBinding, tableName, returning) {
+  _addReturningToSqlAndConvert(sql, outBinding, tableName, returning) {
     const self = this;
     const res = {
       sql: sql
@@ -182,7 +182,7 @@ _.assign(Oracledb_Compiler.prototype, {
     return res;
   },
 
-  _prepOutbindings: function(paramValues, paramReturning) {
+  _prepOutbindings(paramValues, paramReturning) {
     const result = {};
     let params = paramValues || [];
     let returning = paramReturning || [];
@@ -225,7 +225,7 @@ _.assign(Oracledb_Compiler.prototype, {
     return result;
   },
 
-  update: function() {
+  update() {
     const self = this;
     const sql = {};
     const outBindPrep = this._prepOutbindings(this.single.update, this.single.returning);

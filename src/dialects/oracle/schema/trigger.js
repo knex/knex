@@ -2,7 +2,7 @@ import * as utils from '../utils';
 
 const trigger = {
 
-  renameColumnTrigger: function(tableName, columnName, to) {
+  renameColumnTrigger(tableName, columnName, to) {
     const triggerName = utils.generateCombinedName(this, 'autoinc_trg', tableName);
     const sequenceName = utils.generateCombinedName(this, 'seq', tableName);
     return `DECLARE ` +
@@ -38,7 +38,7 @@ const trigger = {
     `END;`;
   },
 
-  createAutoIncrementTrigger: function(tableName) {
+  createAutoIncrementTrigger(tableName) {
     const triggerName = utils.generateCombinedName(this, 'autoinc_trg', tableName);
     const sequenceName = utils.generateCombinedName(this, 'seq', tableName);
     return `DECLARE ` +
@@ -68,7 +68,7 @@ const trigger = {
     `END;`;
   },
 
-  renameTableAndAutoIncrementTrigger: function(tableName, to) {
+  renameTableAndAutoIncrementTrigger(tableName, to) {
     const triggerName = utils.generateCombinedName(this, 'autoinc_trg', tableName);
     const sequenceName = utils.generateCombinedName(this, 'seq', tableName);
     const toTriggerName = utils.generateCombinedName(this, 'autoinc_trg', to);

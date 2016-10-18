@@ -13,11 +13,11 @@ assign(ColumnCompiler_Oracledb.prototype, {
 
   time: 'timestamp with local time zone',
 
-  datetime: function(without) {
+  datetime(without) {
     return without ? 'timestamp' : 'timestamp with local time zone';
   },
 
-  timestamp: function(without) {
+  timestamp(without) {
     return without ? 'timestamp' : 'timestamp with local time zone';
   }
 

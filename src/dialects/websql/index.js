@@ -21,14 +21,7 @@ assign(Client_WebSQL.prototype, {
 
   dialect: 'websql',
 
-  transaction: {
-    begin: '',
-    savepoint: '',
-    commit: '',
-    releaseSavepoint: '',
-    rollback: '',
-    rollbackSavepoint: '',
-  },
+  transaction() {},
 
   // Get a raw connection from the database, returning a promise with the connection object.
   acquireConnection() {
