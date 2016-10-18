@@ -30,7 +30,20 @@ export default function(Target) {
 
   // Sets an explicit "connnection" we wish to use for this query.
   Target.prototype.connection = function(connection) {
-    this._connection = connection;
+    this.log.warn(
+      '.connection is deprecated, please read the documentation about the new knex "contexts"' +
+      'feature, and the associated .setConnection API'
+    )
+    const ctx = this.__context
+    if (ctx.isRootContext()) {
+      this.__context = ctx.context()
+      this.__context.__connection = Bluebird.resolve(connection)
+      this.__context.end = () => {
+        this.removeAllListeners()
+      }
+    } else {
+      throw new Error('Cannot set .connection on a non-root call')
+    }
     return this;
   }
 
