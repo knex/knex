@@ -3987,11 +3987,11 @@ describe("QueryBuilder", function() {
   })
 
   it('is not permitted to mutate the chain after .asPartial is called', () => {
-    expect(() => {
+    expect(function() {
       const chain = qb().table('accounts').where('id', 1)
-      const base = chain.asPartial()
+      chain.asPartial()
       chain.orWhere('id', 3)
-    }).toThrow('')
+    }).toThrow('Cannot mutate a query chain marked as an .asPartial base')
   })
 
 });

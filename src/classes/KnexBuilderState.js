@@ -71,7 +71,7 @@ export default class KnexBuilderState {
       throw new Error('Cannot create a partial chain from a query which has already been executed.')
     }
     if (this.markedAsPartial) {
-      this.log.warn('.asPartial called twice unnecessarily on the query builder')
+      this.log.warn('.asPartial called multiple times (unnecessarily) on the query builder')
     }
     this.markedAsPartial = true
   }
