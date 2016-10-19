@@ -21,10 +21,11 @@ assign(QueryCompiler_MSSQL.prototype, {
   _emptyInsertValue: 'default values',
 
   select() {
+    let sql = this.with();
     const statements = components.map(component =>
         this[component](this)
     );
-    return compact(statements).join(' ');
+    return sql + compact(statements).join(' ');
   },
 
   // Compiles an "insert" query, allowing for multiple
