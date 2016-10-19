@@ -167,15 +167,16 @@ assign(Client_MSSQL.prototype, {
     if (typeof binding == 'number') {
       if (binding % 1 != 0) {
         req.input(`p${i}`, this.driver.Decimal(38,10), binding);
-      } else
-      if (binding < SQL_INT4.MIN || binding > SQL_INT4.MAX) {
+      } else if (binding < SQL_INT4.MIN || binding > SQL_INT4.MAX) {
         if (binding < SQL_BIGINT_SAFE.MIN || binding > SQL_BIGINT_SAFE.MAX) {
           throw new Error(`Bigint must be safe integer or must be passed as string, saw ${binding}`)
         }
-        req.input(`p${i}`, this.driver.BigInt, binding)
+        req.input(`p${i}`, this.driver.BigInt, binding);
       } else {
-        req.input(`p${i}`, binding)
+        req.input(`p${i}`, this.driver.Int, binding);
       }
+    } else {
+      req.input(`p${i}`, binding)
     }
   },
 
