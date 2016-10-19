@@ -89,8 +89,7 @@ class Builder extends EventEmitter {
   // Adds a raw `with` clause to the query.
   withRaw(alias, sql, bindings) {
     const raw = (sql instanceof Raw ? sql : this.client.raw(sql, bindings))
-    this.__state.addStatement({
-      grouping: 'with',
+    this.__state.addStatement('with', {
       type: 'withRaw',
       alias: alias,
       value: raw
@@ -100,8 +99,7 @@ class Builder extends EventEmitter {
 
   // Helper for compiling any advanced `with` queries.
   withWrapped(alias, callback) {
-    this.__state.addStatement({
-      grouping: 'with',
+    this.__state.addStatement('with', {
       type: 'withWrapped',
       alias: alias,
       value: callback
@@ -116,8 +114,7 @@ class Builder extends EventEmitter {
   // being selected on the query.
   columns(column) {
     if (!column) return this;
-    this.__state.addStatement({
-      grouping: 'columns',
+    this.__state.addStatement('columns', {
       value: helpers.normalizeArr(...arguments)
     })
     return this;
@@ -146,8 +143,7 @@ class Builder extends EventEmitter {
 
   // Adds a `distinct` clause to the query.
   distinct() {
-    this.__state.addStatement({
-      grouping: 'columns',
+    this.__state.addStatement('columns', {
       value: helpers.normalizeArr(...arguments),
       distinct: true
     })
@@ -173,7 +169,7 @@ class Builder extends EventEmitter {
         join.on(...rest)
       }
     }
-    this.__state.addStatement(join)
+    this.__state.addStatement('join', join)
     return this;
   }
 
@@ -266,8 +262,7 @@ class Builder extends EventEmitter {
     }
 
     // Push onto the where statement stack.
-    this.__state.addStatement({
-      grouping: 'where',
+    this.__state.addStatement('where', {
       type: 'whereBasic',
       column,
       operator,
@@ -315,8 +310,7 @@ class Builder extends EventEmitter {
   // Adds a raw `where` clause to the query.
   whereRaw(sql, bindings) {
     const raw = (sql instanceof Raw ? sql : this.client.raw(sql, bindings))
-    this.__state.addStatement({
-      grouping: 'where',
+    this.__state.addStatement('where', {
       type: 'whereRaw',
       value: raw,
       not: this._not(),
@@ -331,8 +325,7 @@ class Builder extends EventEmitter {
 
   // Helper for compiling any advanced `where` queries.
   whereWrapped(callback) {
-    this.__state.addStatement({
-      grouping: 'where',
+    this.__state.addStatement('where', {
       type: 'whereWrapped',
       value: callback,
       not: this._not(),
@@ -343,8 +336,7 @@ class Builder extends EventEmitter {
 
   // Adds a `where exists` clause to the query.
   whereExists(callback) {
-    this.__state.addStatement({
-      grouping: 'where',
+    this.__state.addStatement('where', {
       type: 'whereExists',
       value: callback,
       not: this._not(),
@@ -373,8 +365,7 @@ class Builder extends EventEmitter {
     if (Array.isArray(values) && values.length === 0) {
       return this.where(this._not())
     }
-    this.__state.addStatement({
-      grouping: 'where',
+    this.__state.addStatement('where', {
       type: 'whereIn',
       column,
       value: values,
@@ -401,8 +392,7 @@ class Builder extends EventEmitter {
 
   // Adds a `where null` clause to the query.
   whereNull(column) {
-    this.__state.addStatement({
-      grouping: 'where',
+    this.__state.addStatement('where', {
       type: 'whereNull',
       column,
       not: this._not(),
@@ -430,8 +420,7 @@ class Builder extends EventEmitter {
   whereBetween(column, values) {
     invariant(Array.isArray(values), 'The second argument to whereBetween must be an array.')
     invariant(values.length === 2, 'You must specify 2 values for the whereBetween clause')
-    this.__state.addStatement({
-      grouping: 'where',
+    this.__state.addStatement('where', {
       type: 'whereBetween',
       column,
       value: values,
@@ -461,8 +450,7 @@ class Builder extends EventEmitter {
     if (item instanceof Raw) {
       return this.groupByRaw(...arguments)
     }
-    this.__state.addStatement({
-      grouping: 'group',
+    this.__state.addStatement('group', {
       type: 'groupByBasic',
       value: helpers.normalizeArr(...arguments)
     })
@@ -472,8 +460,7 @@ class Builder extends EventEmitter {
   // Adds a raw `group by` clause to the query.
   groupByRaw(sql, bindings) {
     const raw = (sql instanceof Raw ? sql : this.client.raw(sql, bindings))
-    this.__state.addStatement({
-      grouping: 'group',
+    this.__state.addStatement('group', {
       type: 'groupByRaw',
       value: raw
     })
@@ -482,8 +469,7 @@ class Builder extends EventEmitter {
 
   // Adds a `order by` clause to the query.
   orderBy(column, direction) {
-    this.__state.addStatement({
-      grouping: 'order',
+    this.__state.addStatement('order', {
       type: 'orderByBasic',
       value: column,
       direction
@@ -494,8 +480,7 @@ class Builder extends EventEmitter {
   // Add a raw `order by` clause to the query.
   orderByRaw(sql, bindings) {
     const raw = (sql instanceof Raw ? sql : this.client.raw(sql, bindings))
-    this.__state.addStatement({
-      grouping: 'order',
+    this.__state.addStatement('order', {
       type: 'orderByRaw',
       value: raw
     })
@@ -512,8 +497,7 @@ class Builder extends EventEmitter {
         callbacks = [callbacks];
       }
       for (let i = 0, l = callbacks.length; i < l; i++) {
-        this.__state.addStatement({
-          grouping: 'union',
+        this.__state.addStatement('union', {
           clause: 'union',
           value: callbacks[i],
           wrap: wrap || false
@@ -533,8 +517,7 @@ class Builder extends EventEmitter {
 
   // Adds a union all statement to the query.
   unionAll(callback, wrap) {
-    this.__state.addStatement({
-      grouping: 'union',
+    this.__state.addStatement('union', {
       clause: 'union all',
       value: callback,
       wrap: wrap || false
@@ -554,8 +537,7 @@ class Builder extends EventEmitter {
       return this.havingWrapped(column)
     }
 
-    this.__state.addStatement({
-      grouping: 'having',
+    this.__state.addStatement('having', {
       type: 'havingBasic',
       column,
       operator,
@@ -581,8 +563,7 @@ class Builder extends EventEmitter {
 
   // Helper for compiling any advanced `having` queries.
   havingWrapped(callback) {
-    this.__state.addStatement({
-      grouping: 'having',
+    this.__state.addStatement('having', {
       type: 'havingWrapped',
       value: callback,
       bool: this._bool(),
@@ -592,8 +573,7 @@ class Builder extends EventEmitter {
   }
 
   havingNull(column) {
-    this.__state.addStatement({
-      grouping: 'having',
+    this.__state.addStatement('having', {
       type: 'havingNull',
       column,
       not: this._not(),
@@ -615,8 +595,7 @@ class Builder extends EventEmitter {
   }
 
   havingExists(callback) {
-    this.__state.addStatement({
-      grouping: 'having',
+    this.__state.addStatement('having', {
       type: 'havingExists',
       value: callback,
       not: this._not(),
@@ -640,8 +619,7 @@ class Builder extends EventEmitter {
   havingBetween(column, values) {
     invariant(Array.isArray(values), 'The second argument to havingBetween must be an array.')
     invariant(values.length === 2, 'You must specify 2 values for the havingBetween clause')
-    this.__state.addStatement({
-      grouping: 'having',
+    this.__state.addStatement('having', {
       type: 'havingBetween',
       column,
       value: values,
@@ -667,8 +645,7 @@ class Builder extends EventEmitter {
     if (Array.isArray(values) && values.length === 0) {
       return this.where(this._not())
     }
-    this.__state.addStatement({
-      grouping: 'having',
+    this.__state.addStatement('having', {
       type: 'havingIn',
       column,
       value: values,
@@ -696,8 +673,7 @@ class Builder extends EventEmitter {
   // Adds a raw `having` clause to the query.
   havingRaw(sql, bindings) {
     const raw = (sql instanceof Raw ? sql : this.client.raw(sql, bindings))
-    this.__state.addStatement({
-      grouping: 'having',
+    this.__state.addStatement('having', {
       type: 'havingRaw',
       value: raw,
       bool: this._bool(),
@@ -789,8 +765,7 @@ class Builder extends EventEmitter {
   pluck(column) {
     this._method = 'pluck';
     this.__state.setSingle('pluck', column)
-    this.__state.addStatement({
-      grouping: 'columns',
+    this.__state.addStatement('columns', {
       type: 'pluck',
       value: column
     })
@@ -958,8 +933,7 @@ class Builder extends EventEmitter {
 
   // Helper for compiling any aggregate queries.
   _aggregate(method, column, aggregateDistinct) {
-    this.__state.addStatement({
-      grouping: 'columns',
+    this.__state.addStatement('columns', {
       type: 'aggregate',
       method,
       value: column,

@@ -4,8 +4,8 @@ export default class KnexBuilderState {
   constructor(log) {
     this.log = log
     this.method = 'select'
-    this.statements = [];
     this.single = {};
+    this.statements = {};
     this.options = [];
     this.debug = false
 
@@ -18,7 +18,7 @@ export default class KnexBuilderState {
     // has been marked explicitly ".asPartial"
     this.markedAsPartial = false
 
-    // Whether we've called .then on the
+    // Whether we've called .then on the associated builder chain
     this.coercedToPromise = false
   }
 
@@ -40,17 +40,17 @@ export default class KnexBuilderState {
     })
   }
 
-  addStatement(obj) {
+  addStatement(grouping, obj) {
     check(this, () => {
-      this.statements.push(obj)
+      this.statements[grouping] = (this.statements[grouping] || []).concat(obj)
     })
   }
 
   clone() {
     const state = new this.constructor(this.log)
     state.method = this.method
-    state.statements = this.statements.slice()
     state.single = Object.assign({}, this.single)
+    state.statements = Object.assign({}, this.statements)
     state.options = this.options.slice()
     state.debug = this.debug
     state.joinFlag = this.joinFlag

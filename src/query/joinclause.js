@@ -17,8 +17,6 @@ function JoinClause(table, type, schema) {
 
 assign(JoinClause.prototype, {
 
-  grouping: 'join',
-
   // Adds an "on" clause to the current join object.
   on(first, operator, second) {
     if (typeof first === 'function') {
