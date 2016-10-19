@@ -4,7 +4,6 @@
 import inherits from 'inherits';
 import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
-import * as helpers from '../../helpers';
 import { pick, assign } from 'lodash'
 
 const configOptions = [
@@ -79,31 +78,6 @@ assign(Client_MySQL2.prototype, {
         resolver(connection)
       })
     })
-  },
-
-  processResponse(obj, runner) {
-    const { response } = obj
-    const { method } = obj
-    const rows = response[0]
-    const fields = response[1]
-    if (obj.output) return obj.output.call(runner, rows, fields)
-    switch (method) {
-      case 'select':
-      case 'pluck':
-      case 'first': {
-        const resp = helpers.skim(rows)
-        if (method === 'pluck') return resp.map(val => val[obj.pluck])
-        return method === 'first' ? resp[0] : resp
-      }
-      case 'insert':
-        return [rows.insertId]
-      case 'del':
-      case 'update':
-      case 'counter':
-        return rows.affectedRows
-      default:
-        return response
-    }
   }
 
 })
