@@ -1,8 +1,8 @@
 /*eslint no-var:0, max-len:0 */
 'use strict';
 
+var expect = require('expect')
 var tape = require('tape')
-var omit = require('lodash/omit')
 var KnexContext = require('../../lib/classes/KnexContext')
 var QueryBuilder = require('../../lib/query/builder')
 var Client = require('../../lib/client')
@@ -38,9 +38,9 @@ tape('clones correctly', function(t) {
 
   // `deepEqual` freezes when it encounters circular references,
   // so they must be omitted.
-  t.deepEqual(
-    omit(cloned, 'client', 'and'),
-    omit(original, 'client', 'and')
+  t.ok(
+    expect(cloned.__state).toEqual(original.__state),
+    'cloned deep equals client'
   );
 
   t.equal(

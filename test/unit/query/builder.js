@@ -3986,7 +3986,7 @@ describe("QueryBuilder", function() {
     })
   })
 
-  it.skip('is not permitted to mutate the chain after .asPartial is called', () => {
+  it('is not permitted to mutate the chain after .asPartial is called', () => {
     expect(() => {
       const chain = qb().table('accounts').where('id', 1)
       const base = chain.asPartial()

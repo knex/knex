@@ -25,16 +25,16 @@ function isArray(val) {
  * @return {EventEmitter} Emitter instance.
  */
 function hook(name, fn) {
-  if (!this.$hooks) {
-    this.$hooks = {};
+  if (!this._hooks) {
+    this._hooks = {};
   }
 
-  if (!this.$hooks[name]) {
-    this.$hooks[name] = fn;
-  } else if (isArray(this.$hooks[name])) {
-    this.$hooks[name].push(fn);
+  if (!this._hooks[name]) {
+    this._hooks[name] = fn;
+  } else if (isArray(this._hooks[name])) {
+    this._hooks[name].push(fn);
   } else {
-    this.$hooks[name] = [this.$hooks[name], fn];
+    this._hooks[name] = [this._hooks[name], fn];
   }
 
   return this;
@@ -71,8 +71,8 @@ function hookOnce(name, fn) {
  * @return {EventEmitter} Emitter instance.
  */
 function removeHook(name, fn) {
-  if (this.$hooks && this.$hooks[name]) {
-    var list = this.$hooks[name];
+  if (this._hooks && this._hooks[name]) {
+    var list = this._hooks[name];
 
     if (isArray(list)) {
       var pos = -1;
@@ -91,10 +91,10 @@ function removeHook(name, fn) {
       list.splice(pos, 1);
 
       if (!list.length) {
-        delete this.$hooks[name];
+        delete this._hooks[name];
       }
     } else if (list === fn || (list.listener && list.listener === fn)) {
-      delete this.$hooks[name];
+      delete this._hooks[name];
     }
   }
 
@@ -110,12 +110,12 @@ function removeHook(name, fn) {
  */
 function removeAllHooks(name) {
   if (name === undefined) {
-    this.$hooks = {};
+    this._hooks = {};
     return this;
   }
 
-  if (this.$hooks && this.$hooks[name]) {
-    this.$hooks[name] = null;
+  if (this._hooks && this._hooks[name]) {
+    this._hooks[name] = null;
   }
 
   return this;
@@ -129,19 +129,19 @@ function removeAllHooks(name) {
  * @return {EventEmitter} Emitter instance.
  */
 function hooks(name) {
-  if (!this.$hooks) {
-    this.$hooks = {};
+  if (!this._hooks) {
+    this._hooks = {};
   }
 
-  if (!this.$hooks[name]) {
-    this.$hooks[name] = [];
+  if (!this._hooks[name]) {
+    this._hooks[name] = [];
   }
 
-  if (!isArray(this.$hooks[name])) {
-    this.$hooks[name] = [this.$hooks[name]];
+  if (!isArray(this._hooks[name])) {
+    this._hooks[name] = [this._hooks[name]];
   }
 
-  return this.$hooks[name];
+  return this._hooks[name];
 }
 
 /**
@@ -152,11 +152,11 @@ function hooks(name) {
  * @return {boolean} true if at least one handler was invoked, else false.
  */
 async function executeHooks(name) {
-  if (!this.$hooks) {
+  if (!this._hooks) {
     return false;
   }
 
-  var handler = this.$hooks[name];
+  var handler = this._hooks[name];
 
   if (!handler) {
     return false;

@@ -1,6 +1,5 @@
-
-import inherits from 'inherits';
-import { EventEmitter } from 'events';
+import inherits from 'inherits'
+import { EventEmitter } from 'events'
 import { each, toArray } from 'lodash'
 
 // Constructor for the builder instance, typically called from

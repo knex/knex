@@ -4,7 +4,7 @@ import Migrator from '../migrate'
 import Seeder from '../seed'
 import FunctionHelper from '../functionhelper'
 import BatchInsert from './KnexBatchInsert'
-import mixinHooks from '../util/mixinHooks'
+import hooksInterface from '../mixins/hooksInterface'
 import {
   commitTransaction, rollbackTransaction, transactionContainer
 } from '../util/transactionContainer'
@@ -520,4 +520,4 @@ export default class KnexContext extends EventEmitter {
 }
 
 // Mixin .hook, .hookOnce, etc.
-mixinHooks(KnexContext)
+hooksInterface(KnexContext)

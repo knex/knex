@@ -67,15 +67,20 @@ export default function(TargetClass) {
     return this.client.runner(this).pipe(writable, options);
   }
 
-  // Proxied Bluebird api methods:
+  // If .then isn't defined, add a standard implementation
+  if (!TargetClass.prototype.then) {
 
-  TargetClass.prototype.then = function(/* onFulfilled, onRejected */) {
-    if (!this.__promise) {
-      const result = this.client.runner(this).run()
-      this.__promise = Bluebird.resolve(result.then.apply(result, arguments));
+    TargetClass.prototype.then = function(/* onFulfilled, onRejected */) {
+      if (!this.__promise) {
+        const result = this.client.runner(this).run()
+        this.__promise = Bluebird.resolve(result.then.apply(result, arguments));
+      }
+      return this.__promise
     }
-    return this.__promise
+
   }
+
+  // Proxied Bluebird api methods:
 
   asyncInterface(TargetClass)
 

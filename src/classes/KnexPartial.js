@@ -7,6 +7,7 @@ export default class KnexPartial extends EventEmitter {
   constructor(source) {
     super()
     this.__source = source
+    this.__source.__state.toPartial()
   }
 
   queryBuilder() {
