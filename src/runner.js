@@ -183,6 +183,7 @@ assign(Runner.prototype, {
   ensureConnection() {
     return Promise.try(() => {
       return this.connection || new Promise((resolver, rejecter) => {
+        // need to return promise or null from handler to prevent warning from bluebird
         return this.client.acquireConnection()
           .then(resolver)
           .catch(Promise.TimeoutError, (error) => {
@@ -195,6 +196,7 @@ assign(Runner.prototype, {
           .catch(rejecter)
       })
     }).disposer(() => {
+      // need to return promise or null from handler to prevent warning from bluebird
       return this.client.releaseConnection(this.connection)
     })
   }
