@@ -21,7 +21,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   _emptyInsertValue: 'default values',
 
   select() {
-    let sql = this.with();
+    const sql = this.with();
     const statements = components.map(component =>
         this[component](this)
     );
