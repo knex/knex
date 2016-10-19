@@ -2,6 +2,10 @@
 # Master (Unreleased)
 - Add more having* methods / join clause on* methods  #1674
 
+# 0.12.6 - 19 Oct, 2016
+- Address warnings mentioned in #1388 (#1740)
+- Remove postinstall script (#1746)
+
 # 0.12.5 - 12 Oct, 2016
 - Fix broken 0.12.4 build (removed from npm)
 - Fix #1733, #920, incorrect postgres array bindings

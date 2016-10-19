@@ -20,7 +20,7 @@ var exec = function (cmd, args) {
     });
     child.on('error', reject);
   });
-} 
+}
 
 var CWD = process.cwd();
 var POSTINSTALL_BUILD_CWD = process.env.POSTINSTALL_BUILD_CWD;
@@ -58,7 +58,7 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
       if (!_.isEmpty(buildDependencies)) {
         var opts = { env: process.env, stdio: 'inherit' };
 
-        console.log('Building Bookshelf.js')
+        console.log('Building Knex.js')
 
         // Map all key (dependency) value (semver) pairs to
         // "dependency@semver dependency@semver ..." string that can be used
