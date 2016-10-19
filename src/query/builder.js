@@ -2,7 +2,7 @@
 // Builder
 // -------
 import Bluebird from 'bluebird'
-import assert from 'assert'
+import invariant from 'invariant'
 import { EventEmitter } from 'events'
 
 import Raw from '../raw'
@@ -428,8 +428,8 @@ class Builder extends EventEmitter {
 
   // Adds a `where between` clause to the query.
   whereBetween(column, values) {
-    assert(Array.isArray(values), 'The second argument to whereBetween must be an array.')
-    assert(values.length === 2, 'You must specify 2 values for the whereBetween clause')
+    invariant(Array.isArray(values), 'The second argument to whereBetween must be an array.')
+    invariant(values.length === 2, 'You must specify 2 values for the whereBetween clause')
     this.__state.addStatement({
       grouping: 'where',
       type: 'whereBetween',
@@ -638,8 +638,8 @@ class Builder extends EventEmitter {
   }
 
   havingBetween(column, values) {
-    assert(Array.isArray(values), 'The second argument to havingBetween must be an array.')
-    assert(values.length === 2, 'You must specify 2 values for the havingBetween clause')
+    invariant(Array.isArray(values), 'The second argument to havingBetween must be an array.')
+    invariant(values.length === 2, 'You must specify 2 values for the havingBetween clause')
     this.__state.addStatement({
       grouping: 'having',
       type: 'havingBetween',
