@@ -58,10 +58,15 @@ TableCompiler.prototype.createIfNot = function () {
 // go through and handle each of the queries associated
 // with altering the table's schema.
 TableCompiler.prototype.alter = function () {
-  const columns = this.getColumns();
-  const columnTypes = this.getColumnTypes(columns);
-  this.addColumns(columnTypes);
-  this.columnQueries(columns);
+  const addColumns       = this.getColumns();
+  const alterColumns     = this.getColumns('alter');
+  const addColumnTypes   = this.getColumnTypes(addColumns);
+  const alterColumnTypes = this.getColumnTypes(alterColumns);
+
+  this.addColumns(addColumnTypes);
+  this.alterColumns(alterColumnTypes);
+  this.columnQueries(addColumns);
+  this.columnQueries(alterColumns);
   this.alterTable();
 };
 
@@ -107,10 +112,12 @@ TableCompiler.prototype.columnQueries = function (columns) {
 TableCompiler.prototype.addColumnsPrefix = 'add column ';
 
 // All of the columns to "add" for the query
-TableCompiler.prototype.addColumns = function (columns) {
+TableCompiler.prototype.addColumns = function (columns, prefix) {
+  prefix = prefix || this.addColumnsPrefix;
+
   if (columns.sql.length > 0) {
     const columnSql = map(columns.sql, (column) => {
-      return this.addColumnsPrefix + column;
+      return prefix + column;
     });
     this.pushQuery({
       sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + columnSql.join(', '),
@@ -119,10 +126,19 @@ TableCompiler.prototype.addColumns = function (columns) {
   }
 };
 
+// Alter column
+TableCompiler.prototype.alterColumnsPrefix = 'alter column ';
+
+TableCompiler.prototype.alterColumns = function (columns) {
+  this.addColumns(columns, this.alterColumnsPrefix);
+};
+
 // Compile the columns as needed for the current create or alter table
-TableCompiler.prototype.getColumns = function () {
+TableCompiler.prototype.getColumns = function (method) {
   const columns = this.grouped.columns || [];
-  return columns.map(column =>
+  method        = method || 'add';
+
+  return columns.filter(column => column.builder._method === method).map(column =>
     this.client.columnCompiler(this, column.builder).toSQL()
   );
 };
