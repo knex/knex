@@ -38,6 +38,8 @@ assign(TableCompiler_MSSQL.prototype, {
 
   dropColumnPrefix: 'DROP COLUMN ',
 
+  alterColumnPrefix: 'ALTER COLUMN ',
+
   // Compiles column add.  Multiple columns need only one ADD clause (not one ADD per column) so core addColumns doesn't work.  #1348
   addColumns (columns) {
     if (columns.sql.length > 0) {
