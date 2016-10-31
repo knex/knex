@@ -102,6 +102,10 @@ assign(Client.prototype, {
     return new Raw(this).set(...arguments)
   },
 
+  tpl() {
+    return new Raw(this).template(...arguments)
+  },
+
   _formatQuery(sql, bindings, timeZone) {
     bindings = bindings == null ? [] : [].concat(bindings);
     let index = 0;

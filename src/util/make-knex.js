@@ -33,6 +33,10 @@ export default function makeKnex(client) {
       return client.raw.apply(client, arguments)
     },
 
+    tpl() {
+      return client.tpl.apply(client, arguments)
+    },
+
     batchInsert(table, batch, chunkSize = 1000) {
       return new BatchInsert(this, table, batch, chunkSize);
     },

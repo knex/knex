@@ -2,6 +2,8 @@
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
+var stripIndent = require('common-tags').stripIndent;
+
 var MySQL_Client = require('../../../lib/dialects/mysql')
 var PG_Client = require('../../../lib/dialects/postgres')
 var Oracle_Client = require('../../../lib/dialects/oracle')
@@ -34,6 +36,10 @@ function qb() {
 
 function raw(sql, bindings) {
   return clients.sqlite3.raw(sql, bindings)
+}
+
+function tpl() {
+  return clients.sqlite3.tpl.apply(clients.sqlite3, arguments);
 }
 
 function verifySqlResult(dialect, expectedObj, sqlObj) {
@@ -3986,5 +3992,32 @@ describe("QueryBuilder", function() {
       postgres: "select * from \"sometable\" where \"array_field\" && '{\"abc\",\"def\",{\"g\",2}}'"
     });
   })
+
+  it('template literal', function () {
+    var testValue1 = "some value'; --",
+      testValue2 = 'other value',
+      tests = [
+        [{
+          sql: "select * from \"sometable\" where \"some_field\" = ?",
+          bindings: [testValue1]
+        },
+        tpl`select * from "sometable" where "some_field" = ${testValue1}`],
+        [{
+          sql: stripIndent`
+            select * from "sometable"
+              join "othertable" on "other_field" = ?
+              where "some_field" = ?`,
+          bindings: [testValue2, testValue1]
+        },
+        tpl`
+          select * from "sometable"
+            join "othertable" on "other_field" = ${testValue2}
+            where "some_field" = ${testValue1}`]
+      ];
+
+    tests.forEach(function (testCase) {
+      verifySqlResult('postgres', testCase[0], testCase[1]);
+    });
+  });
 
 });
