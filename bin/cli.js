@@ -71,7 +71,7 @@ function initKnex(env) {
 
 function invoke(env) {
 
-  var filetypes = ['js', 'coffee', 'eg', 'ls'];
+  var filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
   var pending = null;
 
   commander
