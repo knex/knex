@@ -2630,7 +2630,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = ?, [name] = ? inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?;select @@rowcount',
+        sql: 'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
       },
       postgres: {
