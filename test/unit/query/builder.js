@@ -3032,7 +3032,7 @@ describe("QueryBuilder", function() {
         bindings: ['Boonesville', 1, 5]
       },
       mssql: {
-        sql: 'update [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] set [tblPerson].[City] = ? where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
+        sql: 'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
         bindings: ['Boonesville', 1, 5]
       },
       postgres: {
