@@ -142,7 +142,10 @@ export default class Formatter {
   outputQuery(compiled, isParameter) {
     let sql = compiled.sql || '';
     if (sql) {
-      if (compiled.method === 'select' && (isParameter || compiled.as)) {
+      if (
+        (compiled.method === 'select' || compiled.method === 'first') &&
+        (isParameter || compiled.as)
+      ) {
         sql = `(${sql})`;
         if (compiled.as) return this.alias(sql, this.wrap(compiled.as))
       }

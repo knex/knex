@@ -59,7 +59,7 @@ assign(QueryCompiler.prototype, {
 
     defaults.bindings = defaults.bindings || [];
 
-    if (method === 'select') {
+    if (method === 'select' || method === 'first') {
       if(this.single.as) {
         defaults.as = this.single.as;
       }
