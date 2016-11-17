@@ -13,6 +13,7 @@ const helpers = require('../../helpers');
 const Transaction = require('./transaction');
 const Client_Oracle = require('../oracle');
 const Oracle_Formatter = require('../oracle/formatter');
+const Buffer = require('safe-buffer').Buffer;
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
@@ -305,7 +306,7 @@ function readStream(stream, cb) {
   if (stream.iLob.type === oracledb.CLOB) {
     stream.setEncoding('utf-8');
   } else {
-    data = new Buffer(0);
+    data = Buffer.alloc(0);
   }
   stream.on('error', function(err) {
     cb(err);
