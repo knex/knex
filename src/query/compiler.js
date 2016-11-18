@@ -7,8 +7,7 @@ import JoinClause from './joinclause';
 import debug from 'debug'
 
 import {
-  assign, bind, compact, groupBy, isEmpty, isString, isUndefined, map, omitBy,
-  reduce
+  assign, bind, compact, isEmpty, isString, isUndefined, map, omitBy, reduce
 } from 'lodash';
 
 import uuid from 'node-uuid';
@@ -18,14 +17,15 @@ const debugBindings = debug('knex:bindings')
 // The "QueryCompiler" takes all of the query statements which
 // have been gathered in the "QueryBuilder" and turns them into a
 // properly formatted / bound query string.
-function QueryCompiler(client, builder) {
+function QueryCompiler(client, builderState) {
   this.client = client
-  this.method = builder._method || 'select';
-  this.options = builder._options;
-  this.single = builder._single;
-  this.timeout = builder._timeout || false;
-  this.cancelOnTimeout = builder._cancelOnTimeout || false;
-  this.grouped = groupBy(builder._statements, 'grouping');
+  this.context = builderState.__context
+  this.method = builderState._method || 'select';
+  this.options = builderState._options;
+  this.single = builderState._single;
+  this.timeout = builderState._timeout || false;
+  this.cancelOnTimeout = builderState._cancelOnTimeout || false;
+  this.statements = builderState._statements;
   this.formatter = client.formatter()
 }
 
@@ -33,6 +33,12 @@ const components = [
   'columns', 'join', 'where', 'union', 'group',
   'having', 'order', 'limit', 'offset', 'lock'
 ];
+
+Object.defineProperty(QueryCompiler.prototype, 'log', {
+  get() {
+    return this.client.log
+  }
+})
 
 assign(QueryCompiler.prototype, {
 
@@ -150,7 +156,7 @@ assign(QueryCompiler.prototype, {
   columns() {
     let distinct = false;
     if (this.onlyUnions()) return ''
-    const columns = this.grouped.columns || []
+    const columns = this.statements.columns || []
     let i = -1, sql = [];
     if (columns) {
       while (++i < columns.length) {
@@ -190,7 +196,7 @@ assign(QueryCompiler.prototype, {
   join() {
     let sql = '';
     let i = -1;
-    const joins = this.grouped.join;
+    const joins = this.statements.join;
     if (!joins) return '';
     while (++i < joins.length) {
       const join = joins[i];
@@ -249,7 +255,7 @@ assign(QueryCompiler.prototype, {
 
   // Compiles all `where` statements on the query.
   where() {
-    const wheres = this.grouped.where;
+    const wheres = this.statements.where;
     if (!wheres) return;
     const sql = [];
     let i = -1;
@@ -281,7 +287,7 @@ assign(QueryCompiler.prototype, {
 
   // Compiles the `having` statements.
   having() {
-    const havings = this.grouped.having;
+    const havings = this.statements.having;
     if (!havings) return '';
     const sql = ['having'];
     for (let i = 0, l = havings.length; i < l; i++) {
@@ -348,7 +354,7 @@ assign(QueryCompiler.prototype, {
   // Compile the "union" queries attached to the main query.
   union() {
     const onlyUnions = this.onlyUnions();
-    const unions = this.grouped.union;
+    const unions = this.statements.union;
     if (!unions) return '';
     let sql = '';
     for (let i = 0, l = unions.length; i < l; i++) {
@@ -368,7 +374,7 @@ assign(QueryCompiler.prototype, {
   // If we haven't specified any columns or a `tableName`, we're assuming this
   // is only being used for unions.
   onlyUnions() {
-    return (!this.grouped.columns && this.grouped.union && !this.tableName);
+    return (!this.statements.columns && this.statements.union && !this.tableName);
   },
 
   limit() {
@@ -399,8 +405,8 @@ assign(QueryCompiler.prototype, {
   // Compiles the "locks".
   lock() {
     if (this.single.lock) {
-      if (!this.client.transacting) {
-        helpers.warn('You are attempting to perform a "lock" command outside of a transaction.')
+      if (!this.context.isInTransaction()) {
+        this.log.warn('You are attempting to perform a "lock" command outside of a transaction.')
       } else {
         return this[this.single.lock]()
       }
@@ -518,10 +524,10 @@ assign(QueryCompiler.prototype, {
 
   // Compiles all `with` statements on the query.
   with() {
-    if(!this.grouped.with || !this.grouped.with.length)  {
+    if(!this.statements.with || !this.statements.with.length)  {
       return '';
     }
-    const withs = this.grouped.with;
+    const withs = this.statements.with;
     if (!withs) return;
     const sql = [];
     let i = -1;
@@ -602,7 +608,7 @@ assign(QueryCompiler.prototype, {
 
   // Compiles the `order by` statements.
   _groupsOrders(type) {
-    const items = this.grouped[type];
+    const items = this.statements[type];
     if (!items) return '';
     const { formatter } = this;
     const sql = items.map(item => {
@@ -625,7 +631,7 @@ QueryCompiler.prototype.first = QueryCompiler.prototype.select;
 // Implemented as a property to prevent ordering issues as described in #704.
 Object.defineProperty(QueryCompiler.prototype, 'tableName', {
   get() {
-    if(!this._tableName) {
+    if (!this._tableName) {
       // Only call this.formatter.wrap() the first time this property is accessed.
       let tableName = this.single.table;
       const schemaName = this.single.schema;

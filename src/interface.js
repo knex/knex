@@ -1,75 +1,87 @@
+import { isArray, map, clone } from 'lodash'
+import Bluebird from 'bluebird'
+import asyncInterface from './mixins/asyncInterface'
 
-import * as helpers from './helpers';
-import { isArray, map, clone, each } from 'lodash'
+export default function(TargetClass) {
 
-export default function(Target) {
-
-  Target.prototype.toQuery = function(tz) {
+  TargetClass.prototype.toQuery = function(tz) {
     let data = this.toSQL(this._method, tz);
     if (!isArray(data)) data = [data];
     return map(data, (statement) => {
       return this.client._formatQuery(statement.sql, statement.bindings, tz);
     }).join(';\n');
-  };
-
-  // Create a new instance of the `Runner`, passing in the current object.
-  Target.prototype.then = function(/* onFulfilled, onRejected */) {
-    const result = this.client.runner(this).run()
-    return result.then.apply(result, arguments);
-  };
+  }
 
   // Add additional "options" to the builder. Typically used for client specific
   // items, like the `mysql` and `sqlite3` drivers.
-  Target.prototype.options = function(opts) {
+  TargetClass.prototype.options = function(opts) {
     this._options = this._options || [];
     this._options.push(clone(opts) || {});
     return this;
-  };
+  }
 
   // Sets an explicit "connnection" we wish to use for this query.
-  Target.prototype.connection = function(connection) {
-    this._connection = connection;
+  TargetClass.prototype.connection = function(connection) {
+    this.log.warn(
+      '.connection is deprecated, please read the documentation about the new knex "contexts"' +
+      'feature, and the associated .setConnection API'
+    )
+    const ctx = this.__context
+    if (ctx.isRootContext()) {
+      this.__context = ctx.context()
+      this.__context.__connection = Bluebird.resolve(connection)
+      this.__context.end = () => {
+        this.removeAllListeners()
+      }
+    } else {
+      throw new Error('Cannot set .connection on a non-root call')
+    }
     return this;
-  };
+  }
 
   // Set a debug flag for the current schema query stack.
-  Target.prototype.debug = function(enabled) {
+  TargetClass.prototype.debug = function(enabled) {
     this._debug = arguments.length ? enabled : true;
     return this;
-  };
+  }
 
   // Set the transaction object for this query.
-  Target.prototype.transacting = function(t) {
+  TargetClass.prototype.transacting = function(t) {
     if (t && t.client) {
-      if (!t.client.transacting) {
-        helpers.warn(`Invalid transaction value: ${t.client}`)
+      if (!t.isTransaction()) {
+        this.log.warn(`Invalid transaction value: ${t.client}`)
       } else {
-        this.client = t.client
+        this.__context = t
       }
     }
     return this;
-  };
+  }
 
   // Initializes a stream.
-  Target.prototype.stream = function(options) {
+  TargetClass.prototype.stream = function(options) {
     return this.client.runner(this).stream(options);
-  };
+  }
 
   // Initialize a stream & pipe automatically.
-  Target.prototype.pipe = function(writable, options) {
+  TargetClass.prototype.pipe = function(writable, options) {
     return this.client.runner(this).pipe(writable, options);
-  };
+  }
 
-  // Creates a method which "coerces" to a promise, by calling a
-  // "then" method on the current `Target`
-  each(['bind', 'catch', 'finally', 'asCallback',
-    'spread', 'map', 'reduce', 'tap', 'thenReturn',
-    'return', 'yield', 'ensure', 'reflect'], function(method) {
-    Target.prototype[method] = function() {
-      let then = this.then();
-      then = then[method].apply(then, arguments);
-      return then;
-    };
-  });
+  // If .then isn't defined, add a standard implementation
+  if (!TargetClass.prototype.then) {
+
+    TargetClass.prototype.then = function(/* onFulfilled, onRejected */) {
+      if (!this.__promise) {
+        const result = this.client.runner(this).run()
+        this.__promise = Bluebird.resolve(result.then.apply(result, arguments));
+      }
+      return this.__promise
+    }
+
+  }
+
+  // Proxied Bluebird api methods:
+
+  asyncInterface(TargetClass)
 
 }

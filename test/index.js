@@ -1,25 +1,22 @@
-/*global describe*/
+/*eslint-env mocha*/
+/*eslint no-var:0, max-len:0 */
 
 'use strict';
 
+require('babel-register')
 require('source-map-support').install();
 
-global.sinon = require("sinon");
+process.on('unhandledRejection', function (err) {
+  console.log('Unhandled: \n' + err.stack)
+})
 
-var chai = global.chai = require("chai");
+global.d = new Date();
 
-chai.use(require("sinon-chai"));
-chai.should();
-
-var Promise   = global.testPromise = require('bluebird');
-global.expect = chai.expect;
-global.d      = new Date();
-
+var Promise = require('bluebird');
 Promise.longStackTraces();
 
 describe('Query Building Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-
   require('./unit/query/builder')
   require('./unit/schema/mysql')('mysql')
   require('./unit/schema/mysql')('maria')

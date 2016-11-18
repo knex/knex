@@ -2,24 +2,25 @@
 
 'use strict';
 
-var _ = require('lodash')
+const _ = require('lodash')
+const expect = require('expect')
 
 module.exports = function(knex) {
 
-  var client  = knex.client;
+  const client = knex.client;
 
   function compareBindings(gotBindings, wantedBindings) {
     if (Array.isArray(wantedBindings)) {
-      expect(gotBindings.length).to.eql(wantedBindings.length);
+      expect(gotBindings.length).toEqual(wantedBindings.length);
       wantedBindings.forEach(function (wantedBinding, index) {
         if (typeof wantedBinding === 'function') {
-          expect(wantedBinding(gotBindings[index])).to.eql(true);
+          expect(wantedBinding(gotBindings[index])).toEqual(true);
         } else {
-          expect(wantedBinding).to.eql(gotBindings[index]);
+          expect(wantedBinding).toEqual(gotBindings[index]);
         }
       });
     } else {
-      expect(gotBindings).to.eql(wantedBindings);
+      expect(gotBindings).toEqual(wantedBindings);
     }
   }
 
@@ -31,13 +32,13 @@ module.exports = function(knex) {
         testSqlTester(qb, val, statement, bindings, returnval);
       });
     } else if (client.driverName === driverName) {
-      var sql = qb.toSQL();
+      const sql = qb.toSQL();
 
       if (statement) {
         if (Array.isArray(sql)) {
-          expect(_.map(sql, 'sql')).to.eql(statement);
+          expect(_.map(sql, 'sql')).toEqual(statement);
         } else {
-          expect(sql.sql).to.equal(statement);
+          expect(sql.sql).toEqual(statement);
         }
       }
       if (bindings) {
@@ -48,14 +49,14 @@ module.exports = function(knex) {
         }
       }
       if (returnval !== undefined && returnval !== null) {
-        var oldThen = qb.then;
+        const oldThen = qb.then;
         qb.then = function() {
-          var promise = oldThen.apply(this, []);
+          let promise = oldThen.apply(this, []);
           promise = promise.tap(function(resp) {
             if (typeof returnval === 'function') {
-              expect(!!returnval(resp)).to.equal(true);
+              expect(!!returnval(resp)).toEqual(true);
             } else {
-              expect(stripDates(resp)).to.eql(returnval);
+              expect(stripDates(resp)).toEqual(returnval);
             }
           });
           return promise.then.apply(promise, arguments);
@@ -79,28 +80,29 @@ module.exports = function(knex) {
   }
 
   function makeTestSQL(builder) {
-    var tester = testSqlTester.bind(null, builder)
+    const tester = testSqlTester.bind(null, builder)
     return function(handler) {
       handler(tester)
       return this
     }
   }
 
-  var originalRaw = client.raw
-  var originalQueryBuilder = client.queryBuilder
-  var originalSchemaBuilder = client.schemaBuilder
-  client.raw = function() {
-    var raw = originalRaw.apply(this, arguments)
+  const originalRaw = knex.raw
+  const originalQueryBuilder = client.queryBuilder
+  const originalSchemaBuilder = client.schemaBuilder
+
+  knex.raw = function() {
+    const raw = originalRaw.apply(this, arguments)
     raw.testSql = makeTestSQL(raw)
     return raw
   }
   client.queryBuilder = function() {
-    var qb = originalQueryBuilder.apply(this, arguments)
+    const qb = originalQueryBuilder.apply(this, arguments)
     qb.testSql = makeTestSQL(qb)
     return qb
   }
   client.schemaBuilder = function() {
-    var sb = originalSchemaBuilder.apply(this, arguments)
+    const sb = originalSchemaBuilder.apply(this, arguments)
     sb.testSql = makeTestSQL(sb)
     return sb
   }

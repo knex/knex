@@ -1,9 +1,10 @@
-/*global describe, expect, it*/
+/*eslint-env mocha*/
 /*eslint no-var:0, max-len:0 */
 'use strict';
 
-var Knex   = require('../../../knex');
+var Knex = require('../../../knex');
 var _ = require('lodash');
+var expect = require('expect')
 
 module.exports = function(knex) {
 
@@ -25,7 +26,7 @@ module.exports = function(knex) {
           return knex('test_table_two')
             .select('*')
             .then(function(resp) {
-              expect(resp).to.have.length(0);
+              expect(resp.length).toEqual(0);
             });
 
         });
@@ -48,12 +49,12 @@ module.exports = function(knex) {
     });
 
     it('should allow using the primary table as a raw statement', function() {
-      expect(knex(knex.raw("raw_table_name")).toQuery()).to.equal('select * from raw_table_name');
+      expect(knex(knex.raw("raw_table_name")).toQuery()).toEqual('select * from raw_table_name');
     });
 
     it('should allow using .fn-methods to create raw statements', function() {
       expect(knex.fn.now().prototype === knex.raw().prototype);
-      expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
+      expect(knex.fn.now().toQuery()).toEqual('CURRENT_TIMESTAMP');
     });
 
     it('gets the columnInfo', function() {
@@ -210,7 +211,7 @@ module.exports = function(knex) {
       }).then(function() {
         return knex.count('*').from('accounts');
       }).then(function(resp) {
-        expect(resp[0][countColumn]).to.equal(count);
+        expect(resp[0][countColumn]).toEqual(count);
       }).then(function() {
         return knex('accounts').select('about_col');
       }).then(function() {
@@ -220,7 +221,7 @@ module.exports = function(knex) {
       }).then(function() {
         return knex.count('*').from('accounts');
       }).then(function(resp) {
-        expect(resp[0][countColumn]).to.equal(count);
+        expect(resp[0][countColumn]).toEqual(count);
       });
     });
 
@@ -248,11 +249,11 @@ module.exports = function(knex) {
       }).then(function() {
         return knex.select('*').from('accounts').first();
       }).then(function(resp) {
-        expect(_.keys(resp).sort()).to.eql(["about", "created_at", "email", "id", "last_name", "logins", "phone", "updated_at"]);
+        expect(_.keys(resp).sort()).toEqual(["about", "created_at", "email", "id", "last_name", "logins", "phone", "updated_at"]);
       }).then(function() {
         return knex.count('*').from('accounts');
       }).then(function(resp) {
-        expect(resp[0][countColumn]).to.equal(count);
+        expect(resp[0][countColumn]).toEqual(count);
       });
     });
 
@@ -289,10 +290,10 @@ module.exports = function(knex) {
 
       return query.timeout(200)
         .then(function() {
-          expect(true).to.equal(false);
+          expect(true).toEqual(false);
         })
         .catch(function(error) {
-          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+          expect(_.pick(error, 'timeout', 'name', 'message')).toEqual({
             timeout: 200,
             name:    'TimeoutError',
             message: 'Defined query timeout of 200ms exceeded when running query.'
@@ -331,7 +332,7 @@ module.exports = function(knex) {
         }
       };
 
-      if(!testQueries.hasOwnProperty(dialect)) {
+      if (!testQueries.hasOwnProperty(dialect)) {
         throw new Error('Missing test query for dialect: ' + dialect);
       }
 
@@ -343,18 +344,18 @@ module.exports = function(knex) {
 
       // Only mysql/mariadb query cancelling supported for now
       if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
-        expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
+        expect(addTimeout).toThrow("Query cancelling not supported for this dialect");
         return;
       }
 
       return addTimeout()
         .then(function() {
-          expect(true).to.equal(false);
+          expect(true).toEqual(false);
         })
         .catch(function(error) {
-          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+          expect(_.pick(error, 'timeout', 'name', 'message')).toEqual({
             timeout: 200,
-            name:    'TimeoutError',
+            name: 'TimeoutError',
             message: 'Defined query timeout of 200ms exceeded when running query.'
           });
 
@@ -365,7 +366,7 @@ module.exports = function(knex) {
             .then(function(results) {
               var processes = results[0];
               var sleepProcess = _.find(processes, {Info: 'SELECT SLEEP(10)'});
-              expect(sleepProcess).to.equal(undefined);
+              expect(sleepProcess).toEqual(undefined);
             });
         });
     });
@@ -390,7 +391,7 @@ module.exports = function(knex) {
         .then(function() {
           throw new Error("Shouldn't have gotten here.");
         }, function(error) {
-          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+          expect(_.pick(error, 'timeout', 'name', 'message')).toEqual({
             timeout: 1,
             name:    'TimeoutError',
             message: 'After query timeout of 1ms exceeded, cancelling of query failed.'
@@ -403,11 +404,11 @@ module.exports = function(knex) {
 
       var onQueryResponse = function(response, obj, builder) {
         queryCount++;
-        expect(response).to.be.an('array');
-        expect(obj).to.be.an('object');
-        expect(obj.__knexUid).to.be.a('string');
-        expect(obj.__knexQueryUid).to.be.a('string');
-        expect(builder).to.be.an('object');
+        expect(response).toBeAn('array');
+        expect(obj).toBeAn('object');
+        expect(obj.__knexUid).toBeA('string');
+        expect(obj.__knexQueryUid).toBeA('string');
+        expect(builder).toBeAn('object');
       };
       knex.on('query-response', onQueryResponse);
 
@@ -419,7 +420,7 @@ module.exports = function(knex) {
           })
         })
         .then(function() {
-          expect(queryCount).to.equal(4);
+          expect(queryCount).toEqual(4);
         })
     });
 
@@ -428,10 +429,10 @@ module.exports = function(knex) {
       var queryCount = 0;
       var onQueryError = function(error, obj) {
         queryCount++;
-        expect(obj).to.be.an('object');
-        expect(obj.__knexUid).to.be.a('string');
-        expect(obj.__knexQueryUid).to.be.a('string');
-        expect(error).to.be.an('object');
+        expect(obj).toBeAn('object');
+        expect(obj.__knexUid).toBeA('string');
+        expect(obj.__knexQueryUid).toBeA('string');
+        expect(error).toBeAn('object');
       };
 
       knex.on('query-error', onQueryError);
@@ -439,10 +440,10 @@ module.exports = function(knex) {
       return knex.raw('Broken query')
         .on('query-error', onQueryError)
         .then(function() {
-          expect(true).to.equal(false); //Should not be resolved
+          expect(true).toEqual(false); //Should not be resolved
         })
         .catch(function() {
-          expect(queryCount).to.equal(2);
+          expect(queryCount).toEqual(2);
         })
     });
 

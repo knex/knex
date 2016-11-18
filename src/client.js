@@ -1,10 +1,9 @@
 import Promise from 'bluebird';
-import * as helpers from './helpers';
+import consoleLogger from './util/consoleLogger'
 
 import Raw from './raw';
 import Runner from './runner';
 import Formatter from './formatter';
-import Transaction from './transaction';
 
 import QueryBuilder from './query/builder';
 import QueryCompiler from './query/compiler';
@@ -36,8 +35,10 @@ function clientId() {
 // The base client provides the general structure
 // for a dialect specific client object.
 function Client(config = {}) {
+  this.log = consoleLogger
   this.config = config
   this.connectionSettings = cloneDeep(config.connection || {})
+
   if (this.driverName && config.connection) {
     this.initializeDriver()
     if (!config.pool || (config.pool && config.pool.max !== 0)) {
@@ -45,6 +46,7 @@ function Client(config = {}) {
       this.initializePool(config)
     }
   }
+
   this.valueForUndefined = this.raw('DEFAULT');
   if (config.useNullAsDefault) {
     this.valueForUndefined = null
@@ -54,20 +56,59 @@ inherits(Client, EventEmitter)
 
 assign(Client.prototype, {
 
+  transaction: {
+    begin: 'BEGIN',
+    savepoint: 'SAVEPOINT %s',
+    commit: 'COMMIT',
+    releaseSavepoint: 'RELEASE SAVEPOINT %s',
+    rollback: 'ROLLBACK',
+    rollbackSavepoint: 'ROLLBACK TO SAVEPOINT %s'
+  },
+
   formatter() {
     return new Formatter(this)
   },
 
-  queryBuilder() {
-    return new QueryBuilder(this)
+  format(fmt) {
+    let i = 1;
+    const args = arguments;
+    return fmt.replace(/%([%sILQ])/g, (_, type) => {
+      if ('%' == type) return '%';
+      const arg = args[i++];
+      switch (type) {
+        case 's': return String(arg == null ? '' : arg)
+        case 'I': return this.ident(arg)
+        case 'L': return this.literal(arg)
+      }
+    });
+  },
+
+  ident(value) {
+
+  },
+
+  literal(value) {
+
+  },
+
+  raw() {
+    return this.__raw({client: this}, ...arguments)
+  },
+
+  __raw(context, ...rest) {
+    return new Raw(context).set(...rest)
+  },
+
+  queryBuilder(context) {
+    return new QueryBuilder(context)
+  },
+
+  schemaBuilder(context) {
+    return new SchemaBuilder(context)
   },
 
   queryCompiler(builder) {
     return new QueryCompiler(this, builder)
-  },
-
-  schemaBuilder() {
-    return new SchemaBuilder(this)
   },
 
   schemaCompiler(builder) {
@@ -90,16 +131,8 @@ assign(Client.prototype, {
     return new ColumnCompiler(this, tableBuilder, columnBuilder)
   },
 
-  runner(connection) {
-    return new Runner(this, connection)
-  },
-
-  transaction(container, config, outerTx) {
-    return new Transaction(this, container, config, outerTx)
-  },
-
-  raw() {
-    return new Raw(this).set(...arguments)
+  runner(builder) {
+    return new Runner(builder)
   },
 
   _formatQuery(sql, bindings, timeZone) {
@@ -123,26 +156,80 @@ assign(Client.prototype, {
     }
   }),
 
-  query(connection, obj) {
-    if (typeof obj === 'string') obj = {sql: obj}
-    obj.bindings = this.prepBindings(obj.bindings)
-    debugQuery(obj.sql)
-    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
-    debugBindings(obj.bindings)
-    return this._query(connection, obj).catch((err) => {
-      err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message
-      this.emit('query-error', err, assign({__knexUid: connection.__knexUid}, obj))
+  async query(context, obj) {
+
+    if (typeof obj === 'string') {
+      obj = {sql: obj}
+    }
+
+    ensureValidContext(context, obj.sql)
+
+    let connection
+    try {
+      connection = context.isRootContext()
+        ? await this.acquireConnection()
+        : await context.getConnection()
+
+      obj.bindings = this.prepBindings(obj.bindings)
+
+      debugQuery(`${connection.__knexUid} - ${obj.sql}`)
+      debugBindings(obj.bindings)
+
+      this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+      context.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+
+      return await this._query(context, connection, obj)
+    } catch (err) {
+      const formattedSql = this._formatQuery(obj.sql, obj.bindings)
+      err.message = `${err.message} - ${formattedSql}`
+      err.sql = obj.sql
+      err.bindings = obj.bindings
+
+      // TODO: conn ident for errors... assign({__knexUid: connection.__knexUid}, obj)
+      this.emit('query-error', err, obj)
+      context.emit('query-error', err, obj)
       throw err
-    })
+    } finally {
+      if (connection) {
+        if (context.isRootContext()) {
+          debugQuery(`${connection.__knexUid} ...releasing (query)...`)
+          this.releaseConnection(connection)
+        } else {
+          debugQuery(`${connection.__knexUid} ...keeping...`)
+        }
+      }
+    }
   },
 
-  stream(connection, obj, stream, options) {
-    if (typeof obj === 'string') obj = {sql: obj}
-    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
-    debugQuery(obj.sql)
-    obj.bindings = this.prepBindings(obj.bindings)
-    debugBindings(obj.bindings)
-    return this._stream(connection, obj, stream, options)
+  async stream(context, obj, passThroughStream, options) {
+
+    if (typeof obj === 'string') {
+      obj = {sql: obj}
+    }
+
+    ensureValidContext(context, obj.sql)
+
+    let connection
+    try {
+      connection = context.isRootContext()
+        ? await this.acquireConnection()
+        : await context.getConnection()
+
+      this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+      context.emit('query', assign({__knexUid: connection.__knexUid}, obj))
+
+      debugQuery(obj.sql)
+
+      obj.bindings = this.prepBindings(obj.bindings)
+
+      debugBindings(obj.bindings)
+
+      return await this._stream(context, connection, obj, passThroughStream, options)
+    } finally {
+      if (connection && context.isRootContext()) {
+        this.releaseConnection(connection)
+      }
+    }
   },
 
   prepBindings(bindings) {
@@ -157,7 +244,8 @@ assign(Client.prototype, {
     try {
       this.driver = this._driver()
     } catch (e) {
-      helpers.exit(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
+      this.log.error(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
+      process.exit()
     }
   },
 
@@ -167,10 +255,9 @@ assign(Client.prototype, {
       min: 2,
       max: 10,
       name: name,
+      // returnToHead: true,
       log(str, level) {
-        if (level === 'info') {
-          debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
-        }
+        debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
       },
       create: (callback) => {
         this.acquireRawConnection()
@@ -184,7 +271,7 @@ assign(Client.prototype, {
       },
       destroy: (connection) => {
         if (poolConfig.beforeDestroy) {
-          helpers.warn(`
+          this.log.warn(`
             beforeDestroy is deprecated, please open an issue if you use this
             to discuss alternative apis
           `)
@@ -196,7 +283,7 @@ assign(Client.prototype, {
       },
       validate: (connection) => {
         if (connection.__knex__disposed) {
-          helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
+          this.log.warn(`Connection Error: ${connection.__knex__disposed}`)
           return false
         }
         return this.validateConnection(connection)
@@ -206,7 +293,7 @@ assign(Client.prototype, {
 
   initializePool(config) {
     if (this.pool) {
-      helpers.warn('The pool has already been initialized')
+      this.log.warn('The pool has already been initialized')
       return
     }
     this.pool = new Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
@@ -218,29 +305,30 @@ assign(Client.prototype, {
 
   // Acquire a connection from the pool.
   acquireConnection() {
+    const timeout = this.config.acquireConnectionTimeout || 60000
     return new Promise((resolver, rejecter) => {
+      let timedOut = false
       if (!this.pool) {
         return rejecter(new Error('Unable to acquire a connection'))
       }
-      let wasRejected = false
       const t = setTimeout(() => {
-        wasRejected = true
-        rejecter(new Promise.TimeoutError(
-          'Knex: Timeout acquiring a connection. The pool is probably full. ' +
-          'Are you missing a .transacting(trx) call?'
+        timedOut = true
+        rejecter(new Error(
+          `Knex: Timeout acquiring a connection. ` +
+          `The pool is probably full. ` +
+          `Are you missing a .transacting(trx) call?`
         ))
-      }, this.config.acquireConnectionTimeout || 60000)
+      }, timeout)
       this.pool.acquire((err, connection) => {
-        if (err) {
+        clearTimeout(t)
+        if (err && !timedOut) {
           return rejecter(err)
         }
-        clearTimeout(t)
-        if (wasRejected) {
-          this.pool.release(connection)
-        } else {
-          debug('acquired connection from pool: %s', connection.__knexUid)
-          resolver(connection)
+        if (timedOut) {
+          return this.releaseConnection(connection)
         }
+        debug('acquired connection from pool: %s', connection.__knexUid)
+        resolver(connection)
       })
     })
   },
@@ -248,11 +336,8 @@ assign(Client.prototype, {
   // Releases a connection back to the connection pool,
   // returning a promise resolved when the connection is released.
   releaseConnection(connection) {
-    return new Promise((resolver) => {
-      debug('releasing connection to pool: %s', connection.__knexUid)
-      this.pool.release(connection)
-      resolver()
-    })
+    debug('releasing connection to pool: %s', connection.__knexUid)
+    this.pool.release(connection)
   },
 
   // Destroy the current connection pool for the client.
@@ -300,4 +385,15 @@ assign(Client.prototype, {
 
 })
 
+function ensureValidContext(context, sql) {
+  if (context.isTransaction() && context.isTransactionComplete()) {
+    throw new Error(
+      `Transaction has already been ${context.__transactionStatus}, ` +
+      `cannot execute query ${sql}`
+    )
+  }
+}
+
 export default Client
+
+

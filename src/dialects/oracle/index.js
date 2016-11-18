@@ -1,7 +1,7 @@
 
 // Oracle Client
 // -------
-import { assign, map, flatten, values } from 'lodash'
+import { map, assign, flatten, values } from 'lodash'
 
 import inherits from 'inherits';
 import Client from '../../client';
@@ -10,7 +10,6 @@ import * as helpers from '../../helpers';
 import {bufferToString} from '../../query/string';
 import Formatter from './formatter';
 
-import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
 import SchemaCompiler from './schema/compiler';
 import ColumnBuilder from './schema/columnbuilder';
@@ -34,10 +33,6 @@ assign(Client_Oracle.prototype, {
 
   _driver() {
     return require('oracle')
-  },
-
-  transaction() {
-    return new Transaction(this, ...arguments)
   },
 
   formatter() {
@@ -65,7 +60,7 @@ assign(Client_Oracle.prototype, {
   },
 
   prepBindings(bindings) {
-    return map(bindings, (value) => {
+    return bindings.map((value) => {
       // returning helper uses always ROWID as string
       if (value instanceof ReturningHelper && this.driver) {
         return new this.driver.OutParam(this.driver.OCCISTRING)
@@ -115,7 +110,7 @@ assign(Client_Oracle.prototype, {
     })
   },
 
-  _stream(connection, obj, stream, options) {
+  _stream(context, connection, obj, stream, options) {
     obj.sql = this.positionBindings(obj.sql);
     return new Promise(function (resolver, rejecter) {
       stream.on('error', (err) => {
@@ -132,7 +127,7 @@ assign(Client_Oracle.prototype, {
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
-  _query(connection, obj) {
+  _query(context, connection, obj) {
 
     // convert ? params into positional bindings (:1)
     obj.sql = this.positionBindings(obj.sql);
@@ -166,7 +161,7 @@ assign(Client_Oracle.prototype, {
       case 'pluck':
       case 'first':
         response = helpers.skim(response);
-        if (obj.method === 'pluck') response = map(response, obj.pluck);
+        if (obj.method === 'pluck') response = response.map(val => val[obj.pluck])
         return obj.method === 'first' ? response[0] : response;
       case 'insert':
       case 'del':

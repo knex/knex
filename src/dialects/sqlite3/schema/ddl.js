@@ -11,8 +11,9 @@ import { assign, uniqueId, find, identity, map, omit } from 'lodash'
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
 // for sqlite3 things.
-function SQLite3_DDL(client, tableCompiler, pragma, connection) {
-  this.client = client
+function SQLite3_DDL(context, tableCompiler, pragma, connection) {
+  this.context = context
+  this.client = context.client
   this.tableCompiler = tableCompiler;
   this.pragma = pragma;
   this.tableName = this.tableCompiler.tableNameRaw;
@@ -29,32 +30,32 @@ assign(SQLite3_DDL.prototype, {
   }),
 
   getTableSql() {
-    return this.trx.raw(
+    return this.context.raw(
       `SELECT name, sql FROM sqlite_master WHERE type="table" AND name="${this.tableName}"`
     );
   },
 
   renameTable: Promise.method(function() {
-    return this.trx.raw(`ALTER TABLE "${this.tableName}" RENAME TO "${this.alteredName}"`);
+    return this.context.raw(`ALTER TABLE "${this.tableName}" RENAME TO "${this.alteredName}"`);
   }),
 
   dropOriginal() {
-    return this.trx.raw(`DROP TABLE "${this.tableName}"`);
+    return this.context.raw(`DROP TABLE "${this.tableName}"`);
   },
 
   dropTempTable() {
-    return this.trx.raw(`DROP TABLE "${this.alteredName}"`);
+    return this.context.raw(`DROP TABLE "${this.alteredName}"`);
   },
 
   copyData() {
-    return this.trx.raw(`SELECT * FROM "${this.tableName}"`)
+    return this.context.raw(`SELECT * FROM "${this.tableName}"`)
       .bind(this)
       .then(this.insertChunked(20, this.alteredName));
   },
 
   reinsertData(iterator) {
     return function() {
-      return this.trx.raw(`SELECT * FROM "${this.alteredName}"`)
+      return this.context.raw(`SELECT * FROM "${this.alteredName}"`)
         .bind(this)
         .then(this.insertChunked(20, this.tableName, iterator));
     };
@@ -69,7 +70,7 @@ assign(SQLite3_DDL.prototype, {
         memo++;
         batch.push(row);
         if (memo % 20 === 0 || memo === result.length) {
-          return ddl.trx.queryBuilder()
+          return ddl.context.queryBuilder()
             .table(target)
             .insert(map(batch, iterator))
             .then(function() { batch = []; })
@@ -82,7 +83,7 @@ assign(SQLite3_DDL.prototype, {
 
   createTempTable(createTable) {
     return function() {
-      return this.trx.raw(createTable.sql.replace(this.tableName, this.alteredName));
+      return this.context.raw(createTable.sql.replace(this.tableName, this.alteredName));
     };
   },
 
@@ -166,8 +167,9 @@ assign(SQLite3_DDL.prototype, {
 
   // Boy, this is quite a method.
   renameColumn: Promise.method(function(from, to) {
-    return this.client.transaction(trx => {
-      this.trx = trx
+    const ctx = this.context
+    return this.context.transaction(trx => {
+      this.context = trx
       return this.getColumn(from)
         .bind(this)
         .then(this.getTableSql)
@@ -184,7 +186,7 @@ assign(SQLite3_DDL.prototype, {
             .then(this.copyData)
             .then(this.dropOriginal)
             .then(function() {
-              return this.trx.raw(newSql);
+              return this.context.raw(newSql);
             })
             .then(this.reinsertData(function(row) {
               row[to] = row[from];
@@ -192,12 +194,15 @@ assign(SQLite3_DDL.prototype, {
             }))
             .then(this.dropTempTable)
         })
-    }, {connection: this.connection})
+    }).finally(() => {
+      this.context = ctx
+    })
   }),
 
   dropColumn: Promise.method(function(column) {
-    return this.client.transaction(trx => {
-      this.trx = trx
+    const ctx = this.context
+    return this.context.transaction(trx => {
+      this.context = trx
       return this.getColumn(column)
       .bind(this)
       .then(this.getTableSql)
@@ -213,12 +218,14 @@ assign(SQLite3_DDL.prototype, {
           .then(this.copyData)
           .then(this.dropOriginal)
           .then(function() {
-            return this.trx.raw(newSql);
+            return this.context.raw(newSql);
           })
           .then(this.reinsertData(row => omit(row, column)))
           .then(this.dropTempTable);
       })
-    }, {connection: this.connection})
+    }).finally(() => {
+      this.context = ctx
+    })
   })
 
 })

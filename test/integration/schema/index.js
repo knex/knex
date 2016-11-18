@@ -1,8 +1,10 @@
-/*global describe, it, expect, testPromise*/
+/*eslint-env mocha*/
+/*eslint no-var:0, max-len:0 */
 
 'use strict';
 
-var Promise = testPromise;
+var Promise = require('bluebird');
+var expect = require('expect')
 
 module.exports = function(knex) {
 
@@ -54,11 +56,11 @@ module.exports = function(knex) {
         expect(function() {
           knex.schema.createTable('callback_must_be_supplied').toString()
         })
-        .to.throw(TypeError);
+        .toThrow(TypeError);
         expect(function() {
           knex.schema.createTable('callback_must_be_supplied', function(){}).toString();
         })
-        .to.not.throw(TypeError);
+        .toNotThrow(TypeError);
       });
 
       it('is possible to chain .catch', function() {
@@ -185,8 +187,8 @@ module.exports = function(knex) {
           var createInvalidObjectInTableSchema = function () {
             table.integer('another_id').references('id').inTable({tableName: 'this_should_fail'})
           };
-          expect(createInvalidUndefinedInTableSchema).to.throw(TypeError);
-          expect(createInvalidObjectInTableSchema).to.throw(TypeError);
+          expect(createInvalidUndefinedInTableSchema).toThrow(TypeError);
+          expect(createInvalidObjectInTableSchema).toThrow(TypeError);
         })
       });
 
@@ -314,11 +316,11 @@ module.exports = function(knex) {
         expect(function() {
           knex.schema.createTable('callback_must_be_supplied').toString()
         })
-          .to.throw(TypeError);
+          .toThrow(TypeError);
         expect(function() {
           knex.schema.createTable('callback_must_be_supplied', function(){}).toString();
         })
-          .to.not.throw(TypeError);
+          .toNotThrow(TypeError);
       });
 
       it('allows adding a field', function () {
@@ -351,13 +353,13 @@ module.exports = function(knex) {
 
       it('checks whether a table exists', function() {
         return knex.schema.hasTable('test_table_two').then(function(resp) {
-          expect(resp).to.equal(true);
+          expect(resp).toEqual(true);
         });
       });
 
       it('should be false if a table does not exists', function() {
         return knex.schema.hasTable('this_table_is_fake').then(function(resp) {
-          expect(resp).to.equal(false);
+          expect(resp).toEqual(false);
         });
       });
 
@@ -384,7 +386,7 @@ module.exports = function(knex) {
     describe('hasColumn', function() {
       it('checks whether a column exists, resolving with a boolean', function() {
         return knex.schema.hasColumn('accounts', 'first_name').then(function(exists) {
-          expect(exists).to.equal(true);
+          expect(exists).toEqual(true);
         });
       });
     });
@@ -423,7 +425,7 @@ module.exports = function(knex) {
           return knex.schema.hasColumn('rename_column_test', 'id');
         })
         .then(function (exists) {
-          expect(exists).to.equal(true);
+          expect(exists).toEqual(true);
         });
       });
 
@@ -449,9 +451,9 @@ module.exports = function(knex) {
             })
             .then(getColInfo)
             .then(function (colInfo) {
-              expect(String(colInfo.colnameint.defaultValue)).to.contain('1');
-              expect(colInfo.colnamestring.defaultValue).to.contain('knex'); //Using contain because of different response per dialect. IE mysql 'knex', postgres 'knex::character varying'
-              expect(colInfo.colnamestring.nullable).to.equal(false);
+              expect(String(colInfo.colnameint.defaultValue)).toContain('1');
+              expect(colInfo.colnamestring.defaultValue).toContain('knex'); //Using contain because of different response per dialect. IE mysql 'knex', postgres 'knex::character varying'
+              expect(colInfo.colnamestring.nullable).toEqual(false);
               return tr.schema.table('renameColTest', function (table) {
                 table.renameColumn('colnameint', 'colnameintchanged');
                 table.renameColumn('colnamestring', 'colnamestringchanged');
@@ -459,9 +461,9 @@ module.exports = function(knex) {
             })
             .then(getColInfo)
             .then(function (columnInfo) {
-              expect(String(columnInfo.colnameintchanged.defaultValue)).to.contain('1');
-              expect(columnInfo.colnamestringchanged.defaultValue).to.contain('knex');
-              expect(columnInfo.colnamestringchanged.nullable).to.equal(false);
+              expect(String(columnInfo.colnameintchanged.defaultValue)).toContain('1');
+              expect(columnInfo.colnamestringchanged.defaultValue).toContain('knex');
+              expect(columnInfo.colnamestringchanged.nullable).toEqual(false);
             });
         });
       });
@@ -477,7 +479,7 @@ module.exports = function(knex) {
       var tableName = 'primarytest';
       return knex.transaction(function(tr) {
         return tr.schema.dropTableIfExists(tableName)
-        .then(function() {
+          .then(function() {
             return tr.schema.createTable(tableName, function(table) {
               table.string('test').primary(constraintName);
               table.string('test2').notNullable();

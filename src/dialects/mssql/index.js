@@ -9,7 +9,6 @@ import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 
 import Formatter from '../../formatter'
-import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
 import SchemaCompiler from './schema/compiler';
 import TableCompiler from './schema/tablecompiler';
@@ -46,8 +45,13 @@ assign(Client_MSSQL.prototype, {
     return new MSSQL_Formatter(this)
   },
 
-  transaction() {
-    return new Transaction(this, ...arguments)
+  transaction: {
+    begin: 'BEGIN',
+    savepoint: 'SAVE TRANSACTION %s',
+    commit: 'COMMIT',
+    releaseSavepoint: 'COMMIT TRANSACTION %s',
+    rollback: 'ROLLBACK',
+    rollbackSavepoint: 'ROLLBACK TRANSACTION %s'
   },
 
   queryCompiler() {
@@ -108,8 +112,7 @@ assign(Client_MSSQL.prototype, {
 
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
-  _stream(connection, obj, stream, options) {
-    options = options || {}
+  _stream(context, connection, obj, stream) {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
     obj.sql = this.positionBindings(obj.sql);
@@ -136,7 +139,7 @@ assign(Client_MSSQL.prototype, {
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
-  _query(connection, obj) {
+  _query(context, connection, obj) {
     const client = this;
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     // convert ? params into positional bindings (@p1)
@@ -185,7 +188,7 @@ assign(Client_MSSQL.prototype, {
       case 'pluck':
       case 'first':
         response = helpers.skim(response)
-        if (method === 'pluck') return map(response, obj.pluck)
+        if (method === 'pluck') response = response.map(val => val[obj.pluck])
         return method === 'first' ? response[0] : response
       case 'insert':
       case 'del':

@@ -1,10 +1,12 @@
-/*global describe, expect, it, testPromise*/
+/*eslint-env mocha*/
+/*eslint no-var:0, max-len:0 */
 
 'use strict';
 
-var Promise = testPromise;
-var Knex   = require('../../../knex');
+var Promise = require('bluebird')
+var Knex   = require('../../../knex')
 var _ = require('lodash');
+var expect = require('expect')
 
 module.exports = function(knex) {
 
@@ -43,10 +45,10 @@ module.exports = function(knex) {
           });
 
       }).then(function(commitMessage) {
-        expect(commitMessage).to.equal('Hello world');
+        expect(commitMessage).toEqual('Hello world');
         return knex('accounts').where('id', id).select('first_name');
       }).then(function(resp) {
-        expect(resp).to.have.length(1);
+        expect(resp.length).toEqual(1);
       });
     });
 
@@ -75,10 +77,10 @@ module.exports = function(knex) {
             t.rollback(err);
           });
       }).catch(function(msg) {
-        expect(msg).to.equal(err);
+        expect(msg).toEqual(err);
         return knex('accounts').where('id', id).select('first_name');
       }).then(function(resp) {
-        expect(resp.length).to.equal(0);
+        expect(resp.length).toEqual(0);
       });
     });
 
@@ -106,10 +108,10 @@ module.exports = function(knex) {
             return 'Hello World';
           });
       }).then(function(commitMessage) {
-        expect(commitMessage).to.equal('Hello World');
+        expect(commitMessage).toEqual('Hello World');
         return knex('accounts').where('id', id).select('first_name');
       }).then(function(resp) {
-        expect(resp).to.have.length(1);
+        expect(resp.length).toEqual(1);
       });
     });
 
@@ -143,19 +145,19 @@ module.exports = function(knex) {
       .on('query', function(obj) {
         count++;
         if (!__knexUid) __knexUid = obj.__knexUid;
-        expect(__knexUid).to.equal(obj.__knexUid);
+        expect(__knexUid).toEqual(obj.__knexUid);
       })
       .catch(function(msg) {
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
         var expectedCount =
           knex.client.dialect === 'oracle' ||
           knex.client.dialect === 'mssql' ? 2 : 4;
-        expect(count).to.equal(expectedCount);
-        expect(msg).to.equal(err);
+        expect(count).toEqual(expectedCount);
+        expect(msg).toEqual(err);
         return knex('accounts').where('id', id).select('first_name');
       })
       .then(function(resp) {
-        expect(resp).to.eql([]);
+        expect(resp).toEqual([]);
       });
     });
 
@@ -165,32 +167,32 @@ module.exports = function(knex) {
       if (knex.client.dialect === 'postgresql') {
         return knex.transaction(function(trx) {
           return trx.schema.createTable('test_schema_transactions', function(table) {
-              table.increments();
-              table.string('name');
-              table.timestamps();
-            }).then(function() {
-              return trx('test_schema_transactions').insert({name: 'bob'});
-            }).then(function() {
-              return trx('test_schema_transactions').count('*');
-            }).then(function(resp) {
-              var _count = parseInt(resp[0].count, 10);
-              expect(_count).to.equal(1);
-              throw err;
-            });
+            table.increments();
+            table.string('name');
+            table.timestamps();
+          }).then(function() {
+            return trx('test_schema_transactions').insert({name: 'bob'});
+          }).then(function() {
+            return trx('test_schema_transactions').count('*');
+          }).then(function(resp) {
+            var _count = parseInt(resp[0].count, 10);
+            expect(_count).toEqual(1);
+            throw err;
+          });
         })
         .on('query', function(obj) {
           count++;
           if (!__knexUid) __knexUid = obj.__knexUid;
-          expect(__knexUid).to.equal(obj.__knexUid);
+          expect(__knexUid).toEqual(obj.__knexUid);
         })
         .catch(function(msg) {
-          expect(msg).to.equal(err);
-          expect(count).to.equal(5);
+          expect(msg).toEqual(err);
+          expect(count).toEqual(5);
           return knex('test_schema_migrations').count('*');
         })
         .catch(function(e) {
           // https://www.postgresql.org/docs/8.2/static/errcodes-appendix.html
-          expect(e.code).to.equal('42P01');
+          expect(e.code).toEqual('42P01');
         });
       } else {
         var id = null;
@@ -222,18 +224,18 @@ module.exports = function(knex) {
         .on('query', function(obj) {
           count++;
           if (!__knexUid) __knexUid = obj.__knexUid;
-          expect(__knexUid).to.equal(obj.__knexUid);
+          expect(__knexUid).toEqual(obj.__knexUid);
         }).then(function() {
           if (knex.client.dialect === 'mssql') {
-            expect(count).to.equal(3);
+            expect(count).toEqual(3);
           } else if (knex.client.dialect === 'oracle') {
-            expect(count).to.equal(4);
+            expect(count).toEqual(4);
           } else {
-            expect(count).to.equal(5);
+            expect(count).toEqual(5);
           }
           return knex('accounts').where('id', id).select('first_name');
         }).then(function(resp) {
-          expect(resp).to.have.length(1);
+          expect(resp.length).toEqual(1);
         }).finally(function() {
           return knex.schema.dropTableIfExists('test_schema_transactions');
         });
@@ -245,7 +247,7 @@ module.exports = function(knex) {
         trx.debugging = true;
         return Promise.resolve(null)
       }).then(function(result) {
-        expect(result).to.equal(null)
+        expect(result).toEqual(null)
       });
     });
 
@@ -268,15 +270,15 @@ module.exports = function(knex) {
       });
 
       function expectQueryEventToHaveBeenTriggered() {
-        expect(queryEventTriggered).to.equal(true);
+        expect(queryEventTriggered).toEqual(true);
         done();
       }
 
       knex.transaction(function(trx) {
         trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
       })
-          .then(expectQueryEventToHaveBeenTriggered)
-          .catch(expectQueryEventToHaveBeenTriggered);
+      .then(expectQueryEventToHaveBeenTriggered)
+      .catch(expectQueryEventToHaveBeenTriggered);
 
     });
 
@@ -287,30 +289,28 @@ module.exports = function(knex) {
       knexConfig.pool.max = 1;
       knexConfig.acquireConnectionTimeout = 1000;
 
-      var knexDb = new Knex(knexConfig);
+      var rootKnex = new Knex(knexConfig);
 
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
-
-      return knexDb.transaction(function(trx) {
+      return rootKnex.transaction(function(trx) {
         var sql = 'SELECT 1 = 1';
         if (knex.client.dialect === 'oracle') {
           sql = 'SELECT 1 FROM DUAL';
         }
         trx.raw(sql).then(function () {
           //No connection is available, so try issuing a query without transaction.
-          //Since there is no available connection, it should throw a timeout error based on `aquireConnectionTimeout` from the knex config.
-          return knexDb.raw('select * FROM accounts WHERE username = ?', ['Test'])
-        })
-        .then(function () {
-          //Should never reach this point
-          expect(false).to.be.ok();
+          //Since there is no available connection, it should throw a timeout error based on `acquireConnectionTimeout` from the knex config.
+          return rootKnex.raw('select * FROM accounts WHERE username = ?', ['Test']).then(function () {
+            //Should never reach this point
+            expect(false).toEqual(true);
+          })
         })
         .catch(function (error) {
-          expect(error.bindings).to.be.an('array');
-          expect(error.bindings[0]).to.equal('Test');
-          expect(error.sql).to.equal('select * FROM accounts WHERE username = ?');
-          expect(error.message).to.equal('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?');
-          trx.commit();//Test done
+          expect(error.message).toContain('Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?');
+          expect(error.sql).toEqual('select * FROM accounts WHERE username = ?');
+          expect(error.bindings).toBeAn('array');
+          expect(error.bindings[0]).toEqual('Test');
+          trx.commit() //Test done
         });
       });
     });
@@ -325,11 +325,18 @@ module.exports = function(knex) {
         connection: knex.client.connectionSettings,
         acquireConnectionTimeout: 300
       })
-      return db.transaction(function() {
-        return db.transaction(function() {})
-      }).then(function () {
-        throw new Error('should not get here')
-      }).catch(Promise.TimeoutError, function(error) {})
+      return db.transaction(function(t) {
+        return t.raw('SELECT 1').then(() => {
+          return db.transaction(function(t2) {
+            return t2.raw('SELECT 2')
+          }).then(function () {
+            throw new Error('should not get here')
+          })
+        })
+      }).catch(function(error) {
+        expect(error.message).toContain('Knex: Timeout acquiring a connection.')
+        db.destroy()
+      })
     })
 
   });

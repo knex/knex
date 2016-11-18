@@ -1,6 +1,5 @@
 import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
-import * as helpers from '../../../helpers';
 
 import { filter } from 'lodash'
 
@@ -73,7 +72,7 @@ TableCompiler_SQLite3.prototype.index = function(columns, indexName) {
 TableCompiler_SQLite3.prototype.primary =
 TableCompiler_SQLite3.prototype.foreign = function() {
   if (this.method !== 'create' && this.method !== 'createIfNot') {
-    helpers.warn('SQLite3 Foreign & Primary keys may only be added on create');
+    this.log.warn('SQLite3 Foreign & Primary keys may only be added on create');
   }
 };
 
@@ -110,7 +109,7 @@ TableCompiler_SQLite3.prototype.renameColumn = function(from, to) {
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {
-      return compiler.client.ddl(compiler, pragma, this.connection).renameColumn(from, to);
+      return compiler.client.ddl(this.context, compiler, pragma).renameColumn(from, to);
     }
   });
 };
@@ -120,7 +119,7 @@ TableCompiler_SQLite3.prototype.dropColumn = function(column) {
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {
-      return compiler.client.ddl(compiler, pragma, this.connection).dropColumn(column);
+      return compiler.client.ddl(this.context, compiler, pragma).dropColumn(column);
     }
   });
 };

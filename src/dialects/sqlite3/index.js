@@ -18,7 +18,7 @@ import SQLite3_DDL from './schema/ddl';
 function Client_SQLite3(config) {
   Client.call(this, config)
   if (isUndefined(config.useNullAsDefault)) {
-    helpers.warn(
+    this.log.warn(
       'sqlite does not support inserting default values. Set the ' +
       '`useNullAsDefault` flag to hide this warning. ' +
       '(see docs http://knexjs.org/#Builder-insert).'
@@ -53,8 +53,8 @@ assign(Client_SQLite3.prototype, {
     return new TableCompiler(this, ...arguments)
   },
 
-  ddl(compiler, pragma, connection) {
-    return new SQLite3_DDL(this, compiler, pragma, connection)
+  ddl(context, compiler, pragma) {
+    return new SQLite3_DDL(context, compiler, pragma)
   },
 
   // Get a raw connection from the database, returning a promise with the connection object.
@@ -81,7 +81,7 @@ assign(Client_SQLite3.prototype, {
 
   // Runs the query on the specified connection, providing the bindings and any
   // other necessary prep work.
-  _query(connection, obj) {
+  _query(context, connection, obj) {
     const { method } = obj;
     let callMethod;
     switch (method) {
@@ -110,18 +110,18 @@ assign(Client_SQLite3.prototype, {
     })
   },
 
-  _stream(connection, sql, stream) {
-    const client = this;
-    return new Promise(function(resolver, rejecter) {
+  _stream(context, connection, sql, stream) {
+    return new Promise((resolver, rejecter) => {
       stream.on('error', rejecter)
       stream.on('end', resolver)
-      return client._query(connection, sql).then(obj => obj.response).map(function(row) {
-        stream.write(row)
-      }).catch(function(err) {
-        stream.emit('error', err)
-      }).then(function() {
-        stream.end()
-      })
+      return this._query(context, connection, sql)
+        .then(obj => obj.response).map(function(row) {
+          stream.write(row)
+        }).catch(function(err) {
+          stream.emit('error', err)
+        }).then(function() {
+          stream.end()
+        })
     })
   },
 

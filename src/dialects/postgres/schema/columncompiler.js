@@ -4,7 +4,7 @@
 
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
-import * as helpers from '../../../helpers';
+import { deprecate } from '../../../helpers';
 
 import { assign } from 'lodash'
 
@@ -38,7 +38,7 @@ assign(ColumnCompiler_PG.prototype, {
   floating: 'real',
   increments: 'serial primary key',
   json(jsonb) {
-    if (jsonb) helpers.deprecate('json(true)', 'jsonb()')
+    if (jsonb) this.log.warn(deprecate('json(true)', 'jsonb()'))
     return jsonColumn(this.client, jsonb);
   },
   jsonb() {

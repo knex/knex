@@ -1,17 +1,18 @@
-/*global after, before, describe, expect, it*/
+/*eslint-env mocha*/
+/*eslint no-var:0, max-len:0 */
 'use strict';
 
-var equal    = require('assert').equal;
-var path     = require('path');
-var rimraf   = require('rimraf');
-var Promise  = require('bluebird');
+var equal = require('assert').equal;
+var path = require('path');
+var expect = require('expect');
+var rimraf = require('rimraf');
+var Promise = require('bluebird');
 
 module.exports = function(knex) {
 
   require('rimraf').sync(path.join(__dirname, './migration'));
 
   before(function() {
-    // make sure lock was not left from previous failed test run
     return knex.migrate.forceFreeMigrationsLock({directory: 'test/integration/migrate/test'});
   });
 
@@ -20,8 +21,8 @@ module.exports = function(knex) {
     it('should create a new migration file with the create method', function() {
       return knex.migrate.make('test').then(function(name) {
         name = path.basename(name);
-        expect(name.split('_')[0]).to.have.length(14);
-        expect(name.split('_')[1].split('.')[0]).to.equal('test');
+        expect(name.split('_')[0].length).toEqual(14);
+        expect(name.split('_')[1].split('.')[0]).toEqual('test');
       });
     });
 
@@ -46,10 +47,10 @@ module.exports = function(knex) {
 
       it('should create a migrations lock table', function() {
         return knex.schema.hasTable('knex_migrations_lock').then(function(exists) {
-          expect(exists).to.equal(true);
+          expect(exists).toEqual(true);
 
           return knex.schema.hasColumn('knex_migrations_lock', 'is_locked').then(function(exists) {
-            expect(exists).to.equal(true);
+            expect(exists).toEqual(true);
           });
         });
       });
@@ -73,7 +74,7 @@ module.exports = function(knex) {
         ])
         .spread(function(migration1, migration2) {
           return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
-            expect(migrationLevel).to.equal(0);
+            expect(migrationLevel).toEqual(0);
           })
           .then(function() {
             // Cleanup the added migrations
@@ -89,7 +90,7 @@ module.exports = function(knex) {
 
       it('should return a negative number if the DB is behind', function() {
         return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
-          expect(migrationLevel).to.equal(-2);
+          expect(migrationLevel).toEqual(-2);
         });
       });
 
@@ -113,7 +114,7 @@ module.exports = function(knex) {
         ])
         .spread(function(migration1, migration2, migration3) {
           return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
-            expect(migrationLevel).to.equal(1);
+            expect(migrationLevel).toEqual(1);
           })
           .then(function() {
             // Cleanup the added migrations
@@ -137,8 +138,8 @@ module.exports = function(knex) {
 
       it('should remove the record in the lock table once finished', function() {
         return knex('knex_migrations_lock').select('*').then(function(data) {
-          expect(data[0]).to.have.property('is_locked');
-          expect(data[0].is_locked).to.not.be.ok;
+          expect(data[0]).toIncludeKey('is_locked');
+          expect(data[0].is_locked).toBeFalsy();
         });
       });
 
@@ -152,11 +153,11 @@ module.exports = function(knex) {
               });
           })
           .catch(function(error) {
-            expect(error).to.have.property('message', 'Migration table is already locked');
+            expect(error).toIncludeKey('message', 'Migration table is already locked');
             return knex('knex_migrations_lock').select('*');
           })
           .then(function(data) {
-            expect(data[0].is_locked).to.equal(1);
+            expect(data[0].is_locked).toEqual(1);
 
             // Clean up lock for other tests
             return knex('knex_migrations_lock').update({ is_locked: 0 })
@@ -170,30 +171,30 @@ module.exports = function(knex) {
           })
           .catch(function(error) {
             // This will fail because of the invalid migration
-            expect(error).to.have.property('message');
+            expect(error).toIncludeKey('message');
             return knex('knex_migrations_lock').select('*')
           })
           .then(function(data) {
-            expect(data[0].is_locked).to.not.be.ok;
+            expect(data[0].is_locked).toBeFalsy();
           });
       });
 
       it('should run all migration files in the specified directory', function() {
         return knex('knex_migrations').select('*').then(function(data) {
-          expect(data.length).to.equal(2);
+          expect(data.length).toEqual(2);
         });
       });
 
       it('should run the migrations from oldest to newest', function() {
         if (knex.client.dialect === 'oracle') {
           return knex('knex_migrations').orderBy('migration_time', 'asc').select('*').then(function(data) {
-            expect(path.basename(data[0].name)).to.equal('20131019235242_migration_1.js');
-            expect(path.basename(data[1].name)).to.equal('20131019235306_migration_2.js');
+            expect(path.basename(data[0].name)).toEqual('20131019235242_migration_1.js');
+            expect(path.basename(data[1].name)).toEqual('20131019235306_migration_2.js');
           });
         } else {
           return knex('knex_migrations').orderBy('id', 'asc').select('*').then(function(data) {
-            expect(path.basename(data[0].name)).to.equal('20131019235242_migration_1.js');
-            expect(path.basename(data[1].name)).to.equal('20131019235306_migration_2.js');
+            expect(path.basename(data[0].name)).toEqual('20131019235242_migration_1.js');
+            expect(path.basename(data[1].name)).toEqual('20131019235306_migration_2.js');
           });
         }
       });
@@ -204,14 +205,14 @@ module.exports = function(knex) {
         // within the table
         return Promise.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
-            expect(exists).to.equal(true);
+            expect(exists).toEqual(true);
             if (exists) {
               return Promise.all([
                 knex.schema.hasColumn(table, 'id').then(function(exists) {
-                  expect(exists).to.equal(true);
+                  expect(exists).toEqual(true);
                 }),
                 knex.schema.hasColumn(table, 'name').then(function(exists) {
-                  expect(exists).to.equal(true);
+                  expect(exists).toEqual(true);
                 })
               ]);
             }
@@ -225,16 +226,16 @@ module.exports = function(knex) {
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
           // so we need to check for dialect
           if (knex.client.dialect === 'mysql' || knex.client.dialect === 'mariadb' || knex.client.dialect === 'oracle') {
-            expect(exists).to.equal(true);
+            expect(exists).toEqual(true);
           } else {
-            expect(exists).to.equal(false);
+            expect(exists).toEqual(false);
           }
         });
       });
 
       it('should not proceed after invalid migration', function() {
         return knex.schema.hasTable('should_not_be_run').then(function(exists) {
-          expect(exists).to.equal(false);
+          expect(exists).toEqual(false);
         });
       });
 
@@ -243,12 +244,12 @@ module.exports = function(knex) {
     describe('knex.migrate.rollback', function() {
       it('should delete the most recent batch from the migration log', function() {
         return knex.migrate.rollback({directory: 'test/integration/migrate/test'}).spread(function(batchNo, log) {
-          expect(batchNo).to.equal(1);
-          expect(log).to.have.length(2);
+          expect(batchNo).toEqual(1);
+          expect(log.length).toEqual(2);
           var migrationPath = ['test', 'integration', 'migrate', 'test'].join(path.sep); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
-          expect(log[0]).to.contain(migrationPath);
+          expect(log[0]).toContain(migrationPath);
           return knex('knex_migrations').select('*').then(function(data) {
-            expect(data.length).to.equal(0);
+            expect(data.length).toEqual(0);
           });
         });
       });
@@ -256,7 +257,7 @@ module.exports = function(knex) {
       it('should drop tables as specified in the batch', function() {
         return Promise.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
-            expect(!!exists).to.equal(false);
+            expect(!!exists).toEqual(false);
           });
         });
       });
@@ -280,7 +281,7 @@ module.exports = function(knex) {
       // transactions are off, the column gets created for all dialects always.
       it('should create column even in invalid migration', function() {
         return knex.schema.hasColumn('migration_test_1', 'transaction').then(function(exists) {
-          expect(exists).to.equal(true);
+          expect(exists).toEqual(true);
         });
       });
 
@@ -298,13 +299,13 @@ module.exports = function(knex) {
 
       it('should run all working migration files in the specified directory', function() {
         return knex('knex_migrations').select('*').then(function(data) {
-          expect(data.length).to.equal(1);
+          expect(data.length).toEqual(1);
         });
       });
 
       it('should create column in invalid migration with transaction disabled', function() {
         return knex.schema.hasColumn('migration_test_trx_1', 'transaction').then(function(exists) {
-          expect(exists).to.equal(true);
+          expect(exists).toEqual(true);
         });
       });
 
@@ -322,7 +323,7 @@ module.exports = function(knex) {
 
       it('should run all working migration files in the specified directory', function() {
         return knex('knex_migrations').select('*').then(function(data) {
-          expect(data.length).to.equal(1);
+          expect(data.length).toEqual(1);
         });
       });
 
@@ -332,9 +333,9 @@ module.exports = function(knex) {
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
           // so we need to check for dialect
           if (knex.client.dialect === 'mysql' || knex.client.dialect === 'mariadb' || knex.client.dialect === 'oracle') {
-            expect(exists).to.equal(true);
+            expect(exists).toEqual(true);
           } else {
-            expect(exists).to.equal(false);
+            expect(exists).toEqual(false);
           }
         });
       });

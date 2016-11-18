@@ -51,13 +51,15 @@ assign(QueryCompiler_SQLite3.prototype, {
     if (this.client.valueForUndefined !== null) {
       each(insertData.values, bindings => {
         each(bindings, binding => {
-          if (binding === undefined) throw new TypeError(
-            '`sqlite` does not support inserting default values. Specify ' +
-            'values explicitly or use the `useNullAsDefault` config flag. ' +
-            '(see docs http://knexjs.org/#Builder-insert).'
-          );
-        });
-      });
+          if (binding === undefined) {
+            throw new TypeError(
+              '`sqlite` does not support inserting default values. Specify ' +
+              'values explicitly or use the `useNullAsDefault` config flag. ' +
+              '(see docs http://knexjs.org/#Builder-insert).'
+            )
+          }
+        })
+      })
     }
 
     if (insertData.values.length === 1) {
@@ -107,7 +109,10 @@ assign(QueryCompiler_SQLite3.prototype, {
         const maxLengthRegex = /.*\((\d+)\)/
         const out = reduce(resp, function (columns, val) {
           let { type } = val
-          let maxLength = (maxLength = type.match(maxLengthRegex)) && maxLength[1]
+          let maxLength = type.match(maxLengthRegex)
+          if (maxLength) {
+            maxLength = maxLength[1]
+          }
           type = maxLength ? type.split('(')[0] : type
           columns[val.name] = {
             type: type.toLowerCase(),

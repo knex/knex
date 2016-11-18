@@ -1,6 +1,8 @@
 /*eslint no-var:0*/
 'use strict';
-// var wtf = require('wtfnode');
+
+require('babel-register')
+
 var tape = require('tape')
 var makeKnex = require('../../knex')
 var knexfile = require('../knexfile')

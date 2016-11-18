@@ -4,7 +4,6 @@
 // -------
 import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
-import * as helpers from '../../../helpers';
 import Promise from 'bluebird';
 
 import { assign } from 'lodash'
@@ -41,7 +40,7 @@ assign(TableCompiler_MySQL.prototype, {
 
     if (this.single.comment) {
       const comment = (this.single.comment || '');
-      if (comment.length > 60) helpers.warn('The max length for a table comment is 60 characters');
+      if (comment.length > 60) this.log.warn('The max length for a table comment is 60 characters');
       sql += ` comment = '${comment}'`;
     }
 
@@ -73,9 +72,10 @@ assign(TableCompiler_MySQL.prototype, {
       output(resp) {
         const column = resp[0];
         const runner = this;
-        return compiler.getFKRefs(runner).get(0)
-          .then(refs =>
-            Promise.try(function () {
+        return compiler.getFKRefs(runner)
+          .then(resp => {
+            const refs = resp[0]
+            return Promise.try(function () {
               if (!refs.length) { return; }
               return compiler.dropFKRefs(runner, refs);
             }).then(function () {
@@ -103,7 +103,7 @@ assign(TableCompiler_MySQL.prototype, {
                 return ref;
               }));
             })
-          );
+          });
       }
     });
   },
