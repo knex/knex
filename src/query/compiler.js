@@ -11,7 +11,7 @@ import {
   reduce
 } from 'lodash';
 
-import uuid from 'node-uuid';
+import uuid from 'uuid';
 
 const debugBindings = debug('knex:bindings')
 
