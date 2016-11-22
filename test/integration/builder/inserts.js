@@ -2,7 +2,7 @@
 
 'use strict';
 
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var _    = require('lodash');
 
 module.exports = function(knex) {
