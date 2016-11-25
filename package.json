@@ -112,6 +112,10 @@
     "sqlite3": false,
     "oracledb": false
   },
+  "react-native": {
+    "./lib/migrate": "./lib/util/noop.js",
+    "./lib/seed": "./lib/util/noop.js"
+  },
   "files": [
     "CONTRIBUTING.md",
     "README.md",
