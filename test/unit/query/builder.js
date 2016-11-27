@@ -3220,6 +3220,28 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it('allows first as syntax', function() {
+    testsql(qb().select(
+      'e.lastname',
+      'e.salary',
+      qb().first('salary').from('employee').whereRaw('dept_no = e.dept_no').orderBy('salary', 'desc').as('top_dept_salary')
+    ).from('employee as e')
+    .where('dept_no', '=', 'e.dept_no'), {
+      mysql: {
+        sql: 'select `e`.`lastname`, `e`.`salary`, (select `salary` from `employee` where dept_no = e.dept_no order by `salary` desc limit ?) as `top_dept_salary` from `employee` as `e` where `dept_no` = ?',
+        bindings: [1, "e.dept_no"]
+      },
+      mssql: {
+        sql: 'select [e].[lastname], [e].[salary], (select top (?) [salary] from [employee] where dept_no = e.dept_no order by [salary] desc) as [top_dept_salary] from [employee] as [e] where [dept_no] = ?',
+        bindings: [1, "e.dept_no"]
+      },
+      postgres: {
+        sql: 'select "e"."lastname", "e"."salary", (select "salary" from "employee" where dept_no = e.dept_no order by "salary" desc limit ?) as "top_dept_salary" from "employee" as "e" where "dept_no" = ?',
+        bindings: [1, "e.dept_no"]
+      }
+    });
+  });
+
   it('supports arbitrarily nested raws', function() {
     var chain = qb().select('*').from('places')
       .where(raw('ST_DWithin((places.address).xy, ?, ?) AND ST_Distance((places.address).xy, ?) > ? AND ?', [
@@ -3974,5 +3996,17 @@ describe("QueryBuilder", function() {
       oracle: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"'
     });
   });
+
+  it('#1710, properly escapes arrays in where clauses in postgresql', function() {
+    testquery(qb().select('*').from('sometable').where('array_field', '&&', [7]), {
+      postgres: "select * from \"sometable\" where \"array_field\" && '{7}'"
+    });
+    testquery(qb().select('*').from('sometable').where('array_field', '&&', ['abc', 'def']), {
+      postgres: "select * from \"sometable\" where \"array_field\" && '{\"abc\",\"def\"}'"
+    });
+    testquery(qb().select('*').from('sometable').where('array_field', '&&', ['abc', 'def', ['g', 2]]), {
+      postgres: "select * from \"sometable\" where \"array_field\" && '{\"abc\",\"def\",{\"g\",2}}'"
+    });
+  })
 
 });

@@ -181,40 +181,23 @@ assign(Runner.prototype, {
 
   // Check whether there's a transaction flag, and that it has a connection.
   ensureConnection() {
-    const runner = this
-    const acquireConnectionTimeout = runner.client.config.acquireConnectionTimeout || 60000;
     return Promise.try(() => {
-      return runner.connection || new Promise((resolver, rejecter) => {
-        const acquireConnection = runner.client.acquireConnection();
-
-        acquireConnection.completed
-          .timeout(acquireConnectionTimeout)
+      return this.connection || new Promise((resolver, rejecter) => {
+        // need to return promise or null from handler to prevent warning from bluebird
+        return this.client.acquireConnection()
           .then(resolver)
           .catch(Promise.TimeoutError, (error) => {
-            const timeoutError = new Error(
-              'Knex: Timeout acquiring a connection. The pool is probably full. ' +
-              'Are you missing a .transacting(trx) call?'
-            );
-            const additionalErrorInformation = {
-              timeoutStack: error.stack
+            if (this.builder) {
+              error.sql = this.builder.sql;
+              error.bindings = this.builder.bindings;
             }
-
-            if(runner.builder) {
-              additionalErrorInformation.sql = runner.builder.sql;
-              additionalErrorInformation.bindings = runner.builder.bindings;
-            }
-
-            assign(timeoutError, additionalErrorInformation)
-
-            // Let the pool know that this request for a connection timed out
-            acquireConnection.abort('Knex: Timeout acquiring a connection.')
-
-            rejecter(timeoutError)
+            throw error
           })
           .catch(rejecter)
       })
-    }).disposer(function() {
-      runner.client.releaseConnection(runner.connection)
+    }).disposer(() => {
+      // need to return promise or null from handler to prevent warning from bluebird
+      return this.client.releaseConnection(this.connection)
     })
   }
 

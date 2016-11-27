@@ -1,8 +1,7 @@
 'use strict';
-
+var Promise    = require('bluebird')
 var harness    = require('./harness')
 var tape       = require('tape')
-var async      = require('async')
 var JSONStream = require('JSONStream')
 
 module.exports = function(knex) {
@@ -350,22 +349,21 @@ module.exports = function(knex) {
     var cid, queryCount = 0;
 
     return knex.transaction(function(tx) {
-      async.eachSeries([
+      Promise.each([
         'SET join_collapse_limit to 1',
         'SET enable_nestloop = off'
-      ],
-      function (request, cb) {
-        knex.raw(request).transacting(tx).asCallback(cb);
-      },
-      function (err) {
-        if (err) return tx.rollback(err)
-        var stream = knex('test_table').transacting(tx).stream();
+      ], function(request) {
+        return tx.raw(request)
+      })
+      .then(function() {
+        var stream = tx.table('test_table').stream();
         stream.on('end', function () {
           tx.commit();
           t.equal(queryCount, 5, 'Five queries run')
         });
         stream.pipe(JSONStream.stringify());
       })
+      .catch(tx.rollback)
     })
     .on('query', function(q) {
       if (!cid) {

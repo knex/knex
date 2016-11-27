@@ -52,7 +52,7 @@ assign(Client_PG.prototype, {
 
   _escapeBinding: makeEscape({
     escapeArray(val, esc) {
-      return '{' + val.map(esc).join(',') + '}'
+      return esc(arrayString(val, esc))
     },
     escapeString(str) {
       let hasBackslash = false
@@ -222,5 +222,23 @@ assign(Client_PG.prototype, {
   }
 
 })
+
+function arrayString(arr, esc) {
+  let result = '{'
+  for (let i = 0 ; i < arr.length; i++) {
+    if (i > 0) result += ','
+    const val = arr[i]
+    if (val === null || typeof val === 'undefined') {
+      result += 'NULL'
+    } else if (Array.isArray(val)) {
+      result += arrayString(val, esc)
+    } else if (typeof val === 'number') {
+      result += val
+    } else {
+      result += JSON.stringify(typeof val === 'string' ? val : esc(val))
+    }
+  }
+  return result + '}'
+}
 
 export default Client_PG

@@ -9,7 +9,7 @@ import debug from 'debug'
 import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
 import Formatter from './formatter'
 
-import uuid from 'node-uuid';
+import uuid from 'uuid';
 
 const debugBindings = debug('knex:bindings')
 
