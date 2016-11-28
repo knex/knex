@@ -11,6 +11,8 @@ var knexInstance = knex(
             password      : "password",
             connectString : 'connect-string',
             externalAuth  : true,
+            host          : "host",
+            database      : "database"
           }
       }
   );
