@@ -32,8 +32,10 @@ describe("OracleDb externalAuth", function() {
           connectString: "connect-string",
           externalAuth: true
       }
-
-      knexInstance.client.acquireRawConnection();
+      knexInstance.client.acquireRawConnection().then(
+          function(resolve) {},
+          function(reject) {}
+      );
       expect(spy).to.have.callCount(1);
       expect(spy).to.have.been.calledWith(connectionWithExternalAuth);
   });
