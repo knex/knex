@@ -4,6 +4,7 @@
 
 var Knex   = require('../../../knex');
 var _ = require('lodash');
+var Promise = require('bluebird');
 
 module.exports = function(knex) {
 
@@ -360,8 +361,12 @@ module.exports = function(knex) {
 
           // Ensure sleep command is removed.
           // This query will hang if a connection gets released back to the pool
-          // too early.
-          return knex.raw('SHOW PROCESSLIST')
+          // too early. 
+          // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
+          return Promise.resolve().then().delay(50)
+            .then(function () { 
+              return knex.raw('SHOW PROCESSLIST');
+            })
             .then(function(results) {
               var processes = results[0];
               var sleepProcess = _.find(processes, {Info: 'SELECT SLEEP(10)'});
