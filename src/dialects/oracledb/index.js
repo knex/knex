@@ -69,10 +69,10 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
     // if not need to set the username and password
     const oracleDbConfig = client.connectionSettings.externalAuth ?
         { externalAuth : client.connectionSettings.externalAuth } :
-        {
-            user : client.connectionSettings.user,
-            password : client.connectionSettings.password
-        }
+      {
+        user : client.connectionSettings.user,
+        password : client.connectionSettings.password
+      }
 
     // In the case of external authentication connection string will be given
     oracleDbConfig.connectString =  client.connectionSettings.connectString ||
