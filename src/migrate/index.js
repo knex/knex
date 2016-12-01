@@ -18,7 +18,7 @@ function LockError(msg) {
 inherits(LockError, Error);
 
 const SUPPORTED_EXTENSIONS = Object.freeze([
-  '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls'
+  '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
 ]);
 
 const CONFIG_DEFAULT = Object.freeze({

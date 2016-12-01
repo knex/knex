@@ -43,7 +43,8 @@ Seeder.prototype._listAll = Promise.method(function(config) {
     .then(seeds =>
       filter(seeds, function(value) {
         const extension = path.extname(value);
-        return includes(['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls'], extension);
+        return includes(
+          ['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'], extension);
       }).sort()
     );
 });
