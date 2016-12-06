@@ -2630,7 +2630,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] inner join [orders] on [users].[id] = [orders].[user_id] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
+        sql: 'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
       },
       postgres: {
@@ -3032,7 +3032,7 @@ describe("QueryBuilder", function() {
         bindings: ['Boonesville', 1, 5]
       },
       mssql: {
-        sql: 'update [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] set [tblPerson].[City] = ? where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
+        sql: 'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
         bindings: ['Boonesville', 1, 5]
       },
       postgres: {
