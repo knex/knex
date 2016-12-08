@@ -276,5 +276,19 @@ export default [
     example: "knex.migrate.currentVersion([config])",
     description: "Retrieves and returns the current migration version, as a promise. If there aren't any migrations run yet, returns \"none\" as the value for the currentVersion.",
     children: [    ]
-  }
+  },
+	{
+		type: "heading",
+		size: "md",
+		content: "Notes about locks",
+		href: "Notes-about-locks"
+	},
+	{
+		type: "text",
+		content: "A lock system is there to prevent multiple processes from running the same migration batch in the same time. When a batch of migrations is about to be run, the migration system first tries to get a lock using a `SELECT ... FOR UPDATE` statement (preventing race conditions from happening). If it can get a lock, the migration batch will run. If it can't, it will wait until the lock is released."
+	},
+	{
+		type: "text",
+		content: "Please note that if your process unfortunately crashes, the lock will have to be *manually* removed in order to let migrations run again. The locks are saved in a table called \"`tableName`_lock\"; it has single one column called `is_locked` that you need to set to `0` in order to release the lock."
+	}
 ]
