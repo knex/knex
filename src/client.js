@@ -37,6 +37,14 @@ function clientId() {
 // for a dialect specific client object.
 function Client(config = {}) {
   this.config = config
+
+  //Client is a required field, so throw error if it's not supplied.
+  //If 'this.dialect' is set, then this is a 'super()' call, in which case
+  //'client' does not have to be set as it's already assigned on the client prototype.
+  if(!this.config.client && !this.dialect) {
+    throw new Error(`knex: Required configuration option 'client' is missing.`)
+  }
+
   this.connectionSettings = cloneDeep(config.connection || {})
   if (this.driverName && config.connection) {
     this.initializeDriver()

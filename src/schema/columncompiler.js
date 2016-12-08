@@ -18,6 +18,7 @@ function ColumnCompiler(client, tableCompiler, columnBuilder) {
   this.isIncrements = (this.type.indexOf('increments') !== -1);
   this.formatter = client.formatter();
   this.sequence = [];
+  this.modifiers = [];
 }
 
 ColumnCompiler.prototype.pushQuery = helpers.pushQuery
