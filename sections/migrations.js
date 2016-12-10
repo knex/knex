@@ -187,6 +187,28 @@ export default [
   },
   {
     type: "heading",
+    size: "sm",
+    content: "Custom migration:"
+  },
+  {
+    type: "text",
+    size: "sm",
+    content: "You may provide a custom migration stub to be used in place of the default option."
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      module.exports = {
+        client: 'pg',
+        migration: {
+          stub: 'migration.stub'
+        }
+      };
+    `
+  },
+  {
+    type: "heading",
     size: "md",
     content: "Migration API",
     href: "Migrations-API"
