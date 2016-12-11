@@ -6,8 +6,8 @@ import ColumnCompiler from '../../../schema/columncompiler';
 // -------
 
 function ColumnCompiler_SQLite3() {
-  this.modifiers = ['nullable', 'defaultTo'];
   ColumnCompiler.apply(this, arguments);
+  this.modifiers = ['nullable', 'defaultTo'];
 }
 inherits(ColumnCompiler_SQLite3, ColumnCompiler);
 
