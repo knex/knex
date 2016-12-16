@@ -182,10 +182,22 @@ assign(Runner.prototype, {
   // Check whether there's a transaction flag, and that it has a connection.
   ensureConnection() {
     return Promise.try(() => {
-      return this.connection || new Promise((resolver, rejecter) => {
+      return this.connection || new Promise((resolver, rejecter, onCancel) => {
+        let cancelled;
+        if (onCancel) {
+          onCancel(() => {
+            cancelled = true
+          })
+        }
         // need to return promise or null from handler to prevent warning from bluebird
         return this.client.acquireConnection()
-          .then(resolver)
+          .then((connection) => {
+            if (cancelled) {
+              this.client.releaseConnection(connection);
+              resolver(null)
+            }
+            resolver(connection)
+          })
           .catch(Promise.TimeoutError, (error) => {
             if (this.builder) {
               error.sql = this.builder.sql;
