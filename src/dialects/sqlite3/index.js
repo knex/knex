@@ -94,9 +94,16 @@ assign(Client_SQLite3.prototype, {
       default:
         callMethod = 'all';
     }
-    return new Promise(function(resolver, rejecter) {
+    return new Promise(function(resolver, rejecter, onCancel) {
       if (!connection || !connection[callMethod]) {
         return rejecter(new Error(`Error calling ${callMethod} on connection.`))
+      }
+      if (onCancel) {
+        onCancel(() => {
+          try {
+            connection.interrupt();
+          } catch (e) {}
+        })
       }
       connection[callMethod](obj.sql, obj.bindings, function(err, response) {
         if (err) return rejecter(err)
