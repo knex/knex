@@ -261,7 +261,7 @@ export default class Migrator {
     const stubPath = this.config.stub ||
       path.join(__dirname, 'stub', this.config.extension + '.stub');
     return Promise.promisify(fs.readFile, {context: fs})(stubPath).then(stub =>
-      template(stub.toString(), {variable: 'd'})
+      template(stub.toString(), {variable: 'd', interpolate: /<%=([\s\S]+?)%>/g})
     );
   }
 
