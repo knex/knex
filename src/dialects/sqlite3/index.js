@@ -102,7 +102,10 @@ assign(Client_SQLite3.prototype, {
         onCancel(() => {
           try {
             connection.interrupt();
-          } catch (e) {}
+          } catch (e) {
+            // see cancelQuery() for why it can be ignored
+            // (also, onCancel() exceptions are thrown away)
+          }
         })
       }
       connection[callMethod](obj.sql, obj.bindings, function(err, response) {
