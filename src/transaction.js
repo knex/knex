@@ -32,14 +32,19 @@ export default class Transaction extends EventEmitter {
       const trxClient = this.trxClient = makeTxClient(this, client, connection)
       const init = client.transacting ? this.savepoint(connection) : this.begin(connection)
 
+      let result
+      let cancelled
+
       init.then(() => {
         return makeTransactor(this, connection, trxClient)
       })
       .then((transactor) => {
+        if (cancelled) {
+          return null;
+        }
         // If we've returned a "thenable" from the transaction container, assume
         // the rollback and commit are chained to this object's success / failure.
         // Directly thrown errors are treated as automatic rollbacks.
-        let result
         try {
           result = container(transactor)
         } catch (err) {
@@ -57,9 +62,20 @@ export default class Transaction extends EventEmitter {
       })
       .catch((e) => this._rejecter(e))
 
-      return new Promise((resolver, rejecter) => {
+      return new Promise((resolver, rejecter, onCancel) => {
         this._resolver = resolver
         this._rejecter = rejecter
+        if (onCancel) {
+          onCancel(() => {
+            if (result) {
+              if (result.cancel && typeof result.cancel === 'function') {
+                result.cancel()
+              }
+            } else {
+              cancelled = true
+            }
+          })
+        }
       })
     })
 
