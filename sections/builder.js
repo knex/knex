@@ -917,7 +917,7 @@ export default [
   {
     type: "method",
     method: "groupByRaw",
-    example: ".groupBy(sql)",
+    example: ".groupByRaw(sql)",
     description: "Adds a raw group by clause to the query.",
     children: [
       {
