@@ -78,7 +78,6 @@ assign(Client_MySQL.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.removeAllListeners()
     connection.end(err => {
       if (err) connection.__knex__disposed = err
     })
