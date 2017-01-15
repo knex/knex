@@ -28,13 +28,14 @@ describe('Query Building Tests', function() {
   require('./unit/schema/sqlite3')
   require('./unit/schema/oracle')
   require('./unit/schema/mssql')
-  require('./unit/schema/oracledb')
+  require('./unit/schema/oracledb'),
+  require('./unit/schema/db2')
 })
 
-describe('ExternalAuth ORACLE Tests', function() {
-  this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-  require('./unit/dialects/oracledb')
-})
+// describe('ExternalAuth ORACLE Tests', function() {
+//   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+//   require('./unit/dialects/oracledb')
+// })
 
 describe('Integration Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);

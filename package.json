@@ -37,6 +37,7 @@
     "coveralls": "~2.11.1",
     "eslint": "2.2.0",
     "eslint-plugin-import": "^1.8.0",
+    "ibm_db": "^1.0.1",
     "istanbul": "^0.4.5",
     "json-loader": "^0.5.4",
     "mariasql": "^0.2.3",

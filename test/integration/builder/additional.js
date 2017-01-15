@@ -20,6 +20,7 @@ module.exports = function(knex) {
           tester('sqlite3', "delete from \"test_table_two\"");
           tester('oracle', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
+          tester('db2', 'truncate table "test_table_two"')
         })
         .then(function() {
 
@@ -57,7 +58,7 @@ module.exports = function(knex) {
       expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
     });
 
-    it('gets the columnInfo', function() {
+    it('gets the columnInfo for all columns', function() {
       return knex('datatype_test').columnInfo().testSql(function(tester) {
         tester('mysql',
           'select * from information_schema.columns where table_name = ? and table_schema = ?',
@@ -135,6 +136,22 @@ module.exports = function(knex) {
               "maxLength": null,
               "nullable": false,
               "type": "uniqueidentifier"
+            }
+          });
+          tester('db2',
+          'select * from syscat.columns where tabname = ? and tabschema = ?',
+          ['datatype_test', 'knex_test'], {
+            "enum_value": {
+              "defaultValue": null,
+              "maxLength": 100,
+              "nullable": true,
+              "type": "nvarchar"
+            },
+            "uuid": {
+              "defaultValue": null,
+              "maxLength": 16,
+              "nullable": false,
+              "type": "char"
             }
           });
       });

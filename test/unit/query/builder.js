@@ -8,6 +8,7 @@ var Oracle_Client = require('../../../lib/dialects/oracle')
 var Oracledb_Client = require('../../../lib/dialects/oracledb')
 var SQLite3_Client = require('../../../lib/dialects/sqlite3')
 var MSSQL_Client = require('../../../lib/dialects/mssql')
+var DB2_Client = require('../../../lib/dialects/db2')
 
 var clients = {
   mysql: new MySQL_Client({}),
@@ -16,6 +17,7 @@ var clients = {
   oracledb: new Oracledb_Client({}),
   sqlite3: new SQLite3_Client({}),
   mssql: new MSSQL_Client({}),
+  db2: new DB2_Client({})
 }
 
 var useNullAsDefaultConfig = { useNullAsDefault: true };
@@ -85,6 +87,7 @@ describe("QueryBuilder", function() {
       mysql: 'select * from `users`',
       mssql: 'select * from [users]',
       postgres: 'select * from "users"',
+      db2: 'select * from "users"'
     });
   });
 
@@ -92,6 +95,7 @@ describe("QueryBuilder", function() {
     testsql(qb().select('foo').select('bar').select(['baz', 'boom']).from('users'), {
       mysql: 'select `foo`, `bar`, `baz`, `boom` from `users`',
       mssql: 'select [foo], [bar], [baz], [boom] from [users]',
+      db2: 'select "foo", "bar", "baz", "boom" from "users"',
       postgres: 'select "foo", "bar", "baz", "boom" from "users"'
     });
   });
@@ -100,7 +104,8 @@ describe("QueryBuilder", function() {
     testsql(qb().distinct().select('foo', 'bar').from('users'), {
       mysql: {sql: 'select distinct `foo`, `bar` from `users`'},
       mssql: {sql: 'select distinct [foo], [bar] from [users]'},
-      postgres: {sql: 'select distinct "foo", "bar" from "users"'}
+      postgres: {sql: 'select distinct "foo", "bar" from "users"'},
+      db2: {sql: 'select distinct "foo", "bar" from "users"'}
     });
   });
 
@@ -110,7 +115,8 @@ describe("QueryBuilder", function() {
       oracle: 'select "foo" "bar" from "users"',
       mssql: 'select [foo] as [bar] from [users]',
       oracledb: 'select "foo" "bar" from "users"',
-      postgres: 'select "foo" as "bar" from "users"'
+      postgres: 'select "foo" as "bar" from "users"',
+      db2: 'select "foo" as "bar" from "users"'
     });
   });
 
@@ -120,7 +126,8 @@ describe("QueryBuilder", function() {
       oracle: 'select "foo" "bar" from "users"',
       mssql: 'select [foo] as [bar] from [users]',
       oracledb: 'select "foo" "bar" from "users"',
-      postgres: 'select "foo" as "bar" from "users"'
+      postgres: 'select "foo" as "bar" from "users"',
+      db2: 'select "foo" as "bar" from "users"'
     });
   });
 
@@ -130,7 +137,8 @@ describe("QueryBuilder", function() {
       oracle: 'select "foo" "bar" from "users"',
       mssql: 'select [foo] as [bar] from [users]',
       oracledb: 'select "foo" "bar" from "users"',
-      postgres: 'select "foo" as "bar" from "users"'
+      postgres: 'select "foo" as "bar" from "users"',
+      db2: 'select "foo" as "bar" from "users"'
     });
   });
 
@@ -139,7 +147,8 @@ describe("QueryBuilder", function() {
       mysql: 'select `foo` as `bar.baz` from `users`',
       oracle: 'select "foo" "bar.baz" from "users"',
       mssql: 'select [foo] as [bar.baz] from [users]',
-      postgres: 'select "foo" as "bar.baz" from "users"'
+      postgres: 'select "foo" as "bar.baz" from "users"',
+      db2: 'select "foo" as "bar.baz" from "users"'
     });
   });
 
@@ -147,7 +156,8 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('public.users'), {
       mysql: 'select * from `public`.`users`',
       mssql: 'select * from [public].[users]',
-      postgres: 'select * from "public"."users"'
+      postgres: 'select * from "public"."users"',
+      db2: 'select * from "public"."users"'
     });
   });
 
@@ -172,6 +182,10 @@ describe("QueryBuilder", function() {
       postgres: {
         sql: 'select * from "users" where "id" = ?',
         bindings: [1]
+      },
+      db2: {
+        sql: 'select * from "users" where "id" = ?',
+        bindings: [1]
       }
     });
 
@@ -179,6 +193,7 @@ describe("QueryBuilder", function() {
       mysql: 'select * from `users` where `id` = 1',
       postgres: 'select * from "users" where "id" = 1',
       mssql: 'select * from [users] where [id] = 1',
+      db2: 'select * from "users" where "id" = 1',
     });
   });
 
@@ -196,6 +211,10 @@ describe("QueryBuilder", function() {
       postgres: {
         sql: 'select * from "users" where not "id" = ?',
         bindings: [1]
+      },
+      db2: {
+        sql: 'select * from "users" where not "id" = ?',
+        bindings: [1]
       }
     });
 
@@ -203,6 +222,7 @@ describe("QueryBuilder", function() {
       mysql: 'select * from `users` where not `id` = 1',
       postgres: 'select * from "users" where not "id" = 1',
       mssql: 'select * from [users] where not [id] = 1',
+      db2: 'select * from "users" where not "id" = 1',
     });
   });
 

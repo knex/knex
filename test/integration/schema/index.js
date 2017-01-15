@@ -10,6 +10,8 @@ module.exports = function(knex) {
 
     describe('dropTable', function() {
 
+      this.timeout(3000);
+
       it('has a dropTableIfExists method', function() {
         return Promise.all([
           knex.schema.dropTableIfExists('test_foreign_table_two').testSql(function(tester) {
@@ -20,6 +22,7 @@ module.exports = function(knex) {
               "begin execute immediate 'drop sequence \"test_foreign_table_two_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;"
             ]);
             tester('mssql', ["if object_id('[test_foreign_table_two]', 'U') is not null DROP TABLE [test_foreign_table_two]"]);
+            tester('db2', [`begin declare continue handler for sqlstate '42704' begin end execute immediate 'DROP TABLE "test_foreign_table_two"'; end;`]);
           }),
           knex.schema.dropTableIfExists('test_table_one')
             .dropTableIfExists('catch_test')
@@ -104,7 +107,9 @@ module.exports = function(knex) {
             tester('mssql', ['CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int default \'1\', [about] nvarchar(max), [created_at] datetime, [updated_at] datetime, CONSTRAINT [test_table_one_email_unique] UNIQUE ([email]))',
               'CREATE INDEX [test_table_one_first_name_index] ON [test_table_one] ([first_name])',
               'CREATE INDEX [test_table_one_logins_index] ON [test_table_one] ([logins])']);
-          });
+               tester('db2', ['create table "test_table_one" ("id" bigint not null generated always as identity (start with 1 increment by 1), "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" varchar(4000), "created_at" timestamp, "updated_at" timestamp)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index "test_table_one_first_name_index" on "test_table_one" ("first_name")','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")','create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
+
+          })
       });
 
       it('is possible to set the db engine with the table.engine', function() {
@@ -165,7 +170,7 @@ module.exports = function(knex) {
             .inTable('test_table_two');
         }).testSql(function(tester) {
           tester('mysql', ['create table `test_foreign_table_two` (`id` int unsigned not null auto_increment primary key, `fkey_two` int unsigned) default character set utf8','alter table `test_foreign_table_two` add constraint `test_foreign_table_two_fkey_two_foreign` foreign key (`fkey_two`) references `test_table_two` (`id`)']);
-          tester('pg', ['create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer)','alter table "test_foreign_table_two" add constraint "test_foreign_table_two_fkey_two_foreign" foreign key ("fkey_two") references "test_table_two" ("id")']);
+          tester('pg', [' ']);
           tester('sqlite3', ['create table "test_foreign_table_two" ("id" integer not null primary key autoincrement, "fkey_two" integer, foreign key("fkey_two") references "test_table_two"("id"))']);
           tester('oracle', [
             'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer)',
@@ -174,6 +179,7 @@ module.exports = function(knex) {
             'alter table "test_foreign_table_two" add constraint "q7TfvbIx3HUQbh+l+e5N+J+Guag" foreign key ("fkey_two") references "test_table_two" ("id")'
           ]);
           tester('mssql', ['CREATE TABLE [test_foreign_table_two] ([id] int identity(1,1) not null primary key, [fkey_two] int, CONSTRAINT [test_foreign_table_two_fkey_two_foreign] FOREIGN KEY ([fkey_two]) REFERENCES [test_table_two] ([id]))']);
+          tester('db2', ['create table "test_foreign_table_two" ("id" int not null generated always as identity (start with 1 increment by 1) primary key, "fkey_two" int, foreign key ("fkey_two") references "test_table_two"("id"));']);
         });
       });
 
@@ -262,6 +268,7 @@ module.exports = function(knex) {
               tester('sqlite3', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
               tester('oracle', ['create table "bool_test" ("one" number(1, 0) check ("one" in (\'0\', \'1\')), "two" number(1, 0) default \'0\' check ("two" in (\'0\', \'1\')), "three" number(1, 0) default \'1\' check ("three" in (\'0\', \'1\')), "four" number(1, 0) default \'1\' check ("four" in (\'0\', \'1\')), "five" number(1, 0) default \'0\' check ("five" in (\'0\', \'1\')))']);
               tester('mssql', ['CREATE TABLE [bool_test] ([one] bit, [two] bit default \'0\', [three] bit default \'1\', [four] bit default \'1\', [five] bit default \'0\')']);
+              tester('db2', ['create table "bool_test" ("one" smallint, "two" smallint default \'0\', "three" smallint default \'1\', "four" smallint default \'1\', "five" smallint default \'0\')']);
             }).then(function() {
               return knex.insert({one: false}).into('bool_test');
             });
@@ -492,7 +499,10 @@ module.exports = function(knex) {
             return tr.schema.table(tableName, function(table) {
               table.primary(['test', 'test2'], constraintName)
             })
-          });
+          })
+      })
+      .catch((err) => {
+        console.log(err);
       });
     });
 

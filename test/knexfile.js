@@ -60,8 +60,10 @@ var testConfigs = {
   mysql: {
     dialect: 'mysql',
     connection: testConfig.mysql || {
-      database: "knex_test",
+      database: "knextest",
       user: "root",
+      password: 'Dolphins18$$91',
+      host: 'mysql-knextest.c4lioc8siqtc.us-west-2.rds.amazonaws.com',
       charset: 'utf8'
     },
     pool: mysqlPool,
@@ -134,6 +136,20 @@ var testConfigs = {
       password: "knex_test",
       server: "127.0.0.1",
       database: "knex_test"
+    },
+    pool: pool,
+    migrations: migrations,
+    seeds: seeds
+  },
+
+  db2: {
+    dialect: 'db2',
+    connection: testConfig.db2 || {
+      user: 'db2inst1',
+      password: 'db2inst1-pwd',
+      host: '127.0.0.1',
+      database: 'knextest',
+      port: '50000'
     },
     pool: pool,
     migrations: migrations,

@@ -13,8 +13,9 @@ const aliases = {
   'mariadb' : 'maria',
   'mariasql' : 'maria',
   'pg' : 'postgres',
-  'postgresql' : 'postgres',
-  'sqlite' : 'sqlite3'
+  'postgresql' : 'postgres', 
+  'sqlite' : 'sqlite3',
+  'db2': 'db2'
 };
 
 export default function Knex(config) {
