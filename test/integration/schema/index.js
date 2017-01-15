@@ -500,9 +500,6 @@ module.exports = function(knex) {
               table.primary(['test', 'test2'], constraintName)
             })
           })
-      })
-      .catch((err) => {
-        console.log(err);
       });
     });
 

@@ -6,7 +6,7 @@ import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
 
-// import Transaction from './transaction';
+import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
 import ColumnCompiler from './schema/columncompiler';
 import TableCompiler from './schema/tablecompiler';
@@ -16,6 +16,21 @@ import { makeEscape } from '../../query/string';
 
 export default function Client_DB2(config) {
   Client.call(this, config)
+}
+
+// TODO: Factor this out
+function promisifyAsyncMethods(obj) {
+  const newobj = {};
+  for (let prop in obj) {
+    newobj[prop] = obj[prop];
+
+    let isAsyncMethod = !prop.toLowerCase().endsWith('sync') && typeof(obj[prop]) === 'function';
+    if (isAsyncMethod) {
+      newobj[prop + 'Async'] = Promise.promisify(obj[prop]);
+    }
+  }
+
+  return newobj;
 }
 
 inherits(Client_DB2, Client)
@@ -38,9 +53,9 @@ assign(Client_DB2.prototype, {
     return new TableCompiler(this, ...arguments)
   },
 
-  // transaction() {
-  //   return new Transaction(this, ...arguments);
-  // },
+  transaction() {
+    return new Transaction(this, ...arguments);
+  },
 
   dialect: 'db2',
 
@@ -110,7 +125,9 @@ assign(Client_DB2.prototype, {
         //   connection.__knex__disposed = err;
         // });
 
-        resolver(connection);
+
+
+        resolver(promisifyAsyncMethods(connection));
       });
     }).tap(function setSearchPath(connection) {
       return client.setSchemaSearchPath(connection);

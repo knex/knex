@@ -19,14 +19,15 @@ export default class Transaction_DB2 extends Transaction {
       .catch(this._rejecter);
   }
 
-  // release(conn, value) {
-  //   return this._resolver(value)
-  // }
+  release(conn, value) {
+    const rollback = false;
+    return conn.endTransactionAsync(rollback);
+  }
 
   rollback(conn, error) {
     this._completed = true
     debug('%s: rolling back', this.txid)
-    return conn.rollbackTransaction()
+    return conn.rollbackTransactionAsync()
       .then(() => this._rejecter(error));
   }
 
@@ -39,18 +40,19 @@ export default class Transaction_DB2 extends Transaction {
     return Promise.try(() => {
       return (t.outerTx ? t.outerTx.conn : null) ||
         configConnection ||
-        t.client.acquireConnection().completed;
+        t.client.acquireConnection();
     }).tap(function(conn) {
       if (!t.outerTx) {
         t.conn = conn
-        conn.tx_ = conn.transaction()
+        // no transaction data structure in ibm_db        
+        conn.tx_ = conn
       }
     }).disposer(function(conn) {
       if (t.outerTx) return;
       if (conn.tx_) {
         if (!t._completed) {
           debug('%s: unreleased transaction', t.txid)
-          conn.tx_.rollback();
+          conn.tx_.rollbackTransactionAsync();
         }
         conn.tx_ = null;
       }
