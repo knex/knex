@@ -12,12 +12,12 @@ import BatchInsert from './batchInsert';
 export default function makeKnex(client) {
 
   // The object we're potentially using to kick off an initial chain.
-  function knex(tableName) {
+  function knex(tableName, only) {
     const qb = knex.queryBuilder()
     if (!tableName) helpers.warn(
       'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
     );
-    return tableName ? qb.table(tableName) : qb
+    return tableName ? qb.table(tableName, only) : qb
   }
 
   assign(knex, {
