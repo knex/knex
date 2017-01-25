@@ -143,7 +143,7 @@ assign(Builder.prototype, {
   //           inheriting table data. Defaults to false.
   table(tableName, options = {}) {
     this._single.table = tableName;
-    this._single.only = options.only !== undefined ? options.only : false;
+    this._single.only = options.only === true;
     return this;
   },
 
