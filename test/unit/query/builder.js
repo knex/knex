@@ -159,6 +159,12 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("selects from only", function() {
+    testsql(qb().select('*').from('users', { only: true }), {
+      postgres: 'select * from only "users"',
+    });
+  });
+
   it("basic wheres", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1), {
       mysql: {
@@ -2575,6 +2581,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("update only method", function() {
+    testsql(qb().update({'email': 'foo', 'name': 'bar'}).table('users', { only: true }).where('id', '=', 1), {
+      postgres: {
+        sql: 'update only "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      }
+    });
+  });
+
   it("should not update columns undefined values", function() {
     testsql(qb().update({'email': 'foo', 'name': undefined}).table('users').where('id', '=', 1), {
       mysql: {
@@ -2726,6 +2741,15 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'delete from "users" where "email" = ?',
+        bindings: ['foo']
+      }
+    });
+  });
+
+  it("delete only method", function() {
+    testsql(qb().from('users', { only: true }).where('email', '=', 'foo').delete(), {
+      postgres: {
+        sql: 'delete from only "users" where "email" = ?',
         bindings: ['foo']
       }
     });

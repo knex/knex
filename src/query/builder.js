@@ -138,8 +138,12 @@ assign(Builder.prototype, {
   // Sets the `tableName` on the query.
   // Alias to "from" for select and "into" for insert statements
   // e.g. builder.insert({a: value}).into('tableName')
-  table(tableName) {
+  // `options`: options object containing keys:
+  //   - `only`: whether the query should use SQL's ONLY to not return
+  //           inheriting table data. Defaults to false.
+  table(tableName, options = {}) {
     this._single.table = tableName;
+    this._single.only = options.only === true;
     return this;
   },
 
