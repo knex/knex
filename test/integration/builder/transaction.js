@@ -330,7 +330,73 @@ module.exports = function(knex) {
       }).then(function () {
         throw new Error('should not get here')
       }).catch(Promise.TimeoutError, function(error) {})
-    })
+    });
+
+    /**
+     * In mssql, certain classes of failures will "abort" a transaction, which
+     * causes the subsequent ROLLBACK to fail (because the transaction has
+     * been rolled back automatically).
+     * An example of this type of auto-aborting error is creating a table with
+     * a foreign key that references a non-existent table.
+     */
+    if (knex.client.dialect === 'mssql') {
+      it('should rollback when transaction aborts', function() {
+        var insertedId = null;
+        var originalError = null;
+
+        function transactionAbortingQuery(transaction) {
+          return transaction.schema.createTable('test_schema_transaction_fails', function(table) {
+            table.string('name').references('id').on('non_exist_table');
+          });
+        }
+
+        function insertSampleRow(transaction) {
+          return transaction('accounts')
+            .returning('id')
+            .insert({
+              first_name: 'Transacting',
+              last_name: 'User2',
+              email:'transaction-test2@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: new Date(),
+              updated_at: new Date()
+            })
+            .then(function(res0) {
+              insertedId = res0[0];
+            });
+        }
+
+        function querySampleRow() {
+          return knex('accounts')
+            .where('id', insertedId)
+            .select('first_name')
+        }
+
+        function captureAndRethrowOriginalError(err) {
+          originalError = err;
+          throw err;
+        }
+
+        return knex.transaction(function(t) {
+          return insertSampleRow(t)
+            .then(function() { return transactionAbortingQuery(t); })
+            .catch(captureAndRethrowOriginalError);
+        })
+        .then(function() {
+          //Should never reach this point
+          expect(false).to.be.ok;
+        })
+        .catch(function(err) {
+          expect(err).should.exist;
+          expect(err.originalError).to.equal(originalError);
+          // confirm transaction rolled back
+          return querySampleRow().then(function(resp) {
+            expect(resp).to.be.empty;
+          });
+        });
+      });
+    }
 
   });
 };
