@@ -150,15 +150,24 @@ function replaceKeyBindings(raw, formatter) {
 
   let { sql } = raw
 
-  const regex = /\\?(:\w+:?)/g
+  const regex = /\\?(::?\w+:?:?)/g
   sql = raw.sql.replace(regex, function(full, part) {
-    if (full !== part) {
+    if (full !== part || part.slice(0, 2) === '::') {
       return part
     }
 
     const key = full.trim();
-    const isIdentifier = key[key.length - 1] === ':'
-    const value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
+    const isCasting = key.slice(-2) === '::'
+    const isIdentifier = key[key.length - 1] === ':' && !isCasting
+
+    let value;
+    if (isIdentifier) {
+      value = values[key.slice(1, -1)]
+    } else if (isCasting) {
+      value = values[key.slice(1, -2)]
+    } else {
+      value = values[key.slice(1)]
+    }
 
     if (value === undefined) {
       formatter.bindings.push(value);
@@ -167,6 +176,8 @@ function replaceKeyBindings(raw, formatter) {
 
     if (isIdentifier) {
       return full.replace(key, formatter.columnize(value))
+    } else if (isCasting) {
+      return full.replace(key, formatter.parameter(value)) + '::'
     }
     return full.replace(key, formatter.parameter(value))
   })
