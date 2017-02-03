@@ -1,6 +1,6 @@
 
 import * as helpers from './helpers';
-import { isArray, map, clone, each, identity } from 'lodash'
+import { isArray, map, clone, each } from 'lodash'
 
 export default function(Target) {
 
@@ -67,7 +67,7 @@ export default function(Target) {
     'return', 'yield', 'ensure', 'reflect',
     'get', 'mapSeries', 'delay'], function(method) {
     Target.prototype[method] = function() {
-      const promise = this.then(identity);
+      const promise = this.then();
       return promise[method].apply(promise, arguments);
     };
   });
