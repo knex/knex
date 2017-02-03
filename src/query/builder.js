@@ -218,6 +218,23 @@ assign(Builder.prototype, {
       return this.where(1, '=', column ? 1 : 0)
     }
 
+    // Allow a Query Builder to be passed in
+    if (column instanceof Builder){
+      if (column._single.table){
+        throw new Error('You passed a query builder into appendWhere() that has a table ('+
+          column._single.table+') specified for it');
+      }
+      column._statements.map((function(_this){
+        return function(statement){
+          if(statement.grouping != 'where')
+            throw new Error('You passed a query builder into appendWhere() that had'+
+              ' a non-where clause on it.');
+          _this._statements.push(statement);
+        };
+      })(this));
+      return this;
+    }
+
     // Check if the column is a function, in which case it's
     // a where statement wrapped in parens.
     if (typeof column === 'function') {
