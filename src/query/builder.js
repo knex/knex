@@ -229,7 +229,7 @@ assign(Builder.prototype, {
           if(statement.grouping != 'where')
             throw new Error('You passed a query builder into appendWhere() that had'+
               ' a non-where clause on it.');
-          _this._statements.push(statement);
+          _this._statements.push(clone(statement));
         };
       })(this));
       return this;
