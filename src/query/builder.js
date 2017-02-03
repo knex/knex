@@ -300,7 +300,7 @@ assign(Builder.prototype, {
   orWhere: function orWhere() {
     this._bool('or');
     const obj = arguments[0];
-    if(isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
+    if(isObject(obj) && !isFunction(obj) && !(obj instanceof Raw) && !(obj instanceof Builder)) {
       return this.whereWrapped(function() {
         for(const key in obj) {
           this.andWhere(key, obj[key]);
