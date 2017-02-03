@@ -578,7 +578,25 @@ module.exports = function(knex) {
             );
           });
       });
+    });
 
+    it('can have a where clause with complex query builder', function() {
+      var simpleWhereClause = knex.where('id', 4);
+
+      var complexWhereClause = knex
+        .where('logins', '>', 1)
+        .whereIn('id', function () {
+          this.select('id').from('accounts').whereNotNull('logins').where(simpleWhereClause)
+          .where(function () {
+            this.where(simpleWhereClause);
+          });
+        });
+
+      knex('accounts').where(simpleWhereClause).where(complexWhereClause).orWhere(simpleWhereClause)
+      .then(function(results){
+        expect(results[0].id == 4);
+        expect(results[0].logins == 2);
+      });
     });
 
     it('has a "distinct" clause', function() {
