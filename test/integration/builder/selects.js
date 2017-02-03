@@ -540,6 +540,45 @@ module.exports = function(knex) {
           });
       });
 
+      it.only('allows parameter to be a query builder', function() {
+        var whereClause = knex.where({'id': 0});
+        return knex('accounts')
+          .where(whereClause)
+          .select()
+          .testSql(function(tester) {
+            tester(
+              'mysql',
+              'select * from `accounts` where `id` = ?',
+              [0],
+              []
+            );
+            tester(
+              'postgresql',
+              'select * from "accounts" where "id" = ?',
+              [0],
+              []
+            );
+            tester(
+              'sqlite3',
+              'select * from "accounts" where "id" = ?',
+              [0],
+              []
+            );
+            tester(
+              'oracle',
+              'select * from "accounts" where "id" = ?',
+              [0],
+              []
+            );
+            tester(
+              'mssql',
+              'select * from [accounts] where [id] = ?',
+              [0],
+              []
+            );
+          });
+      });
+
     });
 
     it('has a "distinct" clause', function() {
