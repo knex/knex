@@ -599,6 +599,28 @@ module.exports = function(knex) {
       });
     });
 
+    it('will throw an error if a where query builder has a table specified', function() {
+      var simpleWhereClause = knex.from('table').where('id', 4);
+
+      try {
+        knex('accounts').where(simpleWhereClause);
+      } catch(error) {
+        expect(error.message == 'You passed a query builder into appendWhere() that'+
+          ' has a table (table) specified for it');
+      }
+    });
+
+    it('will throw an error if a where query builder has any non-where statements specified', function() {
+      var simpleWhereClause = knex.where('id', 4).join(knex.select().from('users'));
+
+      try {
+        knex('accounts').where(simpleWhereClause);
+      } catch(error) {
+        expect(error.message == 'You passed a query builder into appendWhere() that had'+
+          ' a non-where clause on it.');
+      }
+    });
+
     it('has a "distinct" clause', function() {
       return Promise.all([
         knex('accounts').select().distinct('email').where('logins', 2).orderBy('email'),
