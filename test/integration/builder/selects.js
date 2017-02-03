@@ -540,7 +540,7 @@ module.exports = function(knex) {
           });
       });
 
-      it.only('allows parameter to be a query builder', function() {
+      it('allows parameter to be a query builder', function() {
         var whereClause = knex.where({'id': 0});
         return knex('accounts')
           .where(whereClause)
