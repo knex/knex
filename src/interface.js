@@ -64,11 +64,11 @@ export default function(Target) {
   // "then" method on the current `Target`
   each(['bind', 'catch', 'finally', 'asCallback',
     'spread', 'map', 'reduce', 'tap', 'thenReturn',
-    'return', 'yield', 'ensure', 'reflect'], function(method) {
+    'return', 'yield', 'ensure', 'reflect',
+    'get', 'mapSeries', 'delay'], function(method) {
     Target.prototype[method] = function() {
-      let then = this.then();
-      then = then[method].apply(then, arguments);
-      return then;
+      const promise = this.then();
+      return promise[method].apply(promise, arguments);
     };
   });
 

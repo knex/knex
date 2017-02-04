@@ -10,6 +10,46 @@ module.exports = function(knex) {
 
   describe('Additional', function () {
 
+    it('should forward the .get() function from bluebird', function() {
+      return knex('accounts').select().limit(1).then(function(accounts){
+        var firstAccount = accounts[0];
+        return knex('accounts').select().limit(1).get(0).then(function(account){
+          expect(account.id == firstAccount.id);
+        });
+      });
+    });
+
+    it('should forward the .mapSeries() function from bluebird', function() {
+      var asyncTask = function(){
+        return new Promise(function(resolve, reject){
+          var output = asyncTask.num++;
+          setTimeout(function(){
+            resolve(output);
+          }, Math.random()*200);
+        });
+      };
+      asyncTask.num = 1;
+
+      var returnedValues = [];
+      return knex('accounts').select().limit(3).mapSeries(function(account){
+        return asyncTask().then(function(number){
+          returnedValues.push(number);
+        });
+      })
+      .then(function(){
+        expect(returnedValues[0] == 1);
+        expect(returnedValues[1] == 2);
+        expect(returnedValues[2] == 3);
+      });
+    });
+
+    it('should forward the .delay() function from bluebird', function() {
+      var startTime = (new Date()).valueOf();
+      return knex('accounts').select().limit(1).delay(300).then(function(accounts){
+        expect((new Date()).valueOf() - startTime > 300);
+      });
+    });
+
     it('should truncate a table with truncate', function() {
 
       return knex('test_table_two')
