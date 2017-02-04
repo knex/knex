@@ -146,40 +146,24 @@ function replaceRawArrBindings(raw, formatter) {
 }
 
 function replaceKeyBindings(raw, formatter) {
-  const values = raw.bindings
-
   let { sql } = raw
 
-  const regex = /\\?(::?\w+:?:?)/g
-  sql = raw.sql.replace(regex, function(full, part) {
-    if (full !== part || part.slice(0, 2) === '::') {
-      return part
+  sql = raw.sql.replace(/\\?(:(\w+):(?!:)|:(\w+):??)/g, function(match, p1, p2, p3) {
+    if (match !== p1) {
+      return p1
     }
 
-    const key = full.trim();
-    const isCasting = key.slice(-2) === '::'
-    const isIdentifier = key[key.length - 1] === ':' && !isCasting
-
-    let value;
-    if (isIdentifier) {
-      value = values[key.slice(1, -1)]
-    } else if (isCasting) {
-      value = values[key.slice(1, -2)]
-    } else {
-      value = values[key.slice(1)]
-    }
+    const key = match.trim();
+    const isIdentifier = key[key.length - 1] === ':'
+    const value = raw.bindings[p2 || p3]
 
     if (value === undefined) {
-      formatter.bindings.push(value);
-      return full;
+      return match
+    } else if (isIdentifier) {
+      return match.replace(p1, formatter.columnize(value))
     }
 
-    if (isIdentifier) {
-      return full.replace(key, formatter.columnize(value))
-    } else if (isCasting) {
-      return full.replace(key, formatter.parameter(value)) + '::'
-    }
-    return full.replace(key, formatter.parameter(value))
+    return match.replace(p1, formatter.parameter(value))
   })
 
   return {
