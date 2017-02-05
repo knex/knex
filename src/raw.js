@@ -150,7 +150,7 @@ function replaceKeyBindings(raw, formatter) {
 
   let { sql } = raw
 
-  const regex = /\\?(:(\w+):(?!:)|:(\w+):??)/g
+  const regex = /\\?(:(\w+):(?!:)|:(\w+))/g
   sql = raw.sql.replace(regex, function(match, p1, p2, p3) {
     if (match !== p1) {
       return p1
