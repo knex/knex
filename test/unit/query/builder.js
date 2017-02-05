@@ -3869,6 +3869,26 @@ describe("QueryBuilder", function() {
     })
   })
 
+  it('Respect casting with named bindings', function() {
+    var namedBindings = { a: 'foo', b: 'bar', c: 'baz' };
+
+    var raws = [
+      [raw(':a: = :b::TEXT OR :c', namedBindings), '"foo" = ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
+      [raw(':a: = :b::TEXT OR :c::TEXT', namedBindings), '"foo" = ?::TEXT OR ?::TEXT', [namedBindings.b, namedBindings.c]],
+      [raw(":a: = 'bar'::TEXT OR :b OR :c::TEXT", namedBindings), '"foo" = \'bar\'::TEXT OR ? OR ?::TEXT', [namedBindings.b, namedBindings.c]],
+      [raw(":a:::TEXT = OR :b::TEXT OR :c", namedBindings), '"foo"::TEXT = OR ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
+      [raw('\\:a: = :b::TEXT OR :c', namedBindings), ':a: = ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
+      [raw(':a: = \\:b::TEXT OR \\:c', namedBindings), '"foo" = :b::TEXT OR :c', []],
+      [raw('\\:a: = \\:b::TEXT OR \\:c', namedBindings), ':a: = :b::TEXT OR :c', []]
+    ];
+
+    raws.forEach(function(raw) {
+      var result = raw[0].toSQL();
+      expect(result.sql).to.equal(raw[1]);
+      expect(result.bindings).to.deep.equal(raw[2]);
+    });
+  });
+
   it("query \\\\? escaping", function() {
     testquery(qb().select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey?']), {
       mysql: 'select * from `users` where `id` = 1 and `jsonColumn` ? \'jsonKey?\'',
