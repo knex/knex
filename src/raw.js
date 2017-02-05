@@ -146,20 +146,30 @@ function replaceRawArrBindings(raw, formatter) {
 }
 
 function replaceKeyBindings(raw, formatter) {
+  const values = raw.bindings
+
   let { sql } = raw
 
-  sql = raw.sql.replace(/\\?(:(\w+):(?!:)|:(\w+):??)/g, function(match, p1, p2, p3) {
+  const regex = /\\?(:(\w+):(?!:)|:(\w+):??)/g
+  sql = raw.sql.replace(regex, function(match, p1, p2, p3) {
     if (match !== p1) {
       return p1
     }
 
+    const part = p2 || p3
     const key = match.trim();
     const isIdentifier = key[key.length - 1] === ':'
-    const value = raw.bindings[p2 || p3]
+    const value = values[part]
 
     if (value === undefined) {
+      if (values.hasOwnProperty(part)) {
+        formatter.bindings.push(value);
+      }
+
       return match
-    } else if (isIdentifier) {
+    }
+
+    if (isIdentifier) {
       return match.replace(p1, formatter.columnize(value))
     }
 
