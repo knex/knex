@@ -150,13 +150,13 @@ function replaceKeyBindings(raw, formatter) {
 
   let { sql } = raw
 
-  const regex = /\\?(:(\w+):(?!:)|:(\w+))/g
-  sql = raw.sql.replace(regex, function(match, p1, p2, p3) {
+  const regex = /\\?(:(\w+):(?=::)|:(\w+):(?!:)|:(\w+))/g
+  sql = raw.sql.replace(regex, function(match, p1, p2, p3, p4) {
     if (match !== p1) {
       return p1
     }
 
-    const part = p2 || p3
+    const part = p2 || p3 || p4
     const key = match.trim();
     const isIdentifier = key[key.length - 1] === ':'
     const value = values[part]

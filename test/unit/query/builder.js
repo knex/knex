@@ -3876,6 +3876,7 @@ describe("QueryBuilder", function() {
       [raw(':a: = :b::TEXT OR :c', namedBindings), '"foo" = ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
       [raw(':a: = :b::TEXT OR :c::TEXT', namedBindings), '"foo" = ?::TEXT OR ?::TEXT', [namedBindings.b, namedBindings.c]],
       [raw(":a: = 'bar'::TEXT OR :b OR :c::TEXT", namedBindings), '"foo" = \'bar\'::TEXT OR ? OR ?::TEXT', [namedBindings.b, namedBindings.c]],
+      [raw(":a:::TEXT = OR :b::TEXT OR :c", namedBindings), '"foo"::TEXT = OR ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
       [raw('\\:a: = :b::TEXT OR :c', namedBindings), ':a: = ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
       [raw(':a: = \\:b::TEXT OR \\:c', namedBindings), '"foo" = :b::TEXT OR :c', []],
       [raw('\\:a: = \\:b::TEXT OR \\:c', namedBindings), ':a: = :b::TEXT OR :c', []]
