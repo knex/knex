@@ -13,6 +13,10 @@ function QueryCompiler_Redshift(client, builder) {
 inherits(QueryCompiler_Redshift, QueryCompiler_PG);
 
 assign(QueryCompiler_Redshift.prototype, {
+  truncate() {
+    return `truncate ${this.tableName}`;
+  },
+
   _returning(value) {
     return '';
   }

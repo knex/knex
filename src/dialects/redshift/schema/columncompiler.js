@@ -9,7 +9,6 @@ import { assign } from 'lodash'
 
 function ColumnCompiler_Redshift() {
   ColumnCompiler_PG.apply(this, arguments);
-  this.modifiers = ['nullable', 'defaultTo', 'comment']
 }
 inherits(ColumnCompiler_Redshift, ColumnCompiler_PG);
 
