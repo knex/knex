@@ -38,11 +38,15 @@ assign(TableCompiler_MSSQL.prototype, {
 
   dropColumnPrefix: 'DROP COLUMN ',
 
+  alterColumnPrefix: 'ALTER COLUMN ',
+
   // Compiles column add.  Multiple columns need only one ADD clause (not one ADD per column) so core addColumns doesn't work.  #1348
-  addColumns (columns) {
+  addColumns (columns, prefix) {
+    prefix = prefix || this.addColumnsPrefix;
+
     if (columns.sql.length > 0) {
       this.pushQuery({
-        sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + this.addColumnsPrefix + columns.sql.join(', '),
+        sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + prefix + columns.sql.join(', '),
         bindings: columns.bindings
       });
     }
