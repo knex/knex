@@ -53,6 +53,13 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table `users` add `id` int unsigned not null auto_increment primary key, add `email` varchar(255)');
   });
 
+  it('adding json', function() {
+    tableSql = client.schemaBuilder().table('user', function(t) {
+      t.json('preferences');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('alter table `user` add `preferences` json');
+  });
+
   it('test drop table', function() {
     tableSql = client.schemaBuilder().dropTable('users').toSQL();
 

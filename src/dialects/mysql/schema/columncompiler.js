@@ -4,6 +4,7 @@
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
 import * as helpers from '../../../helpers';
+import * as semver from 'semver';
 
 import { assign } from 'lodash'
 
@@ -80,6 +81,10 @@ assign(ColumnCompiler_MySQL.prototype, {
     return length ? `varbinary(${this._num(length)})` : 'blob'
   },
 
+  json() {
+    return jsonColumn(this.client);
+  },
+
   // Modifiers
   // ------
 
@@ -113,7 +118,15 @@ assign(ColumnCompiler_MySQL.prototype, {
   collate(collation) {
     return collation && `collate '${collation}'`
   }
-
+  
 })
+
+function jsonColumn(client) {
+  if(!client.version || semver.gte(client.version, '5.7.8')) {
+    return 'json';
+  } else {
+    return 'text';
+  }
+}
 
 export default ColumnCompiler_MySQL;
