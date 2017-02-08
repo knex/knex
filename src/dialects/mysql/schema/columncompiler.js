@@ -124,7 +124,7 @@ assign(ColumnCompiler_MySQL.prototype, {
 const MIN_JSON_VERSION = semver.SemVer('5.7.8');
 function jsonColumn(client) {
   if(!client.version) {
-    return 'json'; // this is here jsut for tests
+    return 'json'; // this is here just for tests
   } else if(semver.valid(client.version) && semver.gte(client.version, MIN_JSON_VERSION)) {
     return 'json';
   } else {

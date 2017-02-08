@@ -1,6 +1,7 @@
 
 # Master (Unreleased)
 - Add more having* methods / join clause on* methods  #1674
+- MySQL versions greater than 5.7.8 now use the `json` data type instead of `text` when a schema builder migration is run. 
 
 # 0.12.6 - 19 Oct, 2016
 - Address warnings mentioned in #1388 (#1740)
