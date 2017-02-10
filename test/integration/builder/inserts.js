@@ -777,5 +777,49 @@ module.exports = function(knex) {
       });
     });
 
+
+    it('#647 - Chaining insert', function() {
+      return knex('accounts')
+        .whereIn('last_name', ['Insert Test', 'Insert Test2', 'Insert Test3'])
+        .del()
+        .then(function() {
+          return knex('accounts')
+            .insert({
+              last_name: 'Insert Test',
+              email: 'insert@test.com',
+              logins: 0,
+              about: '-',
+              created_at: new Date(),
+              updated_at: new Date()
+            })
+            .insert([
+              {
+                last_name: 'Insert Test2',
+                email: 'insert2@test.com',
+                logins: 0,
+                about: '-',
+                created_at: new Date(),
+                updated_at: new Date()
+              },
+              {
+                last_name: 'Insert Test3',
+                email: 'insert3@test.com',
+                logins: 0,
+                about: '-',
+                created_at: new Date(),
+                updated_at: new Date()
+              }
+            ])
+        })
+      .then(function() {
+          return knex('accounts')
+          .whereIn('last_name', ['Insert Test', 'Insert Test2', 'Insert Test3'])
+          .select();
+        })
+      .then(function(rows) {
+          expect(rows.length).to.equal(3);
+        });
+    });
+
   });
 };

@@ -10,7 +10,7 @@ import * as helpers from '../helpers';
 import JoinClause from './joinclause';
 import {
   assign, clone, each, isBoolean, isEmpty, isFunction, isNumber, isObject,
-  isString, isUndefined, tail, toArray
+  isString, isUndefined, tail, toArray, concat, isArray
 } from 'lodash';
 
 // Typically called from `knex.builder`,
@@ -804,7 +804,11 @@ assign(Builder.prototype, {
   insert(values, returning) {
     this._method = 'insert';
     if (!isEmpty(returning)) this.returning(returning);
-    this._single.insert = values
+    let obj = this._single.insert || [];
+    if(!isEmpty(values)) {
+      obj = concat(obj, isArray(values) ? values : [values]);
+    }
+    this._single.insert = obj;
     return this;
   },
 
@@ -909,11 +913,23 @@ assign(Builder.prototype, {
     let amt = parseInt(amount, 10);
     if (isNaN(amt)) amt = 1;
     this._method = 'counter';
-    this._single.counter = {
-      column,
-      amount: amt,
-      symbol: (symbol || '+')
-    };
+    let counter = this._single.counter || {};
+
+    if(!counter[column]) {
+      counter[column] = {
+        amount: amt,
+        symbol: (symbol || '+')
+      };
+    } else {
+      //Counter for column already exists. Add/subtract the current column amount by the new amount
+      if(symbol === '-') {
+        counter[column].amount -= amount;
+      } else {
+        counter[column].amount += amount;
+      }
+    }
+
+    this._single.counter = counter;
     return this;
   },
 

@@ -169,6 +169,42 @@ module.exports = function(knex) {
 
     });
 
+    it('#647 - Support chaining .increment/.decrement', function() {
+      return knex.transaction(function(tr) {
+        return tr('accounts')
+          .where('first_name', 'ChainingTest')
+          .del()
+          .then(function() {
+            return tr('accounts')
+              .insert({
+                first_name: 'ChainingTest',
+                email: 'chaining@test.com',
+                logins: 0,
+                created_at: new Date(),
+                updated_at: new Date()
+              });
+          })
+          .then(function() {
+            return tr('accounts')
+              .where('first_name', 'ChainingTest')
+              .returning('*')
+              .increment('logins', 1)
+              .increment('logins', 2);
+          })
+          .then(function(rows) {
+            expect(rows[0].logins).to.equal(3);
+            return tr('accounts')
+              .where('first_name', 'ChainingTest')
+              .returning('*')
+              .increment('logins', 5)
+              .decrement('logins', 3);
+          })
+          .then(function(rows) {
+            expect(rows[0].logins).to.equal(5);
+          })
+      });
+    });
+
   });
 
 };
