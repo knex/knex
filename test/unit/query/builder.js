@@ -165,6 +165,61 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("clear a select", function() {
+    testsql(qb().select('id', 'email').from('users').clearSelect(), {
+      mysql: {
+        sql: 'select * from `users`'
+      },
+      mssql: {
+        sql: 'select * from [users]'
+      },
+      postgres: {
+        sql: 'select * from "users"'
+      }
+    });
+
+    testsql(qb().select('id').from('users').clearSelect().select('email'), {
+      mysql: {
+        sql: 'select `email` from `users`'
+      },
+      mssql: {
+        sql: 'select [email] from [users]'
+      },
+      postgres: {
+        sql: 'select "email" from "users"'
+      }
+    });
+  });
+
+  it("clear a where", function() {
+    testsql(qb().select('id').from('users').where('id', '=', 1).clearWhere(), {
+      mysql: {
+        sql: 'select `id` from `users`'
+      },
+      mssql: {
+        sql: 'select [id] from [users]'
+      },
+      postgres: {
+        sql: 'select "id" from "users"'
+      }
+    });
+
+    testsql(qb().select('id').from('users').where('id', '=', 1).clearWhere().where('id', '=', 2), {
+      mysql: {
+        sql: 'select `id` from `users` where `id` = ?',
+        bindings: [2]
+      },
+      mssql: {
+        sql: 'select [id] from [users] where [id] = ?',
+        bindings: [2]
+      },
+      postgres: {
+        sql: 'select "id" from "users" where "id" = ?',
+        bindings: [2]
+      }
+    });
+  });
+
   it("basic wheres", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1), {
       mysql: {
