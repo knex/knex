@@ -976,7 +976,7 @@ assign(Builder.prototype, {
 
   // Helper function for clearing or reseting a grouping type from the builder
   _clearGrouping(grouping){
-    this._statements = reject(this._statements, function(statement){
+    this._statements = reject(this._statements, (statement) => {
       return statement.grouping === grouping;
     });
   }
