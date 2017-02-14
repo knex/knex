@@ -41,6 +41,51 @@ TableCompiler_PG.prototype.createQuery = function(columns, ifNot) {
   if (hasComment) this.comment(this.single.comment);
 };
 
+TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) {
+  if (prefix === this.alterColumnsPrefix) {
+    // alter columns
+    for (const col  of colCompilers) {
+      const quotedTableName = this.tableName();
+      const colName = col.getColumnName();
+      const type = col.getColumnType();
+
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ?? drop default`,
+        bindings: [colName]
+      });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ?? drop not null`,
+        bindings: [colName]
+      });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ?? type ${type}`,
+        bindings: [colName]
+      });
+
+      const defaultTo = col.modified['defaultTo'];
+      if (defaultTo) {
+        const modifier = col.defaultTo.apply(col, defaultTo);
+        this.pushQuery({
+          sql: `alter table ${quotedTableName} alter column ?? set ${modifier}`,
+          bindings: [colName]
+        });
+      }
+
+      const nullable = col.modified['nullable'];
+      if (nullable) {
+        const modifier = col.nullable.apply(col, nullable);
+        this.pushQuery({
+          sql: `alter table ${quotedTableName} alter column ?? set ${modifier}`,
+          bindings: [colName]
+        });
+      }
+    }
+  } else {
+    // base class implementation for normal add
+    TableCompiler.prototype.addColumns.call(this, columns, prefix);
+  }
+};
+
 // Compiles the comment on the table.
 TableCompiler_PG.prototype.comment = function(comment) {
   this.pushQuery(`comment on table ${this.tableName()} is '${this.single.comment || ''}'`);
