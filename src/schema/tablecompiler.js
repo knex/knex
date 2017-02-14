@@ -130,7 +130,9 @@ TableCompiler.prototype.addColumns = function (columns, prefix) {
 TableCompiler.prototype.alterColumnsPrefix = 'alter column ';
 
 TableCompiler.prototype.alterColumns = function (columns) {
-  this.addColumns(columns, this.alterColumnsPrefix);
+  if (columns.sql.length > 0) {
+    this.addColumns(columns, this.alterColumnsPrefix);
+  }
 };
 
 // Compile the columns as needed for the current create or alter table
