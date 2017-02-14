@@ -10,7 +10,7 @@ import * as helpers from '../helpers';
 import JoinClause from './joinclause';
 import {
   assign, clone, each, isBoolean, isEmpty, isFunction, isNumber, isObject,
-  isString, isUndefined, tail, toArray
+  isString, isUndefined, tail, toArray, reject
 } from 'lodash';
 
 // Typically called from `knex.builder`,
@@ -797,6 +797,18 @@ assign(Builder.prototype, {
     return this;
   },
 
+  // Remove everything from select clause
+  clearSelect(){
+    this._clearGrouping('columns');
+    return this;
+  },
+
+  // Remove everything from select clause
+  clearWhere(){
+    this._clearGrouping('where');
+    return this;
+  },
+
   // Insert & Update
   // ------
 
@@ -960,8 +972,12 @@ assign(Builder.prototype, {
       aggregateDistinct: aggregateDistinct || false
     });
     return this;
-  }
+  },
 
+  // Helper function for clearing or reseting a grouping type from the builder
+  _clearGrouping(grouping){
+    this._statements = reject(this._statements, { grouping });
+  }
 })
 
 Object.defineProperty(Builder.prototype, 'or', {
