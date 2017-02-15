@@ -327,8 +327,23 @@ module.exports = function(knex) {
         });
       });
 
+      it('allows adding multiple columns at once', function () {
+        return knex.schema.table('test_table_two', function(t) {
+          t.string('one');
+          t.string('two');
+          t.string('three');
+        }).then(function () {
+          return knex.schema.table('test_table_two', function(t) {
+            t.dropColumn('one');
+            t.dropColumn('two');
+            t.dropColumn('three');
+          });
+        });
+      });
+
       it('allows alter column syntax', function () {
-        if (knex.client.dialect.match('sqlite') !== null) {
+        if (knex.client.dialect.match('sqlite') !== null ||
+            knex.client.dialect.match('oracle') !== null) {
           return;
         }
 
