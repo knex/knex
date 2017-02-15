@@ -328,6 +328,10 @@ module.exports = function(knex) {
       });
 
       it('allows adding multiple columns at once', function () {
+        if (knex.client.dialect.match('oracle') !== null) {
+          // TODO: ENABLE THIS AND ALTER COLUMN TEST WHEN ORACLE IS FIXED
+          return;
+        }
         return knex.schema.table('test_table_two', function(t) {
           t.string('one');
           t.string('two');
