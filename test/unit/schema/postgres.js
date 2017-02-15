@@ -32,27 +32,19 @@ describe("PostgreSQL SchemaBuilder", function() {
 
   it('should alter columns with the alter flag', function() {
     tableSql = client.schemaBuilder().table('users', function() {
-      this.string('foo').notNull().default('foo').alter();
+      this.string('foo').notNullable().default('foo').alter();
       this.integer('bar').alter();
     }).toSQL();
 
     equal(8, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" alter column ?? drop default');
-    expect(tableSql[0].bindings).to.eql(['foo']);
-    expect(tableSql[1].sql).to.equal('alter table "users" alter column ?? drop not null');
-    expect(tableSql[1].bindings).to.eql(['foo']);
-    expect(tableSql[2].sql).to.equal('alter table "users" alter column ?? type varchar(255)');
-    expect(tableSql[2].bindings).to.eql(['foo']);
-    expect(tableSql[3].sql).to.equal(`alter table "users" alter column ?? set default 'foo'`);
-    expect(tableSql[3].bindings).to.eql(['foo']);
-    expect(tableSql[4].sql).to.equal('alter table "users" alter column ?? set not null');
-    expect(tableSql[4].bindings).to.eql(['foo']);
-    expect(tableSql[5].sql).to.equal('alter table "users" alter column ?? drop default');
-    expect(tableSql[5].bindings).to.eql(['bar']);
-    expect(tableSql[6].sql).to.equal('alter table "users" alter column ?? drop not null');
-    expect(tableSql[6].bindings).to.eql(['bar']);
-    expect(tableSql[7].sql).to.equal('alter table "users" alter column ?? type integer');
-    expect(tableSql[7].bindings).to.eql(['bar']);
+    expect(tableSql[0].sql).to.equal('alter table "users" alter column "foo" drop default');
+    expect(tableSql[1].sql).to.equal('alter table "users" alter column "foo" drop not null');
+    expect(tableSql[2].sql).to.equal('alter table "users" alter column "foo" type varchar(255) using ("foo"::varchar(255))');
+    expect(tableSql[3].sql).to.equal(`alter table "users" alter column "foo" set default 'foo'`);
+    expect(tableSql[4].sql).to.equal('alter table "users" alter column "foo" set not null');
+    expect(tableSql[5].sql).to.equal('alter table "users" alter column "bar" drop default');
+    expect(tableSql[6].sql).to.equal('alter table "users" alter column "bar" drop not null');
+    expect(tableSql[7].sql).to.equal('alter table "users" alter column "bar" type integer using ("bar"::integer)');
   });
 
   it("alter table with schema", function() {

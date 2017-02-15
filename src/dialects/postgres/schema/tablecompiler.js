@@ -50,34 +50,35 @@ TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) 
       const type = col.getColumnType();
 
       this.pushQuery({
-        sql: `alter table ${quotedTableName} alter column ?? drop default`,
-        bindings: [colName]
+        sql: `alter table ${quotedTableName} alter column "${colName}" drop default`,
+        bindings: []
       });
       this.pushQuery({
-        sql: `alter table ${quotedTableName} alter column ?? drop not null`,
-        bindings: [colName]
+        sql: `alter table ${quotedTableName} alter column "${colName}" drop not null`,
+        bindings: []
       });
       this.pushQuery({
-        sql: `alter table ${quotedTableName} alter column ?? type ${type}`,
-        bindings: [colName]
+        sql: `alter table ${quotedTableName} alter column "${colName}" type ${type} using ("${colName}"::${type})`,
+        bindings: []
       });
 
       const defaultTo = col.modified['defaultTo'];
       if (defaultTo) {
         const modifier = col.defaultTo.apply(col, defaultTo);
         this.pushQuery({
-          sql: `alter table ${quotedTableName} alter column ?? set ${modifier}`,
-          bindings: [colName]
+          sql: `alter table ${quotedTableName} alter column "${colName}" set ${modifier}`,
+          bindings: []
         });
       }
 
       const nullable = col.modified['nullable'];
       if (nullable) {
-        const modifier = col.nullable.apply(col, nullable);
-        this.pushQuery({
-          sql: `alter table ${quotedTableName} alter column ?? set ${modifier}`,
-          bindings: [colName]
-        });
+        if (nullable[0] === false) {
+          this.pushQuery({
+            sql: `alter table ${quotedTableName} alter column "${colName}" set not null`,
+            bindings: []
+          });
+        }
       }
     }
   } else {
