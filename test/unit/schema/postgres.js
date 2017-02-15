@@ -40,7 +40,7 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" alter column "foo" drop default');
     expect(tableSql[1].sql).to.equal('alter table "users" alter column "foo" drop not null');
     expect(tableSql[2].sql).to.equal('alter table "users" alter column "foo" type varchar(255) using ("foo"::varchar(255))');
-    expect(tableSql[3].sql).to.equal(`alter table "users" alter column "foo" set default 'foo'`);
+    expect(tableSql[3].sql).to.equal('alter table "users" alter column "foo" set default \'foo\'');
     expect(tableSql[4].sql).to.equal('alter table "users" alter column "foo" set not null');
     expect(tableSql[5].sql).to.equal('alter table "users" alter column "bar" drop default');
     expect(tableSql[6].sql).to.equal('alter table "users" alter column "bar" drop not null');
