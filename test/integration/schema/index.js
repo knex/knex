@@ -364,7 +364,6 @@ module.exports = function(knex) {
         }).then(function () {
           return knex('test_table_two').columnInfo();
         }).then(function(info) {
-          console.dir(info);
           expect(info.remove_not_null.nullable).to.equal(true);
           expect(info.remove_not_null.defaultValue).to.not.equal(null);
           expect(info.remove_default.nullable).to.equal(false);

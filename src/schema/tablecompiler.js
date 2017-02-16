@@ -59,8 +59,8 @@ TableCompiler.prototype.createIfNot = function () {
 // go through and handle each of the queries associated
 // with altering the table's schema.
 TableCompiler.prototype.alter = function () {
-  const addColBuilders = this.getColumns();
-  const addColumns     = addColBuilders.map(col => col.toSQL());
+  const addColBuilders   = this.getColumns();
+  const addColumns       = addColBuilders.map(col => col.toSQL());
   const alterColBuilders = this.getColumns('alter');
   const alterColumns     = alterColBuilders.map(col => col.toSQL());
   const addColumnTypes   = this.getColumnTypes(addColumns);
@@ -145,10 +145,7 @@ TableCompiler.prototype.getColumns = function (method) {
 
   return columns
     .filter(column => column.builder._method === method)
-    .map(column => {
-      const compiled = this.client.columnCompiler(this, column.builder);
-      return compiled;
-    });
+    .map(column => this.client.columnCompiler(this, column.builder));
 };
 
 TableCompiler.prototype.tableName = function () {

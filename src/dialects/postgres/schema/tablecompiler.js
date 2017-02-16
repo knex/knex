@@ -72,13 +72,11 @@ TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) 
       }
 
       const nullable = col.modified['nullable'];
-      if (nullable) {
-        if (nullable[0] === false) {
-          this.pushQuery({
-            sql: `alter table ${quotedTableName} alter column "${colName}" set not null`,
-            bindings: []
-          });
-        }
+      if (nullable && nullable[0] === false) {
+        this.pushQuery({
+          sql: `alter table ${quotedTableName} alter column "${colName}" set not null`,
+          bindings: []
+        });
       }
     }
   } else {
