@@ -212,6 +212,16 @@ export default [
   {
     type: "runnable",
     content: `
+    knex('users').where('columnName', 'like', `%${searchTerm}%`)
+    `
+  }
+  {
+    type: "text",
+    content: "The above query demonstrates the common use case of returning all users for which a specific pattern appears within a designated column."
+  },
+  {
+    type: "runnable",
+    content: `
       knex('users').where('votes', '>', 100)
     `
   },
