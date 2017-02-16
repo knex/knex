@@ -212,9 +212,9 @@ export default [
   {
     type: "runnable",
     content: `
-    knex('users').where('columnName', 'like', `%${searchTerm}%`)
+      knex('users').where('columnName', 'like', \`%\${searchTerm}%\`)
     `
-  }
+  },
   {
     type: "text",
     content: "The above query demonstrates the common use case of returning all users for which a specific pattern appears within a designated column."
