@@ -189,6 +189,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
           <li>– <a href="#Schema-dropPrimary">dropPrimary</a></li>
           <li><a href="#Chainable"><b>Chainable:</b></a></li>
+          <li>– <a href="#Schema-alter">alter</a></li>
           <li>– <a href="#Schema-index">index</a></li>
           <li>– <a href="#Schema-primary">primary</a></li>
           <li>– <a href="#Schema-unique">unique</a></li>
