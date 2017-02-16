@@ -63,6 +63,7 @@ assign(Client_MySQL.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
+    const client = this;
     return new Promise((resolver, rejecter) => {
       const connection = this.driver.createConnection(this.connectionSettings)
       connection.connect((err) => {
@@ -70,7 +71,16 @@ assign(Client_MySQL.prototype, {
         connection.on('error', err => {
           connection.__knex__disposed = err
         })
-        resolver(connection)
+
+        // determine the version of the server to enable json support among others
+        if (!client.version) {
+          return client.checkVersion(connection).then(function(version) {
+            client.version = version
+            resolver(connection)
+          });
+        } else {
+          return resolver(connection)
+        }
       })
     })
   },
@@ -165,6 +175,16 @@ assign(Client_MySQL.prototype, {
         acquiringConn
           .then((conn) => this.releaseConnection(conn));
       });
+  },
+
+  checkVersion (connection) {
+    return new Promise(function(resolver, rejecter) {
+      connection.query('select version()', function(err, resp) {
+        if (err) return rejecter(err)
+        const version = resp[0]['version()']
+        resolver(version)
+      })
+    });
   }
 
 })

@@ -6,7 +6,7 @@ import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
 import Transaction from './transaction';
-
+import ColumnCompiler from './schema/columncompiler';
 import { assign, map } from 'lodash'
 
 function Client_MariaSQL(config) {
@@ -26,6 +26,10 @@ assign(Client_MariaSQL.prototype, {
 
   _driver() {
     return require('mariasql')
+  },
+
+  columnCompiler() {
+    return new ColumnCompiler(this, ...arguments)
   },
 
   // Get a raw connection, called by the `pool` whenever a new
