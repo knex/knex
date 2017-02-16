@@ -12,8 +12,8 @@ export default [
   {
     type: "method",
     method: "knex",
-    example: "knex(tableName) / knex.[methodName]",
-    description: "The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream.",
+    example: "knex(tableName, options={only: boolean}) / knex.[methodName]",
+    description: "The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream. Optional second argument for passing options:*   **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data. **NOTE:** only supported in PostgreSQL for now.",
     children: [    ]
   },
   {
@@ -95,8 +95,8 @@ export default [
   {
     type: "method",
     method: "from",
-    example: ".from([tableName])",
-    description: "Specifies the table used in the current query, replacing the current table name if one has already been specified. This is typically used in the sub-queries performed in the advanced where or union methods.",
+    example: ".from([tableName], options={only: boolean})",
+    description: "Specifies the table used in the current query, replacing the current table name if one has already been specified. This is typically used in the sub-queries performed in the advanced where or union methods. Optional second argument for passing options:*   **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data. **NOTE:** only supported in PostgreSQL for now.",
     children: [
       {
         type: "runnable",
