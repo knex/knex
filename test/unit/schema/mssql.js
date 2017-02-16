@@ -92,6 +92,17 @@ describe("MSSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP CONSTRAINT [users_foo_unique]');
   });
 
+  it('should alter columns with the alter flag', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.string('foo').alter();
+      this.string('bar');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [bar] nvarchar(255)');
+    expect(tableSql[1].sql).to.equal('ALTER TABLE [users] alter column [foo] nvarchar(255)');
+  });
+
   it('test drop unique, custom', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.dropUnique(null, 'foo');

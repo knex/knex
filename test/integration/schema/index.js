@@ -323,7 +323,57 @@ module.exports = function(knex) {
 
       it('allows adding a field', function () {
         return knex.schema.table('test_table_two', function(t) {
-          t.json('json_data', true).nullable();
+          t.json('json_data', true);
+        });
+      });
+
+      it('allows adding multiple columns at once', function () {
+        if (knex.client.dialect.match('oracle') !== null) {
+          // TODO: ENABLE THIS AND ALTER COLUMN TEST WHEN ORACLE IS FIXED
+          return;
+        }
+        return knex.schema.table('test_table_two', function(t) {
+          t.string('one');
+          t.string('two');
+          t.string('three');
+        }).then(function () {
+          return knex.schema.table('test_table_two', function(t) {
+            t.dropColumn('one');
+            t.dropColumn('two');
+            t.dropColumn('three');
+          });
+        });
+      });
+
+      it('allows alter column syntax', function () {
+        if (knex.client.dialect.match('sqlite') !== null ||
+            knex.client.dialect.match('oracle') !== null) {
+          return;
+        }
+
+        return knex.schema.table('test_table_two', function(t) {
+          t.integer('remove_not_null').notNull().defaultTo(1);
+          t.string('remove_default').notNull().defaultTo(1);
+          t.dateTime('datetime_to_date').notNull().defaultTo(knex.fn.now());
+        }).then(function () {
+          return knex.schema.table('test_table_two', function(t) {
+            t.integer('remove_not_null').defaultTo(1).alter();
+            t.integer('remove_default').notNull().alter();
+            t.date('datetime_to_date').alter();
+          });
+        }).then(function () {
+          return knex('test_table_two').columnInfo();
+        }).then(function(info) {
+          expect(info.remove_not_null.nullable).to.equal(true);
+          expect(info.remove_not_null.defaultValue).to.not.equal(null);
+          expect(info.remove_default.nullable).to.equal(false);
+          expect(info.remove_default.defaultValue).to.equal(null);
+          expect(info.remove_default.type).to.contains('int');
+          return knex.schema.table('test_table_two', function (t) {
+            t.dropColumn('remove_default');
+            t.dropColumn('remove_not_null');
+            t.dropColumn('datetime_to_date');
+          });
         });
       });
 

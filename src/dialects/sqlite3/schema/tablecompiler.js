@@ -28,7 +28,10 @@ TableCompiler_SQLite3.prototype.createQuery = function(columns, ifNot) {
   this.pushQuery(sql);
 };
 
-TableCompiler_SQLite3.prototype.addColumns = function(columns) {
+TableCompiler_SQLite3.prototype.addColumns = function(columns, prefix) {
+  if (prefix) {
+    throw new Error("Sqlite does not support alter column.");
+  }
   for (let i = 0, l = columns.sql.length; i < l; i++) {
     this.pushQuery({
       sql: `alter table ${this.tableName()} add column ${columns.sql[i]}`,
