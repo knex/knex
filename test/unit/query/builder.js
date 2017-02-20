@@ -165,6 +165,61 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("clear a select", function() {
+    testsql(qb().select('id', 'email').from('users').clearSelect(), {
+      mysql: {
+        sql: 'select * from `users`'
+      },
+      mssql: {
+        sql: 'select * from [users]'
+      },
+      postgres: {
+        sql: 'select * from "users"'
+      }
+    });
+
+    testsql(qb().select('id').from('users').clearSelect().select('email'), {
+      mysql: {
+        sql: 'select `email` from `users`'
+      },
+      mssql: {
+        sql: 'select [email] from [users]'
+      },
+      postgres: {
+        sql: 'select "email" from "users"'
+      }
+    });
+  });
+
+  it("clear a where", function() {
+    testsql(qb().select('id').from('users').where('id', '=', 1).clearWhere(), {
+      mysql: {
+        sql: 'select `id` from `users`'
+      },
+      mssql: {
+        sql: 'select [id] from [users]'
+      },
+      postgres: {
+        sql: 'select "id" from "users"'
+      }
+    });
+
+    testsql(qb().select('id').from('users').where('id', '=', 1).clearWhere().where('id', '=', 2), {
+      mysql: {
+        sql: 'select `id` from `users` where `id` = ?',
+        bindings: [2]
+      },
+      mssql: {
+        sql: 'select [id] from [users] where [id] = ?',
+        bindings: [2]
+      },
+      postgres: {
+        sql: 'select "id" from "users" where "id" = ?',
+        bindings: [2]
+      }
+    });
+  });
+
   it("basic wheres", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1), {
       mysql: {
@@ -1625,10 +1680,84 @@ describe("QueryBuilder", function() {
     });
   });
 
+
+  it("clear nested wheres", function() {
+    testsql(qb().select('*').from('users').where('email', '=', 'foo').orWhere(function(qb) {
+      qb.where('name', '=', 'bar').where('age', '=', 25).clearWhere();
+    }), {
+      mysql: {
+        sql: 'select * from `users` where `email` = ?',
+        bindings: ['foo']
+      },
+      mssql: {
+        sql: 'select * from [users] where [email] = ?',
+        bindings: ['foo']
+      },
+      postgres: {
+        sql: 'select * from "users" where "email" = ?',
+        bindings: ['foo']
+      }
+    });
+  });
+
+  it("clear where and nested wheres", function() {
+    testsql(qb().select('*').from('users').where('email', '=', 'foo').orWhere(function(qb) {
+      qb.where('name', '=', 'bar').where('age', '=', 25);
+    }).clearWhere(), {
+      mysql: {
+        sql: 'select * from `users`'
+      },
+      mssql: {
+        sql: 'select * from [users]'
+      },
+      postgres: {
+        sql: 'select * from "users"'
+      }
+    });
+  });
+
   it("full sub selects", function() {
     testsql(qb().select('*').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
       qb.select(raw('max(id)')).from('users').where('email', '=', 'bar');
     }), {
+      mysql: {
+        sql: 'select * from `users` where `email` = ? or `id` = (select max(id) from `users` where `email` = ?)',
+        bindings: ['foo', 'bar']
+      },
+      mssql: {
+        sql: 'select * from [users] where [email] = ? or [id] = (select max(id) from [users] where [email] = ?)',
+        bindings: ['foo', 'bar']
+      },
+      postgres: {
+        sql: 'select * from "users" where "email" = ? or "id" = (select max(id) from "users" where "email" = ?)',
+        bindings: ['foo', 'bar']
+      }
+    });
+  });
+
+ it("clear nested selects", function() {
+    testsql(qb().select('email').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
+      qb.select(raw('max(id)')).from('users').where('email', '=', 'bar').clearSelect();
+    }), {
+      mysql: {
+        sql: 'select `email` from `users` where `email` = ? or `id` = (select * from `users` where `email` = ?)',
+        bindings: ['foo', 'bar']
+      },
+      mssql: {
+        sql: 'select [email] from [users] where [email] = ? or [id] = (select * from [users] where [email] = ?)',
+        bindings: ['foo', 'bar']
+      },
+      postgres: {
+        sql: 'select "email" from "users" where "email" = ? or "id" = (select * from "users" where "email" = ?)',
+        bindings: ['foo', 'bar']
+      }
+    });
+  });
+
+  it("clear non nested selects", function() {
+    testsql(qb().select('email').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
+      qb.select(raw('max(id)')).from('users').where('email', '=', 'bar');
+    }).clearSelect(), {
       mysql: {
         sql: 'select * from `users` where `email` = ? or `id` = (select max(id) from `users` where `email` = ?)',
         bindings: ['foo', 'bar']
