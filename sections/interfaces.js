@@ -46,7 +46,7 @@ export default [
   {
     type: "method",
     method: "then",
-    example: ".then(onFulfilled)",
+    example: ".then(onFulfilled, [onRejected])",
     description: "Coerces the current query builder chain into a promise state, accepting the resolve and reject handlers as specified by the Promises/A+ spec. As stated in the spec, more than one call to the then method for the current query chain will resolve with the same value, in the order they were called; the query will not be executed multiple times.",
     children: [
       {
