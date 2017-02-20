@@ -289,7 +289,7 @@ export default [
   {
     type: "method",
     method: "timestamps",
-    example: "table.timestamps()",
+    example: "table.timestamps([useTimestamps], [defaultToNow])",
     description: "Adds a created_at and updated_at column on the database, setting these each to dateTime types. When true is passed as the first argument a timestamp type is used. Both colums default to being not null and the current timestamp when true is passed as the second argument.",
     children: [    ]
   },
