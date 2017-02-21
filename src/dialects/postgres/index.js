@@ -169,7 +169,9 @@ assign(Client_PG.prototype, {
     const sql = obj.sql = this.positionBindings(obj.sql)
     return new Promise(function(resolver, rejecter) {
       const queryStream = connection.query(new PGQueryStream(sql, obj.bindings, options));
-      queryStream.on('error', rejecter);
+      queryStream.on('error', function(err) {
+        stream.emit('error', err);
+      });
       // 'error' is not propagated by .pipe, but it breaks the pipe
       stream.on('error', rejecter);
       // 'end' IS propagated by .pipe, by default

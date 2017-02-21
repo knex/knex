@@ -189,6 +189,18 @@ module.exports = function(knex) {
       });
     });
 
+    it('propagates stream errors', function() {
+      return new Promise(function(resolve, reject) {
+        var stream = knex('not_a_table').stream();
+        stream.once('error', function() {
+          resolve();
+        });
+        stream.once('end', function() {
+          reject(new Error('should not get here'));
+        });
+      })
+    });
+
     it('throws errors on the asCallback if uncaught in the last block', function(ok) {
 
       var listeners = process.listeners('uncaughtException');
