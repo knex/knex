@@ -212,7 +212,7 @@ export default [
   {
     type: "runnable",
     content: `
-      knex('users').where('columnName', 'like', \`%\${searchTerm}%\`)
+      knex('users').where('columnName', 'like', '%rowlikeme%')
     `
   },
   {
