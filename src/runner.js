@@ -1,4 +1,4 @@
-import { assign, isArray } from 'lodash'
+import { assign, isArray, noop } from 'lodash'
 import Promise from 'bluebird';
 import * as helpers from './helpers';
 
@@ -98,6 +98,10 @@ assign(Runner.prototype, {
       handler(stream);
       return promise;
     }
+
+    // This promise is unreachable since no handler was given, so noop any
+    // exceptions. Errors should be handled in the stream's 'error' event.
+    promise.catch(noop);
     return stream;
   },
 
