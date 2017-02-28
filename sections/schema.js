@@ -202,7 +202,7 @@ export default [
     type: "method",
     method: "increments",
     example: "table.increments(name)",
-    description: "Adds an auto incrementing column, in PostgreSQL this is a serial. This will be used as the primary key for the column. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial).",
+    description: "Adds an auto incrementing column, in PostgreSQL this is a serial. This will be used as the primary key for the table. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial).",
     children: [    ]
   },
   {
