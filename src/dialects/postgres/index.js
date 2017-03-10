@@ -13,7 +13,7 @@ import SchemaCompiler from './schema/compiler';
 import {makeEscape} from '../../query/string'
 
 function Client_PG(config) {
-  Client.apply(this, arguments)
+  Client.apply(this, arguments);
   if (config.returning) {
     this.defaultReturning = config.returning;
   }
@@ -21,8 +21,12 @@ function Client_PG(config) {
   if (config.searchPath) {
     this.searchPath = config.searchPath;
   }
+
+  if (config.version) {
+    this.version = config.version;
+  }
 }
-inherits(Client_PG, Client)
+inherits(Client_PG, Client);
 
 assign(Client_PG.prototype, {
 
@@ -129,13 +133,10 @@ assign(Client_PG.prototype, {
   // In PostgreSQL, we need to do a version check to do some feature
   // checking on the database.
   checkVersion(connection) {
-    return new Promise(function (resolver, rejecter) {
-      connection.query('select version();', function (err, resp) {
-        let version = resp.rows[0].version;
-        if (err) {
-          return rejecter(err);
-        }
-        resolver((/^PostgreSQL (.*?)( |$)/.exec(version) || [undefined, version])[1]);
+    return new Promise(function(resolver, rejecter) {
+      connection.query('select version();', function(err, resp) {
+        if (err) return rejecter(err);
+        resolver(/^PostgreSQL (.*?)( |$)/.exec(resp.rows[0].version)[1]);
       });
     });
   },
