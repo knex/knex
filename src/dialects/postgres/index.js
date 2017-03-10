@@ -129,10 +129,13 @@ assign(Client_PG.prototype, {
   // In PostgreSQL, we need to do a version check to do some feature
   // checking on the database.
   checkVersion(connection) {
-    return new Promise(function(resolver, rejecter) {
-      connection.query('select version();', function(err, resp) {
-        if (err) return rejecter(err);
-        resolver(/^PostgreSQL (.*?)( |$)/.exec(resp.rows[0].version)[1]);
+    return new Promise(function (resolver, rejecter) {
+      connection.query('select version();', function (err, resp) {
+        let version = resp.rows[0].version;
+        if (err) {
+          return rejecter(err);
+        }
+        resolver((/^PostgreSQL (.*?)( |$)/.exec(version) || [undefined, version])[1]);
       });
     });
   },
