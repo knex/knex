@@ -44,7 +44,16 @@ export default class Migrator {
     return this._migrationData()
       .tap(validateMigrationList)
       .spread((all, completed) => {
-        return this._runBatch(difference(all, completed), 'up');
+          const migrations = difference(all, completed);
+          const transactionForAll = isEmpty(filter(migrations, migration =>
+            !this._useTransaction(migration, this.config.disableTransactions)));
+
+          if (transactionForAll) {
+            return this.knex.transaction(trx => this._runBatch(migrations, 'up', trx));
+          }
+          else {
+            return this._runBatch(migrations, 'up');
+          }
       })
   }
 
@@ -171,8 +180,10 @@ export default class Migrator {
       .update({ is_locked: 1 });
   }
 
-  _getLock() {
-    return this.knex.transaction(trx => {
+  _getLock(trx) {
+    const transact = trx ? fn => fn(trx) : fn => this.knex.transaction(fn);
+
+    return transact(trx => {
       return this._isLocked(trx)
         .then(isLocked => {
           if (isLocked) {
@@ -185,46 +196,46 @@ export default class Migrator {
     });
   }
 
-  _freeLock() {
+  _freeLock(trx = this.knex.queryBuilder()) {
     const tableName = this._getLockTableName();
-    return this.knex(tableName)
+    return trx.table(tableName)
       .update({ is_locked: 0 });
   }
 
   // Run a batch of current migrations, in sequence.
-  _runBatch(migrations, direction) {
-    return this._getLock()
+  _runBatch(migrations, direction, trx) {
+    return this._getLock(trx)
     .then(() => Promise.all(map(migrations, bind(this._validateMigrationStructure, this))))
-    .then(() => this._latestBatchNumber())
+    .then(() => this._latestBatchNumber(trx))
     .then(batchNo => {
       if (direction === 'up') batchNo++;
       return batchNo;
     })
     .then(batchNo => {
-      return this._waterfallBatch(batchNo, migrations, direction)
+      return this._waterfallBatch(batchNo, migrations, direction, trx)
     })
-    .tap(() => this._freeLock())
+    .tap(() => this._freeLock(trx))
     .catch(error => {
       let cleanupReady = Promise.resolve();
 
-      if (error instanceof LockError) {
-        // If locking error do not free the lock.
-        helpers.warn(`Can't take lock to run migrations: ${error.message}`);
-        helpers.warn(
-          'If you are sure migrations are not running you can release the ' +
-          'lock manually by deleting all the rows from migrations lock ' +
-          'table: ' + this._getLockTableName()
-        );
-      } else {
-        helpers.warn(`migrations failed with error: ${error.message}`)
-        // If the error was not due to a locking issue, then remove the lock.
-        cleanupReady = this._freeLock();
-      }
+              if (error instanceof LockError) {
+                  // If locking error do not free the lock.
+                  helpers.warn(`Can't take lock to run migrations: ${error.message}`);
+                  helpers.warn(
+                      'If you are sure migrations are not running you can release the ' +
+                      'lock manually by deleting all the rows from migrations lock ' +
+                      'table: ' + this._getLockTableName()
+                  );
+              } else {
+                  helpers.warn(`migrations failed with error: ${error.message}`)
+                  // If the error was not due to a locking issue, then remove the lock.
+                  cleanupReady = this._freeLock(trx);
+              }
 
-      return cleanupReady.finally(function() {
-        throw error;
-      });
-    });
+              return cleanupReady.finally(function() {
+                  throw error;
+              });
+          });
   }
 
   // Validates some migrations by requiring and checking for an `up` and `down`
@@ -290,8 +301,8 @@ export default class Migrator {
   }
 
   // Returns the latest batch number.
-  _latestBatchNumber() {
-    return this.knex(this.config.tableName)
+  _latestBatchNumber(trx = this.knex.queryBuilder()) {
+    return trx.from(this.config.tableName)
       .max('batch as max_batch').then(obj => obj[0].max_batch || 0);
   }
 
@@ -309,8 +320,7 @@ export default class Migrator {
 
   // Runs a batch of `migrations` in a specified `direction`, saving the
   // appropriate database information as the migrations are run.
-  _waterfallBatch(batchNo, migrations, direction) {
-    const { knex } = this;
+  _waterfallBatch(batchNo, migrations, direction, trx = this.knex.queryBuilder()) {
     const {tableName, disableTransactions} = this.config
     const directory = this._absoluteConfigDir()
     let current = Promise.bind({failed: false, failedOn: 0});
@@ -321,22 +331,22 @@ export default class Migrator {
 
       // We're going to run each of the migrations in the current "up".
       current = current.then(() => {
-        if (this._useTransaction(migration, disableTransactions)) {
+        if (!trx && this._useTransaction(migration, disableTransactions)) {
           return this._transaction(migration, direction, name)
         }
-        return warnPromise(migration[direction](knex, Promise), name)
+        return warnPromise(migration[direction](trx, Promise), name)
       })
       .then(() => {
         log.push(path.join(directory, name));
         if (direction === 'up') {
-          return knex(tableName).insert({
+          return trx.into(tableName).insert({
             name,
             batch: batchNo,
             migration_time: new Date()
           });
         }
         if (direction === 'down') {
-          return knex(tableName).where({name}).del();
+          return trx.from(tableName).where({name}).del();
         }
       });
     })
