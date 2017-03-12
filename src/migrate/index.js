@@ -137,20 +137,20 @@ export default class Migrator {
 
   // Ensures that a proper table has been created, dependent on the migration
   // config settings.
-  _ensureTable() {
+  _ensureTable(trx = this.knex) {
     const table = this.config.tableName;
     const lockTable = this._getLockTableName();
-    return this.knex.schema.hasTable(table)
-      .then(exists => !exists && this._createMigrationTable(table))
-      .then(() => this.knex.schema.hasTable(lockTable))
-      .then(exists => !exists && this._createMigrationLockTable(lockTable))
-      .then(() => this.knex(lockTable).select('*'))
-      .then(data => !data.length && this.knex(lockTable).insert({ is_locked: 0 }));
+    return trx.schema.hasTable(table)
+      .then(exists => !exists && this._createMigrationTable(table, trx))
+      .then(() => trx.schema.hasTable(lockTable))
+      .then(exists => !exists && this._createMigrationLockTable(lockTable, trx))
+      .then(() => trx.from(lockTable).select('*'))
+      .then(data => !data.length && trx.into(lockTable).insert({ is_locked: 0 }));
   }
 
   // Create the migration table, if it doesn't already exist.
-  _createMigrationTable(tableName) {
-    return this.knex.schema.createTableIfNotExists(tableName, function(t) {
+  _createMigrationTable(tableName, trx = this.knex) {
+    return trx.schema.createTableIfNotExists(tableName, function(t) {
       t.increments();
       t.string('name');
       t.integer('batch');
@@ -158,8 +158,8 @@ export default class Migrator {
     });
   }
 
-  _createMigrationLockTable(tableName) {
-    return this.knex.schema.createTableIfNotExists(tableName, function(t) {
+  _createMigrationLockTable(tableName, trx = this.knex) {
+    return trx.schema.createTableIfNotExists(tableName, function(t) {
       t.integer('is_locked');
     });
   }
@@ -260,7 +260,7 @@ export default class Migrator {
   // array.
   _listCompleted(trx = this.knex) {
     const { tableName } = this.config
-    return this._ensureTable(tableName)
+    return this._ensureTable(tableName, trx)
       .then(() => trx.from(tableName).orderBy('id').select('name'))
       .then((migrations) => map(migrations, 'name'))
   }
