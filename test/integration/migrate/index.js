@@ -193,26 +193,6 @@ module.exports = function(knex) {
           });
         });
       });
-
-      it('should not create column for invalid migration', function() {
-        return knex.schema.hasColumn('migration_test_1', 'transaction').then(function(exists) {
-          // MySQL / Oracle commit transactions implicit for most common
-          // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
-          // so we need to check for dialect
-          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'mariadb' || knex.client.dialect === 'oracle') {
-            expect(exists).to.equal(true);
-          } else {
-            expect(exists).to.equal(false);
-          }
-        });
-      });
-
-      it('should not proceed after invalid migration', function() {
-        return knex.schema.hasTable('should_not_be_run').then(function(exists) {
-          expect(exists).to.equal(false);
-        });
-      });
-
     });
 
     describe('knex.migrate.rollback', function() {
@@ -270,7 +250,7 @@ module.exports = function(knex) {
       ], function (res) {return res && res.name})
         .then(function (res) {
           // One should fail:
-          const hasLockError = res[0] === "MigrationLocked" || res[1] === "MigrationLocked";
+          var hasLockError = res[0] === "MigrationLocked" || res[1] === "MigrationLocked";
           expect(hasLockError).to.equal(true);
 
           // But the other should succeed:
