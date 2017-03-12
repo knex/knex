@@ -44,19 +44,19 @@ export default class Migrator {
     return this._migrationData()
       .tap(validateMigrationList)
       .spread((all, completed) => {
-          const migrations = difference(all, completed);
+        const migrations = difference(all, completed);
 
-          const transactionForAll = !this.config.disableTransactions && isEmpty(filter(migrations, name => {
+        const transactionForAll = !this.config.disableTransactions && isEmpty(filter(migrations, name => {
             const migration = require(path.join(this._absoluteConfigDir(), name));
             return !this._useTransaction(migration);
           }));
 
-          if (transactionForAll) {
-            return this.knex.transaction(trx => this._runBatch(migrations, 'up', trx));
-          }
-          else {
-            return this._runBatch(migrations, 'up');
-          }
+        if (transactionForAll) {
+          return this.knex.transaction(trx => this._runBatch(migrations, 'up', trx));
+        }
+        else {
+          return this._runBatch(migrations, 'up');
+        }
       })
   }
 
@@ -80,7 +80,7 @@ export default class Migrator {
       this.knex(this.config.tableName).select('*'),
       this._listAll()
     ])
-    .spread((db, code) => db.length - code.length);
+      .spread((db, code) => db.length - code.length);
 
   }
 
@@ -99,7 +99,7 @@ export default class Migrator {
     this.config = this.setConfig(config);
     const lockTable = this._getLockTableName();
     return this.knex.schema.hasTable(lockTable)
-        .then(exist => exist && this._freeLock());
+      .then(exist => exist && this._freeLock());
   }
 
   // Creates a new migration, with a given name.
@@ -208,40 +208,40 @@ export default class Migrator {
   // Run a batch of current migrations, in sequence.
   _runBatch(migrations, direction, trx) {
     return this._getLock(trx)
-    // When there is a wrapping transaction, some migrations could have done while waiting for the lock:
-    .then(() => trx ? this._listCompleted(trx) : [])
-    .then(completed => migrations = difference(migrations, completed))
-    .then(() => Promise.all(map(migrations, bind(this._validateMigrationStructure, this))))
-    .then(() => this._latestBatchNumber(trx))
-    .then(batchNo => {
-      if (direction === 'up') batchNo++;
-      return batchNo;
-    })
-    .then(batchNo => {
-      return this._waterfallBatch(batchNo, migrations, direction, trx)
-    })
-    .tap(() => this._freeLock(trx))
-    .catch(error => {
-      let cleanupReady = Promise.resolve();
+      // When there is a wrapping transaction, some migrations could have done while waiting for the lock:
+      .then(() => trx ? this._listCompleted(trx) : [])
+      .then(completed => migrations = difference(migrations, completed))
+      .then(() => Promise.all(map(migrations, bind(this._validateMigrationStructure, this))))
+      .then(() => this._latestBatchNumber(trx))
+      .then(batchNo => {
+        if (direction === 'up') batchNo++;
+        return batchNo;
+      })
+      .then(batchNo => {
+        return this._waterfallBatch(batchNo, migrations, direction, trx)
+      })
+      .tap(() => this._freeLock(trx))
+      .catch(error => {
+        let cleanupReady = Promise.resolve();
 
-              if (error instanceof LockError) {
-                  // If locking error do not free the lock.
-                  helpers.warn(`Can't take lock to run migrations: ${error.message}`);
-                  helpers.warn(
-                      'If you are sure migrations are not running you can release the ' +
-                      'lock manually by deleting all the rows from migrations lock ' +
-                      'table: ' + this._getLockTableName()
-                  );
-              } else {
-                  helpers.warn(`migrations failed with error: ${error.message}`)
-                  // If the error was not due to a locking issue, then remove the lock.
-                  cleanupReady = this._freeLock(trx);
-              }
+        if (error instanceof LockError) {
+          // If locking error do not free the lock.
+          helpers.warn(`Can't take lock to run migrations: ${error.message}`);
+          helpers.warn(
+            'If you are sure migrations are not running you can release the ' +
+            'lock manually by deleting all the rows from migrations lock ' +
+            'table: ' + this._getLockTableName()
+          );
+        } else {
+          helpers.warn(`migrations failed with error: ${error.message}`)
+          // If the error was not due to a locking issue, then remove the lock.
+          cleanupReady = this._freeLock(trx);
+        }
 
-              return cleanupReady.finally(function() {
-                  throw error;
-              });
-          });
+        return cleanupReady.finally(function() {
+          throw error;
+        });
+      });
   }
 
   // Validates some migrations by requiring and checking for an `up` and `down`
@@ -341,21 +341,21 @@ export default class Migrator {
         if (!trx && this._useTransaction(migration, disableTransactions)) {
           return this._transaction(migration, direction, name)
         }
-          return warnPromise(migration[direction](trxOrKnex, Promise), name)
+        return warnPromise(migration[direction](trxOrKnex, Promise), name)
       })
-      .then(() => {
-        log.push(path.join(directory, name));
-        if (direction === 'up') {
-          return trxOrKnex.into(tableName).insert({
-            name,
-            batch: batchNo,
-            migration_time: new Date()
-          });
-        }
-        if (direction === 'down') {
-          return trxOrKnex.from(tableName).where({name}).del();
-        }
-      });
+        .then(() => {
+          log.push(path.join(directory, name));
+          if (direction === 'up') {
+            return trxOrKnex.into(tableName).insert({
+              name,
+              batch: batchNo,
+              migration_time: new Date()
+            });
+          }
+          if (direction === 'down') {
+            return trxOrKnex.from(tableName).where({name}).del();
+          }
+        });
     })
 
     return current.thenReturn([batchNo, log]);
@@ -410,9 +410,9 @@ function padDate(segment) {
 function yyyymmddhhmmss() {
   const d = new Date();
   return d.getFullYear().toString() +
-      padDate(d.getMonth() + 1) +
-      padDate(d.getDate()) +
-      padDate(d.getHours()) +
-      padDate(d.getMinutes()) +
-      padDate(d.getSeconds());
+    padDate(d.getMonth() + 1) +
+    padDate(d.getDate()) +
+    padDate(d.getHours()) +
+    padDate(d.getMinutes()) +
+    padDate(d.getSeconds());
 }

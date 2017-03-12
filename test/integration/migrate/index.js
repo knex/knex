@@ -55,8 +55,8 @@ module.exports = function(knex) {
       });
 
       it('should return 0 if code matches DB', function() {
-          return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
-              expect(migrationLevel).to.equal(0);
+        return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+          expect(migrationLevel).to.equal(0);
         });
 
       });
@@ -64,8 +64,8 @@ module.exports = function(knex) {
       it('should return a negative number if the DB is behind', function() {
         return knex.migrate.rollback({directory: 'test/integration/migrate/test'}).then(function () {
           return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
-                expect(migrationLevel).to.equal(-2);
-            });
+            expect(migrationLevel).to.equal(-2);
+          });
         });
       });
 
@@ -87,19 +87,19 @@ module.exports = function(knex) {
             migration_time: new Date()
           })
         ])
-        .spread(function(migration1, migration2, migration3) {
-          return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
-            expect(migrationLevel).to.equal(3);
-          })
-          .then(function() {
-            // Cleanup the added migrations
-            return knex('knex_migrations')
-              .where('id', migration1[0])
-              .orWhere('id', migration2[0])
-              .orWhere('id', migration3[0])
-              .del()
+          .spread(function(migration1, migration2, migration3) {
+            return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+              expect(migrationLevel).to.equal(3);
+            })
+              .then(function() {
+                // Cleanup the added migrations
+                return knex('knex_migrations')
+                  .where('id', migration1[0])
+                  .orWhere('id', migration2[0])
+                  .orWhere('id', migration3[0])
+                  .del()
+              });
           });
-        });
       });
 
     });
