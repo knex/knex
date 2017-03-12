@@ -227,17 +227,19 @@ module.exports = function(knex) {
       return knex.migrate.rollback({directory: 'test/integration/migrate/test'});
     });
 
-    it("is able to run two migrations in parallel", function () {
-      return Promise.all([
-        knex.migrate.latest({directory: 'test/integration/migrate/test'}),
-        knex.migrate.latest({directory: 'test/integration/migrate/test'})
-      ])
-        .then(function() {
-          return knex('knex_migrations').select('*').then(function(data) {
-            expect(data.length).to.equal(2);
+    if (knex.client.dialect === 'postgres') {
+      it("is able to run two migrations in parallel in postgres", function () {
+        return Promise.all([
+          knex.migrate.latest({directory: 'test/integration/migrate/test'}),
+          knex.migrate.latest({directory: 'test/integration/migrate/test'})
+        ])
+          .then(function () {
+            return knex('knex_migrations').select('*').then(function (data) {
+              expect(data.length).to.equal(2);
+            });
           });
-        });
-    });
+      });
+    }
 
     it("is not able to run two migrations in parallel when transactions are disabled", function () {
       return Promise.map([
