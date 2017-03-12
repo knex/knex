@@ -260,7 +260,7 @@ export default class Migrator {
   // array.
   _listCompleted(trx = this.knex) {
     const { tableName } = this.config
-    return this._ensureTable(tableName, trx)
+    return this._ensureTable(trx)
       .then(() => trx.from(tableName).orderBy('id').select('name'))
       .then((migrations) => map(migrations, 'name'))
   }
