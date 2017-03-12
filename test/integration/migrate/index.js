@@ -107,8 +107,7 @@ module.exports = function(knex) {
     describe('knex.migrate.latest', function() {
 
       before(function() {
-        // ignore errors from failed migrations
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function () {});
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'});
       });
 
       it('should remove the record in the lock table once finished', function() {
@@ -242,6 +241,44 @@ module.exports = function(knex) {
       rimraf.sync(path.join(__dirname, './migration'));
     });
 
+  });
+
+  describe('knex.migrate.latest in parallel', function() {
+
+    afterEach(function() {
+      return knex.migrate.rollback({directory: 'test/integration/migrate/test'});
+    });
+
+    it("is able to run two migrations in parallel", function () {
+      return Promise.all([
+        knex.migrate.latest({directory: 'test/integration/migrate/test'}),
+        knex.migrate.latest({directory: 'test/integration/migrate/test'})
+      ])
+        .then(function() {
+          return knex('knex_migrations').select('*').then(function(data) {
+            expect(data.length).to.equal(2);
+          });
+        });
+    });
+
+    it("is not able to run two migrations in parallel when transactions are disabled", function () {
+      return Promise.map([
+        knex.migrate.latest({directory: 'test/integration/migrate/test', disableTransactions: true})
+          .catch(function (err) {return err}),
+        knex.migrate.latest({directory: 'test/integration/migrate/test', disableTransactions: true})
+          .catch(function (err) {return err})
+      ], function (res) {return res && res.name})
+        .then(function (res) {
+          // One should fail:
+          const hasLockError = res[0] === "MigrationLocked" || res[1] === "MigrationLocked";
+          expect(hasLockError).to.equal(true);
+
+          // But the other should succeed:
+          return knex('knex_migrations').select('*').then(function(data) {
+            expect(data.length).to.equal(2);
+          })
+        });
+    });
   });
 
   describe('knex.migrate (transactions disabled)', function () {

@@ -208,6 +208,9 @@ export default class Migrator {
   // Run a batch of current migrations, in sequence.
   _runBatch(migrations, direction, trx) {
     return this._getLock(trx)
+    // When there is a wrapping transaction, some migrations could have done while waiting for the lock:
+    .then(() => trx ? this._listCompleted(trx) : [])
+    .then(completed => migrations = difference(migrations, completed))
     .then(() => Promise.all(map(migrations, bind(this._validateMigrationStructure, this))))
     .then(() => this._latestBatchNumber(trx))
     .then(batchNo => {
@@ -253,10 +256,10 @@ export default class Migrator {
 
   // Lists all migrations that have been completed for the current db, as an
   // array.
-  _listCompleted() {
+  _listCompleted(trx = this.knex) {
     const { tableName } = this.config
     return this._ensureTable(tableName)
-      .then(() => this.knex(tableName).orderBy('id').select('name'))
+      .then(() => trx.from(tableName).orderBy('id').select('name'))
       .then((migrations) => map(migrations, 'name'))
   }
 
