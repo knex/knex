@@ -55,41 +55,17 @@ module.exports = function(knex) {
       });
 
       it('should return 0 if code matches DB', function() {
-        // Put in a couple dummy migrations. Needed
-        // since the migrations directory has a couple
-        // bad migrations that don't get loaded. This
-        // will simulate the DB and source being in sync.
-        return Promise.all([
-          knex('knex_migrations').returning('id').insert({
-            name: 'foobar',
-            batch: 5,
-            migration_time: new Date()
-          }),
-          knex('knex_migrations').returning('id').insert({
-            name: 'foobarbaz',
-            batch: 6,
-            migration_time: new Date()
-          })
-        ])
-        .spread(function(migration1, migration2) {
           return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
-            expect(migrationLevel).to.equal(0);
-          })
-          .then(function() {
-            // Cleanup the added migrations
-            return knex('knex_migrations')
-              .where('id', migration1[0])
-              .orWhere('id', migration2[0])
-              .del()
-          });
-
+              expect(migrationLevel).to.equal(0);
         });
 
       });
 
       it('should return a negative number if the DB is behind', function() {
-        return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
-          expect(migrationLevel).to.equal(-2);
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test'}).then(function () {
+          return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
+                expect(migrationLevel).to.equal(-2);
+            });
         });
       });
 
@@ -113,7 +89,7 @@ module.exports = function(knex) {
         ])
         .spread(function(migration1, migration2, migration3) {
           return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
-            expect(migrationLevel).to.equal(1);
+            expect(migrationLevel).to.equal(3);
           })
           .then(function() {
             // Cleanup the added migrations
@@ -273,7 +249,7 @@ module.exports = function(knex) {
     describe('knex.migrate.latest (all transactions disabled)', function() {
 
       before(function() {
-        return knex.migrate.latest({directory: 'test/integration/migrate/test', disableTransactions: true}).catch(function() {});
+        return knex.migrate.latest({directory: 'test/integration/migrate/test_with_invalid', disableTransactions: true}).catch(function() {});
       });
 
       // Same test as before, but this time, because
@@ -285,7 +261,7 @@ module.exports = function(knex) {
       });
 
       after(function() {
-        return knex.migrate.rollback({directory: 'test/integration/migrate/test'});
+        return knex.migrate.rollback({directory: 'test/integration/migrate/test_with_invalid'});
       });
 
     });

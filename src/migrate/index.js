@@ -45,8 +45,11 @@ export default class Migrator {
       .tap(validateMigrationList)
       .spread((all, completed) => {
           const migrations = difference(all, completed);
-          const transactionForAll = isEmpty(filter(migrations, migration =>
-            !this._useTransaction(migration, this.config.disableTransactions)));
+
+          const transactionForAll = !this.config.disableTransactions && isEmpty(filter(migrations, name => {
+            const migration = require(path.join(this._absoluteConfigDir(), name));
+            return !this._useTransaction(migration);
+          }));
 
           if (transactionForAll) {
             return this.knex.transaction(trx => this._runBatch(migrations, 'up', trx));
@@ -196,7 +199,7 @@ export default class Migrator {
     });
   }
 
-  _freeLock(trx = this.knex.queryBuilder()) {
+  _freeLock(trx = this.knex) {
     const tableName = this._getLockTableName();
     return trx.table(tableName)
       .update({ is_locked: 0 });
@@ -301,7 +304,7 @@ export default class Migrator {
   }
 
   // Returns the latest batch number.
-  _latestBatchNumber(trx = this.knex.queryBuilder()) {
+  _latestBatchNumber(trx = this.knex) {
     return trx.from(this.config.tableName)
       .max('batch as max_batch').then(obj => obj[0].max_batch || 0);
   }
@@ -320,9 +323,10 @@ export default class Migrator {
 
   // Runs a batch of `migrations` in a specified `direction`, saving the
   // appropriate database information as the migrations are run.
-  _waterfallBatch(batchNo, migrations, direction, trx = this.knex.queryBuilder()) {
-    const {tableName, disableTransactions} = this.config
-    const directory = this._absoluteConfigDir()
+  _waterfallBatch(batchNo, migrations, direction, trx) {
+    const trxOrKnex = trx || this.knex;
+    const {tableName, disableTransactions} = this.config;
+    const directory = this._absoluteConfigDir();
     let current = Promise.bind({failed: false, failedOn: 0});
     const log = [];
     each(migrations, (migration) => {
@@ -334,19 +338,19 @@ export default class Migrator {
         if (!trx && this._useTransaction(migration, disableTransactions)) {
           return this._transaction(migration, direction, name)
         }
-        return warnPromise(migration[direction](trx, Promise), name)
+          return warnPromise(migration[direction](trxOrKnex, Promise), name)
       })
       .then(() => {
         log.push(path.join(directory, name));
         if (direction === 'up') {
-          return trx.into(tableName).insert({
+          return trxOrKnex.into(tableName).insert({
             name,
             batch: batchNo,
             migration_time: new Date()
           });
         }
         if (direction === 'down') {
-          return trx.from(tableName).where({name}).del();
+          return trxOrKnex.from(tableName).where({name}).del();
         }
       });
     })
