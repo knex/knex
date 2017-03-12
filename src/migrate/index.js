@@ -46,7 +46,8 @@ export default class Migrator {
       .spread((all, completed) => {
         const migrations = difference(all, completed);
 
-        const transactionForAll = !this.config.disableTransactions && isEmpty(filter(migrations, name => {
+        const transactionForAll = !this.config.disableTransactions
+          && isEmpty(filter(migrations, name => {
             const migration = require(path.join(this._absoluteConfigDir(), name));
             return !this._useTransaction(migration);
           }));
@@ -208,7 +209,8 @@ export default class Migrator {
   // Run a batch of current migrations, in sequence.
   _runBatch(migrations, direction, trx) {
     return this._getLock(trx)
-      // When there is a wrapping transaction, some migrations could have done while waiting for the lock:
+      // When there is a wrapping transaction, some migrations
+      // could have been done while waiting for the lock:
       .then(() => trx ? this._listCompleted(trx) : [])
       .then(completed => migrations = difference(migrations, completed))
       .then(() => Promise.all(map(migrations, bind(this._validateMigrationStructure, this))))
