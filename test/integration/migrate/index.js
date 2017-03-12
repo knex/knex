@@ -36,8 +36,7 @@ module.exports = function(knex) {
     describe('knex.migrate.status', function() {
 
       beforeEach(function() {
-        // ignore errors from failed migrations
-        return knex.migrate.latest({directory: 'test/integration/migrate/test'}).catch(function () {});
+        return knex.migrate.latest({directory: 'test/integration/migrate/test'});
       });
 
       afterEach(function() {
@@ -58,7 +57,6 @@ module.exports = function(knex) {
         return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
           expect(migrationLevel).to.equal(0);
         });
-
       });
 
       it('should return a negative number if the DB is behind', function() {
