@@ -27,7 +27,7 @@ notifications:
   email: false
 
 env:
-  - CXX=g++-4.8 DB="postgres mysql mysql2 sqlite3 oracledb" KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
+  - CXX=g++-4.8 DB="postgres oracledb" KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
 
 addons:
   postgresql: '9.6'
