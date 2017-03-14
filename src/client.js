@@ -16,7 +16,7 @@ import TableCompiler from './schema/tablecompiler';
 import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 
-import { Pool } from 'generic-pool';
+import { createPool } from 'generic-pool';
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
@@ -26,7 +26,6 @@ import { assign, uniqueId, cloneDeep } from 'lodash'
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
 const debugBindings = require('debug')('knex:bindings')
-const debugPool = require('debug')('knex:pool')
 
 let id = 0
 function clientId() {
@@ -170,45 +169,44 @@ assign(Client.prototype, {
   },
 
   poolDefaults(poolConfig) {
-    const name = this.dialect + ':' + this.driverName + ':' + this.__cid
     return {
-      min: 2,
-      max: 10,
-      name: name,
-      log(str, level) {
-        if (level === 'info') {
-          debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
-        }
+      config: {
+        min: 2,
+        max: 10,
       },
-      create: (callback) => {
-        this.acquireRawConnection()
-          .tap(function(connection) {
-            connection.__knexUid = uniqueId('__knexUid')
-            if (poolConfig.afterCreate) {
-              return Promise.promisify(poolConfig.afterCreate)(connection)
-            }
-          })
-          .asCallback(callback)
-      },
-      destroy: (connection) => {
-        if (poolConfig.beforeDestroy) {
-          helpers.warn(`
+      factory: {
+        create: () => {
+          return this.acquireRawConnection()
+            .tap(function(connection) {
+              connection.__knexUid = uniqueId('__knexUid')
+              if (poolConfig.afterCreate) {
+                return Promise.promisify(poolConfig.afterCreate)(connection)
+              }
+            })
+        },
+        destroy: (connection) => {
+          if (poolConfig.beforeDestroy) {
+            helpers.warn(`
             beforeDestroy is deprecated, please open an issue if you use this
             to discuss alternative apis
           `)
-          poolConfig.beforeDestroy(connection, function() {})
-        }
-        if (connection !== void 0) {
-          this.destroyRawConnection(connection)
+            poolConfig.beforeDestroy(connection, function() {})
+          }
+          if (connection !== void 0) {
+            return this.destroyRawConnection(connection)
+          }
+
+          return Promise.resolve()
+        },
+        validate: (connection) => {
+          if (connection.__knex__disposed) {
+            helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
+            return Promise.resolve(false)
+          }
+
+          return this.validateConnection(connection)
         }
       },
-      validate: (connection) => {
-        if (connection.__knex__disposed) {
-          helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
-          return false
-        }
-        return this.validateConnection(connection)
-      }
     }
   },
 
@@ -217,11 +215,22 @@ assign(Client.prototype, {
       helpers.warn('The pool has already been initialized')
       return
     }
-    this.pool = new Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
+
+    //TODO: -- Breaking changes:
+    //1. Config is divided into 'factory' for functions, 'config' for configuration
+    //2. Functions should return promises, not callbacks, see 'poolDefaults'
+    const poolDefaults = this.poolDefaults(config.pool);
+
+    //TODO: -- Due to breaking changes above, config.pool is assigned to both 'factory' and 'config'
+    //Temporary!
+    this.pool = createPool(
+      assign(poolDefaults.factory, config.pool),
+      assign(poolDefaults.config, config.pool)
+    )
   },
 
   validateConnection(connection) {
-    return true
+    return Promise.resolve(true)
   },
 
   // Acquire a connection from the pool.
@@ -238,10 +247,9 @@ assign(Client.prototype, {
           'Are you missing a .transacting(trx) call?'
         ))
       }, this.config.acquireConnectionTimeout || 60000)
-      this.pool.acquire((err, connection) => {
-        if (err) {
-          return rejecter(err)
-        }
+
+      return this.pool.acquire()
+      .then((connection) => {
         clearTimeout(t)
         if (wasRejected) {
           this.pool.release(connection)
@@ -250,6 +258,7 @@ assign(Client.prototype, {
           resolver(connection)
         }
       })
+      .catch(rejecter);
     })
   },
 
@@ -269,12 +278,13 @@ assign(Client.prototype, {
       if (!this.pool) {
         return resolver()
       }
-      this.pool.drain(() => {
-        this.pool.destroyAllNow(() => {
-          this.pool = undefined
-          resolver()
-        })
-      })
+
+      return this.pool.drain()
+      .then(() => this.pool.clear())
+      .then(() => {
+        this.pool = undefined;
+        resolver();
+      });
     })
 
     // Allow either a callback or promise interface for destruction.
