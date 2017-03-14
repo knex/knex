@@ -9,7 +9,7 @@ import makeKnex from './util/make-knex';
 
 const debug = Debug('knex:tx');
 
-import { uniqueId } from 'lodash';
+import { uniqueId, isUndefined } from 'lodash';
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
@@ -121,8 +121,15 @@ export default class Transaction extends EventEmitter {
         debug('%s error running transaction query', this.txid)
       })
       .tap(() => {
-        if (status === 1) this._resolver(value)
-        if (status === 2) this._rejecter(value)
+        if (status === 1) {
+          this._resolver(value)
+        }
+        if (status === 2) {
+          if(isUndefined(value)) {
+            value = new Error(`Transaction rejected with non-error: ${value}`)
+          }
+          this._rejecter(value)
+        }
       })
     if (status === 1 || status === 2) {
       this._completed = true
