@@ -1,6 +1,12 @@
 
 # Master (Unreleased)
 
+# 0.12.8 - 15 Mar, 2017
+- Added clearSelect and clearWhere to query builder #1912
+- Properly close Postgres query streams on error #1935
+- Transactions should never reject with undefined #1970
+- Clear acquireConnectionTimeout if an error occurs when acquiring a connection #1973
+
 # 0.12.7 - 17 Feb, 2017
 - Support custom foreign key names #1311, #1726
 - Fixed named bindings to work with queries containing `:`-chars #1890
