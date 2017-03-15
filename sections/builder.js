@@ -892,6 +892,40 @@ export default [
     ]
   },
   {
+    type: "heading",
+    size: "md",
+    content: "ClearClauses",
+    href: "Builder-clear"
+  },
+  {
+    type: "method",
+    method: "clearSelect",
+    example: ".clearSelect()",
+    description: "Clears all select clauses from the query, excluding subqueries.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('email', 'name').from('users').clearSelect()
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "clearWhere",
+    example: ".clearWhere()",
+    description: "Clears all where clauses from the query, excluding subqueries.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('email', 'name').from('users').where('id', 1).clearWhere()
+        `
+      }
+    ]
+  },
+  {
     type: "method",
     method: "distinct",
     example: ".distinct()",
