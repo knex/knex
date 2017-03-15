@@ -239,10 +239,10 @@ assign(Client.prototype, {
         ))
       }, this.config.acquireConnectionTimeout || 60000)
       this.pool.acquire((err, connection) => {
+        clearTimeout(t)
         if (err) {
           return rejecter(err)
         }
-        clearTimeout(t)
         if (wasRejected) {
           this.pool.release(connection)
         } else {
