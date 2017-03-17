@@ -131,7 +131,7 @@ assign(Client_PG.prototype, {
   checkVersion(connection) {
     return new Promise(function (resolver, rejecter) {
       connection.query('select version();', function (err, resp) {
-        let version = resp.rows[0].version;
+        const version = resp.rows[0].version;
         if (err) {
           return rejecter(err);
         }
