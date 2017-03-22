@@ -5,9 +5,17 @@
 var tableSql;
 
 var PG_Client = require('../../../lib/dialects/postgres');
-var client    = new PG_Client({})
+var client    = new PG_Client({});
 
 var equal  = require('assert').equal;
+
+describe("PostgreSQL Config", function(){
+  it('check version', function(){
+    var version = 'v7.2.1-0';
+    var client = new PG_Client({version: version});
+    equal(version, client.version);
+  });
+});
 
 describe("PostgreSQL SchemaBuilder", function() {
 
