@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.12.8",
+  "version": "0.12.9",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "dependencies": {
