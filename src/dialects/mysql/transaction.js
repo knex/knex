@@ -31,6 +31,8 @@ assign(Transaction_MySQL.prototype, {
       })
       .tap(function() {
         if (status === 1) t._resolver(value)
+        if (typeof value === "undefined")
+          value = new Error("Transaction result was undefined.");
         if (status === 2) t._rejecter(value)
       })
     if (status === 1 || status === 2) {
