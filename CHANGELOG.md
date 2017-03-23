@@ -1,6 +1,9 @@
 
 # Master (Unreleased)
 
+# 0.12.9 - 23 Mar, 2017
+- Fixed unhandled exception in batchInsert when the rows to be inserted resulted in duplicate key violation #1880
+
 # 0.12.8 - 15 Mar, 2017
 - Added clearSelect and clearWhere to query builder #1912
 - Properly close Postgres query streams on error #1935
