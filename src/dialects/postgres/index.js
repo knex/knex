@@ -132,7 +132,7 @@ assign(Client_PG.prototype, {
     return new Promise(function(resolver, rejecter) {
       connection.query('select version();', function(err, resp) {
         if (err) return rejecter(err);
-        resolver(/^PostgreSQL (.*?)( |$)/.exec(resp.rows[0].version)[1]);
+        resolver(/^(?:PostgreSQL|EnterpriseDB) (.*?)( |$)/.exec(resp.rows[0].version)[1]);
       });
     });
   },
