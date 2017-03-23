@@ -6,16 +6,81 @@ var tableSql;
 
 var PG_Client = require('../../../lib/dialects/postgres');
 var client    = new PG_Client({});
+var knex = require('../../../knex');
 
 var equal  = require('assert').equal;
 
 describe("PostgreSQL Config", function(){
-  it('check version', function(){
-    var version = '7.2';
-    var client = new PG_Client({version: version});
-    equal(version, client.version);
+
+});
+describe('PostgreSQL Config', function () {
+  var knexInstance;
+  var sql;
+  var version;
+  var config = {
+    client: 'pg',
+    connection: {
+      user: 'postgres',
+      password: '',
+      host: '127.0.0.1',
+      database: 'knex_test'
+    }
+  };
+  describe('check version', function () {
+    describe('check version < 9.2', function () {
+      beforeEach(function () {
+        version = '7.2';
+        config.version = version;
+        knexInstance = knex(config);
+      });
+
+      it('client.version', function(){
+        equal(version, knexInstance.client.version);
+      });
+
+      it('json', function () {
+        sql = knexInstance.schema.table('public', t => {
+          t.json('test_name');
+        }).toSQL();
+        equal(sql[0].sql, 'alter table "public" add column "test_name" text');
+      });
+
+      it('jsonb', function () {
+        sql = knexInstance.schema.table('public', t => {
+          t.jsonb('test_name');
+        }).toSQL();
+        equal(sql[0].sql, 'alter table "public" add column "test_name" text');
+      });
+    });
+
+    describe('check version >= 9.2', function () {
+      beforeEach(function () {
+        version = '9.5';
+        config.version = version;
+        knexInstance = knex(config);
+      });
+
+      it('client.version', function(){
+        equal(version, knexInstance.client.version);
+      });
+
+      it('json', function () {
+        sql = knexInstance.schema.table('public', t => {
+          t.json('test_name');
+        }).toSQL();
+        equal(sql[0].sql, 'alter table "public" add column "test_name" json');
+      });
+
+      it('jsonb', function () {
+        sql = knexInstance.schema.table('public', t => {
+          t.jsonb('test_name');
+        }).toSQL();
+        equal(sql[0].sql, 'alter table "public" add column "test_name" jsonb');
+      });
+    });
   });
 });
+
 
 describe("PostgreSQL SchemaBuilder", function() {
 
