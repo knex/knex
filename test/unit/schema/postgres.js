@@ -10,12 +10,8 @@ var knex = require('../../../knex');
 
 var equal  = require('assert').equal;
 
-describe("PostgreSQL Config", function(){
-
-});
 describe('PostgreSQL Config', function () {
   var knexInstance;
-  var sql;
   var version;
   var config = {
     client: 'pg',
@@ -35,21 +31,23 @@ describe('PostgreSQL Config', function () {
       });
 
       it('client.version', function(){
-        equal(version, knexInstance.client.version);
+        expect(knexInstance.client.version).to.equal(version);
       });
 
       it('json', function () {
-        sql = knexInstance.schema.table('public', t => {
+        tableSql = knexInstance.schema.table('public', t => {
           t.json('test_name');
         }).toSQL();
-        equal(sql[0].sql, 'alter table "public" add column "test_name" text');
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" text');
       });
 
       it('jsonb', function () {
-        sql = knexInstance.schema.table('public', t => {
+        tableSql = knexInstance.schema.table('public', t => {
           t.jsonb('test_name');
         }).toSQL();
-        equal(sql[0].sql, 'alter table "public" add column "test_name" text');
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" text');
       });
     });
 
@@ -61,21 +59,23 @@ describe('PostgreSQL Config', function () {
       });
 
       it('client.version', function(){
-        equal(version, knexInstance.client.version);
+        expect(knexInstance.client.version).to.equal(version);
       });
 
       it('json', function () {
-        sql = knexInstance.schema.table('public', t => {
+        tableSql = knexInstance.schema.table('public', t => {
           t.json('test_name');
         }).toSQL();
-        equal(sql[0].sql, 'alter table "public" add column "test_name" json');
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" json');
       });
 
       it('jsonb', function () {
-        sql = knexInstance.schema.table('public', t => {
+        tableSql = knexInstance.schema.table('public', t => {
           t.jsonb('test_name');
         }).toSQL();
-        equal(sql[0].sql, 'alter table "public" add column "test_name" jsonb');
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" jsonb');
       });
     });
   });
