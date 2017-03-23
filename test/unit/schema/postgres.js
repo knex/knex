@@ -11,7 +11,7 @@ var equal  = require('assert').equal;
 
 describe("PostgreSQL Config", function(){
   it('check version', function(){
-    var version = 'v7.2.1-0';
+    var version = '7.2';
     var client = new PG_Client({version: version});
     equal(version, client.version);
   });
