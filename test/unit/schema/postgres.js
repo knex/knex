@@ -10,7 +10,7 @@ var knex = require('../../../knex');
 
 var equal  = require('assert').equal;
 
-describe('PostgreSQL Config', function () {
+describe('PostgreSQL Config', function() {
   var knexInstance;
   var version;
   var config = {
@@ -22,8 +22,8 @@ describe('PostgreSQL Config', function () {
       database: 'knex_test'
     }
   };
-  describe('check version', function () {
-    describe('check version < 9.2', function () {
+  describe('check version', function() {
+    describe('check version < 9.2', function() {
       beforeEach(function () {
         version = '7.2';
         config.version = version;
@@ -34,16 +34,16 @@ describe('PostgreSQL Config', function () {
         expect(knexInstance.client.version).to.equal(version);
       });
 
-      it('json', function () {
-        tableSql = knexInstance.schema.table('public', t => {
+      it('json', function() {
+        tableSql = knexInstance.schema.table('public', function(t) {
           t.json('test_name');
         }).toSQL();
         equal(1, tableSql.length);
         expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" text');
       });
 
-      it('jsonb', function () {
-        tableSql = knexInstance.schema.table('public', t => {
+      it('jsonb', function() {
+        tableSql = knexInstance.schema.table('public', function (t) {
           t.jsonb('test_name');
         }).toSQL();
         equal(1, tableSql.length);
@@ -51,8 +51,8 @@ describe('PostgreSQL Config', function () {
       });
     });
 
-    describe('check version >= 9.2', function () {
-      beforeEach(function () {
+    describe('check version >= 9.2', function() {
+      beforeEach(function() {
         version = '9.5';
         config.version = version;
         knexInstance = knex(config);
@@ -62,16 +62,16 @@ describe('PostgreSQL Config', function () {
         expect(knexInstance.client.version).to.equal(version);
       });
 
-      it('json', function () {
-        tableSql = knexInstance.schema.table('public', t => {
+      it('json', function() {
+        tableSql = knexInstance.schema.table('public', function(t) {
           t.json('test_name');
         }).toSQL();
         equal(1, tableSql.length);
         expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" json');
       });
 
-      it('jsonb', function () {
-        tableSql = knexInstance.schema.table('public', t => {
+      it('jsonb', function() {
+        tableSql = knexInstance.schema.table('public', function(t) {
           t.jsonb('test_name');
         }).toSQL();
         equal(1, tableSql.length);
@@ -80,7 +80,6 @@ describe('PostgreSQL Config', function () {
     });
   });
 });
-
 
 describe("PostgreSQL SchemaBuilder", function() {
 
