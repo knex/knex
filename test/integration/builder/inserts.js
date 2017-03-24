@@ -707,11 +707,11 @@ module.exports = function(knex) {
               return knex.batchInsert('batchInsertDuplicateKey', rows, rows.length);
             })
             .catch(function (error) {
-              //Should reach this point before timeout of 2s
+              //Should reach this point before timeout of 10s
               expect(error.message.toLowerCase()).to.include('batchinsertduplicatekey');
               resolve(error);
             });
-        }).timeout(2000);
+        }).timeout(10000);
       });
 
       it('knex.batchInsert with specified transaction', function() {
