@@ -35,15 +35,18 @@ export default function batchInsert(client, tableName, batch, chunkSize = 1000) 
       .then((tr) => {
         return Promise.mapSeries(chunks, (items) => tr(tableName).insert(items, returning))
           .then((result) => {
+            result = flatten(result);
+
             if(autoTransaction) {
-              tr.commit();
+              return tr.commit()
+                .then(() => result);
             }
 
-            return flatten(result);
+            return result;
           })
           .catch((error) => {
             if(autoTransaction) {
-              tr.rollback(error);
+              return tr.rollback(error);
             }
 
             throw error;
