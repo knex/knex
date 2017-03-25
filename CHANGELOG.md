@@ -1,13 +1,26 @@
 
 # Master (Unreleased)
 
+# 0.12.9 - 23 Mar, 2017
+- Fixed unhandled exception in batchInsert when the rows to be inserted resulted in duplicate key violation #1880
+
+# 0.12.8 - 15 Mar, 2017
+- Added clearSelect and clearWhere to query builder #1912
+- Properly close Postgres query streams on error #1935
+- Transactions should never reject with undefined #1970
+- Clear acquireConnectionTimeout if an error occurs when acquiring a connection #1973
+
 # 0.12.7 - 17 Feb, 2017
+
+### Accidental Breaking Change:
+- Ensure that 'client' is provided in knex config object #1822
+
+### Other Changes:
 - Support custom foreign key names #1311, #1726
 - Fixed named bindings to work with queries containing `:`-chars #1890
 - Exposed more promise functions #1896
 - Pass rollback errors to transaction promise in mssql #1885
 - ONLY keyword support for PostgreSQL (for table inheritance) #1874
-- Ensure that 'client' is provided in knex config object #1822
 - Fixed Mssql update with join syntax #1777
 - Replace migrations and seed for react-native packager #1813
 - Support knexfile, migration and seeds in TypeScript #1769

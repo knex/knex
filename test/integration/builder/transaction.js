@@ -398,5 +398,18 @@ module.exports = function(knex) {
       });
     }
 
+    it('Rollback without an error should not reject with undefined #1966', function() {
+      knex.transaction(function(tr) {
+        tr.rollback();
+      })
+      .then(function() {
+        expect(true).to.equal(false, 'Transaction should not have commited');
+      })
+      .catch(function(error) {
+        expect(error instanceof Error).to.equal(true);
+        expect(error.message).to.equal('Transaction rejected with non-error: undefined');
+      });
+    });
+
   });
 };
