@@ -397,7 +397,7 @@ module.exports = function(knex) {
       });
     }
 
-    it('Rollback without an error should not reject with undefined #1966', function() {
+    it.skip('Rollback without an error should not reject with undefined #1966', function() {
       return knex.transaction(function(tr) {
           tr.rollback();
         })
