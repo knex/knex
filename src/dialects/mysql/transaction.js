@@ -3,7 +3,7 @@ import Transaction from '../../transaction';
 import inherits from 'inherits';
 import Debug from 'debug';
 import * as helpers from '../../helpers';
-import { assign } from 'lodash'
+import { assign, isUndefined } from 'lodash'
 
 const debug = Debug('knex:tx');
 
@@ -31,7 +31,12 @@ assign(Transaction_MySQL.prototype, {
       })
       .tap(function() {
         if (status === 1) t._resolver(value)
-        if (status === 2) t._rejecter(value)
+        if (status === 2) {
+          if(isUndefined(value)) {
+            value = new Error(`Transaction rejected with non-error: ${value}`)
+          }
+          t._rejecter(value)
+        }
       })
     if (status === 1 || status === 2) {
       t._completed = true
