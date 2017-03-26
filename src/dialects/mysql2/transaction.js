@@ -4,7 +4,7 @@ import inherits from 'inherits';
 const debug = require('debug')('knex:tx')
 import * as helpers from '../../helpers';
 
-import { assign } from 'lodash'
+import { assign, isUndefined } from 'lodash'
 
 function Transaction_MySQL2() {
   Transaction.apply(this, arguments)
@@ -30,7 +30,12 @@ assign(Transaction_MySQL2.prototype, {
       })
       .tap(function() {
         if (status === 1) t._resolver(value)
-        if (status === 2) t._rejecter(value)
+        if (status === 2) {
+          if(isUndefined(value)) {
+            value = new Error(`Transaction rejected with non-error: ${value}`)
+          }
+          t._rejecter(value)
+        }
       })
     if (status === 1 || status === 2) {
       t._completed = true
