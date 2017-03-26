@@ -13,7 +13,7 @@ import SchemaCompiler from './schema/compiler';
 import {makeEscape} from '../../query/string'
 
 function Client_PG(config) {
-  Client.apply(this, arguments)
+  Client.apply(this, arguments);
   if (config.returning) {
     this.defaultReturning = config.returning;
   }
@@ -21,8 +21,12 @@ function Client_PG(config) {
   if (config.searchPath) {
     this.searchPath = config.searchPath;
   }
+
+  if (config.version) {
+    this.version = config.version;
+  }
 }
-inherits(Client_PG, Client)
+inherits(Client_PG, Client);
 
 assign(Client_PG.prototype, {
 
