@@ -254,10 +254,10 @@ const promiseInterface = [
   'get', 'mapSeries', 'delay'
 ]
 
-// Creates a method which "coerces" to a promise, by calling a
-// "then" method on the current `Target`.
+// Creates methods which proxy promise interface methods to 
+// internal transaction resolution promise
 promiseInterface.forEach(function(method) {
   Transaction.prototype[method] = function() {
-    return (this._promise = this._promise[method].apply(this._promise, arguments))
+    return this._promise[method].apply(this._promise, arguments)
   }
 })
