@@ -7,6 +7,7 @@ import { EventEmitter } from 'events';
 import debug from 'debug'
 
 import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
+import { stripIndent } from 'common-tags';
 import Formatter from './formatter'
 
 import uuid from 'uuid';
@@ -42,6 +43,10 @@ assign(Raw.prototype, {
     ) ? bindings : [bindings]
 
     return this
+  },
+
+  template(parts, ...bindings) {
+    return this.set(stripIndent`${parts.join('?')}`, bindings);
   },
 
   timeout(ms, {cancel} = {}) {
