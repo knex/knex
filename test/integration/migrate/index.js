@@ -89,14 +89,14 @@ module.exports = function(knex) {
             return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
               expect(migrationLevel).to.equal(3);
             })
-              .then(function() {
-                // Cleanup the added migrations
-                return knex('knex_migrations')
-                  .where('id', migration1[0])
-                  .orWhere('id', migration2[0])
-                  .orWhere('id', migration3[0])
-                  .del()
-              });
+            .then(function() {
+              // Cleanup the added migrations
+              return knex('knex_migrations')
+                .where('id', migration1[0])
+                .orWhere('id', migration2[0])
+                .orWhere('id', migration3[0])
+                .del()
+            });
           });
       });
 
@@ -227,17 +227,17 @@ module.exports = function(knex) {
       return knex.migrate.rollback({directory: 'test/integration/migrate/test'});
     });
 
-    if (knex.client.dialect === 'postgres') {
-      it("is able to run two migrations in parallel in postgres", function () {
+    if (knex.client.dialect === 'postgres' || knex.client.dialect === 'mssql') {
+      it("is able to run two migrations in parallel (if no implicit DDL commits)", function () {
         return Promise.all([
           knex.migrate.latest({directory: 'test/integration/migrate/test'}),
           knex.migrate.latest({directory: 'test/integration/migrate/test'})
         ])
-          .then(function () {
-            return knex('knex_migrations').select('*').then(function (data) {
-              expect(data.length).to.equal(2);
-            });
+        .then(function () {
+          return knex('knex_migrations').select('*').then(function (data) {
+            expect(data.length).to.equal(2);
           });
+        });
       });
     }
 
