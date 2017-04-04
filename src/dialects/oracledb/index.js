@@ -27,11 +27,13 @@ inherits(Client_Oracledb, Client_Oracle);
 Client_Oracledb.prototype.driverName = 'oracledb';
 
 Client_Oracledb.prototype._driver = function() {
-  var oracledb = require('oracledb');
-  if(this.config.fetchAsString && _.isArray(this.config.fetchAsString)) {
-    var types = [];
+  let oracledb = require('oracledb');
+  if (this.config.fetchAsString && _.isArray(this.config.fetchAsString)) {
+    let types = [];
     this.config.fetchAsString.forEach(function(type) {
-      if(oracledb[type]) {
+      if (!_.isString(type)) return;
+      type = type.toUpperCase();
+      if (oracledb[type]) {
         types.push(oracledb[type]);
       }
     });
