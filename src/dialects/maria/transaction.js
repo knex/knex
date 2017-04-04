@@ -1,6 +1,7 @@
 import Debug from 'debug';
 import Transaction from '../../transaction';
 import * as helpers from '../../helpers';
+import {isUndefined} from 'lodash';
 
 const debug = Debug('knex:tx');
 
@@ -23,7 +24,12 @@ export default class Transaction_Maria extends Transaction {
       })
       .tap(function() {
         if (status === 1) t._resolver(value)
-        if (status === 2) t._rejecter(value)
+        if (status === 2) {
+          if(isUndefined(value)) {
+            value = new Error(`Transaction rejected with non-error: ${value}`)
+          }
+          t._rejecter(value)
+        }
       })
     if (status === 1 || status === 2) {
       t._completed = true

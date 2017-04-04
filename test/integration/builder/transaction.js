@@ -259,7 +259,7 @@ module.exports = function(knex) {
       })
     })
 
-    it('#855 - Query Event should trigger on Transaction Client AND main Client', function(done) {
+    it('#855 - Query Event should trigger on Transaction Client AND main Client', function() {
       var queryEventTriggered = false;
 
       knex.once('query', function(queryData) {
@@ -269,14 +269,13 @@ module.exports = function(knex) {
 
       function expectQueryEventToHaveBeenTriggered() {
         expect(queryEventTriggered).to.equal(true);
-        done();
       }
 
-      knex.transaction(function(trx) {
-        trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
-      })
-          .then(expectQueryEventToHaveBeenTriggered)
-          .catch(expectQueryEventToHaveBeenTriggered);
+      return knex.transaction(function(trx) {
+          trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
+        })
+        .then(expectQueryEventToHaveBeenTriggered)
+        .catch(expectQueryEventToHaveBeenTriggered);
 
     });
 
@@ -330,7 +329,105 @@ module.exports = function(knex) {
       }).then(function () {
         throw new Error('should not get here')
       }).catch(Promise.TimeoutError, function(error) {})
-    })
+    });
+
+    /**
+     * In mssql, certain classes of failures will "abort" a transaction, which
+     * causes the subsequent ROLLBACK to fail (because the transaction has
+     * been rolled back automatically).
+     * An example of this type of auto-aborting error is creating a table with
+     * a foreign key that references a non-existent table.
+     */
+    if (knex.client.dialect === 'mssql') {
+      it('should rollback when transaction aborts', function() {
+        var insertedId = null;
+        var originalError = null;
+
+        function transactionAbortingQuery(transaction) {
+          return transaction.schema.createTable('test_schema_transaction_fails', function(table) {
+            table.string('name').references('id').on('non_exist_table');
+          });
+        }
+
+        function insertSampleRow(transaction) {
+          return transaction('accounts')
+            .returning('id')
+            .insert({
+              first_name: 'Transacting',
+              last_name: 'User2',
+              email:'transaction-test2@example.com',
+              logins: 1,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: new Date(),
+              updated_at: new Date()
+            })
+            .then(function(res0) {
+              insertedId = res0[0];
+            });
+        }
+
+        function querySampleRow() {
+          return knex('accounts')
+            .where('id', insertedId)
+            .select('first_name')
+        }
+
+        function captureAndRethrowOriginalError(err) {
+          originalError = err;
+          throw err;
+        }
+
+        return knex.transaction(function(t) {
+          return insertSampleRow(t)
+            .then(function() { return transactionAbortingQuery(t); })
+            .catch(captureAndRethrowOriginalError);
+        })
+        .then(function() {
+          //Should never reach this point
+          expect(false).to.be.ok;
+        })
+        .catch(function(err) {
+          expect(err).should.exist;
+          expect(err.originalError).to.equal(originalError);
+          // confirm transaction rolled back
+          return querySampleRow().then(function(resp) {
+            expect(resp).to.be.empty;
+          });
+        });
+      });
+    }
+
+    it('Rollback without an error should not reject with undefined #1966', function() {
+      return knex.transaction(function(tr) {
+        tr.rollback();
+      })
+      .then(function() {
+        expect(true).to.equal(false, 'Transaction should not have commited');
+      })
+      .catch(function(error) {
+        expect(error instanceof Error).to.equal(true);
+        expect(error.message).to.equal('Transaction rejected with non-error: undefined');
+      });
+    });
+
+    it('#1052 - transaction promise mutating', function() {
+      var transactionReturning = knex.transaction(function(trx) {
+        return trx.insert({
+          first_name: 'foo',
+          last_name: 'baz',
+          email:'fbaz@example.com',
+          logins: 1,
+          about: 'Lorem ipsum Dolore labore incididunt enim.',
+          created_at: new Date(),
+          updated_at: new Date()
+        }).into('accounts');
+      });
+
+      return Promise.all([transactionReturning, transactionReturning])
+        .spread(function (ret1, ret2) {
+          expect(ret1).to.equal(ret2);
+        });
+     });
 
   });
 };

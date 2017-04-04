@@ -1,12 +1,15 @@
 # .travis.yml
 language: node_js
+dist: trusty
 sudo: required
+
 
 node_js:
   - '0.12'
   - '4'
   - '5'
   - '6'
+  - '7'
 
 before_install:
   - wget https://raw.githubusercontent.com/Vincit/travis-oracledb-xe/master/accept_the_license_agreement_for_oracledb_xe_11g_and_install.sh
@@ -27,10 +30,8 @@ env:
   - CXX=g++-4.8 DB="maria mysql mysql2 postgres sqlite3 oracledb" KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
 
 addons:
-  postgresql: '9.4'
+  postgresql: '9.6'
   apt:
-    sources:
-    - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
     - gcc-4.8

@@ -9,7 +9,7 @@ import debug from 'debug'
 import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
 import Formatter from './formatter'
 
-import uuid from 'node-uuid';
+import uuid from 'uuid';
 
 const debugBindings = debug('knex:bindings')
 
@@ -150,25 +150,30 @@ function replaceKeyBindings(raw, formatter) {
 
   let { sql } = raw
 
-  const regex = /\\?(:\w+:?)/g
-  sql = raw.sql.replace(regex, function(full, part) {
-    if (full !== part) {
-      return part
+  const regex = /\\?(:(\w+):(?=::)|:(\w+):(?!:)|:(\w+))/g
+  sql = raw.sql.replace(regex, function(match, p1, p2, p3, p4) {
+    if (match !== p1) {
+      return p1
     }
 
-    const key = full.trim();
+    const part = p2 || p3 || p4
+    const key = match.trim();
     const isIdentifier = key[key.length - 1] === ':'
-    const value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
+    const value = values[part]
 
     if (value === undefined) {
-      formatter.bindings.push(value);
-      return full;
+      if (values.hasOwnProperty(part)) {
+        formatter.bindings.push(value);
+      }
+
+      return match
     }
 
     if (isIdentifier) {
-      return full.replace(key, formatter.columnize(value))
+      return match.replace(p1, formatter.columnize(value))
     }
-    return full.replace(key, formatter.parameter(value))
+
+    return match.replace(p1, formatter.parameter(value))
   })
 
   return {

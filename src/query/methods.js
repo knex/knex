@@ -75,6 +75,8 @@ export default [
   'first',
   'debug',
   'pluck',
+  'clearSelect',
+  'clearWhere',
   'insert',
   'update',
   'returning',

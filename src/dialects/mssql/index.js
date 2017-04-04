@@ -162,13 +162,19 @@ assign(Client_MSSQL.prototype, {
     })
   },
 
-  // sets a request input parameter. Detects bigints and sets type appropriately.
+  // sets a request input parameter. Detects bigints and decimals and sets type appropriately.
   _setReqInput(req, i, binding) {
-    if (typeof binding == 'number' && (binding < SQL_INT4.MIN || binding > SQL_INT4.MAX)) {
-      if (binding < SQL_BIGINT_SAFE.MIN || binding > SQL_BIGINT_SAFE.MAX) {
-        throw new Error(`Bigint must be safe integer or must be passed as string, saw ${binding}`)
+    if (typeof binding == 'number') {
+      if (binding % 1 !== 0) {
+        req.input(`p${i}`, this.driver.Decimal(38, 10), binding)
+      } else if (binding < SQL_INT4.MIN || binding > SQL_INT4.MAX) {
+        if (binding < SQL_BIGINT_SAFE.MIN || binding > SQL_BIGINT_SAFE.MAX) {
+          throw new Error(`Bigint must be safe integer or must be passed as string, saw ${binding}`)
+        }
+        req.input(`p${i}`, this.driver.BigInt, binding)
+      } else {
+        req.input(`p${i}`, this.driver.Int, binding)
       }
-      req.input(`p${i}`, this.driver.BigInt, binding)
     } else {
       req.input(`p${i}`, binding)
     }

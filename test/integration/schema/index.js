@@ -163,17 +163,47 @@ module.exports = function(knex) {
             .unsigned()
             .references('id')
             .inTable('test_table_two');
+          table.integer('fkey_three')
+            .unsigned()
+            .references('id')
+            .inTable('test_table_two')
+            .withKeyName('fk_fkey_three');
+          table.integer('fkey_four')
+            .unsigned()
+          table.foreign('fkey_four', 'fk_fkey_four').references('test_table_two.id')
         }).testSql(function(tester) {
-          tester('mysql', ['create table `test_foreign_table_two` (`id` int unsigned not null auto_increment primary key, `fkey_two` int unsigned) default character set utf8','alter table `test_foreign_table_two` add constraint `test_foreign_table_two_fkey_two_foreign` foreign key (`fkey_two`) references `test_table_two` (`id`)']);
-          tester('pg', ['create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer)','alter table "test_foreign_table_two" add constraint "test_foreign_table_two_fkey_two_foreign" foreign key ("fkey_two") references "test_table_two" ("id")']);
-          tester('sqlite3', ['create table "test_foreign_table_two" ("id" integer not null primary key autoincrement, "fkey_two" integer, foreign key("fkey_two") references "test_table_two"("id"))']);
+          tester('mysql', [
+            'create table `test_foreign_table_two` (`id` int unsigned not null auto_increment primary key, `fkey_two` int unsigned, `fkey_three` int unsigned, `fkey_four` int unsigned) default character set utf8',
+            'alter table `test_foreign_table_two` add constraint `test_foreign_table_two_fkey_two_foreign` foreign key (`fkey_two`) references `test_table_two` (`id`)',
+            'alter table `test_foreign_table_two` add constraint `fk_fkey_three` foreign key (`fkey_three`) references `test_table_two` (`id`)',
+            'alter table `test_foreign_table_two` add constraint `fk_fkey_four` foreign key (`fkey_four`) references `test_table_two` (`id`)'
+          ]);
+          tester('pg', [
+            'create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer)',
+            'alter table "test_foreign_table_two" add constraint "test_foreign_table_two_fkey_two_foreign" foreign key ("fkey_two") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_three" foreign key ("fkey_three") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_four" foreign key ("fkey_four") references "test_table_two" ("id")'
+          ]);
+          tester('sqlite3', [
+            'create table "test_foreign_table_two" ("id" integer not null primary key autoincrement, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer, ' +
+            'foreign key("fkey_two") references "test_table_two"("id"), ' +
+            'foreign key("fkey_three") references "test_table_two"("id"), ' +
+            'foreign key("fkey_four") references "test_table_two"("id"))'
+          ]);
           tester('oracle', [
-            'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer)',
+            'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer)',
             "begin execute immediate 'create sequence \"test_foreign_table_two_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;",
             "create or replace trigger \"test_foreign_table_two_id_trg\" before insert on \"test_foreign_table_two\" for each row when (new.\"id\" is null)  begin select \"test_foreign_table_two_seq\".nextval into :new.\"id\" from dual; end;",
-            'alter table "test_foreign_table_two" add constraint "q7TfvbIx3HUQbh+l+e5N+J+Guag" foreign key ("fkey_two") references "test_table_two" ("id")'
+            'alter table "test_foreign_table_two" add constraint "q7TfvbIx3HUQbh+l+e5N+J+Guag" foreign key ("fkey_two") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_three" foreign key ("fkey_three") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_four" foreign key ("fkey_four") references "test_table_two" ("id")'
           ]);
-          tester('mssql', ['CREATE TABLE [test_foreign_table_two] ([id] int identity(1,1) not null primary key, [fkey_two] int, CONSTRAINT [test_foreign_table_two_fkey_two_foreign] FOREIGN KEY ([fkey_two]) REFERENCES [test_table_two] ([id]))']);
+          tester('mssql', [
+            'CREATE TABLE [test_foreign_table_two] ([id] int identity(1,1) not null primary key, [fkey_two] int, [fkey_three] int, [fkey_four] int, ' +
+            'CONSTRAINT [test_foreign_table_two_fkey_two_foreign] FOREIGN KEY ([fkey_two]) REFERENCES [test_table_two] ([id]), ' +
+            'CONSTRAINT [fk_fkey_three] FOREIGN KEY ([fkey_three]) REFERENCES [test_table_two] ([id]), ' +
+            'CONSTRAINT [fk_fkey_four] FOREIGN KEY ([fkey_four]) REFERENCES [test_table_two] ([id]))'
+          ]);
         });
       });
 
@@ -323,7 +353,57 @@ module.exports = function(knex) {
 
       it('allows adding a field', function () {
         return knex.schema.table('test_table_two', function(t) {
-          t.json('json_data', true).nullable();
+          t.json('json_data', true);
+        });
+      });
+
+      it('allows adding multiple columns at once', function () {
+        if (knex.client.dialect.match('oracle') !== null) {
+          // TODO: ENABLE THIS AND ALTER COLUMN TEST WHEN ORACLE IS FIXED
+          return;
+        }
+        return knex.schema.table('test_table_two', function(t) {
+          t.string('one');
+          t.string('two');
+          t.string('three');
+        }).then(function () {
+          return knex.schema.table('test_table_two', function(t) {
+            t.dropColumn('one');
+            t.dropColumn('two');
+            t.dropColumn('three');
+          });
+        });
+      });
+
+      it('allows alter column syntax', function () {
+        if (knex.client.dialect.match('sqlite') !== null ||
+            knex.client.dialect.match('oracle') !== null) {
+          return;
+        }
+
+        return knex.schema.table('test_table_two', function(t) {
+          t.integer('remove_not_null').notNull().defaultTo(1);
+          t.string('remove_default').notNull().defaultTo(1);
+          t.dateTime('datetime_to_date').notNull().defaultTo(knex.fn.now());
+        }).then(function () {
+          return knex.schema.table('test_table_two', function(t) {
+            t.integer('remove_not_null').defaultTo(1).alter();
+            t.integer('remove_default').notNull().alter();
+            t.date('datetime_to_date').alter();
+          });
+        }).then(function () {
+          return knex('test_table_two').columnInfo();
+        }).then(function(info) {
+          expect(info.remove_not_null.nullable).to.equal(true);
+          expect(info.remove_not_null.defaultValue).to.not.equal(null);
+          expect(info.remove_default.nullable).to.equal(false);
+          expect(info.remove_default.defaultValue).to.equal(null);
+          expect(info.remove_default.type).to.contains('int');
+          return knex.schema.table('test_table_two', function (t) {
+            t.dropColumn('remove_default');
+            t.dropColumn('remove_not_null');
+            t.dropColumn('datetime_to_date');
+          });
         });
       });
 

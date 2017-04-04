@@ -12,6 +12,12 @@
 
 * All pull requests should be made to the `master` branch.
 
+## Documentation
+
+Documentation is no longer maintained in knex master repository. All the documentation pull requests should be sent to https://github.com/knex/documentation
+
+Documentation pull requests should not be merged before knex version which has the new documented feature is released.
+
 ## Integration Tests
 
 ### The Easy Way
@@ -65,7 +71,7 @@ There is always room for more collaborators. Be active on resolving github issue
 
 ### Etiquette (/ˈɛtᵻkɛt/ or /ˈɛtᵻkɪt/, French: [e.ti.kɛt])
 
-Make pull requests for your changes, do not commit directly to master (release stuff / documentation changes are ok though).
+Make pull requests for your changes, do not commit directly to master (release stuff like fixing changelog are ok though).
 
 All the pull requests must be peer reviewed by other collaborator, so don't merge your request before that. If there is no response ping others.
 
