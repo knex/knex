@@ -46,7 +46,7 @@ Object.defineProperties(Knex, {
         'Knex.VERSION is deprecated, you can get the module version' +
         "by running require('knex/package').version"
       )
-      return '0.12.5'
+      return '0.12.6'
     }
   },
   Promise: {

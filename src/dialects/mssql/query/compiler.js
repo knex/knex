@@ -4,16 +4,29 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, isEmpty } from 'lodash'
+import { assign, isEmpty, compact } from 'lodash'
 
 function QueryCompiler_MSSQL(client, builder) {
   QueryCompiler.call(this, client, builder)
 }
 inherits(QueryCompiler_MSSQL, QueryCompiler)
 
+const components = [
+  'columns', 'join', 'lock', 'where', 'union', 'group',
+  'having', 'order', 'limit', 'offset'
+];
+
 assign(QueryCompiler_MSSQL.prototype, {
 
   _emptyInsertValue: 'default values',
+
+  select() {
+    const sql = this.with();
+    const statements = components.map(component =>
+        this[component](this)
+    );
+    return sql + compact(statements).join(' ');
+  },
 
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
@@ -73,8 +86,8 @@ assign(QueryCompiler_MSSQL.prototype, {
     const { returning } = this.single;
     return {
       sql: this.with() + `update ${top ? top + ' ' : ''}${this.tableName}` +
-        (join ? ` ${join}` : '') +
         ' set ' + updates.join(', ') +
+        (join ? ` from ${this.tableName} ${join}` : '') +
         (returning ? ` ${this._returning('update', returning)}` : '') +
         (where ? ` ${where}` : '') +
         (order ? ` ${order}` : '') +

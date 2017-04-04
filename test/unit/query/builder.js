@@ -159,6 +159,67 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("selects from only", function() {
+    testsql(qb().select('*').from('users', { only: true }), {
+      postgres: 'select * from only "users"',
+    });
+  });
+
+  it("clear a select", function() {
+    testsql(qb().select('id', 'email').from('users').clearSelect(), {
+      mysql: {
+        sql: 'select * from `users`'
+      },
+      mssql: {
+        sql: 'select * from [users]'
+      },
+      postgres: {
+        sql: 'select * from "users"'
+      }
+    });
+
+    testsql(qb().select('id').from('users').clearSelect().select('email'), {
+      mysql: {
+        sql: 'select `email` from `users`'
+      },
+      mssql: {
+        sql: 'select [email] from [users]'
+      },
+      postgres: {
+        sql: 'select "email" from "users"'
+      }
+    });
+  });
+
+  it("clear a where", function() {
+    testsql(qb().select('id').from('users').where('id', '=', 1).clearWhere(), {
+      mysql: {
+        sql: 'select `id` from `users`'
+      },
+      mssql: {
+        sql: 'select [id] from [users]'
+      },
+      postgres: {
+        sql: 'select "id" from "users"'
+      }
+    });
+
+    testsql(qb().select('id').from('users').where('id', '=', 1).clearWhere().where('id', '=', 2), {
+      mysql: {
+        sql: 'select `id` from `users` where `id` = ?',
+        bindings: [2]
+      },
+      mssql: {
+        sql: 'select [id] from [users] where [id] = ?',
+        bindings: [2]
+      },
+      postgres: {
+        sql: 'select "id" from "users" where "id" = ?',
+        bindings: [2]
+      }
+    });
+  });
+
   it("basic wheres", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1), {
       mysql: {
@@ -1619,10 +1680,84 @@ describe("QueryBuilder", function() {
     });
   });
 
+
+  it("clear nested wheres", function() {
+    testsql(qb().select('*').from('users').where('email', '=', 'foo').orWhere(function(qb) {
+      qb.where('name', '=', 'bar').where('age', '=', 25).clearWhere();
+    }), {
+      mysql: {
+        sql: 'select * from `users` where `email` = ?',
+        bindings: ['foo']
+      },
+      mssql: {
+        sql: 'select * from [users] where [email] = ?',
+        bindings: ['foo']
+      },
+      postgres: {
+        sql: 'select * from "users" where "email" = ?',
+        bindings: ['foo']
+      }
+    });
+  });
+
+  it("clear where and nested wheres", function() {
+    testsql(qb().select('*').from('users').where('email', '=', 'foo').orWhere(function(qb) {
+      qb.where('name', '=', 'bar').where('age', '=', 25);
+    }).clearWhere(), {
+      mysql: {
+        sql: 'select * from `users`'
+      },
+      mssql: {
+        sql: 'select * from [users]'
+      },
+      postgres: {
+        sql: 'select * from "users"'
+      }
+    });
+  });
+
   it("full sub selects", function() {
     testsql(qb().select('*').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
       qb.select(raw('max(id)')).from('users').where('email', '=', 'bar');
     }), {
+      mysql: {
+        sql: 'select * from `users` where `email` = ? or `id` = (select max(id) from `users` where `email` = ?)',
+        bindings: ['foo', 'bar']
+      },
+      mssql: {
+        sql: 'select * from [users] where [email] = ? or [id] = (select max(id) from [users] where [email] = ?)',
+        bindings: ['foo', 'bar']
+      },
+      postgres: {
+        sql: 'select * from "users" where "email" = ? or "id" = (select max(id) from "users" where "email" = ?)',
+        bindings: ['foo', 'bar']
+      }
+    });
+  });
+
+ it("clear nested selects", function() {
+    testsql(qb().select('email').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
+      qb.select(raw('max(id)')).from('users').where('email', '=', 'bar').clearSelect();
+    }), {
+      mysql: {
+        sql: 'select `email` from `users` where `email` = ? or `id` = (select * from `users` where `email` = ?)',
+        bindings: ['foo', 'bar']
+      },
+      mssql: {
+        sql: 'select [email] from [users] where [email] = ? or [id] = (select * from [users] where [email] = ?)',
+        bindings: ['foo', 'bar']
+      },
+      postgres: {
+        sql: 'select "email" from "users" where "email" = ? or "id" = (select * from "users" where "email" = ?)',
+        bindings: ['foo', 'bar']
+      }
+    });
+  });
+
+  it("clear non nested selects", function() {
+    testsql(qb().select('email').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
+      qb.select(raw('max(id)')).from('users').where('email', '=', 'bar');
+    }).clearSelect(), {
       mysql: {
         sql: 'select * from `users` where `email` = ? or `id` = (select max(id) from `users` where `email` = ?)',
         bindings: ['foo', 'bar']
@@ -2575,6 +2710,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("update only method", function() {
+    testsql(qb().update({'email': 'foo', 'name': 'bar'}).table('users', { only: true }).where('id', '=', 1), {
+      postgres: {
+        sql: 'update only "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      }
+    });
+  });
+
   it("should not update columns undefined values", function() {
     testsql(qb().update({'email': 'foo', 'name': undefined}).table('users').where('id', '=', 1), {
       mysql: {
@@ -2630,7 +2774,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] inner join [orders] on [users].[id] = [orders].[user_id] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
+        sql: 'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
       },
       postgres: {
@@ -2726,6 +2870,15 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'delete from "users" where "email" = ?',
+        bindings: ['foo']
+      }
+    });
+  });
+
+  it("delete only method", function() {
+    testsql(qb().from('users', { only: true }).where('email', '=', 'foo').delete(), {
+      postgres: {
+        sql: 'delete from only "users" where "email" = ?',
         bindings: ['foo']
       }
     });
@@ -3032,7 +3185,7 @@ describe("QueryBuilder", function() {
         bindings: ['Boonesville', 1, 5]
       },
       mssql: {
-        sql: 'update [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] set [tblPerson].[City] = ? where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
+        sql: 'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
         bindings: ['Boonesville', 1, 5]
       },
       postgres: {
@@ -3216,6 +3369,28 @@ describe("QueryBuilder", function() {
       postgres: {
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) as "avg_sal_dept" from "employee" as "e" where "dept_no" = ?',
         bindings: ["e.dept_no"]
+      }
+    });
+  });
+
+  it('allows first as syntax', function() {
+    testsql(qb().select(
+      'e.lastname',
+      'e.salary',
+      qb().first('salary').from('employee').whereRaw('dept_no = e.dept_no').orderBy('salary', 'desc').as('top_dept_salary')
+    ).from('employee as e')
+    .where('dept_no', '=', 'e.dept_no'), {
+      mysql: {
+        sql: 'select `e`.`lastname`, `e`.`salary`, (select `salary` from `employee` where dept_no = e.dept_no order by `salary` desc limit ?) as `top_dept_salary` from `employee` as `e` where `dept_no` = ?',
+        bindings: [1, "e.dept_no"]
+      },
+      mssql: {
+        sql: 'select [e].[lastname], [e].[salary], (select top (?) [salary] from [employee] where dept_no = e.dept_no order by [salary] desc) as [top_dept_salary] from [employee] as [e] where [dept_no] = ?',
+        bindings: [1, "e.dept_no"]
+      },
+      postgres: {
+        sql: 'select "e"."lastname", "e"."salary", (select "salary" from "employee" where dept_no = e.dept_no order by "salary" desc limit ?) as "top_dept_salary" from "employee" as "e" where "dept_no" = ?',
+        bindings: [1, "e.dept_no"]
       }
     });
   });
@@ -3822,6 +3997,26 @@ describe("QueryBuilder", function() {
       expect(result.bindings).to.deep.equal(raw[2]);
     })
   })
+
+  it('Respect casting with named bindings', function() {
+    var namedBindings = { a: 'foo', b: 'bar', c: 'baz' };
+
+    var raws = [
+      [raw(':a: = :b::TEXT OR :c', namedBindings), '"foo" = ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
+      [raw(':a: = :b::TEXT OR :c::TEXT', namedBindings), '"foo" = ?::TEXT OR ?::TEXT', [namedBindings.b, namedBindings.c]],
+      [raw(":a: = 'bar'::TEXT OR :b OR :c::TEXT", namedBindings), '"foo" = \'bar\'::TEXT OR ? OR ?::TEXT', [namedBindings.b, namedBindings.c]],
+      [raw(":a:::TEXT = OR :b::TEXT OR :c", namedBindings), '"foo"::TEXT = OR ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
+      [raw('\\:a: = :b::TEXT OR :c', namedBindings), ':a: = ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
+      [raw(':a: = \\:b::TEXT OR \\:c', namedBindings), '"foo" = :b::TEXT OR :c', []],
+      [raw('\\:a: = \\:b::TEXT OR \\:c', namedBindings), ':a: = :b::TEXT OR :c', []]
+    ];
+
+    raws.forEach(function(raw) {
+      var result = raw[0].toSQL();
+      expect(result.sql).to.equal(raw[1]);
+      expect(result.bindings).to.deep.equal(raw[2]);
+    });
+  });
 
   it("query \\\\? escaping", function() {
     testquery(qb().select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey?']), {

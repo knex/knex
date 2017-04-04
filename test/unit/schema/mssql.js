@@ -92,6 +92,17 @@ describe("MSSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP CONSTRAINT [users_foo_unique]');
   });
 
+  it('should alter columns with the alter flag', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.string('foo').alter();
+      this.string('bar');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [bar] nvarchar(255)');
+    expect(tableSql[1].sql).to.equal('ALTER TABLE [users] alter column [foo] nvarchar(255)');
+  });
+
   it('test drop unique, custom', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.dropUnique(null, 'foo');
@@ -189,6 +200,31 @@ describe("MSSQL SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD CONSTRAINT [users_foo_id_foreign] FOREIGN KEY ([foo_id]) REFERENCES [orders] ([id])');
+
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.integer('foo_id').references('id').on('orders');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo_id] int');
+    expect(tableSql[1].sql).to.equal('ALTER TABLE [users] ADD CONSTRAINT [users_foo_id_foreign] FOREIGN KEY ([foo_id]) REFERENCES [orders] ([id])');
+  });
+
+  it('adding foreign key with specific identifier', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.foreign('foo_id', 'fk_foo').references('id').on('orders');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD CONSTRAINT [fk_foo] FOREIGN KEY ([foo_id]) REFERENCES [orders] ([id])');
+
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.integer('foo_id').references('id').on('orders').withKeyName('fk_foo');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo_id] int');
+    expect(tableSql[1].sql).to.equal('ALTER TABLE [users] ADD CONSTRAINT [fk_foo] FOREIGN KEY ([foo_id]) REFERENCES [orders] ([id])');
   });
 
   it("adds foreign key with onUpdate and onDelete", function() {

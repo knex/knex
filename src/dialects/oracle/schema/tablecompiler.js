@@ -51,6 +51,8 @@ assign(TableCompiler_Oracle.prototype, {
 
   addColumnsPrefix: 'add ',
 
+  alterColumnsPrefix: 'modify ',
+
   dropColumn() {
     const columns = helpers.normalizeArr.apply(null, arguments);
     this.pushQuery(`alter table ${this.tableName()} drop (${this.formatter.columnize(columns)})`);

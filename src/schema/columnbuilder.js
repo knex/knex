@@ -3,7 +3,8 @@ import { extend, each, toArray } from 'lodash'
 
 // The chainable interface off the original "column" method.
 export default function ColumnBuilder(client, tableBuilder, type, args) {
-  this.client = client
+  this.client = client;
+  this._method = 'add';
   this._single = {};
   this._modifiers = {};
   this._statements = [];
@@ -58,7 +59,7 @@ each(['index', 'primary', 'unique'], function(method) {
 // Specify that the current column "references" a column,
 // which may be tableName.column or just "column"
 ColumnBuilder.prototype.references = function(value) {
-  return this._tableBuilder.foreign.call(this._tableBuilder, this._args[0], this)
+  return this._tableBuilder.foreign.call(this._tableBuilder, this._args[0], undefined, this)
     ._columnBuilder(this)
     .references(value);
 };
@@ -69,6 +70,7 @@ const AlterMethods = {};
 // over all other rules for the column.
 AlterMethods.drop = function() {
   this._single.drop = true;
+
   return this;
 };
 
@@ -80,9 +82,16 @@ AlterMethods.alterType = function(type) {
     grouping: 'alterType',
     value: type
   });
+
   return this;
 };
 
+// Set column method to alter (default is add).
+AlterMethods.alter = function() {
+  this._method = 'alter';
+
+  return this;
+};
 
 // Alias a few methods for clarity when processing.
 const columnAlias = {

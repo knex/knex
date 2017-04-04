@@ -9,8 +9,8 @@ import Trigger from './trigger';
 // -------
 
 function ColumnCompiler_Oracle() {
-  this.modifiers = ['defaultTo', 'checkIn', 'nullable', 'comment'];
   ColumnCompiler.apply(this, arguments);
+  this.modifiers = ['defaultTo', 'checkIn', 'nullable', 'comment'];
 }
 inherits(ColumnCompiler_Oracle, ColumnCompiler);
 

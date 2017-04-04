@@ -13,7 +13,7 @@ import SchemaCompiler from './schema/compiler';
 import {makeEscape} from '../../query/string'
 
 function Client_PG(config) {
-  Client.apply(this, arguments)
+  Client.apply(this, arguments);
   if (config.returning) {
     this.defaultReturning = config.returning;
   }
@@ -21,8 +21,12 @@ function Client_PG(config) {
   if (config.searchPath) {
     this.searchPath = config.searchPath;
   }
+
+  if (config.version) {
+    this.version = config.version;
+  }
 }
-inherits(Client_PG, Client)
+inherits(Client_PG, Client);
 
 assign(Client_PG.prototype, {
 
@@ -169,9 +173,13 @@ assign(Client_PG.prototype, {
     const sql = obj.sql = this.positionBindings(obj.sql)
     return new Promise(function(resolver, rejecter) {
       const queryStream = connection.query(new PGQueryStream(sql, obj.bindings, options));
-      queryStream.on('error', rejecter);
+      queryStream.on('error', function(error) { stream.emit('error', error); });
       // 'error' is not propagated by .pipe, but it breaks the pipe
-      stream.on('error', rejecter);
+      stream.on('error', function(error) {
+        // Ensure the queryStream is closed so the connection can be released.
+        queryStream.close();
+        rejecter(error);
+      });
       // 'end' IS propagated by .pipe, by default
       stream.on('end', resolver);
       queryStream.pipe(stream);

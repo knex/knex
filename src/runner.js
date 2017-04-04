@@ -1,4 +1,4 @@
-import { assign, isArray } from 'lodash'
+import { assign, isArray, noop } from 'lodash'
 import Promise from 'bluebird';
 import * as helpers from './helpers';
 
@@ -98,6 +98,10 @@ assign(Runner.prototype, {
       handler(stream);
       return promise;
     }
+
+    // This promise is unreachable since no handler was given, so noop any
+    // exceptions. Errors should be handled in the stream's 'error' event.
+    promise.catch(noop);
     return stream;
   },
 
@@ -183,7 +187,8 @@ assign(Runner.prototype, {
   ensureConnection() {
     return Promise.try(() => {
       return this.connection || new Promise((resolver, rejecter) => {
-        this.client.acquireConnection()
+        // need to return promise or null from handler to prevent warning from bluebird
+        return this.client.acquireConnection()
           .then(resolver)
           .catch(Promise.TimeoutError, (error) => {
             if (this.builder) {
@@ -195,7 +200,8 @@ assign(Runner.prototype, {
           .catch(rejecter)
       })
     }).disposer(() => {
-      this.client.releaseConnection(this.connection)
+      // need to return promise or null from handler to prevent warning from bluebird
+      return this.client.releaseConnection(this.connection)
     })
   }
 

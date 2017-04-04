@@ -11,7 +11,7 @@ import {
   reduce
 } from 'lodash';
 
-import uuid from 'node-uuid';
+import uuid from 'uuid';
 
 const debugBindings = debug('knex:bindings')
 
@@ -59,7 +59,7 @@ assign(QueryCompiler.prototype, {
 
     defaults.bindings = defaults.bindings || [];
 
-    if (method === 'select') {
+    if (method === 'select' || method === 'first') {
       if(this.single.as) {
         defaults.as = this.single.as;
       }
@@ -141,7 +141,8 @@ assign(QueryCompiler.prototype, {
     const { tableName } = this;
     const updateData = this._prepUpdate(this.single.update);
     const wheres = this.where();
-    return this.with() + `update ${tableName}` +
+    return this.with() +
+      `update ${this.single.only ? 'only ' : ''}${tableName}` +
       ' set ' + updateData.join(', ') +
       (wheres ? ` ${wheres}` : '');
   },
@@ -166,7 +167,9 @@ assign(QueryCompiler.prototype, {
     }
     if (sql.length === 0) sql = ['*'];
     return `select ${distinct ? 'distinct ' : ''}` +
-      sql.join(', ') + (this.tableName ? ` from ${this.tableName}` : '');
+      sql.join(', ') + (this.tableName
+        ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
+        : '');
   },
 
   aggregate(stmt) {
@@ -387,7 +390,8 @@ assign(QueryCompiler.prototype, {
     // Make sure tableName is processed by the formatter first.
     const { tableName } = this;
     const wheres = this.where();
-    return this.with() + `delete from ${tableName}` +
+    return this.with() +
+      `delete from ${this.single.only ? 'only ' : ''}${tableName}` +
       (wheres ? ` ${wheres}` : '');
   },
 

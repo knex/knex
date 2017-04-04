@@ -1,6 +1,40 @@
 
 # Master (Unreleased)
+
+# 0.12.9 - 23 Mar, 2017
+- Fixed unhandled exception in batchInsert when the rows to be inserted resulted in duplicate key violation #1880
+
+# 0.12.8 - 15 Mar, 2017
+- Added clearSelect and clearWhere to query builder #1912
+- Properly close Postgres query streams on error #1935
+- Transactions should never reject with undefined #1970
+- Clear acquireConnectionTimeout if an error occurs when acquiring a connection #1973
+
+# 0.12.7 - 17 Feb, 2017
+
+### Accidental Breaking Change:
+- Ensure that 'client' is provided in knex config object #1822
+
+### Other Changes:
+- Support custom foreign key names #1311, #1726
+- Fixed named bindings to work with queries containing `:`-chars #1890
+- Exposed more promise functions #1896
+- Pass rollback errors to transaction promise in mssql #1885
+- ONLY keyword support for PostgreSQL (for table inheritance) #1874
+- Fixed Mssql update with join syntax #1777
+- Replace migrations and seed for react-native packager #1813
+- Support knexfile, migration and seeds in TypeScript #1769
+- Fix float to integer conversion of decimal fields in MSSQL #1781
+- External authentication capability when using oracledb driver #1716
+- Fixed MSSQL incorect query build when locks are used #1707
+- Allow to use `first` method as aliased select #1784
+- Alter column for nullability, type and default value #46, #1759
 - Add more having* methods / join clause on* methods  #1674
+- Compatibility fixes and cleanups #1788, #1792, #1794, #1814, #1857, #1649
+
+# 0.12.6 - 19 Oct, 2016
+- Address warnings mentioned in #1388 (#1740)
+- Remove postinstall script (#1746)
 
 # 0.12.5 - 12 Oct, 2016
 - Fix broken 0.12.4 build (removed from npm)

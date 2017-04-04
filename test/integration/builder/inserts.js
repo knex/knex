@@ -2,8 +2,9 @@
 
 'use strict';
 
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var _    = require('lodash');
+var Promise = require('bluebird');
 
 module.exports = function(knex) {
 
@@ -692,6 +693,30 @@ module.exports = function(knex) {
           });
       });
 
+      it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', function() {
+        return new Promise(function(resolve, reject) {
+          return knex.schema.dropTableIfExists('batchInsertDuplicateKey')
+            .then(function() {
+              return knex.schema.createTable('batchInsertDuplicateKey', function (table) {
+                table.string('col');
+                table.primary('col');
+              });
+            })
+            .then(function () {
+              var rows = [{'col': 'a'}, {'col': "a"}];
+              return knex.batchInsert('batchInsertDuplicateKey', rows, rows.length);
+            })
+            .then(function() {
+              return reject(new Error('Should not reach this point'))
+            })
+            .catch(function (error) {
+              //Should reach this point before timeout of 10s
+              expect(error.message.toLowerCase()).to.include('batchinsertduplicatekey');
+              resolve(error);
+            });
+        }).timeout(10000);
+      });
+
       it('knex.batchInsert with specified transaction', function() {
         return knex.transaction(function(tr) {
           knex.batchInsert('BatchInsert', items, 30)
@@ -704,20 +729,37 @@ module.exports = function(knex) {
 
       it('transaction.batchInsert using specified transaction', function() {
         return knex.transaction(function(tr) {
-          tr.batchInsert('BatchInsert', items, 30)
+          return tr.batchInsert('BatchInsert', items, 30)
           .returning(['Col1', 'Col2'])
-          .then(tr.commit)
-          .catch(tr.rollback);
         })
       });
 
     });
 
     it('should validate batchInsert batchSize parameter', function() {
-      expect(function () { knex.batchInsert('test', []) }).to.not.throw();
-      expect(function () { knex.batchInsert('test', [], null) }).to.throw(TypeError);
-      expect(function () { knex.batchInsert('test', [], 0) }).to.throw(TypeError);
-      expect(function () { knex.batchInsert('test', [], 'still no good') }).to.throw(TypeError);
+      //Should not throw, batchSize default
+      return knex.batchInsert('test', [])
+      .then(function() {
+        //Should throw, null not valid
+        return knex.batchInsert('test', [], null);
+      })
+      .catch(function(error) {
+        expect(error.message).to.equal('Invalid chunkSize: null');
+
+        //Should throw, 0 is not a valid chunkSize
+        return knex.batchInsert('test', [], 0);
+      })
+      .catch(function(error) {
+        expect(error.message).to.equal('Invalid chunkSize: 0');
+
+        //Also faulty
+        return knex.batchInsert('test', [], 'still no good');
+      })
+      .catch(function(error) {
+        expect(error.message).to.equal('Invalid chunkSize: still no good');
+
+        return true;
+      });
     });
 
     it('should replace undefined keys in multi insert with DEFAULT', function() {
