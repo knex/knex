@@ -32,8 +32,8 @@ describe('Query Building Tests', function() {
 })
 
 var config = require('./knexfile');
-if (config.oracle) {
-  describe('ExternalAuth ORACLE Tests', function() {
+if (config.oracledb) {
+  describe('Oracledb driver tests', function() {
     this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
     require('./unit/dialects/oracledb');
   });
