@@ -45,9 +45,9 @@ describe("OracleDb externalAuth", function() {
 
 describe("OracleDb parameters", function() {
   this.timeout(20000);
-  const conf = _.clone(config.oracledb);
+  var conf = _.clone(config.oracledb);
   conf.fetchAsString = [ 'number', 'DATE', 'cLOb'];
-  const knexClient = knex(conf);
+  var knexClient = knex(conf);
 
   before(function(done) {
     knexClient.schema.createTable('fetchAsStringTable', function (table) {
