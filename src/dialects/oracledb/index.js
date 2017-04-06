@@ -28,9 +28,10 @@ inherits(Client_Oracledb, Client_Oracle);
 Client_Oracledb.prototype.driverName = 'oracledb';
 
 Client_Oracledb.prototype._driver = function() {
+  const client = this;
   const oracledb = require('oracledb');
+  client.fetchAsString = [];
   if (this.config.fetchAsString && _.isArray(this.config.fetchAsString)) {
-    const types = [];
     this.config.fetchAsString.forEach(function(type) {
       if (!_.isString(type)) return;
       type = type.toUpperCase();
@@ -38,12 +39,10 @@ Client_Oracledb.prototype._driver = function() {
         if (type !== 'NUMBER' && type !== 'DATE' && type !== 'CLOB') {
           helpers.warn('Only "date", "number" and "clob" are supported for fetchAsString');
         }
-        types.push(oracledb[type]);
+        client.fetchAsString.push(oracledb[type]);
       }
     });
-    oracledb.fetchAsString = types;
   }
-
   return oracledb;
 };
 
@@ -100,6 +99,8 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
     if (!_.isUndefined(client.connectionSettings.stmtCacheSize)) {
       oracleDbConfig.stmtCacheSize = client.connectionSettings.stmtCacheSize;
     }
+
+    client.driver.fetchAsString = client.fetchAsString;
 
     client.driver.getConnection(oracleDbConfig, function(err, connection) {
       if (err) {
