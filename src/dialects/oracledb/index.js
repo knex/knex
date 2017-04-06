@@ -35,6 +35,9 @@ Client_Oracledb.prototype._driver = function() {
       if (!_.isString(type)) return;
       type = type.toUpperCase();
       if (oracledb[type]) {
+        if (type !== 'NUMBER' && type !== 'DATE' && type !== 'CLOB') {
+          helpers.warn('Only "date", "number" and "clob" are supported for fetchAsString');
+        }
         types.push(oracledb[type]);
       }
     });
