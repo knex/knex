@@ -44,12 +44,12 @@ describe("OracleDb externalAuth", function() {
 });
 
 describe("OracleDb parameters", function() {
-  this.timeout(20000);
-  var conf = _.clone(config.oracledb);
-  conf.fetchAsString = [ 'number', 'DATE', 'cLOb'];
-  var knexClient = knex(conf);
+  var knexClient;
 
   before(function(done) {
+    const conf = _.clone(config.oracledb);
+    conf.fetchAsString = [ 'number', 'DATE', 'cLOb'];
+    knexClient = knex(conf);
     knexClient.schema.createTable('fetchAsStringTable', function (table) {
       table.increments();
       table.float('testfloat');
@@ -69,13 +69,23 @@ describe("OracleDb parameters", function() {
       expect(result[0]).to.be.ok;
       expect(result[0].testfloat).to.be.a('string');
       expect(result[0].testdate).to.be.a('string');
+      knexClient.destroy(done);
+    }).catch(done);
+  });
+
+  it('without fetchAsString parameter should return default types', function(done) {
+    knexClient = knex(config.oracledb);
+    knexClient('fetchAsStringTable').select().then(function(result) {
+      expect(result[0]).to.be.ok;
+      expect(result[0].testfloat).to.not.be.a('string');
+      expect(result[0].testdate).to.not.be.a('string');
       done();
     }).catch(done);
   });
 
   after(function(done) {
     knexClient.schema.dropTable('fetchAsStringTable').then(function() {
-      done();
+      knexClient.destroy(done);
     }).catch(done);
   });
 });
