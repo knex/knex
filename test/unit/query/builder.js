@@ -4182,4 +4182,13 @@ describe("QueryBuilder", function() {
     });
   })
 
+  it('#2003, properly escapes objects with toPostgres specialization', function () {
+    function TestObject() { }
+    TestObject.prototype.toPostgres = function() {
+      return 'foobar'
+    }
+    testquery(qb().table('sometable').insert({ id: new TestObject() }), {
+      postgres: "insert into \"sometable\" (\"id\") values ('foobar')"
+    });
+  })
 });
