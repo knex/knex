@@ -78,7 +78,7 @@ assign(Client_PG.prototype, {
       }
       return escaped
     },
-    escapeObject(val, timezone, prepareValue, seen = []) {
+    escapeObject(val, prepareValue, timezone, seen = []) {
       if (val && typeof val.toPostgres === 'function') {
         seen = seen || [];
         if (seen.indexOf(val) !== -1) {
