@@ -18,7 +18,9 @@ inherits(ColumnCompiler_MSSQL, ColumnCompiler);
 
 assign(ColumnCompiler_MSSQL.prototype, {
 
-  increments: 'int identity(1,1) not null primary key',
+  increments(withoutPk){
+    return withoutPk ? 'int identity(1,1) not null' : 'int identity(1,1) not null primary key'
+  },
 
   bigincrements: 'bigint identity(1,1) not null primary key',
 
