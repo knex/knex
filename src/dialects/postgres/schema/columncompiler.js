@@ -36,7 +36,9 @@ assign(ColumnCompiler_PG.prototype, {
 
   double: 'double precision',
   floating: 'real',
-  increments: 'serial primary key',
+  increments(withoutPk) {
+    return withoutPk ? 'serial' : 'serial primary key'
+  },
   json(jsonb) {
     if (jsonb) helpers.deprecate('json(true)', 'jsonb()')
     return jsonColumn(this.client, jsonb);
