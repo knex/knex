@@ -26,9 +26,9 @@ assign(ColumnCompiler_Oracle.prototype, {
     });
   },
 
-  increments () {
+  increments (withoutPk) {
     this._createAutoIncrementTriggerAndSequence();
-    return 'integer not null primary key';
+    return withoutPk ? 'integer not null' : 'integer not null primary key';
   },
 
   bigincrements () {
