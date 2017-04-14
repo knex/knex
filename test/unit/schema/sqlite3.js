@@ -24,6 +24,16 @@ describe("SQLite SchemaBuilder", function() {
     equal(tableSql[0].sql, 'create table "users" ("id" integer not null primary key autoincrement, "email" varchar(255))');
   });
 
+  it("basic create table without primary key", function() {
+    tableSql = client.schemaBuilder().createTable('users', function(table) {
+      table.increments('id');
+      table.increments('other_id', true)
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'create table "users" ("id" integer not null primary key autoincrement, "other_id" integer not null autoincrement)');
+  });
+
   it("basic alter table", function() {
     tableSql = client.schemaBuilder().alterTable('users', function(table) {
       table.increments('id');
