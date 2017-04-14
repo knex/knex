@@ -19,9 +19,10 @@ inherits(ColumnCompiler_MySQL, ColumnCompiler);
 assign(ColumnCompiler_MySQL.prototype, {
 
   increments(withoutPk){
-    return withoutPk ? 'int unsigned not null auto_increment' : 'int unsigned not null auto_increment primary key'
+    return withoutPk ? 'int unsigned not null auto_increment' :
+    'int unsigned not null auto_increment primary key';
   },
-  
+
   bigincrements: 'bigint unsigned not null auto_increment primary key',
 
   bigint: 'bigint',
