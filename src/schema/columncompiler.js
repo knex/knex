@@ -74,7 +74,8 @@ ColumnCompiler.prototype.getModifiers = function() {
 // Types
 // ------
 
-ColumnCompiler.prototype.increments = 'integer not null primary key autoincrement';
+ColumnCompiler.prototype.increments = withoutPk =>
+  withoutPk ? 'integer not null autoincrement' : 'integer not null primary key autoincrement';
 ColumnCompiler.prototype.bigincrements = 'integer not null primary key autoincrement';
 ColumnCompiler.prototype.integer       =
 ColumnCompiler.prototype.smallint      =

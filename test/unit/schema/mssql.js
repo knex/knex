@@ -23,6 +23,16 @@ describe("MSSQL SchemaBuilder", function() {
     expect(tableSql.toQuery()).to.equal('CREATE TABLE [users] ([id] int identity(1,1) not null primary key, [email] nvarchar(255))');
   });
 
+  it('test basic create table with incrementing without primary key', function(){
+    tableSql = client.schemaBuilder().createTable('users', function(table) {
+      table.increments('id', true);
+    });
+
+    equal(1, tableSql.toSQL().length);
+    expect(tableSql.toSQL()[0].sql).to.equal('CREATE TABLE [users] ([id] int identity(1,1) not null)');
+    expect(tableSql.toQuery()).to.equal('CREATE TABLE [users] ([id] int identity(1,1) not null)');
+  });
+
   it('basic create table without charset or collate', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.increments('id');
