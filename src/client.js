@@ -184,6 +184,11 @@ assign(Client.prototype, {
         this.acquireRawConnection()
           .tap(function(connection) {
             connection.__knexUid = uniqueId('__knexUid')
+            if (connection.on) {
+              connection.on('end', (err) => {
+                connection.__knex__disposed = err || 'Connection ended unexpectedly';
+              })
+            }
             if (poolConfig.afterCreate) {
               return Promise.promisify(poolConfig.afterCreate)(connection)
             }

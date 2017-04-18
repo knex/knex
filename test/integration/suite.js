@@ -14,6 +14,7 @@ module.exports = function(knex) {
       return knex.destroy()
     })
 
+    require('./reconnect')(knex)
     require('./schema')(knex);
     require('./migrate')(knex);
     require('./seed')(knex);

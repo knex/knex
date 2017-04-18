@@ -35,6 +35,7 @@
     "babel-preset-es2015-loose": "^8.0.0",
     "chai": "^3.5.0",
     "coveralls": "~2.11.1",
+    "dockerode": "^2.4.3",
     "eslint": "2.2.0",
     "eslint-plugin-import": "^1.8.0",
     "istanbul": "^0.4.5",
