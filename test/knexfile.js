@@ -6,7 +6,7 @@ var _          = require('lodash');
 var Promise    = require('bluebird');
 
 // excluding oracle and mssql dialects from default integrations test
-var testIntegrationDialects = (process.env.DB || "postgres" || "maria mysql mysql2 postgres sqlite3").match(/\w+/g);
+var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres sqlite3").match(/\w+/g);
 
 var pool = {
   afterCreate: function(connection, callback) {
@@ -66,7 +66,18 @@ var testConfigs = {
     },
     pool: mysqlPool,
     migrations: migrations,
-    seeds: seeds
+    seeds: seeds,
+    docker: {
+      factory:   './mysql/index.js',
+      container: 'knex-test-mysql',
+      image:     'mysql:5.7',
+      database:  'mysql',
+      username:  'root',
+      password:  'root',
+      hostPort:  '49153',
+      client:    'mysql',
+      timeout:   60 * 1000
+    }
   },
 
   mysql2: {
@@ -114,7 +125,18 @@ var testConfigs = {
     },
     pool: pool,
     migrations: migrations,
-    seeds: seeds
+    seeds: seeds,
+    docker: {
+      factory:   './postgres/index.js',
+      container: 'knex-test-postgres',
+      image:     'postgres:9.6',
+      database:  'postgres',
+      username:  'postgres',
+      password:  '',
+      hostPort:  '49152',
+      client:    'pg',
+      timeout:   10 * 1000
+    }
   },
 
   sqlite3: {

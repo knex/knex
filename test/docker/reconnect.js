@@ -1,27 +1,27 @@
 /*global afterEach, before, expect, describe, it, testPromise*/
-
-var Docker            = require('./docker');
-var knex              = require('../../../knex');
-var PostgresContainer = require('./postgresContainer');
-
 'use strict';
 
+var Docker  = require('./docker');
 var Promise = testPromise;
 
-var DB_CONTAINER_PORT            = 49152;
-var EVICTION_RUN_INTERVAL_MILLIS = 15 * 1000;
-var IDLE_TIMEOUT_MILLIS          = 20 * 1000;
-var ACQUIRE_CONNECTION_TIMEOUT   = 10 * 1000;
-var ACQUIRE_TIMEOUT_MILLIS       = 10 * 1000;
+module.exports = function(config, knex) {
 
-module.exports = function() {
+  var dockerConf       = config.docker;
+  var ContainerFactory = require(dockerConf.factory);
+
+  var EVICTION_RUN_INTERVAL_MILLIS = 15 * 1000;
+  var IDLE_TIMEOUT_MILLIS          = 20 * 1000;
+  var ACQUIRE_CONNECTION_TIMEOUT   = 10 * 1000;
+  var ACQUIRE_TIMEOUT_MILLIS       = 10 * 1000;
 
   var docker;
   var connectionPool;
   var container;
 
+
   describe('using database as a docker container', function () {
-    this.timeout(30 * 1000);
+
+    this.timeout(dockerConf.timeout);
 
     before(function () {
       docker = new Docker();
@@ -40,7 +40,7 @@ module.exports = function() {
     describe('start container and wait until it is ready', function () {
 
       beforeEach(function () {
-        container = new PostgresContainer(docker, { hostPort: DB_CONTAINER_PORT });
+        container = new ContainerFactory(docker, dockerConf);
         return container.start().then(() => waitReadyForQueries());
       });
 
@@ -51,11 +51,11 @@ module.exports = function() {
 
         it('connection pool can query', function () {
           return connectionPool.raw('SELECT 10 as ten').then((result) => {
-            expect(result.rows).to.deep.equal([{ ten: 10 }]);
+            expect(result.rows || result[0]).to.deep.equal([{ ten: 10 }]);
           });
         });
 
-        describe('restart postgres and keep using connection pool', function () {
+        describe('restart db-container and keep using connection pool', function () {
           beforeEach(function () {
             return container.stop()
               .then(() => container.start())
@@ -67,7 +67,7 @@ module.exports = function() {
             for (var i = 0; i < 10; i += 1) {
               promises.push(
                 connectionPool.raw(`SELECT 10 as ten`).then((result) => {
-                  expect(result.rows).to.deep.equal([{ ten: 10 }]);
+                  expect(result.rows || result[0]).to.deep.equal([{ ten: 10 }]);
                 })
               );
             }
@@ -87,7 +87,7 @@ module.exports = function() {
   function createPool() {
     return knex({
       // debug:                    true,
-      client:                   'pg',
+      client:                   dockerConf.client,
       acquireConnectionTimeout: ACQUIRE_CONNECTION_TIMEOUT,
       pool:                     {
         min:                       7,
@@ -97,11 +97,11 @@ module.exports = function() {
         evictionRunIntervalMillis: EVICTION_RUN_INTERVAL_MILLIS
       },
       connection:               {
-        database: 'postgres',
-        port:     `${DB_CONTAINER_PORT}`,
-        host:     '127.0.0.1',
-        user:     'postgres',
-        password: ''
+        database: dockerConf.database,
+        port:     dockerConf.hostPort,
+        user:     dockerConf.username,
+        password: dockerConf.password,
+        host:     '127.0.0.1'
       }
     });
   }

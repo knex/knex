@@ -43,3 +43,8 @@ if (config.oracledb) {
     require('./unit/dialects/oracledb');
   });
 }
+
+describe('Docker Integration Tests', function() {
+  this.timeout(process.env.KNEX_TEST_TIMEOUT || 15000);
+  require('./docker')
+})
