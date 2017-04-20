@@ -7,10 +7,14 @@ var Promise = testPromise;
 module.exports = function(config, knex) {
 
   var dockerConf       = config.docker;
-  var ContainerFactory = require(dockerConf.factory);
+  var ContainerClass   = require(dockerConf.factory);
 
-  var EVICTION_RUN_INTERVAL_MILLIS = 15 * 1000;
-  var IDLE_TIMEOUT_MILLIS          = 20 * 1000;
+  /**
+   * Make sure the connections in the connection pool are not
+   * evicted on timeout, they should only be evicted on error.
+   */
+  var EVICTION_RUN_INTERVAL_MILLIS = dockerConf.timeout;
+  var IDLE_TIMEOUT_MILLIS          = dockerConf.timeout;
   var ACQUIRE_CONNECTION_TIMEOUT   = 10 * 1000;
   var ACQUIRE_TIMEOUT_MILLIS       = 10 * 1000;
 
@@ -40,7 +44,7 @@ module.exports = function(config, knex) {
     describe('start container and wait until it is ready', function () {
 
       beforeEach(function () {
-        container = new ContainerFactory(docker, dockerConf);
+        container = new ContainerClass(docker, dockerConf);
         return container.start().then(() => waitReadyForQueries());
       });
 
@@ -50,33 +54,50 @@ module.exports = function(config, knex) {
         });
 
         it('connection pool can query', function () {
-          return connectionPool.raw('SELECT 10 as ten').then((result) => {
-            expect(result.rows || result[0]).to.deep.equal([{ ten: 10 }]);
-          });
+          return testQuery(connectionPool);
         });
 
-        describe('restart db-container and keep using connection pool', function () {
+        describe('stop db-container and expect queries to fail', function () {
+
           beforeEach(function () {
-            return container.stop()
-              .then(() => container.start())
-              .then(() => waitReadyForQueries());
+            return container.stop();
           });
 
-          it('connection pool can query x10', function () {
+          it('connection pool can not query x10', function () {
             var promises = [];
             for (var i = 0; i < 10; i += 1) {
               promises.push(
-                connectionPool.raw(`SELECT 10 as ten`).then((result) => {
-                  expect(result.rows || result[0]).to.deep.equal([{ ten: 10 }]);
-                })
+                testQuery(connectionPool)
+                  .then(() => { throw new Error('Failure expected'); })
+                  .catch((err) => expect(err.message).to.not.equal('Failure expected'))
               );
             }
             return Promise.all(promises);
+          });
+
+          describe('restart db-container and keep using connection pool', function () {
+            beforeEach(function () {
+              return container.start().then(() => waitReadyForQueries());
+            });
+
+            it('connection pool can query x10', function () {
+              var promises = [];
+              for (var i = 0; i < 10; i += 1) {
+                promises.push(testQuery(connectionPool));
+              }
+              return Promise.all(promises);
+            });
           });
         });
       });
     })
   });
+
+  function testQuery(pool) {
+    return pool.raw(`SELECT 10 as ten`).then((result) => {
+      expect(result.rows || result[0]).to.deep.equal([{ ten: 10 }]);
+    });
+  }
 
   function sequencedPromise(...blocks) {
     const base  = Promise.resolve(true);

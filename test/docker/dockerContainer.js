@@ -3,14 +3,14 @@
 const Promise = require('bluebird');
 const _        = require('lodash');
 
-function DatabaseContainer(docker, name, image, options) {
+function DockerContainer(docker, name, image, options) {
   this.container = docker.createContainer(name, image, options);
 }
 
 /**
  * @returns {Promise}
  */
-DatabaseContainer.prototype.start = function () {
+DockerContainer.prototype.start = function () {
   return this.container.then((c) =>
     c.start().then(() => {
       console.log(`#~ Started container ${c.id}`);
@@ -22,14 +22,14 @@ DatabaseContainer.prototype.start = function () {
 /**
  * @returns {Promise}
  */
-DatabaseContainer.prototype.waitReady = function () {
+DockerContainer.prototype.waitReady = function () {
   return Promise.resolve(this);
 }
 
 /**
  * @returns {Promise}
  */
-DatabaseContainer.prototype.stop = function () {
+DockerContainer.prototype.stop = function () {
   return this.container.then((c) =>
     c.stop().then(() =>
       console.log(`#~ Stopped container ${c.id}`)
@@ -45,7 +45,7 @@ DatabaseContainer.prototype.stop = function () {
 /**
  * @returns {Promise}
  */
-DatabaseContainer.prototype.destroy = function () {
+DockerContainer.prototype.destroy = function () {
   return this.stop().then(() =>
     this.container.then((c) =>
       c.remove().then(() =>
@@ -55,4 +55,4 @@ DatabaseContainer.prototype.destroy = function () {
   );
 }
 
-module.exports = DatabaseContainer;
+module.exports = DockerContainer;

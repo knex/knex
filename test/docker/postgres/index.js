@@ -2,7 +2,7 @@
 
 const Promise           = require('bluebird');
 const _                 = require('lodash');
-const DatabaseContainer = require('../databaseContainer');
+const DockerContainer   = require('../dockerContainer');
 
 function PostgresContainer(docker, options) {
   var name     = _.get(options, 'container');
@@ -10,7 +10,7 @@ function PostgresContainer(docker, options) {
   var username = _.get(options, 'username');
   var password = _.get(options, 'password');
   var hostPort = _.get(options, 'hostPort');
-  DatabaseContainer.call(this, docker, name, image, {
+  DockerContainer.call(this, docker, name, image, {
     Env: [`POSTGRES_USER=${username}`, `POSTGRES_PASSWORD=${password}`],
     PortBindings: {
       '5432/tcp': [{
@@ -20,7 +20,7 @@ function PostgresContainer(docker, options) {
   });
 }
 
-PostgresContainer.prototype = Object.create(DatabaseContainer.prototype);
+PostgresContainer.prototype = Object.create(DockerContainer.prototype);
 
 /**
  * @returns {Promise}
