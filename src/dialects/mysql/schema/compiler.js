@@ -20,8 +20,22 @@ assign(SchemaCompiler_MySQL.prototype, {
 
   // Check whether a table exists on the query.
   hasTable(tableName) {
+    const sql = [`select * from information_schema.tables`];
+    const bindings = [];
+
+    if (this.schema) {
+      sql.push(`where schema_name = ? and table_name = ?`);
+      bindings.push(this.schema, tableName);
+    } else {
+      sql.push(
+        `where concat_ws('.', table_schema, table_name)`,
+        `in (concat_ws('.', database(), ?), ?)`
+      );
+      bindings.push(tableName, tableName);
+    }
     this.pushQuery({
-      sql: `show tables like ${this.formatter.parameter(tableName)}`,
+      sql: sql.join(' '),
+      bindings,
       output(resp) {
         return resp.length > 0;
       }
@@ -30,9 +44,24 @@ assign(SchemaCompiler_MySQL.prototype, {
 
   // Check whether a column exists on the schema.
   hasColumn(tableName, column) {
+    const sql = [`select * from information_schema.columns`];
+    const bindings = []
+
+    if (this.schema) {
+      sql.push(`where schema_name = ? and table_name = ?`);
+      bindings.push(this.schema, tableName);
+    } else {
+      sql.push(
+        `where concat_ws('.', table_schema, table_name)`,
+        `in (concat_ws('.', database(), ?), ?)`
+      );
+      bindings.push(tableName, tableName);
+    }
+    sql.push(`and column_name = ?`)
+    bindings.push(column)
     this.pushQuery({
-      sql: `show columns from ${this.formatter.wrap(tableName)}` +
-        ' like ' + this.formatter.parameter(column),
+      sql: sql.join(' '),
+      bindings,
       output(resp) {
         return resp.length > 0;
       }
