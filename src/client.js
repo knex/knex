@@ -172,8 +172,8 @@ assign(Client.prototype, {
   poolDefaults(poolConfig) {
     const name = this.dialect + ':' + this.driverName + ':' + this.__cid
     return {
-      min: 1,
-      max: 2,
+      min: 2,
+      max: 10,
       name: name,
       log(str, level) {
         if (level === 'info') {
@@ -181,7 +181,6 @@ assign(Client.prototype, {
         }
       },
       create: (callback) => {
-        console.log('CREATE')
         this.acquireRawConnection()
           .tap(function(connection) {
             connection.__knexUid = uniqueId('__knexUid')
@@ -227,7 +226,6 @@ assign(Client.prototype, {
 
   // Acquire a connection from the pool.
   acquireConnection() {
-    console.log('ACQUIRE')
     return new Promise((resolver, rejecter) => {
       if (!this.pool) {
         return rejecter(new Error('Unable to acquire a connection'))
@@ -241,7 +239,6 @@ assign(Client.prototype, {
         ))
       }, this.config.acquireConnectionTimeout || 60000)
       this.pool.acquire((err, connection) => {
-        console.log('CONNECTIONID', connection.__id__)
         clearTimeout(t)
         if (err) {
           return rejecter(err)
