@@ -33,7 +33,7 @@ describe(dialect + " SchemaBuilder", function() {
   it('test basic create table with incrementing without primary key', function(){
     tableSql = client.schemaBuilder().createTable('users', function(table) {
       table.increments('id');
-      table.increments('other_id', true)
+      table.increments('other_id', { primaryKey: false });
     });
 
     equal(1, tableSql.toSQL().length);
@@ -270,6 +270,15 @@ describe(dialect + " SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table `users` add `id` bigint unsigned not null auto_increment primary key');
+  });
+
+  it('test adding big incrementing id without primary key', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.bigIncrements('id', { primaryKey: false });
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` add `id` bigint unsigned not null auto_increment');
   });
 
   it('test adding column after another column', function() {

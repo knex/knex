@@ -18,12 +18,17 @@ inherits(ColumnCompiler_MySQL, ColumnCompiler);
 
 assign(ColumnCompiler_MySQL.prototype, {
 
-  increments(withoutPk){
-    return withoutPk ? 'int unsigned not null auto_increment' :
-    'int unsigned not null auto_increment primary key';
+  increments({ primaryKey = true } = {}){
+    return primaryKey ?
+      'int unsigned not null auto_increment primary key' :
+      'int unsigned not null auto_increment';
   },
 
-  bigincrements: 'bigint unsigned not null auto_increment primary key',
+  bigincrements({ primaryKey = true } = {}){
+    return primaryKey ?
+      'bigint unsigned not null auto_increment primary key' :
+      'bigint unsigned not null auto_increment';
+  },
 
   bigint: 'bigint',
 
