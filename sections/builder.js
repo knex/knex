@@ -1657,8 +1657,7 @@ export default [
   {
     type: "method",
     method: "connection",
-    example: ".connection(dbConnection)",
-    description: "Explicitly specify the connection for the query, allowing you to use the knex chain outside of the built-in pooling capabilities.",
+    description: " _ **(incomplete)** - This feature was incorrectly documented as functional._ <br/>If implemented, the method would set the db connection to use for the query without using the connection pool.",
     children: [    ]
   },
   {
