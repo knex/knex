@@ -50,7 +50,7 @@ describe("OracleDb parameters", function() {
     var knexClient;
 
     before(function(done) {
-      const conf = _.clone(config.oracledb);
+      var conf = _.clone(config.oracledb);
       conf.fetchAsString = [ 'number', 'DATE', 'cLOb'];
       knexClient = knex(conf);
       done();
