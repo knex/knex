@@ -44,48 +44,64 @@ describe("OracleDb externalAuth", function() {
 });
 
 describe("OracleDb parameters", function() {
-  var knexClient;
+  this.timeout(10000);
 
-  before(function(done) {
-    var conf = _.clone(config.oracledb);
-    conf.fetchAsString = [ 'number', 'DATE', 'cLOb'];
-    knexClient = knex(conf);
-    knexClient.schema.createTable('fetchAsStringTable', function (table) {
-      table.increments();
-      table.float('testfloat');
-      table.date('testdate');
-    }).then(function() {
-      knexClient('fetchAsStringTable').insert({
-        testfloat: 7.32,
-        testdate: new Date(2017, 5, 7)
-      }).then(function() {
-        done();
-      }).catch(done);
-    }).catch(done);
-  });
+  describe("with fetchAsString parameter", function() {
+    var knexClient;
 
-  it('fetchAsString parameter should return strings on selected types', function(done) {
-    knexClient('fetchAsStringTable').select().then(function(result) {
-      expect(result[0]).to.be.ok;
-      expect(result[0].testfloat).to.be.a('string');
-      expect(result[0].testdate).to.be.a('string');
-      knexClient.destroy(done);
-    }).catch(done);
-  });
-
-  it('without fetchAsString parameter should return default types', function(done) {
-    knexClient = knex(config.oracledb);
-    knexClient('fetchAsStringTable').select().then(function(result) {
-      expect(result[0]).to.be.ok;
-      expect(result[0].testfloat).to.not.be.a('string');
-      expect(result[0].testdate).to.not.be.a('string');
+    before(function(done) {
+      const conf = _.clone(config.oracledb);
+      conf.fetchAsString = [ 'number', 'DATE', 'cLOb'];
+      knexClient = knex(conf);
       done();
-    }).catch(done);
+    });
+
+    it('on float', function() {
+      return knexClient.raw('select 7.329 as "field" from dual').then(function(result) {
+        expect(result[0]).to.be.ok;
+        expect(result[0].field).to.be.a('string');
+      })
+    });
+
+    it('on date', function() {
+      return knexClient.raw('select CURRENT_DATE as "field" from dual').then(function(result) {
+        expect(result[0]).to.be.ok;
+        expect(result[0].field).to.be.a('string');
+      })
+    });
+
+    after(function() {
+      return knexClient.destroy();
+    });
+
   });
 
-  after(function(done) {
-    knexClient.schema.dropTable('fetchAsStringTable').then(function() {
-      knexClient.destroy(done);
-    }).catch(done);
+  describe("without fetchAsString parameter", function() {
+    var knexClient;
+
+    before(function(done) {
+      knexClient = knex(config.oracledb);
+      done();
+    });
+
+    it('on float', function() {
+      return knexClient.raw('select 7.329 as "field" from dual').then(function(result) {
+        expect(result[0]).to.be.ok;
+        expect(result[0].field).to.not.be.a('string');
+      })
+    });
+
+    it('on date', function() {
+      return knexClient.raw('select CURRENT_DATE as "field" from dual').then(function(result) {
+        expect(result[0]).to.be.ok;
+        expect(result[0].field).to.not.be.a('string');
+      })
+    });
+
+    after(function() {
+      return knexClient.destroy();
+    });
+
   });
+
 });
