@@ -44,16 +44,15 @@ describe("OracleDb externalAuth", function() {
 });
 
 describe("OracleDb parameters", function() {
-  this.timeout(10000);
 
   describe("with fetchAsString parameter", function() {
     var knexClient;
 
-    before(function(done) {
+    before(function() {
       var conf = _.clone(config.oracledb);
       conf.fetchAsString = [ 'number', 'DATE', 'cLOb'];
       knexClient = knex(conf);
-      done();
+      return knexClient;
     });
 
     it('on float', function() {
@@ -79,9 +78,9 @@ describe("OracleDb parameters", function() {
   describe("without fetchAsString parameter", function() {
     var knexClient;
 
-    before(function(done) {
+    before(function() {
       knexClient = knex(config.oracledb);
-      done();
+      return knexClient;
     });
 
     it('on float', function() {
