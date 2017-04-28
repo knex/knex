@@ -234,25 +234,25 @@ export default class Sidebar extends Component {
         </a>
         <ul className="toc_section">
           <li><b><a href="#Interfaces-Promises">Promises</a></b></li>
-          <li>&nbsp;&nbsp;– <a href="#Promises-then">then</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Promises-catch">catch</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Promises-tap">tap</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Promises-map">map</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Promises-reduce">reduce</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Promises-bind">bind</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Promises-return">return</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-then">then</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-catch">catch</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-tap">tap</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-map">map</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-reduce">reduce</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-bind">bind</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-return">return</a></li>
           <li><b><a href="#Interfaces-Callbacks">Callbacks</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Interfaces-asCallback">asCallback</a></li>
           <li><b><a href="#Interfaces-Streams">Streams</a></b></li>
-          <li>&nbsp;&nbsp;– <a href="#Streams-stream">stream</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Streams-pipe">pipe</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-stream">stream</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-pipe">pipe</a></li>
           <li><b><a href="#Interfaces-Events">Events</a></b></li>
-          <li>&nbsp;&nbsp;– <a href="#Events-query">query</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Events-query-error">query-error</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Events-query-response">query-response</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-query">query</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-query-error">query-error</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-query-response">query-response</a></li>
           <li><b><a href="#Interfaces-Other">Other:</a></b></li>
-          <li>&nbsp;&nbsp;– <a href="#Other-toString">toString</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Other-toSQL">toSQL</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-toString">toString</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-toSQL">toSQL</a></li>
         </ul>
 
         <a className="toc_title" href="#Migrations">
