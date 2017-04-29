@@ -213,7 +213,7 @@ export default [
                 conn.query('SELECT set_limit(0.01);', function (err) {
                   // if err is not falsy, connection is discarded from pool
                   // if connection aquire was triggered by a query the error is passed to query promise
-                  done(err, conn); 
+                  done(err, conn);
                 });
               }
             });
@@ -241,6 +241,27 @@ export default [
         connection: {...},
         pool: {...},
         acquireConnectionTimeout: 10000
+      });
+    `
+  },
+  {
+    type: "heading",
+    size: "md",
+    content: "fetchAsString",
+    href: "Installation-fetchAsString"
+  },
+  {
+    type: "text",
+    content: "Utilized by Oracledb. An array of types. The valid types are 'DATE', 'NUMBER' and 'CLOB'. When any column having one of the specified types is queried, the column data is returned as a string instead of the default representation."
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      var knex = require('knex')({
+        client: 'oracledb',
+        connection: {...},
+        fetchAsString: [ 'number', 'clob' ]
       });
     `
   },

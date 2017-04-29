@@ -34,6 +34,7 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Installation-debug">debug</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-pooling">pooling</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-acquireConnectionTimeout">acquireConnectionTimeout</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Installation-fetchAsString">fetchAsString</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-migrations">migrations</a></li>
         </ul>
 
@@ -99,7 +100,7 @@ export default class Sidebar extends Component {
           <li><b><a href="#Builder-clear">Clear Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-clearSelect">clearSelect</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-clearWhere">clearWhere</a></li>
-          
+
           <li>– <a href="#Builder-distinct">distinct</a></li>
           <li>– <a href="#Builder-groupBy">groupBy</a></li>
           <li>– <a href="#Builder-groupByRaw">groupByRaw</a></li>
