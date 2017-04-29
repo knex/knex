@@ -1,6 +1,18 @@
 
 # Master (Unreleased)
 
+# 0.13 - 29 Apr, 2017
+
+### Breaking Changes:
+- Multiple concurrent migration runners blocks instead of throwing error when possible #1962
+- Fixed transaction promise mutation issue #1991
+
+### Other Changes:
+- Allow passing version of connected db in configuration file #1993
+- Bugfixes on batchInsert and transactions for mysql/maria #1992
+- Add fetchAsString optional parameter to oracledb dialect #1998
+- fix: escapeObject parameter order for Postgres dialect. #2003
+
 # 0.12.9 - 23 Mar, 2017
 - Fixed unhandled exception in batchInsert when the rows to be inserted resulted in duplicate key violation #1880
 
