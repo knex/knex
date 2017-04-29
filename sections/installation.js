@@ -102,6 +102,26 @@ export default [
     `
   },
   {
+    type: "info",
+    content: "Note: The database version can be added in knex configuration, when you use the PostgreSQL adapter to connect a non-standard database."
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      var knex = require('knex')({
+        client: 'pg',
+        version: '7.2',
+        connection: {
+          host : '127.0.0.1',
+          user : 'your_database_user',
+          password : 'your_database_password',
+          database : 'myapp_test'
+        }
+      });
+    `
+  },
+  {
     type: "text",
     content: "You can also connect via an unix domain socket, which will ignore host and port."
   },
