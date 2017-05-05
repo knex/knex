@@ -58,7 +58,7 @@ const env = {
   NODE_ENV: 'production'
 }
 
-runCmd('docs-server', 'babel-node scripts/server.js', { env }).then(() => {
+runCmd('docs-server', 'node_modules/.bin/babel-node scripts/server.js', { env }).then(() => {
   console.log('Building webpack for production'.cyan)
-  return runCmd('webpack', `webpack -p --config scripts/webpack.config.js`, { env })
+  return runCmd('webpack', `node_modules/.bin/webpack -p --config scripts/webpack.config.js`, { env })
 })

@@ -64,9 +64,9 @@ portfinder.getPorts(2, {}, (portFinderErr, [docsPort, webpackPort]) => {
     process.exit(1)
   }
 
-  runCmd('webpack-dev-server', `nodemon --watch webpack --watch scripts/webpack.config.js --exec webpack-dev-server -- --config scripts/webpack.config.js --color --port ${webpackPort} --debug --hot --host ${ip.address()}`)
+  runCmd('webpack-dev-server', `node_modules/.bin/nodemon --watch webpack --watch scripts/webpack.config.js --exec webpack-dev-server -- --config scripts/webpack.config.js --color --port ${webpackPort} --debug --hot --host ${ip.address()}`)
 
-  runCmd('docs-server', 'nodemon --watch components --watch sections -e js,jsx --exec babel-node scripts/server.js', {
+  runCmd('docs-server', 'node_modules/.bin/nodemon -- --watch components --watch sections -e js,jsx --exec babel-node scripts/server.js', {
     env: {
       PORT: docsPort,
       WEBPACK_DEV_PORT: webpackPort,
