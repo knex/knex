@@ -1,7 +1,7 @@
 
 # Master (Unreleased)
 
-# 0.13 - 29 Apr, 2017
+# 0.13.0 - 29 Apr, 2017
 
 ### Breaking Changes:
 - Multiple concurrent migration runners blocks instead of throwing error when possible #1962
