@@ -169,7 +169,7 @@ assign(QueryCompiler.prototype, {
     return `select ${distinct ? 'distinct ' : ''}` +
       sql.join(', ') + (this.tableName
         ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
-        : '');
+        : this.fromSystem() ? ' ' + this.fromSystem(): '');
   },
 
   aggregate(stmt) {
@@ -545,6 +545,10 @@ assign(QueryCompiler.prototype, {
   withRaw(statement) {
     return this.formatter.columnize(statement.alias) + ' as (' +
       this.formatter.unwrapRaw(statement.value) + ')';
+  },
+
+  fromSystem: function(){
+    return '';
   },
 
   // Determines whether to add a "not" prefix to the where clause.

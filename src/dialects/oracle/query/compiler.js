@@ -194,6 +194,10 @@ assign(QueryCompiler_Oracle.prototype, {
     return stmt.method + '(' + distinct + this.formatter.wrap(val) + ')';
   },
 
+  fromSystem: function() {
+    return 'from dual';
+  },
+
   // for single commands only
   _addReturningToSqlAndConvert(sql, returning, tableName) {
     const res = {
