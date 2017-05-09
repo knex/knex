@@ -5,40 +5,8 @@ import inherits from 'inherits';
 import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
 import * as helpers from '../../helpers';
-import { pick, map, assign } from 'lodash'
+import { map, assign } from 'lodash'
 import Transaction from './transaction';
-
-const configOptions = [
-  'isServer',
-  'stream',
-  'host',
-  'port',
-  'localAddress',
-  'socketPath',
-  'user',
-  'password',
-  'passwordSha1',
-  'database',
-  'connectTimeout',
-  'insecureAuth',
-  'supportBigNumbers',
-  'bigNumberStrings',
-  'decimalNumbers',
-  'dateStrings',
-  'debug',
-  'trace',
-  'stringifyObjects',
-  'timezone',
-  'flags',
-  'queryFormat',
-  'pool',
-  'ssl',
-  'multipleStatements',
-  'namedPlaceholders',
-  'typeCast',
-  'charsetNumber',
-  'compress'
-];
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
@@ -68,7 +36,7 @@ assign(Client_MySQL2.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    const connection = this.driver.createConnection(pick(this.connectionSettings, configOptions))
+    const connection = this.driver.createConnection(this.connectionSettings)
     return new Promise((resolver, rejecter) => {
       connection.connect((err) => {
         if (err) {
