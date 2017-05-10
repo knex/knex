@@ -150,7 +150,7 @@ module.exports = function(knex) {
           }).testSql(function(tester) {
             tester('mysql', ['create table `datatype_test` (`enum_value` enum(\'a\', \'b\', \'c\'), `uuid` char(36) not null) default character set utf8']);
             tester('pg', ['create table "datatype_test" ("enum_value" text check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" uuid not null)']);
-            tester('sqlite3', ['create table "datatype_test" ("enum_value" varchar, "uuid" char(36) not null)']);
+            tester('sqlite3', ['create table "datatype_test" ("enum_value" text check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" char(36) not null)']);
             tester('oracle', ['create table "datatype_test" ("enum_value" varchar2(1) check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" char(36) not null)']);
             tester('mssql', ['CREATE TABLE [datatype_test] ([enum_value] nvarchar(100), [uuid] uniqueidentifier not null)']);
           });

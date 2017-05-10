@@ -135,7 +135,7 @@ module.exports = function(knex) {
             "defaultValue": null,
             "maxLength": null,
             "nullable": true,
-            "type": "varchar"
+            "type": "text"
           },
           "uuid": {
             "defaultValue": null,

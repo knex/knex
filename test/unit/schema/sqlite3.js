@@ -362,7 +362,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" varchar');
+    equal(tableSql[0].sql, 'alter table "users" add column "foo" text check ("foo" in (\'bar\', \'baz\'))');
   });
 
   it("adding date", function() {
