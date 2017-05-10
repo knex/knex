@@ -187,8 +187,8 @@ module.exports = function(knex) {
           tester('sqlite3', [
             'create table "test_foreign_table_two" ("id" integer not null primary key autoincrement, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer, ' +
             'foreign key("fkey_two") references "test_table_two"("id"), ' +
-            'foreign key("fkey_three") references "test_table_two"("id"), ' +
-            'foreign key("fkey_four") references "test_table_two"("id"))'
+            'constraint "fk_fkey_three" foreign key("fkey_three") references "test_table_two"("id"), ' +
+            'constraint "fk_fkey_four" foreign key("fkey_four") references "test_table_two"("id"))'
           ]);
           tester('oracle', [
             'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer)',
