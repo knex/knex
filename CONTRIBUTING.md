@@ -5,12 +5,16 @@
   update the files in `/lib`. `npm test` will also do this.
 
 * Before sending a pull request for a feature or bug fix, be sure to have
-[tests](https://github.com/tgriesser/knex/tree/master/test).
+[tests](https://github.com/tgriesser/knex/tree/master/test). Every pull request that changes the queries should have 
+also **integration tests which are ran against real database** (in addition to unit tests which checks which kind of queries
+are being created).
 
 * Use the same coding style as the rest of the
 [codebase](https://github.com/tgriesser/knex/blob/master/knex.js).
 
 * All pull requests should be made to the `master` branch.
+
+* Pull request description should have link to corresponding PR of documentation branch.
 
 ## Documentation
 
