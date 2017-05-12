@@ -630,5 +630,111 @@ module.exports = function(knex) {
       });
     });
 
+    it('supports named primary keys', function() {
+      var constraintName = 'pk-test';
+      var tableName = 'namedpk';
+      return knex.transaction(function(tr) {
+        return tr.schema.dropTableIfExists(tableName)
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test').primary(constraintName);
+            })
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(tableName);
+          })
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test');
+              table.string('test2');
+            })
+          })
+          .then(function() {
+            return tr.schema.table(tableName, function(table) {
+              table.primary('test', constraintName)
+            })
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(tableName);
+          })
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test');
+              table.string('test2');
+            })
+          })
+          .then(function() {
+            return tr.schema.table(tableName, function(table) {
+              table.primary(['test', 'test2'], constraintName)
+            })
+          });
+      });
+    });
+
+    it('supports named unique keys', function() {
+      var singleUniqueName = 'uk-single';
+      var multiUniqueName = 'uk-multi';
+      var tableName = 'nameduk';
+      return knex.transaction(function(tr) {
+        return tr.schema.dropTableIfExists(tableName)
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test').unique(singleUniqueName);
+            })
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(tableName);
+          })
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test');
+              table.string('test2');
+            })
+          })
+          .then(function() {
+            return tr.schema.table(tableName, function(table) {
+              table.unique('test', singleUniqueName);
+              table.unique(['test', 'test2'], multiUniqueName);
+            })
+          });
+      });
+    });
+
+    it('supports named foreign keys', function() {
+      var userTableName = 'nfk_user';
+      var groupTableName = 'nfk_group';
+      var joinTableName = 'nfk_user_group';
+      return knex.transaction(function(tr) {
+        return tr.schema.dropTableIfExists(joinTableName)
+          .then(function() {
+            return tr.schema.dropTableIfExists(userTableName);
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(groupTableName);
+          })
+          .then(function() {
+            return tr.schema.createTable(userTableName, function(table) {
+              table.uuid('id').primary();
+              table.string('name').unique();
+            });
+          })
+          .then(function() {
+            return tr.schema.createTable(groupTableName, function(table) {
+              table.uuid('id').primary();
+              table.string('name').unique();
+            });
+          })
+          .then(function() {
+            return tr.schema.createTable(joinTableName, function(table) {
+              table.uuid('user').references('id').inTable(userTableName)
+                .withKeyName(['fk', joinTableName, userTableName].join('-'));
+              table.uuid('group');
+              table.primary(['user', 'group']);
+              table.foreign('group', ['fk', joinTableName, groupTableName].join('-'))
+                .references('id').inTable(groupTableName);
+            });
+          });
+      });
+    });
   });
 };
