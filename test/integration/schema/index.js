@@ -469,6 +469,60 @@ module.exports = function(knex) {
       });
     });
 
+    describe('addColumn', function() {
+      describe('mysql only', function() {
+        before(function() {
+          return knex.schema.createTable('add_column_test_mysql', function (tbl) {
+            tbl.integer('field_foo');
+            tbl.integer('field_bar');
+          }).then(function() {
+            return knex.schema.alterTable('add_column_test_mysql', function (tbl) {
+              tbl.integer('field_foo').comment('foo').alter();
+              tbl.integer('field_bar').comment('bar').alter();
+              tbl.integer('field_first').first().comment('First');
+              tbl.integer('field_after_foo').after('field_foo').comment('After');
+            });
+          });
+        });
+
+        after(function() {
+          return knex.schema.dropTable('add_column_test_mysql');
+        });
+
+        it('should columns order be correctly with after and first', function() {
+          if(!knex || !knex.client | !(/mysql/i.test(knex.client.dialect))) {
+            return Promise.resolve();
+          }
+
+          return knex.raw('SHOW CREATE TABLE `add_column_test_mysql`').then(function(schema) {
+            // .columnInfo() keys does not guaranteed fields order.
+            var fields = schema[0][0]['Create Table'].split('\n')
+            .filter(function(e) { return e.trim().indexOf('`field_') === 0 })
+            .map(function(e) { return e.trim() })
+            .map(function(e) { return e.slice(1, e.slice(1).indexOf('`') + 1) });
+
+            // Fields order
+            expect(fields[0]).to.equal('field_first');
+            expect(fields[1]).to.equal('field_foo');
+            expect(fields[2]).to.equal('field_after_foo');
+            expect(fields[3]).to.equal('field_bar');
+
+            // .columnInfo() does not included fields comment.
+            var comments = schema[0][0]['Create Table'].split('\n')
+            .filter(function(e) { return e.trim().indexOf('`field_') === 0 })
+            .map(function(e) { return e.slice(e.indexOf("'")).trim() })
+            .map(function(e) { return e.slice(1, e.slice(1).indexOf("'") + 1) });
+
+            // Fields comment
+            expect(comments[0]).to.equal('First');
+            expect(comments[1]).to.equal('foo');
+            expect(comments[2]).to.equal('After');
+            expect(comments[3]).to.equal('bar');
+          });
+        });
+      });
+    });
+
     describe('renameColumn', function () {
       before(function () {
         return knex.schema.createTable('rename_column_test', function (tbl) {
