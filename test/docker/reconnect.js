@@ -9,10 +9,6 @@ module.exports = function(config, knex) {
   var dockerConf       = config.docker;
   var ContainerClass   = require(dockerConf.factory);
 
-  /**
-   * Make sure the connections in the connection pool are not
-   * evicted on timeout, they should only be evicted on error.
-   */
   var EVICTION_RUN_INTERVAL_MILLIS = 15 * 1000;
   var IDLE_TIMEOUT_MILLIS          = 20 * 1000;
   var ACQUIRE_CONNECTION_TIMEOUT   = 10 * 1000;
