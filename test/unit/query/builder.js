@@ -1591,7 +1591,7 @@ describe("QueryBuilder", function() {
   });
 
   it("limits and raw selects", function() {
-    testsql(qb().select(raw(`name = ? as isJohn`, ['john'])).from('users').limit(1), {
+    testsql(qb().select(raw('name = ? as isJohn', ['john'])).from('users').limit(1), {
       mysql: {
         sql: 'select name = ? as isJohn from `users` limit ?',
         bindings: ['john', 1]
