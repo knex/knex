@@ -1590,6 +1590,31 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("limits and raw selects", function() {
+    testsql(qb().select(raw(`name = ? as isJohn`, ['john'])).from('users').limit(1), {
+      mysql: {
+        sql: 'select name = ? as isJohn from `users` limit ?',
+        bindings: ['john', 1]
+      },
+      oracle: {
+        sql: 'select * from (select name = ? as isJohn from "users") where rownum <= ?',
+        bindings: ['john', 1]
+      },
+      mssql: {
+        sql: 'select top (?) name = ? as isJohn from [users]',
+        bindings: [1, 'john']
+      },
+      oracledb: {
+        sql: 'select * from (select name = ? as isJohn from "users") where rownum <= ?',
+        bindings: ['john', 1]
+      },
+      postgres: {
+        sql: 'select name = ? as isJohn from "users" limit ?',
+        bindings: ['john', 1]
+      }
+    });
+  });
+
   it("first", function() {
     testsql(qb().first('*').from('users'), {
       mysql: {
@@ -2758,7 +2783,7 @@ describe("QueryBuilder", function() {
       },
       mssql: {
         sql: 'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc;select @@rowcount',
-        bindings: ['foo', 'bar', 1, 5]
+        bindings: [5, 'foo', 'bar', 1]
       },
       postgres: {
         sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
@@ -2793,7 +2818,7 @@ describe("QueryBuilder", function() {
       },
       mssql: {
         sql: 'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
-        bindings: ['foo', 'bar', 1, 1]
+        bindings: [1, 'foo', 'bar', 1]
       },
       postgres: {
         sql: 'update "users" set "email" = ?, "name" = ? where "users"."id" = ?',
