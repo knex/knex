@@ -1,7 +1,6 @@
 'use strict';
 
 const Promise = require('bluebird');
-const _        = require('lodash');
 
 function DockerContainer(docker, name, image, options) {
   this.container = docker.createContainer(name, image, options);
@@ -11,12 +10,13 @@ function DockerContainer(docker, name, image, options) {
  * @returns {Promise}
  */
 DockerContainer.prototype.start = function () {
-  return this.container.then((c) =>
-    c.start().then(() => {
+  const self = this;
+  return self.container.then(function (c) {
+    return c.start().then(function () {
       console.log(`#~ Started container ${c.id}`);
-      return this.waitReady();
+      return self.waitReady();
     })
-  )
+  })
 };
 
 /**
@@ -30,29 +30,30 @@ DockerContainer.prototype.waitReady = function () {
  * @returns {Promise}
  */
 DockerContainer.prototype.stop = function () {
-  return this.container.then((c) =>
-    c.stop().then(() =>
-      console.log(`#~ Stopped container ${c.id}`)
-    )
-    .catch((err) => {
+  return this.container.then(function (c) {
+    return c.stop().then(function () {
+      console.log(`#~ Stopped container ${c.id}`);
+    })
+    .catch(function (err) {
       if (err.statusCode !== 304) {
         throw err;
       }
-    })
-  );
+    });
+  });
 }
 
 /**
  * @returns {Promise}
  */
 DockerContainer.prototype.destroy = function () {
-  return this.stop().then(() =>
-    this.container.then((c) =>
-      c.remove().then(() =>
-        console.log(`#~ Removed container ${c.id}`)
-      )
-    )
-  );
+  const self = this;
+  return self.stop().then(function () {
+    return self.container.then(function (c) {
+      return c.remove().then(function () {
+        console.log(`#~ Removed container ${c.id}`);
+      });
+    });
+  });
 }
 
 module.exports = DockerContainer;

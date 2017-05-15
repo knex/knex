@@ -26,8 +26,9 @@ MySQLContainer.prototype = Object.create(DockerContainer.prototype);
  * @returns {Promise}
  */
 MySQLContainer.prototype.waitReady = function () {
-  return this.container.then((c) => {
-    return new Promise((resolve) => {
+  const self = this;
+  return self.container.then(function (c) {
+    return new Promise(function (resolve) {
       c.exec({
         AttachStdout: true,
         Cmd: [
@@ -36,14 +37,16 @@ MySQLContainer.prototype.waitReady = function () {
           'until mysqladmin ping -h 127.0.0.1 --silent; do echo "Waiting for mysql readiness" && sleep 2; done'
         ]
       })
-      .then((exec) =>
-        exec.start({ Detach: false, Tty: true })
-      )
-      .then(({ output }) => {
-        output.on('data', (data) => {
+      .then(function (exec) {
+        return exec.start({ Detach: false, Tty: true });
+      })
+      .then(function ({ output }) {
+        output.on('data', function (data) {
           console.log(data.toString('utf-8').trim());
         });
-        output.on('end', () => resolve(this));
+        output.on('end', function () {
+          resolve(self);
+        });
       });
     })
   });

@@ -28,20 +28,22 @@ module.exports = function(config, knex) {
     });
 
     afterEach(function () {
-      return sequencedPromise(
-        () => console.log('>> Destroying container'),
-        () => container.destroy()
-        // () => console.log('>> Destroying pool'),
-        // () => connectionPool.destroy(),
-        // () => console.log('>> Destroyed all')
-      );
+      return sequencedPromise([
+        function () { console.log('>> Destroying container'); },
+        function () { return container.destroy(); }
+        // function () { console.log('>> Destroying pool'); },
+        // function () { return connectionPool.destroy(); },
+        // function () { console.log('>> Destroyed all'); }
+      ]);
     });
 
     describe('start container and wait until it is ready', function () {
 
       beforeEach(function () {
         container = new ContainerClass(docker, dockerConf);
-        return container.start().then(() => waitReadyForQueries());
+        return container.start().then(function () {
+          return waitReadyForQueries();
+        });
       });
 
       describe('initialize connection pool', function () {
@@ -64,8 +66,10 @@ module.exports = function(config, knex) {
             for (var i = 0; i < 10; i += 1) {
               promises.push(
                 testQuery(connectionPool)
-                  .then(() => { throw new Error('Failure expected'); })
-                  .catch((err) => expect(err.message).to.not.equal('Failure expected'))
+                  .then(function () { throw new Error('Failure expected'); })
+                  .catch(function (err) {
+                    expect(err.message).to.not.equal('Failure expected');
+                  })
               );
             }
             return Promise.all(promises);
@@ -73,7 +77,9 @@ module.exports = function(config, knex) {
 
           describe('restart db-container and keep using connection pool', function () {
             beforeEach(function () {
-              return container.start().then(() => waitReadyForQueries());
+              return container.start().then(function () {
+                return waitReadyForQueries();
+              });
             });
 
             it('connection pool can query x10', function () {
@@ -90,14 +96,16 @@ module.exports = function(config, knex) {
   });
 
   function testQuery(pool) {
-    return pool.raw(`SELECT 10 as ten`).then((result) => {
+    return pool.raw(`SELECT 10 as ten`).then(function (result) {
       expect(result.rows || result[0]).to.deep.equal([{ ten: 10 }]);
     });
   }
 
-  function sequencedPromise(...blocks) {
+  function sequencedPromise(blocks) {
+    const order = function (prev, block) {
+      return prev.then(block)
+    };
     const base  = Promise.resolve(true);
-    const order = (prev, block) => prev.then(() => block());
     return blocks.reduce(order, base);
   }
 
@@ -128,11 +136,13 @@ module.exports = function(config, knex) {
       console.log(`#~ Waiting to be ready for queries #${attempt}`);
       var pool = createPool();
       pool.raw('SELECT 1 as one')
-        .then(() => pool.destroy().then(resolve))
-        .catch((a) => {
-          pool.destroy().then(() => {
+        .then(function () {
+          return pool.destroy().then(resolve);
+        })
+        .catch(function (a) {
+          return pool.destroy().then(function () {
             if (attempt < 20) {
-              setTimeout(() => resolve(waitReadyForQueries(attempt + 1)), 1000);
+              setTimeout(function () { resolve(waitReadyForQueries(attempt + 1)) }, 1000);
             } else {
               reject(attempt);
             }
