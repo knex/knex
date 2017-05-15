@@ -13,8 +13,8 @@ module.exports = function(config, knex) {
    * Make sure the connections in the connection pool are not
    * evicted on timeout, they should only be evicted on error.
    */
-  var EVICTION_RUN_INTERVAL_MILLIS = dockerConf.timeout;
-  var IDLE_TIMEOUT_MILLIS          = dockerConf.timeout;
+  var EVICTION_RUN_INTERVAL_MILLIS = 15 * 1000;
+  var IDLE_TIMEOUT_MILLIS          = 20 * 1000;
   var ACQUIRE_CONNECTION_TIMEOUT   = 10 * 1000;
   var ACQUIRE_TIMEOUT_MILLIS       = 10 * 1000;
 
@@ -34,10 +34,10 @@ module.exports = function(config, knex) {
     afterEach(function () {
       return sequencedPromise(
         () => console.log('>> Destroying container'),
-        () => container.destroy(),
-        () => console.log('>> Destroying pool'),
-        () => connectionPool.destroy(),
-        () => console.log('>> Destroyed all')
+        () => container.destroy()
+        // () => console.log('>> Destroying pool'),
+        // () => connectionPool.destroy(),
+        // () => console.log('>> Destroyed all')
       );
     });
 
