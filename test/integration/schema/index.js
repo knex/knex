@@ -471,6 +471,10 @@ module.exports = function(knex) {
 
     describe('addColumn', function() {
       describe('mysql only', function() {
+        if(!knex || !knex.client || (!(/mysql/i.test(knex.client.dialect)) && !(/maria/i.test(knex.client.dialect)))) {
+          return Promise.resolve();
+        }
+
         before(function() {
           return knex.schema.createTable('add_column_test_mysql', function (tbl) {
             tbl.integer('field_foo');
@@ -490,10 +494,6 @@ module.exports = function(knex) {
         });
 
         it('should columns order be correctly with after and first', function() {
-          if(!knex || !knex.client | !(/mysql/i.test(knex.client.dialect))) {
-            return Promise.resolve();
-          }
-
           return knex.raw('SHOW CREATE TABLE `add_column_test_mysql`').then(function(schema) {
             // .columnInfo() keys does not guaranteed fields order.
             var fields = schema[0][0]['Create Table'].split('\n')
