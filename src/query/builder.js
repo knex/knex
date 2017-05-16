@@ -715,7 +715,8 @@ assign(Builder.prototype, {
   limit(value) {
     const val = parseInt(value, 10)
     if (isNaN(val)) {
-      helpers.warn('A valid integer must be provided to limit')
+      if(value !== Infinity)
+        helpers.warn('A valid integer must be provided to limit')
     } else {
       this._single.limit = val;
     }
