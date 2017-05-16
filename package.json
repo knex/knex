@@ -52,7 +52,8 @@
     "sqlite3": "^3.0.5",
     "tap-spec": "^4.0.0",
     "tape": "^4.0.0",
-    "through": "^2.3.4"
+    "through": "^2.3.4",
+    "webpack": "^1.13.2"
   },
   "buildDependencies": [
     "babel-cli",
@@ -65,6 +66,7 @@
   ],
   "scripts": {
     "build": "npm run babel",
+    "build-browser": "npm run babel && webpack",
     "debug_test": "node-debug _mocha -t 0 test/index.js",
     "babel": "rimraf ./lib && babel src --out-dir lib --copy-files",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
