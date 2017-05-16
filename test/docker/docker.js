@@ -1,5 +1,5 @@
-const _       = require('lodash');
-const $Docker = require('dockerode');
+var _       = require('lodash');
+var $Docker = require('dockerode');
 
 function Docker() {
   this.dockerAPI = new $Docker({ socketPath: '/var/run/docker.sock' });

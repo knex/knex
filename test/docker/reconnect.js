@@ -96,16 +96,16 @@ module.exports = function(config, knex) {
   });
 
   function testQuery(pool) {
-    return pool.raw(`SELECT 10 as ten`).then(function (result) {
+    return pool.raw('SELECT 10 as ten').then(function (result) {
       expect(result.rows || result[0]).to.deep.equal([{ ten: 10 }]);
     });
   }
 
   function sequencedPromise(blocks) {
-    const order = function (prev, block) {
+    var order = function (prev, block) {
       return prev.then(block)
     };
-    const base  = Promise.resolve(true);
+    var base  = Promise.resolve(true);
     return blocks.reduce(order, base);
   }
 
@@ -131,9 +131,10 @@ module.exports = function(config, knex) {
     });
   }
 
-  function waitReadyForQueries(attempt = 0) {
+  function waitReadyForQueries(attempt) {
+    attempt = attempt || 0;
     return new Promise(function (resolve, reject) {
-      console.log(`#~ Waiting to be ready for queries #${attempt}`);
+      console.log('#~ Waiting to be ready for queries #', attempt);
       var pool = createPool();
       pool.raw('SELECT 1 as one')
         .then(function () {

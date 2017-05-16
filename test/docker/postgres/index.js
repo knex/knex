@@ -1,8 +1,8 @@
 'use strict';
 
-const Promise           = require('bluebird');
-const _                 = require('lodash');
-const DockerContainer   = require('../dockerContainer');
+var Promise           = require('bluebird');
+var _                 = require('lodash');
+var DockerContainer   = require('../dockerContainer');
 
 function PostgresContainer(docker, options) {
   var name     = _.get(options, 'container');
@@ -11,10 +11,10 @@ function PostgresContainer(docker, options) {
   var password = _.get(options, 'password');
   var hostPort = _.get(options, 'hostPort');
   DockerContainer.call(this, docker, name, image, {
-    Env: [`POSTGRES_USER=${username}`, `POSTGRES_PASSWORD=${password}`],
+    Env: ['POSTGRES_USER=' + username, 'POSTGRES_PASSWORD='  + password],
     PortBindings: {
       '5432/tcp': [{
-        HostPort: `${hostPort}`
+        HostPort: hostPort.toString()
       }]
     }
   });
@@ -26,7 +26,7 @@ PostgresContainer.prototype = Object.create(DockerContainer.prototype);
  * @returns {Promise}
  */
 PostgresContainer.prototype.waitReady = function () {
-  const self = this;
+  var self = this;
   return self.container.then(function (c) {
     return new Promise(function (resolve) {
       c.exec({

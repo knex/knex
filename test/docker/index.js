@@ -4,14 +4,14 @@ var os      = require('os');
 var proc    = require('child_process')
 var config  = require('../knexfile');
 var knex    = require('../../knex');
-var Promise = require('bluebird');
 
 if (canRunDockerTests()) {
-  Promise.each(Object.keys(config), function(dialectName) {
+  var dialectName;
+  for (dialectName in config) {
     if (config[dialectName].docker) {
-      return require('./reconnect')(config[dialectName], knex);
+      require('./reconnect')(config[dialectName], knex);
     }
-  });
+  }
 }
 
 function canRunDockerTests() {

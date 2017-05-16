@@ -1,6 +1,6 @@
 'use strict';
 
-const Promise = require('bluebird');
+var Promise = require('bluebird');
 
 function DockerContainer(docker, name, image, options) {
   this.container = docker.createContainer(name, image, options);
@@ -10,10 +10,10 @@ function DockerContainer(docker, name, image, options) {
  * @returns {Promise}
  */
 DockerContainer.prototype.start = function () {
-  const self = this;
+  var self = this;
   return self.container.then(function (c) {
     return c.start().then(function () {
-      console.log(`#~ Started container ${c.id}`);
+      console.log('#~ Started container', c.id);
       return self.waitReady();
     })
   })
@@ -32,7 +32,7 @@ DockerContainer.prototype.waitReady = function () {
 DockerContainer.prototype.stop = function () {
   return this.container.then(function (c) {
     return c.stop().then(function () {
-      console.log(`#~ Stopped container ${c.id}`);
+      console.log('#~ Stopped container', c.id);
     })
     .catch(function (err) {
       if (err.statusCode !== 304) {
@@ -46,11 +46,11 @@ DockerContainer.prototype.stop = function () {
  * @returns {Promise}
  */
 DockerContainer.prototype.destroy = function () {
-  const self = this;
+  var self = this;
   return self.stop().then(function () {
     return self.container.then(function (c) {
       return c.remove().then(function () {
-        console.log(`#~ Removed container ${c.id}`);
+        console.log('#~ Removed container', c.id);
       });
     });
   });
