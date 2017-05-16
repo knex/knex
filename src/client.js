@@ -98,8 +98,8 @@ assign(Client.prototype, {
     return new ColumnCompiler(this, tableBuilder, columnBuilder)
   },
 
-  runner(connection) {
-    return new Runner(this, connection)
+  runner(builder) {
+    return new Runner(this, builder)
   },
 
   transaction(container, config, outerTx) {
