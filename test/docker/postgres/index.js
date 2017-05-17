@@ -40,7 +40,8 @@ PostgresContainer.prototype.waitReady = function () {
       .then(function (exec) {
         return exec.start({ Detach: false, Tty: true });
       })
-      .then(function ({ output }) {
+      .then(function (object) {
+        var output = object.output;
         output.on('data', function (data) {
           console.log(data.toString('utf-8').trim());
         });
