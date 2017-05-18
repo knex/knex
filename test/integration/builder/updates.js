@@ -28,7 +28,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+            'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
             ['test100@example.com','User','Test',1],
             1
           );
@@ -139,7 +139,7 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+          'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
           ['test100@example.com','UpdatedUser','UpdatedTest',1],
           1
         );

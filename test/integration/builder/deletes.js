@@ -25,7 +25,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'delete from "accounts" where "id" = ?',
+            'delete from `accounts` where `id` = ?',
             [1],
             1
           );
@@ -73,7 +73,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'delete from "accounts" where "id" = ?',
+            'delete from `accounts` where `id` = ?',
             [2],
             1
           );

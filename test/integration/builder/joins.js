@@ -88,7 +88,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc', [], [{
+            'select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` order by `accounts`.`id` asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -349,7 +349,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc', [], [{
+            'select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` order by `accounts`.`id` asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -746,7 +746,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details" order by "accounts"."id" asc', [], [{
+            'select * from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` or `accounts`.`email` = `test_table_two`.`details` order by `accounts`.`id` asc', [], [{
               id: 1,
               first_name: 'Test',
               last_name: 'User',
@@ -976,7 +976,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? order by "e1" asc limit ?',
+            'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email` where `a2`.`email` = ? order by `e1` asc limit ?',
             ['test2@example.com', 5],
             [{
               e1: 'test3@example.com',
@@ -1096,7 +1096,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 where "a2"."email" = ? order by "e1" asc limit ?',
+            'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `accounts`.`email` <> `a2`.`email` or `accounts`.`id` = 2 where `a2`.`email` = ? order by `e1` asc limit ?',
             ['test2@example.com', 5],
             [{
                 e1: 'test2@example.com',
@@ -1189,7 +1189,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
+            'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
             [],
             function (res) {
               return res.length === 30;
@@ -1258,7 +1258,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "a1"."email", "a2"."email" from "accounts" as "a1" left join "accounts" as "a2" on "a1"."email" <> "a2"."email" where a1.id = 1 limit ?',
+            'select `a1`.`email`, `a2`.`email` from `accounts` as `a1` left join `accounts` as `a2` on `a1`.`email` <> `a2`.`email` where a1.id = 1 limit ?',
             [2],
             [{
               email: 'test2@example.com'

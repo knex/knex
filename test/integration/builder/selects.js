@@ -31,7 +31,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "id" from "accounts" order by "id" asc',
+            'select `id` from `accounts` order by `id` asc',
             [],
             [1, 2, 3, 4, 5, 6]
           );
@@ -67,7 +67,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
+            'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
             [],
             [1, 2, 3, 4, 5, 6]
           );
@@ -103,7 +103,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "id" from "accounts" order by "id" asc limit ? offset ?',
+            'select `id` from `accounts` order by `id` asc limit ? offset ?',
             [-1, 2],
             [3, 4, 5, 6]
           );
@@ -139,7 +139,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "id", "first_name" from "accounts" order by "id" asc limit ?',
+            'select `id`, `first_name` from `accounts` order by `id` asc limit ?',
             [1],
             { id: 1, first_name: 'Test' }
           );
@@ -256,7 +256,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              'select `first_name`, `last_name` from `accounts` where `id` = ?',
               [1],
               [{
                 first_name: 'Test',
@@ -310,7 +310,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              'select `first_name`, `last_name` from `accounts` where `id` = ?',
               [1],
               [{
                 first_name: 'Test',
@@ -356,7 +356,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select "email", "logins" from "accounts" where "id" > ?',
+              'select `email`, `logins` from `accounts` where `id` > ?',
               [1]
             );
             tester(
@@ -412,7 +412,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select * from "accounts" where "id" = ?',
+              'select * from `accounts` where `id` = ?',
               [1],
               [{
                 id: 1,
@@ -481,7 +481,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select "first_name", "email" from "accounts" where "id" is null',
+              'select `first_name`, `email` from `accounts` where `id` is null',
               [],
               []
             );
@@ -521,7 +521,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select * from "accounts" where "id" = ?',
+              'select * from `accounts` where `id` = ?',
               [0],
               []
             );
