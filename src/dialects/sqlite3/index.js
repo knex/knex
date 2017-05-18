@@ -57,8 +57,8 @@ assign(Client_SQLite3.prototype, {
     return new SQLite3_DDL(this, compiler, pragma, connection)
   },
 
-  wrapIdentifier: function wrapIdentifier(value) {
-    return value !== '*' ? '`' + value.replace(/`/g, '``') + '`' : '*';
+  wrapIdentifier(value) {
+    return (value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*')
   },
 
   // Get a raw connection from the database, returning a promise with the connection object.
