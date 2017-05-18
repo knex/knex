@@ -21,7 +21,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("id" integer not null primary key autoincrement, "email" varchar(255))');
+    equal(tableSql[0].sql, 'create table `users` (`id` integer not null primary key autoincrement, `email` varchar(255))');
   });
 
   it("basic alter table", function() {
@@ -32,8 +32,8 @@ describe("SQLite SchemaBuilder", function() {
 
     equal(2, tableSql.length);
     var expected = [
-      'alter table "users" add column "id" integer not null primary key autoincrement',
-      'alter table "users" add column "email" varchar(255)',
+      'alter table `users` add column `id` integer not null primary key autoincrement',
+      'alter table `users` add column `email` varchar(255)',
     ];
     expect(expected).to.eql(_.map(tableSql, 'sql'));
   });
@@ -52,14 +52,14 @@ describe("SQLite SchemaBuilder", function() {
   it("drop table", function() {
     tableSql = client.schemaBuilder().dropTable('users').toSQL();
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop table "users"');
+    equal(tableSql[0].sql, 'drop table `users`');
   });
 
   it("drop table if exists", function() {
     tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop table if exists "users"');
+    equal(tableSql[0].sql, 'drop table if exists `users`');
   });
 
   it("drop unique", function() {
@@ -68,7 +68,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index "users_foo_unique"');
+    equal(tableSql[0].sql, 'drop index `users_foo_unique`');
   });
 
   it("drop unique, custom", function() {
@@ -77,7 +77,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index "foo"');
+    equal(tableSql[0].sql, 'drop index `foo`');
   });
 
   it("drop index", function() {
@@ -86,7 +86,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index "users_foo_index"');
+    equal(tableSql[0].sql, 'drop index `users_foo_index`');
   });
 
   it("drop index, custom", function() {
@@ -95,14 +95,14 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index "foo"');
+    equal(tableSql[0].sql, 'drop index `foo`');
   });
 
   it("rename table", function() {
     tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" rename to "foo"');
+    equal(tableSql[0].sql, 'alter table `users` rename to `foo`');
   });
 
   it("adding primary key", function() {
@@ -112,7 +112,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), primary key ("foo"))');
+    equal(tableSql[0].sql, 'create table `users` (`foo` varchar(255), primary key (`foo`))');
   });
 
   it("adding composite primary key", function() {
@@ -123,7 +123,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), "order_id" varchar(255), primary key ("foo", "order_id"))');
+    equal(tableSql[0].sql, 'create table `users` (`foo` varchar(255), `order_id` varchar(255), primary key (`foo`, `order_id`))');
 
     tableSql = client.schemaBuilder().createTable('users', function(table) {
       table.string('foo');
@@ -132,7 +132,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), "order_id" varchar(255), primary key ("foo", "order_id"))');
+    equal(tableSql[0].sql, 'create table `users` (`foo` varchar(255), `order_id` varchar(255), primary key (`foo`, `order_id`))');
   });
 
   it("adding primary key fluently", function() {
@@ -141,7 +141,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), primary key ("foo"))');
+    equal(tableSql[0].sql, 'create table `users` (`foo` varchar(255), primary key (`foo`))');
   });
 
   it("adding foreign key", function() {
@@ -152,7 +152,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), "order_id" varchar(255), foreign key("order_id") references "orders"("id"), primary key ("foo"))');
+    equal(tableSql[0].sql, 'create table `users` (`foo` varchar(255), `order_id` varchar(255), foreign key(`order_id`) references `orders`(`id`), primary key (`foo`))');
   });
 
   // SQLite3 doesn't support named foreign keys
@@ -165,7 +165,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), "order_id" varchar(255), foreign key("order_id") references "orders"("id"), primary key ("foo"))');
+    equal(tableSql[0].sql, 'create table `users` (`foo` varchar(255), `order_id` varchar(255), foreign key(`order_id`) references `orders`(`id`), primary key (`foo`))');
   });
 
   it("adds a unique key with autogenerated name", function() {
@@ -174,7 +174,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create unique index "users_foo_unique" on "users" ("foo")');
+    equal(tableSql[0].sql, 'create unique index `users_foo_unique` on `users` (`foo`)');
   });
 
   it("adding unique key with specific name", function() {
@@ -183,7 +183,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create unique index "bar" on "users" ("foo")');
+    equal(tableSql[0].sql, 'create unique index `bar` on `users` (`foo`)');
   });
 
   it("adding index", function() {
@@ -192,7 +192,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create index "baz" on "users" ("foo", "bar")');
+    equal(tableSql[0].sql, 'create index `baz` on `users` (`foo`, `bar`)');
   });
 
   it("adding incrementing id", function() {
@@ -201,7 +201,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "id" integer not null primary key autoincrement');
+    equal(tableSql[0].sql, 'alter table `users` add column `id` integer not null primary key autoincrement');
   });
 
   it("adding big incrementing id", function() {
@@ -210,7 +210,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "id" integer not null primary key autoincrement');
+    equal(tableSql[0].sql, 'alter table `users` add column `id` integer not null primary key autoincrement');
   });
 
   it("adding string", function() {
@@ -219,7 +219,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" varchar(255)');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` varchar(255)');
   });
 
   it("allows setting a value in the string length, although unused by sqlite3", function() {
@@ -228,7 +228,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" varchar(100)');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` varchar(100)');
   });
 
   it("correctly interprets defaultTo(null)", function() {
@@ -236,7 +236,7 @@ describe("SQLite SchemaBuilder", function() {
       table.string('foo').defaultTo(null);
     }).toSQL();
 
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" varchar(255) default null');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` varchar(255) default null');
   });
 
   it("chains notNull and defaultTo", function() {
@@ -245,7 +245,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" varchar(100) not null default \'bar\'');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` varchar(100) not null default \'bar\'');
   });
 
   it("adding text", function() {
@@ -254,7 +254,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" text');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` text');
   });
 
   it("adding big integer", function() {
@@ -263,7 +263,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" bigint');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` bigint');
   });
 
   it("bigincrements works the same as increments for sqlite3", function() {
@@ -272,7 +272,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" integer not null primary key autoincrement');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` integer not null primary key autoincrement');
   });
 
   it("adding integer", function() {
@@ -281,7 +281,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" integer');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` integer');
   });
 
   it("adding autoincrements", function() {
@@ -290,7 +290,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" integer not null primary key autoincrement');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` integer not null primary key autoincrement');
   });
 
   it("adding medium integer", function() {
@@ -299,7 +299,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" integer');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` integer');
   });
 
   it("adding tiny integer", function() {
@@ -308,7 +308,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" tinyint');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` tinyint');
   });
 
   it("adding small integer", function() {
@@ -317,7 +317,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" integer');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` integer');
   });
 
   it("adding float", function() {
@@ -326,7 +326,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" float');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
   });
 
   it("adding double", function() {
@@ -335,7 +335,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" float');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
   });
 
   it("adding decimal", function() {
@@ -344,7 +344,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" float');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
   });
 
   it("adding boolean", function() {
@@ -353,7 +353,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" boolean');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` boolean');
   });
 
   it("adding enum", function() {
@@ -362,7 +362,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" text check ("foo" in (\'bar\', \'baz\'))');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` text check (`foo` in (\'bar\', \'baz\'))');
   });
 
   it("adding date", function() {
@@ -371,7 +371,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" date');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` date');
   });
 
   it("adding date time", function() {
@@ -380,7 +380,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" datetime');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` datetime');
   });
 
   it("adding time", function() {
@@ -389,7 +389,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" time');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` time');
   });
 
   it("adding time stamp", function() {
@@ -398,7 +398,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" datetime');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` datetime');
   });
 
   it("adding time stamps", function() {
@@ -408,8 +408,8 @@ describe("SQLite SchemaBuilder", function() {
 
     equal(2, tableSql.length);
     var expected = [
-      'alter table "users" add column "created_at" datetime',
-      'alter table "users" add column "updated_at" datetime'
+      'alter table `users` add column `created_at` datetime',
+      'alter table `users` add column `updated_at` datetime'
     ];
     deepEqual(expected, _.map(tableSql, 'sql'));
   });
@@ -420,7 +420,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table "users" add column "foo" blob');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` blob');
   });
 
   it('allows for on delete cascade with foreign keys, #166', function() {
@@ -433,7 +433,7 @@ describe("SQLite SchemaBuilder", function() {
     }).toSQL();
 
     equal(2, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("user_id" varchar(36), foreign key("user_id") references "user"("id") on delete CASCADE)');
+    equal(tableSql[0].sql, 'create table `users` (`user_id` varchar(36), foreign key(`user_id`) references `user`(`id`) on delete CASCADE)');
   });
 
   describe('SQLite3_DDL.prototype._doReplace', function () {
@@ -442,20 +442,20 @@ describe("SQLite SchemaBuilder", function() {
 
         var doReplace = SQLite3_DDL.prototype._doReplace;
 
-        var sql1 = 'CREATE TABLE "foo" ("id" integer not null primary key autoincrement, '+
-              '"parent_id_test" integer, foreign key("parent_id") references "foo"("id"))';
-        var sql2 = 'CREATE TABLE "foo" ("id" integer not null primary key autoincrement, '+
-              '"parent_id_test" integer, foreign key("parent_id") references "bar"("id"))';
+        var sql1 = 'CREATE TABLE `foo` (`id` integer not null primary key autoincrement, '+
+              '"parent_id_test" integer, foreign key("parent_id") references `foo`(`id`))';
+        var sql2 = 'CREATE TABLE `foo` (`id` integer not null primary key autoincrement, '+
+              '"parent_id_test" integer, foreign key("parent_id") references `bar`(`id`))';
 
-        var sql1b = 'CREATE TABLE "foo" ("id_foo" integer not null primary key autoincrement, '+
-              '"parent_id_test" integer, foreign key("parent_id") references "foo"("id_foo"))';
-        var sql2b = 'CREATE TABLE "foo" ("id_foo" integer not null primary key autoincrement, '+
-              '"parent_id_test" integer, foreign key("parent_id") references "bar"("id"))';
+        var sql1b = 'CREATE TABLE `foo` ("id_foo" integer not null primary key autoincrement, '+
+              '"parent_id_test" integer, foreign key("parent_id") references `foo`("id_foo"))';
+        var sql2b = 'CREATE TABLE `foo` ("id_foo" integer not null primary key autoincrement, '+
+              '"parent_id_test" integer, foreign key("parent_id") references `bar`(`id`))';
 
 
-        expect(doReplace(sql1, '"bar"', '"lar"')).to.equal(sql1);
-        expect(doReplace(sql1, '"id"', '"id_foo"')).to.equal(sql1b);
-        expect(doReplace(sql2, '"id"', '"id_foo"')).to.equal(sql2b);
+        expect(doReplace(sql1, '`bar`', '"lar"')).to.equal(sql1);
+        expect(doReplace(sql1, '`id`', '"id_foo"')).to.equal(sql1b);
+        expect(doReplace(sql2, '`id`', '"id_foo"')).to.equal(sql2b);
       }).toSQL();
     });
   });
