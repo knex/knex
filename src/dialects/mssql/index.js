@@ -74,7 +74,7 @@ assign(Client_MSSQL.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     return new Promise((resolver, rejecter) => {
-      const connection = new this.driver.Connection(this.connectionSettings);
+      const connection = new this.driver.ConnectionPool(this.connectionSettings);
       connection.connect((err) => {
         if (err) {
           return rejecter(err)
@@ -156,7 +156,7 @@ assign(Client_MSSQL.prototype, {
         if (err) {
           return rejecter(err)
         }
-        obj.response = recordset[0]
+        obj.response = recordset.recordsets[0]
         resolver(obj)
       })
     })
