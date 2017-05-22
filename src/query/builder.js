@@ -746,6 +746,11 @@ assign(Builder.prototype, {
   avg(column) {
     return this._aggregate('avg', column);
   },
+  
+  // Retrieve the standard deviation of the values of a given column.
+  stddev(column) {
+    return this._aggregate('stddev', column);
+  },
 
   // Retrieve the "count" of the distinct results of the query.
   countDistinct(column) {
