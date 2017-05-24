@@ -125,6 +125,9 @@ assign(Client_MariaSQL.prototype, {
 })
 
 function parseType(value, type) {
+  if(value === null) {
+    return value;
+  }
   switch (type) {
     case 'DATETIME':
     case 'TIMESTAMP':
