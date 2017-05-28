@@ -35,7 +35,7 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
+          'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test@example.com','Test','User', 1, d],
           [1]
         );
@@ -88,7 +88,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union all select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"',
+            'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
             ['Lorem ipsum Dolore labore incididunt enim.', d,'test2@example.com','Test','User',1, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test3@example.com','Test','User',2, d],
             [3]
           );
@@ -184,7 +184,7 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at" union all select ? as "about", ? as "created_at", ? as "email", ? as "first_name", ? as "last_name", ? as "logins", ? as "updated_at"',
+          'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test4@example.com','Test','User',2, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test5@example.com','Test','User',2, d],
           [5]
         );
@@ -248,7 +248,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
+            'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d]
           );
           tester(
@@ -296,7 +296,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
+            'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test6@example.com','Test','User',2, d],
             [6]
           );
@@ -333,7 +333,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'insert into "datatype_test" ("enum_value") values (?)',
+            'insert into `datatype_test` (`enum_value`) values (?)',
             ['d'],
             [1]
           );
@@ -413,7 +413,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'insert into "test_default_table" default values',
+              'insert into `test_default_table` default values',
               [],
               [1]
             );
@@ -458,7 +458,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'insert into "test_default_table2" default values',
+              'insert into `test_default_table2` default values',
               [],
               [1]
             );
@@ -549,7 +549,7 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?)',
+          'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?)',
           [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
           [4]
         );
