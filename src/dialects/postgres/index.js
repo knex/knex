@@ -10,7 +10,10 @@ import QueryCompiler from './query/compiler';
 import ColumnCompiler from './schema/columncompiler';
 import TableCompiler from './schema/tablecompiler';
 import SchemaCompiler from './schema/compiler';
-import {makeEscape} from '../../query/string'
+import {makeEscape} from '../../query/string';
+
+let pool;
+let pg;
 
 function Client_PG(config) {
   Client.apply(this, arguments);
@@ -51,7 +54,8 @@ assign(Client_PG.prototype, {
   driverName: 'pg',
 
   _driver() {
-    return require('pg')
+    pg = require('pg')
+    return pg
   },
 
   _escapeBinding: makeEscape({
@@ -102,23 +106,16 @@ assign(Client_PG.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     const client = this;
+    if (!pool) {
+      pool = new pg.Pool(client.connectionSettings);
+    }
     return new Promise(function(resolver, rejecter) {
-      const connection = new client.driver.Client(client.connectionSettings);
-      connection.connect(function(err, connection) {
-        if (err) {
-          return rejecter(err);
-        }
+      pool.connect().then((connection) => {
         connection.on('error', (err) => {
           connection.__knex__disposed = err
         })
-        if (!client.version) {
-          return client.checkVersion(connection).then(function(version) {
-            client.version = version;
-            resolver(connection);
-          });
-        }
-        resolver(connection);
-      });
+        return resolver(connection)
+      })
     }).tap(function setSearchPath(connection) {
       return client.setSchemaSearchPath(connection);
     });
