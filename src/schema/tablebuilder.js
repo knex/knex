@@ -169,10 +169,17 @@ TableBuilder.prototype.timestamps = function timestamps() {
   const method = (arguments[0] === true) ? 'timestamp' : 'datetime';
   const createdAt = this[method]('created_at');
   const updatedAt = this[method]('updated_at');
-  if (arguments[1] === true) {
-    const now = this.client.raw('CURRENT_TIMESTAMP');
+  const now = this.client.raw('CURRENT_TIMESTAMP');
+  
+  if (arguments[1] === true) {  
     createdAt.notNullable().defaultTo(now);
     updatedAt.notNullable().defaultTo(now);
+  }
+  if (arguments[2] === true) {
+    updatedAt.notNullable().onUpdate(now);
+  }
+  if (arguments[3] === true) {
+    const deletedAt = this[method]('deleted_at');
   }
   return;
 }
