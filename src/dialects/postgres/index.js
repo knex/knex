@@ -111,6 +111,9 @@ assign(Client_PG.prototype, {
         connection.on('error', (err) => {
           connection.__knex__disposed = err
         })
+        connection.on('end', (err) => {
+          connection.__knex__disposed = err || 'Connection ended unexpectedly';
+        })
         if (!client.version) {
           return client.checkVersion(connection).then(function(version) {
             client.version = version;
