@@ -16,6 +16,12 @@ if (canRunDockerTests()) {
 
 function canRunDockerTests() {
   var isLinux   = os.platform() === 'linux';
-  var hasDocker = proc.execSync('docker -v 1>/dev/null 2>&1 ; echo $?').toString('utf-8') === '0\n';
+
+  // dont even try on windows / osx for now
+  var hasDocker = false;
+  if (isLinux) {
+    hasDocker = proc.execSync('docker -v 1>/dev/null 2>&1 ; echo $?').toString('utf-8') === '0\n';
+  }
+
   return isLinux && hasDocker;
 }
