@@ -208,7 +208,7 @@ export default class Migrator {
 
   // Run a batch of current migrations, in sequence.
   _runBatch(migrations, direction, trx) {
-    return this._getLock(trx)
+    return !migrations.length ? Promise.resolve([1, []]) : this._getLock()
       // When there is a wrapping transaction, some migrations
       // could have been done while waiting for the lock:
       .then(() => trx ? this._listCompleted(trx) : [])
