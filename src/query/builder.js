@@ -826,7 +826,11 @@ assign(Builder.prototype, {
     let ret;
     const obj = this._single.update || {};
     this._method = 'update';
-    if (isString(values)) {
+    if (isUndefined(values)) {
+      ret = null;
+    } else if (typeof values === 'object' && isEmpty(values)) {
+      ret = null;
+    } else if (isString(values)) {
       obj[values] = returning;
       if (arguments.length > 2) {
         ret = arguments[2];
