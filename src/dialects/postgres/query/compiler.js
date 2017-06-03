@@ -5,7 +5,7 @@ import inherits from 'inherits';
 
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, reduce } from 'lodash'
+import { assign, isEmpty, reduce } from 'lodash'
 
 function QueryCompiler_PG(client, builder) {
   QueryCompiler.call(this, client, builder);
@@ -36,6 +36,15 @@ assign(QueryCompiler_PG.prototype, {
 
   // Compiles an `update` query, allowing for a return value.
   update() {
+    const updateValues = this.single.update || [];
+    if (Array.isArray(updateValues)) {
+      if (updateData.length === 0) {
+        return '';
+      }
+    } else if (typeof updateValues === 'object' && isEmpty(updateValues)) {
+      return '';
+    }
+
     const updateData = this._prepUpdate(this.single.update);
     const wheres = this.where();
     const { returning } = this.single;

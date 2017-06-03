@@ -226,6 +226,15 @@ _.assign(Oracledb_Compiler.prototype, {
   },
 
   update: function() {
+    const updateValues = this.single.update || [];
+    if (Array.isArray(updateValues)) {
+      if (updateValues.length === 0) {
+        return '';
+      }
+    } else if (typeof updateValues === 'object' && _.isEmpty(updateValues)) {
+      return '';
+    }
+
     const self = this;
     const sql = {};
     const outBindPrep = this._prepOutbindings(this.single.update, this.single.returning);
