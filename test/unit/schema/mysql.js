@@ -504,6 +504,24 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table `users` add `foo` decimal(2, 6)');
   });
 
+  it('test set comment', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.comment('Custom comment');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` comment = \'Custom comment\'');
+  });
+
+  it('test set empty comment', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.comment('');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` comment = \'\'');
+  });
+
   it('should alter columns with the alter flag', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.string('foo').alter();
