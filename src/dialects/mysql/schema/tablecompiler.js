@@ -56,7 +56,7 @@ assign(TableCompiler_MySQL.prototype, {
 
   // Compiles the comment on the table.
   comment(comment) {
-    this.pushQuery(`alter table ${this.tableName()} comment = '${comment}'`);
+    this.pushQuery(`alter table ${this.tableName()} comment = '${comment || ''}'`);
   },
 
   changeType() {
