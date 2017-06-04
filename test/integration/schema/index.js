@@ -630,5 +630,49 @@ module.exports = function(knex) {
       });
     });
 
+
+    describe('invalid field', function() {
+      describe('sqlite3 only', function() {
+        const tableName = 'invalid_field_test_sqlite3';
+        const fieldName = 'field_foo';
+        if(!knex || !knex.client || (!(/sqlite3/i.test(knex.client.dialect)))) {
+          return Promise.resolve();
+        }
+
+        before(function() {
+          return knex.schema.createTable(tableName, function (tbl) {
+            tbl.integer(fieldName);
+          });
+        });
+
+        after(function() {
+          return knex.schema.dropTable(tableName);
+        });
+
+        it('should return empty resultset when referencing an existent column', function() {
+
+          return knex(tableName).select().where(fieldName, "something").then(function(rows){
+            expect(rows.length).to.equal(0);
+          })
+
+        });
+
+        it('should throw when referencing a non-existent column', function() {
+
+          return knex(tableName).select().where(fieldName+"foo", "something")
+            .then(function(){
+               throw new Error("should have failed");
+            })
+            .catch(function(err){
+                expect(err.code).to.equal("SQLITE_ERROR");
+            })
+
+        });
+
+
+      });
+    });
+
+
   });
 };
