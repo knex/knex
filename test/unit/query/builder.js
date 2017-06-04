@@ -1893,6 +1893,48 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("cross join", function() {
+    testsql(qb().select('*').from('users').crossJoin('contracts').crossJoin('photos'), {
+      mysql: {
+        sql: 'select * from `users` cross join `contracts` cross join `photos`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] cross join [contracts] cross join [photos]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "users" cross join "contracts" cross join "photos"',
+        bindings: []
+      },
+      sqlite3: {
+        sql: 'select * from `users` cross join `contracts` cross join `photos`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select * from "users" cross join "contracts" cross join "photos"',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select * from "users" cross join "contracts" cross join "photos"',
+        bindings: []
+      }
+    });
+  });
+
+  it("cross join on", function() {
+    testsql(qb().select('*').from('users').crossJoin('contracts', 'users.contractId', 'contracts.id'), {
+      mysql: {
+        sql: 'select * from `users` cross join `contracts` on `users`.`contractId` = `contracts`.`id`',
+        bindings: []
+      },
+      sqlite3: {
+        sql: 'select * from `users` cross join `contracts` on `users`.`contractId` = `contracts`.`id`',
+        bindings: []
+      },
+    });
+  });
+
   it("basic joins", function() {
     testsql(qb().select('*').from('users').join('contacts', 'users.id', '=', 'contacts.id').leftJoin('photos', 'users.id', '=', 'photos.id'), {
       mysql: {
