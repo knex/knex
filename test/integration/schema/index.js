@@ -633,8 +633,8 @@ module.exports = function(knex) {
 
     describe('invalid field', function() {
       describe('sqlite3 only', function() {
-        const tableName = 'invalid_field_test_sqlite3';
-        const fieldName = 'field_foo';
+        var tableName = 'invalid_field_test_sqlite3';
+        var fieldName = 'field_foo';
         if(!knex || !knex.client || (!(/sqlite3/i.test(knex.client.dialect)))) {
           return Promise.resolve();
         }
