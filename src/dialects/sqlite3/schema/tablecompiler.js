@@ -118,12 +118,13 @@ TableCompiler_SQLite3.prototype.renameColumn = function(from, to) {
   });
 };
 
-TableCompiler_SQLite3.prototype.dropColumn = function(column) {
+TableCompiler_SQLite3.prototype.dropColumn = function() {
   const compiler = this;
+  const columns = Object.values(arguments);
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {
-      return compiler.client.ddl(compiler, pragma, this.connection).dropColumn(column);
+      return compiler.client.ddl(compiler, pragma, this.connection).dropColumn(columns);
     }
   });
 };
