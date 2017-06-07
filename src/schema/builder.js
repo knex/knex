@@ -9,6 +9,7 @@ import { each, toArray } from 'lodash'
 // knex instance.
 function SchemaBuilder(client) {
   this.client = client
+  this.mustExistColumnsInfo = null
   this._sequence = []
   this._debug = client.config && client.config.debug
 }

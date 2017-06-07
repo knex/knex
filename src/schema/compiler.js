@@ -66,6 +66,12 @@ function buildTable(type) {
     for (let i = 0, l = sql.length; i < l; i++) {
       this.sequence.push(sql[i]);
     }
+    if (builder._mustExistColumns.length) {
+      this.builder.mustExistColumnsInfo = {
+        table: builder._tableName,
+        columns: builder._mustExistColumns,
+      };
+    }
   };
 }
 

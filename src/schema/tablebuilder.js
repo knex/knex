@@ -18,6 +18,7 @@ function TableBuilder(client, method, tableName, fn) {
   this._tableName = tableName;
   this._statements = [];
   this._single = {};
+  this._mustExistColumns = [];
 
   if(!isFunction(this._fn)) {
     throw new TypeError(
@@ -244,6 +245,7 @@ const AlterMethods = {
   // Renames the current column `from` the current
   // TODO: this.column(from).rename(to)
   renameColumn(from, to) {
+    this._mustExistColumns.push(from);
     this._statements.push({
       grouping: 'alterTable',
       method: 'renameColumn',

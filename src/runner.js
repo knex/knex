@@ -35,11 +35,39 @@ assign(Runner.prototype, {
         helpers.debugLog(sql)
       }
 
-      if (isArray(sql)) {
-        return runner.queryArray(sql);
+      const runOriginalSql = function() {
+        if (isArray(sql)) {
+          return runner.queryArray(sql);
+        }
+        return runner.query(sql);
       }
-      return runner.query(sql);
 
+      // if there are columns that must exist before running
+      // the query, we first check their existence
+      if (runner.builder.mustExistColumnsInfo) {
+        const {mustExistColumnsInfo: {columns, table}} = runner.builder;
+        const checkColumnsQueries = columns.map((column, index) => {
+          return runner.query(runner.client.queryBuilder(runner.client)
+            .select(column)
+            .from(table)
+            .limit(1)
+            .toSQL()
+          ).catch((err) => {
+            err.missingColumn = columns[index];
+            throw err;
+          })
+        })
+        return Promise.all(checkColumnsQueries)
+          .then(() => runOriginalSql())
+          .catch((err) => {
+            if (err.missingColumn) {
+              helpers.error(`Referenced column ${err.missingColumn} does not exist`);
+            }
+            throw err
+          })
+      } else {
+        return runOriginalSql();
+      }
     })
 
     // If there are any "error" listeners, we fire an error event
