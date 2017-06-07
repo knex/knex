@@ -106,6 +106,15 @@ assign(Client_MSSQL.prototype, {
     })
   },
 
+  prepBindings(bindings) {
+    return map(bindings, (value) => {
+    if ( typeof value === 'number' && (value <= -2147483648 || value >= 2147483647)){
+      return value.toString()
+    }
+    return value
+  })
+  },
+
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream, options) {
