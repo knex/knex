@@ -25,6 +25,7 @@ const CONFIG_DEFAULT = Object.freeze({
   extension: 'js',
   tableName: 'knex_migrations',
   directory: './migrations',
+  dryRun: false,
   disableTransactions: false
 });
 
@@ -366,7 +367,11 @@ export default class Migrator {
   _transaction(migration, direction, name) {
     return this.knex.transaction((trx) => {
       return warnPromise(migration[direction](trx, Promise), name, () => {
-        trx.commit()
+        if (!this.config.dryRun) {
+          trx.commit();
+        } else {
+          trx.rollback();
+        }
       })
     })
   }
