@@ -11,9 +11,11 @@ export default function batchInsert(client, tableName, batch, chunkSize = 1000) 
 
   const getTransaction = () => new Promise((resolve, reject) => {
     if(transaction) {
+      autoTransaction = false;
       return resolve(transaction);
     }
 
+    autoTransaction = true;
     client.transaction(resolve)
     .catch(reject);
   });
@@ -65,7 +67,6 @@ export default function batchInsert(client, tableName, batch, chunkSize = 1000) 
     },
     transacting(tr) {
       transaction = tr;
-      autoTransaction = false;
 
       return this;
     }
