@@ -245,6 +245,14 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" rename to "foo"');
   });
 
+  it("rename column", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.renameColumn('foo', 'bar');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" rename "foo" to "bar"');
+  });
+
   it("adding primary key", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.primary('foo');
