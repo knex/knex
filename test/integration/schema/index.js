@@ -441,6 +441,12 @@ module.exports = function(knex) {
         });
       });
 
+      it('should be false whether a parameter is not specified', function() {
+        return knex.schema.hasTable('').then(function(resp) {
+          expect(resp).to.equal(false);
+        });
+      });
+
     });
 
     describe('renameTable', function() {
