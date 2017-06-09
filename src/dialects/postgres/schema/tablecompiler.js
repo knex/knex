@@ -113,6 +113,7 @@ TableCompiler_PG.prototype.dropPrimary = function(constraintName) {
 };
 TableCompiler_PG.prototype.dropIndex = function(columns, indexName) {
   indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = this.schemaNameRaw ? `${this.formatter.wrap(this.schemaNameRaw)}.${indexName}` : indexName;
   this.pushQuery(`drop index ${indexName}`);
 };
 TableCompiler_PG.prototype.dropUnique = function(columns, indexName) {

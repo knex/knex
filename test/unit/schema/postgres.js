@@ -215,6 +215,14 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('drop index "foo"');
   });
 
+  it("drop index, with schema", function() {
+    tableSql = client.schemaBuilder().withSchema('mySchema').table('users', function(table) {
+      table.dropIndex('foo');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop index "mySchema"."users_foo_index"');
+  });
+
   it("drop foreign", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.dropForeign('foo');
