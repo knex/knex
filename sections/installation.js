@@ -146,13 +146,12 @@ export default [
   },
   {
     type: "text",
-    content: "You can even use knex without a connection, just for its query building features. Just pass in an empty object when initializing the library. Specify a client if you are interested in a particular flavour of SQL."
+    content: "Specify the client for the particular flavour of SQL you are interested in."
   },
   {
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({});
       var pg = require('knex')({client: 'pg'});
       knex('table').insert({a: 'b'}).returning('*').toString();
       // "insert into "table" ("a") values ('b')"
