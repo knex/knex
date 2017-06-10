@@ -595,6 +595,22 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "user" add column "preferences" jsonb');
   });
 
+  it('set comment', function() {
+    tableSql = client.schemaBuilder().table('user', function(t) {
+      t.comment('Custom comment');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('comment on table "user" is \'Custom comment\'');
+  });
+
+  it('set empty comment', function() {
+    tableSql = client.schemaBuilder().table('user', function(t) {
+      t.comment('');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('comment on table "user" is \'\'');
+  });
+
   it('allows adding default json objects when the column is json', function() {
     tableSql = client.schemaBuilder().table('user', function(t) {
       t.json('preferences').defaultTo({}).notNullable();
