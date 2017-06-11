@@ -1952,6 +1952,31 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("right (outer) joins", function() {
+    testsql(qb().select('*').from('users').rightJoin('contacts', 'users.id', '=', 'contacts.id').rightOuterJoin('photos', 'users.id', '=', 'photos.id'), {
+      mssql: {
+        sql: 'select * from [users] right join [contacts] on [users].[id] = [contacts].[id] right outer join [photos] on [users].[id] = [photos].[id]',
+        bindings: []
+      },
+      mysql: {
+        sql: 'select * from `users` right join `contacts` on `users`.`id` = `contacts`.`id` right outer join `photos` on `users`.`id` = `photos`.`id`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select * from "users" right join "contacts" on "users"."id" = "contacts"."id" right outer join "photos" on "users"."id" = "photos"."id"',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select * from "users" right join "contacts" on "users"."id" = "contacts"."id" right outer join "photos" on "users"."id" = "photos"."id"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "users" right join "contacts" on "users"."id" = "contacts"."id" right outer join "photos" on "users"."id" = "photos"."id"',
+        bindings: []
+      }
+    });
+  });
+
   it("complex join", function() {
     testsql(qb().select('*').from('users').join('contacts', function(qb) {
       qb.on('users.id', '=', 'contacts.id').orOn('users.name', '=', 'contacts.name');
