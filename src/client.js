@@ -172,10 +172,7 @@ assign(Client.prototype, {
     poolConfig = defaults(poolConfig, {min: 2, max: 10});
 
     return {
-      config: {
-        min: poolConfig.min,
-        max: poolConfig.max,
-      },
+      config: poolConfig,
       factory: {
         create: () => {
           return this.acquireRawConnection()
