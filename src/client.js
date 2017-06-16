@@ -26,7 +26,6 @@ import { assign, uniqueId, cloneDeep, defaults } from 'lodash'
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
 const debugBindings = require('debug')('knex:bindings')
-const debugPool = require('debug')('knex:pool')
 
 let id = 0
 function clientId() {
