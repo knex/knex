@@ -85,7 +85,10 @@ assign(Client_MySQL.prototype, {
   },
 
   validateConnection(connection) {
-    return connection.state === 'connected' || connection.state === 'authenticated'
+    if(connection.state === 'connected' || connection.state === 'authenticated') {
+      return Promise.resolve();
+    }
+    return Promise.reject();
   },
 
   // Grab a connection, run the query via the MySQL streaming interface,

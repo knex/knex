@@ -44,7 +44,10 @@ assign(Client_MariaSQL.prototype, {
   },
 
   validateConnection(connection) {
-    return connection.connected === true
+    if(connection.connected === true) {
+      return Promise.resolve();
+    }
+    return Promise.reject();
   },
 
   // Used to explicitly close a connection, called internally by the pool
