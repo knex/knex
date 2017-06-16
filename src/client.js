@@ -178,27 +178,14 @@ assign(Client.prototype, {
         max: poolConfig.max,
       },
       factory: {
-        create: (callback) => {
+        create: () => {
           return this.acquireRawConnection()
             .tap(function(connection) {
               connection.__knexUid = uniqueId('__knexUid')
               if (poolConfig.afterCreate) {
                 return Promise.promisify(poolConfig.afterCreate)(connection)
               }
-            })
-            .then((connection) => {
-              if(callback) {
-                callback(connection);
-              }
-
-              return connection;
-            })
-            .catch((error) => {
-              if(callback) {
-                callback(error);
-              }
-              throw error;
-            })
+            });
         },
         destroy: (connection) => {
           if (poolConfig.beforeDestroy) {
