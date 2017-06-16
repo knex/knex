@@ -180,6 +180,9 @@ TableBuilder.prototype.timestamps = function timestamps() {
 // Set the comment value for a table, they're only allowed to be called
 // once per table.
 TableBuilder.prototype.comment = function(value) {
+  if (typeof value !== 'string') {
+    throw new TypeError('Table comment must be string');
+  }
   this._single.comment = value;
 };
 
