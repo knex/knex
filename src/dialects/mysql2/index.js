@@ -30,7 +30,7 @@ assign(Client_MySQL2.prototype, {
   },
 
   validateConnection() {
-    return true
+    return Promise.resolve();
   },
 
   // Get a raw connection, called by the `pool` whenever a new
