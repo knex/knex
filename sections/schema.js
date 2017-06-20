@@ -390,7 +390,7 @@ export default [
   {
     type: "method",
     method: "specificType",
-    example: "table.specificType(column, value)",
+    example: "table.specificType(name, type)",
     description: "Sets a specific type for the column creation, if you'd like to add a column type that isn't supported here.",
     children: [    ]
   },
