@@ -1922,6 +1922,27 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("full outer join", function() {
+    testsql(qb().select('*').from('users').fullOuterJoin('contacts', 'users.id', '=', 'contacts.id'), {
+      mssql: {
+        sql: 'select * from [users] full outer join [contacts] on [users].[id] = [contacts].[id]',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select * from "users" full outer join "contacts" on "users"."id" = "contacts"."id"',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select * from "users" full outer join "contacts" on "users"."id" = "contacts"."id"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "users" full outer join "contacts" on "users"."id" = "contacts"."id"',
+        bindings: []
+      }
+    });
+  });
+
   it("cross join on", function() {
     testsql(qb().select('*').from('users').crossJoin('contracts', 'users.contractId', 'contracts.id'), {
       mysql: {
