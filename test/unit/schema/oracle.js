@@ -39,11 +39,27 @@ describe("Oracle SchemaBuilder", function() {
     expect(tableSql[1].sql).to.equal("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
   });
 
+  it('test drop table with cascade', function() {
+    tableSql = client.schemaBuilder().dropTable('users', { cascade: true }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table "users" cascade constraints');
+    expect(tableSql[1].sql).to.equal("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
+  });
+
   it('test drop table if exists', function() {
     tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal("begin execute immediate 'drop table \"users\"'; exception when others then if sqlcode != -942 then raise; end if; end;");
+    expect(tableSql[1].sql).to.equal("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
+  });
+
+  it('test drop table if exists with cascade', function() {
+    tableSql = client.schemaBuilder().dropTableIfExists('users', { cascade: true }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal("begin execute immediate 'drop table \"users\" cascade constraints'; exception when others then if sqlcode != -942 then raise; end if; end;");
     expect(tableSql[1].sql).to.equal("begin execute immediate 'drop sequence \"users_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;");
   });
 

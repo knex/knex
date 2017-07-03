@@ -28,16 +28,23 @@ assign(SchemaCompiler.prototype, {
 
   dropTablePrefix: 'drop table ',
 
-  dropTable(tableName) {
+  dropTableSuffix(options) {
+    return options && options.cascade ? ' cascade' : '';
+  },
+
+  dropTable(tableName, options) {
     this.pushQuery(
-      this.dropTablePrefix + this.formatter.wrap(prefixedTableName(this.schema, tableName))
+      this.dropTablePrefix +
+      this.formatter.wrap(prefixedTableName(this.schema, tableName)) +
+      this.dropTableSuffix(options)
     );
   },
 
-  dropTableIfExists(tableName) {
+  dropTableIfExists(tableName, options) {
     this.pushQuery(
       this.dropTablePrefix + 'if exists ' +
-      this.formatter.wrap(prefixedTableName(this.schema, tableName))
+      this.formatter.wrap(prefixedTableName(this.schema, tableName)) +
+      this.dropTableSuffix(options)
     );
   },
 

@@ -133,6 +133,12 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('drop table "users"');
   });
 
+  it("drop table with cascade", function() {
+    tableSql = client.schemaBuilder().dropTable('users', { cascade: true }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table "users" cascade');
+  });
+
   it("drop table with schema", function() {
     tableSql = client.schemaBuilder().withSchema('myschema').dropTable('users').toSQL();
     equal(1, tableSql.length);
@@ -143,6 +149,12 @@ describe("PostgreSQL SchemaBuilder", function() {
     tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table if exists "users"');
+  });
+
+  it("drop table if exists with cascade", function() {
+    tableSql = client.schemaBuilder().dropTableIfExists('users', { cascade: true }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table if exists "users" cascade');
   });
 
   it("drop table if exists with schema", function() {
