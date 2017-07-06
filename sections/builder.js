@@ -1676,7 +1676,7 @@ export default [
             })
             .select(['a1.email', 'a2.email'])
             .where(knex.raw('a1.id = 1'))
-            .option({ nestTables: true, rowMode: 'array' })
+            .options({ nestTables: true, rowMode: 'array' })
             .limit(2)
             .then(...
         `
