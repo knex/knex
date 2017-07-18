@@ -21,7 +21,7 @@ module.exports = function(config, knex) {
 
   describe('using database as a docker container', function () {
 
-    this.timeout(dockerConf.timeout);
+    this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
 
     before(function () {
       docker = new Docker();
