@@ -4,7 +4,7 @@
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "dependencies": {
-    "babel-runtime": "^6.11.6",
+    "babel-runtime": "^6.23.0",
     "bluebird": "^3.4.6",
     "chalk": "^1.0.0",
     "commander": "^2.2.0",
@@ -32,7 +32,6 @@
     "babel-plugin-lodash": "3.2.9",
     "babel-plugin-transform-runtime": "^6.12.0",
     "babel-preset-es2015": "^6.13.2",
-    "babel-preset-es2015-loose": "^8.0.0",
     "chai": "^3.5.0",
     "coveralls": "~2.11.1",
     "dockerode": "^2.4.3",
