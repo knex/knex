@@ -17,12 +17,9 @@ function LockError(msg) {
 }
 inherits(LockError, Error);
 
-const SUPPORTED_EXTENSIONS = Object.freeze([
-  '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
-]);
-
 const CONFIG_DEFAULT = Object.freeze({
   extension: 'js',
+  loadExtensions: ['.js', '.ts'],
   tableName: 'knex_migrations',
   directory: './migrations',
   disableTransactions: false
@@ -118,11 +115,12 @@ export default class Migrator {
   // Lists all available migration versions, as a sorted array.
   _listAll(config) {
     this.config = this.setConfig(config);
+    const loadExtensions = this.config.loadExtensions;
     return Promise.promisify(fs.readdir, {context: fs})(this._absoluteConfigDir())
       .then(migrations => {
         return filter(migrations, function(value) {
           const extension = path.extname(value);
-          return includes(SUPPORTED_EXTENSIONS, extension);
+          return includes(loadExtensions, extension);
         }).sort();
       })
   }
