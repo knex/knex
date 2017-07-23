@@ -4,8 +4,9 @@ dist: trusty
 sudo: required
 
 
+#  - '8' doesn't work because some strange babel error that I was not able to reproduce in trusty virtualbox,
+#        maybe updating to some newer distro helps...
 node_js:
-  - '8'
   - '7'
   - '6'
   - '5'
