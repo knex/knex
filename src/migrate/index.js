@@ -19,7 +19,9 @@ inherits(LockError, Error);
 
 const CONFIG_DEFAULT = Object.freeze({
   extension: 'js',
-  loadExtensions: ['.js', '.ts'],
+  loadExtensions: [
+    '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
+  ],
   tableName: 'knex_migrations',
   directory: './migrations',
   disableTransactions: false

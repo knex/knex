@@ -135,7 +135,9 @@ Seeder.prototype.setConfig = function(config) {
   return extend({
     extension: 'js',
     directory: './seeds',
-    loadExtensions: ['.js', '.ts']
+    loadExtensions: [
+      '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
+    ],
   }, this.config || {}, config);
 };
 
