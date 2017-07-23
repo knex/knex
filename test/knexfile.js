@@ -75,8 +75,7 @@ var testConfigs = {
       username:  'root',
       password:  'root',
       hostPort:  '49153',
-      client:    'mysql',
-      timeout:   60 * 1000
+      client:    'mysql'
     }
   },
 
@@ -135,7 +134,6 @@ var testConfigs = {
       password:  '',
       hostPort:  '49152',
       client:    'pg',
-      timeout:   10 * 1000
     }
   },
 
