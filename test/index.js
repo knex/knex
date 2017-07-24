@@ -29,6 +29,8 @@ describe('Query Building Tests', function() {
   require('./unit/schema/oracle')
   require('./unit/schema/mssql')
   require('./unit/schema/oracledb')
+  require('./unit/migrate/migrator')
+  require('./unit/seed/seeder')
 })
 
 describe('Integration Tests', function() {
