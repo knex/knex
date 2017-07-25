@@ -195,16 +195,19 @@ assign(SQLite3_DDL.prototype, {
     }, {connection: this.connection})
   }),
 
-  dropColumn: Promise.method(function(column) {
+  dropColumn: Promise.method(function(columns) {
     return this.client.transaction(trx => {
       this.trx = trx
-      return this.getColumn(column)
+      return Promise.all(columns.map(column => this.getColumn(column)))
       .bind(this)
       .then(this.getTableSql)
       .then(function(sql) {
         const createTable = sql[0];
-        const a = this.client.wrapIdentifier(column);
-        const newSql = this._doReplace(createTable.sql, a, '');
+        let newSql = createTable.sql;
+        columns.forEach(column => {
+          const a = this.client.wrapIdentifier(column);
+          newSql = this._doReplace(newSql, a, '');
+        })
         if (sql === newSql) {
           throw new Error('Unable to find the column to change');
         }
@@ -215,7 +218,7 @@ assign(SQLite3_DDL.prototype, {
           .then(function() {
             return this.trx.raw(newSql);
           })
-          .then(this.reinsertData(row => omit(row, column)))
+          .then(this.reinsertData(row => omit(row, ...columns)))
           .then(this.dropTempTable);
       })
     }, {connection: this.connection})
