@@ -157,7 +157,7 @@ assign(Client_PG.prototype, {
     if (!path) return Promise.resolve(true);
 
     return new Promise(function(resolver, rejecter) {
-      connection.query(`set search_path to ${path}`, function(err) {
+      connection.query(`set search_path to "${path}"`, function(err) {
         if (err) return rejecter(err);
         resolver(true);
       });
