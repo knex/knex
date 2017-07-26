@@ -592,13 +592,13 @@ assign(QueryCompiler.prototype, {
   _prepUpdate(data) {
     data = omitBy(data, isUndefined)
     const vals = []
-    const sorted = Object.keys(data).sort()
+    const columns = Object.keys(data)
     let i = -1
-    while (++i < sorted.length) {
+    while (++i < columns.length) {
       vals.push(
-        this.formatter.wrap(sorted[i]) +
+        this.formatter.wrap(columns[i]) +
         ' = ' +
-        this.formatter.parameter(data[sorted[i]])
+        this.formatter.parameter(data[columns[i]])
       );
     }
     return vals;
