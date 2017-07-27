@@ -715,8 +715,14 @@ export default [
     type: "method",
     method: "crossJoin",
     example: ".crossJoin(column, ~mixed~)",
-    description: "",
+    description: "Cross join conditions are only supported in MySQL and SQLite3. For join conditions rather use innerJoin.",
     children: [
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').crossJoin('accounts')
+        `
+      },
       {
         type: "runnable",
         content: `
