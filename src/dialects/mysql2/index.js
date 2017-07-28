@@ -29,8 +29,8 @@ assign(Client_MySQL2.prototype, {
     return require('mysql2')
   },
 
-  validateConnection() {
-    return true
+  validateConnection(connection) {
+    return !connection._fatalError
   },
 
   // Get a raw connection, called by the `pool` whenever a new
@@ -48,6 +48,10 @@ assign(Client_MySQL2.prototype, {
         resolver(connection)
       })
     })
+  },
+
+  destroyRawConnection(connection) {
+    if (!connection._fatalError) return Client_MySQL.prototype.destroyRawConnection(connection)
   },
 
   processResponse(obj, runner) {
