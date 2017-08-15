@@ -554,7 +554,7 @@ export default [
   {
     type: "method",
     method: "innerJoin",
-    example: ".innerJoin(column, ~mixed~)",
+    example: ".innerJoin(table, ~mixed~)",
     description: "",
     children: [
       {
@@ -582,7 +582,7 @@ export default [
   {
     type: "method",
     method: "leftJoin",
-    example: ".leftJoin(column, ~mixed~)",
+    example: ".leftJoin(table, ~mixed~)",
     description: "",
     children: [
       {
@@ -604,7 +604,7 @@ export default [
   {
     type: "method",
     method: "leftOuterJoin",
-    example: ".leftOuterJoin(column, ~mixed~)",
+    example: ".leftOuterJoin(table, ~mixed~)",
     description: "",
     children: [
       {
@@ -626,7 +626,7 @@ export default [
   {
     type: "method",
     method: "rightJoin",
-    example: ".rightJoin(column, ~mixed~)",
+    example: ".rightJoin(table, ~mixed~)",
     description: "",
     children: [
       {
@@ -648,7 +648,7 @@ export default [
   {
     type: "method",
     method: "rightOuterJoin",
-    example: ".rightOuterJoin(column, ~mixed~)",
+    example: ".rightOuterJoin(table, ~mixed~)",
     description: "",
     children: [
       {
@@ -670,7 +670,7 @@ export default [
   {
     type: "method",
     method: "outerJoin",
-    example: ".outerJoin(column, ~mixed~)",
+    example: ".outerJoin(table, ~mixed~)",
     description: "",
     children: [
       {
@@ -692,7 +692,7 @@ export default [
   {
     type: "method",
     method: "fullOuterJoin",
-    example: ".fullOuterJoin(column, ~mixed~)",
+    example: ".fullOuterJoin(table, ~mixed~)",
     description: "",
     children: [
       {
@@ -714,7 +714,7 @@ export default [
   {
     type: "method",
     method: "crossJoin",
-    example: ".crossJoin(column, ~mixed~)",
+    example: ".crossJoin(table, ~mixed~)",
     description: "Cross join conditions are only supported in MySQL and SQLite3. For join conditions rather use innerJoin.",
     children: [
       {
