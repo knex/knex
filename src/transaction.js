@@ -243,7 +243,7 @@ function makeTxClient(trx, client, connection) {
 
 function completedError(trx, obj) {
   const sql = typeof obj === 'string' ? obj : obj && obj.sql
-  debug('%s: Transaction completed: %s', trx.id, sql)
+  debug('%s: Transaction completed: %s', trx.txid, sql)
   throw new Error('Transaction query already complete, run with DEBUG=knex:tx for more info')
 }
 
