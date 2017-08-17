@@ -63,8 +63,12 @@ function initKnex(env) {
     process.exit(1);
   }
 
-  if (argv.debug !== undefined)
+  if (argv.debug !== undefined) {
     config.debug = argv.debug;
+  }
+  if (JSON.parse(config.debug) === true) {
+    Promise.longStackTraces()
+  }
   var knex = require(env.modulePath);
   return knex(config);
 }
