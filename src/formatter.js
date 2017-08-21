@@ -9,7 +9,7 @@ const orderBys = ['asc', 'desc'];
 // Turn this into a lookup map
 const operators = transform([
   '=', '<', '>', '<=', '>=', '<>', '!=', 'like',
-  'not like', 'between', 'ilike', '&', '|', '^', '<<', '>>',
+  'not like', 'between', 'ilike', 'not ilike', '&', '|', '^', '<<', '>>',
   'rlike', 'regexp', 'not regexp', '~', '~*', '!~', '!~*',
   '#', '&&', '@>', '<@', '||'
 ], (result, key) => {

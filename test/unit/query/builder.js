@@ -3358,6 +3358,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it('supports NOT ILIKE operator in Postgres', function() {
+    testsql(qb().select('*').from('users').where('name', 'not ilike', '%jeff%'), {
+      postgres: {
+        sql: 'select * from "users" where "name" not ilike ?',
+        bindings: ['%jeff%']
+      }
+    });
+  });
+
   it('throws if you try to use an invalid operator', function() {
     expect(function () {
       qb().select('*').where('id', 'isnt', 1).toString();
