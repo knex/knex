@@ -648,6 +648,122 @@ module.exports = function(knex) {
       });
     });
 
+    it('should allow insert on conflict do nothing in postgres', function() {
+
+      return knex('accounts')
+        .insert({
+          email:'test7@example.com',
+          first_name: 'User',
+          last_name: 'Test'
+        }, 'id')
+        .onConflict('email', {
+          first_name: 'Test',
+          last_name: 'User'
+        })
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'insert into `accounts` (`email`, `first_name`, `last_name`) values (?, ?, ?)',
+            ['test7@example.com','Test','User'],
+            [8]
+          );
+          tester(
+            'postgresql',
+            'insert into "accounts" ("email", "first_name", "last_name") values (?, ?, ?) on conflict ("email") do nothing returning "id"',
+            ['test7@example.com','Test','User'],
+            ['8']
+          );
+          tester(
+            'sqlite3',
+            'insert into `accounts` (`email`, `first_name`, `last_name`) values (?, ?, ?)',
+            ['test7@example.com','Test','User'],
+            [7]
+          );
+          tester(
+            'oracle',
+            "insert into \"accounts\" (\"email\", \"first_name\", \"last_name\") values (?, ?, ?) returning ROWID into ?",
+            ['test7@example.com','Test','User', function (v) {return v.toString() === '[object ReturningHelper:id]';}],
+            [8]
+          );
+          tester(
+            'mssql',
+            'insert into [accounts] ([email], [first_name], [last_name]) output inserted.[id] values (?, ?, ?)',
+            ['test7@example.com','Test','User'],
+            ['8']
+          );
+        });
+
+    });
+
+    it('should allow insert on conflict do update in postgres', function() {
+
+      return knex('accounts')
+        .insert({
+          email:'test8@example.com',
+          first_name: 'User',
+          last_name: 'Test'
+        }, 'id')
+        .onConflict('email', {
+          first_name: 'Test',
+          last_name: 'User'
+        })
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'insert into `accounts` (`email`, `first_name`, `last_name`) values (?, ?, ?)',
+            ['test8@example.com','Test','User'],
+            [9]
+          );
+          tester(
+            'postgresql',
+            'insert into "accounts" ("email", "first_name", "last_name") values (?, ?, ?) on conflict ("email") do update set "first_name" = \'Test\', "last_name" = \'User\' returning "id"',
+            ['test8@example.com','Test','User'],
+            ['9']
+          );
+          tester(
+            'sqlite3',
+            'insert into `accounts` (`email`, `first_name`, `last_name`) values (?, ?, ?)',
+            ['test8@example.com','Test','User'],
+            [8]
+          );
+          tester(
+            'oracle',
+            "insert into \"accounts\" (\"email\", \"first_name\", \"last_name\") values (?, ?, ?) returning ROWID into ?",
+            ['test8@example.com','Test','User', function (v) {return v.toString() === '[object ReturningHelper:id]';}],
+            [9]
+          );
+          tester(
+            'mssql',
+            'insert into [accounts] ([email], [first_name], [last_name]) output inserted.[id] values (?, ?, ?)',
+            ['test8@example.com','Test','User'],
+            ['9']
+          );
+        });
+
+    });
+
+    it('should perform update on conflict in postgres and return conflicting row', function() {
+
+      return knex('accounts')
+        .insert({
+          email:'test8@example.com',
+          first_name: 'User',
+          last_name: 'Test'
+        }, 'id')
+        .onConflict('email', {
+          first_name: 'Testing',
+          last_name: 'Users'
+        })
+        .testSql(function(tester) {
+          tester(
+            'postgresql',
+            'insert into "accounts" ("email", "first_name", "last_name") values (?, ?, ?) on conflict ("email") do update set "first_name" = \'Testing\', "last_name" = \'Users\' returning "id"',
+            ['test8@example.com','Test','User'],
+            ['9']
+          );
+        });
+
+    });
 
     describe('batchInsert', function() {
       var dialect = String(knex.client.dialect).toUpperCase();
