@@ -27,9 +27,9 @@ assign(QueryCompiler_PG.prototype, {
   insert() {
     const sql = QueryCompiler.prototype.insert.call(this)
     if (sql === '') return sql;
-    const { returning } = this.single;
+    const { onConflict, returning } = this.single;
     return {
-      sql: sql + this._returning(returning),
+      sql: sql + this._onConflict(onConflict) + this._returning(returning),
       returning
     };
   },
@@ -57,6 +57,22 @@ assign(QueryCompiler_PG.prototype, {
       sql: sql + this._returning(returning),
       returning
     };
+  },
+
+  _onConflict(value) {
+    if (!value) {
+      return '';
+    }
+    const { columns, updates } = value;
+    let sql = ` on conflict (${this.formatter.columnize(columns)}) do `;
+    if (updates) {
+      const updateData = this._prepUpdate(updates);
+      sql += `update set ${updateData.join(', ')}`;
+    }
+    else {
+      sql += 'nothing';
+    }
+    return sql;
   },
 
   _returning(value) {
