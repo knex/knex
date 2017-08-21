@@ -743,26 +743,26 @@ module.exports = function(knex) {
     });
 
     it('should perform update on conflict in postgres and return conflicting row', function() {
-
-      return knex('accounts')
-        .insert({
-          email:'test8@example.com',
-          first_name: 'User',
-          last_name: 'Test'
-        }, 'id')
-        .onConflict('email', {
-          first_name: 'Testing',
-          last_name: 'Users'
-        })
-        .testSql(function(tester) {
-          tester(
-            'postgresql',
-            'insert into "accounts" ("email", "first_name", "last_name") values (?, ?, ?) on conflict ("email") do update set "first_name" = \'Testing\', "last_name" = \'Users\' returning "id"',
-            ['test8@example.com','Test','User'],
-            ['9']
-          );
-        });
-
+      if (knex.client.dialect === 'postgresql') {
+        return knex('accounts')
+          .insert({
+            email:'test8@example.com',
+            first_name: 'User',
+            last_name: 'Test'
+          }, 'id')
+          .onConflict('email', {
+            first_name: 'Testing',
+            last_name: 'Users'
+          })
+          .testSql(function(tester) {
+            tester(
+              'postgresql',
+              'insert into "accounts" ("email", "first_name", "last_name") values (?, ?, ?) on conflict ("email") do update set "first_name" = \'Testing\', "last_name" = \'Users\' returning "id"',
+              ['test8@example.com','Test','User'],
+              ['9']
+            );
+          });
+      }
     });
 
     describe('batchInsert', function() {
