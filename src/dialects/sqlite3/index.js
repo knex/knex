@@ -157,8 +157,19 @@ assign(Client_SQLite3.prototype, {
       min: 1,
       max: 1
     })
-  }
+  },
 
+  canCancelQuery: true,
+
+  cancelQuery(connectionToKill) {
+    try {
+      connectionToKill.interrupt();
+    } catch (e) {
+      // node-sqlite3 interrupt() throws when there's no real connection acquired
+      // or it's being closed; both cases are ignorable
+    }
+    return Promise.resolve();
+  }
 })
 
 export default Client_SQLite3
