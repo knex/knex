@@ -1,4 +1,4 @@
-import { assign, isArray, noop } from 'lodash'
+import { assign, isArray } from 'lodash'
 import Promise from 'bluebird';
 import * as helpers from './helpers';
 
@@ -80,7 +80,10 @@ assign(Runner.prototype, {
 
     const runner = this;
     const stream = new PassThrough({objectMode: true});
+
+    let hasConnection = false;
     const promise = Promise.using(this.ensureConnection(), function(connection) {
+      hasConnection = true;
       runner.connection = connection;
       const sql = runner.builder.toSQL()
       const err = new Error('The stream may only be used with a single query statement.');
@@ -99,9 +102,13 @@ assign(Runner.prototype, {
       return promise;
     }
 
-    // This promise is unreachable since no handler was given, so noop any
-    // exceptions. Errors should be handled in the stream's 'error' event.
-    promise.catch(noop);
+    // Emit errors on the stream if the error occurred before a connection
+    // could be acquired.
+    // If the connection was acquired, assume the error occured in the client
+    // code and has already been emitted on the stream. Don't emit it twice.
+    promise.catch(function(err) {
+      if (!hasConnection) stream.emit('error', err);
+    });
     return stream;
   },
 
