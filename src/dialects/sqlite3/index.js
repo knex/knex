@@ -98,9 +98,19 @@ assign(Client_SQLite3.prototype, {
       default:
         callMethod = 'all';
     }
-    return new Promise(function(resolver, rejecter) {
+    return new Promise(function(resolver, rejecter, onCancel) {
       if (!connection || !connection[callMethod]) {
         return rejecter(new Error(`Error calling ${callMethod} on connection.`))
+      }
+      if (onCancel) {
+        onCancel(() => {
+          try {
+            connection.interrupt();
+          } catch (e) {
+            // see cancelQuery() for why it can be ignored
+            // (also, onCancel() exceptions are thrown away)
+          }
+        })
       }
       connection[callMethod](obj.sql, obj.bindings, function(err, response) {
         if (err) return rejecter(err)
@@ -157,8 +167,19 @@ assign(Client_SQLite3.prototype, {
       min: 1,
       max: 1
     })
-  }
+  },
 
+  canCancelQuery: true,
+
+  cancelQuery(connectionToKill) {
+    try {
+      connectionToKill.interrupt();
+    } catch (e) {
+      // node-sqlite3 interrupt() throws when there's no real connection acquired
+      // or it's being closed; both cases are ignorable
+    }
+    return Promise.resolve();
+  }
 })
 
 export default Client_SQLite3
