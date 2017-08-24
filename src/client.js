@@ -171,9 +171,11 @@ assign(Client.prototype, {
 
   poolDefaults(poolConfig) {
     const name = this.dialect + ':' + this.driverName + ':' + this.__cid
+    let min = poolConfig.min || 2, max = poolConfig.max || 10
+    if (max > min) min = max
     return {
-      min: 2,
-      max: 10,
+      min: min,
+      max: max,
       name: name,
       log(str, level) {
         if (level === 'info') {
