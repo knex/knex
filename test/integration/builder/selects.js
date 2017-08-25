@@ -3,6 +3,7 @@
 
 var assert  = require('assert')
 var Promise = testPromise;
+var Runner = require('../../../lib/runner');
 
 module.exports = function(knex) {
 
@@ -175,6 +176,21 @@ module.exports = function(knex) {
       stream.on('data', function() {
         count++;
         if (count === 6) done();
+      });
+    });
+
+    it('emits error on the stream, if not passed a function, and connecting fails', function(done) {
+      var expected = new Error();
+      var original = Runner.prototype.ensureConnection;
+      Runner.prototype.ensureConnection = function() {
+        return Promise.reject(expected);
+      };
+      var stream = knex('accounts').stream();
+      stream.on('error', function(actual) {
+        if (actual === expected) {
+          Runner.prototype.ensureConnection = original;
+          done();
+        }
       });
     });
 
