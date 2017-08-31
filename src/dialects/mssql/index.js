@@ -89,9 +89,9 @@ assign(Client_MSSQL.prototype, {
 
   validateConnection(connection) {
     if(connection.connected === true) {
-      return Promise.resolve();
+      return Promise.resolve(true);
     }
-    return Promise.reject();
+    return Promise.resolve(false);
   },
 
   // Used to explicitly close a connection, called internally by the pool

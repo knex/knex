@@ -17,6 +17,7 @@ import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 
 import * as genericPool from 'generic-pool';
+import * as genericPoolErrors from 'generic-pool/lib/errors'
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
@@ -168,8 +169,21 @@ assign(Client.prototype, {
     }
   },
 
+  poolDefaults() {
+    return {min: 2, max: 10, Promise}
+  },
+
   getPoolSettings(poolConfig) {
-    poolConfig = defaults(poolConfig, {min: 2, max: 10});
+    poolConfig = defaults({}, poolConfig, this.poolDefaults());
+    // acquire connection timeout can be set on config or config.pool
+    // choose the smallest, positive timeout setting and set on poolConfig
+    const timeouts = [
+      this.config.acquireConnectionTimeout,
+      poolConfig.acquireTimeoutMillis
+    ].map(parseInt).filter(x => x > 0);
+    if (timeouts.length > 0) {
+      poolConfig.acquireTimeoutMillis = Math.min(...timeouts);
+    }
 
     return {
       config: poolConfig,
@@ -200,7 +214,7 @@ assign(Client.prototype, {
         validate: (connection) => {
           if (connection.__knex__disposed) {
             helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
-            return Promise.reject();
+            return Promise.resolve(false);
           }
           return this.validateConnection(connection)
         }
@@ -220,48 +234,32 @@ assign(Client.prototype, {
   },
 
   validateConnection(connection) {
-    return Promise.resolve();
+    return Promise.resolve(true);
   },
 
   // Acquire a connection from the pool.
   acquireConnection() {
-    return new Promise((resolver, rejecter) => {
-      if (!this.pool) {
-        return rejecter(new Error('Unable to acquire a connection'))
-      }
-      let wasRejected = false
-      const t = setTimeout(() => {
-        wasRejected = true
-        rejecter(new Promise.TimeoutError(
+    if (!this.pool) {
+      return Promise.reject(new Error('Unable to acquire a connection'))
+    }
+    return this.pool.acquire()
+      .tap(connection => {
+        debug('acquired connection from pool: %s', connection.__knexUid)
+      })
+      .catch(genericPoolErrors.TimeoutError, () => {
+        throw new Promise.TimeoutError(
           'Knex: Timeout acquiring a connection. The pool is probably full. ' +
           'Are you missing a .transacting(trx) call?'
-        ))
-      }, this.config.acquireConnectionTimeout || 60000)
-      this.pool.acquire()
-      .then((connection) => {
-        clearTimeout(t)
-        if(wasRejected) {
-          this.pool.release(connection);
-        } else {
-          debug('acquired connection from pool: %s', connection.__knexUid)
-          resolver(connection);
-        }
-      })
-      .catch((error) => {
-        clearTimeout(t);
-
-        throw error;
+        )
       });
-    })
   },
 
   // Releases a connection back to the connection pool,
   // returning a promise resolved when the connection is released.
   releaseConnection(connection) {
-    return new Promise((resolver) => {
-      debug('releasing connection to pool: %s', connection.__knexUid)
-      this.pool.release(connection)
-      resolver()
+    debug('releasing connection to pool: %s', connection.__knexUid)
+    return this.pool.release(connection).catch(() => {
+      debug('pool refused connection: %s', connection.__knexUid)
     })
   },
 

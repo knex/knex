@@ -4,7 +4,7 @@
 import Promise from 'bluebird';
 
 import inherits from 'inherits';
-import { isUndefined, map, assign } from 'lodash'
+import { isUndefined, map, assign, defaults } from 'lodash'
 
 import Client from '../../client';
 import * as helpers from '../../helpers';
@@ -152,11 +152,8 @@ assign(Client_SQLite3.prototype, {
     }
   },
 
-  poolDefaults(config) {
-    return assign(Client.prototype.poolDefaults.call(this, config), {
-      min: 1,
-      max: 1
-    })
+  poolDefaults() {
+    return defaults({min: 1, max: 1}, Client.prototype.poolDefaults.call(this))
   }
 
 })
