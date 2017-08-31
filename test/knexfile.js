@@ -142,7 +142,7 @@ var testConfigs = {
     connection: testConfig.sqlite3 || {
       filename: __dirname + '/test.sqlite3'
     },
-    pool: pool,
+    pool: Object.assign({max: 1}, pool),
     migrations: migrations,
     seeds: seeds
   },

@@ -16,17 +16,16 @@ import TableCompiler from './schema/tablecompiler';
 import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 
-import { Pool } from 'generic-pool';
+import * as genericPool from 'generic-pool';
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
 import { makeEscape } from './query/string'
-import { assign, uniqueId, cloneDeep } from 'lodash'
+import { assign, uniqueId, cloneDeep, defaults } from 'lodash'
 
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
 const debugBindings = require('debug')('knex:bindings')
-const debugPool = require('debug')('knex:pool')
 
 let id = 0
 function clientId() {
@@ -169,46 +168,43 @@ assign(Client.prototype, {
     }
   },
 
-  poolDefaults(poolConfig) {
-    const name = this.dialect + ':' + this.driverName + ':' + this.__cid
+  getPoolSettings(poolConfig) {
+    poolConfig = defaults(poolConfig, {min: 2, max: 10});
+
     return {
-      min: 2,
-      max: 10,
-      name: name,
-      log(str, level) {
-        if (level === 'info') {
-          debugPool(level.toUpperCase() + ' pool ' + name + ' - ' + str)
-        }
-      },
-      create: (callback) => {
-        this.acquireRawConnection()
-          .tap(function(connection) {
-            connection.__knexUid = uniqueId('__knexUid')
-            if (poolConfig.afterCreate) {
-              return Promise.promisify(poolConfig.afterCreate)(connection)
-            }
-          })
-          .asCallback(callback)
-      },
-      destroy: (connection) => {
-        if (poolConfig.beforeDestroy) {
-          helpers.warn(`
+      config: poolConfig,
+      factory: {
+        create: () => {
+          return this.acquireRawConnection()
+            .tap(function(connection) {
+              connection.__knexUid = uniqueId('__knexUid')
+              if (poolConfig.afterCreate) {
+                return Promise.promisify(poolConfig.afterCreate)(connection)
+              }
+            });
+        },
+        destroy: (connection) => {
+          if (poolConfig.beforeDestroy) {
+            helpers.warn(`
             beforeDestroy is deprecated, please open an issue if you use this
             to discuss alternative apis
           `)
-          poolConfig.beforeDestroy(connection, function() {})
-        }
-        if (connection !== void 0) {
-          this.destroyRawConnection(connection)
+            poolConfig.beforeDestroy(connection, function() {})
+          }
+          if (connection !== void 0) {
+            this.destroyRawConnection(connection)
+          }
+
+          return Promise.resolve();
+        },
+        validate: (connection) => {
+          if (connection.__knex__disposed) {
+            helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
+            return Promise.resolve(false);
+          }
+          return this.validateConnection(connection)
         }
       },
-      validate: (connection) => {
-        if (connection.__knex__disposed) {
-          helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
-          return false
-        }
-        return this.validateConnection(connection)
-      }
     }
   },
 
@@ -217,11 +213,14 @@ assign(Client.prototype, {
       helpers.warn('The pool has already been initialized')
       return
     }
-    this.pool = new Pool(assign(this.poolDefaults(config.pool || {}), config.pool))
+
+    const poolSettings = this.getPoolSettings(config.pool);
+
+    this.pool = genericPool.createPool(poolSettings.factory, poolSettings.config)
   },
 
   validateConnection(connection) {
-    return true
+    return Promise.resolve(true);
   },
 
   // Acquire a connection from the pool.
@@ -238,18 +237,21 @@ assign(Client.prototype, {
           'Are you missing a .transacting(trx) call?'
         ))
       }, this.config.acquireConnectionTimeout || 60000)
-      this.pool.acquire((err, connection) => {
+      this.pool.acquire()
+      .then((connection) => {
         clearTimeout(t)
-        if (err) {
-          return rejecter(err)
-        }
-        if (wasRejected) {
-          this.pool.release(connection)
+        if(wasRejected) {
+          this.pool.release(connection);
         } else {
           debug('acquired connection from pool: %s', connection.__knexUid)
-          resolver(connection)
+          resolver(connection);
         }
       })
+      .catch((error) => {
+        clearTimeout(t);
+
+        throw error;
+      });
     })
   },
 
@@ -265,24 +267,22 @@ assign(Client.prototype, {
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
-    const promise = new Promise((resolver) => {
+    return new Promise((resolver) => {
       if (!this.pool) {
         return resolver()
       }
-      this.pool.drain(() => {
-        this.pool.destroyAllNow(() => {
-          this.pool = undefined
-          resolver()
-        })
+      return this.pool.drain()
+      .then(() => this.pool.clear())
+      .then(() => {
+        this.pool = void 0;
+
+        if(typeof callback === 'function') {
+          callback();
+        }
+
+        resolver();
       })
     })
-
-    // Allow either a callback or promise interface for destruction.
-    if (typeof callback === 'function') {
-      promise.asCallback(callback)
-    } else {
-      return promise
-    }
   },
 
   // Return the database being used by this client.

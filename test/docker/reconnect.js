@@ -119,7 +119,8 @@ module.exports = function(config, knex) {
         max:                       7,
         idleTimeoutMillis:         IDLE_TIMEOUT_MILLIS,
         acquireTimeoutMillis:      ACQUIRE_TIMEOUT_MILLIS,
-        evictionRunIntervalMillis: EVICTION_RUN_INTERVAL_MILLIS
+        evictionRunIntervalMillis: EVICTION_RUN_INTERVAL_MILLIS,
+        testOnBorrow: true,
       },
       connection:               {
         database: dockerConf.database,
