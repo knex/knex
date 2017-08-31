@@ -29,8 +29,11 @@ assign(Client_MySQL2.prototype, {
     return require('mysql2')
   },
 
-  validateConnection() {
-    return Promise.resolve();
+  validateConnection(connection) {
+    if(connection._fatalError) {
+      return Promise.resolve(false);
+    }
+    return Promise.resolve(true);
   },
 
   // Get a raw connection, called by the `pool` whenever a new

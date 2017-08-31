@@ -200,7 +200,7 @@ assign(Client.prototype, {
         validate: (connection) => {
           if (connection.__knex__disposed) {
             helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
-            return Promise.reject();
+            return Promise.resolve(false);
           }
           return this.validateConnection(connection)
         }
@@ -220,7 +220,7 @@ assign(Client.prototype, {
   },
 
   validateConnection(connection) {
-    return Promise.resolve();
+    return Promise.resolve(true);
   },
 
   // Acquire a connection from the pool.
