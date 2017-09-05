@@ -76,11 +76,7 @@ assign(Client_SQLite3.prototype, {
   // Used to explicitly close a connection, called internally by the pool when
   // a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.close((err) => {
-      if (err) {
-        this.emit('error', err)
-      }
-    })
+    return Promise.fromCallback(connection.close.bind(connection))
   },
 
   // Runs the query on the specified connection, providing the bindings and any

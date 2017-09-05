@@ -97,7 +97,7 @@ assign(Client_MSSQL.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.close()
+    return connection.close()
   },
 
   // Position the bindings for the query.

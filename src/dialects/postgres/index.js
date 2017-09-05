@@ -130,7 +130,7 @@ assign(Client_PG.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.end()
+    return Promise.fromCallback(connection.end.bind(connection))
   },
 
   // In PostgreSQL, we need to do a version check to do some feature

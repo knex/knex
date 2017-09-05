@@ -54,7 +54,12 @@ assign(Client_MariaSQL.prototype, {
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
     connection.removeAllListeners()
+    let closed = Promise.resolve()
+    if (connection.connected || connection.connecting) {
+      closed = new Promise(resolve => { connection.once('close', resolve)})
+    }
     connection.end()
+    return closed
   },
 
   // Return the database for the MariaSQL client.

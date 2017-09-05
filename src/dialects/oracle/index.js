@@ -98,7 +98,7 @@ assign(Client_Oracle.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.close()
+    return Promise.fromCallback(connection.close.bind(connection))
   },
 
   // Return the database for the Oracle client.

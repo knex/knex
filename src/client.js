@@ -215,7 +215,7 @@ assign(Client.prototype, {
             poolConfig.beforeDestroy(connection, function() {})
           }
           if (connection !== void 0) {
-            this.destroyRawConnection(connection)
+            return this.destroyRawConnection(connection)
           }
 
           return Promise.resolve();
