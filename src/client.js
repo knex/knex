@@ -22,7 +22,7 @@ import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
 import { makeEscape } from './query/string'
-import { assign, uniqueId, cloneDeep, defaults } from 'lodash'
+import { assign, uniqueId, cloneDeep, defaults, get } from 'lodash'
 
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
@@ -175,15 +175,24 @@ assign(Client.prototype, {
 
   getPoolSettings(poolConfig) {
     poolConfig = defaults({}, poolConfig, this.poolDefaults());
+    const timeoutValidator = (config, path) => {
+      let timeout = get(config, path)
+      if (timeout !== undefined) {
+        timeout = parseInt(timeout, 10)
+        if (isNaN(timeout) || timeout <= 0) {
+          throw new Error(`${path} must be a positive int`)
+        }
+      }
+      return timeout
+    }
+
     // acquire connection timeout can be set on config or config.pool
     // choose the smallest, positive timeout setting and set on poolConfig
     const timeouts = [
-      this.config.acquireConnectionTimeout,
-      poolConfig.acquireTimeoutMillis
-    ].map(parseInt).filter(x => x > 0);
-    if (timeouts.length > 0) {
-      poolConfig.acquireTimeoutMillis = Math.min(...timeouts);
-    }
+      timeoutValidator(this.config, 'acquireConnectionTimeout') || 60000,
+      timeoutValidator({pool: poolConfig}, 'pool.acquireTimeoutMillis')
+    ].filter(timeout => timeout !== undefined)
+    poolConfig.acquireTimeoutMillis = Math.min(...timeouts);
 
     return {
       config: poolConfig,
