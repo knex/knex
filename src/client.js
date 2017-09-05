@@ -265,22 +265,17 @@ assign(Client.prototype, {
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
-    return new Promise((resolver) => {
-      if (!this.pool) {
-        return resolver()
-      }
-      return this.pool.drain()
-      .then(() => this.pool.clear())
-      .then(() => {
-        this.pool = void 0;
-
-        if(typeof callback === 'function') {
-          callback();
-        }
-
-        resolver();
-      })
-    })
+    return Promise.resolve(
+      this.pool &&
+      this.pool.drain()
+        .then(() => this.pool.clear())
+        .then(() => {
+          this.pool = void 0
+          if(typeof callback === 'function') {
+            callback();
+          }
+        })
+    );
   },
 
   // Return the database being used by this client.
