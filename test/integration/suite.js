@@ -30,7 +30,7 @@ module.exports = function(knex) {
 
     describe('knex.destroy', function() {
       it('should allow destroying the pool with knex.destroy', function() {
-        var spy = sinon.spy(knex.client.pool, 'destroyAllNow');
+        var spy = sinon.spy(knex.client.pool, 'clear');
         return knex.destroy().then(function() {
           expect(spy).to.have.callCount(1);
           expect(knex.client.pool).to.equal(undefined);

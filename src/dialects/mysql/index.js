@@ -79,13 +79,18 @@ assign(Client_MySQL.prototype, {
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
     connection.removeAllListeners()
-    connection.end(err => {
-      if (err) connection.__knex__disposed = err
-    })
+    return Promise
+      .fromCallback(connection.end.bind(connection))
+      .catch(err => {
+        connection.__knex__disposed = err
+      })
   },
 
   validateConnection(connection) {
-    return connection.state === 'connected' || connection.state === 'authenticated'
+    if(connection.state === 'connected' || connection.state === 'authenticated') {
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
   },
 
   // Grab a connection, run the query via the MySQL streaming interface,
