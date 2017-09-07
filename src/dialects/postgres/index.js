@@ -91,10 +91,10 @@ assign(Client_PG.prototype, {
     }
   }),
 
-  wrapIdentifier(value) {
+  wrapIdentifierImpl(value) {
     if (value === '*') return value;
     const matched = value.match(/(.*?)(\[[0-9]\])/);
-    if (matched) return this.wrapIdentifier(matched[1]) + matched[2];
+    if (matched) return this.wrapIdentifierImpl(matched[1]) + matched[2];
     return `"${value.replace(/"/g, '""')}"`;
   },
 

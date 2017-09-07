@@ -56,7 +56,7 @@ assign(Client_MySQL.prototype, {
 
   _escapeBinding: makeEscape(),
 
-  wrapIdentifier(value) {
+  wrapIdentifierImpl(value) {
     return (value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*')
   },
 

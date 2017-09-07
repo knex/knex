@@ -66,7 +66,7 @@ assign(Client_MSSQL.prototype, {
     return new ColumnCompiler(this, ...arguments)
   },
 
-  wrapIdentifier(value) {
+  wrapIdentifierImpl(value) {
     return (value !== '*' ? `[${value.replace(/\[/g, '\[')}]` : '*')
   },
 
