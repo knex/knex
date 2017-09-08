@@ -158,6 +158,13 @@ assign(Client.prototype, {
   },
 
   wrapIdentifier(value) {
+    if (this.config.wrapIdentifier) {
+      return this.config.wrapIdentifier(value, this.wrapIdentifierImpl);
+    }
+    return this.wrapIdentifierImpl(value);
+  },
+
+  wrapIdentifierImpl(value) {
     return (value !== '*' ? `"${value.replace(/"/g, '""')}"` : '*')
   },
 

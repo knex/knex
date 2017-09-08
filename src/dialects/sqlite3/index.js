@@ -57,7 +57,7 @@ assign(Client_SQLite3.prototype, {
     return new SQLite3_DDL(this, compiler, pragma, connection)
   },
 
-  wrapIdentifier(value) {
+  wrapIdentifierImpl(value) {
     return (value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*')
   },
 
