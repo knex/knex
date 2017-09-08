@@ -92,6 +92,9 @@ ColumnCompiler.prototype.decimal = function(precision, scale) {
   return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
 };
 ColumnCompiler.prototype.binary = 'blob';
+ColumnCompiler.prototype.tinyblob = 'tinyblob'
+ColumnCompiler.prototype.mediumblob = 'mediumblob'
+ColumnCompiler.prototype.longblob = 'longblob'
 ColumnCompiler.prototype.bool = 'boolean';
 ColumnCompiler.prototype.date = 'date';
 ColumnCompiler.prototype.datetime = 'datetime';
