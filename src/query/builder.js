@@ -97,6 +97,18 @@ assign(Builder.prototype, {
     return this;
   },
 
+  // Adds a raw `with` clause to the query.
+  withRaw(alias, sql, bindings) {
+    const raw = (sql instanceof Raw ? sql : this.client.raw(sql, bindings));
+    this._statements.push({
+      grouping: 'with',
+      type: 'withRaw',
+      alias: alias,
+      value: raw
+    });
+    return this;
+  },
+
   // Helper for compiling any advanced `with` queries.
   withWrapped(alias, callback) {
     this._statements.push({
@@ -104,6 +116,50 @@ assign(Builder.prototype, {
       type: 'withWrapped',
       alias: alias,
       value: callback
+    });
+    return this;
+  },
+
+  // With Recursive
+  // ------
+
+  withRecursive(alias, statement, bindings) {
+    if(typeof alias !== 'string') {
+      throw new Error('withRecursive() first argument must be a string');
+    }
+    if (typeof statement === 'function') {
+      if (!bindings) {
+        throw new Error('withRecursive() third argument must be a function or a raw');
+      }
+      return this.withRecursiveWrapped(alias, statement, bindings);
+    }
+    // Allow a raw statement to be passed along to the query.
+    if (statement instanceof Raw && arguments.length >= 2) {
+      return this.withRecursiveRaw(alias, statement, bindings);
+    }
+    throw new Error('withRecursive() second argument must be a function or a raw');
+  },
+
+  // Adds a raw `with recursive` clause to the query.
+  withRecursiveRaw(alias, sql, bindings) {
+    const raw = (sql instanceof Raw ? sql : this.client.raw(sql, bindings));
+    this._statements.push({
+      grouping: 'with',
+      type: 'withRecursiveRaw',
+      alias: alias,
+      value: raw
+    });
+    return this;
+  },
+
+  // Helper for compiling any advanced `with recursive` queries.
+  withRecursiveWrapped(alias, callback, recursiveCallback) {
+    this._statements.push({
+      grouping: 'with',
+      type: 'withRecursiveWrapped',
+      alias: alias,
+      value: callback,
+      recursive: recursiveCallback
     });
     return this;
   },
