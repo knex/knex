@@ -174,8 +174,8 @@ export default class Formatter {
       const first = obj[key];
       const second = key;
       // Avoids double aliasing for subqueries
-      if (typeof obj[key] === 'function') {
-        let compiled = this.compileCallback(value)
+      if (typeof first === 'function') {
+        const compiled = this.compileCallback(first)
         compiled.as = second // enforces the object's alias
         ret.push(this.outputQuery(compiled, true))
       } else {
