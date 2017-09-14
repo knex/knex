@@ -154,6 +154,36 @@ describe("QueryBuilder", function() {
       postgres: 'select "foo" as "bar" from "users"'
     });
   });
+  
+  it("basic select with mixed pure column and alias pair", function() {
+    testsql(qb().select('baz', {bar: 'foo'}).from('users'), {
+      mysql: 'select `baz`, `foo` as `bar` from `users`',
+      oracle: 'select "baz", "foo" "bar" from "users"',
+      mssql: 'select [baz], [foo] as [bar] from [users]',
+      oracledb: 'select "baz", "foo" "bar" from "users"',
+      postgres: 'select "baz", "foo" as "bar" from "users"'
+    });
+  });
+  
+  it("basic select with array-wrapped alias pair", function() {
+    testsql(qb().select(['baz', {bar: 'foo'}]).from('users'), {
+      mysql: 'select `baz`, `foo` as `bar` from `users`',
+      oracle: 'select "baz", "foo" "bar" from "users"',
+      mssql: 'select [baz], [foo] as [bar] from [users]',
+      oracledb: 'select "baz", "foo" "bar" from "users"',
+      postgres: 'select "baz", "foo" as "bar" from "users"'
+    });
+  });
+  
+  it("basic select with mixed pure column and alias pair", function() {
+    testsql(qb().select({bar: 'foo'}).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      postgres: 'select "foo" as "bar" from "users"'
+    });
+  });
 
   it("basic old-style alias", function() {
     testsql(qb().select('foo as bar').from('users'), {
