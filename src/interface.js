@@ -14,8 +14,10 @@ export default function(Target) {
 
   // Create a new instance of the `Runner`, passing in the current object.
   Target.prototype.then = function(/* onFulfilled, onRejected */) {
-    const result = this.client.runner(this).run()
-    return result.then.apply(result, arguments);
+    if (!this._runInstance) {
+      this._runInstance = this.client.runner(this).run();
+    }
+    return this._runInstance.then.apply(this._runInstance, arguments);
   };
 
   // Add additional "options" to the builder. Typically used for client specific

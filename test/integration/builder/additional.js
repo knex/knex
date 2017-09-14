@@ -19,6 +19,24 @@ module.exports = function(knex) {
       });
     });
 
+    it('should run the query once after calling the .then() function', function() {
+      var p = knex('accounts').insert({
+        first_name: 'Test',
+        last_name: 'Multithen',
+        email:'test@example.com',
+      }, 'id');
+
+      return Promise.resolve().then(function(){
+        return p;
+      }).then(function(){
+        return p;
+      }).then(function(){
+        return knex('accounts').where('last_name', 'Multithen').select('*');
+      }).then(function(multithenAccounts){
+        expect(multithenAccounts.length == 1);
+      });
+    });
+
     it('should forward the .mapSeries() function from bluebird', function() {
       var asyncTask = function(){
         return new Promise(function(resolve, reject){
