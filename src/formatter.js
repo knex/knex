@@ -173,7 +173,14 @@ export default class Formatter {
     for (const key in obj) {
       const first = obj[key];
       const second = key;
-      ret.push(this.alias(this.wrap(first), this.wrapAsIdentifier(second)))
+      // Avoids double aliasing for subqueries
+      if (typeof obj[key] === 'function') {
+        let compiled = this.compileCallback(value)
+        compiled.as = second // enforces the object's alias
+        ret.push(this.outputQuery(compiled, true))
+      } else {
+        ret.push(this.alias(this.wrap(first), this.wrapAsIdentifier(second)))
+      }
     }
     return ret.join(', ')
   }
