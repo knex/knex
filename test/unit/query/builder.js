@@ -145,7 +145,17 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("basic alias", function() {
+  it("basic select with alias as property-value pairs", function() {
+    testsql(qb().select({bar: 'foo'}).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      postgres: 'select "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic old-style alias", function() {
     testsql(qb().select('foo as bar').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',

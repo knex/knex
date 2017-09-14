@@ -97,13 +97,18 @@ export default class Formatter {
   // Puts the appropriate wrapper around a value depending on the database
   // engine, unless it's a knex.raw value, in which case it's left alone.
   wrap(value) {
-    if (typeof value === 'function') {
-      return this.outputQuery(this.compileCallback(value), true);
-    }
     const raw = this.unwrapRaw(value);
     if (raw) return raw;
-    if (typeof value === 'number') return value;
-    return this._wrapString(value + '');
+    switch (typeof value) {
+      case 'function':
+        return this.outputQuery(this.compileCallback(value), true);
+      case 'object':
+        return this.parseObject(value);
+      case 'number':
+        return value;
+      default:
+        return this.wrapString(value + '');
+    }
   }
 
   wrapAsIdentifier(value) {
@@ -161,14 +166,25 @@ export default class Formatter {
     }
     return sql;
   }
+  
+  // Key-value notation for alias
+  parseObject(obj) {
+    const ret = [];
+    for (const key in obj) {
+      const first = obj[key];
+      const second = key;
+      ret.push(this.alias(this.wrap(first), this.wrapAsIdentifier(second)))
+    }
+    return ret.join(', ')
+  }
 
   // Coerce to string to prevent strange errors when it's not a string.
-  _wrapString(value) {
+  wrapString(value) {
     const asIndex = value.toLowerCase().indexOf(' as ');
     if (asIndex !== -1) {
-      const first = value.slice(0, asIndex)
-      const second = value.slice(asIndex + 4)
-      return this.alias(this.wrap(first), this.wrapAsIdentifier(second))
+      const first = value.slice(0, asIndex);
+      const second = value.slice(asIndex + 4);
+      return this.alias(this.wrap(first), this.wrapAsIdentifier(second));
     }
     const wrapped = [];
     let i = -1;
