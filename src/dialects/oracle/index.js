@@ -116,7 +116,6 @@ assign(Client_Oracle.prototype, {
   },
 
   _stream(connection, obj, stream, options) {
-    obj.sql = this.positionBindings(obj.sql);
     return new Promise(function (resolver, rejecter) {
       stream.on('error', (err) => {
         if (isConnectionError(err)) {
@@ -133,9 +132,6 @@ assign(Client_Oracle.prototype, {
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query(connection, obj) {
-
-    // convert ? params into positional bindings (:1)
-    obj.sql = this.positionBindings(obj.sql);
 
     if (!obj.sql) throw new Error('The query is empty');
 

@@ -21,9 +21,9 @@ function canRunDockerTests() {
   const isLinux   = os.platform() === 'linux';
   const isDarwin  = os.platform() === 'darwin'
   // dont even try on windows / osx for now
-  let hasDocker = false;
+  let hasDockerStarted = false;
   if (isLinux || isDarwin) {
-    hasDocker = proc.execSync('docker -v 1>/dev/null 2>&1 ; echo $?').toString('utf-8') === '0\n';
+    hasDockerStarted = proc.execSync('docker info 1>/dev/null 2>&1 ; echo $?').toString('utf-8') === '0\n';
   }
-  return hasDocker;
+  return hasDockerStarted;
 }
