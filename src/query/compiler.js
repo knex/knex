@@ -73,7 +73,15 @@ assign(QueryCompiler.prototype, {
       );
     }
 
-    return assign(defaults, val);
+    const query = assign(defaults, val);
+    query.toNative = () => {
+      return {
+        sql: this.client.positionBindings(query.sql),
+        bindings: this.client.prepBindings(query.bindings)
+      };
+    };
+
+    return query;
   },
 
   // Compiles the `select` statement, or nested sub-selects by calling each of
