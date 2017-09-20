@@ -9,7 +9,7 @@ import { assign } from 'lodash'
 
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'first', 'after', 'comment', 'collate']
+  this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'comment', 'first', 'after', 'collate']
 }
 inherits(ColumnCompiler_MySQL, ColumnCompiler);
 
@@ -95,19 +95,19 @@ assign(ColumnCompiler_MySQL.prototype, {
     return 'unsigned'
   },
 
+  comment(comment) {
+    if (comment && comment.length > 255) {
+      helpers.warn('Your comment is longer than the max comment length for MySQL')
+    }
+    return comment && `comment '${comment}'`
+  },
+
   first() {
     return 'first'
   },
 
   after(column) {
     return `after ${this.formatter.wrap(column)}`
-  },
-
-  comment(comment) {
-    if (comment && comment.length > 255) {
-      helpers.warn('Your comment is longer than the max comment length for MySQL')
-    }
-    return comment && `comment '${comment}'`
   },
 
   collate(collation) {

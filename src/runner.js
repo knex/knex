@@ -1,4 +1,4 @@
-import { assign, isArray } from 'lodash'
+import { assign, isArray, noop } from 'lodash'
 import Promise from 'bluebird';
 import * as helpers from './helpers';
 
@@ -98,6 +98,10 @@ assign(Runner.prototype, {
       handler(stream);
       return promise;
     }
+
+    // This promise is unreachable since no handler was given, so noop any
+    // exceptions. Errors should be handled in the stream's 'error' event.
+    promise.catch(noop);
     return stream;
   },
 
@@ -181,24 +185,21 @@ assign(Runner.prototype, {
 
   // Check whether there's a transaction flag, and that it has a connection.
   ensureConnection() {
-    return Promise.try(() => {
-      return this.connection || new Promise((resolver, rejecter) => {
-        // need to return promise or null from handler to prevent warning from bluebird
-        return this.client.acquireConnection()
-          .then(resolver)
-          .catch(Promise.TimeoutError, (error) => {
-            if (this.builder) {
-              error.sql = this.builder.sql;
-              error.bindings = this.builder.bindings;
-            }
-            throw error
-          })
-          .catch(rejecter)
+    if(this.connection) {
+      return Promise.resolve(this.connection)
+    }
+    return this.client.acquireConnection()
+      .catch(Promise.TimeoutError, error => {
+        if (this.builder) {
+          error.sql = this.builder.sql;
+          error.bindings = this.builder.bindings;
+        }
+        throw error;
       })
-    }).disposer(() => {
-      // need to return promise or null from handler to prevent warning from bluebird
-      return this.client.releaseConnection(this.connection)
-    })
+      .disposer(() => {
+        // need to return promise or null from handler to prevent warning from bluebird
+        return this.client.releaseConnection(this.connection)
+      });
   }
 
 })

@@ -7,7 +7,7 @@ import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
 import * as helpers from '../helpers';
 import { assign } from 'lodash'
-import BatchInsert from './batchInsert';
+import batchInsert from './batchInsert';
 
 export default function makeKnex(client) {
 
@@ -34,7 +34,7 @@ export default function makeKnex(client) {
     },
 
     batchInsert(table, batch, chunkSize = 1000) {
-      return new BatchInsert(this, table, batch, chunkSize);
+      return batchInsert(this, table, batch, chunkSize);
     },
 
     // Runs a new transaction, taking a container and returning a promise

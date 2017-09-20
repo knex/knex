@@ -44,14 +44,22 @@ assign(Client_MariaSQL.prototype, {
   },
 
   validateConnection(connection) {
-    return connection.connected === true
+    if(connection.connected === true) {
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
   },
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
     connection.removeAllListeners()
+    let closed = Promise.resolve()
+    if (connection.connected || connection.connecting) {
+      closed = new Promise(resolve => { connection.once('close', resolve)})
+    }
     connection.end()
+    return closed
   },
 
   // Return the database for the MariaSQL client.

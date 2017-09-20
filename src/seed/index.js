@@ -38,13 +38,13 @@ Seeder.prototype.make = function(name, config) {
 // Lists all available seed files as a sorted array.
 Seeder.prototype._listAll = Promise.method(function(config) {
   this.config = this.setConfig(config);
+  const loadExtensions = this.config.loadExtensions;
   return Promise.promisify(fs.readdir, {context: fs})(this._absoluteConfigDir())
     .bind(this)
     .then(seeds =>
       filter(seeds, function(value) {
         const extension = path.extname(value);
-        return includes(
-          ['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'], extension);
+        return includes(loadExtensions, extension);
       }).sort()
     );
 });
@@ -134,7 +134,10 @@ Seeder.prototype._absoluteConfigDir = function() {
 Seeder.prototype.setConfig = function(config) {
   return extend({
     extension: 'js',
-    directory: './seeds'
+    directory: './seeds',
+    loadExtensions: [
+      '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
+    ],
   }, this.config || {}, config);
 };
 

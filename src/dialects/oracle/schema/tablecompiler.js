@@ -6,7 +6,7 @@ import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
 import Trigger from './trigger';
 
-import { assign } from 'lodash'
+import { assign, map } from 'lodash'
 
 // Table Compiler
 // ------
@@ -17,6 +17,27 @@ function TableCompiler_Oracle() {
 inherits(TableCompiler_Oracle, TableCompiler);
 
 assign(TableCompiler_Oracle.prototype, {
+
+  addColumns(columns, prefix) {
+    if (columns.sql.length > 0) {
+      prefix = prefix || this.addColumnsPrefix;
+
+      const columnSql = map(columns.sql, (column) => column);
+      const alter = this.lowerCase ? 'alter table ' : 'ALTER TABLE ';
+
+      let sql = `${alter}${this.tableName()} ${prefix}`;
+      if (columns.sql.length > 1) {
+        sql += `(${columnSql.join(', ')})`;
+      } else {
+        sql += columnSql.join(', ');
+      }
+
+      this.pushQuery({
+        sql,
+        bindings: columns.bindings,
+      });
+    }
+  },
 
   // Compile a rename column command.
   renameColumn(from, to) {
@@ -50,6 +71,8 @@ assign(TableCompiler_Oracle.prototype, {
   },
 
   addColumnsPrefix: 'add ',
+
+  alterColumnsPrefix: 'modify ',
 
   dropColumn() {
     const columns = helpers.normalizeArr.apply(null, arguments);

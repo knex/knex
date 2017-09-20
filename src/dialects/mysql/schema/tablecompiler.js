@@ -50,6 +50,8 @@ assign(TableCompiler_MySQL.prototype, {
 
   addColumnsPrefix: 'add ',
 
+  alterColumnsPrefix: 'modify ',
+
   dropColumnPrefix: 'drop ',
 
   // Compiles the comment on the table.

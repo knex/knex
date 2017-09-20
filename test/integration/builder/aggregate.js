@@ -35,10 +35,10 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select sum("logins") from "accounts"',
+            'select sum(`logins`) from `accounts`',
             [],
             [{
-              'sum("logins")': 10
+              'sum(`logins`)': 10
             }]
           );
           tester(
@@ -74,7 +74,7 @@ module.exports = function(knex) {
         // mysql: 1.6667
         tester('mysql', 'select avg(`logins`) from `accounts`', [], checkResRange.bind(null, 'avg(`logins`)'));
         // sqlite: 1.6666666666666667
-        tester('sqlite3', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'avg("logins")'));
+        tester('sqlite3', 'select avg(`logins`) from `accounts`', [], checkResRange.bind(null, 'avg(`logins`)'));
         // postgres: '1.6666666666666667'
         tester('postgresql', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'avg'));
         // oracle: 1.66666666666667
@@ -106,10 +106,10 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'select count("id") from "accounts"',
+          'select count(`id`) from `accounts`',
           [],
           [{
-            'count("id")': 6
+            'count(`id`)': 6
           }]
         );
         tester(
@@ -157,12 +157,12 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'select count("id"), max("logins"), min("logins") from "accounts"',
+          'select count(`id`), max(`logins`), min(`logins`) from `accounts`',
           [],
           [{
-            'count("id")': 6,
-            'max("logins")': 2,
-            'min("logins")': 1
+            'count(`id`)': 6,
+            'max(`logins`)': 2,
+            'min(`logins`)': 1
           }]
         );
         tester(
@@ -212,12 +212,12 @@ module.exports = function(knex) {
         );
         tester(
             'sqlite3',
-            'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
+            'select count(distinct `id`), sum(distinct `logins`), avg(distinct `logins`) from `accounts`',
             [],
             [{
-              'count(distinct "id")': 6,
-              'sum(distinct "logins")': 3,
-              'avg(distinct "logins")': 1.5
+              'count(distinct `id`)': 6,
+              'sum(distinct `logins`)': 3,
+              'avg(distinct `logins`)': 1.5
             }]
         );
         tester(
@@ -267,12 +267,12 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'select count("id") from "accounts" group by "logins"',
+          'select count(`id`) from `accounts` group by `logins`',
           [],
           [{
-            'count("id")': 2
+            'count(`id`)': 2
           },{
-            'count("id")': 4
+            'count(`id`)': 4
           }]
         );
         tester(
@@ -316,10 +316,10 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select count("id") from "accounts" group by "first_name"',
+            'select count(`id`) from `accounts` group by `first_name`',
             [],
             [{
-              'count("id")': 6
+              'count(`id`)': 6
             }]
           );
           tester(

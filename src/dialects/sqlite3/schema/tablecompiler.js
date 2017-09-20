@@ -28,7 +28,10 @@ TableCompiler_SQLite3.prototype.createQuery = function(columns, ifNot) {
   this.pushQuery(sql);
 };
 
-TableCompiler_SQLite3.prototype.addColumns = function(columns) {
+TableCompiler_SQLite3.prototype.addColumns = function(columns, prefix) {
+  if (prefix) {
+    throw new Error("Sqlite does not support alter column.");
+  }
   for (let i = 0, l = columns.sql.length; i < l; i++) {
     this.pushQuery({
       sql: `alter table ${this.tableName()} add column ${columns.sql[i]}`,
@@ -115,12 +118,13 @@ TableCompiler_SQLite3.prototype.renameColumn = function(from, to) {
   });
 };
 
-TableCompiler_SQLite3.prototype.dropColumn = function(column) {
+TableCompiler_SQLite3.prototype.dropColumn = function() {
   const compiler = this;
+  const columns = Object.values(arguments);
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {
-      return compiler.client.ddl(compiler, pragma, this.connection).dropColumn(column);
+      return compiler.client.ddl(compiler, pragma, this.connection).dropColumn(columns);
     }
   });
 };

@@ -41,6 +41,50 @@ TableCompiler_PG.prototype.createQuery = function(columns, ifNot) {
   if (hasComment) this.comment(this.single.comment);
 };
 
+TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) {
+  if (prefix === this.alterColumnsPrefix) {
+    // alter columns
+    for (const col  of colCompilers) {
+      const quotedTableName = this.tableName();
+      const colName = col.getColumnName();
+      const type = col.getColumnType();
+
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column "${colName}" drop default`,
+        bindings: []
+      });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column "${colName}" drop not null`,
+        bindings: []
+      });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column "${colName}" type ${type} using ("${colName}"::${type})`,
+        bindings: []
+      });
+
+      const defaultTo = col.modified['defaultTo'];
+      if (defaultTo) {
+        const modifier = col.defaultTo.apply(col, defaultTo);
+        this.pushQuery({
+          sql: `alter table ${quotedTableName} alter column "${colName}" set ${modifier}`,
+          bindings: []
+        });
+      }
+
+      const nullable = col.modified['nullable'];
+      if (nullable && nullable[0] === false) {
+        this.pushQuery({
+          sql: `alter table ${quotedTableName} alter column "${colName}" set not null`,
+          bindings: []
+        });
+      }
+    }
+  } else {
+    // base class implementation for normal add
+    TableCompiler.prototype.addColumns.call(this, columns, prefix);
+  }
+};
+
 // Compiles the comment on the table.
 TableCompiler_PG.prototype.comment = function(comment) {
   this.pushQuery(`comment on table ${this.tableName()} is '${this.single.comment || ''}'`);
@@ -69,6 +113,7 @@ TableCompiler_PG.prototype.dropPrimary = function(constraintName) {
 };
 TableCompiler_PG.prototype.dropIndex = function(columns, indexName) {
   indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+  indexName = this.schemaNameRaw ? `${this.formatter.wrap(this.schemaNameRaw)}.${indexName}` : indexName;
   this.pushQuery(`drop index ${indexName}`);
 };
 TableCompiler_PG.prototype.dropUnique = function(columns, indexName) {

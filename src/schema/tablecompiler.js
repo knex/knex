@@ -38,7 +38,8 @@ TableCompiler.prototype.lowerCase = true;
 // and then run through anything else and push it to the query sequence.
 TableCompiler.prototype.createAlterTableMethods = null;
 TableCompiler.prototype.create = function (ifNot) {
-  const columns = this.getColumns();
+  const columnBuilders = this.getColumns();
+  const columns = columnBuilders.map(col => col.toSQL());
   const columnTypes = this.getColumnTypes(columns);
   if (this.createAlterTableMethods) {
     this.alterTableForCreate(columnTypes);
@@ -58,16 +59,23 @@ TableCompiler.prototype.createIfNot = function () {
 // go through and handle each of the queries associated
 // with altering the table's schema.
 TableCompiler.prototype.alter = function () {
-  const columns = this.getColumns();
-  const columnTypes = this.getColumnTypes(columns);
-  this.addColumns(columnTypes);
-  this.columnQueries(columns);
+  const addColBuilders   = this.getColumns();
+  const addColumns       = addColBuilders.map(col => col.toSQL());
+  const alterColBuilders = this.getColumns('alter');
+  const alterColumns     = alterColBuilders.map(col => col.toSQL());
+  const addColumnTypes   = this.getColumnTypes(addColumns);
+  const alterColumnTypes = this.getColumnTypes(alterColumns);
+
+  this.addColumns(addColumnTypes);
+  this.alterColumns(alterColumnTypes, alterColBuilders);
+  this.columnQueries(addColumns);
+  this.columnQueries(alterColumns);
   this.alterTable();
 };
 
 TableCompiler.prototype.foreign = function (foreignData) {
   if (foreignData.inTable && foreignData.references) {
-    const keyName = this._indexCommand('foreign', this.tableNameRaw, foreignData.column);
+    const keyName = foreignData.keyName ? this.formatter.wrap(foreignData.keyName) : this._indexCommand('foreign', this.tableNameRaw, foreignData.column);
     const column = this.formatter.columnize(foreignData.column);
     const references = this.formatter.columnize(foreignData.references);
     const inTable = this.formatter.wrap(foreignData.inTable);
@@ -98,8 +106,8 @@ TableCompiler.prototype.columnQueries = function (columns) {
     if (!isEmpty(column)) return memo.concat(column);
     return memo;
   }, []);
-  for (let i = 0, l = queries.length; i < l; i++) {
-    this.pushQuery(queries[i]);
+  for (const q of queries) {
+    this.pushQuery(q);
   }
 };
 
@@ -107,10 +115,12 @@ TableCompiler.prototype.columnQueries = function (columns) {
 TableCompiler.prototype.addColumnsPrefix = 'add column ';
 
 // All of the columns to "add" for the query
-TableCompiler.prototype.addColumns = function (columns) {
+TableCompiler.prototype.addColumns = function (columns, prefix) {
+  prefix = prefix || this.addColumnsPrefix;
+
   if (columns.sql.length > 0) {
     const columnSql = map(columns.sql, (column) => {
-      return this.addColumnsPrefix + column;
+      return prefix + column;
     });
     this.pushQuery({
       sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + columnSql.join(', '),
@@ -119,12 +129,23 @@ TableCompiler.prototype.addColumns = function (columns) {
   }
 };
 
+// Alter column
+TableCompiler.prototype.alterColumnsPrefix = 'alter column ';
+
+TableCompiler.prototype.alterColumns = function (columns, colBuilders) {
+  if (columns.sql.length > 0) {
+    this.addColumns(columns, this.alterColumnsPrefix, colBuilders);
+  }
+};
+
 // Compile the columns as needed for the current create or alter table
-TableCompiler.prototype.getColumns = function () {
+TableCompiler.prototype.getColumns = function (method) {
   const columns = this.grouped.columns || [];
-  return columns.map(column =>
-    this.client.columnCompiler(this, column.builder).toSQL()
-  );
+  method        = method || 'add';
+
+  return columns
+    .filter(column => column.builder._method === method)
+    .map(column => this.client.columnCompiler(this, column.builder));
 };
 
 TableCompiler.prototype.tableName = function () {

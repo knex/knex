@@ -57,7 +57,7 @@ module.exports = function(knex) {
         .testSql(function(tester) {
           tester('mysql', 'truncate `test_table_two`');
           tester('postgresql', 'truncate "test_table_two" restart identity');
-          tester('sqlite3', "delete from \"test_table_two\"");
+          tester('sqlite3', "delete from `test_table_two`");
           tester('oracle', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
         })
@@ -135,7 +135,7 @@ module.exports = function(knex) {
             "defaultValue": null,
             "maxLength": null,
             "nullable": true,
-            "type": "varchar"
+            "type": "text"
           },
           "uuid": {
             "defaultValue": null,
@@ -244,7 +244,7 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["show fields from `accounts` where field = ?"]);
           tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
-          tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+          tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
           tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
         });
@@ -281,7 +281,7 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["alter table `accounts` drop `first_name`"]);
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
-          tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+          tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ['alter table "accounts" drop ("first_name")']);
           //tester('oracledb', ['alter table "accounts" drop ("first_name")']);
           tester('mssql', ["ALTER TABLE [accounts] DROP COLUMN [first_name]"]);
