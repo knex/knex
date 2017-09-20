@@ -19,7 +19,7 @@ SchemaCompiler_PG.prototype.hasTable = function(tableName) {
     sql += ' and table_schema = ?';
     bindings.push(this.schema);
   } else {
-    sql += ' and table_schema = current_schema';
+    sql += ' and table_schema = current_schema()';
   }
 
   this.pushQuery({
@@ -40,7 +40,7 @@ SchemaCompiler_PG.prototype.hasColumn = function(tableName, columnName) {
     sql += ' and table_schema = ?';
     bindings.push(this.schema);
   } else {
-    sql += ' and table_schema = current_schema';
+    sql += ' and table_schema = current_schema()';
   }
 
   this.pushQuery({

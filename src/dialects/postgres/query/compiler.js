@@ -82,7 +82,7 @@ assign(QueryCompiler_PG.prototype, {
       sql += ' and table_schema = ?';
       bindings.push(this.single.schema);
     } else {
-      sql += ' and table_schema = current_schema';
+      sql += ' and table_schema = current_schema()';
     }
 
     return {

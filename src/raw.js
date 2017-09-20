@@ -147,7 +147,7 @@ function replaceRawArrBindings(raw, formatter) {
 
 function replaceKeyBindings(raw, formatter) {
   const values = raw.bindings
-
+  
   let { sql } = raw
 
   const regex = /\\?(:(\w+):(?=::)|:(\w+):(?!:)|:(\w+))/g

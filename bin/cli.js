@@ -190,7 +190,7 @@ function invoke(env) {
   });
 }
 
-var cli = new Liftoff({
+const cli = new Liftoff({
   name: 'knex',
   extensions: interpret.jsVariants,
   v8flags: require('v8flags')
