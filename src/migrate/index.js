@@ -97,9 +97,15 @@ export default class Migrator {
 
   forceFreeMigrationsLock(config) {
     this.config = this.setConfig(config);
+    console.log("LOOKING FOR LOCKTABLENAME");
     const lockTable = this._getLockTableName();
+    console.log(`LOOKING FOR HASTABLE(${lockTable}) with ${typeof this.knex.schema.hasTable}`);
+    debugger;
     return this.knex.schema.hasTable(lockTable)
-      .then(exist => exist && this._freeLock());
+      .then(exist => {
+        console.log("LOOKING FOR EXIST");
+        return exist && this._freeLock();
+      });
   }
 
   // Creates a new migration, with a given name.

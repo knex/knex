@@ -1,18 +1,44 @@
-/*global expect, describe, it*/
+/*global expect, describe, before, after, it, testPromise*/
 
 'use strict';
 
-module.exports = function(knex) {
+var os = require("os");
+var proc    = require('child_process');
+var Docker = require("../docker/docker");
+var Promise = testPromise;
+
+module.exports = function(knex, config) {
   var sinon = require('sinon');
+  var docker,
+    dockerConf,
+    container;
 
   describe(knex.client.dialect + ' | ' + knex.client.driverName, function() {
 
     this.dialect    = knex.client.dialect;
     this.driverName = knex.client.driverName;
 
+    before(function() {
+      if (config && config.docker && canRunDockerTests()) {
+        dockerConf = config.docker;
+        const ContainerClass = require("../docker/" + dockerConf. factory);
+        docker = new Docker();
+        container = new ContainerClass(docker, dockerConf);
+        return container.start().then(function() {
+          return waitReadyForQueries();
+        });
+      }
+    });
+
     after(function() {
-      return knex.destroy()
-    })
+      var promises = [
+        knex.destroy(),
+      ];
+      if (container) {
+        promises.push(container.destroy());
+      }
+      return testPromise.all(promises);
+    });
 
     require('./schema')(knex);
     require('./migrate')(knex);
@@ -42,4 +68,32 @@ module.exports = function(knex) {
     });
   });
 
+
+  function waitReadyForQueries(attempt) {
+    attempt = attempt || 0;
+    return new Promise(function (resolve, reject) {
+      knex.raw('SELECT 1 as one')
+        .then(function () {
+          resolve();
+        })
+        .catch(function (a) {
+          if (attempt < 20) {
+            setTimeout(function () { resolve(waitReadyForQueries(attempt + 1)) }, 1000);
+          } else {
+            reject(attempt);
+          }
+        });
+    });
+  }
+
+  function canRunDockerTests() {
+    var isLinux   = os.platform() === 'linux';
+    var isDarwin  = os.platform() === 'darwin'
+    // dont even try on windows / osx for now
+    var hasDocker = false;
+    if (isLinux || isDarwin) {
+      hasDocker = proc.execSync('docker -v 1>/dev/null 2>&1 ; echo $?').toString('utf-8') === '0\n';
+    }
+    return hasDocker;
+  }
 };

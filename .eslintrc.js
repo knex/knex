@@ -12,7 +12,6 @@ module.exports = {
     "comma-dangle": 0,
     "no-unused-vars": [warning, {"vars": "all", "args": "none"}],
     "no-console": warning,
-    "no-var": 2,
     "no-debugger": warning,
     "indent": [warning, 2, {"SwitchCase": 1}],
     "max-len": [warning, 100, 2],
