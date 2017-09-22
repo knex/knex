@@ -66,7 +66,7 @@ assign(Client_MSSQL.prototype, {
     return new ColumnCompiler(this, ...arguments)
   },
 
-  wrapIdentifier(value) {
+  wrapIdentifierImpl(value) {
     return (value !== '*' ? `[${value.replace(/\[/g, '\[')}]` : '*')
   },
 
@@ -74,7 +74,7 @@ assign(Client_MSSQL.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     return new Promise((resolver, rejecter) => {
-      const connection = new this.driver.Connection(this.connectionSettings);
+      const connection = new this.driver.ConnectionPool(this.connectionSettings);
       connection.connect((err) => {
         if (err) {
           return rejecter(err)
@@ -88,13 +88,16 @@ assign(Client_MSSQL.prototype, {
   },
 
   validateConnection(connection) {
-    return connection.connected === true
+    if(connection.connected === true) {
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
   },
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.close()
+    return connection.close()
   },
 
   // Position the bindings for the query.
@@ -156,7 +159,7 @@ assign(Client_MSSQL.prototype, {
         if (err) {
           return rejecter(err)
         }
-        obj.response = recordset[0]
+        obj.response = recordset.recordsets[0]
         resolver(obj)
       })
     })

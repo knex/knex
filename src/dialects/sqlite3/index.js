@@ -4,7 +4,7 @@
 import Promise from 'bluebird';
 
 import inherits from 'inherits';
-import { isUndefined, map, assign } from 'lodash'
+import { isUndefined, map, assign, defaults } from 'lodash'
 
 import Client from '../../client';
 import * as helpers from '../../helpers';
@@ -57,6 +57,10 @@ assign(Client_SQLite3.prototype, {
     return new SQLite3_DDL(this, compiler, pragma, connection)
   },
 
+  wrapIdentifierImpl(value) {
+    return (value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*')
+  },
+
   // Get a raw connection from the database, returning a promise with the connection object.
   acquireRawConnection() {
     return new Promise((resolve, reject) => {
@@ -72,11 +76,7 @@ assign(Client_SQLite3.prototype, {
   // Used to explicitly close a connection, called internally by the pool when
   // a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.close((err) => {
-      if (err) {
-        this.emit('error', err)
-      }
-    })
+    return Promise.fromCallback(connection.close.bind(connection))
   },
 
   // Runs the query on the specified connection, providing the bindings and any
@@ -148,11 +148,8 @@ assign(Client_SQLite3.prototype, {
     }
   },
 
-  poolDefaults(config) {
-    return assign(Client.prototype.poolDefaults.call(this, config), {
-      min: 1,
-      max: 1
-    })
+  poolDefaults() {
+    return defaults({min: 1, max: 1}, Client.prototype.poolDefaults.call(this))
   }
 
 })

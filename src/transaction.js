@@ -9,7 +9,7 @@ import makeKnex from './util/make-knex';
 
 const debug = Debug('knex:tx');
 
-import { uniqueId } from 'lodash';
+import { uniqueId, isUndefined } from 'lodash';
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
@@ -121,8 +121,15 @@ export default class Transaction extends EventEmitter {
         debug('%s error running transaction query', this.txid)
       })
       .tap(() => {
-        if (status === 1) this._resolver(value)
-        if (status === 2) this._rejecter(value)
+        if (status === 1) {
+          this._resolver(value)
+        }
+        if (status === 2) {
+          if(isUndefined(value)) {
+            value = new Error(`Transaction rejected with non-error: ${value}`)
+          }
+          this._rejecter(value)
+        }
       })
     if (status === 1 || status === 2) {
       this._completed = true
@@ -236,20 +243,21 @@ function makeTxClient(trx, client, connection) {
 
 function completedError(trx, obj) {
   const sql = typeof obj === 'string' ? obj : obj && obj.sql
-  debug('%s: Transaction completed: %s', trx.id, sql)
+  debug('%s: Transaction completed: %s', trx.txid, sql)
   throw new Error('Transaction query already complete, run with DEBUG=knex:tx for more info')
 }
 
 const promiseInterface = [
   'then', 'bind', 'catch', 'finally', 'asCallback',
   'spread', 'map', 'reduce', 'tap', 'thenReturn',
-  'return', 'yield', 'ensure', 'exec', 'reflect'
+  'return', 'yield', 'ensure', 'exec', 'reflect',
+  'get', 'mapSeries', 'delay'
 ]
 
-// Creates a method which "coerces" to a promise, by calling a
-// "then" method on the current `Target`.
+// Creates methods which proxy promise interface methods to 
+// internal transaction resolution promise
 promiseInterface.forEach(function(method) {
   Transaction.prototype[method] = function() {
-    return (this._promise = this._promise[method].apply(this._promise, arguments))
+    return this._promise[method].apply(this._promise, arguments)
   }
 })

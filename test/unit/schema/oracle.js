@@ -74,6 +74,17 @@ describe("Oracle SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo", "bar")');
   });
 
+  it('should alter columns with the alter flag', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.string('foo').alter();
+      this.string('bar');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "bar" varchar2(255)');
+    expect(tableSql[1].sql).to.equal('alter table "users" modify "foo" varchar2(255)');
+  });
+
   it('test drop primary', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.dropPrimary();
@@ -186,6 +197,31 @@ describe("Oracle SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "orders" ("id")');
+
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.integer('foo_id').references('id').on('orders');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo_id" integer');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "orders" ("id")');
+  });
+
+  it('adding foreign key with specific identifier', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.foreign('foo_id', 'fk_foo').references('id').on('orders');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "fk_foo" foreign key ("foo_id") references "orders" ("id")');
+
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.integer('foo_id').references('id').on('orders').withKeyName('fk_foo');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo_id" integer');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "fk_foo" foreign key ("foo_id") references "orders" ("id")');
   });
 
   it("adds foreign key with onUpdate and onDelete", function() {
@@ -440,7 +476,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "created_at" timestamp with time zone, add "updated_at" timestamp with time zone');
+    expect(tableSql[0].sql).to.equal('alter table "users" add ("created_at" timestamp with time zone, "updated_at" timestamp with time zone)');
   });
 
   it('test adding binary', function() {
@@ -459,6 +495,24 @@ describe("Oracle SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add "foo" decimal(2, 6)');
+  });
+
+  it('test set comment', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.comment('Custom comment');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('comment on table "users" is \'Custom comment\'');
+  });
+
+  it('test set empty comment', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.comment('');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('comment on table "users" is \'\'');
   });
 
   it('is possible to set raw statements in defaultTo, #146', function() {

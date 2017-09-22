@@ -78,11 +78,11 @@ assign(QueryCompiler_MSSQL.prototype, {
 
   // Compiles an `update` query, allowing for a return value.
   update() {
+    const top = this.top();
     const updates = this._prepUpdate(this.single.update);
     const join = this.join();
     const where = this.where();
     const order = this.order();
-    const top = this.top();
     const { returning } = this.single;
     return {
       sql: this.with() + `update ${top ? top + ' ' : ''}${this.tableName}` +
@@ -116,6 +116,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   columns() {
     let distinct = false;
     if (this.onlyUnions()) return ''
+    const top = this.top();
     const columns = this.grouped.columns || []
     let i = -1, sql = [];
     if (columns) {
@@ -131,7 +132,7 @@ assign(QueryCompiler_MSSQL.prototype, {
       }
     }
     if (sql.length === 0) sql = ['*'];
-    const top = this.top();
+
     return `select ${distinct ? 'distinct ' : ''}` +
       (top ? top + ' ' : '') +
       sql.join(', ') + (this.tableName ? ` from ${this.tableName}` : '');

@@ -34,7 +34,8 @@ function makeClient(trx, client) {
 const promiseInterface = [
   'then', 'bind', 'catch', 'finally', 'asCallback',
   'spread', 'map', 'reduce', 'tap', 'thenReturn',
-  'return', 'yield', 'ensure', 'exec', 'reflect'
+  'return', 'yield', 'ensure', 'exec', 'reflect',
+  'get', 'mapSeries', 'delay'
 ]
 
 // Creates a method which "coerces" to a promise, by calling a

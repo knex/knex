@@ -7,17 +7,17 @@ import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
 import * as helpers from '../helpers';
 import { assign } from 'lodash'
-import BatchInsert from './batchInsert';
+import batchInsert from './batchInsert';
 
 export default function makeKnex(client) {
 
   // The object we're potentially using to kick off an initial chain.
-  function knex(tableName) {
+  function knex(tableName, options) {
     const qb = knex.queryBuilder()
     if (!tableName) helpers.warn(
       'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
     );
-    return tableName ? qb.table(tableName) : qb
+    return tableName ? qb.table(tableName, options) : qb
   }
 
   assign(knex, {
@@ -34,7 +34,7 @@ export default function makeKnex(client) {
     },
 
     batchInsert(table, batch, chunkSize = 1000) {
-      return new BatchInsert(this, table, batch, chunkSize);
+      return batchInsert(this, table, batch, chunkSize);
     },
 
     // Runs a new transaction, taking a container and returning a promise

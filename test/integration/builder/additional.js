@@ -10,6 +10,46 @@ module.exports = function(knex) {
 
   describe('Additional', function () {
 
+    it('should forward the .get() function from bluebird', function() {
+      return knex('accounts').select().limit(1).then(function(accounts){
+        var firstAccount = accounts[0];
+        return knex('accounts').select().limit(1).get(0).then(function(account){
+          expect(account.id == firstAccount.id);
+        });
+      });
+    });
+
+    it('should forward the .mapSeries() function from bluebird', function() {
+      var asyncTask = function(){
+        return new Promise(function(resolve, reject){
+          var output = asyncTask.num++;
+          setTimeout(function(){
+            resolve(output);
+          }, Math.random()*200);
+        });
+      };
+      asyncTask.num = 1;
+
+      var returnedValues = [];
+      return knex('accounts').select().limit(3).mapSeries(function(account){
+        return asyncTask().then(function(number){
+          returnedValues.push(number);
+        });
+      })
+      .then(function(){
+        expect(returnedValues[0] == 1);
+        expect(returnedValues[1] == 2);
+        expect(returnedValues[2] == 3);
+      });
+    });
+
+    it('should forward the .delay() function from bluebird', function() {
+      var startTime = (new Date()).valueOf();
+      return knex('accounts').select().limit(1).delay(300).then(function(accounts){
+        expect((new Date()).valueOf() - startTime > 300);
+      });
+    });
+
     it('should truncate a table with truncate', function() {
 
       return knex('test_table_two')
@@ -17,7 +57,7 @@ module.exports = function(knex) {
         .testSql(function(tester) {
           tester('mysql', 'truncate `test_table_two`');
           tester('postgresql', 'truncate "test_table_two" restart identity');
-          tester('sqlite3', "delete from \"test_table_two\"");
+          tester('sqlite3', "delete from `test_table_two`");
           tester('oracle', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
           tester('db2', 'truncate table "test_table_two"')
@@ -96,7 +136,7 @@ module.exports = function(knex) {
             "defaultValue": null,
             "maxLength": null,
             "nullable": true,
-            "type": "varchar"
+            "type": "text"
           },
           "uuid": {
             "defaultValue": null,
@@ -221,7 +261,7 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["show fields from `accounts` where field = ?"]);
           tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
-          tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+          tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
           tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
         });
@@ -258,7 +298,7 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["alter table `accounts` drop `first_name`"]);
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
-          tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+          tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ['alter table "accounts" drop ("first_name")']);
           //tester('oracledb', ['alter table "accounts" drop ("first_name")']);
           tester('mssql', ["ALTER TABLE [accounts] DROP COLUMN [first_name]"]);

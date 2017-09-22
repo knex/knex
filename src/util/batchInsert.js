@@ -1,82 +1,76 @@
 
 
-import { isNumber, isString, isArray, chunk, flatten } from 'lodash';
+import { isNumber, isArray, chunk, flatten, assign } from 'lodash';
 import Promise from 'bluebird';
 
-export default class BatchInsert {
-  constructor(client, tableName, batch, chunkSize = 1000) {
+export default function batchInsert(client, tableName, batch, chunkSize = 1000) {
+
+  let returning = void 0;
+  let autoTransaction = true;
+  let transaction = null;
+
+  const getTransaction = () => new Promise((resolve, reject) => {
+    if(transaction) {
+      autoTransaction = false;
+      return resolve(transaction);
+    }
+
+    autoTransaction = true;
+    client.transaction(resolve)
+    .catch(reject);
+  });
+
+  const wrapper = assign(new Promise((resolve, reject) => {
+    const chunks = chunk(batch, chunkSize);
+
     if(!isNumber(chunkSize) || chunkSize < 1) {
-      throw new TypeError(`Invalid chunkSize: ${chunkSize}`);
+      return reject(new TypeError(`Invalid chunkSize: ${chunkSize}`));
     }
 
     if(!isArray(batch)) {
-      throw new TypeError(`Invalid batch: Expected array, got ${typeof batch}`)
+      return reject(new TypeError(`Invalid batch: Expected array, got ${typeof batch}`));
     }
 
-    this.client = client;
-    this.tableName = tableName;
-    this.batch = chunk(batch, chunkSize);
-    this._returning = void 0;
-    this._transaction = null;
-    this._autoTransaction = true;
-
-    if (client.transacting) {
-      this.transacting(client);
-    }
-  }
-
-  /**
-   * Columns to return from the batch operation.
-   * @param returning
-   */
-  returning(returning) {
-    if(isArray(returning) || isString(returning)) {
-      this._returning = returning;
-    }
-    return this;
-  }
-
-  /**
-   * User may supply their own transaction. If this is the case,
-   * `autoTransaction = false`, meaning we don't automatically commit/rollback
-   * the transaction. The responsibility instead falls on the user.
-   *
-   * @param transaction
-   */
-  transacting(transaction) {
-    this._transaction = transaction;
-    this._autoTransaction = false;
-    return this;
-  }
-
-  _getTransaction() {
-    return new Promise((resolve) => {
-      if(this._transaction) {
-        return resolve(this._transaction);
-      }
-      this.client.transaction((tr) => resolve(tr));
-    });
-  }
-
-  then(callback = function() {}) {
-    return this._getTransaction()
-      .then((transaction) => {
-        return Promise.all(this.batch.map((items) => {
-          return transaction(this.tableName)
-            .insert(items, this._returning);
-        }))
+    //Next tick to ensure wrapper functions are called if needed
+    return Promise.delay(1)
+      .then(getTransaction)
+      .then((tr) => {
+        return Promise.mapSeries(chunks, (items) => tr(tableName).insert(items, returning))
           .then((result) => {
-            if(this._autoTransaction) {
-              transaction.commit();
+            result = flatten(result || []);
+
+            if(autoTransaction) {
+              //TODO: -- Oracle tr.commit() does not return a 'thenable' !? Ugly hack for now.
+              return (tr.commit(result) || Promise.resolve())
+                .then(() => result);
             }
-            return callback(flatten(result || []));
+
+            return result;
           })
           .catch((error) => {
-            if(this._autoTransaction) {
-              transaction.rollback(error);
+            if(autoTransaction) {
+              return tr.rollback(error)
+                .then(() => Promise.reject(error));
             }
-            throw error;
-          });
-      });
-  }
+
+            return Promise.reject(error);
+          })
+      })
+      .then(resolve)
+      .catch(reject);
+
+  }), {
+    returning(columns) {
+      returning = columns;
+
+      return this;
+    },
+    transacting(tr) {
+      transaction = tr;
+
+      return this;
+    }
+  });
+
+  return wrapper;
 }

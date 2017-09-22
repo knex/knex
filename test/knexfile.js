@@ -68,7 +68,17 @@ var testConfigs = {
     },
     pool: mysqlPool,
     migrations: migrations,
-    seeds: seeds
+    seeds: seeds,
+    docker: {
+      factory:   './mysql/index.js',
+      container: 'knex-test-mysql',
+      image:     'mysql:5.7',
+      database:  'mysql',
+      username:  'root',
+      password:  'root',
+      hostPort:  '49153',
+      client:    'mysql'
+    }
   },
 
   mysql2: {
@@ -80,7 +90,17 @@ var testConfigs = {
     },
     pool: mysqlPool,
     migrations: migrations,
-    seeds: seeds
+    seeds: seeds,
+    docker: {
+      factory:   './mysql/index.js',
+      container: 'knex-test-mysql2',
+      image:     'mysql:5.7',
+      database:  'mysql',
+      username:  'root',
+      password:  'root',
+      hostPort:  '49153',
+      client:    'mysql'
+    }
   },
 
   oracle: {
@@ -116,7 +136,17 @@ var testConfigs = {
     },
     pool: pool,
     migrations: migrations,
-    seeds: seeds
+    seeds: seeds,
+    docker: {
+      factory:   './postgres/index.js',
+      container: 'knex-test-postgres',
+      image:     'postgres:9.6',
+      database:  'postgres',
+      username:  'postgres',
+      password:  '',
+      hostPort:  '49152',
+      client:    'pg'
+    }
   },
 
   sqlite3: {
@@ -124,7 +154,7 @@ var testConfigs = {
     connection: testConfig.sqlite3 || {
       filename: __dirname + '/test.sqlite3'
     },
-    pool: pool,
+    pool,
     migrations: migrations,
     seeds: seeds
   },
