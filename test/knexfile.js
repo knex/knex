@@ -6,7 +6,7 @@ var _          = require('lodash');
 var Promise    = require('bluebird');
 
 // excluding oracle and mssql dialects from default integrations test
-var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres sqlite3").match(/\w+/g);
+var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres redshift sqlite3").match(/\w+/g);
 
 var pool = {
   afterCreate: function(connection, callback) {
@@ -150,13 +150,26 @@ var testConfigs = {
   redshift: {
     dialect: 'redshift',
     connection: testConfig.redshift || {
-      adapter:  "postgresql",
-      database: "knex_test",
-      user:     "knex_test"
+      adapter:  'postgresql',
+      database: 'dev',
+      user:     process.env.REDSHIFT_USER || 'postgres',
+      password: process.env.REDSHIFT_PASSWORD || '',
+      port:     '5439',
+      host:     process.env.REDSHIFT_HOST || '127.0.0.1',
     },
     pool: pool,
     migrations: migrations,
-    seeds: seeds
+    seeds: seeds,
+    docker: {
+      factory:   './redshift/index.js',
+      container: 'knex-test-redshift',
+      image:     'quay.io/skuid/docker-aws-redshift',
+      database:  'postgres',
+      username:  'postgres',
+      password:  '',
+      hostPort:  '49154',
+      client:    'pg'
+    }
   },
 
   sqlite3: {

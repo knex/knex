@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ -n "$(which docker)" ]; then
-    DOCKER_IMAGES=("mysql:5.7" "postgres:9.6")
+    DOCKER_IMAGES=("mysql:5.7" "postgres:9.6" "quay.io/skuid/docker-aws-redshift")
     for image in ${DOCKER_IMAGES[@]}; do
         if [ -z "$(docker images -q ${image})" ]; then
             echo "Installing Docker image ${image}"

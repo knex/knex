@@ -151,17 +151,19 @@ describe("Redshift SchemaBuilder", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.primary('foo');
     }).toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "users_pkey" primary key ("foo")');
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" alter column "foo" set not null');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_pkey" primary key ("foo")');
   });
 
   it("adding primary key fluently", function() {
     tableSql = client.schemaBuilder().createTable('users', function(table) {
       table.string('name').primary();
     }).toSQL();
-    equal(2, tableSql.length);
+    equal(3, tableSql.length);
     expect(tableSql[0].sql).to.equal('create table "users" ("name" varchar(255))');
-    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_pkey" primary key ("name")');
+    expect(tableSql[1].sql).to.equal('alter table "users" alter column "name" set not null');
+    expect(tableSql[2].sql).to.equal('alter table "users" add constraint "users_pkey" primary key ("name")');
   });
 
   it("adding foreign key", function() {
@@ -466,13 +468,17 @@ describe("Redshift SchemaBuilder", function() {
     tableSql = client.schemaBuilder().table('users', function(t) {
       t.primary(['test1', 'test2'], 'testconstraintname');
     }).toSQL();
-    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
+
+    expect(tableSql[0].sql).to.equal('alter table "users" alter column "test1" set not null');
+    expect(tableSql[1].sql).to.equal('alter table "users" alter column "test2" set not null');
+    expect(tableSql[2].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
 
     tableSql = client.schemaBuilder().createTable('users', function(t) {
       t.string('test').primary('testconstraintname');
     }).toSQL();
 
-    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test")');
+    expect(tableSql[1].sql).to.equal('alter table "users" alter column "test" set not null');
+    expect(tableSql[2].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test")');
   });
 
 });
