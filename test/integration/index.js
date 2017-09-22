@@ -10,7 +10,7 @@ var fs     = require('fs');
 var Promise = require('bluebird')
 
 Promise.each(Object.keys(config), function(dialectName) {
-  return require('./suite')(logger(knex(config[dialectName])), config[dialectName]);
+  return require('./suite')(logger(knex(config[dialectName])));
 })
 
 after(function(done) {

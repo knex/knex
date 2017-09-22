@@ -24,7 +24,6 @@ module.exports = function(config, knex) {
     this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
 
     before(function () {
-      console.log("DOCKERRRRRRR");
       docker = new Docker();
     });
 
@@ -41,17 +40,14 @@ module.exports = function(config, knex) {
     describe('start container and wait until it is ready', function () {
 
       beforeEach(function () {
-        console.log("NO THIS ONE");
         container = new ContainerClass(docker, dockerConf);
         return container.start().then(function () {
-          console.log("GOT HERE");
           return waitReadyForQueries();
         });
       });
 
       describe('initialize connection pool', function () {
         beforeEach(function () {
-          console.log("POOOOOOOL");
           connectionPool = createPool();
         });
 
@@ -62,7 +58,6 @@ module.exports = function(config, knex) {
         describe('stop db-container and expect queries to fail', function () {
 
           beforeEach(function () {
-            console.log("STOOOOOOOOOP");
             return container.stop();
           });
 

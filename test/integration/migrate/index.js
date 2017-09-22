@@ -11,7 +11,6 @@ module.exports = function(knex) {
   require('rimraf').sync(path.join(__dirname, './migration'));
 
   before(function() {
-    console.log("THIS ONE HERE");
     // make sure lock was not left from previous failed test run
     return knex.migrate.forceFreeMigrationsLock({directory: 'test/integration/migrate/test'});
   });

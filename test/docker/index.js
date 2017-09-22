@@ -11,8 +11,7 @@ if (canRunDockerTests()) {
   for (const dialectName in config) {
     if (config[dialectName].docker) {
       describe(`${dialectName} dialect`, function() {
-        console.log("skipping docker reconnect tests");
-        // require('./reconnect')(config[dialectName], knex);
+        require('./reconnect')(config[dialectName], knex);
       })
     }
   }
