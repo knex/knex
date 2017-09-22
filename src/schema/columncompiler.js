@@ -25,6 +25,21 @@ ColumnCompiler.prototype.pushQuery = helpers.pushQuery
 
 ColumnCompiler.prototype.pushAdditional = helpers.pushAdditional
 
+ColumnCompiler.prototype._defaultMap = {
+  'columnName': function() {
+    if (!this.isIncrements) throw new Error(`You did not specify a column name for the ${this.type} column.`);
+    return 'id';
+  }
+}
+
+ColumnCompiler.prototype.defaults = function(label) {
+  if (this._defaultMap.hasOwnProperty(label)){
+    return this._defaultMap[label].bind(this)();
+  } else {
+    throw new Error(`There is no default for the specified identifier ${label}`)
+  }
+}
+
 // To convert to sql, we first go through and build the
 // column as it would be in the insert statement
 ColumnCompiler.prototype.toSQL = function() {
@@ -44,12 +59,7 @@ ColumnCompiler.prototype.compileColumn = function() {
 // Assumes the autoincrementing key is named `id` if not otherwise specified.
 ColumnCompiler.prototype.getColumnName = function() {
   const value = first(this.args);
-  if (value) return value;
-  if (this.isIncrements) {
-    return 'id';
-  } else {
-    throw new Error(`You did not specify a column name for the ${this.type}column.`);
-  }
+  return value || this.defaults('columnName');
 };
 
 ColumnCompiler.prototype.getColumnType = function() {
@@ -59,15 +69,15 @@ ColumnCompiler.prototype.getColumnType = function() {
 
 ColumnCompiler.prototype.getModifiers = function() {
   const modifiers = [];
-  if (this.type.indexOf('increments') === -1) {
-    for (let i = 0, l = this.modifiers.length; i < l; i++) {
-      const modifier = this.modifiers[i];
-      if (has(this.modified, modifier)) {
-        const val = this[modifier].apply(this, this.modified[modifier]);
-        if (val) modifiers.push(val);
-      }
+
+  for (let i = 0, l = this.modifiers.length; i < l; i++) {
+    const modifier = this.modifiers[i];
+    if (has(this.modified, modifier)) {
+      const val = this[modifier].apply(this, this.modified[modifier]);
+      if (val) modifiers.push(val);
     }
   }
+  
   return modifiers.length > 0 ? ` ${modifiers.join(' ')}` : '';
 };
 
