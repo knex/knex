@@ -3363,15 +3363,15 @@ describe("QueryBuilder", function() {
   it('supports capitalized operators', function() {
     testsql(qb().select('*').from('users').where('name', 'LIKE', '%test%'), {
       mysql: {
-        sql: 'select * from `users` where `name` LIKE ?',
+        sql: 'select * from `users` where `name` like ?',
         bindings: ['%test%']
       },
       mssql: {
-        sql: 'select * from [users] where [name] LIKE ?',
+        sql: 'select * from [users] where [name] like ?',
         bindings: ['%test%']
       },
       postgres: {
-        sql: 'select * from "users" where "name" LIKE ?',
+        sql: 'select * from "users" where "name" like ?',
         bindings: ['%test%']
       }
     });
@@ -4174,6 +4174,19 @@ describe("QueryBuilder", function() {
     testquery(qb().select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey?']), {
       mysql: 'select * from `users` where `id` = 1 and `jsonColumn` ? \'jsonKey?\'',
       postgres: 'select * from "users" where "id" = 1 and "jsonColumn" ? \'jsonKey?\''
+    });
+  });
+
+  it("operator transformation", function() {
+    // part of common base code, no need to test on every dialect
+    testsql(qb().select('*').from('users').where('id', '?', 1), {
+      postgres: 'select * from "users" where "id" \\? ?'
+    });
+    testsql(qb().select('*').from('users').where('id', '?|', 1), {
+      postgres: 'select * from "users" where "id" \\?| ?'
+    });
+    testsql(qb().select('*').from('users').where('id', '?&', 1), {
+      postgres: 'select * from "users" where "id" \\?& ?'
     });
   });
 

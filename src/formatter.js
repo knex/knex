@@ -8,12 +8,21 @@ const orderBys = ['asc', 'desc'];
 
 // Turn this into a lookup map
 const operators = transform([
-  '=', '<', '>', '<=', '>=', '<>', '!=', 'like',
-  'not like', 'between', 'ilike', 'not ilike', '&', '|', '^', '<<', '>>',
-  'rlike', 'regexp', 'not regexp', '~', '~*', '!~', '!~*',
-  '#', '&&', '@>', '<@', '||'
+  '=', '<', '>', '<=', '>=', '<>', '!=',
+  'like', 'not like', 'between', 'not between',
+  'ilike', 'not ilike', 'exists', 'not exist',
+  'rlike', 'not rlike', 'regexp', 'not regexp',
+  '&', '|', '^', '<<', '>>', '~', '~*', '!~', '!~*',
+  '#', '&&', '@>', '<@', '||', '&<', '&>', '-|-', '@@', '!!',
+  ['?', '\\?'],
+  ['?|', '\\?|'],
+  ['?&', '\\?&'],
 ], (result, key) => {
-  result[key] = true
+  if (Array.isArray(key)) {
+    result[key[0]] = key[1];
+  } else {
+    result[key] = key;
+  }
 }, {});
 
 export default class Formatter {
@@ -105,14 +114,14 @@ export default class Formatter {
     return first + ' as ' + second;
   }
 
-  // The operator method takes a value and returns something or other.
   operator(value) {
     const raw = this.unwrapRaw(value);
     if (raw) return raw;
-    if (operators[(value || '').toLowerCase()] !== true) {
+    const operator = operators[(value || '').toLowerCase()];
+    if (!operator) {
       throw new TypeError(`The operator "${value}" is not permitted`);
     }
-    return value;
+    return operator;
   }
 
   // Specify the direction of the ordering.
