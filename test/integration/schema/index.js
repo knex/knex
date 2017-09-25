@@ -487,6 +487,7 @@ module.exports = function(knex) {
               tbl.integer('field_bar').comment('bar').alter();
               tbl.integer('field_first').first().comment('First');
               tbl.integer('field_after_foo').after('field_foo').comment('After');
+              tbl.increments('field_nondefault_increments').comment('Comment on increment col');
             });
           });
         });
@@ -508,6 +509,7 @@ module.exports = function(knex) {
             expect(fields[1]).to.equal('field_foo');
             expect(fields[2]).to.equal('field_after_foo');
             expect(fields[3]).to.equal('field_bar');
+            expect(fields[4]).to.equal('field_nondefault_increments');
 
             // .columnInfo() does not included fields comment.
             var comments = schema[0][0]['Create Table'].split('\n')
@@ -520,6 +522,7 @@ module.exports = function(knex) {
             expect(comments[1]).to.equal('foo');
             expect(comments[2]).to.equal('After');
             expect(comments[3]).to.equal('bar');
+            expect(comments[4]).to.equal('Comment on increment col');
           });
         });
       });
