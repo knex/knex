@@ -5,6 +5,7 @@
 
 import { warn } from '../../../helpers';
 import inherits from 'inherits';
+import { has } from 'lodash';
 import TableCompiler_PG from '../../postgres/schema/tablecompiler';
 
 function TableCompiler_Redshift() {
@@ -20,16 +21,57 @@ TableCompiler_Redshift.prototype.dropIndex = function(columns, indexName) {
   warn('Redshift does not support the deletion of indexes.');
 };
 
+// TODO: have to disable setting not null on columns that already exist...
+
+// Adds the "create" query to the query sequence.
+TableCompiler_Redshift.prototype.createQuery = function(columns, ifNot) {
+  const createStatement = ifNot ? 'create table if not exists ' : 'create table ';
+  let sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ') + ')';
+  if (this.single.inherits) sql += ` like (${this.formatter.wrap(this.single.inherits)})`;
+  this.pushQuery({
+    sql,
+    bindings: columns.bindings
+  });
+  const hasComment = has(this.single, 'comment');
+  if (hasComment) this.comment(this.single.comment);
+};
+
 TableCompiler_Redshift.prototype.primary = function(columns, constraintName) {
-	// What this actually needs to do is warn if the columns are nullable, and do nothing...
-  constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
+  const self = this;
+  constraintName = constraintName ? self.formatter.wrap(constraintName) : self.formatter.wrap(`${this.tableNameRaw}_pkey`);
   if (columns.constructor !== Array){
     columns = [columns];
   }
-  for (let i = 0; i < columns.length; i++){
-    this.pushQuery(`alter table ${this.tableName()} alter column ${this.formatter.columnize(columns[i])} set not null`);
+  const thiscolumns = self.grouped.columns;
+
+  // debugger;
+  // by this point it may be too late, the column generation may have already run.
+  // yup. this (TableCompiler) already has .sequence containing sql with nullable column
+  // and can we check on existing columns?
+  if (thiscolumns) {
+    for (let i = 0; i < columns.length; i++){
+      let exists = thiscolumns.find(tcb => tcb.grouping === "columns" &&
+        tcb.builder &&
+        tcb.builder._method === "add" &&
+        tcb.builder._args &&
+        tcb.builder._args.includes(columns[i]));
+      if (exists) {
+        exists = exists.builder;
+      }
+      const nullable = !(exists &&
+        exists._modifiers &&
+        exists._modifiers["nullable"] &&
+        exists._modifiers["nullable"][0] === false);
+      if (nullable){
+        if (exists){
+          exists = exists.notNullable();
+        } else {
+          return warn("Redshift does not allow primary keys to contain nonexistent or nullable columns.");
+        }
+      }
+    }
   }
-  this.pushQuery(`alter table ${this.tableName()} add constraint ${constraintName} primary key (${this.formatter.columnize(columns)})`);
+  return self.pushQuery(`alter table ${self.tableName()} add constraint ${constraintName} primary key (${self.formatter.columnize(columns)})`);
 };
 
 export default TableCompiler_Redshift;

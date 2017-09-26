@@ -7,6 +7,7 @@ import { assign } from 'lodash'
 
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
+import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 import TableCompiler from './schema/tablecompiler';
 import SchemaCompiler from './schema/compiler';
@@ -23,6 +24,10 @@ assign(Client_Redshift.prototype, {
 
   queryCompiler() {
     return new QueryCompiler(this, ...arguments)
+  },
+
+  columnBuilder() {
+    return new ColumnBuilder(this, ...arguments);
   },
 
   columnCompiler() {

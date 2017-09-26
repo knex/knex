@@ -23,7 +23,6 @@ assign(ColumnCompiler_Redshift.prototype, {
   enu: 'text',
   enum: 'text',
   increments: 'integer identity(1,1) primary key not null',
-  // increments: 'integer identity(0, 1)',
   json: 'varchar(max)',
   jsonb: 'varchar(max)',
   longblob: 'varchar(max)',
