@@ -44,10 +44,6 @@ TableCompiler_Redshift.prototype.primary = function(columns, constraintName) {
   }
   const thiscolumns = self.grouped.columns;
 
-  // debugger;
-  // by this point it may be too late, the column generation may have already run.
-  // yup. this (TableCompiler) already has .sequence containing sql with nullable column
-  // and can we check on existing columns?
   if (thiscolumns) {
     for (let i = 0; i < columns.length; i++){
       let exists = thiscolumns.find(tcb => tcb.grouping === "columns" &&
@@ -64,9 +60,9 @@ TableCompiler_Redshift.prototype.primary = function(columns, constraintName) {
         exists._modifiers["nullable"][0] === false);
       if (nullable){
         if (exists){
-          exists = exists.notNullable();
+          return warn("Redshift does not allow primary keys to contain nullable columns.");
         } else {
-          return warn("Redshift does not allow primary keys to contain nonexistent or nullable columns.");
+          return warn("Redshift does not allow primary keys to contain nonexistent columns.");
         }
       }
     }

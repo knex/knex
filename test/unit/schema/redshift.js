@@ -471,12 +471,20 @@ describe("Redshift SchemaBuilder", function() {
       t.primary(['test1', 'test2'], 'testconstraintname');
     }).toSQL();
 
-    // debugger;
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "test1" varchar(255), add column "test2" varchar(255) not null');
+
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.string('test1').notNullable();
+      t.string('test2').notNullable();
+      t.primary(['test1', 'test2'], 'testconstraintname');
+    }).toSQL();
+
     expect(tableSql[0].sql).to.equal('alter table "users" add column "test1" varchar(255) not null, add column "test2" varchar(255) not null');
     expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
 
     tableSql = client.schemaBuilder().createTable('users', function(t) {
-      t.string('test').notNullable().primary('testconstraintname');
+      t.string('test').primary('testconstraintname');
     }).toSQL();
 
     expect(tableSql[0].sql).to.equal('create table "users" ("test" varchar(255) not null)');

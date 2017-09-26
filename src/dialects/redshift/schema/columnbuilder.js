@@ -11,7 +11,7 @@ inherits(ColumnBuilder_Redshift, ColumnBuilder);
 // primary needs to set not null on non-preexisting columns, or fail
 ColumnBuilder_Redshift.prototype.primary = function () {
   this.notNullable();
-  return ColumnBuilder.prototype.primary.apply(this);
+  return ColumnBuilder.prototype.primary.apply(this, arguments);
 };
 
 export default ColumnBuilder_Redshift;
