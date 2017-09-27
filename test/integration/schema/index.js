@@ -1,8 +1,8 @@
-/*global describe, it, expect, testPromise*/
+/*global describe, it, expect, testPromise, before, after*/
 
 'use strict';
 
-var Promise = testPromise;
+const Promise = testPromise;
 
 module.exports = function(knex) {
 
@@ -14,6 +14,7 @@ module.exports = function(knex) {
         return Promise.all([
           knex.schema.dropTableIfExists('test_foreign_table_two').testSql(function(tester) {
             tester(['pg'], ['drop table if exists "test_foreign_table_two"']);
+            tester(['pg-redshift'], ['drop table if exists "test_foreign_table_two"']);
             tester(['sqlite3', 'mysql'], ['drop table if exists `test_foreign_table_two`']);
             tester('oracle', [
               "begin execute immediate 'drop table \"test_foreign_table_two\"'; exception when others then if sqlcode != -942 then raise; end if; end;",
@@ -41,6 +42,7 @@ module.exports = function(knex) {
             .dropTableIfExists('10_test_table')
             .dropTableIfExists('rename_column_foreign_test')
             .dropTableIfExists('rename_column_test')
+            .dropTableIfExists('renamecoltest')
             .dropTableIfExists('should_not_be_run')
             .dropTableIfExists('invalid_inTable_param_test')
         ]);
@@ -89,7 +91,9 @@ module.exports = function(knex) {
             table.timestamps();
           }).testSql(function(tester) {
             tester('mysql', ['create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default \'1\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add index `test_table_one_first_name_index`(`first_name`)','alter table `test_table_one` add unique `test_table_one_email_unique`(`email`)','alter table `test_table_one` add index `test_table_one_logins_index`(`logins`)']);
-            tester('pg', ['create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index "test_table_one_first_name_index" on "test_table_one" ("first_name")','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")','create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
+            tester('redshift', ['create table "test_table_one" FOOBAR']);
+            tester('pg', ['create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" timestamp, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index "test_table_one_first_name_index" on "test_table_one" ("first_name")','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")','create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
+            tester('pg-redshift', ['create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" varchar(max), "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")']);
             tester('sqlite3', ['create table `test_table_one` (`id` integer not null primary key autoincrement, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` integer default \'1\', `about` text, `created_at` datetime, `updated_at` datetime)','create index `test_table_one_first_name_index` on `test_table_one` (`first_name`)','create unique index `test_table_one_email_unique` on `test_table_one` (`email`)','create index `test_table_one_logins_index` on `test_table_one` (`logins`)']);
             tester('oracle', [
               'create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default \'1\', "about" varchar2(4000), "created_at" timestamp with time zone, "updated_at" timestamp with time zone)',
@@ -136,6 +140,7 @@ module.exports = function(knex) {
           }).testSql(function(tester) {
             tester('mysql', ['create table `test_table_three` (`main` int not null, `paragraph` text) default character set utf8 engine = InnoDB','alter table `test_table_three` add primary key `test_table_three_pkey`(`main`)']);
             tester('pg', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
+            tester('pg-redshift', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
             tester('sqlite3', ['create table `test_table_three` (`main` integer not null, `paragraph` text default \'Lorem ipsum Qui quis qui in.\', primary key (`main`))']);
             tester('oracle', ['create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
             tester('mssql', ['CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))']);
@@ -150,6 +155,7 @@ module.exports = function(knex) {
           }).testSql(function(tester) {
             tester('mysql', ['create table `datatype_test` (`enum_value` enum(\'a\', \'b\', \'c\'), `uuid` char(36) not null) default character set utf8']);
             tester('pg', ['create table "datatype_test" ("enum_value" text check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" uuid not null)']);
+            tester('pg-redshift', ['create table "datatype_test" ("enum_value" text check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" uuid not null)']);
             tester('sqlite3', ['create table `datatype_test` (`enum_value` text check (`enum_value` in (\'a\', \'b\', \'c\')), `uuid` char(36) not null)']);
             tester('oracle', ['create table "datatype_test" ("enum_value" varchar2(1) check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" char(36) not null)']);
             tester('mssql', ['CREATE TABLE [datatype_test] ([enum_value] nvarchar(100), [uuid] uniqueidentifier not null)']);
@@ -179,6 +185,12 @@ module.exports = function(knex) {
             'alter table `test_foreign_table_two` add constraint `fk_fkey_four` foreign key (`fkey_four`) references `test_table_two` (`id`)'
           ]);
           tester('pg', [
+            'create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer)',
+            'alter table "test_foreign_table_two" add constraint "test_foreign_table_two_fkey_two_foreign" foreign key ("fkey_two") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_three" foreign key ("fkey_three") references "test_table_two" ("id")',
+            'alter table "test_foreign_table_two" add constraint "fk_fkey_four" foreign key ("fkey_four") references "test_table_two" ("id")'
+          ]);
+          tester('pg-redshift', [
             'create table "test_foreign_table_two" ("id" serial primary key, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer)',
             'alter table "test_foreign_table_two" add constraint "test_foreign_table_two_fkey_two_foreign" foreign key ("fkey_two") references "test_table_two" ("id")',
             'alter table "test_foreign_table_two" add constraint "fk_fkey_three" foreign key ("fkey_three") references "test_table_two" ("id")',
@@ -232,6 +244,7 @@ module.exports = function(knex) {
           }).testSql(function(tester) {
             tester('mysql', ['create table `composite_key_test` (`column_a` int, `column_b` int, `details` text, `status` tinyint) default character set utf8','alter table `composite_key_test` add unique `composite_key_test_column_a_column_b_unique`(`column_a`, `column_b`)']);
             tester('pg', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint "composite_key_test_column_a_column_b_unique" unique ("column_a", "column_b")']);
+            tester('pg-redshift', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint "composite_key_test_column_a_column_b_unique" unique ("column_a", "column_b")']);
             tester('sqlite3', ['create table `composite_key_test` (`column_a` integer, `column_b` integer, `details` text, `status` tinyint)','create unique index `composite_key_test_column_a_column_b_unique` on `composite_key_test` (`column_a`, `column_b`)']);
             tester('oracle', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" clob, "status" smallint)','alter table "composite_key_test" add constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk" unique ("column_a", "column_b")']);
             tester('mssql', ['CREATE TABLE [composite_key_test] ([column_a] int, [column_b] int, [details] nvarchar(max), [status] tinyint, CONSTRAINT [composite_key_test_column_a_column_b_unique] UNIQUE ([column_a], [column_b]))']);
@@ -268,6 +281,7 @@ module.exports = function(knex) {
           }).testSql(function(tester) {
             tester('mysql', ['create table `charset_collate_test` (`id` int unsigned not null auto_increment primary key, `account_id` int, `details` text, `status` tinyint) default character set latin1 collate latin1_general_ci engine = InnoDB']);
             tester('pg', ['create table "charset_collate_test" ("id" serial primary key, "account_id" integer, "details" text, "status" smallint)']);
+            tester('pg-redshift', ['create table "charset_collate_test" ("id" serial primary key, "account_id" integer, "details" text, "status" smallint)']);
             tester('sqlite3', ['create table `charset_collate_test` (`id` integer not null primary key autoincrement, `account_id` integer, `details` text, `status` tinyint)']);
             tester('oracle', [
               "create table \"charset_collate_test\" (\"id\" integer not null primary key, \"account_id\" integer, \"details\" clob, \"status\" smallint)",
@@ -289,6 +303,7 @@ module.exports = function(knex) {
             }).testSql(function(tester) {
               tester('mysql', ['create table `bool_test` (`one` boolean, `two` boolean default \'0\', `three` boolean default \'1\', `four` boolean default \'1\', `five` boolean default \'0\') default character set utf8']);
               tester('pg', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
+              tester('pg-redshift', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
               tester('sqlite3', ['create table `bool_test` (`one` boolean, `two` boolean default \'0\', `three` boolean default \'1\', `four` boolean default \'1\', `five` boolean default \'0\')']);
               tester('oracle', ['create table "bool_test" ("one" number(1, 0) check ("one" in (\'0\', \'1\')), "two" number(1, 0) default \'0\' check ("two" in (\'0\', \'1\')), "three" number(1, 0) default \'1\' check ("three" in (\'0\', \'1\')), "four" number(1, 0) default \'1\' check ("four" in (\'0\', \'1\')), "five" number(1, 0) default \'0\' check ("five" in (\'0\', \'1\')))']);
               tester('mssql', ['CREATE TABLE [bool_test] ([one] bit, [two] bit default \'0\', [three] bit default \'1\', [four] bit default \'1\', [five] bit default \'0\')']);
@@ -358,6 +373,7 @@ module.exports = function(knex) {
       });
 
       it('allows adding multiple columns at once', function () {
+        if(/redshift/i.test(knex.client.dialect)) { return; }
         return knex.schema.table('test_table_two', function(t) {
           t.string('one');
           t.string('two');
@@ -373,6 +389,7 @@ module.exports = function(knex) {
 
       it('allows alter column syntax', function () {
         if (knex.client.dialect.match('sqlite') !== null ||
+            knex.client.dialect.match('redshift') !== null ||
             knex.client.dialect.match('oracle') !== null) {
           return;
         }
@@ -404,6 +421,7 @@ module.exports = function(knex) {
       });
 
       it('allows changing a field', function() {
+        if(/redshift/i.test(knex.client.dialect)) { return; }
         return knex.schema.table('test_table_one', function(t) {
           t.string('phone').nullable();
         });
@@ -473,7 +491,10 @@ module.exports = function(knex) {
 
     describe('addColumn', function() {
       describe('mysql only', function() {
-        if(!knex || !knex.client || (!(/mysql/i.test(knex.client.dialect)) && !(/maria/i.test(knex.client.dialect)))) {
+        if (!knex ||
+            !knex.client ||
+            (!(/mysql/i.test(knex.client.dialect)) && !(/maria/i.test(knex.client.dialect)))
+        ) {
           return Promise.resolve();
         }
 
@@ -498,10 +519,11 @@ module.exports = function(knex) {
         it('should columns order be correctly with after and first', function() {
           return knex.raw('SHOW CREATE TABLE `add_column_test_mysql`').then(function(schema) {
             // .columnInfo() keys does not guaranteed fields order.
-            var fields = schema[0][0]['Create Table'].split('\n')
-            .filter(function(e) { return e.trim().indexOf('`field_') === 0 })
-            .map(function(e) { return e.trim() })
-            .map(function(e) { return e.slice(1, e.slice(1).indexOf('`') + 1) });
+            const fields = schema[0][0]['Create Table']
+              .split('\n')
+              .filter(function(e) { return e.trim().indexOf('`field_') === 0 })
+              .map(function(e) { return e.trim() })
+              .map(function(e) { return e.slice(1, e.slice(1).indexOf('`') + 1) });
 
             // Fields order
             expect(fields[0]).to.equal('field_first');
@@ -510,10 +532,10 @@ module.exports = function(knex) {
             expect(fields[3]).to.equal('field_bar');
 
             // .columnInfo() does not included fields comment.
-            var comments = schema[0][0]['Create Table'].split('\n')
-            .filter(function(e) { return e.trim().indexOf('`field_') === 0 })
-            .map(function(e) { return e.slice(e.indexOf("'")).trim() })
-            .map(function(e) { return e.slice(1, e.slice(1).indexOf("'") + 1) });
+            const comments = schema[0][0]['Create Table'].split('\n')
+              .filter(function(e) { return e.trim().indexOf('`field_') === 0 })
+              .map(function(e) { return e.slice(e.indexOf("'")).trim() })
+              .map(function(e) { return e.slice(1, e.slice(1).indexOf("'") + 1) });
 
             // Fields comment
             expect(comments[0]).to.equal('First');
@@ -528,18 +550,26 @@ module.exports = function(knex) {
     describe('renameColumn', function () {
       before(function () {
         return knex.schema.createTable('rename_column_test', function (tbl) {
-          tbl.increments('id_test').unsigned()
+          tbl.increments('id_test')
+            .unsigned()
             .primary();
-          tbl.integer('parent_id_test').unsigned()
+          tbl.integer('parent_id_test')
+            .unsigned()
             .references('id_test')
             .inTable('rename_column_test');
         })
         .createTable('rename_column_foreign_test', function(tbl) {
-          tbl.increments('id').unsigned()
+          tbl.increments('id')
+            .unsigned()
             .primary();
-          tbl.integer('foreign_id_test').unsigned()
+          tbl.integer('foreign_id_test')
+            .unsigned()
             .references('id_test')
             .inTable('rename_column_test');
+        })
+        .createTable('rename_col_test', function(tbl) {
+          tbl.integer('colnameint').defaultTo(1);
+          tbl.string('colnamestring').defaultTo('knex').notNullable();
         })
         .then(function () {
           // without data, the column isn't found??
@@ -548,7 +578,10 @@ module.exports = function(knex) {
       });
 
       after(function () {
-        return knex.schema.dropTable('rename_column_foreign_test').dropTable('rename_column_test');
+        return knex.schema
+          .dropTable('rename_column_foreign_test')
+          .dropTable('rename_column_test')
+          .dropTable('rename_col_test');
       });
 
       it('renames the column', function () {
@@ -576,19 +609,17 @@ module.exports = function(knex) {
       });
 
       it('#933 - .renameColumn should not drop null or default value', function() {
+        const tableName = 'rename_col_test';
         return knex.transaction(function (tr) {
-          var getColInfo = function() { return tr('renameColTest').columnInfo()};
-          return tr.schema.dropTableIfExists('renameColTest')
-            .createTable('renameColTest', function (table) {
-              table.integer('colnameint').defaultTo(1);
-              table.string('colnamestring').defaultTo('knex').notNullable();
-            })
-            .then(getColInfo)
+          const getColInfo = () => tr(tableName).columnInfo();
+          return getColInfo()
             .then(function (colInfo) {
               expect(String(colInfo.colnameint.defaultValue)).to.contain('1');
-              expect(colInfo.colnamestring.defaultValue).to.contain('knex'); //Using contain because of different response per dialect. IE mysql 'knex', postgres 'knex::character varying'
+              // Using contain because of different response per dialect.
+              // IE mysql 'knex', postgres 'knex::character varying'
+              expect(colInfo.colnamestring.defaultValue).to.contain('knex');
               expect(colInfo.colnamestring.nullable).to.equal(false);
-              return tr.schema.table('renameColTest', function (table) {
+              return tr.schema.table(tableName, function (table) {
                 table.renameColumn('colnameint', 'colnameintchanged');
                 table.renameColumn('colnamestring', 'colnamestringchanged');
               })
@@ -604,39 +635,66 @@ module.exports = function(knex) {
     });
 
 
+    it('should warn attempting to create primary from nonexistent columns', function() {
+      // Redshift only
+      if(!knex || !knex.client || !(/redshift/i.test(knex.client.dialect))) {
+        return Promise.resolve();
+      }
+      const tableName = 'no_test_column';
+      const constraintName = 'testconstraintname';
+      return knex.transaction(function(tr) {
+        return tr.schema.dropTableIfExists(tableName).then(function(){
+          return tr.schema.createTable(tableName, function(t) {
+            t.string('test_zero').notNullable();
+            t.string('test_one').notNullable();
+          });
+        }).then(function() {
+          return tr.schema.table(tableName, function(u) {
+            u.primary(['test_one', 'test_two'], constraintName);
+          });
+        }).then(function(){
+          throw new Error("should have failed");
+        }).catch(function(err){
+          expect(err.code).to.equal("42703");
+          expect(err.message).to.equal(`alter table "${tableName}" add constraint "${constraintName}" primary key ("test_one", "test_two") - column "test_two" named in key does not exist`);
+        }).then(function(res){
+          return knex.schema.dropTableIfExists(tableName);
+        });
+      });
+    });
+
     //Unit tests checks SQL -- This will test running those queries, no hard assertions here.
     it('#1430 - .primary() & .dropPrimary() same for all dialects', function() {
       if(/sqlite/i.test(knex.client.dialect)) {
         return Promise.resolve();
       }
-      var constraintName = 'testconstraintname';
-      var tableName = 'primarytest';
+      const constraintName = 'testconstraintname';
+      const tableName = 'primarytest';
       return knex.transaction(function(tr) {
         return tr.schema.dropTableIfExists(tableName)
         .then(function() {
-            return tr.schema.createTable(tableName, function(table) {
-              table.string('test').primary(constraintName);
-              table.string('test2').notNullable();
-            })
+          return tr.schema.createTable(tableName, function(table) {
+            table.string('test').primary(constraintName);
+            table.string('test2').notNullable();
           })
-          .then(function() {
-            return tr.schema.table(tableName, function(table) {
-              table.dropPrimary(constraintName);
-            })
+        })
+        .then(function(res) {
+          return tr.schema.table(tableName, function(table) {
+            table.dropPrimary(constraintName);
           })
-          .then(function() {
-            return tr.schema.table(tableName, function(table) {
-              table.primary(['test', 'test2'], constraintName)
-            })
-          });
+        })
+        .then(function() {
+          return tr.schema.table(tableName, function(table) {
+            table.primary(['test', 'test2'], constraintName)
+          })
+        });
       });
     });
 
-
     describe('invalid field', function() {
       describe('sqlite3 only', function() {
-        var tableName = 'invalid_field_test_sqlite3';
-        var fieldName = 'field_foo';
+        const tableName = 'invalid_field_test_sqlite3';
+        const fieldName = 'field_foo';
         if(!knex || !knex.client || (!(/sqlite3/i.test(knex.client.dialect)))) {
           return Promise.resolve();
         }
@@ -663,10 +721,10 @@ module.exports = function(knex) {
 
           return knex(tableName).select().where(fieldName+"foo", "something")
             .then(function(){
-               throw new Error("should have failed");
+              throw new Error("should have failed");
             })
             .catch(function(err){
-                expect(err.code).to.equal("SQLITE_ERROR");
+              expect(err.code).to.equal("SQLITE_ERROR");
             })
 
         });
@@ -674,7 +732,6 @@ module.exports = function(knex) {
 
       });
     });
-
 
   });
 };

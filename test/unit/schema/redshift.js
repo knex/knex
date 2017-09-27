@@ -363,7 +363,7 @@ describe("Redshift SchemaBuilder", function() {
       table.dateTime('foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamp');
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamptz');
   });
 
   it("adding time", function() {
@@ -379,7 +379,7 @@ describe("Redshift SchemaBuilder", function() {
       table.timestamp('foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamp');
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamptz');
   });
 
   it("adding timestamps", function() {
@@ -387,7 +387,7 @@ describe("Redshift SchemaBuilder", function() {
       table.timestamps();
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamp, add column "updated_at" timestamp');
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz, add column "updated_at" timestamptz');
   });
 
   it("adding timestamps with defaults", function() {
@@ -395,7 +395,7 @@ describe("Redshift SchemaBuilder", function() {
       table.timestamps(false, true);
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamp not null default CURRENT_TIMESTAMP, add column "updated_at" timestamp not null default CURRENT_TIMESTAMP');
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz not null default CURRENT_TIMESTAMP, add column "updated_at" timestamptz not null default CURRENT_TIMESTAMP');
   });
 
   it("adding binary", function() {

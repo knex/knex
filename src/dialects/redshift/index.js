@@ -44,7 +44,7 @@ assign(Client_Redshift.prototype, {
   
   dialect: 'redshift',
 
-  driverName: 'pg',
+  driverName: 'pg-redshift',
 
   _driver() {
     return require('pg')
