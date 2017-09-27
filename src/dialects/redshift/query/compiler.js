@@ -3,6 +3,7 @@
 // ------
 import inherits from 'inherits';
 
+import QueryCompiler from '../../../query/compiler';
 import QueryCompiler_PG from '../../postgres/query/compiler';
 import * as helpers from '../../../helpers';
 
@@ -15,28 +16,36 @@ inherits(QueryCompiler_Redshift, QueryCompiler_PG);
 
 assign(QueryCompiler_Redshift.prototype, {
   truncate() {
-    return `truncate ${this.tableName}`;
+    return `truncate ${this.tableName.toLowerCase()}`;
   },
 
-  _returning(value) {
-    return '';
+  // Compiles an `insert` query, allowing for multiple
+  // inserts using a single query statement.
+  insert() {
+    const sql = QueryCompiler.prototype.insert.call(this)
+    if (sql === '') return sql;
+    const { returning } = this.single;
+    return {
+      sql: sql + this._returning(returning),
+      returning
+    };
   },
 
   forUpdate() {
-    if (this.client.transacting && this.single.table){
-      const { returning } = this.single;
-      return {
-        sql: `; LOCK TABLE ${this.single.table.toLowerCase()};`,
-        returning,
-      }
-    }
-    helpers.warn('table lock is not supported by redshift dialect outside a transaction');
+    helpers.warn('table lock is not supported by redshift dialect');
     return '';
   },
 
   forShare() {
     helpers.warn('lock for share is not supported by redshift dialect');
     return '';
+  },
+
+  _returning(value) {
+    const vals = value ? this.formatter.columnize(value) : null;
+    const desc = value && value.constructor === Array ? this.formatter.columnize(value).split(", ").map(v => v + " DESC").join() : value + " DESC";
+    const tbl = this.tableName.toLowerCase();
+    return value ? `; SELECT ${vals} FROM ${tbl} ORDER BY ${desc} LIMIT 1;` : '';
   },
 
   // Compiles a columnInfo query

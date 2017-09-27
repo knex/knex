@@ -2990,7 +2990,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       redshift: {
-        sql: "insert into \"users\" (\"email\", \"name\") values (?, ?), (?, ?)",
+        sql: "insert into \"users\" (\"email\", \"name\") values (?, ?), (?, ?); SELECT \"id\" FROM \"users\" ORDER BY id DESC LIMIT 1;",
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       oracle: {
@@ -3039,7 +3039,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       redshift: {
-        sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?)',
+        sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?); SELECT "id", "name" FROM "users" ORDER BY "id" DESC,"name" DESC LIMIT 1;',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       oracle: {
@@ -3211,7 +3211,7 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       redshift: {
-        sql: 'insert into "users" default values',
+        sql: 'insert into "users" default values; SELECT "id" FROM "users" ORDER BY id DESC LIMIT 1;',
         bindings: []
       },
       oracle: {
@@ -3591,7 +3591,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo']
       },
       redshift: {
-        sql: 'insert into "users" ("email") values (?)',
+        sql: 'insert into "users" ("email") values (?); SELECT "id" FROM "users" ORDER BY id DESC LIMIT 1;',
         bindings: ['foo']
       },
       oracle: {

@@ -45,6 +45,7 @@ module.exports = function(knex) {
             .dropTableIfExists('renamecoltest')
             .dropTableIfExists('should_not_be_run')
             .dropTableIfExists('invalid_inTable_param_test')
+            .dropTableIfExists('primarytest')
         ]);
       });
 
