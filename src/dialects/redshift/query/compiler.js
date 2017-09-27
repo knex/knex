@@ -4,6 +4,7 @@
 import inherits from 'inherits';
 
 import QueryCompiler_PG from '../../postgres/query/compiler';
+import * as helpers from '../../../helpers';
 
 import { assign, reduce } from 'lodash';
 
@@ -18,6 +19,23 @@ assign(QueryCompiler_Redshift.prototype, {
   },
 
   _returning(value) {
+    return '';
+  },
+
+  forUpdate() {
+    if (this.client.transacting && this.single.table){
+      const { returning } = this.single;
+      return {
+        sql: `; LOCK TABLE ${this.single.table.toLowerCase()};`,
+        returning,
+      }
+    }
+    helpers.warn('table lock is not supported by redshift dialect outside a transaction');
+    return '';
+  },
+
+  forShare() {
+    helpers.warn('lock for share is not supported by redshift dialect');
     return '';
   },
 
