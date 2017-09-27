@@ -4,10 +4,10 @@
 
 var tableSql;
 
-var Redshift_Client = require('../../../lib/dialects/redshift');
-var client          = new Redshift_Client({})
+const Redshift_Client = require('../../../lib/dialects/redshift');
+const client          = new Redshift_Client({})
 
-var equal  = require('assert').equal;
+const equal  = require('assert').equal;
 
 describe("Redshift SchemaBuilder", function() {
 
@@ -347,7 +347,7 @@ describe("Redshift SchemaBuilder", function() {
       table.enum('foo', ['bar', 'baz']);
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" text');
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" varchar(255)');
   });
 
   it("adding date", function() {

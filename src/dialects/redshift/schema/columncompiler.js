@@ -21,8 +21,8 @@ assign(ColumnCompiler_Redshift.prototype, {
     return column.length !== false ? `char(${column.length})` : 'char(1)';
   },
   blob: 'varchar(max)',
-  enu: 'text',
-  enum: 'text',
+  enu: 'varchar(255)',
+  enum: 'varchar(255)',
   increments: 'integer identity(1,1) primary key not null',
   json: 'varchar(max)',
   jsonb: 'varchar(max)',
