@@ -27,7 +27,9 @@ ColumnCompiler.prototype.pushAdditional = helpers.pushAdditional
 
 ColumnCompiler.prototype._defaultMap = {
   'columnName': function() {
-    if (!this.isIncrements) throw new Error(`You did not specify a column name for the ${this.type} column.`);
+    if (!this.isIncrements) {
+      throw new Error(`You did not specify a column name for the ${this.type} column.`);
+    } 
     return 'id';
   }
 }
