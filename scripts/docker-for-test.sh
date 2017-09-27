@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -n "$(which docker)" ]; then
+if [ -n "$(docker info)" ]; then
     DOCKER_IMAGES=("mysql:5.7" "postgres:9.6")
     for image in ${DOCKER_IMAGES[@]}; do
         if [ -z "$(docker images -q ${image})" ]; then

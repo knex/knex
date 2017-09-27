@@ -133,6 +133,7 @@ assign(Client.prototype, {
 
   query(connection, obj) {
     if (typeof obj === 'string') obj = {sql: obj}
+    obj.sql = this.positionBindings(obj.sql);
     obj.bindings = this.prepBindings(obj.bindings)
     debugQuery(obj.sql)
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
@@ -146,15 +147,20 @@ assign(Client.prototype, {
 
   stream(connection, obj, stream, options) {
     if (typeof obj === 'string') obj = {sql: obj}
+    obj.sql = this.positionBindings(obj.sql);
+    obj.bindings = this.prepBindings(obj.bindings)
     this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
     debugQuery(obj.sql)
-    obj.bindings = this.prepBindings(obj.bindings)
     debugBindings(obj.bindings)
     return this._stream(connection, obj, stream, options)
   },
 
   prepBindings(bindings) {
     return bindings;
+  },
+
+  positionBindings(sql) {
+    return sql;
   },
 
   wrapIdentifier(value) {

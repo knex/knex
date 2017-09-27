@@ -233,10 +233,6 @@ Client_Oracledb.prototype.destroyRawConnection = function(connection) {
 // Runs the query on the specified connection, providing the bindings
 // and any other necessary prep work.
 Client_Oracledb.prototype._query = function(connection, obj) {
-  // Convert ? params into positional bindings (:1)
-  obj.sql = this.positionBindings(obj.sql);
-  obj.bindings = this.prepBindings(obj.bindings) || [];
-
   return new Promise(function(resolver, rejecter) {
     if (!obj.sql) {
       return rejecter(new Error('The query is empty'));

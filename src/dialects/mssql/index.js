@@ -114,8 +114,6 @@ assign(Client_MSSQL.prototype, {
   _stream(connection, obj, stream, options) {
     options = options || {}
     if (!obj || typeof obj === 'string') obj = {sql: obj}
-    // convert ? params into positional bindings (@p1)
-    obj.sql = this.positionBindings(obj.sql);
     return new Promise((resolver, rejecter) => {
       stream.on('error', (err) => {
         rejecter(err)
@@ -142,8 +140,6 @@ assign(Client_MSSQL.prototype, {
   _query(connection, obj) {
     const client = this;
     if (!obj || typeof obj === 'string') obj = {sql: obj}
-    // convert ? params into positional bindings (@p1)
-    obj.sql = this.positionBindings(obj.sql);
     return new Promise((resolver, rejecter) => {
       const { sql } = obj
       if (!sql) return resolver()
