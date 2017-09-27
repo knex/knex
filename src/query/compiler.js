@@ -44,42 +44,40 @@ assign(QueryCompiler.prototype, {
     this._undefinedInWhereClause = false;
 
     method = method || this.method
-    let val = this[method]()
-    const defaults = {
+    const val = this[method]() || '';
+
+    const query = {
       method,
       options: reduce(this.options, assign, {}),
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
-      bindings: this.formatter.bindings,
-      __knexQueryUid: uuid.v4()
+      bindings: this.formatter.bindings || [],
+      __knexQueryUid: uuid.v4(),
+      toNative: () => ({
+        sql: this.client.positionBindings(query.sql),
+        bindings: this.client.prepBindings(query.bindings)
+      })
     };
-    if (isString(val)) {
-      val = {sql: val};
-    }
 
-    defaults.bindings = defaults.bindings || [];
+    if (isString(val)) {
+      query.sql = val;
+    } else {
+      assign(query, val);
+    }
 
     if (method === 'select' || method === 'first') {
       if(this.single.as) {
-        defaults.as = this.single.as;
+        query.as = this.single.as;
       }
     }
 
     if(this._undefinedInWhereClause) {
-      debugBindings(defaults.bindings)
+      debugBindings(query.bindings)
       throw new Error(
         `Undefined binding(s) detected when compiling ` +
-        `${method.toUpperCase()} query: ${val.sql}`
+        `${method.toUpperCase()} query: ${query.sql}`
       );
     }
-
-    const query = assign(defaults, val);
-    query.toNative = () => {
-      return {
-        sql: this.client.positionBindings(query.sql),
-        bindings: this.client.prepBindings(query.bindings)
-      };
-    };
 
     return query;
   },
