@@ -9,6 +9,10 @@ import * as helpers from '../../../helpers';
 
 import { assign, reduce } from 'lodash';
 
+function ReturningHelper(columnName) {
+  this.columnName = columnName;
+}
+
 function QueryCompiler_Redshift(client, builder) {
   QueryCompiler_PG.call(this, client, builder);
 }
@@ -25,10 +29,14 @@ assign(QueryCompiler_Redshift.prototype, {
     const sql = QueryCompiler.prototype.insert.call(this)
     if (sql === '') return sql;
     const { returning } = this.single;
-    return {
-      sql: sql + this._returning(returning),
-      returning
+    const res = {
+      sql: sql,
+      returning,
     };
+    if (returning) {
+      res.returningSql = this._returning(returning);
+    }
+    return res;
   },
 
   forUpdate() {
@@ -42,10 +50,11 @@ assign(QueryCompiler_Redshift.prototype, {
   },
 
   _returning(value) {
-    const vals = value ? this.formatter.columnize(value) : null;
-    const desc = value && value.constructor === Array ? this.formatter.columnize(value).split(", ").map(v => v + " DESC").join() : value + " DESC";
+    if (!value) { return ''; }
+    const vals = this.formatter.columnize(value);
+    const desc = Array.isArray(value) ? this.formatter.columnize(value).split(", ").map(v => v + " DESC").join() : value + " DESC";
     const tbl = this.tableName.toLowerCase();
-    return value ? `; SELECT ${vals} FROM ${tbl} ORDER BY ${desc} LIMIT 1;` : '';
+    return `SELECT ${vals} FROM ${tbl} ORDER BY ${desc} LIMIT 1`;
   },
 
   // Compiles a columnInfo query
