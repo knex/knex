@@ -33,8 +33,9 @@ assign(QueryCompiler_Redshift.prototype, {
       sql: sql,
       returning,
     };
+    const length = Array.isArray(this.single.insert) ? this.single.insert.length : 1;
     if (returning) {
-      res.returningSql = this._returning(returning);
+      res.returningSql = this._returning(returning, length);
     }
     return res;
   },
@@ -49,12 +50,12 @@ assign(QueryCompiler_Redshift.prototype, {
     return '';
   },
 
-  _returning(value) {
+  _returning(value, length) {
     if (!value) { return ''; }
     const vals = /\*/.test(value) ? '"*"' : this.formatter.columnize(value);
     const desc = /\*/.test(value) ? '"id" DESC ' : Array.isArray(value) ? this.formatter.columnize(value).split(", ").map(v => v + " DESC").join() : value + " DESC";
     const tbl = this.tableName.toLowerCase();
-    return `SELECT ${vals} FROM ${tbl} ORDER BY ${desc} LIMIT 1`;
+    return `SELECT ${vals} FROM ${tbl} ORDER BY ${desc} LIMIT ${length}`;
   },
 
   // Compiles a columnInfo query

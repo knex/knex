@@ -3,7 +3,7 @@
 // -------
 import inherits from 'inherits';
 import Client_PG from '../postgres';
-import { assign, extend, flatten, map, values } from 'lodash'
+import { assign, extend, flatten, map, reverse, values } from 'lodash'
 import Promise from 'bluebird';
 
 import * as helpers from '../../helpers';
@@ -84,7 +84,7 @@ assign(Client_Redshift.prototype, {
       case 'select':
       case 'pluck':
       case 'first':
-        if (method === 'pluck') return map(response, pluck)
+        if (method === 'pluck') return reverse(map(response, pluck))
         return method === 'first' ? response[0] : response
       case 'insert':
       case 'del':
@@ -95,7 +95,7 @@ assign(Client_Redshift.prototype, {
             return response;
           }
           // return an array with values if only one returning value was specified
-          return flatten(map(response, values));
+          return reverse(flatten(map(response, values)));
         }
         return response;
       default:
