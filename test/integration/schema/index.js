@@ -43,12 +43,149 @@ module.exports = function(knex) {
             .dropTableIfExists('rename_column_test')
             .dropTableIfExists('should_not_be_run')
             .dropTableIfExists('invalid_inTable_param_test')
+            .dropTableIfExists('increments_columns_1_test')
+            .dropTableIfExists('increments_columns_2_test')
         ]);
       });
 
     });
 
     describe('createTable', function() {
+
+      describe('increments types - postgres', function() {
+        if(!knex || !knex.client || !(/postgres/i.test(knex.client.dialect))) {
+          return Promise.resolve();
+        }
+
+          before(function() {
+            return Promise.all([
+              knex.schema.createTable('increments_columns_1_test', function(table) {
+                table.increments().comment('comment_1');
+              }),
+              knex.schema.createTable('increments_columns_2_test', function(table) {
+                table.increments('named_2').comment('comment_2');
+              })
+            ])
+          });
+
+          after(function() {
+            return Promise.all([
+              knex.schema.dropTable('increments_columns_1_test'),
+              knex.schema.dropTable('increments_columns_2_test')
+            ])
+          });
+
+          it('#2210 - creates an incrementing column with a comment', function() {
+            const table_name = 'increments_columns_1_test';
+            const expected_column = 'id'
+            const expected_comment = 'comment_1';
+            
+            return knex.raw('SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',[table_name]).then(function(res) {
+              const column_oid = res.rows[0].oid;
+
+              return knex.raw('SELECT pg_catalog.col_description(?,?);', [column_oid, '1']).then(function(_res) {
+                const comment = _res.rows[0].col_description;
+
+                return knex.raw('select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = ?;', table_name).then((res) => {
+                  const column_name = res.rows[0].column_name;
+
+                  expect(column_name).to.equal(expected_column);
+                  expect(comment).to.equal(expected_comment);
+                })
+              })
+            })
+
+          });
+
+          it('#2210 - creates an incrementing column with a specified name and comment', function() {
+            const table_name = 'increments_columns_2_test';
+            const expected_column = 'named_2';
+            const expected_comment = 'comment_2';
+            
+            return knex.raw('SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',[table_name]).then(function(res) {
+              const column_oid = res.rows[0].oid;
+              
+              return knex.raw('SELECT pg_catalog.col_description(?,?);', [column_oid, '1']).then(function(_res) {
+                const comment = _res.rows[0].col_description;
+                
+                return knex.raw('select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = ?;', table_name).then((res) => {
+                  const column_name = res.rows[0].column_name;
+
+                  expect(column_name).to.equal(expected_column);
+                  expect(comment).to.equal(expected_comment);
+                })
+              })
+            })
+          });
+      });
+
+      describe('increments types - mysql/maria', function() {
+        if(!knex || !knex.client || (!(/mysql/i.test(knex.client.dialect)) && !(/maria/i.test(knex.client.dialect)))) {
+          return Promise.resolve();
+        }
+
+          before(function() {
+            return Promise.all([
+              knex.schema.createTable('increments_columns_1_test', function(table) {
+                table.increments().comment('comment_1');
+              }),
+              knex.schema.createTable('increments_columns_2_test', function(table) {
+                table.increments('named_2').comment('comment_2');
+              })
+            ])
+          });
+
+          after(function() {
+            return Promise.all([
+              knex.schema.dropTable('increments_columns_1_test'),
+              knex.schema.dropTable('increments_columns_2_test')
+            ])
+          });
+
+          it('#2210 - creates an incrementing column with a comment', function() {
+            const table_name = 'increments_columns_1_test';
+            const expected_column = 'id'
+            const expected_comment = 'comment_1';
+
+            const query = `
+            SELECT
+              COLUMN_COMMENT
+            FROM
+              INFORMATION_SCHEMA.COLUMNS
+            WHERE
+              TABLE_NAME = ? AND
+              COLUMN_NAME = ?
+            `
+            
+            return knex.raw(query,[table_name, expected_column]).then(function(res) {
+              const comment = res[0][0].COLUMN_COMMENT
+              expect(comment).to.equal(expected_comment)
+            })
+
+          });
+
+          it('#2210 - creates an incrementing column with a specified name and comment', function() {
+            const table_name = 'increments_columns_2_test';
+            const expected_column = 'named_2';
+            const expected_comment = 'comment_2';
+
+            const query = `
+            SELECT
+              COLUMN_COMMENT
+            FROM
+              INFORMATION_SCHEMA.COLUMNS
+            WHERE
+              TABLE_NAME = ? AND
+              COLUMN_NAME = ?
+            `
+            
+            return knex.raw(query,[table_name, expected_column]).then(function(res) {
+              const comment = res[0][0].COLUMN_COMMENT
+              expect(comment).to.equal(expected_comment)
+            })
+            
+          });
+      });
 
       it('Callback function must be supplied', function() {
         expect(function() {
@@ -487,6 +624,7 @@ module.exports = function(knex) {
               tbl.integer('field_bar').comment('bar').alter();
               tbl.integer('field_first').first().comment('First');
               tbl.integer('field_after_foo').after('field_foo').comment('After');
+              tbl.increments('field_nondefault_increments').comment('Comment on increment col');
             });
           });
         });
@@ -508,6 +646,7 @@ module.exports = function(knex) {
             expect(fields[1]).to.equal('field_foo');
             expect(fields[2]).to.equal('field_after_foo');
             expect(fields[3]).to.equal('field_bar');
+            expect(fields[4]).to.equal('field_nondefault_increments');
 
             // .columnInfo() does not included fields comment.
             var comments = schema[0][0]['Create Table'].split('\n')
@@ -520,6 +659,7 @@ module.exports = function(knex) {
             expect(comments[1]).to.equal('foo');
             expect(comments[2]).to.equal('After');
             expect(comments[3]).to.equal('bar');
+            expect(comments[4]).to.equal('Comment on increment col');
           });
         });
       });
