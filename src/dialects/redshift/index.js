@@ -84,7 +84,7 @@ assign(Client_Redshift.prototype, {
       case 'select':
       case 'pluck':
       case 'first':
-        if (method === 'pluck') return reverse(map(response, pluck))
+        if (method === 'pluck') return map(response, pluck)
         return method === 'first' ? response[0] : response
       case 'insert':
       case 'del':

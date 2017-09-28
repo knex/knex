@@ -9,46 +9,46 @@ var Promise = require('bluebird');
 module.exports = function(knex) {
 
   describe('Inserts', function() {
-    before(() => knex.schema
-      .dropTableIfExists('accounts')
-      .createTable('accounts', function(table) {
-        table.engine('InnoDB');
-        table.comment('A table comment.');
-        table.bigIncrements('id');
-        table.string('first_name').index();
-        table.string('last_name');
-        table.string('email').unique().nullable();
-        table.integer('logins').defaultTo(1).index().comment();
-        if (knex.client.dialect === 'oracle') {
-          // use string instead to force varchar2 to avoid later problems with join and union
-          table.string('about', 4000).comment('A comment.');
-        } else {
-          table.text('about').comment('A comment.');
-        }
-        table.timestamps();
-      })
-      .dropTableIfExists('datatype_test')
-      .createTable('datatype_test', function(table) {
-        table.enum('enum_value', ['a', 'b', 'c']);
-        table.uuid('uuid').notNull();
-      })
-      .dropTableIfExists('test_table_two')
-      .createTable('test_table_two', function(table) {
-        table.engine('InnoDB');
-        table.increments();
-        table.integer('account_id');
-        if (knex.client.dialect === 'oracle') {
-          // use string instead to force varchar2 to avoid later problems with join and union
-          // e.g. where email (varchar2) = details (clob) does not work
-          table.string('details', 4000);
-        } else {
-          table.text('details');
-        }
-        table.tinyint('status');
-      }) 
-      .dropTableIfExists('test_default_table')
-      .dropTableIfExists('test_default_table2')
-    );
+    // before(() => knex.schema
+    //   .dropTableIfExists('accounts')
+    //   .createTable('accounts', function(table) {
+    //     table.engine('InnoDB');
+    //     table.comment('A table comment.');
+    //     table.bigIncrements('id');
+    //     table.string('first_name').index();
+    //     table.string('last_name');
+    //     table.string('email').unique().nullable();
+    //     table.integer('logins').defaultTo(1).index().comment();
+    //     if (knex.client.dialect === 'oracle') {
+    //       // use string instead to force varchar2 to avoid later problems with join and union
+    //       table.string('about', 4000).comment('A comment.');
+    //     } else {
+    //       table.text('about').comment('A comment.');
+    //     }
+    //     table.timestamps();
+    //   })
+    //   .dropTableIfExists('datatype_test')
+    //   .createTable('datatype_test', function(table) {
+    //     table.enum('enum_value', ['a', 'b', 'c']);
+    //     table.uuid('uuid').notNull();
+    //   })
+    //   .dropTableIfExists('test_table_two')
+    //   .createTable('test_table_two', function(table) {
+    //     table.engine('InnoDB');
+    //     table.increments();
+    //     table.integer('account_id');
+    //     if (knex.client.dialect === 'oracle') {
+    //       // use string instead to force varchar2 to avoid later problems with join and union
+    //       // e.g. where email (varchar2) = details (clob) does not work
+    //       table.string('details', 4000);
+    //     } else {
+    //       table.text('details');
+    //     }
+    //     table.tinyint('status');
+    //   }) 
+    //   .dropTableIfExists('test_default_table')
+    //   .dropTableIfExists('test_default_table2')
+    // );
 
     it("should handle simple inserts", function() {
 
@@ -302,11 +302,6 @@ module.exports = function(knex) {
           tester(
             'postgresql',
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
-            ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d]
-          );
-          tester(
-            'pg-redshift',
-            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d]
           );
           tester(
@@ -651,25 +646,16 @@ module.exports = function(knex) {
         tester(
           'oracle',
           "insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (?, ?, ?) returning ROWID into ?",
-          [
-            10,
-            'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-            0,
+          [10, 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.', 0,
             function (v) {return v.toString() === '[object ReturningHelper:account_id:details]';}
           ],
-          [{
-            account_id: 10,
-            details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
-          }]
+          [{account_id: 10, details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'}]
         );
         tester(
           'mssql',
           'insert into [test_table_two] ([account_id], [details], [status]) output inserted.[account_id], inserted.[details] values (?, ?, ?)',
           [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
-          [{
-            account_id: 10,
-            details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
-          }]
+          [{account_id: 10, details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'}]
         );
       }).then(function(rows) {
         expect(rows.length).to.equal(1);
@@ -710,7 +696,8 @@ module.exports = function(knex) {
             id: 5,
             account_id: 10,
             details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-            status: 0
+            status: 0,
+            json_data: null
           }]
         );
         tester(
