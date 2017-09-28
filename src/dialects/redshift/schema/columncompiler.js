@@ -37,7 +37,7 @@ assign(ColumnCompiler_Redshift.prototype, {
     return without ? 'timestamp' : 'timestamptz';
   },
   tinyblob: 'varchar(256)',
-  uuid: 'char(32)',
+  uuid: 'char(36)',
   varbinary: 'varchar(max)',
   bigint: 'bigint',
   bool: 'boolean',

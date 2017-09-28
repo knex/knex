@@ -18,7 +18,7 @@ describe("Redshift SchemaBuilder", function() {
       table.string('email');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create table "users" ("key" char(32), "id" integer identity(1,1) primary key not null, "email" varchar(255))');
+    expect(tableSql[0].sql).to.equal('create table "users" ("key" char(36), "id" integer identity(1,1) primary key not null, "email" varchar(255))');
   });
 
   it("basic alter table", function() {

@@ -51,8 +51,8 @@ assign(QueryCompiler_Redshift.prototype, {
 
   _returning(value) {
     if (!value) { return ''; }
-    const vals = this.formatter.columnize(value);
-    const desc = Array.isArray(value) ? this.formatter.columnize(value).split(", ").map(v => v + " DESC").join() : value + " DESC";
+    const vals = /\*/.test(value) ? '"*"' : this.formatter.columnize(value);
+    const desc = /\*/.test(value) ? '"id" DESC ' : Array.isArray(value) ? this.formatter.columnize(value).split(", ").map(v => v + " DESC").join() : value + " DESC";
     const tbl = this.tableName.toLowerCase();
     return `SELECT ${vals} FROM ${tbl} ORDER BY ${desc} LIMIT 1`;
   },
