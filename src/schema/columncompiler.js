@@ -72,11 +72,16 @@ ColumnCompiler.prototype.getColumnType = function() {
 ColumnCompiler.prototype.getModifiers = function() {
   const modifiers = [];
 
+  
   for (let i = 0, l = this.modifiers.length; i < l; i++) {
     const modifier = this.modifiers[i];
-    if (has(this.modified, modifier)) {
-      const val = this[modifier].apply(this, this.modified[modifier]);
-      if (val) modifiers.push(val);
+
+    //Cannot allow 'nullable' modifiers on increments types
+    if (!this.isIncrements || (this.isIncrements && modifier === 'comment')){
+      if (has(this.modified, modifier)) {
+        const val = this[modifier].apply(this, this.modified[modifier]);
+        if (val) modifiers.push(val);
+      }
     }
   }
   
