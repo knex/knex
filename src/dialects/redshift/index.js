@@ -55,15 +55,20 @@ assign(Client_Redshift.prototype, {
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query(connection, obj) {
-    let sql = obj.sql = this.positionBindings(obj.sql)
+    // TODO: if deleting with returning, flip the order of delete and returning queries
+    const that = this;
+    let sql = obj.sql = that.positionBindings(obj.sql)
     if (obj.options) sql = extend({text: sql}, obj.options);
     return new Promise(function(resolver, rejecter) {
       connection.query(sql, obj.bindings, function(err, response) {
         if (err) { return rejecter(err); }
         obj.response = response;
         if (!obj.returning) { return resolver(obj); }
-        obj.method = 'insert';
-        connection.query(obj.returningSql, function(err, response) {
+        const retSql = obj.returningSql(obj.returning);
+        if (retSql.bindings && retSql.bindings.length > 0){
+          retSql.sql = that.positionBindings(retSql.sql);
+        }
+        return connection.query(retSql.sql, retSql.bindings, function(err, response) {
           if (err) { return rejecter(err); }
           obj.response = response;
           return resolver(obj);
@@ -75,29 +80,28 @@ assign(Client_Redshift.prototype, {
   // Process the response as returned from the query.
   processResponse(obj, runner) {
     if (obj == null) return;
-    let { response } = obj
+    const { response } = obj
     const { method, output, pluck, returning } = obj
     if (output) { return output.call(runner, response); }
     if (method === 'raw') return response;
-    response = response.rows;
     switch (method) {
       case 'select':
       case 'pluck':
       case 'first':
-        if (method === 'pluck') return map(response, pluck)
-        return method === 'first' ? response[0] : response
+        if (method === 'pluck') return map(response.rows, pluck)
+        return method === 'first' ? response.rows[0] : response.rows
       case 'insert':
-      case 'del':
       case 'update':
+      case 'del':
       case 'counter':
         if (returning) {
           if ((Array.isArray(returning) && returning.length > 1) || returning[0] === '*') {
-            return response;
+            return response.rows;
           }
           // return an array with values if only one returning value was specified
-          return reverse(flatten(map(response, values)));
+          return reverse(flatten(map(response.rows, values)));
         }
-        return response;
+        return (method === "insert") ? response.rows : response.rowCount;
       default:
         return response
     }

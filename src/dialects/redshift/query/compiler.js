@@ -9,10 +9,6 @@ import * as helpers from '../../../helpers';
 
 import { assign, reduce } from 'lodash';
 
-function ReturningHelper(columnName) {
-  this.columnName = columnName;
-}
-
 function QueryCompiler_Redshift(client, builder) {
   QueryCompiler_PG.call(this, client, builder);
 }
@@ -30,12 +26,42 @@ assign(QueryCompiler_Redshift.prototype, {
     if (sql === '') return sql;
     const { returning } = this.single;
     const res = {
-      sql: sql,
+      sql,
       returning,
     };
-    const length = Array.isArray(this.single.insert) ? this.single.insert.length : 1;
+    const length = this.single && this.single.insert && Array.isArray(this.single.insert) ? this.single.insert.length : 1;
     if (returning) {
-      res.returningSql = this._returning(returning, length);
+      res.returningSql = this._returning(length).bind(this);
+    }
+    return res;
+  },
+
+  // Compiles an `update` query, allowing for a return value.
+  update() {
+    const sql = QueryCompiler.prototype.update.call(this)
+    const { returning } = this.single;
+    const res = {
+      sql,
+      returning,
+    }
+    if (returning) {
+      res.returningSql = this._returning().bind(this);
+    }
+    return res;
+  },
+
+  // Compiles an `delete` query, allowing for a return value.
+  del() {
+    const sql = QueryCompiler.prototype.del.apply(this, arguments);
+    const { returning } = this.single;
+    const res = {
+      sql,
+      returning,
+    }
+    if (returning) {
+      // NB: this won't work in redshift. I'm not sure of a workaround, 
+      // other than trying to select *before* deleting.
+      res.returningSql = this._returning().bind(this);
     }
     return res;
   },
@@ -50,12 +76,25 @@ assign(QueryCompiler_Redshift.prototype, {
     return '';
   },
 
-  _returning(value, length) {
-    if (!value) { return ''; }
-    const vals = /\*/.test(value) ? '"*"' : this.formatter.columnize(value);
-    const desc = /\*/.test(value) ? '"id" DESC ' : Array.isArray(value) ? this.formatter.columnize(value).split(", ").map(v => v + " DESC").join() : value + " DESC";
-    const tbl = this.tableName.toLowerCase();
-    return `SELECT ${vals} FROM ${tbl} ORDER BY ${desc} LIMIT ${length}`;
+  _returning(length) {
+    return function(returning){
+      if (!returning) { return ''; }
+      const vals = /\*/.test(returning) ? '*' : this.formatter.columnize(returning);
+      let order = "ORDER BY " + (/\*/.test(returning) ? '"id" DESC ' : Array.isArray(returning) ? this.formatter.columnize(returning).split(", ").map(v => v + " DESC").join() : returning + " DESC");
+      const tbl = this.tableName.toLowerCase();
+      let limit = length ? `LIMIT ${length}` : ``;
+      const wheres = length ? undefined : this.where();
+      let bindings;
+      if (wheres){
+        bindings = this.grouped.where.map(w => w.value);
+        limit = ``;
+        order = ``;
+      }
+      return {
+        sql: `SELECT ${vals} FROM ${tbl} ${wheres} ${order} ${limit}`.trim(),
+        bindings,
+      }
+    }
   },
 
   // Compiles a columnInfo query

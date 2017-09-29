@@ -422,12 +422,6 @@ module.exports = function(knex) {
       });
 
       it('allows changing a field', function() {
-        if(/redshift/i.test(knex.client.dialect)) {
-          return knex.schema.table('test_table_one', function(t) {
-            t.dropColumn('phone');
-            t.string('phone').nullable();
-          });
-        }
         return knex.schema.table('test_table_one', function(t) {
           t.string('phone').nullable();
         });

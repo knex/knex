@@ -874,7 +874,7 @@ module.exports = function(knex) {
           logins: 2,
           created_at: new Date(),
           updated_at: new Date()
-        }])
+        }], '*')
         .then(function () {
           return knex('accounts').whereIn('email', [
             'single-test1@example.com',

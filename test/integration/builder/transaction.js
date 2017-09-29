@@ -250,10 +250,14 @@ module.exports = function(knex) {
     });
 
     it('should allow for nested transactions', function() {
+      // if(/redshift/i.test(knex.client.dialect)) { return done(); }
       return knex.transaction(function(trx) {
         return trx.select('*').from('accounts').then(function() {
-          return trx.transaction(function() {
-            return trx.select('*').from('accounts')
+          return trx.transaction(function(trz) {
+            return trz.select('*').from('accounts').then(function(){
+              trx.commit();
+              trz.commit();
+            })
           })
         })
       })
@@ -272,10 +276,10 @@ module.exports = function(knex) {
       }
 
       return knex.transaction(function(trx) {
-          trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
-        })
-        .then(expectQueryEventToHaveBeenTriggered)
-        .catch(expectQueryEventToHaveBeenTriggered);
+        trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
+      })
+      .then(expectQueryEventToHaveBeenTriggered)
+      .catch(expectQueryEventToHaveBeenTriggered);
 
     });
 
@@ -315,15 +319,13 @@ module.exports = function(knex) {
     });
 
     it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', function() {
-      var db = Knex({
-        client: knex.client.driverName,
-        pool: {
-          min: 0,
-          max: 1
-        },
-        connection: knex.client.connectionSettings,
-        acquireConnectionTimeout: 300
-      })
+      const knexConfig = _.clone(knex.client.config);
+      knexConfig.pool.min = 0;
+      knexConfig.pool.max = 1;
+      knexConfig.acquireConnectionTimeout = 300;
+
+      const db = new Knex(knexConfig);
+
       return db.transaction(function() {
         return db.transaction(function() {})
       }).then(function () {

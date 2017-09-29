@@ -282,10 +282,10 @@ module.exports = function(knex) {
 
     it("support the groupBy function", function() {
 
-      return knex('accounts').count('id').groupBy('logins').testSql(function(tester) {
+      return knex('accounts').count('id').groupBy('logins').orderBy('logins', 'asc').testSql(function(tester) {
         tester(
           'mysql',
-          'select count(`id`) from `accounts` group by `logins`',
+          'select count(`id`) from `accounts` group by `logins` order by `logins` asc',
           [],
           [{
             'count(`id`)': 2
@@ -295,7 +295,7 @@ module.exports = function(knex) {
         );
         tester(
           'postgresql',
-          'select count("id") from "accounts" group by "logins"',
+          'select count("id") from "accounts" group by "logins" order by "logins" asc',
           [],
           [{
             count: '2'
@@ -305,7 +305,7 @@ module.exports = function(knex) {
         );
         tester(
           'pg-redshift',
-          'select count("id") from "accounts" group by "logins"',
+          'select count("id") from "accounts" group by "logins" order by "logins" asc',
           [],
           [{
             count: '2'
@@ -315,7 +315,7 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'select count(`id`) from `accounts` group by `logins`',
+          'select count(`id`) from `accounts` group by `logins` order by `logins` asc',
           [],
           [{
             'count(`id`)': 2
@@ -325,7 +325,7 @@ module.exports = function(knex) {
         );
         tester(
           'oracle',
-          'select count("id") from "accounts" group by "logins"',
+          'select count("id") from "accounts" group by "logins" order by "logins" asc',
           [],
           [{
             'COUNT("ID")': 2
@@ -335,7 +335,7 @@ module.exports = function(knex) {
         );
         tester(
           'mssql',
-          'select count([id]) from [accounts] group by [logins]',
+          'select count([id]) from [accounts] group by [logins] order by [logins] asc',
           [],
           [{
             '': 2

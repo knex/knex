@@ -469,7 +469,8 @@ module.exports = function(knex) {
                 logins: 1,
                 about: "Lorem ipsum Dolore labore incididunt enim.",
                 created_at: d,
-                updated_at: d
+                updated_at: d,
+                phone: null
               }]
             );
             tester(

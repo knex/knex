@@ -104,6 +104,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
               },
               {
@@ -115,6 +116,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
               },
               {
@@ -126,6 +128,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 details: ''
               }
             ]
@@ -412,6 +415,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
               },
               {
@@ -423,6 +427,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'
               },
               {
@@ -434,6 +439,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 details: ''
               },
               {
@@ -445,6 +451,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 details: null
               },
               {
@@ -456,6 +463,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 details: null
               },
               {
@@ -467,6 +475,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 details: null
               }
             ]
@@ -889,6 +898,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 account_id: 1,
                 details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 0,
@@ -903,6 +913,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 account_id: 2,
                 details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 1,
@@ -917,6 +928,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 account_id: 3,
                 details: '',
                 status: 1,
@@ -931,6 +943,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 account_id: null,
                 details: null,
                 status: null,
@@ -945,6 +958,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 account_id: null,
                 details: null,
                 status: null,
@@ -959,6 +973,7 @@ module.exports = function(knex) {
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: d,
                 updated_at: d,
+                phone: null,
                 account_id: null,
                 details: null,
                 status: null,
