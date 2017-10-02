@@ -100,9 +100,11 @@ assign(ColumnCompiler_Oracle.prototype, {
   // ------
 
   comment(comment) {
+    const columnName = this.args[0] || this.defaults('columnName');
+
     this.pushAdditional(function() {
       this.pushQuery(`comment on column ${this.tableCompiler.tableName()}.` +
-        this.formatter.wrap(this.args[0]) + " is '" + (comment || '')+ "'");
+        this.formatter.wrap(columnName) + " is '" + (comment || '')+ "'");
     }, comment);
   },
 

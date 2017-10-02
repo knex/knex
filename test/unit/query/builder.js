@@ -72,6 +72,17 @@ function testsql(chain, valuesToCheck, selectedClients) {
   })
 }
 
+function testNativeSql(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
+  Object.keys(valuesToCheck).forEach(function(key) {
+    var newChain = chain.clone();
+    newChain.client = selectedClients[key];
+    var sqlAndBindings = newChain.toSQL().toNative();
+    var checkValue = valuesToCheck[key];
+    verifySqlResult(key, checkValue, sqlAndBindings);
+  })
+}
+
 function testquery(chain, valuesToCheck, selectedClients) {
   selectedClients = selectedClients || clients;
   Object.keys(valuesToCheck).forEach(function(key) {
@@ -3944,15 +3955,15 @@ describe("QueryBuilder", function() {
   it('supports capitalized operators', function() {
     testsql(qb().select('*').from('users').where('name', 'LIKE', '%test%'), {
       mysql: {
-        sql: 'select * from `users` where `name` LIKE ?',
+        sql: 'select * from `users` where `name` like ?',
         bindings: ['%test%']
       },
       mssql: {
-        sql: 'select * from [users] where [name] LIKE ?',
+        sql: 'select * from [users] where [name] like ?',
         bindings: ['%test%']
       },
       postgres: {
-        sql: 'select * from "users" where "name" LIKE ?',
+        sql: 'select * from "users" where "name" like ?',
         bindings: ['%test%']
       },
       redshift: {
@@ -4873,6 +4884,19 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("operator transformation", function() {
+    // part of common base code, no need to test on every dialect
+    testsql(qb().select('*').from('users').where('id', '?', 1), {
+      postgres: 'select * from "users" where "id" \\? ?'
+    });
+    testsql(qb().select('*').from('users').where('id', '?|', 1), {
+      postgres: 'select * from "users" where "id" \\?| ?'
+    });
+    testsql(qb().select('*').from('users').where('id', '?&', 1), {
+      postgres: 'select * from "users" where "id" \\?& ?'
+    });
+  });
+
   it("wrapped 'with' clause select", function() {
     testsql(qb().with('withClause', function() {
       this.select('foo').from('users');
@@ -5009,6 +5033,35 @@ describe("QueryBuilder", function() {
           sql: 'with "withClause" as (with "withSubClause" as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from "withSubClause") select * from "withClause" where "id" = ?',
           bindings: [1, 20, 10]
         }
+    });
+  });
+
+  it("should return dialect specific sql and bindings with  toSQL().toNative()", function() {
+    testNativeSql(qb().from('table').where('isIt', true), {
+      mssql: {
+        sql: 'select * from [table] where [isIt] = @p0',
+        bindings: [true]
+      },
+      mysql: {
+        sql: 'select * from `table` where `isIt` = ?',
+        bindings: [true]
+      },
+      sqlite3: {
+        sql: 'select * from `table` where `isIt` = ?',
+        bindings: [true]
+      },
+      postgres: {
+        sql: 'select * from "table" where "isIt" = $1',
+        bindings: [true]
+      },
+      oracledb: {
+        sql: 'select * from "table" where "isIt" = :1',
+        bindings: [1]
+      },
+      oracle: {
+        sql: 'select * from "table" where "isIt" = :1',
+        bindings: [1]
+      }
     });
   });
 
