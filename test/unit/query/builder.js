@@ -3967,7 +3967,7 @@ describe("QueryBuilder", function() {
         bindings: ['%test%']
       },
       redshift: {
-        sql: 'select * from "users" where "name" LIKE ?',
+        sql: 'select * from "users" where "name" like ?',
         bindings: ['%test%']
       },
     });

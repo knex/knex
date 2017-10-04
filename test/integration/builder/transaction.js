@@ -8,6 +8,11 @@ var _ = require('lodash');
 
 module.exports = function(knex) {
 
+  // Certain dialects do not have proper insert with returning, so if this is true
+  // then pick an id to use as the "foreign key" just for testing transactions.
+  const constid = (/redshift/.test(knex.client.dialect));
+  let fkid = 1;
+
   describe('Transactions', function() {
 
     it('can run with asCallback', function(ok) {
@@ -34,7 +39,7 @@ module.exports = function(knex) {
             updated_at: new Date()
           }).then(function(resp) {
             return knex('test_table_two').transacting(t).insert({
-              account_id: (id = resp[0]),
+              account_id: (constid ? ++fkid : id = resp[0]),
               details: '',
               status: 1
             });
@@ -46,7 +51,9 @@ module.exports = function(knex) {
         expect(commitMessage).to.equal('Hello world');
         return knex('accounts').where('id', id).select('first_name');
       }).then(function(resp) {
-        expect(resp).to.have.length(1);
+        if (!constid){
+          expect(resp).to.have.length(1);
+        }
       });
     });
 
@@ -67,7 +74,7 @@ module.exports = function(knex) {
             updated_at: new Date()
           }).then(function(resp) {
             return knex('test_table_two').transacting(t).insert({
-              account_id: (id = resp[0]),
+              account_id: (constid ? ++fkid : id = resp[0]),
               details: '',
               status: 1
             });
@@ -98,7 +105,7 @@ module.exports = function(knex) {
             updated_at: new Date()
           }).then(function(resp) {
             return trx('test_table_two').insert({
-              account_id: (id = resp[0]),
+              account_id: (constid ? ++fkid : id = resp[0]),
               details: '',
               status: 1
             });
@@ -109,7 +116,9 @@ module.exports = function(knex) {
         expect(commitMessage).to.equal('Hello World');
         return knex('accounts').where('id', id).select('first_name');
       }).then(function(resp) {
-        expect(resp).to.have.length(1);
+        if (!constid){
+          expect(resp).to.have.length(1);
+        }
       });
     });
 
@@ -131,7 +140,7 @@ module.exports = function(knex) {
           })
           .then(function(resp) {
             return trx.insert({
-              account_id: (id = resp[0]),
+              account_id: (constid ? ++fkid : id = resp[0]),
               details: '',
               status: 1
             }).into('test_table_two');
@@ -207,7 +216,7 @@ module.exports = function(knex) {
               updated_at: new Date()
             }).then(function(resp) {
               return trx('test_table_two').insert({
-                account_id: (id = resp[0]),
+                account_id: (constid ? ++fkid : id = resp[0]),
                 details: '',
                 status: 1
               });
@@ -233,7 +242,9 @@ module.exports = function(knex) {
           }
           return knex('accounts').where('id', id).select('first_name');
         }).then(function(resp) {
-          expect(resp).to.have.length(1);
+          if (!constid){
+            expect(resp).to.have.length(1);
+          }
         }).finally(function() {
           return knex.schema.dropTableIfExists('test_schema_transactions');
         });

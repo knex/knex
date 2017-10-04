@@ -9,46 +9,6 @@ var Promise = require('bluebird');
 module.exports = function(knex) {
 
   describe('Inserts', function() {
-    // before(() => knex.schema
-    //   .dropTableIfExists('accounts')
-    //   .createTable('accounts', function(table) {
-    //     table.engine('InnoDB');
-    //     table.comment('A table comment.');
-    //     table.bigIncrements('id');
-    //     table.string('first_name').index();
-    //     table.string('last_name');
-    //     table.string('email').unique().nullable();
-    //     table.integer('logins').defaultTo(1).index().comment();
-    //     if (knex.client.dialect === 'oracle') {
-    //       // use string instead to force varchar2 to avoid later problems with join and union
-    //       table.string('about', 4000).comment('A comment.');
-    //     } else {
-    //       table.text('about').comment('A comment.');
-    //     }
-    //     table.timestamps();
-    //   })
-    //   .dropTableIfExists('datatype_test')
-    //   .createTable('datatype_test', function(table) {
-    //     table.enum('enum_value', ['a', 'b', 'c']);
-    //     table.uuid('uuid').notNull();
-    //   })
-    //   .dropTableIfExists('test_table_two')
-    //   .createTable('test_table_two', function(table) {
-    //     table.engine('InnoDB');
-    //     table.increments();
-    //     table.integer('account_id');
-    //     if (knex.client.dialect === 'oracle') {
-    //       // use string instead to force varchar2 to avoid later problems with join and union
-    //       // e.g. where email (varchar2) = details (clob) does not work
-    //       table.string('details', 4000);
-    //     } else {
-    //       table.text('details');
-    //     }
-    //     table.tinyint('status');
-    //   }) 
-    //   .dropTableIfExists('test_default_table')
-    //   .dropTableIfExists('test_default_table2')
-    // );
 
     it("should handle simple inserts", function() {
 
@@ -77,7 +37,7 @@ module.exports = function(knex) {
           'pg-redshift',
           'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test@example.com','Test','User', 1, d],
-          ['1']
+          1
         );
         tester(
           'sqlite3',
@@ -136,7 +96,7 @@ module.exports = function(knex) {
             'pg-redshift',
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             ['Lorem ipsum Dolore labore incididunt enim.', d,'test2@example.com','Test','User',1, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test3@example.com','Test','User',2, d],
-            ['2','3']
+            2
           );
           tester(
             'sqlite3',
@@ -238,7 +198,7 @@ module.exports = function(knex) {
           'pg-redshift',
           'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test4@example.com','Test','User',2, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test5@example.com','Test','User',2, d],
-          ['4','5']
+          2
         );
         tester(
           'sqlite3',
@@ -356,7 +316,7 @@ module.exports = function(knex) {
             'pg-redshift',
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test6@example.com','Test','User',2, d],
-            ['6']
+            1
           );
           tester(
             'sqlite3',
@@ -484,7 +444,7 @@ module.exports = function(knex) {
               'pg-redshift',
               'insert into "test_default_table" default values',
               [],
-              [1]
+              1
             );
             tester(
               'sqlite3',
@@ -535,7 +495,7 @@ module.exports = function(knex) {
               'pg-redshift',
               'insert into "test_default_table2" default values',
               [],
-              [1]
+              1
             );
             tester(
               'sqlite3',
@@ -635,7 +595,7 @@ module.exports = function(knex) {
           'pg-redshift',
           'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?)',
           [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
-          [{account_id: 10, details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'}]
+          1
         );
         tester(
           'sqlite3',
@@ -658,6 +618,9 @@ module.exports = function(knex) {
           [{account_id: 10, details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'}]
         );
       }).then(function(rows) {
+        if (/redshift/.test(knex.client.dialect)){
+          return expect(rows).to.equal(1);
+        }
         expect(rows.length).to.equal(1);
         if (knex.client.dialect === 'postgresql') {
           expect(_.keys(rows[0]).length).to.equal(2);
@@ -668,6 +631,7 @@ module.exports = function(knex) {
     });
 
     it('should allow a * for returning in postgres and oracle', function() {
+      if(/redshift/i.test(knex.client.dialect)) { return; }
       var insertData = {
         account_id: 10,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -679,18 +643,6 @@ module.exports = function(knex) {
         tester(
           'postgresql',
           'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning *',
-          [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
-          [{
-            id: 5,
-            account_id: 10,
-            details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
-            status: 0,
-            json_data: null
-          }]
-        );
-        tester(
-          'pg-redshift',
-          'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?)',
           [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
           [{
             id: 5,

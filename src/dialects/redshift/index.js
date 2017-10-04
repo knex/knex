@@ -3,10 +3,8 @@
 // -------
 import inherits from 'inherits';
 import Client_PG from '../postgres';
-import { assign, extend, flatten, map, reverse, values } from 'lodash'
-import Promise from 'bluebird';
+import { assign, map, } from 'lodash'
 
-import * as helpers from '../../helpers';
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
 import ColumnBuilder from './schema/columnbuilder';
@@ -52,60 +50,25 @@ assign(Client_Redshift.prototype, {
     return require('pg')
   },
 
-  // Runs the query on the specified connection, providing the bindings
-  // and any other necessary prep work.
-  _query(connection, obj) {
-    // TODO: if deleting with returning, flip the order of delete and returning queries
-    const that = this;
-    let sql = obj.sql = that.positionBindings(obj.sql)
-    if (obj.options) sql = extend({text: sql}, obj.options);
-    return new Promise(function(resolver, rejecter) {
-      connection.query(sql, obj.bindings, function(err, response) {
-        if (err) { return rejecter(err); }
-        obj.response = response;
-        if (!obj.returning) { return resolver(obj); }
-        const retSql = obj.returningSql(obj.returning);
-        if (retSql.bindings && retSql.bindings.length > 0){
-          retSql.sql = that.positionBindings(retSql.sql);
-        }
-        return connection.query(retSql.sql, retSql.bindings, function(err, response) {
-          if (err) { return rejecter(err); }
-          obj.response = response;
-          return resolver(obj);
-        });
-      });
-    });
-  },
-
-  // Process the response as returned from the query.
+  // Ensures the response is returned in the same format as other clients.
   processResponse(obj, runner) {
-    if (obj == null) return;
-    const { response } = obj
-    const { method, output, pluck, returning } = obj
-    if (output) { return output.call(runner, response); }
-    if (method === 'raw') return response;
-    switch (method) {
-      case 'select':
-      case 'pluck':
-      case 'first':
-        if (method === 'pluck') return map(response.rows, pluck)
-        return method === 'first' ? response.rows[0] : response.rows
-      case 'insert':
-      case 'update':
-      case 'del':
-      case 'counter':
-        if (returning) {
-          if ((Array.isArray(returning) && returning.length > 1) || returning[0] === '*') {
-            return response.rows;
-          }
-          // return an array with values if only one returning value was specified
-          return reverse(flatten(map(response.rows, values)));
-        }
-        return (method === "insert") ? response.rows : response.rowCount;
-      default:
-        return response
+    const resp = obj.response;
+    if (obj.output) return obj.output.call(runner, resp);
+    if (obj.method === 'raw') return resp;
+    if (resp.command === 'SELECT') {
+      if (obj.method === 'first') return resp.rows[0];
+      if (obj.method === 'pluck') return map(resp.rows, obj.pluck);
+      return resp.rows;
     }
-  },
+    if (
+      resp.command === 'INSERT' ||
+      resp.command === 'UPDATE' ||
+      resp.command === 'DELETE'
+    ) {
+      return resp.rowCount;
+    }
+    return resp;
+  }
 })
 
 export default Client_Redshift;

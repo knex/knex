@@ -81,7 +81,7 @@ module.exports = function(knex) {
             'pg-redshift',
             'delete from "accounts" where "id" = ?',
             [2],
-            []
+            1
           );
           tester(
             'sqlite3',

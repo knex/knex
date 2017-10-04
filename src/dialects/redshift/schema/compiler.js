@@ -6,33 +6,9 @@
 import inherits from 'inherits';
 import SchemaCompiler_PG from '../../postgres/schema/compiler';
 
-import { assign } from 'lodash';
-
 function SchemaCompiler_Redshift() {
   SchemaCompiler_PG.apply(this, arguments);
 }
 inherits(SchemaCompiler_Redshift, SchemaCompiler_PG);
-
-assign(SchemaCompiler_Redshift.prototype, {
-
-  // Check whether the current table
-  hasTable(tableName) {
-    let sql = 'select * from information_schema.tables where table_name = ?';
-    const bindings = [tableName];
-    if (this.schema) {
-      sql += ' and table_schema = ?';
-      bindings.push(this.schema);
-    } else {
-      sql += ' and table_schema = current_schema()';
-    }
-    this.pushQuery({
-      sql,
-      bindings,
-      output(resp) {
-        return resp.rows.length > 0;
-      }
-    });
-  },
-});
 
 export default SchemaCompiler_Redshift;

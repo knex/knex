@@ -1471,7 +1471,8 @@ module.exports = function(knex) {
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function (res) {
-              return res.length === 30;
+              // redshift, not supporting insert...returning, had to fake 6 of these in previous tests
+              return res.length === 24;
             }
           );
           tester(

@@ -22,48 +22,37 @@ assign(QueryCompiler_Redshift.prototype, {
   // Compiles an `insert` query, allowing for multiple
   // inserts using a single query statement.
   insert() {
-    const sql = QueryCompiler.prototype.insert.call(this)
+    const sql = QueryCompiler.prototype.insert.apply(this, arguments);
     if (sql === '') return sql;
-    const { returning } = this.single;
-    const res = {
+    this._slightReturn();
+    return {
       sql,
-      returning,
     };
-    const length = this.single && this.single.insert && Array.isArray(this.single.insert) ? this.single.insert.length : 1;
-    if (returning) {
-      res.returningSql = this._returning(length).bind(this);
-    }
-    return res;
   },
 
-  // Compiles an `update` query, allowing for a return value.
+  // Compiles an `update` query, warning on unsupported returning
   update() {
-    const sql = QueryCompiler.prototype.update.call(this)
-    const { returning } = this.single;
-    const res = {
+    const sql = QueryCompiler.prototype.update.apply(this, arguments);
+    this._slightReturn();
+    return {
       sql,
-      returning,
-    }
-    if (returning) {
-      res.returningSql = this._returning().bind(this);
-    }
-    return res;
+    };
   },
 
-  // Compiles an `delete` query, allowing for a return value.
+  // Compiles an `delete` query, warning on unsupported returning
   del() {
     const sql = QueryCompiler.prototype.del.apply(this, arguments);
-    const { returning } = this.single;
-    const res = {
+    this._slightReturn();
+    return {
       sql,
-      returning,
+    };
+  },
+
+  // simple: if trying to return, warn
+  _slightReturn(){
+    if (this.single.isReturning) {
+      helpers.warn('insert/update/delete returning is not supported by redshift dialect');
     }
-    if (returning) {
-      // NB: this won't work in redshift. I'm not sure of a workaround, 
-      // other than trying to select *before* deleting.
-      res.returningSql = this._returning().bind(this);
-    }
-    return res;
   },
 
   forUpdate() {
@@ -74,27 +63,6 @@ assign(QueryCompiler_Redshift.prototype, {
   forShare() {
     helpers.warn('lock for share is not supported by redshift dialect');
     return '';
-  },
-
-  _returning(length) {
-    return function(returning){
-      if (!returning) { return ''; }
-      const vals = /\*/.test(returning) ? '*' : this.formatter.columnize(returning);
-      let order = "ORDER BY " + (/\*/.test(returning) ? '"id" DESC ' : Array.isArray(returning) ? this.formatter.columnize(returning).split(", ").map(v => v + " DESC").join() : returning + " DESC");
-      const tbl = this.tableName.toLowerCase();
-      let limit = length ? `LIMIT ${length}` : ``;
-      const wheres = length ? undefined : this.where();
-      let bindings;
-      if (wheres){
-        bindings = this.grouped.where.map(w => w.value);
-        limit = ``;
-        order = ``;
-      }
-      return {
-        sql: `SELECT ${vals} FROM ${tbl} ${wheres} ${order} ${limit}`.trim(),
-        bindings,
-      }
-    }
   },
 
   // Compiles a columnInfo query
