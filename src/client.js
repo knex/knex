@@ -163,6 +163,13 @@ assign(Client.prototype, {
     return sql;
   },
 
+  postProcessResponse(resp) {
+    if (this.config.postProcessResponse) {
+      return this.config.postProcessResponse(resp);
+    }
+    return resp;
+  },
+
   wrapIdentifier(value) {
     if (this.config.wrapIdentifier) {
       return this.config.wrapIdentifier(value, this.wrapIdentifierImpl);
