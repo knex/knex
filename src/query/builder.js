@@ -966,7 +966,7 @@ assign(Builder.prototype, {
   _aggregate(method, column, aggregateDistinct) {
     this._statements.push({
       grouping: 'columns',
-      type: 'aggregate',
+      type: column instanceof Raw ? 'aggregateRaw' : 'aggregate',
       method,
       value: column,
       aggregateDistinct: aggregateDistinct || false

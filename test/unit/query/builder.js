@@ -2405,6 +2405,40 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("count with raw values", function() {
+    testsql(qb().from('users').count(raw('??', 'name')), {
+      mysql: {
+        sql: 'select count(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count distinct with raw values", function() {
+    testsql(qb().from('users').countDistinct(raw('??', 'name')), {
+      mysql: {
+        sql: 'select count(distinct `name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct [name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct "name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("max", function() {
     testsql(qb().from('users').max('id'), {
       mysql: {
@@ -2417,6 +2451,23 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select max("id") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("max with raw values", function() {
+    testsql(qb().from('users').max(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select max(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select max([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select max("name") from "users"',
         bindings: []
       }
     });
@@ -2439,6 +2490,23 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("min with raw values", function() {
+    testsql(qb().from('users').min(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select min(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select min([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select min("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("sum", function() {
     testsql(qb().from('users').sum('id'), {
       mysql: {
@@ -2456,6 +2524,23 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("sum with raw values", function() {
+    testsql(qb().from('users').sum(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select sum(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select sum([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select sum("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("sum distinct", function() {
     testsql(qb().from('users').sumDistinct('id'), {
       mysql: {
@@ -2468,6 +2553,74 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select sum(distinct "id") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("sum distinct with raw values", function() {
+    testsql(qb().from('users').sumDistinct(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select sum(distinct `name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select sum(distinct [name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select sum(distinct "name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("avg", function() {
+    testsql(qb().from('users').avg('id'), {
+      mysql: {
+        sql: 'select avg(`id`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select avg([id]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select avg("id") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("avg with raw values", function() {
+    testsql(qb().from('users').avg(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select avg(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select avg([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select avg("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("avg distinct with raw values", function() {
+    testsql(qb().from('users').avgDistinct(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select avg(distinct `name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select avg(distinct [name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select avg(distinct "name") from "users"',
         bindings: []
       }
     });
