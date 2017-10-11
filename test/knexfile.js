@@ -5,8 +5,8 @@ var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
 var _          = require('lodash');
 var Promise    = require('bluebird');
 
-// excluding oracle and mssql dialects from default integrations test
-var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres redshift sqlite3").match(/\w+/g);
+// excluding redshift, oracle, and mssql dialects from default integrations test
+var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres sqlite3").match(/\w+/g);
 
 var pool = {
   afterCreate: function(connection, callback) {
@@ -159,17 +159,7 @@ var testConfigs = {
     },
     pool: pool,
     migrations: migrations,
-    seeds: seeds,
-    docker: {
-      factory:   './redshift/index.js',
-      container: 'knex-test-redshift',
-      image:     'quay.io/skuid/docker-aws-redshift',
-      database:  'postgres',
-      username:  'postgres',
-      password:  '',
-      hostPort:  '49154',
-      client:    'pg'
-    }
+    seeds: seeds
   },
 
   sqlite3: {

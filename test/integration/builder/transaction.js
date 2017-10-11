@@ -261,14 +261,11 @@ module.exports = function(knex) {
     });
 
     it('should allow for nested transactions', function() {
-      // if(/redshift/i.test(knex.client.dialect)) { return done(); }
+      if(/redshift/i.test(knex.client.dialect)) { return Promise.resolve() }
       return knex.transaction(function(trx) {
         return trx.select('*').from('accounts').then(function() {
-          return trx.transaction(function(trz) {
-            return trz.select('*').from('accounts').then(function(){
-              trx.commit();
-              trz.commit();
-            })
+          return trx.transaction(function() {
+            return trx.select('*').from('accounts')
           })
         })
       })
