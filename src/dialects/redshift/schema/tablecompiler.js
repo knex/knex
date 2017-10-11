@@ -50,7 +50,7 @@ TableCompiler_Redshift.prototype.primary = function(columns, constraintName) {
         tcb.builder &&
         tcb.builder._method === "add" &&
         tcb.builder._args &&
-        tcb.builder._args.includes(columns[i]));
+        tcb.builder._args.indexOf(columns[i]) > -1);
       if (exists) {
         exists = exists.builder;
       }
