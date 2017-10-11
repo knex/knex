@@ -695,7 +695,7 @@ module.exports = function(knex) {
           .select()
           .testSql(function(tester) {
             tester('mysql',
-              'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?),(?, ?)) order by "status" desc',
+              'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?),(?, ?)) order by `status` desc',
               [1,1,1,2],
               [{
                 column_a: 1,
