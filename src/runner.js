@@ -132,19 +132,24 @@ assign(Runner.prototype, {
     return queryPromise
       .then((resp) => {
         const processedResponse = this.client.processResponse(resp, runner);
+        const postProcessedResponse = this.client
+          .postProcessResponse(processedResponse);
+
         this.builder.emit(
           'query-response',
-          processedResponse,
+          postProcessedResponse,
           assign({__knexUid: this.connection.__knexUid}, obj),
           this.builder
         );
+
         this.client.emit(
           'query-response',
-          processedResponse,
+          postProcessedResponse,
           assign({__knexUid: this.connection.__knexUid}, obj),
           this.builder
         );
-        return processedResponse;
+
+        return postProcessedResponse;
       }).catch(Promise.TimeoutError, error => {
         const { timeout, sql, bindings } = obj;
 
