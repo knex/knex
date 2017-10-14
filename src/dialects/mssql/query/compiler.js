@@ -126,6 +126,9 @@ assign(QueryCompiler_MSSQL.prototype, {
         if (stmt.type === 'aggregate') {
           sql.push(this.aggregate(stmt))
         }
+        else if (stmt.type === 'aggregateRaw') {
+          sql.push(this.aggregateRaw(stmt))
+        }
         else if (stmt.value && stmt.value.length > 0) {
           sql.push(this.formatter.columnize(stmt.value))
         }
