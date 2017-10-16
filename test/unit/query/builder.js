@@ -145,7 +145,47 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("basic alias", function() {
+  it("basic select with alias as property-value pairs", function() {
+    testsql(qb().select({bar: 'foo'}).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      postgres: 'select "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic select with mixed pure column and alias pair", function() {
+    testsql(qb().select('baz', {bar: 'foo'}).from('users'), {
+      mysql: 'select `baz`, `foo` as `bar` from `users`',
+      oracle: 'select "baz", "foo" "bar" from "users"',
+      mssql: 'select [baz], [foo] as [bar] from [users]',
+      oracledb: 'select "baz", "foo" "bar" from "users"',
+      postgres: 'select "baz", "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic select with array-wrapped alias pair", function() {
+    testsql(qb().select(['baz', {bar: 'foo'}]).from('users'), {
+      mysql: 'select `baz`, `foo` as `bar` from `users`',
+      oracle: 'select "baz", "foo" "bar" from "users"',
+      mssql: 'select [baz], [foo] as [bar] from [users]',
+      oracledb: 'select "baz", "foo" "bar" from "users"',
+      postgres: 'select "baz", "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic select with mixed pure column and alias pair", function() {
+    testsql(qb().select({bar: 'foo'}).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      postgres: 'select "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic old-style alias", function() {
     testsql(qb().select('foo as bar').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
@@ -182,6 +222,25 @@ describe("QueryBuilder", function() {
       mssql: 'select [foo] as [bar.baz] from [users]',
       postgres: 'select "foo" as "bar.baz" from "users"'
     });
+  });
+
+  it("less trivial case of object alias syntax", () => {
+    testsql(qb()
+      .select({
+        bar: 'table1.*',
+        subq: qb().from('test').select(raw('??', [{ a: 'col1', b: 'col2' }])).limit(1)
+      })
+      .from({
+        table1: 'table',
+        table2: 'table',
+        subq: qb().from('test').limit(1)
+      }), {
+        mysql: 'select `table1`.* as `bar`, (select `col1` as `a`, `col2` as `b` from `test` limit ?) as `subq` from `table` as `table1`, `table` as `table2`, (select * from `test` limit ?) as `subq`',
+        postgres: 'select "table1".* as "bar", (select "col1" as "a", "col2" as "b" from "test" limit ?) as "subq" from "table" as "table1", "table" as "table2", (select * from "test" limit ?) as "subq"',
+        sqlite3: 'select `table1`.* as `bar`, (select `col1` as `a`, `col2` as `b` from `test` limit ?) as `subq` from `table` as `table1`, `table` as `table2`, (select * from `test` limit ?) as `subq`',
+        oracledb: 'select "table1".* "bar", (select * from (select "col1" "a", "col2" "b" from "test") where rownum <= ?) "subq" from "table" "table1", "table" "table2", (select * from (select * from "test") where rownum <= ?) "subq"',
+        mssql: 'select [table1].* as [bar], (select top (?) [col1] as [a], [col2] as [b] from [test]) as [subq] from [table] as [table1], [table] as [table2], (select top (?) * from [test]) as [subq]',
+      });
   });
 
   it("basic table wrapping", function() {
