@@ -34,7 +34,7 @@ export default class Formatter {
 
   // Accepts a string or array of columns to wrap as appropriate.
   columnize(target) {
-    const columns = typeof target === 'string' ? [target] : target
+    const columns = Array.isArray(target) ? target : [target];
     let str = '', i = -1;
     while (++i < columns.length) {
       if (i > 0) str += ', '
@@ -166,20 +166,24 @@ export default class Formatter {
     }
     return sql;
   }
-  
+
   // Key-value notation for alias
   parseObject(obj) {
     const ret = [];
-    for (const key in obj) {
-      const first = obj[key];
-      const second = key;
+    for (const alias in obj) {
+      const queryOrIdentifier = obj[alias];
       // Avoids double aliasing for subqueries
-      if (typeof first === 'function') {
-        const compiled = this.compileCallback(first)
-        compiled.as = second // enforces the object's alias
-        ret.push(this.outputQuery(compiled, true))
+      if (typeof queryOrIdentifier === 'function') {
+        const compiled = this.compileCallback(queryOrIdentifier);
+        compiled.as = alias; // enforces the object's alias
+        ret.push(this.outputQuery(compiled, true));
+      } else if (queryOrIdentifier instanceof QueryBuilder) {
+        ret.push(this.alias(
+          `(${this.wrap(queryOrIdentifier)})`,
+          this.wrapAsIdentifier(alias))
+        );
       } else {
-        ret.push(this.alias(this.wrap(first), this.wrapAsIdentifier(second)))
+        ret.push(this.alias(this.wrap(queryOrIdentifier), this.wrapAsIdentifier(alias)))
       }
     }
     return ret.join(', ')
