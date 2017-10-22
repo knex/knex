@@ -11,7 +11,7 @@
     "debug": "^2.1.3",
     "generic-pool": "^3.1.7",
     "inherits": "~2.0.1",
-    "interpret": "^0.6.5",
+    "interpret": "^1.0.4",
     "liftoff": "~2.2.0",
     "lodash": "^4.6.0",
     "minimist": "~1.1.0",
