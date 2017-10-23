@@ -166,7 +166,7 @@ module.exports = function(knex) {
             "type": "uuid"
           }
         });
-        tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
+        tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
           "enum_value": {
             "defaultValue": null,
             "maxLength": null,
@@ -233,7 +233,7 @@ module.exports = function(knex) {
           "nullable": false,
           "type": "uuid"
         });
-        tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
+        tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
           "defaultValue": null,
           "maxLength": "36",
           "nullable": false,
@@ -258,6 +258,32 @@ module.exports = function(knex) {
             "type": "uniqueidentifier"
           });
       });
+    });
+
+    it('#2184 - should properly escape table name for SQLite columnInfo', function() {
+      if (knex.client.dialect !== 'sqlite3') {
+        return;
+      }
+
+      return knex.schema.dropTableIfExists('group')
+        .then(function() {
+          return knex.schema.createTable('group', function(table) {
+            table.integer('foo');
+          });
+        })
+        .then(function() {
+          return knex('group').columnInfo();
+        })
+        .then(function(columnInfo) {
+          expect(columnInfo).to.deep.equal({
+            foo: {
+              type: 'integer',
+              maxLength: null,
+              nullable: true,
+              defaultValue: null,
+            },
+          });
+        });
     });
 
     it('should allow renaming a column', function() {
