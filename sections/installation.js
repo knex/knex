@@ -75,6 +75,10 @@ export default [
     content: "The connection options are passed directly to the appropriate database client to create the connection, and may be either an object, or a connection string:"
   },
   {
+    type: "info",
+    content: "Note: Knex's PostgreSQL client allows you to set the initial search path for each connection automatically using an additional option \"searchPath\" as shown below."
+  },
+  {
     type: "code",
     language: "js",
     content: `
