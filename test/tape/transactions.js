@@ -452,4 +452,12 @@ module.exports = function(knex) {
       return Promise.resolve()
     });
   });
+
+  test('#2273 - can migrate within a transaction', function(t) {
+    return knex.transaction(function(trx) {
+      t.equal(trx.migrate._isTransaction(), true)
+      t.equal(knex.migrate._isTransaction(), false)
+      return Promise.resolve()
+    });
+  });
 }

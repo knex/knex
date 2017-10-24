@@ -55,7 +55,10 @@ export default class Migrator {
             return !this._useTransaction(migration);
           }));
 
-        if (transactionForAll) {
+        if (this._isTransaction()) {
+          return this._runBatch(migrations, 'up', this.knex);
+        }
+        else if (transactionForAll) {
           return this.knex.transaction(trx => this._runBatch(migrations, 'up', trx));
         }
         else {
@@ -66,13 +69,14 @@ export default class Migrator {
 
   // Rollback the last "batch" of migrations that were run.
   rollback(config) {
+    const trx = this._isTransaction() ? this.knex : null;
     return Promise.try(() => {
       this.config = this.setConfig(config);
       return this._migrationData()
         .tap(validateMigrationList)
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
-          return this._runBatch(map(migrations, 'name'), 'down');
+          return this._runBatch(map(migrations, 'name'), 'down', trx);
         });
     })
   }
@@ -116,6 +120,10 @@ export default class Migrator {
     return this._ensureFolder(config)
       .then((val) => this._generateStubTemplate(val))
       .then((val) => this._writeNewMigration(name, val));
+  }
+
+  _isTransaction() {
+    return this.knex.isTransaction()
   }
 
   // Lists all available migration versions, as a sorted array.
