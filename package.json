@@ -21,7 +21,7 @@
     "safe-buffer": "^5.0.1",
     "tildify": "~1.0.0",
     "uuid": "^3.0.0",
-    "v8flags": "^2.0.2"
+    "v8flags": "^3.0.0"
   },
   "devDependencies": {
     "JSONStream": "^1.0.3",
