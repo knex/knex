@@ -43,6 +43,10 @@ export default function makeKnex(client) {
       return client.transaction(container, config)
     },
 
+    isTransaction() {
+      return Boolean(client.transacting)
+    },
+
     // Typically never needed, initializes the pool for a knex client.
     initialize(config) {
       return client.initialize(config)

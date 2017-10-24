@@ -445,4 +445,11 @@ module.exports = function(knex) {
     })
   }
 
+  test('#2273 - knows it is a transaction', function(t) {
+    return knex.transaction(function(trx) {
+      t.equal(trx.isTransaction(), true)
+      t.equal(knex.isTransaction(), false)
+      return Promise.resolve()
+    });
+  });
 }
