@@ -556,11 +556,6 @@ assign(QueryCompiler.prototype, {
     return val && this.formatter.columnize(statement.alias) + ' as (' + val + ')' || '';
   },
 
-  withRaw(statement) {
-    return this.formatter.columnize(statement.alias) + ' as (' +
-      this.formatter.unwrapRaw(statement.value) + ')';
-  },
-
   // Determines whether to add a "not" prefix to the where clause.
   _not(statement, str) {
     if (statement.not) return `not ${str}`;

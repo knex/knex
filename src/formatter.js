@@ -87,6 +87,13 @@ export default class Formatter {
     }
   }
 
+  /**
+   * Creates SQL for a parameter, which might be passed to where() or .with() or
+   * pretty much anywhere in API.
+   *
+   * @param query Callback (for where or complete builder), Raw or QueryBuilder
+   * @param method Optional at least 'select' or 'update' are valid
+   */
   rawOrFn(value, method) {
     if (typeof value === 'function') {
       return this.outputQuery(this.compileCallback(value, method));
@@ -149,7 +156,7 @@ export default class Formatter {
     compiler.formatter = this;
 
     // Return the compiled & parameterized sql.
-    return compiler.toSQL(method || 'select');
+    return compiler.toSQL(method || builder._method || 'select');
   }
 
   // Ensures the query is aliased if necessary.
