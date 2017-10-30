@@ -3224,6 +3224,64 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("empty update should be a noop", function() {
+    testsql(qb().update().table('users').where('id', '=', 1), {
+      mysql: {
+        sql: '',
+        bindings: []
+      },
+      oracle: {
+        sql: '',
+        bindings: []
+      },
+      mssql: {
+        sql: '',
+        bindings: []
+      },
+      oracledb: {
+        sql: '',
+        bindings: []
+      },
+      postgres: {
+        sql: '',
+        bindings: []
+      },
+      sqlite3: {
+        sql: '',
+        bindings: []
+      }
+    });
+  });
+
+  it("empty object update should be a noop", function() {
+    testsql(qb().update({}).table('users').where('id', '=', 1), {
+      mysql: {
+        sql: '',
+        bindings: []
+      },
+      oracle: {
+        sql: '',
+        bindings: []
+      },
+      mssql: {
+        sql: '',
+        bindings: []
+      },
+      oracledb: {
+        sql: '',
+        bindings: []
+      },
+      postgres: {
+        sql: '',
+        bindings: []
+      },
+      sqlite3: {
+        sql: '',
+        bindings: []
+      }
+    });
+  });
+
   it("delete method", function() {
     testsql(qb().from('users').where('email', '=', 'foo').delete(), {
       mysql: {

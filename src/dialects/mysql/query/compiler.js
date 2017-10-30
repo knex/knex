@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import { assign } from 'lodash'
+import { assign, isEmpty } from 'lodash'
 
 function QueryCompiler_MySQL(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -17,6 +17,15 @@ assign(QueryCompiler_MySQL.prototype, {
 
   // Update method, including joins, wheres, order & limits.
   update() {
+    const updateValues = this.single.update || [];
+    if (Array.isArray(updateValues)) {
+      if (updateValues.length === 0) {
+        return '';
+      }
+    } else if (typeof updateValues === 'object' && isEmpty(updateValues)) {
+      return '';
+    }
+
     const join = this.join();
     const updates = this._prepUpdate(this.single.update);
     const where = this.where();

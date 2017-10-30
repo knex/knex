@@ -143,6 +143,15 @@ assign(QueryCompiler.prototype, {
 
   // Compiles the "update" query.
   update() {
+    const updateValues = this.single.update || [];
+    if (Array.isArray(updateValues)) {
+      if (updateData.length === 0) {
+        return '';
+      }
+    } else if (typeof updateValues === 'object' && isEmpty(updateValues)) {
+      return '';
+    }
+
     // Make sure tableName is processed by the formatter first.
     const { tableName } = this;
     const updateData = this._prepUpdate(this.single.update);
