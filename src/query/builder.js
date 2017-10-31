@@ -206,6 +206,23 @@ assign(Builder.prototype, {
       return this.where(1, '=', column ? 1 : 0)
     }
 
+    // Allow a Query Builder to be passed in
+    if (column instanceof Builder){
+      if (column._single.table){
+        throw new Error('You passed a query builder into appendWhere() that has a table ('+
+          column._single.table+') specified for it');
+      }
+      column._statements.map((function(_this){
+        return function(statement){
+          if(statement.grouping != 'where')
+            throw new Error('You passed a query builder into appendWhere() that had'+
+              ' a non-where clause on it.');
+          _this._statements.push(clone(statement));
+        };
+      })(this));
+      return this;
+    }
+
     // Check if the column is a function, in which case it's
     // a where statement wrapped in parens.
     if (typeof column === 'function') {
@@ -271,7 +288,7 @@ assign(Builder.prototype, {
   orWhere: function orWhere() {
     this._bool('or');
     const obj = arguments[0];
-    if(isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
+    if(isObject(obj) && !isFunction(obj) && !(obj instanceof Raw) && !(obj instanceof Builder)) {
       return this.whereWrapped(function() {
         for(const key in obj) {
           this.andWhere(key, obj[key]);

@@ -573,6 +573,85 @@ module.exports = function(knex) {
           });
       });
 
+      it('allows parameter to be a query builder', function() {
+        var whereClause = knex.where({'id': 0});
+        return knex('accounts')
+          .where(whereClause)
+          .select()
+          .testSql(function(tester) {
+            tester(
+              'mysql',
+              'select * from `accounts` where `id` = ?',
+              [0],
+              []
+            );
+            tester(
+              'postgresql',
+              'select * from "accounts" where "id" = ?',
+              [0],
+              []
+            );
+            tester(
+              'sqlite3',
+              'select * from "accounts" where "id" = ?',
+              [0],
+              []
+            );
+            tester(
+              'oracle',
+              'select * from "accounts" where "id" = ?',
+              [0],
+              []
+            );
+            tester(
+              'mssql',
+              'select * from [accounts] where [id] = ?',
+              [0],
+              []
+            );
+          });
+      });
+    });
+
+    it('can have a where clause with complex query builder', function() {
+      var simpleWhereClause = knex.where('id', 4);
+
+      var complexWhereClause = knex
+        .where('logins', '>', 1)
+        .whereIn('id', function () {
+          this.select('id').from('accounts').whereNotNull('logins').where(simpleWhereClause)
+          .where(function () {
+            this.where(simpleWhereClause);
+          });
+        });
+
+      knex('accounts').where(simpleWhereClause).where(complexWhereClause).orWhere(simpleWhereClause)
+      .then(function(results){
+        expect(results[0].id == 4);
+        expect(results[0].logins == 2);
+      });
+    });
+
+    it('will throw an error if a where query builder has a table specified', function() {
+      var simpleWhereClause = knex.from('table').where('id', 4);
+
+      try {
+        knex('accounts').where(simpleWhereClause);
+      } catch(error) {
+        expect(error.message == 'You passed a query builder into appendWhere() that'+
+          ' has a table (table) specified for it');
+      }
+    });
+
+    it('will throw an error if a where query builder has any non-where statements specified', function() {
+      var simpleWhereClause = knex.where('id', 4).join(knex.select().from('users'));
+
+      try {
+        knex('accounts').where(simpleWhereClause);
+      } catch(error) {
+        expect(error.message == 'You passed a query builder into appendWhere() that had'+
+          ' a non-where clause on it.');
+      }
     });
 
     it('has a "distinct" clause', function() {
