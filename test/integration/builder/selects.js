@@ -8,7 +8,6 @@ var Runner = require('../../../lib/runner');
 module.exports = function(knex) {
 
   describe('Selects', function() {
-
     it('runs with no conditions', function() {
 
       return knex('accounts').select();

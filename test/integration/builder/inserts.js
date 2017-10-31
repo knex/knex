@@ -51,6 +51,13 @@ module.exports = function(knex) {
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test@example.com','Test','User', 1, d],
           ['1']
         );
+        // db2 returns number of records inserted instead of specified column names
+        tester(
+          'db2',
+          'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
+          ['Lorem ipsum Dolore labore incididunt enim.', d,'test@example.com','Test','User', 1, d],
+          [1]
+        );
       });
     });
 

@@ -30,6 +30,7 @@ describe('Query Building Tests', function() {
   require('./unit/schema/mssql')
   require('./unit/schema/oracledb')
   require('./unit/migrate/migrator')
+  require('./unit/schema/db2')
   require('./unit/seed/seeder')
 })
 
