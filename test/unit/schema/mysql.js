@@ -60,11 +60,25 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('drop table `users`');
   });
 
+  it('test drop table with cascade', function() {
+    tableSql = client.schemaBuilder().dropTable('users', { cascade: true }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table `users` cascade');
+  });
+
   it('test drop table if exists', function() {
     tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table if exists `users`');
+  });
+
+  it('test drop table if exists with cascade', function() {
+    tableSql = client.schemaBuilder().dropTableIfExists('users', { cascade: true }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop table if exists `users` cascade');
   });
 
   it('test drop column', function() {
