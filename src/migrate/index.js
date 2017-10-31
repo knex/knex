@@ -92,7 +92,7 @@ export default class Migrator {
   // If no migrations have been run yet, return "none".
   currentVersion(config) {
     this.config = this.setConfig(config);
-    return this._listCompleted(config)
+    return this._listCompleted()
       .then((completed) => {
         const val = max(map(completed, value => value.split('_')[0]));
         return (isUndefined(val) ? 'none' : val);
