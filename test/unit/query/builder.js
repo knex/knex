@@ -4587,6 +4587,44 @@ describe("QueryBuilder", function() {
     });
   });
 
+  describe("#2263, update / delete queries in with syntax", () => {
+    it("with update query passed as raw", () => {
+      testquery(qb().with('update1', raw('??', [qb().from('accounts').update({ name: 'foo' })])).from('accounts'), {
+        postgres: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
+      });
+    });
+
+    it("with update query passed as query builder", () => {
+      testquery(qb().with('update1', qb().from('accounts').update({ name: 'foo' })).from('accounts'), {
+       postgres: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
+      });
+    });
+
+    it("with update query passed as callback", () => {
+      testquery(qb().with('update1', builder => builder.from('accounts').update({ name: 'foo' })).from('accounts'), {
+        postgres: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
+      });
+    });
+
+    it("with delete query passed as raw", () => {
+      testquery(qb().with('delete1', raw('??', [qb().delete().from('accounts').where('id', 1)])).from('accounts'), {
+        postgres: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
+      });
+    });
+
+    it("with delete query passed as query builder", () => {
+      testquery(qb().with('delete1', builder => builder.delete().from('accounts').where('id', 1)).from('accounts'), {
+        postgres: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
+      });
+    });
+
+    it("with delete query passed as callback", () => {
+      testquery(qb().with('delete1', qb().delete().from('accounts').where('id', 1)).from('accounts'), {
+        postgres: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
+      });
+    });
+  });
+
   it('#1710, properly escapes arrays in where clauses in postgresql', function() {
     testquery(qb().select('*').from('sometable').where('array_field', '&&', [7]), {
       postgres: "select * from \"sometable\" where \"array_field\" && '{7}'"
