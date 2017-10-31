@@ -6,26 +6,29 @@ var MySQL_Client = require('../../../lib/dialects/mysql')
 var PG_Client = require('../../../lib/dialects/postgres')
 var Oracle_Client = require('../../../lib/dialects/oracle')
 var Oracledb_Client = require('../../../lib/dialects/oracledb')
+var Redshift_Client = require('../../../lib/dialects/redshift')
 var SQLite3_Client = require('../../../lib/dialects/sqlite3')
 var MSSQL_Client = require('../../../lib/dialects/mssql')
 
 var clients = {
   mysql: new MySQL_Client({}),
   postgres: new PG_Client({}),
+  redshift: new Redshift_Client({}),
   oracle: new Oracle_Client({}),
   oracledb: new Oracledb_Client({}),
   sqlite3: new SQLite3_Client({}),
-  mssql: new MSSQL_Client({}),
+  mssql: new MSSQL_Client({})
 }
 
 var useNullAsDefaultConfig = { useNullAsDefault: true };
 var clientsWithNullAsDefault = {
   mysql: new MySQL_Client(useNullAsDefaultConfig),
   postgres: new PG_Client(useNullAsDefaultConfig),
+  redshift: new Redshift_Client(useNullAsDefaultConfig),
   oracle: new Oracle_Client(useNullAsDefaultConfig),
   oracledb: new Oracledb_Client(useNullAsDefaultConfig),
   sqlite3: new SQLite3_Client(useNullAsDefaultConfig),
-  mssql: new MSSQL_Client(useNullAsDefaultConfig),
+  mssql: new MSSQL_Client(useNullAsDefaultConfig)
 }
 
 // note: as a workaround, we are using postgres here, since that's using the default " field wrapping
