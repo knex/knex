@@ -208,7 +208,7 @@ function getKnexfile() {
   if (argv.knexfile) {
     return argv.knexfile;
   }
-  if (fs.existsSync(__dirname + '/.knex-cli.json')) {
+  if (fs.accessSync(__dirname + '/.knex-cli.json')) {
     return require(__dirname + '/.knex-cli.json');
   }
   return undefined;
