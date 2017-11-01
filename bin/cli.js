@@ -204,9 +204,19 @@ cli.on('requireFail', function(name) {
   console.log(chalk.red('Failed to load external module'), chalk.magenta(name));
 });
 
+function getKnexfile() {
+  if (argv.knexfile) {
+    return argv.knexfile;
+  }
+  if (fs.existsSync(__dirname + '/.knex-cli.json')) {
+    return require(__dirname + '/.knex-cli.json');
+  }
+  return undefined;
+}
+
 cli.launch({
   cwd: argv.cwd,
-  configPath: argv.knexfile,
+  configPath: getKnexfile(),
   require: argv.require,
   completion: argv.completion
 }, invoke);
