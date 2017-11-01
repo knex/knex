@@ -213,7 +213,7 @@ function getKnexfile() {
   // if a .knex-cli.js file exists, use it to determine the location of the knexfile
   if (fs.existsSync('./.knex-cli.js')) {
     try {
-      return require('./.knex-cli.js').knexfilePath;
+      return require(process.cwd() + '/.knex-cli').knexfilePath;
     }
     catch (e) {
       return undefined;
