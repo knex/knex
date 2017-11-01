@@ -205,12 +205,20 @@ cli.on('requireFail', function(name) {
 });
 
 function getKnexfile() {
+  // knexfile provided as argument should override .knex-cli.json
   if (argv.knexfile) {
     return argv.knexfile;
   }
-  if (fs.accessSync(__dirname + '/.knex-cli.json')) {
-    return require(__dirname + '/.knex-cli.json');
+  // if a .knex-cli.json file exists, use it to determine the location of the knexfile
+  if (fs.existsSync("./.knex-cli.json")) {
+    try {
+      return JSON.parse(fs.readFileSync("./.knex-cli.json", "utf8")).knexfilePath;
+    }
+    catch (e) {
+      return undefined;
+    }
   }
+  // otherwise, just use the default knexfile
   return undefined;
 }
 
