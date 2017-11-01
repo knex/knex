@@ -33,11 +33,23 @@ function checkLocalModule(env) {
 }
 
 function initKnex(env) {
-
   checkLocalModule(env);
 
-  if (!env.configPath) {
-    exit('No knexfile found in this directory. Specify a path with --knexfile');
+  var knex = require(env.modulePath);
+
+  if (/^\w+:/.test(argv.config)) { // use direct inline connection string
+    return knex(argv.config);
+  }
+
+  var configPath = argv.config || (fs.existsSync('./knexfile.js') && './knexfile.js');
+
+  if (argv.knexfile) {
+    console.log(chalk.red('DEPRECATED: use the --config option to provide either config path or a connection string.'));
+    configPath = argv.knexfile;
+  }
+
+  if (!configPath) {
+    exit('No knexfile found in this directory. Specify a path or connection string with --config');
   }
 
   if (process.cwd() !== env.cwd) {
@@ -47,7 +59,7 @@ function initKnex(env) {
 
   var environment = commander.env || process.env.NODE_ENV;
   var defaultEnv = 'development';
-  var config = require(env.configPath);
+  var config = require(configPath);
 
   if (!environment && typeof config[defaultEnv] === 'object') {
     environment = defaultEnv;
@@ -80,7 +92,8 @@ function invoke(env) {
       chalk.blue('Local Knex version: ', chalk.green(env.modulePackage.version)) + '\n'
     )
     .option('--debug', 'Run with debugging.')
-    .option('--knexfile [path]', 'Specify the knexfile path.')
+    .option('--knexfile [path]', 'Specify the knexfile path (DEPRECATED use --config).')
+    .option('--config [path]', 'Specify the knexfile path or inline connection string.')
     .option('--cwd [path]', 'Specify the working directory.')
     .option('--env [name]', 'environment, default: process.env.NODE_ENV || development');
 
@@ -207,6 +220,7 @@ cli.on('requireFail', function(name) {
 cli.launch({
   cwd: argv.cwd,
   configPath: argv.knexfile,
+  config: argv.config,
   require: argv.require,
   completion: argv.completion
 }, invoke);
