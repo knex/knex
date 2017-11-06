@@ -80,6 +80,10 @@ export default {
         test: /\.eot$|\.ttf$|\.svg$|\.woff2?$/,
         loader: 'file?name=[name].[ext]'
       },
+      {
+        test: /ansi-styles|chalk|generic-pool/,
+        loader: 'babel-loader'
+      }
     ],
   },
 

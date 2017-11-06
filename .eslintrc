@@ -12,7 +12,7 @@
     "object-curly-spacing": 0,
     "array-bracket-spacing": 0,
     "react/prop-types": 1,
-    "space-before-function-paren": 0,
+    "space-before-function-paren": 0
   },
   "plugins": [
     "react",
