@@ -1416,8 +1416,8 @@ export default [
   {
     type: "method",
     method: "count",
-    example: ".count(column)",
-    description: "Performs a count on the specified column. Note that in Postgres, count returns a bigint type which will be a String and not a Number (more info).",
+    example: ".count(column|raw)",
+    description: "Performs a count on the specified column. Also accepts raw expressions. Note that in Postgres, count returns a bigint type which will be a String and not a Number (more info).",
     children: [
       {
         type: "runnable",
@@ -1429,6 +1429,12 @@ export default [
         type: "runnable",
         content: `
           knex('users').count('active as a')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').count(knex.raw('??', ['active']))
         `
       }
     ]
@@ -1446,8 +1452,8 @@ export default [
   {
     type: "method",
     method: "min",
-    example: ".min(column)",
-    description: "Gets the minimum value for the specified column.",
+    example: ".min(column|raw)",
+    description: "Gets the minimum value for the specified column. Also accepts raw expressions.",
     children: [
       {
         type: "runnable",
@@ -1460,14 +1466,20 @@ export default [
         content: `
           knex('users').min('age as a')
         `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').min(knex.raw('??', ['age']))
+        `
       }
     ]
   },
   {
     type: "method",
     method: "max",
-    example: ".max(column)",
-    description: "Gets the maximum value for the specified column.",
+    example: ".max(column|raw)",
+    description: "Gets the maximum value for the specified column. Also accepts raw expressions.",
     children: [
       {
         type: "runnable",
@@ -1480,14 +1492,20 @@ export default [
         content: `
           knex('users').max('age as a')
         `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').max(knex.raw('??', ['age']))
+        `
       }
     ]
   },
   {
     type: "method",
     method: "sum",
-    example: ".sum(column)",
-    description: "Retrieve the sum of the values of a given column.",
+    example: ".sum(column|raw)",
+    description: "Retrieve the sum of the values of a given column. Also accepts raw expressions.",
     children: [
       {
         type: "runnable",
@@ -1499,6 +1517,12 @@ export default [
         type: "runnable",
         content: `
           knex('users').sum('products as p')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').sum(knex.raw('??', ['products']))
         `
       }
     ]
@@ -1516,8 +1540,8 @@ export default [
   {
     type: "method",
     method: "avg",
-    example: ".avg(column)",
-    description: "Retrieve the average of the values of a given column.",
+    example: ".avg(column|raw)",
+    description: "Retrieve the average of the values of a given column. Also accepts raw expressions.",
     children: [
       {
         type: "runnable",
@@ -1529,6 +1553,12 @@ export default [
         type: "runnable",
         content: `
           knex('users').avg('age as a')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').avg(knex.raw('??', ['age']))
         `
       }
     ]
