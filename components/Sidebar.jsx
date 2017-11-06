@@ -44,6 +44,7 @@ export default class Sidebar extends Component {
           Query Builder
         </a>
         <ul className="toc_section">
+          <li>– <a href="#Builder-identifier-syntax"><b>Identifier Syntax</b></a></li>
           <li>– <a href="#Builder-knex"><b>constructor</b></a></li>
           <li>– <a href="#Builder-timeout">timeout</a></li>
           <li>– <a href="#Builder-select">select</a></li>
