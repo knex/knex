@@ -16,13 +16,6 @@ export default class Sidebar extends Component {
           <li>&raquo; <a href="#changelog">Change Log</a></li>
         </ul>
 
-        <a className="toc_title" href="#Upgrading">
-          Upgrading
-        </a>
-        <ul className="toc_section">
-          <li>– <a href="#Upgrading-from0.11">0.11.x -> 0.12</a></li>
-        </ul>
-
         <a className="toc_title" href="#Installation">
           Installation
         </a>
