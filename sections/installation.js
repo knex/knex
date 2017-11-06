@@ -347,4 +347,44 @@ export default [
       });
     `
   },
+  {
+    type: "heading",
+    size: "md",
+    content: "wrapIdentifier",
+    href: "Installation-wrap-identifier"
+  },
+  {
+    type: "text",
+    content: [
+      "Knex supports transforming identifier names automatically to quoted versions for each dialect.",
+      "For example `'Table.columnName as foo'` for PostgreSQL is converted to \"Table\".\"columnName\" as \"foo\".",
+    ].join(' ')
+  },
+  {
+    type: "text",
+    content: [
+      "With `wrapIdentifier` one may override the way how identifiers are transformed.",
+      "It can be used to override default functionality and for example to help doing `camelCase` -> `snake_case` conversion.",
+    ].join(' ')
+  },
+  {
+    type: "text",
+    content: [
+      "Conversion function `wrapIdentifier(value, dialectImpl): string` gets each part of the identifier as a single `value`",
+      "and the second parameter is the original conversion function from the dialect implementation.",
+      "For example `knex('table').withSchema('foo').select('table.field as otherName').where('id', 1)` will call",
+      "`wrapIdentifier` converter for following values `'table'`, `'foo'`, `'table'`, `'field'`, `'otherName'` and `'id'`.",
+    ].join(' ')
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      var knex = require('knex')({
+        client: 'mysql',
+        // overly simplified camelCase -> snake_case converter
+        wrapIdentifier: (value, origImpl) => origImpl(convertToSnakeCase(value))
+      });
+    `
+  },
 ]
