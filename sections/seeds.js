@@ -7,7 +7,23 @@ export default [
   },
   {
     type: "text",
-    content: "`knex.seed` is the class utilized by the knex seed CLI. Each method takes an optional `config` object, which may specify the relative `directory` for the migrations."
+    content: [
+      "`knex.seed` is the class utilized by the knex seed CLI.",
+      "Each method takes an optional `config` object, which may specify the following properties:"
+    ]
+  },
+  {
+    type: "list",
+    content: [
+      "`directory`: a relative path to the directory containing the seed files (default `./seeds`)",
+      "`loadExtensions`: array of file extensions which knex will treat as seeds. For example, if you have typescript transpiled into javascript in the same folder, you want to execute only javascript seeds. In this case, set `loadExtensions` to `['.js']`  (Notice the dot!)  (default `['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts']`)",
+    ]
+  },
+  {
+    type: "heading",
+    size: "sm",
+    content: "Methods",
+    href: "Seeds-API-methods"
   },
   {
     type: "method",

@@ -226,7 +226,8 @@ export default [
       "`directory`: a relative path to the directory containing the migration files (default `./migrations`)",
       "`extension`: the file extension used for the generated migration files (default `js`)",
       "`tableName`: the table name used for storing the migration state (default `knex_migrations`)",
-      "`disableTransactions`: don't run migrations inside transactions (default `false`)"
+      "`disableTransactions`: don't run migrations inside transactions (default `false`)",
+      "`loadExtensions`: array of file extensions which knex will treat as migrations. For example, if you have typescript transpiled into javascript in the same folder, you want to execute only javascript migrations. In this case, set `loadExtensions` to `['.js']` (Notice the dot!) (default `['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts']`)",
     ]
   },
   {
