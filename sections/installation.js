@@ -315,5 +315,36 @@ export default [
         }
       });
     `
-  }
+  },
+  {
+    type: "heading",
+    size: "md",
+    content: "postProcessResponse",
+    href: "Installation-post-process-response"
+  },
+  {
+    type: "text",
+    content: [
+      "Hook for modifying returned rows, before passing them forward to user. One can do for example",
+      "snake_case -> camelCase conversion for returned columns with this hook.",
+    ].join(' ')
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      var knex = require('knex')({
+        client: 'mysql',
+        // overly simplified snake_case -> camelCase converter
+        postProcessResponse: (result) => {
+          // TODO: add special case for raw results (depends on dialect)
+          if (Array.isArray(result)) {
+            return result.map(row => convertToCamel(row));
+          } else {
+            return convertToCamel(result);
+          }
+        }
+      });
+    `
+  },
 ]
