@@ -365,7 +365,11 @@ export default [
     type: "method",
     method: "toString",
     example: ".toString()",
-    description: "Returns an array of query strings filled out with the correct values based on bindings, etc. Useful for debugging.",
+    description: [
+      "Returns an array of query strings filled out with the correct values",
+      "based on bindings, etc. Useful for debugging, but should not be used to",
+      "create queries for running them against DB."
+    ].join(' '),
     children: [
       {
         type: "code",
@@ -382,17 +386,39 @@ export default [
   {
     type: "method",
     method: "toSQL",
-    example: ".toSQL()",
-    description: "Returns an array of query strings filled out with the correct values based on bindings, etc. Useful for debugging.",
+    example: ".toSQL() and toSQL().toNative()",
+    description: [
+      "Returns an array of query strings filled out with the correct values based",
+      "on bindings, etc. Useful for debugging and building queries for running them",
+      "manually with DB driver. `.toSQL().toNative()` outputs object with sql string",
+      "and bindings in a dialects format in the same way that knex internally sends",
+      "them to unterlying DB driver."
+    ].join(' '),
     children: [
       {
         type: "code",
         language: "js",
         content: `
-          knex.select('*').from('users').where(knex.raw('id = ?', [1])).toSQL()
+          knex.select('*').from('users')
+            .where(knex.raw('id = ?', [1]))
+            .toSQL()
+          // Outputs:
+          // {
+          //   bindings: [1],
+          //   method: 'select',
+          //   sql: 'select * from "users" where id = ?',
+          //   options: undefined,
+          //   toNative: function () {}
+          // }
 
-          // Outputs: { bindings: [1], method: 'select', sql: 'select * from "users" where id = ?', options: undefined, }
-        `
+          knex.select('*').from('users')
+            .where(knex.raw('id = ?', [1]))
+            .toSQL().toNative()
+          // Outputs for postgresql dialect:
+          // {
+          //   bindings: [1],
+          //   sql: 'select * from "users" where id = $1',
+          // }        `
       }
     ]
   }

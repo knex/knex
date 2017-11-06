@@ -256,6 +256,7 @@ export default class Sidebar extends Component {
           <li><b><a href="#Interfaces-Other">Other:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Interfaces-toString">toString</a></li>
           <li>&nbsp;&nbsp;– <a href="#Interfaces-toSQL">toSQL</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Interfaces-toSQL">toSQL().toNative()</a></li>
         </ul>
 
         <a className="toc_title" href="#Migrations">
