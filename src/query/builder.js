@@ -908,7 +908,7 @@ assign(Builder.prototype, {
   // Stores or returns (if called with no arguments) context passed to
   // wrapIdentifier and postProcessResponse hooks
   hookContext(context) {
-    if (context === undefined) {
+    if (isUndefined(context)) {
       return this._hookContext;
     }
     this._hookContext = context;
