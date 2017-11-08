@@ -93,8 +93,12 @@ function testquery(chain, valuesToCheck, selectedClients) {
 
 describe("Custom identifier wrapping", function() {
   var customWrapperConfig = {
-    wrapIdentifier: (value, clientImpl) => {
-      return clientImpl(value + '_wrapper_was_here');
+    wrapIdentifier: (value, clientImpl, context) => {
+      var suffix = '_wrapper_was_here';
+      if (context && context.fancy) {
+        suffix = '_fancy_wrapper_was_here';
+      }
+      return clientImpl(value + suffix);
     }
   };
 
@@ -116,6 +120,30 @@ describe("Custom identifier wrapping", function() {
       postgres: 'select "users_wrapper_was_here"."foo_wrapper_was_here" as "bar_wrapper_was_here" from "schema_wrapper_was_here"."users_wrapper_was_here"',
       sqlite3: 'select `users_wrapper_was_here`.`foo_wrapper_was_here` as `bar_wrapper_was_here` from `schema_wrapper_was_here`.`users_wrapper_was_here`'
     }, clientsWithCustomIdentifierWrapper);
+  })
+
+  describe('with hookContext configured', () => {
+    it('should pass the context to the custom wrapper', () => {
+      testsql(qb().withSchema('schema').select('users.foo as bar').from('users').hookContext({ fancy: true }), {
+        mysql: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`',
+        oracle: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
+        mssql: 'select [users_fancy_wrapper_was_here].[foo_fancy_wrapper_was_here] as [bar_fancy_wrapper_was_here] from [schema_fancy_wrapper_was_here].[users_fancy_wrapper_was_here]',
+        oracledb: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
+        postgres: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" as "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
+        sqlite3: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`'
+      }, clientsWithCustomIdentifierWrapper);
+    })
+
+    it('should copy the context when a builder is cloned', () => {
+      testsql(qb().hookContext({ fancy: true }).clone().withSchema('schema').select('users.foo as bar').from('users'), {
+        mysql: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`',
+        oracle: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
+        mssql: 'select [users_fancy_wrapper_was_here].[foo_fancy_wrapper_was_here] as [bar_fancy_wrapper_was_here] from [schema_fancy_wrapper_was_here].[users_fancy_wrapper_was_here]',
+        oracledb: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
+        postgres: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" as "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
+        sqlite3: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`'
+      }, clientsWithCustomIdentifierWrapper);
+    })
   })
 });
 

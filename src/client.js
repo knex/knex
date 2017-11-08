@@ -62,8 +62,8 @@ inherits(Client, EventEmitter)
 
 assign(Client.prototype, {
 
-  formatter() {
-    return new Formatter(this)
+  formatter(builder) {
+    return new Formatter(this, builder)
   },
 
   queryBuilder() {
@@ -170,9 +170,9 @@ assign(Client.prototype, {
     return resp;
   },
 
-  wrapIdentifier(value) {
+  wrapIdentifier(value, context) {
     if (this.config.wrapIdentifier) {
-      return this.config.wrapIdentifier(value, this.wrapIdentifierImpl);
+      return this.config.wrapIdentifier(value, this.wrapIdentifierImpl, context);
     }
     return this.wrapIdentifierImpl(value);
   },

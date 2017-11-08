@@ -53,6 +53,9 @@ assign(Builder.prototype, {
     if (!isUndefined(this._options)) {
       cloned._options = clone(this._options);
     }
+    if (!isUndefined(this._hookContext)) {
+      cloned._hookContext = clone(this._hookContext);
+    }
 
     return cloned;
   },
@@ -899,6 +902,16 @@ assign(Builder.prototype, {
   // domain-specific helpers
   modify(callback) {
     callback.apply(this, [this].concat(tail(arguments)));
+    return this;
+  },
+
+  // Stores or returns (if called with no arguments) context passed to
+  // wrapIdentifier and postProcessResponse hooks
+  hookContext(context) {
+    if (context === undefined) {
+      return this._hookContext;
+    }
+    this._hookContext = context;
     return this;
   },
 

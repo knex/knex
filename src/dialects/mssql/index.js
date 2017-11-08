@@ -43,7 +43,7 @@ assign(Client_MSSQL.prototype, {
   },
 
   formatter() {
-    return new MSSQL_Formatter(this)
+    return new MSSQL_Formatter(this, ...arguments)
   },
 
   transaction() {

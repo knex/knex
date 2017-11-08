@@ -53,7 +53,7 @@ Client_Oracledb.prototype.columnCompiler = function() {
   return new ColumnCompiler(this, ...arguments)
 }
 Client_Oracledb.prototype.formatter = function() {
-  return new Oracledb_Formatter(this)
+  return new Oracledb_Formatter(this, ...arguments)
 }
 Client_Oracledb.prototype.transaction = function() {
   return new Transaction(this, ...arguments)

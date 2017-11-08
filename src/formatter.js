@@ -27,8 +27,9 @@ const operators = transform([
 
 export default class Formatter {
 
-  constructor(client) {
+  constructor(client, builder) {
     this.client = client
+    this.builder = builder
     this.bindings = []
   }
 
@@ -119,7 +120,11 @@ export default class Formatter {
   }
 
   wrapAsIdentifier(value) {
-    return this.client.wrapIdentifier((value || '').trim());
+    let hookContext;
+    if (this.builder instanceof QueryBuilder) {
+      hookContext = this.builder.hookContext();
+    }
+    return this.client.wrapIdentifier((value || '').trim(), hookContext);
   }
 
   alias(first, second) {
@@ -212,7 +217,7 @@ export default class Formatter {
       if (i === 0 && segments.length > 1) {
         wrapped.push(this.wrap((value || '').trim()));
       } else {
-        wrapped.push(this.client.wrapIdentifier((value || '').trim()));
+        wrapped.push(this.wrapAsIdentifier(value));
       }
     }
     return wrapped.join('.');
