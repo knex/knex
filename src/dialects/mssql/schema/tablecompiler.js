@@ -25,7 +25,7 @@ assign(TableCompiler_MSSQL.prototype, {
     const sql = createStatement + this.tableName() + (this._formatting ? ' (\n    ' : ' (') + columns.sql.join(this._formatting ? ',\n    ' : ', ') + ')';
 
     if (this.single.comment) {
-      const comment = (this.single.comment || '');
+      const {comment} = this.single;
       if (comment.length > 60) helpers.warn('The max length for a table comment is 60 characters');
     }
 
@@ -38,11 +38,15 @@ assign(TableCompiler_MSSQL.prototype, {
 
   dropColumnPrefix: 'DROP COLUMN ',
 
+  alterColumnPrefix: 'ALTER COLUMN ',
+
   // Compiles column add.  Multiple columns need only one ADD clause (not one ADD per column) so core addColumns doesn't work.  #1348
-  addColumns (columns) {
+  addColumns (columns, prefix) {
+    prefix = prefix || this.addColumnsPrefix;
+
     if (columns.sql.length > 0) {
       this.pushQuery({
-        sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + this.addColumnsPrefix + columns.sql.join(', '),
+        sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + prefix + columns.sql.join(', '),
         bindings: columns.bindings
       });
     }

@@ -66,7 +66,7 @@ assign(Client_MSSQL.prototype, {
     return new ColumnCompiler(this, ...arguments)
   },
 
-  wrapIdentifier(value) {
+  wrapIdentifierImpl(value) {
     return (value !== '*' ? `[${value.replace(/\[/g, '\[')}]` : '*')
   },
 
@@ -74,7 +74,7 @@ assign(Client_MSSQL.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     return new Promise((resolver, rejecter) => {
-      const connection = new this.driver.Connection(this.connectionSettings);
+      const connection = new this.driver.ConnectionPool(this.connectionSettings);
       connection.connect((err) => {
         if (err) {
           return rejecter(err)
@@ -88,13 +88,16 @@ assign(Client_MSSQL.prototype, {
   },
 
   validateConnection(connection) {
-    return connection.connected === true
+    if(connection.connected === true) {
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
   },
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.close()
+    return connection.close()
   },
 
   // Position the bindings for the query.
@@ -111,8 +114,6 @@ assign(Client_MSSQL.prototype, {
   _stream(connection, obj, stream, options) {
     options = options || {}
     if (!obj || typeof obj === 'string') obj = {sql: obj}
-    // convert ? params into positional bindings (@p1)
-    obj.sql = this.positionBindings(obj.sql);
     return new Promise((resolver, rejecter) => {
       stream.on('error', (err) => {
         rejecter(err)
@@ -139,8 +140,6 @@ assign(Client_MSSQL.prototype, {
   _query(connection, obj) {
     const client = this;
     if (!obj || typeof obj === 'string') obj = {sql: obj}
-    // convert ? params into positional bindings (@p1)
-    obj.sql = this.positionBindings(obj.sql);
     return new Promise((resolver, rejecter) => {
       const { sql } = obj
       if (!sql) return resolver()
@@ -156,19 +155,25 @@ assign(Client_MSSQL.prototype, {
         if (err) {
           return rejecter(err)
         }
-        obj.response = recordset[0]
+        obj.response = recordset.recordsets[0]
         resolver(obj)
       })
     })
   },
 
-  // sets a request input parameter. Detects bigints and sets type appropriately.
+  // sets a request input parameter. Detects bigints and decimals and sets type appropriately.
   _setReqInput(req, i, binding) {
-    if (typeof binding == 'number' && (binding < SQL_INT4.MIN || binding > SQL_INT4.MAX)) {
-      if (binding < SQL_BIGINT_SAFE.MIN || binding > SQL_BIGINT_SAFE.MAX) {
-        throw new Error(`Bigint must be safe integer or must be passed as string, saw ${binding}`)
+    if (typeof binding == 'number') {
+      if (binding % 1 !== 0) {
+        req.input(`p${i}`, this.driver.Decimal(38, 10), binding)
+      } else if (binding < SQL_INT4.MIN || binding > SQL_INT4.MAX) {
+        if (binding < SQL_BIGINT_SAFE.MIN || binding > SQL_BIGINT_SAFE.MAX) {
+          throw new Error(`Bigint must be safe integer or must be passed as string, saw ${binding}`)
+        }
+        req.input(`p${i}`, this.driver.BigInt, binding)
+      } else {
+        req.input(`p${i}`, this.driver.Int, binding)
       }
-      req.input(`p${i}`, this.driver.BigInt, binding)
     } else {
       req.input(`p${i}`, binding)
     }

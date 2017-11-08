@@ -16,26 +16,26 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester(
             'mysql',
-            'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
-            ['test100@example.com','User','Test',1],
+            'update `accounts` set `first_name` = ?, `last_name` = ?, `email` = ? where `id` = ?',
+            ['User','Test','test100@example.com',1],
             1
           );
           tester(
             'postgresql',
-            'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
-            ['test100@example.com','User','Test',1],
+            'update "accounts" set "first_name" = ?, "last_name" = ?, "email" = ? where "id" = ?',
+            ['User','Test','test100@example.com',1],
             1
           );
           tester(
             'sqlite3',
-            'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
-            ['test100@example.com','User','Test',1],
+            'update `accounts` set `first_name` = ?, `last_name` = ?, `email` = ? where `id` = ?',
+            ['User','Test','test100@example.com',1],
             1
           );
           tester(
             'mssql',
-            'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? where [id] = ?;select @@rowcount',
-            ['test100@example.com','User','Test',1],
+            'update [accounts] set [first_name] = ?, [last_name] = ?, [email] = ? where [id] = ?;select @@rowcount',
+            ['User','Test','test100@example.com',1],
             1
           );
         });
@@ -45,9 +45,9 @@ module.exports = function(knex) {
       return knex('accounts')
         .where('id', 1000)
         .update({
+          email:'test100@example.com',
           first_name: null,
-          last_name: 'Test',
-          email:'test100@example.com'
+          last_name: 'Test'
         }).testSql(function(tester) {
           tester(
             'mysql',
@@ -111,9 +111,9 @@ module.exports = function(knex) {
     it('should allow returning for updates in postgresql', function() {
 
       return knex('accounts').where('id', 1).update({
+        email:'test100@example.com',
         first_name: 'UpdatedUser',
-        last_name: 'UpdatedTest',
-        email:'test100@example.com'
+        last_name: 'UpdatedTest'
       }, '*').testSql(function(tester) {
         tester(
           'mysql',
@@ -139,7 +139,7 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+          'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
           ['test100@example.com','UpdatedUser','UpdatedTest',1],
           1
         );

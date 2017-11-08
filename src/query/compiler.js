@@ -11,7 +11,7 @@ import {
   reduce
 } from 'lodash';
 
-import uuid from 'node-uuid';
+import uuid from 'uuid';
 
 const debugBindings = debug('knex:bindings')
 
@@ -44,36 +44,42 @@ assign(QueryCompiler.prototype, {
     this._undefinedInWhereClause = false;
 
     method = method || this.method
-    let val = this[method]()
-    const defaults = {
+    const val = this[method]() || '';
+
+    const query = {
       method,
       options: reduce(this.options, assign, {}),
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
-      bindings: this.formatter.bindings,
-      __knexQueryUid: uuid.v4()
+      bindings: this.formatter.bindings || [],
+      __knexQueryUid: uuid.v4(),
+      toNative: () => ({
+        sql: this.client.positionBindings(query.sql),
+        bindings: this.client.prepBindings(query.bindings)
+      })
     };
+
     if (isString(val)) {
-      val = {sql: val};
+      query.sql = val;
+    } else {
+      assign(query, val);
     }
 
-    defaults.bindings = defaults.bindings || [];
-
-    if (method === 'select') {
+    if (method === 'select' || method === 'first') {
       if(this.single.as) {
-        defaults.as = this.single.as;
+        query.as = this.single.as;
       }
     }
 
     if(this._undefinedInWhereClause) {
-      debugBindings(defaults.bindings)
+      debugBindings(query.bindings)
       throw new Error(
         `Undefined binding(s) detected when compiling ` +
-        `${method.toUpperCase()} query: ${val.sql}`
+        `${method.toUpperCase()} query: ${query.sql}`
       );
     }
 
-    return assign(defaults, val);
+    return query;
   },
 
   // Compiles the `select` statement, or nested sub-selects by calling each of
@@ -141,7 +147,8 @@ assign(QueryCompiler.prototype, {
     const { tableName } = this;
     const updateData = this._prepUpdate(this.single.update);
     const wheres = this.where();
-    return this.with() + `update ${tableName}` +
+    return this.with() +
+      `update ${this.single.only ? 'only ' : ''}${tableName}` +
       ' set ' + updateData.join(', ') +
       (wheres ? ` ${wheres}` : '');
   },
@@ -159,6 +166,9 @@ assign(QueryCompiler.prototype, {
         if (stmt.type === 'aggregate') {
           sql.push(this.aggregate(stmt))
         }
+        else if (stmt.type === 'aggregateRaw') {
+          sql.push(this.aggregateRaw(stmt))
+        }
         else if (stmt.value && stmt.value.length > 0) {
           sql.push(this.formatter.columnize(stmt.value))
         }
@@ -166,7 +176,9 @@ assign(QueryCompiler.prototype, {
     }
     if (sql.length === 0) sql = ['*'];
     return `select ${distinct ? 'distinct ' : ''}` +
-      sql.join(', ') + (this.tableName ? ` from ${this.tableName}` : '');
+      sql.join(', ') + (this.tableName
+        ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
+        : '');
   },
 
   aggregate(stmt) {
@@ -183,6 +195,11 @@ assign(QueryCompiler.prototype, {
       );
     }
     return `${stmt.method}(${distinct + this.formatter.wrap(val)})`;
+  },
+
+  aggregateRaw(stmt) {
+    const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
+    return `${stmt.method}(${distinct + this.formatter.unwrapRaw(stmt.value)})`;
   },
 
   // Compiles all each of the `join` clauses on the query,
@@ -216,6 +233,35 @@ assign(QueryCompiler.prototype, {
       }
     }
     return sql;
+  },
+
+  onBetween(statement) {
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'between') + ' ' +
+      map(statement.value, bind(this.formatter.parameter, this.formatter)).join(' and ');
+  },
+
+  onNull(statement) {
+    return this.formatter.wrap(statement.column) + ' is ' + this._not(statement, 'null');
+  },
+
+  onExists(statement) {
+    return this._not(statement, 'exists') + ' (' + this.formatter.rawOrFn(statement.value) + ')';
+  },
+
+  onIn(statement) {
+    if (Array.isArray(statement.column)) return this.multiOnIn(statement);
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'in ') +
+      this.wrap(this.formatter.parameterize(statement.value));
+  },
+
+  multiOnIn(statement) {
+    let i = -1, sql = `(${this.formatter.columnize(statement.column)}) `
+    sql += this._not(statement, 'in ') + '(('
+    while (++i < statement.value.length) {
+      if (i !== 0) sql += '),('
+      sql += this.formatter.parameterize(statement.value[i])
+    }
+    return sql + '))'
   },
 
   // Compiles all `where` statements on the query.
@@ -256,22 +302,64 @@ assign(QueryCompiler.prototype, {
     if (!havings) return '';
     const sql = ['having'];
     for (let i = 0, l = havings.length; i < l; i++) {
-      let str = '';
       const s = havings[i];
-      if (i !== 0) str = s.bool + ' ';
-      if (s.type === 'havingBasic') {
-        sql.push(str + this.formatter.columnize(s.column) + ' ' +
-          this.formatter.operator(s.operator) + ' ' + this.formatter.parameter(s.value));
-      } else {
-        if(s.type === 'whereWrapped'){
-          const val = this.whereWrapped(s)
-          if (val) sql.push(val)
-        } else {
-          sql.push(str + this.formatter.unwrapRaw(s.value));
+      const val = this[s.type](s);
+      if (val) {
+        if(sql.length === 0) {
+          sql[0] = 'where';
         }
+        if (sql.length > 1 || (sql.length === 1 && sql[0] !== 'having')) {
+          sql.push(s.bool)
+        }
+        sql.push(val)
       }
     }
     return sql.length > 1 ? sql.join(' ') : '';
+  },
+
+  havingRaw(statement) {
+    return this._not(statement, '') + this.formatter.unwrapRaw(statement.value);
+  },
+
+  havingWrapped(statement) {
+    const val = this.formatter.rawOrFn(statement.value, 'where')
+    return val && this._not(statement, '') + '(' + val.slice(6) + ')' || '';
+  },
+
+  havingBasic(statement) {
+    return this._not(statement, '') +
+      this.formatter.wrap(statement.column) + ' ' +
+      this.formatter.operator(statement.operator) + ' ' +
+      this.formatter.parameter(statement.value);
+  },
+
+  havingNull(statement) {
+    return this.formatter.wrap(statement.column) + ' is ' + this._not(statement, 'null');
+  },
+
+  havingExists(statement) {
+    return this._not(statement, 'exists') + ' (' + this.formatter.rawOrFn(statement.value) + ')';
+  },
+
+  havingBetween(statement) {
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'between') + ' ' +
+      map(statement.value, bind(this.formatter.parameter, this.formatter)).join(' and ');
+  },
+
+  havingIn(statement) {
+    if (Array.isArray(statement.column)) return this.multiHavingIn(statement);
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'in ') +
+      this.wrap(this.formatter.parameterize(statement.value));
+  },
+
+  multiHavingIn(statement) {
+    let i = -1, sql = `(${this.formatter.columnize(statement.column)}) `
+    sql += this._not(statement, 'in ') + '(('
+    while (++i < statement.value.length) {
+      if (i !== 0) sql += '),('
+      sql += this.formatter.parameterize(statement.value[i])
+    }
+    return sql + '))'
   },
 
   // Compile the "union" queries attached to the main query.
@@ -316,7 +404,8 @@ assign(QueryCompiler.prototype, {
     // Make sure tableName is processed by the formatter first.
     const { tableName } = this;
     const wheres = this.where();
-    return this.with() + `delete from ${tableName}` +
+    return this.with() +
+      `delete from ${this.single.only ? 'only ' : ''}${tableName}` +
       (wheres ? ` ${wheres}` : '');
   },
 
@@ -467,11 +556,6 @@ assign(QueryCompiler.prototype, {
     return val && this.formatter.columnize(statement.alias) + ' as (' + val + ')' || '';
   },
 
-  withRaw(statement) {
-    return this.formatter.columnize(statement.alias) + ' as (' +
-      this.formatter.unwrapRaw(statement.value) + ')';
-  },
-
   // Determines whether to add a "not" prefix to the where clause.
   _not(statement, str) {
     if (statement.not) return `not ${str}`;
@@ -517,13 +601,13 @@ assign(QueryCompiler.prototype, {
   _prepUpdate(data) {
     data = omitBy(data, isUndefined)
     const vals = []
-    const sorted = Object.keys(data).sort()
+    const columns = Object.keys(data)
     let i = -1
-    while (++i < sorted.length) {
+    while (++i < columns.length) {
       vals.push(
-        this.formatter.wrap(sorted[i]) +
+        this.formatter.wrap(columns[i]) +
         ' = ' +
-        this.formatter.parameter(data[sorted[i]])
+        this.formatter.parameter(data[columns[i]])
       );
     }
     return vals;

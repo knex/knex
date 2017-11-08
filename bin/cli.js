@@ -71,7 +71,7 @@ function initKnex(env) {
 
 function invoke(env) {
 
-  var filetypes = ['js', 'coffee', 'eg', 'ls'];
+  var filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
   var pending = null;
 
   commander
@@ -110,7 +110,7 @@ function invoke(env) {
 
   commander
     .command('migrate:make <name>')
-    .description('       Create a named migration file.')
+    .description('        Create a named migration file.')
     .option(`-x [${filetypes.join('|')}]`, 'Specify the stub extension (default js)')
     .action(function(name) {
       var instance = initKnex(env);
@@ -152,7 +152,7 @@ function invoke(env) {
 
   commander
     .command('migrate:currentVersion')
-    .description('       View the current version for the migration.')
+    .description('        View the current version for the migration.')
     .action(function () {
       pending = initKnex(env).migrate.currentVersion().then(function(version) {
         success(chalk.green('Current Version: ') + chalk.blue(version));
@@ -161,7 +161,7 @@ function invoke(env) {
 
   commander
     .command('seed:make <name>')
-    .description('       Create a named seed file.')
+    .description('        Create a named seed file.')
     .option(`-x [${filetypes.join('|')}]`, 'Specify the stub extension (default js)')
     .action(function(name) {
       var instance = initKnex(env);
@@ -173,7 +173,7 @@ function invoke(env) {
 
   commander
     .command('seed:run')
-    .description('       Run seed files.')
+    .description('        Run seed files.')
     .action(function() {
       pending = initKnex(env).seed.run().spread(function(log) {
         if (log.length === 0) {

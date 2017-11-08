@@ -1,8 +1,10 @@
 /*global describe, expect, it, testPromise, d*/
 'use strict';
 
+var _ = require('lodash')
 var assert  = require('assert')
 var Promise = testPromise;
+var Runner = require('../../../lib/runner');
 
 module.exports = function(knex) {
 
@@ -31,7 +33,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "id" from "accounts" order by "id" asc',
+            'select `id` from `accounts` order by `id` asc',
             [],
             [1, 2, 3, 4, 5, 6]
           );
@@ -67,7 +69,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
+            'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
             [],
             [1, 2, 3, 4, 5, 6]
           );
@@ -103,7 +105,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "id" from "accounts" order by "id" asc limit ? offset ?',
+            'select `id` from `accounts` order by `id` asc limit ? offset ?',
             [-1, 2],
             [3, 4, 5, 6]
           );
@@ -139,7 +141,7 @@ module.exports = function(knex) {
           );
           tester(
             'sqlite3',
-            'select "id", "first_name" from "accounts" order by "id" asc limit ?',
+            'select `id`, `first_name` from `accounts` order by `id` asc limit ?',
             [1],
             { id: 1, first_name: 'Test' }
           );
@@ -176,6 +178,68 @@ module.exports = function(knex) {
         count++;
         if (count === 6) done();
       });
+    });
+
+    it('allows you to stream with mysql dialect options', function() {
+      if (!_.includes(['mysql', 'mysql2'], knex.client.dialect)) {
+        return
+      }
+      const rows = []
+      return knex('accounts')
+        .options({
+          typeCast (field, next) {
+            var val
+            if (field.type === 'VAR_STRING') {
+              val = field.string()
+              return val == null ? val : val.toUpperCase()
+            }
+            return next()
+          }
+        })
+        .stream(function(rowStream) {
+          rowStream.on('data', function(row) {
+            rows.push(row)
+          });
+        }).then(function() {
+          expect(rows).to.have.lengthOf(6)
+          rows.forEach(row => {
+            ['first_name', 'last_name', 'email'].forEach(
+              field => expect(row[field]).to.equal(row[field].toUpperCase())
+            )
+          })
+        });
+    })
+
+    it('emits error on the stream, if not passed a function, and connecting fails', function() {
+      var expected = new Error();
+      var original = Runner.prototype.ensureConnection;
+      Runner.prototype.ensureConnection = function() {
+        return Promise.reject(expected);
+      };
+
+      var restore = () => {
+        Runner.prototype.ensureConnection = original;
+      };
+
+      var promise = new Promise((resolve, reject) => {
+        var timeout = setTimeout(() => {
+          reject(new Error('Timeout'));
+        }, 5000);
+
+        var stream = knex('accounts').stream();
+        stream.on('error', function(actual) {
+          clearTimeout(timeout);
+
+          if (actual === expected) {
+            resolve();
+          } else {
+            reject(new Error('Stream emitted unexpected error'));
+          }
+        });
+      });
+
+      promise.then(restore, restore);
+      return promise;
     });
 
     it('properly escapes postgres queries on streaming', function() {
@@ -256,7 +320,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              'select `first_name`, `last_name` from `accounts` where `id` = ?',
               [1],
               [{
                 first_name: 'Test',
@@ -310,7 +374,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              'select `first_name`, `last_name` from `accounts` where `id` = ?',
               [1],
               [{
                 first_name: 'Test',
@@ -356,7 +420,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select "email", "logins" from "accounts" where "id" > ?',
+              'select `email`, `logins` from `accounts` where `id` > ?',
               [1]
             );
             tester(
@@ -412,7 +476,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select * from "accounts" where "id" = ?',
+              'select * from `accounts` where `id` = ?',
               [1],
               [{
                 id: 1,
@@ -481,7 +545,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select "first_name", "email" from "accounts" where "id" is null',
+              'select `first_name`, `email` from `accounts` where `id` is null',
               [],
               []
             );
@@ -521,7 +585,7 @@ module.exports = function(knex) {
             );
             tester(
               'sqlite3',
-              'select * from "accounts" where "id" = ?',
+              'select * from `accounts` where `id` = ?',
               [0],
               []
             );

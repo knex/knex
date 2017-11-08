@@ -4,10 +4,87 @@
 
 var Knex   = require('../../../knex');
 var _ = require('lodash');
+var Promise = require('bluebird');
 
 module.exports = function(knex) {
 
   describe('Additional', function () {
+
+    describe("Custom response processing", () => {
+
+      before('setup custom response handler', () => {
+        knex.client.config.postProcessResponse = (response) => {
+          response.callCount = response.callCount ? (response.callCount + 1) : 1;
+          return response;
+        };
+      });
+
+      after('restore client configuration', () => {
+        knex.client.config.postProcessResponse = null;
+      });
+
+      it('should process normal response', () => {
+        return knex('accounts').limit(1).then(res => {
+          expect(res.callCount).to.equal(1);
+        });
+      });
+
+      it('should process raw response', () => {
+        return knex.raw('select * from ??', ['accounts']).then(res => {
+        });
+      });
+
+      it('should process response done in transaction', () => {
+        return knex.transaction(trx => {
+          return trx('accounts').limit(1).then(res => {
+            expect(res.callCount).to.equal(1);
+            return res;
+          });
+        }).then(res => {
+          expect(res.callCount).to.equal(1);
+        });
+      });
+    });
+
+    it('should forward the .get() function from bluebird', function() {
+      return knex('accounts').select().limit(1).then(function(accounts){
+        var firstAccount = accounts[0];
+        return knex('accounts').select().limit(1).get(0).then(function(account){
+          expect(account.id == firstAccount.id);
+        });
+      });
+    });
+
+    it('should forward the .mapSeries() function from bluebird', function() {
+      var asyncTask = function(){
+        return new Promise(function(resolve, reject){
+          var output = asyncTask.num++;
+          setTimeout(function(){
+            resolve(output);
+          }, Math.random()*200);
+        });
+      };
+      asyncTask.num = 1;
+
+      var returnedValues = [];
+      return knex('accounts').select().limit(3).mapSeries(function(account){
+        return asyncTask().then(function(number){
+          returnedValues.push(number);
+        });
+      })
+      .then(function(){
+        expect(returnedValues[0] == 1);
+        expect(returnedValues[1] == 2);
+        expect(returnedValues[2] == 3);
+      });
+    });
+
+    it('should forward the .delay() function from bluebird', function() {
+      var startTime = (new Date()).valueOf();
+      return knex('accounts').select().limit(1).delay(300).then(function(accounts){
+        expect((new Date()).valueOf() - startTime > 300);
+      });
+    });
 
     it('should truncate a table with truncate', function() {
 
@@ -16,7 +93,7 @@ module.exports = function(knex) {
         .testSql(function(tester) {
           tester('mysql', 'truncate `test_table_two`');
           tester('postgresql', 'truncate "test_table_two" restart identity');
-          tester('sqlite3', "delete from \"test_table_two\"");
+          tester('sqlite3', "delete from `test_table_two`");
           tester('oracle', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
         })
@@ -89,12 +166,12 @@ module.exports = function(knex) {
             "type": "uuid"
           }
         });
-        tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
+        tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
           "enum_value": {
             "defaultValue": null,
             "maxLength": null,
             "nullable": true,
-            "type": "varchar"
+            "type": "text"
           },
           "uuid": {
             "defaultValue": null,
@@ -156,7 +233,7 @@ module.exports = function(knex) {
           "nullable": false,
           "type": "uuid"
         });
-        tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
+        tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
           "defaultValue": null,
           "maxLength": "36",
           "nullable": false,
@@ -183,6 +260,32 @@ module.exports = function(knex) {
       });
     });
 
+    it('#2184 - should properly escape table name for SQLite columnInfo', function() {
+      if (knex.client.dialect !== 'sqlite3') {
+        return;
+      }
+
+      return knex.schema.dropTableIfExists('group')
+        .then(function() {
+          return knex.schema.createTable('group', function(table) {
+            table.integer('foo');
+          });
+        })
+        .then(function() {
+          return knex('group').columnInfo();
+        })
+        .then(function(columnInfo) {
+          expect(columnInfo).to.deep.equal({
+            foo: {
+              type: 'integer',
+              maxLength: null,
+              nullable: true,
+              defaultValue: null,
+            },
+          });
+        });
+    });
+
     it('should allow renaming a column', function() {
       var countColumn
       switch (knex.client.dialect) {
@@ -203,7 +306,7 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["show fields from `accounts` where field = ?"]);
           tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
-          tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+          tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
           tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
         });
@@ -225,7 +328,7 @@ module.exports = function(knex) {
     });
 
     it('should allow dropping a column', function() {
-      var countColumn
+      var countColumn;
       switch (knex.client.dialect) {
         case 'oracle': countColumn = 'COUNT(*)'; break;
         case 'mssql': countColumn = ''; break;
@@ -240,8 +343,9 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["alter table `accounts` drop `first_name`"]);
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
-          tester('sqlite3', ["PRAGMA table_info(\"accounts\")"]);
+          tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ['alter table "accounts" drop ("first_name")']);
+          //tester('oracledb', ['alter table "accounts" drop ("first_name")']);
           tester('mssql', ["ALTER TABLE [accounts] DROP COLUMN [first_name]"]);
         });
       }).then(function() {
@@ -257,10 +361,10 @@ module.exports = function(knex) {
 
 
     it('.timeout() should throw TimeoutError', function() {
-      var dialect = knex.client.config.dialect;
+      var dialect = knex.client.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
       var testQueries = {
-        'postgres': function() {
+        'postgresql': function() {
           return knex.raw('SELECT pg_sleep(1)');
         },
         'mysql': function() {
@@ -269,17 +373,14 @@ module.exports = function(knex) {
         'mysql2': function() {
           return knex.raw('SELECT SLEEP(1)');
         },
-        maria: function() {
+        mariadb: function() {
           return knex.raw('SELECT SLEEP(1)');
         },
         mssql: function() {
           return knex.raw('WAITFOR DELAY \'00:00:01\'');
         },
         oracle: function() {
-          return knex.raw('dbms_lock.sleep(1)');
-        },
-        'strong-oracle': function() {
-          return knex.raw('dbms_lock.sleep(1)');
+          return knex.raw('begin dbms_lock.sleep(1); end;');
         }
       };
 
@@ -289,22 +390,22 @@ module.exports = function(knex) {
 
       var query = testQueries[dialect]();
 
-      return query.timeout(1)
+      return query.timeout(200)
         .then(function() {
           expect(true).to.equal(false);
         })
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
-            timeout: 1,
+            timeout: 200,
             name:    'TimeoutError',
-            message: 'Defined query timeout of 1ms exceeded when running query.'
+            message: 'Defined query timeout of 200ms exceeded when running query.'
           });
         })
     });
 
 
     it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
-      var dialect = knex.client.config.dialect;
+      var dialect = knex.client.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
 
       // There's unexpected behavior caused by knex releasing a connection back
@@ -313,7 +414,7 @@ module.exports = function(knex) {
       // until the first query finishes. Setting a sleep time longer than the
       // mocha timeout exposes this behavior.
       var testQueries = {
-        'postgres': function() {
+        'postgresql': function() {
           return knex.raw('SELECT pg_sleep(10)');
         },
         'mysql': function() {
@@ -322,17 +423,14 @@ module.exports = function(knex) {
         'mysql2': function() {
           return knex.raw('SELECT SLEEP(10)');
         },
-        maria: function() {
+        mariadb: function() {
           return knex.raw('SELECT SLEEP(10)');
         },
         mssql: function() {
           return knex.raw('WAITFOR DELAY \'00:00:10\'');
         },
         oracle: function() {
-          return knex.raw('dbms_lock.sleep(10)');
-        },
-        'strong-oracle': function() {
-          return knex.raw('dbms_lock.sleep(10)');
+          return knex.raw('begin dbms_lock.sleep(10); end;');
         }
       };
 
@@ -343,7 +441,7 @@ module.exports = function(knex) {
       var query = testQueries[dialect]();
 
       function addTimeout() {
-        return query.timeout(1, {cancel: true});
+        return query.timeout(200, {cancel: true});
       }
 
       // Only mysql/mariadb query cancelling supported for now
@@ -358,15 +456,19 @@ module.exports = function(knex) {
         })
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
-            timeout: 1,
+            timeout: 200,
             name:    'TimeoutError',
-            message: 'Defined query timeout of 1ms exceeded when running query.'
+            message: 'Defined query timeout of 200ms exceeded when running query.'
           });
 
           // Ensure sleep command is removed.
           // This query will hang if a connection gets released back to the pool
           // too early.
-          return knex.raw('SHOW PROCESSLIST')
+          // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
+          return Promise.resolve().then().delay(50)
+            .then(function () {
+              return knex.raw('SHOW PROCESSLIST');
+            })
             .then(function(results) {
               var processes = results[0];
               var sleepProcess = _.find(processes, {Info: 'SELECT SLEEP(10)'});
@@ -424,6 +526,7 @@ module.exports = function(knex) {
           })
         })
         .then(function() {
+          knex.removeListener('query-response', onQueryResponse);
           expect(queryCount).to.equal(4);
         })
     });
@@ -447,6 +550,7 @@ module.exports = function(knex) {
           expect(true).to.equal(false); //Should not be resolved
         })
         .catch(function() {
+          knex.removeListener('query-error', onQueryError);
           expect(queryCount).to.equal(2);
         })
     });

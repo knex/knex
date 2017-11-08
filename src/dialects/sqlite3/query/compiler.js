@@ -102,7 +102,7 @@ assign(QueryCompiler_SQLite3.prototype, {
   columnInfo() {
     const column = this.single.columnInfo
     return {
-      sql: `PRAGMA table_info(${this.single.table})`,
+      sql: `PRAGMA table_info(\`${this.single.table}\`)`,
       output(resp) {
         const maxLengthRegex = /.*\((\d+)\)/
         const out = reduce(resp, function (columns, val) {

@@ -5,12 +5,22 @@
   update the files in `/lib`. `npm test` will also do this.
 
 * Before sending a pull request for a feature or bug fix, be sure to have
-[tests](https://github.com/tgriesser/knex/tree/master/test).
+[tests](https://github.com/tgriesser/knex/tree/master/test). Every pull request that changes the queries should have 
+also **integration tests which are ran against real database** (in addition to unit tests which checks which kind of queries
+are being created).
 
 * Use the same coding style as the rest of the
 [codebase](https://github.com/tgriesser/knex/blob/master/knex.js).
 
 * All pull requests should be made to the `master` branch.
+
+* Pull request description should have link to corresponding PR of documentation branch.
+
+## Documentation
+
+Documentation is no longer maintained in knex master repository. All the documentation pull requests should be sent to https://github.com/knex/documentation
+
+Documentation pull requests should not be merged before knex version which has the new documented feature is released.
 
 ## Integration Tests
 
@@ -65,7 +75,7 @@ There is always room for more collaborators. Be active on resolving github issue
 
 ### Etiquette (/ˈɛtᵻkɛt/ or /ˈɛtᵻkɪt/, French: [e.ti.kɛt])
 
-Make pull requests for your changes, do not commit directly to master (release stuff / documentation changes are ok though).
+Make pull requests for your changes, do not commit directly to master (release stuff like fixing changelog are ok though).
 
 All the pull requests must be peer reviewed by other collaborator, so don't merge your request before that. If there is no response ping others.
 

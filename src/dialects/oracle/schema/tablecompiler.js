@@ -4,8 +4,9 @@ import inherits from 'inherits';
 import * as utils from '../utils';
 import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
+import Trigger from './trigger';
 
-import { assign } from 'lodash'
+import { assign, map } from 'lodash'
 
 // Table Compiler
 // ------
@@ -17,12 +18,32 @@ inherits(TableCompiler_Oracle, TableCompiler);
 
 assign(TableCompiler_Oracle.prototype, {
 
+  addColumns(columns, prefix) {
+    if (columns.sql.length > 0) {
+      prefix = prefix || this.addColumnsPrefix;
+
+      const columnSql = map(columns.sql, (column) => column);
+      const alter = this.lowerCase ? 'alter table ' : 'ALTER TABLE ';
+
+      let sql = `${alter}${this.tableName()} ${prefix}`;
+      if (columns.sql.length > 1) {
+        sql += `(${columnSql.join(', ')})`;
+      } else {
+        sql += columnSql.join(', ');
+      }
+
+      this.pushQuery({
+        sql,
+        bindings: columns.bindings,
+      });
+    }
+  },
+
   // Compile a rename column command.
   renameColumn(from, to) {
-    return this.pushQuery({
-      sql: `alter table ${this.tableName()} rename column ` +
-        this.formatter.wrap(from) + ' to ' + this.formatter.wrap(to)
-    });
+    // Remove quotes around tableName
+    const tableName = this.tableName().slice(1, -1)
+    return this.pushQuery(Trigger.renameColumnTrigger(tableName, from, to));
   },
 
   compileAdd(builder) {
@@ -46,10 +67,12 @@ assign(TableCompiler_Oracle.prototype, {
 
   // Compiles the comment on the table.
   comment(comment) {
-    this.pushQuery(`comment on table ${this.tableName()} is '${comment || ''}'`);
+    this.pushQuery(`comment on table ${this.tableName()} is '${comment}'`);
   },
 
   addColumnsPrefix: 'add ',
+
+  alterColumnsPrefix: 'modify ',
 
   dropColumn() {
     const columns = helpers.normalizeArr.apply(null, arguments);

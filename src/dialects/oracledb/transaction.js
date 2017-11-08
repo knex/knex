@@ -1,3 +1,5 @@
+import {isUndefined} from 'lodash';
+
 const Promise = require('bluebird');
 const Transaction = require('../../transaction');
 const debugTx = require('debug')('knex:tx');
@@ -27,14 +29,21 @@ export default class Oracle_Transaction extends Transaction {
     return conn.rollbackAsync().timeout(5000).catch(Promise.TimeoutError, function(e) {
       self._rejecter(e);
     }).then(function() {
+      if(isUndefined(err)) {
+        err = new Error(`Transaction rejected with non-error: ${err}`)
+      }
       self._rejecter(err);
     });
+  }
+
+  savepoint(conn) {
+    return this.query(conn, `SAVEPOINT ${this.txid}`);
   }
 
   acquireConnection(config) {
     const t = this;
     return Promise.try(function() {
-      return t.client.acquireConnection().completed.then(function(cnx) {
+      return t.client.acquireConnection().then(function(cnx) {
         cnx.isTransaction = true;
         return cnx;
       });

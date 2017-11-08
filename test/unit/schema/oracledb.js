@@ -5,7 +5,7 @@
 var Oracle_Client = require('../../../lib/dialects/oracledb');
 var client        = new Oracle_Client({})
 
-describe("Oracle SchemaBuilder", function() {
+describe("OracleDb SchemaBuilder", function() {
 
   var tableSql;
   var equal = require('assert').equal;
@@ -16,10 +16,9 @@ describe("Oracle SchemaBuilder", function() {
       table.string('email');
     });
 
-    equal(3, tableSql.toSQL().length);
+    equal(2, tableSql.toSQL().length);
     expect(tableSql.toSQL()[0].sql).to.equal('create table "users" ("id" integer not null primary key, "email" varchar2(255))');
-    expect(tableSql.toSQL()[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
+    expect(tableSql.toSQL()[1].sql).to.equal("DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE \"users_seq\"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = \'users\';  execute immediate (\'create or replace trigger \"users_autoinc_trg\"  BEFORE INSERT on \"users\"  for each row  declare  checking number := 1;  begin    if (:new.\"\' || PK_NAME || \'\" is null) then      while checking >= 1 loop        select \"users_seq\".nextval into :new.\"\' || PK_NAME || \'\" from dual;        select count(\"\' || PK_NAME || \'\") into checking from \"users\"        where \"\' || PK_NAME || \'\" = :new.\"\' || PK_NAME || \'\";      end loop;    end if;  end;\'); END;");
   });
 
   it('test basic create table if not exists', function() {
@@ -28,10 +27,9 @@ describe("Oracle SchemaBuilder", function() {
       table.string('email');
     });
 
-    equal(3, tableSql.toSQL().length);
+    equal(2, tableSql.toSQL().length);
     expect(tableSql.toSQL()[0].sql).to.equal("begin execute immediate 'create table \"users\" (\"id\" integer not null primary key, \"email\" varchar2(255))'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql.toSQL()[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql.toSQL()[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
+    expect(tableSql.toSQL()[1].sql).to.equal("DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE \"users_seq\"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = \'users\';  execute immediate (\'create or replace trigger \"users_autoinc_trg\"  BEFORE INSERT on \"users\"  for each row  declare  checking number := 1;  begin    if (:new.\"\' || PK_NAME || \'\" is null) then      while checking >= 1 loop        select \"users_seq\".nextval into :new.\"\' || PK_NAME || \'\" from dual;        select count(\"\' || PK_NAME || \'\") into checking from \"users\"        where \"\' || PK_NAME || \'\" = :new.\"\' || PK_NAME || \'\";      end loop;    end if;  end;\'); END;");
   });
 
   it('test drop table', function() {
@@ -152,7 +150,7 @@ describe("Oracle SchemaBuilder", function() {
   it("rename table", function() {
     tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('rename "users" to "foo"');
+    expect(tableSql[0].sql).to.equal('DECLARE PK_NAME VARCHAR(200); IS_AUTOINC NUMBER := 0; BEGIN  EXECUTE IMMEDIATE (\'RENAME "users" TO "foo"\');  SELECT COUNT(*) INTO IS_AUTOINC from "USER_TRIGGERS" where trigger_name = \'users_autoinc_trg\';  IF (IS_AUTOINC > 0) THEN    EXECUTE IMMEDIATE (\'DROP TRIGGER "users_autoinc_trg"\');    EXECUTE IMMEDIATE (\'RENAME "users_seq" TO "foo_seq"\');    SELECT cols.column_name INTO PK_NAME    FROM all_constraints cons, all_cons_columns cols    WHERE cons.constraint_type = \'P\'    AND cons.constraint_name = cols.constraint_name    AND cons.owner = cols.owner    AND cols.table_name = \'foo\';    EXECUTE IMMEDIATE (\'create or replace trigger "foo_autoinc_trg"    BEFORE INSERT on "foo" for each row      declare      checking number := 1;      begin        if (:new."\' || PK_NAME || \'" is null) then          while checking >= 1 loop            select "foo_seq".nextval into :new."\' || PK_NAME || \'" from dual;            select count("\' || PK_NAME || \'") into checking from "foo"            where "\' || PK_NAME || \'" = :new."\' || PK_NAME || \'";          end loop;        end if;      end;\');  end if;END;');
   });
 
   it('test adding primary key', function() {
@@ -189,6 +187,31 @@ describe("Oracle SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "orders" ("id")');
+
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.integer('foo_id').references('id').on('orders');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo_id" integer');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "orders" ("id")');
+  });
+
+  it('adding foreign key with specific identifier', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.foreign('foo_id', 'fk_foo').references('id').on('orders');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "fk_foo" foreign key ("foo_id") references "orders" ("id")');
+
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.integer('foo_id').references('id').on('orders').withKeyName('fk_foo');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo_id" integer');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "fk_foo" foreign key ("foo_id") references "orders" ("id")');
   });
 
   it("adds foreign key with onUpdate and onDelete", function() {
@@ -206,10 +229,9 @@ describe("Oracle SchemaBuilder", function() {
       this.increments('id');
     }).toSQL();
 
-    equal(3, tableSql.length);
+    equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add "id" integer not null primary key');
-    expect(tableSql[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
+    expect(tableSql[1].sql).to.equal('DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE \"users_seq\"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = \'users\';  execute immediate (\'create or replace trigger \"users_autoinc_trg\"  BEFORE INSERT on \"users\"  for each row  declare  checking number := 1;  begin    if (:new.\"\' || PK_NAME || \'\" is null) then      while checking >= 1 loop        select \"users_seq\".nextval into :new.\"\' || PK_NAME || \'\" from dual;        select count(\"\' || PK_NAME || \'\") into checking from \"users\"        where \"\' || PK_NAME || \'\" = :new.\"\' || PK_NAME || \'\";      end loop;    end if;  end;\'); END;');
   });
 
   it('test adding big incrementing id', function() {
@@ -217,10 +239,9 @@ describe("Oracle SchemaBuilder", function() {
       this.bigIncrements('id');
     }).toSQL();
 
-    equal(3, tableSql.length);
+    equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add "id" number(20, 0) not null primary key');
-    expect(tableSql[1].sql).to.equal("begin execute immediate 'create sequence \"users_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;");
-    expect(tableSql[2].sql).to.equal("create or replace trigger \"users_id_trg\" before insert on \"users\" for each row declare checking number := 1; begin if (:new.\"id\" is null) then while checking >= 1 loop select \"users_seq\".nextval into :new.\"id\" from dual; select count(\"id\") into checking from \"users\" where \"id\" = :new.\"id\"; end loop; end if; end;");
+    expect(tableSql[1].sql).to.equal('DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE \"users_seq\"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = \'users\';  execute immediate (\'create or replace trigger \"users_autoinc_trg\"  BEFORE INSERT on \"users\"  for each row  declare  checking number := 1;  begin    if (:new.\"\' || PK_NAME || \'\" is null) then      while checking >= 1 loop        select \"users_seq\".nextval into :new.\"\' || PK_NAME || \'\" from dual;        select count(\"\' || PK_NAME || \'\") into checking from \"users\"        where \"\' || PK_NAME || \'\" = :new.\"\' || PK_NAME || \'\";      end loop;    end if;  end;\'); END;');
   });
 
   it('test rename column', function() {
@@ -228,7 +249,7 @@ describe("Oracle SchemaBuilder", function() {
       this.renameColumn('foo', 'bar');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" rename column "foo" to "bar"');
+    expect(tableSql[0].sql).to.equal('DECLARE PK_NAME VARCHAR(200); IS_AUTOINC NUMBER := 0; BEGIN  EXECUTE IMMEDIATE (\'ALTER TABLE "users" RENAME COLUMN "foo" TO "bar"\');  SELECT COUNT(*) INTO IS_AUTOINC from "USER_TRIGGERS" where trigger_name = \'users_autoinc_trg\';  IF (IS_AUTOINC > 0) THEN    SELECT cols.column_name INTO PK_NAME    FROM all_constraints cons, all_cons_columns cols    WHERE cons.constraint_type = \'P\'    AND cons.constraint_name = cols.constraint_name    AND cons.owner = cols.owner    AND cols.table_name = \'users\';    IF (\'bar\' = PK_NAME) THEN      EXECUTE IMMEDIATE (\'DROP TRIGGER "users_autoinc_trg"\');      EXECUTE IMMEDIATE (\'create or replace trigger "users_autoinc_trg"      BEFORE INSERT on "users" for each row        declare        checking number := 1;        begin          if (:new."bar" is null) then            while checking >= 1 loop              select "users_seq".nextval into :new."bar" from dual;              select count("bar") into checking from "users"              where "bar" = :new."bar";            end loop;          end if;        end;\');    end if;  end if;END;');
   });
 
   it('test adding string', function() {
@@ -445,7 +466,7 @@ describe("Oracle SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add "created_at" timestamp with local time zone, add "updated_at" timestamp with local time zone');
+    expect(tableSql[0].sql).to.equal('alter table "users" add ("created_at" timestamp with local time zone, "updated_at" timestamp with local time zone)');
   });
 
   it('test adding binary', function() {
@@ -464,6 +485,42 @@ describe("Oracle SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add "foo" decimal(2, 6)');
+  });
+
+  it('test set comment', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.comment('Custom comment');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('comment on table "users" is \'Custom comment\'');
+  });
+
+  it('test set empty comment', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.comment('');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('comment on table "users" is \'\'');
+  });
+
+  it('set comment to undefined', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment();
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
+  it('set comment to null', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment(null);
+      }).toSQL();
+    })
+    .to.throw(TypeError);
   });
 
   it('is possible to set raw statements in defaultTo, #146', function() {

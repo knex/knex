@@ -1,6 +1,7 @@
 
 import Promise from 'bluebird';
 import Transaction from '../../transaction';
+import {isUndefined} from 'lodash';
 const debugTx = require('debug')('knex:tx')
 
 export default class Oracle_Transaction extends Transaction {
@@ -26,13 +27,19 @@ export default class Oracle_Transaction extends Transaction {
     debugTx('%s: rolling back', this.txid)
     return conn.rollbackAsync()
       .throw(err)
-      .catch(this._rejecter)
+      .catch((error) => {
+        if(isUndefined(error)) {
+          error = new Error(`Transaction rejected with non-error: ${error}`)
+        }
+
+        return this._rejecter(error);
+      });
   }
 
   acquireConnection(config) {
     const t = this
     return Promise.try(() =>
-      config.connection || t.client.acquireConnection().completed
+      config.connection || t.client.acquireConnection()
     ).tap(connection => {
       if (!t.outerTx) {
         connection.setAutoCommit(false)

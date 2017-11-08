@@ -4,16 +4,29 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, isEmpty } from 'lodash'
+import { assign, isEmpty, compact } from 'lodash'
 
 function QueryCompiler_MSSQL(client, builder) {
   QueryCompiler.call(this, client, builder)
 }
 inherits(QueryCompiler_MSSQL, QueryCompiler)
 
+const components = [
+  'columns', 'join', 'lock', 'where', 'union', 'group',
+  'having', 'order', 'limit', 'offset'
+];
+
 assign(QueryCompiler_MSSQL.prototype, {
 
   _emptyInsertValue: 'default values',
+
+  select() {
+    const sql = this.with();
+    const statements = components.map(component =>
+        this[component](this)
+    );
+    return sql + compact(statements).join(' ');
+  },
 
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
@@ -65,16 +78,16 @@ assign(QueryCompiler_MSSQL.prototype, {
 
   // Compiles an `update` query, allowing for a return value.
   update() {
+    const top = this.top();
     const updates = this._prepUpdate(this.single.update);
     const join = this.join();
     const where = this.where();
     const order = this.order();
-    const top = this.top();
     const { returning } = this.single;
     return {
       sql: this.with() + `update ${top ? top + ' ' : ''}${this.tableName}` +
-        (join ? ` ${join}` : '') +
         ' set ' + updates.join(', ') +
+        (join ? ` from ${this.tableName} ${join}` : '') +
         (returning ? ` ${this._returning('update', returning)}` : '') +
         (where ? ` ${where}` : '') +
         (order ? ` ${order}` : '') +
@@ -103,6 +116,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   columns() {
     let distinct = false;
     if (this.onlyUnions()) return ''
+    const top = this.top();
     const columns = this.grouped.columns || []
     let i = -1, sql = [];
     if (columns) {
@@ -112,13 +126,16 @@ assign(QueryCompiler_MSSQL.prototype, {
         if (stmt.type === 'aggregate') {
           sql.push(this.aggregate(stmt))
         }
+        else if (stmt.type === 'aggregateRaw') {
+          sql.push(this.aggregateRaw(stmt))
+        }
         else if (stmt.value && stmt.value.length > 0) {
           sql.push(this.formatter.columnize(stmt.value))
         }
       }
     }
     if (sql.length === 0) sql = ['*'];
-    const top = this.top();
+
     return `select ${distinct ? 'distinct ' : ''}` +
       (top ? top + ' ' : '') +
       sql.join(', ') + (this.tableName ? ` from ${this.tableName}` : '');

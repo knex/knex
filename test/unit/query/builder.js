@@ -28,12 +28,14 @@ var clientsWithNullAsDefault = {
   mssql: new MSSQL_Client(useNullAsDefaultConfig),
 }
 
+// note: as a workaround, we are using postgres here, since that's using the default " field wrapping
+// otherwise subquery cloning would need to be fixed. See: https://github.com/tgriesser/knex/pull/2063
 function qb() {
-  return clients.sqlite3.queryBuilder()
+  return clients.postgres.queryBuilder()
 }
 
 function raw(sql, bindings) {
-  return clients.sqlite3.raw(sql, bindings)
+  return clients.postgres.raw(sql, bindings)
 }
 
 function verifySqlResult(dialect, expectedObj, sqlObj) {
@@ -67,6 +69,17 @@ function testsql(chain, valuesToCheck, selectedClients) {
   })
 }
 
+function testNativeSql(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
+  Object.keys(valuesToCheck).forEach(function(key) {
+    var newChain = chain.clone();
+    newChain.client = selectedClients[key];
+    var sqlAndBindings = newChain.toSQL().toNative();
+    var checkValue = valuesToCheck[key];
+    verifySqlResult(key, checkValue, sqlAndBindings);
+  })
+}
+
 function testquery(chain, valuesToCheck, selectedClients) {
   selectedClients = selectedClients || clients;
   Object.keys(valuesToCheck).forEach(function(key) {
@@ -77,6 +90,34 @@ function testquery(chain, valuesToCheck, selectedClients) {
     expect(checkValue).to.equal(sqlString)
   })
 }
+
+describe("Custom identifier wrapping", function() {
+  var customWrapperConfig = {
+    wrapIdentifier: (value, clientImpl) => {
+      return clientImpl(value + '_wrapper_was_here');
+    }
+  };
+
+  var clientsWithCustomIdentifierWrapper = {
+    mysql: new MySQL_Client(customWrapperConfig),
+    postgres: new PG_Client(customWrapperConfig),
+    oracle: new Oracle_Client(customWrapperConfig),
+    oracledb: new Oracledb_Client(customWrapperConfig),
+    sqlite3: new SQLite3_Client(customWrapperConfig),
+    mssql: new MSSQL_Client(customWrapperConfig),
+  };
+
+  it('should use custom wrapper', () => {
+    testsql(qb().withSchema('schema').select('users.foo as bar').from('users'), {
+      mysql: 'select `users_wrapper_was_here`.`foo_wrapper_was_here` as `bar_wrapper_was_here` from `schema_wrapper_was_here`.`users_wrapper_was_here`',
+      oracle: 'select "users_wrapper_was_here"."foo_wrapper_was_here" "bar_wrapper_was_here" from "schema_wrapper_was_here"."users_wrapper_was_here"',
+      mssql: 'select [users_wrapper_was_here].[foo_wrapper_was_here] as [bar_wrapper_was_here] from [schema_wrapper_was_here].[users_wrapper_was_here]',
+      oracledb: 'select "users_wrapper_was_here"."foo_wrapper_was_here" "bar_wrapper_was_here" from "schema_wrapper_was_here"."users_wrapper_was_here"',
+      postgres: 'select "users_wrapper_was_here"."foo_wrapper_was_here" as "bar_wrapper_was_here" from "schema_wrapper_was_here"."users_wrapper_was_here"',
+      sqlite3: 'select `users_wrapper_was_here`.`foo_wrapper_was_here` as `bar_wrapper_was_here` from `schema_wrapper_was_here`.`users_wrapper_was_here`'
+    }, clientsWithCustomIdentifierWrapper);
+  })
+});
 
 describe("QueryBuilder", function() {
 
@@ -104,7 +145,47 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("basic alias", function() {
+  it("basic select with alias as property-value pairs", function() {
+    testsql(qb().select({bar: 'foo'}).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      postgres: 'select "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic select with mixed pure column and alias pair", function() {
+    testsql(qb().select('baz', {bar: 'foo'}).from('users'), {
+      mysql: 'select `baz`, `foo` as `bar` from `users`',
+      oracle: 'select "baz", "foo" "bar" from "users"',
+      mssql: 'select [baz], [foo] as [bar] from [users]',
+      oracledb: 'select "baz", "foo" "bar" from "users"',
+      postgres: 'select "baz", "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic select with array-wrapped alias pair", function() {
+    testsql(qb().select(['baz', {bar: 'foo'}]).from('users'), {
+      mysql: 'select `baz`, `foo` as `bar` from `users`',
+      oracle: 'select "baz", "foo" "bar" from "users"',
+      mssql: 'select [baz], [foo] as [bar] from [users]',
+      oracledb: 'select "baz", "foo" "bar" from "users"',
+      postgres: 'select "baz", "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic select with mixed pure column and alias pair", function() {
+    testsql(qb().select({bar: 'foo'}).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      postgres: 'select "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic old-style alias", function() {
     testsql(qb().select('foo as bar').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
@@ -143,6 +224,25 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("less trivial case of object alias syntax", () => {
+    testsql(qb()
+      .select({
+        bar: 'table1.*',
+        subq: qb().from('test').select(raw('??', [{ a: 'col1', b: 'col2' }])).limit(1)
+      })
+      .from({
+        table1: 'table',
+        table2: 'table',
+        subq: qb().from('test').limit(1)
+      }), {
+        mysql: 'select `table1`.* as `bar`, (select `col1` as `a`, `col2` as `b` from `test` limit ?) as `subq` from `table` as `table1`, `table` as `table2`, (select * from `test` limit ?) as `subq`',
+        postgres: 'select "table1".* as "bar", (select "col1" as "a", "col2" as "b" from "test" limit ?) as "subq" from "table" as "table1", "table" as "table2", (select * from "test" limit ?) as "subq"',
+        sqlite3: 'select `table1`.* as `bar`, (select `col1` as `a`, `col2` as `b` from `test` limit ?) as `subq` from `table` as `table1`, `table` as `table2`, (select * from `test` limit ?) as `subq`',
+        oracledb: 'select "table1".* "bar", (select * from (select "col1" "a", "col2" "b" from "test") where rownum <= ?) "subq" from "table" "table1", "table" "table2", (select * from (select * from "test") where rownum <= ?) "subq"',
+        mssql: 'select [table1].* as [bar], (select top (?) [col1] as [a], [col2] as [b] from [test]) as [subq] from [table] as [table1], [table] as [table2], (select top (?) * from [test]) as [subq]',
+      });
+  });
+
   it("basic table wrapping", function() {
     testsql(qb().select('*').from('public.users'), {
       mysql: 'select * from `public`.`users`',
@@ -156,6 +256,67 @@ describe("QueryBuilder", function() {
       mysql: 'select * from `myschema`.`users`',
       postgres: 'select * from "myschema"."users"',
       mssql: 'select * from [myschema].[users]',
+    });
+  });
+
+  it("selects from only", function() {
+    testsql(qb().select('*').from('users', { only: true }), {
+      postgres: 'select * from only "users"',
+    });
+  });
+
+  it("clear a select", function() {
+    testsql(qb().select('id', 'email').from('users').clearSelect(), {
+      mysql: {
+        sql: 'select * from `users`'
+      },
+      mssql: {
+        sql: 'select * from [users]'
+      },
+      postgres: {
+        sql: 'select * from "users"'
+      }
+    });
+
+    testsql(qb().select('id').from('users').clearSelect().select('email'), {
+      mysql: {
+        sql: 'select `email` from `users`'
+      },
+      mssql: {
+        sql: 'select [email] from [users]'
+      },
+      postgres: {
+        sql: 'select "email" from "users"'
+      }
+    });
+  });
+
+  it("clear a where", function() {
+    testsql(qb().select('id').from('users').where('id', '=', 1).clearWhere(), {
+      mysql: {
+        sql: 'select `id` from `users`'
+      },
+      mssql: {
+        sql: 'select [id] from [users]'
+      },
+      postgres: {
+        sql: 'select "id" from "users"'
+      }
+    });
+
+    testsql(qb().select('id').from('users').where('id', '=', 1).clearWhere().where('id', '=', 2), {
+      mysql: {
+        sql: 'select `id` from `users` where `id` = ?',
+        bindings: [2]
+      },
+      mssql: {
+        sql: 'select [id] from [users] where [id] = ?',
+        bindings: [2]
+      },
+      postgres: {
+        sql: 'select "id" from "users" where "id" = ?',
+        bindings: [2]
+      }
     });
   });
 
@@ -280,7 +441,7 @@ describe("QueryBuilder", function() {
   it('where bool', function() {
     testquery(qb().select('*').from('users').where(true), {
       mysql: 'select * from `users` where 1 = 1',
-      sqlite3: 'select * from "users" where 1 = 1',
+      sqlite3: 'select * from `users` where 1 = 1',
       mssql: 'select * from [users] where 1 = 1',
       postgres: 'select * from "users" where 1 = 1'
     });
@@ -616,7 +777,7 @@ describe("QueryBuilder", function() {
         bindings: [0]
       },
       sqlite3: {
-        sql: 'select * from "users" where 1 = ?',
+        sql: 'select * from `users` where 1 = ?',
         bindings: [0]
       },
       mssql: {
@@ -637,7 +798,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       sqlite3: {
-        sql: 'select * from "users" where 1 = ?',
+        sql: 'select * from `users` where 1 = ?',
         bindings: [1]
       },
       mssql: {
@@ -1201,7 +1362,19 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').having('email', '>', 1), {
       mysql: 'select * from `users` having `email` > ?',
       mssql: 'select * from [users] having [email] > ?',
-      postgres: 'select * from "users" having "email" > ?'
+      postgres: 'select * from "users" having "email" > ?',
+      oracledb: 'select * from "users" having "email" > ?',
+      oracle: 'select * from "users" having "email" > ?'
+    });
+  });
+
+  it("or having", function() {
+    testsql(qb().select('*').from('users').having('baz', '>', 5).orHaving('email', '=', 10), {
+      mysql: 'select * from `users` having `baz` > ? or `email` = ?',
+      mssql: 'select * from [users] having [baz] > ? or [email] = ?',
+      postgres: 'select * from "users" having "baz" > ? or "email" = ?',
+      oracledb: 'select * from "users" having "baz" > ? or "email" = ?',
+      oracle: 'select * from "users" having "baz" > ? or "email" = ?'
     });
   });
 
@@ -1211,7 +1384,9 @@ describe("QueryBuilder", function() {
     }), {
       mysql: 'select * from `users` having (`email` > ?)',
       mssql: 'select * from [users] having ([email] > ?)',
-      postgres: 'select * from "users" having ("email" > ?)'
+      postgres: 'select * from "users" having ("email" > ?)',
+      oracledb: 'select * from "users" having ("email" > ?)',
+      oracle: 'select * from "users" having ("email" > ?)'
     });
   });
 
@@ -1222,7 +1397,9 @@ describe("QueryBuilder", function() {
     }), {
       mysql: 'select * from `users` having (`email` > ? or `email` = ?)',
       mssql: 'select * from [users] having ([email] > ? or [email] = ?)',
-      postgres: 'select * from "users" having ("email" > ? or "email" = ?)'
+      postgres: 'select * from "users" having ("email" > ? or "email" = ?)',
+      oracledb: 'select * from "users" having ("email" > ? or "email" = ?)',
+      oracle: 'select * from "users" having ("email" > ? or "email" = ?)'
     });
   });
 
@@ -1230,7 +1407,9 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').groupBy('email').having('email', '>', 1), {
       mysql: 'select * from `users` group by `email` having `email` > ?',
       mssql: 'select * from [users] group by [email] having [email] > ?',
-      postgres: 'select * from "users" group by "email" having "email" > ?'
+      postgres: 'select * from "users" group by "email" having "email" > ?',
+      oracledb: 'select * from "users" group by "email" having "email" > ?',
+      oracle: 'select * from "users" group by "email" having "email" > ?'
     });
   });
 
@@ -1248,7 +1427,9 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').having(raw('user_foo < user_bar')), {
       mysql: 'select * from `users` having user_foo < user_bar',
       mssql: 'select * from [users] having user_foo < user_bar',
-      postgres: 'select * from "users" having user_foo < user_bar'
+      postgres: 'select * from "users" having user_foo < user_bar',
+      oracledb: 'select * from "users" having user_foo < user_bar',
+      oracle: 'select * from "users" having user_foo < user_bar'
     });
   });
 
@@ -1256,7 +1437,181 @@ describe("QueryBuilder", function() {
     testsql(qb().select('*').from('users').having('baz', '=', 1).orHaving(raw('user_foo < user_bar')), {
       mysql: 'select * from `users` having `baz` = ? or user_foo < user_bar',
       mssql: 'select * from [users] having [baz] = ? or user_foo < user_bar',
-      postgres: 'select * from "users" having "baz" = ? or user_foo < user_bar'
+      postgres: 'select * from "users" having "baz" = ? or user_foo < user_bar',
+      oracledb: 'select * from "users" having "baz" = ? or user_foo < user_bar',
+      oracle: 'select * from "users" having "baz" = ? or user_foo < user_bar'
+    });
+  });
+
+  it("having null", function() {
+    testsql(qb().select('*').from('users').havingNull('baz'), {
+      mysql: 'select * from `users` having `baz` is null',
+      mssql: 'select * from [users] having [baz] is null',
+      postgres: 'select * from "users" having "baz" is null',
+      oracledb: 'select * from "users" having "baz" is null',
+      oracle: 'select * from "users" having "baz" is null'
+    });
+  });
+
+  it("or having null", function() {
+    testsql(qb().select('*').from('users').havingNull('baz').orHavingNull('foo'), {
+      mysql: 'select * from `users` having `baz` is null or `foo` is null',
+      mssql: 'select * from [users] having [baz] is null or [foo] is null',
+      postgres: 'select * from "users" having "baz" is null or "foo" is null',
+      oracledb: 'select * from "users" having "baz" is null or "foo" is null',
+      oracle: 'select * from "users" having "baz" is null or "foo" is null'
+    });
+  });
+
+  it("having not null", function() {
+    testsql(qb().select('*').from('users').havingNotNull('baz'), {
+      mysql: 'select * from `users` having `baz` is not null',
+      mssql: 'select * from [users] having [baz] is not null',
+      postgres: 'select * from "users" having "baz" is not null',
+      oracledb: 'select * from "users" having "baz" is not null',
+      oracle: 'select * from "users" having "baz" is not null'
+    });
+  });
+
+  it("or having not null", function() {
+    testsql(qb().select('*').from('users').havingNotNull('baz').orHavingNotNull('foo'), {
+      mysql: 'select * from `users` having `baz` is not null or `foo` is not null',
+      mssql: 'select * from [users] having [baz] is not null or [foo] is not null',
+      postgres: 'select * from "users" having "baz" is not null or "foo" is not null',
+      oracledb: 'select * from "users" having "baz" is not null or "foo" is not null',
+      oracle: 'select * from "users" having "baz" is not null or "foo" is not null'
+    });
+  });
+
+  it("having exists", function() {
+    testsql(qb().select('*').from('users').havingExists(function() {
+      this.select('baz').from('users');
+    }), {
+      mysql: 'select * from `users` having exists (select `baz` from `users`)',
+      mssql: 'select * from [users] having exists (select [baz] from [users])',
+      postgres: 'select * from "users" having exists (select "baz" from "users")',
+      oracledb: 'select * from "users" having exists (select "baz" from "users")',
+      oracle: 'select * from "users" having exists (select "baz" from "users")'
+    });
+  });
+
+  it("or having exists", function() {
+    testsql(qb().select('*').from('users').havingExists(function() {
+      this.select('baz').from('users');
+    }).orHavingExists(function() {
+      this.select('foo').from('users');
+    }), {
+      mysql: 'select * from `users` having exists (select `baz` from `users`) or exists (select `foo` from `users`)',
+      mssql: 'select * from [users] having exists (select [baz] from [users]) or exists (select [foo] from [users])',
+      postgres: 'select * from "users" having exists (select "baz" from "users") or exists (select "foo" from "users")',
+      oracledb: 'select * from "users" having exists (select "baz" from "users") or exists (select "foo" from "users")',
+      oracle: 'select * from "users" having exists (select "baz" from "users") or exists (select "foo" from "users")'
+    });
+  });
+
+  it("having not exists", function() {
+    testsql(qb().select('*').from('users').havingNotExists(function() {
+      this.select('baz').from('users');
+    }), {
+      mysql: 'select * from `users` having not exists (select `baz` from `users`)',
+      mssql: 'select * from [users] having not exists (select [baz] from [users])',
+      postgres: 'select * from "users" having not exists (select "baz" from "users")',
+      oracledb: 'select * from "users" having not exists (select "baz" from "users")',
+      oracle: 'select * from "users" having not exists (select "baz" from "users")'
+    });
+  });
+
+  it("or having not exists", function() {
+    testsql(qb().select('*').from('users').havingNotExists(function() {
+      this.select('baz').from('users');
+    }).orHavingNotExists(function() {
+      this.select('foo').from('users');
+    }), {
+      mysql: 'select * from `users` having not exists (select `baz` from `users`) or not exists (select `foo` from `users`)',
+      mssql: 'select * from [users] having not exists (select [baz] from [users]) or not exists (select [foo] from [users])',
+      postgres: 'select * from "users" having not exists (select "baz" from "users") or not exists (select "foo" from "users")',
+      oracledb: 'select * from "users" having not exists (select "baz" from "users") or not exists (select "foo" from "users")',
+      oracle: 'select * from "users" having not exists (select "baz" from "users") or not exists (select "foo" from "users")'
+    });
+  });
+
+  it("having between", function() {
+    testsql(qb().select('*').from('users').havingBetween('baz', [5, 10]), {
+      mysql: 'select * from `users` having `baz` between ? and ?',
+      mssql: 'select * from [users] having [baz] between ? and ?',
+      postgres: 'select * from "users" having "baz" between ? and ?',
+      oracledb: 'select * from "users" having "baz" between ? and ?',
+      oracle: 'select * from "users" having "baz" between ? and ?'
+    });
+  });
+
+  it("or having between", function() {
+    testsql(qb().select('*').from('users').havingBetween('baz', [5, 10]).orHavingBetween('baz', [20, 30]), {
+      mysql: 'select * from `users` having `baz` between ? and ? or `baz` between ? and ?',
+      mssql: 'select * from [users] having [baz] between ? and ? or [baz] between ? and ?',
+      postgres: 'select * from "users" having "baz" between ? and ? or "baz" between ? and ?',
+      oracledb: 'select * from "users" having "baz" between ? and ? or "baz" between ? and ?',
+      oracle: 'select * from "users" having "baz" between ? and ? or "baz" between ? and ?'
+    });
+  });
+
+  it("having not between", function() {
+    testsql(qb().select('*').from('users').havingNotBetween('baz', [5, 10]), {
+      mysql: 'select * from `users` having `baz` not between ? and ?',
+      mssql: 'select * from [users] having [baz] not between ? and ?',
+      postgres: 'select * from "users" having "baz" not between ? and ?',
+      oracledb: 'select * from "users" having "baz" not between ? and ?',
+      oracle: 'select * from "users" having "baz" not between ? and ?'
+    });
+  });
+
+  it("or having not between", function() {
+    testsql(qb().select('*').from('users').havingNotBetween('baz', [5, 10]).orHavingNotBetween('baz', [20, 30]), {
+      mysql: 'select * from `users` having `baz` not between ? and ? or `baz` not between ? and ?',
+      mssql: 'select * from [users] having [baz] not between ? and ? or [baz] not between ? and ?',
+      postgres: 'select * from "users" having "baz" not between ? and ? or "baz" not between ? and ?',
+      oracledb: 'select * from "users" having "baz" not between ? and ? or "baz" not between ? and ?',
+      oracle: 'select * from "users" having "baz" not between ? and ? or "baz" not between ? and ?'
+    });
+  });
+
+  it("having in", function() {
+    testsql(qb().select('*').from('users').havingIn('baz', [5, 10, 37]), {
+      mysql: 'select * from `users` having `baz` in (?, ?, ?)',
+      mssql: 'select * from [users] having [baz] in (?, ?, ?)',
+      postgres: 'select * from "users" having "baz" in (?, ?, ?)',
+      oracledb: 'select * from "users" having "baz" in (?, ?, ?)',
+      oracle: 'select * from "users" having "baz" in (?, ?, ?)'
+    });
+  });
+
+  it("or having in", function() {
+    testsql(qb().select('*').from('users').havingIn('baz', [5, 10, 37]).orHavingIn('foo', ['Batman', 'Joker']), {
+      mysql: 'select * from `users` having `baz` in (?, ?, ?) or `foo` in (?, ?)',
+      mssql: 'select * from [users] having [baz] in (?, ?, ?) or [foo] in (?, ?)',
+      postgres: 'select * from "users" having "baz" in (?, ?, ?) or "foo" in (?, ?)',
+      oracledb: 'select * from "users" having "baz" in (?, ?, ?) or "foo" in (?, ?)',
+      oracle: 'select * from "users" having "baz" in (?, ?, ?) or "foo" in (?, ?)'
+    });
+  });
+
+  it("having not in", function() {
+    testsql(qb().select('*').from('users').havingNotIn('baz', [5, 10, 37]), {
+      mysql: 'select * from `users` having `baz` not in (?, ?, ?)',
+      mssql: 'select * from [users] having [baz] not in (?, ?, ?)',
+      postgres: 'select * from "users" having "baz" not in (?, ?, ?)',
+      oracledb: 'select * from "users" having "baz" not in (?, ?, ?)',
+      oracle: 'select * from "users" having "baz" not in (?, ?, ?)'
+    });
+  });
+
+  it("or having not in", function() {
+    testsql(qb().select('*').from('users').havingNotIn('baz', [5, 10, 37]).orHavingNotIn('foo', ['Batman', 'Joker']), {
+      mysql: 'select * from `users` having `baz` not in (?, ?, ?) or `foo` not in (?, ?)',
+      mssql: 'select * from [users] having [baz] not in (?, ?, ?) or [foo] not in (?, ?)',
+      postgres: 'select * from "users" having "baz" not in (?, ?, ?) or "foo" not in (?, ?)',
+      oracledb: 'select * from "users" having "baz" not in (?, ?, ?) or "foo" not in (?, ?)',
+      oracle: 'select * from "users" having "baz" not in (?, ?, ?) or "foo" not in (?, ?)'
     });
   });
 
@@ -1335,6 +1690,31 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("limits and raw selects", function() {
+    testsql(qb().select(raw('name = ? as isJohn', ['john'])).from('users').limit(1), {
+      mysql: {
+        sql: 'select name = ? as isJohn from `users` limit ?',
+        bindings: ['john', 1]
+      },
+      oracle: {
+        sql: 'select * from (select name = ? as isJohn from "users") where rownum <= ?',
+        bindings: ['john', 1]
+      },
+      mssql: {
+        sql: 'select top (?) name = ? as isJohn from [users]',
+        bindings: [1, 'john']
+      },
+      oracledb: {
+        sql: 'select * from (select name = ? as isJohn from "users") where rownum <= ?',
+        bindings: ['john', 1]
+      },
+      postgres: {
+        sql: 'select name = ? as isJohn from "users" limit ?',
+        bindings: ['john', 1]
+      }
+    });
+  });
+
   it("first", function() {
     testsql(qb().first('*').from('users'), {
       mysql: {
@@ -1367,7 +1747,7 @@ describe("QueryBuilder", function() {
         bindings: [5]
       },
       sqlite3: {
-        sql: 'select * from "users" limit ? offset ?',
+        sql: 'select * from `users` limit ? offset ?',
         bindings: [-1, 5]
       },
       postgres: {
@@ -1425,10 +1805,84 @@ describe("QueryBuilder", function() {
     });
   });
 
+
+  it("clear nested wheres", function() {
+    testsql(qb().select('*').from('users').where('email', '=', 'foo').orWhere(function(qb) {
+      qb.where('name', '=', 'bar').where('age', '=', 25).clearWhere();
+    }), {
+      mysql: {
+        sql: 'select * from `users` where `email` = ?',
+        bindings: ['foo']
+      },
+      mssql: {
+        sql: 'select * from [users] where [email] = ?',
+        bindings: ['foo']
+      },
+      postgres: {
+        sql: 'select * from "users" where "email" = ?',
+        bindings: ['foo']
+      }
+    });
+  });
+
+  it("clear where and nested wheres", function() {
+    testsql(qb().select('*').from('users').where('email', '=', 'foo').orWhere(function(qb) {
+      qb.where('name', '=', 'bar').where('age', '=', 25);
+    }).clearWhere(), {
+      mysql: {
+        sql: 'select * from `users`'
+      },
+      mssql: {
+        sql: 'select * from [users]'
+      },
+      postgres: {
+        sql: 'select * from "users"'
+      }
+    });
+  });
+
   it("full sub selects", function() {
     testsql(qb().select('*').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
       qb.select(raw('max(id)')).from('users').where('email', '=', 'bar');
     }), {
+      mysql: {
+        sql: 'select * from `users` where `email` = ? or `id` = (select max(id) from `users` where `email` = ?)',
+        bindings: ['foo', 'bar']
+      },
+      mssql: {
+        sql: 'select * from [users] where [email] = ? or [id] = (select max(id) from [users] where [email] = ?)',
+        bindings: ['foo', 'bar']
+      },
+      postgres: {
+        sql: 'select * from "users" where "email" = ? or "id" = (select max(id) from "users" where "email" = ?)',
+        bindings: ['foo', 'bar']
+      }
+    });
+  });
+
+ it("clear nested selects", function() {
+    testsql(qb().select('email').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
+      qb.select(raw('max(id)')).from('users').where('email', '=', 'bar').clearSelect();
+    }), {
+      mysql: {
+        sql: 'select `email` from `users` where `email` = ? or `id` = (select * from `users` where `email` = ?)',
+        bindings: ['foo', 'bar']
+      },
+      mssql: {
+        sql: 'select [email] from [users] where [email] = ? or [id] = (select * from [users] where [email] = ?)',
+        bindings: ['foo', 'bar']
+      },
+      postgres: {
+        sql: 'select "email" from "users" where "email" = ? or "id" = (select * from "users" where "email" = ?)',
+        bindings: ['foo', 'bar']
+      }
+    });
+  });
+
+  it("clear non nested selects", function() {
+    testsql(qb().select('email').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
+      qb.select(raw('max(id)')).from('users').where('email', '=', 'bar');
+    }).clearSelect(), {
       mysql: {
         sql: 'select * from `users` where `email` = ? or `id` = (select max(id) from `users` where `email` = ?)',
         bindings: ['foo', 'bar']
@@ -1537,6 +1991,69 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("cross join", function() {
+    testsql(qb().select('*').from('users').crossJoin('contracts').crossJoin('photos'), {
+      mysql: {
+        sql: 'select * from `users` cross join `contracts` cross join `photos`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] cross join [contracts] cross join [photos]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "users" cross join "contracts" cross join "photos"',
+        bindings: []
+      },
+      sqlite3: {
+        sql: 'select * from `users` cross join `contracts` cross join `photos`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select * from "users" cross join "contracts" cross join "photos"',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select * from "users" cross join "contracts" cross join "photos"',
+        bindings: []
+      }
+    });
+  });
+
+  it("full outer join", function() {
+    testsql(qb().select('*').from('users').fullOuterJoin('contacts', 'users.id', '=', 'contacts.id'), {
+      mssql: {
+        sql: 'select * from [users] full outer join [contacts] on [users].[id] = [contacts].[id]',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select * from "users" full outer join "contacts" on "users"."id" = "contacts"."id"',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select * from "users" full outer join "contacts" on "users"."id" = "contacts"."id"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "users" full outer join "contacts" on "users"."id" = "contacts"."id"',
+        bindings: []
+      }
+    });
+  });
+
+  it("cross join on", function() {
+    testsql(qb().select('*').from('users').crossJoin('contracts', 'users.contractId', 'contracts.id'), {
+      mysql: {
+        sql: 'select * from `users` cross join `contracts` on `users`.`contractId` = `contracts`.`id`',
+        bindings: []
+      },
+      sqlite3: {
+        sql: 'select * from `users` cross join `contracts` on `users`.`contractId` = `contracts`.`id`',
+        bindings: []
+      },
+    });
+  });
+
   it("basic joins", function() {
     testsql(qb().select('*').from('users').join('contacts', 'users.id', '=', 'contacts.id').leftJoin('photos', 'users.id', '=', 'photos.id'), {
       mysql: {
@@ -1549,6 +2066,31 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" left join "photos" on "users"."id" = "photos"."id"',
+        bindings: []
+      }
+    });
+  });
+
+  it("right (outer) joins", function() {
+    testsql(qb().select('*').from('users').rightJoin('contacts', 'users.id', '=', 'contacts.id').rightOuterJoin('photos', 'users.id', '=', 'photos.id'), {
+      mssql: {
+        sql: 'select * from [users] right join [contacts] on [users].[id] = [contacts].[id] right outer join [photos] on [users].[id] = [photos].[id]',
+        bindings: []
+      },
+      mysql: {
+        sql: 'select * from `users` right join `contacts` on `users`.`id` = `contacts`.`id` right outer join `photos` on `users`.`id` = `photos`.`id`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select * from "users" right join "contacts" on "users"."id" = "contacts"."id" right outer join "photos" on "users"."id" = "photos"."id"',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select * from "users" right join "contacts" on "users"."id" = "contacts"."id" right outer join "photos" on "users"."id" = "photos"."id"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "users" right join "contacts" on "users"."id" = "contacts"."id" right outer join "photos" on "users"."id" = "photos"."id"',
         bindings: []
       }
     });
@@ -1626,6 +2168,198 @@ describe("QueryBuilder", function() {
         sql: 'select * from "myschema"."users" inner join "myschema"."contacts" on "users"."id" = "contacts"."id" left join "myschema"."photos" on "users"."id" = "photos"."id"',
         bindings: []
       }
+    });
+  });
+
+  it("on null", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNull('contacts.address')
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is null',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[address] is null',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null'
+    });
+  });
+
+  it("or on null", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNull('contacts.address').orOnNull('contacts.phone')
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is null or `contacts`.`phone` is null',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[address] is null or [contacts].[phone] is null',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null or "contacts"."phone" is null',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null or "contacts"."phone" is null',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is null or "contacts"."phone" is null'
+    });
+  });
+
+  it("on not null", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotNull('contacts.address')
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is not null',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[address] is not null',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null'
+    });
+  });
+
+  it("or on not null", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotNull('contacts.address').orOnNotNull('contacts.phone')
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`address` is not null or `contacts`.`phone` is not null',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[address] is not null or [contacts].[phone] is not null',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null or "contacts"."phone" is not null',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null or "contacts"."phone" is not null',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."address" is not null or "contacts"."phone" is not null'
+    });
+  });
+
+  it("on exists", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onExists(function(){this.select('*').from('foo')})
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and exists (select * from `foo`)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and exists (select * from [foo])',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo")',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo")',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo")'
+    });
+  });
+
+  it("or on exists", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onExists(function(){this.select('*').from('foo')}).orOnExists(function(){this.select('*').from('bar')})
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and exists (select * from `foo`) or exists (select * from `bar`)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and exists (select * from [foo]) or exists (select * from [bar])',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo") or exists (select * from "bar")',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo") or exists (select * from "bar")',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and exists (select * from "foo") or exists (select * from "bar")'
+    });
+  });
+
+  it("on not exists", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotExists(function(){this.select('*').from('foo')})
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and not exists (select * from `foo`)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and not exists (select * from [foo])',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo")',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo")',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo")'
+    });
+  });
+
+  it("or on not exists", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotExists(function(){this.select('*').from('foo')}).orOnNotExists(function(){this.select('*').from('bar')})
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and not exists (select * from `foo`) or not exists (select * from `bar`)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and not exists (select * from [foo]) or not exists (select * from [bar])',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo") or not exists (select * from "bar")',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo") or not exists (select * from "bar")',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and not exists (select * from "foo") or not exists (select * from "bar")'
+    });
+  });
+
+  it("on between", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onBetween('contacts.id', [7, 15])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` between ? and ?',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] between ? and ?',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ?',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ?',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ?'
+    });
+  });
+
+  it("or on between", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onBetween('contacts.id', [7, 15]).orOnBetween('users.id', [9, 14])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` between ? and ? or `users`.`id` between ? and ?',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] between ? and ? or [users].[id] between ? and ?',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ? or "users"."id" between ? and ?',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ? or "users"."id" between ? and ?',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" between ? and ? or "users"."id" between ? and ?'
+    });
+  });
+
+  it("on not between", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [7, 15])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not between ? and ?',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] not between ? and ?',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ?',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ?',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ?'
+    });
+  });
+
+  it("or on not between", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [7, 15]).orOnNotBetween('users.id', [9, 14])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not between ? and ? or `users`.`id` not between ? and ?',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] not between ? and ? or [users].[id] not between ? and ?',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ? or "users"."id" not between ? and ?',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ? or "users"."id" not between ? and ?',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not between ? and ? or "users"."id" not between ? and ?'
+    });
+  });
+
+  it("on in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onIn('contacts.id', [7, 15, 23, 41])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` in (?, ?, ?, ?)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] in (?, ?, ?, ?)',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?)',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?)',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?)'
+    });
+  });
+
+  it("or on in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onIn('contacts.id', [7, 15, 23, 41]).orOnIn('users.id', [21, 37])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` in (?, ?, ?, ?) or `users`.`id` in (?, ?)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] in (?, ?, ?, ?) or [users].[id] in (?, ?)',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?) or "users"."id" in (?, ?)',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?) or "users"."id" in (?, ?)',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?) or "users"."id" in (?, ?)'
+    });
+  });
+
+  it("on not in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotIn('contacts.id', [7, 15, 23, 41])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not in (?, ?, ?, ?)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] not in (?, ?, ?, ?)',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?)',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?)',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?)'
+    });
+  });
+
+  it("or on not in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onNotIn('contacts.id', [7, 15, 23, 41]).orOnNotIn('users.id', [21, 37])
+    }), {
+      mysql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` not in (?, ?, ?, ?) or `users`.`id` not in (?, ?)',
+      mssql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] not in (?, ?, ?, ?) or [users].[id] not in (?, ?)',
+      postgres: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?) or "users"."id" not in (?, ?)',
+      oracledb: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?) or "users"."id" not in (?, ?)',
+      oracle: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" not in (?, ?, ?, ?) or "users"."id" not in (?, ?)'
     });
   });
 
@@ -1730,6 +2464,40 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("count with raw values", function() {
+    testsql(qb().from('users').count(raw('??', 'name')), {
+      mysql: {
+        sql: 'select count(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count distinct with raw values", function() {
+    testsql(qb().from('users').countDistinct(raw('??', 'name')), {
+      mysql: {
+        sql: 'select count(distinct `name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct [name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct "name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("max", function() {
     testsql(qb().from('users').max('id'), {
       mysql: {
@@ -1742,6 +2510,23 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select max("id") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("max with raw values", function() {
+    testsql(qb().from('users').max(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select max(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select max([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select max("name") from "users"',
         bindings: []
       }
     });
@@ -1764,6 +2549,23 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("min with raw values", function() {
+    testsql(qb().from('users').min(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select min(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select min([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select min("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("sum", function() {
     testsql(qb().from('users').sum('id'), {
       mysql: {
@@ -1781,6 +2583,23 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("sum with raw values", function() {
+    testsql(qb().from('users').sum(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select sum(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select sum([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select sum("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("sum distinct", function() {
     testsql(qb().from('users').sumDistinct('id'), {
       mysql: {
@@ -1793,6 +2612,74 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select sum(distinct "id") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("sum distinct with raw values", function() {
+    testsql(qb().from('users').sumDistinct(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select sum(distinct `name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select sum(distinct [name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select sum(distinct "name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("avg", function() {
+    testsql(qb().from('users').avg('id'), {
+      mysql: {
+        sql: 'select avg(`id`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select avg([id]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select avg("id") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("avg with raw values", function() {
+    testsql(qb().from('users').avg(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select avg(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select avg([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select avg("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("avg distinct with raw values", function() {
+    testsql(qb().from('users').avgDistinct(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select avg(distinct `name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select avg(distinct [name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select avg(distinct "name") from "users"',
         bindings: []
       }
     });
@@ -1822,7 +2709,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       sqlite3: {
-        sql: 'insert into "users" ("email", "name") select ? as "email", ? as "name" union all select ? as "email", ? as "name"',
+        sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       oracle: {
@@ -1847,7 +2734,7 @@ describe("QueryBuilder", function() {
   it("multiple inserts with partly undefined keys client with configuration nullAsDefault: true", function() {
     testquery(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {name: 'dayle'}]), {
       mysql: "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (NULL, 'dayle')",
-      sqlite3: 'insert into "users" ("email", "name") select \'foo\' as "email", \'taylor\' as "name" union all select NULL as "email", \'dayle\' as "name"',
+      sqlite3: 'insert into `users` (`email`, `name`) select \'foo\' as `email`, \'taylor\' as `name` union all select NULL as `email`, \'dayle\' as `name`',
       oracle: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using NULL, \'dayle\';end;',
       mssql: "insert into [users] ([email], [name]) values ('foo', 'taylor'), (NULL, 'dayle')",
       oracledb: 'begin execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using \'foo\', \'taylor\'; execute immediate \'insert into "users" ("email", "name") values (:1, :2)\' using NULL, \'dayle\';end;',
@@ -1882,7 +2769,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       sqlite3: {
-        sql: "insert into \"users\" (\"email\", \"name\") select ? as \"email\", ? as \"name\" union all select ? as \"email\", ? as \"name\"",
+        sql: "insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`",
       },
       postgres: {
         sql: "insert into \"users\" (\"email\", \"name\") values (?, ?), (?, ?) returning \"id\"",
@@ -1926,7 +2813,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       sqlite3: {
-        sql: "insert into \"users\" (\"email\", \"name\") select ? as \"email\", ? as \"name\" union all select ? as \"email\", ? as \"name\"",
+        sql: "insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`",
         bindings: ['foo', 'taylor', 'bar', 'dayle']
       },
       postgres: {
@@ -1998,7 +2885,7 @@ describe("QueryBuilder", function() {
         bindings: [1, 2, 2, 3]
       },
       sqlite3: {
-        sql: 'insert into "table" ("a", "b", "c") select ? as "a", ? as "b", ? as "c" union all select ? as "a", ? as "b", ? as "c" union all select ? as "a", ? as "b", ? as "c"',
+        sql: 'insert into `table` (`a`, `b`, `c`) select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c`',
         bindings: [1, undefined, undefined, undefined, 2, undefined, 2, undefined, 3]
       },
       oracle: {
@@ -2078,7 +2965,7 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       sqlite3: {
-        sql: 'insert into "users" default values',
+        sql: 'insert into `users` default values',
         bindings: []
       },
       postgres: {
@@ -2189,6 +3076,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("update only method", function() {
+    testsql(qb().update({'email': 'foo', 'name': 'bar'}).table('users', { only: true }).where('id', '=', 1), {
+      postgres: {
+        sql: 'update only "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      }
+    });
+  });
+
   it("should not update columns undefined values", function() {
     testsql(qb().update({'email': 'foo', 'name': undefined}).table('users').where('id', '=', 1), {
       mysql: {
@@ -2228,7 +3124,7 @@ describe("QueryBuilder", function() {
       },
       mssql: {
         sql: 'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc;select @@rowcount',
-        bindings: ['foo', 'bar', 1, 5]
+        bindings: [5, 'foo', 'bar', 1]
       },
       postgres: {
         sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
@@ -2244,7 +3140,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] inner join [orders] on [users].[id] = [orders].[user_id] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
+        sql: 'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?;select @@rowcount',
         bindings: ['foo', 'bar', 1]
       },
       postgres: {
@@ -2263,7 +3159,7 @@ describe("QueryBuilder", function() {
       },
       mssql: {
         sql: 'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
-        bindings: ['foo', 'bar', 1, 1]
+        bindings: [1, 'foo', 'bar', 1]
       },
       postgres: {
         sql: 'update "users" set "email" = ?, "name" = ? where "users"."id" = ?',
@@ -2345,6 +3241,15 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("delete only method", function() {
+    testsql(qb().from('users', { only: true }).where('email', '=', 'foo').delete(), {
+      postgres: {
+        sql: 'delete from only "users" where "email" = ?',
+        bindings: ['foo']
+      }
+    });
+  });
+
   it("truncate method", function() {
     testsql(qb().table('users').truncate(), {
       mysql: {
@@ -2352,7 +3257,7 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       sqlite3: {
-        sql: 'delete from "users"',
+        sql: 'delete from `users`',
         bindings: [],
         output: function (output) {
           expect(typeof output).to.equal('function');
@@ -2646,7 +3551,7 @@ describe("QueryBuilder", function() {
         bindings: ['Boonesville', 1, 5]
       },
       mssql: {
-        sql: 'update [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] set [tblPerson].[City] = ? where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
+        sql: 'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
         bindings: ['Boonesville', 1, 5]
       },
       postgres: {
@@ -2681,15 +3586,15 @@ describe("QueryBuilder", function() {
   it('supports capitalized operators', function() {
     testsql(qb().select('*').from('users').where('name', 'LIKE', '%test%'), {
       mysql: {
-        sql: 'select * from `users` where `name` LIKE ?',
+        sql: 'select * from `users` where `name` like ?',
         bindings: ['%test%']
       },
       mssql: {
-        sql: 'select * from [users] where [name] LIKE ?',
+        sql: 'select * from [users] where [name] like ?',
         bindings: ['%test%']
       },
       postgres: {
-        sql: 'select * from "users" where "name" LIKE ?',
+        sql: 'select * from "users" where "name" like ?',
         bindings: ['%test%']
       }
     });
@@ -2700,6 +3605,15 @@ describe("QueryBuilder", function() {
       postgres: {
         sql: 'select * from "users" where "name" ~ ?',
         bindings: ['.*test.*']
+      }
+    });
+  });
+
+  it('supports NOT ILIKE operator in Postgres', function() {
+    testsql(qb().select('*').from('users').where('name', 'not ilike', '%jeff%'), {
+      postgres: {
+        sql: 'select * from "users" where "name" not ilike ?',
+        bindings: ['%jeff%']
       }
     });
   });
@@ -2830,6 +3744,28 @@ describe("QueryBuilder", function() {
       postgres: {
         sql: 'select "e"."lastname", "e"."salary", (select "avg(salary)" from "employee" where dept_no = e.dept_no) as "avg_sal_dept" from "employee" as "e" where "dept_no" = ?',
         bindings: ["e.dept_no"]
+      }
+    });
+  });
+
+  it('allows first as syntax', function() {
+    testsql(qb().select(
+      'e.lastname',
+      'e.salary',
+      qb().first('salary').from('employee').whereRaw('dept_no = e.dept_no').orderBy('salary', 'desc').as('top_dept_salary')
+    ).from('employee as e')
+    .where('dept_no', '=', 'e.dept_no'), {
+      mysql: {
+        sql: 'select `e`.`lastname`, `e`.`salary`, (select `salary` from `employee` where dept_no = e.dept_no order by `salary` desc limit ?) as `top_dept_salary` from `employee` as `e` where `dept_no` = ?',
+        bindings: [1, "e.dept_no"]
+      },
+      mssql: {
+        sql: 'select [e].[lastname], [e].[salary], (select top (?) [salary] from [employee] where dept_no = e.dept_no order by [salary] desc) as [top_dept_salary] from [employee] as [e] where [dept_no] = ?',
+        bindings: [1, "e.dept_no"]
+      },
+      postgres: {
+        sql: 'select "e"."lastname", "e"."salary", (select "salary" from "employee" where dept_no = e.dept_no order by "salary" desc limit ?) as "top_dept_salary" from "employee" as "e" where "dept_no" = ?',
+        bindings: [1, "e.dept_no"]
       }
     });
   });
@@ -3299,7 +4235,7 @@ describe("QueryBuilder", function() {
     expect(mysqlQb.sql).to.equal('select * from `users` where `users`.`name` = ? or `users`.`name` = ?');
     expect(mysqlQb.bindings).to.deep.equal(['Bob', 'Jay']);
 
-    expect(sqliteQb.sql).to.equal('select * from "users" where "users"."name" = ? or "users"."name" = ?');
+    expect(sqliteQb.sql).to.equal('select * from `users` where `users`.`name` = ? or `users`.`name` = ?');
     expect(sqliteQb.bindings).to.deep.equal(['Bob', 'Jay']);
   });
 
@@ -3437,10 +4373,43 @@ describe("QueryBuilder", function() {
     })
   })
 
+  it('Respect casting with named bindings', function() {
+    var namedBindings = { a: 'foo', b: 'bar', c: 'baz' };
+
+    var raws = [
+      [raw(':a: = :b::TEXT OR :c', namedBindings), '"foo" = ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
+      [raw(':a: = :b::TEXT OR :c::TEXT', namedBindings), '"foo" = ?::TEXT OR ?::TEXT', [namedBindings.b, namedBindings.c]],
+      [raw(":a: = 'bar'::TEXT OR :b OR :c::TEXT", namedBindings), '"foo" = \'bar\'::TEXT OR ? OR ?::TEXT', [namedBindings.b, namedBindings.c]],
+      [raw(":a:::TEXT = OR :b::TEXT OR :c", namedBindings), '"foo"::TEXT = OR ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
+      [raw('\\:a: = :b::TEXT OR :c', namedBindings), ':a: = ?::TEXT OR ?', [namedBindings.b, namedBindings.c]],
+      [raw(':a: = \\:b::TEXT OR \\:c', namedBindings), '"foo" = :b::TEXT OR :c', []],
+      [raw('\\:a: = \\:b::TEXT OR \\:c', namedBindings), ':a: = :b::TEXT OR :c', []]
+    ];
+
+    raws.forEach(function(raw) {
+      var result = raw[0].toSQL();
+      expect(result.sql).to.equal(raw[1]);
+      expect(result.bindings).to.deep.equal(raw[2]);
+    });
+  });
+
   it("query \\\\? escaping", function() {
     testquery(qb().select('*').from('users').where('id', '=', 1).whereRaw('?? \\? ?', ['jsonColumn', 'jsonKey?']), {
       mysql: 'select * from `users` where `id` = 1 and `jsonColumn` ? \'jsonKey?\'',
       postgres: 'select * from "users" where "id" = 1 and "jsonColumn" ? \'jsonKey?\''
+    });
+  });
+
+  it("operator transformation", function() {
+    // part of common base code, no need to test on every dialect
+    testsql(qb().select('*').from('users').where('id', '?', 1), {
+      postgres: 'select * from "users" where "id" \\? ?'
+    });
+    testsql(qb().select('*').from('users').where('id', '?|', 1), {
+      postgres: 'select * from "users" where "id" \\?| ?'
+    });
+    testsql(qb().select('*').from('users').where('id', '?&', 1), {
+      postgres: 'select * from "users" where "id" \\?& ?'
     });
   });
 
@@ -3449,7 +4418,7 @@ describe("QueryBuilder", function() {
       this.select('foo').from('users');
     }).select('*').from('withClause'), {
       mssql: 'with [withClause] as (select [foo] from [users]) select * from [withClause]',
-      sqlite3: 'with "withClause" as (select "foo" from "users") select * from "withClause"',
+      sqlite3: 'with `withClause` as (select `foo` from `users`) select * from `withClause`',
       postgres: 'with "withClause" as (select "foo" from "users") select * from "withClause"',
       oracledb: 'with "withClause" as (select "foo" from "users") select * from "withClause"',
       oracle: 'with "withClause" as (select "foo" from "users") select * from "withClause"'
@@ -3461,7 +4430,7 @@ describe("QueryBuilder", function() {
       this.select('foo').from('users');
     }).insert(raw('select * from "withClause"')).into('users'), {
       mssql: 'with [withClause] as (select [foo] from [users]) insert into [users] select * from "withClause"',
-      sqlite3: 'with "withClause" as (select "foo" from "users") insert into "users" select * from "withClause"',
+      sqlite3: 'with `withClause` as (select `foo` from `users`) insert into `users` select * from "withClause"',
       postgres: 'with "withClause" as (select "foo" from "users") insert into "users" select * from "withClause"'
     });
   });
@@ -3475,7 +4444,7 @@ describe("QueryBuilder", function() {
         bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack']
       },
       sqlite3: {
-        sql: 'with "withClause" as (select "foo" from "users" where "name" = ?) insert into "users" ("email", "name") select ? as "email", ? as "name" union all select ? as "email", ? as "name"',
+        sql: 'with `withClause` as (select `foo` from `users` where `name` = ?) insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
         bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack']
       },
       postgres: {
@@ -3490,7 +4459,7 @@ describe("QueryBuilder", function() {
       this.select('foo').from('users');
     }).update({foo: 'updatedFoo'}).where('email', '=', 'foo').from('users'), {
       mssql: 'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?;select @@rowcount',
-      sqlite3: 'with "withClause" as (select "foo" from "users") update "users" set "foo" = ? where "email" = ?',
+      sqlite3: 'with `withClause` as (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
       postgres: 'with "withClause" as (select "foo" from "users") update "users" set "foo" = ? where "email" = ?'
     });
   });
@@ -3500,7 +4469,7 @@ describe("QueryBuilder", function() {
       this.select('email').from('users');
     }).del().where('foo', '=', 'updatedFoo').from('users'), {
       mssql: 'with [withClause] as (select [email] from [users]) delete from [users] where [foo] = ?;select @@rowcount',
-      sqlite3: 'with "withClause" as (select "email" from "users") delete from "users" where "foo" = ?',
+      sqlite3: 'with `withClause` as (select `email` from `users`) delete from `users` where `foo` = ?',
       postgres: 'with "withClause" as (select "email" from "users") delete from "users" where "foo" = ?'
     });
   });
@@ -3508,7 +4477,7 @@ describe("QueryBuilder", function() {
   it("raw 'with' clause", function() {
     testsql(qb().with('withRawClause', raw('select "foo" as "baz" from "users"')).select('*').from('withRawClause'), {
       mssql: 'with [withRawClause] as (select "foo" as "baz" from "users") select * from [withRawClause]',
-      sqlite3: 'with "withRawClause" as (select "foo" as "baz" from "users") select * from "withRawClause"',
+      sqlite3: 'with `withRawClause` as (select "foo" as "baz" from "users") select * from `withRawClause`',
       postgres: 'with "withRawClause" as (select "foo" as "baz" from "users") select * from "withRawClause"',
       oracledb: 'with "withRawClause" as (select "foo" as "baz" from "users") select * from "withRawClause"',
       oracle: 'with "withRawClause" as (select "foo" as "baz" from "users") select * from "withRawClause"'
@@ -3522,7 +4491,7 @@ describe("QueryBuilder", function() {
       this.select('bar').from('users');
     }).select('*').from('secondWithClause'), {
       mssql: 'with [firstWithClause] as (select [foo] from [users]), [secondWithClause] as (select [bar] from [users]) select * from [secondWithClause]',
-      sqlite3: 'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"',
+      sqlite3: 'with `firstWithClause` as (select `foo` from `users`), `secondWithClause` as (select `bar` from `users`) select * from `secondWithClause`',
       postgres: 'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"',
       oracledb: 'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"',
       oracle: 'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"'
@@ -3536,7 +4505,7 @@ describe("QueryBuilder", function() {
       }).select('*').from('withSubClause');
     }).select('*').from('withClause'), {
       mssql: 'with [withClause] as (with [withSubClause] as ((select [foo] from [users]) as [baz]) select * from [withSubClause]) select * from [withClause]',
-      sqlite3: 'with "withClause" as (with "withSubClause" as ((select "foo" from "users") as "baz") select * from "withSubClause") select * from "withClause"',
+      sqlite3: 'with `withClause` as (with `withSubClause` as ((select `foo` from `users`) as `baz`) select * from `withSubClause`) select * from `withClause`',
       postgres: 'with "withClause" as (with "withSubClause" as ((select "foo" from "users") as "baz") select * from "withSubClause") select * from "withClause"',
       oracledb: 'with "withClause" as (with "withSubClause" as ((select "foo" from "users") "baz") select * from "withSubClause") select * from "withClause"',
       oracle: 'with "withClause" as (with "withSubClause" as ((select "foo" from "users") "baz") select * from "withSubClause") select * from "withClause"'
@@ -3553,7 +4522,7 @@ describe("QueryBuilder", function() {
           bindings: [1, 20, 10]
         },
       sqlite3: {
-          sql: 'with "withClause" as (with "withSubClause" as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from "withSubClause") select * from "withClause" where "id" = ?',
+          sql: 'with `withClause` as (with `withSubClause` as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from `withSubClause`) select * from `withClause` where `id` = ?',
           bindings: [1, 20, 10]
         },
       postgres: {
@@ -3571,6 +4540,35 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("should return dialect specific sql and bindings with  toSQL().toNative()", function() {
+    testNativeSql(qb().from('table').where('isIt', true), {
+      mssql: {
+        sql: 'select * from [table] where [isIt] = @p0',
+        bindings: [true]
+      },
+      mysql: {
+        sql: 'select * from `table` where `isIt` = ?',
+        bindings: [true]
+      },
+      sqlite3: {
+        sql: 'select * from `table` where `isIt` = ?',
+        bindings: [true]
+      },
+      postgres: {
+        sql: 'select * from "table" where "isIt" = $1',
+        bindings: [true]
+      },
+      oracledb: {
+        sql: 'select * from "table" where "isIt" = :1',
+        bindings: [1]
+      },
+      oracle: {
+        sql: 'select * from "table" where "isIt" = :1',
+        bindings: [1]
+      }
+    });
+  });
+
   it("nested and chained wrapped 'with' clause", function() {
     testsql(qb().with('firstWithClause', function() {
       this.with('firstWithSubClause', function() {
@@ -3582,11 +4580,70 @@ describe("QueryBuilder", function() {
       }).select('*').from('secondWithSubClause');
     }).select('*').from('secondWithClause'), {
       mssql: 'with [firstWithClause] as (with [firstWithSubClause] as ((select [foo] from [users]) as [foz]) select * from [firstWithSubClause]), [secondWithClause] as (with [secondWithSubClause] as ((select [bar] from [users]) as [baz]) select * from [secondWithSubClause]) select * from [secondWithClause]',
-      sqlite3: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+      sqlite3: 'with `firstWithClause` as (with `firstWithSubClause` as ((select `foo` from `users`) as `foz`) select * from `firstWithSubClause`), `secondWithClause` as (with `secondWithSubClause` as ((select `bar` from `users`) as `baz`) select * from `secondWithSubClause`) select * from `secondWithClause`',
       postgres: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
       oracledb: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
       oracle: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"'
     });
   });
 
+  describe("#2263, update / delete queries in with syntax", () => {
+    it("with update query passed as raw", () => {
+      testquery(qb().with('update1', raw('??', [qb().from('accounts').update({ name: 'foo' })])).from('accounts'), {
+        postgres: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
+      });
+    });
+
+    it("with update query passed as query builder", () => {
+      testquery(qb().with('update1', qb().from('accounts').update({ name: 'foo' })).from('accounts'), {
+       postgres: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
+      });
+    });
+
+    it("with update query passed as callback", () => {
+      testquery(qb().with('update1', builder => builder.from('accounts').update({ name: 'foo' })).from('accounts'), {
+        postgres: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
+      });
+    });
+
+    it("with delete query passed as raw", () => {
+      testquery(qb().with('delete1', raw('??', [qb().delete().from('accounts').where('id', 1)])).from('accounts'), {
+        postgres: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
+      });
+    });
+
+    it("with delete query passed as query builder", () => {
+      testquery(qb().with('delete1', builder => builder.delete().from('accounts').where('id', 1)).from('accounts'), {
+        postgres: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
+      });
+    });
+
+    it("with delete query passed as callback", () => {
+      testquery(qb().with('delete1', qb().delete().from('accounts').where('id', 1)).from('accounts'), {
+        postgres: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
+      });
+    });
+  });
+
+  it('#1710, properly escapes arrays in where clauses in postgresql', function() {
+    testquery(qb().select('*').from('sometable').where('array_field', '&&', [7]), {
+      postgres: "select * from \"sometable\" where \"array_field\" && '{7}'"
+    });
+    testquery(qb().select('*').from('sometable').where('array_field', '&&', ['abc', 'def']), {
+      postgres: "select * from \"sometable\" where \"array_field\" && '{\"abc\",\"def\"}'"
+    });
+    testquery(qb().select('*').from('sometable').where('array_field', '&&', ['abc', 'def', ['g', 2]]), {
+      postgres: "select * from \"sometable\" where \"array_field\" && '{\"abc\",\"def\",{\"g\",2}}'"
+    });
+  })
+
+  it('#2003, properly escapes objects with toPostgres specialization', function () {
+    function TestObject() { }
+    TestObject.prototype.toPostgres = function() {
+      return 'foobar'
+    }
+    testquery(qb().table('sometable').insert({ id: new TestObject() }), {
+      postgres: "insert into \"sometable\" (\"id\") values ('foobar')"
+    });
+  })
 });

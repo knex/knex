@@ -56,7 +56,7 @@ assign(Client_MySQL.prototype, {
 
   _escapeBinding: makeEscape(),
 
-  wrapIdentifier(value) {
+  wrapIdentifierImpl(value) {
     return (value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*')
   },
 
@@ -79,21 +79,29 @@ assign(Client_MySQL.prototype, {
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
     connection.removeAllListeners()
-    connection.end()
+    return Promise
+      .fromCallback(connection.end.bind(connection))
+      .catch(err => {
+        connection.__knex__disposed = err
+      })
   },
 
   validateConnection(connection) {
-    return connection.state === 'connected' || connection.state === 'authenticated'
+    if(connection.state === 'connected' || connection.state === 'authenticated') {
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
   },
 
   // Grab a connection, run the query via the MySQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream, options) {
     options = options || {}
+    const queryOptions = assign({sql: obj.sql}, obj.options)
     return new Promise((resolver, rejecter) => {
       stream.on('error', rejecter)
       stream.on('end', resolver)
-      connection.query(obj.sql, obj.bindings).stream(options).pipe(stream)
+      connection.query(queryOptions, obj.bindings).stream(options).pipe(stream)
     })
   },
 
@@ -102,10 +110,12 @@ assign(Client_MySQL.prototype, {
   _query(connection, obj) {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     return new Promise(function(resolver, rejecter) {
-      let { sql } = obj
-      if (!sql) return resolver()
-      if (obj.options) sql = assign({sql}, obj.options)
-      connection.query(sql, obj.bindings, function(err, rows, fields) {
+      if (!obj.sql) {
+        resolver()
+        return
+      }
+      const queryOptions = assign({sql: obj.sql}, obj.options)
+      connection.query(queryOptions, obj.bindings, function(err, rows, fields) {
         if (err) return rejecter(err)
         obj.response = [rows, fields]
         resolver(obj)
@@ -143,7 +153,7 @@ assign(Client_MySQL.prototype, {
   canCancelQuery: true,
 
   cancelQuery(connectionToKill) {
-    const acquiringConn = this.acquireConnection().completed
+    const acquiringConn = this.acquireConnection()
 
     // Error out if we can't acquire connection in time.
     // Purposely not putting timeout on `KILL QUERY` execution because erroring

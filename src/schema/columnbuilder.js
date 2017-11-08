@@ -3,7 +3,8 @@ import { extend, each, toArray } from 'lodash'
 
 // The chainable interface off the original "column" method.
 export default function ColumnBuilder(client, tableBuilder, type, args) {
-  this.client = client
+  this.client = client;
+  this._method = 'add';
   this._single = {};
   this._modifiers = {};
   this._statements = [];
@@ -21,22 +22,29 @@ export default function ColumnBuilder(client, tableBuilder, type, args) {
 // All of the modifier methods that can be used to modify the current query.
 const modifiers = [
   'default', 'defaultsTo', 'defaultTo', 'unsigned',
-  'nullable', 'notNull', 'notNullable',
-  'first', 'after', 'comment', 'collate'
+  'nullable', 'first', 'after', 'comment', 'collate'
 ];
+
+// Aliases for convenience.
+const aliasMethod = {
+  default:    'defaultTo',
+  defaultsTo: 'defaultTo',
+};
 
 // If we call any of the modifiers (index or otherwise) on the chainable, we pretend
 // as though we're calling `table.method(column)` directly.
 each(modifiers, function(method) {
+  const key = aliasMethod[method] || method
   ColumnBuilder.prototype[method] = function() {
-    if (aliasMethod[method]) {
-      method = aliasMethod[method];
-    }
-    if (method === 'notNullable') return this.nullable(false);
-    this._modifiers[method] = toArray(arguments);
+    this._modifiers[key] = toArray(arguments);
     return this;
   };
 });
+
+ColumnBuilder.prototype.notNull =
+ColumnBuilder.prototype.notNullable = function notNullable() {
+  return this.nullable(false)
+}
 
 each(['index', 'primary', 'unique'], function(method) {
   ColumnBuilder.prototype[method] = function() {
@@ -51,7 +59,7 @@ each(['index', 'primary', 'unique'], function(method) {
 // Specify that the current column "references" a column,
 // which may be tableName.column or just "column"
 ColumnBuilder.prototype.references = function(value) {
-  return this._tableBuilder.foreign.call(this._tableBuilder, this._args[0], this)
+  return this._tableBuilder.foreign.call(this._tableBuilder, this._args[0], undefined, this)
     ._columnBuilder(this)
     .references(value);
 };
@@ -62,6 +70,7 @@ const AlterMethods = {};
 // over all other rules for the column.
 AlterMethods.drop = function() {
   this._single.drop = true;
+
   return this;
 };
 
@@ -73,14 +82,15 @@ AlterMethods.alterType = function(type) {
     grouping: 'alterType',
     value: type
   });
+
   return this;
 };
 
-// Aliases for convenience.
-const aliasMethod = {
-  default:    'defaultTo',
-  defaultsTo: 'defaultTo',
-  notNull:    'notNullable'
+// Set column method to alter (default is add).
+AlterMethods.alter = function() {
+  this._method = 'alter';
+
+  return this;
 };
 
 // Alias a few methods for clarity when processing.

@@ -5,7 +5,7 @@ var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
 var _          = require('lodash');
 var Promise    = require('bluebird');
 
-// excluding oracle and maria dialects from default integrations test
+// excluding oracle and mssql dialects from default integrations test
 var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres sqlite3").match(/\w+/g);
 
 var pool = {
@@ -66,7 +66,17 @@ var testConfigs = {
     },
     pool: mysqlPool,
     migrations: migrations,
-    seeds: seeds
+    seeds: seeds,
+    docker: {
+      factory:   './mysql/index.js',
+      container: 'knex-test-mysql',
+      image:     'mysql:5.7',
+      database:  'mysql',
+      username:  'root',
+      password:  'root',
+      hostPort:  '49153',
+      client:    'mysql'
+    }
   },
 
   mysql2: {
@@ -78,7 +88,17 @@ var testConfigs = {
     },
     pool: mysqlPool,
     migrations: migrations,
-    seeds: seeds
+    seeds: seeds,
+    docker: {
+      factory:   './mysql/index.js',
+      container: 'knex-test-mysql2',
+      image:     'mysql:5.7',
+      database:  'mysql',
+      username:  'root',
+      password:  'root',
+      hostPort:  '49153',
+      client:    'mysql'
+    }
   },
 
   oracle: {
@@ -87,6 +107,19 @@ var testConfigs = {
       adapter:  "oracle",
       database: "knex_test",
       user:     "oracle"
+    },
+    pool: pool,
+    migrations: migrations
+  },
+
+  oracledb: {
+    client: 'oracledb',
+    connection: testConfig.oracledb || {
+      user          : "travis",
+      password      : "travis",
+      connectString : "localhost/XE",
+      // https://github.com/oracle/node-oracledb/issues/525
+      stmtCacheSize : 0
     },
     pool: pool,
     migrations: migrations
@@ -101,7 +134,17 @@ var testConfigs = {
     },
     pool: pool,
     migrations: migrations,
-    seeds: seeds
+    seeds: seeds,
+    docker: {
+      factory:   './postgres/index.js',
+      container: 'knex-test-postgres',
+      image:     'postgres:9.6',
+      database:  'postgres',
+      username:  'postgres',
+      password:  '',
+      hostPort:  '49152',
+      client:    'pg'
+    }
   },
 
   sqlite3: {
@@ -109,7 +152,7 @@ var testConfigs = {
     connection: testConfig.sqlite3 || {
       filename: __dirname + '/test.sqlite3'
     },
-    pool: pool,
+    pool,
     migrations: migrations,
     seeds: seeds
   },

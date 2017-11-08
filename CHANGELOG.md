@@ -1,4 +1,124 @@
 
+# Master (Unreleased)
+
+# 0.14.0 - 6 Nov, 2017
+
+### Breaking Changes:
+
+- Remove sorting of statements from update queries #2171
+- Updated allowed operator list with some missing operators and make all to lower case #2239
+- Use node-mssql 4.0.0 #2029
+- Support for enum columns to SQlite3 dialect #2055
+- Better identifier quoting in Sqlite3 #2087
+- Migration Errors - Display filename of of failed migration #2272
+
+### Other Features:
+
+- Post processing hook for query result #2261
+- Build native SQL where binding parameters are dialect specific #2237
+- Configuration option to allow override identifier wrapping #2217
+- Implemented select syntax: select({ alias: 'column' }) #2227
+- Allows to filter seeds and migrations by extensions #2168
+- Reconnecting after database server disconnect/reconnect + tests #2017
+- Removed filering from allowed configuration settings of mysql2 #2040
+- Allow raw expressions in query builder aggregate methods #2257
+- Throw error on non-string table comment #2126
+- Support for mysql stream query options #2301
+
+### Bug fixes:
+
+- Allow update queries and passing query builder to with statements #2298
+- Fix escape table name in SQLite columnInfo call #2281
+- Preventing containsUndefined from going to recursion loop #1711
+- Fix error caused by call to knex.migrate.currentVersion #2123
+- Upgraded generic-pool to 3.1.7 (did resolve some memory issues) #2208
+- Allow using NOT ILIKE operator #2195
+- Fix postgres searchPath to be case-sensitive #2172
+- Fix drop of multiple columns in sqlite3 #2107
+- Fix adding multiple columns in Oracle #2115
+- Use selected schema when dropping indices in Postgres. #2105
+- Fix hasTable for MySQL to not do partial matches #2097
+- Fix setting autoTransaction in batchInsert #2113
+- Fix connection error propagation when streaming #2199
+- Fix comments not being applied to increments columns #2243
+- Fix mssql wrong binding order of queries that combine a limit with select raw or update #2066
+- Fixed mysql alter table attributes order #2062
+
+### Test / internal changes
+
+- Update each out-of-date dependency according to david-dm.org #2297
+- Update v8flags to version 3.0.0 #2288
+- Update interpret version #2283
+- Fix debug output typo #2187
+- Docker CI tests #2164
+- Unit test for right/rightOuterJoin combination #2117
+- Unit test for fullOuterJoin #2118
+- Unit tests for table comment #2098
+- Test referencing non-existent column with sqlite3 #2104
+- Unit test for renaming column in postgresql #2099
+- Unit test for cross-join #2102
+- Fix incorrect parameter name #2068
+
+# 0.13.0 - 29 Apr, 2017
+
+### Breaking Changes:
+- Multiple concurrent migration runners blocks instead of throwing error when possible #1962
+- Fixed transaction promise mutation issue #1991
+
+### Other Changes:
+- Allow passing version of connected db in configuration file #1993
+- Bugfixes on batchInsert and transactions for mysql/maria #1992
+- Add fetchAsString optional parameter to oracledb dialect #1998
+- fix: escapeObject parameter order for Postgres dialect. #2003
+
+# 0.12.9 - 23 Mar, 2017
+- Fixed unhandled exception in batchInsert when the rows to be inserted resulted in duplicate key violation #1880
+
+# 0.12.8 - 15 Mar, 2017
+- Added clearSelect and clearWhere to query builder #1912
+- Properly close Postgres query streams on error #1935
+- Transactions should never reject with undefined #1970
+- Clear acquireConnectionTimeout if an error occurs when acquiring a connection #1973
+
+# 0.12.7 - 17 Feb, 2017
+
+### Accidental Breaking Change:
+- Ensure that 'client' is provided in knex config object #1822
+
+### Other Changes:
+- Support custom foreign key names #1311, #1726
+- Fixed named bindings to work with queries containing `:`-chars #1890
+- Exposed more promise functions #1896
+- Pass rollback errors to transaction promise in mssql #1885
+- ONLY keyword support for PostgreSQL (for table inheritance) #1874
+- Fixed Mssql update with join syntax #1777
+- Replace migrations and seed for react-native packager #1813
+- Support knexfile, migration and seeds in TypeScript #1769
+- Fix float to integer conversion of decimal fields in MSSQL #1781
+- External authentication capability when using oracledb driver #1716
+- Fixed MSSQL incorect query build when locks are used #1707
+- Allow to use `first` method as aliased select #1784
+- Alter column for nullability, type and default value #46, #1759
+- Add more having* methods / join clause on* methods  #1674
+- Compatibility fixes and cleanups #1788, #1792, #1794, #1814, #1857, #1649
+
+# 0.12.6 - 19 Oct, 2016
+- Address warnings mentioned in #1388 (#1740)
+- Remove postinstall script (#1746)
+
+# 0.12.5 - 12 Oct, 2016
+- Fix broken 0.12.4 build (removed from npm)
+- Fix #1733, #920, incorrect postgres array bindings
+
+# 0.12.3 - 9 Oct, 2016
+- Fix #1703, #1694 - connections should be returned to pool if acquireConnectionTimeout is triggered
+- Fix #1710 regression in postgres array escaping
+
+# 0.12.2 - 27 Sep, 2016
+- Restore pool min: 1 for sqlite3, #1701
+- Fix for connection error after it's closed / released, #1691
+- Fix oracle prefetchRowCount setting, #1675
+
 # 0.12.1 - 16 Sep, 2016
 - Fix MSSQL sql execution error, #1669
 - Added DEBUG=knex:bindings for debugging query bindings, #1557

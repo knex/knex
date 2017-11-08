@@ -8,12 +8,21 @@ const orderBys = ['asc', 'desc'];
 
 // Turn this into a lookup map
 const operators = transform([
-  '=', '<', '>', '<=', '>=', '<>', '!=', 'like',
-  'not like', 'between', 'ilike', '&', '|', '^', '<<', '>>',
-  'rlike', 'regexp', 'not regexp', '~', '~*', '!~', '!~*',
-  '#', '&&', '@>', '<@', '||'
+  '=', '<', '>', '<=', '>=', '<>', '!=',
+  'like', 'not like', 'between', 'not between',
+  'ilike', 'not ilike', 'exists', 'not exist',
+  'rlike', 'not rlike', 'regexp', 'not regexp',
+  '&', '|', '^', '<<', '>>', '~', '~*', '!~', '!~*',
+  '#', '&&', '@>', '<@', '||', '&<', '&>', '-|-', '@@', '!!',
+  ['?', '\\?'],
+  ['?|', '\\?|'],
+  ['?&', '\\?&'],
 ], (result, key) => {
-  result[key] = true
+  if (Array.isArray(key)) {
+    result[key[0]] = key[1];
+  } else {
+    result[key] = key;
+  }
 }, {});
 
 export default class Formatter {
@@ -25,7 +34,7 @@ export default class Formatter {
 
   // Accepts a string or array of columns to wrap as appropriate.
   columnize(target) {
-    const columns = typeof target === 'string' ? [target] : target
+    const columns = Array.isArray(target) ? target : [target];
     let str = '', i = -1;
     while (++i < columns.length) {
       if (i > 0) str += ', '
@@ -78,6 +87,13 @@ export default class Formatter {
     }
   }
 
+  /**
+   * Creates SQL for a parameter, which might be passed to where() or .with() or
+   * pretty much anywhere in API.
+   *
+   * @param query Callback (for where or complete builder), Raw or QueryBuilder
+   * @param method Optional at least 'select' or 'update' are valid
+   */
   rawOrFn(value, method) {
     if (typeof value === 'function') {
       return this.outputQuery(this.compileCallback(value, method));
@@ -88,13 +104,18 @@ export default class Formatter {
   // Puts the appropriate wrapper around a value depending on the database
   // engine, unless it's a knex.raw value, in which case it's left alone.
   wrap(value) {
-    if (typeof value === 'function') {
-      return this.outputQuery(this.compileCallback(value), true);
-    }
     const raw = this.unwrapRaw(value);
     if (raw) return raw;
-    if (typeof value === 'number') return value;
-    return this._wrapString(value + '');
+    switch (typeof value) {
+      case 'function':
+        return this.outputQuery(this.compileCallback(value), true);
+      case 'object':
+        return this.parseObject(value);
+      case 'number':
+        return value;
+      default:
+        return this.wrapString(value + '');
+    }
   }
 
   wrapAsIdentifier(value) {
@@ -105,14 +126,14 @@ export default class Formatter {
     return first + ' as ' + second;
   }
 
-  // The operator method takes a value and returns something or other.
   operator(value) {
     const raw = this.unwrapRaw(value);
     if (raw) return raw;
-    if (operators[(value || '').toLowerCase()] !== true) {
+    const operator = operators[(value || '').toLowerCase()];
+    if (!operator) {
       throw new TypeError(`The operator "${value}" is not permitted`);
     }
-    return value;
+    return operator;
   }
 
   // Specify the direction of the ordering.
@@ -135,14 +156,17 @@ export default class Formatter {
     compiler.formatter = this;
 
     // Return the compiled & parameterized sql.
-    return compiler.toSQL(method || 'select');
+    return compiler.toSQL(method || builder._method || 'select');
   }
 
   // Ensures the query is aliased if necessary.
   outputQuery(compiled, isParameter) {
     let sql = compiled.sql || '';
     if (sql) {
-      if (compiled.method === 'select' && (isParameter || compiled.as)) {
+      if (
+        (compiled.method === 'select' || compiled.method === 'first') &&
+        (isParameter || compiled.as)
+      ) {
         sql = `(${sql})`;
         if (compiled.as) return this.alias(sql, this.wrap(compiled.as))
       }
@@ -150,13 +174,35 @@ export default class Formatter {
     return sql;
   }
 
+  // Key-value notation for alias
+  parseObject(obj) {
+    const ret = [];
+    for (const alias in obj) {
+      const queryOrIdentifier = obj[alias];
+      // Avoids double aliasing for subqueries
+      if (typeof queryOrIdentifier === 'function') {
+        const compiled = this.compileCallback(queryOrIdentifier);
+        compiled.as = alias; // enforces the object's alias
+        ret.push(this.outputQuery(compiled, true));
+      } else if (queryOrIdentifier instanceof QueryBuilder) {
+        ret.push(this.alias(
+          `(${this.wrap(queryOrIdentifier)})`,
+          this.wrapAsIdentifier(alias))
+        );
+      } else {
+        ret.push(this.alias(this.wrap(queryOrIdentifier), this.wrapAsIdentifier(alias)))
+      }
+    }
+    return ret.join(', ')
+  }
+
   // Coerce to string to prevent strange errors when it's not a string.
-  _wrapString(value) {
+  wrapString(value) {
     const asIndex = value.toLowerCase().indexOf(' as ');
     if (asIndex !== -1) {
-      const first = value.slice(0, asIndex)
-      const second = value.slice(asIndex + 4)
-      return this.alias(this.wrap(first), this.wrapAsIdentifier(second))
+      const first = value.slice(0, asIndex);
+      const second = value.slice(asIndex + 4);
+      return this.alias(this.wrap(first), this.wrapAsIdentifier(second));
     }
     const wrapped = [];
     let i = -1;

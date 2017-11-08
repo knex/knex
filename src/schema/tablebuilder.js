@@ -142,7 +142,6 @@ const columnTypes = [
   'biginteger',
   'bigInteger',
   'string',
-  'timestamps',
   'json',
   'jsonb',
   'uuid',
@@ -156,42 +155,42 @@ const columnTypes = [
 each(columnTypes, function(type) {
   TableBuilder.prototype[type] = function() {
     const args = toArray(arguments);
-
-    // The "timestamps" call is really a compound call to set the
-    // `created_at` and `updated_at` columns.
-    if (type === 'timestamps') {
-      const col = (args[0] === true) ? 'timestamp' : 'datetime';
-      const createdAt = this[col]('created_at');
-      const updatedAt = this[col]('updated_at');
-      if (args[1] === true) {
-        const now = this.client.raw('CURRENT_TIMESTAMP');
-        createdAt.notNullable().defaultTo(now);
-        updatedAt.notNullable().defaultTo(now);
-      }
-      return;
-    }
     const builder = this.client.columnBuilder(this, type, args);
-
     this._statements.push({
       grouping: 'columns',
       builder
     });
     return builder;
   };
-
 });
+
+// The "timestamps" call is really just sets the `created_at` and `updated_at` columns.
+TableBuilder.prototype.timestamps = function timestamps() {
+  const method = (arguments[0] === true) ? 'timestamp' : 'datetime';
+  const createdAt = this[method]('created_at');
+  const updatedAt = this[method]('updated_at');
+  if (arguments[1] === true) {
+    const now = this.client.raw('CURRENT_TIMESTAMP');
+    createdAt.notNullable().defaultTo(now);
+    updatedAt.notNullable().defaultTo(now);
+  }
+  return;
+}
 
 // Set the comment value for a table, they're only allowed to be called
 // once per table.
 TableBuilder.prototype.comment = function(value) {
+  if (typeof value !== 'string') {
+    throw new TypeError('Table comment must be string');
+  }
   this._single.comment = value;
 };
 
 // Set a foreign key on the table, calling
 // `table.foreign('column_name').references('column').on('table').onDelete()...
 // Also called from the ColumnBuilder context when chaining.
-TableBuilder.prototype.foreign = function(column) {
-  const foreignData = {column};
+TableBuilder.prototype.foreign = function(column, keyName) {
+  const foreignData = {column: column, keyName: keyName};
   this._statements.push({
     grouping: 'alterTable',
     method: 'foreign',
@@ -220,6 +219,10 @@ TableBuilder.prototype.foreign = function(column) {
       }
       foreignData.inTable = pieces[0];
       foreignData.references = pieces[1];
+      return returnObj;
+    },
+    withKeyName(keyName) {
+      foreignData.keyName = keyName;
       return returnObj;
     },
     onUpdate(statement) {

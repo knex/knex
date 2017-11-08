@@ -31,7 +31,13 @@ export default class Transaction_MSSQL extends Transaction {
     this._completed = true
     debug('%s: rolling back', this.txid)
     return conn.tx_.rollback()
-      .then(() => this._rejecter(error))
+      .then(
+        () => this._rejecter(error),
+        err => {
+          if (error) err.originalError = error;
+          return this._rejecter(err);
+        }
+      )
   }
 
   rollbackTo(conn, error) {
@@ -50,7 +56,7 @@ export default class Transaction_MSSQL extends Transaction {
     return Promise.try(() => {
       return (t.outerTx ? t.outerTx.conn : null) ||
         configConnection ||
-        t.client.acquireConnection().completed;
+        t.client.acquireConnection();
     }).tap(function(conn) {
       if (!t.outerTx) {
         t.conn = conn
