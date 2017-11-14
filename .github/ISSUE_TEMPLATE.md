@@ -12,7 +12,7 @@ Rest of dialects doesn't need tags.
 
 1. Explain what kind of behaviour you are getting and how you think it should do
 
-2. Error massage
+2. Error message
 
 3. Reduced test code, for example in https://npm.runkit.com/knex or if it needs real
    database connection to mysql or postgresql, then single file example which initializes
