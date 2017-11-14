@@ -34,6 +34,13 @@ function checkLocalModule(env) {
 
 function initKnex(env) {
 
+  var connIdx = process.argv.indexOf('--connection');
+  var knex = require(env.modulePath || 'knex');
+
+  if (connIdx >= 0) {
+    return knex(process.argv[connIdx + 1]);
+  }
+
   checkLocalModule(env);
 
   if (!env.configPath) {
@@ -63,9 +70,10 @@ function initKnex(env) {
     process.exit(1);
   }
 
-  if (argv.debug !== undefined)
+  if (argv.debug !== undefined) {
     config.debug = argv.debug;
-  var knex = require(env.modulePath);
+  }
+  
   return knex(config);
 }
 
@@ -81,6 +89,7 @@ function invoke(env) {
     )
     .option('--debug', 'Run with debugging.')
     .option('--knexfile [path]', 'Specify the knexfile path.')
+    .option('--connection [path]', 'Specify a connection string.')
     .option('--cwd [path]', 'Specify the working directory.')
     .option('--env [name]', 'environment, default: process.env.NODE_ENV || development');
 
@@ -207,6 +216,7 @@ cli.on('requireFail', function(name) {
 cli.launch({
   cwd: argv.cwd,
   configPath: argv.knexfile,
+  connection: argv.connection,
   require: argv.require,
   completion: argv.completion
 }, invoke);
