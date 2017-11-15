@@ -120,10 +120,7 @@ export default class Formatter {
   }
 
   wrapAsIdentifier(value) {
-    let hookContext;
-    if (this.builder instanceof QueryBuilder) {
-      hookContext = this.builder.hookContext();
-    }
+    const hookContext = this.builder.hookContext();
     return this.client.wrapIdentifier((value || '').trim(), hookContext);
   }
 

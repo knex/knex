@@ -905,16 +905,6 @@ assign(Builder.prototype, {
     return this;
   },
 
-  // Stores or returns (if called with no arguments) context passed to
-  // wrapIdentifier and postProcessResponse hooks
-  hookContext(context) {
-    if (isUndefined(context)) {
-      return this._hookContext;
-    }
-    this._hookContext = context;
-    return this;
-  },
-
   // ----------------------------------------------------------------------
 
   // Helper for the incrementing/decrementing queries.
