@@ -445,9 +445,9 @@ module.exports = function(knex) {
 
       return knex.transaction(function(trx) {
         return trx
-          .hookContext({ foo: 'bar' })
           .select()
-          .from('accounts');
+          .from('accounts')
+          .hookContext({ foo: 'bar' });
       }).then(function() {
         expect(spy.callCount).toBe(1);
         expect(spy.calledWith({ foo: 'bar' })).toBeTrue();
