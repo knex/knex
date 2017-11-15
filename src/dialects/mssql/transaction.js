@@ -17,6 +17,7 @@ export default class Transaction_MSSQL extends Transaction {
   }
 
   commit(conn, value) {
+    if ( this._completed ) return;
     this._completed = true
     debug('%s: commit', this.txid)
     return conn.tx_.commit()
@@ -28,6 +29,7 @@ export default class Transaction_MSSQL extends Transaction {
   }
 
   rollback(conn, error) {
+    if ( this._completed ) return;
     this._completed = true
     debug('%s: rolling back', this.txid)
     return conn.tx_.rollback()
@@ -41,6 +43,8 @@ export default class Transaction_MSSQL extends Transaction {
   }
 
   rollbackTo(conn, error) {
+    if ( this._completed ) return;
+    this._completed = true
     debug('%s: rolling backTo', this.txid)
     return Promise.resolve()
       .then(() => this.query(conn, `ROLLBACK TRANSACTION ${this.txid}`, 2, error))
