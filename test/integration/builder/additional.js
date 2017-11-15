@@ -168,7 +168,6 @@ module.exports = function(knex) {
             "type": "uuid"
           }
         });
-<<<<<<< HEAD
         tester('pg-redshift', 'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
         null, {
           "enum_value": {
