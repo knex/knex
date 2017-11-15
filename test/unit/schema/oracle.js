@@ -515,6 +515,24 @@ describe("Oracle SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('comment on table "users" is \'\'');
   });
 
+  it('set comment to undefined', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment();
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
+  it('set comment to null', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment(null);
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
   it('is possible to set raw statements in defaultTo, #146', function() {
     tableSql = client.schemaBuilder().createTable('default_raw_test', function(t) {
       t.timestamp('created_at').defaultTo(client.raw('CURRENT_TIMESTAMP'));

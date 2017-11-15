@@ -397,6 +397,24 @@ describe("MSSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(5, 2)');
   });
 
+  it('set comment to undefined', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment();
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
+  it('set comment to null', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment(null);
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
   it('test adding boolean', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.boolean('foo');

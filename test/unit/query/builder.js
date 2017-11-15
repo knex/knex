@@ -161,7 +161,47 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("basic alias", function() {
+  it("basic select with alias as property-value pairs", function() {
+    testsql(qb().select({bar: 'foo'}).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      postgres: 'select "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic select with mixed pure column and alias pair", function() {
+    testsql(qb().select('baz', {bar: 'foo'}).from('users'), {
+      mysql: 'select `baz`, `foo` as `bar` from `users`',
+      oracle: 'select "baz", "foo" "bar" from "users"',
+      mssql: 'select [baz], [foo] as [bar] from [users]',
+      oracledb: 'select "baz", "foo" "bar" from "users"',
+      postgres: 'select "baz", "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic select with array-wrapped alias pair", function() {
+    testsql(qb().select(['baz', {bar: 'foo'}]).from('users'), {
+      mysql: 'select `baz`, `foo` as `bar` from `users`',
+      oracle: 'select "baz", "foo" "bar" from "users"',
+      mssql: 'select [baz], [foo] as [bar] from [users]',
+      oracledb: 'select "baz", "foo" "bar" from "users"',
+      postgres: 'select "baz", "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic select with mixed pure column and alias pair", function() {
+    testsql(qb().select({bar: 'foo'}).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      oracle: 'select "foo" "bar" from "users"',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      postgres: 'select "foo" as "bar" from "users"'
+    });
+  });
+
+  it("basic old-style alias", function() {
     testsql(qb().select('foo as bar').from('users'), {
       mysql: 'select `foo` as `bar` from `users`',
       oracle: 'select "foo" "bar" from "users"',
@@ -202,6 +242,25 @@ describe("QueryBuilder", function() {
       postgres: 'select "foo" as "bar.baz" from "users"',
       redshift: 'select "foo" as "bar.baz" from "users"',
     });
+  });
+
+  it("less trivial case of object alias syntax", () => {
+    testsql(qb()
+      .select({
+        bar: 'table1.*',
+        subq: qb().from('test').select(raw('??', [{ a: 'col1', b: 'col2' }])).limit(1)
+      })
+      .from({
+        table1: 'table',
+        table2: 'table',
+        subq: qb().from('test').limit(1)
+      }), {
+        mysql: 'select `table1`.* as `bar`, (select `col1` as `a`, `col2` as `b` from `test` limit ?) as `subq` from `table` as `table1`, `table` as `table2`, (select * from `test` limit ?) as `subq`',
+        postgres: 'select "table1".* as "bar", (select "col1" as "a", "col2" as "b" from "test" limit ?) as "subq" from "table" as "table1", "table" as "table2", (select * from "test" limit ?) as "subq"',
+        sqlite3: 'select `table1`.* as `bar`, (select `col1` as `a`, `col2` as `b` from `test` limit ?) as `subq` from `table` as `table1`, `table` as `table2`, (select * from `test` limit ?) as `subq`',
+        oracledb: 'select "table1".* "bar", (select * from (select "col1" "a", "col2" "b" from "test") where rownum <= ?) "subq" from "table" "table1", "table" "table2", (select * from (select * from "test") where rownum <= ?) "subq"',
+        mssql: 'select [table1].* as [bar], (select top (?) [col1] as [a], [col2] as [b] from [test]) as [subq] from [table] as [table1], [table] as [table2], (select top (?) * from [test]) as [subq]',
+      });
   });
 
   it("basic table wrapping", function() {
@@ -2816,6 +2875,40 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("count with raw values", function() {
+    testsql(qb().from('users').count(raw('??', 'name')), {
+      mysql: {
+        sql: 'select count(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count distinct with raw values", function() {
+    testsql(qb().from('users').countDistinct(raw('??', 'name')), {
+      mysql: {
+        sql: 'select count(distinct `name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct [name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct "name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("max", function() {
     testsql(qb().from('users').max('id'), {
       mysql: {
@@ -2834,6 +2927,23 @@ describe("QueryBuilder", function() {
         sql: 'select max("id") from "users"',
         bindings: []
       },
+    });
+  });
+
+  it("max with raw values", function() {
+    testsql(qb().from('users').max(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select max(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select max([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select max("name") from "users"',
+        bindings: []
+      }
     });
   });
 
@@ -2858,6 +2968,23 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("min with raw values", function() {
+    testsql(qb().from('users').min(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select min(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select min([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select min("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("sum", function() {
     testsql(qb().from('users').sum('id'), {
       mysql: {
@@ -2879,6 +3006,23 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("sum with raw values", function() {
+    testsql(qb().from('users').sum(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select sum(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select sum([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select sum("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("sum distinct", function() {
     testsql(qb().from('users').sumDistinct('id'), {
       mysql: {
@@ -2897,6 +3041,74 @@ describe("QueryBuilder", function() {
         sql: 'select sum(distinct "id") from "users"',
         bindings: []
       },
+    });
+  });
+
+  it("sum distinct with raw values", function() {
+    testsql(qb().from('users').sumDistinct(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select sum(distinct `name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select sum(distinct [name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select sum(distinct "name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("avg", function() {
+    testsql(qb().from('users').avg('id'), {
+      mysql: {
+        sql: 'select avg(`id`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select avg([id]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select avg("id") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("avg with raw values", function() {
+    testsql(qb().from('users').avg(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select avg(`name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select avg([name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select avg("name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("avg distinct with raw values", function() {
+    testsql(qb().from('users').avgDistinct(raw('??', ['name'])), {
+      mysql: {
+        sql: 'select avg(distinct `name`) from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select avg(distinct [name]) from [users]',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select avg(distinct "name") from "users"',
+        bindings: []
+      }
     });
   });
 
@@ -5081,6 +5293,44 @@ describe("QueryBuilder", function() {
       redshift: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
       oracledb: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
       oracle: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"'
+    });
+  });
+
+  describe("#2263, update / delete queries in with syntax", () => {
+    it("with update query passed as raw", () => {
+      testquery(qb().with('update1', raw('??', [qb().from('accounts').update({ name: 'foo' })])).from('accounts'), {
+        postgres: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
+      });
+    });
+
+    it("with update query passed as query builder", () => {
+      testquery(qb().with('update1', qb().from('accounts').update({ name: 'foo' })).from('accounts'), {
+       postgres: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
+      });
+    });
+
+    it("with update query passed as callback", () => {
+      testquery(qb().with('update1', builder => builder.from('accounts').update({ name: 'foo' })).from('accounts'), {
+        postgres: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
+      });
+    });
+
+    it("with delete query passed as raw", () => {
+      testquery(qb().with('delete1', raw('??', [qb().delete().from('accounts').where('id', 1)])).from('accounts'), {
+        postgres: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
+      });
+    });
+
+    it("with delete query passed as query builder", () => {
+      testquery(qb().with('delete1', builder => builder.delete().from('accounts').where('id', 1)).from('accounts'), {
+        postgres: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
+      });
+    });
+
+    it("with delete query passed as callback", () => {
+      testquery(qb().with('delete1', qb().delete().from('accounts').where('id', 1)).from('accounts'), {
+        postgres: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
+      });
     });
   });
 

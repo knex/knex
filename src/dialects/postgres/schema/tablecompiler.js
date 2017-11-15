@@ -87,7 +87,7 @@ TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) 
 
 // Compiles the comment on the table.
 TableCompiler_PG.prototype.comment = function(comment) {
-  this.pushQuery(`comment on table ${this.tableName()} is '${this.single.comment || ''}'`);
+  this.pushQuery(`comment on table ${this.tableName()} is '${this.single.comment}'`);
 };
 
 // Indexes:

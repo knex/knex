@@ -611,6 +611,24 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('comment on table "user" is \'\'');
   });
 
+  it('set comment to undefined', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment();
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
+  it('set comment to null', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment(null);
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
   it('allows adding default json objects when the column is json', function() {
     tableSql = client.schemaBuilder().table('user', function(t) {
       t.json('preferences').defaultTo({}).notNullable();

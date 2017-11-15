@@ -25,7 +25,7 @@ assign(TableCompiler_MSSQL.prototype, {
     const sql = createStatement + this.tableName() + (this._formatting ? ' (\n    ' : ' (') + columns.sql.join(this._formatting ? ',\n    ' : ', ') + ')';
 
     if (this.single.comment) {
-      const comment = (this.single.comment || '');
+      const {comment} = this.single;
       if (comment.length > 60) helpers.warn('The max length for a table comment is 60 characters');
     }
 

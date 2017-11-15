@@ -67,7 +67,7 @@ assign(TableCompiler_Oracle.prototype, {
 
   // Compiles the comment on the table.
   comment(comment) {
-    this.pushQuery(`comment on table ${this.tableName()} is '${comment || ''}'`);
+    this.pushQuery(`comment on table ${this.tableName()} is '${comment}'`);
   },
 
   addColumnsPrefix: 'add ',

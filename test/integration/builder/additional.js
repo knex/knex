@@ -10,6 +10,42 @@ module.exports = function(knex) {
 
   describe('Additional', function () {
 
+    describe("Custom response processing", () => {
+
+      before('setup custom response handler', () => {
+        knex.client.config.postProcessResponse = (response) => {
+          response.callCount = response.callCount ? (response.callCount + 1) : 1;
+          return response;
+        };
+      });
+
+      after('restore client configuration', () => {
+        knex.client.config.postProcessResponse = null;
+      });
+
+      it('should process normal response', () => {
+        return knex('accounts').limit(1).then(res => {
+          expect(res.callCount).to.equal(1);
+        });
+      });
+
+      it('should process raw response', () => {
+        return knex.raw('select * from ??', ['accounts']).then(res => {
+        });
+      });
+
+      it('should process response done in transaction', () => {
+        return knex.transaction(trx => {
+          return trx('accounts').limit(1).then(res => {
+            expect(res.callCount).to.equal(1);
+            return res;
+          });
+        }).then(res => {
+          expect(res.callCount).to.equal(1);
+        });
+      });
+    });
+
     it('should forward the .get() function from bluebird', function() {
       return knex('accounts').select().limit(1).then(function(accounts){
         var firstAccount = accounts[0];
@@ -147,7 +183,7 @@ module.exports = function(knex) {
             "type": "character"
           }
         });
-        tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
+        tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
           "enum_value": {
             "defaultValue": null,
             "maxLength": null,
@@ -221,7 +257,7 @@ module.exports = function(knex) {
           "nullable": false,
           "type": "character"
         });
-        tester('sqlite3', 'PRAGMA table_info(datatype_test)', [], {
+        tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
           "defaultValue": null,
           "maxLength": "36",
           "nullable": false,
@@ -246,6 +282,32 @@ module.exports = function(knex) {
             "type": "uniqueidentifier"
           });
       });
+    });
+
+    it('#2184 - should properly escape table name for SQLite columnInfo', function() {
+      if (knex.client.dialect !== 'sqlite3') {
+        return;
+      }
+
+      return knex.schema.dropTableIfExists('group')
+        .then(function() {
+          return knex.schema.createTable('group', function(table) {
+            table.integer('foo');
+          });
+        })
+        .then(function() {
+          return knex('group').columnInfo();
+        })
+        .then(function(columnInfo) {
+          expect(columnInfo).to.deep.equal({
+            foo: {
+              type: 'integer',
+              maxLength: null,
+              nullable: true,
+              defaultValue: null,
+            },
+          });
+        });
     });
 
     it('should allow renaming a column', function() {
@@ -429,10 +491,10 @@ module.exports = function(knex) {
 
           // Ensure sleep command is removed.
           // This query will hang if a connection gets released back to the pool
-          // too early. 
+          // too early.
           // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
           return Promise.resolve().then().delay(50)
-            .then(function () { 
+            .then(function () {
               return knex.raw('SHOW PROCESSLIST');
             })
             .then(function(results) {
@@ -492,6 +554,7 @@ module.exports = function(knex) {
           })
         })
         .then(function() {
+          knex.removeListener('query-response', onQueryResponse);
           expect(queryCount).to.equal(4);
         })
     });
@@ -515,6 +578,7 @@ module.exports = function(knex) {
           expect(true).to.equal(false); //Should not be resolved
         })
         .catch(function() {
+          knex.removeListener('query-error', onQueryError);
           expect(queryCount).to.equal(2);
         })
     });

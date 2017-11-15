@@ -62,8 +62,10 @@ export function containsUndefined(mixed) {
     }
   } else if(isObject(mixed)) {
     for(const key in mixed) {
-      if(argContainsUndefined) break;
-      argContainsUndefined = this.containsUndefined(mixed[key]);
+      if (mixed.hasOwnProperty(key)) {
+        if(argContainsUndefined) break;
+        argContainsUndefined = this.containsUndefined(mixed[key]);
+      }
     }
   } else {
     argContainsUndefined = isUndefined(mixed);
