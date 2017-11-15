@@ -430,7 +430,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should passes the hookContext to wrapIdentifier', function () {
+    it('should pass the hook context to wrapIdentifier', function () {
       const originalWrapIdentifier = knex.client.config.wrapIdentifier;
       const spy = sinon.spy().named('calledWithContext');
 
@@ -449,8 +449,8 @@ module.exports = function(knex) {
           .from('accounts')
           .hookContext({ foo: 'bar' });
       }).then(function() {
-        expect(spy.callCount).toBe(1);
-        expect(spy.calledWith({ foo: 'bar' })).toBeTrue();
+        expect(spy.callCount).to.equal(1);
+        expect(spy.calledWith({ foo: 'bar' })).to.equal(true);
       }).then(function() {
         restoreWrapIdentifier();
       }).catch(function(e) {
