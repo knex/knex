@@ -1,6 +1,7 @@
 import { assign, isArray } from 'lodash'
 import Promise from 'bluebird';
 import * as helpers from './helpers';
+import QueryBuilder from './query/builder';
 
 let PassThrough;
 
@@ -132,8 +133,12 @@ assign(Runner.prototype, {
     return queryPromise
       .then((resp) => {
         const processedResponse = this.client.processResponse(resp, runner);
+        let hookContext;
+        if (this.builder instanceof QueryBuilder) {
+          hookContext = this.builder.hookContext();
+        }
         const postProcessedResponse = this.client
-          .postProcessResponse(processedResponse);
+          .postProcessResponse(processedResponse, hookContext);
 
         this.builder.emit(
           'query-response',

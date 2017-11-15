@@ -13,8 +13,9 @@ module.exports = function(knex) {
     describe("Custom response processing", () => {
 
       before('setup custom response handler', () => {
-        knex.client.config.postProcessResponse = (response) => {
+        knex.client.config.postProcessResponse = (response, context) => {
           response.callCount = response.callCount ? (response.callCount + 1) : 1;
+          response.context = context;
           return response;
         };
       });
@@ -26,6 +27,12 @@ module.exports = function(knex) {
       it('should process normal response', () => {
         return knex('accounts').limit(1).then(res => {
           expect(res.callCount).to.equal(1);
+        });
+      });
+
+      it('should pass context to the custom handler', () => {
+        return knex('accounts').hookContext('the context').limit(1).then(res => {
+          expect(res.context).to.equal('the context');
         });
       });
 
@@ -42,6 +49,17 @@ module.exports = function(knex) {
           });
         }).then(res => {
           expect(res.callCount).to.equal(1);
+        });
+      });
+
+      it('should pass context for responses from transactions', () => {
+        return knex.transaction(trx => {
+          return trx('accounts').hookContext('the context').limit(1).then(res => {
+            expect(res.context).to.equal('the context');
+            return res;
+          });
+        }).then(res => {
+          expect(res.context).to.equal('the context');
         });
       });
     });

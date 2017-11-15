@@ -163,9 +163,9 @@ assign(Client.prototype, {
     return sql;
   },
 
-  postProcessResponse(resp) {
+  postProcessResponse(resp, context) {
     if (this.config.postProcessResponse) {
-      return this.config.postProcessResponse(resp);
+      return this.config.postProcessResponse(resp, context);
     }
     return resp;
   },
