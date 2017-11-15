@@ -151,7 +151,7 @@ var testConfigs = {
     dialect: 'redshift',
     connection: testConfig.redshift || {
       adapter:  'postgresql',
-      database: 'dev',
+      database: 'knex_test',
       user:     process.env.REDSHIFT_USER || 'postgres',
       password: process.env.REDSHIFT_PASSWORD || '',
       port:     '5439',
