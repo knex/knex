@@ -1,6 +1,64 @@
 
 # Master (Unreleased)
 
+# 0.14.0 - 6 Nov, 2017
+
+### Breaking Changes:
+
+- Remove sorting of statements from update queries #2171
+- Updated allowed operator list with some missing operators and make all to lower case #2239
+- Use node-mssql 4.0.0 #2029
+- Support for enum columns to SQlite3 dialect #2055
+- Better identifier quoting in Sqlite3 #2087
+- Migration Errors - Display filename of of failed migration #2272
+
+### Other Features:
+
+- Post processing hook for query result #2261
+- Build native SQL where binding parameters are dialect specific #2237
+- Configuration option to allow override identifier wrapping #2217
+- Implemented select syntax: select({ alias: 'column' }) #2227
+- Allows to filter seeds and migrations by extensions #2168
+- Reconnecting after database server disconnect/reconnect + tests #2017
+- Removed filering from allowed configuration settings of mysql2 #2040
+- Allow raw expressions in query builder aggregate methods #2257
+- Throw error on non-string table comment #2126
+- Support for mysql stream query options #2301
+
+### Bug fixes:
+
+- Allow update queries and passing query builder to with statements #2298
+- Fix escape table name in SQLite columnInfo call #2281
+- Preventing containsUndefined from going to recursion loop #1711
+- Fix error caused by call to knex.migrate.currentVersion #2123
+- Upgraded generic-pool to 3.1.7 (did resolve some memory issues) #2208
+- Allow using NOT ILIKE operator #2195
+- Fix postgres searchPath to be case-sensitive #2172
+- Fix drop of multiple columns in sqlite3 #2107
+- Fix adding multiple columns in Oracle #2115
+- Use selected schema when dropping indices in Postgres. #2105
+- Fix hasTable for MySQL to not do partial matches #2097
+- Fix setting autoTransaction in batchInsert #2113
+- Fix connection error propagation when streaming #2199
+- Fix comments not being applied to increments columns #2243
+- Fix mssql wrong binding order of queries that combine a limit with select raw or update #2066
+- Fixed mysql alter table attributes order #2062
+
+### Test / internal changes
+
+- Update each out-of-date dependency according to david-dm.org #2297
+- Update v8flags to version 3.0.0 #2288
+- Update interpret version #2283
+- Fix debug output typo #2187
+- Docker CI tests #2164
+- Unit test for right/rightOuterJoin combination #2117
+- Unit test for fullOuterJoin #2118
+- Unit tests for table comment #2098
+- Test referencing non-existent column with sqlite3 #2104
+- Unit test for renaming column in postgresql #2099
+- Unit test for cross-join #2102
+- Fix incorrect parameter name #2068
+
 # 0.13.0 - 29 Apr, 2017
 
 ### Breaking Changes:

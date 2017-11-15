@@ -522,6 +522,24 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table `users` comment = \'\'');
   });
 
+  it('set comment to undefined', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment();
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
+  it('set comment to null', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment(null);
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
   it('should alter columns with the alter flag', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.string('foo').alter();

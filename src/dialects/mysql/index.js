@@ -97,10 +97,11 @@ assign(Client_MySQL.prototype, {
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream, options) {
     options = options || {}
+    const queryOptions = assign({sql: obj.sql}, obj.options)
     return new Promise((resolver, rejecter) => {
       stream.on('error', rejecter)
       stream.on('end', resolver)
-      connection.query(obj.sql, obj.bindings).stream(options).pipe(stream)
+      connection.query(queryOptions, obj.bindings).stream(options).pipe(stream)
     })
   },
 
@@ -109,10 +110,12 @@ assign(Client_MySQL.prototype, {
   _query(connection, obj) {
     if (!obj || typeof obj === 'string') obj = {sql: obj}
     return new Promise(function(resolver, rejecter) {
-      let { sql } = obj
-      if (!sql) return resolver()
-      if (obj.options) sql = assign({sql}, obj.options)
-      connection.query(sql, obj.bindings, function(err, rows, fields) {
+      if (!obj.sql) {
+        resolver()
+        return
+      }
+      const queryOptions = assign({sql: obj.sql}, obj.options)
+      connection.query(queryOptions, obj.bindings, function(err, rows, fields) {
         if (err) return rejecter(err)
         obj.response = [rows, fields]
         resolver(obj)

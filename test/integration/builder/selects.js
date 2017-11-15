@@ -1,9 +1,10 @@
 /*global describe, expect, it, testPromise, d*/
 'use strict';
 
-const assert  = require('assert')
-const Promise = testPromise;
-const Runner = require('../../../lib/runner');
+var _ = require('lodash')
+var assert  = require('assert')
+var Promise = testPromise;
+var Runner = require('../../../lib/runner');
 
 module.exports = function(knex) {
 
@@ -202,6 +203,36 @@ module.exports = function(knex) {
         if (count === 6) done();
       });
     });
+
+    it('allows you to stream with mysql dialect options', function() {
+      if (!_.includes(['mysql', 'mysql2'], knex.client.dialect)) {
+        return
+      }
+      const rows = []
+      return knex('accounts')
+        .options({
+          typeCast (field, next) {
+            var val
+            if (field.type === 'VAR_STRING') {
+              val = field.string()
+              return val == null ? val : val.toUpperCase()
+            }
+            return next()
+          }
+        })
+        .stream(function(rowStream) {
+          rowStream.on('data', function(row) {
+            rows.push(row)
+          });
+        }).then(function() {
+          expect(rows).to.have.lengthOf(6)
+          rows.forEach(row => {
+            ['first_name', 'last_name', 'email'].forEach(
+              field => expect(row[field]).to.equal(row[field].toUpperCase())
+            )
+          })
+        });
+    })
 
     it('emits error on the stream, if not passed a function, and connecting fails', function() {
       var expected = new Error();

@@ -35,6 +35,10 @@ export default class Migrator {
   constructor(knex) {
     this.knex = knex
     this.config = this.setConfig(knex.client.config.migrations);
+    
+    this._activeMigration = {
+      fileName: null
+    }
   }
 
   // Migrators to the latest configuration.
@@ -88,7 +92,7 @@ export default class Migrator {
   // If no migrations have been run yet, return "none".
   currentVersion(config) {
     this.config = this.setConfig(config);
-    return this._listCompleted(config)
+    return this._listCompleted()
       .then((completed) => {
         const val = max(map(completed, value => value.split('_')[0]));
         return (isUndefined(val) ? 'none' : val);
@@ -225,6 +229,7 @@ export default class Migrator {
       .tap(() => this._freeLock(trx))
       .catch(error => {
         let cleanupReady = Promise.resolve();
+        helpers.warn(`migration file "${this._activeMigration.fileName}" failed`)
 
         if (error instanceof LockError) {
           // If locking error do not free the lock.
@@ -235,7 +240,7 @@ export default class Migrator {
             'table: ' + this._getLockTableName()
           );
         } else {
-          helpers.warn(`migrations failed with error: ${error.message}`)
+          helpers.warn(`migration failed with error: ${error.message}`)
           // If the error was not due to a locking issue, then remove the lock.
           cleanupReady = this._freeLock(trx);
         }
@@ -336,6 +341,7 @@ export default class Migrator {
     const log = [];
     each(migrations, (migration) => {
       const name = migration;
+      this._activeMigration.fileName = name;
       migration = require(directory + '/' + name);
 
       // We're going to run each of the migrations in the current "up".
