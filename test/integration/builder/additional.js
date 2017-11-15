@@ -42,6 +42,12 @@ module.exports = function(knex) {
         });
       });
 
+      it('should pass context for raw responses', () => {
+        return knex.raw('select * from ??', ['accounts']).hookContext('the context').then(res => {
+          expect(res.context).to.equal('the context');
+        });
+      });
+
       it('should process response done in transaction', () => {
         return knex.transaction(trx => {
           return trx('accounts').limit(1).then(res => {
