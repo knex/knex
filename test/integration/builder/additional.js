@@ -38,6 +38,7 @@ module.exports = function(knex) {
 
       it('should process raw response', () => {
         return knex.raw('select * from ??', ['accounts']).then(res => {
+          expect(res.callCount).to.equal(1);
         });
       });
 
