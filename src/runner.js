@@ -1,7 +1,6 @@
 import { assign, isArray } from 'lodash'
 import Promise from 'bluebird';
 import * as helpers from './helpers';
-import QueryBuilder from './query/builder';
 
 let PassThrough;
 
