@@ -224,14 +224,32 @@ assign(Client.prototype, {
               if (poolConfig.afterCreate) {
                 return Promise.promisify(poolConfig.afterCreate)(connection)
               }
+            })
+            .catch(err => {
+              // Acquire connection must never reject, because generic-pool
+              // will retry trying to get connection until acquireConnectionTimeout is
+              // reached. acquireConnectionTimeout should trigger in knex only 
+              // in that case if aquiring connection waits because pool is full
+              // https://github.com/coopernurse/node-pool/pull/184
+              // https://github.com/tgriesser/knex/issues/2325
+              return {
+                genericPoolMissingRetryCountHack: true,
+                __knex__disposed: err,
+                query: () => {
+                  throw err; // pass error to query
+                }
+              };
             });
         },
         destroy: (connection) => {
+          if (connection.genericPoolMissingRetryCountHack) {
+            return;
+          }
           if (poolConfig.beforeDestroy) {
             helpers.warn(`
-            beforeDestroy is deprecated, please open an issue if you use this
-            to discuss alternative apis
-          `)
+              beforeDestroy is deprecated, please open an issue if you use this
+              to discuss alternative apis
+            `)
             poolConfig.beforeDestroy(connection, function() {})
           }
           if (connection !== void 0) {

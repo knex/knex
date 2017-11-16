@@ -12,6 +12,7 @@ require('./seed')
 require('./migrate')
 require('./pool')
 require('./knex')
+require('./invalid-db-setup')(knexfile)
 
 Object.keys(knexfile).forEach(function(key) {
 
@@ -23,7 +24,7 @@ Object.keys(knexfile).forEach(function(key) {
   // Tear down the knex connection
   tape(knex.client.driverName + ' - transactions: after', function(t) {
     knex.destroy(function() {
-      t.ok(true, 'Knex client destroyed')
+      t.pass('Knex client destroyed')
       t.end()
     })
   })
