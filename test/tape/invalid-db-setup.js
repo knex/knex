@@ -10,7 +10,7 @@ module.exports = (knexfile) => {
   Object.keys(knexfile).forEach((key) => {
     const dialect = knexfile[key].dialect || knexfile[key].client;
 
-    if (dialect !== 'sqlite3') {
+    if (dialect !== 'sqlite3' && dialect !== 'oracledb') {
       const knexConf = _.cloneDeep(knexfile[key]);
       knexConf.connection.database = knexConf.connection.db = 'I-refuse-to-exist';
       knexConf.acquireConnectionTimeout = 4000;
