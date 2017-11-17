@@ -8,7 +8,7 @@ const Bluebird = require('bluebird');
 
 module.exports = (knexfile) => {
   Object.keys(knexfile).forEach((key) => {
-    const dialect = knexfile[key].dialect;
+    const dialect = knexfile[key].dialect || knexfile[key].client;
 
     if (dialect !== 'sqlite3') {
       const knexConf = _.cloneDeep(knexfile[key]);
@@ -19,7 +19,7 @@ module.exports = (knexfile) => {
       tape(dialect + ' - propagate error when DB does not exist', t => {
         t.plan(1);
         t.timeoutAfter(1000);
-        knex.select(1)
+        knex('accounts').select(1)
           .then(res => {
             t.fail(`Query should have failed, got: ${JSON.stringify(res)}`);
           })
