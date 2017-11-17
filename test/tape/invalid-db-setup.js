@@ -59,6 +59,10 @@ module.exports = (knexfile) => {
       knexConf.pool = { max: 1 };
       const knex = makeKnex(knexConf);
 
+      tape.onFinish(() => {
+        knex.destroy();
+      });
+
       tape(dialect + ' - acquireConnectionTimeout works', t => {
         t.plan(2);
         t.timeoutAfter(1000);
@@ -85,10 +89,6 @@ module.exports = (knexfile) => {
           .finally(() => {
             hoggerTrx.commit(); // release stuff
           });
-      });
-
-      tape.onFinish(() => {
-        knex.destroy();
       });
     }
 
