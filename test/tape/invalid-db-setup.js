@@ -1,3 +1,5 @@
+'use strict';
+
 const tape = require('tape')
 const _ = require('lodash');
 const makeKnex = require('../../knex')
@@ -70,7 +72,7 @@ module.exports = (knexfile) => {
           t.end();
         });
 
-        knex.select(1)
+        knex('accounts').select(1)
           .then(() => {
             t.fail('query should have stalled');
           })
