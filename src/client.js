@@ -190,7 +190,7 @@ assign(Client.prototype, {
   },
 
   poolDefaults() {
-    return {min: 2, max: 10, Promise}
+    return {min: 2, max: 10, testOnBorrow: true, Promise}
   },
 
   getPoolSettings(poolConfig) {
