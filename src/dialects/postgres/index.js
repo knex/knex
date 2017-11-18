@@ -170,9 +170,14 @@ assign(Client_PG.prototype, {
 
     if(isString(path)) {
       if(includes(path, ',')) {
-        warn(`Detected comma in searchPath "${path}". If you are trying to specify multiple schemas, then use Array syntax: [${map(path.split(','), (searchPath) => `'${searchPath}'`).join(', ')}]`);
+        const parts = path.split(',');
+        const arraySyntax = `[${map(parts, (searchPath) => `'${searchPath}'`).join(', ')}]`;
+        warn(
+          `Detected comma in searchPath "${path}".`
+          +
+          `If you are trying to specify multiple schemas, use Array syntax: ${arraySyntax}`);
       }
-			path = [path];
+      path = [path];
     }
 
     path = map(path, (schemaName) => `"${schemaName}"`).join(',');
