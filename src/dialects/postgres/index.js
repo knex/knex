@@ -1,10 +1,11 @@
 
 // PostgreSQL
 // -------
-import { assign, map, extend } from 'lodash'
+import { assign, map, extend, isArray, isString, includes } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
+import {warn} from '../../helpers';
 
 import QueryCompiler from './query/compiler';
 import ColumnCompiler from './schema/columncompiler';
@@ -159,12 +160,30 @@ assign(Client_PG.prototype, {
   },
 
   setSchemaSearchPath(connection, searchPath) {
-    const path = (searchPath || this.searchPath);
+    let path = (searchPath || this.searchPath);
 
     if (!path) return Promise.resolve(true);
 
+    if(!isArray(path) && !isString(path)) {
+      throw new TypeError(`knex: Expected searchPath to be Array/String, got: ${typeof path}`);
+    }
+
+    if(isString(path)) {
+      if(includes(path, ',')) {
+        const parts = path.split(',');
+        const arraySyntax = `[${map(parts, (searchPath) => `'${searchPath}'`).join(', ')}]`;
+        warn(
+          `Detected comma in searchPath "${path}".`
+          +
+          `If you are trying to specify multiple schemas, use Array syntax: ${arraySyntax}`);
+      }
+      path = [path];
+    }
+
+    path = map(path, (schemaName) => `"${schemaName}"`).join(',');
+
     return new Promise(function(resolver, rejecter) {
-      connection.query(`set search_path to "${path}"`, function(err) {
+      connection.query(`set search_path to ${path}`, function(err) {
         if (err) return rejecter(err);
         resolver(true);
       });

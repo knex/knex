@@ -1,5 +1,8 @@
 
 # Master (Unreleased)
+### Bug fixes:
+
+- Fix support for multiple schema names in in postgres `searchPath` #2340
 
 # 0.14.0 - 6 Nov, 2017
 
