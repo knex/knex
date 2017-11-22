@@ -411,8 +411,8 @@ export default [
   {
     type: "method",
     method: "unique",
-    example: "table.unique(columns)",
-    description: "Adds an unique index to a table over the given `columns`",
+    example: "table.unique(columns, [indexName])",
+    description: "Adds an unique index to a table over the given `columns`. A default index name using the columns is used unless indexName is specified.",
     children: [{
       type: 'code',
       language: 'js',
@@ -429,8 +429,8 @@ export default [
   {
     type: "method",
     method: "foreign",
-    example: "table.foreign(columns)",
-    description: "Adds a foreign key constraint to a table for an existing column using `table.foreign(column).references(column)` or multiple columns using `table.foreign(columns).references(columns)`. You can also chain onDelete and/or onUpdate to set the reference option (RESTRICT, CASCADE, SET NULL, NO ACTION) for the operation. Note, this is the same as column.references(column) but works for existing columns.",
+    example: "table.foreign(columns, [foreignKeyName])",
+    description: "Adds a foreign key constraint to a table for an existing column using `table.foreign(column).references(column)` or multiple columns using `table.foreign(columns).references(columns)`. A default key name using the columns is used unless foreignKeyName is specified. You can also chain onDelete and/or onUpdate to set the reference option (RESTRICT, CASCADE, SET NULL, NO ACTION) for the operation. Note, this is the same as column.references(column) but works for existing columns.",
     children: [{
       type: 'code',
       language: 'js',
