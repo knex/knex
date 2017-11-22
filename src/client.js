@@ -228,7 +228,7 @@ assign(Client.prototype, {
             .catch(err => {
               // Acquire connection must never reject, because generic-pool
               // will retry trying to get connection until acquireConnectionTimeout is
-              // reached. acquireConnectionTimeout should trigger in knex only 
+              // reached. acquireConnectionTimeout should trigger in knex only
               // in that case if aquiring connection waits because pool is full
               // https://github.com/coopernurse/node-pool/pull/184
               // https://github.com/tgriesser/knex/issues/2325
@@ -242,7 +242,10 @@ assign(Client.prototype, {
             });
         },
         destroy: (connection) => {
-          if (connection.genericPoolMissingRetryCountHack) {
+          if (
+            connection.genericPoolMissingRetryCountHack ||
+            connection.__knex__disposed
+          ) {
             return;
           }
           if (poolConfig.beforeDestroy) {
