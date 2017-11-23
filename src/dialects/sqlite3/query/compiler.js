@@ -87,12 +87,12 @@ assign(QueryCompiler_SQLite3.prototype, {
 
   // Compile a truncate table statement into SQL.
   truncate() {
-    const table = this.tableName
+    const { table } = this.single
     return {
-      sql: `delete from ${table}`,
+      sql: `delete from ${this.tableName}`,
       output() {
         return this.query({
-          sql: `delete from sqlite_sequence where name = ${table}`
+          sql: `delete from sqlite_sequence where name = '${table}'`
         }).catch(noop)
       }
     }
