@@ -1,6 +1,12 @@
 
 # Master (Unreleased)
 
+# 0.14.2 - 24 Nov, 2017
+
+### Bug fixes:
+
+- Fix sqlite3 truncate method to work again #2348
+
 # 0.14.1 - 19 Nov, 2017
 
 ### Bug fixes:
