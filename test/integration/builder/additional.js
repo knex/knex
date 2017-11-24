@@ -97,16 +97,30 @@ module.exports = function(knex) {
           tester('oracle', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
         })
-        .then(function() {
-
+        .then(() => {
           return knex('test_table_two')
             .select('*')
-            .then(function(resp) {
+            .then(resp => {
               expect(resp).to.have.length(0);
             });
-
+        })
+        .then(() => {
+          // Insert new data after truncate and make sure ids restart at 1.
+          // This doesn't currently work on oracle, where the created sequence
+          // needs to be manually reset.
+          if (knex.client.dialect !== 'oracle') {
+            return knex('test_table_two').insert({ status: 1 })
+              .then(res => {
+                return knex('test_table_two')
+                  .select('id')
+                  .first()
+                  .then(res => {
+                    expect(res).to.be.an('object')
+                    expect(res.id).to.equal(1);
+                  });
+              });
+          }
         });
-
     });
 
     it('should allow raw queries directly with `knex.raw`', function() {
