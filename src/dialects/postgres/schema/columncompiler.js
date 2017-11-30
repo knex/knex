@@ -36,7 +36,7 @@ assign(ColumnCompiler_PG.prototype, {
 
   double: 'double precision',
   decimal(precision, scale) {
-    if (!precision) return 'decimal';
+    if (precision === null) return 'decimal';
     return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
   },
   floating: 'real',

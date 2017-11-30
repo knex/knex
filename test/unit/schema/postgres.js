@@ -518,7 +518,7 @@ describe("PostgreSQL SchemaBuilder", function() {
 
   it("adding decimal, variable precision", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
-      table.decimal('foo');
+      table.decimal('foo', null);
     }).toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" decimal');

@@ -422,6 +422,14 @@ describe(dialect + " SchemaBuilder", function() {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table `users` add `foo` decimal(5, 2)');
   });
+  
+  it('test adding decimal, no precision', function() {
+    expect(() => {
+      tableSql = client.schemaBuilder().table('users', function() {
+        this.decimal('foo', null);
+      }).toSQL();
+    }).to.throw('Specifying no precision on decimal columns is not supported');
+  });
 
   it('test adding boolean', function() {
     tableSql = client.schemaBuilder().table('users', function() {
