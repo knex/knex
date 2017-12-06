@@ -203,7 +203,28 @@ export default [
     method: "increments",
     example: "table.increments(name)",
     description: "Adds an auto incrementing column, in PostgreSQL this is a serial. This will be used as the primary key for the table. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial).",
-    children: [    ]
+    children: [  
+      {
+        type: 'code',
+        language: 'js',
+        content: `
+          // create table 'users' with a primary key using 'increments()'
+          knex.schema.createTable('users', function (table) {
+            table.increments('userId');
+            table.string('name');
+          });
+
+          // reference the 'users' primary key in new table 'posts'
+          knex.schema.createTable('posts', function (table) {
+            table.integer('author').unsigned().notNullable();
+            table.string('title', 30);
+            table.string('content');
+
+            table.foreign('author').references('userId').inTable('users');
+          });
+        `
+      } 
+    ]
   },
   {
     type: "method",
