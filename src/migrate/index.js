@@ -229,7 +229,6 @@ export default class Migrator {
       .tap(() => this._freeLock(trx))
       .catch(error => {
         let cleanupReady = Promise.resolve();
-        helpers.warn(`migration file "${this._activeMigration.fileName}" failed`)
 
         if (error instanceof LockError) {
           // If locking error do not free the lock.
@@ -240,6 +239,9 @@ export default class Migrator {
             'table: ' + this._getLockTableName()
           );
         } else {
+          if (this._activeMigration.fileName) {
+            helpers.warn(`migration file "${this._activeMigration.fileName}" failed`)
+          }
           helpers.warn(`migration failed with error: ${error.message}`)
           // If the error was not due to a locking issue, then remove the lock.
           cleanupReady = this._freeLock(trx);
