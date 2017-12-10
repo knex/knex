@@ -186,7 +186,9 @@ function invoke(env) {
   commander.parse(process.argv);
 
   Promise.resolve(pending).then(function() {
-    commander.help();
+    commander.outputHelp()
+  }).then(function () {
+    process.exit(1)
   });
 }
 
