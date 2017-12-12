@@ -6,6 +6,8 @@ import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
 
+import QueryCompiler from './query/compiler';
+
 import { assign } from 'lodash';
 import { makeEscape } from '../../query/string';
 
@@ -33,6 +35,10 @@ assign(Client_BigQuery.prototype, {
       BigQuery.timestamp
     ];
     return new BigQuery(this.connectionStrings);
+  },
+
+  queryCompiler() {
+    return new QueryCompiler(this, ...arguments)
   },
 
   schemaCompiler() {
