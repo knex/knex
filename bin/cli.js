@@ -13,9 +13,9 @@ var cliPkg = require('../package');
 
 function exit(text) {
   if (text instanceof Error) {
-    chalk.red(console.error(text.stack));
+    console.error(chalk.red(text.stack));
   } else {
-    chalk.red(console.error(text));
+    console.error(chalk.red(text));
   }
   process.exit(1);
 }
