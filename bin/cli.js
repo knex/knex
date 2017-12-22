@@ -186,7 +186,8 @@ function invoke(env) {
   commander.parse(process.argv);
 
   Promise.resolve(pending).then(function() {
-    commander.help();
+    commander.outputHelp();
+    exit('Unknown command-line options, exiting');
   });
 }
 
