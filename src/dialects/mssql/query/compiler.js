@@ -87,8 +87,8 @@ assign(QueryCompiler_MSSQL.prototype, {
     return {
       sql: this.with() + `update ${top ? top + ' ' : ''}${this.tableName}` +
         ' set ' + updates.join(', ') +
+        (returning ? ` ${this._returning('update', returning)}` : '') +		
         (join ? ` from ${this.tableName} ${join}` : '') +
-        (returning ? ` ${this._returning('update', returning)}` : '') +
         (where ? ` ${where}` : '') +
         (order ? ` ${order}` : '') +
         (!returning ? this._returning('rowcount', '@@rowcount') : ''),
