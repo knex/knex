@@ -560,9 +560,9 @@ module.exports = function(knex) {
 
       describe('supports partial indexes - postgres, sqlite, and mssql', function() {
         if(!knex || !knex.client ||
-          !(/postgres/i.test(knex.client.dialect) ||
-            /sqlite/i.test(knex.client.dialect) ||
-            /mssql/i.test(knex.client.dialect)))
+           !(/postgres/i.test(knex.client.dialect) ||
+             /sqlite/i.test(knex.client.dialect) ||
+             /mssql/i.test(knex.client.dialect)))
         {
           return Promise.resolve();
         }
