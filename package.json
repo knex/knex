@@ -39,7 +39,7 @@
     "eslint-plugin-import": "^1.8.0",
     "istanbul": "^0.4.5",
     "json-loader": "^0.5.4",
-    "mariasql": "^0.2.3",
+    "mariasql": "^0.2.6",
     "mocha": "^3.1.2",
     "mock-fs": "^4.4.1",
     "mssql": "^4.0.0",
@@ -51,7 +51,7 @@
     "sinon": "^1.10.0",
     "sinon-chai": "^2.5.0",
     "source-map-support": "^0.4.0",
-    "sqlite3": "^3.0.5",
+    "sqlite3": "^3.1.13",
     "tap-spec": "^4.0.0",
     "tape": "^4.0.0",
     "through": "^2.3.4"
