@@ -171,10 +171,14 @@ assign(Client.prototype, {
   },
 
   wrapIdentifier(value) {
+    return this.customWrapIdentifier(value, this.wrapIdentifierImpl);
+  },
+
+  customWrapIdentifier(value, origImpl) {
     if (this.config.wrapIdentifier) {
-      return this.config.wrapIdentifier(value, this.wrapIdentifierImpl);
+      return this.config.wrapIdentifier(value, origImpl);
     }
-    return this.wrapIdentifierImpl(value);
+    return origImpl(value);
   },
 
   wrapIdentifierImpl(value) {

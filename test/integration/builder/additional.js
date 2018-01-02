@@ -46,6 +46,39 @@ module.exports = function(knex) {
       });
     });
 
+    describe('columnInfo with wrapIdentifier and postProcessResponse', () => {
+
+      before('setup hooks', () => {
+        knex.client.config.postProcessResponse = (response) => {
+          return _.mapKeys(response, (val, key) => {
+            return _.camelCase(key);
+          });
+        };
+
+        knex.client.config.wrapIdentifier = (id, origImpl) => {
+          return origImpl(_.snakeCase(id));
+        };
+      });
+
+      after('restore client configuration', () => {
+        knex.client.config.postProcessResponse = null;
+        knex.client.config.wrapIdentifier = null;
+      });
+
+      it('should work using camelCased table name', () => {
+        return knex('testTableTwo').columnInfo().then(res => {
+          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+        });
+      });
+
+      it('should work using snake_cased table name', () => {
+        return knex('test_table_two').columnInfo().then(res => {
+          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+        });
+      });
+
+    });
+
     it('should forward the .get() function from bluebird', function() {
       return knex('accounts').select().limit(1).then(function(accounts){
         var firstAccount = accounts[0];
