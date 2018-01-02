@@ -2,7 +2,7 @@
 
 // Oracle Query Builder & Compiler
 // ------
-import { assign, isPlainObject, isEmpty, isString, map, reduce, compact } from 'lodash'
+import { assign, isPlainObject, isEmpty, isString, map, reduce, compact, identity } from 'lodash'
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 import * as helpers from '../../../helpers';
@@ -146,11 +146,17 @@ assign(QueryCompiler_Oracle.prototype, {
   // Compiles a `columnInfo` query.
   columnInfo() {
     const column = this.single.columnInfo;
+
+    // The user may have specified a custom wrapIdentifier function in the config. We
+    // need to run the identifiers through that function, but not format them as
+    // identifiers otherwise.
+    const table = this.client.customWrapIdentifier(this.single.table, identity);
+
     // Node oracle drivers doesn't support LONG type (which is data_default type)
     const sql = `select * from xmltable( '/ROWSET/ROW'
       passing dbms_xmlgen.getXMLType('
       select char_col_decl_length, column_name, data_type, data_default, nullable
-      from user_tab_columns where table_name = ''${this.single.table}'' ')
+      from user_tab_columns where table_name = ''${table}'' ')
       columns
       CHAR_COL_DECL_LENGTH number, COLUMN_NAME varchar2(200), DATA_TYPE varchar2(106),
       DATA_DEFAULT clob, NULLABLE varchar2(1))`;
