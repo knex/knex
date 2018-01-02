@@ -94,9 +94,16 @@ assign(Client_PG.prototype, {
 
   wrapIdentifierImpl(value) {
     if (value === '*') return value;
-    const matched = value.match(/(.*?)(\[[0-9]\])/);
-    if (matched) return this.wrapIdentifierImpl(matched[1]) + matched[2];
-    return `"${value.replace(/"/g, '""')}"`;
+
+    let arrayAccessor = '';
+    const arrayAccessorMatch = value.match(/(.*?)(\[[0-9]+\])/);
+
+    if (arrayAccessorMatch) {
+      value = arrayAccessorMatch[1];
+      arrayAccessor = arrayAccessorMatch[2];
+    }
+
+    return `"${value.replace(/"/g, '""')}"${arrayAccessor}`;
   },
 
   // Get a raw connection, called by the `pool` whenever a new
