@@ -52,12 +52,20 @@ assign(QueryCompiler.prototype, {
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
       bindings: this.formatter.bindings || [],
-      __knexQueryUid: uuid.v4(),
-      toNative: () => ({
-        sql: this.client.positionBindings(query.sql),
-        bindings: this.client.prepBindings(query.bindings)
-      })
+      __knexQueryUid: uuid.v4()
     };
+
+    Object.defineProperties(query, {
+      toNative: {
+        value: () => {
+          return {
+            sql: this.client.positionBindings(query.sql),
+            bindings: this.client.prepBindings(query.bindings)
+          };
+        },
+        enumerable: false
+      }
+    });
 
     if (isString(val)) {
       query.sql = val;
