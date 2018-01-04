@@ -516,6 +516,14 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" decimal(5, 2)');
   });
 
+  it("adding decimal, variable precision", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.decimal('foo', null);
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" decimal');
+  });
+
   it("adding boolean", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.boolean('foo').defaultTo(false);

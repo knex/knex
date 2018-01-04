@@ -79,6 +79,39 @@ module.exports = function(knex) {
       });
     });
 
+    describe('columnInfo with wrapIdentifier and postProcessResponse', () => {
+
+      before('setup hooks', () => {
+        knex.client.config.postProcessResponse = (response) => {
+          return _.mapKeys(response, (val, key) => {
+            return _.camelCase(key);
+          });
+        };
+
+        knex.client.config.wrapIdentifier = (id, origImpl) => {
+          return origImpl(_.snakeCase(id));
+        };
+      });
+
+      after('restore client configuration', () => {
+        knex.client.config.postProcessResponse = null;
+        knex.client.config.wrapIdentifier = null;
+      });
+
+      it('should work using camelCased table name', () => {
+        return knex('testTableTwo').columnInfo().then(res => {
+          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+        });
+      });
+
+      it('should work using snake_cased table name', () => {
+        return knex('test_table_two').columnInfo().then(res => {
+          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+        });
+      });
+
+    });
+
     it('should forward the .get() function from bluebird', function() {
       return knex('accounts').select().limit(1).then(function(accounts){
         var firstAccount = accounts[0];
@@ -130,16 +163,30 @@ module.exports = function(knex) {
           tester('oracle', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
         })
-        .then(function() {
-
+        .then(() => {
           return knex('test_table_two')
             .select('*')
-            .then(function(resp) {
+            .then(resp => {
               expect(resp).to.have.length(0);
             });
-
+        })
+        .then(() => {
+          // Insert new data after truncate and make sure ids restart at 1.
+          // This doesn't currently work on oracle, where the created sequence
+          // needs to be manually reset.
+          if (knex.client.dialect !== 'oracle') {
+            return knex('test_table_two').insert({ status: 1 })
+              .then(res => {
+                return knex('test_table_two')
+                  .select('id')
+                  .first()
+                  .then(res => {
+                    expect(res).to.be.an('object')
+                    expect(res.id).to.equal(1);
+                  });
+              });
+          }
         });
-
     });
 
     it('should allow raw queries directly with `knex.raw`', function() {

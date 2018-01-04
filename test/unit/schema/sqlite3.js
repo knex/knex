@@ -347,6 +347,15 @@ describe("SQLite SchemaBuilder", function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
   });
 
+  it('test adding decimal, no precision', function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.decimal('foo', null);
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
+  });
+
   it("adding boolean", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.boolean('foo');
