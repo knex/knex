@@ -161,7 +161,7 @@ assign(Client_BigQuery.prototype, {
     });
 
     const out = connection.driver
-      .startQuery(query)
+      .createQueryJob(query)
       .then((results) => {
         connection.job = results[0];
         debug(`Job ${ connection.job.id } started`);
