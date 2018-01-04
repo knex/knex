@@ -24,6 +24,7 @@
     "v8flags": "^3.0.0"
   },
   "devDependencies": {
+    "@google-cloud/bigquery": "^0.12.0",
     "JSONStream": "^1.0.3",
     "async": "^0.9.0",
     "babel-cli": "^6.11.4",
@@ -105,6 +106,7 @@
     "./lib/migrate/index.js": "./lib/util/noop.js",
     "./lib/bin/cli.js": "./lib/util/noop.js",
     "./lib/seed/index.js": "./lib/util/noop.js",
+    "@google-cloud/bigquery": false,
     "mssql": false,
     "mysql": false,
     "mysql2": false,
