@@ -120,9 +120,9 @@ describe("Custom identifier wrapping", function() {
       postgres: 'select "users_wrapper_was_here"."foo_wrapper_was_here" as "bar_wrapper_was_here" from "schema_wrapper_was_here"."users_wrapper_was_here"',
       sqlite3: 'select `users_wrapper_was_here`.`foo_wrapper_was_here` as `bar_wrapper_was_here` from `schema_wrapper_was_here`.`users_wrapper_was_here`'
     }, clientsWithCustomIdentifierWrapper);
-  })
+  });
 
-  describe('with hookContext configured', () => {
+  describe('hookContext', () => {
     it('should pass the context to the custom wrapper', () => {
       testsql(qb().withSchema('schema').select('users.foo as bar').from('users').hookContext({ fancy: true }), {
         mysql: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`',
@@ -132,19 +132,38 @@ describe("Custom identifier wrapping", function() {
         postgres: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" as "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
         sqlite3: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`'
       }, clientsWithCustomIdentifierWrapper);
-    })
+    });
 
-    it('should copy the context when a builder is cloned', () => {
-      testsql(qb().hookContext({ fancy: true }).clone().withSchema('schema').select('users.foo as bar').from('users'), {
-        mysql: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`',
-        oracle: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
-        mssql: 'select [users_fancy_wrapper_was_here].[foo_fancy_wrapper_was_here] as [bar_fancy_wrapper_was_here] from [schema_fancy_wrapper_was_here].[users_fancy_wrapper_was_here]',
-        oracledb: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
-        postgres: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" as "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
-        sqlite3: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`'
-      }, clientsWithCustomIdentifierWrapper);
-    })
-  })
+    it('should allow chaining', () => {
+      var builder = qb();
+      expect(builder.hookContext({ foo: 'foo' })).to.deep.equal(builder);
+    });
+
+    it('should return the context if called with no arguments', () => {
+      expect(qb().hookContext({ foo: 'foo' }).hookContext()).to.deep.equal({ foo: 'foo' });
+    });
+
+    describe('when a builder is cloned', () => {
+      it('should copy the context', () => {
+        expect(qb().hookContext({ foo: 'foo' }).clone().hookContext()).to.deep.equal({ foo: 'foo' });
+      });
+
+      it('should not modify the original context if the clone is modified', () => {
+        var original = qb().hookContext({ foo: 'foo' });
+        var clone = original.clone().hookContext({ foo: 'bar' });
+        expect(original.hookContext()).to.deep.equal({ foo: 'foo' });
+        expect(clone.hookContext()).to.deep.equal({ foo: 'bar' });
+      });
+
+      it('should only shallow clone the context', () => {
+        var original = qb().hookContext({ foo: { bar: 'baz' } });
+        var clone = original.clone();
+        clone.hookContext().foo.bar = 'quux';
+        expect(original.hookContext()).to.deep.equal({ foo: { bar: 'quux' } });
+        expect(clone.hookContext()).to.deep.equal({ foo: { bar: 'quux' } });
+      });
+    });
+  });
 });
 
 describe("QueryBuilder", function() {
