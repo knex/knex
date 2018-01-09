@@ -201,7 +201,7 @@ export default [
     content: `
       module.exports = {
         client: 'pg',
-        migration: {
+        migrations: {
           stub: 'migration.stub'
         }
       };
