@@ -120,11 +120,11 @@ export default class Formatter {
   }
 
   wrapAsIdentifier(value) {
-    let hookContext;
-    if (this.builder && isFunction(this.builder.hookContext)) {
-      hookContext = this.builder.hookContext();
+    let queryContext;
+    if (this.builder && isFunction(this.builder.queryContext)) {
+      queryContext = this.builder.queryContext();
     }
-    return this.client.wrapIdentifier((value || '').trim(), hookContext);
+    return this.client.wrapIdentifier((value || '').trim(), queryContext);
   }
 
   alias(first, second) {

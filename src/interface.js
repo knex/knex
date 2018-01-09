@@ -62,11 +62,11 @@ export default function(Target) {
 
   // Stores or returns (if called with no arguments) context passed to
   // wrapIdentifier and postProcessResponse hooks
-  Target.prototype.hookContext = function(context) {
+  Target.prototype.queryContext = function(context) {
     if (isUndefined(context)) {
-      return this._hookContext;
+      return this._queryContext;
     }
-    this._hookContext = context;
+    this._queryContext = context;
     return this;
   },
 

@@ -132,12 +132,12 @@ assign(Runner.prototype, {
     return queryPromise
       .then((resp) => {
         const processedResponse = this.client.processResponse(resp, runner);
-        let hookContext;
-        if (this.builder && isFunction(this.builder.hookContext)) {
-          hookContext = this.builder.hookContext();
+        let queryContext;
+        if (this.builder && isFunction(this.builder.queryContext)) {
+          queryContext = this.builder.queryContext();
         }
         const postProcessedResponse = this.client
-          .postProcessResponse(processedResponse, hookContext);
+          .postProcessResponse(processedResponse, queryContext);
 
         this.builder.emit(
           'query-response',

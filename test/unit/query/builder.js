@@ -122,9 +122,9 @@ describe("Custom identifier wrapping", function() {
     }, clientsWithCustomIdentifierWrapper);
   });
 
-  describe('hookContext', () => {
-    it('should pass the context to the custom wrapper', () => {
-      testsql(qb().withSchema('schema').select('users.foo as bar').from('users').hookContext({ fancy: true }), {
+  describe('queryContext', () => {
+    it('should pass the query context to the custom wrapper', () => {
+      testsql(qb().withSchema('schema').select('users.foo as bar').from('users').queryContext({ fancy: true }), {
         mysql: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`',
         oracle: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
         mssql: 'select [users_fancy_wrapper_was_here].[foo_fancy_wrapper_was_here] as [bar_fancy_wrapper_was_here] from [schema_fancy_wrapper_was_here].[users_fancy_wrapper_was_here]',
@@ -136,31 +136,31 @@ describe("Custom identifier wrapping", function() {
 
     it('should allow chaining', () => {
       var builder = qb();
-      expect(builder.hookContext({ foo: 'foo' })).to.deep.equal(builder);
+      expect(builder.queryContext({ foo: 'foo' })).to.deep.equal(builder);
     });
 
-    it('should return the context if called with no arguments', () => {
-      expect(qb().hookContext({ foo: 'foo' }).hookContext()).to.deep.equal({ foo: 'foo' });
+    it('should return the query context if called with no arguments', () => {
+      expect(qb().queryContext({ foo: 'foo' }).queryContext()).to.deep.equal({ foo: 'foo' });
     });
 
     describe('when a builder is cloned', () => {
-      it('should copy the context', () => {
-        expect(qb().hookContext({ foo: 'foo' }).clone().hookContext()).to.deep.equal({ foo: 'foo' });
+      it('should copy the query context', () => {
+        expect(qb().queryContext({ foo: 'foo' }).clone().queryContext()).to.deep.equal({ foo: 'foo' });
       });
 
-      it('should not modify the original context if the clone is modified', () => {
-        var original = qb().hookContext({ foo: 'foo' });
-        var clone = original.clone().hookContext({ foo: 'bar' });
-        expect(original.hookContext()).to.deep.equal({ foo: 'foo' });
-        expect(clone.hookContext()).to.deep.equal({ foo: 'bar' });
+      it('should not modify the original query context if the clone is modified', () => {
+        var original = qb().queryContext({ foo: 'foo' });
+        var clone = original.clone().queryContext({ foo: 'bar' });
+        expect(original.queryContext()).to.deep.equal({ foo: 'foo' });
+        expect(clone.queryContext()).to.deep.equal({ foo: 'bar' });
       });
 
-      it('should only shallow clone the context', () => {
-        var original = qb().hookContext({ foo: { bar: 'baz' } });
+      it('should only shallow clone the query context', () => {
+        var original = qb().queryContext({ foo: { bar: 'baz' } });
         var clone = original.clone();
-        clone.hookContext().foo.bar = 'quux';
-        expect(original.hookContext()).to.deep.equal({ foo: { bar: 'quux' } });
-        expect(clone.hookContext()).to.deep.equal({ foo: { bar: 'quux' } });
+        clone.queryContext().foo.bar = 'quux';
+        expect(original.queryContext()).to.deep.equal({ foo: { bar: 'quux' } });
+        expect(clone.queryContext()).to.deep.equal({ foo: { bar: 'quux' } });
       });
     });
   });

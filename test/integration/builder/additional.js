@@ -30,9 +30,9 @@ module.exports = function(knex) {
         });
       });
 
-      it('should pass context to the custom handler', () => {
+      it('should pass query context to the custom handler', () => {
         return knex('accounts')
-          .hookContext('the context')
+          .queryContext('the context')
           .limit(1)
           .then(res => {
             expect(res.context).to.equal('the context');
@@ -45,9 +45,9 @@ module.exports = function(knex) {
         });
       });
 
-      it('should pass context for raw responses', () => {
+      it('should pass query context for raw responses', () => {
         return knex.raw('select * from ??', ['accounts'])
-          .hookContext('the context')
+          .queryContext('the context')
           .then(res => {
             expect(res.context).to.equal('the context');
           });
@@ -64,10 +64,10 @@ module.exports = function(knex) {
         });
       });
 
-      it('should pass context for responses from transactions', () => {
+      it('should pass query context for responses from transactions', () => {
         return knex.transaction(trx => {
           return trx('accounts')
-            .hookContext('the context')
+            .queryContext('the context')
             .limit(1)
             .then(res => {
               expect(res.context).to.equal('the context');

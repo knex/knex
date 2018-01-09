@@ -53,8 +53,8 @@ assign(Builder.prototype, {
     if (!isUndefined(this._options)) {
       cloned._options = clone(this._options);
     }
-    if (!isUndefined(this._hookContext)) {
-      cloned._hookContext = clone(this._hookContext);
+    if (!isUndefined(this._queryContext)) {
+      cloned._queryContext = clone(this._queryContext);
     }
 
     return cloned;

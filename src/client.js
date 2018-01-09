@@ -163,20 +163,20 @@ assign(Client.prototype, {
     return sql;
   },
 
-  postProcessResponse(resp, context) {
+  postProcessResponse(resp, queryContext) {
     if (this.config.postProcessResponse) {
-      return this.config.postProcessResponse(resp, context);
+      return this.config.postProcessResponse(resp, queryContext);
     }
     return resp;
   },
 
-  wrapIdentifier(value, context) {
-    return this.customWrapIdentifier(value, this.wrapIdentifierImpl, context);
+  wrapIdentifier(value, queryContext) {
+    return this.customWrapIdentifier(value, this.wrapIdentifierImpl, queryContext);
   },
 
-  customWrapIdentifier(value, origImpl, context) {
+  customWrapIdentifier(value, origImpl, queryContext) {
     if (this.config.wrapIdentifier) {
-      return this.config.wrapIdentifier(value, origImpl, context);
+      return this.config.wrapIdentifier(value, origImpl, queryContext);
     }
     return origImpl(value);
   },
