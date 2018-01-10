@@ -1005,5 +1005,6 @@ Builder.prototype.del = Builder.prototype.delete
 
 // Attach all of the top level promise methods that should be chainable.
 require('../interface')(Builder);
+helpers.addQueryContext(Builder);
 
 export default Builder;

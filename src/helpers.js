@@ -73,3 +73,15 @@ export function containsUndefined(mixed) {
 
   return argContainsUndefined;
 }
+
+export function addQueryContext(Target) {
+  // Stores or returns (if called with no arguments) context passed to
+  // wrapIdentifier and postProcessResponse hooks
+  Target.prototype.queryContext = function(context) {
+    if (isUndefined(context)) {
+      return this._queryContext;
+    }
+    this._queryContext = context;
+    return this;
+  }
+}

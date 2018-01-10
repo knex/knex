@@ -1,6 +1,6 @@
 
 import * as helpers from './helpers';
-import { isArray, map, clone, each, isUndefined } from 'lodash'
+import { isArray, map, clone, each } from 'lodash'
 
 export default function(Target) {
 
@@ -59,16 +59,6 @@ export default function(Target) {
   Target.prototype.pipe = function(writable, options) {
     return this.client.runner(this).pipe(writable, options);
   };
-
-  // Stores or returns (if called with no arguments) context passed to
-  // wrapIdentifier and postProcessResponse hooks
-  Target.prototype.queryContext = function(context) {
-    if (isUndefined(context)) {
-      return this._queryContext;
-    }
-    this._queryContext = context;
-    return this;
-  },
 
   // Creates a method which "coerces" to a promise, by calling a
   // "then" method on the current `Target`

@@ -186,5 +186,6 @@ function replaceKeyBindings(raw, formatter) {
 // Allow the `Raw` object to be utilized with full access to the relevant
 // promise API.
 require('./interface')(Raw)
+helpers.addQueryContext(Raw);
 
 export default Raw
