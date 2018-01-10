@@ -16,7 +16,7 @@ function ColumnCompiler(client, tableCompiler, columnBuilder) {
   this.grouped = groupBy(columnBuilder._statements, 'grouping');
   this.modified = columnBuilder._modifiers;
   this.isIncrements = (this.type.indexOf('increments') !== -1);
-  this.formatter = client.formatter();
+  this.formatter = client.formatter(columnBuilder);
   this.sequence = [];
   this.modifiers = [];
 }
