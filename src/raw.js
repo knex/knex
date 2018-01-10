@@ -14,8 +14,8 @@ import uuid from 'uuid';
 const debugBindings = debug('knex:bindings')
 
 const fakeClient = {
-  formatter() {
-    return new Formatter(fakeClient)
+  formatter(builder) {
+    return new Formatter(fakeClient, builder)
   }
 }
 
@@ -70,7 +70,7 @@ assign(Raw.prototype, {
   // Returns the raw sql for the query.
   toSQL(method, tz) {
     let obj
-    const formatter = this.client.formatter()
+    const formatter = this.client.formatter(this)
 
     if (Array.isArray(this.bindings)) {
       obj = replaceRawArrBindings(this, formatter)
