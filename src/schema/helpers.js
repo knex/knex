@@ -12,7 +12,7 @@ export function pushQuery(query) {
     query.bindings = this.formatter.bindings;
   }
   this.sequence.push(query);
-  this.formatter = this.client.formatter();
+  this.formatter = this.client.formatter(this.builder);
 }
 
 // Used in cases where we need to push some additional column specific statements.

@@ -10,7 +10,7 @@ function SchemaCompiler(client, builder) {
   this.builder = builder
   this.client = client
   this.schema = builder._schema;
-  this.formatter = client.formatter()
+  this.formatter = client.formatter(builder)
   this.sequence = []
 }
 
