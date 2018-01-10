@@ -85,6 +85,8 @@ each(specialMethods, function(methods, dialect) {
   });
 });
 
+helpers.addQueryContext(TableBuilder);
+
 // Each of the column types that we can add, we create a new ColumnBuilder
 // instance and push it onto the statements array.
 const columnTypes = [
