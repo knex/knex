@@ -8,12 +8,13 @@ import { groupBy, reduce, map, first, tail, isEmpty, indexOf, isArray } from 'lo
 
 function TableCompiler(client, tableBuilder) {
   this.client = client
+  this.tableBuilder = tableBuilder;
   this.method = tableBuilder._method;
   this.schemaNameRaw = tableBuilder._schemaName;
   this.tableNameRaw = tableBuilder._tableName;
   this.single = tableBuilder._single;
   this.grouped = groupBy(tableBuilder._statements, 'grouping');
-  this.formatter = client.formatter();
+  this.formatter = client.formatter(tableBuilder);
   this.sequence = [];
   this._formatting = client.config && client.config.formatting
 }
