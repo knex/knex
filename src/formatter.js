@@ -1,7 +1,7 @@
 import QueryBuilder from './query/builder';
 import Raw from './raw';
 
-import { transform, isFunction } from 'lodash'
+import { transform } from 'lodash'
 
 // Valid values for the `order by` clause generation.
 const orderBys = ['asc', 'desc'];
@@ -120,10 +120,7 @@ export default class Formatter {
   }
 
   wrapAsIdentifier(value) {
-    let queryContext;
-    if (this.builder && isFunction(this.builder.queryContext)) {
-      queryContext = this.builder.queryContext();
-    }
+    const queryContext = this.builder.queryContext();
     return this.client.wrapIdentifier((value || '').trim(), queryContext);
   }
 

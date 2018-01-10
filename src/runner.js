@@ -1,4 +1,4 @@
-import { assign, isArray, isFunction } from 'lodash'
+import { assign, isArray } from 'lodash'
 import Promise from 'bluebird';
 import * as helpers from './helpers';
 
@@ -132,10 +132,7 @@ assign(Runner.prototype, {
     return queryPromise
       .then((resp) => {
         const processedResponse = this.client.processResponse(resp, runner);
-        let queryContext;
-        if (this.builder && isFunction(this.builder.queryContext)) {
-          queryContext = this.builder.queryContext();
-        }
+        const queryContext = this.builder.queryContext();
         const postProcessedResponse = this.client
           .postProcessResponse(processedResponse, queryContext);
 
