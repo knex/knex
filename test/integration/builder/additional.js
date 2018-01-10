@@ -13,9 +13,9 @@ module.exports = function(knex) {
     describe("Custom response processing", () => {
 
       before('setup custom response handler', () => {
-        knex.client.config.postProcessResponse = (response, context) => {
+        knex.client.config.postProcessResponse = (response, queryContext) => {
           response.callCount = response.callCount ? (response.callCount + 1) : 1;
-          response.context = context;
+          response.queryContext = queryContext;
           return response;
         };
       });
@@ -35,7 +35,7 @@ module.exports = function(knex) {
           .queryContext('the context')
           .limit(1)
           .then(res => {
-            expect(res.context).to.equal('the context');
+            expect(res.queryContext).to.equal('the context');
           });
       });
 
@@ -49,7 +49,7 @@ module.exports = function(knex) {
         return knex.raw('select * from ??', ['accounts'])
           .queryContext('the context')
           .then(res => {
-            expect(res.context).to.equal('the context');
+            expect(res.queryContext).to.equal('the context');
           });
       });
 
@@ -70,11 +70,11 @@ module.exports = function(knex) {
             .queryContext('the context')
             .limit(1)
             .then(res => {
-              expect(res.context).to.equal('the context');
+              expect(res.queryContext).to.equal('the context');
               return res;
             });
         }).then(res => {
-          expect(res.context).to.equal('the context');
+          expect(res.queryContext).to.equal('the context');
         });
       });
     });

@@ -438,8 +438,8 @@ module.exports = function(knex) {
         knex.client.config.wrapIdentifier = originalWrapIdentifier;
       }
 
-      knex.client.config.wrapIdentifier = (value, wrap, context) => {
-        spy(context);
+      knex.client.config.wrapIdentifier = (value, wrap, queryContext) => {
+        spy(queryContext);
         return wrap(value);
       };
 
