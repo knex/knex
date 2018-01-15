@@ -608,7 +608,7 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[1].sql).to.equal('alter table `users` add primary key `testconstraintname`(`test`)');
   });
 
-  describe('queryContext', function () {
+  describe.only('queryContext', function () {
     let spy;
     let originalWrapIdentifier;
 
@@ -632,7 +632,7 @@ describe(dialect + " SchemaBuilder", function() {
     it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function () {
       client
         .schemaBuilder()
-        .queryContext('table context')
+        .queryContext('schema context')
         .createTable('users', function (table) {
           table.increments('id');
           table.string('email');
@@ -640,9 +640,9 @@ describe(dialect + " SchemaBuilder", function() {
         .toSQL();
 
       expect(spy.callCount).to.equal(3);
-      expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
-      expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
-      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'schema context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'schema context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', 'schema context']);
     });
 
     it('TableCompiler passes queryContext to wrapIdentifier', function () {
@@ -663,8 +663,26 @@ describe(dialect + " SchemaBuilder", function() {
     it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
       client
         .schemaBuilder()
-        .queryContext('table context')
+        .queryContext('schema context')
         .createTable('users', function (table) {
+          table.queryContext('table context');
+          table.increments('id');
+          table.string('email');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
+
+    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
+      client
+        .schemaBuilder()
+        .queryContext('schema context')
+        .createTable('users', function (table) {
+          table.queryContext('table context');
           table.increments('id').queryContext('id context');
           table.string('email').queryContext('email context');
         })

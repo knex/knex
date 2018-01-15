@@ -525,8 +525,26 @@ describe("SQLite SchemaBuilder", function() {
     it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
       client
         .schemaBuilder()
-        .queryContext('table context')
+        .queryContext('schema context')
         .createTable('users', function (table) {
+          table.queryContext('table context');
+          table.increments('id');
+          table.string('email');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
+
+    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
+      client
+        .schemaBuilder()
+        .queryContext('schema context')
+        .createTable('users', function (table) {
+          table.queryContext('table context');
           table.increments('id').queryContext('id context');
           table.string('email').queryContext('email context');
         })
