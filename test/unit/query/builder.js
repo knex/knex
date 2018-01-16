@@ -134,6 +134,17 @@ describe("Custom identifier wrapping", function() {
       }, clientsWithCustomIdentifierWrapper);
     });
 
+    it('should pass the query context for raw queries', () => {
+      testsql(qb().select(raw('??', [{ a: 'col1' }]).queryContext({ fancy: true })).from('users').queryContext({ fancy: true }), {
+        mysql: 'select `col1_fancy_wrapper_was_here` as `a_fancy_wrapper_was_here` from `users_fancy_wrapper_was_here`',
+        oracle: 'select "col1_fancy_wrapper_was_here" "a_fancy_wrapper_was_here" from "users_fancy_wrapper_was_here"',
+        mssql: 'select [col1_fancy_wrapper_was_here] as [a_fancy_wrapper_was_here] from [users_fancy_wrapper_was_here]',
+        oracledb: 'select "col1_fancy_wrapper_was_here" "a_fancy_wrapper_was_here" from "users_fancy_wrapper_was_here"',
+        postgres: 'select "col1_fancy_wrapper_was_here" as "a_fancy_wrapper_was_here" from "users_fancy_wrapper_was_here"',
+        sqlite3: 'select `col1_fancy_wrapper_was_here` as `a_fancy_wrapper_was_here` from `users_fancy_wrapper_was_here`'
+      }, clientsWithCustomIdentifierWrapper);
+    });
+
     it('should allow chaining', () => {
       var builder = qb();
       expect(builder.queryContext({ foo: 'foo' })).to.deep.equal(builder);
