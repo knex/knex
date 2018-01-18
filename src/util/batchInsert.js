@@ -17,7 +17,7 @@ export default function batchInsert(client, tableName, batch, chunkSize = 1000) 
 
     autoTransaction = true;
     client.transaction(resolve)
-    .catch(reject);
+      .catch(reject);
   });
 
   const wrapper = assign(new Promise((resolve, reject) => {

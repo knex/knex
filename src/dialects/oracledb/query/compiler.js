@@ -23,7 +23,7 @@ _.assign(Oracledb_Compiler.prototype, {
       return this._addReturningToSqlAndConvert('insert into ' +
         this.tableName +
         ' (' + this.formatter.wrap(this.single.returning) + ') values (default)',
-        outBinding[0], this.tableName, returning);
+      outBinding[0], this.tableName, returning);
     }
 
     if (_.isEmpty(this.single.insert) && typeof this.single.insert !== 'function') {
@@ -37,14 +37,14 @@ _.assign(Oracledb_Compiler.prototype, {
     if (_.isString(insertData)) {
       return this._addReturningToSqlAndConvert('insert into ' +
         this.tableName + ' ' + insertData, outBinding[0],
-        this.tableName, returning);
+      this.tableName, returning);
     }
 
     if (insertData.values.length === 1) {
       return this._addReturningToSqlAndConvert('insert into ' +
         this.tableName + ' (' + this.formatter.columnize(insertData.columns) +
         ') values (' + this.formatter.parameterize(insertData.values[0]) + ')',
-        outBinding[0], this.tableName, returning);
+      outBinding[0], this.tableName, returning);
     }
 
     const insertDefaultsOnly = (insertData.columns.length === 0);

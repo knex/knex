@@ -185,8 +185,8 @@ assign(QueryCompiler.prototype, {
     if (sql.length === 0) sql = ['*'];
     return `select ${distinct ? 'distinct ' : ''}` +
       sql.join(', ') + (this.tableName
-        ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
-        : '');
+      ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
+      : '');
   },
 
   aggregate(stmt) {
