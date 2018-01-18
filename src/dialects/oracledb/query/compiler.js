@@ -67,15 +67,7 @@ _.assign(Oracledb_Compiler.prototype, {
 
         let returningClause = '';
         let intoClause = '';
-        let usingClause = '';
         let outClause = '';
-
-        _.each(value, function(val) {
-          if (!(val instanceof BlobHelper)) {
-            usingClause += ' ?,';
-          }
-        });
-        usingClause = usingClause.slice(0, -1);
 
         // Build returning and into clauses
         _.each(outBinding[index], function(ret) {
