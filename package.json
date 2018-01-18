@@ -37,6 +37,7 @@
     "dockerode": "^2.5.3",
     "eslint": "4.15.0",
     "eslint-plugin-import": "^2.8.0",
+    "estraverse": "^4.2.0",
     "istanbul": "^0.4.5",
     "json-loader": "^0.5.7",
     "mariasql": "^0.2.6",
