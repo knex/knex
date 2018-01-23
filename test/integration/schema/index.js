@@ -540,6 +540,31 @@ module.exports = function(knex) {
         });
       });
 
+      it('allows adding a field with custom collation after another field', function () {
+        return knex.schema.table('test_table_two', function(t) {
+          t.string('ref_column').after('json_data');
+        }).then(function() {
+          return knex.schema.table('test_table_two', function(t) {
+            t.string('after_column').after('ref_column').collate('utf8_bin');
+          });
+        }).then(function() {
+          return knex.schema.table('test_table_two', function(t) {
+            t.dropColumn('ref_column');
+            t.dropColumn('after_column');
+          });
+        });
+      });
+
+      it('allows adding a field with custom collation first', function () {
+        return knex.schema.table('test_table_two', function(t) {
+          t.string('first_column').first().collate('utf8_bin');
+        }).then(function() {
+          return knex.schema.table('test_table_two', function(t) {
+            t.dropColumn('first_column');
+          });
+        });
+      });
+
       it('allows changing a field', function() {
         return knex.schema.table('test_table_one', function(t) {
           t.string('phone').nullable();
