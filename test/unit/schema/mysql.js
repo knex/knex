@@ -608,7 +608,7 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[1].sql).to.equal('alter table `users` add primary key `testconstraintname`(`test`)');
   });
 
-  describe.only('queryContext', function () {
+  describe('queryContext', function () {
     let spy;
     let originalWrapIdentifier;
 
