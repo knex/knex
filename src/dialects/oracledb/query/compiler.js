@@ -67,6 +67,8 @@ _.assign(Oracledb_Compiler.prototype, {
 
         let returningClause = '';
         let intoClause = '';
+        // ToDo review if this code is still needed or could be dropped
+        // eslint-disable-next-line no-unused-vars
         let usingClause = '';
         let outClause = '';
 
