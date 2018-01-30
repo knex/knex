@@ -492,6 +492,14 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" smallint');
   });
 
+  it("adding real", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.real('foo');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" real');
+  });
+
   it("adding float", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.float('foo', 5, 2);
