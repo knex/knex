@@ -102,6 +102,7 @@ ColumnCompiler.prototype.varchar = function(length) {
 };
 ColumnCompiler.prototype.text = 'text';
 ColumnCompiler.prototype.tinyint = 'tinyint';
+ColumnCompiler.prototype.real = 'real';
 ColumnCompiler.prototype.floating = function(precision, scale) {
   return `float(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
 };
