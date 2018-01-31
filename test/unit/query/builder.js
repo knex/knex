@@ -2498,6 +2498,31 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("count distinct with multiple columns", function() {
+    testsql(qb().from('users').countDistinct('foo', 'bar'), {
+      mysql: {
+        sql: 'select count(distinct `foo`, `bar`) from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct "foo", "bar") from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct [foo], [bar]) from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct "foo", "bar") from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct "foo", "bar") from "users"',
+        bindings: []
+      }
+    });
+  });
+
   it("max", function() {
     testsql(qb().from('users').max('id'), {
       mysql: {
