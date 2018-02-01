@@ -67,7 +67,7 @@ assign(Client_MSSQL.prototype, {
   },
 
   wrapIdentifierImpl(value) {
-    return (value !== '*' ? `[${value.replace(/\[/g, '\[')}]` : '*')
+    return (value !== '*' ? `[${value.replace(/\[/g, '[')}]` : '*')
   },
 
   // Get a raw connection, called by the `pool` whenever a new

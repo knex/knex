@@ -23,7 +23,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   select() {
     const sql = this.with();
     const statements = components.map(component =>
-        this[component](this)
+      this[component](this)
     );
     return sql + compact(statements).join(' ');
   },
@@ -87,7 +87,7 @@ assign(QueryCompiler_MSSQL.prototype, {
     return {
       sql: this.with() + `update ${top ? top + ' ' : ''}${this.tableName}` +
         ' set ' + updates.join(', ') +
-        (returning ? ` ${this._returning('update', returning)}` : '') +		
+        (returning ? ` ${this._returning('update', returning)}` : '') +
         (join ? ` from ${this.tableName} ${join}` : '') +
         (where ? ` ${where}` : '') +
         (order ? ` ${order}` : '') +

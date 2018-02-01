@@ -35,27 +35,27 @@ export default class Transaction extends EventEmitter {
       init.then(() => {
         return makeTransactor(this, connection, trxClient)
       })
-      .then((transactor) => {
+        .then((transactor) => {
         // If we've returned a "thenable" from the transaction container, assume
         // the rollback and commit are chained to this object's success / failure.
         // Directly thrown errors are treated as automatic rollbacks.
-        let result
-        try {
-          result = container(transactor)
-        } catch (err) {
-          result = Promise.reject(err)
-        }
-        if (result && result.then && typeof result.then === 'function') {
-          result.then((val) => {
-            return transactor.commit(val)
-          })
-          .catch((err) => {
-            return transactor.rollback(err)
-          })
-        }
-        return null;
-      })
-      .catch((e) => this._rejecter(e))
+          let result
+          try {
+            result = container(transactor)
+          } catch (err) {
+            result = Promise.reject(err)
+          }
+          if (result && result.then && typeof result.then === 'function') {
+            result.then((val) => {
+              return transactor.commit(val)
+            })
+              .catch((err) => {
+                return transactor.rollback(err)
+              })
+          }
+          return null;
+        })
+        .catch((e) => this._rejecter(e))
 
       return new Promise((resolver, rejecter) => {
         this._resolver = resolver
@@ -148,14 +148,14 @@ export default class Transaction extends EventEmitter {
   acquireConnection(client, config, txid) {
     const configConnection = config && config.connection
     return Promise.try(() => configConnection || client.acquireConnection())
-    .disposer(function(connection) {
-      if (!configConnection) {
-        debug('%s: releasing connection', txid)
-        client.releaseConnection(connection)
-      } else {
-        debug('%s: not releasing external connection', txid)
-      }
-    })
+      .disposer(function(connection) {
+        if (!configConnection) {
+          debug('%s: releasing connection', txid)
+          client.releaseConnection(connection)
+        } else {
+          debug('%s: not releasing external connection', txid)
+        }
+      })
   }
 
 }
