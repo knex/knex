@@ -199,28 +199,28 @@ assign(SQLite3_DDL.prototype, {
     return this.client.transaction(trx => {
       this.trx = trx
       return Promise.all(columns.map(column => this.getColumn(column)))
-      .bind(this)
-      .then(this.getTableSql)
-      .then(function(sql) {
-        const createTable = sql[0];
-        let newSql = createTable.sql;
-        columns.forEach(column => {
-          const a = this.client.wrapIdentifier(column);
-          newSql = this._doReplace(newSql, a, '');
-        })
-        if (sql === newSql) {
-          throw new Error('Unable to find the column to change');
-        }
-        return Promise.bind(this)
-          .then(this.createTempTable(createTable))
-          .then(this.copyData)
-          .then(this.dropOriginal)
-          .then(function() {
-            return this.trx.raw(newSql);
+        .bind(this)
+        .then(this.getTableSql)
+        .then(function(sql) {
+          const createTable = sql[0];
+          let newSql = createTable.sql;
+          columns.forEach(column => {
+            const a = this.client.wrapIdentifier(column);
+            newSql = this._doReplace(newSql, a, '');
           })
-          .then(this.reinsertData(row => omit(row, ...columns)))
-          .then(this.dropTempTable);
-      })
+          if (sql === newSql) {
+            throw new Error('Unable to find the column to change');
+          }
+          return Promise.bind(this)
+            .then(this.createTempTable(createTable))
+            .then(this.copyData)
+            .then(this.dropOriginal)
+            .then(function() {
+              return this.trx.raw(newSql);
+            })
+            .then(this.reinsertData(row => omit(row, ...columns)))
+            .then(this.dropTempTable);
+        })
     }, {connection: this.connection})
   })
 

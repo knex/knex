@@ -3,19 +3,23 @@ language: node_js
 dist: trusty
 sudo: required
 
-
-#  - '8' doesn't work because some strange babel error that I was not able to reproduce in trusty virtualbox,
-#        maybe updating to some newer distro helps...
-node_js:
-  - '7'
-  - '6'
-  - '5'
-  - '4'
+matrix:
+  include:
+  - node_js: "8"
+    env: TEST_ORACLEDB=true DB="maria mysql mysql2 postgres sqlite3 oracledb" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
+  - node_js: "6"
+    env: TEST_ORACLEDB=true DB="maria mysql mysql2 postgres sqlite3 oracledb" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
+  - node_js: "4"
+    env: TEST_ORACLEDB=true DB="maria mysql mysql2 postgres sqlite3 oracledb" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
+  - node_js: "7"
+    env: DB="maria mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000 
+  - node_js: "5"
+    env: DB="maria mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000 
 
 before_install:
-  - wget https://raw.githubusercontent.com/Vincit/travis-oracledb-xe/master/accept_the_license_agreement_for_oracledb_xe_11g_and_install.sh
-  - bash ./accept_the_license_agreement_for_oracledb_xe_11g_and_install.sh
-  - npm install oracledb
+  - if [ ! -z $TEST_ORACLEDB ]; then wget https://raw.githubusercontent.com/Vincit/travis-oracledb-xe/master/accept_the_license_agreement_for_oracledb_xe_11g_and_install.sh; fi
+  - if [ ! -z $TEST_ORACLEDB ]; then bash ./accept_the_license_agreement_for_oracledb_xe_11g_and_install.sh; fi
+  - if [ ! -z $TEST_ORACLEDB ]; then npm install oracledb; fi
 
 before_script:
   - psql -c 'create database knex_test;' -U postgres
@@ -26,9 +30,6 @@ after_script:
 
 notifications:
   email: false
-
-env:
-  - CXX=g++-4.8 DB="maria mysql mysql2 postgres sqlite3 oracledb" KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
 
 addons:
   postgresql: '9.6'

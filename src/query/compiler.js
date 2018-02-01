@@ -26,7 +26,7 @@ function QueryCompiler(client, builder) {
   this.timeout = builder._timeout || false;
   this.cancelOnTimeout = builder._cancelOnTimeout || false;
   this.grouped = groupBy(builder._statements, 'grouping');
-  this.formatter = client.formatter()
+  this.formatter = client.formatter(builder)
 }
 
 const components = [
@@ -52,12 +52,20 @@ assign(QueryCompiler.prototype, {
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
       bindings: this.formatter.bindings || [],
-      __knexQueryUid: uuid.v4(),
-      toNative: () => ({
-        sql: this.client.positionBindings(query.sql),
-        bindings: this.client.prepBindings(query.bindings)
-      })
+      __knexQueryUid: uuid.v4()
     };
+
+    Object.defineProperties(query, {
+      toNative: {
+        value: () => {
+          return {
+            sql: this.client.positionBindings(query.sql),
+            bindings: this.client.prepBindings(query.bindings)
+          };
+        },
+        enumerable: false
+      }
+    });
 
     if (isString(val)) {
       query.sql = val;
@@ -177,8 +185,8 @@ assign(QueryCompiler.prototype, {
     if (sql.length === 0) sql = ['*'];
     return `select ${distinct ? 'distinct ' : ''}` +
       sql.join(', ') + (this.tableName
-        ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
-        : '');
+      ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
+      : '');
   },
 
   aggregate(stmt) {

@@ -41,7 +41,7 @@ assign(Client_Oracle.prototype, {
   },
 
   formatter() {
-    return new Formatter(this)
+    return new Formatter(this, ...arguments)
   },
 
   queryCompiler() {

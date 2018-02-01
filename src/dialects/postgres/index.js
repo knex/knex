@@ -1,10 +1,11 @@
 
 // PostgreSQL
 // -------
-import { assign, map, extend } from 'lodash'
+import { assign, map, extend, isArray, isString, includes } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
+import {warn} from '../../helpers';
 
 import QueryCompiler from './query/compiler';
 import ColumnCompiler from './schema/columncompiler';
@@ -93,9 +94,16 @@ assign(Client_PG.prototype, {
 
   wrapIdentifierImpl(value) {
     if (value === '*') return value;
-    const matched = value.match(/(.*?)(\[[0-9]\])/);
-    if (matched) return this.wrapIdentifierImpl(matched[1]) + matched[2];
-    return `"${value.replace(/"/g, '""')}"`;
+
+    let arrayAccessor = '';
+    const arrayAccessorMatch = value.match(/(.*?)(\[[0-9]+\])/);
+
+    if (arrayAccessorMatch) {
+      value = arrayAccessorMatch[1];
+      arrayAccessor = arrayAccessorMatch[2];
+    }
+
+    return `"${value.replace(/"/g, '""')}"${arrayAccessor}`;
   },
 
   // Get a raw connection, called by the `pool` whenever a new
@@ -159,12 +167,30 @@ assign(Client_PG.prototype, {
   },
 
   setSchemaSearchPath(connection, searchPath) {
-    const path = (searchPath || this.searchPath);
+    let path = (searchPath || this.searchPath);
 
     if (!path) return Promise.resolve(true);
 
+    if(!isArray(path) && !isString(path)) {
+      throw new TypeError(`knex: Expected searchPath to be Array/String, got: ${typeof path}`);
+    }
+
+    if(isString(path)) {
+      if(includes(path, ',')) {
+        const parts = path.split(',');
+        const arraySyntax = `[${map(parts, (searchPath) => `'${searchPath}'`).join(', ')}]`;
+        warn(
+          `Detected comma in searchPath "${path}".`
+          +
+          `If you are trying to specify multiple schemas, use Array syntax: ${arraySyntax}`);
+      }
+      path = [path];
+    }
+
+    path = map(path, (schemaName) => `"${schemaName}"`).join(',');
+
     return new Promise(function(resolver, rejecter) {
-      connection.query(`set search_path to "${path}"`, function(err) {
+      connection.query(`set search_path to ${path}`, function(err) {
         if (err) return rejecter(err);
         resolver(true);
       });

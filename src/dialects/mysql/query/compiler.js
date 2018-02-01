@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import { assign } from 'lodash'
+import { assign, identity } from 'lodash'
 
 function QueryCompiler_MySQL(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -41,9 +41,15 @@ assign(QueryCompiler_MySQL.prototype, {
   // Compiles a `columnInfo` query.
   columnInfo() {
     const column = this.single.columnInfo;
+
+    // The user may have specified a custom wrapIdentifier function in the config. We
+    // need to run the identifiers through that function, but not format them as
+    // identifiers otherwise.
+    const table = this.client.customWrapIdentifier(this.single.table, identity);
+
     return {
       sql: 'select * from information_schema.columns where table_name = ? and table_schema = ?',
-      bindings: [this.single.table, this.client.database()],
+      bindings: [table, this.client.database()],
       output(resp) {
         const out = resp.reduce(function(columns, val) {
           columns[val.COLUMN_NAME] = {

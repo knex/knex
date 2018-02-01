@@ -20,7 +20,7 @@ function Client_Oracledb() {
   // Node.js only have 4 background threads by default, oracledb needs one by connection
   if (this.driver) {
     process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || 1;
-    process.env.UV_THREADPOOL_SIZE += this.driver.poolMax;
+    process.env.UV_THREADPOOL_SIZE = parseInt(process.env.UV_THREADPOOL_SIZE) + this.driver.poolMax;
   }
 }
 inherits(Client_Oracledb, Client_Oracle);
@@ -53,7 +53,7 @@ Client_Oracledb.prototype.columnCompiler = function() {
   return new ColumnCompiler(this, ...arguments)
 }
 Client_Oracledb.prototype.formatter = function() {
-  return new Oracledb_Formatter(this)
+  return new Oracledb_Formatter(this, ...arguments)
 }
 Client_Oracledb.prototype.transaction = function() {
   return new Transaction(this, ...arguments)

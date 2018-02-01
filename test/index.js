@@ -47,6 +47,10 @@ if (config.oracledb) {
   });
 }
 
+if(config.postgres) {
+  require('./unit/dialects/postgres');
+}
+
 describe('Docker Integration Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 15000);
   require('./docker')

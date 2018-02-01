@@ -46,6 +46,11 @@ assign(ColumnCompiler_Oracle.prototype, {
     return `number(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
   },
 
+  decimal(precision, scale) {
+    if (precision === null) return 'decimal';
+    return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
+  },
+
   integer(length) {
     return length ? `number(${this._num(length, 11)})` : 'integer';
   },
@@ -64,7 +69,7 @@ assign(ColumnCompiler_Oracle.prototype, {
     allowed = uniq(allowed);
     const maxLength = (allowed || []).reduce((maxLength, name) =>
       Math.max(maxLength, String(name).length)
-    , 1);
+      , 1);
 
     // implicitly add the enum values as checked values
     this.columnBuilder._modifiers.checkIn = [allowed];

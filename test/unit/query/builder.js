@@ -96,8 +96,12 @@ function testquery(chain, valuesToCheck, selectedClients) {
 
 describe("Custom identifier wrapping", function() {
   var customWrapperConfig = {
-    wrapIdentifier: (value, clientImpl) => {
-      return clientImpl(value + '_wrapper_was_here');
+    wrapIdentifier: (value, clientImpl, context) => {
+      var suffix = '_wrapper_was_here';
+      if (context && context.fancy) {
+        suffix = '_fancy_wrapper_was_here';
+      }
+      return clientImpl(value + suffix);
     }
   };
 
@@ -121,7 +125,61 @@ describe("Custom identifier wrapping", function() {
       redshift: 'select "users_wrapper_was_here"."foo_wrapper_was_here" as "bar_wrapper_was_here" from "schema_wrapper_was_here"."users_wrapper_was_here"',
       sqlite3: 'select `users_wrapper_was_here`.`foo_wrapper_was_here` as `bar_wrapper_was_here` from `schema_wrapper_was_here`.`users_wrapper_was_here`'
     }, clientsWithCustomIdentifierWrapper);
-  })
+  });
+
+  describe('queryContext', () => {
+    it('should pass the query context to the custom wrapper', () => {
+      testsql(qb().withSchema('schema').select('users.foo as bar').from('users').queryContext({ fancy: true }), {
+        mysql: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`',
+        oracle: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
+        mssql: 'select [users_fancy_wrapper_was_here].[foo_fancy_wrapper_was_here] as [bar_fancy_wrapper_was_here] from [schema_fancy_wrapper_was_here].[users_fancy_wrapper_was_here]',
+        oracledb: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
+        postgres: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" as "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
+        sqlite3: 'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`'
+      }, clientsWithCustomIdentifierWrapper);
+    });
+
+    it('should pass the query context for raw queries', () => {
+      testsql(qb().select(raw('??', [{ a: 'col1' }]).queryContext({ fancy: true })).from('users').queryContext({ fancy: true }), {
+        mysql: 'select `col1_fancy_wrapper_was_here` as `a_fancy_wrapper_was_here` from `users_fancy_wrapper_was_here`',
+        oracle: 'select "col1_fancy_wrapper_was_here" "a_fancy_wrapper_was_here" from "users_fancy_wrapper_was_here"',
+        mssql: 'select [col1_fancy_wrapper_was_here] as [a_fancy_wrapper_was_here] from [users_fancy_wrapper_was_here]',
+        oracledb: 'select "col1_fancy_wrapper_was_here" "a_fancy_wrapper_was_here" from "users_fancy_wrapper_was_here"',
+        postgres: 'select "col1_fancy_wrapper_was_here" as "a_fancy_wrapper_was_here" from "users_fancy_wrapper_was_here"',
+        sqlite3: 'select `col1_fancy_wrapper_was_here` as `a_fancy_wrapper_was_here` from `users_fancy_wrapper_was_here`'
+      }, clientsWithCustomIdentifierWrapper);
+    });
+
+    it('should allow chaining', () => {
+      var builder = qb();
+      expect(builder.queryContext({ foo: 'foo' })).to.deep.equal(builder);
+    });
+
+    it('should return the query context if called with no arguments', () => {
+      expect(qb().queryContext({ foo: 'foo' }).queryContext()).to.deep.equal({ foo: 'foo' });
+    });
+
+    describe('when a builder is cloned', () => {
+      it('should copy the query context', () => {
+        expect(qb().queryContext({ foo: 'foo' }).clone().queryContext()).to.deep.equal({ foo: 'foo' });
+      });
+
+      it('should not modify the original query context if the clone is modified', () => {
+        var original = qb().queryContext({ foo: 'foo' });
+        var clone = original.clone().queryContext({ foo: 'bar' });
+        expect(original.queryContext()).to.deep.equal({ foo: 'foo' });
+        expect(clone.queryContext()).to.deep.equal({ foo: 'bar' });
+      });
+
+      it('should only shallow clone the query context', () => {
+        var original = qb().queryContext({ foo: { bar: 'baz' } });
+        var clone = original.clone();
+        clone.queryContext().foo.bar = 'quux';
+        expect(original.queryContext()).to.deep.equal({ foo: { bar: 'quux' } });
+        expect(clone.queryContext()).to.deep.equal({ foo: { bar: 'quux' } });
+      });
+    });
+  });
 });
 
 describe("QueryBuilder", function() {

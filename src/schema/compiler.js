@@ -1,7 +1,7 @@
 
 import { pushQuery, pushAdditional } from './helpers';
 
-import { assign } from 'lodash'
+import { assign, isUndefined } from 'lodash'
 
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of
@@ -10,7 +10,7 @@ function SchemaCompiler(client, builder) {
   this.builder = builder
   this.client = client
   this.schema = builder._schema;
-  this.formatter = client.formatter()
+  this.formatter = client.formatter(builder)
   this.sequence = []
 }
 
@@ -59,6 +59,12 @@ assign(SchemaCompiler.prototype, {
 function buildTable(type) {
   return function(tableName, fn) {
     const builder = this.client.tableBuilder(type, tableName, fn);
+
+    // pass queryContext down to tableBuilder but do not overwrite it if already set
+    const queryContext = this.builder.queryContext();
+    if (!isUndefined(queryContext) && isUndefined(builder.queryContext())) {
+      builder.queryContext(queryContext);
+    }
 
     builder.setSchema(this.schema);
     const sql = builder.toSQL();

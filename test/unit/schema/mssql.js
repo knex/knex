@@ -2,6 +2,7 @@
 
 'use strict';
 
+var sinon = require('sinon');
 var MSSQL_Client  = require('../../../lib/dialects/mssql');
 var client = new MSSQL_Client();
 
@@ -397,6 +398,14 @@ describe("MSSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(5, 2)');
   });
 
+  it('test adding decimal, no precision', function() {
+    expect(() => {
+      tableSql = client.schemaBuilder().table('users', function() {
+        this.decimal('foo', null);
+      }).toSQL();
+    }).to.throw('Specifying no precision on decimal columns is not supported');
+  });
+
   it('set comment to undefined', function() {
     expect(function() {
       client.schemaBuilder().table('user', function(t) {
@@ -545,6 +554,93 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     expect(tableSql[0].sql).to.equal('CREATE TABLE [users] ([test] nvarchar(255), CONSTRAINT [testconstraintname] PRIMARY KEY ([test]))');
+  });
+
+  describe('queryContext', function () {
+    let spy;
+    let originalWrapIdentifier;
+
+    before(function () {
+      spy = sinon.spy();
+      originalWrapIdentifier = client.config.wrapIdentifier;
+      client.config.wrapIdentifier = function (value, wrap, queryContext) {
+        spy(value, queryContext);
+        return wrap(value);
+      };
+    });
+
+    beforeEach(function () {
+      spy.reset();
+    });
+
+    after(function () {
+      client.config.wrapIdentifier = originalWrapIdentifier;
+    });
+
+    it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function () {
+      client
+        .schemaBuilder()
+        .queryContext('table context')
+        .createTable('users', function (table) {
+          table.increments('id');
+          table.string('email');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
+
+    it('TableCompiler passes queryContext to wrapIdentifier', function () {
+      client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.increments('id').queryContext('id context');
+          table.string('email').queryContext('email context');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', undefined]);
+    });
+
+    it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
+      client
+        .schemaBuilder()
+        .queryContext('schema context')
+        .createTable('users', function (table) {
+          table.queryContext('table context');
+          table.increments('id');
+          table.string('email');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
+
+    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
+      client
+        .schemaBuilder()
+        .queryContext('schema context')
+        .createTable('users', function (table) {
+          table.queryContext('table context');
+          table.increments('id').queryContext('id context');
+          table.string('email').queryContext('email context');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
   });
 
 });

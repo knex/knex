@@ -16,7 +16,7 @@ function ColumnCompiler(client, tableCompiler, columnBuilder) {
   this.grouped = groupBy(columnBuilder._statements, 'grouping');
   this.modified = columnBuilder._modifiers;
   this.isIncrements = (this.type.indexOf('increments') !== -1);
-  this.formatter = client.formatter();
+  this.formatter = client.formatter(columnBuilder);
   this.sequence = [];
   this.modifiers = [];
 }
@@ -29,7 +29,7 @@ ColumnCompiler.prototype._defaultMap = {
   'columnName': function() {
     if (!this.isIncrements) {
       throw new Error(`You did not specify a column name for the ${this.type} column.`);
-    } 
+    }
     return 'id';
   }
 }
@@ -72,7 +72,7 @@ ColumnCompiler.prototype.getColumnType = function() {
 ColumnCompiler.prototype.getModifiers = function() {
   const modifiers = [];
 
-  
+
   for (let i = 0, l = this.modifiers.length; i < l; i++) {
     const modifier = this.modifiers[i];
 
@@ -84,7 +84,7 @@ ColumnCompiler.prototype.getModifiers = function() {
       }
     }
   }
-  
+
   return modifiers.length > 0 ? ` ${modifiers.join(' ')}` : '';
 };
 
@@ -106,6 +106,11 @@ ColumnCompiler.prototype.floating = function(precision, scale) {
   return `float(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
 };
 ColumnCompiler.prototype.decimal = function(precision, scale) {
+  if (precision === null) {
+    throw new Error(
+      'Specifying no precision on decimal columns is not supported for that SQL dialect.'
+    );
+  }
   return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
 };
 ColumnCompiler.prototype.binary = 'blob';

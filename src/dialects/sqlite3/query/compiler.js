@@ -3,7 +3,7 @@
 
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
-import { assign, each, isEmpty, isString, noop, reduce } from 'lodash'
+import { assign, each, isEmpty, isString, noop, reduce, identity } from 'lodash'
 
 function QueryCompiler_SQLite3(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -87,12 +87,12 @@ assign(QueryCompiler_SQLite3.prototype, {
 
   // Compile a truncate table statement into SQL.
   truncate() {
-    const table = this.tableName
+    const { table } = this.single
     return {
-      sql: `delete from ${table}`,
+      sql: `delete from ${this.tableName}`,
       output() {
         return this.query({
-          sql: `delete from sqlite_sequence where name = ${table}`
+          sql: `delete from sqlite_sequence where name = '${table}'`
         }).catch(noop)
       }
     }
@@ -100,9 +100,15 @@ assign(QueryCompiler_SQLite3.prototype, {
 
   // Compiles a `columnInfo` query
   columnInfo() {
-    const column = this.single.columnInfo
+    const column = this.single.columnInfo;
+
+    // The user may have specified a custom wrapIdentifier function in the config. We
+    // need to run the identifiers through that function, but not format them as
+    // identifiers otherwise.
+    const table = this.client.customWrapIdentifier(this.single.table, identity);
+
     return {
-      sql: `PRAGMA table_info(\`${this.single.table}\`)`,
+      sql: `PRAGMA table_info(\`${table}\`)`,
       output(resp) {
         const maxLengthRegex = /.*\((\d+)\)/
         const out = reduce(resp, function (columns, val) {

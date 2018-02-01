@@ -1,6 +1,20 @@
 
 # Master (Unreleased)
 
+# 0.14.2 - 24 Nov, 2017
+
+### Bug fixes:
+
+- Fix sqlite3 truncate method to work again #2348
+
+# 0.14.1 - 19 Nov, 2017
+
+### Bug fixes:
+
+- Fix support for multiple schema names in in postgres `searchPath` #2340
+- Fix create new connection to pass errors to query instead of retry loop #2336
+- Fix recognition of connections closed by server #2341
+
 # 0.14.0 - 6 Nov, 2017
 
 ### Breaking Changes:

@@ -40,14 +40,14 @@ assign(Client_MySQL2.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     const connection = this.driver.createConnection(this.connectionSettings)
+    connection.on('error', err => {
+      connection.__knex__disposed = err
+    })
     return new Promise((resolver, rejecter) => {
       connection.connect((err) => {
         if (err) {
           return rejecter(err)
         }
-        connection.on('error', err => {
-          connection.__knex__disposed = err
-        })
         resolver(connection)
       })
     })

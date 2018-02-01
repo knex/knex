@@ -62,8 +62,8 @@ inherits(Client, EventEmitter)
 
 assign(Client.prototype, {
 
-  formatter() {
-    return new Formatter(this)
+  formatter(builder) {
+    return new Formatter(this, builder)
   },
 
   queryBuilder() {
@@ -163,18 +163,22 @@ assign(Client.prototype, {
     return sql;
   },
 
-  postProcessResponse(resp) {
+  postProcessResponse(resp, queryContext) {
     if (this.config.postProcessResponse) {
-      return this.config.postProcessResponse(resp);
+      return this.config.postProcessResponse(resp, queryContext);
     }
     return resp;
   },
 
-  wrapIdentifier(value) {
+  wrapIdentifier(value, queryContext) {
+    return this.customWrapIdentifier(value, this.wrapIdentifierImpl, queryContext);
+  },
+
+  customWrapIdentifier(value, origImpl, queryContext) {
     if (this.config.wrapIdentifier) {
-      return this.config.wrapIdentifier(value, this.wrapIdentifierImpl);
+      return this.config.wrapIdentifier(value, origImpl, queryContext);
     }
-    return this.wrapIdentifierImpl(value);
+    return origImpl(value);
   },
 
   wrapIdentifierImpl(value) {
@@ -190,7 +194,7 @@ assign(Client.prototype, {
   },
 
   poolDefaults() {
-    return {min: 2, max: 10, Promise}
+    return {min: 2, max: 10, testOnBorrow: true, Promise}
   },
 
   getPoolSettings(poolConfig) {
@@ -224,14 +228,32 @@ assign(Client.prototype, {
               if (poolConfig.afterCreate) {
                 return Promise.promisify(poolConfig.afterCreate)(connection)
               }
+            })
+            .catch(err => {
+              // Acquire connection must never reject, because generic-pool
+              // will retry trying to get connection until acquireConnectionTimeout is
+              // reached. acquireConnectionTimeout should trigger in knex only
+              // in that case if aquiring connection waits because pool is full
+              // https://github.com/coopernurse/node-pool/pull/184
+              // https://github.com/tgriesser/knex/issues/2325
+              return {
+                genericPoolMissingRetryCountHack: true,
+                __knex__disposed: err,
+                query: () => {
+                  throw err; // pass error to query
+                }
+              };
             });
         },
         destroy: (connection) => {
+          if (connection.genericPoolMissingRetryCountHack) {
+            return;
+          }
           if (poolConfig.beforeDestroy) {
             helpers.warn(`
-            beforeDestroy is deprecated, please open an issue if you use this
-            to discuss alternative apis
-          `)
+              beforeDestroy is deprecated, please open an issue if you use this
+              to discuss alternative apis
+            `)
             poolConfig.beforeDestroy(connection, function() {})
           }
           if (connection !== void 0) {
