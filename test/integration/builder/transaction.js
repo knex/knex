@@ -5,6 +5,7 @@
 var Promise = testPromise;
 var Knex   = require('../../../knex');
 var _ = require('lodash');
+var sinon = require('sinon')
 
 module.exports = function(knex) {
 
@@ -165,18 +166,18 @@ module.exports = function(knex) {
       if (knex.client.dialect === 'postgresql') {
         return knex.transaction(function(trx) {
           return trx.schema.createTable('test_schema_transactions', function(table) {
-              table.increments();
-              table.string('name');
-              table.timestamps();
-            }).then(function() {
-              return trx('test_schema_transactions').insert({name: 'bob'});
-            }).then(function() {
-              return trx('test_schema_transactions').count('*');
-            }).then(function(resp) {
-              var _count = parseInt(resp[0].count, 10);
-              expect(_count).to.equal(1);
-              throw err;
-            });
+            table.increments();
+            table.string('name');
+            table.timestamps();
+          }).then(function() {
+            return trx('test_schema_transactions').insert({name: 'bob'});
+          }).then(function() {
+            return trx('test_schema_transactions').count('*');
+          }).then(function(resp) {
+            var _count = parseInt(resp[0].count, 10);
+            expect(_count).to.equal(1);
+            throw err;
+          });
         })
         .on('query', function(obj) {
           count++;
@@ -272,8 +273,8 @@ module.exports = function(knex) {
       }
 
       return knex.transaction(function(trx) {
-          trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
-        })
+        trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
+      })
         .then(expectQueryEventToHaveBeenTriggered)
         .catch(expectQueryEventToHaveBeenTriggered);
 
@@ -427,7 +428,35 @@ module.exports = function(knex) {
         .spread(function (ret1, ret2) {
           expect(ret1).to.equal(ret2);
         });
-     });
+    });
 
+    it('should pass the query context to wrapIdentifier', function () {
+      const originalWrapIdentifier = knex.client.config.wrapIdentifier;
+      const spy = sinon.spy().named('calledWithContext');
+
+      function restoreWrapIdentifier() {
+        knex.client.config.wrapIdentifier = originalWrapIdentifier;
+      }
+
+      knex.client.config.wrapIdentifier = (value, wrap, queryContext) => {
+        spy(queryContext);
+        return wrap(value);
+      };
+
+      return knex.transaction(function(trx) {
+        return trx
+          .select()
+          .from('accounts')
+          .queryContext({ foo: 'bar' });
+      }).then(function() {
+        expect(spy.callCount).to.equal(1);
+        expect(spy.calledWith({ foo: 'bar' })).to.equal(true);
+      }).then(function() {
+        restoreWrapIdentifier();
+      }).catch(function(e) {
+        restoreWrapIdentifier();
+        throw e;
+      });
+    });
   });
 };

@@ -62,8 +62,8 @@ inherits(Client, EventEmitter)
 
 assign(Client.prototype, {
 
-  formatter() {
-    return new Formatter(this)
+  formatter(builder) {
+    return new Formatter(this, builder)
   },
 
   queryBuilder() {
@@ -163,20 +163,20 @@ assign(Client.prototype, {
     return sql;
   },
 
-  postProcessResponse(resp) {
+  postProcessResponse(resp, queryContext) {
     if (this.config.postProcessResponse) {
-      return this.config.postProcessResponse(resp);
+      return this.config.postProcessResponse(resp, queryContext);
     }
     return resp;
   },
 
-  wrapIdentifier(value) {
-    return this.customWrapIdentifier(value, this.wrapIdentifierImpl);
+  wrapIdentifier(value, queryContext) {
+    return this.customWrapIdentifier(value, this.wrapIdentifierImpl, queryContext);
   },
 
-  customWrapIdentifier(value, origImpl) {
+  customWrapIdentifier(value, origImpl, queryContext) {
     if (this.config.wrapIdentifier) {
-      return this.config.wrapIdentifier(value, origImpl);
+      return this.config.wrapIdentifier(value, origImpl, queryContext);
     }
     return origImpl(value);
   },
@@ -232,7 +232,7 @@ assign(Client.prototype, {
             .catch(err => {
               // Acquire connection must never reject, because generic-pool
               // will retry trying to get connection until acquireConnectionTimeout is
-              // reached. acquireConnectionTimeout should trigger in knex only 
+              // reached. acquireConnectionTimeout should trigger in knex only
               // in that case if aquiring connection waits because pool is full
               // https://github.com/coopernurse/node-pool/pull/184
               // https://github.com/tgriesser/knex/issues/2325

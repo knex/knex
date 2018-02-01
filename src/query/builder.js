@@ -53,6 +53,9 @@ assign(Builder.prototype, {
     if (!isUndefined(this._options)) {
       cloned._options = clone(this._options);
     }
+    if (!isUndefined(this._queryContext)) {
+      cloned._queryContext = clone(this._queryContext);
+    }
 
     return cloned;
   },
@@ -1002,5 +1005,6 @@ Builder.prototype.del = Builder.prototype.delete
 
 // Attach all of the top level promise methods that should be chainable.
 require('../interface')(Builder);
+helpers.addQueryContext(Builder);
 
 export default Builder;

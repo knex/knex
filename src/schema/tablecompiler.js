@@ -4,16 +4,17 @@
 // -------
 import { pushAdditional, pushQuery } from './helpers';
 import * as helpers from '../helpers';
-import { groupBy, reduce, map, first, tail, isEmpty, indexOf, isArray } from 'lodash'
+import { groupBy, reduce, map, first, tail, isEmpty, indexOf, isArray, isUndefined } from 'lodash'
 
 function TableCompiler(client, tableBuilder) {
   this.client = client
+  this.tableBuilder = tableBuilder;
   this.method = tableBuilder._method;
   this.schemaNameRaw = tableBuilder._schemaName;
   this.tableNameRaw = tableBuilder._tableName;
   this.single = tableBuilder._single;
   this.grouped = groupBy(tableBuilder._statements, 'grouping');
-  this.formatter = client.formatter();
+  this.formatter = client.formatter(tableBuilder);
   this.sequence = [];
   this._formatting = client.config && client.config.formatting
 }
@@ -143,9 +144,17 @@ TableCompiler.prototype.getColumns = function (method) {
   const columns = this.grouped.columns || [];
   method        = method || 'add';
 
+  const queryContext = this.tableBuilder.queryContext();
+
   return columns
     .filter(column => column.builder._method === method)
-    .map(column => this.client.columnCompiler(this, column.builder));
+    .map(column => {
+      // pass queryContext down to columnBuilder but do not overwrite it if already set
+      if (!isUndefined(queryContext) && isUndefined(column.builder.queryContext())) {
+        column.builder.queryContext(queryContext);
+      }
+      return this.client.columnCompiler(this, column.builder);
+    });
 };
 
 TableCompiler.prototype.tableName = function () {

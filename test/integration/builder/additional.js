@@ -13,8 +13,9 @@ module.exports = function(knex) {
     describe("Custom response processing", () => {
 
       before('setup custom response handler', () => {
-        knex.client.config.postProcessResponse = (response) => {
+        knex.client.config.postProcessResponse = (response, queryContext) => {
           response.callCount = response.callCount ? (response.callCount + 1) : 1;
+          response.queryContext = queryContext;
           return response;
         };
       });
@@ -29,9 +30,27 @@ module.exports = function(knex) {
         });
       });
 
+      it('should pass query context to the custom handler', () => {
+        return knex('accounts')
+          .queryContext('the context')
+          .limit(1)
+          .then(res => {
+            expect(res.queryContext).to.equal('the context');
+          });
+      });
+
       it('should process raw response', () => {
         return knex.raw('select * from ??', ['accounts']).then(res => {
+          expect(res.callCount).to.equal(1);
         });
+      });
+
+      it('should pass query context for raw responses', () => {
+        return knex.raw('select * from ??', ['accounts'])
+          .queryContext('the context')
+          .then(res => {
+            expect(res.queryContext).to.equal('the context');
+          });
       });
 
       it('should process response done in transaction', () => {
@@ -42,6 +61,20 @@ module.exports = function(knex) {
           });
         }).then(res => {
           expect(res.callCount).to.equal(1);
+        });
+      });
+
+      it('should pass query context for responses from transactions', () => {
+        return knex.transaction(trx => {
+          return trx('accounts')
+            .queryContext('the context')
+            .limit(1)
+            .then(res => {
+              expect(res.queryContext).to.equal('the context');
+              return res;
+            });
+        }).then(res => {
+          expect(res.queryContext).to.equal('the context');
         });
       });
     });

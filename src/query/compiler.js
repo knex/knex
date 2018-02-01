@@ -26,7 +26,7 @@ function QueryCompiler(client, builder) {
   this.timeout = builder._timeout || false;
   this.cancelOnTimeout = builder._cancelOnTimeout || false;
   this.grouped = groupBy(builder._statements, 'grouping');
-  this.formatter = client.formatter()
+  this.formatter = client.formatter(builder)
 }
 
 const components = [

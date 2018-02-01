@@ -132,8 +132,9 @@ assign(Runner.prototype, {
     return queryPromise
       .then((resp) => {
         const processedResponse = this.client.processResponse(resp, runner);
+        const queryContext = this.builder.queryContext();
         const postProcessedResponse = this.client
-          .postProcessResponse(processedResponse);
+          .postProcessResponse(processedResponse, queryContext);
 
         this.builder.emit(
           'query-response',
