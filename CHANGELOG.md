@@ -1,6 +1,8 @@
 
 # Master (Unreleased)
 
+- Drop support for Node.js 4 and 5
+
 # 0.14.2 - 24 Nov, 2017
 
 ### Bug fixes:

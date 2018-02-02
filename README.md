@@ -18,6 +18,8 @@ Node.js and the Browser, featuring:
 - a [thorough test suite](https://travis-ci.org/tgriesser/knex)
 - the ability to [run in the Browser](http://knexjs.org/#Installation-browser)
 
+Node.js versions 6+ are supported.
+
 [Read the full documentation to get started!](http://knexjs.org)
 
 For support and questions, join the `#bookshelf` channel on freenode IRC
