@@ -3,7 +3,6 @@
 const tape = require('tape')
 const _ = require('lodash');
 const makeKnex = require('../../knex')
-const pool = require('generic-pool');
 const Bluebird = require('bluebird');
 
 module.exports = (knexfile) => {
@@ -56,7 +55,7 @@ module.exports = (knexfile) => {
     if (dialect !== 'sqlite3') {
       const knexConf = _.cloneDeep(knexfile[key]);
       knexConf.acquireConnectionTimeout = 10;
-      knexConf.pool = { max: 1 };
+      knexConf.pool = { max: 1, min: 1 };
       const knex = makeKnex(knexConf);
 
       tape.onFinish(() => {
