@@ -11,7 +11,7 @@ module.exports = function(knex) {
     describe('dropTable', function() {
 
       it('has a dropTableIfExists method', function() {
-        this.timeout(30000);
+        this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
         return Promise.all([
           knex.schema.dropTableIfExists('test_foreign_table_two').testSql(function(tester) {
             tester(['pg'], ['drop table if exists "test_foreign_table_two"']);
