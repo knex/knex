@@ -36,10 +36,12 @@ assign(Client_MariaSQL.prototype, {
       connection.connect(assign({metadata: true}, this.connectionSettings))
       connection
         .on('ready', function() {
-          connection.removeAllListeners('error');
           resolver(connection);
         })
-        .on('error', rejecter);
+        .on('error', err => {
+          connection.__knex__disposed = err
+          rejecter(err)
+        });
     })
   },
 
