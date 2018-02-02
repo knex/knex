@@ -54,7 +54,7 @@ module.exports = (knexfile) => {
 
     if (dialect !== 'sqlite3') {
       const knexConf = _.cloneDeep(knexfile[key]);
-      knexConf.acquireConnectionTimeout = 10;
+      knexConf.acquireConnectionTimeout = 100;
       knexConf.pool = { max: 1, min: 1 };
       const knex = makeKnex(knexConf);
 
@@ -66,28 +66,29 @@ module.exports = (knexfile) => {
         t.plan(2);
         t.timeoutAfter(1000);
 
-        let hoggerTrx;
+        // just hog the only connection.
         knex.transaction(trx => {
-          // just hog the only connection.
-          hoggerTrx = trx;
+          // Don't return this promise! Also note that we use `knex` instead of `trx`
+          // here on purpose. The only reason this code is here, is that we can be
+          // certain `trx` has been created before this.
+          knex('accounts').select(1)
+            .then(() => {
+              t.fail('query should have stalled');
+            })
+            .catch(Bluebird.TimeoutError, e => {
+              t.pass('Got acquireTimeout error');
+            })
+            .catch(e => {
+              t.fail(`should have got acquire timeout error, but got ${e.message} instead.`);
+            })
+            .finally(() => {
+              trx.commit(); // release stuff
+            });
+
         }).then(() => {
           t.pass('transaction was resolved');
           t.end();
         });
-
-        knex('accounts').select(1)
-          .then(() => {
-            t.fail('query should have stalled');
-          })
-          .catch(Bluebird.TimeoutError, e => {
-            t.pass('Got acquireTimeout error');
-          })
-          .catch(e => {
-            t.fail(`should have got acquire timeout error, but got ${e.message} instead.`);
-          })
-          .finally(() => {
-            hoggerTrx.commit(); // release stuff
-          });
       });
     }
 
