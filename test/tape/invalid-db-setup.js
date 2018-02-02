@@ -11,7 +11,7 @@ module.exports = (knexfile) => {
 
     if (dialect !== 'sqlite3' && dialect !== 'oracledb') {
       const knexConf = _.cloneDeep(knexfile[key]);
-      knexConf.connection.database = knexConf.connection.db = 'I-refuse-to-exist';
+      knexConf.connection.database = knexConf.connection.db = 'i-refuse-to-exist';
       knexConf.acquireConnectionTimeout = 4000;
       const knex = makeKnex(knexConf);
 
@@ -26,7 +26,7 @@ module.exports = (knexfile) => {
             t.fail(`Query should have failed with non timeout error`);
           })
           .catch(e => {
-            t.ok(e.message.indexOf('I-refuse-to-exist') > 0, `all good, failed as expected with msg: ${e.message}`);
+            t.ok(e.message.indexOf('i-refuse-to-exist') > 0, `all good, failed as expected with msg: ${e.message}`);
           });
       });
 
@@ -43,7 +43,7 @@ module.exports = (knexfile) => {
             t.fail(`Stream query should have failed with non timeout error`);
           })
           .catch(e => {
-            t.ok(e.message.indexOf('I-refuse-to-exist') > 0, `all good, failed as expected with msg: ${e.message}`);
+            t.ok(e.message.indexOf('i-refuse-to-exist') > 0, `all good, failed as expected with msg: ${e.message}`);
           });
       });
 
