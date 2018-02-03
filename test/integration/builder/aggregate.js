@@ -34,6 +34,14 @@ module.exports = function(knex) {
             }]
           );
           tester(
+            'pg-redshift',
+            'select sum("logins") from "accounts"',
+            [],
+            [{
+              sum: '10'
+            }]
+          );
+          tester(
             'sqlite3',
             'select sum(`logins`) from `accounts`',
             [],
@@ -67,7 +75,7 @@ module.exports = function(knex) {
         function checkResRange(key, resp) {
           return Math.abs(10/6 - +(resp[0][key])) < 0.001;
         }
-       function checkResRangeMssql(key, resp) {
+        function checkResRangeMssql(key, resp) {
           return +(resp[0][key]) === 1;
         }
 
@@ -77,6 +85,8 @@ module.exports = function(knex) {
         tester('sqlite3', 'select avg(`logins`) from `accounts`', [], checkResRange.bind(null, 'avg(`logins`)'));
         // postgres: '1.6666666666666667'
         tester('postgresql', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'avg'));
+        // postgres: '1.6666666666666667'
+        tester('pg-redshift', 'select avg("logins") from "accounts"', [], checkResRangeMssql.bind(null, 'avg'));
         // oracle: 1.66666666666667
         tester('oracle', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'AVG("LOGINS")'));
         // mssql: 1
@@ -98,6 +108,14 @@ module.exports = function(knex) {
         );
         tester(
           'postgresql',
+          'select count("id") from "accounts"',
+          [],
+          [{
+            count: '6'
+          }]
+        );
+        tester(
+          'pg-redshift',
           'select count("id") from "accounts"',
           [],
           [{
@@ -147,6 +165,16 @@ module.exports = function(knex) {
         );
         tester(
           'postgresql',
+          'select count("id"), max("logins"), min("logins") from "accounts"',
+          [],
+          [{
+            count: '6',
+            max: 2,
+            min: 1
+          }]
+        );
+        tester(
+          'pg-redshift',
           'select count("id"), max("logins"), min("logins") from "accounts"',
           [],
           [{
@@ -211,6 +239,16 @@ module.exports = function(knex) {
             }]
         );
         tester(
+            'pg-redshift',
+            'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
+            [],
+            [{
+              count: '6',
+              sum: '3',
+              avg: '1'
+            }]
+        );
+        tester(
             'sqlite3',
             'select count(distinct `id`), sum(distinct `logins`), avg(distinct `logins`) from `accounts`',
             [],
@@ -244,10 +282,10 @@ module.exports = function(knex) {
 
     it("support the groupBy function", function() {
 
-      return knex('accounts').count('id').groupBy('logins').testSql(function(tester) {
+      return knex('accounts').count('id').groupBy('logins').orderBy('logins', 'asc').testSql(function(tester) {
         tester(
           'mysql',
-          'select count(`id`) from `accounts` group by `logins`',
+          'select count(`id`) from `accounts` group by `logins` order by `logins` asc',
           [],
           [{
             'count(`id`)': 2
@@ -257,7 +295,17 @@ module.exports = function(knex) {
         );
         tester(
           'postgresql',
-          'select count("id") from "accounts" group by "logins"',
+          'select count("id") from "accounts" group by "logins" order by "logins" asc',
+          [],
+          [{
+            count: '2'
+          },{
+            count: '4'
+          }]
+        );
+        tester(
+          'pg-redshift',
+          'select count("id") from "accounts" group by "logins" order by "logins" asc',
           [],
           [{
             count: '2'
@@ -267,7 +315,7 @@ module.exports = function(knex) {
         );
         tester(
           'sqlite3',
-          'select count(`id`) from `accounts` group by `logins`',
+          'select count(`id`) from `accounts` group by `logins` order by `logins` asc',
           [],
           [{
             'count(`id`)': 2
@@ -277,7 +325,7 @@ module.exports = function(knex) {
         );
         tester(
           'oracle',
-          'select count("id") from "accounts" group by "logins"',
+          'select count("id") from "accounts" group by "logins" order by "logins" asc',
           [],
           [{
             'COUNT("ID")': 2
@@ -287,7 +335,7 @@ module.exports = function(knex) {
         );
         tester(
           'mssql',
-          'select count([id]) from [accounts] group by [logins]',
+          'select count([id]) from [accounts] group by [logins] order by [logins] asc',
           [],
           [{
             '': 2
@@ -308,6 +356,14 @@ module.exports = function(knex) {
           );
           tester(
             'postgresql',
+            'select count("id") from "accounts" group by "first_name"',
+            [],
+            [{
+              count: '6'
+            }]
+          );
+          tester(
+            'pg-redshift',
             'select count("id") from "accounts" group by "first_name"',
             [],
             [{

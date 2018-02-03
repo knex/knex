@@ -25,6 +25,7 @@ describe('Query Building Tests', function() {
   require('./unit/schema/mysql')('maria')
   require('./unit/schema/mysql')('mysql2')
   require('./unit/schema/postgres')
+  require('./unit/schema/redshift')
   require('./unit/schema/sqlite3')
   require('./unit/schema/oracle')
   require('./unit/schema/mssql')

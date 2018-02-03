@@ -5,6 +5,7 @@ raw
 .DS_Store
 .vagrant
 node_modules
+package-lock.json
 test.sqlite3
 npm-debug.log
 tmp
