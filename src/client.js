@@ -246,7 +246,10 @@ assign(Client.prototype, {
             });
         },
         destroy: (connection) => {
-          if (connection.genericPoolMissingRetryCountHack) {
+          if (
+            connection.genericPoolMissingRetryCountHack ||
+            connection.__knex__disposed
+          ) {
             return;
           }
           if (poolConfig.beforeDestroy) {
