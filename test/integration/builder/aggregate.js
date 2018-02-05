@@ -242,6 +242,53 @@ module.exports = function(knex) {
 
     });
 
+    it('supports countDistinct with multiple columns', function() {
+
+      return knex('accounts').countDistinct('id', 'logins').testSql(function(tester) {
+        tester(
+            'mysql',
+            'select count(distinct `id`, `logins`) from `accounts`',
+            [],
+            [{
+              'count(distinct `id`, `logins`)': 3
+            }]
+        );
+        tester(
+            'postgresql',
+            'select count(distinct "id", "logins") from "accounts"',
+            [],
+            [{
+              count: '3'
+            }]
+        );
+        tester(
+            'sqlite3',
+            'select count(distinct `id`, `logins`) from `accounts`',
+            [],
+            [{
+              'count(distinct `id`, `logins`)': 3
+            }]
+        );
+        tester(
+            'oracle',
+            'select count(distinct "id", "logins") from "accounts"',
+            [],
+            [{
+              'COUNT(DISTINCT "ID", "LOGINS")': 3
+            }]
+        );
+        tester(
+            'mssql',
+            'select count(distinct [id], [logins]) from [accounts]',
+            [],
+            [{
+              '': [3]
+            }]
+        );
+      });
+
+    });
+
     it("support the groupBy function", function() {
 
       return knex('accounts').count('id').groupBy('logins').testSql(function(tester) {
