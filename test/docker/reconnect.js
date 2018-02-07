@@ -9,7 +9,6 @@ module.exports = function(config, knex) {
   var dockerConf       = config.docker;
   var ContainerClass   = require(dockerConf.factory);
 
-  var EVICTION_RUN_INTERVAL_MILLIS = 15 * 1000;
   var IDLE_TIMEOUT_MILLIS          = 20 * 1000;
   var ACQUIRE_CONNECTION_TIMEOUT   = 10 * 1000;
   var ACQUIRE_TIMEOUT_MILLIS       = 10 * 1000;
@@ -118,9 +117,7 @@ module.exports = function(config, knex) {
         min:                       7,
         max:                       7,
         idleTimeoutMillis:         IDLE_TIMEOUT_MILLIS,
-        acquireTimeoutMillis:      ACQUIRE_TIMEOUT_MILLIS,
-        evictionRunIntervalMillis: EVICTION_RUN_INTERVAL_MILLIS,
-        testOnBorrow: true
+        acquireTimeoutMillis:      ACQUIRE_TIMEOUT_MILLIS
       },
       connection:               {
         database: dockerConf.database,
