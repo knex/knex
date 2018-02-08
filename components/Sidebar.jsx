@@ -67,7 +67,6 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-leftOuterJoin">leftOuterJoin</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-rightJoin">rightJoin</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-rightOuterJoin">rightOuterJoin</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-outerJoin">outerJoin</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-fullOuterJoin">fullOuterJoin</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-crossJoin">crossJoin</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-joinRaw">joinRaw</a></li>
