@@ -81,7 +81,7 @@ export default {
         loader: 'file?name=[name].[ext]'
       },
       {
-        test: /ansi-styles|chalk|generic-pool/,
+        test: /ansi-styles|chalk|tarn/,
         loader: 'babel-loader'
       }
     ],
