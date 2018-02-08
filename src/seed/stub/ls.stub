@@ -1,10 +1,11 @@
 exports.seed = (knex, Promise) ->
-  Promise.join(
-    # Deletes ALL existing entries
-    knex('table_name').del(),
-
+  # Deletes ALL existing entries
+  knex('table_name').del()
+  .then(() ->
     # Inserts seed entries
-    knex('table_name').insert({id: 1, colName: 'rowValue'}),
-    knex('table_name').insert({id: 2, colName: 'rowValue2'}),
-    knex('table_name').insert({id: 3, colName: 'rowValue3'}))
-
+    knex('table_name').insert([
+      {id: 1, colName: 'rowValue1'},
+      {id: 2, colName: 'rowValue2'},
+      {id: 3, colName: 'rowValue3'}
+    ])
+  )

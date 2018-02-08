@@ -4,10 +4,83 @@
 
 var tableSql;
 
+var sinon = require('sinon');
 var PG_Client = require('../../../lib/dialects/postgres');
-var client    = new PG_Client({})
+var client    = new PG_Client({});
+var knex = require('../../../knex');
 
 var equal  = require('assert').equal;
+
+describe('PostgreSQL Config', function() {
+  var knexInstance;
+  var version;
+  var config = {
+    client: 'pg',
+    connection: {
+      user: 'postgres',
+      password: '',
+      host: '127.0.0.1',
+      database: 'knex_test'
+    }
+  };
+  describe('check version', function() {
+    describe('check version < 9.2', function() {
+      beforeEach(function () {
+        version = '7.2';
+        config.version = version;
+        knexInstance = knex(config);
+      });
+
+      it('client.version', function(){
+        expect(knexInstance.client.version).to.equal(version);
+      });
+
+      it('json', function() {
+        tableSql = knexInstance.schema.table('public', function(t) {
+          t.json('test_name');
+        }).toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" text');
+      });
+
+      it('jsonb', function() {
+        tableSql = knexInstance.schema.table('public', function (t) {
+          t.jsonb('test_name');
+        }).toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" text');
+      });
+    });
+
+    describe('check version >= 9.2', function() {
+      beforeEach(function() {
+        version = '9.5';
+        config.version = version;
+        knexInstance = knex(config);
+      });
+
+      it('client.version', function(){
+        expect(knexInstance.client.version).to.equal(version);
+      });
+
+      it('json', function() {
+        tableSql = knexInstance.schema.table('public', function(t) {
+          t.json('test_name');
+        }).toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" json');
+      });
+
+      it('jsonb', function() {
+        tableSql = knexInstance.schema.table('public', function(t) {
+          t.jsonb('test_name');
+        }).toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('alter table "public" add column "test_name" jsonb');
+      });
+    });
+  });
+});
 
 describe("PostgreSQL SchemaBuilder", function() {
 
@@ -28,6 +101,23 @@ describe("PostgreSQL SchemaBuilder", function() {
     }).toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add column "id" serial primary key, add column "email" varchar(255)');
+  });
+
+  it('should alter columns with the alter flag', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.string('foo').notNullable().default('foo').alter();
+      this.integer('bar').alter();
+    }).toSQL();
+
+    equal(8, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" alter column "foo" drop default');
+    expect(tableSql[1].sql).to.equal('alter table "users" alter column "foo" drop not null');
+    expect(tableSql[2].sql).to.equal('alter table "users" alter column "foo" type varchar(255) using ("foo"::varchar(255))');
+    expect(tableSql[3].sql).to.equal('alter table "users" alter column "foo" set default \'foo\'');
+    expect(tableSql[4].sql).to.equal('alter table "users" alter column "foo" set not null');
+    expect(tableSql[5].sql).to.equal('alter table "users" alter column "bar" drop default');
+    expect(tableSql[6].sql).to.equal('alter table "users" alter column "bar" drop not null');
+    expect(tableSql[7].sql).to.equal('alter table "users" alter column "bar" type integer using ("bar"::integer)');
   });
 
   it("alter table with schema", function() {
@@ -126,6 +216,14 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('drop index "foo"');
   });
 
+  it("drop index, with schema", function() {
+    tableSql = client.schemaBuilder().withSchema('mySchema').table('users', function(table) {
+      table.dropIndex('foo');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop index "mySchema"."users_foo_index"');
+  });
+
   it("drop foreign", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.dropForeign('foo');
@@ -156,12 +254,20 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" rename to "foo"');
   });
 
+  it("rename column", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.renameColumn('foo', 'bar');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" rename "foo" to "bar"');
+  });
+
   it("adding primary key", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.primary('foo');
     }).toSQL();
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add primary key ("foo")');
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "users_pkey" primary key ("foo")');
   });
 
   it("adding primary key fluently", function() {
@@ -170,14 +276,39 @@ describe("PostgreSQL SchemaBuilder", function() {
     }).toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal('create table "users" ("name" varchar(255))');
-    expect(tableSql[1].sql).to.equal('alter table "users" add primary key ("name")');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_pkey" primary key ("name")');
   });
 
   it("adding foreign key", function() {
-    tableSql = client.schemaBuilder().createTable('accounts', function(table) {
-      table.integer('account_id').references('users.id');
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.foreign('foo_id').references('id').on('orders');
     }).toSQL();
-    expect(tableSql[1].sql).to.equal('alter table "accounts" add constraint "accounts_account_id_foreign" foreign key ("account_id") references "users" ("id")');
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "orders" ("id")');
+
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.integer('foo_id').references('id').on('orders');
+    }).toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo_id" integer');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "orders" ("id")');
+  });
+
+  it('adding foreign key with specific identifier', function() {
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.foreign('foo_id', 'fk_foo').references('id').on('orders');
+    }).toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "fk_foo" foreign key ("foo_id") references "orders" ("id")');
+
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.integer('foo_id').references('id').on('orders').withKeyName('fk_foo');
+    }).toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo_id" integer');
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "fk_foo" foreign key ("foo_id") references "orders" ("id")');
   });
 
   it("adds foreign key with onUpdate and onDelete", function() {
@@ -386,6 +517,14 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" decimal(5, 2)');
   });
 
+  it("adding decimal, variable precision", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.decimal('foo', null);
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" decimal');
+  });
+
   it("adding boolean", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.boolean('foo').defaultTo(false);
@@ -465,6 +604,40 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "user" add column "preferences" jsonb');
   });
 
+  it('set comment', function() {
+    tableSql = client.schemaBuilder().table('user', function(t) {
+      t.comment('Custom comment');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('comment on table "user" is \'Custom comment\'');
+  });
+
+  it('set empty comment', function() {
+    tableSql = client.schemaBuilder().table('user', function(t) {
+      t.comment('');
+    }).toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('comment on table "user" is \'\'');
+  });
+
+  it('set comment to undefined', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment();
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
+  it('set comment to null', function() {
+    expect(function() {
+      client.schemaBuilder().table('user', function(t) {
+        t.comment(null);
+      }).toSQL();
+    })
+    .to.throw(TypeError);
+  });
+
   it('allows adding default json objects when the column is json', function() {
     tableSql = client.schemaBuilder().table('user', function(t) {
       t.json('preferences').defaultTo({}).notNullable();
@@ -513,6 +686,106 @@ describe("PostgreSQL SchemaBuilder", function() {
       t.engine('myISAM');
     }).toSQL();
     expect(tableSql[0].sql).to.equal('create table "users" ("username" varchar(255))');
+  });
+
+  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+    tableSql = client.schemaBuilder().table('users', function(t) {
+      t.primary(['test1', 'test2'], 'testconstraintname');
+    }).toSQL();
+    expect(tableSql[0].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
+
+    tableSql = client.schemaBuilder().createTable('users', function(t) {
+      t.string('test').primary('testconstraintname');
+    }).toSQL();
+
+    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test")');
+  });
+
+  describe('queryContext', function () {
+    let spy;
+    let originalWrapIdentifier;
+
+    before(function () {
+      spy = sinon.spy();
+      originalWrapIdentifier = client.config.wrapIdentifier;
+      client.config.wrapIdentifier = function (value, wrap, queryContext) {
+        spy(value, queryContext);
+        return wrap(value);
+      };
+    });
+
+    beforeEach(function () {
+      spy.reset();
+    });
+
+    after(function () {
+      client.config.wrapIdentifier = originalWrapIdentifier;
+    });
+
+    it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function () {
+      client
+        .schemaBuilder()
+        .queryContext('table context')
+        .createTable('users', function (table) {
+          table.increments('id');
+          table.string('email');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
+
+    it('TableCompiler passes queryContext to wrapIdentifier', function () {
+      client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.increments('id').queryContext('id context');
+          table.string('email').queryContext('email context');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', undefined]);
+    });
+
+    it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
+      client
+        .schemaBuilder()
+        .queryContext('schema context')
+        .createTable('users', function (table) {
+          table.queryContext('table context');
+          table.increments('id');
+          table.string('email');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
+
+    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
+      client
+        .schemaBuilder()
+        .queryContext('schema context')
+        .createTable('users', function (table) {
+          table.queryContext('table context');
+          table.increments('id').queryContext('id context');
+          table.string('email').queryContext('email context');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
+      expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
+      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
   });
 
 });

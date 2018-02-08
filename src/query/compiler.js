@@ -1,29 +1,34 @@
 
 // Query Compiler
 // -------
-var helpers = require('../helpers');
-var Raw     = require('../raw');
+import * as helpers from '../helpers';
+import Raw from '../raw';
+import JoinClause from './joinclause';
+import debug from 'debug'
+
 import {
   assign, bind, compact, groupBy, isEmpty, isString, isUndefined, map, omitBy,
   reduce
 } from 'lodash';
+import uuid from 'uuid';
 
-const { isArray } = Array;
+const debugBindings = debug('knex:bindings')
 
 // The "QueryCompiler" takes all of the query statements which
 // have been gathered in the "QueryBuilder" and turns them into a
 // properly formatted / bound query string.
 function QueryCompiler(client, builder) {
-  this.client    = client
-  this.method    = builder._method || 'select';
-  this.options   = builder._options;
-  this.single    = builder._single;
-  this.timeout   = builder._timeout || false;
-  this.grouped   = groupBy(builder._statements, 'grouping');
-  this.formatter = client.formatter()
+  this.client = client
+  this.method = builder._method || 'select';
+  this.options = builder._options;
+  this.single = builder._single;
+  this.timeout = builder._timeout || false;
+  this.cancelOnTimeout = builder._cancelOnTimeout || false;
+  this.grouped = groupBy(builder._statements, 'grouping');
+  this.formatter = client.formatter(builder)
 }
 
-var components = [
+const components = [
   'columns', 'join', 'where', 'union', 'group',
   'having', 'order', 'limit', 'offset', 'lock'
 ];
@@ -35,50 +40,84 @@ assign(QueryCompiler.prototype, {
 
   // Collapse the builder into a single object
   toSQL(method, tz) {
+    this._undefinedInWhereClause = false;
+
     method = method || this.method
-    var val = this[method]()
-    var defaults = {
-      method: method,
+    const val = this[method]() || '';
+
+    const query = {
+      method,
       options: reduce(this.options, assign, {}),
       timeout: this.timeout,
-      bindings: this.formatter.bindings
+      cancelOnTimeout: this.cancelOnTimeout,
+      bindings: this.formatter.bindings || [],
+      __knexQueryUid: uuid.v4()
     };
+
+    Object.defineProperties(query, {
+      toNative: {
+        value: () => {
+          return {
+            sql: this.client.positionBindings(query.sql),
+            bindings: this.client.prepBindings(query.bindings)
+          };
+        },
+        enumerable: false
+      }
+    });
+
     if (isString(val)) {
-      val = {sql: val};
-    }
-    if (method === 'select' && this.single.as) {
-      defaults.as = this.single.as;
+      query.sql = val;
+    } else {
+      assign(query, val);
     }
 
-    defaults.bindings = this.client.prepBindings(defaults.bindings || [], tz);
+    if (method === 'select' || method === 'first') {
+      if(this.single.as) {
+        query.as = this.single.as;
+      }
+    }
 
-    return assign(defaults, val);
+    if(this._undefinedInWhereClause) {
+      debugBindings(query.bindings)
+      throw new Error(
+        `Undefined binding(s) detected when compiling ` +
+        `${method.toUpperCase()} query: ${query.sql}`
+      );
+    }
+
+    return query;
   },
 
-  // Compiles the `select` statement, or nested sub-selects
-  // by calling each of the component compilers, trimming out
-  // the empties, and returning a generated query string.
+  // Compiles the `select` statement, or nested sub-selects by calling each of
+  // the component compilers, trimming out the empties, and returning a
+  // generated query string.
   select() {
-    var i = -1, statements = [];
-    while (++i < components.length) {
-      statements.push(this[components[i]](this));
-    }
-    return compact(statements).join(' ');
+    let sql = this.with();
+
+    const statements = components.map(component =>
+      this[component](this)
+    );
+    sql += compact(statements).join(' ');
+    return sql;
   },
 
   pluck() {
+    let toPluck = this.single.pluck
+    if (toPluck.indexOf('.') !== -1) {
+      toPluck = toPluck.split('.').slice(-1)[0]
+    }
     return {
       sql: this.select(),
-      pluck: this.single.pluck
+      pluck: toPluck
     };
   },
 
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
   insert() {
-    var insertValues = this.single.insert || [];
-    var sql = 'insert into ' + this.tableName + ' ';
-
+    const insertValues = this.single.insert || [];
+    let sql = this.with() + `insert into ${this.tableName} `;
     if (Array.isArray(insertValues)) {
       if (insertValues.length === 0) {
         return ''
@@ -87,17 +126,17 @@ assign(QueryCompiler.prototype, {
       return sql + this._emptyInsertValue
     }
 
-    var insertData = this._prepInsert(insertValues);
+    const insertData = this._prepInsert(insertValues);
     if (typeof insertData === 'string') {
       sql += insertData;
     } else  {
       if (insertData.columns.length) {
-        sql += '(' + this.formatter.columnize(insertData.columns)
+        sql += `(${this.formatter.columnize(insertData.columns)}`
         sql += ') values ('
-        var i = -1
+        let i = -1
         while (++i < insertData.values.length) {
           if (i !== 0) sql += '), ('
-          sql += this.formatter.parameterize(insertData.values[i])
+          sql += this.formatter.parameterize(insertData.values[i], this.client.valueForUndefined)
         }
         sql += ')';
       } else if (insertValues.length === 1 && insertValues[0]) {
@@ -112,26 +151,30 @@ assign(QueryCompiler.prototype, {
   // Compiles the "update" query.
   update() {
     // Make sure tableName is processed by the formatter first.
-    var tableName  = this.tableName;
-    var updateData = this._prepUpdate(this.single.update);
-    var wheres     = this.where();
-    return 'update ' + tableName +
+    const { tableName } = this;
+    const updateData = this._prepUpdate(this.single.update);
+    const wheres = this.where();
+    return this.with() +
+      `update ${this.single.only ? 'only ' : ''}${tableName}` +
       ' set ' + updateData.join(', ') +
-      (wheres ? ' ' + wheres : '');
+      (wheres ? ` ${wheres}` : '');
   },
 
   // Compiles the columns in the query, specifying if an item was distinct.
   columns() {
-    var distinct = false;
+    let distinct = false;
     if (this.onlyUnions()) return ''
-    var columns = this.grouped.columns || []
-    var i = -1, sql = [];
+    const columns = this.grouped.columns || []
+    let i = -1, sql = [];
     if (columns) {
       while (++i < columns.length) {
-        var stmt = columns[i];
+        const stmt = columns[i];
         if (stmt.distinct) distinct = true
         if (stmt.type === 'aggregate') {
           sql.push(this.aggregate(stmt))
+        }
+        else if (stmt.type === 'aggregateRaw') {
+          sql.push(this.aggregateRaw(stmt))
         }
         else if (stmt.value && stmt.value.length > 0) {
           sql.push(this.formatter.columnize(stmt.value))
@@ -139,57 +182,107 @@ assign(QueryCompiler.prototype, {
       }
     }
     if (sql.length === 0) sql = ['*'];
-    return 'select ' + (distinct ? 'distinct ' : '') +
-      sql.join(', ') + (this.tableName ? ' from ' + this.tableName : '');
+    return `select ${distinct ? 'distinct ' : ''}` +
+      sql.join(', ') + (this.tableName
+      ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
+      : '');
   },
 
   aggregate(stmt) {
-    var val = stmt.value;
-    var splitOn = val.toLowerCase().indexOf(' as ');
-    var distinct = stmt.aggregateDistinct ? 'distinct ' : '';
+    const val = stmt.value;
+    const splitOn = val.toLowerCase().indexOf(' as ');
+    const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
     // Allows us to speciy an alias for the aggregate types.
     if (splitOn !== -1) {
-      var col = val.slice(0, splitOn);
-      var alias = val.slice(splitOn + 4);
-      return stmt.method + '(' + distinct + this.formatter.wrap(col) + ') as ' + this.formatter.wrap(alias);
+      const col = val.slice(0, splitOn);
+      const alias = val.slice(splitOn + 4);
+      return (
+        `${stmt.method}(${distinct + this.formatter.wrap(col)}) ` +
+        `as ${this.formatter.wrap(alias)}`
+      );
     }
-    return stmt.method + '(' + distinct + this.formatter.wrap(val) + ')';
+    return `${stmt.method}(${distinct + this.formatter.wrap(val)})`;
+  },
+
+  aggregateRaw(stmt) {
+    const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
+    return `${stmt.method}(${distinct + this.formatter.unwrapRaw(stmt.value)})`;
   },
 
   // Compiles all each of the `join` clauses on the query,
   // including any nested join queries.
   join() {
-    var sql = '', i = -1, joins = this.grouped.join;
+    let sql = '';
+    let i = -1;
+    const joins = this.grouped.join;
     if (!joins) return '';
     while (++i < joins.length) {
-      var join = joins[i];
-      var table = join.schema ? `${join.schema}.${join.table}` : join.table;
+      const join = joins[i];
+      const table = join.schema ? `${join.schema}.${join.table}` : join.table;
       if (i > 0) sql += ' '
       if (join.joinType === 'raw') {
         sql += this.formatter.unwrapRaw(join.table)
       } else {
         sql += join.joinType + ' join ' + this.formatter.wrap(table)
-        var ii = -1
+        let ii = -1
         while (++ii < join.clauses.length) {
-          var clause = join.clauses[ii]
-          sql += ' ' + (ii > 0 ? clause[0] : clause[1]) + ' '
-          sql += this.formatter.wrap(clause[2])
-          if (!isUndefined(clause[3])) sql += ' ' + this.formatter.operator(clause[3])
-          if (!isUndefined(clause[4])) sql += ' ' + this.formatter.wrap(clause[4])
+          const clause = join.clauses[ii]
+          if (ii > 0) {
+            sql += ` ${clause.bool} `;
+          } else {
+            sql += ` ${clause.type === 'onUsing' ? 'using' : 'on'} `;
+          }
+          const val = this[clause.type].call(this, clause);
+          if (val) {
+            sql += val;
+          }
         }
       }
     }
     return sql;
   },
 
+  onBetween(statement) {
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'between') + ' ' +
+      map(statement.value, bind(this.formatter.parameter, this.formatter)).join(' and ');
+  },
+
+  onNull(statement) {
+    return this.formatter.wrap(statement.column) + ' is ' + this._not(statement, 'null');
+  },
+
+  onExists(statement) {
+    return this._not(statement, 'exists') + ' (' + this.formatter.rawOrFn(statement.value) + ')';
+  },
+
+  onIn(statement) {
+    if (Array.isArray(statement.column)) return this.multiOnIn(statement);
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'in ') +
+      this.wrap(this.formatter.parameterize(statement.value));
+  },
+
+  multiOnIn(statement) {
+    let i = -1, sql = `(${this.formatter.columnize(statement.column)}) `
+    sql += this._not(statement, 'in ') + '(('
+    while (++i < statement.value.length) {
+      if (i !== 0) sql += '),('
+      sql += this.formatter.parameterize(statement.value[i])
+    }
+    return sql + '))'
+  },
+
   // Compiles all `where` statements on the query.
   where() {
-    var wheres = this.grouped.where;
+    const wheres = this.grouped.where;
     if (!wheres) return;
-    var i = -1, sql = [];
+    const sql = [];
+    let i = -1;
     while (++i < wheres.length) {
-      var stmt = wheres[i]
-      var val = this[stmt.type](stmt)
+      const stmt = wheres[i]
+      if(stmt.hasOwnProperty('value') && helpers.containsUndefined(stmt.value)) {
+        this._undefinedInWhereClause = true;
+      }
+      const val = this[stmt.type](stmt)
       if (val) {
         if (sql.length === 0) {
           sql[0] = 'where'
@@ -212,38 +305,81 @@ assign(QueryCompiler.prototype, {
 
   // Compiles the `having` statements.
   having() {
-    var havings = this.grouped.having;
+    const havings = this.grouped.having;
     if (!havings) return '';
-    var sql = ['having'];
-    for (var i = 0, l = havings.length; i < l; i++) {
-      var str = '', s = havings[i];
-      if (i !== 0) str = s.bool + ' ';
-      if (s.type === 'havingBasic') {
-        sql.push(str + this.formatter.columnize(s.column) + ' ' +
-          this.formatter.operator(s.operator) + ' ' + this.formatter.parameter(s.value));
-      } else {
-        if(s.type === 'whereWrapped'){
-          var val = this.whereWrapped(s)
-          if (val) sql.push(val)
-        } else {
-          sql.push(str + this.formatter.unwrapRaw(s.value));
+    const sql = ['having'];
+    for (let i = 0, l = havings.length; i < l; i++) {
+      const s = havings[i];
+      const val = this[s.type](s);
+      if (val) {
+        if(sql.length === 0) {
+          sql[0] = 'where';
         }
+        if (sql.length > 1 || (sql.length === 1 && sql[0] !== 'having')) {
+          sql.push(s.bool)
+        }
+        sql.push(val)
       }
     }
     return sql.length > 1 ? sql.join(' ') : '';
   },
 
+  havingRaw(statement) {
+    return this._not(statement, '') + this.formatter.unwrapRaw(statement.value);
+  },
+
+  havingWrapped(statement) {
+    const val = this.formatter.rawOrFn(statement.value, 'where')
+    return val && this._not(statement, '') + '(' + val.slice(6) + ')' || '';
+  },
+
+  havingBasic(statement) {
+    return this._not(statement, '') +
+      this.formatter.wrap(statement.column) + ' ' +
+      this.formatter.operator(statement.operator) + ' ' +
+      this.formatter.parameter(statement.value);
+  },
+
+  havingNull(statement) {
+    return this.formatter.wrap(statement.column) + ' is ' + this._not(statement, 'null');
+  },
+
+  havingExists(statement) {
+    return this._not(statement, 'exists') + ' (' + this.formatter.rawOrFn(statement.value) + ')';
+  },
+
+  havingBetween(statement) {
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'between') + ' ' +
+      map(statement.value, bind(this.formatter.parameter, this.formatter)).join(' and ');
+  },
+
+  havingIn(statement) {
+    if (Array.isArray(statement.column)) return this.multiHavingIn(statement);
+    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'in ') +
+      this.wrap(this.formatter.parameterize(statement.value));
+  },
+
+  multiHavingIn(statement) {
+    let i = -1, sql = `(${this.formatter.columnize(statement.column)}) `
+    sql += this._not(statement, 'in ') + '(('
+    while (++i < statement.value.length) {
+      if (i !== 0) sql += '),('
+      sql += this.formatter.parameterize(statement.value[i])
+    }
+    return sql + '))'
+  },
+
   // Compile the "union" queries attached to the main query.
   union() {
-    var onlyUnions = this.onlyUnions();
-    var unions = this.grouped.union;
+    const onlyUnions = this.onlyUnions();
+    const unions = this.grouped.union;
     if (!unions) return '';
-    var sql = '';
-    for (var i = 0, l = unions.length; i < l; i++) {
-      var union = unions[i];
+    let sql = '';
+    for (let i = 0, l = unions.length; i < l; i++) {
+      const union = unions[i];
       if (i > 0) sql += ' ';
       if (i > 0 || !onlyUnions) sql += union.clause + ' ';
-      var statement = this.formatter.rawOrFn(union.value);
+      const statement = this.formatter.rawOrFn(union.value);
       if (statement) {
         if (union.wrap) sql += '(';
         sql += statement;
@@ -260,28 +396,29 @@ assign(QueryCompiler.prototype, {
   },
 
   limit() {
-    var noLimit = !this.single.limit && this.single.limit !== 0;
+    const noLimit = !this.single.limit && this.single.limit !== 0;
     if (noLimit) return '';
-    return 'limit ' + this.formatter.parameter(this.single.limit);
+    return `limit ${this.formatter.parameter(this.single.limit)}`;
   },
 
   offset() {
     if (!this.single.offset) return '';
-    return 'offset ' + this.formatter.parameter(this.single.offset);
+    return `offset ${this.formatter.parameter(this.single.offset)}`;
   },
 
   // Compiles a `delete` query.
   del() {
     // Make sure tableName is processed by the formatter first.
-    var tableName  = this.tableName;
-    var wheres = this.where();
-    return 'delete from ' + tableName +
-      (wheres ? ' ' + wheres : '');
+    const { tableName } = this;
+    const wheres = this.where();
+    return this.with() +
+      `delete from ${this.single.only ? 'only ' : ''}${tableName}` +
+      (wheres ? ` ${wheres}` : '');
   },
 
   // Compiles a `truncate` query.
   truncate() {
-    return 'truncate ' + this.tableName;
+    return `truncate ${this.tableName}`;
   },
 
   // Compiles the "locks".
@@ -297,13 +434,55 @@ assign(QueryCompiler.prototype, {
 
   // Compile the "counter".
   counter() {
-    var counter = this.single.counter;
-    var toUpdate = {};
+    const { counter } = this.single;
+    const toUpdate = {};
     toUpdate[counter.column] = this.client.raw(this.formatter.wrap(counter.column) +
       ' ' + (counter.symbol || '+') +
       ' ' + counter.amount);
     this.single.update = toUpdate;
     return this.update();
+  },
+
+  // On Clause
+  // ------
+
+  onWrapped(clause) {
+    const self = this;
+
+    const wrapJoin = new JoinClause();
+    clause.value.call(wrapJoin, wrapJoin);
+
+    let sql = '';
+    wrapJoin.clauses.forEach(function(wrapClause, ii) {
+      if (ii > 0) {
+        sql += ` ${wrapClause.bool} `;
+      }
+      const val = self[wrapClause.type](wrapClause);
+      if (val) {
+        sql += val;
+      }
+    });
+
+    if (sql.length) {
+      return `(${sql})`;
+    }
+    return '';
+  },
+
+  onBasic(clause) {
+    return (
+      this.formatter.wrap(clause.column) + ' ' +
+      this.formatter.operator(clause.operator) + ' ' +
+      this.formatter.wrap(clause.value)
+    );
+  },
+
+  onRaw(clause) {
+    return this.formatter.unwrapRaw(clause.value);
+  },
+
+  onUsing(clause) {
+    return this.formatter.wrap(clause.column);
   },
 
   // Where Clause
@@ -338,7 +517,7 @@ assign(QueryCompiler.prototype, {
   },
 
   whereWrapped(statement) {
-    var val = this.formatter.rawOrFn(statement.value, 'where')
+    const val = this.formatter.rawOrFn(statement.value, 'where')
     return val && this._not(statement, '') + '(' + val.slice(6) + ')' || '';
   },
 
@@ -349,40 +528,63 @@ assign(QueryCompiler.prototype, {
 
   // Compiles a "whereRaw" query.
   whereRaw(statement) {
-    return this.formatter.unwrapRaw(statement.value);
+    return this._not(statement, '') + this.formatter.unwrapRaw(statement.value);
   },
 
   wrap(str) {
-    if (str.charAt(0) !== '(') return '(' + str + ')';
+    if (str.charAt(0) !== '(') return `(${str})`;
     return str;
+  },
+
+
+  // Compiles all `with` statements on the query.
+  with() {
+    if(!this.grouped.with || !this.grouped.with.length)  {
+      return '';
+    }
+    const withs = this.grouped.with;
+    if (!withs) return;
+    const sql = [];
+    let i = -1;
+    while (++i < withs.length) {
+      const stmt = withs[i]
+      const val = this[stmt.type](stmt)
+      sql.push(val);
+    }
+    return 'with ' + sql.join(', ') + ' ';
+  },
+
+  withWrapped(statement) {
+    const val = this.formatter.rawOrFn(statement.value);
+    return val && this.formatter.columnize(statement.alias) + ' as (' + val + ')' || '';
   },
 
   // Determines whether to add a "not" prefix to the where clause.
   _not(statement, str) {
-    if (statement.not) return 'not ' + str;
+    if (statement.not) return `not ${str}`;
     return str;
   },
 
   _prepInsert(data) {
-    var isRaw = this.formatter.rawOrFn(data);
+    const isRaw = this.formatter.rawOrFn(data);
     if (isRaw) return isRaw;
-    var columns = [];
-    var values  = [];
+    let columns = [];
+    const values = [];
     if (!Array.isArray(data)) data = data ? [data] : [];
-    var i = -1
+    let i = -1
     while (++i < data.length) {
       if (data[i] == null) break;
       if (i === 0) columns = Object.keys(data[i]).sort()
-      var row  = new Array(columns.length)
-      var keys = Object.keys(data[i])
-      var j = -1
+      const row = new Array(columns.length)
+      const keys = Object.keys(data[i])
+      let j = -1
       while (++j < keys.length) {
-        var key = keys[j];
-        var idx = columns.indexOf(key);
+        const key = keys[j];
+        let idx = columns.indexOf(key);
         if (idx === -1) {
           columns = columns.concat(key).sort()
-          idx     = columns.indexOf(key)
-          var k = -1
+          idx = columns.indexOf(key)
+          let k = -1
           while (++k < values.length) {
             values[k].splice(idx, 0, undefined)
           }
@@ -393,31 +595,40 @@ assign(QueryCompiler.prototype, {
       values.push(row)
     }
     return {
-      columns: columns,
-      values:  values
+      columns,
+      values
     };
   },
 
   // "Preps" the update.
   _prepUpdate(data) {
     data = omitBy(data, isUndefined)
-    var vals   = []
-    var sorted = Object.keys(data).sort()
-    var i      = -1
-    while (++i < sorted.length) {
-      vals.push(this.formatter.wrap(sorted[i]) + ' = ' + this.formatter.parameter(data[sorted[i]]));
+    const vals = []
+    const columns = Object.keys(data)
+    let i = -1
+    while (++i < columns.length) {
+      vals.push(
+        this.formatter.wrap(columns[i]) +
+        ' = ' +
+        this.formatter.parameter(data[columns[i]])
+      );
     }
     return vals;
   },
 
   // Compiles the `order by` statements.
   _groupsOrders(type) {
-    var items = this.grouped[type];
+    const items = this.grouped[type];
     if (!items) return '';
-    var formatter = this.formatter;
-    var sql = items.map(function (item) {
-      return (item.value instanceof Raw ? formatter.unwrapRaw(item.value) : formatter.columnize(item.value)) +
-        ((type === 'order' && item.type !== 'orderByRaw') ? ' ' + formatter.direction(item.direction) : '');
+    const { formatter } = this;
+    const sql = items.map(item => {
+      const column = item.value instanceof Raw
+        ? formatter.unwrapRaw(item.value)
+        : formatter.columnize(item.value);
+      const direction = type === 'order' && item.type !== 'orderByRaw'
+        ? ` ${formatter.direction(item.direction)}`
+        : '';
+      return column + direction;
     });
     return sql.length ? type + ' by ' + sql.join(', ') : '';
   }
@@ -432,8 +643,8 @@ Object.defineProperty(QueryCompiler.prototype, 'tableName', {
   get() {
     if(!this._tableName) {
       // Only call this.formatter.wrap() the first time this property is accessed.
-      var tableName = this.single.table;
-      var schemaName = this.single.schema;
+      let tableName = this.single.table;
+      const schemaName = this.single.schema;
 
       if (tableName && schemaName) tableName = `${schemaName}.${tableName}`;
 
@@ -444,4 +655,4 @@ Object.defineProperty(QueryCompiler.prototype, 'tableName', {
 });
 
 
-module.exports = QueryCompiler;
+export default QueryCompiler;

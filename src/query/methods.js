@@ -1,7 +1,8 @@
 
 // All properties we can use to start a query chain
 // from the `knex` object, e.g. `knex.select('*').from(...`
-module.exports = [
+export default [
+  'with',
   'select',
   'as',
   'columns',
@@ -74,6 +75,8 @@ module.exports = [
   'first',
   'debug',
   'pluck',
+  'clearSelect',
+  'clearWhere',
   'insert',
   'update',
   'returning',

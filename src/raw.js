@@ -1,163 +1,190 @@
 
 // Raw
 // -------
-var inherits      = require('inherits')
-var EventEmitter  = require('events').EventEmitter
+import inherits from 'inherits';
+import * as helpers from './helpers';
+import { EventEmitter } from 'events';
+import debug from 'debug'
 
-import {assign, reduce, isPlainObject, isObject, isUndefined, isNumber} from 'lodash'
+import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
+import Formatter from './formatter'
 
-function Raw(client) {
-  this.client   = client
+import uuid from 'uuid';
 
-  this.sql      = ''
+const debugBindings = debug('knex:bindings')
+
+const fakeClient = {
+  formatter(builder) {
+    return new Formatter(fakeClient, builder)
+  }
+}
+
+function Raw(client = fakeClient) {
+  this.client = client
+
+  this.sql = ''
   this.bindings = []
-  this._cached  = undefined
 
   // Todo: Deprecate
   this._wrappedBefore = undefined
-  this._wrappedAfter  = undefined
-  this._debug         = client && client.config && client.config.debug
+  this._wrappedAfter = undefined
+  this._debug = client && client.config && client.config.debug
 }
 inherits(Raw, EventEmitter)
 
 assign(Raw.prototype, {
 
-  set: function(sql, bindings) {
-    this._cached  = undefined
-    this.sql      = sql
-    this.bindings = (isObject(bindings) || isUndefined(bindings)) ?  bindings : [bindings]
+  set(sql, bindings) {
+    this.sql = sql
+    this.bindings = (
+      (isObject(bindings) && !bindings.toSQL) ||
+      isUndefined(bindings)
+    ) ? bindings : [bindings]
 
     return this
   },
 
-  timeout: function(ms) {
-    if(isNumber(ms) && ms > 0) {
+  timeout(ms, {cancel} = {}) {
+    if (isNumber(ms) && ms > 0) {
       this._timeout = ms;
+      if (cancel) {
+        this.client.assertCanCancelQuery();
+        this._cancelOnTimeout = true;
+      }
     }
     return this;
   },
 
   // Wraps the current sql with `before` and `after`.
-  wrap: function(before, after) {
-    this._cached        = undefined
+  wrap(before, after) {
     this._wrappedBefore = before
-    this._wrappedAfter  = after
+    this._wrappedAfter = after
     return this
   },
 
   // Calls `toString` on the Knex object.
-  toString: function() {
+  toString() {
     return this.toQuery()
   },
 
   // Returns the raw sql for the query.
-  toSQL: function(method, tz) {
-    if (this._cached) return this._cached
+  toSQL(method, tz) {
+    let obj
+    const formatter = this.client.formatter(this)
+
     if (Array.isArray(this.bindings)) {
-      this._cached = replaceRawArrBindings(this)
+      obj = replaceRawArrBindings(this, formatter)
     } else if (this.bindings && isPlainObject(this.bindings)) {
-      this._cached = replaceKeyBindings(this)
+      obj = replaceKeyBindings(this, formatter)
     } else {
-      this._cached = {
+      obj = {
         method: 'raw',
         sql: this.sql,
-        bindings: isUndefined(this.bindings) ? void 0 : [this.bindings]
+        bindings: isUndefined(this.bindings) ? [] : [this.bindings]
       }
     }
+
     if (this._wrappedBefore) {
-      this._cached.sql = this._wrappedBefore + this._cached.sql
+      obj.sql = this._wrappedBefore + obj.sql
     }
     if (this._wrappedAfter) {
-      this._cached.sql = this._cached.sql + this._wrappedAfter
+      obj.sql = obj.sql + this._wrappedAfter
     }
-    this._cached.options = reduce(this._options, assign, {})
-    if(this._timeout) {
-      this._cached.timeout = this._timeout;
+
+    obj.options = reduce(this._options, assign, {})
+
+    if (this._timeout) {
+      obj.timeout = this._timeout;
+      if (this._cancelOnTimeout) {
+        obj.cancelOnTimeout = this._cancelOnTimeout;
+      }
     }
-    if(this.client && this.client.prepBindings) {
-      this._cached.bindings = this.client.prepBindings(this._cached.bindings || [], tz);
+
+    obj.bindings = obj.bindings || [];
+    if (helpers.containsUndefined(obj.bindings)) {
+      debugBindings(obj.bindings)
+      throw new Error(
+        `Undefined binding(s) detected when compiling RAW query: ` +
+        obj.sql
+      );
     }
-    return this._cached
+
+    obj.__knexQueryUid = uuid.v4();
+
+    return obj
   }
 
 })
 
-function replaceRawArrBindings(raw) {
-  var expectedBindings = raw.bindings.length
-  var values           = raw.bindings
-  var client           = raw.client
-  var index            = 0;
-  var bindings         = []
+function replaceRawArrBindings(raw, formatter) {
+  const expectedBindings = raw.bindings.length
+  const values = raw.bindings
+  let index = 0;
 
-  var sql = raw.sql.replace(/\\?\?\??/g, function(match) {
+  const sql = raw.sql.replace(/\\?\?\??/g, function(match) {
     if (match === '\\?') {
       return match
     }
 
-    var value = values[index++]
-
-    if (value && typeof value.toSQL === 'function') {
-      var bindingSQL = value.toSQL()
-      if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)
-      }
-      return bindingSQL.sql
-    }
+    const value = values[index++]
 
     if (match === '??') {
-      return client.formatter().columnize(value)
+      return formatter.columnize(value)
     }
-    bindings.push(value)
-    return '?'
+    return formatter.parameter(value)
   })
 
   if (expectedBindings !== index) {
-    throw new Error('Expected ' + expectedBindings + ' bindings, saw ' + index)
+    throw new Error(`Expected ${expectedBindings} bindings, saw ${index}`)
   }
 
   return {
     method: 'raw',
-    sql: sql,
-    bindings: bindings
+    sql,
+    bindings: formatter.bindings
   }
 }
 
-function replaceKeyBindings(raw) {
-  var values   = raw.bindings
-  var client   = raw.client
-  var sql      = raw.sql, bindings = []
+function replaceKeyBindings(raw, formatter) {
+  const values = raw.bindings
+  let { sql } = raw
 
-  var regex = new RegExp('(\\:\\w+\\:?)', 'g')
-  sql = raw.sql.replace(regex, function(full) {
-    var key = full.trim();
-    var isIdentifier = key[key.length - 1] === ':'
-    var value = isIdentifier ? values[key.slice(1, -1)] : values[key.slice(1)]
+  const regex = /\\?(:(\w+):(?=::)|:(\w+):(?!:)|:(\w+))/g
+  sql = raw.sql.replace(regex, function(match, p1, p2, p3, p4) {
+    if (match !== p1) {
+      return p1
+    }
+
+    const part = p2 || p3 || p4
+    const key = match.trim();
+    const isIdentifier = key[key.length - 1] === ':'
+    const value = values[part]
+
     if (value === undefined) {
-      return full;
-    }
-    if (value && typeof value.toSQL === 'function') {
-      var bindingSQL = value.toSQL()
-      if (bindingSQL.bindings !== undefined) {
-        bindings = bindings.concat(bindingSQL.bindings)
+      if (values.hasOwnProperty(part)) {
+        formatter.bindings.push(value);
       }
-      return full.replace(key, bindingSQL.sql)
+
+      return match
     }
+
     if (isIdentifier) {
-      return full.replace(key, client.formatter().columnize(value))
+      return match.replace(p1, formatter.columnize(value))
     }
-    bindings.push(value)
-    return full.replace(key, '?')
+
+    return match.replace(p1, formatter.parameter(value))
   })
 
   return {
     method: 'raw',
-    sql: sql,
-    bindings: bindings
+    sql,
+    bindings: formatter.bindings
   }
 }
 
 // Allow the `Raw` object to be utilized with full access to the relevant
 // promise API.
 require('./interface')(Raw)
+helpers.addQueryContext(Raw);
 
-module.exports = Raw
+export default Raw

@@ -14,7 +14,7 @@ tape('accumulates multiple update calls #647', function(t) {
 
 tape('allows for object syntax in join', function(t) {
   t.plan(1)
-  var qb = new QueryBuilder(new Client())
+  var qb = new QueryBuilder(new Client({client: 'mysql'}))
   var sql = qb.table('users').innerJoin('accounts', {
     'accounts.id': 'users.account_id',
     'accounts.owner_id': 'users.id'
@@ -24,7 +24,7 @@ tape('allows for object syntax in join', function(t) {
 })
 
 tape('clones correctly', function(t) {
-  var qb = new QueryBuilder(new Client())
+  var qb = new QueryBuilder(new Client({client: 'mysql'}))
   var original = qb.table('users').debug().innerJoin('accounts', {
     'accounts.id': 'users.account_id',
     'accounts.owner_id': 'users.id'

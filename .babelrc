@@ -1,0 +1,10 @@
+{
+  "presets": [ 
+    ["es2015", { "loose": true }] 
+  ],
+  "plugins": [
+    "lodash",
+    "transform-runtime",
+    "add-module-exports"
+  ]
+}

@@ -1,18 +1,20 @@
+/*eslint no-var:0*/
 'use strict';
-
-var tape     = require('tape')
+// var wtf = require('wtfnode');
+var tape = require('tape')
 var makeKnex = require('../../knex')
 var knexfile = require('../knexfile')
 
-Object.keys(knexfile).forEach(function(key) {
+require('./parse-connection')
+require('./raw')
+require('./query-builder')
+require('./seed')
+require('./migrate')
+require('./pool')
+require('./knex')
+require('./invalid-db-setup')(knexfile)
 
-  require('./parse-connection')
-  require('./raw')
-  require('./query-builder')
-  require('./seed')
-  require('./migrate')
-  require('./pool')
-  require('./knex')
+Object.keys(knexfile).forEach(function(key) {
 
   var knex = makeKnex(knexfile[key])
 
@@ -21,9 +23,9 @@ Object.keys(knexfile).forEach(function(key) {
 
   // Tear down the knex connection
   tape(knex.client.driverName + ' - transactions: after', function(t) {
-    knex.destroy().then(function() {
+    knex.destroy(function() {
+      t.pass('Knex client destroyed')
       t.end()
     })
   })
-
 })
