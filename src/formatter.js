@@ -1,6 +1,5 @@
 import QueryBuilder from './query/builder';
 import Raw from './raw';
-import { transform } from 'lodash'
 import {assign, transform} from 'lodash'
 
 // Valid values for the `order by` clause generation.
