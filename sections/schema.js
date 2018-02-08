@@ -312,6 +312,7 @@ export default [
   },
   {
     type: "method",
+    id: "Schema-enum",
     method: "enum / enu",
     example: "table.enu(col, values)",
     description: "Adds a enum column, (aliased to enu, as enum is a reserved word in JavaScript). Note that the second argument is an array of values. Example:",
@@ -596,6 +597,7 @@ export default [
     method: "comment",
     example: "column.comment(value)",
     description: "Sets the comment for a column.",
+    id: "Column-comment",
     children: [    ]
   },
   {
@@ -612,6 +614,7 @@ export default [
     method: "collate",
     example: "column.collate(collation)",
     description: "Sets the collation for a column (only works in MySQL). Here is a list of all available collations: https://dev.mysql.com/doc/refman/5.5/en/charset-charsets.html",
+    id: "Column-collate",
     children: [    ]
   },
   {

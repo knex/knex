@@ -204,8 +204,8 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-nullable">nullable</a></li>
           <li>– <a href="#Schema-first">first</a></li>
           <li>– <a href="#Schema-after">after</a></li>
-          <li>– <a href="#Schema-comment">comment</a></li>
-          <li>– <a href="#Schema-collate">collate</a></li>
+          <li>– <a href="#Column-comment">comment</a></li>
+          <li>– <a href="#Column-collate">collate</a></li>
         </ul>
 
         <a className="toc_title" href="#Raw">

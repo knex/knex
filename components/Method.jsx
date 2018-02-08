@@ -11,13 +11,14 @@ export default class Method extends Component {
     example: PropTypes.string,
     children: PropTypes.array,
     description: PropTypes.string,
-    method: PropTypes.string.isRequired
+    method: PropTypes.string.isRequired,
+    id: PropTypes.string
   };
 
   render() {
     const {
       context: {section},
-      props: {method, example, children, description}
+      props: {method, example, children, description, id}
     } = this
 
     let methodContent = []
@@ -33,7 +34,7 @@ export default class Method extends Component {
     }
 
     return (
-      <div id={`${section}-${method}`}>
+      <div id={id ? id : `${section}-${method}`}>
         <b>{method}</b>
         {example && ` — `}
         {example && <code>{example}</code>}
