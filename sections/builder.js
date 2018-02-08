@@ -1749,7 +1749,7 @@ export default [
         content: `
           knex('accounts as a1')
             .queryContext({ foo: 'bar' })
-            .select(['a1.email', 'a2.email']
+            .select(['a1.email', 'a2.email'])
         `
       },
       {
