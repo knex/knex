@@ -490,7 +490,7 @@ assign(QueryCompiler.prototype, {
 
   whereIn(statement) {
     let columns = null;
-    if (isArray(statement.column)) {
+    if (Array.isArray(statement.column)) {
       columns = `(${this.formatter.columnize(statement.column)})`
     } else {
       columns = this.formatter.wrap(statement.column);
