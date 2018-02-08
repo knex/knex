@@ -78,7 +78,7 @@ export default class Formatter {
     }
 
     return this.parameter(values);
-  },
+  }
 
   // Checks whether a value is a function... if it is, we compile it
   // otherwise we check whether it's a raw
