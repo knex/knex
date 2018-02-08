@@ -12,7 +12,7 @@ export default [
       "**How do I debug?**  \nKnex is beginning to make use of the [debug](https://github.com/visionmedia/debug) module internally, so you can set the `DEBUG` environment variable to `knex:*` to see all debugging, or select individual namespaces `DEBUG=knex:query,knex:tx` to constrain a bit.",
       "If you pass `{debug: true}` as one of the options in your initialize settings, you can see all of the query calls being made. Sometimes you need to dive a bit further into the various calls and see what all is going on behind the scenes. I'd recommend [node-inspector](https://github.com/dannycoates/node-inspector), which allows you to debug code with `debugger` statements like you would in the browser.",
       "At the start of your application code will catch any errors not otherwise caught in the normal promise chain handlers, which is very helpful in debugging.",
-      "**How do I run the test suite?**  \nThe test suite looks for an environment variable called `KNEX_TEST` for the path to the database configuration. If you run the following command:"
+      "**How do I run the test suite?**  \nThe test suite looks for an environment variable called `KNEX_TEST` for the path to the database configuration. If you run the following command:",
     ]
   },
   {
@@ -38,6 +38,9 @@ export default [
   },
   {
     type: "text",
-    content: "**Can I use Knex outside of Node.js**  \nYes. While the WebSQL spec is deprecated, there is still an adapter that provides support. You will need to use a build tool like browserify or webpack for a browser build."
+    content: [
+      "**Can I use Knex outside of Node.js**  \nYes. While the WebSQL spec is deprecated, there is still an adapter that provides support. You will need to use a build tool like browserify or webpack for a browser build.",
+      "**I found something broken with Amazon Redshift! Can you help?**  \nBecause there is no testing platform available for Amazon Redshift, be aware that it is included as a dialect but is unsupported. With that said, please file an issue if something is found to be broken that is not noted in the documentation, and we will do our best.",
+    ]
   }
 ]

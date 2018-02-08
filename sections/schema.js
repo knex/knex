@@ -219,7 +219,7 @@ export default [
     type: "method",
     method: "increments",
     example: "table.increments(name)",
-    description: "Adds an auto incrementing column, in PostgreSQL this is a serial. This will be used as the primary key for the table. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial).",
+    description: "Adds an auto incrementing column. In PostgreSQL this is a serial; in Amazon Redshift an integer identity(1,1). This will be used as the primary key for the table. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial).",
     children: [  
       {
         type: 'code',
@@ -310,7 +310,7 @@ export default [
     type: "method",
     method: "time",
     example: "table.time(name)",
-    description: "Adds a time column.",
+    description: "Adds a time column. Not supported on Amazon Redshift.",
     children: [    ]
   },
   {
@@ -350,7 +350,7 @@ export default [
     id: "Schema-enum",
     method: "enum / enu",
     example: "table.enu(col, values)",
-    description: "Adds a enum column, (aliased to enu, as enum is a reserved word in JavaScript). Note that the second argument is an array of values. Example:",
+    description: "Adds a enum column, (aliased to enu, as enum is a reserved word in JavaScript). Implemented as unchecked varchar(255) on Amazon Redshift. Note that the second argument is an array of values. Example:",
     children: [{
       type: 'code',
       language: 'js',
@@ -437,14 +437,14 @@ export default [
     type: "method",
     method: "index",
     example: "table.index(columns, [indexName], [indexType])",
-    description: "Adds an index to a table over the given columns. A default index name using the columns is used unless indexName is specified. The indexType can be optionally specified for PostgreSQL.",
+    description: "Adds an index to a table over the given columns. A default index name using the columns is used unless indexName is specified. The indexType can be optionally specified for PostgreSQL. Amazon Redshift does not allow creating an index.",
     children: [    ]
   },
   {
     type: "method",
     method: "dropIndex",
     example: "table.dropIndex(columns, [indexName])",
-    description: "Drops an index from a table. A default index name using the columns is used unless indexName is specified (in which case columns is ignored).",
+    description: "Drops an index from a table. A default index name using the columns is used unless indexName is specified (in which case columns is ignored). Amazon Redshift does not allow creating an index.",
     children: [    ]
   },
   {
@@ -575,7 +575,7 @@ export default [
     type: "method",
     method: "alter",
     example: "column.alter()",
-    description: 'Marks the column as an alter / modify, instead of the default add. Note: This only works in .alterTable() and is not supported by SQlite. Alter is *not* done incrementally over older column type so if you like to add `notNull` and keep the old default value, the alter statement must contain both `.notNull().defaultTo(1).alter()`. If one just tries to add `.notNull().alter()` the old default value will be dropped.',
+    description: 'Marks the column as an alter / modify, instead of the default add. Note: This only works in .alterTable() and is not supported by SQlite or Amazon Redshift. Alter is *not* done incrementally over older column type so if you like to add `notNull` and keep the old default value, the alter statement must contain both `.notNull().defaultTo(1).alter()`. If one just tries to add `.notNull().alter()` the old default value will be dropped.',
     children: [    ]
   },
   {
@@ -606,6 +606,7 @@ export default [
       To create a compound primary key, pass an array of column names:
       \`table.primary(['column1', 'column2'])\`.
       Constraint name defaults to \`tablename_pkey\` unless \`constraintName\` is specified.
+      On Amazon Redshift, all columns included in a primary key must be not nullable.
     `,
     children: [    ]
   },
@@ -613,7 +614,7 @@ export default [
     type: "method",
     method: "unique",
     example: "column.unique()",
-    description: "Sets the column as unique.",
+    description: "Sets the column as unique. On Amazon Redshift, this constraint is not enforced, but it is used by the query planner.",
     children: [    ]
   },
   {

@@ -98,7 +98,8 @@ export default [
     type: "text",
     content: [
       "Throwing an error directly from the transaction handler function automatically rolls back the transaction, same as returning a rejected promise.",
-      "Notice that if a promise is not returned within the handler, it is up to you to ensure `trx.commit`, or `trx.rollback` are called, otherwise the transaction connection will hang."
+      "Notice that if a promise is not returned within the handler, it is up to you to ensure `trx.commit`, or `trx.rollback` are called, otherwise the transaction connection will hang.",
+      "Note that Amazon Redshift does not support savepoints in transactions.",
     ]
   }
 ]
