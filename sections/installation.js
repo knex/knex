@@ -327,6 +327,7 @@ export default [
     content: [
       "Hook for modifying returned rows, before passing them forward to user. One can do for example",
       "snake_case -> camelCase conversion for returned columns with this hook.",
+      "The `queryContext` is only available if configured for a query builder instance via [queryContext](#Builder-queryContext)."
     ].join(' ')
   },
   {
@@ -336,7 +337,7 @@ export default [
       var knex = require('knex')({
         client: 'mysql',
         // overly simplified snake_case -> camelCase converter
-        postProcessResponse: (result) => {
+        postProcessResponse: (result, queryContext) => {
           // TODO: add special case for raw results (depends on dialect)
           if (Array.isArray(result)) {
             return result.map(row => convertToCamel(row));
@@ -370,9 +371,11 @@ export default [
   {
     type: "text",
     content: [
-      "Conversion function `wrapIdentifier(value, dialectImpl): string` gets each part of the identifier as a single `value`",
-      "and the second parameter is the original conversion function from the dialect implementation.",
-      "For example `knex('table').withSchema('foo').select('table.field as otherName').where('id', 1)` will call",
+      "Conversion function `wrapIdentifier(value, dialectImpl, context): string` gets each part of the identifier",
+      "as a single `value`, the original conversion function from the dialect implementation and the `queryContext`,",
+      "which is only available if configured for a query builder instance via [builder.queryContext](#Builder-queryContext),",
+      "and for schema builder instances via [schema.queryContext](#Schema-queryContext) or [table.queryContext](#Schema-table-queryContext).",
+      "For example, with the query builder, `knex('table').withSchema('foo').select('table.field as otherName').where('id', 1)` will call",
       "`wrapIdentifier` converter for following values `'table'`, `'foo'`, `'table'`, `'field'`, `'otherName'` and `'id'`.",
     ].join(' ')
   },
@@ -383,7 +386,7 @@ export default [
       var knex = require('knex')({
         client: 'mysql',
         // overly simplified camelCase -> snake_case converter
-        wrapIdentifier: (value, origImpl) => origImpl(convertToSnakeCase(value))
+        wrapIdentifier: (value, origImpl, queryContext) => origImpl(convertToSnakeCase(value))
       });
     `
   },

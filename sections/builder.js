@@ -1751,5 +1751,42 @@ export default [
         `
       }
     ]
+  },
+  {
+    type: "method",
+    method: "queryContext",
+    example: ".queryContext(context)",
+    href: "Builder-queryContext",
+    children: [
+      {
+        type: 'text',
+        content: [
+          "Allows for configuring a context to be passed to the [wrapIdentifier](#Installation-wrap-identifier) and",
+          "[postProcessResponse](#Installation-post-process-response) hooks:",
+        ].join(" ")
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex('accounts as a1')
+            .queryContext({ foo: 'bar' })
+            .select(['a1.email', 'a2.email']
+        `
+      },
+      {
+        type: "text",
+        content: [
+          "The context can be any kind of value and will be passed to the hooks without modification.",
+          "However, note that **objects will be shallow-cloned** when a query builder instance is [cloned](#Builder-clone),",
+          "which means that they will contain all the properties of the original object but will not be the same object reference.",
+          "This allows modifying the context for the cloned query builder instance.",
+        ].join(" ")
+      },
+      {
+        type: "text",
+        content: "Calling `queryContext` with no arguments will return any context configured for the query builder instance."
+      }
+    ]
   }
 ]
