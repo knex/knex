@@ -1,6 +1,6 @@
 import QueryBuilder from './query/builder';
 import Raw from './raw';
-import {assign, transform} from 'lodash'
+import {transform} from 'lodash'
 
 // Valid values for the `order by` clause generation.
 const orderBys = ['asc', 'desc'];
@@ -65,8 +65,8 @@ export default class Formatter {
   // knex.raw('select ?', 1) -> '(select ?)'
   //
   values(values) {
-    if (isArray(values)) {
-      if (isArray(values[0])) {
+    if (Array.isArray(values)) {
+      if (Array.isArray(values[0])) {
         return `(${values.map(value => `(${this.parameterize(value)})`).join(', ')})`;
       }
       return `(${this.parameterize(values)})`;
