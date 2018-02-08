@@ -45,24 +45,6 @@ export default [
   },
   {
     type: "method",
-    method: "createTableIfNotExists",
-    example: "knex.schema.createTableIfNotExists(tableName, callback)",
-    description: "Creates a new table on the database if it doesn't exists on database, with a callback function to modify the table's structure, using the schema-building commands.",
-    children: [
-      {
-        type: "runnable",
-        content: `
-          knex.schema.createTableIfNotExists('users', function (table) {
-            table.increments();
-            table.string('name');
-            table.timestamps();
-          })
-        `
-      }
-    ]
-  },
-  {
-    type: "method",
     method: "renameTable",
     example: "knex.schema.renameTable(from, to)",
     description: "Renames a table from a current tableName to another.",
