@@ -247,7 +247,7 @@ export default [
     type: "method",
     method: "decimal",
     example: "table.decimal(column, [precision], [scale])",
-    description: "Adds a decimal column, with optional precision (defaults to 8) and scale (defaults to 2).",
+    description: "Adds a decimal column, with optional precision (defaults to 8) and scale (defaults to 2). Specifying NULL as precision creates a decimal column that can store numbers of any precision and scale. (Only supported for Oracle, SQLite, Postgres)",
     children: [    ]
   },
   {
@@ -490,9 +490,9 @@ export default [
       knex.schema.alterTable('user', function(t) {
         t.increments().primary(); // add
         // drops previous default value from column, change type to string and add not nullable constraint
-        t.string('username', 35).notNullable().alter(); 
+        t.string('username', 35).notNullable().alter();
         // drops both not null contraint and the default value
-        t.integer('age').alter(); 
+        t.integer('age').alter();
       });
     `
   },
