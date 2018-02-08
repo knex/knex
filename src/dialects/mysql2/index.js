@@ -30,10 +30,11 @@ assign(Client_MySQL2.prototype, {
   },
 
   validateConnection(connection) {
-    if(connection._fatalError) {
-      return Promise.resolve(false);
+    if (connection._fatalError) {
+      return false
     }
-    return Promise.resolve(true);
+
+    return true
   },
 
   // Get a raw connection, called by the `pool` whenever a new

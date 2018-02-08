@@ -43,7 +43,7 @@ assign(Client_MSSQL.prototype, {
   },
 
   formatter() {
-    return new MSSQL_Formatter(this)
+    return new MSSQL_Formatter(this, ...arguments)
   },
 
   transaction() {
@@ -67,7 +67,7 @@ assign(Client_MSSQL.prototype, {
   },
 
   wrapIdentifierImpl(value) {
-    return (value !== '*' ? `[${value.replace(/\[/g, '\[')}]` : '*')
+    return (value !== '*' ? `[${value.replace(/\[/g, '[')}]` : '*')
   },
 
   // Get a raw connection, called by the `pool` whenever a new
@@ -88,10 +88,11 @@ assign(Client_MSSQL.prototype, {
   },
 
   validateConnection(connection) {
-    if(connection.connected === true) {
-      return Promise.resolve(true);
+    if (connection.connected === true) {
+      return true
     }
-    return Promise.resolve(false);
+
+    return false
   },
 
   // Used to explicitly close a connection, called internally by the pool

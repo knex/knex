@@ -16,13 +16,12 @@ import TableCompiler from './schema/tablecompiler';
 import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 
-import * as genericPool from 'generic-pool';
-import * as genericPoolErrors from 'generic-pool/lib/errors'
+import { Pool, TimeoutError } from 'tarn';
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
 import { makeEscape } from './query/string'
-import { assign, uniqueId, cloneDeep, defaults, get } from 'lodash'
+import { assign, uniqueId, cloneDeep, defaults } from 'lodash'
 
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
@@ -62,8 +61,8 @@ inherits(Client, EventEmitter)
 
 assign(Client.prototype, {
 
-  formatter() {
-    return new Formatter(this)
+  formatter(builder) {
+    return new Formatter(this, builder)
   },
 
   queryBuilder() {
@@ -163,18 +162,22 @@ assign(Client.prototype, {
     return sql;
   },
 
-  postProcessResponse(resp) {
+  postProcessResponse(resp, queryContext) {
     if (this.config.postProcessResponse) {
-      return this.config.postProcessResponse(resp);
+      return this.config.postProcessResponse(resp, queryContext);
     }
     return resp;
   },
 
-  wrapIdentifier(value) {
+  wrapIdentifier(value, queryContext) {
+    return this.customWrapIdentifier(value, this.wrapIdentifierImpl, queryContext);
+  },
+
+  customWrapIdentifier(value, origImpl, queryContext) {
     if (this.config.wrapIdentifier) {
-      return this.config.wrapIdentifier(value, this.wrapIdentifierImpl);
+      return this.config.wrapIdentifier(value, origImpl, queryContext);
     }
-    return this.wrapIdentifierImpl(value);
+    return origImpl(value);
   },
 
   wrapIdentifierImpl(value) {
@@ -190,83 +193,75 @@ assign(Client.prototype, {
   },
 
   poolDefaults() {
-    return {min: 2, max: 10, testOnBorrow: true, Promise}
+    return {min: 2, max: 10, propagateCreateError: true}
   },
 
   getPoolSettings(poolConfig) {
     poolConfig = defaults({}, poolConfig, this.poolDefaults());
-    const timeoutValidator = (config, path) => {
-      let timeout = get(config, path)
-      if (timeout !== undefined) {
-        timeout = parseInt(timeout, 10)
-        if (isNaN(timeout) || timeout <= 0) {
-          throw new Error(`${path} must be a positive int`)
-        }
+
+    [
+      'maxWaitingClients',
+      'testOnBorrow',
+      'fifo',
+      'priorityRange',
+      'autostart',
+      'evictionRunIntervalMillis',
+      'numTestsPerRun',
+      'softIdleTimeoutMillis',
+      'Promise'
+    ].forEach(option => {
+      if (option in poolConfig) {
+        helpers.warn([
+          `Pool config option "${option}" is no longer supported.`,
+          `See https://github.com/Vincit/tarn.js for possible pool config options.`
+        ].join(' '))
       }
-      return timeout
-    }
+    })
+
+    const timeouts = [
+      this.config.acquireConnectionTimeout || 60000,
+      poolConfig.acquireTimeoutMillis
+    ].filter(timeout => timeout !== undefined);
 
     // acquire connection timeout can be set on config or config.pool
     // choose the smallest, positive timeout setting and set on poolConfig
-    const timeouts = [
-      timeoutValidator(this.config, 'acquireConnectionTimeout') || 60000,
-      timeoutValidator({pool: poolConfig}, 'pool.acquireTimeoutMillis')
-    ].filter(timeout => timeout !== undefined)
     poolConfig.acquireTimeoutMillis = Math.min(...timeouts);
 
-    return {
-      config: poolConfig,
-      factory: {
-        create: () => {
-          return this.acquireRawConnection()
-            .tap(function(connection) {
-              connection.__knexUid = uniqueId('__knexUid')
-              if (poolConfig.afterCreate) {
-                return Promise.promisify(poolConfig.afterCreate)(connection)
-              }
-            })
-            .catch(err => {
-              // Acquire connection must never reject, because generic-pool
-              // will retry trying to get connection until acquireConnectionTimeout is
-              // reached. acquireConnectionTimeout should trigger in knex only 
-              // in that case if aquiring connection waits because pool is full
-              // https://github.com/coopernurse/node-pool/pull/184
-              // https://github.com/tgriesser/knex/issues/2325
-              return {
-                genericPoolMissingRetryCountHack: true,
-                __knex__disposed: err,
-                query: () => {
-                  throw err; // pass error to query
-                }
-              };
-            });
-        },
-        destroy: (connection) => {
-          if (connection.genericPoolMissingRetryCountHack) {
-            return;
-          }
-          if (poolConfig.beforeDestroy) {
-            helpers.warn(`
-              beforeDestroy is deprecated, please open an issue if you use this
-              to discuss alternative apis
-            `)
-            poolConfig.beforeDestroy(connection, function() {})
-          }
-          if (connection !== void 0) {
-            return this.destroyRawConnection(connection)
-          }
+    return Object.assign(poolConfig, {
+      create: () => {
+        return this.acquireRawConnection().tap(connection => {
+          connection.__knexUid = uniqueId('__knexUid')
 
-          return Promise.resolve();
-        },
-        validate: (connection) => {
-          if (connection.__knex__disposed) {
-            helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
-            return Promise.resolve(false);
+          if (poolConfig.afterCreate) {
+            return Promise.promisify(poolConfig.afterCreate)(connection)
           }
-          return this.validateConnection(connection)
+        });
+      },
+
+      destroy: (connection) => {
+        if (poolConfig.beforeDestroy) {
+          helpers.warn(`
+            beforeDestroy is deprecated, please open an issue if you use this
+            to discuss alternative apis
+          `)
+
+          poolConfig.beforeDestroy(connection, function() {})
+        }
+
+        if (connection !== void 0) {
+          return this.destroyRawConnection(connection)
         }
       },
-    }
+
+      validate: (connection) => {
+        if (connection.__knex__disposed) {
+          helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
+          return false
+        }
+
+        return this.validateConnection(connection)
+      }
+    })
   },
 
   initializePool(config) {
@@ -275,13 +270,11 @@ assign(Client.prototype, {
       return
     }
 
-    const poolSettings = this.getPoolSettings(config.pool);
-
-    this.pool = genericPool.createPool(poolSettings.factory, poolSettings.config)
+    this.pool = new Pool(this.getPoolSettings(config.pool))
   },
 
   validateConnection(connection) {
-    return Promise.resolve(true);
+    return true
   },
 
   // Acquire a connection from the pool.
@@ -289,11 +282,13 @@ assign(Client.prototype, {
     if (!this.pool) {
       return Promise.reject(new Error('Unable to acquire a connection'))
     }
-    return this.pool.acquire()
+
+    return Promise
+      .try(() => this.pool.acquire().promise)
       .tap(connection => {
         debug('acquired connection from pool: %s', connection.__knexUid)
       })
-      .catch(genericPoolErrors.TimeoutError, () => {
+      .catch(TimeoutError, () => {
         throw new Promise.TimeoutError(
           'Knex: Timeout acquiring a connection. The pool is probably full. ' +
           'Are you missing a .transacting(trx) call?'
@@ -305,24 +300,38 @@ assign(Client.prototype, {
   // returning a promise resolved when the connection is released.
   releaseConnection(connection) {
     debug('releasing connection to pool: %s', connection.__knexUid)
-    return this.pool.release(connection).catch(() => {
+    const didRelease = this.pool.release(connection)
+
+    if (!didRelease) {
       debug('pool refused connection: %s', connection.__knexUid)
-    })
+    }
+
+    return Promise.resolve()
   },
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
-    return Promise.resolve(
-      this.pool &&
-      this.pool.drain()
-        .then(() => this.pool.clear())
-        .then(() => {
-          this.pool = void 0
-          if(typeof callback === 'function') {
-            callback();
-          }
-        })
-    );
+    let promise = null
+
+    if (this.pool) {
+      promise = this.pool.destroy()
+    } else {
+      promise = Promise.resolve()
+    }
+
+    return promise.then(() => {
+      this.pool = void 0
+
+      if (typeof callback === 'function') {
+        callback()
+      }
+    }).catch(err => {
+      if (typeof callback === 'function') {
+        callback(err)
+      }
+
+      return Promise.reject(err)
+    })
   },
 
   // Return the database being used by this client.

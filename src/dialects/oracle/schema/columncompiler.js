@@ -69,7 +69,7 @@ assign(ColumnCompiler_Oracle.prototype, {
     allowed = uniq(allowed);
     const maxLength = (allowed || []).reduce((maxLength, name) =>
       Math.max(maxLength, String(name).length)
-    , 1);
+      , 1);
 
     // implicitly add the enum values as checked values
     this.columnBuilder._modifiers.checkIn = [allowed];

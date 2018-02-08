@@ -74,7 +74,7 @@ assign(TableCompiler_MSSQL.prototype, {
   },
 
   dropFKRefs (runner, refs) {
-    const formatter = this.client.formatter();
+    const formatter = this.client.formatter(this.tableBuilder);
     return Promise.all(refs.map(function (ref) {
       const constraintName = formatter.wrap(ref.CONSTRAINT_NAME);
       const tableName = formatter.wrap(ref.TABLE_NAME);
@@ -84,7 +84,7 @@ assign(TableCompiler_MSSQL.prototype, {
     }));
   },
   createFKRefs (runner, refs) {
-    const formatter = this.client.formatter();
+    const formatter = this.client.formatter(this.tableBuilder);
 
     return Promise.all(refs.map(function (ref) {
       const tableName = formatter.wrap(ref.TABLE_NAME);

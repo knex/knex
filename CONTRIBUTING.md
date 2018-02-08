@@ -22,6 +22,82 @@ Documentation is no longer maintained in knex master repository. All the documen
 
 Documentation pull requests should not be merged before knex version which has the new documented feature is released.
 
+## I would like to add support for new dialect to knex, is it possible?
+
+Currently there are already way too many dialects supported in `knex` and instead of adding new dialect to central codebase, all the dialects should be moved to separate npm packages out from `knex` core library with their respective maintainers and test suites. 
+
+So if you like to write your own dialect, you can just inherit own dialect from knex base classes and use it by passing dilaect to knex in knex configuration (https://runkit.com/embed/90b3cpyr4jh2):
+
+```js
+// simple dialect overriding sqlite3 dialect to use sqlite3-offline driver
+require('sqlite3-offline');
+const Knex = require("knex");
+
+const Dialect = require(`knex/lib/dialects/sqlite3/index.js`);
+Dialect.prototype._driver = () => require('sqlite3-offline');
+
+const knex = Knex({
+  client: Dialect,
+  connection: ':memory:'
+});
+
+console.log(
+  knex.select(knex.raw(1)).toSQL()
+);
+
+await knex.schema.createTable('fooobar', (t) => {
+  t.bigincrements('id');
+  t.string('data');
+});
+await knex('fooobar').insert({ data: 'nomnom' });
+
+console.log("Gimme all the data:", await knex('fooobar'));
+```
+
+## What is minimal code to reproduce bug and why I have to provide that when I can just tell whats the problem is
+
+Writing minimal reproduction code for the problem is timeconsuming and some times it also really hard when for 
+example when the original code where the bug happens is written using express or mocha. So why it is necessary 
+for me to commit so much time to it when the problem is in `knex`? Contributors should be grateful that I reported
+the bug I found. 
+
+The point of runnable code to reproduce the problem is to easily verify that there really is a problem and that the one 
+who did the report did nothing wrong (surprisingly often problem is in the user code). So instead of just description 
+what to do the complete code encourages devs to actually test out that problem exists and start solving it and it 
+saves lots of time.
+
+tl;dr list:
+
+1. Actually in most of the cases developer already figures out what was the problem when writing the minimal test case
+or if there was problem how stuff was initilized or how async code was written it is easy to point out the problem.
+
+2. It motivates developer to actually try out if the bug really exist by not having to figure out from incomplete example
+environment in which and how bug actually manifests.
+
+3. There are curently very few people fixing knex issues and if one has to put easily 15-30 minutes time to issue just 
+to see that I cannot reproduce this issue it just wastes development hours that were available for improving knex.
+
+
+Test case should initialize needed tables, insert needed data and fail...
+
+```
+const knex = require('knex')({
+  client: 'pg',
+  connection: 'postgres:///knex_test'
+});
+
+async function main() {
+  await knex.schema.createTable(...);
+  await knex('table').insert({foo: 'bar}');
+  await knex.destroy();
+}
+
+main(); 
+```
+
+Usually issues without reproduction code available are just closed and if the same issue is reported multiple
+times maybe someone looks into it.
+
 ## Integration Tests
 
 ### The Easy Way

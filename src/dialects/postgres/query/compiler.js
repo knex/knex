@@ -5,7 +5,7 @@ import inherits from 'inherits';
 
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, reduce } from 'lodash'
+import { assign, reduce, identity } from 'lodash'
 
 function QueryCompiler_PG(client, builder) {
   QueryCompiler.call(this, client, builder);
@@ -74,15 +74,25 @@ assign(QueryCompiler_PG.prototype, {
   // Compiles a columnInfo query
   columnInfo() {
     const column = this.single.columnInfo;
+    let schema = this.single.schema;
+
+    // The user may have specified a custom wrapIdentifier function in the config. We
+    // need to run the identifiers through that function, but not format them as
+    // identifiers otherwise.
+    const table = this.client.customWrapIdentifier(this.single.table, identity);
+
+    if (schema) {
+      schema = this.client.customWrapIdentifier(schema, identity);
+    }
 
     let sql = 'select * from information_schema.columns where table_name = ? and table_catalog = ?';
-    const bindings = [this.single.table, this.client.database()];
+    const bindings = [table, this.client.database()];
 
-    if (this.single.schema) {
+    if (schema) {
       sql += ' and table_schema = ?';
-      bindings.push(this.single.schema);
+      bindings.push(schema);
     } else {
-      sql += ' and table_schema = current_schema';
+      sql += ' and table_schema = current_schema()';
     }
 
     return {

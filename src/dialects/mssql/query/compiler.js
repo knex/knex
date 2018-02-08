@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, isEmpty, compact } from 'lodash'
+import { assign, isEmpty, compact, identity } from 'lodash'
 
 function QueryCompiler_MSSQL(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -23,7 +23,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   select() {
     const sql = this.with();
     const statements = components.map(component =>
-        this[component](this)
+      this[component](this)
     );
     return sql + compact(statements).join(' ');
   },
@@ -87,8 +87,8 @@ assign(QueryCompiler_MSSQL.prototype, {
     return {
       sql: this.with() + `update ${top ? top + ' ' : ''}${this.tableName}` +
         ' set ' + updates.join(', ') +
-        (join ? ` from ${this.tableName} ${join}` : '') +
         (returning ? ` ${this._returning('update', returning)}` : '') +
+        (join ? ` from ${this.tableName} ${join}` : '') +
         (where ? ` ${where}` : '') +
         (order ? ` ${order}` : '') +
         (!returning ? this._returning('rowcount', '@@rowcount') : ''),
@@ -175,12 +175,23 @@ assign(QueryCompiler_MSSQL.prototype, {
   // Compiles a `columnInfo` query.
   columnInfo() {
     const column = this.single.columnInfo;
-    let sql =`select * from information_schema.columns where table_name = ? and table_catalog = ?`;
-    const bindings = [this.single.table, this.client.database()];
+    let schema = this.single.schema;
 
-    if (this.single.schema) {
+    // The user may have specified a custom wrapIdentifier function in the config. We
+    // need to run the identifiers through that function, but not format them as
+    // identifiers otherwise.
+    const table = this.client.customWrapIdentifier(this.single.table, identity);
+
+    if (schema) {
+      schema = this.client.customWrapIdentifier(schema, identity);
+    }
+
+    let sql =`select * from information_schema.columns where table_name = ? and table_catalog = ?`;
+    const bindings = [table, this.client.database()];
+
+    if (schema) {
       sql += ' and table_schema = ?';
-      bindings.push(this.single.schema);
+      bindings.push(schema);
     } else {
       sql += ` and table_schema = 'dbo'`;
     }

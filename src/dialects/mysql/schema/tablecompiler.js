@@ -111,7 +111,7 @@ assign(TableCompiler_MySQL.prototype, {
   },
 
   getFKRefs (runner) {
-    const formatter = this.client.formatter();
+    const formatter = this.client.formatter(this.tableBuilder);
     const sql = 'SELECT KCU.CONSTRAINT_NAME, KCU.TABLE_NAME, KCU.COLUMN_NAME, '+
               '       KCU.REFERENCED_TABLE_NAME, KCU.REFERENCED_COLUMN_NAME, '+
               '       RC.UPDATE_RULE, RC.DELETE_RULE '+
@@ -129,7 +129,7 @@ assign(TableCompiler_MySQL.prototype, {
   },
 
   dropFKRefs (runner, refs) {
-    const formatter = this.client.formatter();
+    const formatter = this.client.formatter(this.tableBuilder);
 
     return Promise.all(refs.map(function (ref) {
       const constraintName = formatter.wrap(ref.CONSTRAINT_NAME);
@@ -140,7 +140,7 @@ assign(TableCompiler_MySQL.prototype, {
     }));
   },
   createFKRefs (runner, refs) {
-    const formatter = this.client.formatter();
+    const formatter = this.client.formatter(this.tableBuilder);
 
     return Promise.all(refs.map(function (ref) {
       const tableName = formatter.wrap(ref.TABLE_NAME);

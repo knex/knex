@@ -13,8 +13,9 @@ module.exports = function(knex) {
     describe("Custom response processing", () => {
 
       before('setup custom response handler', () => {
-        knex.client.config.postProcessResponse = (response) => {
+        knex.client.config.postProcessResponse = (response, queryContext) => {
           response.callCount = response.callCount ? (response.callCount + 1) : 1;
+          response.queryContext = queryContext;
           return response;
         };
       });
@@ -29,9 +30,27 @@ module.exports = function(knex) {
         });
       });
 
+      it('should pass query context to the custom handler', () => {
+        return knex('accounts')
+          .queryContext('the context')
+          .limit(1)
+          .then(res => {
+            expect(res.queryContext).to.equal('the context');
+          });
+      });
+
       it('should process raw response', () => {
         return knex.raw('select * from ??', ['accounts']).then(res => {
+          expect(res.callCount).to.equal(1);
         });
+      });
+
+      it('should pass query context for raw responses', () => {
+        return knex.raw('select * from ??', ['accounts'])
+          .queryContext('the context')
+          .then(res => {
+            expect(res.queryContext).to.equal('the context');
+          });
       });
 
       it('should process response done in transaction', () => {
@@ -44,6 +63,53 @@ module.exports = function(knex) {
           expect(res.callCount).to.equal(1);
         });
       });
+
+      it('should pass query context for responses from transactions', () => {
+        return knex.transaction(trx => {
+          return trx('accounts')
+            .queryContext('the context')
+            .limit(1)
+            .then(res => {
+              expect(res.queryContext).to.equal('the context');
+              return res;
+            });
+        }).then(res => {
+          expect(res.queryContext).to.equal('the context');
+        });
+      });
+    });
+
+    describe('columnInfo with wrapIdentifier and postProcessResponse', () => {
+
+      before('setup hooks', () => {
+        knex.client.config.postProcessResponse = (response) => {
+          return _.mapKeys(response, (val, key) => {
+            return _.camelCase(key);
+          });
+        };
+
+        knex.client.config.wrapIdentifier = (id, origImpl) => {
+          return origImpl(_.snakeCase(id));
+        };
+      });
+
+      after('restore client configuration', () => {
+        knex.client.config.postProcessResponse = null;
+        knex.client.config.wrapIdentifier = null;
+      });
+
+      it('should work using camelCased table name', () => {
+        return knex('testTableTwo').columnInfo().then(res => {
+          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+        });
+      });
+
+      it('should work using snake_cased table name', () => {
+        return knex('test_table_two').columnInfo().then(res => {
+          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+        });
+      });
+
     });
 
     it('should forward the .get() function from bluebird', function() {
@@ -93,6 +159,7 @@ module.exports = function(knex) {
         .testSql(function(tester) {
           tester('mysql', 'truncate `test_table_two`');
           tester('postgresql', 'truncate "test_table_two" restart identity');
+          tester('pg-redshift', 'truncate "test_table_two"');
           tester('sqlite3', "delete from `test_table_two`");
           tester('oracle', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
@@ -129,6 +196,7 @@ module.exports = function(knex) {
         mysql2: 'SHOW TABLES',
         mariadb: 'SHOW TABLES',
         postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+        redshift: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';",
         oracle: "select TABLE_NAME from USER_TABLES",
         mssql: "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'"
@@ -178,6 +246,21 @@ module.exports = function(knex) {
             "maxLength": null,
             "nullable": false,
             "type": "uuid"
+          }
+        });
+        tester('pg-redshift', 'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
+        null, {
+          "enum_value": {
+            "defaultValue": null,
+            "maxLength": 255,
+            "nullable": true,
+            "type": "character varying"
+          },
+          "uuid": {
+            "defaultValue": null,
+            "maxLength": 36,
+            "nullable": false,
+            "type": "character"
           }
         });
         tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
@@ -246,6 +329,13 @@ module.exports = function(knex) {
           "maxLength": null,
           "nullable": false,
           "type": "uuid"
+        });
+        tester('pg-redshift', 'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
+        null, {
+          "defaultValue": null,
+          "maxLength": 36,
+          "nullable": false,
+          "type": "character"
         });
         tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
           "defaultValue": null,
@@ -320,6 +410,7 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["show fields from `accounts` where field = ?"]);
           tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
+          tester('pg-redshift', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
           tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
@@ -357,6 +448,7 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["alter table `accounts` drop `first_name`"]);
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
+          tester('pg-redshift', ['alter table "accounts" drop column "first_name"']);
           tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ['alter table "accounts" drop ("first_name")']);
           //tester('oracledb', ['alter table "accounts" drop ("first_name")']);
@@ -377,6 +469,7 @@ module.exports = function(knex) {
     it('.timeout() should throw TimeoutError', function() {
       var dialect = knex.client.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+      if (/redshift/.test(dialect)) { return; }
       var testQueries = {
         'postgresql': function() {
           return knex.raw('SELECT pg_sleep(1)');
@@ -421,6 +514,7 @@ module.exports = function(knex) {
     it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
       var dialect = knex.client.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+      if (/redshift/.test(dialect)) { return; }
 
       // There's unexpected behavior caused by knex releasing a connection back
       // to the pool because of a timeout when a long query is still running.
