@@ -12,17 +12,41 @@ const pg = Knex({
   pool: { max: 50 }
 });
 
-const mysql = Knex({
+const mysql2 = Knex({
   client: 'mysql2',
   connection: 'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8',
   pool: { max: 50 }
 });
 
+const mysql = Knex({
+  client: 'mysql',
+  connection: 'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8',
+  pool: { max: 50 }
+});
+
+const maria = Knex({
+  client: 'mariadb',
+  // TODO: fix connection string with mariasql
+  connection: {
+    host: '127.0.0.1',
+    port: 23306,
+    user: 'root',
+    password: 'mysqlrootpassword',
+    charset: 'utf8'
+  },
+  pool: { max: 50 }
+});
+
+
 /* TODO: figure out how to nicely install oracledb node driver on osx
 const mysql = Knex({
   client: 'oracledb',
   connection: {
-    // TODO:     
+    user          : "travis",
+    password      : "travis",
+    connectString : "localhost/XE",
+    // https://github.com/oracle/node-oracledb/issues/525
+    stmtCacheSize : 0
   },
   pool: { max: 50 }
 });
@@ -39,6 +63,8 @@ function setQueryCounters(instance, name) {
 
 setQueryCounters(pg, 'pg');
 setQueryCounters(mysql, 'mysql');
+setQueryCounters(mysql2, 'mysql2');
+setQueryCounters(maria, 'maria');
 
 const _ = require('lodash');
 
@@ -68,12 +94,14 @@ async function killConnectionsPg() {
       AND pid <> pg_backend_pid()`);
 } 
 
-async function killConnectionsMyslq() {
-  const [rows, colDefs] = await mysql.raw(`SHOW FULL PROCESSLIST`);
-  await Promise.all(rows.map(row => mysql.raw(`KILL ${row.Id}`)));
+async function killConnectionsMyslq(client) {
+  const [rows, colDefs] = await client.raw(`SHOW FULL PROCESSLIST`);
+  await Promise.all(rows.map(row => client.raw(`KILL ${row.Id}`)));
 } 
 
 async function main() {
+  console.log(await maria.raw('select 1'));
+
   async function loopQueries(prefix, query) {
     const queries = () => [
       ...Array(50).fill(query),
@@ -110,7 +138,7 @@ async function main() {
     // cause connections to be closed every 500 bytes
     await proxy.addToxic(new toxiproxy.Toxic(proxy, {
       type: 'limit_data',
-      attributes: {bytes: 500}
+      attributes: {bytes: 15000}
     }));
   }
 
@@ -126,17 +154,25 @@ async function main() {
   loopQueries('PSQL:', pg.raw('select 1'));
   loopQueries('PSQL TO:', pg.raw('select 1').timeout(20));
 
-  // on knex <= 0.14.3 these queries crash knex
   loopQueries('MYSQL:', mysql.raw('select 1'));
   loopQueries('MYSQL TO:', mysql.raw('select 1').timeout(20));
+
+  // on knex <= 0.14.3 these queries crash knex
+  loopQueries('MYSQL2:', mysql2.raw('select 1'));
+  loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
+
+  // on knex <= 0.14.3 these queries crash knex
+  loopQueries('MARIA:', maria.raw('select 1'));
+  loopQueries('MARIA TO:', maria.raw('select 1').timeout(20));
 
   while(true) {
     await Bluebird.delay(20); // kill everything every quite often from server side
     try {
       await Promise.all([
         killConnectionsPg(),
-        killConnectionsMyslq(),
-        // TODO: how to kill connections server side with oracle 
+        killConnectionsMyslq(mysql),
+        killConnectionsMyslq(mysql2),
+        killConnectionsMyslq(maria),
       ]);
     } catch (err) {
       console.log('KILLER ERROR:', err);
