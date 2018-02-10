@@ -55,7 +55,8 @@
     "sqlite3": "^3.1.13",
     "tap-spec": "^4.1.1",
     "tape": "^4.8.0",
-    "through": "^2.3.8"
+    "through": "^2.3.8",
+    "toxiproxy-node-client": "^2.0.6"
   },
   "buildDependencies": [
     "babel-cli",
