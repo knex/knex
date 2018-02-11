@@ -158,12 +158,12 @@ async function main() {
   loopQueries('MYSQL TO:', mysql.raw('select 1').timeout(20));
 
   // on knex <= 0.14.3 these queries crash knex
-  loopQueries('MYSQL2:', mysql2.raw('select 1'));
-  loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
+//  loopQueries('MYSQL2:', mysql2.raw('select 1'));
+//  loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
 
   // on knex <= 0.14.3 these queries crash knex
-  loopQueries('MARIA:', maria.raw('select 1'));
-  loopQueries('MARIA TO:', maria.raw('select 1').timeout(20));
+//  loopQueries('MARIA:', maria.raw('select 1'));
+//  loopQueries('MARIA TO:', maria.raw('select 1').timeout(20));
 
   while(true) {
     await Bluebird.delay(20); // kill everything every quite often from server side
@@ -171,8 +171,8 @@ async function main() {
       await Promise.all([
         killConnectionsPg(),
         killConnectionsMyslq(mysql),
-        killConnectionsMyslq(mysql2),
-        killConnectionsMyslq(maria),
+//        killConnectionsMyslq(mysql2),
+//        killConnectionsMyslq(maria),
       ]);
     } catch (err) {
       console.log('KILLER ERROR:', err);

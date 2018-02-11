@@ -42,6 +42,7 @@ assign(Client_MySQL2.prototype, {
   acquireRawConnection() {
     const connection = this.driver.createConnection(this.connectionSettings)
     connection.on('error', err => {
+      console.log('Im dead!!!!', err);
       connection.__knex__disposed = err
     })
     return new Promise((resolver, rejecter) => {
