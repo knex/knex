@@ -121,7 +121,7 @@ async function main() {
     // cause connections to be closed every 500 bytes
     await proxy.addToxic(new toxiproxy.Toxic(proxy, {
       type: 'limit_data',
-      attributes: {bytes: 15000}
+      attributes: {bytes: 5000}
     }));
   }
 
@@ -160,4 +160,4 @@ async function main() {
 }
 
 main();
-
+process.on('exit', () => console.log('- STATS ')); // marker for grep...
