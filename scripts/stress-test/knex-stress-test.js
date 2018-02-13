@@ -14,29 +14,15 @@ const pg = Knex({
 
 const mysql2 = Knex({
   client: 'mysql2',
-  connection: 'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8',
+  connection: 'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8&connectTimeout=500',
   pool: { max: 50 }
 });
 
 const mysql = Knex({
   client: 'mysql',
-  connection: 'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8',
+  connection: 'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8&connectTimeout=500',
   pool: { max: 50 }
 });
-
-const maria = Knex({
-  client: 'mariadb',
-  // TODO: fix connection string with mariasql
-  connection: {
-    host: '127.0.0.1',
-    port: 23306,
-    user: 'root',
-    password: 'mysqlrootpassword',
-    charset: 'utf8'
-  },
-  pool: { max: 50 }
-});
-
 
 /* TODO: figure out how to nicely install oracledb node driver on osx
 const mysql = Knex({
@@ -64,7 +50,6 @@ function setQueryCounters(instance, name) {
 setQueryCounters(pg, 'pg');
 setQueryCounters(mysql, 'mysql');
 setQueryCounters(mysql2, 'mysql2');
-setQueryCounters(maria, 'maria');
 
 const _ = require('lodash');
 
@@ -100,8 +85,6 @@ async function killConnectionsMyslq(client) {
 } 
 
 async function main() {
-  console.log(await maria.raw('select 1'));
-
   async function loopQueries(prefix, query) {
     const queries = () => [
       ...Array(50).fill(query),
@@ -158,12 +141,9 @@ async function main() {
   loopQueries('MYSQL TO:', mysql.raw('select 1').timeout(20));
 
   // on knex <= 0.14.3 these queries crash knex
-//  loopQueries('MYSQL2:', mysql2.raw('select 1'));
-//  loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
+  loopQueries('MYSQL2:', mysql2.raw('select 1'));
+  loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
 
-  // on knex <= 0.14.3 these queries crash knex
-//  loopQueries('MARIA:', maria.raw('select 1'));
-//  loopQueries('MARIA TO:', maria.raw('select 1').timeout(20));
 
   while(true) {
     await Bluebird.delay(20); // kill everything every quite often from server side
@@ -171,8 +151,7 @@ async function main() {
       await Promise.all([
         killConnectionsPg(),
         killConnectionsMyslq(mysql),
-//        killConnectionsMyslq(mysql2),
-//        killConnectionsMyslq(maria),
+        killConnectionsMyslq(mysql2),
       ]);
     } catch (err) {
       console.log('KILLER ERROR:', err);
