@@ -167,11 +167,10 @@ each(columnTypes, function(type) {
 });
 
 // The "timestamps" call is really just sets the `created_at` and `updated_at` columns.
-TableBuilder.prototype.timestamps = function timestamps() {
-  const method = (arguments[0] === true) ? 'timestamp' : 'datetime';
-  const createdAt = this[method]('created_at');
-  const updatedAt = this[method]('updated_at');
-  if (arguments[1] === true) {
+TableBuilder.prototype.timestamps = function timestamps(datatype = 'timestamp', createdatcolname = 'created_at', updatedatcolname = 'updated_at') {
+  const createdAt = this[datatype](createdatcolname);
+  const updatedAt = this[datatype](updatedatcolname);
+  if (datatype === 'timestamp') {
     const now = this.client.raw('CURRENT_TIMESTAMP');
     createdAt.notNullable().defaultTo(now);
     updatedAt.notNullable().defaultTo(now);
@@ -257,8 +256,8 @@ const AlterMethods = {
     return this;
   },
 
-  dropTimestamps() {
-    return this.dropColumns(['created_at', 'updated_at']);
+  dropTimestamps(createdatcolname = 'created_at', updatedatcolname = 'updated_at') {
+    return this.dropColumns([createdatcolname, updatedatcolname]);
   }
 
   // TODO: changeType
