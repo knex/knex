@@ -618,6 +618,15 @@ assign(QueryCompiler.prototype, {
         this.formatter.parameter(data[columns[i]])
       );
     }
+
+    if(isEmpty(vals)) {
+      throw new Error([
+        'Empty .update() call detected!',
+        'Update data does not contain any values to update.',
+        'This will result in a faulty query.',
+      ].join(' '));
+    }
+
     return vals;
   },
 
