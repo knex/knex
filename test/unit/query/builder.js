@@ -5416,7 +5416,7 @@ describe("QueryBuilder", function() {
 
   it('Throws error if .update() results in faulty sql due to no data', function() {
     try {
-			qb().table('sometable').update({column: undefined}).toString();
+      qb().table('sometable').update({column: undefined}).toString();
       throw new Error('Should not reach this point');
     } catch(error) {
       expect(error.message).to.equal('Empty .update() call detected! Update data does not contain any values to update. This will result in a faulty query.');
