@@ -3988,22 +3988,18 @@ describe("QueryBuilder", function() {
   //   });
   // });
 
-  it("should warn when trying to use forUpdate outside of a transaction", function() {
+  it("should allow lock (such as forUpdate) outside of a transaction", function() {
     testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
       mysql: {
-        sql: 'select * from `foo` where `bar` = ?',
+        sql: 'select * from `foo` where `bar` = ? for update',
         bindings: ['baz']
       },
       mssql: {
-        sql: 'select * from [foo] where [bar] = ?',
+        sql: 'select * from [foo] with (READCOMMITTEDLOCK) where [bar] = ?',
         bindings: ['baz']
       },
       postgres: {
-        sql: 'select * from "foo" where "bar" = ?',
-        bindings: ['baz']
-      },
-      redshift: {
-        sql: 'select * from "foo" where "bar" = ?',
+        sql: 'select * from "foo" where "bar" = ? for update',
         bindings: ['baz']
       },
     });
