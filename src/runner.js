@@ -121,7 +121,10 @@ assign(Runner.prototype, {
   // to run in sequence, and on the same connection, especially helpful when schema building
   // and dealing with foreign key constraints, etc.
   query: Promise.method(function(obj) {
-    this.builder.emit('query', assign({__knexUid: this.connection.__knexUid}, obj))
+    const {__knexUid, __knexTxId} = this.connection;
+
+    this.builder.emit('query', assign({__knexUid, __knexTxId}, obj))
+
     const runner = this
     let queryPromise = this.client.query(this.connection, obj)
 

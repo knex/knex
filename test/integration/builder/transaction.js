@@ -469,5 +469,23 @@ module.exports = function(knex) {
         throw e;
       });
     });
+
+    it('connection should contain __knexTxId which is also exposed in query event', function() {
+      return knex.transaction(function(trx) {
+        var builder = trx
+          .select()
+          .from('accounts');
+
+        trx.on('query', function(obj) {
+          expect(typeof obj.__knexTxId).to.equal(typeof '');
+        });
+
+        builder.on('query', function(obj) {
+          expect(typeof obj.__knexTxId).to.equal(typeof '');
+        });
+
+        return builder
+      })
+    });
   });
 };
