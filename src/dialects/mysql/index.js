@@ -64,33 +64,36 @@ assign(Client_MySQL.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     return new Promise((resolver, rejecter) => {
-      const connection = this.driver.createConnection(this.connectionSettings)
+      const connection = this.driver.createConnection(this.connectionSettings);
+      connection.on('error', err => {
+        connection.__knex__disposed = err;
+      });
       connection.connect((err) => {
-        if (err) return rejecter(err)
-        connection.on('error', err => {
-          connection.__knex__disposed = err
-        })
-        resolver(connection)
-      })
+        if (err) {
+          // if connection is rejected, remove listener that was registered above...
+          connection.removeAllListeners();
+          return rejecter(err);
+        }
+        resolver(connection);
+      });
     })
   },
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    connection.removeAllListeners()
     return Promise
       .fromCallback(connection.end.bind(connection))
       .catch(err => {
         connection.__knex__disposed = err
       })
+      .finally(() => connection.removeAllListeners());
   },
 
   validateConnection(connection) {
     if (connection.state === 'connected' || connection.state === 'authenticated') {
       return true
     }
-
     return false
   },
 
