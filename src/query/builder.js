@@ -742,8 +742,6 @@ assign(Builder.prototype, {
     if (!columns.length) {
       columns = '*';
     } else if (columns.length === 1) {
-      // if only one argument was passed, pass it along as a string since it may
-      // contain an alias e.g. 'column as alias'
       columns = columns[0];
     }
 

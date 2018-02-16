@@ -2414,7 +2414,7 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("count with alias", function() {
+  it("count with string alias", function() {
     testsql(qb().from('users').count('* as all'), {
       mysql: {
         sql: 'select count(*) as `all` from `users`',
@@ -2439,7 +2439,36 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("count distinct with alias", function() {
+  it("count with object alias", function () {
+    testsql(qb().from('users').count({ all: '*' }), {
+      mysql: {
+        sql: 'select count(*) as `all` from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(*) as [all] from [users]',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: []
+      },
+      redshift: {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: []
+      },
+    });
+  });
+
+  it("count distinct with string alias", function() {
     testsql(qb().from('users').countDistinct('* as all'), {
       mysql: {
         sql: 'select count(distinct *) as `all` from `users`',
@@ -2461,6 +2490,35 @@ describe("QueryBuilder", function() {
         sql: 'select count(distinct *) as "all" from "users"',
         bindings: []
       }
+    });
+  });
+
+  it("count distinct with object alias", function () {
+    testsql(qb().from('users').countDistinct({ all: '*' }), {
+      mysql: {
+        sql: 'select count(distinct *) as `all` from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct *) as [all] from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: []
+      },
+      redshift: {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: []
+      },
     });
   });
 
@@ -2518,6 +2576,31 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select count(distinct "foo", "bar") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count distinct with multiple columns with alias", function () {
+    testsql(qb().from('users').countDistinct({ alias: ['foo', 'bar'] }), {
+      mysql: {
+        sql: 'select count(distinct `foo`, `bar`) as `alias` from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct "foo", "bar") "alias" from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct [foo], [bar]) as [alias] from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct "foo", "bar") "alias" from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct "foo", "bar") as "alias" from "users"',
         bindings: []
       }
     });
