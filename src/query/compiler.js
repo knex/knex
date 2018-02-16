@@ -425,11 +425,7 @@ assign(QueryCompiler.prototype, {
   // Compiles the "locks".
   lock() {
     if (this.single.lock) {
-      if (!this.client.transacting) {
-        helpers.warn('You are attempting to perform a "lock" command outside of a transaction.')
-      } else {
-        return this[this.single.lock]()
-      }
+      return this[this.single.lock]()
     }
   },
 
