@@ -288,7 +288,7 @@ module.exports = function(knex) {
             'select count(distinct `id`, `logins`) from `accounts`',
             [],
             [{
-              'count(distinct `id`, `logins`)': 3
+              'count(distinct `id`, `logins`)': 6
             }]
         );
         tester(
@@ -296,7 +296,7 @@ module.exports = function(knex) {
             'select count(distinct "id", "logins") from "accounts"',
             [],
             [{
-              count: '3'
+              count: '6'
             }]
         );
         tester(
@@ -304,7 +304,7 @@ module.exports = function(knex) {
             'select count(distinct `id`, `logins`) from `accounts`',
             [],
             [{
-              'count(distinct `id`, `logins`)': 3
+              'count(distinct `id`, `logins`)': 6
             }]
         );
         tester(
@@ -312,7 +312,7 @@ module.exports = function(knex) {
             'select count(distinct "id", "logins") from "accounts"',
             [],
             [{
-              'COUNT(DISTINCT "ID", "LOGINS")': 3
+              'COUNT(DISTINCT "ID", "LOGINS")': 6
             }]
         );
         tester(
@@ -320,7 +320,7 @@ module.exports = function(knex) {
             'select count(distinct [id], [logins]) from [accounts]',
             [],
             [{
-              '': [3]
+              '': [6]
             }]
         );
       });
@@ -333,42 +333,42 @@ module.exports = function(knex) {
         .testSql(function (tester) {
           tester(
             'mysql',
-            'select count(distinct `id`, `logins`) as `logins` from `accounts`',
+            'select count(distinct `id`, `logins`) as `count` from `accounts`',
             [],
             [{
-              count: 3
+              count: 6
             }]
           );
           tester(
             'postgresql',
-            'select count(distinct "id", "logins") as "logins" from "accounts"',
+            'select count(distinct "id", "logins") as "count" from "accounts"',
             [],
             [{
-              count: '3'
+              count: '6'
             }]
           );
           tester(
             'sqlite3',
-            'select count(distinct `id`, `logins`) as `logins` from `accounts`',
+            'select count(distinct `id`, `logins`) as `count` from `accounts`',
             [],
             [{
-              count: 3
+              count: 6
             }]
           );
           tester(
             'oracle',
-            'select count(distinct "id", "logins") "logins" from "accounts"',
+            'select count(distinct "id", "logins") "count" from "accounts"',
             [],
             [{
-              COUNT: 3
+              COUNT: 6
             }]
           );
           tester(
             'mssql',
-            'select count(distinct [id], [logins]) as [logins] from [accounts]',
+            'select count(distinct [id], [logins]) as [count] from [accounts]',
             [],
             [{
-              count: [3]
+              count: [6]
             }]
           );
         });
