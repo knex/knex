@@ -2,6 +2,7 @@
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 import { each, toArray } from 'lodash'
+import { addQueryContext, warn } from '../helpers';
 
 // Constructor for the builder instance, typically called from
 // `knex.builder`, accepting the current `knex` instance,
@@ -37,6 +38,15 @@ each([
   'raw'
 ], function(method) {
   SchemaBuilder.prototype[method] = function() {
+    if (method === 'createTableIfNotExists') {
+      warn([
+        'Use async .hasTable to check if table exists and then use plain .createTable. Since ',
+        '.createTableIfNotExists actually just generates plain "CREATE TABLE IF NOT EXIST..." ',
+        'query it will not work correctly if there are any alter table queries generated for ',
+        'columns afterwards. To not break old migrations this function is left untouched for now',
+        ', but it should not be used when writing new code and it is removed from documentation.'
+      ].join(''));
+    }
     if (method === 'table') method = 'alterTable';
     this._sequence.push({
       method,
@@ -47,6 +57,7 @@ each([
 })
 
 require('../interface')(SchemaBuilder)
+addQueryContext(SchemaBuilder);
 
 SchemaBuilder.prototype.withSchema = function(schemaName) {
   this._schema = schemaName;

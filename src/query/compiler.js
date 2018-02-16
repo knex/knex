@@ -26,7 +26,7 @@ function QueryCompiler(client, builder) {
   this.timeout = builder._timeout || false;
   this.cancelOnTimeout = builder._cancelOnTimeout || false;
   this.grouped = groupBy(builder._statements, 'grouping');
-  this.formatter = client.formatter()
+  this.formatter = client.formatter(builder)
 }
 
 const components = [
@@ -185,8 +185,8 @@ assign(QueryCompiler.prototype, {
     if (sql.length === 0) sql = ['*'];
     return `select ${distinct ? 'distinct ' : ''}` +
       sql.join(', ') + (this.tableName
-        ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
-        : '');
+      ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
+      : '');
   },
 
   aggregate(stmt) {
@@ -416,11 +416,7 @@ assign(QueryCompiler.prototype, {
   // Compiles the "locks".
   lock() {
     if (this.single.lock) {
-      if (!this.client.transacting) {
-        helpers.warn('You are attempting to perform a "lock" command outside of a transaction.')
-      } else {
-        return this[this.single.lock]()
-      }
+      return this[this.single.lock]()
     }
   },
 
@@ -609,6 +605,15 @@ assign(QueryCompiler.prototype, {
         this.formatter.parameter(data[columns[i]])
       );
     }
+
+    if(isEmpty(vals)) {
+      throw new Error([
+        'Empty .update() call detected!',
+        'Update data does not contain any values to update.',
+        'This will result in a faulty query.',
+      ].join(' '));
+    }
+
     return vals;
   },
 

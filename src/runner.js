@@ -45,18 +45,18 @@ assign(Runner.prototype, {
     // If there are any "error" listeners, we fire an error event
     // and then re-throw the error to be eventually handled by
     // the promise chain. Useful if you're wrapping in a custom `Promise`.
-    .catch(function(err) {
-      if (runner.builder._events && runner.builder._events.error) {
-        runner.builder.emit('error', err);
-      }
-      throw err;
-    })
+      .catch(function(err) {
+        if (runner.builder._events && runner.builder._events.error) {
+          runner.builder.emit('error', err);
+        }
+        throw err;
+      })
 
     // Fire a single "end" event on the builder when
     // all queries have successfully completed.
-    .tap(function() {
-      runner.builder.emit('end');
-    })
+      .tap(function() {
+        runner.builder.emit('end');
+      })
 
   },
 
@@ -132,8 +132,9 @@ assign(Runner.prototype, {
     return queryPromise
       .then((resp) => {
         const processedResponse = this.client.processResponse(resp, runner);
+        const queryContext = this.builder.queryContext();
         const postProcessedResponse = this.client
-          .postProcessResponse(processedResponse);
+          .postProcessResponse(processedResponse, queryContext);
 
         this.builder.emit(
           'query-response',
@@ -157,11 +158,22 @@ assign(Runner.prototype, {
         if (obj.cancelOnTimeout) {
           cancelQuery = this.client.cancelQuery(this.connection);
         } else {
+          // If we don't cancel the query, we need to mark the connection as disposed so that
+          // it gets destroyed by the pool and is never used again. If we don't do this and
+          // return the connection to the pool, it will be useless until the current operation
+          // that timed out, finally finishes.
+          this.connection.__knex__disposed = error
           cancelQuery = Promise.resolve();
         }
 
         return cancelQuery
           .catch((cancelError) => {
+            // If the cancellation failed, we need to mark the connection as disposed so that
+            // it gets destroyed by the pool and is never used again. If we don't do this and
+            // return the connection to the pool, it will be useless until the current operation
+            // that timed out, finally finishes.
+            this.connection.__knex__disposed = error
+
             // cancellation failed
             throw assign(cancelError, {
               message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,

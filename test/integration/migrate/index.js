@@ -34,6 +34,7 @@ module.exports = function(knex) {
     var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
 
     describe('knex.migrate.status', function() {
+      this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
 
       beforeEach(function() {
         return knex.migrate.latest({directory: 'test/integration/migrate/test'});
@@ -91,6 +92,11 @@ module.exports = function(knex) {
             })
             .then(function() {
               // Cleanup the added migrations
+              if (/redshift/.test(knex.client.dialect)){
+                return knex('knex_migrations')
+                  .where('name', 'like', '%foobar%')
+                  .del();
+              }
               return knex('knex_migrations')
                 .where('id', migration1[0])
                 .orWhere('id', migration2[0])

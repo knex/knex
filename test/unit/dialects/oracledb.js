@@ -38,7 +38,7 @@ describe("OracleDb externalAuth", function() {
   });
 
   after(function() {
-    sinon.restore(knexInstance.client.driver.getConnection);
+    knexInstance.client.driver.getConnection.restore();
   });
 
 });

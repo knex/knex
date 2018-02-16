@@ -14,8 +14,8 @@ import uuid from 'uuid';
 const debugBindings = debug('knex:bindings')
 
 const fakeClient = {
-  formatter() {
-    return new Formatter(fakeClient)
+  formatter(builder) {
+    return new Formatter(fakeClient, builder)
   }
 }
 
@@ -70,7 +70,7 @@ assign(Raw.prototype, {
   // Returns the raw sql for the query.
   toSQL(method, tz) {
     let obj
-    const formatter = this.client.formatter()
+    const formatter = this.client.formatter(this)
 
     if (Array.isArray(this.bindings)) {
       obj = replaceRawArrBindings(this, formatter)
@@ -147,7 +147,6 @@ function replaceRawArrBindings(raw, formatter) {
 
 function replaceKeyBindings(raw, formatter) {
   const values = raw.bindings
-
   let { sql } = raw
 
   const regex = /\\?(:(\w+):(?=::)|:(\w+):(?!:)|:(\w+))/g
@@ -186,5 +185,6 @@ function replaceKeyBindings(raw, formatter) {
 // Allow the `Raw` object to be utilized with full access to the relevant
 // promise API.
 require('./interface')(Raw)
+helpers.addQueryContext(Raw);
 
 export default Raw

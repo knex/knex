@@ -1,5 +1,6 @@
 
-import { extend, each, toArray } from 'lodash'
+import { extend, each, toArray } from 'lodash';
+import { addQueryContext } from '../helpers';
 
 // The chainable interface off the original "column" method.
 export default function ColumnBuilder(client, tableBuilder, type, args) {
@@ -40,6 +41,8 @@ each(modifiers, function(method) {
     return this;
   };
 });
+
+addQueryContext(ColumnBuilder);
 
 ColumnBuilder.prototype.notNull =
 ColumnBuilder.prototype.notNullable = function notNullable() {
