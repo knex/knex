@@ -73,3 +73,24 @@ export function containsUndefined(mixed) {
 
   return argContainsUndefined;
 }
+
+export function aggregateStatement(stmt, { aliasSeparator, wrap }) {
+  const value = stmt.value;
+  const method = stmt.method;
+  const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
+
+  if (Array.isArray(value)) {
+    const columns = value.map(val => ` ${wrap(val)}`)
+    return `${method}(${distinct.trim() + columns})`;
+  }
+
+  // Allows us to speciy an alias for the aggregate types.
+  const splitOn = value.toLowerCase().indexOf(' as ');
+  if (splitOn !== -1) {
+    const column = value.slice(0, splitOn);
+    const alias = value.slice(splitOn + 4);
+    return `${method}(${distinct + wrap(column)})${aliasSeparator}${wrap(alias)}`;
+  }
+
+  return `${method}(${distinct + wrap(value)})`;
+}

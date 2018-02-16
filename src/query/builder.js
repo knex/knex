@@ -736,8 +736,18 @@ assign(Builder.prototype, {
   },
 
   // Retrieve the "count" of the distinct results of the query.
-  countDistinct(column) {
-    return this._aggregate('count', (column || '*'), true);
+  countDistinct() {
+    let columns = helpers.normalizeArr.apply(null, arguments);
+
+    if (!columns.length) {
+      columns = '*';
+    } else if (columns.length === 1) {
+      // if only one argument was passed, pass it along as a string since it may
+      // contain an alias e.g. 'column as alias'
+      columns = columns[0];
+    }
+
+    return this._aggregate('count', columns, true);
   },
 
   // Retrieve the sum of the distinct values of a given column.

@@ -190,19 +190,10 @@ assign(QueryCompiler.prototype, {
   },
 
   aggregate(stmt) {
-    const val = stmt.value;
-    const splitOn = val.toLowerCase().indexOf(' as ');
-    const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
-    // Allows us to speciy an alias for the aggregate types.
-    if (splitOn !== -1) {
-      const col = val.slice(0, splitOn);
-      const alias = val.slice(splitOn + 4);
-      return (
-        `${stmt.method}(${distinct + this.formatter.wrap(col)}) ` +
-        `as ${this.formatter.wrap(alias)}`
-      );
-    }
-    return `${stmt.method}(${distinct + this.formatter.wrap(val)})`;
+    return helpers.aggregateStatement(stmt, {
+      aliasSeparator: ' as ',
+      wrap: identifier => this.formatter.wrap(identifier)
+    });
   },
 
   aggregateRaw(stmt) {
