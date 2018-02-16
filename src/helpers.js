@@ -106,8 +106,11 @@ export function aggregateStatement(stmt, { aliasSeparator, wrap }) {
     return value;
   };
   const aggregateArray = (value, alias) => {
-    const columns = value.map(val => ` ${wrap(val)}`);
-    const aggregated = `${method}(${distinct.trim() + columns})`;
+    let columns = value.map(wrap).join(', ');
+    if (distinct) {
+      columns = `${distinct.trim()}(${columns})`;
+    }
+    const aggregated = `${method}(${columns})`;
     return addAlias(aggregated, alias);
   };
   const aggregateString = (value, alias) => {
