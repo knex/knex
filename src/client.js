@@ -264,7 +264,7 @@ assign(Client.prototype, {
     })
   },
 
-  initializePool(config) {
+  initializePool(config = this.config) {
     if (this.pool) {
       helpers.warn('The pool has already been initialized')
       return
