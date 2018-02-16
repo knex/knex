@@ -3,9 +3,7 @@
 // -------
 import inherits from 'inherits';
 import Client_MySQL from '../mysql';
-import Promise from 'bluebird';
-import * as helpers from '../../helpers';
-import { map, assign } from 'lodash'
+import { assign } from 'lodash'
 import Transaction from './transaction';
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
@@ -33,52 +31,8 @@ assign(Client_MySQL2.prototype, {
     if (connection._fatalError) {
       return false
     }
-
     return true
-  },
-
-  // Get a raw connection, called by the `pool` whenever a new
-  // connection needs to be added to the pool.
-  acquireRawConnection() {
-    const connection = this.driver.createConnection(this.connectionSettings)
-    connection.on('error', err => {
-      connection.__knex__disposed = err
-    })
-    return new Promise((resolver, rejecter) => {
-      connection.connect((err) => {
-        if (err) {
-          return rejecter(err)
-        }
-        resolver(connection)
-      })
-    })
-  },
-
-  processResponse(obj, runner) {
-    const { response } = obj
-    const { method } = obj
-    const rows = response[0]
-    const fields = response[1]
-    if (obj.output) return obj.output.call(runner, rows, fields)
-    switch (method) {
-      case 'select':
-      case 'pluck':
-      case 'first': {
-        const resp = helpers.skim(rows)
-        if (method === 'pluck') return map(resp, obj.pluck)
-        return method === 'first' ? resp[0] : resp
-      }
-      case 'insert':
-        return [rows.insertId]
-      case 'del':
-      case 'update':
-      case 'counter':
-        return rows.affectedRows
-      default:
-        return response
-    }
   }
-
 })
 
 export default Client_MySQL2;

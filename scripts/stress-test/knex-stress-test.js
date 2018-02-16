@@ -140,7 +140,6 @@ async function main() {
   loopQueries('MYSQL:', mysql.raw('select 1'));
   loopQueries('MYSQL TO:', mysql.raw('select 1').timeout(20));
 
-  // on knex <= 0.14.3 these queries crash knex
   loopQueries('MYSQL2:', mysql2.raw('select 1'));
   loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
 
@@ -159,5 +158,5 @@ async function main() {
   }
 }
 
+process.on('exit', () => console.log('- STATS PRINT NEAR END LOGS ')); // marker for grep...
 main();
-process.on('exit', () => console.log('- STATS ')); // marker for grep...
