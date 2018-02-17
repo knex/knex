@@ -32,9 +32,9 @@ function connectionObject(parsed) {
     db = db.slice(1)
   }
 
-	connection.database = db
+  connection.database = db
 
-	if (parsed.hostname) {
+  if (parsed.hostname) {
     if (parsed.protocol.indexOf('mssql') === 0) {
       connection.server = parsed.hostname;
     } else {
