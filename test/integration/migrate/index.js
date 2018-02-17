@@ -330,7 +330,7 @@ module.exports = function(knex) {
           // MySQL / Oracle commit transactions implicit for most common
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
           // so we need to check for dialect
-          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'mariadb' || knex.client.dialect === 'oracle') {
+          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'oracle') {
             expect(exists).to.equal(true);
           } else {
             expect(exists).to.equal(false);
