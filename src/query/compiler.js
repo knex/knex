@@ -189,11 +189,57 @@ assign(QueryCompiler.prototype, {
       : '');
   },
 
+  _aggregate(stmt, { aliasSeparator }) {
+    const value = stmt.value;
+    const method = stmt.method;
+    const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
+    const wrap = identifier => this.formatter.wrap(identifier)
+    const addAlias = (value, alias) => {
+      if (alias) {
+        return value + aliasSeparator + wrap(alias);
+      }
+      return value;
+    };
+    const aggregateArray = (value, alias) => {
+      let columns = value.map(wrap).join(', ');
+      if (distinct) {
+        columns = `${distinct.trim()}(${columns})`;
+      }
+      const aggregated = `${method}(${columns})`;
+      return addAlias(aggregated, alias);
+    };
+    const aggregateString = (value, alias) => {
+      const aggregated = `${method}(${distinct + wrap(value)})`;
+      return addAlias(aggregated, alias);
+    };
+
+    if (Array.isArray(value)) {
+      return aggregateArray(value);
+    }
+
+    if (typeof value === 'object') {
+      const keys = Object.keys(value);
+      const alias = keys[0];
+      const column = value[alias];
+      if (Array.isArray(column)) {
+        return aggregateArray(column, alias);
+      }
+      return aggregateString(column, alias);
+    }
+
+    // Allows us to speciy an alias for the aggregate types.
+    const splitOn = value.toLowerCase().indexOf(' as ');
+    if (splitOn !== -1) {
+      const column = value.slice(0, splitOn);
+      const alias = value.slice(splitOn + 4);
+      return aggregateString(column, alias);
+    }
+
+    return aggregateString(value);
+  },
+
   aggregate(stmt) {
-    return helpers.aggregateStatement(stmt, {
-      aliasSeparator: ' as ',
-      wrap: identifier => this.formatter.wrap(identifier)
-    });
+    return this._aggregate(stmt, { aliasSeparator: ' as ' });
   },
 
   aggregateRaw(stmt) {

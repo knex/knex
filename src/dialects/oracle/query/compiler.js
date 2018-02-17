@@ -188,10 +188,7 @@ assign(QueryCompiler_Oracle.prototype, {
   },
 
   aggregate(stmt) {
-    return helpers.aggregateStatement(stmt, {
-      aliasSeparator: ' ',
-      wrap: identifier => this.formatter.wrap(identifier)
-    });
+    return this._aggregate(stmt, { aliasSeparator: ' ' });
   },
 
   // for single commands only
