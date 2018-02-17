@@ -5,9 +5,6 @@ import { parse as parsePG } from 'pg-connection-string'
 export default function parseConnectionString(str) {
   const parsed = url.parse(str)
   let { protocol } = parsed
-  if (protocol && protocol.indexOf('maria') === 0) {
-    protocol = 'maria'
-  }
   if (protocol === null) {
     return {
       client: 'sqlite3',
@@ -31,12 +28,10 @@ function connectionObject(parsed) {
   if (db[0] === '/') {
     db = db.slice(1)
   }
-  if (parsed.protocol.indexOf('maria') === 0) {
-    connection.db = db
-  } else {
-    connection.database = db
-  }
-  if (parsed.hostname) {
+
+	connection.database = db
+
+	if (parsed.hostname) {
     if (parsed.protocol.indexOf('mssql') === 0) {
       connection.server = parsed.hostname;
     } else {

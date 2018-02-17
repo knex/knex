@@ -4,7 +4,6 @@
 
 var sinon = require('sinon');
 var MySQL_Client  = require('../../../lib/dialects/mysql');
-var Maria_Client  = require('../../../lib/dialects/maria');
 var MySQL2_Client = require('../../../lib/dialects/mysql2');
 
 module.exports = function(dialect) {
@@ -15,7 +14,6 @@ describe(dialect + " SchemaBuilder", function() {
   switch(dialect) {
     case 'mysql': client = new MySQL_Client(); break;
     case 'mysql2': client = new MySQL2_Client(); break;
-    case 'maria': client = new Maria_Client(); break;
   }
 
   var tableSql;
