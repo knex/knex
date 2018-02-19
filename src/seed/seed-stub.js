@@ -1,7 +1,7 @@
 
 // Stub Seed:
 // Used for now in browser builds, where filesystem access isn't
-// available. Maybe we can eventually do websql migrations
+// available.
 // with jsonp and a json migration api.
 const StubSeed = module.exports = function() {};
 

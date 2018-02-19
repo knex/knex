@@ -63,9 +63,3 @@ Knex.raw = (sql, bindings) => {
   warn('global Knex.raw is deprecated, use knex.raw (chain off an initialized knex object)')
   return new Raw().set(sql, bindings)
 }
-
-// Doing this ensures Browserify works. Still need to figure out
-// the best way to do some of this.
-if (process.browser) {
-  require('./dialects/websql/index.js')
-}
