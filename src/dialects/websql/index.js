@@ -7,7 +7,7 @@ import inherits from 'inherits';
 import Transaction from './transaction';
 import Client_SQLite3 from '../sqlite3';
 import Promise from 'bluebird';
-import { assign, map, uniqueId, clone } from 'lodash'
+import { assign, map, uniqueId, clone } from 'lodash';
 
 function Client_WebSQL(config) {
   Client_SQLite3.call(this, config);
@@ -19,9 +19,8 @@ function Client_WebSQL(config) {
 inherits(Client_WebSQL, Client_SQLite3);
 
 assign(Client_WebSQL.prototype, {
-
   transaction() {
-    return new Transaction(this, ...arguments)
+    return new Transaction(this, ...arguments);
   },
 
   dialect: 'websql',
@@ -32,7 +31,10 @@ assign(Client_WebSQL.prototype, {
       try {
         /*jslint browser: true*/
         const db = openDatabase(
-          this.name, this.version, this.displayName, this.estimatedSize
+          this.name,
+          this.version,
+          this.displayName,
+          this.estimatedSize
         );
         db.transaction(function(t) {
           t.__knexUid = uniqueId('__knexUid');
@@ -47,7 +49,7 @@ assign(Client_WebSQL.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   releaseConnection() {
-    return Promise.resolve()
+    return Promise.resolve();
   },
 
   // Runs the query on the specified connection,
@@ -55,30 +57,38 @@ assign(Client_WebSQL.prototype, {
   _query(connection, obj) {
     return new Promise((resolver, rejecter) => {
       if (!connection) return rejecter(new Error('No connection provided.'));
-      connection.executeSql(obj.sql, obj.bindings, (trx, response) => {
-        obj.response = response;
-        return resolver(obj);
-      }, (trx, err) => {
-        rejecter(err);
-      });
+      connection.executeSql(
+        obj.sql,
+        obj.bindings,
+        (trx, response) => {
+          obj.response = response;
+          return resolver(obj);
+        },
+        (trx, err) => {
+          rejecter(err);
+        }
+      );
     });
   },
 
   _stream(connection, sql, stream) {
     const client = this;
     return new Promise(function(resolver, rejecter) {
-      stream.on('error', rejecter)
-      stream.on('end', resolver)
-      return client._query(connection, sql).then(obj =>
-        client.processResponse(obj)
-      ).map(row => {
-        stream.write(row)
-      }).catch(err => {
-        stream.emit('error', err)
-      }).then(() => {
-        stream.end()
-      })
-    })
+      stream.on('error', rejecter);
+      stream.on('end', resolver);
+      return client
+        ._query(connection, sql)
+        .then(obj => client.processResponse(obj))
+        .map(row => {
+          stream.write(row);
+        })
+        .catch(err => {
+          stream.emit('error', err);
+        })
+        .then(() => {
+          stream.end();
+        });
+    });
   },
 
   processResponse(obj, runner) {
@@ -104,8 +114,7 @@ assign(Client_WebSQL.prototype, {
       default:
         return resp;
     }
-  }
-
-})
+  },
+});
 
 export default Client_WebSQL;

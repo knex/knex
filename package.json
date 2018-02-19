@@ -1,7 +1,8 @@
 {
   "name": "knex",
   "version": "0.14.4",
-  "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
+  "description":
+    "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "dependencies": {
     "babel-runtime": "^6.26.0",
@@ -35,10 +36,12 @@
     "chai": "^4.1.2",
     "coveralls": "~3.0.0",
     "eslint": "4.16.0",
+    "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-import": "^2.8.0",
     "estraverse": "^4.2.0",
     "istanbul": "^0.4.5",
     "json-loader": "^0.5.7",
+    "lint-staged": "^6.1.1",
     "mariasql": "^0.2.6",
     "mocha": "^3.5.3",
     "mock-fs": "^4.4.2",
@@ -47,6 +50,7 @@
     "mysql2": "^1.5.2",
     "pg": "^7.4.1",
     "pg-query-stream": "^1.1.1",
+    "prettier": "^1.10.2",
     "rimraf": "^2.6.2",
     "sinon": "^4.2.2",
     "sinon-chai": "^2.14.0",
@@ -66,11 +70,17 @@
     "babel-preset-es2015-loose",
     "rimraf"
   ],
+  "lint-staged": {
+    "*.{js,json}": ["prettier --write", "git add"]
+  },
   "scripts": {
     "build": "npm run babel",
+    "precommit": "lint-staged",
+    "format": "prettier --write \"{src,bin,scripts,test}/**/*.js\"",
     "debug_test": "node-debug _mocha -t 0 test/index.js",
     "babel": "rimraf ./lib && babel src --out-dir lib --copy-files",
-    "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "coveralls":
+      "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "dev": "rimraf ./lib && babel -w src --out-dir lib --copy-files",
     "lint": "eslint src/**",
     "plaintest": "mocha --check-leaks -b -R spec test/index.js && npm run tape",
@@ -78,10 +88,14 @@
     "pre_test": "npm run lint",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node-debug test/tape/index.js",
-    "test": "npm run pre_test && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
-    "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
-    "stress:test": "node scripts/stress-test/knex-stress-test.js |  grep -A 3 -- '- STATS '",
-    "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
+    "test":
+      "npm run pre_test && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
+    "stress:init":
+      "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
+    "stress:test":
+      "node scripts/stress-test/knex-stress-test.js |  grep -A 3 -- '- STATS '",
+    "stress:destroy":
+      "docker-compose -f scripts/stress-test/docker-compose.yml stop"
   },
   "bin": {
     "knex": "./bin/cli.js"

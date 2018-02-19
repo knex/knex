@@ -1,20 +1,18 @@
-
 import * as helpers from './helpers';
-import { isArray, map, clone, each } from 'lodash'
+import { isArray, map, clone, each } from 'lodash';
 
 export default function(Target) {
-
   Target.prototype.toQuery = function(tz) {
     let data = this.toSQL(this._method, tz);
     if (!isArray(data)) data = [data];
-    return map(data, (statement) => {
+    return map(data, statement => {
       return this.client._formatQuery(statement.sql, statement.bindings, tz);
     }).join(';\n');
   };
 
   // Create a new instance of the `Runner`, passing in the current object.
   Target.prototype.then = function(/* onFulfilled, onRejected */) {
-    const result = this.client.runner(this).run()
+    const result = this.client.runner(this).run();
     return result.then.apply(result, arguments);
   };
 
@@ -42,9 +40,9 @@ export default function(Target) {
   Target.prototype.transacting = function(t) {
     if (t && t.client) {
       if (!t.client.transacting) {
-        helpers.warn(`Invalid transaction value: ${t.client}`)
+        helpers.warn(`Invalid transaction value: ${t.client}`);
       } else {
-        this.client = t.client
+        this.client = t.client;
       }
     }
     return this;
@@ -62,14 +60,30 @@ export default function(Target) {
 
   // Creates a method which "coerces" to a promise, by calling a
   // "then" method on the current `Target`
-  each(['bind', 'catch', 'finally', 'asCallback',
-    'spread', 'map', 'reduce', 'tap', 'thenReturn',
-    'return', 'yield', 'ensure', 'reflect',
-    'get', 'mapSeries', 'delay'], function(method) {
-    Target.prototype[method] = function() {
-      const promise = this.then();
-      return promise[method].apply(promise, arguments);
-    };
-  });
-
+  each(
+    [
+      'bind',
+      'catch',
+      'finally',
+      'asCallback',
+      'spread',
+      'map',
+      'reduce',
+      'tap',
+      'thenReturn',
+      'return',
+      'yield',
+      'ensure',
+      'reflect',
+      'get',
+      'mapSeries',
+      'delay',
+    ],
+    function(method) {
+      Target.prototype[method] = function() {
+        const promise = this.then();
+        return promise[method].apply(promise, arguments);
+      };
+    }
+  );
 }
