@@ -356,6 +356,29 @@ export default [
     ]
   },
   {
+    type: "method",
+    method: "start",
+    description: "A `start` event is fired right before a query-builder is compiled. Note: While this event can be used to alter a builders state prior to compilation it is not to be recommended. Future goals include ways of doing this in a different manner such as hooks.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.select('*')
+            .from('users')
+            .on('start', function(builder) {
+              builder
+              .where('IsPrivate', 0)
+            })
+            .then(function(Rows) {
+              //Only contains Rows where IsPrivate = 0
+            })
+            .catch(function(error) { });
+        `
+      }
+    ]
+  },
+  {
     type: "heading",
     size: "md",
     content: "Other",
