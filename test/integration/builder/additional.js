@@ -663,6 +663,29 @@ module.exports = function(knex) {
         })
     });
 
+    it('Event: start', function() {
+      return knex('accounts')
+        .insert({id: '999', last_name: 'Start'})
+        .then(function() {
+          var queryBuilder = knex('accounts').select();
+
+          queryBuilder.on('start', function(builder) {
+            //Alter builder prior to compilation
+            //Select only one row
+            builder
+              .where('id', '999')
+              .first();
+          });
+
+          return queryBuilder
+        })
+        .then(function(row) {
+          expect(row).to.exist;
+          expect(row.id).to.equal('999');
+          expect(row.last_name).to.equal('Start');
+        });
+    });
+
   });
 
 };
