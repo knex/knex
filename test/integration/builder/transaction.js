@@ -31,7 +31,7 @@ module.exports = function(knex) {
       })
       .catch(
         function handle(error) {
-          expect(error.message).to.equal('Invalid transacting value (null or undefined)')
+          expect(error.message).to.equal('Invalid transacting value (null, undefined or empty object)')
         }
       )
     });
@@ -43,7 +43,7 @@ module.exports = function(knex) {
       })
       .catch(
         function handle(error) {
-          expect(error.message).to.equal('Invalid transacting value (null or undefined)')
+          expect(error.message).to.equal('Invalid transacting value (null, undefined or empty object)')
         }
       )
     });
@@ -55,7 +55,7 @@ module.exports = function(knex) {
       })
       .catch(
         function handle(error) {
-          expect(error.message).to.equal('Invalid transacting value (null or undefined)')
+          expect(error.message).to.equal('Invalid transacting value (null, undefined or empty object)')
         }
       )
     });
