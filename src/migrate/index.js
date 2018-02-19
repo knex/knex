@@ -152,7 +152,6 @@ export default class Migrator {
       .then(data => !data.length && trx.into(lockTable).insert({ is_locked: 0 }));
   }
 
-  // Create the migration table, if it doesn't already exist.
   _createMigrationTable(tableName, trx = this.knex) {
     return trx.schema.createTable(tableName, function(t) {
       t.increments();
