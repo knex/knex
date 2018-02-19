@@ -1,6 +1,28 @@
 
 # Master (Unreleased)
 
+# 0.14.4 - 19 Feb, 2018
+
+### Bug fixes:
+
+- containsUndefined only validate plain objects. Fixes #1898 (#2468)
+- Add warning when using .returning() in sqlite3. Fixes #1660 (#2471)
+- Throw an error if .update() results in an empty sql (#2472)
+- Removed unnecessary createTableIfNotExist and replaced with createTable (#2473)
+
+### New Features:
+
+- Allow calling lock procedures (such as forUpdate) outside of transaction. Fixes #2403. (#2475)
+- Added test and documentation for Event 'start' (#2488)
+
+### Test / internal changes
+
+- Added stress test, which uses TCP proxy to simulate flaky connection #2460
+- Removed old docker tests, new stress test setup (#2474)
+- Removed unused property __cid on the base client (#2481)
+- Changed rm to rimraf in 'npm run dev' (#2483)
+- Changed babel preset and use latest node as target when running dev (#2484)
+
 # 0.14.3 - 8 Feb, 2018
 
 ### Bug fixes:
