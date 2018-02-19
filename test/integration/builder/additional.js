@@ -681,7 +681,7 @@ module.exports = function(knex) {
         })
         .then(function(row) {
           expect(row).to.exist;
-          expect(row.id).to.equal('999');
+          expect(String(row.id)).to.equal('999');
           expect(row.last_name).to.equal('Start');
         });
     });
