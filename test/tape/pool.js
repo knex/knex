@@ -1,11 +1,11 @@
 'use strict';
 
-var test   = require('tape')
+var test = require('tape');
 var Client = require('../../lib/dialects/sqlite3');
 var tarn = require('tarn');
 var Pool = tarn.Pool;
 var knexfile = require('../knexfile');
-var makeKnex = require('../../knex')
+var makeKnex = require('../../knex');
 const Bluebird = require('bluebird');
 
 test(`pool evicts dead resources when factory.validate rejects`, t => {
@@ -28,7 +28,7 @@ test(`pool evicts dead resources when factory.validate rejects`, t => {
 
     destroy: res => {
       return true;
-    }
+    },
   });
 
   let connections = Bluebird.resolve(Array.from(Array(5)))
@@ -38,7 +38,7 @@ test(`pool evicts dead resources when factory.validate rejects`, t => {
       });
     })
     .map(con => {
-      pool.release(con)
+      pool.release(con);
       return con;
     })
     .map(con => {
@@ -47,8 +47,9 @@ test(`pool evicts dead resources when factory.validate rejects`, t => {
       return con;
     })
     .map(con => {
-      return pool.acquire().promise
-        .then(con => {
+      return pool
+        .acquire()
+        .promise.then(con => {
           t.ok(con.id > 4, 'old dead connections were not reused');
           return con;
         })
@@ -57,7 +58,7 @@ test(`pool evicts dead resources when factory.validate rejects`, t => {
         });
     })
     .map(con => {
-      pool.release(con)
+      pool.release(con);
       return con;
     })
     .map(con => {
@@ -67,7 +68,7 @@ test(`pool evicts dead resources when factory.validate rejects`, t => {
       });
     })
     .map(con => {
-      pool.release(con)
+      pool.release(con);
       return con;
     })
     .then(() => pool.destroy())
@@ -77,54 +78,59 @@ test(`pool evicts dead resources when factory.validate rejects`, t => {
 });
 
 test('#822, pool config, max: 0 should skip pool construction', function(t) {
-
-  var client = new Client({connection: {filename: ':memory:'}, pool: {max: 0}})
+  var client = new Client({
+    connection: { filename: ':memory:' },
+    pool: { max: 0 },
+  });
 
   try {
-    t.equal(client.pool, undefined)
-    t.end()
+    t.equal(client.pool, undefined);
+    t.end();
   } finally {
-    client.destroy()
+    client.destroy();
   }
-
-})
+});
 
 test('#823, should not skip pool construction pool config is not defined', function(t) {
-
-  var client = new Client({connection: {filename: ':memory:'}})
+  var client = new Client({ connection: { filename: ':memory:' } });
   try {
-    t.ok(client.pool instanceof Pool)
-    t.end()
+    t.ok(client.pool instanceof Pool);
+    t.end();
   } finally {
-    client.destroy()
+    client.destroy();
   }
+});
 
-})
-
-test('#2321 dead connections are not evicted from pool', (t) => {
+test('#2321 dead connections are not evicted from pool', t => {
   const knex = makeKnex(knexfile['mysql2']);
 
   t.plan(10);
-  Bluebird.all(Array.from(Array(30)).map(() => {
-    // kill all connections in pool
-    return knex.raw(`KILL connection_id()`).catch(() => {
-      // just ignore errors
+  Bluebird.all(
+    Array.from(Array(30)).map(() => {
+      // kill all connections in pool
+      return knex.raw(`KILL connection_id()`).catch(() => {
+        // just ignore errors
+      });
+    })
+  )
+    .delay(50) // wait driver to notice connection errors (2ms was enough locally)
+    .then(() => {
+      // all connections are dead, so they should be evicted from pool and this should work
+      return Promise.all(
+        Array.from(Array(10)).map(() =>
+          knex.select(1).then(() => t.pass('Read data'))
+        )
+      );
+    })
+    .catch(e => {
+      t.fail(
+        `Should have created new connection and execute the query, got : ${e}`
+      );
+    })
+    .then(() => {
+      t.end();
+    })
+    .finally(() => {
+      return knex.destroy();
     });
-  }))
-  .delay(50) // wait driver to notice connection errors (2ms was enough locally)
-  .then(() => {
-    // all connections are dead, so they should be evicted from pool and this should work
-    return Promise.all(Array.from(Array(10)).map(
-      () => knex.select(1).then(() => t.pass('Read data'))
-    ));
-  })
-  .catch(e => {
-    t.fail(`Should have created new connection and execute the query, got : ${e}`);
-  })
-  .then(() => {
-    t.end();
-  })
-  .finally(() => {
-    return knex.destroy();
-  })
 });

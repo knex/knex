@@ -8,13 +8,13 @@ import {
   isUndefined,
   isPlainObject,
   isArray,
-  isTypedArray
-} from 'lodash'
+  isTypedArray,
+} from 'lodash';
 import chalk from 'chalk';
 
 // Pick off the attributes from only the current layer of the object.
 export function skim(data) {
-  return map(data, (obj) => pick(obj, keys(obj)));
+  return map(data, obj => pick(obj, keys(obj)));
 }
 
 // Check if the first argument is an array, otherwise uses all arguments as an
@@ -35,44 +35,43 @@ export function debugLog(msg) {
 }
 
 export function error(msg) {
-  console.log(chalk.red(`Knex:Error ${msg}`))
+  console.log(chalk.red(`Knex:Error ${msg}`));
 }
 
-  // Used to signify deprecated functionality.
+// Used to signify deprecated functionality.
 export function deprecate(method, alternate) {
   warn(`${method} is deprecated, please use ${alternate}`);
 }
 
-  // Used to warn about incorrect use, without error'ing
+// Used to warn about incorrect use, without error'ing
 export function warn(msg) {
-  console.log(chalk.yellow(`Knex:warning - ${msg}`))
+  console.log(chalk.yellow(`Knex:warning - ${msg}`));
 }
 
 export function exit(msg) {
-  console.log(chalk.red(msg))
-  process.exit(1)
+  console.log(chalk.red(msg));
+  process.exit(1);
 }
 
 export function containsUndefined(mixed) {
   let argContainsUndefined = false;
 
-  if (isTypedArray(mixed))
-    return false;
+  if (isTypedArray(mixed)) return false;
 
-  if(mixed && isFunction(mixed.toSQL)) {
+  if (mixed && isFunction(mixed.toSQL)) {
     //Any QueryBuilder or Raw will automatically be validated during compile.
     return argContainsUndefined;
   }
 
-  if(isArray(mixed)) {
-    for(let i = 0; i < mixed.length; i++) {
-      if(argContainsUndefined) break;
+  if (isArray(mixed)) {
+    for (let i = 0; i < mixed.length; i++) {
+      if (argContainsUndefined) break;
       argContainsUndefined = this.containsUndefined(mixed[i]);
     }
-  } else if(isPlainObject(mixed)) {
-    for(const key in mixed) {
+  } else if (isPlainObject(mixed)) {
+    for (const key in mixed) {
       if (mixed.hasOwnProperty(key)) {
-        if(argContainsUndefined) break;
+        if (argContainsUndefined) break;
         argContainsUndefined = this.containsUndefined(mixed[key]);
       }
     }
@@ -92,5 +91,5 @@ export function addQueryContext(Target) {
     }
     this._queryContext = context;
     return this;
-  }
+  };
 }

@@ -1,4 +1,3 @@
-
 // Redshift Query Builder & Compiler
 // ------
 import inherits from 'inherits';
@@ -49,9 +48,11 @@ assign(QueryCompiler_Redshift.prototype, {
   },
 
   // simple: if trying to return, warn
-  _slightReturn(){
+  _slightReturn() {
     if (this.single.isReturning) {
-      helpers.warn('insert/update/delete returning is not supported by redshift dialect');
+      helpers.warn(
+        'insert/update/delete returning is not supported by redshift dialect'
+      );
     }
   },
 
@@ -69,8 +70,12 @@ assign(QueryCompiler_Redshift.prototype, {
   columnInfo() {
     const column = this.single.columnInfo;
 
-    let sql = 'select * from information_schema.columns where table_name = ? and table_catalog = ?';
-    const bindings = [this.single.table.toLowerCase(), this.client.database().toLowerCase()];
+    let sql =
+      'select * from information_schema.columns where table_name = ? and table_catalog = ?';
+    const bindings = [
+      this.single.table.toLowerCase(),
+      this.client.database().toLowerCase(),
+    ];
 
     if (this.single.schema) {
       sql += ' and table_schema = ?';
@@ -83,19 +88,23 @@ assign(QueryCompiler_Redshift.prototype, {
       sql,
       bindings,
       output(resp) {
-        const out = reduce(resp.rows, function(columns, val) {
-          columns[val.column_name] = {
-            type: val.data_type,
-            maxLength: val.character_maximum_length,
-            nullable: (val.is_nullable === 'YES'),
-            defaultValue: val.column_default
-          };
-          return columns;
-        }, {});
-        return column && out[column] || out;
-      }
+        const out = reduce(
+          resp.rows,
+          function(columns, val) {
+            columns[val.column_name] = {
+              type: val.data_type,
+              maxLength: val.character_maximum_length,
+              nullable: val.is_nullable === 'YES',
+              defaultValue: val.column_default,
+            };
+            return columns;
+          },
+          {}
+        );
+        return (column && out[column]) || out;
+      },
     };
-  }
-})
+  },
+});
 
 export default QueryCompiler_Redshift;

@@ -8,20 +8,23 @@ const rp = require('request-promise-native');
 // init instances
 const pg = Knex({
   client: 'pg',
-  connection: 'postgres://postgres:postgresrootpassword@localhost:25432/postgres',
-  pool: { max: 50 }
+  connection:
+    'postgres://postgres:postgresrootpassword@localhost:25432/postgres',
+  pool: { max: 50 },
 });
 
 const mysql2 = Knex({
   client: 'mysql2',
-  connection: 'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8&connectTimeout=500',
-  pool: { max: 50 }
+  connection:
+    'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8&connectTimeout=500',
+  pool: { max: 50 },
 });
 
 const mysql = Knex({
   client: 'mysql',
-  connection: 'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8&connectTimeout=500',
-  pool: { max: 50 }
+  connection:
+    'mysql://root:mysqlrootpassword@localhost:23306/?charset=utf8&connectTimeout=500',
+  pool: { max: 50 },
 });
 
 /* TODO: figure out how to nicely install oracledb node driver on osx
@@ -41,10 +44,10 @@ const mysql = Knex({
 const counters = {};
 
 function setQueryCounters(instance, name) {
-  const counts = counters[name] = {queries: 0, results: 0, errors: 0};
-  instance.on('query', () => counts.queries += 1);
-  instance.on('query-response', () => counts.results += 1);
-  instance.on('query-error', () => counts.errors += 1);    
+  const counts = (counters[name] = { queries: 0, results: 0, errors: 0 });
+  instance.on('query', () => (counts.queries += 1));
+  instance.on('query-response', () => (counts.results += 1));
+  instance.on('query-error', () => (counts.errors += 1));
 }
 
 setQueryCounters(pg, 'pg');
@@ -63,34 +66,35 @@ setInterval(() => {
       queries: (counters[key].queries - lastCounters[key].queries) / 2,
       results: (counters[key].results - lastCounters[key].results) / 2,
       errors: (counters[key].errors - lastCounters[key].errors) / 2,
-    }
+    };
   }
-  console.log('------------------------ STATS PER SECOND ------------------------');
-  console.dir(reqsPerSec, {colors: true});
-  console.log('------------------------------- EOS ------------------------------');
+  console.log(
+    '------------------------ STATS PER SECOND ------------------------'
+  );
+  console.dir(reqsPerSec, { colors: true });
+  console.log(
+    '------------------------------- EOS ------------------------------'
+  );
   lastCounters = _.cloneDeep(counters);
-}, 2000);  
-
+}, 2000);
 
 async function killConnectionsPg() {
   return pg.raw(`SELECT pg_terminate_backend(pg_stat_activity.pid) 
     FROM pg_stat_activity
     WHERE pg_stat_activity.datname = 'postgres' 
       AND pid <> pg_backend_pid()`);
-} 
+}
 
 async function killConnectionsMyslq(client) {
   const [rows, colDefs] = await client.raw(`SHOW FULL PROCESSLIST`);
   await Promise.all(rows.map(row => client.raw(`KILL ${row.Id}`)));
-} 
+}
 
 async function main() {
   async function loopQueries(prefix, query) {
-    const queries = () => [
-      ...Array(50).fill(query),
-    ];
+    const queries = () => [...Array(50).fill(query)];
 
-    while(true) {
+    while (true) {
       try {
         await Promise.all(queries());
       } catch (err) {
@@ -102,27 +106,31 @@ async function main() {
   async function recreateProxy(serviceName, listenPort, proxyToPort) {
     try {
       await rp.delete({
-        url: `${toxicli.host}/proxies/${serviceName}`
-      });  
-    } catch(err) {}
+        url: `${toxicli.host}/proxies/${serviceName}`,
+      });
+    } catch (err) {}
 
     const proxy = await toxicli.createProxy({
       name: serviceName,
       listen: `0.0.0.0:${listenPort}`,
-      upstream: `${serviceName}:${proxyToPort}`
+      upstream: `${serviceName}:${proxyToPort}`,
     });
 
     // add some latency
-    await proxy.addToxic(new toxiproxy.Toxic(proxy, {
-      type: 'latency',
-      attributes: {latency: 1, jitter: 1}
-    }));
+    await proxy.addToxic(
+      new toxiproxy.Toxic(proxy, {
+        type: 'latency',
+        attributes: { latency: 1, jitter: 1 },
+      })
+    );
 
     // cause connections to be closed every 500 bytes
-    await proxy.addToxic(new toxiproxy.Toxic(proxy, {
-      type: 'limit_data',
-      attributes: {bytes: 5000}
-    }));
+    await proxy.addToxic(
+      new toxiproxy.Toxic(proxy, {
+        type: 'limit_data',
+        attributes: { bytes: 5000 },
+      })
+    );
   }
 
   // create TCP proxies for simulating bad connections etc.
@@ -133,7 +141,7 @@ async function main() {
   }
 
   await recreateProxies();
-  
+
   loopQueries('PSQL:', pg.raw('select 1'));
   loopQueries('PSQL TO:', pg.raw('select 1').timeout(20));
 
@@ -143,8 +151,7 @@ async function main() {
   loopQueries('MYSQL2:', mysql2.raw('select 1'));
   loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
 
-
-  while(true) {
+  while (true) {
     await Bluebird.delay(20); // kill everything every quite often from server side
     try {
       await Promise.all([

@@ -1,10 +1,9 @@
-
 // SQLite3: Column Builder & Compiler
 // -------
 import inherits from 'inherits';
 import SchemaCompiler from '../../../schema/compiler';
 
-import { some } from 'lodash'
+import { some } from 'lodash';
 
 // Schema Compiler
 // -------
@@ -27,14 +26,18 @@ SchemaCompiler_SQLite3.prototype.hasColumn = function(tableName, column) {
   this.pushQuery({
     sql: `PRAGMA table_info(${this.formatter.wrap(tableName)})`,
     output(resp) {
-      return some(resp, {name: column});
-    }
+      return some(resp, { name: column });
+    },
   });
 };
 
 // Compile a rename table command.
 SchemaCompiler_SQLite3.prototype.renameTable = function(from, to) {
-  this.pushQuery(`alter table ${this.formatter.wrap(from)} rename to ${this.formatter.wrap(to)}`);
+  this.pushQuery(
+    `alter table ${this.formatter.wrap(from)} rename to ${this.formatter.wrap(
+      to
+    )}`
+  );
 };
 
 export default SchemaCompiler_SQLite3;
