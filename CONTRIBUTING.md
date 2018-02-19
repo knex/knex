@@ -116,7 +116,7 @@ You can optionally specify which dialects to test using the `DB` environment var
 * postgres
 * sqlite3
 * maria
-* oracle
+* oracledb
 * mssql
 
 ```bash
@@ -143,6 +143,25 @@ Once this is done, check it works by attempting to login:
 
 ```
 psql -h localhost -U postgres -d knex_test
+```
+
+### Runnin OracleDB tests in docker
+
+```
+npm run test:oracledb
+```
+
+You can also manually start shell in the docker image and run build commands manually:
+```
+docker run -i -t knex-test-oracledb /bin/bash
+
+root@34f1f1cd20cf:/#
+
+/usr/sbin/startup.sh
+cd knex
+npm install
+npm install oracledb
+npm test
 ```
 
 ## Want to be Collaborator?
