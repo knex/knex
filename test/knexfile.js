@@ -145,9 +145,9 @@ var testConfigs = {
   mssql: {
     dialect: 'mssql',
     connection: testConfig.mssql || {
-      user: "knex_test",
-      password: "knex_test",
-      server: "127.0.0.1",
+      user: "sa",
+      password: "S0meVeryHardPassword",
+      server: "localhost",
       database: "knex_test"
     },
     pool: pool,

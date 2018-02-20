@@ -145,10 +145,15 @@ Once this is done, check it works by attempting to login:
 psql -h localhost -U postgres -d knex_test
 ```
 
-### Runnin OracleDB tests in docker
+### Running OracleDB tests in docker
+
+Since node-oracledb driver is so hard to install on every platform, oracle tests
+are actually ran inside docker container. Container has Oracle XE g11,
+node 8 and node-oracledb driver installed and copies local knex directory in 
+to be able to run the tests.
 
 ```
-npm run test:oracledb
+npm run oracledb:test
 ```
 
 You can also manually start shell in the docker image and run build commands manually:
@@ -162,6 +167,21 @@ cd knex
 npm install
 npm install oracledb
 npm test
+```
+
+### Runnin MSSQL SQL Server tests
+
+SQL Server needs to be started as docker container before running tests
+
+```
+# start mssql docker container
+npm run mssql:init
+
+# run tests, do changes etc.
+npm run mssql:test
+
+# stop mssql container
+npm run mssql:destroy
 ```
 
 ## Want to be Collaborator?
