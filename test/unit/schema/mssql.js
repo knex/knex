@@ -53,6 +53,7 @@ describe("MSSQL SchemaBuilder", function() {
       this.dropColumn('foo');
     }).toSQL();
     equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.includes(`IF @constraint IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @constraint)`);
     expect(tableSql[1].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo]');
   });
 
@@ -62,6 +63,8 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(3, tableSql.length);
+    expect(tableSql[0].sql).to.includes(`IF @constraint IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @constraint)`);
+    expect(tableSql[1].sql).to.includes(`IF @constraint IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @constraint)`);
     expect(tableSql[2].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], [bar]');
   });
 
@@ -71,6 +74,8 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(3, tableSql.length);
+    expect(tableSql[0].sql).to.includes(`IF @constraint IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @constraint)`);
+    expect(tableSql[1].sql).to.includes(`IF @constraint IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @constraint)`);
     expect(tableSql[2].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], [bar]');
   });
 
@@ -154,6 +159,8 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(3, tableSql.length);
+    expect(tableSql[0].sql).to.includes(`IF @constraint IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @constraint)`);
+    expect(tableSql[1].sql).to.includes(`IF @constraint IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @constraint)`);
     expect(tableSql[2].sql).to.equal('ALTER TABLE [users] DROP COLUMN [created_at], [updated_at]');
   });
 
