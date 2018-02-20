@@ -52,9 +52,8 @@ describe("MSSQL SchemaBuilder", function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.dropColumn('foo');
     }).toSQL();
-
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo]');
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo]');
   });
 
   it('drops multiple columns with an array', function() {
@@ -62,8 +61,8 @@ describe("MSSQL SchemaBuilder", function() {
       this.dropColumn(['foo', 'bar']);
     }).toSQL();
 
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], [bar]');
+    equal(3, tableSql.length);
+    expect(tableSql[2].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], [bar]');
   });
 
   it('drops multiple columns as multiple arguments', function() {
@@ -71,8 +70,8 @@ describe("MSSQL SchemaBuilder", function() {
       this.dropColumn('foo', 'bar');
     }).toSQL();
 
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], [bar]');
+    equal(3, tableSql.length);
+    expect(tableSql[2].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo], [bar]');
   });
 
   it('test drop primary', function() {
@@ -154,8 +153,8 @@ describe("MSSQL SchemaBuilder", function() {
       this.dropTimestamps();
     }).toSQL();
 
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP COLUMN [created_at], [updated_at]');
+    equal(3, tableSql.length);
+    expect(tableSql[2].sql).to.equal('ALTER TABLE [users] DROP COLUMN [created_at], [updated_at]');
   });
 
   it('test rename table', function() {
