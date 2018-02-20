@@ -148,7 +148,7 @@ psql -h localhost -U postgres -d knex_test
 ### Runnin OracleDB tests in docker
 
 ```
-npm run test:oracledb
+npm run oracledb:test
 ```
 
 You can also manually start shell in the docker image and run build commands manually:
