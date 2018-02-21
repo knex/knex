@@ -1,6 +1,55 @@
 
 # Master (Unreleased)
 
+# 0.14.4 - 19 Feb, 2018
+
+### Bug fixes:
+
+- containsUndefined only validate plain objects. Fixes #1898 (#2468)
+- Add warning when using .returning() in sqlite3. Fixes #1660 (#2471)
+- Throw an error if .update() results in an empty sql (#2472)
+- Removed unnecessary createTableIfNotExist and replaced with createTable (#2473)
+
+### New Features:
+
+- Allow calling lock procedures (such as forUpdate) outside of transaction. Fixes #2403. (#2475)
+- Added test and documentation for Event 'start' (#2488)
+
+### Test / internal changes
+
+- Added stress test, which uses TCP proxy to simulate flaky connection #2460
+- Removed old docker tests, new stress test setup (#2474)
+- Removed unused property __cid on the base client (#2481)
+- Changed rm to rimraf in 'npm run dev' (#2483)
+- Changed babel preset and use latest node as target when running dev (#2484)
+
+# 0.14.3 - 8 Feb, 2018
+
+### Bug fixes:
+
+- Use tarn as pool instead of generic-pool which has been given various problems #2450
+- Fixed mysql issue where add columns failed if using both after and collate #2432
+- CLI sets exit-code 1 if the command supplied was not parseable #2358
+- Set toNative() to be not enumerable #2388
+- Use wrapIdentifier in columnInfo. fixes #2402 #2405
+- Fixed a bug when using .returning (OUTPUT) in an update query with joins in MSSQL #2399
+- Better error message when running migrations fail before even starting run migrations #2373
+- Read oracle's UV_THREADPOOL_SIZE env variable correctly #2372
+- Added decimal variable precision / scale support #2353
+
+### New Features:
+
+- Added queryContext to schema and query builders #2314
+- Added redshift dialect #2233
+- Added warning when one uses .createTableIfNotExist and deprecated it from docs #2458
+
+### Test / internal changes
+
+- Update dependencies and fix ESLint warnings accordingly #2433
+- Disable oracledb tests from non LTS nodes #2407
+- Update dependencies #2422
+
+
 # 0.14.2 - 24 Nov, 2017
 
 ### Bug fixes:

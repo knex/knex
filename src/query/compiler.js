@@ -424,11 +424,7 @@ assign(QueryCompiler.prototype, {
   // Compiles the "locks".
   lock() {
     if (this.single.lock) {
-      if (!this.client.transacting) {
-        helpers.warn('You are attempting to perform a "lock" command outside of a transaction.')
-      } else {
-        return this[this.single.lock]()
-      }
+      return this[this.single.lock]()
     }
   },
 
@@ -613,6 +609,15 @@ assign(QueryCompiler.prototype, {
         this.formatter.parameter(data[columns[i]])
       );
     }
+
+    if(isEmpty(vals)) {
+      throw new Error([
+        'Empty .update() call detected!',
+        'Update data does not contain any values to update.',
+        'This will result in a faulty query.',
+      ].join(' '));
+    }
+
     return vals;
   },
 

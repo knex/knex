@@ -40,19 +40,24 @@ export default class Oracle_Transaction extends Transaction {
     const t = this
     return Promise.try(() =>
       config.connection || t.client.acquireConnection()
-    ).tap(connection => {
-      if (!t.outerTx) {
-        connection.setAutoCommit(false)
-      }
-    }).disposer(connection => {
-      debugTx('%s: releasing connection', t.txid)
-      connection.setAutoCommit(true)
-      if (!config.connection) {
-        t.client.releaseConnection(connection)
-      } else {
-        debugTx('%s: not releasing external connection', t.txid)
-      }
-    })
+    )
+      .then(connection => {
+        connection.__knexTxId = this.txid;
+
+        return connection;
+      }).tap(connection => {
+        if (!t.outerTx) {
+          connection.setAutoCommit(false)
+        }
+      }).disposer(connection => {
+        debugTx('%s: releasing connection', t.txid)
+        connection.setAutoCommit(true)
+        if (!config.connection) {
+          t.client.releaseConnection(connection)
+        } else {
+          debugTx('%s: not releasing external connection', t.txid)
+        }
+      })
   }
 
 }

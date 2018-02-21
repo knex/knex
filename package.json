@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.14.2",
+  "version": "0.14.4",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "dependencies": {
@@ -31,10 +31,9 @@
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-lodash": "3.3.2",
     "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
     "coveralls": "~3.0.0",
-    "dockerode": "^2.5.3",
     "eslint": "4.16.0",
     "eslint-plugin-import": "^2.8.0",
     "estraverse": "^4.2.0",
@@ -45,7 +44,7 @@
     "mock-fs": "^4.4.2",
     "mssql": "^4.1.0",
     "mysql": "^2.15.0",
-    "mysql2": "^1.5.1",
+    "mysql2": "^1.5.2",
     "pg": "^7.4.1",
     "pg-query-stream": "^1.1.1",
     "rimraf": "^2.6.2",
@@ -55,7 +54,8 @@
     "sqlite3": "^3.1.13",
     "tap-spec": "^4.1.1",
     "tape": "^4.8.0",
-    "through": "^2.3.8"
+    "through": "^2.3.8",
+    "toxiproxy-node-client": "^2.0.6"
   },
   "buildDependencies": [
     "babel-cli",
@@ -71,15 +71,21 @@
     "debug_test": "node-debug _mocha -t 0 test/index.js",
     "babel": "rimraf ./lib && babel src --out-dir lib --copy-files",
     "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "dev": "rm -rf ./lib && babel -w src --out-dir lib --copy-files",
+    "dev": "rimraf ./lib && babel -w src --out-dir lib --copy-files",
     "lint": "eslint src/**",
-    "plaintest": "mocha --check-leaks -b -R spec test/index.js && npm run tape",
+    "plaintest": "mocha -t 10000 -b -R spec test/index.js && npm run tape",
     "prepublish": "npm run babel",
-    "docker_test": "bash ./scripts/docker-for-test.sh",
-    "pre_test": "npm run lint && npm run docker_test",
+    "pre_test": "npm run lint",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node-debug test/tape/index.js",
-    "test": "npm run pre_test && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 10000 -b -R spec test/index.js && npm run tape"
+    "test": "npm run pre_test && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
+    "oracledb:test": "docker rmi -f --no-prune knex-test-oracledb && docker build -f scripts/oracle-tests-Dockerfile --tag knex-test-oracledb . && docker run -i -t knex-test-oracledb",
+    "mssql:init": "docker-compose -f scripts/mssql-docker-compose.yml up --no-start && docker-compose -f scripts/mssql-docker-compose.yml start",
+    "mssql:test": "DB=mssql npm test",
+    "mssql:destroy": "docker-compose -f scripts/mssql-docker-compose.yml stop",    
+    "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
+    "stress:test": "node scripts/stress-test/knex-stress-test.js |  grep -A 3 -- '- STATS '",
+    "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
   },
   "bin": {
     "knex": "./bin/cli.js"

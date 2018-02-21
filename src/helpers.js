@@ -1,6 +1,15 @@
 /* eslint no-console:0 */
 
-import { map, pick, keys, isFunction, isUndefined, isObject, isArray, isTypedArray } from 'lodash'
+import {
+  map,
+  pick,
+  keys,
+  isFunction,
+  isUndefined,
+  isPlainObject,
+  isArray,
+  isTypedArray
+} from 'lodash'
 import chalk from 'chalk';
 
 // Pick off the attributes from only the current layer of the object.
@@ -60,7 +69,7 @@ export function containsUndefined(mixed) {
       if(argContainsUndefined) break;
       argContainsUndefined = this.containsUndefined(mixed[i]);
     }
-  } else if(isObject(mixed)) {
+  } else if(isPlainObject(mixed)) {
     for(const key in mixed) {
       if (mixed.hasOwnProperty(key)) {
         if(argContainsUndefined) break;

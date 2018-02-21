@@ -148,6 +148,11 @@ export default class Transaction extends EventEmitter {
   acquireConnection(client, config, txid) {
     const configConnection = config && config.connection
     return Promise.try(() => configConnection || client.acquireConnection())
+      .then(function(connection) {
+        connection.__knexTxId = txid;
+
+        return connection;
+      })
       .disposer(function(connection) {
         if (!configConnection) {
           debug('%s: releasing connection', txid)

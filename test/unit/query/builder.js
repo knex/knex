@@ -4020,22 +4020,18 @@ describe("QueryBuilder", function() {
   //   });
   // });
 
-  it("should warn when trying to use forUpdate outside of a transaction", function() {
+  it("should allow lock (such as forUpdate) outside of a transaction", function() {
     testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
       mysql: {
-        sql: 'select * from `foo` where `bar` = ?',
+        sql: 'select * from `foo` where `bar` = ? for update',
         bindings: ['baz']
       },
       mssql: {
-        sql: 'select * from [foo] where [bar] = ?',
+        sql: 'select * from [foo] with (READCOMMITTEDLOCK) where [bar] = ?',
         bindings: ['baz']
       },
       postgres: {
-        sql: 'select * from "foo" where "bar" = ?',
-        bindings: ['baz']
-      },
-      redshift: {
-        sql: 'select * from "foo" where "bar" = ?',
+        sql: 'select * from "foo" where "bar" = ? for update',
         bindings: ['baz']
       },
     });
@@ -5445,4 +5441,13 @@ describe("QueryBuilder", function() {
       postgres: "insert into \"sometable\" (\"id\") values ('foobar')"
     });
   })
+
+  it('Throws error if .update() results in faulty sql due to no data', function() {
+    try {
+      qb().table('sometable').update({column: undefined}).toString();
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Empty .update() call detected! Update data does not contain any values to update. This will result in a faulty query.');
+    }
+  });
 });
