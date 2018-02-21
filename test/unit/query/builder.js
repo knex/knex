@@ -844,10 +844,22 @@ describe("QueryBuilder", function() {
         sql: 'select * from `users` where (`a`, `b`) in ((?, ?), (?, ?), (?, ?))',
         bindings: [1, 2, 3, 4, 5, 6]
       },
-      default: {
+      postgres: {
         sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
         bindings: [1, 2, 3, 4, 5, 6]
-      }
+      },
+      redshift: {
+        sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      mssql: {
+        sql: 'select * from [users] where ([a], [b]) in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      oracle: {
+        sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
     });
   });
 
@@ -1415,10 +1427,18 @@ describe("QueryBuilder", function() {
         sql: 'select * from "users" where ("id_a", "id_b") in (select * from (select "id_a", "id_b" from "users" where "age" > ?) where rownum <= ?)',
         bindings: [25, 3]
       },
-      default: {
+      postgres: {
         sql: 'select * from "users" where ("id_a", "id_b") in (select "id_a", "id_b" from "users" where "age" > ? limit ?)',
         bindings: [25, 3]
-      }
+      },
+      redshift: {
+        sql: 'select * from "users" where ("id_a", "id_b") in (select "id_a", "id_b" from "users" where "age" > ? limit ?)',
+        bindings: [25, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where ([id_a], [id_b]) in (select top (?) [id_a], [id_b] from [users] where [age] > ?)',
+        bindings: [3, 25]
+      },
     });
   });
 
