@@ -44,6 +44,7 @@ export default class Oracle_Transaction extends Transaction {
     const t = this;
     return Promise.try(function() {
       return t.client.acquireConnection().then(function(cnx) {
+        cnx.__knexTxId = t.txid;
         cnx.isTransaction = true;
         return cnx;
       });

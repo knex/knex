@@ -128,12 +128,16 @@ assign(Client.prototype, {
     if (typeof obj === 'string') obj = {sql: obj}
     obj.sql = this.positionBindings(obj.sql);
     obj.bindings = this.prepBindings(obj.bindings)
-    debugQuery(obj.sql)
-    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
-    debugBindings(obj.bindings)
+
+    const {__knexUid, __knexTxId} = connection;
+
+    this.emit('query', assign({__knexUid, __knexTxId}, obj))
+    debugQuery(obj.sql, __knexTxId)
+    debugBindings(obj.bindings, __knexTxId)
+
     return this._query(connection, obj).catch((err) => {
       err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message
-      this.emit('query-error', err, assign({__knexUid: connection.__knexUid}, obj))
+      this.emit('query-error', err, assign({__knexUid, __knexTxId}, obj))
       throw err
     })
   },
@@ -142,9 +146,13 @@ assign(Client.prototype, {
     if (typeof obj === 'string') obj = {sql: obj}
     obj.sql = this.positionBindings(obj.sql);
     obj.bindings = this.prepBindings(obj.bindings)
-    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
-    debugQuery(obj.sql)
-    debugBindings(obj.bindings)
+
+    const {__knexUid, __knexTxId} = connection;
+
+    this.emit('query', assign({__knexUid, __knexTxId}, obj))
+    debugQuery(obj.sql, __knexTxId)
+    debugBindings(obj.bindings, __knexTxId)
+
     return this._stream(connection, obj, stream, options)
   },
 
