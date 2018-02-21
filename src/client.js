@@ -27,11 +27,6 @@ const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
 const debugBindings = require('debug')('knex:bindings')
 
-let id = 0
-function clientId() {
-  return `client${id++}`
-}
-
 // The base client provides the general structure
 // for a dialect specific client object.
 function Client(config = {}) {
@@ -48,7 +43,6 @@ function Client(config = {}) {
   if (this.driverName && config.connection) {
     this.initializeDriver()
     if (!config.pool || (config.pool && config.pool.max !== 0)) {
-      this.__cid = clientId()
       this.initializePool(config)
     }
   }

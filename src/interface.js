@@ -1,6 +1,6 @@
 
 import * as helpers from './helpers';
-import { isArray, map, clone, each } from 'lodash'
+import { isEmpty, isArray, map, clone, each } from 'lodash'
 
 export default function(Target) {
 
@@ -46,6 +46,10 @@ export default function(Target) {
       } else {
         this.client = t.client
       }
+    }
+    if (isEmpty(t)) {
+      helpers.error('Invalid value on transacting call, potential bug')
+      throw Error('Invalid transacting value (null, undefined or empty object)')
     }
     return this;
   };
