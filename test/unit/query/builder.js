@@ -5418,4 +5418,34 @@ describe("QueryBuilder", function() {
       expect(error.message).to.equal('Empty .update() call detected! Update data does not contain any values to update. This will result in a faulty query.');
     }
   });
+
+  it('Throws error if .first() is called on update', function() {
+    try {
+      qb().table('sometable').update({column: 'value'}).first().toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .first() on "update" query!');
+    }
+  });
+
+  it('Throws error if .first() is called on insert', function() {
+    try {
+      qb().table('sometable').insert({column: 'value'}).first().toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .first() on "insert" query!');
+    }
+  });
+
+  it('Throws error if .first() is called on delete', function() {
+    try {
+      qb().table('sometable').del().first().toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .first() on "del" query!');
+    }
+  });
 });

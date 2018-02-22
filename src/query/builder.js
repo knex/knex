@@ -10,7 +10,7 @@ import * as helpers from '../helpers';
 import JoinClause from './joinclause';
 import {
   assign, clone, each, isBoolean, isEmpty, isFunction, isNumber, isObject,
-  isString, isUndefined, tail, toArray, reject
+  isString, isUndefined, tail, toArray, reject, includes
 } from 'lodash';
 
 // Typically called from `knex.builder`,
@@ -766,6 +766,12 @@ assign(Builder.prototype, {
   // Sets the values for a `select` query, informing that only the first
   // row should be returned (limit 1).
   first() {
+    const {_method} = this;
+
+    if(!includes(['pluck', 'first', 'select'], _method)) {
+      throw new Error(`Cannot chain .first() on "${_method}" query!`);
+    }
+
     const args = new Array(arguments.length);
     for (let i = 0; i < args.length; i++) {
       args[i] = arguments[i];
