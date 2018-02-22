@@ -280,60 +280,45 @@ module.exports = function(knex) {
 
     });
 
+    const testWithMultipleColumns = knex.client.driverName === 'mysql' || 
+      knex.client.driverName === 'postgresql';
+
     it('supports countDistinct with multiple columns', function() {
+      if (!testWithMultipleColumns) {
+        return this.skip();
+      }
 
       return knex('accounts').countDistinct('id', 'logins').testSql(function(tester) {
         tester(
-            'mysql',
-            'select count(distinct(`id`, `logins`)) from `accounts`',
-            [],
-            [{
-              'count(distinct(`id`, `logins`))': 6
-            }]
+          'mysql',
+          'select count(distinct `id`, `logins`) from `accounts`',
+          [],
+          [{
+            'count(distinct `id`, `logins`)': 6
+          }]
         );
         tester(
-            'postgresql',
-            'select count(distinct("id", "logins")) from "accounts"',
-            [],
-            [{
-              count: '6'
-            }]
-        );
-        tester(
-            'sqlite3',
-            'select count(distinct(`id`, `logins`)) from `accounts`',
-            [],
-            [{
-              'count(distinct(`id`, `logins`))': 6
-            }]
-        );
-        tester(
-            'oracle',
-            'select count(distinct("id", "logins")) from "accounts"',
-            [],
-            [{
-              'COUNT(DISTINCT("ID", "LOGINS"))': 6
-            }]
-        );
-        tester(
-            'mssql',
-            'select count(distinct([id], [logins])) from [accounts]',
-            [],
-            [{
-              '': [6]
-            }]
+          'postgresql',
+          'select count(distinct("id", "logins")) from "accounts"',
+          [],
+          [{
+            count: '6'
+          }]
         );
       });
 
     });
 
     it('supports countDistinct with multiple columns with alias', function () {
+      if (!testWithMultipleColumns) {
+        return this.skip();
+      }
 
       return knex('accounts').countDistinct({ count: ['id', 'logins'] })
         .testSql(function (tester) {
           tester(
             'mysql',
-            'select count(distinct(`id`, `logins`)) as `count` from `accounts`',
+            'select count(distinct `id`, `logins`) as `count` from `accounts`',
             [],
             [{
               count: 6
@@ -345,30 +330,6 @@ module.exports = function(knex) {
             [],
             [{
               count: '6'
-            }]
-          );
-          tester(
-            'sqlite3',
-            'select count(distinct(`id`, `logins`)) as `count` from `accounts`',
-            [],
-            [{
-              count: 6
-            }]
-          );
-          tester(
-            'oracle',
-            'select count(distinct("id", "logins")) "count" from "accounts"',
-            [],
-            [{
-              COUNT: 6
-            }]
-          );
-          tester(
-            'mssql',
-            'select count(distinct([id], [logins])) as [count] from [accounts]',
-            [],
-            [{
-              count: [6]
             }]
           );
         });
