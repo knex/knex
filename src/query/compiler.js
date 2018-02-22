@@ -189,7 +189,7 @@ assign(QueryCompiler.prototype, {
       : '');
   },
 
-  _aggregate(stmt, { aliasSeparator }) {
+  _aggregate(stmt, { aliasSeparator = ' as ', distinctParentheses } = {}) {
     const value = stmt.value;
     const method = stmt.method;
     const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
@@ -203,7 +203,11 @@ assign(QueryCompiler.prototype, {
     const aggregateArray = (value, alias) => {
       let columns = value.map(wrap).join(', ');
       if (distinct) {
-        columns = `${distinct.trim()}(${columns})`;
+        columns = `${distinct.trim()}${
+          distinctParentheses ? '(' : ' '
+        }${columns}${
+          distinctParentheses ? ')' : ''
+        }`;
       }
       const aggregated = `${method}(${columns})`;
       return addAlias(aggregated, alias);
@@ -239,7 +243,7 @@ assign(QueryCompiler.prototype, {
   },
 
   aggregate(stmt) {
-    return this._aggregate(stmt, { aliasSeparator: ' as ' });
+    return this._aggregate(stmt);
   },
 
   aggregateRaw(stmt) {
