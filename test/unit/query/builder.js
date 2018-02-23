@@ -41,6 +41,10 @@ function raw(sql, bindings) {
   return clients.postgres.raw(sql, bindings);
 }
 
+function ref(ref) {
+  return clients.postgres.ref(ref);
+}
+
 function verifySqlResult(dialect, expectedObj, sqlObj) {
   Object.keys(expectedObj).forEach(function (key) {
     if (typeof expectedObj[key] === 'function') {
@@ -5499,5 +5503,17 @@ describe("QueryBuilder", function() {
     } catch(error) {
       expect(error.message).to.equal('Cannot chain .first() on "del" query!');
     }
+  });
+
+  describe('knex.ref()', function() {
+    it('Can be used as parameter in where-clauses', function() {
+      testquery(qb().table('sometable').where('sometable.column', ref('someothertable.someothercolumn')).select(), {
+        postgres: 'select * from "sometable" where "sometable"."column" = "someothertable"."someothercolumn"',
+        mysql: 'select * from `sometable` where `sometable`.`column` = `someothertable`.`someothercolumn`',
+        mssql: 'select * from [sometable] where [sometable].[column] = [someothertable].[someothercolumn]',
+        redshift: 'select * from "sometable" where "sometable"."column" = "someothertable"."someothercolumn"',
+        oracle: 'select * from "sometable" where "sometable"."column" = "someothertable"."someothercolumn"',
+      });
+    });
   });
 });

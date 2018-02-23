@@ -51,6 +51,10 @@ export default function makeKnex(client) {
     // Convenience method for tearing down the pool.
     destroy(callback) {
       return client.destroy(callback)
+    },
+
+    ref(ref) {
+      return client.ref(ref);
     }
 
   })
