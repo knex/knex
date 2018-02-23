@@ -29,4 +29,4 @@ class Ref extends Raw {
   }
 }
 
-module.exports = Ref;
+export default Ref
