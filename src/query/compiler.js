@@ -203,11 +203,9 @@ assign(QueryCompiler.prototype, {
     const aggregateArray = (value, alias) => {
       let columns = value.map(wrap).join(', ');
       if (distinct) {
-        columns = `${distinct.trim()}${
-          distinctParentheses ? '(' : ' '
-        }${columns}${
-          distinctParentheses ? ')' : ''
-        }`;
+        const openParen = distinctParentheses ? '(' : ' ';
+        const closeParen = distinctParentheses ? ')' : '';
+        columns = distinct.trim() + openParen + columns + closeParen;
       }
       const aggregated = `${method}(${columns})`;
       return addAlias(aggregated, alias);
