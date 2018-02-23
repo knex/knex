@@ -5515,5 +5515,15 @@ describe("QueryBuilder", function() {
         oracle: 'select * from "sometable" where "sometable"."column" = "someothertable"."someothercolumn"',
       });
     });
+
+    it('Can use .as() for alias', function() {
+      testquery(qb().table('sometable').select(['one', ref('sometable.two').as('Two')]), {
+        postgres: 'select "one", "sometable"."two" as "Two" from "sometable"',
+        mysql: 'select `one`, `sometable`.`two` as `Two` from `sometable`',
+        mssql: 'select [one], [sometable].[two] as [Two] from [sometable]',
+        redshift: 'select "one", "sometable"."two" as "Two" from "sometable"',
+        oracle: 'select "one", "sometable"."two" as "Two" from "sometable"',
+      });
+    });
   });
 });

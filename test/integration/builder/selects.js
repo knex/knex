@@ -920,6 +920,20 @@ module.exports = function(knex) {
       }
     });
 
+    it('knex.ref() as column in .select()', function() {
+      return knex('accounts')
+        .select([
+          knex.ref('accounts.id').as('userid'),
+        ])
+        .where(knex.ref('accounts.id'), '1')
+        .first()
+        .then(function(row) {
+          expect(String(row.userid)).to.equal('1');
+
+          return true;
+        })
+    });
+
   });
 
 };
