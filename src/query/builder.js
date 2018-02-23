@@ -704,6 +704,10 @@ assign(Builder.prototype, {
 
   // Only allow a single "limit" to be set for the current query.
   limit(value) {
+    const { _method } = this;
+    if (_method.indexOf('update') !== -1) {
+      throw new Error(`Cannot chain .limit() on "update" query!`);
+    }
     const val = parseInt(value, 10)
     if (isNaN(val)) {
       helpers.warn('A valid integer must be provided to limit')

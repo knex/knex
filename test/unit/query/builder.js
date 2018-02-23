@@ -5500,4 +5500,14 @@ describe("QueryBuilder", function() {
       expect(error.message).to.equal('Cannot chain .first() on "del" query!');
     }
   });
+
+  it('Throws error if .limit() is called on update', function() {
+    try {
+      qb().table('sometable').update().limit(1).toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .limit() on "update" query!');
+    }
+  });
 });
