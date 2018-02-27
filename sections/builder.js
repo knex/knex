@@ -228,6 +228,22 @@ export default [
   },
   {
     type: "text",
+    content: "Functions:"
+  },
+  {
+    type: "runnable",
+    content: `
+      knex('users')
+      .where((builder) => 
+        builder.whereIn('id', [1, 11, 15]).whereNotIn('id', [17, 19])
+      )
+      .andWhere(function() {
+        this.where('id', '>', 10)
+      })
+    `
+  },
+  {
+    type: "text",
     content: "Grouped Chain:"
   },
   {
