@@ -43,7 +43,7 @@ export function deprecate(method, alternate) {
   warn(`${method} is deprecated, please use ${alternate}`);
 }
 
-const priorMessage = "";
+let priorMessage = "";
 
   // Used to warn about incorrect use, without error'ing
 export function warn(msg) {
