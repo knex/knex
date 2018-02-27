@@ -43,9 +43,14 @@ export function deprecate(method, alternate) {
   warn(`${method} is deprecated, please use ${alternate}`);
 }
 
+const priorMessage = "";
+
   // Used to warn about incorrect use, without error'ing
 export function warn(msg) {
-  console.log(chalk.yellow(`Knex:warning - ${msg}`))
+  if (priorMessage !== msg) {
+    console.log(chalk.yellow(`Knex:warning - ${msg}`));
+    priorMessage = msg;
+  }
 }
 
 export function exit(msg) {
