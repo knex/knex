@@ -1,9 +1,6 @@
 /* eslint no-console:0 */
 
 import {
-  map,
-  pick,
-  keys,
   isFunction,
   isUndefined,
   isPlainObject,

@@ -6,7 +6,6 @@ import { assign, map, flatten, values } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
-import * as helpers from '../../helpers';
 import {bufferToString} from '../../query/string';
 import Formatter from './formatter';
 

@@ -4,7 +4,6 @@
 import inherits from 'inherits';
 import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
-import * as helpers from '../../helpers';
 import Transaction from './transaction';
 
 import { assign, map } from 'lodash'
