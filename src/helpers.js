@@ -12,11 +12,6 @@ import {
 } from 'lodash'
 import chalk from 'chalk';
 
-// Pick off the attributes from only the current layer of the object.
-export function skim(data) {
-  return map(data, (obj) => pick(obj, keys(obj)));
-}
-
 // Check if the first argument is an array, otherwise uses all arguments as an
 // array.
 export function normalizeArr() {

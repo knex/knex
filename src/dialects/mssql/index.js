@@ -190,7 +190,6 @@ assign(Client_MSSQL.prototype, {
       case 'select':
       case 'pluck':
       case 'first':
-        response = helpers.skim(response)
         if (method === 'pluck') return map(response, obj.pluck)
         return method === 'first' ? response[0] : response
       case 'insert':

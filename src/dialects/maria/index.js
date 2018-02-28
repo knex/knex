@@ -118,9 +118,8 @@ assign(Client_MariaSQL.prototype, {
       case 'select':
       case 'pluck':
       case 'first': {
-        const resp = helpers.skim(rows);
-        if (method === 'pluck') return map(resp, obj.pluck);
-        return method === 'first' ? resp[0] : resp;
+        if (method === 'pluck') return map(rows, obj.pluck);
+        return method === 'first' ? rows[0] : rows;
       }
       case 'insert':
         return [data.insertId];
