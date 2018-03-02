@@ -20,8 +20,8 @@ export default [
     content: [
       "In many places in APIs identifiers like table name or column name can be passed to methods.",
       "Most commonly one needs just plain `tableName.columnName`, `tableName` or `columnName`, but in many cases one also needs to pass an alias how that identifier is referred later on in the query.",
-      "There are two ways to declare an alias for identifier. One can directly give `as aliasName` prefix for the identifier or oen can pass an object `{ aliasName: 'identifierName' }`.",
-      "If in the object has multiple aliases `{ alias1: 'identifier1', alias2: 'identifier2' }`, then all the aliased identifiers are expanded to comma separated list.",
+      "There are two ways to declare an alias for identifier. One can directly give `as aliasName` prefix for the identifier or one can pass an object `{ aliasName: 'identifierName' }`.",
+      "If the object has multiple aliases `{ alias1: 'identifier1', alias2: 'identifier2' }`, then all the aliased identifiers are expanded to comma separated list.",
       "NOTE: identifier syntax has no place for selecting schema, so if you are doing `schemaName.tableName`, query might be rendered wrong. Use `.withSchema('schemaName')` instead."
     ]
   },
