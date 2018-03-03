@@ -6,6 +6,7 @@
   "dependencies": {
     "babel-runtime": "^6.26.0",
     "bluebird": "^3.5.1",
+    "bluebird-api": "^1.0.2",
     "chalk": "2.3.0",
     "commander": "^2.13.0",
     "debug": "3.1.0",
@@ -30,6 +31,7 @@
     "babel-eslint": "^8.2.1",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-lodash": "3.3.2",
+    "babel-plugin-module-resolver": "^3.1.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
