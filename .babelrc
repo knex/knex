@@ -1,10 +1,4 @@
 {
   "presets": ["./.babelconfig.js"],
-  "plugins": [
-    ["module-resolver", {
-      "alias": {
-        "bluebird": "bluebird-api"
-      }
-    }]
-  ]
+  "plugins": [["module-resolver", { "alias": { "bluebird": "bluebird-api" } }]]
 }
