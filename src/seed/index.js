@@ -40,7 +40,6 @@ Seeder.prototype._listAll = Promise.method(function(config) {
   this.config = this.setConfig(config);
   const loadExtensions = this.config.loadExtensions;
   return Promise.promisify(fs.readdir, {context: fs})(this._absoluteConfigDir())
-    .bind(this)
     .then(seeds =>
       filter(seeds, function(value) {
         const extension = path.extname(value);
