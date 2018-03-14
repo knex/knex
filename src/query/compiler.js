@@ -609,7 +609,7 @@ assign(QueryCompiler.prototype, {
     let i = -1
     while (++i < data.length) {
       if (data[i] == null) break;
-      if (i === 0) columns = Object.keys(data[i]).sort()
+      if (i === 0) columns = Object.keys(data[i])
       const row = new Array(columns.length)
       const keys = Object.keys(data[i])
       let j = -1
@@ -617,7 +617,7 @@ assign(QueryCompiler.prototype, {
         const key = keys[j];
         let idx = columns.indexOf(key);
         if (idx === -1) {
-          columns = columns.concat(key).sort()
+          columns = columns.concat(key)
           idx = columns.indexOf(key)
           let k = -1
           while (++k < values.length) {
