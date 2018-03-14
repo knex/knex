@@ -585,6 +585,80 @@ module.exports = function(knex) {
         });
     });
 
+    it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query in transaction', function() {
+      var dialect = knex.client.dialect;
+      if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+      if (/redshift/.test(dialect)) { return; }
+
+      // There's unexpected behavior caused by knex releasing a connection back
+      // to the pool because of a timeout when a long query is still running.
+      // A subsequent query will acquire the connection (still in-use) and hang
+      // until the first query finishes. Setting a sleep time longer than the
+      // mocha timeout exposes this behavior.
+      var testQueries = {
+        'postgresql': function() {
+          return knex.raw('SELECT pg_sleep(10)');
+        },
+        'mysql': function() {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        'mysql2': function() {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        mariadb: function() {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        mssql: function() {
+          return knex.raw('WAITFOR DELAY \'00:00:10\'');
+        },
+        oracle: function() {
+          return knex.raw('begin dbms_lock.sleep(10); end;');
+        }
+      };
+
+      if(!testQueries.hasOwnProperty(dialect)) {
+        throw new Error('Missing test query for dialect: ' + dialect);
+      }
+
+      var query = testQueries[dialect]();
+
+      function addTimeout() {
+        return query.timeout(200, {cancel: true});
+      }
+
+      // Only mysql/mariadb query cancelling supported for now
+      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
+        expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
+        return;
+      }
+
+      return knex.transaction(trx => addTimeout().transacting(trx))
+        .then(function() {
+          expect(true).to.equal(false);
+        })
+        .catch(function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 200,
+            name:    'TimeoutError',
+            message: 'Defined query timeout of 200ms exceeded when running query.'
+          });
+
+          // Ensure sleep command is removed.
+          // This query will hang if a connection gets released back to the pool
+          // too early.
+          // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
+          return Promise.resolve().then().delay(50)
+            .then(function () {
+              return knex.raw('SHOW PROCESSLIST');
+            })
+            .then(function(results) {
+              var processes = results[0];
+              var sleepProcess = _.find(processes, {Info: 'SELECT SLEEP(10)'});
+              expect(sleepProcess).to.equal(undefined);
+            });
+        });
+    });
+
 
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
       // Only mysql/mariadb query cancelling supported for now
@@ -593,14 +667,10 @@ module.exports = function(knex) {
         return;
       }
 
-      //To make this test easier, I'm changing the pool settings to max 1.
-      var knexConfig = _.clone(knex.client.config);
-      knexConfig.pool.min = 0;
-      knexConfig.pool.max = 1;
+      const orig = knex.client.acquireRawConnection
+      knex.client.acquireRawConnection = () => orig.call(knex.client).delay(1000)
 
-      var knexDb = new Knex(knexConfig);
-
-      return knexDb.raw('SELECT SLEEP(1)')
+      return knex.raw('SELECT SLEEP(1)')
         .timeout(1, {cancel: true})
         .then(function() {
           throw new Error("Shouldn't have gotten here.");
@@ -610,7 +680,8 @@ module.exports = function(knex) {
             name:    'TimeoutError',
             message: 'After query timeout of 1ms exceeded, cancelling of query failed.'
           });
-        });
+        })
+        .finally(() => knex.client.acquireRawConnection = orig);
     });
 
     it('Event: query-response', function() {
