@@ -8,7 +8,7 @@ import debug from 'debug'
 
 import { assign, reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash'
 import Formatter from './formatter'
-
+import saveAsyncStack from './util/save-async-stack';
 import uuid from 'uuid';
 
 const debugBindings = debug('knex:bindings')
@@ -28,7 +28,10 @@ function Raw(client = fakeClient) {
   // Todo: Deprecate
   this._wrappedBefore = undefined
   this._wrappedAfter = undefined
-  this._debug = client && client.config && client.config.debug
+  if (client && client.config) {
+    this._debug = client.config.debug
+    saveAsyncStack(this, 4)
+  }
 }
 inherits(Raw, EventEmitter)
 
