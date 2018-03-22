@@ -3,7 +3,7 @@ import url from 'url'
 import { parse as parsePG } from 'pg-connection-string'
 
 export default function parseConnectionString(str) {
-  const parsed = url.parse(str)
+  const parsed = url.parse(str, true)
   let { protocol } = parsed
   if (protocol && protocol.indexOf('maria') === 0) {
     protocol = 'maria'
@@ -56,6 +56,9 @@ function connectionObject(parsed) {
     } else {
       connection.user = parsed.auth;
     }
+  }
+  if (parsed.query && parsed.protocol.indexOf('mssql') === 0) {
+    connection.options = { ...parsed.query }
   }
   return connection
 }

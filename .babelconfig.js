@@ -10,6 +10,7 @@ module.exports = {
   "plugins": [
     "lodash",
     "transform-runtime",
-    "add-module-exports"
+    "add-module-exports",
+    ["transform-object-rest-spread", { "useBuiltIns": true }]
   ]
 };

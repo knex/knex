@@ -30,6 +30,7 @@
     "babel-eslint": "^8.2.1",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-lodash": "3.3.2",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
@@ -82,7 +83,7 @@
     "oracledb:test": "docker rmi -f --no-prune knex-test-oracledb && docker build -f scripts/oracle-tests-Dockerfile --tag knex-test-oracledb . && docker run -i -t knex-test-oracledb",
     "mssql:init": "docker-compose -f scripts/mssql-docker-compose.yml up --no-start && docker-compose -f scripts/mssql-docker-compose.yml start",
     "mssql:test": "DB=mssql npm test",
-    "mssql:destroy": "docker-compose -f scripts/mssql-docker-compose.yml stop",    
+    "mssql:destroy": "docker-compose -f scripts/mssql-docker-compose.yml stop",
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
     "stress:test": "node scripts/stress-test/knex-stress-test.js |  grep -A 3 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
