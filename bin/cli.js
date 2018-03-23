@@ -353,6 +353,7 @@ const cli = new Liftoff({
   name: 'knex',
   extensions: interpret.jsVariants,
   v8flags: require('v8flags'),
+  moduleName: require('../package.json').name,
 });
 
 cli.on('require', function(name) {
