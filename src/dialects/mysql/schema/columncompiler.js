@@ -7,6 +7,10 @@ import * as helpers from '../../../helpers';
 
 import { assign } from 'lodash'
 
+function supportsPreciseTimestamps(client) {
+  return client.version && parseFloat(client.version) > 5.5
+}
+
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
   this.modifiers = ['unsigned', 'nullable', 'defaultTo', 'comment', 'collate', 'first', 'after']
@@ -68,9 +72,13 @@ assign(ColumnCompiler_MySQL.prototype, {
     return `enum('${allowed.join("', '")}')`
   },
 
-  datetime: 'datetime',
+  datetime() {
+    return supportsPreciseTimestamps(this.client) ? 'datetime(3)' : 'datetime'
+  },
 
-  timestamp: 'timestamp',
+  timestamp() {
+    return supportsPreciseTimestamps(this.client) ? 'timestamp(3)' : 'timestamp'
+  },
 
   bit(length) {
     return length ? `bit(${this._num(length)})` : 'bit'
