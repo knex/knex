@@ -495,6 +495,28 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table `users` add `created_at` datetime, add `updated_at` datetime');
   });
 
+  it('test adding precise time stamp', function() {
+    client.version = '5.6'
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.timestamp('foo');
+    }).toSQL();
+    delete client.version
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` timestamp(3)');
+  });
+
+  it('test adding precise time stamps', function() {
+    client.version = '5.6'
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.timestamps();
+    }).toSQL();
+    delete client.version
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` add `created_at` datetime(3), add `updated_at` datetime(3)');
+  });
+
   it('test adding binary', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.binary('foo');
