@@ -8,6 +8,13 @@ import * as helpers from '../../../helpers';
 import { assign } from 'lodash'
 
 function supportsPreciseTimestamps(client) {
+  if (!client.version) {
+    const message = 'If you are using a MySQL version older than 5.6.4 you should specify the ' +
+                    'version in your client options when initializing Knex. See ' +
+                    'http://knexjs.org/#Schema-timestamps for more information.'
+    helpers.warn(message)
+  }
+
   return client.version && parseFloat(client.version) > 5.5
 }
 
