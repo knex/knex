@@ -503,7 +503,7 @@ describe(dialect + " SchemaBuilder", function() {
     delete client.version
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` timestamp(3)');
+    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` timestamp(6)');
   });
 
   it('test adding precise time stamps', function() {
@@ -514,7 +514,7 @@ describe(dialect + " SchemaBuilder", function() {
     delete client.version
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table `users` add `created_at` datetime(3), add `updated_at` datetime(3)');
+    expect(tableSql[0].sql).to.equal('alter table `users` add `created_at` datetime(6), add `updated_at` datetime(6)');
   });
 
   it('test adding binary', function() {

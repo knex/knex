@@ -73,11 +73,11 @@ assign(ColumnCompiler_MySQL.prototype, {
   },
 
   datetime() {
-    return supportsPreciseTimestamps(this.client) ? 'datetime(3)' : 'datetime'
+    return supportsPreciseTimestamps(this.client) ? 'datetime(6)' : 'datetime'
   },
 
   timestamp() {
-    return supportsPreciseTimestamps(this.client) ? 'timestamp(3)' : 'timestamp'
+    return supportsPreciseTimestamps(this.client) ? 'timestamp(6)' : 'timestamp'
   },
 
   bit(length) {
