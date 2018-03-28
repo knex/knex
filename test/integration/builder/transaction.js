@@ -16,11 +16,48 @@ module.exports = function(knex) {
 
   describe('Transactions', function() {
 
+    
     it('can run with asCallback', function(ok) {
       knex.transaction(function(t) {
         t.commit();
       })
       .asCallback(ok)
+    });
+    
+    it('should throw when undefined transaction is sent to transacting', function() {
+      return knex.transaction(function(t) {
+        knex('accounts')
+          .transacting(undefined)
+      })
+      .catch(
+        function handle(error) {
+          expect(error.message).to.equal('Invalid transacting value (null, undefined or empty object)')
+        }
+      )
+    });
+    
+    it('should throw when null transaction is sent to transacting', function() {
+      return knex.transaction(function(t) {
+        knex('accounts')
+          .transacting(null)
+      })
+      .catch(
+        function handle(error) {
+          expect(error.message).to.equal('Invalid transacting value (null, undefined or empty object)')
+        }
+      )
+    });
+    
+    it('should throw when empty object transaction is sent to transacting', function() {
+      return knex.transaction(function(t) {
+        knex('accounts')
+          .transacting({})
+      })
+      .catch(
+        function handle(error) {
+          expect(error.message).to.equal('Invalid transacting value (null, undefined or empty object)')
+        }
+      )
     });
 
     it('should be able to commit transactions', function() {
@@ -468,6 +505,24 @@ module.exports = function(knex) {
         restoreWrapIdentifier();
         throw e;
       });
+    });
+
+    it('connection should contain __knexTxId which is also exposed in query event', function() {
+      return knex.transaction(function(trx) {
+        var builder = trx
+          .select()
+          .from('accounts');
+
+        trx.on('query', function(obj) {
+          expect(typeof obj.__knexTxId).to.equal(typeof '');
+        });
+
+        builder.on('query', function(obj) {
+          expect(typeof obj.__knexTxId).to.equal(typeof '');
+        });
+
+        return builder
+      })
     });
   });
 };

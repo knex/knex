@@ -280,6 +280,62 @@ module.exports = function(knex) {
 
     });
 
+    const testWithMultipleColumns = knex.client.driverName === 'mysql' || 
+      knex.client.driverName === 'postgresql';
+
+    it('supports countDistinct with multiple columns', function() {
+      if (!testWithMultipleColumns) {
+        return this.skip();
+      }
+
+      return knex('accounts').countDistinct('id', 'logins').testSql(function(tester) {
+        tester(
+          'mysql',
+          'select count(distinct `id`, `logins`) from `accounts`',
+          [],
+          [{
+            'count(distinct `id`, `logins`)': 6
+          }]
+        );
+        tester(
+          'postgresql',
+          'select count(distinct("id", "logins")) from "accounts"',
+          [],
+          [{
+            count: '6'
+          }]
+        );
+      });
+
+    });
+
+    it('supports countDistinct with multiple columns with alias', function () {
+      if (!testWithMultipleColumns) {
+        return this.skip();
+      }
+
+      return knex('accounts').countDistinct({ count: ['id', 'logins'] })
+        .testSql(function (tester) {
+          tester(
+            'mysql',
+            'select count(distinct `id`, `logins`) as `count` from `accounts`',
+            [],
+            [{
+              count: 6
+            }]
+          );
+          tester(
+            'postgresql',
+            'select count(distinct("id", "logins")) as "count" from "accounts"',
+            [],
+            [{
+              count: '6'
+            }]
+          );
+        });
+
+    });
+
     it("support the groupBy function", function() {
 
       return knex('accounts').count('id').groupBy('logins').orderBy('logins', 'asc').testSql(function(tester) {

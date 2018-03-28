@@ -10,7 +10,6 @@ import {
   assign, bind, compact, groupBy, isEmpty, isString, isUndefined, map, omitBy,
   reduce
 } from 'lodash';
-
 import uuid from 'uuid';
 
 const debugBindings = debug('knex:bindings')
@@ -189,20 +188,59 @@ assign(QueryCompiler.prototype, {
       : '');
   },
 
-  aggregate(stmt) {
-    const val = stmt.value;
-    const splitOn = val.toLowerCase().indexOf(' as ');
+  _aggregate(stmt, { aliasSeparator = ' as ', distinctParentheses } = {}) {
+    const value = stmt.value;
+    const method = stmt.method;
     const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
-    // Allows us to speciy an alias for the aggregate types.
-    if (splitOn !== -1) {
-      const col = val.slice(0, splitOn);
-      const alias = val.slice(splitOn + 4);
-      return (
-        `${stmt.method}(${distinct + this.formatter.wrap(col)}) ` +
-        `as ${this.formatter.wrap(alias)}`
-      );
+    const wrap = identifier => this.formatter.wrap(identifier)
+    const addAlias = (value, alias) => {
+      if (alias) {
+        return value + aliasSeparator + wrap(alias);
+      }
+      return value;
+    };
+    const aggregateArray = (value, alias) => {
+      let columns = value.map(wrap).join(', ');
+      if (distinct) {
+        const openParen = distinctParentheses ? '(' : ' ';
+        const closeParen = distinctParentheses ? ')' : '';
+        columns = distinct.trim() + openParen + columns + closeParen;
+      }
+      const aggregated = `${method}(${columns})`;
+      return addAlias(aggregated, alias);
+    };
+    const aggregateString = (value, alias) => {
+      const aggregated = `${method}(${distinct + wrap(value)})`;
+      return addAlias(aggregated, alias);
+    };
+
+    if (Array.isArray(value)) {
+      return aggregateArray(value);
     }
-    return `${stmt.method}(${distinct + this.formatter.wrap(val)})`;
+
+    if (typeof value === 'object') {
+      const keys = Object.keys(value);
+      const alias = keys[0];
+      const column = value[alias];
+      if (Array.isArray(column)) {
+        return aggregateArray(column, alias);
+      }
+      return aggregateString(column, alias);
+    }
+
+    // Allows us to speciy an alias for the aggregate types.
+    const splitOn = value.toLowerCase().indexOf(' as ');
+    if (splitOn !== -1) {
+      const column = value.slice(0, splitOn);
+      const alias = value.slice(splitOn + 4);
+      return aggregateString(column, alias);
+    }
+
+    return aggregateString(value);
+  },
+
+  aggregate(stmt) {
+    return this._aggregate(stmt);
   },
 
   aggregateRaw(stmt) {
@@ -425,11 +463,7 @@ assign(QueryCompiler.prototype, {
   // Compiles the "locks".
   lock() {
     if (this.single.lock) {
-      if (!this.client.transacting) {
-        helpers.warn('You are attempting to perform a "lock" command outside of a transaction.')
-      } else {
-        return this[this.single.lock]()
-      }
+      return this[this.single.lock]()
     }
   },
 
@@ -490,19 +524,15 @@ assign(QueryCompiler.prototype, {
   // ------
 
   whereIn(statement) {
-    if (Array.isArray(statement.column)) return this.multiWhereIn(statement);
-    return this.formatter.wrap(statement.column) + ' ' + this._not(statement, 'in ') +
-      this.wrap(this.formatter.parameterize(statement.value));
-  },
-
-  multiWhereIn(statement) {
-    let i = -1, sql = `(${this.formatter.columnize(statement.column)}) `
-    sql += this._not(statement, 'in ') + '(('
-    while (++i < statement.value.length) {
-      if (i !== 0) sql += '),('
-      sql += this.formatter.parameterize(statement.value[i])
+    let columns = null;
+    if (Array.isArray(statement.column)) {
+      columns = `(${this.formatter.columnize(statement.column)})`
+    } else {
+      columns = this.formatter.wrap(statement.column);
     }
-    return sql + '))'
+
+    const values = this.formatter.values(statement.value);
+    return `${columns} ${this._not(statement, 'in ')}${values}`;
   },
 
   whereNull(statement) {
@@ -618,6 +648,15 @@ assign(QueryCompiler.prototype, {
         this.formatter.parameter(data[columns[i]])
       );
     }
+
+    if(isEmpty(vals)) {
+      throw new Error([
+        'Empty .update() call detected!',
+        'Update data does not contain any values to update.',
+        'This will result in a faulty query.',
+      ].join(' '));
+    }
+
     return vals;
   },
 

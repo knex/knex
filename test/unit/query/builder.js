@@ -838,6 +838,31 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("multi column where ins", function() {
+    testsql(qb().select('*').from('users').whereIn(['a', 'b'], [[1, 2], [3, 4], [5, 6]]), {
+      mysql: {
+        sql: 'select * from `users` where (`a`, `b`) in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      postgres: {
+        sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      redshift: {
+        sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      mssql: {
+        sql: 'select * from [users] where ([a], [b]) in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      oracle: {
+        sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+    });
+  });
+
   it("orWhereIn", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1).orWhereIn('id', [1, 2, 3]), {
       mysql: {
@@ -1390,6 +1415,33 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("sub select multi column where ins", function() {
+    testsql(qb().select('*').from('users').whereIn(['id_a', 'id_b'], function(qb) {
+      qb.select('id_a', 'id_b').from('users').where('age', '>', 25).limit(3);
+    }), {
+      mysql: {
+        sql: 'select * from `users` where (`id_a`, `id_b`) in (select `id_a`, `id_b` from `users` where `age` > ? limit ?)',
+        bindings: [25, 3]
+      },
+      oracle: {
+        sql: 'select * from "users" where ("id_a", "id_b") in (select * from (select "id_a", "id_b" from "users" where "age" > ?) where rownum <= ?)',
+        bindings: [25, 3]
+      },
+      postgres: {
+        sql: 'select * from "users" where ("id_a", "id_b") in (select "id_a", "id_b" from "users" where "age" > ? limit ?)',
+        bindings: [25, 3]
+      },
+      redshift: {
+        sql: 'select * from "users" where ("id_a", "id_b") in (select "id_a", "id_b" from "users" where "age" > ? limit ?)',
+        bindings: [25, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where ([id_a], [id_b]) in (select top (?) [id_a], [id_b] from [users] where [age] > ?)',
+        bindings: [3, 25]
+      },
+    });
+  });
+
   it("sub select where not ins", function() {
     testsql(qb().select('*').from('users').whereNotIn('id', function(qb) {
       qb.select('id').from('users').where('age', '>', 25);
@@ -1550,6 +1602,10 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       postgres: {
+        sql: 'select * from "users" group by id, email',
+        bindings: []
+      },
+      redshift: {
         sql: 'select * from "users" group by id, email',
         bindings: []
       },
@@ -2875,7 +2931,7 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("count with alias", function() {
+  it("count with string alias", function() {
     testsql(qb().from('users').count('* as all'), {
       mysql: {
         sql: 'select count(*) as `all` from `users`',
@@ -2904,8 +2960,66 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("count distinct with alias", function() {
+  it("count with object alias", function () {
+    testsql(qb().from('users').count({ all: '*' }), {
+      mysql: {
+        sql: 'select count(*) as `all` from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(*) as [all] from [users]',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: []
+      },
+      redshift: {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: []
+      },
+    });
+  });
+
+  it("count distinct with string alias", function() {
     testsql(qb().from('users').countDistinct('* as all'), {
+      mysql: {
+        sql: 'select count(distinct *) as `all` from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct *) as [all] from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: []
+      },
+      redshift: {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: []
+      },
+    });
+  });
+
+  it("count distinct with object alias", function () {
+    testsql(qb().from('users').countDistinct({ all: '*' }), {
       mysql: {
         sql: 'select count(distinct *) as `all` from `users`',
         bindings: []
@@ -2962,6 +3076,56 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select count(distinct "name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count distinct with multiple columns", function() {
+    testsql(qb().from('users').countDistinct('foo', 'bar'), {
+      mysql: {
+        sql: 'select count(distinct `foo`, `bar`) from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct "foo", "bar") from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct [foo], [bar]) from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct "foo", "bar") from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct("foo", "bar")) from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count distinct with multiple columns with alias", function () {
+    testsql(qb().from('users').countDistinct({ alias: ['foo', 'bar'] }), {
+      mysql: {
+        sql: 'select count(distinct `foo`, `bar`) as `alias` from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct "foo", "bar") "alias" from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct [foo], [bar]) as [alias] from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct "foo", "bar") "alias" from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct("foo", "bar")) as "alias" from "users"',
         bindings: []
       }
     });
@@ -3642,6 +3806,10 @@ describe("QueryBuilder", function() {
         sql: 'update "users" set "email" = ? where "id" = ?',
         bindings: ['foo', 1]
       },
+      redshift: {
+        sql: 'update "users" set "email" = ? where "id" = ?',
+        bindings: ['foo', 1]
+      },
     });
   });
 
@@ -3988,18 +4156,18 @@ describe("QueryBuilder", function() {
   //   });
   // });
 
-  it("should warn when trying to use forUpdate outside of a transaction", function() {
+  it("should allow lock (such as forUpdate) outside of a transaction", function() {
     testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
       mysql: {
-        sql: 'select * from `foo` where `bar` = ?',
+        sql: 'select * from `foo` where `bar` = ? for update',
         bindings: ['baz']
       },
       mssql: {
-        sql: 'select * from [foo] where [bar] = ?',
+        sql: 'select * from [foo] with (READCOMMITTEDLOCK) where [bar] = ?',
         bindings: ['baz']
       },
       postgres: {
-        sql: 'select * from "foo" where "bar" = ?',
+        sql: 'select * from "foo" where "bar" = ? for update',
         bindings: ['baz']
       },
       redshift: {
@@ -5413,4 +5581,43 @@ describe("QueryBuilder", function() {
       postgres: "insert into \"sometable\" (\"id\") values ('foobar')"
     });
   })
+
+  it('Throws error if .update() results in faulty sql due to no data', function() {
+    try {
+      qb().table('sometable').update({column: undefined}).toString();
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Empty .update() call detected! Update data does not contain any values to update. This will result in a faulty query.');
+    }
+  });
+
+  it('Throws error if .first() is called on update', function() {
+    try {
+      qb().table('sometable').update({column: 'value'}).first().toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .first() on "update" query!');
+    }
+  });
+
+  it('Throws error if .first() is called on insert', function() {
+    try {
+      qb().table('sometable').insert({column: 'value'}).first().toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .first() on "insert" query!');
+    }
+  });
+
+  it('Throws error if .first() is called on delete', function() {
+    try {
+      qb().table('sometable').del().first().toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .first() on "del" query!');
+    }
+  });
 });

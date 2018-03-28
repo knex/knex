@@ -4,9 +4,16 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 import { assign, each, isEmpty, isString, noop, reduce, identity } from 'lodash'
+import { warn } from '../../../helpers';
 
 function QueryCompiler_SQLite3(client, builder) {
   QueryCompiler.call(this, client, builder)
+
+  const {returning} = this.single;
+
+  if(returning) {
+    warn('.returning() is not supported by sqlite3 and will not have any effect.');
+  }
 }
 inherits(QueryCompiler_SQLite3, QueryCompiler)
 
@@ -113,7 +120,10 @@ assign(QueryCompiler_SQLite3.prototype, {
         const maxLengthRegex = /.*\((\d+)\)/
         const out = reduce(resp, function (columns, val) {
           let { type } = val
-          let maxLength = (maxLength = type.match(maxLengthRegex)) && maxLength[1]
+          let maxLength = type.match(maxLengthRegex)
+          if (maxLength) {
+            maxLength = maxLength[1]
+          }
           type = maxLength ? type.split('(')[0] : type
           columns[val.name] = {
             type: type.toLowerCase(),
