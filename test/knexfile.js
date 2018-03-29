@@ -1,4 +1,5 @@
 'use strict';
+/* eslint no-var: 0 */
 
 var assert     = require('assert')
 var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
@@ -115,21 +116,6 @@ var testConfigs = {
     pool: pool,
     migrations: migrations,
     seeds: seeds,
-  },
-
-  redshift: {
-    dialect: 'redshift',
-    connection: testConfig.redshift || {
-      adapter:  'postgresql',
-      database: 'knex_test',
-      user:     process.env.REDSHIFT_USER || 'postgres',
-      password: process.env.REDSHIFT_PASSWORD || '',
-      port:     '5439',
-      host:     process.env.REDSHIFT_HOST || '127.0.0.1',
-    },
-    pool: pool,
-    migrations: migrations,
-    seeds: seeds
   },
 
   redshift: {

@@ -7,7 +7,7 @@ import QueryCompiler from '../../../query/compiler';
 import QueryCompiler_PG from '../../postgres/query/compiler';
 import * as helpers from '../../../helpers';
 
-import { assign, reduce } from 'lodash';
+import { assign, reduce, identity } from 'lodash';
 
 function QueryCompiler_Redshift(client, builder) {
   QueryCompiler_PG.call(this, client, builder);
@@ -68,13 +68,23 @@ assign(QueryCompiler_Redshift.prototype, {
   // Compiles a columnInfo query
   columnInfo() {
     const column = this.single.columnInfo;
+    let schema = this.single.schema;
+
+    // The user may have specified a custom wrapIdentifier function in the config. We
+    // need to run the identifiers through that function, but not format them as
+    // identifiers otherwise.
+    const table = this.client.customWrapIdentifier(this.single.table, identity);
+
+    if (schema) {
+      schema = this.client.customWrapIdentifier(schema, identity);
+    }
 
     let sql = 'select * from information_schema.columns where table_name = ? and table_catalog = ?';
-    const bindings = [this.single.table.toLowerCase(), this.client.database().toLowerCase()];
+    const bindings = [table.toLowerCase(), this.client.database().toLowerCase()];
 
-    if (this.single.schema) {
+    if (schema) {
       sql += ' and table_schema = ?';
-      bindings.push(this.single.schema);
+      bindings.push(schema);
     } else {
       sql += ' and table_schema = current_schema()';
     }
