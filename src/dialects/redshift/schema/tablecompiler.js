@@ -5,7 +5,7 @@
 
 import { warn } from '../../../helpers';
 import inherits from 'inherits';
-import { each, has } from 'lodash';
+import { has } from 'lodash';
 import TableCompiler_PG from '../../postgres/schema/tablecompiler';
 
 function TableCompiler_Redshift() {
