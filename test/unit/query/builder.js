@@ -413,6 +413,39 @@ describe("QueryBuilder", function() {
     });
   });
 
+
+  it("clear an order", function() {
+    testsql(qb().table('users').orderBy('name', 'desc').clearOrder(), {
+      mysql: {
+        sql: 'select * from `users`'
+      },
+      mssql: {
+        sql: 'select * from [users]'
+      },
+      postgres: {
+        sql: 'select * from "users"'
+      },
+      redshift: {
+        sql: 'select * from "users"'
+      },
+    });
+
+    testsql(qb().table('users').orderBy('name', 'desc').clearOrder().orderBy('id', 'asc'), {
+      mysql: {
+        sql: 'select * from `users` order by `id` asc'
+      },
+      mssql: {
+        sql: 'select * from [users] order by [id] asc'
+      },
+      postgres: {
+        sql: 'select * from "users" order by "id" asc'
+      },
+      redshift: {
+        sql: 'select * from "users" order by "id" asc'
+      },
+    });
+  });
+
   it("basic wheres", function() {
     testsql(qb().select('*').from('users').where('id', '=', 1), {
       mysql: {

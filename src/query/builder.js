@@ -814,6 +814,12 @@ assign(Builder.prototype, {
     return this;
   },
 
+  // Remove everything from select clause
+  clearOrder(){
+    this._clearGrouping('order');
+    return this;
+  },
+
   // Insert & Update
   // ------
 
