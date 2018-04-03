@@ -14,8 +14,10 @@ module.exports = function(knex) {
       return knex.destroy()
     })
 
-    require('./schema')(knex);
+    //require('./schema')(knex);
     require('./migrate')(knex);
+
+    /*
     require('./seed')(knex);
     require('./builder/inserts')(knex);
     require('./builder/selects')(knex);
@@ -27,6 +29,7 @@ module.exports = function(knex) {
     require('./builder/deletes')(knex);
     require('./builder/additional')(knex);
     require('./datatype/bigint')(knex);
+    */
 
     describe('knex.destroy', function() {
       it('should allow destroying the pool with knex.destroy', function() {

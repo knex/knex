@@ -17,7 +17,8 @@ global.d      = new Date();
 
 Promise.longStackTraces();
 
-describe('Query Building Tests', function() {
+
+describe.skip('Query Building Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
 
   require('./unit/query/builder')
