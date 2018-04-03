@@ -177,7 +177,7 @@ describe("Custom identifier wrapping", function() {
     }, clientsWithCustomIdentifierWrapper);
   });
 
-  it.only("should use custom wrapper on multiple inserts with multiple returning", function() {
+  it("should use custom wrapper on multiple inserts with multiple returning", function() {
     testsql(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}], ['id', 'name']), {
       mysql: {
         sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) values (?, ?), (?, ?)',
