@@ -34,7 +34,7 @@ const CONFIG_DEFAULT = Object.freeze({
 export default class Migrator {
 
   constructor(knex) {
-    this.knex = knex
+    this.knex = knex;
     this.config = this.setConfig(knex.client.config.migrations);
 
     this._activeMigration = {
@@ -82,7 +82,7 @@ export default class Migrator {
     this.config = this.setConfig(config);
 
     return Promise.all([
-      this._getTable(this.config.tableName, this.config.schemaName)
+      getTable(this.knex, this.config.tableName, this.config.schemaName)
         .select('*'),
       this._listAll()
     ])
@@ -104,7 +104,7 @@ export default class Migrator {
   forceFreeMigrationsLock(config) {
     this.config = this.setConfig(config);
     const lockTable = this._getLockTableName();
-    return this._getKnexSchema(this.knex, this.config.schemaName).hasTable(lockTable)
+    return getSchemaBuilder(this.knex, this.config.schemaName).hasTable(lockTable)
       .then(exist => exist && this._freeLock());
   }
 
@@ -119,10 +119,6 @@ export default class Migrator {
       .then((val) => this._generateStubTemplate(val))
       .then((val) => this._writeNewMigration(name, val));
   }
-
-	_getKnexSchema(trx, schemaName) {
-		return schemaName ? trx.schema.withSchema(schemaName) : trx.schema;
-	}
 
   // Lists all available migration versions, as a sorted array.
   _listAll(config) {
@@ -151,11 +147,11 @@ export default class Migrator {
     const { tableName, schemaName }  = this.config;
     const lockTable = this._getLockTableName();
 	const lockTableWithSchema = this._getLockTableNameWithSchema();
-    return this._getKnexSchema(trx, schemaName).hasTable(tableName)
+    return getSchemaBuilder(trx, schemaName).hasTable(tableName)
       .then(exists => !exists && this._createMigrationTable(tableName, schemaName, trx))
-      .then(() => this._getKnexSchema(trx, schemaName).hasTable(lockTable))
+      .then(() => getSchemaBuilder(trx, schemaName).hasTable(lockTable))
       .then(exists => !exists && this._createMigrationLockTable(lockTableWithSchema, trx))
-      .then(() => trx.from(lockTableWithSchema).select('*'))
+      .then(() => getTable(trx, lockTable, this.config.schemaName).select('*'))
       .then(data => !data.length && trx.into(lockTableWithSchema).insert({ is_locked: 0 }));
   }
 
@@ -169,24 +165,24 @@ export default class Migrator {
   }
 
   _createMigrationLockTable(tableName, trx = this.knex) {
-    return trx.schema.createTable(tableName, function(t) {
+    return getSchemaBuilder(trx, this.config.schemaName).createTable(tableName, function(t) {
       t.integer('is_locked');
     });
   }
 
   _getLockTableName() {
-        return this.config.tableName + '_lock';
+    return this.config.tableName + '_lock';
   }
 
-	_getLockTableNameWithSchema() {
-		return this.config.schemaName ?
-			this.config.schemaName + '.' + this._getLockTableName()
-			: this._getLockTableName();
-	}
+  _getLockTableNameWithSchema() {
+    return this.config.schemaName ?
+      this.config.schemaName + '.' + this._getLockTableName()
+      : this._getLockTableName();
+  }
 
   _isLocked(trx) {
-    const tableName = this._getLockTableNameWithSchema();
-    return this.knex(tableName)
+    const tableName = this._getLockTableName();
+    return getTable(this.knex, tableName, this.config.schemaName)
       .transacting(trx)
       .forUpdate()
       .select('*')
@@ -194,8 +190,8 @@ export default class Migrator {
   }
 
   _lockMigrations(trx) {
-    const tableName = this._getLockTableNameWithSchema();
-    return this.knex(tableName)
+    const tableName = this._getLockTableName();
+    return getTable(this.knex, tableName, this.config.schemaName)
       .transacting(trx)
       .update({ is_locked: 1 });
   }
@@ -217,8 +213,8 @@ export default class Migrator {
   }
 
   _freeLock(trx = this.knex) {
-    const tableName = this._getLockTableNameWithSchema();
-    return trx.table(tableName)
+    const tableName = this._getLockTableName();
+    return getTable(this.knex, tableName, this.config.schemaName)
       .update({ is_locked: 0 });
   }
 
@@ -278,7 +274,7 @@ export default class Migrator {
   // Lists all migrations that have been completed for the current db, as an
   // array.
   _listCompleted(trx = this.knex) {
-    const { tableName, schemaName } = this.config
+    const { tableName, schemaName } = this.config;
     return this._ensureTable(trx)
       .then(() => trx.from(`${schemaName}.${tableName}`).orderBy('id').select('name'))
       .then((migrations) => map(migrations, 'name'))
@@ -320,27 +316,16 @@ export default class Migrator {
   // order.
   _getLastBatch() {
     const { tableName, schemaName } = this.config;
-    return this._getTable(tableName, schemaName)
+    return getTable(this.knex, tableName, schemaName)
       .where('batch', function(qb) {
         qb.max('batch').from(tableName)
       })
       .orderBy('id', 'desc');
   }
 
-  _getTable(tableName, schemaName) {
-		  return this.knex(this._getTableName(tableName, schemaName))
-  }
-
-	_getTableName(tableName, schemaName) {
-		return schemaName ?
-			`${schemaName}.${tableName}` :
-			tableName
-	}
-
-
   // Returns the latest batch number.
   _latestBatchNumber(trx = this.knex) {
-    return trx.from(this._getTableName(this.config.tableName, this.config.schemaName))
+    return trx.from(getTableName(this.config.tableName, this.config.schemaName))
       .max('batch as max_batch').then(obj => obj[0].max_batch || 0);
   }
 
@@ -379,17 +364,17 @@ export default class Migrator {
         .then(() => {
           log.push(path.join(directory, name));
           if (direction === 'up') {
-            return trxOrKnex.into(this._getTableName(tableName, schemaName)).insert({
+            return trxOrKnex.into(getTableName(tableName, schemaName)).insert({
               name,
               batch: batchNo,
               migration_time: new Date()
             });
           }
           if (direction === 'down') {
-            return trxOrKnex.from(this._getTableName(tableName, schemaName)).where({name}).del();
+            return trxOrKnex.from(getTableName(tableName, schemaName)).where({name}).del();
           }
         });
-    })
+    });
 
     return current.thenReturn([batchNo, log]);
   }
@@ -448,4 +433,21 @@ function yyyymmddhhmmss() {
     padDate(d.getHours()) +
     padDate(d.getMinutes()) +
     padDate(d.getSeconds());
+}
+
+//Get schema-aware table name
+function getTableName(tableName, schemaName) {
+  return schemaName ?
+    `${schemaName}.${tableName}` :
+    tableName
+}
+
+//Get schema-aware query builder for a given table and schema name
+function getTable(trxOrKnex, tableName, schemaName) {
+  return schemaName ? trxOrKnex(tableName).withSchema(schemaName) : trxOrKnex(tableName);
+}
+
+//Get schema-aware schema builder for a given schema nam
+function getSchemaBuilder(trxOrKnex, schemaName) {
+  return schemaName ? trxOrKnex.schema.withSchema(schemaName) : trxOrKnex.schema;
 }
