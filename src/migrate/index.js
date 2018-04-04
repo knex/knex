@@ -146,7 +146,7 @@ export default class Migrator {
   _ensureTable(trx = this.knex) {
     const { tableName, schemaName }  = this.config;
     const lockTable = this._getLockTableName();
-	const lockTableWithSchema = this._getLockTableNameWithSchema();
+    const lockTableWithSchema = this._getLockTableNameWithSchema();
     return getSchemaBuilder(trx, schemaName).hasTable(tableName)
       .then(exists => !exists && this._createMigrationTable(tableName, schemaName, trx))
       .then(() => getSchemaBuilder(trx, schemaName).hasTable(lockTable))
