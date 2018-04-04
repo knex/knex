@@ -344,21 +344,44 @@ module.exports = function(knex) {
 
     });
 
-    describe.only('knex.migrate.latest with specific changelog schema', function () {
-      before(function () {
-        return knex.migrate.latest({
-          directory: 'test/integration/migrate/test',
-          disableTransactions: true,
-          schemaName: 'testschema'
-        });
-      });
+    if (knex.client.dialect === 'postgresql') {
+      describe.only('knex.migrate.latest with specific changelog schema', function () {
 
-      it('should create changelog in the correct schema', function () {
-        return knex('testschema.knex_migrations').select('*').then(function (data) {
-          expect(data.length).to.equal(2);
+        it('should create changelog in the correct schema without transactions', function (done) {
+          knex.migrate.latest({
+            directory: 'test/integration/migrate/test',
+            disableTransactions: true,
+            schemaName: 'testschema'
+          }).then(() => {
+            return knex('testschema.knex_migrations').select('*').then(function (data) {
+              expect(data.length).to.equal(2);
+              done();
+            });
+          });
         });
+
+        it('should create changelog in the correct schema with transactions', function (done) {
+          knex.migrate.latest({
+            directory: 'test/integration/migrate/test',
+            disableTransactions: false,
+            schemaName: 'testschema'
+          }).then(() => {
+            return knex('testschema.knex_migrations').select('*').then(function (data) {
+              expect(data.length).to.equal(2);
+              done();
+            });
+          });
+        });
+
+        afterEach(function() {
+          return knex.migrate.rollback({
+            directory: 'test/integration/migrate/test',
+            disableTransactions: true,
+            schemaName: 'testschema'
+          });
+        });
+
       });
-    });
+    }
   });
-
 };

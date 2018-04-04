@@ -150,13 +150,13 @@ export default class Migrator {
     return getSchemaBuilder(trx, schemaName).hasTable(tableName)
       .then(exists => !exists && this._createMigrationTable(tableName, schemaName, trx))
       .then(() => getSchemaBuilder(trx, schemaName).hasTable(lockTable))
-      .then(exists => !exists && this._createMigrationLockTable(lockTableWithSchema, trx))
+      .then(exists => !exists && this._createMigrationLockTable(lockTable, trx))
       .then(() => getTable(trx, lockTable, this.config.schemaName).select('*'))
       .then(data => !data.length && trx.into(lockTableWithSchema).insert({ is_locked: 0 }));
   }
 
   _createMigrationTable(tableName, schemaName, trx = this.knex) {
-    return trx.schema.createTable(`${schemaName}.${tableName}`, function(t) {
+    return getSchemaBuilder(trx, schemaName).createTable(getTableName(tableName), function(t) {
       t.increments();
       t.string('name');
       t.integer('batch');
@@ -214,7 +214,7 @@ export default class Migrator {
 
   _freeLock(trx = this.knex) {
     const tableName = this._getLockTableName();
-    return getTable(this.knex, tableName, this.config.schemaName)
+    return getTable(trx, tableName, this.config.schemaName)
       .update({ is_locked: 0 });
   }
 
@@ -276,7 +276,7 @@ export default class Migrator {
   _listCompleted(trx = this.knex) {
     const { tableName, schemaName } = this.config;
     return this._ensureTable(trx)
-      .then(() => trx.from(`${schemaName}.${tableName}`).orderBy('id').select('name'))
+      .then(() => trx.from(getTableName(tableName, schemaName)).orderBy('id').select('name'))
       .then((migrations) => map(migrations, 'name'))
   }
 
@@ -318,7 +318,7 @@ export default class Migrator {
     const { tableName, schemaName } = this.config;
     return getTable(this.knex, tableName, schemaName)
       .where('batch', function(qb) {
-        qb.max('batch').from(tableName)
+        qb.max('batch').from(getTableName(tableName, schemaName))
       })
       .orderBy('id', 'desc');
   }
@@ -438,16 +438,18 @@ function yyyymmddhhmmss() {
 //Get schema-aware table name
 function getTableName(tableName, schemaName) {
   return schemaName ?
-    `${schemaName}.${tableName}` :
-    tableName
+    `${schemaName}.${tableName}`
+    : tableName;
 }
 
 //Get schema-aware query builder for a given table and schema name
 function getTable(trxOrKnex, tableName, schemaName) {
-  return schemaName ? trxOrKnex(tableName).withSchema(schemaName) : trxOrKnex(tableName);
+  return schemaName ? trxOrKnex(tableName).withSchema(schemaName)
+    : trxOrKnex(tableName);
 }
 
 //Get schema-aware schema builder for a given schema nam
 function getSchemaBuilder(trxOrKnex, schemaName) {
-  return schemaName ? trxOrKnex.schema.withSchema(schemaName) : trxOrKnex.schema;
+  return schemaName ? trxOrKnex.schema.withSchema(schemaName)
+    : trxOrKnex.schema;
 }
