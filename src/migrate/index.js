@@ -104,7 +104,7 @@ export default class Migrator {
   forceFreeMigrationsLock(config) {
     this.config = this.setConfig(config);
     const lockTable = this._getLockTableName();
-    return this.knex.schema.hasTable(lockTable)
+    return this._getKnexSchema(this.knex, this.config.schemaName).hasTable(lockTable)
       .then(exist => exist && this._freeLock());
   }
 
@@ -119,6 +119,10 @@ export default class Migrator {
       .then((val) => this._generateStubTemplate(val))
       .then((val) => this._writeNewMigration(name, val));
   }
+
+	_getKnexSchema(trx, schemaName) {
+		return schemaName ? trx.schema.withSchema(schemaName) : trx.schema;
+	}
 
   // Lists all available migration versions, as a sorted array.
   _listAll(config) {
@@ -146,12 +150,13 @@ export default class Migrator {
   _ensureTable(trx = this.knex) {
     const { tableName, schemaName }  = this.config;
     const lockTable = this._getLockTableName();
-    return trx.schema.hasTable(`${schemaName}.${tableName}`)
+	const lockTableWithSchema = this._getLockTableNameWithSchema();
+    return this._getKnexSchema(trx, schemaName).hasTable(tableName)
       .then(exists => !exists && this._createMigrationTable(tableName, schemaName, trx))
-      .then(() => trx.schema.hasTable(lockTable))
-      .then(exists => !exists && this._createMigrationLockTable(lockTable, trx))
-      .then(() => trx.from(lockTable).select('*'))
-      .then(data => !data.length && trx.into(lockTable).insert({ is_locked: 0 }));
+      .then(() => this._getKnexSchema(trx, schemaName).hasTable(lockTable))
+      .then(exists => !exists && this._createMigrationLockTable(lockTableWithSchema, trx))
+      .then(() => trx.from(lockTableWithSchema).select('*'))
+      .then(data => !data.length && trx.into(lockTableWithSchema).insert({ is_locked: 0 }));
   }
 
   _createMigrationTable(tableName, schemaName, trx = this.knex) {
@@ -170,13 +175,17 @@ export default class Migrator {
   }
 
   _getLockTableName() {
-    return this.config.schemaName ?
-		this.config.schemaName + '.' + this.config.tableName + '_lock'
-        : this.config.tableName + '_lock';
+        return this.config.tableName + '_lock';
   }
 
+	_getLockTableNameWithSchema() {
+		return this.config.schemaName ?
+			this.config.schemaName + '.' + this._getLockTableName()
+			: this._getLockTableName();
+	}
+
   _isLocked(trx) {
-    const tableName = this._getLockTableName();
+    const tableName = this._getLockTableNameWithSchema();
     return this.knex(tableName)
       .transacting(trx)
       .forUpdate()
@@ -185,7 +194,7 @@ export default class Migrator {
   }
 
   _lockMigrations(trx) {
-    const tableName = this._getLockTableName();
+    const tableName = this._getLockTableNameWithSchema();
     return this.knex(tableName)
       .transacting(trx)
       .update({ is_locked: 1 });
@@ -208,7 +217,7 @@ export default class Migrator {
   }
 
   _freeLock(trx = this.knex) {
-    const tableName = this._getLockTableName();
+    const tableName = this._getLockTableNameWithSchema();
     return trx.table(tableName)
       .update({ is_locked: 0 });
   }
@@ -239,7 +248,7 @@ export default class Migrator {
           helpers.warn(
             'If you are sure migrations are not running you can release the ' +
             'lock manually by deleting all the rows from migrations lock ' +
-            'table: ' + this._getLockTableName()
+            'table: ' + this._getLockTableNameWithSchema()
           );
         } else {
           if (this._activeMigration.fileName) {
@@ -331,7 +340,7 @@ export default class Migrator {
 
   // Returns the latest batch number.
   _latestBatchNumber(trx = this.knex) {
-    return trx.from(this._getTableName(this.config.tableName, this.config.schemaName)
+    return trx.from(this._getTableName(this.config.tableName, this.config.schemaName))
       .max('batch as max_batch').then(obj => obj[0].max_batch || 0);
   }
 

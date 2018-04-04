@@ -344,19 +344,21 @@ module.exports = function(knex) {
 
     });
 
-	  describe('knex.migrate.latest with specific changelog schema', function() {
+	  describe.only('knex.migrate.latest with specific changelog schema', function() {
 
 		  before(function() {
 			  return knex.migrate.latest({
-          directory: 'test/integration/migrate/test_per_migration_trx_enabled',
+          directory: 'test/integration/migrate/test',
           disableTransactions: true,
 				  schemaName: 'testschema'
-			  }).catch(function() {});
+			  }).catch(function(err) {
+                  console.log(err);
+              });
 		  });
 
 		  it('should create changelog in the correct schema', function() {
 			  return knex('testschema.knex_migrations').select('*').then(function(data) {
-				  expect(data.length).to.equal(1);
+				  expect(data.length).to.equal(2);
 			  });
 		  });
 
