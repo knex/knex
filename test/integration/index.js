@@ -7,9 +7,9 @@ var logger = require('./logger');
 var config = require('../knexfile');
 var fs     = require('fs');
 
-var Promise = require('bluebird')
+var Promise = require('bluebird');
 
-Promise.each(Object.keys(config), function (dialectName) {
+Promise.each(Object.keys(config), function(dialectName) {
   return require('./suite')(logger(knex(config[dialectName])));
 });
 

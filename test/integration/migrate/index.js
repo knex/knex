@@ -345,7 +345,7 @@ module.exports = function(knex) {
     });
 
     if (knex.client.dialect === 'postgresql') {
-      describe.only('knex.migrate.latest with specific changelog schema', function () {
+      describe('knex.migrate.latest with specific changelog schema', function () {
 
         it('should create changelog in the correct schema without transactions', function (done) {
           knex.migrate.latest({
