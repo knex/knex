@@ -9,7 +9,9 @@ var fs     = require('fs');
 
 var Promise = require('bluebird')
 
-require('./suite')(logger(knex(config.postgres)));
+Promise.each(Object.keys(config), function (dialectName) {
+  return require('./suite')(logger(knex(config[dialectName])));
+});
 
 after(function(done) {
   if (config.sqlite3 && config.sqlite3.connection.filename !== ':memory:') {

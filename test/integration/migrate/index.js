@@ -1,10 +1,10 @@
 /*global after, before, describe, expect, it*/
 'use strict';
 
-const equal    = require('assert').equal;
-const path     = require('path');
-const rimraf   = require('rimraf');
-const Promise  = require('bluebird');
+var equal    = require('assert').equal;
+var path     = require('path');
+var rimraf   = require('rimraf');
+var Promise  = require('bluebird');
 
 module.exports = function(knex) {
 
@@ -31,7 +31,7 @@ module.exports = function(knex) {
       });
     });
 
-    const tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
+    var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
 
     describe('knex.migrate.status', function() {
       this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
@@ -91,7 +91,7 @@ module.exports = function(knex) {
               expect(migrationLevel).to.equal(3);
             })
               .then(function() {
-              // Cleanup the added migrations
+                // Cleanup the added migrations
                 if (/redshift/.test(knex.client.dialect)){
                   return knex('knex_migrations')
                     .where('name', 'like', '%foobar%')
@@ -204,7 +204,7 @@ module.exports = function(knex) {
         return knex.migrate.rollback({directory: 'test/integration/migrate/test'}).spread(function(batchNo, log) {
           expect(batchNo).to.equal(1);
           expect(log).to.have.length(2);
-          const migrationPath = ['test', 'integration', 'migrate', 'test'].join(path.sep); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
+          var migrationPath = ['test', 'integration', 'migrate', 'test'].join(path.sep); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
           expect(log[0]).to.contain(migrationPath);
           return knex('knex_migrations').select('*').then(function(data) {
             expect(data.length).to.equal(0);
@@ -256,7 +256,7 @@ module.exports = function(knex) {
       ], function (res) {return res && res.name})
         .then(function (res) {
           // One should fail:
-          const hasLockError = res[0] === "MigrationLocked" || res[1] === "MigrationLocked";
+          var hasLockError = res[0] === "MigrationLocked" || res[1] === "MigrationLocked";
           expect(hasLockError).to.equal(true);
 
           // But the other should succeed:
@@ -380,7 +380,6 @@ module.exports = function(knex) {
             schemaName: 'testschema'
           });
         });
-
       });
     }
   });
