@@ -12,10 +12,11 @@ module.exports = function(knex) {
 
     after(function() {
       return knex.destroy()
-    })
+    });
 
     require('./schema')(knex);
     require('./migrate')(knex);
+
     require('./seed')(knex);
     require('./builder/inserts')(knex);
     require('./builder/selects')(knex);

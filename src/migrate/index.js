@@ -23,6 +23,7 @@ const CONFIG_DEFAULT = Object.freeze({
     '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
   ],
   tableName: 'knex_migrations',
+  schemaName: null,
   directory: './migrations',
   disableTransactions: false
 });
@@ -33,9 +34,9 @@ const CONFIG_DEFAULT = Object.freeze({
 export default class Migrator {
 
   constructor(knex) {
-    this.knex = knex
+    this.knex = knex;
     this.config = this.setConfig(knex.client.config.migrations);
-    
+
     this._activeMigration = {
       fileName: null
     }
@@ -81,7 +82,8 @@ export default class Migrator {
     this.config = this.setConfig(config);
 
     return Promise.all([
-      this.knex(this.config.tableName).select('*'),
+      getTable(this.knex, this.config.tableName, this.config.schemaName)
+        .select('*'),
       this._listAll()
     ])
       .spread((db, code) => db.length - code.length);
@@ -102,7 +104,7 @@ export default class Migrator {
   forceFreeMigrationsLock(config) {
     this.config = this.setConfig(config);
     const lockTable = this._getLockTableName();
-    return this.knex.schema.hasTable(lockTable)
+    return getSchemaBuilder(this.knex, this.config.schemaName).hasTable(lockTable)
       .then(exist => exist && this._freeLock());
   }
 
@@ -142,18 +144,19 @@ export default class Migrator {
   // Ensures that a proper table has been created, dependent on the migration
   // config settings.
   _ensureTable(trx = this.knex) {
-    const table = this.config.tableName;
+    const { tableName, schemaName }  = this.config;
     const lockTable = this._getLockTableName();
-    return trx.schema.hasTable(table)
-      .then(exists => !exists && this._createMigrationTable(table, trx))
-      .then(() => trx.schema.hasTable(lockTable))
+    const lockTableWithSchema = this._getLockTableNameWithSchema();
+    return getSchemaBuilder(trx, schemaName).hasTable(tableName)
+      .then(exists => !exists && this._createMigrationTable(tableName, schemaName, trx))
+      .then(() => getSchemaBuilder(trx, schemaName).hasTable(lockTable))
       .then(exists => !exists && this._createMigrationLockTable(lockTable, trx))
-      .then(() => trx.from(lockTable).select('*'))
-      .then(data => !data.length && trx.into(lockTable).insert({ is_locked: 0 }));
+      .then(() => getTable(trx, lockTable, this.config.schemaName).select('*'))
+      .then(data => !data.length && trx.into(lockTableWithSchema).insert({ is_locked: 0 }));
   }
 
-  _createMigrationTable(tableName, trx = this.knex) {
-    return trx.schema.createTable(tableName, function(t) {
+  _createMigrationTable(tableName, schemaName, trx = this.knex) {
+    return getSchemaBuilder(trx, schemaName).createTable(getTableName(tableName), function(t) {
       t.increments();
       t.string('name');
       t.integer('batch');
@@ -162,7 +165,7 @@ export default class Migrator {
   }
 
   _createMigrationLockTable(tableName, trx = this.knex) {
-    return trx.schema.createTable(tableName, function(t) {
+    return getSchemaBuilder(trx, this.config.schemaName).createTable(tableName, function(t) {
       t.integer('is_locked');
     });
   }
@@ -171,9 +174,15 @@ export default class Migrator {
     return this.config.tableName + '_lock';
   }
 
+  _getLockTableNameWithSchema() {
+    return this.config.schemaName ?
+      this.config.schemaName + '.' + this._getLockTableName()
+      : this._getLockTableName();
+  }
+
   _isLocked(trx) {
     const tableName = this._getLockTableName();
-    return this.knex(tableName)
+    return getTable(this.knex, tableName, this.config.schemaName)
       .transacting(trx)
       .forUpdate()
       .select('*')
@@ -182,7 +191,7 @@ export default class Migrator {
 
   _lockMigrations(trx) {
     const tableName = this._getLockTableName();
-    return this.knex(tableName)
+    return getTable(this.knex, tableName, this.config.schemaName)
       .transacting(trx)
       .update({ is_locked: 1 });
   }
@@ -205,7 +214,7 @@ export default class Migrator {
 
   _freeLock(trx = this.knex) {
     const tableName = this._getLockTableName();
-    return trx.table(tableName)
+    return getTable(trx, tableName, this.config.schemaName)
       .update({ is_locked: 0 });
   }
 
@@ -235,7 +244,7 @@ export default class Migrator {
           helpers.warn(
             'If you are sure migrations are not running you can release the ' +
             'lock manually by deleting all the rows from migrations lock ' +
-            'table: ' + this._getLockTableName()
+            'table: ' + this._getLockTableNameWithSchema()
           );
         } else {
           if (this._activeMigration.fileName) {
@@ -265,9 +274,9 @@ export default class Migrator {
   // Lists all migrations that have been completed for the current db, as an
   // array.
   _listCompleted(trx = this.knex) {
-    const { tableName } = this.config
+    const { tableName, schemaName } = this.config;
     return this._ensureTable(trx)
-      .then(() => trx.from(tableName).orderBy('id').select('name'))
+      .then(() => trx.from(getTableName(tableName, schemaName)).orderBy('id').select('name'))
       .then((migrations) => map(migrations, 'name'))
   }
 
@@ -306,17 +315,17 @@ export default class Migrator {
   // Get the last batch of migrations, by name, ordered by insert id in reverse
   // order.
   _getLastBatch() {
-    const { tableName } = this.config;
-    return this.knex(tableName)
+    const { tableName, schemaName } = this.config;
+    return getTable(this.knex, tableName, schemaName)
       .where('batch', function(qb) {
-        qb.max('batch').from(tableName)
+        qb.max('batch').from(getTableName(tableName, schemaName))
       })
       .orderBy('id', 'desc');
   }
 
   // Returns the latest batch number.
   _latestBatchNumber(trx = this.knex) {
-    return trx.from(this.config.tableName)
+    return trx.from(getTableName(this.config.tableName, this.config.schemaName))
       .max('batch as max_batch').then(obj => obj[0].max_batch || 0);
   }
 
@@ -336,7 +345,7 @@ export default class Migrator {
   // appropriate database information as the migrations are run.
   _waterfallBatch(batchNo, migrations, direction, trx) {
     const trxOrKnex = trx || this.knex;
-    const {tableName, disableTransactions} = this.config;
+    const {tableName, schemaName, disableTransactions} = this.config;
     const directory = this._absoluteConfigDir();
     let current = Promise.bind({failed: false, failedOn: 0});
     const log = [];
@@ -355,17 +364,17 @@ export default class Migrator {
         .then(() => {
           log.push(path.join(directory, name));
           if (direction === 'up') {
-            return trxOrKnex.into(tableName).insert({
+            return trxOrKnex.into(getTableName(tableName, schemaName)).insert({
               name,
               batch: batchNo,
               migration_time: new Date()
             });
           }
           if (direction === 'down') {
-            return trxOrKnex.from(tableName).where({name}).del();
+            return trxOrKnex.from(getTableName(tableName, schemaName)).where({name}).del();
           }
         });
-    })
+    });
 
     return current.thenReturn([batchNo, log]);
   }
@@ -424,4 +433,23 @@ function yyyymmddhhmmss() {
     padDate(d.getHours()) +
     padDate(d.getMinutes()) +
     padDate(d.getSeconds());
+}
+
+//Get schema-aware table name
+function getTableName(tableName, schemaName) {
+  return schemaName ?
+    `${schemaName}.${tableName}`
+    : tableName;
+}
+
+//Get schema-aware query builder for a given table and schema name
+function getTable(trxOrKnex, tableName, schemaName) {
+  return schemaName ? trxOrKnex(tableName).withSchema(schemaName)
+    : trxOrKnex(tableName);
+}
+
+//Get schema-aware schema builder for a given schema nam
+function getSchemaBuilder(trxOrKnex, schemaName) {
+  return schemaName ? trxOrKnex.schema.withSchema(schemaName)
+    : trxOrKnex.schema;
 }
