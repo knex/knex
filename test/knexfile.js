@@ -1,4 +1,5 @@
 'use strict';
+/* eslint no-var: 0 */
 
 var assert     = require('assert')
 var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};

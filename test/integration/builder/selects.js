@@ -754,7 +754,7 @@ module.exports = function(knex) {
                 status: 0
               }]);
             tester('pg-redshift',
-              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?),(?, ?)) order by "status" desc',
+              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
               [1,1,1,2],
               [
                 {
@@ -814,7 +814,7 @@ module.exports = function(knex) {
                 status: 1
               }]);
             tester('pg-redshift',
-              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?),(?, ?))',
+              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
               [1,1,1,1,2],
               [{
                 column_a: 1,

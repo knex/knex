@@ -1743,6 +1743,10 @@ describe("QueryBuilder", function() {
         sql: 'select * from "users" group by id, email',
         bindings: []
       },
+      redshift: {
+        sql: 'select * from "users" group by id, email',
+        bindings: []
+      },
     });
   });
 
@@ -3936,6 +3940,10 @@ describe("QueryBuilder", function() {
         sql: 'update "users" set "email" = ? where "id" = ?',
         bindings: ['foo', 1]
       },
+      redshift: {
+        sql: 'update "users" set "email" = ? where "id" = ?',
+        bindings: ['foo', 1]
+      },
     });
   });
 
@@ -4294,6 +4302,10 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select * from "foo" where "bar" = ? for update',
+        bindings: ['baz']
+      },
+      redshift: {
+        sql: 'select * from "foo" where "bar" = ?',
         bindings: ['baz']
       },
     });
