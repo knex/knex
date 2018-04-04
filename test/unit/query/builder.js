@@ -127,6 +127,107 @@ describe("Custom identifier wrapping", function() {
     }, clientsWithCustomIdentifierWrapper);
   });
 
+  it("should use custom wrapper on multiple inserts with returning", function() {
+    // returning only supported directly by postgres and with workaround with oracle
+    // other databases implicitly return the inserted id
+    testsql(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}], 'id'), {
+      mysql: {
+        sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      sqlite3: {
+        sql: "insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here`",
+      },
+      postgres: {
+        sql: "insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (?, ?), (?, ?) returning \"id_wrapper_was_here\"",
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      redshift: {
+        sql: "insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (?, ?), (?, ?)",
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      oracle: {
+        sql: "begin execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;",
+        bindings: function(bindings) {
+          expect(bindings.length).to.equal(6);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3]).to.equal('bar');
+          expect(bindings[4]).to.equal('dayle');
+          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },
+      mssql: {
+        sql: 'insert into [users_wrapper_was_here] ([email_wrapper_was_here], [name_wrapper_was_here]) output inserted.[id_wrapper_was_here] values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning \"id_wrapper_was_here\" into :3' using ?, ?, out ?; execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning \"id_wrapper_was_here\" into :3' using ?, ?, out ?;end;",
+        bindings: function(bindings) {
+          expect(bindings.length).to.equal(6);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3]).to.equal('bar');
+          expect(bindings[4]).to.equal('dayle');
+          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },
+    }, clientsWithCustomIdentifierWrapper);
+  });
+
+  it("should use custom wrapper on multiple inserts with multiple returning", function() {
+    testsql(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}], ['id', 'name']), {
+      mysql: {
+        sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      sqlite3: {
+        sql: "insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here`",
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      postgres: {
+        sql: 'insert into "users_wrapper_was_here" ("email_wrapper_was_here", "name_wrapper_was_here") values (?, ?), (?, ?) returning "id_wrapper_was_here", "name_wrapper_was_here"',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      redshift: {
+        sql: 'insert into "users_wrapper_was_here" ("email_wrapper_was_here", "name_wrapper_was_here") values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      oracle: {
+        sql: "begin execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;",
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(6);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id:name]');
+          expect(bindings[3]).to.equal('bar');
+          expect(bindings[4]).to.equal('dayle');
+          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id:name]');
+        }
+      },
+      mssql: {
+        sql: 'insert into [users_wrapper_was_here] ([email_wrapper_was_here], [name_wrapper_was_here]) output inserted.[id_wrapper_was_here], inserted.[name_wrapper_was_here] values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning \"id_wrapper_was_here\",\"name_wrapper_was_here\" into :3, :4' using ?, ?, out ?, out ?; execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning \"id_wrapper_was_here\",\"name_wrapper_was_here\" into :3, :4' using ?, ?, out ?, out ?;end;",
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(8);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3].toString()).to.equal('[object ReturningHelper:name]');
+          expect(bindings[4]).to.equal('bar');
+          expect(bindings[5]).to.equal('dayle');
+          expect(bindings[6].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[7].toString()).to.equal('[object ReturningHelper:name]');
+        }
+      },
+    }, clientsWithCustomIdentifierWrapper);
+  });
+
   describe('queryContext', () => {
     it('should pass the query context to the custom wrapper', () => {
       testsql(qb().withSchema('schema').select('users.foo as bar').from('users').queryContext({ fancy: true }), {
