@@ -350,11 +350,7 @@ module.exports = function(knex) {
           return knex.raw(`CREATE SCHEMA IF NOT EXISTS "testschema"`);
         });
         after(() => {
-          return knex.raw(`DROP TABLE "testschema"."knex_migrations"`).then(() => {
-            return knex.raw(`DROP TABLE "testschema"."knex_migrations_lock"`);
-          }).then(() =>{
-            return knex.raw(`DROP SCHEMA "testschema"`);
-          });
+          return knex.raw(`DROP SCHEMA "testschema" CASCADE`);
         });
 
         it('should create changelog in the correct schema without transactions', function (done) {
