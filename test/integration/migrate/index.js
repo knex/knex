@@ -346,6 +346,12 @@ module.exports = function(knex) {
 
     if (knex.client.dialect === 'postgresql') {
       describe('knex.migrate.latest with specific changelog schema', function () {
+        before(() => {
+          return knex.raw(`CREATE SCHEMA IF NOT EXISTS "testschema"`);
+        });
+        after(() => {
+          return knex.raw(`DROP SCHEMA "testschema"`);
+        });
 
         it('should create changelog in the correct schema without transactions', function (done) {
           knex.migrate.latest({
