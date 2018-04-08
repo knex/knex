@@ -27,6 +27,8 @@ function Client_MSSQL(config) {
   if(config && config.connection && config.connection.host) {
     config.connection.server = config.connection.host;
   }
+  // mssql always creates pool :( lets try to unpool it as much as possible
+  config.pool = { min: 1, max: 1, idleTimeoutMillis: Number.MAX_SAFE_INTEGER, evictionRunIntervalMillis: 0 };
   Client.call(this, config);
 }
 inherits(Client_MSSQL, Client);
@@ -38,7 +40,113 @@ assign(Client_MSSQL.prototype, {
   driverName: 'mssql',
 
   _driver() {
-    return require('mssql');
+    const tds = require('tedious');
+    let mssqlTedious = require('mssql');
+    let base = require('mssql/lib/base');
+
+    // Monkey patch mssql's tedious driver _poolCreate method to fix problem with hanging acquire connection,
+    // this should be removed when https://github.com/tediousjs/node-mssql/pull/614 is merged and released.
+
+    // Also since this dialect actually always uses tedious driver (msnodesqlv8 driver should be required in different way), it 
+    // might be better to use tedious directly, because mssql driver uses always internally extra generic-pool and just adds one 
+    // unnecessary layer of indirection between database and knex and mssql driver has been lately without maintainer 
+    // (changing implementation to use tedious will be breaking change though).
+    
+    const mssqlVersion = require('mssql/package.json').version;
+    if (mssqlVersion !== '4.1.0') {
+      throw new Error('This knex version does not support any other mssql version except 4.1.0 (knex patches bug in its implementation)');
+    }
+
+    mssqlTedious.ConnectionPool.prototype._poolCreate = _poolCreate;
+    
+    function _poolCreate() {
+      // implementation is copy-pasted from https://github.com/tediousjs/node-mssql/pull/614
+      return new base.Promise((resolve, reject) => {
+        const cfg = {
+          userName: this.config.user,
+          password: this.config.password,
+          server: this.config.server,
+          options: Object.assign({}, this.config.options),
+          domain: this.config.domain
+        }
+  
+        cfg.options.database = this.config.database
+        cfg.options.port = this.config.port
+        cfg.options.connectTimeout = this.config.connectionTimeout || this.config.timeout || 15000
+        cfg.options.requestTimeout = this.config.requestTimeout != null ? this.config.requestTimeout : 15000
+        cfg.options.tdsVersion = cfg.options.tdsVersion || '7_4'
+        cfg.options.rowCollectionOnDone = false
+        cfg.options.rowCollectionOnRequestCompletion = false
+        cfg.options.useColumnNames = false
+        cfg.options.appName = cfg.options.appName || 'node-mssql'
+  
+        // tedious always connect via tcp when port is specified
+        if (cfg.options.instanceName) delete cfg.options.port
+  
+        if (isNaN(cfg.options.requestTimeout)) cfg.options.requestTimeout = 15000
+        if (cfg.options.requestTimeout === Infinity) cfg.options.requestTimeout = 0
+        if (cfg.options.requestTimeout < 0) cfg.options.requestTimeout = 0
+  
+        if (this.config.debug) {
+          cfg.options.debug = {
+            packet: true,
+            token: true,
+            data: true,
+            payload: true
+          }
+        }
+  
+        const tedious = new tds.Connection(cfg)
+
+        // prevent calling resolve again on end event
+        let alreadyResolved = false
+        function safeResolve (err) {
+          if (!alreadyResolved) {
+            alreadyResolved = true
+            console.log('----------------------------- acquire resolve!');
+            resolve(err)
+          }
+        }
+  
+        function safeReject (err) {
+          if (!alreadyResolved) {
+            alreadyResolved = true
+            console.log('----------------------------- acquire reject!');
+            reject(err)
+          }
+        }
+  
+        tedious.once('end', evt => {
+          safeReject(new base.ConnectionError('Connection ended unexpectedly during connecting'))
+        })
+  
+        tedious.once('connect', err => {
+          if (err) {
+            err = new base.ConnectionError(err)
+            return safeReject(err)
+          }
+          safeResolve(tedious)
+        })
+
+        tedious.on('debug', msg => console.log('------------------------------ DEBUG', msg));
+  
+        tedious.on('error', err => {
+          console.log('----------------------------- emit tedious error!');
+          if (err.code === 'ESOCKET') {
+            tedious.hasError = true
+            return
+          }
+  
+          this.emit('error', err)
+        })
+  
+        if (this.config.debug) {
+          tedious.on('debug', this.emit.bind(this, 'debug', tedious))
+        }
+      })
+    }
+
+    return mssqlTedious;
   },
 
   formatter() {
@@ -75,10 +183,12 @@ assign(Client_MSSQL.prototype, {
     return new Promise((resolver, rejecter) => {
       const connection = new this.driver.ConnectionPool(this.connectionSettings);
       connection.connect((err) => {
+        console.log('--------------- KNEX got connection!');
         if (err) {
           return rejecter(err)
         }
         connection.on('error', (err) => {
+          console.log('--------------- KNEX error in connection!');
           connection.__knex__disposed = err
         })
         resolver(connection);
@@ -97,7 +207,10 @@ assign(Client_MSSQL.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    return connection.close()
+    return connection.close().catch(err => {
+      // some times close will reject just because pool has already been destoyed 
+      // internally by the driver there is nothing we can do in this case
+    });
   },
 
   // Position the bindings for the query.

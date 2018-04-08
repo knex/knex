@@ -24,6 +24,18 @@ const mysql = Knex({
   pool: { max: 50 }
 });
 
+const mssql = Knex({
+  client: 'mssql',
+  connection: {
+    port: 21433,
+    user: "sa",
+    password: "S0meVeryHardPassword",
+    server: "localhost",
+    requestTimeout: 500
+  },
+  pool: { max: 50 }
+});
+
 /* TODO: figure out how to nicely install oracledb node driver on osx
 const mysql = Knex({
   client: 'oracledb',
@@ -50,6 +62,7 @@ function setQueryCounters(instance, name) {
 setQueryCounters(pg, 'pg');
 setQueryCounters(mysql, 'mysql');
 setQueryCounters(mysql2, 'mysql2');
+setQueryCounters(mssql, 'mssql');
 
 const _ = require('lodash');
 
@@ -82,6 +95,11 @@ async function killConnectionsPg() {
 async function killConnectionsMyslq(client) {
   const [rows, colDefs] = await client.raw(`SHOW FULL PROCESSLIST`);
   await Promise.all(rows.map(row => client.raw(`KILL ${row.Id}`)));
+} 
+
+async function killConnectionsMssql() {
+  const rows = await mssql('sys.dm_exec_sessions').select('session_id');
+  await Promise.all(rows.map(row => mssql.raw(`KILL ${row.session_id}`)));
 } 
 
 async function main() {
@@ -130,10 +148,12 @@ async function main() {
     await recreateProxy('postgresql', 25432, 5432);
     await recreateProxy('mysql', 23306, 3306);
     await recreateProxy('oracledbxe', 21521, 1521);
+    await recreateProxy('mssql', 21433, 1433);
   }
 
   await recreateProxies();
-  
+
+  /*
   loopQueries('PSQL:', pg.raw('select 1'));
   loopQueries('PSQL TO:', pg.raw('select 1').timeout(20));
 
@@ -143,14 +163,20 @@ async function main() {
   loopQueries('MYSQL2:', mysql2.raw('select 1'));
   loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
 
+  loopQueries('MSSQL:', mssql.raw('select 1'));
+*/
+  loopQueries('MSSQL TO:', mssql.raw('select 1').timeout(20));
+
+  setInterval(recreateProxies, 2000);
 
   while(true) {
     await Bluebird.delay(20); // kill everything every quite often from server side
     try {
       await Promise.all([
-        killConnectionsPg(),
-        killConnectionsMyslq(mysql),
-        killConnectionsMyslq(mysql2),
+//        killConnectionsPg(),
+//        killConnectionsMyslq(mysql),
+//        killConnectionsMyslq(mysql2),
+        killConnectionsMssql()  
       ]);
     } catch (err) {
       console.log('KILLER ERROR:', err);
