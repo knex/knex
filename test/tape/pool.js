@@ -102,7 +102,7 @@ test('#823, should not skip pool construction pool config is not defined', funct
 })
 
 test('#2321 dead connections are not evicted from pool', (t) => {
-  if (process.env.DB.indexOf('mysql2') >= 0) {
+  if (knexfile['mysql2']) {
     const knex = makeKnex(knexfile['mysql2']);
 
     t.plan(10);
