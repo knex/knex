@@ -974,6 +974,20 @@ export default [
   },
   {
     type: "method",
+    method: "clearOrder",
+    example: ".clearOrder()",
+    description: "Clears all order clauses from the query, excluding subqueries.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select().from('users').orderBy('name', 'desc').clearOrder()
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "distinct",
     example: ".distinct()",
     description: "Sets a distinct clause on the query.",
