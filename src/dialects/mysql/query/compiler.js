@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, identity } from 'lodash'
+import { assign, identity, map } from 'lodash'
 
 function QueryCompiler_MySQL(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -36,6 +36,19 @@ assign(QueryCompiler_MySQL.prototype, {
 
   forShare() {
     return 'lock in share mode';
+  },
+
+  // Compiles a `listTables` query
+  listTables() {
+    return {
+      sql: 'select table_name from information_schema.tables where table_schema = ?',
+      bindings: [this.client.database()],
+      output(resp) {
+        return map(resp, function (table) {
+          return table.table_name
+        })
+      }
+    }
   },
 
   // Compiles a `columnInfo` query.

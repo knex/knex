@@ -4,7 +4,7 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, isEmpty, compact, identity } from 'lodash'
+import { assign, isEmpty, compact, identity, map } from 'lodash'
 
 function QueryCompiler_MSSQL(client, builder) {
   QueryCompiler.call(this, client, builder)
@@ -170,6 +170,20 @@ assign(QueryCompiler_MSSQL.prototype, {
 
   forShare() {
     return 'with (NOLOCK)';
+  },
+
+  // Compiles a `listTables` query
+  listTables() {
+    return {
+      sql: 'select table_name from information_schema.tables' +
+           'where table_schema = \'public\' and table_catalog = ?',
+      bindings: [this.client.database()],
+      output(resp) {
+        return map(resp.rows, function (table) {
+          return table.table_name
+        })
+      }
+    }
   },
 
   // Compiles a `columnInfo` query.

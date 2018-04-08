@@ -5,7 +5,7 @@ import inherits from 'inherits';
 
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, reduce, identity } from 'lodash'
+import { assign, reduce, identity, map } from 'lodash'
 
 function QueryCompiler_PG(client, builder) {
   QueryCompiler.call(this, client, builder);
@@ -73,6 +73,20 @@ assign(QueryCompiler_PG.prototype, {
 
   forShare() {
     return 'for share';
+  },
+
+  // Compiles a `listTables` query
+  listTables() {
+    return {
+      sql: 'select table_name from information_schema.tables' +
+           'where table_schema = \'public\' and table_catalog = ?',
+      bindings: [this.client.database()],
+      output(resp) {
+        return map(resp.rows, function (table) {
+          return table.table_name
+        })
+      }
+    }
   },
 
   // Compiles a columnInfo query

@@ -216,6 +216,18 @@ module.exports = function(knex) {
       expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
     });
 
+    it('should list tables', () => {
+      return knex().listTables().then(res => {
+        expect(res.sort()).to.deep.equal([
+          '10_test_table', 'BatchInsert', 'accounts', 'batchInsertDuplicateKey',
+          'bool_test', 'catch_test', 'charset_collate_test', 'composite_key_test',
+          'datatype_test', 'group', 'invalid_inTable_param_test', 'knex_migrations',
+          'knex_migrations_lock', 'sqlite_sequence', 'test_default_table',
+          'test_default_table2', 'test_table', 'test_table_two'
+        ]);
+      });
+    });
+
     it('gets the columnInfo', function() {
       return knex('datatype_test').columnInfo().testSql(function(tester) {
         tester('mysql',

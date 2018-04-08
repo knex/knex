@@ -143,6 +143,18 @@ assign(QueryCompiler_Oracle.prototype, {
     return '';
   },
 
+  // Compiles a `listTables` query
+  listTables() {
+    return {
+      sql: `select table_name from user_tables`,
+      output(resp) {
+        return map(resp, function (table) {
+          return table.TABLE_NAME
+        })
+      }
+    }
+  },
+
   // Compiles a `columnInfo` query.
   columnInfo() {
     const column = this.single.columnInfo;

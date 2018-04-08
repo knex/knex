@@ -3,7 +3,7 @@
 
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
-import { assign, each, isEmpty, isString, noop, reduce, identity } from 'lodash'
+import { assign, each, isEmpty, isString, map, noop, reduce, identity } from 'lodash'
 import { warn } from '../../../helpers';
 
 function QueryCompiler_SQLite3(client, builder) {
@@ -101,6 +101,18 @@ assign(QueryCompiler_SQLite3.prototype, {
         return this.query({
           sql: `delete from sqlite_sequence where name = '${table}'`
         }).catch(noop)
+      }
+    }
+  },
+
+  // Compiles a `listTables` query
+  listTables() {
+    return {
+      sql: `SELECT name FROM sqlite_master WHERE type='table';`,
+      output(resp) {
+        return map(resp, function (table) {
+          return table.name;
+        });
       }
     }
   },
