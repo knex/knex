@@ -1,6 +1,28 @@
 
 # Master (Unreleased)
 
+# 0.14.5 - 8 Apr, 2018
+
+### Bug fixes:
+
+- Fix wrapping returning column on oracledb #2554
+
+### New Features:
+
+- Support passing DB schema name for migrations #2499 #2559
+- add clearOrder method #2360 #2553
+- Added knexTxId to query events and debug calls #2476
+- Support multi-column `whereIn` with query #1390
+- Added error if chaining update/insert/etc with first() #2506
+- Checks for an empty, undefined or null object on transacting #2494
+- countDistinct with multiple columns #2449
+
+### Test / internal changes
+
+- Added npm run test:oracledb command that runs oracledb tests in docker #2491
+- Runnin mssql tests in docker #2496
+- Update dependencies #2561
+
 # 0.14.4 - 19 Feb, 2018
 
 ### Bug fixes:
