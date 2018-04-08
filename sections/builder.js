@@ -362,7 +362,7 @@ export default [
   {
     type: "method",
     method: "whereIn",
-    example: ".whereIn(column, array|callback|builder) / .orWhereIn",
+    example: ".whereIn(column|columns, array|callback|builder) / .orWhereIn",
     description: "Shorthand for .where('id', 'in', obj), the .whereIn and .orWhereIn methods add a \"where in\" clause to the query.",
     children: [
       {
@@ -389,6 +389,20 @@ export default [
 
           knex.select('name').from('users')
             .whereIn('account_id', subquery)
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.select('name').from('users')
+            .whereIn(['account_id', 'email'], [[3, 'test3@example.com'], [4, 'test4@example.com']])
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.select('name').from('users')
+            .whereIn(['account_id', 'email'], knex.select('id', 'email').from('accounts'))
         `
       }
     ]
