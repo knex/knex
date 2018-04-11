@@ -696,8 +696,15 @@ module.exports = function(knex) {
 
       builder
         .on('query', function(obj) {
-          expect(obj.sql).to.not.equal(builder.toSQL().toNative().sql);
-          expect(obj.sql).to.equal(builder.toSQL().sql);
+          var native = builder.toSQL().toNative().sql;
+          var sql = builder.toSQL().sql;
+
+          //Only assert if they diff to begin with.
+          //IE Maria does not diff
+          if(native !== sql) {
+            expect(obj.sql).to.not.equal(builder.toSQL().toNative().sql);
+            expect(obj.sql).to.equal(builder.toSQL().sql);
+          }
         });
 
       return builder;
