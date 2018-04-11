@@ -126,7 +126,6 @@ assign(Client.prototype, {
 
   query(connection, obj) {
     if (typeof obj === 'string') obj = {sql: obj}
-    obj.sql = this.positionBindings(obj.sql);
     obj.bindings = this.prepBindings(obj.bindings)
 
     const {__knexUid, __knexTxId} = connection;
@@ -134,6 +133,8 @@ assign(Client.prototype, {
     this.emit('query', assign({__knexUid, __knexTxId}, obj))
     debugQuery(obj.sql, __knexTxId)
     debugBindings(obj.bindings, __knexTxId)
+
+    obj.sql = this.positionBindings(obj.sql);
 
     return this._query(connection, obj).catch((err) => {
       err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message
@@ -144,7 +145,6 @@ assign(Client.prototype, {
 
   stream(connection, obj, stream, options) {
     if (typeof obj === 'string') obj = {sql: obj}
-    obj.sql = this.positionBindings(obj.sql);
     obj.bindings = this.prepBindings(obj.bindings)
 
     const {__knexUid, __knexTxId} = connection;
@@ -152,6 +152,8 @@ assign(Client.prototype, {
     this.emit('query', assign({__knexUid, __knexTxId}, obj))
     debugQuery(obj.sql, __knexTxId)
     debugBindings(obj.bindings, __knexTxId)
+
+    obj.sql = this.positionBindings(obj.sql);
 
     return this._stream(connection, obj, stream, options)
   },

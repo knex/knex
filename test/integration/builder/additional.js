@@ -689,6 +689,20 @@ module.exports = function(knex) {
         });
     });
 
+    it('Event \'query\' should not emit native sql string', function() {
+      var builder = knex('accounts')
+        .where('id', 1)
+        .select();
+
+      builder
+        .on('query', function(obj) {
+          expect(obj.sql).to.not.equal(builder.toSQL().toNative().sql);
+          expect(obj.sql).to.equal(builder.toSQL().sql);
+        });
+
+      return builder;
+    });
+
   });
 
 };
