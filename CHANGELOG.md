@@ -1,6 +1,12 @@
 
 # Master (Unreleased)
 
+# 0.14.6 - 12 Apr, 2018
+
+### Bug fixes:
+
+- Restored functionality of query event #2566 (#2549)
+
 # 0.14.5 - 8 Apr, 2018
 
 ### Bug fixes:
