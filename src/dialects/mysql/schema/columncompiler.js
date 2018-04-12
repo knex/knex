@@ -9,9 +9,10 @@ import { assign } from 'lodash'
 
 function supportsPreciseTimestamps(client) {
   if (!client.version) {
-    const message = 'If you are using a MySQL version older than 5.6.4 you should specify the ' +
-                    'version in your client options when initializing Knex. See ' +
-                    'http://knexjs.org/#Schema-timestamps for more information.'
+    const message = 'To get rid of this warning you should specify the mysql dialect version in ' +
+                    'your knex configuration. Currently this defaults to 5.5, but in a future ' +
+                    'release it will default to 5.6 which supports high precision timestamps. ' +
+                    'See http://knexjs.org/#Schema-timestamps for more information.'
     helpers.warn(message)
   }
 
