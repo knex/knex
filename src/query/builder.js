@@ -138,13 +138,10 @@ assign(Builder.prototype, {
     return this;
   },
 
-  from(from, options) {
-    if (this._single.table) {
-      this._single.from = from;
-      return this;
-    }
-
-    return this.table(from, options);
+  from(from, options = {}) {
+    this._single.from = from;
+    this._single.only = options.only === true;
+    return this;
   },
 
   // Adds a `distinct` clause to the query.

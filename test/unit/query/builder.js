@@ -4070,103 +4070,118 @@ describe("QueryBuilder", function() {
   });
 
   describe("update method with `table` and `from`", function () {
-    it("constructs the correct query for postgres", function () {
-      testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).from('accounts').where('id', '=', 1), {
-        mysql: {
-          sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-        mssql: {
-          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
-          bindings: ['foo', 'bar', 1]
-        },
-        postgres: {
-          sql: 'update "users" set "email" = ?, "name" = ? from "accounts" where "id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-        redshift: {
-          sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
+    describe("for postgres", function () {
+      it("constructs an `update from` query", function () {
+        testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).from('accounts').where('id', '=', 1), {
+          postgres: {
+            sql: 'update "users" set "email" = ?, "name" = ? from "accounts" where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+
+      it("allows aliasing `from`", function () {
+        testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).from({ myAccounts: 'accounts' }).where('id', '=', 1), {
+          postgres: {
+            sql: 'update "users" set "email" = ?, "name" = ? from "accounts" as "myAccounts" where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+
+      it("allows `from` with a subquery", function () {
+        testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).from({ accounts: qb().from('accounts') }).where('id', '=', 1), {
+          postgres: {
+            sql: 'update "users" set "email" = ?, "name" = ? from (select * from "accounts") as "accounts" where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+
+      it("allows `from values`", function () {
+        const query = qb()
+          .table('users')
+          .update({ email: raw('??', ['accounts.email']), name: raw('??', ['accounts.name']) })
+          .from(raw(`(values (?, ?, ?)) as ??(??, ??, ??)`, [1, 'foo', 'bar', 'accounts', 'id', 'email', 'name']))
+          .where('users.id', '=', raw('??', ['accounts.id']));
+
+        testsql(query, {
+          postgres: {
+            sql: 'update "users" set "email" = "accounts"."email", "name" = "accounts"."name" from (values (?, ?, ?)) as "accounts"("id", "email", "name") where "users"."id" = "accounts"."id"',
+            bindings: [1, 'foo', 'bar']
+          }
+        });
+      });
+
+      it("constructs the correct query when `table` is set after `from`", function () {
+        testsql(qb().from('accounts').table('users').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+          postgres: {
+            sql: 'update "users" set "email" = ?, "name" = ? from "accounts" where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
       });
     });
 
-    it("allows aliasing `from`", function () {
-      testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).from({ myAccounts:'accounts' }).where('id', '=', 1), {
-        mysql: {
-          sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-        mssql: {
-          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
-          bindings: ['foo', 'bar', 1]
-        },
-        postgres: {
-          sql: 'update "users" set "email" = ?, "name" = ? from "accounts" as "myAccounts" where "id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-        redshift: {
-          sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
+    describe("for other dialects", function () {
+      it("should ignore `from` when `table` is set", function () {
+        testsql(qb().table('accounts').from('users').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+          mysql: {
+            sql: 'update `accounts` set `email` = ?, `name` = ? where `id` = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+          mssql: {
+            sql: 'update [accounts] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+            bindings: ['foo', 'bar', 1]
+          },
+          redshift: {
+            sql: 'update "accounts" set "email" = ?, "name" = ? where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
       });
     });
+  });
 
-    it("allows `from` with a subquery", function () {
-      testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).from({ accounts: qb().from('accounts') }).where('id', '=', 1), {
-        mysql: {
-          sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-        mssql: {
-          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
-          bindings: ['foo', 'bar', 1]
-        },
-        postgres: {
-          sql: 'update "users" set "email" = ?, "name" = ? from (select * from "accounts") as "accounts" where "id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-        redshift: {
-          sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-      });
+  it("update method with `from`", function () {
+    testsql(qb().from('users').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+      mysql: {
+        sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      mssql: {
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+        bindings: ['foo', 'bar', 1]
+      },
+      postgres: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      redshift: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      },
     });
+  });
 
-    it("allows `from values`", function () {
-      const query = qb()
-        .table('users')
-        .update({ email: raw('??', ['accounts.email']), name: raw('??', ['accounts.name']) })
-        .from(raw(`(values (?, ?, ?)) as ??(??, ??, ??)`, [1, 'foo', 'bar', 'accounts', 'id', 'email', 'name']))
-        .where('users.id', '=', raw('??', ['accounts.id']));
-
-      testsql(query, {
-        postgres: {
-          sql: 'update "users" set "email" = "accounts"."email", "name" = "accounts"."name" from (values (?, ?, ?)) as "accounts"("id", "email", "name") where "users"."id" = "accounts"."id"',
-          bindings: [1, 'foo', 'bar']
-        }
-      });
-    });
-
-    it("constructs the correct query without `table`", function () {
-      testsql(qb().from('users').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
-        mysql: {
-          sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-        mssql: {
-          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
-          bindings: ['foo', 'bar', 1]
-        },
-        postgres: {
-          sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-        redshift: {
-          sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
-          bindings: ['foo', 'bar', 1]
-        },
-      });
+  it("update method with `table`", function () {
+    testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+      mysql: {
+        sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      mssql: {
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+        bindings: ['foo', 'bar', 1]
+      },
+      postgres: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      redshift: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      },
     });
   });
 

@@ -687,7 +687,7 @@ Object.defineProperty(QueryCompiler.prototype, 'tableName', {
   get() {
     if(!this._tableName) {
       // Only call this.formatter.wrap() the first time this property is accessed.
-      let tableName = this.single.table;
+      let tableName = this.single.table || this.single.from;
       const schemaName = this.single.schema;
 
       if (tableName && schemaName) tableName = `${schemaName}.${tableName}`;
