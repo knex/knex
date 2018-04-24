@@ -138,6 +138,15 @@ assign(Builder.prototype, {
     return this;
   },
 
+  from(from, options) {
+    if (this._single.table) {
+      this._single.from = from;
+      return this;
+    }
+
+    return this.table(from, options);
+  },
+
   // Adds a `distinct` clause to the query.
   distinct() {
     this._statements.push({
@@ -1019,7 +1028,6 @@ Builder.prototype.andHavingExists = Builder.prototype.havingExists
 Builder.prototype.andHavingNotExists = Builder.prototype.havingNotExists
 Builder.prototype.andHavingBetween = Builder.prototype.havingBetween
 Builder.prototype.andHavingNotBetween = Builder.prototype.havingNotBetween
-Builder.prototype.from = Builder.prototype.table
 Builder.prototype.into = Builder.prototype.table
 Builder.prototype.del = Builder.prototype.delete
 

@@ -38,11 +38,12 @@ assign(QueryCompiler_PG.prototype, {
   update() {
     const updateData = this._prepUpdate(this.single.update);
     const wheres = this.where();
-    const { returning } = this.single;
+    const { returning, from } = this.single;
     return {
       sql: this.with() +
       `update ${this.single.only ? 'only ' : ''}${this.tableName} ` +
       `set ${updateData.join(', ')}` +
+      this._from(from) +
       (wheres ? ` ${wheres}` : '') +
       this._returning(returning),
       returning
@@ -61,6 +62,10 @@ assign(QueryCompiler_PG.prototype, {
 
   aggregate(stmt) {
     return this._aggregate(stmt, { distinctParentheses: true });
+  },
+
+  _from(value) {
+    return value ? ` from ${this.formatter.wrap(value)}` : '';
   },
 
   _returning(value) {
