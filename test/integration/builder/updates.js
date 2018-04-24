@@ -182,7 +182,7 @@ module.exports = function(knex) {
     });
 
     it('should allow `update from` for updates in postgresql', function () {
-      if (!knex.client.driverName === 'postgresql') {
+      if (knex.client.driverName !== 'postgresql') {
         return this.skip();
       }
 
