@@ -4124,8 +4124,25 @@ describe("QueryBuilder", function() {
     });
 
     describe("for other dialects", function () {
-      it("should ignore `from` when `table` is set", function () {
-        testsql(qb().table('accounts').from('users').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+      it("`from` overwrites the table-name set with `table`", function () {
+        testsql(qb().table('users').from('accounts').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+          mysql: {
+            sql: 'update `accounts` set `email` = ?, `name` = ? where `id` = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+          mssql: {
+            sql: 'update [accounts] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+            bindings: ['foo', 'bar', 1]
+          },
+          redshift: {
+            sql: 'update "accounts" set "email" = ?, "name" = ? where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+
+      it("`table` overwrites the table-name set with `from`", function () {
+        testsql(qb().from('users').table('accounts').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
           mysql: {
             sql: 'update `accounts` set `email` = ?, `name` = ? where `id` = ?',
             bindings: ['foo', 'bar', 1]
