@@ -2423,7 +2423,7 @@ describe("QueryBuilder", function() {
     });
   });
 
- it("clear nested selects", function() {
+  it("clear nested selects", function() {
     testsql(qb().select('email').from('users').where('email', '=', 'foo').orWhere('id', '=', function(qb) {
       qb.select(raw('max(id)')).from('users').where('email', '=', 'bar').clearSelect();
     }), {
@@ -3849,8 +3849,8 @@ describe("QueryBuilder", function() {
   //       bindings: []
   //     },
   //     redshift: {
-  //       sql: '', 
-  //       bindings: [] 
+  //       sql: '',
+  //       bindings: []
   //     },
   //   });
   // });
@@ -3874,23 +3874,23 @@ describe("QueryBuilder", function() {
   //       bindings: []
   //     },
   //     postgres: {
-  //       sql: "", 
-  //       bindings: [] 
+  //       sql: "",
+  //       bindings: []
   //     },
   //     redshift: {
-  //       sql: "", 
-  //       bindings: [] 
+  //       sql: "",
+  //       bindings: []
   //     },
   //     mssql: {
   //       sql: '',
   //       bindings: []
   //     },
   //     postgres: {
-  //       sql: '', 
-  //       bindings: [] 
+  //       sql: '',
+  //       bindings: []
   //     },
   //     redshift: {
-   //       sql: '', 
+   //       sql: '',
    //       bindings: []
    //     },
   //   });
@@ -4069,6 +4069,139 @@ describe("QueryBuilder", function() {
     });
   });
 
+  describe("update method with `table` and `from`", function () {
+    describe("for postgres", function () {
+      it("constructs an `update from` query", function () {
+        testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).from('accounts').where('id', '=', 1), {
+          postgres: {
+            sql: 'update "users" set "email" = ?, "name" = ? from "accounts" where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+
+      it("allows aliasing `from`", function () {
+        testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).from({ myAccounts: 'accounts' }).where('id', '=', 1), {
+          postgres: {
+            sql: 'update "users" set "email" = ?, "name" = ? from "accounts" as "myAccounts" where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+
+      it("allows `from` with a subquery", function () {
+        testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).from({ accounts: qb().from('accounts') }).where('id', '=', 1), {
+          postgres: {
+            sql: 'update "users" set "email" = ?, "name" = ? from (select * from "accounts") as "accounts" where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+
+      it("allows `from values`", function () {
+        const query = qb()
+          .table('users')
+          .update({ email: raw('??', ['accounts.email']), name: raw('??', ['accounts.name']) })
+          .from(raw(`(values (?, ?, ?)) as ??(??, ??, ??)`, [1, 'foo', 'bar', 'accounts', 'id', 'email', 'name']))
+          .where('users.id', '=', raw('??', ['accounts.id']));
+
+        testsql(query, {
+          postgres: {
+            sql: 'update "users" set "email" = "accounts"."email", "name" = "accounts"."name" from (values (?, ?, ?)) as "accounts"("id", "email", "name") where "users"."id" = "accounts"."id"',
+            bindings: [1, 'foo', 'bar']
+          }
+        });
+      });
+
+      it("constructs the correct query when `table` is set after `from`", function () {
+        testsql(qb().from('accounts').table('users').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+          postgres: {
+            sql: 'update "users" set "email" = ?, "name" = ? from "accounts" where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+    });
+
+    describe("for other dialects", function () {
+      it("`from` overwrites the table-name set with `table`", function () {
+        testsql(qb().table('users').from('accounts').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+          mysql: {
+            sql: 'update `accounts` set `email` = ?, `name` = ? where `id` = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+          mssql: {
+            sql: 'update [accounts] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+            bindings: ['foo', 'bar', 1]
+          },
+          redshift: {
+            sql: 'update "accounts" set "email" = ?, "name" = ? where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+
+      it("`table` overwrites the table-name set with `from`", function () {
+        testsql(qb().from('users').table('accounts').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+          mysql: {
+            sql: 'update `accounts` set `email` = ?, `name` = ? where `id` = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+          mssql: {
+            sql: 'update [accounts] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+            bindings: ['foo', 'bar', 1]
+          },
+          redshift: {
+            sql: 'update "accounts" set "email" = ?, "name" = ? where "id" = ?',
+            bindings: ['foo', 'bar', 1]
+          },
+        });
+      });
+    });
+  });
+
+  it("update method with `from`", function () {
+    testsql(qb().from('users').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+      mysql: {
+        sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      mssql: {
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+        bindings: ['foo', 'bar', 1]
+      },
+      postgres: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      redshift: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+    });
+  });
+
+  it("update method with `table`", function () {
+    testsql(qb().table('users').update({ email: 'foo', name: 'bar' }).where('id', '=', 1), {
+      mysql: {
+        sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      mssql: {
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+        bindings: ['foo', 'bar', 1]
+      },
+      postgres: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+      redshift: {
+        sql: 'update "users" set "email" = ?, "name" = ? where "id" = ?',
+        bindings: ['foo', 'bar', 1]
+      },
+    });
+  });
+
   // TODO:
   // it("update method with joins on postgres", function() {
   //   chain = qb().from('users').join('orders', 'users.id', '=', 'orders.user_id').where('users.id', '=', 1).update({email: 'foo', name: 'bar'}).toSQL();
@@ -4231,7 +4364,7 @@ describe("QueryBuilder", function() {
   //       bindings: ['baz']
   //     },
   //     postgres: {
-  //       sql: 'select * from "foo" where "bar" = ? for update', 
+  //       sql: 'select * from "foo" where "bar" = ? for update',
   //       bindings: ['baz']
   //     },
   //     redshift: {
@@ -4251,7 +4384,7 @@ describe("QueryBuilder", function() {
   //       bindings: ['baz']
   //     },
   //     postgres: {
-  //       sql: 'select * from "foo" where "bar" = ?', 
+  //       sql: 'select * from "foo" where "bar" = ?',
   //       bindings: ['baz']
   //     },
   //     redshift: {
@@ -4268,7 +4401,7 @@ describe("QueryBuilder", function() {
   //       bindings: ['baz']
   //     },
   //     postgres: {
-  //       sql: "select * from \"foo\" where \"bar\" = ? for share", 
+  //       sql: "select * from \"foo\" where \"bar\" = ? for share",
   //       bindings: ['baz']
   //     },
   //     redshift: {
@@ -4280,7 +4413,7 @@ describe("QueryBuilder", function() {
   //       bindings: ['baz']
   //     },
   //     postgres: {
-  //       sql: 'select * from "foo" where "bar" = ?', 
+  //       sql: 'select * from "foo" where "bar" = ?',
   //       bindings: ['baz']
   //     },
   //     redshift: {

@@ -181,6 +181,39 @@ module.exports = function(knex) {
 
     });
 
+    it('should allow `update from` for updates in postgresql', function () {
+      if (knex.client.driverName !== 'postgresql') {
+        return this.skip();
+      }
+
+      const query = knex('accounts')
+        .update({
+          first_name: knex.raw('??', ['a.first_name']),
+          last_name: knex.raw('??', ['a.last_name'])
+        })
+        .from(knex.raw(`(values (?, ?, ?)) as ??(??, ??, ??)`, ['test100@example.com', 'UpdatedFromValuesUser', 'UpdatedFromValuesTest', 'a', 'email', 'first_name', 'last_name']))
+        .where(knex.raw('?? = ??', ['accounts.email', 'a.email']))
+        .returning('*');
+
+      return query.testSql(function (tester) {
+        tester(
+          'postgresql',
+          'update "accounts" set "first_name" = "a"."first_name", "last_name" = "a"."last_name" from (values (?, ?, ?)) as "a"("email", "first_name", "last_name") where "accounts"."email" = "a"."email" returning *',
+          ['test100@example.com', 'UpdatedFromValuesUser', 'UpdatedFromValuesTest'],
+          [{
+            id: '1',
+            first_name: 'UpdatedFromValuesUser',
+            last_name: 'UpdatedFromValuesTest',
+            email: 'test100@example.com',
+            logins: 1,
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            created_at: d,
+            updated_at: d,
+            phone: null
+          }]
+        );
+      });
+    });
   });
 
 };

@@ -43,6 +43,7 @@ assign(QueryCompiler_PG.prototype, {
       sql: this.with() +
       `update ${this.single.only ? 'only ' : ''}${this.tableName} ` +
       `set ${updateData.join(', ')}` +
+      this._from() +
       (wheres ? ` ${wheres}` : '') +
       this._returning(returning),
       returning
@@ -61,6 +62,17 @@ assign(QueryCompiler_PG.prototype, {
 
   aggregate(stmt) {
     return this._aggregate(stmt, { distinctParentheses: true });
+  },
+
+  _from() {
+    const { from, table } = this.single;
+    if (!from) {
+      return '';
+    }
+    if (from && !table) { // ignore `from` when `table` is not set
+      return '';
+    }
+    return ` from ${this.formatter.wrap(from)}`;
   },
 
   _returning(value) {
