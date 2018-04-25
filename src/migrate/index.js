@@ -166,6 +166,7 @@ export default class Migrator {
 
   _createMigrationLockTable(tableName, trx = this.knex) {
     return getSchemaBuilder(trx, this.config.schemaName).createTable(tableName, function(t) {
+      t.increments('index').primary();
       t.integer('is_locked');
     });
   }
