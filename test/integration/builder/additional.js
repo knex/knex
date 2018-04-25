@@ -710,6 +710,34 @@ module.exports = function(knex) {
       return builder;
     });
 
+    describe('async stack traces', function () {
+      before(() => {
+        knex.client.config.asyncStackTraces = true
+      })
+      after(() => {
+        delete knex.client.config.asyncStackTraces
+      })
+      it('should capture stack trace on query builder instantiation', () => {
+        return knex('some_nonexisten_table')
+        .select().catch((err) => {
+          expect(err.stack.split('\n')[1]).to.match(/at Function\.queryBuilder \(/) // the index 1 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string')
+        })
+      })
+      it('should capture stack trace on raw query', () => {
+        return knex.raw('select * from some_nonexisten_table').catch((err) => {
+          expect(err.stack.split('\n')[2]).to.match(/at Function\.raw \(/)  // the index 2 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string')
+        })
+      })
+      it('should capture stack trace on schema builder', () => {
+        return knex.schema.renameTable('some_nonexisten_table', 'whatever').catch((err) => {
+          expect(err.stack.split('\n')[1]).to.match(/client\.schemaBuilder/)  // the index 1 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string')
+        })
+      })
+    })
+
   });
 
 };
