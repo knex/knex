@@ -5,6 +5,8 @@ sudo: required
 
 matrix:
   include:
+  - node_js: "10"
+    env: TEST_ORACLEDB=true DB="maria mysql mysql2 postgres sqlite3 oracledb" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib  
   - node_js: "8"
     env: TEST_ORACLEDB=true DB="maria mysql mysql2 postgres sqlite3 oracledb" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
   - node_js: "6"
