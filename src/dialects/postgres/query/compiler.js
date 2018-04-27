@@ -59,6 +59,10 @@ assign(QueryCompiler_PG.prototype, {
     };
   },
 
+  aggregate(stmt) {
+    return this._aggregate(stmt, { distinctParentheses: true });
+  },
+
   _returning(value) {
     return value ? ` returning ${this.formatter.columnize(value)}` : '';
   },
@@ -92,7 +96,7 @@ assign(QueryCompiler_PG.prototype, {
       sql += ' and table_schema = ?';
       bindings.push(schema);
     } else {
-      sql += ' and table_schema = current_schema';
+      sql += ' and table_schema = current_schema()';
     }
 
     return {

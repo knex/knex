@@ -100,13 +100,13 @@ module.exports = function(knex) {
 
       it('should work using camelCased table name', () => {
         return knex('testTableTwo').columnInfo().then(res => {
-          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+          expect(Object.keys(res)).to.have.all.members(['id', 'accountId', 'details', 'status', 'jsonData']);
         });
       });
 
       it('should work using snake_cased table name', () => {
         return knex('test_table_two').columnInfo().then(res => {
-          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+          expect(Object.keys(res)).to.have.all.members(['id', 'accountId', 'details', 'status', 'jsonData']);
         });
       });
 
@@ -159,6 +159,7 @@ module.exports = function(knex) {
         .testSql(function(tester) {
           tester('mysql', 'truncate `test_table_two`');
           tester('postgresql', 'truncate "test_table_two" restart identity');
+          tester('pg-redshift', 'truncate "test_table_two"');
           tester('sqlite3', "delete from `test_table_two`");
           tester('oracle', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
@@ -174,18 +175,19 @@ module.exports = function(knex) {
           // Insert new data after truncate and make sure ids restart at 1.
           // This doesn't currently work on oracle, where the created sequence
           // needs to be manually reset.
-          if (knex.client.dialect !== 'oracle') {
-            return knex('test_table_two').insert({ status: 1 })
-              .then(res => {
-                return knex('test_table_two')
-                  .select('id')
-                  .first()
-                  .then(res => {
-                    expect(res).to.be.an('object')
-                    expect(res.id).to.equal(1);
-                  });
-              });
-          }
+          // On redshift, one would need to create an entirely new table and do
+          //  `insert into ... (select ...); alter table rename...`
+          if (/oracle/i.test(knex.client.dialect) || /redshift/i.test(knex.client.dialect)) { return; }
+          return knex('test_table_two').insert({ status: 1 })
+            .then(res => {
+              return knex('test_table_two')
+                .select('id')
+                .first()
+                .then(res => {
+                  expect(res).to.be.an('object')
+                  expect(res.id).to.equal(1);
+                });
+            });
         });
     });
 
@@ -195,6 +197,7 @@ module.exports = function(knex) {
         mysql2: 'SHOW TABLES',
         mariadb: 'SHOW TABLES',
         postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+        redshift: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';",
         oracle: "select TABLE_NAME from USER_TABLES",
         mssql: "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'"
@@ -244,6 +247,21 @@ module.exports = function(knex) {
             "maxLength": null,
             "nullable": false,
             "type": "uuid"
+          }
+        });
+        tester('pg-redshift', 'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
+        null, {
+          "enum_value": {
+            "defaultValue": null,
+            "maxLength": 255,
+            "nullable": true,
+            "type": "character varying"
+          },
+          "uuid": {
+            "defaultValue": null,
+            "maxLength": 36,
+            "nullable": false,
+            "type": "character"
           }
         });
         tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
@@ -312,6 +330,13 @@ module.exports = function(knex) {
           "maxLength": null,
           "nullable": false,
           "type": "uuid"
+        });
+        tester('pg-redshift', 'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
+        null, {
+          "defaultValue": null,
+          "maxLength": 36,
+          "nullable": false,
+          "type": "character"
         });
         tester('sqlite3', 'PRAGMA table_info(\`datatype_test\`)', [], {
           "defaultValue": null,
@@ -386,6 +411,7 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["show fields from `accounts` where field = ?"]);
           tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
+          tester('pg-redshift', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
           tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
@@ -423,6 +449,7 @@ module.exports = function(knex) {
         }).testSql(function(tester) {
           tester('mysql', ["alter table `accounts` drop `first_name`"]);
           tester('postgresql', ['alter table "accounts" drop column "first_name"']);
+          tester('pg-redshift', ['alter table "accounts" drop column "first_name"']);
           tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ['alter table "accounts" drop ("first_name")']);
           //tester('oracledb', ['alter table "accounts" drop ("first_name")']);
@@ -443,6 +470,7 @@ module.exports = function(knex) {
     it('.timeout() should throw TimeoutError', function() {
       var dialect = knex.client.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+      if (/redshift/.test(dialect)) { return; }
       var testQueries = {
         'postgresql': function() {
           return knex.raw('SELECT pg_sleep(1)');
@@ -487,6 +515,7 @@ module.exports = function(knex) {
     it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
       var dialect = knex.client.dialect;
       if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+      if (/redshift/.test(dialect)) { return; }
 
       // There's unexpected behavior caused by knex releasing a connection back
       // to the pool because of a timeout when a long query is still running.
@@ -634,6 +663,80 @@ module.exports = function(knex) {
           expect(queryCount).to.equal(2);
         })
     });
+
+    it('Event: start', function() {
+      // On redshift, cannot set an identity column to a value
+      if (/redshift/i.test(knex.client.dialect)) { return; }
+      return knex('accounts')
+        .insert({id: '999', last_name: 'Start'})
+        .then(function() {
+          var queryBuilder = knex('accounts').select();
+
+          queryBuilder.on('start', function(builder) {
+            //Alter builder prior to compilation
+            //Select only one row
+            builder
+              .where('id', '999')
+              .first();
+          });
+
+          return queryBuilder
+        })
+        .then(function(row) {
+          expect(row).to.exist;
+          expect(String(row.id)).to.equal('999');
+          expect(row.last_name).to.equal('Start');
+        });
+    });
+
+    it('Event \'query\' should not emit native sql string', function() {
+      var builder = knex('accounts')
+        .where('id', 1)
+        .select();
+
+      builder
+        .on('query', function(obj) {
+          var native = builder.toSQL().toNative().sql;
+          var sql = builder.toSQL().sql;
+
+          //Only assert if they diff to begin with.
+          //IE Maria does not diff
+          if(native !== sql) {
+            expect(obj.sql).to.not.equal(builder.toSQL().toNative().sql);
+            expect(obj.sql).to.equal(builder.toSQL().sql);
+          }
+        });
+
+      return builder;
+    });
+
+    describe('async stack traces', function () {
+      before(() => {
+        knex.client.config.asyncStackTraces = true
+      })
+      after(() => {
+        delete knex.client.config.asyncStackTraces
+      })
+      it('should capture stack trace on query builder instantiation', () => {
+        return knex('some_nonexisten_table')
+        .select().catch((err) => {
+          expect(err.stack.split('\n')[1]).to.match(/at Function\.queryBuilder \(/) // the index 1 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string')
+        })
+      })
+      it('should capture stack trace on raw query', () => {
+        return knex.raw('select * from some_nonexisten_table').catch((err) => {
+          expect(err.stack.split('\n')[2]).to.match(/at Function\.raw \(/)  // the index 2 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string')
+        })
+      })
+      it('should capture stack trace on schema builder', () => {
+        return knex.schema.renameTable('some_nonexisten_table', 'whatever').catch((err) => {
+          expect(err.stack.split('\n')[1]).to.match(/client\.schemaBuilder/)  // the index 1 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string')
+        })
+      })
+    })
 
   });
 

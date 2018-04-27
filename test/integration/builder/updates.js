@@ -27,6 +27,12 @@ module.exports = function(knex) {
             1
           );
           tester(
+            'pg-redshift',
+            'update "accounts" set "first_name" = ?, "last_name" = ?, "email" = ? where "id" = ?',
+            ['User','Test','test100@example.com',1],
+            1
+          );
+          tester(
             'sqlite3',
             'update `accounts` set `first_name` = ?, `last_name` = ?, `email` = ? where `id` = ?',
             ['User','Test','test100@example.com',1],
@@ -136,6 +142,12 @@ module.exports = function(knex) {
             updated_at: d,
             phone: null
           }]
+        );
+        tester(
+          'pg-redshift',
+          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+          ['test100@example.com','UpdatedUser','UpdatedTest',1],
+          1
         );
         tester(
           'sqlite3',

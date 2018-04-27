@@ -4,7 +4,10 @@ raw
 .idea
 .DS_Store
 .vagrant
+*.sublime-project
+*.sublime-workspace
 node_modules
+package-lock.json
 test.sqlite3
 npm-debug.log
 tmp

@@ -9,13 +9,55 @@ var sinon = require('sinon')
 
 module.exports = function(knex) {
 
+  // Certain dialects do not have proper insert with returning, so if this is true
+  // then pick an id to use as the "foreign key" just for testing transactions.
+  const constid = (/redshift/.test(knex.client.dialect));
+  let fkid = 1;
+
   describe('Transactions', function() {
 
+    
     it('can run with asCallback', function(ok) {
       knex.transaction(function(t) {
         t.commit();
       })
       .asCallback(ok)
+    });
+    
+    it('should throw when undefined transaction is sent to transacting', function() {
+      return knex.transaction(function(t) {
+        knex('accounts')
+          .transacting(undefined)
+      })
+      .catch(
+        function handle(error) {
+          expect(error.message).to.equal('Invalid transacting value (null, undefined or empty object)')
+        }
+      )
+    });
+    
+    it('should throw when null transaction is sent to transacting', function() {
+      return knex.transaction(function(t) {
+        knex('accounts')
+          .transacting(null)
+      })
+      .catch(
+        function handle(error) {
+          expect(error.message).to.equal('Invalid transacting value (null, undefined or empty object)')
+        }
+      )
+    });
+    
+    it('should throw when empty object transaction is sent to transacting', function() {
+      return knex.transaction(function(t) {
+        knex('accounts')
+          .transacting({})
+      })
+      .catch(
+        function handle(error) {
+          expect(error.message).to.equal('Invalid transacting value (null, undefined or empty object)')
+        }
+      )
     });
 
     it('should be able to commit transactions', function() {
@@ -35,7 +77,7 @@ module.exports = function(knex) {
             updated_at: new Date()
           }).then(function(resp) {
             return knex('test_table_two').transacting(t).insert({
-              account_id: (id = resp[0]),
+              account_id: (constid ? ++fkid : id = resp[0]),
               details: '',
               status: 1
             });
@@ -47,7 +89,9 @@ module.exports = function(knex) {
         expect(commitMessage).to.equal('Hello world');
         return knex('accounts').where('id', id).select('first_name');
       }).then(function(resp) {
-        expect(resp).to.have.length(1);
+        if (!constid){
+          expect(resp).to.have.length(1);
+        }
       });
     });
 
@@ -68,7 +112,7 @@ module.exports = function(knex) {
             updated_at: new Date()
           }).then(function(resp) {
             return knex('test_table_two').transacting(t).insert({
-              account_id: (id = resp[0]),
+              account_id: (constid ? ++fkid : id = resp[0]),
               details: '',
               status: 1
             });
@@ -99,7 +143,7 @@ module.exports = function(knex) {
             updated_at: new Date()
           }).then(function(resp) {
             return trx('test_table_two').insert({
-              account_id: (id = resp[0]),
+              account_id: (constid ? ++fkid : id = resp[0]),
               details: '',
               status: 1
             });
@@ -110,7 +154,9 @@ module.exports = function(knex) {
         expect(commitMessage).to.equal('Hello World');
         return knex('accounts').where('id', id).select('first_name');
       }).then(function(resp) {
-        expect(resp).to.have.length(1);
+        if (!constid){
+          expect(resp).to.have.length(1);
+        }
       });
     });
 
@@ -132,7 +178,7 @@ module.exports = function(knex) {
           })
           .then(function(resp) {
             return trx.insert({
-              account_id: (id = resp[0]),
+              account_id: (constid ? ++fkid : id = resp[0]),
               details: '',
               status: 1
             }).into('test_table_two');
@@ -208,7 +254,7 @@ module.exports = function(knex) {
               updated_at: new Date()
             }).then(function(resp) {
               return trx('test_table_two').insert({
-                account_id: (id = resp[0]),
+                account_id: (constid ? ++fkid : id = resp[0]),
                 details: '',
                 status: 1
               });
@@ -234,7 +280,9 @@ module.exports = function(knex) {
           }
           return knex('accounts').where('id', id).select('first_name');
         }).then(function(resp) {
-          expect(resp).to.have.length(1);
+          if (!constid){
+            expect(resp).to.have.length(1);
+          }
         }).finally(function() {
           return knex.schema.dropTableIfExists('test_schema_transactions');
         });
@@ -251,6 +299,7 @@ module.exports = function(knex) {
     });
 
     it('should allow for nested transactions', function() {
+      if(/redshift/i.test(knex.client.dialect)) { return Promise.resolve() }
       return knex.transaction(function(trx) {
         return trx.select('*').from('accounts').then(function() {
           return trx.transaction(function() {
@@ -275,9 +324,8 @@ module.exports = function(knex) {
       return knex.transaction(function(trx) {
         trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
       })
-        .then(expectQueryEventToHaveBeenTriggered)
-        .catch(expectQueryEventToHaveBeenTriggered);
-
+      .then(expectQueryEventToHaveBeenTriggered)
+      .catch(expectQueryEventToHaveBeenTriggered);
     });
 
     it('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function() {
@@ -316,15 +364,15 @@ module.exports = function(knex) {
     });
 
     it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', function() {
-      var db = Knex({
-        client: knex.client.driverName,
-        pool: {
-          min: 0,
-          max: 1
-        },
-        connection: knex.client.connectionSettings,
-        acquireConnectionTimeout: 300
-      })
+      const knexConfig = _.clone(knex.client.config);
+      knexConfig.pool = {
+        min: 0,
+        max: 1,
+      };
+      knexConfig.acquireConnectionTimeout = 300;
+
+      const db = new Knex(knexConfig);
+
       return db.transaction(function() {
         return db.transaction(function() {})
       }).then(function () {
@@ -457,6 +505,24 @@ module.exports = function(knex) {
         restoreWrapIdentifier();
         throw e;
       });
+    });
+
+    it('connection should contain __knexTxId which is also exposed in query event', function() {
+      return knex.transaction(function(trx) {
+        var builder = trx
+          .select()
+          .from('accounts');
+
+        trx.on('query', function(obj) {
+          expect(typeof obj.__knexTxId).to.equal(typeof '');
+        });
+
+        builder.on('query', function(obj) {
+          expect(typeof obj.__knexTxId).to.equal(typeof '');
+        });
+
+        return builder
+      })
     });
   });
 };

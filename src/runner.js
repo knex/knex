@@ -121,7 +121,10 @@ assign(Runner.prototype, {
   // to run in sequence, and on the same connection, especially helpful when schema building
   // and dealing with foreign key constraints, etc.
   query: Promise.method(function(obj) {
-    this.builder.emit('query', assign({__knexUid: this.connection.__knexUid}, obj))
+    const {__knexUid, __knexTxId} = this.connection;
+
+    this.builder.emit('query', assign({__knexUid, __knexTxId}, obj))
+
     const runner = this
     let queryPromise = this.client.query(this.connection, obj)
 
@@ -158,11 +161,22 @@ assign(Runner.prototype, {
         if (obj.cancelOnTimeout) {
           cancelQuery = this.client.cancelQuery(this.connection);
         } else {
+          // If we don't cancel the query, we need to mark the connection as disposed so that
+          // it gets destroyed by the pool and is never used again. If we don't do this and
+          // return the connection to the pool, it will be useless until the current operation
+          // that timed out, finally finishes.
+          this.connection.__knex__disposed = error
           cancelQuery = Promise.resolve();
         }
 
         return cancelQuery
           .catch((cancelError) => {
+            // If the cancellation failed, we need to mark the connection as disposed so that
+            // it gets destroyed by the pool and is never used again. If we don't do this and
+            // return the connection to the pool, it will be useless until the current operation
+            // that timed out, finally finishes.
+            this.connection.__knex__disposed = error
+
             // cancellation failed
             throw assign(cancelError, {
               message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,

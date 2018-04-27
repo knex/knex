@@ -1,6 +1,6 @@
 
 import * as helpers from './helpers';
-import { isArray, map, clone, each } from 'lodash'
+import { isEmpty, isArray, map, clone, each } from 'lodash'
 
 export default function(Target) {
 
@@ -14,7 +14,19 @@ export default function(Target) {
 
   // Create a new instance of the `Runner`, passing in the current object.
   Target.prototype.then = function(/* onFulfilled, onRejected */) {
-    const result = this.client.runner(this).run()
+    let result = this.client.runner(this).run()
+
+    if (this.client.config.asyncStackTraces) {
+      result = result.catch((err) => {
+        err.originalStack = err.stack
+        const firstLine = err.stack.split('\n')[0]
+        this._asyncStack.unshift(firstLine)
+        // put the fake more helpful "async" stack on the thrown error
+        err.stack = this._asyncStack.join('\n')
+        throw err
+      })
+    }
+
     return result.then.apply(result, arguments);
   };
 
@@ -46,6 +58,10 @@ export default function(Target) {
       } else {
         this.client = t.client
       }
+    }
+    if (isEmpty(t)) {
+      helpers.error('Invalid value on transacting call, potential bug')
+      throw Error('Invalid transacting value (null, undefined or empty object)')
     }
     return this;
   };

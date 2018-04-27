@@ -32,6 +32,12 @@ module.exports = function(knex) {
             ['1', '2', '3', '4', '5', '7']
           );
           tester(
+            'pg-redshift',
+            'select "id" from "accounts" order by "id" asc',
+            [],
+            ['1', '2', '3', '4', '5', '6']
+          );
+          tester(
             'sqlite3',
             'select `id` from `accounts` order by `id` asc',
             [],
@@ -66,6 +72,12 @@ module.exports = function(knex) {
             'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
             ['1', '2', '3', '4', '5', '7']
+          );
+          tester(
+            'pg-redshift',
+            'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
+            [],
+            ['1', '2', '3', '4', '5', '6']
           );
           tester(
             'sqlite3',
@@ -104,6 +116,12 @@ module.exports = function(knex) {
             ['3', '4', '5', '7']
           );
           tester(
+            'pg-redshift',
+            'select "id" from "accounts" order by "id" asc offset ?',
+            [2],
+            ['3', '4', '5', '6']
+          );
+          tester(
             'sqlite3',
             'select `id` from `accounts` order by `id` asc limit ? offset ?',
             [-1, 2],
@@ -140,6 +158,12 @@ module.exports = function(knex) {
             { id: '1', first_name: 'Test' }
           );
           tester(
+            'pg-redshift',
+            'select "id", "first_name" from "accounts" order by "id" asc limit ?',
+            [1],
+            { id: '1', first_name: 'Test' }
+          );
+          tester(
             'sqlite3',
             'select `id`, `first_name` from `accounts` order by `id` asc limit ?',
             [1],
@@ -161,7 +185,7 @@ module.exports = function(knex) {
     });
 
     it('allows you to stream', function() {
-      var count = 0;
+      let count = 0;
       return knex('accounts').stream(function(rowStream) {
         rowStream.on('data', function() {
           count++;
@@ -172,8 +196,8 @@ module.exports = function(knex) {
     });
 
     it('returns a stream if not passed a function', function(done) {
-      var count = 0;
-      var stream = knex('accounts').stream();
+      let count = 0;
+      const stream = knex('accounts').stream();
       stream.on('data', function() {
         count++;
         if (count === 6) done();
@@ -243,7 +267,7 @@ module.exports = function(knex) {
     });
 
     it('properly escapes postgres queries on streaming', function() {
-      var count = 0;
+      let count = 0;
       return knex('accounts').where('id', 1).stream(function(rowStream) {
         rowStream.on('data', function() {
           count++;
@@ -255,13 +279,13 @@ module.exports = function(knex) {
 
     it('throws errors on the asCallback if uncaught in the last block', function(ok) {
 
-      var listeners = process.listeners('uncaughtException');
+      const listeners = process.listeners('uncaughtException');
 
       process.removeAllListeners('uncaughtException');
 
       process.on('uncaughtException', function() {
         process.removeAllListeners('uncaughtException');
-        for (var i = 0, l = listeners.length; i < l; i++) {
+        for (let i = 0, l = listeners.length; i < l; i++) {
           process.on('uncaughtException', listeners[i]);
         }
         ok();
@@ -311,6 +335,15 @@ module.exports = function(knex) {
             );
             tester(
               'postgresql',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
+            );
+            tester(
+              'pg-redshift',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
               [1],
               [{
@@ -373,6 +406,15 @@ module.exports = function(knex) {
               }]
             );
             tester(
+              'pg-redshift',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1],
+              [{
+                first_name: 'Test',
+                last_name: 'User'
+              }]
+            );
+            tester(
               'sqlite3',
               'select `first_name`, `last_name` from `accounts` where `id` = ?',
               [1],
@@ -419,6 +461,11 @@ module.exports = function(knex) {
               [1]
             );
             tester(
+              'pg-redshift',
+              'select "email", "logins" from "accounts" where "id" > ?',
+              [1]
+            );
+            tester(
               'sqlite3',
               'select `email`, `logins` from `accounts` where `id` > ?',
               [1]
@@ -460,6 +507,22 @@ module.exports = function(knex) {
             );
             tester(
               'postgresql',
+              'select * from "accounts" where "id" = ?',
+              [1],
+              [{
+                id: '1',
+                first_name: "Test",
+                last_name: "User",
+                email: "test@example.com",
+                logins: 1,
+                about: "Lorem ipsum Dolore labore incididunt enim.",
+                created_at: d,
+                updated_at: d,
+                phone: null
+              }]
+            );
+            tester(
+              'pg-redshift',
               'select * from "accounts" where "id" = ?',
               [1],
               [{
@@ -544,6 +607,12 @@ module.exports = function(knex) {
               []
             );
             tester(
+              'pg-redshift',
+              'select "first_name", "email" from "accounts" where "id" is null',
+              [],
+              []
+            );
+            tester(
               'sqlite3',
               'select `first_name`, `email` from `accounts` where `id` is null',
               [],
@@ -579,6 +648,12 @@ module.exports = function(knex) {
             );
             tester(
               'postgresql',
+              'select * from "accounts" where "id" = ?',
+              [0],
+              []
+            );
+            tester(
+              'pg-redshift',
               'select * from "accounts" where "id" = ?',
               [0],
               []
@@ -647,24 +722,11 @@ module.exports = function(knex) {
       if (knex.client.dialect !== 'sqlite3' && knex.client.dialect !== 'mssql') {
         return knex('composite_key_test')
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
+          .orderBy('status', 'desc')
           .select()
           .testSql(function(tester) {
             tester('mysql',
-              'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?),(?, ?))',
-              [1,1,1,2],
-              [{
-                column_a: 1,
-                column_b: 1,
-                details: 'One, One, One',
-                status: 1
-              },{
-                column_a: 1,
-                column_b: 2,
-                details: 'One, Two, Zero',
-                status: 0
-            }]);
-            tester('postgresql',
-              'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?))',
+              'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?), (?, ?)) order by `status` desc',
               [1,1,1,2],
               [{
                 column_a: 1,
@@ -677,8 +739,39 @@ module.exports = function(knex) {
                 details: 'One, Two, Zero',
                 status: 0
               }]);
+            tester('postgresql',
+              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?),(?, ?)) order by "status" desc',
+              [1,1,1,2],
+              [{
+                column_a: 1,
+                column_b: 1,
+                details: 'One, One, One',
+                status: 1
+              },{
+                column_a: 1,
+                column_b: 2,
+                details: 'One, Two, Zero',
+                status: 0
+              }]);
+            tester('pg-redshift',
+              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
+              [1,1,1,2],
+              [
+                {
+                  column_a: 1,
+                  column_b: 1,
+                  details: 'One, One, One',
+                  status: 1
+                },
+                {
+                  column_a: 1,
+                  column_b: 2,
+                  details: 'One, Two, Zero',
+                  status: 0
+                },
+              ]); 
             tester('oracle',
-              'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?))',
+              'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?)) order by "status" desc',
               [1,1,1,2],
               [{
                 column_a: 1,
@@ -703,7 +796,7 @@ module.exports = function(knex) {
           .select()
           .testSql(function(tester) {
             tester('mysql',
-              'select * from `composite_key_test` where `status` = ? and (`column_a`, `column_b`) in ((?, ?),(?, ?))',
+              'select * from `composite_key_test` where `status` = ? and (`column_a`, `column_b`) in ((?, ?), (?, ?))',
               [1,1,1,1,2],
               [{
                 column_a: 1,
@@ -713,6 +806,15 @@ module.exports = function(knex) {
               }]);
             tester('postgresql',
               'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?),(?, ?))',
+              [1,1,1,1,2],
+              [{
+                column_a: 1,
+                column_b: 1,
+                details: 'One, One, One',
+                status: 1
+              }]);
+            tester('pg-redshift',
+              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
               [1,1,1,1,2],
               [{
                 column_a: 1,
@@ -792,10 +894,10 @@ module.exports = function(knex) {
     });
 
     it('Retains array bindings, #228', function() {
-      var raw  = knex.raw('select * from table t where t.id = ANY( ?::int[] )', [[1, 2, 3]]);
-      var raw2 = knex.raw('select "stored_procedure"(?, ?, ?)', [1, 2, ['a', 'b', 'c']]);
-      var expected1 = [[1, 2, 3]];
-      var expected2 = [1, 2, ['a', 'b', 'c']];
+      const raw  = knex.raw('select * from table t where t.id = ANY( ?::int[] )', [[1, 2, 3]]);
+      const raw2 = knex.raw('select "stored_procedure"(?, ?, ?)', [1, 2, ['a', 'b', 'c']]);
+      const expected1 = [[1, 2, 3]];
+      const expected2 = [1, 2, ['a', 'b', 'c']];
       expect(raw.toSQL().bindings).to.eql(knex.client.prepBindings(expected1));
       expect(raw2.toSQL().bindings).to.eql(knex.client.prepBindings(expected2));
       //Also expect raw's bindings to not have been modified by calling .toSQL() (preserving original bindings)
@@ -813,7 +915,7 @@ module.exports = function(knex) {
 
     it('properly escapes identifiers, #737', function() {
       if (knex.client.dialect === 'postgresql') {
-        var query = knex.select('id","name').from('test').toSQL();
+        const query = knex.select('id","name').from('test').toSQL();
         assert(query.sql === 'select "id"",""name" from "test"');
       }
     });

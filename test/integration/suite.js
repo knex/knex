@@ -12,10 +12,11 @@ module.exports = function(knex) {
 
     after(function() {
       return knex.destroy()
-    })
+    });
 
     require('./schema')(knex);
     require('./migrate')(knex);
+
     require('./seed')(knex);
     require('./builder/inserts')(knex);
     require('./builder/selects')(knex);
@@ -30,7 +31,7 @@ module.exports = function(knex) {
 
     describe('knex.destroy', function() {
       it('should allow destroying the pool with knex.destroy', function() {
-        var spy = sinon.spy(knex.client.pool, 'clear');
+        var spy = sinon.spy(knex.client.pool, 'destroy');
         return knex.destroy().then(function() {
           expect(spy).to.have.callCount(1);
           expect(knex.client.pool).to.equal(undefined);

@@ -188,16 +188,7 @@ assign(QueryCompiler_Oracle.prototype, {
   },
 
   aggregate(stmt) {
-    const val = stmt.value;
-    const splitOn = val.toLowerCase().indexOf(' as ');
-    const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
-    // Allows us to speciy an alias for the aggregate types.
-    if (splitOn !== -1) {
-      const col = val.slice(0, splitOn);
-      const alias = val.slice(splitOn + 4);
-      return stmt.method + '(' + distinct + this.formatter.wrap(col) + ') ' + this.formatter.wrap(alias);
-    }
-    return stmt.method + '(' + distinct + this.formatter.wrap(val) + ')';
+    return this._aggregate(stmt, { aliasSeparator: ' ' });
   },
 
   // for single commands only

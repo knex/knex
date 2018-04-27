@@ -1,11 +1,12 @@
 'use strict';
+/* eslint no-var: 0 */
 
 var assert     = require('assert')
 var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
 var _          = require('lodash');
 var Promise    = require('bluebird');
 
-// excluding oracle and mssql dialects from default integrations test
+// excluding redshift, oracle, and mssql dialects from default integrations test
 var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres sqlite3").match(/\w+/g);
 
 var pool = {
@@ -67,16 +68,6 @@ var testConfigs = {
     pool: mysqlPool,
     migrations: migrations,
     seeds: seeds,
-    docker: {
-      factory:   './mysql/index.js',
-      container: 'knex-test-mysql',
-      image:     'mysql:5.7',
-      database:  'mysql',
-      username:  'root',
-      password:  'root',
-      hostPort:  '49153',
-      client:    'mysql'
-    }
   },
 
   mysql2: {
@@ -89,16 +80,6 @@ var testConfigs = {
     pool: mysqlPool,
     migrations: migrations,
     seeds: seeds,
-    docker: {
-      factory:   './mysql/index.js',
-      container: 'knex-test-mysql2',
-      image:     'mysql:5.7',
-      database:  'mysql',
-      username:  'root',
-      password:  'root',
-      hostPort:  '49153',
-      client:    'mysql'
-    }
   },
 
   oracle: {
@@ -135,16 +116,21 @@ var testConfigs = {
     pool: pool,
     migrations: migrations,
     seeds: seeds,
-    docker: {
-      factory:   './postgres/index.js',
-      container: 'knex-test-postgres',
-      image:     'postgres:9.6',
-      database:  'postgres',
-      username:  'postgres',
-      password:  '',
-      hostPort:  '49152',
-      client:    'pg'
-    }
+  },
+
+  redshift: {
+    dialect: 'redshift',
+    connection: testConfig.redshift || {
+      adapter:  'postgresql',
+      database: 'knex_test',
+      user:     process.env.REDSHIFT_USER || 'postgres',
+      password: process.env.REDSHIFT_PASSWORD || '',
+      port:     '5439',
+      host:     process.env.REDSHIFT_HOST || '127.0.0.1',
+    },
+    pool: pool,
+    migrations: migrations,
+    seeds: seeds
   },
 
   sqlite3: {
@@ -160,9 +146,9 @@ var testConfigs = {
   mssql: {
     dialect: 'mssql',
     connection: testConfig.mssql || {
-      user: "knex_test",
-      password: "knex_test",
-      server: "127.0.0.1",
+      user: "sa",
+      password: "S0meVeryHardPassword",
+      server: "localhost",
       database: "knex_test"
     },
     pool: pool,

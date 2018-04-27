@@ -34,6 +34,7 @@ module.exports = function(knex) {
     var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
 
     describe('knex.migrate.status', function() {
+      this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
 
       beforeEach(function() {
         return knex.migrate.latest({directory: 'test/integration/migrate/test'});
@@ -89,14 +90,19 @@ module.exports = function(knex) {
             return knex.migrate.status({directory: 'test/integration/migrate/test'}).then(function(migrationLevel) {
               expect(migrationLevel).to.equal(3);
             })
-            .then(function() {
-              // Cleanup the added migrations
-              return knex('knex_migrations')
-                .where('id', migration1[0])
-                .orWhere('id', migration2[0])
-                .orWhere('id', migration3[0])
-                .del()
-            });
+              .then(function() {
+                // Cleanup the added migrations
+                if (/redshift/.test(knex.client.dialect)){
+                  return knex('knex_migrations')
+                    .where('name', 'like', '%foobar%')
+                    .del();
+                }
+                return knex('knex_migrations')
+                  .where('id', migration1[0])
+                  .orWhere('id', migration2[0])
+                  .orWhere('id', migration3[0])
+                  .del()
+              });
           });
       });
 
@@ -233,11 +239,11 @@ module.exports = function(knex) {
           knex.migrate.latest({directory: 'test/integration/migrate/test'}),
           knex.migrate.latest({directory: 'test/integration/migrate/test'})
         ])
-        .then(function () {
-          return knex('knex_migrations').select('*').then(function (data) {
-            expect(data.length).to.equal(2);
+          .then(function () {
+            return knex('knex_migrations').select('*').then(function (data) {
+              expect(data.length).to.equal(2);
+            });
           });
-        });
       });
     }
 
@@ -338,6 +344,49 @@ module.exports = function(knex) {
 
     });
 
-  });
+    if (knex.client.dialect === 'postgresql') {
+      describe('knex.migrate.latest with specific changelog schema', function () {
+        before(() => {
+          return knex.raw(`CREATE SCHEMA IF NOT EXISTS "testschema"`);
+        });
+        after(() => {
+          return knex.raw(`DROP SCHEMA "testschema" CASCADE`);
+        });
 
+        it('should create changelog in the correct schema without transactions', function (done) {
+          knex.migrate.latest({
+            directory: 'test/integration/migrate/test',
+            disableTransactions: true,
+            schemaName: 'testschema'
+          }).then(() => {
+            return knex('testschema.knex_migrations').select('*').then(function (data) {
+              expect(data.length).to.equal(2);
+              done();
+            });
+          });
+        });
+
+        it('should create changelog in the correct schema with transactions', function (done) {
+          knex.migrate.latest({
+            directory: 'test/integration/migrate/test',
+            disableTransactions: false,
+            schemaName: 'testschema'
+          }).then(() => {
+            return knex('testschema.knex_migrations').select('*').then(function (data) {
+              expect(data.length).to.equal(2);
+              done();
+            });
+          });
+        });
+
+        afterEach(function() {
+          return knex.migrate.rollback({
+            directory: 'test/integration/migrate/test',
+            disableTransactions: true,
+            schemaName: 'testschema'
+          });
+        });
+      });
+    }
+  });
 };

@@ -23,6 +23,7 @@ module.exports = {
     "import/parser": "babel-eslint"
   },
   "env": {
-    "node": true
+    "node": true,
+    "mocha": true
   }
 };

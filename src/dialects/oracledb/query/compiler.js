@@ -82,7 +82,7 @@ _.assign(Oracledb_Compiler.prototype, {
         // Build returning and into clauses
         _.each(outBinding[index], function(ret) {
           const columnName = ret.columnName || ret;
-          returningClause += '"' + columnName + '",';
+          returningClause += self.formatter.wrap(columnName) + ',';
           intoClause += ' ?,';
           outClause += ' out ?,';
 
@@ -156,7 +156,7 @@ _.assign(Oracledb_Compiler.prototype, {
     // Build returning and into clauses
     _.each(returningValues, function(ret) {
       const columnName = ret.columnName || ret;
-      returningClause += '"' + columnName + '",';
+      returningClause += self.formatter.wrap(columnName) + ',';
       intoClause += '?,';
 
       // Add Helpers to bindings
@@ -248,7 +248,7 @@ _.assign(Oracledb_Compiler.prototype, {
     _.each(outBinding, function(out) {
       _.each(out, function(ret) {
         const columnName = ret.columnName || ret;
-        returningClause += '"' + columnName + '",';
+        returningClause += self.formatter.wrap(columnName) + ',';
         intoClause += ' ?,';
 
         // Add Helpers to bindings
