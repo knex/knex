@@ -2,6 +2,7 @@ import Promise from 'bluebird';
 import * as helpers from './helpers';
 
 import Raw from './raw';
+import Ref from './ref';
 import Runner from './runner';
 import Formatter from './formatter';
 import Transaction from './transaction';
@@ -101,6 +102,10 @@ assign(Client.prototype, {
 
   raw() {
     return new Raw(this).set(...arguments)
+  },
+
+  ref() {
+    return new Ref(this, ...arguments)
   },
 
   _formatQuery(sql, bindings, timeZone) {
