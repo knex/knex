@@ -1,6 +1,8 @@
 
 # Master (Unreleased)
 
+- Drop support for Node.js 4 and 5
+
 # 0.14.6 - 12 Apr, 2018
 
 ### Bug fixes:
@@ -76,7 +78,6 @@
 - Update dependencies and fix ESLint warnings accordingly #2433
 - Disable oracledb tests from non LTS nodes #2407
 - Update dependencies #2422
-
 
 # 0.14.2 - 24 Nov, 2017
 
