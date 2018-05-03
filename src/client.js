@@ -320,15 +320,10 @@ assign(Client.prototype, {
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
-    let promise = null
 
-    if (this.pool) {
-      promise = this.pool.destroy()
-    } else {
-      promise = Promise.resolve()
-    }
+    const maybeDestroy = this.pool && this.pool.destroy()
 
-    return promise.then(() => {
+    return Promise.resolve(maybeDestroy).then(() => {
       this.pool = void 0
 
       if (typeof callback === 'function') {
