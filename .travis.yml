@@ -3,6 +3,9 @@ language: node_js
 dist: trusty
 sudo: required
 
+git:
+  depth: 5
+
 matrix:
   include:
   - node_js: "8"
