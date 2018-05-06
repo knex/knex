@@ -4,8 +4,8 @@ dist: trusty
 sudo: required
 
 cache:
- directories:
- - "node_modules"
+  directories:
+  - "node_modules"
 
 matrix:
   include:
