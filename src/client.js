@@ -143,6 +143,10 @@ assign(Client.prototype, {
 
     return this._query(connection, obj).catch((err) => {
       err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message
+      const {detail} = err
+      if (detail) {
+        err.message += '\nDetail: ' + detail
+      }
       this.emit('query-error', err, assign({__knexUid, __knexTxId}, obj))
       throw err
     })
