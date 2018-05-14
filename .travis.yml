@@ -3,6 +3,10 @@ language: node_js
 dist: trusty
 sudo: required
 
+cache:
+  directories:
+  - "node_modules"
+
 matrix:
   include:
   - node_js: "8"
