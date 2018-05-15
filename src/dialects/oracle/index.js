@@ -118,7 +118,7 @@ assign(Client_Oracle.prototype, {
   _stream(connection, obj, stream, options) {
     return new Promise(function (resolver, rejecter) {
       stream.on('error', (err) => {
-        if (isConnectionError(err)) {
+        if (this.isConnectionError(err)) {
           connection.__knex__disposed = err
         }
         rejecter(err)
@@ -144,7 +144,7 @@ assign(Client_Oracle.prototype, {
       obj.rowsAffected  = response.updateCount;
       return obj;
     }).catch(err => {
-      if (isConnectionError(err)) {
+      if (this.isConnectionError(err)) {
         connection.__knex__disposed = err
       }
       throw err
@@ -179,16 +179,22 @@ assign(Client_Oracle.prototype, {
       default:
         return response;
     }
+  },
+
+  // If the error is any of these, we'll assume we need to
+  // mark the connection as failed
+  isConnectionError(err) {
+    return [
+      'ORA-03114', // not connected to ORACLE
+      'ORA-03113', // end-of-file on communication channel
+      'ORA-03135', // connection lost contact
+      'ORA-12514', // listener does not currently know of service requested in connect descriptor
+      'NJS-040',
+      'NJS-024',
+      'NJS-003',
+      'NJS-024',
+    ].some(function(prefix) {
+      return err.message.indexOf(prefix) === 0;
+    });
   }
-
 })
-
-// If the error is any of these, we'll assume we need to
-// mark the connection as failed
-const connectionErrors = [
-  'ORA-12514', 'NJS-040', 'NJS-024', 'NJS-003', 'NJS-024'
-]
-
-function isConnectionError(err) {
-  return connectionErrors.some(prefix => err.message.indexOf(prefix) === 0)
-}
