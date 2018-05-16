@@ -135,7 +135,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
         if (options.resultSet) {
           connection.execute(sql, bindParams || [], options, function(err, result) {
             if (err) {
-              if (Client_Oracle.prototype.isConnectionError(err)) {
+              if (client.isConnectionError(err)) {
                 connection.__knex__disposed = err;
               }
               return cb(err);
@@ -145,7 +145,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
             const fetchRowsFromRS = function(connection, resultSet, numRows) {
               resultSet.getRows(numRows, function(err, rows) {
                 if (err) {
-                  if (Client_Oracle.prototype.isConnectionError(err)) {
+                  if (client.isConnectionError(err)) {
                     connection.__knex__disposed = err;
                   }
                   resultSet.close(function() {
