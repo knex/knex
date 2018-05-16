@@ -46,19 +46,19 @@ TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) 
     // alter columns
     for (const col  of colCompilers) {
       const quotedTableName = this.tableName();
-      const colName = col.getColumnName();
+      const colName = this.client.wrapIdentifier(col.getColumnName());
       const type = col.getColumnType();
 
       this.pushQuery({
-        sql: `alter table ${quotedTableName} alter column "${colName}" drop default`,
+        sql: `alter table ${quotedTableName} alter column ${colName} drop default`,
         bindings: []
       });
       this.pushQuery({
-        sql: `alter table ${quotedTableName} alter column "${colName}" drop not null`,
+        sql: `alter table ${quotedTableName} alter column ${colName} drop not null`,
         bindings: []
       });
       this.pushQuery({
-        sql: `alter table ${quotedTableName} alter column "${colName}" type ${type} using ("${colName}"::${type})`,
+        sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::${type})`,
         bindings: []
       });
 
@@ -66,7 +66,7 @@ TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) 
       if (defaultTo) {
         const modifier = col.defaultTo.apply(col, defaultTo);
         this.pushQuery({
-          sql: `alter table ${quotedTableName} alter column "${colName}" set ${modifier}`,
+          sql: `alter table ${quotedTableName} alter column ${colName} set ${modifier}`,
           bindings: []
         });
       }
@@ -74,7 +74,7 @@ TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) 
       const nullable = col.modified['nullable'];
       if (nullable && nullable[0] === false) {
         this.pushQuery({
-          sql: `alter table ${quotedTableName} alter column "${colName}" set not null`,
+          sql: `alter table ${quotedTableName} alter column ${colName} set not null`,
           bindings: []
         });
       }
