@@ -19,10 +19,13 @@ export default function parseConnectionString(str) {
   if (protocol.slice(-1) === ':') {
     protocol = protocol.slice(0, -1);
   }
+
+  const isPG = ['postgresql', 'postgres'].includes(protocol);
+
   return {
     client: protocol,
-    connection: protocol === 'postgres' ? parsePG(str) : connectionObject(parsed)
-  }
+    connection: isPG ? parsePG(str) : connectionObject(parsed)
+  };
 }
 
 function connectionObject(parsed) {
