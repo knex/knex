@@ -458,7 +458,7 @@ module.exports = function(knex) {
       }).then(function() {
         return knex.select('*').from('accounts').first();
       }).then(function(resp) {
-        expect(_.keys(resp).sort()).to.eql(["about", "created_at", "email", "id", "last_name", "logins", "phone", "updated_at"]);
+        expect(_.keys(resp).sort()).to.eql(["about", "balance", "created_at", "email", "id", "last_name", "logins", "phone", "updated_at"]);
       }).then(function() {
         return knex.count('*').from('accounts');
       }).then(function(resp) {

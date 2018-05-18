@@ -4101,6 +4101,90 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("increment method", function() {
+    testsql(qb().into('users').where('id', '=', 1).increment('balance', 10), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` + 10 where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'update [users] set [balance] = [balance] + 10 where [id] = ?;select @@rowcount',
+        bindings: [1]
+      },
+      postgres: {
+        sql: 'update "users" set "balance" = "balance" + 10 where "id" = ?',
+        bindings: [1]
+      },
+      redshift: {
+        sql: 'update "users" set "balance" = "balance" + 10 where "id" = ?',
+        bindings: [1]
+      },
+    });
+  });
+
+  it("increment method with floats", function() {
+    testsql(qb().into('users').where('id', '=', 1).increment('balance', 1.23), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` + 1.23 where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'update [users] set [balance] = [balance] + 1.23 where [id] = ?;select @@rowcount',
+        bindings: [1]
+      },
+      postgres: {
+        sql: 'update "users" set "balance" = "balance" + 1.23 where "id" = ?',
+        bindings: [1]
+      },
+      redshift: {
+        sql: 'update "users" set "balance" = "balance" + 1.23 where "id" = ?',
+        bindings: [1]
+      },
+    });
+  });
+
+  it("decrement method", function() {
+    testsql(qb().into('users').where('id', '=', 1).decrement('balance', 10), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` - 10 where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'update [users] set [balance] = [balance] - 10 where [id] = ?;select @@rowcount',
+        bindings: [1]
+      },
+      postgres: {
+        sql: 'update "users" set "balance" = "balance" - 10 where "id" = ?',
+        bindings: [1]
+      },
+      redshift: {
+        sql: 'update "users" set "balance" = "balance" - 10 where "id" = ?',
+        bindings: [1]
+      },
+    });
+  });
+
+  it("decrement method with floats", function() {
+    testsql(qb().into('users').where('id', '=', 1).decrement('balance', 1.23), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` - 1.23 where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'update [users] set [balance] = [balance] - 1.23 where [id] = ?;select @@rowcount',
+        bindings: [1]
+      },
+      postgres: {
+        sql: 'update "users" set "balance" = "balance" - 1.23 where "id" = ?',
+        bindings: [1]
+      },
+      redshift: {
+        sql: 'update "users" set "balance" = "balance" - 1.23 where "id" = ?',
+        bindings: [1]
+      },
+    });
+  });
+
   it("delete method", function() {
     testsql(qb().from('users').where('email', '=', 'foo').delete(), {
       mysql: {
