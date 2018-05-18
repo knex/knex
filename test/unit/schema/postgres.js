@@ -786,6 +786,19 @@ describe("PostgreSQL SchemaBuilder", function() {
       expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
+
+    it('TableCompiler calls wrapIdentifier when altering column', function () {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.queryContext('table context');
+          table.string('email').notNull().alter().queryContext('email alter context');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.thirdCall.args).to.deep.equal(['email', 'email alter context']);
+    })
   });
 
 });

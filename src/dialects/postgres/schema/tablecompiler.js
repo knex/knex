@@ -46,7 +46,7 @@ TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) 
     // alter columns
     for (const col  of colCompilers) {
       const quotedTableName = this.tableName();
-      const colName = this.client.wrapIdentifier(col.getColumnName());
+      const colName = this.client.wrapIdentifier(col.getColumnName(), col.columnBuilder.queryContext());
       const type = col.getColumnType();
 
       this.pushQuery({
