@@ -136,6 +136,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
           connection.execute(sql, bindParams || [], options, function(err, result) {
             if (err) {
               if (client.isConnectionError(err)) {
+                connection.close().catch(function(err) {});
                 connection.__knex__disposed = err;
               }
               return cb(err);
@@ -146,6 +147,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
               resultSet.getRows(numRows, function(err, rows) {
                 if (err) {
                   if (client.isConnectionError(err)) {
+                    connection.close().catch(function(err) {});
                     connection.__knex__disposed = err;
                   }
                   resultSet.close(function() {
