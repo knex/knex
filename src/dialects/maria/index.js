@@ -142,6 +142,8 @@ function parseType(value, type) {
       return new Date(value);
     case 'INTEGER':
       return parseInt(value, 10);
+    case 'FLOAT':
+      return parseFloat(value);
     default:
       return value;
   }
