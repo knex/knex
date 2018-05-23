@@ -21,6 +21,7 @@ export default class Transaction extends EventEmitter {
     const txid = this.txid = uniqueId('trx')
 
     this.client    = client
+    this.logger    = client.logger;
     this.outerTx   = outerTx
     this.trxClient = undefined;
     this._debug    = client.config && client.config.debug
