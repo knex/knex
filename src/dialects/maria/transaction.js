@@ -10,7 +10,7 @@ export default class Transaction_Maria extends Transaction {
     const t = this
     const q = this.trxClient.query(conn, sql)
       .catch(err => err.code === 1305, () => {
-        this.logger.warn(
+        this.trxClient.logger.warn(
           'Transaction was implicitly committed, do not mix transactions and ' +
           'DDL with MariaDB (#805)'
         );

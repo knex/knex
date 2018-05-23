@@ -16,7 +16,7 @@ assign(Transaction_MySQL2.prototype, {
     const t = this
     const q = this.trxClient.query(conn, sql)
       .catch(err => err.code === 'ER_SP_DOES_NOT_EXIST', function() {
-        this.logger.warn(
+        this.trxClient.logger.warn(
           'Transaction was implicitly committed, do not mix transactions and' +
           'DDL with MySQL (#805)'
         )
