@@ -754,6 +754,9 @@ module.exports = function(knex) {
         deprecate: assertCall.bind(null, 'test is deprecated, please use test2'),
       };
 
+      //Sqlite warning message
+      knexConfig.useNullAsDefault = true;
+
       var knexDb = new Knex(knexConfig);
 
       knexDb.client.logger.warn('test');
