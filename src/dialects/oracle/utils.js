@@ -1,7 +1,4 @@
-
-import * as helpers from '../../helpers';
-
-function generateCombinedName(postfix, name, subNames) {
+function generateCombinedName(logger, postfix, name, subNames) {
   const crypto = require('crypto');
   const limit = 30;
   if (!Array.isArray(subNames)) subNames = subNames ? [subNames] : [];
@@ -9,7 +6,7 @@ function generateCombinedName(postfix, name, subNames) {
   const subNamesPart = subNames.join('_');
   let result = `${table}_${subNamesPart.length ? subNamesPart + '_': ''}${postfix}`.toLowerCase();
   if (result.length > limit) {
-    helpers.warn(
+    logger.warn(
       `Automatically generated name "${result}" exceeds ${limit} character ` +
       `limit for Oracle. Using base64 encoded sha1 of that name instead.`
     );

@@ -173,7 +173,7 @@ TableCompiler.prototype.alterTable = function () {
     if (this[statement.method]) {
       this[statement.method].apply(this, statement.args);
     } else {
-      helpers.error(`Debug: ${statement.method} does not exist`);
+      this.client.logger.error(`Debug: ${statement.method} does not exist`);
     }
   }
   for (const item in this.single) {
@@ -197,7 +197,7 @@ TableCompiler.prototype.alterTableForCreate = function (columnTypes) {
       this[statement.method].apply(this, statement.args);
       columnTypes.sql.push(this.sequence[0].sql);
     } else {
-      helpers.error(`Debug: ${statement.method} does not exist`);
+      this.client.logger.error(`Debug: ${statement.method} does not exist`);
     }
   }
   this.sequence = savedSequence;

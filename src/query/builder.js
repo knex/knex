@@ -709,7 +709,7 @@ assign(Builder.prototype, {
   limit(value) {
     const val = parseInt(value, 10)
     if (isNaN(val)) {
-      helpers.warn('A valid integer must be provided to limit')
+      this.client.logger.warn('A valid integer must be provided to limit')
     } else {
       this._single.limit = val;
     }
@@ -848,7 +848,7 @@ assign(Builder.prototype, {
     } else {
       const keys = Object.keys(values);
       if (this._single.update) {
-        helpers.warn('Update called multiple times with objects.')
+        this.client.logger.warn('Update called multiple times with objects.')
       }
       let i = -1;
       while (++i < keys.length) {
@@ -910,7 +910,7 @@ assign(Builder.prototype, {
   fromJS(obj) {
     each(obj, (val, key) => {
       if (typeof this[key] !== 'function') {
-        helpers.warn(`Knex Error: unknown key ${key}`)
+        this.client.logger.warn(`Knex Error: unknown key ${key}`)
       }
       if (Array.isArray(val)) {
         this[key].apply(this, val)

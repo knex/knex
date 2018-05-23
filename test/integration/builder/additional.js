@@ -738,6 +738,32 @@ module.exports = function(knex) {
       })
     })
 
+    it('Overwrite knex.logger functions using config', () => {
+      var knexConfig = _.clone(knex.client.config);
+
+      var callCount = 0;
+      var assertCall = function(expectedMessage, message) {
+        expect(message).to.equal(expectedMessage);
+        callCount++;
+      };
+
+      knexConfig.log = {
+        warn: assertCall.bind(null, 'test'),
+        error: assertCall.bind(null, 'test'),
+        debug: assertCall.bind(null, 'test'),
+        deprecate: assertCall.bind(null, 'test is deprecated, please use test2'),
+      };
+
+      var knexDb = new Knex(knexConfig);
+
+      knexDb.client.logger.warn('test');
+      knexDb.client.logger.error('test');
+      knexDb.client.logger.debug('test');
+      knexDb.client.logger.deprecate('test', 'test2');
+
+      expect(callCount).to.equal(4);
+    });
+
   });
 
 };
