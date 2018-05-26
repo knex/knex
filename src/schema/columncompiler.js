@@ -25,6 +25,8 @@ ColumnCompiler.prototype.pushQuery = helpers.pushQuery
 
 ColumnCompiler.prototype.pushAdditional = helpers.pushAdditional
 
+ColumnCompiler.prototype.unshiftQuery = helpers.unshiftQuery
+
 ColumnCompiler.prototype._defaultMap = {
   'columnName': function() {
     if (!this.isIncrements) {
