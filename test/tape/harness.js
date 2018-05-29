@@ -35,7 +35,6 @@ module.exports = function(tableName, knex) {
         var val = cb(t)
         if (val && typeof val.then === 'function') {
           return val.catch(function(err) {
-            console.error(err);
             t.error(err)
           })
         } else {
