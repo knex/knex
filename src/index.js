@@ -1,6 +1,5 @@
 
 import Raw from './raw';
-import { warn } from './helpers';
 import Client from './client';
 
 import makeKnex from './util/make-knex';
@@ -39,10 +38,12 @@ export default function Knex(config) {
 // Expose Client on the main Knex namespace.
 Knex.Client = Client
 
+/* eslint no-console:0 */
+
 Object.defineProperties(Knex, {
   VERSION: {
     get() {
-      warn(
+      console.warn(
         'Knex.VERSION is deprecated, you can get the module version' +
         "by running require('knex/package').version"
       )
@@ -51,7 +52,7 @@ Object.defineProperties(Knex, {
   },
   Promise: {
     get() {
-      warn(`Knex.Promise is deprecated, either require bluebird or use the global Promise`)
+      console.warn(`Knex.Promise is deprecated, either require bluebird or use the global Promise`)
       return require('bluebird')
     }
   }
@@ -60,7 +61,7 @@ Object.defineProperties(Knex, {
 // Run a "raw" query, though we can't do anything with it other than put
 // it in a query statement.
 Knex.raw = (sql, bindings) => {
-  warn('global Knex.raw is deprecated, use knex.raw (chain off an initialized knex object)')
+  console.warn('global Knex.raw is deprecated, use knex.raw (chain off an initialized knex object)')
   return new Raw().set(sql, bindings)
 }
 

@@ -3,7 +3,6 @@
 // -------
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
-import * as helpers from '../../../helpers';
 
 import { assign } from 'lodash'
 
@@ -13,7 +12,7 @@ function supportsPreciseTimestamps(client) {
                     'your knex configuration. Currently this defaults to 5.5, but in a future ' +
                     'release it will default to 5.6 which supports high precision timestamps. ' +
                     'See http://knexjs.org/#Schema-timestamps for more information.'
-    helpers.warn(message)
+    client.logger.warn(message)
   }
 
   return client.version && parseFloat(client.version) > 5.5
@@ -113,7 +112,7 @@ assign(ColumnCompiler_MySQL.prototype, {
 
   comment(comment) {
     if (comment && comment.length > 255) {
-      helpers.warn('Your comment is longer than the max comment length for MySQL')
+      this.client.logger.warn('Your comment is longer than the max comment length for MySQL')
     }
     return comment && `comment '${comment}'`
   },

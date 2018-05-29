@@ -2,9 +2,9 @@ import * as utils from '../utils';
 
 const trigger = {
 
-  renameColumnTrigger: function(tableName, columnName, to) {
-    const triggerName = utils.generateCombinedName('autoinc_trg', tableName);
-    const sequenceName = utils.generateCombinedName('seq', tableName);
+  renameColumnTrigger: function(logger, tableName, columnName, to) {
+    const triggerName = utils.generateCombinedName(logger, 'autoinc_trg', tableName);
+    const sequenceName = utils.generateCombinedName(logger, 'seq', tableName);
     return `DECLARE ` +
     `PK_NAME VARCHAR(200); ` +
     `IS_AUTOINC NUMBER := 0; ` +
@@ -38,9 +38,9 @@ const trigger = {
     `END;`;
   },
 
-  createAutoIncrementTrigger: function(tableName) {
-    const triggerName = utils.generateCombinedName('autoinc_trg', tableName);
-    const sequenceName = utils.generateCombinedName('seq', tableName);
+  createAutoIncrementTrigger: function(logger, tableName) {
+    const triggerName = utils.generateCombinedName(logger, 'autoinc_trg', tableName);
+    const sequenceName = utils.generateCombinedName(logger, 'seq', tableName);
     return `DECLARE ` +
     `PK_NAME VARCHAR(200); ` +
     `BEGIN` +
@@ -68,11 +68,11 @@ const trigger = {
     `END;`;
   },
 
-  renameTableAndAutoIncrementTrigger: function(tableName, to) {
-    const triggerName = utils.generateCombinedName('autoinc_trg', tableName);
-    const sequenceName = utils.generateCombinedName('seq', tableName);
-    const toTriggerName = utils.generateCombinedName('autoinc_trg', to);
-    const toSequenceName = utils.generateCombinedName('seq', to);
+  renameTableAndAutoIncrementTrigger: function(logger, tableName, to) {
+    const triggerName = utils.generateCombinedName(logger, 'autoinc_trg', tableName);
+    const sequenceName = utils.generateCombinedName(logger, 'seq', tableName);
+    const toTriggerName = utils.generateCombinedName(logger, 'autoinc_trg', to);
+    const toSequenceName = utils.generateCombinedName(logger, 'seq', to);
     return `DECLARE ` +
     `PK_NAME VARCHAR(200); ` +
     `IS_AUTOINC NUMBER := 0; ` +

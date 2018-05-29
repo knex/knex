@@ -1,6 +1,5 @@
 import Debug from 'debug';
 import Transaction from '../../transaction';
-import * as helpers from '../../helpers';
 import {isUndefined} from 'lodash';
 
 const debug = Debug('knex:tx');
@@ -11,7 +10,7 @@ export default class Transaction_Maria extends Transaction {
     const t = this
     const q = this.trxClient.query(conn, sql)
       .catch(err => err.code === 1305, () => {
-        helpers.warn(
+        this.trxClient.logger.warn(
           'Transaction was implicitly committed, do not mix transactions and ' +
           'DDL with MariaDB (#805)'
         );

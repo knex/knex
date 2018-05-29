@@ -21,7 +21,10 @@ assign(ColumnCompiler_Oracle.prototype, {
     // TODO Add warning that sequence etc is created
     this.pushAdditional(function () {
       const tableName = this.tableCompiler.tableNameRaw;
-      const createTriggerSQL = Trigger.createAutoIncrementTrigger(tableName);
+      const createTriggerSQL = Trigger.createAutoIncrementTrigger(
+        this.client.logger,
+        tableName
+      );
       this.pushQuery(createTriggerSQL);
     });
   },
