@@ -33,6 +33,7 @@ const debugBindings = require('debug')('knex:bindings')
 // for a dialect specific client object.
 function Client(config = {}) {
   this.config = config
+  this.logger = new Logger(config);
 
   //Client is a required field, so throw error if it's not supplied.
   //If 'this.dialect' is set, then this is a 'super()' call, in which case
@@ -52,8 +53,6 @@ function Client(config = {}) {
   if (config.useNullAsDefault) {
     this.valueForUndefined = null
   }
-
-  this.logger = new Logger(config);
 }
 inherits(Client, EventEmitter)
 
