@@ -6,7 +6,6 @@ import inherits from 'inherits';
 
 import Client from '../../client';
 import Promise from 'bluebird';
-import * as helpers from '../../helpers';
 
 import Formatter from '../../formatter'
 import Transaction from './transaction';
@@ -183,14 +182,12 @@ assign(Client_MSSQL.prototype, {
   // Process the response as returned from the query.
   processResponse(obj, runner) {
     if (obj == null) return;
-    let { response } = obj
-    const { method } = obj
+    const { response, method } = obj
     if (obj.output) return obj.output.call(runner, response)
     switch (method) {
       case 'select':
       case 'pluck':
       case 'first':
-        response = helpers.skim(response)
         if (method === 'pluck') return map(response, obj.pluck)
         return method === 'first' ? response[0] : response
       case 'insert':

@@ -6,7 +6,6 @@ import { assign, map, flatten, values } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
-import * as helpers from '../../helpers';
 import {bufferToString} from '../../query/string';
 import Formatter from './formatter';
 
@@ -161,7 +160,6 @@ assign(Client_Oracle.prototype, {
       case 'select':
       case 'pluck':
       case 'first':
-        response = helpers.skim(response);
         if (obj.method === 'pluck') response = map(response, obj.pluck);
         return obj.method === 'first' ? response[0] : response;
       case 'insert':

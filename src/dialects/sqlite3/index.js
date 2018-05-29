@@ -134,7 +134,6 @@ assign(Client_SQLite3.prototype, {
       case 'select':
       case 'pluck':
       case 'first':
-        response = helpers.skim(response)
         if (obj.method === 'pluck') response = map(response, obj.pluck)
         return obj.method === 'first' ? response[0] : response;
       case 'insert':
