@@ -9,7 +9,6 @@ const BlobHelper = require('./utils').BlobHelper;
 const ReturningHelper = require('./utils').ReturningHelper;
 const Promise = require('bluebird');
 const stream = require('stream');
-const helpers = require('../../helpers');
 const Transaction = require('./transaction');
 const Client_Oracle = require('../oracle');
 const Oracle_Formatter = require('../oracle/formatter');

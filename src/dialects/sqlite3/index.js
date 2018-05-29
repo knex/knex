@@ -7,7 +7,6 @@ import inherits from 'inherits';
 import { isUndefined, map, assign, defaults } from 'lodash'
 
 import Client from '../../client';
-import * as helpers from '../../helpers';
 
 import QueryCompiler from './query/compiler';
 import SchemaCompiler from './schema/compiler';
