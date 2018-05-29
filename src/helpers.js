@@ -7,7 +7,6 @@ import {
   isArray,
   isTypedArray
 } from 'lodash'
-import chalk from 'chalk';
 
 // Check if the first argument is an array, otherwise uses all arguments as an
 // array.
@@ -20,29 +19,6 @@ export function normalizeArr() {
     return args[0];
   }
   return args;
-}
-
-export function debugLog(msg) {
-  console.log(msg);
-}
-
-export function error(msg) {
-  console.log(chalk.red(`Knex:Error ${msg}`))
-}
-
-  // Used to signify deprecated functionality.
-export function deprecate(method, alternate) {
-  warn(`${method} is deprecated, please use ${alternate}`);
-}
-
-  // Used to warn about incorrect use, without error'ing
-export function warn(msg) {
-  console.log(chalk.yellow(`Knex:warning - ${msg}`))
-}
-
-export function exit(msg) {
-  console.log(chalk.red(msg))
-  process.exit(1)
 }
 
 export function containsUndefined(mixed) {

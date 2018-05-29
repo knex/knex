@@ -5,7 +5,6 @@ import inherits from 'inherits';
 
 import QueryCompiler from '../../../query/compiler';
 import QueryCompiler_PG from '../../postgres/query/compiler';
-import * as helpers from '../../../helpers';
 
 import { assign, reduce, identity } from 'lodash';
 
@@ -51,17 +50,19 @@ assign(QueryCompiler_Redshift.prototype, {
   // simple: if trying to return, warn
   _slightReturn(){
     if (this.single.isReturning) {
-      helpers.warn('insert/update/delete returning is not supported by redshift dialect');
+      this.client.logger.warn(
+        'insert/update/delete returning is not supported by redshift dialect'
+      );
     }
   },
 
   forUpdate() {
-    helpers.warn('table lock is not supported by redshift dialect');
+    this.client.logger.warn('table lock is not supported by redshift dialect');
     return '';
   },
 
   forShare() {
-    helpers.warn('lock for share is not supported by redshift dialect');
+    this.client.logger.warn('lock for share is not supported by redshift dialect');
     return '';
   },
 

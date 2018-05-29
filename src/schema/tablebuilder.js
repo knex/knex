@@ -72,10 +72,10 @@ each(specialMethods, function(methods, dialect) {
   each(methods, function(method) {
     TableBuilder.prototype[method] = function(value) {
       if (this.client.dialect !== dialect) {
-        helpers.warn(`Knex only supports ${method} statement with ${dialect}.`);
+        this.client.logger.warn(`Knex only supports ${method} statement with ${dialect}.`);
       }
       if (this._method === 'alter') {
-        helpers.warn(
+        this.client.logger.warn(
           `Knex does not support altering the ${method} outside of create ` +
           `table, please use knex.raw statement.`
         );

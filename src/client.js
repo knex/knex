@@ -1,5 +1,4 @@
 import Promise from 'bluebird';
-import * as helpers from './helpers';
 
 import Raw from './raw';
 import Ref from './ref';
@@ -23,6 +22,8 @@ import { EventEmitter } from 'events';
 
 import { makeEscape } from './query/string'
 import { assign, uniqueId, cloneDeep, defaults } from 'lodash'
+
+import Logger from './logger';
 
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
@@ -51,6 +52,8 @@ function Client(config = {}) {
   if (config.useNullAsDefault) {
     this.valueForUndefined = null
   }
+
+  this.logger = new Logger(config);
 }
 inherits(Client, EventEmitter)
 
@@ -197,7 +200,8 @@ assign(Client.prototype, {
     try {
       this.driver = this._driver()
     } catch (e) {
-      helpers.exit(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
+      this.logger.error(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
+      process.exit(1);
     }
   },
 
@@ -220,7 +224,7 @@ assign(Client.prototype, {
       'Promise'
     ].forEach(option => {
       if (option in poolConfig) {
-        helpers.warn([
+        this.logger.warn([
           `Pool config option "${option}" is no longer supported.`,
           `See https://github.com/Vincit/tarn.js for possible pool config options.`
         ].join(' '))
@@ -249,7 +253,7 @@ assign(Client.prototype, {
 
       destroy: (connection) => {
         if (poolConfig.beforeDestroy) {
-          helpers.warn(`
+          this.logger.warn(`
             beforeDestroy is deprecated, please open an issue if you use this
             to discuss alternative apis
           `)
@@ -264,7 +268,7 @@ assign(Client.prototype, {
 
       validate: (connection) => {
         if (connection.__knex__disposed) {
-          helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
+          this.logger.warn(`Connection Error: ${connection.__knex__disposed}`)
           return false
         }
 
@@ -275,7 +279,7 @@ assign(Client.prototype, {
 
   initializePool(config) {
     if (this.pool) {
-      helpers.warn('The pool has already been initialized')
+      this.logger.warn('The pool has already been initialized')
       return
     }
 
