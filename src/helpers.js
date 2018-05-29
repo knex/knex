@@ -1,20 +1,12 @@
 /* eslint no-console:0 */
 
 import {
-  map,
-  pick,
-  keys,
   isFunction,
   isUndefined,
   isPlainObject,
   isArray,
   isTypedArray
 } from 'lodash'
-
-// Pick off the attributes from only the current layer of the object.
-export function skim(data) {
-  return map(data, (obj) => pick(obj, keys(obj)));
-}
 
 // Check if the first argument is an array, otherwise uses all arguments as an
 // array.

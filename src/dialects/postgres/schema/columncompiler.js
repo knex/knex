@@ -29,8 +29,17 @@ assign(ColumnCompiler_PG.prototype, {
 
   // Create the column definition for an enum type.
   // Using method "2" here: http://stackoverflow.com/a/10984951/525714
-  enu(allowed) {
-    return `text check (${this.formatter.wrap(this.args[0])} in ('${allowed.join("', '")}'))`;
+  enu(allowed, options) {
+    options = options || {};
+
+    const values = allowed.join("', '");
+
+    if (options.useNative) {
+      this.tableCompiler.unshiftQuery(`create type "${options.enumName}" as enum ('${values}')`);
+
+      return `"${options.enumName}"`;
+    }
+    return `text check (${this.formatter.wrap(this.args[0])} in ('${values}'))`;
   },
 
   double: 'double precision',

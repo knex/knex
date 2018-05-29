@@ -356,7 +356,6 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
     case 'select':
     case 'pluck':
     case 'first':
-      response = helpers.skim(response);
       if (obj.method === 'pluck') {
         response = _.map(response, obj.pluck);
       }
