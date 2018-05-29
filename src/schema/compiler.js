@@ -1,5 +1,5 @@
 
-import { pushQuery, pushAdditional } from './helpers';
+import { pushQuery, pushAdditional, unshiftQuery } from './helpers';
 
 import { assign, isUndefined } from 'lodash'
 
@@ -19,6 +19,8 @@ assign(SchemaCompiler.prototype, {
   pushQuery: pushQuery,
 
   pushAdditional: pushAdditional,
+
+  unshiftQuery: unshiftQuery,
 
   createTable: buildTable('create'),
 
