@@ -5,7 +5,6 @@ import inherits from 'inherits';
 
 import Client from '../../client';
 import Promise from 'bluebird';
-import * as helpers from '../../helpers';
 
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
@@ -139,9 +138,8 @@ assign(Client_MySQL.prototype, {
       case 'select':
       case 'pluck':
       case 'first': {
-        const resp = helpers.skim(rows)
-        if (method === 'pluck') return map(resp, obj.pluck)
-        return method === 'first' ? resp[0] : resp
+        if (method === 'pluck') return map(rows, obj.pluck)
+        return method === 'first' ? rows[0] : rows
       }
       case 'insert':
         return [rows.insertId]
