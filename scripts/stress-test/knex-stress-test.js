@@ -153,18 +153,18 @@ async function main() {
 
   await recreateProxies();
 
-  /*
   loopQueries('PSQL:', pg.raw('select 1'));
   loopQueries('PSQL TO:', pg.raw('select 1').timeout(20));
 
   loopQueries('MYSQL:', mysql.raw('select 1'));
   loopQueries('MYSQL TO:', mysql.raw('select 1').timeout(20));
 
-  loopQueries('MYSQL2:', mysql2.raw('select 1'));
-  loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
+// mysql2 still crashes app (without connection killer nor timeouts)
+// https://github.com/sidorares/node-mysql2/issues/731
+//  loopQueries('MYSQL2:', mysql2.raw('select 1'));
+//  loopQueries('MYSQL2 TO:', mysql2.raw('select 1').timeout(20));
 
   loopQueries('MSSQL:', mssql.raw('select 1'));
-*/
   loopQueries('MSSQL TO:', mssql.raw('select 1').timeout(20));
 
   setInterval(recreateProxies, 2000);
@@ -173,8 +173,8 @@ async function main() {
     await Bluebird.delay(20); // kill everything every quite often from server side
     try {
       await Promise.all([
-//        killConnectionsPg(),
-//        killConnectionsMyslq(mysql),
+        killConnectionsPg(),
+        killConnectionsMyslq(mysql),
 //        killConnectionsMyslq(mysql2),
         killConnectionsMssql()  
       ]);

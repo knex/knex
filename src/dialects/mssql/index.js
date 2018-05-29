@@ -21,14 +21,21 @@ const SQL_BIGINT_SAFE = { MIN : -9007199254740991, MAX: 9007199254740991}
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler" objects, which
 // extend the base 'lib/query/builder' and 'lib/query/compiler', respectively.
-function Client_MSSQL(config) {
+function Client_MSSQL(config = {}) {
   // #1235 mssql module wants 'server', not 'host'. This is to enforce the same
   // options object across all dialects.
   if(config && config.connection && config.connection.host) {
     config.connection.server = config.connection.host;
   }
+
   // mssql always creates pool :( lets try to unpool it as much as possible
-  config.pool = { min: 1, max: 1, idleTimeoutMillis: Number.MAX_SAFE_INTEGER, evictionRunIntervalMillis: 0 };
+  config.pool = {
+    min: 1,
+    max: 1,
+    idleTimeoutMillis: Number.MAX_SAFE_INTEGER,
+    evictionRunIntervalMillis: 0
+  };
+
   Client.call(this, config);
 }
 inherits(Client_MSSQL, Client);
@@ -41,24 +48,39 @@ assign(Client_MSSQL.prototype, {
 
   _driver() {
     const tds = require('tedious');
-    let mssqlTedious = require('mssql');
-    let base = require('mssql/lib/base');
+    const mssqlTedious = require('mssql');
+    const base = require('mssql/lib/base');
 
-    // Monkey patch mssql's tedious driver _poolCreate method to fix problem with hanging acquire connection,
-    // this should be removed when https://github.com/tediousjs/node-mssql/pull/614 is merged and released.
+    // Monkey patch mssql's tedious driver _poolCreate method to fix problem with hanging acquire
+    // connection, this should be removed when https://github.com/tediousjs/node-mssql/pull/614 is
+    // merged and released.
 
-    // Also since this dialect actually always uses tedious driver (msnodesqlv8 driver should be required in different way), it 
-    // might be better to use tedious directly, because mssql driver uses always internally extra generic-pool and just adds one 
-    // unnecessary layer of indirection between database and knex and mssql driver has been lately without maintainer 
+    // Also since this dialect actually always uses tedious driver (msnodesqlv8 driver should be
+    // required in different way), it might be better to use tedious directly, because mssql
+    // driver uses always internally extra generic-pool and just adds one unnecessary layer of
+    // indirection between database and knex and mssql driver has been lately without maintainer
     // (changing implementation to use tedious will be breaking change though).
     
+    // TODO: remove mssql implementation all together and use tedious directly
+
     const mssqlVersion = require('mssql/package.json').version;
     if (mssqlVersion !== '4.1.0') {
-      throw new Error('This knex version does not support any other mssql version except 4.1.0 (knex patches bug in its implementation)');
+      throw new Error(
+        'This knex version does not support any other mssql version except 4.1.0 ' +
+        '(knex patches bug in its implementation)');
     }
 
+    mssqlTedious.ConnectionPool.prototype.release = release;
     mssqlTedious.ConnectionPool.prototype._poolCreate = _poolCreate;
-    
+
+    // in some rare situations release is called when stream is interrupted, but 
+    // after pool is already destroyed
+    function release(connection) {
+      if (this.pool) {
+        this.pool.release(connection);
+      }
+    }
+
     function _poolCreate() {
       // implementation is copy-pasted from https://github.com/tediousjs/node-mssql/pull/614
       return new base.Promise((resolve, reject) => {
@@ -73,7 +95,8 @@ assign(Client_MSSQL.prototype, {
         cfg.options.database = this.config.database
         cfg.options.port = this.config.port
         cfg.options.connectTimeout = this.config.connectionTimeout || this.config.timeout || 15000
-        cfg.options.requestTimeout = this.config.requestTimeout != null ? this.config.requestTimeout : 15000
+        cfg.options.requestTimeout =
+          this.config.requestTimeout != null ? this.config.requestTimeout : 15000
         cfg.options.tdsVersion = cfg.options.tdsVersion || '7_4'
         cfg.options.rowCollectionOnDone = false
         cfg.options.rowCollectionOnRequestCompletion = false
@@ -103,7 +126,6 @@ assign(Client_MSSQL.prototype, {
         function safeResolve (err) {
           if (!alreadyResolved) {
             alreadyResolved = true
-            console.log('----------------------------- acquire resolve!');
             resolve(err)
           }
         }
@@ -111,7 +133,6 @@ assign(Client_MSSQL.prototype, {
         function safeReject (err) {
           if (!alreadyResolved) {
             alreadyResolved = true
-            console.log('----------------------------- acquire reject!');
             reject(err)
           }
         }
@@ -127,11 +148,8 @@ assign(Client_MSSQL.prototype, {
           }
           safeResolve(tedious)
         })
-
-        tedious.on('debug', msg => console.log('------------------------------ DEBUG', msg));
   
         tedious.on('error', err => {
-          console.log('----------------------------- emit tedious error!');
           if (err.code === 'ESOCKET') {
             tedious.hasError = true
             return
@@ -183,12 +201,10 @@ assign(Client_MSSQL.prototype, {
     return new Promise((resolver, rejecter) => {
       const connection = new this.driver.ConnectionPool(this.connectionSettings);
       connection.connect((err) => {
-        console.log('--------------- KNEX got connection!');
         if (err) {
           return rejecter(err)
         }
         connection.on('error', (err) => {
-          console.log('--------------- KNEX error in connection!');
           connection.__knex__disposed = err
         })
         resolver(connection);
