@@ -9,7 +9,6 @@ const BlobHelper = require('./utils').BlobHelper;
 const ReturningHelper = require('./utils').ReturningHelper;
 const Promise = require('bluebird');
 const stream = require('stream');
-const helpers = require('../../helpers');
 const Transaction = require('./transaction');
 const Client_Oracle = require('../oracle');
 const Oracle_Formatter = require('../oracle/formatter');
@@ -37,7 +36,9 @@ Client_Oracledb.prototype._driver = function() {
       type = type.toUpperCase();
       if (oracledb[type]) {
         if (type !== 'NUMBER' && type !== 'DATE' && type !== 'CLOB') {
-          helpers.warn('Only "date", "number" and "clob" are supported for fetchAsString');
+          this.logger.warn(
+            'Only "date", "number" and "clob" are supported for fetchAsString'
+          );
         }
         client.fetchAsString.push(oracledb[type]);
       }

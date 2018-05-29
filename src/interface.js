@@ -1,5 +1,4 @@
 
-import * as helpers from './helpers';
 import { isEmpty, isArray, map, clone, each } from 'lodash'
 
 export default function(Target) {
@@ -54,13 +53,13 @@ export default function(Target) {
   Target.prototype.transacting = function(t) {
     if (t && t.client) {
       if (!t.client.transacting) {
-        helpers.warn(`Invalid transaction value: ${t.client}`)
+        t.client.logger.warn(`Invalid transaction value: ${t.client}`)
       } else {
         this.client = t.client
       }
     }
     if (isEmpty(t)) {
-      helpers.error('Invalid value on transacting call, potential bug')
+      this.client.logger.error('Invalid value on transacting call, potential bug')
       throw Error('Invalid transacting value (null, undefined or empty object)')
     }
     return this;

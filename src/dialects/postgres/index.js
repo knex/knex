@@ -5,7 +5,6 @@ import { assign, map, extend, isArray, isString, includes } from 'lodash'
 import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
-import {warn} from '../../helpers';
 
 import QueryCompiler from './query/compiler';
 import ColumnCompiler from './schema/columncompiler';
@@ -179,7 +178,7 @@ assign(Client_PG.prototype, {
       if(includes(path, ',')) {
         const parts = path.split(',');
         const arraySyntax = `[${map(parts, (searchPath) => `'${searchPath}'`).join(', ')}]`;
-        warn(
+        this.logger.warn(
           `Detected comma in searchPath "${path}".`
           +
           `If you are trying to specify multiple schemas, use Array syntax: ${arraySyntax}`);

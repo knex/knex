@@ -21,6 +21,7 @@ export default class Transaction extends EventEmitter {
     const txid = this.txid = uniqueId('trx')
 
     this.client    = client
+    this.logger    = client.logger;
     this.outerTx   = outerTx
     this.trxClient = undefined;
     this._debug    = client.config && client.config.debug
@@ -196,12 +197,13 @@ function makeTransactor(trx, connection, trxClient) {
 // connection and does not release back into the pool.
 function makeTxClient(trx, client, connection) {
 
-  const trxClient = Object.create(client.constructor.prototype)
+  const trxClient              = Object.create(client.constructor.prototype)
   trxClient.config             = client.config
   trxClient.driver             = client.driver
   trxClient.connectionSettings = client.connectionSettings
   trxClient.transacting        = true
   trxClient.valueForUndefined  = client.valueForUndefined
+  trxClient.logger             = client.logger;
 
   trxClient.on('query', function(arg) {
     trx.emit('query', arg)

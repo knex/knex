@@ -43,7 +43,7 @@ assign(TableCompiler_Oracle.prototype, {
   renameColumn(from, to) {
     // Remove quotes around tableName
     const tableName = this.tableName().slice(1, -1)
-    return this.pushQuery(Trigger.renameColumnTrigger(tableName, from, to));
+    return this.pushQuery(Trigger.renameColumnTrigger(this.client.logger, tableName, from, to));
   },
 
   compileAdd(builder) {
@@ -84,7 +84,7 @@ assign(TableCompiler_Oracle.prototype, {
   },
 
   _indexCommand(type, tableName, columns) {
-    return this.formatter.wrap(utils.generateCombinedName(type, tableName, columns));
+    return this.formatter.wrap(utils.generateCombinedName(this.client.logger, type, tableName, columns));
   },
 
   primary(columns, constraintName) {
