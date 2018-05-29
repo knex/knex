@@ -2756,6 +2756,29 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("complex join with empty in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onIn('users.name', []);
+    }), {
+      mysql: {
+        sql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and 1 = 0',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and 1 = 0',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and 1 = 0',
+        bindings: []
+      },
+      redshift: {
+        sql: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and 1 = 0',
+        bindings: []
+      },
+    });
+  });
+
   it("joins with raw", function() {
     testsql(qb().select('*').from('users').join('contacts', 'users.id', raw(1)).leftJoin('photos', 'photos.title', '=', raw('?', ['My Photo'])), {
       mysql: {
