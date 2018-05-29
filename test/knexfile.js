@@ -82,17 +82,6 @@ var testConfigs = {
     seeds: seeds,
   },
 
-  oracle: {
-    client: 'strong-oracle',
-    connection: testConfig.oracle || {
-      adapter:  "oracle",
-      database: "knex_test",
-      user:     "oracle"
-    },
-    pool: pool,
-    migrations: migrations
-  },
-
   oracledb: {
     client: 'oracledb',
     connection: testConfig.oracledb || {
