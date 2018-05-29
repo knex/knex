@@ -84,7 +84,7 @@ module.exports = function(knex) {
             const table_name = 'increments_columns_1_test';
             const expected_column = 'id'
             const expected_comment = 'comment_1';
-            
+
             return knex.raw('SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',[table_name]).then(function(res) {
               const column_oid = res.rows[0].oid;
 
@@ -106,13 +106,13 @@ module.exports = function(knex) {
             const table_name = 'increments_columns_2_test';
             const expected_column = 'named_2';
             const expected_comment = 'comment_2';
-            
+
             return knex.raw('SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',[table_name]).then(function(res) {
               const column_oid = res.rows[0].oid;
-              
+
               return knex.raw('SELECT pg_catalog.col_description(?,?);', [column_oid, '1']).then(function(_res) {
                 const comment = _res.rows[0].col_description;
-                
+
                 return knex.raw('select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = ?;', table_name).then((res) => {
                   const column_name = res.rows[0].column_name;
 
@@ -161,7 +161,7 @@ module.exports = function(knex) {
               TABLE_NAME = ? AND
               COLUMN_NAME = ?
             `
-            
+
             return knex.raw(query,[table_name, expected_column]).then(function(res) {
               const comment = res[0][0].COLUMN_COMMENT
               expect(comment).to.equal(expected_comment)
@@ -183,14 +183,40 @@ module.exports = function(knex) {
               TABLE_NAME = ? AND
               COLUMN_NAME = ?
             `
-            
+
             return knex.raw(query,[table_name, expected_column]).then(function(res) {
               const comment = res[0][0].COLUMN_COMMENT
               expect(comment).to.equal(expected_comment)
             })
-            
+
           });
       });
+
+      describe('enum - postgres', function() {
+        if (!knex || !knex.client || !(/postgres/i.test(knex.client.dialect))) {
+          return Promise.resolve();
+        }
+
+        afterEach(function() {
+          return knex.schema.dropTableIfExists('native_enum_test').raw('DROP TYPE "foo_type"');
+        });
+
+        it('uses native type when useNative is specified', function() {
+          return knex.schema
+            .createTable('native_enum_test', function(table) {
+              table.enum('foo_column', ['a', 'b', 'c'], {
+                useNative: true,
+                enumName: 'foo_type'
+              }).notNull();
+              table.uuid('id').notNull();
+            }).testSql(function(tester) {
+              tester('pg', [
+                'create type "foo_type" as enum (\'a\', \'b\', \'c\')',
+                'create table "native_enum_test" ("foo_column" "foo_type" not null, "id" uuid not null)'
+              ]);
+            });
+        });
+      })
 
       it('Callback function must be supplied', function() {
         expect(function() {

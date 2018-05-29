@@ -541,6 +541,18 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" text check ("foo" in (\'bar\', \'baz\'))');
   });
 
+  it("adding enum with useNative", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.enu('foo', ['bar', 'baz'], {
+        useNative: true,
+        enumName: 'foo_type'
+      }).notNullable();
+    }).toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('create type "foo_type" as enum (\'bar\', \'baz\')')
+    expect(tableSql[1].sql).to.equal('alter table "users" add column "foo" "foo_type" not null');
+  });
+
   it("adding date", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.date('foo');

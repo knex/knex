@@ -2,7 +2,7 @@
 
 // Table Compiler
 // -------
-import { pushAdditional, pushQuery } from './helpers';
+import { pushAdditional, pushQuery, unshiftQuery } from './helpers';
 import * as helpers from '../helpers';
 import { groupBy, reduce, map, first, tail, isEmpty, indexOf, isArray, isUndefined } from 'lodash'
 
@@ -22,6 +22,8 @@ function TableCompiler(client, tableBuilder) {
 TableCompiler.prototype.pushQuery = pushQuery
 
 TableCompiler.prototype.pushAdditional = pushAdditional
+
+TableCompiler.prototype.unshiftQuery = unshiftQuery
 
 // Convert the tableCompiler toSQL
 TableCompiler.prototype.toSQL = function () {
