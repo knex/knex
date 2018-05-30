@@ -50,7 +50,7 @@ TableCompiler_PG.prototype.addColumns = function(columns, prefix, colCompilers) 
       // We'd prefer to call this.formatter.wrapAsIdentifier here instead, however the context passed to
       // `this` instance is not that of the column, but of the table. Thus, we unfortunately have to call
       // `wrapIdentifier` here as well (it is already called once on the initial column operation) to give
-      // our `alter` operation the correct `queryContext`. Refer to issue #2616.
+      // our `alter` operation the correct `queryContext`. Refer to issue #2606 and PR #2612.
       const colName = this.client.wrapIdentifier(col.getColumnName(), col.columnBuilder.queryContext());
 
       this.pushQuery({
