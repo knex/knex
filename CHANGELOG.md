@@ -2,6 +2,7 @@
 # Master (Unreleased)
 
 - Drop support for Node.js 4 and 5
+- `json` data type is no longer converted to `text` within a schema builder migration for MySQL databases (note that JSON data type is only supported for MySQL 5.7.8+)
 
 # 0.14.6 - 12 Apr, 2018
 

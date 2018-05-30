@@ -95,6 +95,10 @@ assign(ColumnCompiler_MySQL.prototype, {
     return length ? `varbinary(${this._num(length)})` : 'blob'
   },
 
+  json() {
+    return 'json';
+  },
+
   // Modifiers
   // ------
 

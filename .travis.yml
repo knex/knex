@@ -31,9 +31,18 @@ after_script:
 notifications:
   email: false
 
+services:
+  - mysql
 addons:
   postgresql: '9.6'
   apt:
+    sources:
+      - mysql-5.7-trusty
     packages:
-    - g++-4.8
-    - gcc-4.8
+      - g++-4.8
+      - gcc-4.8
+      - libmysqlclient-dev
+      - libmysqlclient20
+      - mysql-community-client
+      - mysql-common
+      - mysql-community-server
