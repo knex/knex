@@ -761,8 +761,8 @@ module.exports = function(knex) {
                 details: 'One, Two, Zero',
                 status: 0
               }]);
-            tester('postgresql',
-              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?),(?, ?)) order by "status" desc',
+            tester('pg',
+              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
               [1,1,1,2],
               [{
                 column_a: 1,
@@ -826,8 +826,8 @@ module.exports = function(knex) {
                 details: 'One, One, One',
                 status: 1
               }]);
-            tester('postgresql',
-              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?),(?, ?))',
+            tester('pg',
+              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
               [1,1,1,1,2],
               [{
                 column_a: 1,

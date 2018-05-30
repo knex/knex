@@ -84,7 +84,7 @@ module.exports = function(knex) {
         // sqlite: 1.6666666666666667
         tester('sqlite3', 'select avg(`logins`) from `accounts`', [], checkResRange.bind(null, 'avg(`logins`)'));
         // postgres: '1.6666666666666667'
-        tester('postgresql', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'avg'));
+        tester('pg', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'avg'));
         // postgres: '1.6666666666666667'
         tester('pg-redshift', 'select avg("logins") from "accounts"', [], checkResRangeMssql.bind(null, 'avg'));
         // oracle: 1.66666666666667

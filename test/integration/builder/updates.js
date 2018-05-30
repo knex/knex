@@ -21,7 +21,7 @@ module.exports = function(knex) {
             1
           );
           tester(
-            'postgresql',
+            'pg',
             'update "accounts" set "first_name" = ?, "last_name" = ?, "email" = ? where "id" = ?',
             ['User','Test','test100@example.com',1],
             1
@@ -137,7 +137,6 @@ module.exports = function(knex) {
     });
 
     it('should allow returning for updates in postgresql', function() {
-
       return knex('accounts').where('id', 1).update({
         email:'test100@example.com',
         first_name: 'UpdatedUser',
@@ -150,7 +149,7 @@ module.exports = function(knex) {
           1
         );
         tester(
-          'postgresql',
+          'pg',
           'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning *',
           ['test100@example.com','UpdatedUser','UpdatedTest',1],
           [{
