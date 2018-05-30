@@ -554,10 +554,31 @@ module.exports = function(knex) {
       }
 
       // Only mysql/mariadb query cancelling supported for now
-      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
+      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria") && !_.startsWith(dialect, "postgres")) {
         expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
         return;
       }
+
+      var getProcessesQueries = {
+        'postgresql': function() {
+          return knex.raw('SELECT * from pg_stat_activity');
+        },
+        'mysql': function() {
+          return knex.raw('SHOW PROCESSLIST');
+        },
+        'mysql2': function() {
+          return knex.raw('SHOW PROCESSLIST');
+        },
+        mariadb: function() {
+          return knex.raw('SHOW PROCESSLIST');
+        }
+      };
+
+      if(!getProcessesQueries.hasOwnProperty(dialect)) {
+        throw new Error('Missing test query for dialect: ' + dialect);
+      }
+
+      var getProcessesQuery = getProcessesQueries[dialect]();
 
       return addTimeout()
         .then(function() {
@@ -576,11 +597,19 @@ module.exports = function(knex) {
           // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
           return Promise.resolve().then().delay(50)
             .then(function () {
-              return knex.raw('SHOW PROCESSLIST');
+              return getProcessesQuery;
             })
             .then(function(results) {
-              var processes = results[0];
-              var sleepProcess = _.find(processes, {Info: 'SELECT SLEEP(10)'});
+              var processes;
+              var sleepProcess;
+
+              if(_.startsWith(dialect, "postgres")) {
+                processes = results.rows;
+                sleepProcess = _.find(processes, {query: query.toString()});
+              } else {
+                processes = results[0];
+                sleepProcess = _.find(processes, {Info: 'SELECT SLEEP(10)'});
+              }
               expect(sleepProcess).to.equal(undefined);
             });
         });
@@ -589,8 +618,8 @@ module.exports = function(knex) {
 
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
       // Only mysql/mariadb query cancelling supported for now
-      var dialect = knex.client.config.dialect;
-      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
+      var dialect = knex.client.dialect;
+      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria") && !_.startsWith(dialect, "postgres")) {
         return;
       }
 
@@ -601,7 +630,34 @@ module.exports = function(knex) {
 
       var knexDb = new Knex(knexConfig);
 
-      return knexDb.raw('SELECT SLEEP(1)')
+      var testQueries = {
+        'postgresql': function() {
+          return knexDb.raw('SELECT pg_sleep(10)');
+        },
+        'mysql': function() {
+          return knexDb.raw('SELECT SLEEP(10)');
+        },
+        'mysql2': function() {
+          return knexDb.raw('SELECT SLEEP(10)');
+        },
+        mariadb: function() {
+          return knexDb.raw('SELECT SLEEP(10)');
+        },
+        mssql: function() {
+          return knexDb.raw('WAITFOR DELAY \'00:00:10\'');
+        },
+        oracle: function() {
+          return knexDb.raw('begin dbms_lock.sleep(10); end;');
+        }
+      };
+
+      if(!testQueries.hasOwnProperty(dialect)) {
+        throw new Error('Missing test query for dialect: ' + dialect);
+      }
+
+      var query = testQueries[dialect]();
+
+      return query
         .timeout(1, {cancel: true})
         .then(function() {
           throw new Error("Shouldn't have gotten here.");

@@ -256,6 +256,30 @@ assign(Client_PG.prototype, {
       return resp.rowCount;
     }
     return resp;
+  },
+
+  canCancelQuery: true,
+  cancelQuery(connectionToKill) {
+    const acquiringConn = this.acquireConnection();
+
+    // Error out if we can't acquire connection in time.
+    // Purposely not putting timeout on `pg_terminate_backend` execution because erroring
+    // early there would release the `connectionToKill` back to the pool with
+    // a `KILL QUERY` command yet to finish.
+    return acquiringConn
+      .timeout(100)
+      .then((conn) => this.query(conn, {
+        method: 'raw',
+        sql: 'SELECT pg_terminate_backend(?);',
+        bindings: [connectionToKill.processID],
+        options: {},
+      }))
+      .finally(() => {
+        // NOT returning this promise because we want to release the connection
+        // in a non-blocking fashion
+        acquiringConn
+          .then((conn) => this.releaseConnection(conn));
+      });
   }
 
 })
