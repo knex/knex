@@ -556,9 +556,10 @@ module.exports = function(knex) {
       });
 
       it('allows alter column syntax', function () {
-        if (knex.client.dialect.match('sqlite') !== null ||
-            knex.client.dialect.match('redshift') !== null ||
-            knex.client.dialect.match('oracle') !== null) {
+        if (knex.client.dialect.match('sqlite') ||
+            knex.client.dialect.match('redshift') ||
+            knex.client.dialect.match('mssql') ||
+            knex.client.dialect.match('oracle')) {
           return;
         }
 
