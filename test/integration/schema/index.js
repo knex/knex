@@ -388,7 +388,7 @@ module.exports = function(knex) {
       });
 
       it('rejects setting foreign key where tableName is not typeof === string', function() {
-        return knex.schema.createTable('invalid_inTable_param_test', function(table) {
+        let builder = knex.schema.createTable('invalid_inTable_param_test', function(table) {
           const createInvalidUndefinedInTableSchema = function() {
             table.increments('id').references('id').inTable()
           };
@@ -397,7 +397,11 @@ module.exports = function(knex) {
           };
           expect(createInvalidUndefinedInTableSchema).to.throw(TypeError);
           expect(createInvalidObjectInTableSchema).to.throw(TypeError);
-        })
+
+          table.integer('yet_another_id').references('id').inTable({tableName: 'this_should_fail_too'})
+        });
+
+        expect(() => builder.toSQL()).to.throw(TypeError);
       });
 
 

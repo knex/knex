@@ -369,7 +369,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('gets the columnInfo', function() {
+    it('gets the columnInfo with columntype', function() {
       return knex('datatype_test').columnInfo('uuid').testSql(function(tester) {
         tester('mysql',
           'select * from information_schema.columns where table_name = ? and table_schema = ?',
