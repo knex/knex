@@ -159,6 +159,7 @@ module.exports = function(knex) {
             last_name: 'UpdatedTest',
             email: 'test100@example.com',
             logins: 1,
+            balance: 12.24,
             about: 'Lorem ipsum Dolore labore incididunt enim.',
             created_at: d,
             updated_at: d,
@@ -193,6 +194,7 @@ module.exports = function(knex) {
             last_name: 'UpdatedTest',
             email: 'test100@example.com',
             logins: 1,
+            balance: 12.240000000000002,
             about: 'Lorem ipsum Dolore labore incididunt enim.',
             created_at: d,
             updated_at: d,
@@ -200,7 +202,6 @@ module.exports = function(knex) {
           }]
         );
       });
-
     });
 
   });

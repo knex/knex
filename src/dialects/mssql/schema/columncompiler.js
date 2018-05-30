@@ -24,13 +24,12 @@ assign(ColumnCompiler_MSSQL.prototype, {
   bigint: 'bigint',
 
   double(precision, scale) {
-    if (!precision) return 'decimal'
-    return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`
+    return 'float'; 
   },
 
   floating(precision, scale) {
-    if (!precision) return 'decimal'
-    return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`
+    // ignore precicion / scale which is mysql specific stuff
+    return `float`;
   },
 
   integer(length) {

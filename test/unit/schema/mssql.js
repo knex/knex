@@ -368,7 +368,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(5, 2)');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float');
   });
 
   it('test adding double', function() {
@@ -377,7 +377,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float');
   });
 
   it('test adding double specifying precision', function() {
@@ -386,7 +386,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(15, 8)');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float');
   });
 
   it('test adding decimal', function() {
