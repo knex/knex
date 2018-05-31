@@ -1,10 +1,10 @@
 /*global describe, expect, it, testPromise, d*/
 'use strict';
 
-var _ = require('lodash')
-var assert  = require('assert')
-var Promise = testPromise;
-var Runner = require('../../../lib/runner');
+const _ = require('lodash')
+const assert  = require('assert')
+const Promise = testPromise;
+const Runner = require('../../../lib/runner');
 
 module.exports = function(knex) {
 
@@ -212,7 +212,7 @@ module.exports = function(knex) {
       return knex('accounts')
         .options({
           typeCast (field, next) {
-            var val
+            let val
             if (field.type === 'VAR_STRING') {
               val = field.string()
               return val == null ? val : val.toUpperCase()
@@ -235,22 +235,22 @@ module.exports = function(knex) {
     })
 
     it('emits error on the stream, if not passed a function, and connecting fails', function() {
-      var expected = new Error();
-      var original = Runner.prototype.ensureConnection;
+      const expected = new Error();
+      const original = Runner.prototype.ensureConnection;
       Runner.prototype.ensureConnection = function() {
         return Promise.reject(expected);
       };
 
-      var restore = () => {
+      const restore = () => {
         Runner.prototype.ensureConnection = original;
       };
 
-      var promise = new Promise((resolve, reject) => {
-        var timeout = setTimeout(() => {
+      const promise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
           reject(new Error('Timeout'));
         }, 5000);
 
-        var stream = knex('accounts').stream();
+        const stream = knex('accounts').stream();
         stream.on('error', function(actual) {
           clearTimeout(timeout);
 
