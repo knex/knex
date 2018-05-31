@@ -269,7 +269,7 @@ module.exports = function(knex) {
     it('emits error on the stream, if not passed a function, and query fails', function(done) {
       const stream = knex('accounts').select('invalid_field').stream()
       stream.on('error', function(err) {
-        assert(err.code === 'ER_BAD_FIELD_ERROR')
+        assert(err instanceof Error)
         done()
       })
     })
