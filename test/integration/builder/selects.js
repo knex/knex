@@ -266,6 +266,18 @@ module.exports = function(knex) {
       return promise;
     });
 
+    it('emits error on the stream, if not passed a function, and query fails', function(done) {
+      setTimeout(() => {
+        done(new Error('Timeout'));
+      }, 5000)
+
+      const stream = knex('accounts').select('invalid_field').stream()
+      stream.on('error', function(err) {
+        assert(err.code === 'ER_BAD_FIELD_ERROR')
+        done()
+      })
+    })
+
     it('properly escapes postgres queries on streaming', function() {
       let count = 0;
       return knex('accounts').where('id', 1).stream(function(rowStream) {
