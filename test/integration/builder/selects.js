@@ -267,10 +267,6 @@ module.exports = function(knex) {
     });
 
     it('emits error on the stream, if not passed a function, and query fails', function(done) {
-      setTimeout(() => {
-        done(new Error('Timeout'));
-      }, 5000)
-
       const stream = knex('accounts').select('invalid_field').stream()
       stream.on('error', function(err) {
         assert(err.code === 'ER_BAD_FIELD_ERROR')
@@ -279,12 +275,7 @@ module.exports = function(knex) {
     })
 
     it('emits error if not passed a function and the query has wrong bindings', function(done) {
-      setTimeout(() => {
-        done(new Error('Timeout'));
-      }, 5000)
-
       const stream = knex('accounts').whereRaw('id = ? and first_name = ?', ['2']).stream()
-
       stream.on('error', function(err) {
         assert(err instanceof Error)
         done()
