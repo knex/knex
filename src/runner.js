@@ -75,7 +75,7 @@ assign(Runner.prototype, {
     const hasHandler = typeof handler === 'function';
 
     // Lazy-load the "PassThrough" dependency.
-    PassThrough = PassThrough || require('readable-stream').PassThrough;
+    PassThrough = PassThrough || require('stream').PassThrough;
 
     const runner = this;
     const stream = new PassThrough({objectMode: true});

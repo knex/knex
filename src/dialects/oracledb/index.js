@@ -12,7 +12,6 @@ const stream = require('stream');
 const Transaction = require('./transaction');
 const Client_Oracle = require('../oracle');
 const Oracle_Formatter = require('../oracle/formatter');
-const Buffer = require('safe-buffer').Buffer;
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
