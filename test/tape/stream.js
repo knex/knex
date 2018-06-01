@@ -1,7 +1,7 @@
 'use strict';
 
 var tape   = require('tape')
-var stream = require('readable-stream')
+var stream = require('stream')
 
 module.exports = function(knex) {
 
