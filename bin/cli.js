@@ -319,10 +319,20 @@ function invoke(env) {
   });
 }
 
-const cli = new Liftoff({
+let v8flags;
+
+if (typeof process.env.KNEX_V8_FLAGS !== 'undefined') {
+  v8flags = process.env.KNEX_V8_FLAGS.split(' ').filter(function(flag) {
+    return flag;
+  });
+} else {
+  v8flags = require('v8flags');
+}
+
+var cli = new Liftoff({
   name: 'knex',
   extensions: interpret.jsVariants,
-  v8flags: require('v8flags'),
+  v8flags: v8flags,
 });
 
 cli.on('require', function(name) {
