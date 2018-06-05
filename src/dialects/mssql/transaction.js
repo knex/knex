@@ -65,6 +65,7 @@ export default class Transaction_MSSQL extends Transaction {
         configConnection ||
         t.client.acquireConnection();
     }).tap(function(conn) {
+      conn.__knexTxId = t.txid;
       if (!t.outerTx) {
         t.conn = conn
         conn.tx_ = conn.transaction()

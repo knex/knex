@@ -1543,7 +1543,7 @@ module.exports = function(knex) {
             }
           );
           tester(
-            'postgresql',
+            'pg',
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function (res) {

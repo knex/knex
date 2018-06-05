@@ -26,7 +26,7 @@ module.exports = function(knex) {
             [1, 2, 3, 4, 5, 7]
           );
           tester(
-            'postgresql',
+            'pg',
             'select "id" from "accounts" order by "id" asc',
             [],
             ['1', '2', '3', '4', '5', '7']
@@ -68,7 +68,7 @@ module.exports = function(knex) {
             [1, 2, 3, 4, 5, 7]
           );
           tester(
-            'postgresql',
+            'pg',
             'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
             ['1', '2', '3', '4', '5', '7']
@@ -110,7 +110,7 @@ module.exports = function(knex) {
             [3, 4, 5, 7]
           );
           tester(
-            'postgresql',
+            'pg',
             'select "id" from "accounts" order by "id" asc offset ?',
             [2],
             ['3', '4', '5', '7']
@@ -152,7 +152,7 @@ module.exports = function(knex) {
             { id: 1, first_name: 'Test' }
           );
           tester(
-            'postgresql',
+            'pg',
             'select "id", "first_name" from "accounts" order by "id" asc limit ?',
             [1],
             { id: '1', first_name: 'Test' }
@@ -350,7 +350,7 @@ module.exports = function(knex) {
               }]
             );
             tester(
-              'postgresql',
+              'pg',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
               [1],
               [{
@@ -413,7 +413,7 @@ module.exports = function(knex) {
               }]
             );
             tester(
-              'postgresql',
+              'pg',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
               [1],
               [{
@@ -472,7 +472,7 @@ module.exports = function(knex) {
               [1]
             );
             tester(
-              'postgresql',
+              'pg',
               'select "email", "logins" from "accounts" where "id" > ?',
               [1]
             );
@@ -523,7 +523,7 @@ module.exports = function(knex) {
               }]
             );
             tester(
-              'postgresql',
+              'pg',
               'select * from "accounts" where "id" = ?',
               [1],
               [{
@@ -623,7 +623,7 @@ module.exports = function(knex) {
               []
             );
             tester(
-              'postgresql',
+              'pg',
               'select "first_name", "email" from "accounts" where "id" is null',
               [],
               []
@@ -669,7 +669,7 @@ module.exports = function(knex) {
               []
             );
             tester(
-              'postgresql',
+              'pg',
               'select * from "accounts" where "id" = ?',
               [0],
               []
@@ -956,6 +956,47 @@ module.exports = function(knex) {
         })
     });
 
-  });
+    it('select for update locks selected row', function() {
+      return knex('test_table').insert({ name: 'making sure there is a row to lock'})
+        .then(() => {
+          return knex.transaction(trx => {
+            // select all from test table and lock
+            return trx('test_table').forUpdate().then((res) => {
+              // try to select stuff from table in other connection should just hang...
+              return knex('test_table').forUpdate().timeout(100);
+            });
+          }).then(res => {
+            expect("Second query should have timed out").to.be.false;
+          }).catch(err => {
+            expect(err.message).to.be.contain('Defined query timeout of 100ms exceeded when running query');
+          });
+        });  
+    });  
 
+    it('select for share prevents updating in other transaction', function() {
+      return knex('test_table').insert({ name: 'making sure there is a row to lock'})
+        .then(() => {
+          return knex.transaction(trx => {
+            // select all from test table and lock
+            return trx('test_table').forShare().then((res) => {
+              // try to update row that was selected for share should just hang...
+              return knex.transaction(trx2 => {
+                return trx2('test_table').update({ name: 'foo' }).timeout(100);
+              });
+            });
+          }).then(res => {
+            expect("Second query should have timed out").to.be.false;
+          }).catch(err => {
+            // mssql fails because it tires to rollback at the same time when update query is running
+            // hopefully for share really works though...
+            if (knex.client.dialect == 'mssql') {
+              expect(err.message).to.be.contain("Can't rollback transaction. There is a request in progress");
+            } else {
+              expect(err.message).to.be.contain('Defined query timeout of 100ms exceeded when running query');
+            }
+          });
+        });  
+    });
+
+  }); 
 };

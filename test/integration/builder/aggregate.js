@@ -26,7 +26,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'postgresql',
+            'pg',
             'select sum("logins") from "accounts"',
             [],
             [{
@@ -107,7 +107,7 @@ module.exports = function(knex) {
           }]
         );
         tester(
-          'postgresql',
+          'pg',
           'select count("id") from "accounts"',
           [],
           [{
@@ -164,7 +164,7 @@ module.exports = function(knex) {
           }]
         );
         tester(
-          'postgresql',
+          'pg',
           'select count("id"), max("logins"), min("logins") from "accounts"',
           [],
           [{
@@ -229,13 +229,13 @@ module.exports = function(knex) {
             }]
         );
         tester(
-            'postgresql',
+            'pg',
             'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
             [],
             [{
               count: '6',
-              sum: 3,
-              avg: 1.5
+              sum: "3",
+              avg: "1.5000000000000000"
             }]
         );
         tester(
@@ -298,7 +298,7 @@ module.exports = function(knex) {
           }]
         );
         tester(
-          'postgresql',
+          'pg',
           'select count(distinct("id", "logins")) from "accounts"',
           [],
           [{
@@ -325,7 +325,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'postgresql',
+            'pg',
             'select count(distinct("id", "logins")) as "count" from "accounts"',
             [],
             [{
@@ -350,7 +350,7 @@ module.exports = function(knex) {
           }]
         );
         tester(
-          'postgresql',
+          'pg',
           'select count("id") from "accounts" group by "logins" order by "logins" asc',
           [],
           [{
@@ -411,7 +411,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'postgresql',
+            'pg',
             'select count("id") from "accounts" group by "first_name"',
             [],
             [{

@@ -18,7 +18,7 @@ module.exports = function(knex) {
             1
           );
           tester(
-            'postgresql',
+            'pg',
             'delete from "accounts" where "id" = ?',
             [1],
             1
@@ -50,7 +50,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should allow returning for deletes in postgresql', function() {
+    it('should allow returning for deletes in postgresql and mssql', function() {
       return knex('accounts')
         .where('id', 2)
         .del('*')
@@ -62,7 +62,7 @@ module.exports = function(knex) {
             1
           );
           tester(
-            'postgresql',
+            'pg',
             'delete from "accounts" where "id" = ? returning *',
             [2],
             [{
@@ -71,6 +71,7 @@ module.exports = function(knex) {
               last_name: 'User',
               email: 'test2@example.com',
               logins: 1,
+              balance: 0,
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               created_at: d,
               updated_at: d,
@@ -105,6 +106,7 @@ module.exports = function(knex) {
               last_name: 'User',
               email: 'test2@example.com',
               logins: 1,
+              balance: 0,
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               created_at: d,
               updated_at: d,

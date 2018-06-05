@@ -4335,71 +4335,43 @@ describe("QueryBuilder", function() {
     });
   });
 
-  // it("lock for update", function (){
-  //   testsql(tb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
-  //     mysql: {
-  //       sql: 'select * from `foo` where `bar` = ? for update',
-  //       bindings: ['baz']
-  //     },
-  //     postgres: {
-  //       sql: 'select * from "foo" where "bar" = ? for update', 
-  //       bindings: ['baz']
-  //     },
-  //     redshift: {
-  //       sql: 'select * from "foo" where "bar" = ? for update',
-  //       bindings: ['baz']
-  //     },
-  //     oracle: {
-  //       sql: 'select * from "foo" where "bar" = ? for update',
-  //       bindings: ['baz']
-  //     },
-  //     mssql: {
-  //       sql: 'select * from [foo] where [bar] = ? with (READCOMMITTEDLOCK)',
-  //       bindings: ['baz']
-  //     },
-  //     oracledb: {
-  //       sql: 'select * from "foo" where "bar" = ? for update',
-  //       bindings: ['baz']
-  //     },
-  //     postgres: {
-  //       sql: 'select * from "foo" where "bar" = ?', 
-  //       bindings: ['baz']
-  //     },
-  //     redshift: {
-  //       sql: 'select * from "foo" where "bar" = ?',
-  //       bindings: ['baz']
-  //     },
-  //   });
-  // });
+  it("lock for update", function (){
+    testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
+      mysql: {
+        sql: 'select * from `foo` where `bar` = ? for update',
+        bindings: ['baz']
+      },
+      postgres: {
+        sql: 'select * from "foo" where "bar" = ? for update', 
+        bindings: ['baz']
+      },
+      mssql: {
+        sql: 'select * from [foo] with (UPDLOCK) where [bar] = ?',
+        bindings: ['baz']
+      },
+      oracledb: {
+        sql: 'select * from "foo" where "bar" = ? for update',
+        bindings: ['baz']
+      }
+    });
+  });
 
-  // it("lock in share mode", function() {
-  //   testsql(qb().transacting({}).select('*').from('foo').where('bar', '=', 'baz').forShare(), {
-  //     mysql: {
-  //       sql: 'select * from `foo` where `bar` = ? lock in share mode',
-  //       bindings: ['baz']
-  //     },
-  //     postgres: {
-  //       sql: "select * from \"foo\" where \"bar\" = ? for share", 
-  //       bindings: ['baz']
-  //     },
-  //     redshift: {
-  //       sql: "select * from \"foo\" where \"bar\" = ? for share",
-  //       bindings: ['baz']
-  //     },
-  //     mssql: {
-  //       sql: 'select * from [foo] where [bar] = ? with (NOLOCK)',
-  //       bindings: ['baz']
-  //     },
-  //     postgres: {
-  //       sql: 'select * from "foo" where "bar" = ?', 
-  //       bindings: ['baz']
-  //     },
-  //     redshift: {
-  //       sql: 'select * from "foo" where "bar" = ?',
-  //       bindings: ['baz']
-  //     },
-  //   });
-  // });
+  it("lock in share mode", function() {
+    testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forShare(), {
+      mysql: {
+        sql: 'select * from `foo` where `bar` = ? lock in share mode',
+        bindings: ['baz']
+      },
+      postgres: {
+        sql: "select * from \"foo\" where \"bar\" = ? for share", 
+        bindings: ['baz']
+      },
+      mssql: {
+        sql: 'select * from [foo] with (HOLDLOCK) where [bar] = ?',
+        bindings: ['baz']
+      },
+    });
+  });
 
   it("should allow lock (such as forUpdate) outside of a transaction", function() {
     testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
@@ -4408,15 +4380,11 @@ describe("QueryBuilder", function() {
         bindings: ['baz']
       },
       mssql: {
-        sql: 'select * from [foo] with (READCOMMITTEDLOCK) where [bar] = ?',
+        sql: 'select * from [foo] with (UPDLOCK) where [bar] = ?',
         bindings: ['baz']
       },
       postgres: {
         sql: 'select * from "foo" where "bar" = ? for update',
-        bindings: ['baz']
-      },
-      redshift: {
-        sql: 'select * from "foo" where "bar" = ?',
         bindings: ['baz']
       },
     });

@@ -720,10 +720,8 @@ module.exports = function(knex) {
     });
 
     it('Event: start', function() {
-      // On redshift, cannot set an identity column to a value
-      if (/redshift/i.test(knex.client.dialect)) { return; }
       return knex('accounts')
-        .insert({id: '999', last_name: 'Start'})
+        .insert({last_name: 'Start event test'})
         .then(function() {
           var queryBuilder = knex('accounts').select();
 
@@ -731,7 +729,7 @@ module.exports = function(knex) {
             //Alter builder prior to compilation
             //Select only one row
             builder
-              .where('id', '999')
+              .where('last_name', 'Start event test')
               .first();
           });
 
@@ -739,8 +737,7 @@ module.exports = function(knex) {
         })
         .then(function(row) {
           expect(row).to.exist;
-          expect(String(row.id)).to.equal('999');
-          expect(row.last_name).to.equal('Start');
+          expect(row.last_name).to.equal('Start event test');
         });
     });
 

@@ -262,7 +262,7 @@ module.exports = function(knex) {
           // But the other should succeed:
           return knex('knex_migrations').select('*').then(function(data) {
             expect(data.length).to.equal(2);
-          })
+          });
         });
     });
   });

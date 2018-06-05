@@ -165,11 +165,14 @@ assign(QueryCompiler_MSSQL.prototype, {
   },
 
   forUpdate() {
-    return 'with (READCOMMITTEDLOCK)';
+    // this doesn't work exacltly as it should, one should also mention index while locking
+    // https://stackoverflow.com/a/9818448/360060
+    return 'with (UPDLOCK)';
   },
 
   forShare() {
-    return 'with (NOLOCK)';
+    // http://www.sqlteam.com/article/introduction-to-locking-in-sql-server
+    return 'with (HOLDLOCK)'; 
   },
 
   // Compiles a `columnInfo` query.
