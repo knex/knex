@@ -112,6 +112,61 @@ module.exports = function(knex) {
 
     });
 
+    // TODO: This doesn't work on oracle yet.
+    if (['postgresql', 'mssql'].includes(knex.client.dialect)) {
+      describe('returning with wrapIdentifier and postProcessResponse`', () => {
+        let origHooks = {};
+
+        before('setup custom hooks', () => {
+          origHooks.postProcessResponse = knex.client.config.postProcessResponse;
+          origHooks.wrapIdentifier = knex.client.config.wrapIdentifier;
+
+          // Add `_foo` to each identifier.
+          knex.client.config.postProcessResponse = (res) => {
+            if (Array.isArray(res)) {
+              return res.map(it => {
+                if (typeof it === 'object') {
+                  return _.mapKeys(it, (value, key) => {
+                    return key + '_foo';
+                  });
+                } else {
+                  return it;
+                }
+              })
+            } else {
+              return res;
+            }
+          };
+
+          // Remove `_foo` from the end of each identifier.
+          knex.client.config.wrapIdentifier = (id) => {
+            return id.substring(0, id.length - 4);
+          };
+        });
+
+        after('restore hooks', () => {
+          knex.client.config.postProcessResponse = origHooks.postProcessResponse;
+          knex.client.config.wrapIdentifier = origHooks.wrapIdentifier;
+        });
+
+        it('should return the correct column when a single property is given to returning', () => {
+          return knex('accounts_foo')
+            .insert({ balance_foo: 123 })
+            .returning('balance_foo').then(res => {
+              expect(res).to.eql([123]);
+            });
+        });
+
+        it('should return the correct columns when multiple properties are given to returning', () => {
+          return knex('accounts_foo')
+            .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
+            .returning(['balance_foo', 'email_foo']).then(res => {
+              expect(res).to.eql([{ balance_foo: 123, email_foo: 'foo@bar.com' }]);;
+            });
+        });
+      });
+    }
+
     it('should forward the .get() function from bluebird', function() {
       return knex('accounts').select().limit(1).then(function(accounts){
         var firstAccount = accounts[0];

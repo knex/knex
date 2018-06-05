@@ -246,7 +246,8 @@ assign(Client_PG.prototype, {
         if (returning === '*' || Array.isArray(returning)) {
           returns[i] = row;
         } else {
-          returns[i] = row[returning];
+          // Pluck the only column in the row.
+          returns[i] = row[Object.keys(row)[0]];
         }
       }
       return returns;
