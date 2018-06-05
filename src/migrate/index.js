@@ -327,7 +327,15 @@ export default class Migrator {
   // Returns the latest batch number.
   _latestBatchNumber(trx = this.knex) {
     return trx.from(getTableName(this.config.tableName, this.config.schemaName))
-      .max('batch as max_batch').then(obj => obj[0].max_batch || 0);
+      .max('batch as max_batch').then(obj => {
+        let maxBatchKey = 'max_batch'
+        if (this.knex.client.config.postProcessResponse) {
+          maxBatchKey = Object.keys(
+            this.knex.client.config.postProcessResponse({ max_batch: null })
+          )[0]
+        }
+        return obj[0][maxBatchKey] || 0
+      });
   }
 
   // If transaction config for a single migration is defined, use that.
