@@ -22,6 +22,7 @@ const CONFIG_DEFAULT = Object.freeze({
     '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
   ],
   tableName: 'knex_migrations',
+  validateMigrationList: true,
   schemaName: null,
   directory: './migrations',
   disableTransactions: false
@@ -45,7 +46,7 @@ export default class Migrator {
   latest(config) {
     this.config = this.setConfig(config);
     return this._migrationData()
-      .tap(validateMigrationList)
+      .tap(this.validateMigrationList.bind(this))
       .spread((all, completed) => {
         const migrations = difference(all, completed);
 
@@ -69,7 +70,7 @@ export default class Migrator {
     return Promise.try(() => {
       this.config = this.setConfig(config);
       return this._migrationData()
-        .tap(validateMigrationList)
+        .tap(this.validateMigrationList.bind(this))
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
           return this._runBatch(map(migrations, 'name'), 'down');
@@ -397,18 +398,19 @@ export default class Migrator {
     return assign({}, CONFIG_DEFAULT, this.config || {}, config);
   }
 
-}
-
-// Validates that migrations are present in the appropriate directories.
-function validateMigrationList(migrations) {
-  const all = migrations[0];
-  const completed = migrations[1];
-  const diff = difference(completed, all);
-  if (!isEmpty(diff)) {
-    throw new Error(
-      `The migration directory is corrupt, the following files are missing: ${diff.join(', ')}`
-    );
+  // Validates that migrations are present in the appropriate directories.
+  validateMigrationList(migrations) {
+    if(!this.config.validateMigrationList) return;
+    const all = migrations[0];
+    const completed = migrations[1];
+    const diff = difference(completed, all);
+    if (!isEmpty(diff)) {
+      throw new Error(
+        `The migration directory is corrupt, the following files are missing: ${diff.join(', ')}`
+      );
+    }
   }
+
 }
 
 function warnPromise(value, name, fn) {
