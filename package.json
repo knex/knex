@@ -94,6 +94,7 @@
     "type": "git",
     "url": "git://github.com/tgriesser/knex.git"
   },
+  "homepage": "https://knexjs.org",
   "keywords": [
     "sql",
     "query",
