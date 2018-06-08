@@ -238,6 +238,16 @@ assign(Client_MSSQL.prototype, {
         debug("request::completed id=%s", request.id);
       });
 
+      request.on('error', err => {
+        debug("request::error id=%s message=%s", request.id, err.message);
+        reject(err);
+      })
+
+      // connection.once('errorMessage', err => {
+      //   debug("request::errorMessage id=%s message=%s", request.id, err.message);
+      //   reject(err);
+      // })
+
       if (Array.isArray(query.bindings)) {
         for (let i = 0; i < query.bindings.length; i++) {
           const binding = query.bindings[i];
@@ -317,7 +327,10 @@ assign(Client_MSSQL.prototype, {
   processResponse(obj, runner) {
     if (obj == null) return;
     const { response, method } = obj;
-    if (obj.output) return obj.output.call(runner, response);
+    if (obj.output) {
+      debugger;
+      return obj.output.call(runner, response);
+    }
 
     if (!response || !response.length) {
       return;
@@ -328,7 +341,7 @@ assign(Client_MSSQL.prototype, {
       case "pluck":
       case "first":
         if (method === "pluck") return map(response, obj.pluck);
-        return method === "first" ? mapValues(response[0], 'value') : response;
+        return method === "first" ? response[0] : response;
       case "insert":
       case "del":
       case "update":

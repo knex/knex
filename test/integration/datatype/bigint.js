@@ -67,6 +67,7 @@ module.exports = function (knex) {
             console.log(row);
             expect(row.id).to.equal('negative');
         }).catch(function (err) {
+            throw err;
             expect(err).to.be.undefined;
         });
     });

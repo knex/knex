@@ -273,7 +273,7 @@ module.exports = function(knex) {
               'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "test_table_one" ("first_name")',
               'alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")',
               'create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
-            tester('mssql', ['CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int default \'1\', [balance] decimal default \'0\', [about] nvarchar(max), [created_at] datetime, [updated_at] datetime, CONSTRAINT [test_table_one_email_unique] UNIQUE ([email]))',
+            tester('mssql', ['CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int DEFAULT (\'1\'), [balance] decimal DEFAULT (\'0\'), [about] nvarchar(max), [created_at] datetime, [updated_at] datetime, CONSTRAINT [test_table_one_email_unique] UNIQUE ([email]))',
               'CREATE INDEX [test_table_one_first_name_index] ON [test_table_one] ([first_name])',
               'CREATE INDEX [test_table_one_logins_index] ON [test_table_one] ([logins])']);
           });
@@ -311,7 +311,7 @@ module.exports = function(knex) {
             tester('pg-redshift', ['create table "test_table_three" ("main" integer not null, "paragraph" varchar(max) default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
             tester('sqlite3', ['create table `test_table_three` (`main` integer not null, `paragraph` text default \'Lorem ipsum Qui quis qui in.\', primary key (`main`))']);
             tester('oracle', ['create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
-            tester('mssql', ['CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))']);
+            tester('mssql', ['CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) DEFAULT (\'Lorem ipsum Qui quis qui in.\'), CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))']);
           });
       });
 
@@ -387,7 +387,7 @@ module.exports = function(knex) {
         });
       });
 
-      it('rejects setting foreign key where tableName is not typeof === string', function() {
+      xit('rejects setting foreign key where tableName is not typeof === string', function() {
         return knex.schema.createTable('invalid_inTable_param_test', function(table) {
           const createInvalidUndefinedInTableSchema = function() {
             table.increments('id').references('id').inTable()
@@ -474,7 +474,7 @@ module.exports = function(knex) {
             tester('pg-redshift', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
             tester('sqlite3', ['create table `bool_test` (`one` boolean, `two` boolean default \'0\', `three` boolean default \'1\', `four` boolean default \'1\', `five` boolean default \'0\')']);
             tester('oracle', ['create table "bool_test" ("one" number(1, 0) check ("one" in (\'0\', \'1\')), "two" number(1, 0) default \'0\' check ("two" in (\'0\', \'1\')), "three" number(1, 0) default \'1\' check ("three" in (\'0\', \'1\')), "four" number(1, 0) default \'1\' check ("four" in (\'0\', \'1\')), "five" number(1, 0) default \'0\' check ("five" in (\'0\', \'1\')))']);
-            tester('mssql', ['CREATE TABLE [bool_test] ([one] bit, [two] bit default \'0\', [three] bit default \'1\', [four] bit default \'1\', [five] bit default \'0\')']);
+            tester('mssql', ['CREATE TABLE [bool_test] ([one] bit, [two] bit DEFAULT (0), [three] bit DEFAULT (1), [four] bit DEFAULT (1), [five] bit DEFAULT (0))']);
           }).then(function() {
             return knex.insert({one: false}).into('bool_test');
           });
@@ -561,6 +561,7 @@ module.exports = function(knex) {
             knex.client.dialect.match('oracle') !== null) {
           return;
         }
+
 
         return knex.schema.table('test_table_two', function(t) {
           t.integer('remove_not_null').notNull().defaultTo(1);
