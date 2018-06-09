@@ -1,4 +1,5 @@
 yarn.lock
+package-lock.json
 raw
 *.sw?
 .idea
