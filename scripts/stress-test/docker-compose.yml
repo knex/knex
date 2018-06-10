@@ -8,9 +8,12 @@ services:
       - "23306:23306"
       - "25432:25432"
       - "21521:21521"
+      - "21433:21433"
     links:
       - "mysql"
       - "postgresql"
+      - "oracledbxe"
+      - "mssql"
 
   mysql:
     image: mysql:5.7
@@ -35,10 +38,10 @@ services:
     environment:
       - ORACLE_ALLOW_REMOTE=true
 
-#  mssql:
-#    image: microsoft/mssql-server-linux
-#    ports:
-#      - "31433:1433"
-#    environment:
-#      - ACCEPT_EULA=Y
-#      - SA_PASSWORD=mssqlpassword
+  mssql:
+    image: microsoft/mssql-server-linux:2017-latest
+    ports:
+      - "31433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=S0meVeryHardPassword
