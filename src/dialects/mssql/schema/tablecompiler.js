@@ -146,7 +146,11 @@ assign(TableCompiler_MSSQL.prototype, {
   // Compile a drop unique key command.
   dropUnique (column, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, column);
-    this.pushQuery(`ALTER TABLE ${this.tableName()} DROP CONSTRAINT ${indexName}`);
+    if (!this.forCreate) {
+      this.pushQuery(`DROP INDEX ${indexName} ON ${this.tableName()}`);
+    } else {
+      this.pushQuery(`ALTER TABLE ${this.tableName()} DROP CONSTRAINT ${indexName}`);
+    }
   }
 
 })
