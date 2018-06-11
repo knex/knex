@@ -17,7 +17,7 @@ module.exports = function(knex) {
         t.string('third').unique();
         t.unique(['first', 'second']);
       })
-      .then(function() {
+      .finally(function() {
         t.end();
       });
   });
@@ -37,7 +37,7 @@ module.exports = function(knex) {
     }).catch(err => {
       t.assert(true, 'two column unique constraint prevents adding rows');
 
-      // even one null makes index to not match
+      // even one null makes index to not match, thus allows adding the row
       return knex('test_table').insert([
         { first: 'fo', second: null, third: null }, 
         { first: 'fo', second: null, third: null },
@@ -49,8 +49,37 @@ module.exports = function(knex) {
       return knex('test_table');
     }).then(res => {
       t.assert(res.length == 5, 'multiple rows with nulls could be added despite of unique constraints')
+    }).finally(() => {
       t.end();
     });
+  });
+
+  tape(dialect + ' - create and drop index works in different cases', t => {
+    t.plan(1);
+    knex.schema.dropTableIfExists('test_table_drop_unique')
+      .createTable('test_table_drop_unique', t => {
+        t.integer('id');
+        t.string('first');
+        t.string('second');
+        t.string('third').unique();
+        t.string('fourth');
+        t.unique(['first', 'second']);
+        t.unique('fourth');
+      }).alterTable('test_table_drop_unique', t => {
+        t.dropUnique('third');
+        t.dropUnique('fourth');
+        t.dropUnique(['first', 'second']);
+      }).alterTable('test_table_drop_unique', t => {
+        t.unique(['first', 'second']);
+        t.unique('third');
+        t.unique('fourth');
+      })
+      .then(() => {
+        t.assert(true, 'Creating / dropping / creating unique constraint was a success');
+      })
+      .finally(() => {
+        t.end();
+      })
   });
 
 }
