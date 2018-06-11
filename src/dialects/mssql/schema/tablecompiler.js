@@ -235,6 +235,12 @@ assign(TableCompiler_MSSQL.prototype, {
     );
   },
 
+  foreign(data) {
+    if (typeof data.inTable !== 'string') {
+      throw TypeError('Foreign key must be a string');
+    }
+    return TableCompiler_MSSQL.super_.prototype.foreign.apply(this, arguments);
+  }
 });
 
 export default TableCompiler_MSSQL;

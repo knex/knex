@@ -351,7 +351,7 @@ module.exports = function(knex) {
           }
         );
         tester('mssql',
-          'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = \'dbo\'',
+          'select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = \'dbo\'',
           ['datatype_test', 'knex_test'], {
             "enum_value": {
               "defaultValue": null,
@@ -410,7 +410,7 @@ module.exports = function(knex) {
           }
         );
         tester('mssql',
-          'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = \'dbo\'',
+          'select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = \'dbo\'',
           null, {
             "defaultValue": null,
             "maxLength": null,
@@ -722,6 +722,8 @@ module.exports = function(knex) {
     it('Event: start', function() {
       // On redshift, cannot set an identity column to a value
       if (/redshift/i.test(knex.client.dialect)) { return; }
+      // On mssql, cannot set an identity column to a value without IDENTITY_INSERT
+      if (/mssql/i.test(knex.client.dialect)) { return; }
       return knex('accounts')
         .insert({id: '999', last_name: 'Start'})
         .then(function() {

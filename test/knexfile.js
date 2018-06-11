@@ -138,7 +138,7 @@ var testConfigs = {
       user: "sa",
       password: "S0meVeryHardPassword",
       server: "localhost",
-      database: "knex_test"
+      database: "knex_test",
     },
     pool: pool,
     migrations: migrations,

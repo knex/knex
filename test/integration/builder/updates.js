@@ -40,7 +40,7 @@ module.exports = function(knex) {
           );
           tester(
             'mssql',
-            'update [accounts] set [first_name] = ?, [last_name] = ?, [email] = ? where [id] = ?;select @@rowcount',
+            'update [accounts] set [first_name] = ?, [last_name] = ?, [email] = ? where [id] = ?',
             ['User','Test','test100@example.com',1],
             1
           );
@@ -63,7 +63,7 @@ module.exports = function(knex) {
           );
           tester(
             'mssql',
-            'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? where [id] = ?;select @@rowcount',
+            'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? where [id] = ?',
             ['test100@example.com', null, 'Test', 1000],
             0
           );
@@ -192,6 +192,7 @@ module.exports = function(knex) {
             first_name: 'UpdatedUser',
             last_name: 'UpdatedTest',
             email: 'test100@example.com',
+            balance: 12.24,
             logins: 1,
             about: 'Lorem ipsum Dolore labore incididunt enim.',
             created_at: d,

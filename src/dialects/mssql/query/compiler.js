@@ -154,7 +154,7 @@ assign(QueryCompiler_MSSQL.prototype, {
           : '';
       case 'rowcount':
         return value
-          ? ';select @@rowcount'
+          ? '' // ''
           : '';
     }
   },
@@ -186,7 +186,7 @@ assign(QueryCompiler_MSSQL.prototype, {
       schema = this.client.customWrapIdentifier(schema, identity);
     }
 
-    let sql =`select * from information_schema.columns where table_name = ? and table_catalog = ?`;
+    let sql =`select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ?`;
     const bindings = [table, this.client.database()];
 
     if (schema) {
@@ -200,12 +200,12 @@ assign(QueryCompiler_MSSQL.prototype, {
       sql,
       bindings: bindings,
       output(resp) {
-        const out = resp.reduce(function(columns, val) {
-          columns[val.COLUMN_NAME] = {
-            defaultValue: val.COLUMN_DEFAULT,
-            type: val.DATA_TYPE,
-            maxLength: val.CHARACTER_MAXIMUM_LENGTH,
-            nullable: (val.IS_NULLABLE === 'YES')
+        const out = resp.reduce((columns, val) => {
+          columns[val[0].value] = {
+            defaultValue: val[1].value,
+            type: val[2].value,
+            maxLength: val[3].value,
+            nullable: (val[4].value === 'YES')
           };
           return columns
         }, {})

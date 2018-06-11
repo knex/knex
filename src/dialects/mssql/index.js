@@ -1,6 +1,6 @@
 // MSSQL Client
 // -------
-import { assign, map, flatten, values, mapValues } from "lodash";
+import { assign, map, flatten, values, mapValues, chain } from "lodash";
 import inherits from "inherits";
 
 import Client from "../../client";
@@ -35,6 +35,8 @@ function Client_MSSQL(config) {
 inherits(Client_MSSQL, Client);
 
 assign(Client_MSSQL.prototype, {
+  requestQueue: [],
+
   dialect: "mssql",
 
   driverName: "mssql",
@@ -75,13 +77,21 @@ assign(Client_MSSQL.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     return new Promise((resolve, reject) => {
-      const config = Object.assign({}, { 
-        server: this.config.connection.host,
-        userName: this.config.connection.user,
-        options: {
-          useColumnNames: true,
-        }
-      }, this.config.connection);
+      const config = Object.assign(
+        {},
+        {
+          server: this.config.connection.host,
+          userName: this.config.connection.user,
+          options: {}
+        },
+        this.config.connection
+      );
+
+      Object.assign(
+        config.options,
+        { database: this.config.connection.database },
+        this.config.connection.options
+      );
 
       const connection = new tedious.Connection(config);
       debug("connection::connection new connection requested");
@@ -98,6 +108,7 @@ assign(Client_MSSQL.prototype, {
         connection.on("error", e => {
           debug("connection::error message=%s", err.message);
           connection.__knex__disposed = e;
+          connection.connected = false;
         });
 
         connection.once("end", () => {
@@ -120,7 +131,7 @@ assign(Client_MSSQL.prototype, {
   destroyRawConnection(connection) {
     debug("connection::destroy");
     return new Promise((resolve, reject) => {
-      connection.once('end', () => {
+      connection.once("end", () => {
         resolve();
       });
 
@@ -130,152 +141,159 @@ assign(Client_MSSQL.prototype, {
 
   // Position the bindings for the query.
   positionBindings(sql) {
-    let questionCount = -1;
+    let questionCount = 0;
     return sql.replace(/\?/g, function() {
-      questionCount += 1;
-      return `@p${questionCount}`;
+      return `@p${questionCount++}`;
     });
   },
 
-  // Grab a connection, run the query via the MSSQL streaming interface,
-  // and pass that through to the stream we've sent back to the client.
-  _stream(connection, obj, stream, options) {
-    options = options || {};
-    if (!obj || typeof obj === "string") obj = { sql: obj };
-    return new Promise((resolver, rejecter) => {
-      stream.on("error", err => {
-        rejecter(err);
-      });
-      stream.on("end", resolver);
-      const { sql } = obj;
-      if (!sql) return resolver();
-      const req = (connection.tx_ || connection).request();
-      //req.verbose = true;
-      req.multiple = true;
-      req.stream = true;
-      if (obj.bindings) {
-        for (let i = 0; i < obj.bindings.length; i++) {
-          this._setReqInput(req, i, obj.bindings[i]);
-        }
+  _chomp(connection) {
+    if (connection.state.name === "LoggedIn") {
+      const nextRequest = this.requestQueue.pop();
+      if (nextRequest) {
+        debug(
+          "connection::query executing query, %d more in queue",
+          this.requestQueue.length
+        );
+
+        nextRequest.once("requestCompleted", () => {
+          setImmediate(() => this._chomp(connection));
+        });
+
+        connection.execSql(nextRequest);
       }
-      req.pipe(stream);
-      req.query(sql);
+    }
+  },
+
+  _enqueueRequest(request, connection) {
+    this.requestQueue.push(request);
+    this._chomp(connection);
+  },
+
+  _makeRequest(query, callback) {
+    const sql = typeof query === "string" ? query : query.sql;
+    let rowCount = 0;
+
+    const request = new tedious.Request(sql, (err, remoteRowCount) => {
+      if (err) {
+        debug("request::error message=%s", err.message);
+        return callback(err);
+      }
+
+      rowCount = remoteRowCount;
+      debug("request::callback rowCount=%d", rowCount);
     });
+
+    request.on("prepared", () => {
+      debug("request %s::request prepared", this.id);
+    });
+
+    request.on("done", (rowCount, more) => {
+      debug("request::done rowCount=%d more=%s", rowCount, more);
+    });
+
+    request.on("doneProc", (rowCount, more) => {
+      debug(
+        "request::doneProc id=%s rowCount=%d more=%s",
+        request.id,
+        rowCount,
+        more
+      );
+    });
+
+    request.on("doneInProc", (rowCount, more) => {
+      debug(
+        "request::doneInProc id=%s rowCount=%d more=%s",
+        request.id,
+        rowCount,
+        more
+      );
+    });
+
+    request.once("requestCompleted", () => {
+      debug("request::completed id=%s", request.id);
+      return callback(null, rowCount);
+    });
+
+    request.on("error", err => {
+      debug("request::error id=%s message=%s", request.id, err.message);
+      return callback(err);
+    });
+
+    return request;
+  },
+
+  _stream(connection, query, stream) {
+    return new Promise((resolve, reject) => {
+      const request = this._makeRequest(query, err => {
+        if (err) {
+          return reject(err);
+        }
+
+        resolve();
+      });
+
+      request.on("row", row => stream.push(mapValues(row, "value")));
+      request.on("error", err => stream.emit("error", err));
+      request.once("requestCompleted", () => stream.push(null /* EOF */));
+
+      this._assignBindings(request, query.bindings);
+      this._enqueueRequest(request, connection);
+    });
+  },
+
+  _assignBindings(request, bindings) {
+    if (Array.isArray(bindings)) {
+      for (let i = 0; i < bindings.length; i++) {
+        const binding = bindings[i];
+        this._setReqInput(request, i, binding);
+      }
+    }
   },
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
-  _queryOld(connection, obj) {
-    const client = this;
-    if (!obj || typeof obj === "string") obj = { sql: obj };
-    return new Promise((resolver, rejecter) => {
-      const { sql } = obj;
-      if (!sql) return resolver();
-      const req = (connection.tx_ || connection).request();
-      // req.verbose = true;
-      req.multiple = true;
-      if (obj.bindings) {
-        for (let i = 0; i < obj.bindings.length; i++) {
-          const binding = obj.bindings[i];
-          const type = client._typeForBinding(binding);
-
-          client._setReqInput(req, i, binding, type);
-        }
-      }
-      req.query(sql, (err, recordset) => {
-        if (err) {
-          return rejecter(err);
-        }
-        obj.response = recordset.recordsets[0];
-        resolver(obj);
-      });
-    });
-  },
-
   _query(connection, query) {
-    const sql = typeof query === "string" ? query : query.sql;
-
     return new Promise((resolve, reject) => {
-      const request = new tedious.Request(sql, (err, rowCount) => {
+      const rows = [];
+      const request = this._makeRequest(query, (err, count) => {
         if (err) {
-          debug("request::error message=%s", err.message);
           return reject(err);
         }
 
-        if (!query.response) {
-          query.response = new Array(rowCount);
-        }
-        debug("request::callback rowCount=%d", rowCount);
-        resolve(query);
-      });
+        query.response = rows;
+        query.response.rowCount = count;
 
-      request.on('prepared', () => {
-        debug("request %s::request prepared", this.id);
+        resolve(query);
       });
 
       request.on("row", row => {
         debug("request::row");
-        if (!query.response) {
-          query.response = [];
-        }
-
-        query.response.push(mapValues(row, 'value'));
+        rows.push(row);
       });
 
-      request.on("done", (rowCount, more) => {
-        debug("request::done rowCount=%d more=%s", rowCount, more);
-      });
-      
-      request.on("doneProc", (rowCount, more) => {
-        debug("request::doneProc id=%s rowCount=%d more=%s", request.id, rowCount, more);
-      });
-
-      request.on("doneInProc", (rowCount, more) => {
-        debug("request::doneInProc id=%s rowCount=%d more=%s", request.id, rowCount, more);
-      });
-
-      request.on('requestCompleted', () => {
-        debug("request::completed id=%s", request.id);
-      });
-
-      request.on('error', err => {
-        debug("request::error id=%s message=%s", request.id, err.message);
-        reject(err);
-      })
-
-      // connection.once('errorMessage', err => {
-      //   debug("request::errorMessage id=%s message=%s", request.id, err.message);
-      //   reject(err);
-      // })
-
-      if (Array.isArray(query.bindings)) {
-        for (let i = 0; i < query.bindings.length; i++) {
-          const binding = query.bindings[i];
-          const type = this._typeForBinding(binding);
-
-          this._setReqInput(request, i, binding, type);
-          debug("request::binding pos=%d type=%s value=%s", i, type.name, binding);
-        }
-      }
-
-      connection.execSql(request);
-      debug("connection::query executing query");
+      this._assignBindings(request, query.bindings);
+      this._enqueueRequest(request, connection);
     });
   },
 
   // sets a request input parameter. Detects bigints and decimals and sets type appropriately.
-  _setReqInput(req, i, binding, type = tedious.TYPES.NVarChar) {
+  _setReqInput(req, i, binding) {
     const tediousType = this._typeForBinding(binding);
     const bindingName = "p".concat(i);
-    let scale;
+    let options;
 
-    if (typeof binding == "number") {
-      if (binding % 1 !== 0) {
-        scale = this._scaleForBinding(binding);
-      }
+    if (typeof binding === "number" && binding % 1 !== 0) {
+      options = this._scaleForBinding(binding);
     }
 
-    req.addParameter(bindingName, tediousType, binding, scale);
+    debug(
+      "request::binding pos=%d type=%s value=%s",
+      i,
+      tediousType.name,
+      binding
+    );
+    req.addParameter(bindingName, tediousType, binding, options);
   },
 
   _scaleForBinding(binding) {
@@ -310,9 +328,9 @@ assign(Client_MSSQL.prototype, {
         return tedious.TYPES.Int;
       }
       default: {
-        if (binding === null) {
-          return tedious.TYPES.Null;
-        }
+        // if (binding === null || typeof binding === 'undefined') {
+        //   return tedious.TYPES.Null;
+        // }
 
         if (binding instanceof Date) {
           return tedious.TYPES.DateTime;
@@ -324,36 +342,58 @@ assign(Client_MSSQL.prototype, {
   },
 
   // Process the response as returned from the query.
-  processResponse(obj, runner) {
-    if (obj == null) return;
-    const { response, method } = obj;
-    if (obj.output) {
-      debugger;
-      return obj.output.call(runner, response);
+  processResponse(query, runner) {
+    if (query == null) return;
+
+    let { response } = query;
+    const { method } = query;
+    const { rowCount } = response;
+
+    if (query.output) {
+      return query.output.call(runner, response);
     }
 
-    if (!response || !response.length) {
-      return;
-    }
+    response = response.map(row => row.reduce((columns, r) => {
+      const colName = r.metadata.colName;
+
+      if (columns.hasOwnProperty(colName)) {
+        if (!Array.isArray(columns[colName])) {
+          columns[colName] = [columns[colName]];
+        }
+        
+        columns[colName].push(r.value);
+      } else {
+        columns[colName] = r.value;
+      }
+
+      return columns;
+    }, {}));
+
+    // response = response.map(r =>
+    //   chain(r)
+    //     .keyBy(k => k.metadata.colName)
+    //     .mapValues("value")
+    //     .value()
+    // );
 
     switch (method) {
       case "select":
       case "pluck":
       case "first":
-        if (method === "pluck") return map(response, obj.pluck);
+        if (method === "pluck") return map(response, query.pluck);
         return method === "first" ? response[0] : response;
       case "insert":
       case "del":
       case "update":
       case "counter":
-        if (obj.returning) {
-          if (obj.returning === "@@rowcount") {
-            return response[0][""];
+        if (query.returning) {
+          if (query.returning === "@@rowcount") {
+            return rowCount || 0;
           }
 
           if (
-            (isArray(obj.returning) && obj.returning.length > 1) ||
-            obj.returning[0] === "*"
+            (isArray(query.returning) && query.returning.length > 1) ||
+            query.returning[0] === "*"
           ) {
             return response;
           }

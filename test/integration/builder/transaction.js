@@ -343,6 +343,9 @@ module.exports = function(knex) {
         var sql = 'SELECT 1 = 1';
         if (knex.client.dialect === 'oracle') {
           sql = 'SELECT 1 FROM DUAL';
+        } else if (knex.client.dialect === 'mssql') {
+          // MSSQL does not have a boolean type.
+          sql = 'SELECT CASE WHEN 1 = 1 THEN 1 ELSE 0 END'
         }
         trx.raw(sql).then(function () {
           //No connection is available, so try issuing a query without transaction.
@@ -436,7 +439,7 @@ module.exports = function(knex) {
           expect(false).to.be.ok;
         })
         .catch(function(err) {
-          expect(err).should.exist;
+          expect(err).to.exist;
           expect(err.originalError).to.equal(originalError);
           // confirm transaction rolled back
           return querySampleRow().then(function(resp) {

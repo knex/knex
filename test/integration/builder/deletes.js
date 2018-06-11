@@ -43,7 +43,7 @@ module.exports = function(knex) {
           );
           tester(
             'mssql',
-            'delete from [accounts] where [id] = ?;select @@rowcount',
+            'delete from [accounts] where [id] = ?',
             [1],
             1
           );
@@ -106,9 +106,10 @@ module.exports = function(knex) {
               email: 'test2@example.com',
               logins: 1,
               about: 'Lorem ipsum Dolore labore incididunt enim.',
+              balance: 0,
               created_at: d,
               updated_at: d,
-              phone: null
+              phone: null,
             }]
           );
         });

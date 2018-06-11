@@ -225,7 +225,7 @@ export default class Migrator {
       // could have been done while waiting for the lock:
       .then(() => trx ? this._listCompleted(trx) : [])
       .then(completed => migrations = difference(migrations, completed))
-      .then(() => Promise.all(map(migrations, bind(this._validateMigrationStructure, this))))
+      .then(() => Promise.mapSeries(migrations, bind(this._validateMigrationStructure, this)))
       .then(() => this._latestBatchNumber(trx))
       .then(batchNo => {
         if (direction === 'up') batchNo++;

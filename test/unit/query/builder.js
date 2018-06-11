@@ -3930,7 +3930,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
         bindings: ['foo', 'bar', 1]
       },
       postgres: {
@@ -3981,7 +3981,7 @@ describe("QueryBuilder", function() {
         bindings: [null, 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
         bindings: [null, 'bar', 1]
       },
       postgres: {
@@ -4003,7 +4003,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1, 5]
       },
       mssql: {
-        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc;select @@rowcount',
+        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc',
         bindings: [5, 'foo', 'bar', 1]
       },
       postgres: {
@@ -4024,7 +4024,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?;select @@rowcount',
+        sql: 'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?',
         bindings: ['foo', 'bar', 1]
       },
       postgres: {
@@ -4046,7 +4046,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1, 1]
       },
       mssql: {
-        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
+        sql: 'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?',
         bindings: [1, 'foo', 'bar', 1]
       },
       postgres: {
@@ -4067,7 +4067,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo', 'bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+        sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
         bindings: ['foo', 'bar', 1]
       },
       postgres: {
@@ -4110,7 +4110,7 @@ describe("QueryBuilder", function() {
         bindings: ['bar', 1]
       },
       mssql: {
-        sql: 'update [users] set [email] = foo, [name] = ? where [id] = ?;select @@rowcount',
+        sql: 'update [users] set [email] = foo, [name] = ? where [id] = ?',
         bindings: ['bar', 1]
       },
       postgres: {
@@ -4131,7 +4131,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'update [users] set [balance] = [balance] + 10 where [id] = ?;select @@rowcount',
+        sql: 'update [users] set [balance] = [balance] + 10 where [id] = ?',
         bindings: [1]
       },
       postgres: {
@@ -4152,7 +4152,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'update [users] set [balance] = [balance] + 1.23 where [id] = ?;select @@rowcount',
+        sql: 'update [users] set [balance] = [balance] + 1.23 where [id] = ?',
         bindings: [1]
       },
       postgres: {
@@ -4173,7 +4173,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'update [users] set [balance] = [balance] - 10 where [id] = ?;select @@rowcount',
+        sql: 'update [users] set [balance] = [balance] - 10 where [id] = ?',
         bindings: [1]
       },
       postgres: {
@@ -4194,7 +4194,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'update [users] set [balance] = [balance] - 1.23 where [id] = ?;select @@rowcount',
+        sql: 'update [users] set [balance] = [balance] - 1.23 where [id] = ?',
         bindings: [1]
       },
       postgres: {
@@ -4215,7 +4215,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo']
       },
       mssql: {
-        sql: 'delete from [users] where [email] = ?;select @@rowcount',
+        sql: 'delete from [users] where [email] = ?',
         bindings: ['foo']
       },
       postgres: {
@@ -4504,7 +4504,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'delete from [word] where [page_id] in (select [id] from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?));select @@rowcount',
+        sql: 'delete from [word] where [page_id] in (select [id] from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?))',
         bindings: [1]
       },
       postgres: {
@@ -4523,7 +4523,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'delete from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?);select @@rowcount',
+        sql: 'delete from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?)',
         bindings: [1]
       },
       postgres: {
@@ -4542,7 +4542,7 @@ describe("QueryBuilder", function() {
         bindings: [1]
       },
       mssql: {
-        sql: 'delete from [chapter] where [book] = ?;select @@rowcount',
+        sql: 'delete from [chapter] where [book] = ?',
         bindings: [1]
       },
       postgres: {
@@ -4595,7 +4595,7 @@ describe("QueryBuilder", function() {
         bindings: ['Boonesville', 1, 5]
       },
       mssql: {
-        sql: 'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
+        sql: 'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?',
         bindings: ['Boonesville', 1, 5]
       },
       postgres: {
@@ -5630,7 +5630,7 @@ describe("QueryBuilder", function() {
     testsql(qb().with('withClause', function() {
       this.select('foo').from('users');
     }).update({foo: 'updatedFoo'}).where('email', '=', 'foo').from('users'), {
-      mssql: 'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?;select @@rowcount',
+      mssql: 'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?',
       sqlite3: 'with `withClause` as (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
       postgres: 'with "withClause" as (select "foo" from "users") update "users" set "foo" = ? where "email" = ?'
     });
@@ -5640,7 +5640,7 @@ describe("QueryBuilder", function() {
     testsql(qb().with('withClause', function() {
       this.select('email').from('users');
     }).del().where('foo', '=', 'updatedFoo').from('users'), {
-      mssql: 'with [withClause] as (select [email] from [users]) delete from [users] where [foo] = ?;select @@rowcount',
+      mssql: 'with [withClause] as (select [email] from [users]) delete from [users] where [foo] = ?',
       sqlite3: 'with `withClause` as (select `email` from `users`) delete from `users` where `foo` = ?',
       postgres: 'with "withClause" as (select "email" from "users") delete from "users" where "foo" = ?'
     });

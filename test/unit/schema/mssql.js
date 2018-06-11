@@ -299,7 +299,7 @@ describe("MSSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] nvarchar(100) not null');
   });
 
-  xit('allows for raw values in the default field', function() {
+  it('allows for raw values in the default field', function() {
     tableSql = client.schemaBuilder().table('users', function() {
       this.string('foo', 100).nullable().defaultTo(client.raw('CURRENT_TIMESTAMP'));
     }).toSQL();
@@ -377,7 +377,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(18, 4)');
   });
 
   it('test adding double specifying precision', function() {

@@ -23,12 +23,12 @@ assign(ColumnCompiler_MSSQL.prototype, {
   bigint: "bigint",
 
   double(precision, scale) {
-    if (!precision) return "decimal";
+    if (!precision) return "decimal(18, 4)";
     return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
   },
 
   floating(precision, scale) {
-    if (!precision) return "decimal";
+    if (!precision) return "decimal(18, 4)";
     return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
   },
 
