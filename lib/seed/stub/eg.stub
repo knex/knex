@@ -1,0 +1,11 @@
+provide: seed
+seed = (knex, Promise) ->
+  ;; Deletes ALL existing entries
+  knex(.table_name).del()
+  .then(() ->
+    ;; Inserts seed entries
+    knex(.table_name).insert with [
+      { id = 1, col-name = .row-value-1 }
+      { id = 2, col-name = .row-value-2 }
+      { id = 3, col-name = .row-value-3 }
+    ]
