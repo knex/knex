@@ -106,7 +106,7 @@ assign(Client_MSSQL.prototype, {
 
         connection.connected = true;
         connection.on("error", e => {
-          debug("connection::error message=%s", err.message);
+          debug("connection::error message=%s", e.message);
           connection.__knex__disposed = e;
           connection.connected = false;
         });
