@@ -98,7 +98,7 @@ export default class Transaction extends EventEmitter {
   }
 
   rollback(conn, error) {
-    return this.query(conn, 'ROLLBACK;', 2, error)
+    return this.query(conn, 'ROLLBACK', 2, error)
       .timeout(5000)
       .catch(Promise.TimeoutError, () => {
         this._rejecter(error);
