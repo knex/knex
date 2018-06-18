@@ -26,7 +26,7 @@ export default function Knex(config) {
   } else if (typeof config.client === 'function' && config.client.prototype instanceof Client) {
     Dialect = config.client
   } else {
-    const clientName = config.client || config.dialect
+    const clientName = config.client || config.dialect;
     Dialect = require(`./dialects/${aliases[clientName] || clientName}/index.js`)
   }
   if (typeof config.connection === 'string') {
@@ -36,7 +36,7 @@ export default function Knex(config) {
 }
 
 // Expose Client on the main Knex namespace.
-Knex.Client = Client
+Knex.Client = Client;
 
 /* eslint no-console:0 */
 
@@ -46,7 +46,7 @@ Object.defineProperties(Knex, {
       console.warn(
         'Knex.VERSION is deprecated, you can get the module version' +
         "by running require('knex/package').version"
-      )
+      );
       return '0.12.6'
     }
   },
@@ -56,17 +56,11 @@ Object.defineProperties(Knex, {
       return require('bluebird')
     }
   }
-})
+});
 
 // Run a "raw" query, though we can't do anything with it other than put
 // it in a query statement.
 Knex.raw = (sql, bindings) => {
   console.warn('global Knex.raw is deprecated, use knex.raw (chain off an initialized knex object)')
   return new Raw().set(sql, bindings)
-}
-
-// Doing this ensures Browserify works. Still need to figure out
-// the best way to do some of this.
-if (process.browser) {
-  require('./dialects/websql/index.js')
-}
+};
