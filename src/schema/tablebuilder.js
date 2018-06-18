@@ -168,9 +168,10 @@ each(columnTypes, function(type) {
 
 // The "timestamps" call is really just sets the `created_at` and `updated_at` columns.
 TableBuilder.prototype.timestamps = function timestamps() {
-  const method = (arguments[0] === true) ? 'timestamp' : 'datetime';
-  const createdAt = this[method]('created_at');
-  const updatedAt = this[method]('updated_at');
+  const isTimestamp = arguments[0] === true;
+  const method = isTimestamp ? 'timestamp' : 'datetime';
+  const createdAt = this[method]('created_at', isTimestamp);
+  const updatedAt = this[method]('updated_at', isTimestamp);
   if (arguments[1] === true) {
     const now = this.client.raw('CURRENT_TIMESTAMP');
     createdAt.notNullable().defaultTo(now);
