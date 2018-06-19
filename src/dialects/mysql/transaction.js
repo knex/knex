@@ -2,7 +2,6 @@
 import Transaction from '../../transaction';
 import inherits from 'inherits';
 import Debug from 'debug';
-import * as helpers from '../../helpers';
 import { assign, isUndefined } from 'lodash'
 
 const debug = Debug('knex:tx');
@@ -17,8 +16,8 @@ assign(Transaction_MySQL.prototype, {
   query(conn, sql, status, value) {
     const t = this
     const q = this.trxClient.query(conn, sql)
-      .catch(err => err.errno === 1305, function() {
-        helpers.warn(
+      .catch(err => err.errno === 1305, () => {
+        this.trxClient.logger.warn(
           'Transaction was implicitly committed, do not mix transactions and ' +
           'DDL with MySQL (#805)'
         )

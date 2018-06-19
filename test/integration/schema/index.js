@@ -84,7 +84,7 @@ module.exports = function(knex) {
             const table_name = 'increments_columns_1_test';
             const expected_column = 'id'
             const expected_comment = 'comment_1';
-            
+
             return knex.raw('SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',[table_name]).then(function(res) {
               const column_oid = res.rows[0].oid;
 
@@ -106,13 +106,13 @@ module.exports = function(knex) {
             const table_name = 'increments_columns_2_test';
             const expected_column = 'named_2';
             const expected_comment = 'comment_2';
-            
+
             return knex.raw('SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',[table_name]).then(function(res) {
               const column_oid = res.rows[0].oid;
-              
+
               return knex.raw('SELECT pg_catalog.col_description(?,?);', [column_oid, '1']).then(function(_res) {
                 const comment = _res.rows[0].col_description;
-                
+
                 return knex.raw('select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = ?;', table_name).then((res) => {
                   const column_name = res.rows[0].column_name;
 
@@ -161,7 +161,7 @@ module.exports = function(knex) {
               TABLE_NAME = ? AND
               COLUMN_NAME = ?
             `
-            
+
             return knex.raw(query,[table_name, expected_column]).then(function(res) {
               const comment = res[0][0].COLUMN_COMMENT
               expect(comment).to.equal(expected_comment)
@@ -183,14 +183,40 @@ module.exports = function(knex) {
               TABLE_NAME = ? AND
               COLUMN_NAME = ?
             `
-            
+
             return knex.raw(query,[table_name, expected_column]).then(function(res) {
               const comment = res[0][0].COLUMN_COMMENT
               expect(comment).to.equal(expected_comment)
             })
-            
+
           });
       });
+
+      describe('enum - postgres', function() {
+        if (!knex || !knex.client || !(/postgres/i.test(knex.client.dialect))) {
+          return Promise.resolve();
+        }
+
+        afterEach(function() {
+          return knex.schema.dropTableIfExists('native_enum_test').raw('DROP TYPE "foo_type"');
+        });
+
+        it('uses native type when useNative is specified', function() {
+          return knex.schema
+            .createTable('native_enum_test', function(table) {
+              table.enum('foo_column', ['a', 'b', 'c'], {
+                useNative: true,
+                enumName: 'foo_type'
+              }).notNull();
+              table.uuid('id').notNull();
+            }).testSql(function(tester) {
+              tester('pg', [
+                'create type "foo_type" as enum (\'a\', \'b\', \'c\')',
+                'create table "native_enum_test" ("foo_column" "foo_type" not null, "id" uuid not null)'
+              ]);
+            });
+        });
+      })
 
       it('Callback function must be supplied', function() {
         expect(function() {
@@ -222,6 +248,7 @@ module.exports = function(knex) {
             table.string('last_name');
             table.string('email').unique().nullable();
             table.integer('logins').defaultTo(1).index().comment();
+            table.float('balance').defaultTo(0);
             if (knex.client.dialect === 'oracle') {
               // use string instead to force varchar2 to avoid later problems with join and union
               table.string('about', 4000).comment('A comment.');
@@ -230,22 +257,23 @@ module.exports = function(knex) {
             }
             table.timestamps();
           }).testSql(function(tester) {
-            tester('mysql', ['create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default \'1\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add index `test_table_one_first_name_index`(`first_name`)','alter table `test_table_one` add unique `test_table_one_email_unique`(`email`)','alter table `test_table_one` add index `test_table_one_logins_index`(`logins`)']);
+            tester('mysql', ['create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default \'1\', `balance` float(8, 2) default \'0\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add index `test_table_one_first_name_index`(`first_name`)','alter table `test_table_one` add unique `test_table_one_email_unique`(`email`)','alter table `test_table_one` add index `test_table_one_logins_index`(`logins`)']);
             tester('redshift', ['create table "test_table_one" FOOBAR']);
-            tester('pg', ['create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index "test_table_one_first_name_index" on "test_table_one" ("first_name")','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")','create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
-            tester('pg-redshift', ['create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "about" varchar(max), "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")']);
-            tester('sqlite3', ['create table `test_table_one` (`id` integer not null primary key autoincrement, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` integer default \'1\', `about` text, `created_at` datetime, `updated_at` datetime)','create index `test_table_one_first_name_index` on `test_table_one` (`first_name`)','create unique index `test_table_one_email_unique` on `test_table_one` (`email`)','create index `test_table_one_logins_index` on `test_table_one` (`logins`)']);
+            tester('pg', ['create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "balance" real default \'0\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index "test_table_one_first_name_index" on "test_table_one" ("first_name")','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")','create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
+            tester('pg-redshift', ['create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "balance" real default \'0\', "about" varchar(max), "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")']);
+            tester('sqlite3', ['create table `test_table_one` (`id` integer not null primary key autoincrement, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` integer default \'1\', `balance` float default \'0\', `about` text, `created_at` datetime, `updated_at` datetime)','create index `test_table_one_first_name_index` on `test_table_one` (`first_name`)','create unique index `test_table_one_email_unique` on `test_table_one` (`email`)','create index `test_table_one_logins_index` on `test_table_one` (`logins`)']);
             tester('oracle', [
-              'create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default \'1\', "about" varchar2(4000), "created_at" timestamp with time zone, "updated_at" timestamp with time zone)',
+              'create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default \'1\', "balance" float default \'0\',"about" varchar2(4000), "created_at" timestamp with time zone, "updated_at" timestamp with time zone)',
               'comment on table "test_table_one" is \'A table comment.\'',
               "begin execute immediate 'create sequence \"test_table_one_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;",
               "create or replace trigger \"test_table_one_id_trg\" before insert on \"test_table_one\" for each row when (new.\"id\" is null)  begin select \"test_table_one_seq\".nextval into :new.\"id\" from dual; end;",
               "comment on column \"test_table_one\".\"logins\" is \'\'",
+              "comment on column \"test_table_one\".\"balance\" is \'\'",
               'comment on column "test_table_one"."about" is \'A comment.\'',
               'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "test_table_one" ("first_name")',
               'alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")',
               'create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
-            tester('mssql', ['CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int default \'1\', [about] nvarchar(max), [created_at] datetime, [updated_at] datetime, CONSTRAINT [test_table_one_email_unique] UNIQUE ([email]))',
+            tester('mssql', ['CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int default \'1\', [balance] decimal default \'0\', [about] nvarchar(max), [created_at] datetime, [updated_at] datetime, CONSTRAINT [test_table_one_email_unique] UNIQUE ([email]))',
               'CREATE INDEX [test_table_one_first_name_index] ON [test_table_one] ([first_name])',
               'CREATE INDEX [test_table_one_logins_index] ON [test_table_one] ([logins])']);
           });

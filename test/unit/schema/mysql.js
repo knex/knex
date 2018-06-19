@@ -54,6 +54,15 @@ describe(dialect + " SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table `users` add `id` int unsigned not null auto_increment primary key, add `email` varchar(255)');
   });
 
+  if(dialect !== 'maria') {
+    it('adding json', function() {
+	  tableSql = client.schemaBuilder().table('user', function(t) {
+	  t.json('preferences');
+	  }).toSQL();
+	  expect(tableSql[0].sql).to.equal('alter table `user` add `preferences` json');
+    });
+  }
+
   it('test drop table', function() {
     tableSql = client.schemaBuilder().dropTable('users').toSQL();
 
@@ -493,6 +502,28 @@ describe(dialect + " SchemaBuilder", function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table `users` add `created_at` datetime, add `updated_at` datetime');
+  });
+
+  it('test adding precise time stamp', function() {
+    client.version = '5.6'
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.timestamp('foo');
+    }).toSQL();
+    delete client.version
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` add `foo` timestamp(6)');
+  });
+
+  it('test adding precise time stamps', function() {
+    client.version = '5.6'
+    tableSql = client.schemaBuilder().table('users', function() {
+      this.timestamps();
+    }).toSQL();
+    delete client.version
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table `users` add `created_at` datetime(6), add `updated_at` datetime(6)');
   });
 
   it('test adding binary', function() {

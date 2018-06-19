@@ -102,29 +102,33 @@ test('#823, should not skip pool construction pool config is not defined', funct
 })
 
 test('#2321 dead connections are not evicted from pool', (t) => {
-  const knex = makeKnex(knexfile['mysql2']);
+  if (knexfile['mysql2']) {
+    const knex = makeKnex(knexfile['mysql2']);
 
-  t.plan(10);
-  Bluebird.all(Array.from(Array(30)).map(() => {
-    // kill all connections in pool
-    return knex.raw(`KILL connection_id()`).catch(() => {
-      // just ignore errors
-    });
-  }))
-  .delay(50) // wait driver to notice connection errors (2ms was enough locally)
-  .then(() => {
-    // all connections are dead, so they should be evicted from pool and this should work
-    return Promise.all(Array.from(Array(10)).map(
-      () => knex.select(1).then(() => t.pass('Read data'))
-    ));
-  })
-  .catch(e => {
-    t.fail(`Should have created new connection and execute the query, got : ${e}`);
-  })
-  .then(() => {
+    t.plan(10);
+    Bluebird.all(Array.from(Array(30)).map(() => {
+      // kill all connections in pool
+      return knex.raw(`KILL connection_id()`).catch(() => {
+        // just ignore errors
+      });
+    }))
+    .delay(50) // wait driver to notice connection errors (2ms was enough locally)
+    .then(() => {
+      // all connections are dead, so they should be evicted from pool and this should work
+      return Promise.all(Array.from(Array(10)).map(
+        () => knex.select(1).then(() => t.pass('Read data'))
+      ));
+    })
+    .catch(e => {
+      t.fail(`Should have created new connection and execute the query, got : ${e}`);
+    })
+    .then(() => {
+      t.end();
+    })
+    .finally(() => {
+      return knex.destroy();
+    })
+  } else {
     t.end();
-  })
-  .finally(() => {
-    return knex.destroy();
-  })
+  }
 });

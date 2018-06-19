@@ -1,4 +1,5 @@
 'use strict';
+/* eslint no-var: 0 */
 
 var assert     = require('assert')
 var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
@@ -67,16 +68,6 @@ var testConfigs = {
     pool: mysqlPool,
     migrations: migrations,
     seeds: seeds,
-    docker: {
-      factory:   './mysql/index.js',
-      container: 'knex-test-mysql',
-      image:     'mysql:5.7',
-      database:  'mysql',
-      username:  'root',
-      password:  'root',
-      hostPort:  '49153',
-      client:    'mysql'
-    }
   },
 
   mysql2: {
@@ -89,27 +80,6 @@ var testConfigs = {
     pool: mysqlPool,
     migrations: migrations,
     seeds: seeds,
-    docker: {
-      factory:   './mysql/index.js',
-      container: 'knex-test-mysql2',
-      image:     'mysql:5.7',
-      database:  'mysql',
-      username:  'root',
-      password:  'root',
-      hostPort:  '49153',
-      client:    'mysql'
-    }
-  },
-
-  oracle: {
-    client: 'strong-oracle',
-    connection: testConfig.oracle || {
-      adapter:  "oracle",
-      database: "knex_test",
-      user:     "oracle"
-    },
-    pool: pool,
-    migrations: migrations
   },
 
   oracledb: {
@@ -135,16 +105,6 @@ var testConfigs = {
     pool: pool,
     migrations: migrations,
     seeds: seeds,
-    docker: {
-      factory:   './postgres/index.js',
-      container: 'knex-test-postgres',
-      image:     'postgres:9.6',
-      database:  'postgres',
-      username:  'postgres',
-      password:  '',
-      hostPort:  '49152',
-      client:    'pg'
-    }
   },
 
   redshift: {
@@ -175,9 +135,9 @@ var testConfigs = {
   mssql: {
     dialect: 'mssql',
     connection: testConfig.mssql || {
-      user: "knex_test",
-      password: "knex_test",
-      server: "127.0.0.1",
+      user: "sa",
+      password: "S0meVeryHardPassword",
+      server: "localhost",
       database: "knex_test"
     },
     pool: pool,

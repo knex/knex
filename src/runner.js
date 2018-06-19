@@ -1,6 +1,5 @@
 import { assign, isArray } from 'lodash'
 import Promise from 'bluebird';
-import * as helpers from './helpers';
 
 let PassThrough;
 
@@ -32,7 +31,7 @@ assign(Runner.prototype, {
       const sql = runner.builder.toSQL();
 
       if (runner.builder._debug) {
-        helpers.debugLog(sql)
+        runner.client.logger.debug(sql);
       }
 
       if (isArray(sql)) {
@@ -76,7 +75,7 @@ assign(Runner.prototype, {
     const hasHandler = typeof handler === 'function';
 
     // Lazy-load the "PassThrough" dependency.
-    PassThrough = PassThrough || require('readable-stream').PassThrough;
+    PassThrough = PassThrough || require('stream').PassThrough;
 
     const runner = this;
     const stream = new PassThrough({objectMode: true});
@@ -121,7 +120,10 @@ assign(Runner.prototype, {
   // to run in sequence, and on the same connection, especially helpful when schema building
   // and dealing with foreign key constraints, etc.
   query: Promise.method(function(obj) {
-    this.builder.emit('query', assign({__knexUid: this.connection.__knexUid}, obj))
+    const {__knexUid, __knexTxId} = this.connection;
+
+    this.builder.emit('query', assign({__knexUid, __knexTxId}, obj))
+
     const runner = this
     let queryPromise = this.client.query(this.connection, obj)
 

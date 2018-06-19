@@ -59,6 +59,10 @@ assign(QueryCompiler_PG.prototype, {
     };
   },
 
+  aggregate(stmt) {
+    return this._aggregate(stmt, { distinctParentheses: true });
+  },
+
   _returning(value) {
     return value ? ` returning ${this.formatter.columnize(value)}` : '';
   },

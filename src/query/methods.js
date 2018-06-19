@@ -77,6 +77,7 @@ export default [
   'pluck',
   'clearSelect',
   'clearWhere',
+  'clearOrder',
   'insert',
   'update',
   'returning',

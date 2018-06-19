@@ -1,6 +1,60 @@
 
 # Master (Unreleased)
 
+- Drop support for Node.js 4 and 5
+- `json` data type is no longer converted to `text` within a schema builder migration for MySQL databases (note that JSON data type is only supported for MySQL 5.7.8+)
+- Removed WebSQL dialect #2461
+
+# 0.14.6 - 12 Apr, 2018
+
+### Bug fixes:
+
+- Restored functionality of query event #2566 (#2549)
+
+# 0.14.5 - 8 Apr, 2018
+
+### Bug fixes:
+
+- Fix wrapping returning column on oracledb #2554
+
+### New Features:
+
+- Support passing DB schema name for migrations #2499 #2559
+- add clearOrder method #2360 #2553
+- Added knexTxId to query events and debug calls #2476
+- Support multi-column `whereIn` with query #1390
+- Added error if chaining update/insert/etc with first() #2506
+- Checks for an empty, undefined or null object on transacting #2494
+- countDistinct with multiple columns #2449
+
+### Test / internal changes
+
+- Added npm run test:oracledb command that runs oracledb tests in docker #2491
+- Runnin mssql tests in docker #2496
+- Update dependencies #2561
+
+# 0.14.4 - 19 Feb, 2018
+
+### Bug fixes:
+
+- containsUndefined only validate plain objects. Fixes #1898 (#2468)
+- Add warning when using .returning() in sqlite3. Fixes #1660 (#2471)
+- Throw an error if .update() results in an empty sql (#2472)
+- Removed unnecessary createTableIfNotExist and replaced with createTable (#2473)
+
+### New Features:
+
+- Allow calling lock procedures (such as forUpdate) outside of transaction. Fixes #2403. (#2475)
+- Added test and documentation for Event 'start' (#2488)
+
+### Test / internal changes
+
+- Added stress test, which uses TCP proxy to simulate flaky connection #2460
+- Removed old docker tests, new stress test setup (#2474)
+- Removed unused property __cid on the base client (#2481)
+- Changed rm to rimraf in 'npm run dev' (#2483)
+- Changed babel preset and use latest node as target when running dev (#2484)
+
 # 0.14.3 - 8 Feb, 2018
 
 ### Bug fixes:
@@ -26,7 +80,6 @@
 - Update dependencies and fix ESLint warnings accordingly #2433
 - Disable oracledb tests from non LTS nodes #2407
 - Update dependencies #2422
-
 
 # 0.14.2 - 24 Nov, 2017
 

@@ -100,17 +100,72 @@ module.exports = function(knex) {
 
       it('should work using camelCased table name', () => {
         return knex('testTableTwo').columnInfo().then(res => {
-          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+          expect(Object.keys(res)).to.have.all.members(['id', 'accountId', 'details', 'status', 'jsonData']);
         });
       });
 
       it('should work using snake_cased table name', () => {
         return knex('test_table_two').columnInfo().then(res => {
-          expect(Object.keys(res)).to.eql(['id', 'accountId', 'details', 'status', 'jsonData']);
+          expect(Object.keys(res)).to.have.all.members(['id', 'accountId', 'details', 'status', 'jsonData']);
         });
       });
 
     });
+
+    // TODO: This doesn't work on oracle yet.
+    if (['postgresql', 'mssql'].includes(knex.client.dialect)) {
+      describe('returning with wrapIdentifier and postProcessResponse`', () => {
+        let origHooks = {};
+
+        before('setup custom hooks', () => {
+          origHooks.postProcessResponse = knex.client.config.postProcessResponse;
+          origHooks.wrapIdentifier = knex.client.config.wrapIdentifier;
+
+          // Add `_foo` to each identifier.
+          knex.client.config.postProcessResponse = (res) => {
+            if (Array.isArray(res)) {
+              return res.map(it => {
+                if (typeof it === 'object') {
+                  return _.mapKeys(it, (value, key) => {
+                    return key + '_foo';
+                  });
+                } else {
+                  return it;
+                }
+              })
+            } else {
+              return res;
+            }
+          };
+
+          // Remove `_foo` from the end of each identifier.
+          knex.client.config.wrapIdentifier = (id) => {
+            return id.substring(0, id.length - 4);
+          };
+        });
+
+        after('restore hooks', () => {
+          knex.client.config.postProcessResponse = origHooks.postProcessResponse;
+          knex.client.config.wrapIdentifier = origHooks.wrapIdentifier;
+        });
+
+        it('should return the correct column when a single property is given to returning', () => {
+          return knex('accounts_foo')
+            .insert({ balance_foo: 123 })
+            .returning('balance_foo').then(res => {
+              expect(res).to.eql([123]);
+            });
+        });
+
+        it('should return the correct columns when multiple properties are given to returning', () => {
+          return knex('accounts_foo')
+            .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
+            .returning(['balance_foo', 'email_foo']).then(res => {
+              expect(res).to.eql([{ balance_foo: 123, email_foo: 'foo@bar.com' }]);;
+            });
+        });
+      });
+    }
 
     it('should forward the .get() function from bluebird', function() {
       return knex('accounts').select().limit(1).then(function(accounts){
@@ -175,18 +230,19 @@ module.exports = function(knex) {
           // Insert new data after truncate and make sure ids restart at 1.
           // This doesn't currently work on oracle, where the created sequence
           // needs to be manually reset.
-          if (knex.client.dialect !== 'oracle') {
-            return knex('test_table_two').insert({ status: 1 })
-              .then(res => {
-                return knex('test_table_two')
-                  .select('id')
-                  .first()
-                  .then(res => {
-                    expect(res).to.be.an('object')
-                    expect(res.id).to.equal(1);
-                  });
-              });
-          }
+          // On redshift, one would need to create an entirely new table and do
+          //  `insert into ... (select ...); alter table rename...`
+          if (/oracle/i.test(knex.client.dialect) || /redshift/i.test(knex.client.dialect)) { return; }
+          return knex('test_table_two').insert({ status: 1 })
+            .then(res => {
+              return knex('test_table_two')
+                .select('id')
+                .first()
+                .then(res => {
+                  expect(res).to.be.an('object')
+                  expect(res.id).to.equal(1);
+                });
+            });
         });
     });
 
@@ -457,7 +513,7 @@ module.exports = function(knex) {
       }).then(function() {
         return knex.select('*').from('accounts').first();
       }).then(function(resp) {
-        expect(_.keys(resp).sort()).to.eql(["about", "created_at", "email", "id", "last_name", "logins", "phone", "updated_at"]);
+        expect(_.keys(resp).sort()).to.eql(["about", "balance", "created_at", "email", "id", "last_name", "logins", "phone", "updated_at"]);
       }).then(function() {
         return knex.count('*').from('accounts');
       }).then(function(resp) {
@@ -661,6 +717,109 @@ module.exports = function(knex) {
           knex.removeListener('query-error', onQueryError);
           expect(queryCount).to.equal(2);
         })
+    });
+
+    it('Event: start', function() {
+      // On redshift, cannot set an identity column to a value
+      if (/redshift/i.test(knex.client.dialect)) { return; }
+      return knex('accounts')
+        .insert({id: '999', last_name: 'Start'})
+        .then(function() {
+          var queryBuilder = knex('accounts').select();
+
+          queryBuilder.on('start', function(builder) {
+            //Alter builder prior to compilation
+            //Select only one row
+            builder
+              .where('id', '999')
+              .first();
+          });
+
+          return queryBuilder
+        })
+        .then(function(row) {
+          expect(row).to.exist;
+          expect(String(row.id)).to.equal('999');
+          expect(row.last_name).to.equal('Start');
+        });
+    });
+
+    it('Event \'query\' should not emit native sql string', function() {
+      var builder = knex('accounts')
+        .where('id', 1)
+        .select();
+
+      builder
+        .on('query', function(obj) {
+          var native = builder.toSQL().toNative().sql;
+          var sql = builder.toSQL().sql;
+
+          //Only assert if they diff to begin with.
+          //IE Maria does not diff
+          if(native !== sql) {
+            expect(obj.sql).to.not.equal(builder.toSQL().toNative().sql);
+            expect(obj.sql).to.equal(builder.toSQL().sql);
+          }
+        });
+
+      return builder;
+    });
+
+    describe('async stack traces', function () {
+      before(() => {
+        knex.client.config.asyncStackTraces = true
+      })
+      after(() => {
+        delete knex.client.config.asyncStackTraces
+      })
+      it('should capture stack trace on query builder instantiation', () => {
+        return knex('some_nonexisten_table')
+        .select().catch((err) => {
+          expect(err.stack.split('\n')[1]).to.match(/at Function\.queryBuilder \(/) // the index 1 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string')
+        })
+      })
+      it('should capture stack trace on raw query', () => {
+        return knex.raw('select * from some_nonexisten_table').catch((err) => {
+          expect(err.stack.split('\n')[2]).to.match(/at Function\.raw \(/)  // the index 2 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string')
+        })
+      })
+      it('should capture stack trace on schema builder', () => {
+        return knex.schema.renameTable('some_nonexisten_table', 'whatever').catch((err) => {
+          expect(err.stack.split('\n')[1]).to.match(/client\.schemaBuilder/)  // the index 1 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string')
+        })
+      })
+    })
+
+    it('Overwrite knex.logger functions using config', () => {
+      var knexConfig = _.clone(knex.client.config);
+
+      var callCount = 0;
+      var assertCall = function(expectedMessage, message) {
+        expect(message).to.equal(expectedMessage);
+        callCount++;
+      };
+
+      knexConfig.log = {
+        warn: assertCall.bind(null, 'test'),
+        error: assertCall.bind(null, 'test'),
+        debug: assertCall.bind(null, 'test'),
+        deprecate: assertCall.bind(null, 'test is deprecated, please use test2'),
+      };
+
+      //Sqlite warning message
+      knexConfig.useNullAsDefault = true;
+
+      var knexDb = new Knex(knexConfig);
+
+      knexDb.client.logger.warn('test');
+      knexDb.client.logger.error('test');
+      knexDb.client.logger.debug('test');
+      knexDb.client.logger.deprecate('test', 'test2');
+
+      expect(callCount).to.equal(4);
     });
 
   });

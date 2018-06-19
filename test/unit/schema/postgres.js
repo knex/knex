@@ -541,6 +541,18 @@ describe("PostgreSQL SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" text check ("foo" in (\'bar\', \'baz\'))');
   });
 
+  it("adding enum with useNative", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.enu('foo', ['bar', 'baz'], {
+        useNative: true,
+        enumName: 'foo_type'
+      }).notNullable();
+    }).toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('create type "foo_type" as enum (\'bar\', \'baz\')')
+    expect(tableSql[1].sql).to.equal('alter table "users" add column "foo" "foo_type" not null');
+  });
+
   it("adding date", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.date('foo');
@@ -786,6 +798,19 @@ describe("PostgreSQL SchemaBuilder", function() {
       expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
+
+    it('TableCompiler calls wrapIdentifier when altering column', function () {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.queryContext('table context');
+          table.string('email').notNull().alter().queryContext('email alter context');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.thirdCall.args).to.deep.equal(['email', 'email alter context']);
+    })
   });
 
 });

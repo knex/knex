@@ -95,7 +95,7 @@ assign(JoinClause.prototype, {
   },
 
   onIn(column, values) {
-    if (Array.isArray(values) && values.length === 0) return this.where(this._not());
+    if (Array.isArray(values) && values.length === 0) return this.on(1, '=', 0);
     this.clauses.push({
       type: 'onIn',
       column,

@@ -1,8 +1,9 @@
 /*global describe, expect, it*/
+/* eslint max-len:0 */
 
 'use strict';
 
-var tableSql;
+let tableSql;
 
 const Redshift_Client = require('../../../lib/dialects/redshift');
 const client          = new Redshift_Client({})
@@ -26,8 +27,9 @@ describe("Redshift SchemaBuilder", function() {
       table.increments('id');
       table.string('email');
     }).toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "id" integer identity(1,1) primary key not null, add column "email" varchar(255)');
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "id" integer identity(1,1) primary key not null');
+    expect(tableSql[1].sql).to.equal('alter table "users" add column "email" varchar(255)');
   });
 
   it("alter table with schema", function() {
@@ -386,16 +388,18 @@ describe("Redshift SchemaBuilder", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.timestamps();
     }).toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz, add column "updated_at" timestamptz');
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz');
+    expect(tableSql[1].sql).to.equal('alter table "users" add column "updated_at" timestamptz');
   });
 
   it("adding timestamps with defaults", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.timestamps(false, true);
     }).toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz not null default CURRENT_TIMESTAMP, add column "updated_at" timestamptz not null default CURRENT_TIMESTAMP');
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamptz not null default CURRENT_TIMESTAMP');
+    expect(tableSql[1].sql).to.equal('alter table "users" add column "updated_at" timestamptz not null default CURRENT_TIMESTAMP');
   });
 
   it("adding binary", function() {
@@ -428,22 +432,22 @@ describe("Redshift SchemaBuilder", function() {
   });
 
   it('allows creating an extension', function() {
-    var sql = client.schemaBuilder().createExtension('test').toSQL();
+    const sql = client.schemaBuilder().createExtension('test').toSQL();
     expect(sql[0].sql).to.equal('create extension "test"');
   });
 
   it('allows dropping an extension', function() {
-    var sql = client.schemaBuilder().dropExtension('test').toSQL();
+    const sql = client.schemaBuilder().dropExtension('test').toSQL();
     expect(sql[0].sql).to.equal('drop extension "test"');
   });
 
   it('allows creating an extension only if it doesn\'t exist', function() {
-    var sql = client.schemaBuilder().createExtensionIfNotExists('test').toSQL();
+    const sql = client.schemaBuilder().createExtensionIfNotExists('test').toSQL();
     expect(sql[0].sql).to.equal('create extension if not exists "test"');
   });
 
   it('allows dropping an extension only if it exists', function() {
-    var sql = client.schemaBuilder().dropExtensionIfExists('test').toSQL();
+    const sql = client.schemaBuilder().dropExtensionIfExists('test').toSQL();
     expect(sql[0].sql).to.equal('drop extension if exists "test"');
   });
 
@@ -471,8 +475,9 @@ describe("Redshift SchemaBuilder", function() {
       t.primary(['test1', 'test2'], 'testconstraintname');
     }).toSQL();
 
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "test1" varchar(255), add column "test2" varchar(255) not null');
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "test1" varchar(255)');
+    expect(tableSql[1].sql).to.equal('alter table "users" add column "test2" varchar(255) not null');
 
     tableSql = client.schemaBuilder().table('users', function(t) {
       t.string('test1').notNullable();
@@ -480,8 +485,9 @@ describe("Redshift SchemaBuilder", function() {
       t.primary(['test1', 'test2'], 'testconstraintname');
     }).toSQL();
 
-    expect(tableSql[0].sql).to.equal('alter table "users" add column "test1" varchar(255) not null, add column "test2" varchar(255) not null');
-    expect(tableSql[1].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "test1" varchar(255) not null');
+    expect(tableSql[1].sql).to.equal('alter table "users" add column "test2" varchar(255) not null');
+    expect(tableSql[2].sql).to.equal('alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")');
 
     tableSql = client.schemaBuilder().createTable('users', function(t) {
       t.string('test').primary('testconstraintname');

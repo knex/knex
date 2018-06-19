@@ -41,6 +41,10 @@ function raw(sql, bindings) {
   return clients.postgres.raw(sql, bindings);
 }
 
+function ref(ref) {
+  return clients.postgres.ref(ref);
+}
+
 function verifySqlResult(dialect, expectedObj, sqlObj) {
   Object.keys(expectedObj).forEach(function (key) {
     if (typeof expectedObj[key] === 'function') {
@@ -124,6 +128,107 @@ describe("Custom identifier wrapping", function() {
       postgres: 'select "users_wrapper_was_here"."foo_wrapper_was_here" as "bar_wrapper_was_here" from "schema_wrapper_was_here"."users_wrapper_was_here"',
       redshift: 'select "users_wrapper_was_here"."foo_wrapper_was_here" as "bar_wrapper_was_here" from "schema_wrapper_was_here"."users_wrapper_was_here"',
       sqlite3: 'select `users_wrapper_was_here`.`foo_wrapper_was_here` as `bar_wrapper_was_here` from `schema_wrapper_was_here`.`users_wrapper_was_here`'
+    }, clientsWithCustomIdentifierWrapper);
+  });
+
+  it("should use custom wrapper on multiple inserts with returning", function() {
+    // returning only supported directly by postgres and with workaround with oracle
+    // other databases implicitly return the inserted id
+    testsql(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}], 'id'), {
+      mysql: {
+        sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      sqlite3: {
+        sql: "insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here`",
+      },
+      postgres: {
+        sql: "insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (?, ?), (?, ?) returning \"id_wrapper_was_here\"",
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      redshift: {
+        sql: "insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (?, ?), (?, ?)",
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      oracle: {
+        sql: "begin execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;",
+        bindings: function(bindings) {
+          expect(bindings.length).to.equal(6);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3]).to.equal('bar');
+          expect(bindings[4]).to.equal('dayle');
+          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },
+      mssql: {
+        sql: 'insert into [users_wrapper_was_here] ([email_wrapper_was_here], [name_wrapper_was_here]) output inserted.[id_wrapper_was_here] values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning \"id_wrapper_was_here\" into :3' using ?, ?, out ?; execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning \"id_wrapper_was_here\" into :3' using ?, ?, out ?;end;",
+        bindings: function(bindings) {
+          expect(bindings.length).to.equal(6);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3]).to.equal('bar');
+          expect(bindings[4]).to.equal('dayle');
+          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id]');
+        }
+      },
+    }, clientsWithCustomIdentifierWrapper);
+  });
+
+  it("should use custom wrapper on multiple inserts with multiple returning", function() {
+    testsql(qb().from('users').insert([{email: 'foo', name: 'taylor'}, {email: 'bar', name: 'dayle'}], ['id', 'name']), {
+      mysql: {
+        sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      sqlite3: {
+        sql: "insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here`",
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      postgres: {
+        sql: 'insert into "users_wrapper_was_here" ("email_wrapper_was_here", "name_wrapper_was_here") values (?, ?), (?, ?) returning "id_wrapper_was_here", "name_wrapper_was_here"',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      redshift: {
+        sql: 'insert into "users_wrapper_was_here" ("email_wrapper_was_here", "name_wrapper_was_here") values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      oracle: {
+        sql: "begin execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?; execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning ROWID into :3' using ?, ?, out ?;end;",
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(6);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id:name]');
+          expect(bindings[3]).to.equal('bar');
+          expect(bindings[4]).to.equal('dayle');
+          expect(bindings[5].toString()).to.equal('[object ReturningHelper:id:name]');
+        }
+      },
+      mssql: {
+        sql: 'insert into [users_wrapper_was_here] ([email_wrapper_was_here], [name_wrapper_was_here]) output inserted.[id_wrapper_was_here], inserted.[name_wrapper_was_here] values (?, ?), (?, ?)',
+        bindings: ['foo', 'taylor', 'bar', 'dayle']
+      },
+      oracledb: {
+        sql: "begin execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning \"id_wrapper_was_here\",\"name_wrapper_was_here\" into :3, :4' using ?, ?, out ?, out ?; execute immediate 'insert into \"users_wrapper_was_here\" (\"email_wrapper_was_here\", \"name_wrapper_was_here\") values (:1, :2) returning \"id_wrapper_was_here\",\"name_wrapper_was_here\" into :3, :4' using ?, ?, out ?, out ?;end;",
+        bindings: function (bindings) {
+          expect(bindings.length).to.equal(8);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1]).to.equal('taylor');
+          expect(bindings[2].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[3].toString()).to.equal('[object ReturningHelper:name]');
+          expect(bindings[4]).to.equal('bar');
+          expect(bindings[5]).to.equal('dayle');
+          expect(bindings[6].toString()).to.equal('[object ReturningHelper:id]');
+          expect(bindings[7].toString()).to.equal('[object ReturningHelper:name]');
+        }
+      },
     }, clientsWithCustomIdentifierWrapper);
   });
 
@@ -409,6 +514,39 @@ describe("QueryBuilder", function() {
       redshift: {
         sql: 'select "id" from "users" where "id" = ?',
         bindings: [2]
+      },
+    });
+  });
+
+
+  it("clear an order", function() {
+    testsql(qb().table('users').orderBy('name', 'desc').clearOrder(), {
+      mysql: {
+        sql: 'select * from `users`'
+      },
+      mssql: {
+        sql: 'select * from [users]'
+      },
+      postgres: {
+        sql: 'select * from "users"'
+      },
+      redshift: {
+        sql: 'select * from "users"'
+      },
+    });
+
+    testsql(qb().table('users').orderBy('name', 'desc').clearOrder().orderBy('id', 'asc'), {
+      mysql: {
+        sql: 'select * from `users` order by `id` asc'
+      },
+      mssql: {
+        sql: 'select * from [users] order by [id] asc'
+      },
+      postgres: {
+        sql: 'select * from "users" order by "id" asc'
+      },
+      redshift: {
+        sql: 'select * from "users" order by "id" asc'
       },
     });
   });
@@ -834,6 +972,31 @@ describe("QueryBuilder", function() {
       redshift: {
         sql: 'select * from "users" where "id" in (?, ?, ?)',
         bindings: [1, 2, 3]
+      },
+    });
+  });
+
+  it("multi column where ins", function() {
+    testsql(qb().select('*').from('users').whereIn(['a', 'b'], [[1, 2], [3, 4], [5, 6]]), {
+      mysql: {
+        sql: 'select * from `users` where (`a`, `b`) in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      postgres: {
+        sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      redshift: {
+        sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      mssql: {
+        sql: 'select * from [users] where ([a], [b]) in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
+      },
+      oracle: {
+        sql: 'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
+        bindings: [1, 2, 3, 4, 5, 6]
       },
     });
   });
@@ -1390,6 +1553,33 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("sub select multi column where ins", function() {
+    testsql(qb().select('*').from('users').whereIn(['id_a', 'id_b'], function(qb) {
+      qb.select('id_a', 'id_b').from('users').where('age', '>', 25).limit(3);
+    }), {
+      mysql: {
+        sql: 'select * from `users` where (`id_a`, `id_b`) in (select `id_a`, `id_b` from `users` where `age` > ? limit ?)',
+        bindings: [25, 3]
+      },
+      oracle: {
+        sql: 'select * from "users" where ("id_a", "id_b") in (select * from (select "id_a", "id_b" from "users" where "age" > ?) where rownum <= ?)',
+        bindings: [25, 3]
+      },
+      postgres: {
+        sql: 'select * from "users" where ("id_a", "id_b") in (select "id_a", "id_b" from "users" where "age" > ? limit ?)',
+        bindings: [25, 3]
+      },
+      redshift: {
+        sql: 'select * from "users" where ("id_a", "id_b") in (select "id_a", "id_b" from "users" where "age" > ? limit ?)',
+        bindings: [25, 3]
+      },
+      mssql: {
+        sql: 'select * from [users] where ([id_a], [id_b]) in (select top (?) [id_a], [id_b] from [users] where [age] > ?)',
+        bindings: [3, 25]
+      },
+    });
+  });
+
   it("sub select where not ins", function() {
     testsql(qb().select('*').from('users').whereNotIn('id', function(qb) {
       qb.select('id').from('users').where('age', '>', 25);
@@ -1550,6 +1740,10 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       postgres: {
+        sql: 'select * from "users" group by id, email',
+        bindings: []
+      },
+      redshift: {
         sql: 'select * from "users" group by id, email',
         bindings: []
       },
@@ -2562,6 +2756,29 @@ describe("QueryBuilder", function() {
     });
   });
 
+  it("complex join with empty in", function() {
+    testsql(qb().select('*').from('users').join('contacts', function(qb) {
+      qb.on('users.id', '=', 'contacts.id').onIn('users.name', []);
+    }), {
+      mysql: {
+        sql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and 1 = 0',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and 1 = 0',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and 1 = 0',
+        bindings: []
+      },
+      redshift: {
+        sql: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and 1 = 0',
+        bindings: []
+      },
+    });
+  });
+
   it("joins with raw", function() {
     testsql(qb().select('*').from('users').join('contacts', 'users.id', raw(1)).leftJoin('photos', 'photos.title', '=', raw('?', ['My Photo'])), {
       mysql: {
@@ -2875,7 +3092,7 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("count with alias", function() {
+  it("count with string alias", function() {
     testsql(qb().from('users').count('* as all'), {
       mysql: {
         sql: 'select count(*) as `all` from `users`',
@@ -2904,8 +3121,66 @@ describe("QueryBuilder", function() {
     });
   });
 
-  it("count distinct with alias", function() {
+  it("count with object alias", function () {
+    testsql(qb().from('users').count({ all: '*' }), {
+      mysql: {
+        sql: 'select count(*) as `all` from `users`',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(*) as [all] from [users]',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: []
+      },
+      redshift: {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: []
+      },
+    });
+  });
+
+  it("count distinct with string alias", function() {
     testsql(qb().from('users').countDistinct('* as all'), {
+      mysql: {
+        sql: 'select count(distinct *) as `all` from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct *) as [all] from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: []
+      },
+      redshift: {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: []
+      },
+    });
+  });
+
+  it("count distinct with object alias", function () {
+    testsql(qb().from('users').countDistinct({ all: '*' }), {
       mysql: {
         sql: 'select count(distinct *) as `all` from `users`',
         bindings: []
@@ -2962,6 +3237,56 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select count(distinct "name") from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count distinct with multiple columns", function() {
+    testsql(qb().from('users').countDistinct('foo', 'bar'), {
+      mysql: {
+        sql: 'select count(distinct `foo`, `bar`) from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct "foo", "bar") from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct [foo], [bar]) from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct "foo", "bar") from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct("foo", "bar")) from "users"',
+        bindings: []
+      }
+    });
+  });
+
+  it("count distinct with multiple columns with alias", function () {
+    testsql(qb().from('users').countDistinct({ alias: ['foo', 'bar'] }), {
+      mysql: {
+        sql: 'select count(distinct `foo`, `bar`) as `alias` from `users`',
+        bindings: []
+      },
+      oracle: {
+        sql: 'select count(distinct "foo", "bar") "alias" from "users"',
+        bindings: []
+      },
+      mssql: {
+        sql: 'select count(distinct [foo], [bar]) as [alias] from [users]',
+        bindings: []
+      },
+      oracledb: {
+        sql: 'select count(distinct "foo", "bar") "alias" from "users"',
+        bindings: []
+      },
+      postgres: {
+        sql: 'select count(distinct("foo", "bar")) as "alias" from "users"',
         bindings: []
       }
     });
@@ -3642,6 +3967,10 @@ describe("QueryBuilder", function() {
         sql: 'update "users" set "email" = ? where "id" = ?',
         bindings: ['foo', 1]
       },
+      redshift: {
+        sql: 'update "users" set "email" = ? where "id" = ?',
+        bindings: ['foo', 1]
+      },
     });
   });
 
@@ -3791,6 +4120,90 @@ describe("QueryBuilder", function() {
       redshift: {
         sql: 'update "users" set "email" = foo, "name" = ? where "id" = ?',
         bindings: ['bar', 1]
+      },
+    });
+  });
+
+  it("increment method", function() {
+    testsql(qb().into('users').where('id', '=', 1).increment('balance', 10), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` + 10 where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'update [users] set [balance] = [balance] + 10 where [id] = ?;select @@rowcount',
+        bindings: [1]
+      },
+      postgres: {
+        sql: 'update "users" set "balance" = "balance" + 10 where "id" = ?',
+        bindings: [1]
+      },
+      redshift: {
+        sql: 'update "users" set "balance" = "balance" + 10 where "id" = ?',
+        bindings: [1]
+      },
+    });
+  });
+
+  it("increment method with floats", function() {
+    testsql(qb().into('users').where('id', '=', 1).increment('balance', 1.23), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` + 1.23 where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'update [users] set [balance] = [balance] + 1.23 where [id] = ?;select @@rowcount',
+        bindings: [1]
+      },
+      postgres: {
+        sql: 'update "users" set "balance" = "balance" + 1.23 where "id" = ?',
+        bindings: [1]
+      },
+      redshift: {
+        sql: 'update "users" set "balance" = "balance" + 1.23 where "id" = ?',
+        bindings: [1]
+      },
+    });
+  });
+
+  it("decrement method", function() {
+    testsql(qb().into('users').where('id', '=', 1).decrement('balance', 10), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` - 10 where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'update [users] set [balance] = [balance] - 10 where [id] = ?;select @@rowcount',
+        bindings: [1]
+      },
+      postgres: {
+        sql: 'update "users" set "balance" = "balance" - 10 where "id" = ?',
+        bindings: [1]
+      },
+      redshift: {
+        sql: 'update "users" set "balance" = "balance" - 10 where "id" = ?',
+        bindings: [1]
+      },
+    });
+  });
+
+  it("decrement method with floats", function() {
+    testsql(qb().into('users').where('id', '=', 1).decrement('balance', 1.23), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` - 1.23 where `id` = ?',
+        bindings: [1]
+      },
+      mssql: {
+        sql: 'update [users] set [balance] = [balance] - 1.23 where [id] = ?;select @@rowcount',
+        bindings: [1]
+      },
+      postgres: {
+        sql: 'update "users" set "balance" = "balance" - 1.23 where "id" = ?',
+        bindings: [1]
+      },
+      redshift: {
+        sql: 'update "users" set "balance" = "balance" - 1.23 where "id" = ?',
+        bindings: [1]
       },
     });
   });
@@ -4000,6 +4413,10 @@ describe("QueryBuilder", function() {
       },
       postgres: {
         sql: 'select * from "foo" where "bar" = ? for update',
+        bindings: ['baz']
+      },
+      redshift: {
+        sql: 'select * from "foo" where "bar" = ?',
         bindings: ['baz']
       },
     });
@@ -5417,5 +5834,57 @@ describe("QueryBuilder", function() {
     } catch(error) {
       expect(error.message).to.equal('Empty .update() call detected! Update data does not contain any values to update. This will result in a faulty query.');
     }
+  });
+
+  it('Throws error if .first() is called on update', function() {
+    try {
+      qb().table('sometable').update({column: 'value'}).first().toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .first() on "update" query!');
+    }
+  });
+
+  it('Throws error if .first() is called on insert', function() {
+    try {
+      qb().table('sometable').insert({column: 'value'}).first().toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .first() on "insert" query!');
+    }
+  });
+
+  it('Throws error if .first() is called on delete', function() {
+    try {
+      qb().table('sometable').del().first().toSQL();
+
+      throw new Error('Should not reach this point');
+    } catch(error) {
+      expect(error.message).to.equal('Cannot chain .first() on "del" query!');
+    }
+  });
+
+  describe('knex.ref()', function() {
+    it('Can be used as parameter in where-clauses', function() {
+      testquery(qb().table('sometable').where('sometable.column', ref('someothertable.someothercolumn')).select(), {
+        postgres: 'select * from "sometable" where "sometable"."column" = "someothertable"."someothercolumn"',
+        mysql: 'select * from `sometable` where `sometable`.`column` = `someothertable`.`someothercolumn`',
+        mssql: 'select * from [sometable] where [sometable].[column] = [someothertable].[someothercolumn]',
+        redshift: 'select * from "sometable" where "sometable"."column" = "someothertable"."someothercolumn"',
+        oracle: 'select * from "sometable" where "sometable"."column" = "someothertable"."someothercolumn"',
+      });
+    });
+
+    it('Can use .as() for alias', function() {
+      testquery(qb().table('sometable').select(['one', ref('sometable.two').as('Two')]), {
+        postgres: 'select "one", "sometable"."two" as "Two" from "sometable"',
+        mysql: 'select `one`, `sometable`.`two` as `Two` from `sometable`',
+        mssql: 'select [one], [sometable].[two] as [Two] from [sometable]',
+        redshift: 'select "one", "sometable"."two" as "Two" from "sometable"',
+        oracle: 'select "one", "sometable"."two" as "Two" from "sometable"',
+      });
+    });
   });
 });

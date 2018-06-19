@@ -1,7 +1,7 @@
 import Promise from 'bluebird';
-import * as helpers from './helpers';
 
 import Raw from './raw';
+import Ref from './ref';
 import Runner from './runner';
 import Formatter from './formatter';
 import Transaction from './transaction';
@@ -23,19 +23,17 @@ import { EventEmitter } from 'events';
 import { makeEscape } from './query/string'
 import { assign, uniqueId, cloneDeep, defaults } from 'lodash'
 
+import Logger from './logger';
+
 const debug = require('debug')('knex:client')
 const debugQuery = require('debug')('knex:query')
 const debugBindings = require('debug')('knex:bindings')
-
-let id = 0
-function clientId() {
-  return `client${id++}`
-}
 
 // The base client provides the general structure
 // for a dialect specific client object.
 function Client(config = {}) {
   this.config = config
+  this.logger = new Logger(config);
 
   //Client is a required field, so throw error if it's not supplied.
   //If 'this.dialect' is set, then this is a 'super()' call, in which case
@@ -48,7 +46,6 @@ function Client(config = {}) {
   if (this.driverName && config.connection) {
     this.initializeDriver()
     if (!config.pool || (config.pool && config.pool.max !== 0)) {
-      this.__cid = clientId()
       this.initializePool(config)
     }
   }
@@ -109,6 +106,10 @@ assign(Client.prototype, {
     return new Raw(this).set(...arguments)
   },
 
+  ref() {
+    return new Ref(this, ...arguments)
+  },
+
   _formatQuery(sql, bindings, timeZone) {
     bindings = bindings == null ? [] : [].concat(bindings);
     let index = 0;
@@ -132,25 +133,35 @@ assign(Client.prototype, {
 
   query(connection, obj) {
     if (typeof obj === 'string') obj = {sql: obj}
-    obj.sql = this.positionBindings(obj.sql);
     obj.bindings = this.prepBindings(obj.bindings)
-    debugQuery(obj.sql)
-    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
-    debugBindings(obj.bindings)
+
+    const {__knexUid, __knexTxId} = connection;
+
+    this.emit('query', assign({__knexUid, __knexTxId}, obj))
+    debugQuery(obj.sql, __knexTxId)
+    debugBindings(obj.bindings, __knexTxId)
+
+    obj.sql = this.positionBindings(obj.sql);
+
     return this._query(connection, obj).catch((err) => {
       err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message
-      this.emit('query-error', err, assign({__knexUid: connection.__knexUid}, obj))
+      this.emit('query-error', err, assign({__knexUid, __knexTxId}, obj))
       throw err
     })
   },
 
   stream(connection, obj, stream, options) {
     if (typeof obj === 'string') obj = {sql: obj}
-    obj.sql = this.positionBindings(obj.sql);
     obj.bindings = this.prepBindings(obj.bindings)
-    this.emit('query', assign({__knexUid: connection.__knexUid}, obj))
-    debugQuery(obj.sql)
-    debugBindings(obj.bindings)
+
+    const {__knexUid, __knexTxId} = connection;
+
+    this.emit('query', assign({__knexUid, __knexTxId}, obj))
+    debugQuery(obj.sql, __knexTxId)
+    debugBindings(obj.bindings, __knexTxId)
+
+    obj.sql = this.positionBindings(obj.sql);
+
     return this._stream(connection, obj, stream, options)
   },
 
@@ -188,7 +199,8 @@ assign(Client.prototype, {
     try {
       this.driver = this._driver()
     } catch (e) {
-      helpers.exit(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
+      this.logger.error(`Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`)
+      process.exit(1);
     }
   },
 
@@ -211,7 +223,7 @@ assign(Client.prototype, {
       'Promise'
     ].forEach(option => {
       if (option in poolConfig) {
-        helpers.warn([
+        this.logger.warn([
           `Pool config option "${option}" is no longer supported.`,
           `See https://github.com/Vincit/tarn.js for possible pool config options.`
         ].join(' '))
@@ -240,7 +252,7 @@ assign(Client.prototype, {
 
       destroy: (connection) => {
         if (poolConfig.beforeDestroy) {
-          helpers.warn(`
+          this.logger.warn(`
             beforeDestroy is deprecated, please open an issue if you use this
             to discuss alternative apis
           `)
@@ -255,7 +267,7 @@ assign(Client.prototype, {
 
       validate: (connection) => {
         if (connection.__knex__disposed) {
-          helpers.warn(`Connection Error: ${connection.__knex__disposed}`)
+          this.logger.warn(`Connection Error: ${connection.__knex__disposed}`)
           return false
         }
 
@@ -266,7 +278,7 @@ assign(Client.prototype, {
 
   initializePool(config = this.config) {
     if (this.pool) {
-      helpers.warn('The pool has already been initialized')
+      this.logger.warn('The pool has already been initialized')
       return
     }
 
@@ -311,15 +323,10 @@ assign(Client.prototype, {
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
-    let promise = null
 
-    if (this.pool) {
-      promise = this.pool.destroy()
-    } else {
-      promise = Promise.resolve()
-    }
+    const maybeDestroy = this.pool && this.pool.destroy()
 
-    return promise.then(() => {
+    return Promise.resolve(maybeDestroy).then(() => {
       this.pool = void 0
 
       if (typeof callback === 'function') {

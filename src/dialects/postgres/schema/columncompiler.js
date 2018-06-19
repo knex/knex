@@ -4,7 +4,6 @@
 
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
-import * as helpers from '../../../helpers';
 
 import { assign } from 'lodash'
 
@@ -30,8 +29,17 @@ assign(ColumnCompiler_PG.prototype, {
 
   // Create the column definition for an enum type.
   // Using method "2" here: http://stackoverflow.com/a/10984951/525714
-  enu(allowed) {
-    return `text check (${this.formatter.wrap(this.args[0])} in ('${allowed.join("', '")}'))`;
+  enu(allowed, options) {
+    options = options || {};
+
+    const values = allowed.join("', '");
+
+    if (options.useNative) {
+      this.tableCompiler.unshiftQuery(`create type "${options.enumName}" as enum ('${values}')`);
+
+      return `"${options.enumName}"`;
+    }
+    return `text check (${this.formatter.wrap(this.args[0])} in ('${values}'))`;
   },
 
   double: 'double precision',
@@ -42,7 +50,7 @@ assign(ColumnCompiler_PG.prototype, {
   floating: 'real',
   increments: 'serial primary key',
   json(jsonb) {
-    if (jsonb) helpers.deprecate('json(true)', 'jsonb()')
+    if (jsonb) this.client.logger.deprecate('json(true)', 'jsonb()')
     return jsonColumn(this.client, jsonb);
   },
   jsonb() {

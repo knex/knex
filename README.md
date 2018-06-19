@@ -8,7 +8,7 @@
 
 > **A SQL query builder that is _flexible_, _portable_, and _fun_ to use!**
 
-A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle(including Oracle Wallet Authentication), WebSQL) query builder for
+A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle(including Oracle Wallet Authentication)) query builder for
 Node.js and the Browser, featuring:
 
 - [transactions](http://knexjs.org/#Transactions)
@@ -18,11 +18,13 @@ Node.js and the Browser, featuring:
 - a [thorough test suite](https://travis-ci.org/tgriesser/knex)
 - the ability to [run in the Browser](http://knexjs.org/#Installation-browser)
 
+Node.js versions 6+ are supported.
+
 [Read the full documentation to get started!](http://knexjs.org)
 
 For support and questions, join the `#bookshelf` channel on freenode IRC
 
-For an Object Relational Mapper, see: 
+For an Object Relational Mapper, see:
 - http://bookshelfjs.org
 - https://github.com/Vincit/objection.js
 

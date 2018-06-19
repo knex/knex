@@ -5,7 +5,6 @@
 import { assign, isPlainObject, isEmpty, isString, map, reduce, compact, identity } from 'lodash'
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
-import * as helpers from '../../../helpers';
 import { ReturningHelper } from '../utils';
 
 const components = [
@@ -139,7 +138,7 @@ assign(QueryCompiler_Oracle.prototype, {
   forShare() {
     // lock for share is not directly supported by oracle
     // use LOCK TABLE .. IN SHARE MODE; instead
-    helpers.warn('lock for share is not supported by oracle dialect');
+    this.client.logger.warn('lock for share is not supported by oracle dialect');
     return '';
   },
 
@@ -188,16 +187,7 @@ assign(QueryCompiler_Oracle.prototype, {
   },
 
   aggregate(stmt) {
-    const val = stmt.value;
-    const splitOn = val.toLowerCase().indexOf(' as ');
-    const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
-    // Allows us to speciy an alias for the aggregate types.
-    if (splitOn !== -1) {
-      const col = val.slice(0, splitOn);
-      const alias = val.slice(splitOn + 4);
-      return stmt.method + '(' + distinct + this.formatter.wrap(col) + ') ' + this.formatter.wrap(alias);
-    }
-    return stmt.method + '(' + distinct + this.formatter.wrap(val) + ')';
+    return this._aggregate(stmt, { aliasSeparator: ' ' });
   },
 
   // for single commands only

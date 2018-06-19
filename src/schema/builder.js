@@ -2,7 +2,8 @@
 import inherits from 'inherits';
 import { EventEmitter } from 'events';
 import { each, toArray } from 'lodash'
-import { addQueryContext, warn } from '../helpers';
+import { addQueryContext } from '../helpers';
+import saveAsyncStack from '../util/save-async-stack';
 
 // Constructor for the builder instance, typically called from
 // `knex.builder`, accepting the current `knex` instance,
@@ -11,7 +12,12 @@ import { addQueryContext, warn } from '../helpers';
 function SchemaBuilder(client) {
   this.client = client
   this._sequence = []
-  this._debug = client.config && client.config.debug
+
+  if (client.config) {
+    this._debug = client.config.debug
+    saveAsyncStack(this, 4)
+  }
+
 }
 inherits(SchemaBuilder, EventEmitter)
 
@@ -39,7 +45,7 @@ each([
 ], function(method) {
   SchemaBuilder.prototype[method] = function() {
     if (method === 'createTableIfNotExists') {
-      warn([
+      this.client.logger.warn([
         'Use async .hasTable to check if table exists and then use plain .createTable. Since ',
         '.createTableIfNotExists actually just generates plain "CREATE TABLE IF NOT EXIST..." ',
         'query it will not work correctly if there are any alter table queries generated for ',

@@ -21,6 +21,7 @@ export default class Transaction extends EventEmitter {
     const txid = this.txid = uniqueId('trx')
 
     this.client    = client
+    this.logger    = client.logger;
     this.outerTx   = outerTx
     this.trxClient = undefined;
     this._debug    = client.config && client.config.debug
@@ -97,10 +98,10 @@ export default class Transaction extends EventEmitter {
   }
 
   rollback(conn, error) {
-    return this.query(conn, 'ROLLBACK;', 2, error)
+    return this.query(conn, 'ROLLBACK', 2, error)
       .timeout(5000)
       .catch(Promise.TimeoutError, () => {
-        this._resolver();
+        this._rejecter(error);
       });
   }
 
@@ -108,7 +109,7 @@ export default class Transaction extends EventEmitter {
     return this.query(conn, `ROLLBACK TO SAVEPOINT ${this.txid}`, 2, error)
       .timeout(5000)
       .catch(Promise.TimeoutError, () => {
-        this._resolver();
+        this._rejecter(error);
       });
   }
 
@@ -148,6 +149,11 @@ export default class Transaction extends EventEmitter {
   acquireConnection(client, config, txid) {
     const configConnection = config && config.connection
     return Promise.try(() => configConnection || client.acquireConnection())
+      .then(function(connection) {
+        connection.__knexTxId = txid;
+
+        return connection;
+      })
       .disposer(function(connection) {
         if (!configConnection) {
           debug('%s: releasing connection', txid)
@@ -191,12 +197,13 @@ function makeTransactor(trx, connection, trxClient) {
 // connection and does not release back into the pool.
 function makeTxClient(trx, client, connection) {
 
-  const trxClient = Object.create(client.constructor.prototype)
+  const trxClient              = Object.create(client.constructor.prototype)
   trxClient.config             = client.config
   trxClient.driver             = client.driver
   trxClient.connectionSettings = client.connectionSettings
   trxClient.transacting        = true
   trxClient.valueForUndefined  = client.valueForUndefined
+  trxClient.logger             = client.logger;
 
   trxClient.on('query', function(arg) {
     trx.emit('query', arg)

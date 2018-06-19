@@ -3,7 +3,6 @@
 // Redshift Table Builder & Compiler
 // -------
 
-import { warn } from '../../../helpers';
 import inherits from 'inherits';
 import { has } from 'lodash';
 import TableCompiler_PG from '../../postgres/schema/tablecompiler';
@@ -14,11 +13,11 @@ function TableCompiler_Redshift() {
 inherits(TableCompiler_Redshift, TableCompiler_PG);
 
 TableCompiler_Redshift.prototype.index = function(columns, indexName, indexType) {
-  warn('Redshift does not support the creation of indexes.');
+  this.client.logger.warn('Redshift does not support the creation of indexes.');
 };
 
 TableCompiler_Redshift.prototype.dropIndex = function(columns, indexName) {
-  warn('Redshift does not support the deletion of indexes.');
+  this.client.logger.warn('Redshift does not support the deletion of indexes.');
 };
 
 // TODO: have to disable setting not null on columns that already exist...
@@ -60,14 +59,33 @@ TableCompiler_Redshift.prototype.primary = function(columns, constraintName) {
         exists._modifiers["nullable"][0] === false);
       if (nullable){
         if (exists){
-          return warn("Redshift does not allow primary keys to contain nullable columns.");
+          return this.client.logger.warn("Redshift does not allow primary keys to contain nullable columns.");
         } else {
-          return warn("Redshift does not allow primary keys to contain nonexistent columns.");
+          return this.client.logger.warn("Redshift does not allow primary keys to contain nonexistent columns.");
         }
       }
     }
   }
   return self.pushQuery(`alter table ${self.tableName()} add constraint ${constraintName} primary key (${self.formatter.columnize(columns)})`);
+};
+
+// Compiles column add. Redshift can only add one column per ALTER TABLE, so core addColumns doesn't work.  #2545
+TableCompiler_Redshift.prototype.addColumns = function (columns, prefix, colCompilers) {
+  if (prefix === this.alterColumnsPrefix) {
+    TableCompiler_PG.prototype.addColumns.call(this, columns, prefix, colCompilers);
+  } else {
+    prefix = prefix || this.addColumnsPrefix;
+    colCompilers = colCompilers || this.getColumns();
+    for (const col  of colCompilers) {
+      const quotedTableName = this.tableName();
+      const colCompiled = col.compileColumn();
+
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} ${prefix}${colCompiled}`,
+        bindings: []
+      });
+    }
+  }
 };
 
 export default TableCompiler_Redshift;

@@ -10,8 +10,9 @@ import * as helpers from '../helpers';
 import JoinClause from './joinclause';
 import {
   assign, clone, each, isBoolean, isEmpty, isFunction, isNumber, isObject,
-  isString, isUndefined, tail, toArray, reject
+  isString, isUndefined, tail, toArray, reject, includes
 } from 'lodash';
+import saveAsyncStack from '../util/save-async-stack';
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
@@ -21,8 +22,10 @@ function Builder(client) {
   this._single = {};
   this._statements = [];
   this._method = 'select'
-  this._debug = client.config && client.config.debug;
-
+  if (client.config) {
+    saveAsyncStack(this, 5)
+    this._debug = client.config.debug;
+  }
   // Internal flags used in the builder.
   this._joinFlag = 'inner';
   this._boolFlag = 'and';
@@ -706,7 +709,7 @@ assign(Builder.prototype, {
   limit(value) {
     const val = parseInt(value, 10)
     if (isNaN(val)) {
-      helpers.warn('A valid integer must be provided to limit')
+      this.client.logger.warn('A valid integer must be provided to limit')
     } else {
       this._single.limit = val;
     }
@@ -739,8 +742,16 @@ assign(Builder.prototype, {
   },
 
   // Retrieve the "count" of the distinct results of the query.
-  countDistinct(column) {
-    return this._aggregate('count', (column || '*'), true);
+  countDistinct() {
+    let columns = helpers.normalizeArr.apply(null, arguments);
+
+    if (!columns.length) {
+      columns = '*';
+    } else if (columns.length === 1) {
+      columns = columns[0];
+    }
+
+    return this._aggregate('count', columns, true);
   },
 
   // Retrieve the sum of the distinct values of a given column.
@@ -766,6 +777,12 @@ assign(Builder.prototype, {
   // Sets the values for a `select` query, informing that only the first
   // row should be returned (limit 1).
   first() {
+    const {_method} = this;
+
+    if(!includes(['pluck', 'first', 'select'], _method)) {
+      throw new Error(`Cannot chain .first() on "${_method}" query!`);
+    }
+
     const args = new Array(arguments.length);
     for (let i = 0; i < args.length; i++) {
       args[i] = arguments[i];
@@ -800,6 +817,12 @@ assign(Builder.prototype, {
     return this;
   },
 
+  // Remove everything from select clause
+  clearOrder(){
+    this._clearGrouping('order');
+    return this;
+  },
+
   // Insert & Update
   // ------
 
@@ -825,7 +848,7 @@ assign(Builder.prototype, {
     } else {
       const keys = Object.keys(values);
       if (this._single.update) {
-        helpers.warn('Update called multiple times with objects.')
+        this.client.logger.warn('Update called multiple times with objects.')
       }
       let i = -1;
       while (++i < keys.length) {
@@ -887,7 +910,7 @@ assign(Builder.prototype, {
   fromJS(obj) {
     each(obj, (val, key) => {
       if (typeof this[key] !== 'function') {
-        helpers.warn(`Knex Error: unknown key ${key}`)
+        this.client.logger.warn(`Knex Error: unknown key ${key}`)
       }
       if (Array.isArray(val)) {
         this[key].apply(this, val)
@@ -909,7 +932,7 @@ assign(Builder.prototype, {
 
   // Helper for the incrementing/decrementing queries.
   _counter(column, amount, symbol) {
-    let amt = parseInt(amount, 10);
+    let amt = parseFloat(amount);
     if (isNaN(amt)) amt = 1;
     this._method = 'counter';
     this._single.counter = {

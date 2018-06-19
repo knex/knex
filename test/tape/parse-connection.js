@@ -83,3 +83,15 @@ test('#852, ssl param with PG query string', function(t) {
     ssl: true
   })
 })
+
+test('support postgresql connection protocol', function(t) {
+  t.plan(1)
+  t.deepEqual(parseConnection('postgresql://user:password@host:0000/database?ssl=true').connection, {
+    host: 'host',
+    port: '0000',
+    user: 'user',
+    password: 'password',
+    database: 'database',
+    ssl: true
+  })
+})

@@ -4,7 +4,6 @@
 import inherits from 'inherits';
 import Client_MySQL from '../mysql';
 import Promise from 'bluebird';
-import * as helpers from '../../helpers';
 import Transaction from './transaction';
 
 import { assign, map } from 'lodash'
@@ -118,9 +117,8 @@ assign(Client_MariaSQL.prototype, {
       case 'select':
       case 'pluck':
       case 'first': {
-        const resp = helpers.skim(rows);
-        if (method === 'pluck') return map(resp, obj.pluck);
-        return method === 'first' ? resp[0] : resp;
+        if (method === 'pluck') return map(rows, obj.pluck);
+        return method === 'first' ? rows[0] : rows;
       }
       case 'insert':
         return [data.insertId];
@@ -142,6 +140,8 @@ function parseType(value, type) {
       return new Date(value);
     case 'INTEGER':
       return parseInt(value, 10);
+    case 'FLOAT':
+      return parseFloat(value);
     default:
       return value;
   }

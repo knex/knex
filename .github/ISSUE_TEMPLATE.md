@@ -5,7 +5,7 @@ Database + version:
 OS:
 
 Select applicable tempalate from below.
-If issue is about oracledb support tag @ atiertant. For MSSql tag @ Grimace1975 .
+If issue is about oracledb support tag @ atiertant. For MSSql tag @ smorey2 .
 Rest of dialects doesn't need tags.
 
 # Bug

@@ -1,7 +1,6 @@
 import QueryBuilder from './query/builder';
 import Raw from './raw';
-
-import { transform } from 'lodash'
+import {transform} from 'lodash'
 
 // Valid values for the `order by` clause generation.
 const orderBys = ['asc', 'desc'];
@@ -55,6 +54,29 @@ export default class Formatter {
       str += this.parameter(values[i] === undefined ? notSetValue : values[i])
     }
     return str;
+  }
+
+  // Formats `values` into a parenthesized list of parameters for a `VALUES`
+  // clause.
+  //
+  // [1, 2]                  -> '(?, ?)'
+  // [[1, 2], [3, 4]]        -> '((?, ?), (?, ?))'
+  // knex('table')           -> '(select * from "table")'
+  // knex.raw('select ?', 1) -> '(select ?)'
+  //
+  values(values) {
+    if (Array.isArray(values)) {
+      if (Array.isArray(values[0])) {
+        return `(${values.map(value => `(${this.parameterize(value)})`).join(', ')})`;
+      }
+      return `(${this.parameterize(values)})`;
+    }
+
+    if (values instanceof Raw) {
+      return `(${this.parameter(values)})`;
+    }
+
+    return this.parameter(values);
   }
 
   // Checks whether a value is a function... if it is, we compile it

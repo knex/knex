@@ -2,7 +2,7 @@
 
 // Table Compiler
 // -------
-import { pushAdditional, pushQuery } from './helpers';
+import { pushAdditional, pushQuery, unshiftQuery } from './helpers';
 import * as helpers from '../helpers';
 import { groupBy, reduce, map, first, tail, isEmpty, indexOf, isArray, isUndefined } from 'lodash'
 
@@ -22,6 +22,8 @@ function TableCompiler(client, tableBuilder) {
 TableCompiler.prototype.pushQuery = pushQuery
 
 TableCompiler.prototype.pushAdditional = pushAdditional
+
+TableCompiler.prototype.unshiftQuery = unshiftQuery
 
 // Convert the tableCompiler toSQL
 TableCompiler.prototype.toSQL = function () {
@@ -173,7 +175,7 @@ TableCompiler.prototype.alterTable = function () {
     if (this[statement.method]) {
       this[statement.method].apply(this, statement.args);
     } else {
-      helpers.error(`Debug: ${statement.method} does not exist`);
+      this.client.logger.error(`Debug: ${statement.method} does not exist`);
     }
   }
   for (const item in this.single) {
@@ -197,7 +199,7 @@ TableCompiler.prototype.alterTableForCreate = function (columnTypes) {
       this[statement.method].apply(this, statement.args);
       columnTypes.sql.push(this.sequence[0].sql);
     } else {
-      helpers.error(`Debug: ${statement.method} does not exist`);
+      this.client.logger.error(`Debug: ${statement.method} does not exist`);
     }
   }
   this.sequence = savedSequence;

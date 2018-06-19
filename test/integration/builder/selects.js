@@ -499,6 +499,7 @@ module.exports = function(knex) {
                 last_name: "User",
                 email: "test@example.com",
                 logins: 1,
+                balance: 0,
                 about: "Lorem ipsum Dolore labore incididunt enim.",
                 created_at: d,
                 updated_at: d,
@@ -515,6 +516,7 @@ module.exports = function(knex) {
                 last_name: "User",
                 email: "test@example.com",
                 logins: 1,
+                balance: 0,
                 about: "Lorem ipsum Dolore labore incididunt enim.",
                 created_at: d,
                 updated_at: d,
@@ -531,6 +533,7 @@ module.exports = function(knex) {
                 last_name: "User",
                 email: "test@example.com",
                 logins: 1,
+                balance: 0,
                 about: "Lorem ipsum Dolore labore incididunt enim.",
                 created_at: d,
                 updated_at: d,
@@ -547,6 +550,7 @@ module.exports = function(knex) {
                 last_name: "User",
                 email: "test@example.com",
                 logins: 1,
+                balance: 0,
                 about: "Lorem ipsum Dolore labore incididunt enim.",
                 created_at: d,
                 updated_at: d,
@@ -563,6 +567,7 @@ module.exports = function(knex) {
                 last_name: "User",
                 email: "test@example.com",
                 logins: 1,
+                balance: 0,
                 about: "Lorem ipsum Dolore labore incididunt enim.",
                 created_at: d,
                 updated_at: d,
@@ -579,6 +584,7 @@ module.exports = function(knex) {
                 last_name: "User",
                 email: "test@example.com",
                 logins: 1,
+                balance: 0,
                 about: "Lorem ipsum Dolore labore incididunt enim.",
                 created_at: d,
                 updated_at: d,
@@ -726,7 +732,7 @@ module.exports = function(knex) {
           .select()
           .testSql(function(tester) {
             tester('mysql',
-              'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?),(?, ?)) order by `status` desc',
+              'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?), (?, ?)) order by `status` desc',
               [1,1,1,2],
               [{
                 column_a: 1,
@@ -754,7 +760,7 @@ module.exports = function(knex) {
                 status: 0
               }]);
             tester('pg-redshift',
-              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?),(?, ?)) order by "status" desc',
+              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
               [1,1,1,2],
               [
                 {
@@ -796,7 +802,7 @@ module.exports = function(knex) {
           .select()
           .testSql(function(tester) {
             tester('mysql',
-              'select * from `composite_key_test` where `status` = ? and (`column_a`, `column_b`) in ((?, ?),(?, ?))',
+              'select * from `composite_key_test` where `status` = ? and (`column_a`, `column_b`) in ((?, ?), (?, ?))',
               [1,1,1,1,2],
               [{
                 column_a: 1,
@@ -814,7 +820,7 @@ module.exports = function(knex) {
                 status: 1
               }]);
             tester('pg-redshift',
-              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?),(?, ?))',
+              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
               [1,1,1,1,2],
               [{
                 column_a: 1,
@@ -918,6 +924,20 @@ module.exports = function(knex) {
         const query = knex.select('id","name').from('test').toSQL();
         assert(query.sql === 'select "id"",""name" from "test"');
       }
+    });
+
+    it('knex.ref() as column in .select()', function() {
+      return knex('accounts')
+        .select([
+          knex.ref('accounts.id').as('userid'),
+        ])
+        .where(knex.ref('accounts.id'), '1')
+        .first()
+        .then(function(row) {
+          expect(String(row.userid)).to.equal('1');
+
+          return true;
+        })
     });
 
   });

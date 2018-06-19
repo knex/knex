@@ -5,7 +5,6 @@ import Migrator from '../migrate';
 import Seeder from '../seed';
 import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
-import * as helpers from '../helpers';
 import { assign } from 'lodash'
 import batchInsert from './batchInsert';
 
@@ -14,7 +13,7 @@ export default function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
   function knex(tableName, options) {
     const qb = knex.queryBuilder()
-    if (!tableName) helpers.warn(
+    if (!tableName) client.logger.warn(
       'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
     );
     return tableName ? qb.table(tableName, options) : qb
@@ -51,6 +50,10 @@ export default function makeKnex(client) {
     // Convenience method for tearing down the pool.
     destroy(callback) {
       return client.destroy(callback)
+    },
+
+    ref(ref) {
+      return client.ref(ref);
     }
 
   })
@@ -78,7 +81,7 @@ export default function makeKnex(client) {
 
     __knex__: {
       get() {
-        helpers.warn(
+        knex.client.logger.warn(
           'knex.__knex__ is deprecated, you can get the module version' +
           "by running require('knex/package').version"
         )
@@ -88,7 +91,7 @@ export default function makeKnex(client) {
 
     VERSION: {
       get() {
-        helpers.warn(
+        knex.client.logger.warn(
           'knex.VERSION is deprecated, you can get the module version' +
           "by running require('knex/package').version"
         )
