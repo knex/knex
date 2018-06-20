@@ -39,7 +39,7 @@ assign(Client_MSSQL.prototype, {
 
   dialect: "mssql",
 
-  driverName: "mssql",
+  driverName: "tedious",
 
   _driver() {
     return tedious;
