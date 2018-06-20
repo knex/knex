@@ -21,6 +21,8 @@ assign(ColumnCompiler_MSSQL.prototype, {
   bigincrements: "bigint identity(1,1) not null primary key",
 
   bigint: "bigint",
+  
+  json: "VARCHAR(MAX)",
 
   double(precision, scale) {
     if (!precision) return "decimal(18, 4)";
