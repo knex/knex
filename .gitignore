@@ -11,7 +11,6 @@ package-lock.json
 test.sqlite3
 npm-debug.log
 tmp
-lib
 
 # Testing for the knex cli:
 bin/migrations-folder
