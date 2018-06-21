@@ -160,6 +160,11 @@ assign(TableCompiler_MySQL.prototype, {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery(`alter table ${this.tableName()} add index ${indexName}(${this.formatter.columnize(columns)})`);
   },
+  
+  spatial(columns, indexName) {
+    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+    this.pushQuery(`alter table ${this.tableName()} add spatial index ${indexName}(${this.formatter.columnize(columns)})`);
+  },
 
   primary(columns, constraintName) {
     constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
