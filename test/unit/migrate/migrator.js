@@ -5,19 +5,20 @@
 var mockFs = require('mock-fs');
 var knex = require('../../../knex');
 
+var config = {
+  client: 'pg',
+  connection: {
+    user: 'postgres',
+    password: '',
+    host: '127.0.0.1',
+    database: 'knex_test'
+  },
+  migrations: {
+    directory: 'test/integration/migrate/migration'
+  }
+};
+
 describe('Migrator.loadExtensions', function () {
-  var config = {
-    client: 'pg',
-    connection: {
-      user: 'postgres',
-      password: '',
-      host: '127.0.0.1',
-      database: 'knex_test'
-    },
-    migrations: {
-      directory: 'test/integration/migrate/migration'
-    }
-  };
   var migrator;
 
   before(function() {
@@ -70,4 +71,27 @@ describe('Migrator.loadExtensions', function () {
       })
   });
 
+});
+
+describe('Migrator.validateMigrationList', function () {
+  it('should throw error if migrations list is invalid', function () {
+    var migrator = knex(config).migrate;
+    var result;
+    try {
+      result = migrator.validateMigrationList([[], ['absent']]);
+    } catch (err) {
+      result = err;
+    }
+    return expect(result).to.be.an.instanceof(Error);
+  });
+
+  it('should return if migrations list is invalid', function () {
+    var customMigrator = knex(Object.assign(config, {migrations: {validateMigrationList: false}})).migrate;
+    return expect(customMigrator.validateMigrationList([[], ['absent']])).to.eql(undefined)
+  });
+
+  it('should return if migrations list is valid', function () {
+    var migrator = knex(config).migrate;
+    return expect(migrator.validateMigrationList([['present'], ['present']])).to.eql(undefined)
+  });
 });
