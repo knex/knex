@@ -69,6 +69,9 @@ export default class Transaction_MSSQL extends Transaction {
     debug("transaction::rollback id=%s", this.txid);
 
     return new Promise((resolve, reject) => {
+      if (!conn.inTransaction) {
+        return reject(err || error || new Error('Transaction rejected with non-error: undefined'));
+      }
       conn.rollbackTransaction(err => {
         if (err) {
           debug(
