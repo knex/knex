@@ -384,6 +384,24 @@ describe("Redshift SchemaBuilder", function() {
     expect(tableSql[0].sql).to.equal('alter table "users" add column "foo" timestamptz');
   });
 
+  it("adding timestamps without tz", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.timestamps(true);
+    }).toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamp');
+    expect(tableSql[1].sql).to.equal('alter table "users" add column "updated_at" timestamp');
+  });
+
+  it("adding timestamps with defaults without tz", function() {
+    tableSql = client.schemaBuilder().table('users', function(table) {
+      table.timestamps(true, true);
+    }).toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add column "created_at" timestamp not null default CURRENT_TIMESTAMP');
+    expect(tableSql[1].sql).to.equal('alter table "users" add column "updated_at" timestamp not null default CURRENT_TIMESTAMP');
+  });
+
   it("adding timestamps", function() {
     tableSql = client.schemaBuilder().table('users', function(table) {
       table.timestamps();
