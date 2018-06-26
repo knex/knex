@@ -94,7 +94,7 @@ assign(Runner.prototype, {
         return runner.client.stream(runner.connection, sql, stream, options)
       } catch (e) {
         stream.emit('error', e)
-        throw new Error(e);
+        throw e;
       }
     })
 
