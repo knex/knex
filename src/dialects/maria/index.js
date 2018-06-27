@@ -76,7 +76,10 @@ assign(Client_MariaSQL.prototype, {
       connection.query(sql.sql, sql.bindings)
         .on('result', function(res) {
           res
-            .on('error', rejecter)
+            .on('error', (err) => {
+              rejecter(err)
+              stream.emit('error', err)
+            })
             .on('end', function() {
               resolver(res.info);
             })

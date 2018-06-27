@@ -84,13 +84,18 @@ assign(Runner.prototype, {
     const promise = Promise.using(this.ensureConnection(), function(connection) {
       hasConnection = true;
       runner.connection = connection;
-      const sql = runner.builder.toSQL()
-      const err = new Error('The stream may only be used with a single query statement.');
-      if (isArray(sql)) {
-        if (hasHandler) throw err;
-        stream.emit('error', err);
+      try {
+        const sql = runner.builder.toSQL()
+
+        if (isArray(sql) && hasHandler) {
+          throw new Error('The stream may only be used with a single query statement.');
+        }
+
+        return runner.client.stream(runner.connection, sql, stream, options)
+      } catch (e) {
+        stream.emit('error', e)
+        throw e;
       }
-      return runner.client.stream(runner.connection, sql, stream, options);
     })
 
     // If a function is passed to handle the stream, send the stream

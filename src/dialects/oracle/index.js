@@ -125,6 +125,10 @@ assign(Client_Oracle.prototype, {
       stream.on('end', resolver);
       const queryStream = connection.queryStream(obj.sql, obj.bindings, options);
       queryStream.pipe(stream);
+      queryStream.on('error', function(error) {
+        rejecter(error);
+        stream.emit('error', error);
+      });
     })
   },
 
