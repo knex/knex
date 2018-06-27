@@ -104,7 +104,14 @@ assign(Client_MySQL.prototype, {
     return new Promise((resolver, rejecter) => {
       stream.on('error', rejecter)
       stream.on('end', resolver)
-      connection.query(queryOptions, obj.bindings).stream(options).pipe(stream)
+      const queryStream = connection.query(queryOptions, obj.bindings).stream(options)
+
+      queryStream.on('error', (err) => {
+        rejecter(err);
+        stream.emit('error', err)
+      })
+
+      queryStream.pipe(stream)
     })
   },
 
