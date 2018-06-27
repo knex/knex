@@ -363,7 +363,10 @@ export default [
     example: "table.json(name)",
     children: [{
       type: 'text',
-      content: `Adds a json column, using the built-in json type in postgresql, defaulting to a text column in older versions of postgresql or in unsupported databases. Note that when setting an array (or a value that could be an array) as the value of a json or jsonb column, you should use JSON.stringify() to convert your value to a string prior to passing it to the query builder, e.g.`
+      content: `Adds a json column, using the built-in json type in postgresql and mysql, defaulting to a text column in older versions or in unsupported databases.`
+    }, {
+      type: 'text',
+      content: `For postgresql, due to incompatibility between native array and json types, when setting an array (or a value that could be an array) as the value of a json or jsonb column, you should use JSON.stringify() to convert your value to a string prior to passing it to the query builder, e.g.`
     }, {
       type: 'code',
       language: 'js',
@@ -372,9 +375,6 @@ export default [
           .where({id: 1})
           .update({json_data: JSON.stringify(mightBeAnArray)});
       `
-    }, {
-      type: 'text',
-      content: 'This is because postgresql has a native array type which uses a syntax incompatible with json; knex has no way of knowing which syntax to use, and calling JSON.stringify() forces json-style syntax.'
     }]
   },
   {
