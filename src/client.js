@@ -2,7 +2,7 @@ import Promise from 'bluebird';
 
 import Raw from './raw';
 import Ref from './ref';
-import { addCastToClient } from './cast';
+import { addCast } from './cast';
 import Runner from './runner';
 import Formatter from './formatter';
 import Transaction from './transaction';
@@ -365,6 +365,6 @@ assign(Client.prototype, {
 
 })
 
-addCastToClient(Client);
+addCast(Client.prototype);
 
 export default Client

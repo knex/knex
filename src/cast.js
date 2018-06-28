@@ -86,7 +86,7 @@ class Cast extends Raw {
 
 export default Cast
 
-function addCast(target, client) {
+export function addCast(target, client = target) {
   target.cast = function() {
     const cast = new Cast(client);
 
@@ -102,12 +102,4 @@ function addCast(target, client) {
       return cast[fnName](...arguments);
     };
   }
-}
-
-export function addCastToKnex(target, client) {
-  addCast(target, client);
-}
-
-export function addCastToClient(client) {
-  addCast(client.prototype, client);
 }
