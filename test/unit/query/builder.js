@@ -45,6 +45,10 @@ function ref(ref) {
   return clients.postgres.ref(ref);
 }
 
+function client() {
+  return clients.postgres;
+}
+
 function verifySqlResult(dialect, expectedObj, sqlObj) {
   Object.keys(expectedObj).forEach(function (key) {
     if (typeof expectedObj[key] === 'function') {
@@ -1740,10 +1744,6 @@ describe("QueryBuilder", function() {
         bindings: []
       },
       postgres: {
-        sql: 'select * from "users" group by id, email',
-        bindings: []
-      },
-      redshift: {
         sql: 'select * from "users" group by id, email',
         bindings: []
       },
@@ -3967,10 +3967,6 @@ describe("QueryBuilder", function() {
         sql: 'update "users" set "email" = ? where "id" = ?',
         bindings: ['foo', 1]
       },
-      redshift: {
-        sql: 'update "users" set "email" = ? where "id" = ?',
-        bindings: ['foo', 1]
-      },
     });
   });
 
@@ -4301,7 +4297,7 @@ describe("QueryBuilder", function() {
         bindings: ['foo']
       },
       oracledb: {
-        sql: 'insert into "users" ("email") values (?) returning \"id\" into ?',
+        sql: 'insert into "users" ("email") values (?) returning "id" into ?',
         bindings: function (bindings) {
           expect(bindings.length).to.equal(2);
           expect(bindings[0]).to.equal('foo');
@@ -5884,6 +5880,27 @@ describe("QueryBuilder", function() {
         mssql: 'select [one], [sometable].[two] as [Two] from [sometable]',
         redshift: 'select "one", "sometable"."two" as "Two" from "sometable"',
         oracle: 'select "one", "sometable"."two" as "Two" from "sometable"',
+      });
+    });
+  });
+
+  describe('knex.cast()', function() {
+    it('Generates correct SQL', function() {
+      testquery(qb().select([
+        client().castInt(ref('id')),
+        client().castBigInt(ref('id')),
+        client().castText(1),
+        client().castFloat('500'),
+        client().castDecimal(ref('Amount')),
+        client().castReal(ref('column')),
+        client().castBool(1),
+        client().castJson(ref('json_column')),
+      ]), {
+        postgres: 'select CAST("id" AS integer), CAST("id" AS bigint), CAST(1 AS text), CAST(\'500\' AS float), CAST("Amount" AS decimal), CAST("column" AS real), CAST(1 AS boolean), to_jsonb("json_column")',
+        mysql: 'select CAST(`id` AS integer), CAST(`id` AS bigint), CAST(1 AS text), CAST(\'500\' AS float), CAST(`Amount` AS decimal), CAST(`column` AS real), CAST(1 AS boolean), to_jsonb(`json_column`)',
+        mssql: 'select CAST([id] AS integer), CAST([id] AS bigint), CAST(1 AS text), CAST(\'500\' AS float), CAST([Amount] AS decimal), CAST([column] AS real), CAST(1 AS boolean), to_jsonb([json_column])',
+        redshift: 'select CAST("id" AS integer), CAST("id" AS bigint), CAST(1 AS text), CAST(\'500\' AS float), CAST("Amount" AS decimal), CAST("column" AS real), CAST(1 AS boolean), to_jsonb("json_column")',
+        oracle: 'select CAST("id" AS integer), CAST("id" AS bigint), CAST(1 AS text), CAST(\'500\' AS float), CAST("Amount" AS decimal), CAST("column" AS real), CAST(1 AS boolean), to_jsonb("json_column")',
       });
     });
   });
