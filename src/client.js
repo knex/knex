@@ -22,7 +22,7 @@ import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
 import { makeEscape } from './query/string'
-import { assign, uniqueId, cloneDeep, defaults, keys } from 'lodash'
+import { assign, uniqueId, cloneDeep, defaults } from 'lodash'
 
 import Logger from './logger';
 
@@ -109,12 +109,6 @@ assign(Client.prototype, {
 
   ref() {
     return new Ref(this, ...arguments)
-  },
-
-  cast() {
-    const cast = new Cast(this);
-
-    return cast.cast(...arguments);
   },
 
   _formatQuery(sql, bindings, timeZone) {

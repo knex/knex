@@ -1,7 +1,6 @@
 'use strict';
 import Raw from './raw';
 import {keys} from "lodash";
-import Client from "./client";
 
 class Cast extends Raw {
   constructor(client) {
