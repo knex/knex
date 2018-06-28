@@ -9,8 +9,8 @@ module.exports = (knexfile) => {
   Object.keys(knexfile).forEach((key) => {
     const dialect = knexfile[key].dialect || knexfile[key].client;
 
-    // TODO: check why these must be disabled for oracle and mssql
-    if (dialect !== 'sqlite3' && dialect !== 'oracledb'  && dialect !== 'mssql') {
+    // TODO: FIX ORACLE AND MSSQL TO WORK THE SAME WAY WITH OTHER DIALECTS IF POSSIBLE
+    if (dialect !== 'sqlite3' && dialect !== 'oracledb' && dialect !== 'mssql') {
       const knexConf = _.cloneDeep(knexfile[key]);
       knexConf.connection.database = knexConf.connection.db = 'i-refuse-to-exist';
       knexConf.acquireConnectionTimeout = 4000;

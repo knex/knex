@@ -957,6 +957,10 @@ module.exports = function(knex) {
     });
 
     it('select for update locks selected row', function() {
+      if (knex.client.dialect === 'sqlite3') { 
+        return;
+      }
+
       return knex('test_default_table').insert({ string: 'making sure there is a row to lock'})
         .then(() => {
           return knex.transaction(trx => {
@@ -974,6 +978,10 @@ module.exports = function(knex) {
     });  
 
     it('select for share prevents updating in other transaction', function() {
+      if (knex.client.dialect === 'sqlite3' || knex.client.dialect === 'oracle') {
+        return;
+      }
+
       return knex('test_default_table').insert({ string: 'making sure there is a row to lock'})
         .then(() => {
           return knex.transaction(trx => {

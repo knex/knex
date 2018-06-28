@@ -81,6 +81,7 @@
     "test": "npm run pre_test && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
     "oracledb:test": "docker rmi -f --no-prune knex-test-oracledb && docker build -f scripts/oracle-tests-Dockerfile --tag knex-test-oracledb . && docker run -i -t knex-test-oracledb",
     "mssql:init": "docker-compose -f scripts/mssql-docker-compose.yml up --no-start && docker-compose -f scripts/mssql-docker-compose.yml start",
+    "postmssql:init": "node scripts/wait-for-mssql-server.js",
     "mssql:test": "DB=mssql npm test",
     "mssql:destroy": "docker-compose -f scripts/mssql-docker-compose.yml stop",
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",

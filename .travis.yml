@@ -29,6 +29,8 @@ before_script:
   - psql -c 'create database knex_test;' -U postgres
   - mysql -e 'create database knex_test;'
   - npm run mssql:init
+  - docker ps -a
+  - netstat -tulpn
 
 after_script:
   - npm run-script coveralls
