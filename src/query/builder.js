@@ -10,7 +10,7 @@ import * as helpers from '../helpers';
 import JoinClause from './joinclause';
 import {
   assign, clone, each, isBoolean, isEmpty, isFunction, isNumber, isObject,
-  isString, isUndefined, tail, toArray, reject, includes
+  isString, isUndefined, tail, toArray, reject, includes, pick
 } from 'lodash';
 import saveAsyncStack from '../util/save-async-stack';
 
@@ -42,6 +42,24 @@ assign(Builder.prototype, {
   // Convert the current query "toSQL"
   toSQL(method, tz) {
     return this.client.queryCompiler(this).toSQL(method || this._method, tz);
+  },
+
+  toWhereClauseSQL() {
+    const whereBuilder = this.clone();
+
+    whereBuilder._method = 'where';
+
+    const result = whereBuilder.toSQL();
+
+    result.sql = result.sql.substr(6);
+
+    return pick(result, 'sql', 'bindings', 'toNative');
+  },
+
+  toWhereClauseString() {
+    const {sql, bindings} = this.toWhereClauseSQL();
+
+    return this.client._formatQuery(sql, bindings);
   },
 
   // Create a shallow clone of the current query builder.
