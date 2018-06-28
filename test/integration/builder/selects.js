@@ -957,13 +957,13 @@ module.exports = function(knex) {
     });
 
     it('select for update locks selected row', function() {
-      return knex('test_table').insert({ name: 'making sure there is a row to lock'})
+      return knex('test_default_table').insert({ string: 'making sure there is a row to lock'})
         .then(() => {
           return knex.transaction(trx => {
             // select all from test table and lock
-            return trx('test_table').forUpdate().then((res) => {
+            return trx('test_default_table').forUpdate().then((res) => {
               // try to select stuff from table in other connection should just hang...
-              return knex('test_table').forUpdate().timeout(100);
+              return knex('test_default_table').forUpdate().timeout(100);
             });
           }).then(res => {
             expect("Second query should have timed out").to.be.false;
@@ -974,14 +974,14 @@ module.exports = function(knex) {
     });  
 
     it('select for share prevents updating in other transaction', function() {
-      return knex('test_table').insert({ name: 'making sure there is a row to lock'})
+      return knex('test_default_table').insert({ string: 'making sure there is a row to lock'})
         .then(() => {
           return knex.transaction(trx => {
             // select all from test table and lock
-            return trx('test_table').forShare().then((res) => {
+            return trx('test_default_table').forShare().then((res) => {
               // try to update row that was selected for share should just hang...
               return knex.transaction(trx2 => {
-                return trx2('test_table').update({ name: 'foo' }).timeout(100);
+                return trx2('test_default_table').update({ string: 'foo' }).timeout(100);
               });
             });
           }).then(res => {
