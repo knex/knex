@@ -29,10 +29,10 @@ function Client_MSSQL(config = {}) {
   }
 
   // mssql always creates pool :( lets try to unpool it as much as possible
-  config.pool = {
+  this.mssqlPoolSettings = {
     min: 1,
     max: 1,
-    idleTimeoutMillis: Number.MAX_SAFE_INTEGER,
+    idleTimeoutMillis: Number.MAX_SAFE_INTEGER,  
     evictionRunIntervalMillis: 0
   };
 
@@ -199,7 +199,10 @@ assign(Client_MSSQL.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     return new Promise((resolver, rejecter) => {
-      const connection = new this.driver.ConnectionPool(this.connectionSettings);
+      const settings = Object.assign({}, this.connectionSettings);
+      settings.pool = this.mssqlPoolSettings;
+
+      const connection = new this.driver.ConnectionPool(settings);
       connection.connect((err) => {
         if (err) {
           return rejecter(err)

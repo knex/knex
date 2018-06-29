@@ -90,7 +90,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP CONSTRAINT [users_foo_unique]');
+    expect(tableSql[0].sql).to.equal('DROP INDEX [users_foo_unique] ON [users]');
   });
 
   it('should alter columns with the alter flag', function() {
@@ -110,7 +110,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] DROP CONSTRAINT [foo]');
+    expect(tableSql[0].sql).to.equal('DROP INDEX [foo] ON [users]');
   });
 
   it('test drop index', function() {
@@ -182,7 +182,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('CREATE UNIQUE INDEX [bar] ON [users] ([foo])');
+    expect(tableSql[0].sql).to.equal('CREATE UNIQUE INDEX [bar] ON [users] ([foo]) WHERE [foo] IS NOT NULL');
   });
 
   it('test adding index', function() {
@@ -368,7 +368,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(5, 2)');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float');
   });
 
   it('test adding double', function() {
@@ -377,7 +377,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float');
   });
 
   it('test adding double specifying precision', function() {
@@ -386,7 +386,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] decimal(15, 8)');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float');
   });
 
   it('test adding decimal', function() {
@@ -530,7 +530,7 @@ describe("MSSQL SchemaBuilder", function() {
     }).toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [composite_key_test] DROP CONSTRAINT [composite_key_test_column_a_column_b_unique]');
+    expect(tableSql[0].sql).to.equal('DROP INDEX [composite_key_test_column_a_column_b_unique] ON [composite_key_test]');
   });
 
   it('allows default as alias for defaultTo', function() {

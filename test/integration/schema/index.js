@@ -273,8 +273,10 @@ module.exports = function(knex) {
               'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "test_table_one" ("first_name")',
               'alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")',
               'create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
-            tester('mssql', ['CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int default \'1\', [balance] decimal default \'0\', [about] nvarchar(max), [created_at] datetime, [updated_at] datetime, CONSTRAINT [test_table_one_email_unique] UNIQUE ([email]))',
+            tester('mssql', [
+              'CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int default \'1\', [balance] float default \'0\', [about] nvarchar(max), [created_at] datetime, [updated_at] datetime)',
               'CREATE INDEX [test_table_one_first_name_index] ON [test_table_one] ([first_name])',
+              'CREATE UNIQUE INDEX [test_table_one_email_unique] ON [test_table_one] ([email]) WHERE [email] IS NOT NULL',
               'CREATE INDEX [test_table_one_logins_index] ON [test_table_one] ([logins])']);
           });
       });
@@ -388,7 +390,7 @@ module.exports = function(knex) {
       });
 
       it('rejects setting foreign key where tableName is not typeof === string', function() {
-        return knex.schema.createTable('invalid_inTable_param_test', function(table) {
+        let builder = knex.schema.createTable('invalid_inTable_param_test', function(table) {
           const createInvalidUndefinedInTableSchema = function() {
             table.increments('id').references('id').inTable()
           };
@@ -397,7 +399,11 @@ module.exports = function(knex) {
           };
           expect(createInvalidUndefinedInTableSchema).to.throw(TypeError);
           expect(createInvalidObjectInTableSchema).to.throw(TypeError);
-        })
+
+          table.integer('yet_another_id').references('id').inTable({tableName: 'this_should_fail_too'})
+        });
+
+        expect(() => builder.toSQL()).to.throw(TypeError);
       });
 
 
@@ -415,7 +421,10 @@ module.exports = function(knex) {
             tester('pg-redshift', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" varchar(max), "status" smallint)','alter table "composite_key_test" add constraint "composite_key_test_column_a_column_b_unique" unique ("column_a", "column_b")']);
             tester('sqlite3', ['create table `composite_key_test` (`column_a` integer, `column_b` integer, `details` text, `status` tinyint)','create unique index `composite_key_test_column_a_column_b_unique` on `composite_key_test` (`column_a`, `column_b`)']);
             tester('oracle', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" clob, "status" smallint)','alter table "composite_key_test" add constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk" unique ("column_a", "column_b")']);
-            tester('mssql', ['CREATE TABLE [composite_key_test] ([column_a] int, [column_b] int, [details] nvarchar(max), [status] tinyint, CONSTRAINT [composite_key_test_column_a_column_b_unique] UNIQUE ([column_a], [column_b]))']);
+            tester('mssql', [
+              'CREATE TABLE [composite_key_test] ([column_a] int, [column_b] int, [details] nvarchar(max), [status] tinyint)',
+              'CREATE UNIQUE INDEX [composite_key_test_column_a_column_b_unique] ON [composite_key_test] ([column_a], [column_b]) WHERE [column_a] IS NOT NULL AND [column_b] IS NOT NULL'
+            ]);
           }).then(function() {
             return knex('composite_key_test').insert([{
               column_a: 1,
@@ -556,9 +565,10 @@ module.exports = function(knex) {
       });
 
       it('allows alter column syntax', function () {
-        if (knex.client.dialect.match('sqlite') !== null ||
-            knex.client.dialect.match('redshift') !== null ||
-            knex.client.dialect.match('oracle') !== null) {
+        if (knex.client.dialect.match('sqlite') ||
+            knex.client.dialect.match('redshift') ||
+            knex.client.dialect.match('mssql') ||
+            knex.client.dialect.match('oracle')) {
           return;
         }
 

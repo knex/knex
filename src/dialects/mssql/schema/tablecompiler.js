@@ -19,7 +19,7 @@ inherits(TableCompiler_MSSQL, TableCompiler);
 
 assign(TableCompiler_MSSQL.prototype, {
 
-  createAlterTableMethods: ['foreign', 'primary', 'unique'],
+  createAlterTableMethods: ['foreign', 'primary'],
   createQuery (columns, ifNot) {
     const createStatement = ifNot ? `if object_id('${this.tableName()}', 'U') is null CREATE TABLE ` : 'CREATE TABLE ';
     const sql = createStatement + this.tableName() + (this._formatting ? ' (\n    ' : ' (') + columns.sql.join(this._formatting ? ',\n    ' : ', ') + ')';
@@ -118,11 +118,16 @@ assign(TableCompiler_MSSQL.prototype, {
 
   unique (columns, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-    if (!this.forCreate) {
-      this.pushQuery(`CREATE UNIQUE INDEX ${indexName} ON ${this.tableName()} (${this.formatter.columnize(columns)})`);
-    } else {
-      this.pushQuery(`CONSTRAINT ${indexName} UNIQUE (${this.formatter.columnize(columns)})`);
+
+    if (!Array.isArray(columns)) {
+      columns = [columns];
     }
+
+    const whereAllTheColumnsAreNotNull = columns.map(column => this.formatter.columnize(column) + ' IS NOT NULL').join(' AND ');
+
+    // make unique constraint that allows null https://stackoverflow.com/a/767702/360060 
+    // to be more or less compatible with other DBs (if any of the columns is NULL then "duplicates" are allowed)
+    this.pushQuery(`CREATE UNIQUE INDEX ${indexName} ON ${this.tableName()} (${this.formatter.columnize(columns)}) WHERE ${whereAllTheColumnsAreNotNull}`);
   },
 
   // Compile a drop index command.
@@ -146,7 +151,7 @@ assign(TableCompiler_MSSQL.prototype, {
   // Compile a drop unique key command.
   dropUnique (column, indexName) {
     indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, column);
-    this.pushQuery(`ALTER TABLE ${this.tableName()} DROP CONSTRAINT ${indexName}`);
+    this.pushQuery(`DROP INDEX ${indexName} ON ${this.tableName()}`);
   }
 
 })

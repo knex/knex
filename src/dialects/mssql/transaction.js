@@ -1,5 +1,6 @@
 import Promise from 'bluebird';
 import Transaction from '../../transaction';
+import { isUndefined } from 'lodash'
 const debug = require('debug')('knex:tx')
 
 export default class Transaction_MSSQL extends Transaction {
@@ -32,7 +33,13 @@ export default class Transaction_MSSQL extends Transaction {
     debug('%s: rolling back', this.txid)
     return conn.tx_.rollback()
       .then(
-        () => this._rejecter(error),
+        () => {
+          let err = error;
+          if(isUndefined(error)) {
+            err = new Error(`Transaction rejected with non-error: ${error}`)
+          }
+          this._rejecter(err)
+        },
         err => {
           if (error) err.originalError = error;
           return this._rejecter(err);
@@ -58,6 +65,7 @@ export default class Transaction_MSSQL extends Transaction {
         configConnection ||
         t.client.acquireConnection();
     }).tap(function(conn) {
+      conn.__knexTxId = t.txid;
       if (!t.outerTx) {
         t.conn = conn
         conn.tx_ = conn.transaction()

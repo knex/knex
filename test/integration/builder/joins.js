@@ -52,7 +52,7 @@ module.exports = function(knex) {
               details: ''
             }]
           );
-          tester('postgresql',
+          tester('pg',
             'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc',
             [],
             [
@@ -348,7 +348,7 @@ module.exports = function(knex) {
               details: null
             }]
           );
-          tester('postgresql',
+          tester('pg',
             'select "accounts".*, "test_table_two"."details" from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc',
             [],
             [
@@ -849,7 +849,7 @@ module.exports = function(knex) {
               json_data: null
             }]
           );
-          tester('postgresql',
+          tester('pg',
             'select * from "accounts" left join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" or "accounts"."email" = "test_table_two"."details" order by "accounts"."id" asc',
             [],
             [
@@ -1274,7 +1274,7 @@ module.exports = function(knex) {
               e2: 'test2@example.com'
             }]
           );
-          tester('postgresql',
+          tester('pg',
             'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? order by "e1" asc limit ?',
             ['test2@example.com', 5],
             [
@@ -1425,7 +1425,7 @@ module.exports = function(knex) {
               e2: 'test2@example.com'
             }]
           );
-          tester('postgresql',
+          tester('pg',
             'select "accounts"."email" as "e1", "a2"."email" as "e2" from "accounts" inner join "accounts" as "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 where "a2"."email" = ? order by "e1" asc limit ?',
             ['test2@example.com', 5],
             [{
@@ -1543,7 +1543,7 @@ module.exports = function(knex) {
             }
           );
           tester(
-            'postgresql',
+            'pg',
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function (res) {

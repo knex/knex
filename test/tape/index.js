@@ -20,6 +20,7 @@ Object.keys(knexfile).forEach(function(key) {
 
   require('./transactions')(knex)
   require('./stream')(knex)
+  require('./crossdb-compatibility')(knex)
 
   // Tear down the knex connection
   tape(knex.client.driverName + ' - transactions: after', function(t) {
