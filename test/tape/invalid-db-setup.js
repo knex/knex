@@ -9,7 +9,8 @@ module.exports = (knexfile) => {
   Object.keys(knexfile).forEach((key) => {
     const dialect = knexfile[key].dialect || knexfile[key].client;
 
-    if (dialect !== 'sqlite3' && dialect !== 'oracledb') {
+    // TODO: FIX ORACLE AND MSSQL TO WORK THE SAME WAY WITH OTHER DIALECTS IF POSSIBLE
+    if (dialect !== 'sqlite3' && dialect !== 'oracledb' && dialect !== 'mssql') {
       const knexConf = _.cloneDeep(knexfile[key]);
       knexConf.connection.database = knexConf.connection.db = 'i-refuse-to-exist';
       knexConf.acquireConnectionTimeout = 4000;
@@ -19,7 +20,7 @@ module.exports = (knexfile) => {
         t.plan(1);
         t.timeoutAfter(1000);
         knex('accounts').select(1)
-          .then(res => {
+          .then(res => {  
             t.fail(`Query should have failed, got: ${JSON.stringify(res)}`);
           })
           .catch(Bluebird.TimeoutError, e => {

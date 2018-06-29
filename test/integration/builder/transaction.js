@@ -340,10 +340,11 @@ module.exports = function(knex) {
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
 
       return knexDb.transaction(function(trx) {
-        var sql = 'SELECT 1 = 1';
+        var sql = 'SELECT 1';
         if (knex.client.dialect === 'oracle') {
           sql = 'SELECT 1 FROM DUAL';
         }
+
         trx.raw(sql).then(function () {
           //No connection is available, so try issuing a query without transaction.
           //Since there is no available connection, it should throw a timeout error based on `aquireConnectionTimeout` from the knex config.

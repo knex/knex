@@ -37,7 +37,7 @@ const mssql = Knex({
 });
 
 /* TODO: figure out how to nicely install oracledb node driver on osx
-const mysql = Knex({
+const oracledb = Knex({
   client: 'oracledb',
   connection: {
     user          : "travis",

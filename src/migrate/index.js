@@ -198,7 +198,6 @@ export default class Migrator {
 
   _getLock(trx) {
     const transact = trx ? fn => fn(trx) : fn => this.knex.transaction(fn);
-
     return transact(trx => {
       return this._isLocked(trx)
         .then(isLocked => {

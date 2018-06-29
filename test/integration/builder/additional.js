@@ -213,7 +213,7 @@ module.exports = function(knex) {
         .truncate()
         .testSql(function(tester) {
           tester('mysql', 'truncate `test_table_two`');
-          tester('postgresql', 'truncate "test_table_two" restart identity');
+          tester('pg', 'truncate "test_table_two" restart identity');
           tester('pg-redshift', 'truncate "test_table_two"');
           tester('sqlite3', "delete from `test_table_two`");
           tester('oracle', "truncate table \"test_table_two\"");
@@ -289,7 +289,7 @@ module.exports = function(knex) {
               "type": "char"
             }
           });
-        tester('postgresql', 'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema',
+        tester('pg', 'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
         null, {
           "enum_value": {
             "defaultValue": null,
@@ -369,7 +369,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('gets the columnInfo', function() {
+    it('gets the columnInfo with columntype', function() {
       return knex('datatype_test').columnInfo('uuid').testSql(function(tester) {
         tester('mysql',
           'select * from information_schema.columns where table_name = ? and table_schema = ?',
@@ -379,7 +379,7 @@ module.exports = function(knex) {
             "nullable": false,
             "type": "char"
           });
-        tester('postgresql', 'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema',
+        tester('pg', 'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
         null, {
           "defaultValue": null,
           "maxLength": null,
@@ -465,7 +465,7 @@ module.exports = function(knex) {
           t.renameColumn('about', 'about_col');
         }).testSql(function(tester) {
           tester('mysql', ["show fields from `accounts` where field = ?"]);
-          tester('postgresql', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
+          tester('pg', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('pg-redshift', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
@@ -503,7 +503,7 @@ module.exports = function(knex) {
           t.dropColumn('first_name');
         }).testSql(function(tester) {
           tester('mysql', ["alter table `accounts` drop `first_name`"]);
-          tester('postgresql', ['alter table "accounts" drop column "first_name"']);
+          tester('pg', ['alter table "accounts" drop column "first_name"']);
           tester('pg-redshift', ['alter table "accounts" drop column "first_name"']);
           tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
           tester('oracle', ['alter table "accounts" drop ("first_name")']);
@@ -720,10 +720,8 @@ module.exports = function(knex) {
     });
 
     it('Event: start', function() {
-      // On redshift, cannot set an identity column to a value
-      if (/redshift/i.test(knex.client.dialect)) { return; }
       return knex('accounts')
-        .insert({id: '999', last_name: 'Start'})
+        .insert({last_name: 'Start event test'})
         .then(function() {
           var queryBuilder = knex('accounts').select();
 
@@ -731,7 +729,7 @@ module.exports = function(knex) {
             //Alter builder prior to compilation
             //Select only one row
             builder
-              .where('id', '999')
+              .where('last_name', 'Start event test')
               .first();
           });
 
@@ -739,8 +737,7 @@ module.exports = function(knex) {
         })
         .then(function(row) {
           expect(row).to.exist;
-          expect(String(row.id)).to.equal('999');
-          expect(row.last_name).to.equal('Start');
+          expect(row.last_name).to.equal('Start event test');
         });
     });
 

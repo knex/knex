@@ -28,7 +28,7 @@ module.exports = function(knex) {
           [1]
         );
         tester(
-          'postgresql',
+          'pg',
           'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test@example.com','Test','User', 1, d],
           ['1']
@@ -87,7 +87,7 @@ module.exports = function(knex) {
             [2]
           );
           tester(
-            'postgresql',
+            'pg',
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
             ['Lorem ipsum Dolore labore incididunt enim.', d,'test2@example.com','Test','User',1, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test3@example.com','Test','User',2, d],
             ['2','3']
@@ -189,7 +189,7 @@ module.exports = function(knex) {
           [4]
         );
         tester(
-          'postgresql',
+          'pg',
           'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test4@example.com','Test','User',2, d,'Lorem ipsum Dolore labore incididunt enim.', d,'test5@example.com','Test','User',2, d],
           ['4','5']
@@ -260,7 +260,7 @@ module.exports = function(knex) {
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d]
           );
           tester(
-            'postgresql',
+            'pg',
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d]
           );
@@ -307,7 +307,7 @@ module.exports = function(knex) {
             [7]
           );
           tester(
-            'postgresql',
+            'pg',
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test6@example.com','Test','User',2, d],
             ['7']
@@ -351,7 +351,7 @@ module.exports = function(knex) {
             ['d']
           );
           tester(
-            'postgresql',
+            'pg',
             'insert into "datatype_test" ("enum_value") values (?)',
             ['d']
           );
@@ -435,7 +435,7 @@ module.exports = function(knex) {
               [1]
             );
             tester(
-              'postgresql',
+              'pg',
               'insert into "test_default_table" default values returning "id"',
               [],
               [1]
@@ -486,7 +486,7 @@ module.exports = function(knex) {
               [1]
             );
             tester(
-              'postgresql',
+              'pg',
               'insert into "test_default_table2" default values returning "id"',
               [],
               [1]
@@ -541,7 +541,7 @@ module.exports = function(knex) {
     //           [1]
     //         );
     //         tester(
-    //           'postgresql', 
+    //           'pg', 
     //           'insert into "test_default_table3" ("id") values (default), (default) returning "id"', 
     //           [], 
     //           [1, 2] 
@@ -586,7 +586,7 @@ module.exports = function(knex) {
           [4]
         );
         tester(
-          'postgresql',
+          'pg',
           'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning "account_id", "details"',
           [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
           [{account_id: 10, details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'}]
@@ -641,7 +641,7 @@ module.exports = function(knex) {
       var returningColumn = '*';
       return knex('test_table_two').insert(insertData, returningColumn).testSql(function(tester) {
         tester(
-          'postgresql',
+          'pg',
           'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning *',
           [10,'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',0],
           [{
