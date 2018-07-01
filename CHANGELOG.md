@@ -1,9 +1,48 @@
 
 # Master (Unreleased)
 
-- Drop support for Node.js 4 and 5
-- `json` data type is no longer converted to `text` within a schema builder migration for MySQL databases (note that JSON data type is only supported for MySQL 5.7.8+)
+# 0.15.0 - 1 Jul, 2018
+
+### Breaking Changes:
+
+- Stop executing tests on Node 4 and 5. #2451 (not supported anymore)
+- `json` data type is no longer converted to `text` within a schema builder migration for MySQL databases (note that JSON data type is only supported for MySQL 5.7.8+)  #2635
 - Removed WebSQL dialect #2461
+- Drop mariadb support #2681
+- Primary Key for Migration Lock Table #2569. This shouldn't affect to old loc tables, but if you like to have your locktable to have primary key, delete the old table and it will be recreated when migrations are ran next time.
+- Ensure knex.destroy() returns a bluebird promise #2589
+- Increment floats #2614
+- Testing removal of 'skim' #2520, Now rows are not converted to plain js objects, returned row objects might have changed type with oracle, mssql, mysql and sqlite3
+- Drop support for strong-oracle #2487
+- Timeout errors doesn't silently ignore the passed errors anymore #2626
+- Removed WebSQL dialect #2647
+- Various fixes to mssql dialect to make it compatible with other dialects #2653, Unique constraint now allow multiple null values, float type is now float instaed of decimal, rolling back transaction with undefined rejects with Error, select for update and select for share actually locks selected row, so basically old schema migrations will work a lot different and produce different schema like before. Also now MSSQL is included in CI tests.
+
+### Bug fixes:
+
+- Fixes onIn with empty values array #2513
+- fix wrapIdentifier not being called in postgres alter column #2612
+- fixes wrapIdentifier to work with postgres `returning` statement 2630 #2642
+- Fix mssql driver crashing in certain cases when conneciton is closed unexpectedly #2637
+- Removed semicolon from rollback stmt for oracle #2564
+- Make the stream catch errors in the query #2638
+
+### New Features:
+
+- Create timestamp columns with microsecond precision on MySQL 5.6 and newer #2542
+- Allow storing stacktrace, where builder is initialized to be able trace back where certain query was created #2500 #2505
+- Added 'ref' function #2509, no need for knex.raw('??', ['id']) anymore, one can do  knex.ref('id')
+- Support postgresql connection uri protocol #2609
+- Add support for native enums on Postgres #2632
+- Allow overwriting log functions #2625
+
+### Test / internal changes
+
+- chore: cache node_modules #2595
+- Remove babel-plugin-lodash #2634
+- Remove readable-stream and safe-buffer #2640
+- chore: add Node.js 10 #2594
+- add homepage field to package.json #2650
 
 # 0.14.6 - 12 Apr, 2018
 
