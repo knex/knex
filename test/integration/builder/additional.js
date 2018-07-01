@@ -250,7 +250,6 @@ module.exports = function(knex) {
       var tables = {
         mysql: 'SHOW TABLES',
         mysql2: 'SHOW TABLES',
-        mariadb: 'SHOW TABLES',
         postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         redshift: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';",
@@ -536,9 +535,6 @@ module.exports = function(knex) {
         'mysql2': function() {
           return knex.raw('SELECT SLEEP(1)');
         },
-        mariadb: function() {
-          return knex.raw('SELECT SLEEP(1)');
-        },
         mssql: function() {
           return knex.raw('WAITFOR DELAY \'00:00:01\'');
         },
@@ -587,9 +583,6 @@ module.exports = function(knex) {
         'mysql2': function() {
           return knex.raw('SELECT SLEEP(10)');
         },
-        mariadb: function() {
-          return knex.raw('SELECT SLEEP(10)');
-        },
         mssql: function() {
           return knex.raw('WAITFOR DELAY \'00:00:10\'');
         },
@@ -608,8 +601,8 @@ module.exports = function(knex) {
         return query.timeout(200, {cancel: true});
       }
 
-      // Only mysql/mariadb query cancelling supported for now
-      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
+      // Only mysql query cancelling supported for now
+      if (!_.startsWith(dialect, "mysql")) {
         expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
         return;
       }
@@ -643,9 +636,9 @@ module.exports = function(knex) {
 
 
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
-      // Only mysql/mariadb query cancelling supported for now
+      // Only mysql query cancelling supported for now
       var dialect = knex.client.config.dialect;
-      if (!_.startsWith(dialect, "mysql") && !_.startsWith(dialect, "maria")) {
+      if (!_.startsWith(dialect, "mysql")) {
         return;
       }
 

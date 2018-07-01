@@ -124,8 +124,8 @@ module.exports = function(knex) {
           });
       });
 
-      describe('increments types - mysql/maria', function() {
-        if(!knex || !knex.client || (!(/mysql/i.test(knex.client.dialect)) && !(/maria/i.test(knex.client.dialect)))) {
+      describe('increments types - mysql', function() {
+        if(!knex || !knex.client || (!(/mysql/i.test(knex.client.dialect)))) {
           return Promise.resolve();
         }
 
@@ -695,7 +695,7 @@ module.exports = function(knex) {
       describe('mysql only', function() {
         if (!knex ||
             !knex.client ||
-            (!(/mysql/i.test(knex.client.dialect)) && !(/maria/i.test(knex.client.dialect)))
+            (!(/mysql/i.test(knex.client.dialect)))
         ) {
           return Promise.resolve();
         }
