@@ -317,18 +317,21 @@ export default [
     type: "method",
     method: "timestamp",
     example: "table.timestamp(name, [standard])",
-    description: "Adds a timestamp column, defaults to timestamptz in PostgreSQL, unless true is passed as the second argument. For Example:",
+    description: "Adds a timestamp column, defaulting to timestamptz in PostgreSQL unless true is passed as the second argument. For Example:",
     children: [{
       type: 'code',
       language: 'js',
       content: `table.timestamp('created_at').defaultTo(knex.fn.now());`
+    }, {
+      type: 'text',
+      content: "Note that there's an issue of microsecond information being lost when stored on MySQL versions older than 5.6.4. If you need this kind of precision read the timestamps method documention below for further details."
     }]
   },
   {
     type: "method",
     method: "timestamps",
     example: "table.timestamps([useTimestamps], [defaultToNow])",
-    description: "Adds a created_at and updated_at column on the database, setting these each to dateTime types. When true is passed as the first argument a timestamp type is used. Both colums default to being not null and the current timestamp when true is passed as the second argument.",
+    description: "Adds created_at and updated_at columns on the database, setting each to dateTime types. When true is passed as the first argument a timestamp type is used instead. Both colums default to being not null and using the current timestamp when true is passed as the second argument. Note that on MySQL the timestamps will only have second precision by default because versions of MySQL Server older than 5.6.4 don't support storing microseconds. You can enable microsecond precision by specifying version 5.6 or greater in your settings when initializing Knex.",
     children: [    ]
   },
   {
