@@ -48,6 +48,11 @@ module.exports = function(knex) {
       expect(knex.client.pool).to.equal(undefined);
       knex.initialize();
       expect(knex.client.pool.destroyed).to.equal(false);
+      return knex.destroy().then(() => {
+        expect(knex.client.pool.destroyed).to.equal(true);
+        knex.init();
+        expect(knex.client.pool.destroyed).to.equal(false);        
+      })
     });
   });
 
