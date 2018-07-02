@@ -25,6 +25,7 @@ export default class Sidebar extends Component {
           <li><b><a href="#Installation-client">Config Options:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-client">client</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-debug">debug</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Installation-async-stack-traces">Async stacktraces</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-pooling">pooling</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-pooling-afterCreate">afterCreate</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-acquireConnectionTimeout">acquireConnectionTimeout</a></li>
