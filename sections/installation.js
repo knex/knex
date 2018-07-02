@@ -390,4 +390,36 @@ export default [
       });
     `
   },
+  {
+    type: "heading",
+    size: "md",
+    content: "log",
+    href: "Installation-log"
+  },
+  {
+    type: "text",
+    content: [
+      "Knex contains some internal log functions for printing warnings, errors, deprecations, and debug information when applicable.",
+      "These log functions typically log to the console, but can be overwritten using the log option and providing alternative functions.",
+      "Different log functions can be used for separate knex instances.",
+    ].join(' ')
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      var knex = require('knex')({
+         log: {
+          warn(message) {
+          },
+          error(message) {
+          },
+          deprecate(message) {
+          },
+          debug(message) {
+          },
+        }
+      });
+    `
+  },
 ]

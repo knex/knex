@@ -32,6 +32,7 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Installation-migrations">migrations</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-post-process-response">postProcessResponse</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-wrap-identifier">wrapIdentifier</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Installation-log">log</a></li>
         </ul>
 
         <a className="toc_title" href="#Builder">
