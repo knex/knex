@@ -48,8 +48,10 @@ module.exports = function(knex) {
       expect(knex.client.pool).to.equal(undefined);
       knex.initialize();
       expect(knex.client.pool.destroyed).to.equal(false);
-      return knex.destroy().then(() => {
-        expect(knex.client.pool.destroyed).to.equal(true);
+      let waitForDestroy = knex.destroy();
+      expect(knex.client.pool.destroyed).to.equal(true);
+      return waitForDestroy.then(() => {
+        expect(knex.client.pool).to.equal(undefined);
         knex.init();
         expect(knex.client.pool.destroyed).to.equal(false);        
       })
