@@ -52,7 +52,7 @@ module.exports = function(knex) {
       expect(knex.client.pool.destroyed).to.equal(true);
       return waitForDestroy.then(() => {
         expect(knex.client.pool).to.equal(undefined);
-        knex.init();
+        knex.initialize();
         expect(knex.client.pool.destroyed).to.equal(false);        
       })
     });
