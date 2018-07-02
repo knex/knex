@@ -11,6 +11,7 @@ import interfaces from '../sections/interfaces'
 import migrations from '../sections/migrations'
 import prelude from '../sections/prelude'
 import raw from '../sections/raw'
+import ref from '../sections/ref'
 import schema from '../sections/schema'
 import seeds from '../sections/seeds'
 import support from '../sections/support'
@@ -43,6 +44,7 @@ export default class Documentation extends Component {
         <Section id="Transactions" content={transactions} />
         <Section id="Schema" content={schema} />
         <Section id="Raw" content={raw} />
+        <Section id="Ref" content={ref} />
         <Section id="Utility" content={utility} />
         <Section id="Interfaces" content={interfaces} />
         <Section id="Migrations" content={migrations} />

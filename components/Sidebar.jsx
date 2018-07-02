@@ -219,6 +219,15 @@ export default class Sidebar extends Component {
           <li>- <a href="#Raw-queries-wrapped">Wrapped Queries</a></li>
         </ul>
 
+        <a className="toc_title" href="#Ref">
+         Ref
+        </a>
+        <ul className="toc_section">
+         <li>– <a href="#Ref-Usage">Usage</a></li>
+         <li>– <a href="#Ref-withSchema">withSchema</a></li>
+         <li>– <a href="#Ref-alias">alias</a></li>
+        </ul>
+
 
         <a className="toc_title" href="#Utility">
           Utility
