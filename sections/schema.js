@@ -220,7 +220,7 @@ export default [
     method: "increments",
     example: "table.increments(name)",
     description: "Adds an auto incrementing column. In PostgreSQL this is a serial; in Amazon Redshift an integer identity(1,1). This will be used as the primary key for the table. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial).",
-    children: [  
+    children: [
       {
         type: 'code',
         language: 'js',
@@ -240,7 +240,7 @@ export default [
             table.foreign('author').references('userId').inTable('users');
           });
         `
-      } 
+      }
     ]
   },
   {
@@ -349,12 +349,26 @@ export default [
     type: "method",
     id: "Schema-enum",
     method: "enum / enu",
-    example: "table.enu(col, values)",
+    example: "table.enu(col, values, [options])",
     description: "Adds a enum column, (aliased to enu, as enum is a reserved word in JavaScript). Implemented as unchecked varchar(255) on Amazon Redshift. Note that the second argument is an array of values. Example:",
     children: [{
       type: 'code',
       language: 'js',
       content: `table.enu('column', ['value1', 'value2'])`
+    }, {
+      type: 'text',
+      content: "For Postgres, an additional options argument can be provided to specify whether or not to use Postgres's native TYPE:"
+    }, {
+      type: 'code',
+      language: 'js',
+      content: `table.enu('column', ['value1', 'value2'], { useNative: true, enumName: 'foo_type' })`
+    }, {
+      type: 'text',
+      content: "It will use the values provided to generate the appropriate TYPE. Example:"
+    }, {
+      type: 'code',
+      language: 'sql',
+      content: `CREATE TYPE "foo_type" AS ENUM ('value1', 'value2');`
     }]
   },
   {
