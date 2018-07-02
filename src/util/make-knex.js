@@ -44,7 +44,7 @@ export default function makeKnex(client) {
 
     // Typically never needed, initializes the pool for a knex client.
     initialize(config) {
-      return client.initialize(config)
+      return client.initializePool(config)
     },
 
     // Convenience method for tearing down the pool.
