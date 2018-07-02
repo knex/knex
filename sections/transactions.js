@@ -36,7 +36,7 @@ export default [
 
               // Some validation could take place here.
 
-              return trx.insert(info).into('books');
+              return trx.insert(book).into('books');
             });
           });
       })
@@ -78,7 +78,7 @@ export default [
 
               // Some validation could take place here.
 
-              return knex.insert(info).into('books').transacting(trx);
+              return knex.insert(book).into('books').transacting(trx);
             });
           })
           .then(trx.commit)
