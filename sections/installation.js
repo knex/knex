@@ -177,6 +177,16 @@ export default [
   {
     type: "heading",
     size: "md",
+    content: "Async stack traces",
+    href: "Installation-async-stack-traces"
+  },
+  {
+    type: "text",
+    content: "Passing an `asyncStackTraces: true` flag on your initialization object will turn on stack trace capture for all query builders, raw queries and schema builders. When a DB driver returns and error, this previously captured stack trace is thrown instead of a new one. This helps to mitigate default behaviour of `await` in node.js/V8 which blows the stack away. \n This has small performance overhead, so it is advised to use only for development. Turned off by default."
+  },
+  {
+    type: "heading",
+    size: "md",
     content: "Pooling",
     href: "Installation-pooling"
   },
