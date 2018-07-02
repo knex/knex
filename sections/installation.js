@@ -29,10 +29,13 @@ export default [
       $ npm install sqlite3
       $ npm install mysql
       $ npm install mysql2
-      $ npm install mariasql
       $ npm install oracle
       $ npm install mssql
     `
+  },
+  {
+    type: "text",
+    content: "*If you want to use a MariaDB instance, you can use the `mysql` driver.*"
   },
   {
     type: "heading",
