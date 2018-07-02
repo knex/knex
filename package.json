@@ -54,7 +54,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "babel-runtime": "^6.11.6",
-    "knex": "^0.14.6"
+    "babel-runtime": "^6.11.6"
   }
 }
