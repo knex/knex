@@ -30,7 +30,6 @@ export default [
       $ npm install mysql
       $ npm install mysql2
       $ npm install mariasql
-      $ npm install strong-oracle
       $ npm install oracle
       $ npm install mssql
     `
