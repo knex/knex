@@ -313,6 +313,6 @@ export default [
 	},
 	{
 		type: "text",
-		content: "Please note that if your process unfortunately crashes, the lock will have to be *manually* removed in order to let migrations run again. The locks are saved in a table called \"`tableName`_lock\"; it has single one column called `is_locked` that you need to set to `0` in order to release the lock."
+		content: "Please note that if your process unfortunately crashes, the lock will have to be *manually* removed in order to let migrations run again. The locks are saved in a table called \"`tableName`_lock\"; it has a column called `is_locked` that you need to set to `0` in order to release the lock. The `index` column in the lock table exists for compatibility with some database clusters that require a primary key, but is otherwise unused."
 	}
 ]
