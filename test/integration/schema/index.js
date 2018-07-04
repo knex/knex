@@ -1093,6 +1093,90 @@ module.exports = function(knex) {
       });
     });
 
+    describe('withSchema', function() {
+      describe('mssql only', function() {
+        if (!knex || !knex.client || !/mssql/i.test(knex.client.dialect)) {
+          return Promise.resolve();
+        }
+
+        const columnName = 'test';
+
+        function checkTable(schema, tableName, expected) {
+          return knex.schema
+            .withSchema(schema)
+            .hasTable(tableName)
+            .then(function(exists) {
+              return expect(exists).to.equal(expected);
+            });
+        }
+
+        function createTable(schema, tableName) {
+          return knex.schema
+            .withSchema(schema)
+            .createTable(tableName, (table) => {
+              table.string(columnName);
+            });
+        }
+
+        function checkColumn(schema, tableName) {
+          return knex.schema
+            .withSchema(schema)
+            .hasColumn(tableName, columnName)
+            .then((exists) => {
+              return expect(exists).to.equal(true);
+            });
+        }
+
+        function renameTable(schema, from, to) {
+          return knex.schema.withSchema(schema).renameTable(from, to);
+        }
+
+        function createSchema(schema) {
+          return knex.schema.raw('CREATE SCHEMA ' + schema);
+        }
+
+        const defaultSchemaName = 'public';
+        const testSchemaName = 'test';
+
+        before(function() {
+          return createSchema(testSchemaName);
+        });
+
+        after(function() {
+          return knex.schema.raw('DROP SCHEMA ' + testSchemaName);
+        });
+
+        it('should not find non-existent tables', function() {
+          return checkTable(testSchemaName, 'test', false).then(() =>
+            checkTable(defaultSchemaName, 'test', false)
+          );
+        });
+
+        it('should create and drop tables', function() {
+          return createTable(testSchemaName, 'test')
+            .then(() => checkColumn(testSchemaName, 'test'))
+            .then(() => checkTable(testSchemaName, 'test', true))
+            .then(() => checkTable(defaultSchemaName, 'test', false))
+            .then(() =>
+              knex.schema.withSchema(testSchemaName).dropTableIfExists('test')
+            )
+            .then(() => checkTable(testSchemaName, 'test', false));
+        });
+
+        it('should rename tables', function() {
+          return createTable(testSchemaName, 'test')
+            .then(() => renameTable(testSchemaName, 'test', 'test2'))
+            .then(() => checkColumn(testSchemaName, 'test2'))
+            .then(() => checkTable(defaultSchemaName, 'test2', false))
+            .then(() => checkTable(testSchemaName, 'test', false))
+            .then(() => checkTable(testSchemaName, 'test2', true))
+            .then(() =>
+              knex.schema.withSchema(testSchemaName).dropTableIfExists('test2')
+            );
+        });
+      });
+    });
+
     it('should warn attempting to create primary from nonexistent columns', function() {
       // Redshift only
       if (!knex || !knex.client || !/redshift/i.test(knex.client.driverName)) {
