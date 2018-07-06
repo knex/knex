@@ -46,7 +46,7 @@ module.exports = function(knex) {
           [1]
         );
         tester(
-          'oracle',
+          'oracledb',
           "insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) returning ROWID into ?",
           ['Lorem ipsum Dolore labore incididunt enim.', d,'test@example.com','Test','User', 1, d, function (v) { return v.toString() === '[object ReturningHelper:id]';}],
           [1]
@@ -105,7 +105,7 @@ module.exports = function(knex) {
             [3]
           );
           tester(
-            'oracle',
+            'oracledb',
             "begin execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning ROWID into :8' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning ROWID into :8' using ?, ?, ?, ?, ?, ?, ?, out ?;end;",
             ['Lorem ipsum Dolore labore incididunt enim.', d,'test2@example.com','Test','User',1, d, function (v) { return v.toString() === '[object ReturningHelper:id]';},
              'Lorem ipsum Dolore labore incididunt enim.', d,'test3@example.com','Test','User',2, d, function (v) { return v.toString() === '[object ReturningHelper:id]';}],
@@ -138,7 +138,7 @@ module.exports = function(knex) {
       }], 'id')
       .testSql(function(tester) {
         tester(
-          'oracle',
+          'oracledb',
           "begin execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?; execute immediate 'insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (:1, :2, :3) returning ROWID into :4' using ?, ?, ?, out ?;end;",
           [
             1,
@@ -207,7 +207,7 @@ module.exports = function(knex) {
           [5]
         );
         tester(
-          'oracle',
+          'oracledb',
           "begin execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning ROWID into :8' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate 'insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (:1, :2, :3, :4, :5, :6, :7) returning ROWID into :8' using ?, ?, ?, ?, ?, ?, ?, out ?;end;",
           [
             'Lorem ipsum Dolore labore incididunt enim.',
@@ -240,7 +240,7 @@ module.exports = function(knex) {
     });
 
     it('will fail when multiple inserts are made into a unique column', function() {
-      if(/redshift/i.test(knex.client.dialect)) { return; }
+      if(/redshift/i.test(knex.client.driverName)) { return; }
       return knex('accounts')
         .where('id', '>', 1)
         .orWhere('x', 2)
@@ -270,7 +270,7 @@ module.exports = function(knex) {
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d]
           );
           tester(
-            'oracle',
+            'oracledb',
             "insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) returning ROWID into ?",
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test5@example.com','Test','User', 2, d, function (v) {return v.toString() === '[object ReturningHelper:id]';}]
           );
@@ -325,7 +325,7 @@ module.exports = function(knex) {
             [6]
           );
           tester(
-            'oracle',
+            'oracledb',
             "insert into \"accounts\" (\"about\", \"created_at\", \"email\", \"first_name\", \"last_name\", \"logins\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?) returning ROWID into ?",
             ['Lorem ipsum Dolore labore incididunt enim.', d, 'test6@example.com','Test','User',2, d, function (v) {return v.toString() === '[object ReturningHelper:id]';}],
             [7]
@@ -367,7 +367,7 @@ module.exports = function(knex) {
             [1]
           );
           tester(
-            'oracle',
+            'oracledb',
             'insert into "datatype_test" ("enum_value") values (?)',
             ['d']
           );
@@ -380,7 +380,7 @@ module.exports = function(knex) {
         .then(function() {
           // No errors happen in sqlite3, which doesn't have native support
           // for the enum type.
-          if (knex.client.dialect !== 'sqlite3') {
+          if (knex.client.driverName !== 'sqlite3') {
             throw new Error('There should be an error for invalid enum inserts');
           }
         }, function() {});
@@ -398,7 +398,7 @@ module.exports = function(knex) {
         }).then(function() {
           // No errors happen in sqlite3 or mysql, which dont have native support
           // for the uuid type.
-          if (knex.client.dialect === 'postgresql' || knex.client.dialect === 'mssql') {
+          if (knex.client.driverName === 'pg' || knex.client.driverName === 'mssql') {
             throw new Error('There should be an error in postgresql for uuids');
           }
         }, function() {});
@@ -453,7 +453,7 @@ module.exports = function(knex) {
               [1]
             );
             tester(
-              'oracle',
+              'oracledb',
               "insert into \"test_default_table\" (\"id\") values (default) returning ROWID into ?",
               [function (v) {return v.toString() === '[object ReturningHelper:id]';}],
               [1]
@@ -504,7 +504,7 @@ module.exports = function(knex) {
               [1]
             );
             tester(
-              'oracle',
+              'oracledb',
               "insert into \"test_default_table2\" (\"id\") values (default) returning ROWID into ?",
               [function (v) {return v.toString() === '[object ReturningHelper:id]';}],
               [1]
@@ -521,7 +521,7 @@ module.exports = function(knex) {
 
     // TODO
     // it('should handle multiple default inserts with returning only', function() {
-    //   if (knex.client.dialect === 'sqlite3') {
+    //   if (knex.client.driverName === 'sqlite3') {
     //     console.log('not tested for sqlite3');
     //     return;
     //   }
@@ -553,7 +553,7 @@ module.exports = function(knex) {
     //           [1, 2] 
     //         );
     //         tester(
-    //           'oracle',
+    //           'oracledb',
     //           "begin execute immediate 'insert into \"test_default_table3\" (\"id\") values (default) returning ROWID into :1' using out ?; execute immediate 'insert into \"test_default_table3\" (\"id\") values (default) returning ROWID into :1' using out ?;end;",
     //           [function (v) {return v.toString() === '[object ReturningHelper:id]';}, function (v) {return v.toString() === '[object ReturningHelper:id]';}],
     //           [1, 2]
@@ -604,7 +604,7 @@ module.exports = function(knex) {
           [4]
         );
         tester(
-          'oracle',
+          'oracledb',
           "insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (?, ?, ?) returning ROWID into ?",
           [10, 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.', 0,
             function (v) {return v.toString() === '[object ReturningHelper:account_id:details]';}
@@ -618,11 +618,11 @@ module.exports = function(knex) {
           [{account_id: 10, details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'}]
         );
       }).then(function(rows) {
-        if (/redshift/.test(knex.client.dialect)){
+        if (/redshift/.test(knex.client.driverName)){
           return expect(rows).to.equal(1);
         }
         expect(rows.length).to.equal(1);
-        if (knex.client.dialect === 'postgresql') {
+        if (knex.client.driverName === 'pg') {
           expect(_.keys(rows[0]).length).to.equal(2);
           expect(rows[0].account_id).to.equal(insertData.account_id);
           expect(rows[0].details).to.equal(insertData.details);
@@ -631,7 +631,7 @@ module.exports = function(knex) {
     });
 
     it('should allow a * for returning in postgres and oracle', function() {
-      if(/redshift/i.test(knex.client.dialect)) { return; }
+      if(/redshift/i.test(knex.client.driverName)) { return; }
       var insertData = {
         account_id: 10,
         details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -653,7 +653,7 @@ module.exports = function(knex) {
           }]
         );
         tester(
-          'oracle',
+          'oracledb',
           "insert into \"test_table_two\" (\"account_id\", \"details\", \"status\") values (?, ?, ?) returning ROWID into ?",
           [
             10,
@@ -683,7 +683,7 @@ module.exports = function(knex) {
         );
       }).then(function(rows) {
         expect(rows.length).to.equal(1);
-        if (knex.client.dialect === 'postgresql') {
+        if (knex.client.driverName === 'pg') {
           expect(_.keys(rows[0]).length).to.equal(5);
           expect(rows[0].account_id).to.equal(insertData.account_id);
           expect(rows[0].details).to.equal(insertData.details);
@@ -695,7 +695,7 @@ module.exports = function(knex) {
 
 
     describe('batchInsert', function() {
-      var dialect = String(knex.client.dialect).toUpperCase();
+      var driverName = knex.client.driverName;
       var fiftyLengthString = 'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
       var items             = [];
       var amountOfItems     = 100;
@@ -725,7 +725,7 @@ module.exports = function(knex) {
           .returning(['Col1', 'Col2'])
           .then(function (result) {
             //Returning only supported by some dialects.
-            if(['POSTGRES', 'ORACLE'].indexOf(dialect) !== -1) {
+            if(['pg', 'oracledb'].indexOf(driverName) !== -1) {
               result.forEach(function(item) {
                 expect(item.Col1).to.equal(fiftyLengthString);
                 expect(item.Col2).to.equal(fiftyLengthString);
@@ -740,7 +740,7 @@ module.exports = function(knex) {
       });
 
       it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', function() {
-        if(/redshift/i.test(knex.client.dialect)) { return; }
+        if(/redshift/i.test(knex.client.driverName)) { return; }
         return new Promise(function(resolve, reject) {
           return knex.schema.dropTableIfExists('batchInsertDuplicateKey')
             .then(function() {
@@ -810,7 +810,7 @@ module.exports = function(knex) {
     });
 
     it('should replace undefined keys in multi insert with DEFAULT', function() {
-      if (knex.client.dialect === 'sqlite3') {
+      if (knex.client.driverName === 'sqlite3') {
         return true;
       }
       return knex('accounts')
@@ -842,7 +842,7 @@ module.exports = function(knex) {
     });
 
     it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function() {
-      if (knex.client.dialect === 'sqlite3') {
+      if (knex.client.driverName === 'sqlite3') {
         return true;
       }
       return knex.transaction(function(trx) {

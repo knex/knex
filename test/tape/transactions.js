@@ -50,8 +50,8 @@ module.exports = function(knex) {
       // BEGIN, INSERT, ROLLBACK
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedQueryCount =
-        knex.client.dialect === 'oracle' ||
-        knex.client.dialect === 'mssql' ? 1 : 3
+        knex.client.driverName === 'oracledb' ||
+        knex.client.driverName === 'mssql' ? 1 : 3
       t.equal(trxQueryCount, expectedQueryCount, 'Expected number of transaction SQL queries executed')
       t.equal(trxRejected, true, 'Transaction promise rejected')
       return knex.select('*').from('test_table').then(function (results) {
@@ -78,8 +78,8 @@ module.exports = function(knex) {
       // BEGIN, ROLLBACK
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedQueryCount =
-        knex.client.dialect === 'oracle' ||
-        knex.client.dialect === 'mssql' ? 0 : 2
+        knex.client.driverName === 'oracledb' ||
+        knex.client.driverName === 'mssql' ? 0 : 2
       t.equal(trxQueryCount, expectedQueryCount, 'Expected number of transaction SQL queries executed')
       t.equal(trxRejected, true, 'Transaction promise rejected')
     })
@@ -118,8 +118,8 @@ module.exports = function(knex) {
       // trx2: SAVEPOINT, INSERT, SELECT, ROLLBACK TO SAVEPOINT
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedTrx1QueryCount =
-        knex.client.dialect === 'oracle' ||
-        knex.client.dialect === 'mssql' ? 1 : 3
+        knex.client.driverName === 'oracledb' ||
+        knex.client.driverName === 'mssql' ? 1 : 3
       var expectedTrx2QueryCount = 4
       expectedTrx1QueryCount += expectedTrx2QueryCount
       t.equal(trx1QueryCount, expectedTrx1QueryCount, 'Expected number of parent transaction SQL queries executed')
@@ -159,8 +159,8 @@ module.exports = function(knex) {
       // trx2: SAVEPOINT, ROLLBACK TO SAVEPOINT
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedTrx1QueryCount =
-        knex.client.dialect === 'oracle' ||
-        knex.client.dialect === 'mssql' ? 1 : 3
+        knex.client.driverName === 'oracledb' ||
+        knex.client.driverName === 'mssql' ? 1 : 3
       var expectedTrx2QueryCount = 2
       expectedTrx1QueryCount += expectedTrx2QueryCount
       t.equal(trx1QueryCount, expectedTrx1QueryCount, 'Expected number of parent transaction SQL queries executed')
@@ -408,8 +408,8 @@ module.exports = function(knex) {
     .finally(function() {
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
       var expectedQueryCount =
-        knex.client.dialect === 'oracle' ||
-        knex.client.dialect === 'mssql' ? 1 : 3
+        knex.client.driverName === 'oracledb' ||
+        knex.client.driverName === 'mssql' ? 1 : 3
       t.equal(queryCount, expectedQueryCount, 'Expected number of transaction SQL queries executed')
     })
 

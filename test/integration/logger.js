@@ -8,6 +8,9 @@ module.exports = function(knex) {
 
   var client  = knex.client;
 
+  // allowed driver name of a client
+  const allowedClients = ['pg', 'mssql', 'mysql', 'mysql2', 'oracledb', 'pg-redshift', 'sqlite3'];
+
   function compareBindings(gotBindings, wantedBindings) {
     if (Array.isArray(wantedBindings)) {
       expect(gotBindings.length).to.eql(wantedBindings.length);
@@ -60,6 +63,10 @@ module.exports = function(knex) {
           });
           return promise.then.apply(promise, arguments);
         };
+      }
+    } else {
+      if (!allowedClients.includes(driverName)) {
+        throw new Error('Invalid client name: ' + driverName + ' Should be one of: ' + allowedClients.join(','));
       }
     }
   }

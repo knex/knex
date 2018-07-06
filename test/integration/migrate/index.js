@@ -92,7 +92,7 @@ module.exports = function(knex) {
             })
               .then(function() {
                 // Cleanup the added migrations
-                if (/redshift/.test(knex.client.dialect)){
+                if (/redshift/.test(knex.client.driverName)){
                   return knex('knex_migrations')
                     .where('name', 'like', '%foobar%')
                     .del();
@@ -164,7 +164,7 @@ module.exports = function(knex) {
       });
 
       it('should run the migrations from oldest to newest', function() {
-        if (knex.client.dialect === 'oracle') {
+        if (knex.client.driverName === 'oracledb') {
           return knex('knex_migrations').orderBy('migration_time', 'asc').select('*').then(function(data) {
             expect(path.basename(data[0].name)).to.equal('20131019235242_migration_1.js');
             expect(path.basename(data[1].name)).to.equal('20131019235306_migration_2.js');
@@ -233,7 +233,7 @@ module.exports = function(knex) {
       return knex.migrate.rollback({directory: 'test/integration/migrate/test'});
     });
 
-    if (knex.client.dialect === 'postgres' || knex.client.dialect === 'mssql') {
+    if (knex.client.driverName === 'pg' || knex.client.driverName === 'mssql') {
       it("is able to run two migrations in parallel (if no implicit DDL commits)", function () {
         return Promise.all([
           knex.migrate.latest({directory: 'test/integration/migrate/test'}),
@@ -330,7 +330,7 @@ module.exports = function(knex) {
           // MySQL / Oracle commit transactions implicit for most common
           // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
           // so we need to check for dialect
-          if (knex.client.dialect === 'mysql' || knex.client.dialect === 'oracle') {
+          if (knex.client.driverName === 'mysql' || knex.client.driverName === 'mysql2' || knex.client.driverName === 'oracledb') {
             expect(exists).to.equal(true);
           } else {
             expect(exists).to.equal(false);
@@ -344,7 +344,7 @@ module.exports = function(knex) {
 
     });
 
-    if (knex.client.dialect === 'postgresql') {
+    if (knex.client.driverName === 'pg') {
       describe('knex.migrate.latest with specific changelog schema', function () {
         before(() => {
           return knex.raw(`CREATE SCHEMA IF NOT EXISTS "testschema"`);
