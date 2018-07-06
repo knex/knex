@@ -179,7 +179,7 @@ module.exports = function(knex) {
         );
         tester(
           'oracledb',
-          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning "ROWID" into ?',
           ['test100@example.com','UpdatedUser','UpdatedTest',1],
           1
         );

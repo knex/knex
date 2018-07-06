@@ -87,7 +87,7 @@ module.exports = function(knex) {
           );
           tester(
             'oracledb',
-            'select  "accounts"."id" from "accounts" order by "accounts"."id" asc',
+            'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
             [1, 2, 3, 4, 5, 7]
           );
@@ -793,7 +793,7 @@ module.exports = function(knex) {
                 },
               ]); 
             tester('oracledb',
-              'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?)) order by "status" desc',
+              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
               [1,1,1,2],
               [{
                 column_a: 1,
@@ -845,7 +845,7 @@ module.exports = function(knex) {
                 status: 1
               }]);
             tester('oracledb',
-              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?),(?, ?))',
+              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
               [1,1,1,1,2],
               [{
                 column_a: 1,

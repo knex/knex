@@ -263,9 +263,9 @@ module.exports = function(knex) {
             'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
             [],
             [{
-              'COUNT(DISTINCT "ID")': 6,
-              'SUM(DISTINCT "LOGINS")': 3,
-              'AVG(DISTINCT "LOGINS")': 1.5
+              'COUNT(DISTINCT"ID")': 6,
+              'SUM(DISTINCT"LOGINS")': 3,
+              'AVG(DISTINCT"LOGINS")': 1.5
             }]
         );
         tester(
