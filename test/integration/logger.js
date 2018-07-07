@@ -13,14 +13,14 @@ module.exports = function(knex) {
 
   function compareBindings(gotBindings, wantedBindings) {
     if (Array.isArray(wantedBindings)) {
-      expect(gotBindings.length).to.eql(wantedBindings.length);
       wantedBindings.forEach(function (wantedBinding, index) {
         if (typeof wantedBinding === 'function') {
-          expect(wantedBinding(gotBindings[index])).to.eql(true);
+          expect(wantedBinding(gotBindings[index]), "binding cheker function failed got: " + gotBindings).to.equal(true);
         } else {
           expect(wantedBinding).to.eql(gotBindings[index]);
         }
       });
+      expect(gotBindings.length, "length doesn't match got: " + gotBindings).to.equal(wantedBindings.length);
     } else {
       expect(gotBindings).to.eql(wantedBindings);
     }
