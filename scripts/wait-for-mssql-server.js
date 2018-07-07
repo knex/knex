@@ -19,7 +19,7 @@ function tryToConnect() {
   tryCount++;
   if (tryCount > CONNECTION_ATTEMPTS) {
     console.log("Giving up... it fails if it fails");
-    process.exit(0);
+    process.exit(1);
   }
 
   console.log("Connecting... to mssql");
