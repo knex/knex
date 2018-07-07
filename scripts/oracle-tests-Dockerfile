@@ -54,4 +54,5 @@ CMD /usr/sbin/startup.sh && \
   cd knex && \
   npm install && \
   npm install oracledb && \
+  npm run build && \
   npm run plaintest  
