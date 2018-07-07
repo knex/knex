@@ -28,7 +28,7 @@ function tryToConnect() {
 
   connection.on('end', () => {
     if (!didConnect) {
-      console.log("Couldnt connnect yet... try again in two secs...");
+      console.log(`Couldnt connnect yet... try again in ${PAUSE_BETWEEN_CONNECTIONS}ms...`);
       setTimeout(tryToConnect, PAUSE_BETWEEN_CONNECTIONS);
     }
   });
