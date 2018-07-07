@@ -180,8 +180,8 @@ module.exports = function(knex) {
         tester(
           'oracledb',
           'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning "ROWID" into ?',
-          ['test100@example.com','UpdatedUser','UpdatedTest',1],
-          1
+          ['test100@example.com','UpdatedUser','UpdatedTest',1, (v) => v.toString() === '[object ReturningHelper:ROWID]';}],
+          '1'
         );
         tester(
           'mssql',

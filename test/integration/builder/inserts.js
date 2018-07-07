@@ -554,9 +554,10 @@ module.exports = function(knex) {
           'oracledb',
           `insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning "account_id","details" into ?,?`,
           [10, 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.', 0,
-            function (v) {return v.toString() === '[object ReturningHelper:account_id:details]';}
+            function (v) {return v.toString() === '[object ReturningHelper:account_id]';},
+            function (v) {return v.toString() === '[object ReturningHelper:details]';}
           ],
-          [{account_id: 10, details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'}]
+          [{account_id: '10', details: 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.'}]
         );
         tester(
           'mssql',
@@ -606,7 +607,7 @@ module.exports = function(knex) {
             10,
             'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
             0,
-            function (v) {return v.toString() === '[object ReturningHelper:*]';}
+            function (v) {return v.toString() === '[object ReturningHelper:ROWID]';}
           ],
           [{
             id: 5,
