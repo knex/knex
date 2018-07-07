@@ -595,7 +595,7 @@ describe("Oracle SchemaBuilder", function() {
     });
 
     beforeEach(function () {
-      spy.reset();
+      spy.resetHistory();
     });
 
     after(function () {
