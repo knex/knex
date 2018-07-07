@@ -338,11 +338,13 @@ module.exports = function(knex) {
           [],
           {
             "enum_value": {
+              defaultValue: null,
               nullable: true,
               maxLength: 1,
               type: "VARCHAR2"
             },
             "uuid": {
+              defaultValue: null,
               nullable: false,
               maxLength: 36,
               type: "CHAR"
@@ -403,9 +405,10 @@ module.exports = function(knex) {
           'select * from xmltable( \'/ROWSET/ROW\'\n      passing dbms_xmlgen.getXMLType(\'\n      select char_col_decl_length, column_name, data_type, data_default, nullable\n      from user_tab_columns where table_name = \'\'datatype_test\'\' \')\n      columns\n      CHAR_COL_DECL_LENGTH number, COLUMN_NAME varchar2(200), DATA_TYPE varchar2(106),\n      DATA_DEFAULT clob, NULLABLE varchar2(1))',
           [],
           {
-            "maxLength": 36,
-            "nullable": false,
-            "type": "CHAR"
+            defaultValue: null,
+            maxLength: 36,
+            nullable: false,
+            type: "CHAR"
           }
         );
         tester('mssql',
