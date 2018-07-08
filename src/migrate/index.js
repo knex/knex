@@ -45,7 +45,11 @@ export default class Migrator {
     // Migrators to the latest configuration.
   latest(config) {
     this.config = this.setConfig(config);
-    return migrationListResolver.listAllAndCompleted(config, this.knex, this._absoluteConfigDir())
+    return migrationListResolver.listAllAndCompleted(
+      this.config,
+      this.knex,
+      this._absoluteConfigDir()
+    )
       .tap(validateMigrationList)
       .spread((all, completed) => {
         const migrations = difference(all, completed);
@@ -69,7 +73,11 @@ export default class Migrator {
   rollback(config) {
     return Promise.try(() => {
       this.config = this.setConfig(config);
-      return migrationListResolver.listAllAndCompleted(config, this.knex, this._absoluteConfigDir())
+      return migrationListResolver.listAllAndCompleted(
+        this.config,
+        this.knex,
+        this._absoluteConfigDir()
+      )
         .tap(validateMigrationList)
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
@@ -84,7 +92,7 @@ export default class Migrator {
     return Promise.all([
       getTable(this.knex, this.config.tableName, this.config.schemaName)
         .select('*'),
-      migrationListResolver.listAll(this._absoluteConfigDir(), config.loadExtensions)
+      migrationListResolver.listAll(this._absoluteConfigDir(), this.config.loadExtensions)
     ])
       .spread((db, code) => db.length - code.length);
 
@@ -94,7 +102,11 @@ export default class Migrator {
     // If no migrations have been run yet, return "none".
   currentVersion(config) {
     this.config = this.setConfig(config);
-    return migrationListResolver.listCompleted(config.tableName, config.schemaName, this.knex)
+    return migrationListResolver.listCompleted(
+      this.config.tableName,
+      this.config.schemaName,
+      this.knex
+    )
       .then((completed) => {
         const val = max(map(completed, value => value.split('_')[0]));
         return (isUndefined(val) ? 'none' : val);
