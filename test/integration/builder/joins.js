@@ -183,7 +183,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'oracle',
+            'oracledb',
             "select \"accounts\".*, \"test_table_two\".\"details\" from \"accounts\" inner join \"test_table_two\" on \"accounts\".\"id\" = \"test_table_two\".\"account_id\" order by \"accounts\".\"id\" asc", [], [{
               id: 1,
               first_name: 'Test',
@@ -593,7 +593,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'oracle',
+            'oracledb',
             "select \"accounts\".*, \"test_table_two\".\"details\" from \"accounts\" left join \"test_table_two\" on \"accounts\".\"id\" = \"test_table_two\".\"account_id\" order by \"accounts\".\"id\" asc", [], [{
               id: 1,
               first_name: 'Test',
@@ -1348,7 +1348,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'oracle',
+            'oracledb',
             "select * from (select \"accounts\".\"email\" \"e1\", \"a2\".\"email\" \"e2\" from \"accounts\" inner join \"accounts\" \"a2\" on \"a2\".\"email\" <> \"accounts\".\"email\" where \"a2\".\"email\" = ? order by \"e1\" asc) where rownum <= ?",
             ['test2@example.com', 5],
             [{
@@ -1487,7 +1487,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'oracle',
+            'oracledb',
             "select * from (select \"accounts\".\"email\" \"e1\", \"a2\".\"email\" \"e2\" from \"accounts\" inner join \"accounts\" \"a2\" on \"accounts\".\"email\" <> \"a2\".\"email\" or \"accounts\".\"id\" = 2 where \"a2\".\"email\" = ? order by \"e1\" asc) where rownum <= ?",
             ['test2@example.com', 5],
             [{
@@ -1560,10 +1560,11 @@ module.exports = function(knex) {
             }
           );
           tester(
-            'oracle',
+            'oracledb',
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function (res) {
+              console.log("RESULT:", res.length);
               return res.length === 30;
             }
           );
@@ -1587,7 +1588,7 @@ module.exports = function(knex) {
     });
 
     it('supports joins with overlapping column names', function() {
-      if (knex.client.dialect === 'oracle') {
+      if (knex.client.driverName === 'oracledb') {
         console.warn("Overlapping column names not supported with oracle");
         return;
       }
@@ -1626,7 +1627,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'postgres',
+            'pg',
             'select "a1"."email", "a2"."email" from "accounts" as "a1" left join "accounts" as "a2" on "a1"."email" <> "a2"."email" where a1.id = 1 order by "a2"."id" asc limit ?',
             [2],
             [{

@@ -17,7 +17,7 @@ module.exports = function(knex) {
             tester(['pg'], ['drop table if exists "test_foreign_table_two"']);
             tester(['pg-redshift'], ['drop table if exists "test_foreign_table_two"']);
             tester(['sqlite3', 'mysql'], ['drop table if exists `test_foreign_table_two`']);
-            tester('oracle', [
+            tester('oracledb', [
               "begin execute immediate 'drop table \"test_foreign_table_two\"'; exception when others then if sqlcode != -942 then raise; end if; end;",
               "begin execute immediate 'drop sequence \"test_foreign_table_two_seq\"'; exception when others then if sqlcode != -2289 then raise; end if; end;"
             ]);
@@ -58,7 +58,7 @@ module.exports = function(knex) {
     describe('createTable', function() {
 
       describe('increments types - postgres', function() {
-        if(!knex || !knex.client || !(/postgres/i.test(knex.client.dialect))) {
+        if(!knex || !knex.client || !(/pg/i.test(knex.client.driverName))) {
           return Promise.resolve();
         }
 
@@ -125,7 +125,7 @@ module.exports = function(knex) {
       });
 
       describe('increments types - mysql', function() {
-        if(!knex || !knex.client || (!(/mysql/i.test(knex.client.dialect)))) {
+        if(!knex || !knex.client || (!(/mysql/i.test(knex.client.driverName)))) {
           return Promise.resolve();
         }
 
@@ -193,7 +193,7 @@ module.exports = function(knex) {
       });
 
       describe('enum - postgres', function() {
-        if (!knex || !knex.client || !(/postgres/i.test(knex.client.dialect))) {
+        if (!knex || !knex.client || !(/pg/i.test(knex.client.driverName))) {
           return Promise.resolve();
         }
 
@@ -249,7 +249,7 @@ module.exports = function(knex) {
             table.string('email').unique().nullable();
             table.integer('logins').defaultTo(1).index().comment();
             table.float('balance').defaultTo(0);
-            if (knex.client.dialect === 'oracle') {
+            if (knex.client.driverName === 'oracledb') {
               // use string instead to force varchar2 to avoid later problems with join and union
               table.string('about', 4000).comment('A comment.');
             } else {
@@ -258,17 +258,14 @@ module.exports = function(knex) {
             table.timestamps();
           }).testSql(function(tester) {
             tester('mysql', ['create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default \'1\', `balance` float(8, 2) default \'0\', `about` text comment \'A comment.\', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = \'A table comment.\'','alter table `test_table_one` add index `test_table_one_first_name_index`(`first_name`)','alter table `test_table_one` add unique `test_table_one_email_unique`(`email`)','alter table `test_table_one` add index `test_table_one_logins_index`(`logins`)']);
-            tester('redshift', ['create table "test_table_one" FOOBAR']);
             tester('pg', ['create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "balance" real default \'0\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','create index "test_table_one_first_name_index" on "test_table_one" ("first_name")','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")','create index "test_table_one_logins_index" on "test_table_one" ("logins")']);
             tester('pg-redshift', ['create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "balance" real default \'0\', "about" varchar(max), "created_at" timestamptz, "updated_at" timestamptz)','comment on table "test_table_one" is \'A table comment.\'',"comment on column \"test_table_one\".\"logins\" is NULL",'comment on column "test_table_one"."about" is \'A comment.\'','alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")']);
             tester('sqlite3', ['create table `test_table_one` (`id` integer not null primary key autoincrement, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` integer default \'1\', `balance` float default \'0\', `about` text, `created_at` datetime, `updated_at` datetime)','create index `test_table_one_first_name_index` on `test_table_one` (`first_name`)','create unique index `test_table_one_email_unique` on `test_table_one` (`email`)','create index `test_table_one_logins_index` on `test_table_one` (`logins`)']);
-            tester('oracle', [
-              'create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default \'1\', "balance" float default \'0\',"about" varchar2(4000), "created_at" timestamp with time zone, "updated_at" timestamp with time zone)',
-              'comment on table "test_table_one" is \'A table comment.\'',
-              "begin execute immediate 'create sequence \"test_table_one_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;",
-              "create or replace trigger \"test_table_one_id_trg\" before insert on \"test_table_one\" for each row when (new.\"id\" is null)  begin select \"test_table_one_seq\".nextval into :new.\"id\" from dual; end;",
+            tester('oracledb', [
+              `create table \"test_table_one\" (\"id\" number(20, 0) not null primary key, \"first_name\" varchar2(255), \"last_name\" varchar2(255), \"email\" varchar2(255) null, \"logins\" integer default '1', \"balance\" float default '0', \"about\" varchar2(4000), \"created_at\" timestamp with local time zone, \"updated_at\" timestamp with local time zone)`,
+              "comment on table \"test_table_one\" is 'A table comment.'",
+              `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE \"test_table_one_seq\"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_one';  execute immediate ('create or replace trigger \"test_table_one_autoinc_trg\"  BEFORE INSERT on \"test_table_one\"  for each row  declare  checking number := 1;  begin    if (:new.\"' || PK_NAME || '\" is null) then      while checking >= 1 loop        select \"test_table_one_seq\".nextval into :new.\"' || PK_NAME || '\" from dual;        select count(\"' || PK_NAME || '\") into checking from \"test_table_one\"        where \"' || PK_NAME || '\" = :new.\"' || PK_NAME || '\";      end loop;    end if;  end;'); END;`,
               "comment on column \"test_table_one\".\"logins\" is \'\'",
-              "comment on column \"test_table_one\".\"balance\" is \'\'",
               'comment on column "test_table_one"."about" is \'A comment.\'',
               'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "test_table_one" ("first_name")',
               'alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")',
@@ -287,7 +284,7 @@ module.exports = function(knex) {
             table.engine('InnoDB');
             table.increments();
             table.integer('account_id');
-            if (knex.client.dialect === 'oracle') {
+            if (knex.client.driverName === 'oracledb') {
               // use string instead to force varchar2 to avoid later problems with join and union
               // e.g. where email (varchar2) = details (clob) does not work
               table.string('details', 4000);
@@ -312,7 +309,7 @@ module.exports = function(knex) {
             tester('pg', ['create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
             tester('pg-redshift', ['create table "test_table_three" ("main" integer not null, "paragraph" varchar(max) default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
             tester('sqlite3', ['create table `test_table_three` (`main` integer not null, `paragraph` text default \'Lorem ipsum Qui quis qui in.\', primary key (`main`))']);
-            tester('oracle', ['create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
+            tester('oracledb', ['create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')','alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")']);
             tester('mssql', ['CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))']);
           });
       });
@@ -327,7 +324,7 @@ module.exports = function(knex) {
             tester('mysql', ['create table `datatype_test` (`enum_value` enum(\'a\', \'b\', \'c\'), `uuid` char(36) not null) default character set utf8']);
             tester('pg', ['create table "datatype_test" ("enum_value" text check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" uuid not null)']);
             tester('sqlite3', ['create table `datatype_test` (`enum_value` text check (`enum_value` in (\'a\', \'b\', \'c\')), `uuid` char(36) not null)']);
-            tester('oracle', ['create table "datatype_test" ("enum_value" varchar2(1) check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" char(36) not null)']);
+            tester('oracledb', ['create table "datatype_test" ("enum_value" varchar2(1) check ("enum_value" in (\'a\', \'b\', \'c\')), "uuid" char(36) not null)']);
             tester('mssql', ['CREATE TABLE [datatype_test] ([enum_value] nvarchar(100), [uuid] uniqueidentifier not null)']);
           });
       });
@@ -372,10 +369,9 @@ module.exports = function(knex) {
             'foreign key(`fkey_three`) references `test_table_two`(`id`), ' +
             'foreign key(`fkey_four`) references `test_table_two`(`id`))'
           ]);
-          tester('oracle', [
+          tester('oracledb', [
             'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer)',
-            "begin execute immediate 'create sequence \"test_foreign_table_two_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;",
-            "create or replace trigger \"test_foreign_table_two_id_trg\" before insert on \"test_foreign_table_two\" for each row when (new.\"id\" is null)  begin select \"test_foreign_table_two_seq\".nextval into :new.\"id\" from dual; end;",
+            "DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE \"test_foreign_table_two_seq\"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_foreign_table_two';  execute immediate ('create or replace trigger \"m6uvAnbUQqcHvfWTN5IAjip1/vk\"  BEFORE INSERT on \"test_foreign_table_two\"  for each row  declare  checking number := 1;  begin    if (:new.\"' || PK_NAME || '\" is null) then      while checking >= 1 loop        select \"test_foreign_table_two_seq\".nextval into :new.\"' || PK_NAME || '\" from dual;        select count(\"' || PK_NAME || '\") into checking from \"test_foreign_table_two\"        where \"' || PK_NAME || '\" = :new.\"' || PK_NAME || '\";      end loop;    end if;  end;'); END;",
             'alter table "test_foreign_table_two" add constraint "q7TfvbIx3HUQbh+l+e5N+J+Guag" foreign key ("fkey_two") references "test_table_two" ("id")',
             'alter table "test_foreign_table_two" add constraint "fk_fkey_three" foreign key ("fkey_three") references "test_table_two" ("id")',
             'alter table "test_foreign_table_two" add constraint "fk_fkey_four" foreign key ("fkey_four") references "test_table_two" ("id")'
@@ -420,7 +416,7 @@ module.exports = function(knex) {
             tester('pg', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" text, "status" smallint)','alter table "composite_key_test" add constraint "composite_key_test_column_a_column_b_unique" unique ("column_a", "column_b")']);
             tester('pg-redshift', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" varchar(max), "status" smallint)','alter table "composite_key_test" add constraint "composite_key_test_column_a_column_b_unique" unique ("column_a", "column_b")']);
             tester('sqlite3', ['create table `composite_key_test` (`column_a` integer, `column_b` integer, `details` text, `status` tinyint)','create unique index `composite_key_test_column_a_column_b_unique` on `composite_key_test` (`column_a`, `column_b`)']);
-            tester('oracle', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" clob, "status" smallint)','alter table "composite_key_test" add constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk" unique ("column_a", "column_b")']);
+            tester('oracledb', ['create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" clob, "status" smallint)','alter table "composite_key_test" add constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk" unique ("column_a", "column_b")']);
             tester('mssql', [
               'CREATE TABLE [composite_key_test] ([column_a] int, [column_b] int, [details] nvarchar(max), [status] tinyint)',
               'CREATE UNIQUE INDEX [composite_key_test_column_a_column_b_unique] ON [composite_key_test] ([column_a], [column_b]) WHERE [column_a] IS NOT NULL AND [column_b] IS NOT NULL'
@@ -460,10 +456,9 @@ module.exports = function(knex) {
             tester('pg', ['create table "charset_collate_test" ("id" serial primary key, "account_id" integer, "details" text, "status" smallint)']);
             tester('pg-redshift', ['create table "charset_collate_test" ("id" integer identity(1,1) primary key not null, "account_id" integer, "details" varchar(max), "status" smallint)']);
             tester('sqlite3', ['create table `charset_collate_test` (`id` integer not null primary key autoincrement, `account_id` integer, `details` text, `status` tinyint)']);
-            tester('oracle', [
+            tester('oracledb', [
               "create table \"charset_collate_test\" (\"id\" integer not null primary key, \"account_id\" integer, \"details\" clob, \"status\" smallint)",
-              "begin execute immediate 'create sequence \"charset_collate_test_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;",
-              "create or replace trigger \"charset_collate_test_id_trg\" before insert on \"charset_collate_test\" for each row when (new.\"id\" is null)  begin select \"charset_collate_test_seq\".nextval into :new.\"id\" from dual; end;"
+              "DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE \"charset_collate_test_seq\"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'charset_collate_test';  execute immediate ('create or replace trigger \"x9C3VzXH9urIKnTjm32JM7OvYYQ\"  BEFORE INSERT on \"charset_collate_test\"  for each row  declare  checking number := 1;  begin    if (:new.\"' || PK_NAME || '\" is null) then      while checking >= 1 loop        select \"charset_collate_test_seq\".nextval into :new.\"' || PK_NAME || '\" from dual;        select count(\"' || PK_NAME || '\") into checking from \"charset_collate_test\"        where \"' || PK_NAME || '\" = :new.\"' || PK_NAME || '\";      end loop;    end if;  end;'); END;"
             ]);
             tester('mssql', ['CREATE TABLE [charset_collate_test] ([id] int identity(1,1) not null primary key, [account_id] int, [details] nvarchar(max), [status] tinyint)']);
           });
@@ -482,7 +477,7 @@ module.exports = function(knex) {
             tester('pg', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
             tester('pg-redshift', ['create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')']);
             tester('sqlite3', ['create table `bool_test` (`one` boolean, `two` boolean default \'0\', `three` boolean default \'1\', `four` boolean default \'1\', `five` boolean default \'0\')']);
-            tester('oracle', ['create table "bool_test" ("one" number(1, 0) check ("one" in (\'0\', \'1\')), "two" number(1, 0) default \'0\' check ("two" in (\'0\', \'1\')), "three" number(1, 0) default \'1\' check ("three" in (\'0\', \'1\')), "four" number(1, 0) default \'1\' check ("four" in (\'0\', \'1\')), "five" number(1, 0) default \'0\' check ("five" in (\'0\', \'1\')))']);
+            tester('oracledb', ['create table "bool_test" ("one" number(1, 0) check ("one" in (\'0\', \'1\')), "two" number(1, 0) default \'0\' check ("two" in (\'0\', \'1\')), "three" number(1, 0) default \'1\' check ("three" in (\'0\', \'1\')), "four" number(1, 0) default \'1\' check ("four" in (\'0\', \'1\')), "five" number(1, 0) default \'0\' check ("five" in (\'0\', \'1\')))']);
             tester('mssql', ['CREATE TABLE [bool_test] ([one] bit, [two] bit default \'0\', [three] bit default \'1\', [four] bit default \'1\', [five] bit default \'0\')']);
           }).then(function() {
             return knex.insert({one: false}).into('bool_test');
@@ -517,12 +512,11 @@ module.exports = function(knex) {
               'create unique index `10_test_table_email_unique` on `10_test_table` (`email`)',
               'create index `10_test_table_logins_index` on `10_test_table` (`logins`)'
             ]);
-            tester('oracle', [
+            tester('oracledb', [
               'create table "10_test_table" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default \'1\')',
-              "begin execute immediate 'create sequence \"10_test_table_seq\"'; exception when others then if sqlcode != -955 then raise; end if; end;",
-              "create or replace trigger \"10_test_table_id_trg\" before insert on \"10_test_table\" for each row when (new.\"id\" is null)  begin select \"10_test_table_seq\".nextval into :new.\"id\" from dual; end;",
+              "DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE \"10_test_table_seq\"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = '10_test_table';  execute immediate ('create or replace trigger \"10_test_table_autoinc_trg\"  BEFORE INSERT on \"10_test_table\"  for each row  declare  checking number := 1;  begin    if (:new.\"' || PK_NAME || '\" is null) then      while checking >= 1 loop        select \"10_test_table_seq\".nextval into :new.\"' || PK_NAME || '\" from dual;        select count(\"' || PK_NAME || '\") into checking from \"10_test_table\"        where \"' || PK_NAME || '\" = :new.\"' || PK_NAME || '\";      end loop;    end if;  end;'); END;",
               "comment on column \"10_test_table\".\"logins\" is \'\'",
-              'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "10_test_table" ("first_name")',
+              "create index \"10_test_table_first_name_index\" on \"10_test_table\" (\"first_name\")",
               'alter table "10_test_table" add constraint "10_test_table_email_unique" unique ("email")',
               'create index "10_test_table_logins_index" on "10_test_table" ("logins")'
             ]);
@@ -550,7 +544,7 @@ module.exports = function(knex) {
       });
 
       it('allows adding multiple columns at once', function () {
-        if(/redshift/i.test(knex.client.dialect)) { return; }
+        if(/redshift/i.test(knex.client.driverName)) { return; }
         return knex.schema.table('test_table_two', function(t) {
           t.string('one');
           t.string('two');
@@ -565,10 +559,10 @@ module.exports = function(knex) {
       });
 
       it('allows alter column syntax', function () {
-        if (knex.client.dialect.match('sqlite') ||
-            knex.client.dialect.match('redshift') ||
-            knex.client.dialect.match('mssql') ||
-            knex.client.dialect.match('oracle')) {
+        if (knex.client.driverName.match('sqlite3') ||
+            knex.client.driverName.match('pg-redshift') ||
+            knex.client.driverName.match('mssql') ||
+            knex.client.driverName.match('oracledb')) {
           return;
         }
 
@@ -695,7 +689,7 @@ module.exports = function(knex) {
       describe('mysql only', function() {
         if (!knex ||
             !knex.client ||
-            (!(/mysql/i.test(knex.client.dialect)))
+            (!(/mysql/i.test(knex.client.driverName)))
         ) {
           return Promise.resolve();
         }
@@ -842,7 +836,7 @@ module.exports = function(knex) {
 
     it('should warn attempting to create primary from nonexistent columns', function() {
       // Redshift only
-      if(!knex || !knex.client || !(/redshift/i.test(knex.client.dialect))) {
+      if(!knex || !knex.client || !(/redshift/i.test(knex.client.driverName))) {
         return Promise.resolve();
       }
       const tableName = 'no_test_column';
@@ -870,7 +864,7 @@ module.exports = function(knex) {
 
     //Unit tests checks SQL -- This will test running those queries, no hard assertions here.
     it('#1430 - .primary() & .dropPrimary() same for all dialects', function() {
-      if(/sqlite/i.test(knex.client.dialect)) {
+      if(/sqlite/i.test(knex.client.driverName)) {
         return Promise.resolve();
       }
       const constraintName = 'testconstraintname';
@@ -900,7 +894,7 @@ module.exports = function(knex) {
       describe('sqlite3 only', function() {
         const tableName = 'invalid_field_test_sqlite3';
         const fieldName = 'field_foo';
-        if(!knex || !knex.client || (!(/sqlite3/i.test(knex.client.dialect)))) {
+        if(!knex || !knex.client || (!(/sqlite3/i.test(knex.client.driverName)))) {
           return Promise.resolve();
         }
 

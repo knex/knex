@@ -11,7 +11,7 @@ module.exports = function (knex) {
     var negativeUnsafeBigint = -99071992547409911;
 
     it('#test number mssql should not allow unsafe bigint', function () {
-        if (!/mssql/i.test(knex.client.dialect)) {
+        if (!/mssql/i.test(knex.client.driverName)) {
             return Promise.resolve();
         }
         var constraintName = 'pk_id';
@@ -72,7 +72,7 @@ module.exports = function (knex) {
     });
 
     it('#1781 - decimal value must not be converted to integer', function () {
-        if (!/mssql/i.test(knex.client.dialect)) {
+        if (!/mssql/i.test(knex.client.driverName)) {
             return
         }
 

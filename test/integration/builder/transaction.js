@@ -11,7 +11,7 @@ module.exports = function(knex) {
 
   // Certain dialects do not have proper insert with returning, so if this is true
   // then pick an id to use as the "foreign key" just for testing transactions.
-  const constid = (/redshift/.test(knex.client.dialect));
+  const constid = (/redshift/.test(knex.client.driverName));
   let fkid = 1;
 
   describe('Transactions', function() {
@@ -195,8 +195,8 @@ module.exports = function(knex) {
       .catch(function(msg) {
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
         var expectedCount =
-          knex.client.dialect === 'oracle' ||
-          knex.client.dialect === 'mssql' ? 2 : 4;
+          knex.client.driverName === 'oracledb' ||
+          knex.client.driverName === 'mssql' ? 2 : 4;
         expect(count).to.equal(expectedCount);
         expect(msg).to.equal(err);
         return knex('accounts').where('id', id).select('first_name');
@@ -209,7 +209,7 @@ module.exports = function(knex) {
     it('should be able to run schema methods', function() {
       var __knexUid, count = 0;
       var err = new Error('error message');
-      if (knex.client.dialect === 'postgresql') {
+      if (knex.client.driverName === 'pg') {
         return knex.transaction(function(trx) {
           return trx.schema.createTable('test_schema_transactions', function(table) {
             table.increments();
@@ -271,9 +271,9 @@ module.exports = function(knex) {
           if (!__knexUid) __knexUid = obj.__knexUid;
           expect(__knexUid).to.equal(obj.__knexUid);
         }).then(function() {
-          if (knex.client.dialect === 'mssql') {
+          if (knex.client.driverName === 'mssql') {
             expect(count).to.equal(3);
-          } else if (knex.client.dialect === 'oracle') {
+          } else if (knex.client.driverName === 'oracledb') {
             expect(count).to.equal(4);
           } else {
             expect(count).to.equal(5);
@@ -299,7 +299,7 @@ module.exports = function(knex) {
     });
 
     it('should allow for nested transactions', function() {
-      if(/redshift/i.test(knex.client.dialect)) { return Promise.resolve() }
+      if(/redshift/i.test(knex.client.driverName)) { return Promise.resolve() }
       return knex.transaction(function(trx) {
         return trx.select('*').from('accounts').then(function() {
           return trx.transaction(function() {
@@ -341,7 +341,7 @@ module.exports = function(knex) {
 
       return knexDb.transaction(function(trx) {
         var sql = 'SELECT 1';
-        if (knex.client.dialect === 'oracle') {
+        if (knex.client.driverName === 'oracledb') {
           sql = 'SELECT 1 FROM DUAL';
         }
 
@@ -388,7 +388,7 @@ module.exports = function(knex) {
      * An example of this type of auto-aborting error is creating a table with
      * a foreign key that references a non-existent table.
      */
-    if (knex.client.dialect === 'mssql') {
+    if (knex.client.driverName === 'mssql') {
       it('should rollback when transaction aborts', function() {
         var insertedId = null;
         var originalError = null;

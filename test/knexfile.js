@@ -34,7 +34,7 @@ var seeds = {
 
 var testConfigs = {
   mysql: {
-    dialect: 'mysql',
+    client: 'mysql',
     connection: testConfig.mysql || {
       database: "knex_test",
       user: "root",
@@ -46,7 +46,7 @@ var testConfigs = {
   },
 
   mysql2: {
-    dialect: 'mysql2',
+    client: 'mysql2',
     connection: testConfig.mysql || {
       database: "knex_test",
       user: "root",
@@ -71,7 +71,7 @@ var testConfigs = {
   },
 
   postgres: {
-    dialect: 'postgres',
+    client: 'postgres',
     connection: testConfig.postgres || {
       adapter:  "postgresql",
       database: "knex_test",
@@ -83,7 +83,7 @@ var testConfigs = {
   },
 
   redshift: {
-    dialect: 'redshift',
+    client: 'redshift',
     connection: testConfig.redshift || {
       adapter:  'postgresql',
       database: 'knex_test',
@@ -108,7 +108,7 @@ var testConfigs = {
   },
 
   mssql: {
-    dialect: 'mssql',
+    client: 'mssql',
     connection: testConfig.mssql || {
       user: "sa",
       password: "S0meVeryHardPassword",
