@@ -1,16 +1,20 @@
-import Promise from "bluebird";
-import {filter, includes, map} from "lodash";
-import * as fs from "fs";
+import Promise from 'bluebird';
+import {filter, map} from 'lodash';
+import fs from 'fs';
 import path from 'path';
 import {getTableName} from './table-resolver'
 
+export const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
+  '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
+]);
+
 // Lists all available migration versions, as a sorted array.
-export function listAll(loadExtensions) {
-  return Promise.promisify(fs.readdir, {context: fs})(this._absoluteConfigDir())
+export function listAll(absoluteConfigDir, loadExtensions = DEFAULT_LOAD_EXTENSIONS) {
+  return Promise.promisify(fs.readdir, {context: fs})(absoluteConfigDir)
     .then(migrations => {
       return filter(migrations, function (value) {
         const extension = path.extname(value);
-        return includes(loadExtensions, extension);
+        return loadExtensions.includes(extension);
       }).sort();
     })
 }
@@ -25,9 +29,9 @@ export function listCompleted(tableName, schemaName, trxOrKnex) {
 
 // Gets the migration list from the migration directory specified in config, as well as
 // the list of completed migrations to check what should be run.
-export function listAllAndCompleted(config, trxOrKnex) {
+export function listAllAndCompleted(config, trxOrKnex, absoluteConfigDir) {
   return Promise.all([
-    listAll(config.loadExtensions),
+    listAll(config.loadExtensions, absoluteConfigDir),
     listCompleted(config.tableName, config.schemaName, trxOrKnex)
   ]);
 }

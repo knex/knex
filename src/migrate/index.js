@@ -21,9 +21,7 @@ inherits(LockError, Error);
 
 const CONFIG_DEFAULT = Object.freeze({
   extension: 'js',
-  loadExtensions: [
-    '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
-  ],
+  loadExtensions: migrationListResolver.DEFAULT_LOAD_EXTENSIONS,
   tableName: 'knex_migrations',
   schemaName: null,
   directory: './migrations',
@@ -47,7 +45,7 @@ export default class Migrator {
     // Migrators to the latest configuration.
   latest(config) {
     this.config = this.setConfig(config);
-    return migrationListResolver.listAllAndCompleted(config, this.knex)
+    return migrationListResolver.listAllAndCompleted(config, this.knex, this._absoluteConfigDir())
       .tap(validateMigrationList)
       .spread((all, completed) => {
         const migrations = difference(all, completed);
@@ -71,7 +69,7 @@ export default class Migrator {
   rollback(config) {
     return Promise.try(() => {
       this.config = this.setConfig(config);
-      return migrationListResolver.listAllAndCompleted(config, this.knex)
+      return migrationListResolver.listAllAndCompleted(config, this.knex, this._absoluteConfigDir())
         .tap(validateMigrationList)
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
@@ -86,7 +84,7 @@ export default class Migrator {
     return Promise.all([
       getTable(this.knex, this.config.tableName, this.config.schemaName)
         .select('*'),
-      migrationListResolver.listAll(config.loadExtensions)
+      migrationListResolver.listAll(this._absoluteConfigDir(), config.loadExtensions)
     ])
       .spread((db, code) => db.length - code.length);
 
