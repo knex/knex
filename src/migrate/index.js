@@ -9,13 +9,14 @@ import {
   isEmpty, isUndefined, map, max, template
 } from 'lodash'
 import inherits from 'inherits';
-import { getTable, getTableName } from './table-resolver';
+import {getTable, getTableName} from './table-resolver';
 import * as migrationListResolver from './migration-list-resolver';
 
 function LockError(msg) {
   this.name = 'MigrationLocked';
   this.message = msg;
 }
+
 inherits(LockError, Error);
 
 const CONFIG_DEFAULT = Object.freeze({
@@ -43,7 +44,7 @@ export default class Migrator {
     }
   }
 
-  // Migrators to the latest configuration.
+    // Migrators to the latest configuration.
   latest(config) {
     this.config = this.setConfig(config);
     return migrationListResolver.listAllAndCompleted(config, this.knex)
@@ -52,10 +53,10 @@ export default class Migrator {
         const migrations = difference(all, completed);
 
         const transactionForAll = !this.config.disableTransactions
-          && isEmpty(filter(migrations, name => {
-            const migration = require(path.join(this._absoluteConfigDir(), name));
-            return !this._useTransaction(migration);
-          }));
+                    && isEmpty(filter(migrations, name => {
+                      const migration = require(path.join(this._absoluteConfigDir(), name));
+                      return !this._useTransaction(migration);
+                    }));
 
         if (transactionForAll) {
           return this.knex.transaction(trx => this._runBatch(migrations, 'up', trx));
@@ -66,7 +67,7 @@ export default class Migrator {
       })
   }
 
-  // Rollback the last "batch" of migrations that were run.
+    // Rollback the last "batch" of migrations that were run.
   rollback(config) {
     return Promise.try(() => {
       this.config = this.setConfig(config);
@@ -91,8 +92,8 @@ export default class Migrator {
 
   }
 
-  // Retrieves and returns the current migration version we're on, as a promise.
-  // If no migrations have been run yet, return "none".
+    // Retrieves and returns the current migration version we're on, as a promise.
+    // If no migrations have been run yet, return "none".
   currentVersion(config) {
     this.config = this.setConfig(config);
     return migrationListResolver.listCompleted(config.tableName, config.schemaName, this.knex)
@@ -109,7 +110,7 @@ export default class Migrator {
       .then(exist => exist && this._freeLock());
   }
 
-  // Creates a new migration, with a given name.
+    // Creates a new migration, with a given name.
   make(name, config) {
     this.config = this.setConfig(config);
     if (!name) {
@@ -121,18 +122,18 @@ export default class Migrator {
       .then((val) => this._writeNewMigration(name, val));
   }
 
-  // Ensures a folder for the migrations exist, dependent on the migration
-  // config settings.
+    // Ensures a folder for the migrations exist, dependent on the migration
+    // config settings.
   _ensureFolder() {
     const dir = this._absoluteConfigDir();
     return Promise.promisify(fs.stat, {context: fs})(dir)
       .catch(() => Promise.promisify(mkdirp)(dir));
   }
 
-  // Ensures that a proper table has been created, dependent on the migration
-  // config settings.
+    // Ensures that a proper table has been created, dependent on the migration
+    // config settings.
   _ensureTable(trx = this.knex) {
-    const { tableName, schemaName }  = this.config;
+    const {tableName, schemaName} = this.config;
     const lockTable = this._getLockTableName();
     const lockTableWithSchema = this._getLockTableNameWithSchema();
     return getSchemaBuilder(trx, schemaName).hasTable(tableName)
@@ -140,11 +141,11 @@ export default class Migrator {
       .then(() => getSchemaBuilder(trx, schemaName).hasTable(lockTable))
       .then(exists => !exists && this._createMigrationLockTable(lockTable, trx))
       .then(() => getTable(trx, lockTable, this.config.schemaName).select('*'))
-      .then(data => !data.length && trx.into(lockTableWithSchema).insert({ is_locked: 0 }));
+      .then(data => !data.length && trx.into(lockTableWithSchema).insert({is_locked: 0}));
   }
 
   _createMigrationTable(tableName, schemaName, trx = this.knex) {
-    return getSchemaBuilder(trx, schemaName).createTable(getTableName(tableName), function(t) {
+    return getSchemaBuilder(trx, schemaName).createTable(getTableName(tableName), function (t) {
       t.increments();
       t.string('name');
       t.integer('batch');
@@ -153,7 +154,7 @@ export default class Migrator {
   }
 
   _createMigrationLockTable(tableName, trx = this.knex) {
-    return getSchemaBuilder(trx, this.config.schemaName).createTable(tableName, function(t) {
+    return getSchemaBuilder(trx, this.config.schemaName).createTable(tableName, function (t) {
       t.increments('index').primary();
       t.integer('is_locked');
     });
@@ -182,7 +183,7 @@ export default class Migrator {
     const tableName = this._getLockTableName();
     return getTable(this.knex, tableName, this.config.schemaName)
       .transacting(trx)
-      .update({ is_locked: 1 });
+      .update({is_locked: 1});
   }
 
   _getLock(trx) {
@@ -203,16 +204,19 @@ export default class Migrator {
   _freeLock(trx = this.knex) {
     const tableName = this._getLockTableName();
     return getTable(trx, tableName, this.config.schemaName)
-      .update({ is_locked: 0 });
+      .update({is_locked: 0});
   }
 
-  // Run a batch of current migrations, in sequence.
+    // Run a batch of current migrations, in sequence.
   _runBatch(migrations, direction, trx) {
     return this._getLock(trx)
-      // When there is a wrapping transaction, some migrations
-      // could have been done while waiting for the lock:
+        // When there is a wrapping transaction, some migrations
+        // could have been done while waiting for the lock:
       .then(() => trx ?
-        migrationListResolver.listCompleted(this.config.tableName, this.config.schemaName, trx) : [])
+        migrationListResolver.listCompleted(
+          this.config.tableName,
+          this.config.schemaName, trx)
+        : [])
       .then(completed => migrations = difference(migrations, completed))
       .then(() => Promise.all(map(migrations, bind(this._validateMigrationStructure, this))))
       .then(() => this._latestBatchNumber(trx))
@@ -228,12 +232,12 @@ export default class Migrator {
         let cleanupReady = Promise.resolve();
 
         if (error instanceof LockError) {
-          // If locking error do not free the lock.
+                    // If locking error do not free the lock.
           this.knex.client.logger.warn(`Can't take lock to run migrations: ${error.message}`);
           this.knex.client.logger.warn(
             'If you are sure migrations are not running you can release the ' +
-            'lock manually by deleting all the rows from migrations lock ' +
-            'table: ' + this._getLockTableNameWithSchema()
+                        'lock manually by deleting all the rows from migrations lock ' +
+                        'table: ' + this._getLockTableNameWithSchema()
           );
         } else {
           if (this._activeMigration.fileName) {
@@ -242,18 +246,18 @@ export default class Migrator {
             )
           }
           this.knex.client.logger.warn(`migration failed with error: ${error.message}`);
-          // If the error was not due to a locking issue, then remove the lock.
+                    // If the error was not due to a locking issue, then remove the lock.
           cleanupReady = this._freeLock(trx);
         }
 
-        return cleanupReady.finally(function() {
+        return cleanupReady.finally(function () {
           throw error;
         });
       });
   }
 
-  // Validates some migrations by requiring and checking for an `up` and `down`
-  // function.
+    // Validates some migrations by requiring and checking for an `up` and `down`
+    // function.
   _validateMigrationStructure(name) {
     const migration = require(path.join(this._absoluteConfigDir(), name));
     if (typeof migration.up !== 'function' || typeof migration.down !== 'function') {
@@ -262,20 +266,20 @@ export default class Migrator {
     return name;
   }
 
-  // Generates the stub template for the current migration, returning a compiled
-  // template.
+    // Generates the stub template for the current migration, returning a compiled
+    // template.
   _generateStubTemplate() {
     const stubPath = this.config.stub ||
-      path.join(__dirname, 'stub', this.config.extension + '.stub');
+            path.join(__dirname, 'stub', this.config.extension + '.stub');
     return Promise.promisify(fs.readFile, {context: fs})(stubPath).then(stub =>
       template(stub.toString(), {variable: 'd'})
     );
   }
 
-  // Write a new migration to disk, using the config and generated filename,
-  // passing any `variables` given in the config to the template.
+    // Write a new migration to disk, using the config and generated filename,
+    // passing any `variables` given in the config to the template.
   _writeNewMigration(name, tmpl) {
-    const { config } = this;
+    const {config} = this;
     const dir = this._absoluteConfigDir();
     if (name[0] === '-') name = name.slice(1);
     const filename = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
@@ -285,27 +289,27 @@ export default class Migrator {
     ).return(path.join(dir, filename));
   }
 
-  // Get the last batch of migrations, by name, ordered by insert id in reverse
-  // order.
+    // Get the last batch of migrations, by name, ordered by insert id in reverse
+    // order.
   _getLastBatch() {
-    const { tableName, schemaName } = this.config;
+    const {tableName, schemaName} = this.config;
     return getTable(this.knex, tableName, schemaName)
-      .where('batch', function(qb) {
+      .where('batch', function (qb) {
         qb.max('batch').from(getTableName(tableName, schemaName))
       })
       .orderBy('id', 'desc');
   }
 
-  // Returns the latest batch number.
+    // Returns the latest batch number.
   _latestBatchNumber(trx = this.knex) {
     return trx.from(getTableName(this.config.tableName, this.config.schemaName))
       .max('batch as max_batch').then(obj => obj[0].max_batch || 0);
   }
 
-  // If transaction config for a single migration is defined, use that.
-  // Otherwise, rely on the common config. This allows enabling/disabling
-  // transaction for a single migration at will, regardless of the common
-  // config.
+    // If transaction config for a single migration is defined, use that.
+    // Otherwise, rely on the common config. This allows enabling/disabling
+    // transaction for a single migration at will, regardless of the common
+    // config.
   _useTransaction(migration, allTransactionsDisabled) {
     const singleTransactionValue = get(migration, 'config.transaction');
 
@@ -314,8 +318,8 @@ export default class Migrator {
       !allTransactionsDisabled;
   }
 
-  // Runs a batch of `migrations` in a specified `direction`, saving the
-  // appropriate database information as the migrations are run.
+    // Runs a batch of `migrations` in a specified `direction`, saving the
+    // appropriate database information as the migrations are run.
   _waterfallBatch(batchNo, migrations, direction, trx) {
     const trxOrKnex = trx || this.knex;
     const {tableName, schemaName, disableTransactions} = this.config;
@@ -327,7 +331,7 @@ export default class Migrator {
       this._activeMigration.fileName = name;
       migration = require(directory + '/' + name);
 
-      // We're going to run each of the migrations in the current "up".
+            // We're going to run each of the migrations in the current "up".
       current = current.then(() => {
         if (!trx && this._useTransaction(migration, disableTransactions)) {
           return this._transaction(migration, direction, name)
@@ -401,11 +405,11 @@ function padDate(segment) {
 function yyyymmddhhmmss() {
   const d = new Date();
   return d.getFullYear().toString() +
-    padDate(d.getMonth() + 1) +
-    padDate(d.getDate()) +
-    padDate(d.getHours()) +
-    padDate(d.getMinutes()) +
-    padDate(d.getSeconds());
+        padDate(d.getMonth() + 1) +
+        padDate(d.getDate()) +
+        padDate(d.getHours()) +
+        padDate(d.getMinutes()) +
+        padDate(d.getSeconds());
 }
 
 //Get schema-aware schema builder for a given schema nam
