@@ -11,7 +11,7 @@ export function ensureTable (tableName, schemaName, trxOrKnex) {
   return getSchemaBuilder(trxOrKnex, schemaName).hasTable(tableName)
     .then(exists => !exists && _createMigrationTable(tableName, schemaName, trxOrKnex))
     .then(() => getSchemaBuilder(trxOrKnex, schemaName).hasTable(lockTable))
-    .then(exists => !exists && _createMigrationLockTable(lockTable, trxOrKnex))
+    .then(exists => !exists && _createMigrationLockTable(lockTable, schemaName, trxOrKnex))
     .then(() => getTable(trxOrKnex, lockTable, schemaName).select('*'))
     .then(data => !data.length && trxOrKnex.into(lockTableWithSchema).insert({is_locked: 0}));
 }
@@ -25,8 +25,8 @@ function _createMigrationTable(tableName, schemaName, trxOrKnex) {
   });
 }
 
-function _createMigrationLockTable(tableName, trxOrKnex) {
-  return getSchemaBuilder(trxOrKnex, this.config.schemaName).createTable(tableName, function (t) {
+function _createMigrationLockTable(tableName, schemaName, trxOrKnex) {
+  return getSchemaBuilder(trxOrKnex, schemaName).createTable(tableName, function (t) {
     t.increments('index').primary();
     t.integer('is_locked');
   });
