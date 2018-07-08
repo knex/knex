@@ -5,7 +5,7 @@ import path from 'path';
 import {getTableName} from './table-resolver'
 
 // Lists all available migration versions, as a sorted array.
-function listAll(loadExtensions) {
+export function listAll(loadExtensions) {
   return Promise.promisify(fs.readdir, {context: fs})(this._absoluteConfigDir())
     .then(migrations => {
       return filter(migrations, function (value) {
@@ -17,7 +17,7 @@ function listAll(loadExtensions) {
 
 // Lists all migrations that have been completed for the current db, as an
 // array.
-function listCompleted(tableName, schemaName, trxOrKnex) {
+export function listCompleted(tableName, schemaName, trxOrKnex) {
   return this._ensureTable(trxOrKnex)
     .then(() => trxOrKnex.from(getTableName(tableName, schemaName)).orderBy('id').select('name'))
     .then((migrations) => map(migrations, 'name'))
@@ -25,15 +25,10 @@ function listCompleted(tableName, schemaName, trxOrKnex) {
 
 // Gets the migration list from the migration directory specified in config, as well as
 // the list of completed migrations to check what should be run.
-function listAllAndCompleted(config, trxOrKnex) {
+export function listAllAndCompleted(config, trxOrKnex) {
   return Promise.all([
     listAll(config.loadExtensions),
     listCompleted(config.tableName, config.schemaName, trxOrKnex)
   ]);
 }
 
-module.exports = {
-  listAll,
-  listAllAndCompleted,
-  listCompleted
-};
