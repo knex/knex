@@ -5,10 +5,12 @@ import path from 'path';
 import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
 import {
-  assign, bind, difference, each, filter, get, includes, isBoolean,
+  assign, bind, difference, each, filter, get, isBoolean,
   isEmpty, isUndefined, map, max, template
 } from 'lodash'
 import inherits from 'inherits';
+import { getTable, getTableName } from './table-resolver';
+import * as migrationListResolver from './migration-list-resolver';
 
 function LockError(msg) {
   this.name = 'MigrationLocked';
@@ -44,7 +46,7 @@ export default class Migrator {
   // Migrators to the latest configuration.
   latest(config) {
     this.config = this.setConfig(config);
-    return this._migrationData()
+    return migrationListResolver.listAllAndCompleted(config, this.knex)
       .tap(validateMigrationList)
       .spread((all, completed) => {
         const migrations = difference(all, completed);
@@ -68,7 +70,7 @@ export default class Migrator {
   rollback(config) {
     return Promise.try(() => {
       this.config = this.setConfig(config);
-      return this._migrationData()
+      return migrationListResolver.listAllAndCompleted(config, this.knex)
         .tap(validateMigrationList)
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
@@ -83,7 +85,7 @@ export default class Migrator {
     return Promise.all([
       getTable(this.knex, this.config.tableName, this.config.schemaName)
         .select('*'),
-      this._listAll()
+      migrationListResolver.listAll(config.loadExtensions)
     ])
       .spread((db, code) => db.length - code.length);
 
@@ -93,7 +95,7 @@ export default class Migrator {
   // If no migrations have been run yet, return "none".
   currentVersion(config) {
     this.config = this.setConfig(config);
-    return this._listCompleted()
+    return migrationListResolver.listCompleted(config.tableName, config.schemaName, this.knex)
       .then((completed) => {
         const val = max(map(completed, value => value.split('_')[0]));
         return (isUndefined(val) ? 'none' : val);
@@ -117,19 +119,6 @@ export default class Migrator {
     return this._ensureFolder(config)
       .then((val) => this._generateStubTemplate(val))
       .then((val) => this._writeNewMigration(name, val));
-  }
-
-  // Lists all available migration versions, as a sorted array.
-  _listAll(config) {
-    this.config = this.setConfig(config);
-    const loadExtensions = this.config.loadExtensions;
-    return Promise.promisify(fs.readdir, {context: fs})(this._absoluteConfigDir())
-      .then(migrations => {
-        return filter(migrations, function(value) {
-          const extension = path.extname(value);
-          return includes(loadExtensions, extension);
-        }).sort();
-      })
   }
 
   // Ensures a folder for the migrations exist, dependent on the migration
@@ -222,7 +211,8 @@ export default class Migrator {
     return this._getLock(trx)
       // When there is a wrapping transaction, some migrations
       // could have been done while waiting for the lock:
-      .then(() => trx ? this._listCompleted(trx) : [])
+      .then(() => trx ?
+        migrationListResolver.listCompleted(this.config.tableName, this.config.schemaName, trx) : [])
       .then(completed => migrations = difference(migrations, completed))
       .then(() => Promise.all(map(migrations, bind(this._validateMigrationStructure, this))))
       .then(() => this._latestBatchNumber(trx))
@@ -251,7 +241,7 @@ export default class Migrator {
               `migration file "${this._activeMigration.fileName}" failed`
             )
           }
-          this.knex.client.logger.warn(`migration failed with error: ${error.message}`)
+          this.knex.client.logger.warn(`migration failed with error: ${error.message}`);
           // If the error was not due to a locking issue, then remove the lock.
           cleanupReady = this._freeLock(trx);
         }
@@ -270,24 +260,6 @@ export default class Migrator {
       throw new Error(`Invalid migration: ${name} must have both an up and down function`);
     }
     return name;
-  }
-
-  // Lists all migrations that have been completed for the current db, as an
-  // array.
-  _listCompleted(trx = this.knex) {
-    const { tableName, schemaName } = this.config;
-    return this._ensureTable(trx)
-      .then(() => trx.from(getTableName(tableName, schemaName)).orderBy('id').select('name'))
-      .then((migrations) => map(migrations, 'name'))
-  }
-
-  // Gets the migration list from the specified migration directory, as well as
-  // the list of completed migrations to check what should be run.
-  _migrationData() {
-    return Promise.all([
-      this._listAll(),
-      this._listCompleted()
-    ]);
   }
 
   // Generates the stub template for the current migration, returning a compiled
@@ -434,19 +406,6 @@ function yyyymmddhhmmss() {
     padDate(d.getHours()) +
     padDate(d.getMinutes()) +
     padDate(d.getSeconds());
-}
-
-//Get schema-aware table name
-function getTableName(tableName, schemaName) {
-  return schemaName ?
-    `${schemaName}.${tableName}`
-    : tableName;
-}
-
-//Get schema-aware query builder for a given table and schema name
-function getTable(trxOrKnex, tableName, schemaName) {
-  return schemaName ? trxOrKnex(tableName).withSchema(schemaName)
-    : trxOrKnex(tableName);
 }
 
 //Get schema-aware schema builder for a given schema nam
