@@ -7,7 +7,9 @@ const presets = [
       {"loose": true},
       isDev ?
         {"targets": {"node": "current"}} :
-        {"targets": {"node": "6"}})]
+        {"targets": {"node": "6"}}
+        )
+  ]
 ];
 
 module.exports = {
