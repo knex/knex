@@ -1,0 +1,38 @@
+import {
+  getTable,
+  getLockTableName,
+  getLockTableNameWithSchema,
+  getTableName
+} from "./table-resolver";
+
+export function ensureTable (tableName, schemaName, trxOrKnex) {
+  const lockTable = getLockTableName(tableName);
+  const lockTableWithSchema = getLockTableNameWithSchema(tableName, schemaName);
+  return getSchemaBuilder(trxOrKnex, schemaName).hasTable(tableName)
+    .then(exists => !exists && _createMigrationTable(tableName, schemaName, trxOrKnex))
+    .then(() => getSchemaBuilder(trxOrKnex, schemaName).hasTable(lockTable))
+    .then(exists => !exists && _createMigrationLockTable(lockTable, trxOrKnex))
+    .then(() => getTable(trxOrKnex, lockTable, schemaName).select('*'))
+    .then(data => !data.length && trxOrKnex.into(lockTableWithSchema).insert({is_locked: 0}));
+}
+
+function _createMigrationTable(tableName, schemaName, trxOrKnex) {
+  return getSchemaBuilder(trxOrKnex, schemaName).createTable(getTableName(tableName), function (t) {
+    t.increments();
+    t.string('name');
+    t.integer('batch');
+    t.timestamp('migration_time');
+  });
+}
+
+function _createMigrationLockTable(tableName, trxOrKnex) {
+  return getSchemaBuilder(trxOrKnex, this.config.schemaName).createTable(tableName, function (t) {
+    t.increments('index').primary();
+    t.integer('is_locked');
+  });
+}
+
+//Get schema-aware schema builder for a given schema nam
+export function getSchemaBuilder(trxOrKnex, schemaName) {
+  return schemaName ? trxOrKnex.schema.withSchema(schemaName) : trxOrKnex.schema;
+}

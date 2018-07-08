@@ -3,6 +3,7 @@ import {filter, map} from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import {getTableName} from './table-resolver'
+import {ensureTable} from './table-creator'
 
 export const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
   '.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts'
@@ -22,7 +23,7 @@ export function listAll(absoluteConfigDir, loadExtensions = DEFAULT_LOAD_EXTENSI
 // Lists all migrations that have been completed for the current db, as an
 // array.
 export function listCompleted(tableName, schemaName, trxOrKnex) {
-  return this._ensureTable(trxOrKnex)
+  return ensureTable(tableName, schemaName, trxOrKnex)
     .then(() => trxOrKnex.from(getTableName(tableName, schemaName)).orderBy('id').select('name'))
     .then((migrations) => map(migrations, 'name'))
 }

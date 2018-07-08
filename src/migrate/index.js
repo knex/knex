@@ -9,7 +9,10 @@ import {
   isEmpty, isUndefined, map, max, template
 } from 'lodash'
 import inherits from 'inherits';
-import {getTable, getTableName} from './table-resolver';
+import {
+  getLockTableName, getLockTableNameWithSchema, getTable,
+  getTableName} from './table-resolver';
+import {getSchemaBuilder} from './table-creator';
 import * as migrationListResolver from './migration-list-resolver';
 
 function LockError(msg) {
@@ -115,7 +118,7 @@ export default class Migrator {
 
   forceFreeMigrationsLock(config) {
     this.config = this.setConfig(config);
-    const lockTable = this._getLockTableName();
+    const lockTable = getLockTableName(this.config.tableName);
     return getSchemaBuilder(this.knex, this.config.schemaName).hasTable(lockTable)
       .then(exist => exist && this._freeLock());
   }
@@ -140,48 +143,8 @@ export default class Migrator {
       .catch(() => Promise.promisify(mkdirp)(dir));
   }
 
-    // Ensures that a proper table has been created, dependent on the migration
-    // config settings.
-  _ensureTable(trx = this.knex) {
-    const {tableName, schemaName} = this.config;
-    const lockTable = this._getLockTableName();
-    const lockTableWithSchema = this._getLockTableNameWithSchema();
-    return getSchemaBuilder(trx, schemaName).hasTable(tableName)
-      .then(exists => !exists && this._createMigrationTable(tableName, schemaName, trx))
-      .then(() => getSchemaBuilder(trx, schemaName).hasTable(lockTable))
-      .then(exists => !exists && this._createMigrationLockTable(lockTable, trx))
-      .then(() => getTable(trx, lockTable, this.config.schemaName).select('*'))
-      .then(data => !data.length && trx.into(lockTableWithSchema).insert({is_locked: 0}));
-  }
-
-  _createMigrationTable(tableName, schemaName, trx = this.knex) {
-    return getSchemaBuilder(trx, schemaName).createTable(getTableName(tableName), function (t) {
-      t.increments();
-      t.string('name');
-      t.integer('batch');
-      t.timestamp('migration_time');
-    });
-  }
-
-  _createMigrationLockTable(tableName, trx = this.knex) {
-    return getSchemaBuilder(trx, this.config.schemaName).createTable(tableName, function (t) {
-      t.increments('index').primary();
-      t.integer('is_locked');
-    });
-  }
-
-  _getLockTableName() {
-    return this.config.tableName + '_lock';
-  }
-
-  _getLockTableNameWithSchema() {
-    return this.config.schemaName ?
-      this.config.schemaName + '.' + this._getLockTableName()
-      : this._getLockTableName();
-  }
-
   _isLocked(trx) {
-    const tableName = this._getLockTableName();
+    const tableName = getLockTableName(this.config.tableName);
     return getTable(this.knex, tableName, this.config.schemaName)
       .transacting(trx)
       .forUpdate()
@@ -190,7 +153,7 @@ export default class Migrator {
   }
 
   _lockMigrations(trx) {
-    const tableName = this._getLockTableName();
+    const tableName = getLockTableName(this.config.tableName);
     return getTable(this.knex, tableName, this.config.schemaName)
       .transacting(trx)
       .update({is_locked: 1});
@@ -212,7 +175,7 @@ export default class Migrator {
   }
 
   _freeLock(trx = this.knex) {
-    const tableName = this._getLockTableName();
+    const tableName = getLockTableName(this.config.tableName);
     return getTable(trx, tableName, this.config.schemaName)
       .update({is_locked: 0});
   }
@@ -245,10 +208,10 @@ export default class Migrator {
                     // If locking error do not free the lock.
           this.knex.client.logger.warn(`Can't take lock to run migrations: ${error.message}`);
           this.knex.client.logger.warn(
-            'If you are sure migrations are not running you can release the ' +
-                        'lock manually by deleting all the rows from migrations lock ' +
-                        'table: ' + this._getLockTableNameWithSchema()
-          );
+            'If you are sure migrations are not running you can release the '
+            + 'lock manually by deleting all the rows from migrations lock '
+            + 'table: ' + getLockTableNameWithSchema(this.config.tableName, this.config.schemaName)
+          )
         } else {
           if (this._activeMigration.fileName) {
             this.knex.client.logger.warn(
@@ -420,10 +383,4 @@ function yyyymmddhhmmss() {
         padDate(d.getHours()) +
         padDate(d.getMinutes()) +
         padDate(d.getSeconds());
-}
-
-//Get schema-aware schema builder for a given schema nam
-function getSchemaBuilder(trxOrKnex, schemaName) {
-  return schemaName ? trxOrKnex.schema.withSchema(schemaName)
-    : trxOrKnex.schema;
 }

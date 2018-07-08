@@ -10,8 +10,18 @@ function getTable(trxOrKnex, tableName, schemaName) {
   return schemaName ? trxOrKnex(tableName).withSchema(schemaName)
     : trxOrKnex(tableName);
 }
+function getLockTableName(tableName) {
+  return tableName + '_lock';
+}
+
+function getLockTableNameWithSchema(tableName, schemaName) {
+  return schemaName ? schemaName + '.' + getLockTableName(tableName)
+    : getLockTableName(tableName)
+}
 
 module.exports = {
+  getLockTableName,
+  getLockTableNameWithSchema,
   getTable,
   getTableName
 };
