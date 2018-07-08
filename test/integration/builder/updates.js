@@ -178,9 +178,9 @@ module.exports = function(knex) {
           1
         );
         tester(
-          'oracle',
-          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
-          ['test100@example.com','UpdatedUser','UpdatedTest',1],
+          'oracledb',
+          'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning "ROWID" into ?',
+          ['test100@example.com','UpdatedUser','UpdatedTest',1, (v) => v.toString() === '[object ReturningHelper:ROWID]'],
           1
         );
         tester(

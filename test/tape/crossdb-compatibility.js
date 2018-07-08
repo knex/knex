@@ -6,14 +6,14 @@ const tape = require('tape')
  */
 module.exports = function(knex) {
 
-  const dialect = knex.client.dialect;
+  const driverName = knex.client.driverName;
 
-  if (dialect === 'oracle') {
+  if (driverName === 'oracledb') {
     // TODO: FIX ORACLE TO WORK THE SAME WAY WITH OTHER DIALECTS IF POSSIBLE
     return;
   }
 
-  tape(dialect + ' - crossdb compatibility: setup test table', function(t) {
+  tape(driverName + ' - crossdb compatibility: setup test table', function(t) {
     knex.schema.dropTableIfExists('test_table')
       .createTable('test_table', function(t) {
         t.integer('id');
@@ -27,7 +27,7 @@ module.exports = function(knex) {
       });
   });
 
-  tape(dialect + ' - crossdb compatibility: table may have multiple nulls in unique constrainted column', function (t) {
+  tape(driverName + ' - crossdb compatibility: table may have multiple nulls in unique constrainted column', function (t) {
     t.plan(3);
 
     knex('test_table').insert([
@@ -59,7 +59,7 @@ module.exports = function(knex) {
     });
   });
 
-  tape(dialect + ' - create and drop index works in different cases', t => {
+  tape(driverName + ' - create and drop index works in different cases', t => {
     t.plan(1);
     knex.schema.dropTableIfExists('test_table_drop_unique')
       .createTable('test_table_drop_unique', t => {

@@ -113,7 +113,7 @@ module.exports = function(knex) {
     });
 
     // TODO: This doesn't work on oracle yet.
-    if (['postgresql', 'mssql'].includes(knex.client.dialect)) {
+    if (['pg', 'mssql'].includes(knex.client.driverName)) {
       describe('returning with wrapIdentifier and postProcessResponse`', () => {
         let origHooks = {};
 
@@ -216,7 +216,7 @@ module.exports = function(knex) {
           tester('pg', 'truncate "test_table_two" restart identity');
           tester('pg-redshift', 'truncate "test_table_two"');
           tester('sqlite3', "delete from `test_table_two`");
-          tester('oracle', "truncate table \"test_table_two\"");
+          tester('oracledb', "truncate table \"test_table_two\"");
           tester('mssql', 'truncate table [test_table_two]');
         })
         .then(() => {
@@ -232,7 +232,7 @@ module.exports = function(knex) {
           // needs to be manually reset.
           // On redshift, one would need to create an entirely new table and do
           //  `insert into ... (select ...); alter table rename...`
-          if (/oracle/i.test(knex.client.dialect) || /redshift/i.test(knex.client.dialect)) { return; }
+          if (/oracle/i.test(knex.client.driverName) || /redshift/i.test(knex.client.driverName)) { return; }
           return knex('test_table_two').insert({ status: 1 })
             .then(res => {
               return knex('test_table_two')
@@ -250,14 +250,14 @@ module.exports = function(knex) {
       var tables = {
         mysql: 'SHOW TABLES',
         mysql2: 'SHOW TABLES',
-        postgresql: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
-        redshift: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+        pg: "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+        'pg-redshift': "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         sqlite3: "SELECT name FROM sqlite_master WHERE type='table';",
-        oracle: "select TABLE_NAME from USER_TABLES",
+        oracledb: "select TABLE_NAME from USER_TABLES",
         mssql: "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'"
       };
-      return knex.raw(tables[knex.client.dialect]).testSql(function(tester) {
-        tester(knex.client.dialect, tables[knex.client.dialect]);
+      return knex.raw(tables[knex.client.driverName]).testSql(function(tester) {
+        tester(knex.client.driverName, tables[knex.client.driverName]);
       });
     });
 
@@ -333,16 +333,18 @@ module.exports = function(knex) {
           }
         });
         tester(
-          'oracle',
-          "select COLUMN_NAME, DATA_TYPE, CHAR_COL_DECL_LENGTH, NULLABLE from USER_TAB_COLS where TABLE_NAME = :1",
-          ['datatype_test'],
+          'oracledb',
+          'select * from xmltable( \'/ROWSET/ROW\'\n      passing dbms_xmlgen.getXMLType(\'\n      select char_col_decl_length, column_name, data_type, data_default, nullable\n      from user_tab_columns where table_name = \'\'datatype_test\'\' \')\n      columns\n      CHAR_COL_DECL_LENGTH number, COLUMN_NAME varchar2(200), DATA_TYPE varchar2(106),\n      DATA_DEFAULT clob, NULLABLE varchar2(1))',
+          [],
           {
             "enum_value": {
+              defaultValue: null,
               nullable: true,
               maxLength: 1,
               type: "VARCHAR2"
             },
             "uuid": {
+              defaultValue: null,
               nullable: false,
               maxLength: 36,
               type: "CHAR"
@@ -399,13 +401,14 @@ module.exports = function(knex) {
           "type": "char"
         });
         tester(
-          'oracle',
-          'select COLUMN_NAME, DATA_TYPE, CHAR_COL_DECL_LENGTH, NULLABLE from USER_TAB_COLS where TABLE_NAME = :1',
-          ['datatype_test'],
+          'oracledb',
+          'select * from xmltable( \'/ROWSET/ROW\'\n      passing dbms_xmlgen.getXMLType(\'\n      select char_col_decl_length, column_name, data_type, data_default, nullable\n      from user_tab_columns where table_name = \'\'datatype_test\'\' \')\n      columns\n      CHAR_COL_DECL_LENGTH number, COLUMN_NAME varchar2(200), DATA_TYPE varchar2(106),\n      DATA_DEFAULT clob, NULLABLE varchar2(1))',
+          [],
           {
-            "maxLength": 36,
-            "nullable": false,
-            "type": "CHAR"
+            defaultValue: null,
+            maxLength: 36,
+            nullable: false,
+            type: "CHAR"
           }
         );
         tester('mssql',
@@ -420,7 +423,7 @@ module.exports = function(knex) {
     });
 
     it('#2184 - should properly escape table name for SQLite columnInfo', function() {
-      if (knex.client.dialect !== 'sqlite3') {
+      if (knex.client.driverName !== 'sqlite3') {
         return;
       }
 
@@ -447,8 +450,8 @@ module.exports = function(knex) {
 
     it('should allow renaming a column', function() {
       var countColumn
-      switch (knex.client.dialect) {
-        case 'oracle': countColumn = 'COUNT(*)'; break;
+      switch (knex.client.driverName) {
+        case 'oracledb': countColumn = 'COUNT(*)'; break;
         case 'mssql': countColumn = ''; break;
         default: countColumn = 'count(*)'; break;
       }
@@ -467,7 +470,7 @@ module.exports = function(knex) {
           tester('pg', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('pg-redshift', ["alter table \"accounts\" rename \"about\" to \"about_col\""]);
           tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
-          tester('oracle', ["alter table \"accounts\" rename column \"about\" to \"about_col\""]);
+          tester('oracledb', ["DECLARE PK_NAME VARCHAR(200); IS_AUTOINC NUMBER := 0; BEGIN  EXECUTE IMMEDIATE ('ALTER TABLE \"accounts\" RENAME COLUMN \"about\" TO \"about_col\"');  SELECT COUNT(*) INTO IS_AUTOINC from \"USER_TRIGGERS\" where trigger_name = 'accounts_autoinc_trg';  IF (IS_AUTOINC > 0) THEN    SELECT cols.column_name INTO PK_NAME    FROM all_constraints cons, all_cons_columns cols    WHERE cons.constraint_type = 'P'    AND cons.constraint_name = cols.constraint_name    AND cons.owner = cols.owner    AND cols.table_name = 'accounts';    IF ('about_col' = PK_NAME) THEN      EXECUTE IMMEDIATE ('DROP TRIGGER \"accounts_autoinc_trg\"');      EXECUTE IMMEDIATE ('create or replace trigger \"accounts_autoinc_trg\"      BEFORE INSERT on \"accounts\" for each row        declare        checking number := 1;        begin          if (:new.\"about_col\" is null) then            while checking >= 1 loop              select \"accounts_seq\".nextval into :new.\"about_col\" from dual;              select count(\"about_col\") into checking from \"accounts\"              where \"about_col\" = :new.\"about_col\";            end loop;          end if;        end;');    end if;  end if;END;"]);
           tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
         });
       }).then(function() {
@@ -489,8 +492,8 @@ module.exports = function(knex) {
 
     it('should allow dropping a column', function() {
       var countColumn;
-      switch (knex.client.dialect) {
-        case 'oracle': countColumn = 'COUNT(*)'; break;
+      switch (knex.client.driverName) {
+        case 'oracledb': countColumn = 'COUNT(*)'; break;
         case 'mssql': countColumn = ''; break;
         default: countColumn = 'count(*)'; break;
       }
@@ -505,7 +508,7 @@ module.exports = function(knex) {
           tester('pg', ['alter table "accounts" drop column "first_name"']);
           tester('pg-redshift', ['alter table "accounts" drop column "first_name"']);
           tester('sqlite3', ["PRAGMA table_info(`accounts`)"]);
-          tester('oracle', ['alter table "accounts" drop ("first_name")']);
+          tester('oracledb', ['alter table "accounts" drop ("first_name")']);
           //tester('oracledb', ['alter table "accounts" drop ("first_name")']);
           tester('mssql', ["ALTER TABLE [accounts] DROP COLUMN [first_name]"]);
         });
@@ -522,32 +525,32 @@ module.exports = function(knex) {
 
 
     it('.timeout() should throw TimeoutError', function() {
-      var dialect = knex.client.dialect;
-      if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
-      if (/redshift/.test(dialect)) { return; }
+      var driverName = knex.client.driverName;
+      if(driverName === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+      if (/redshift/.test(driverName)) { return; }
       var testQueries = {
-        'postgresql': function() {
+        pg: function() {
           return knex.raw('SELECT pg_sleep(1)');
         },
-        'mysql': function() {
+        mysql: function() {
           return knex.raw('SELECT SLEEP(1)');
         },
-        'mysql2': function() {
+        mysql2: function() {
           return knex.raw('SELECT SLEEP(1)');
         },
         mssql: function() {
           return knex.raw('WAITFOR DELAY \'00:00:01\'');
         },
-        oracle: function() {
+        oracledb: function() {
           return knex.raw('begin dbms_lock.sleep(1); end;');
         }
       };
 
-      if(!testQueries.hasOwnProperty(dialect)) {
-        throw new Error('Missing test query for dialect: ' + dialect);
+      if(!testQueries.hasOwnProperty(driverName)) {
+        throw new Error('Missing test query for driver: ' + driverName);
       }
 
-      var query = testQueries[dialect]();
+      var query = testQueries[driverName]();
 
       return query.timeout(200)
         .then(function() {
@@ -564,9 +567,9 @@ module.exports = function(knex) {
 
 
     it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
-      var dialect = knex.client.dialect;
-      if(dialect === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
-      if (/redshift/.test(dialect)) { return; }
+      var driverName = knex.client.driverName;
+      if(driverName === 'sqlite3') { return; } //TODO -- No built-in support for sleeps
+      if (/redshift/.test(driverName)) { return; }
 
       // There's unexpected behavior caused by knex releasing a connection back
       // to the pool because of a timeout when a long query is still running.
@@ -574,35 +577,35 @@ module.exports = function(knex) {
       // until the first query finishes. Setting a sleep time longer than the
       // mocha timeout exposes this behavior.
       var testQueries = {
-        'postgresql': function() {
+        pg: function() {
           return knex.raw('SELECT pg_sleep(10)');
         },
-        'mysql': function() {
+        mysql: function() {
           return knex.raw('SELECT SLEEP(10)');
         },
-        'mysql2': function() {
+        mysql2: function() {
           return knex.raw('SELECT SLEEP(10)');
         },
         mssql: function() {
           return knex.raw('WAITFOR DELAY \'00:00:10\'');
         },
-        oracle: function() {
+        oracledb: function() {
           return knex.raw('begin dbms_lock.sleep(10); end;');
         }
       };
 
-      if(!testQueries.hasOwnProperty(dialect)) {
-        throw new Error('Missing test query for dialect: ' + dialect);
+      if(!testQueries.hasOwnProperty(driverName)) {
+        throw new Error('Missing test query for driverName: ' + driverName);
       }
 
-      var query = testQueries[dialect]();
+      var query = testQueries[driverName]();
 
       function addTimeout() {
         return query.timeout(200, {cancel: true});
       }
 
       // Only mysql query cancelling supported for now
-      if (!_.startsWith(dialect, "mysql")) {
+      if (!_.startsWith(driverName, "mysql")) {
         expect(addTimeout).to.throw("Query cancelling not supported for this dialect");
         return;
       }
@@ -637,8 +640,8 @@ module.exports = function(knex) {
 
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
       // Only mysql query cancelling supported for now
-      var dialect = knex.client.config.dialect;
-      if (!_.startsWith(dialect, "mysql")) {
+      var driverName = knex.client.config.driverName;
+      if (!_.startsWith(driverName, "mysql")) {
         return;
       }
 
@@ -659,7 +662,7 @@ module.exports = function(knex) {
             name:    'TimeoutError',
             message: 'After query timeout of 1ms exceeded, cancelling of query failed.'
           });
-        });
+        }).finally(() => knexDb.destroy());
     });
 
     it('Event: query-response', function() {

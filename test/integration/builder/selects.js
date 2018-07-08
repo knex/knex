@@ -44,7 +44,7 @@ module.exports = function(knex) {
             [1, 2, 3, 4, 5, 6]
           );
           tester(
-            'oracle',
+            'oracledb',
             "select \"id\" from \"accounts\" order by \"id\" asc",
             [],
             [1, 2, 3, 4, 5, 7]
@@ -86,8 +86,8 @@ module.exports = function(knex) {
             [1, 2, 3, 4, 5, 6]
           );
           tester(
-            'oracle',
-            'select  "accounts"."id" from "accounts" order by "accounts"."id" asc',
+            'oracledb',
+            'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
             [1, 2, 3, 4, 5, 7]
           );
@@ -128,7 +128,7 @@ module.exports = function(knex) {
             [3, 4, 5, 6]
           );
           tester(
-            'oracle',
+            'oracledb',
             "select * from (select row_.*, ROWNUM rownum_ from (select \"id\" from \"accounts\" order by \"id\" asc) row_ where rownum <= ?) where rownum_ > ?",
             [10000000000002, 2],
             [3, 4, 5, 7]
@@ -170,7 +170,7 @@ module.exports = function(knex) {
             { id: 1, first_name: 'Test' }
           );
           tester(
-            'oracle',
+            'oracledb',
             "select * from (select \"id\", \"first_name\" from \"accounts\" order by \"id\" asc) where rownum <= ?",
             [1],
             { id: 1, first_name: 'Test' }
@@ -205,7 +205,7 @@ module.exports = function(knex) {
     });
 
     it('allows you to stream with mysql dialect options', function() {
-      if (!_.includes(['mysql', 'mysql2'], knex.client.dialect)) {
+      if (!_.includes(['mysql', 'mysql2'], knex.client.driverName)) {
         return
       }
       const rows = []
@@ -318,7 +318,7 @@ module.exports = function(knex) {
         .orderBy('id', 'desc')
         .testSql(function(tester) {
           tester(
-            'oracle',
+            'oracledb',
             "select \"id\" from \"accounts\" order by \"id\" desc",
             [],
             [7, 5, 4, 3, 2, 1]
@@ -377,7 +377,7 @@ module.exports = function(knex) {
               }]
             );
             tester(
-              'oracle',
+              'oracledb',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
               [1],
               [{
@@ -440,7 +440,7 @@ module.exports = function(knex) {
               }]
             );
             tester(
-              'oracle',
+              'oracledb',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
               [1],
               [{
@@ -487,7 +487,7 @@ module.exports = function(knex) {
               [1]
             );
             tester(
-              'oracle',
+              'oracledb',
               'select "email", "logins" from "accounts" where "id" > ?',
               [1]
             );
@@ -574,7 +574,7 @@ module.exports = function(knex) {
               }]
             );
             tester(
-              'oracle',
+              'oracledb',
               'select * from "accounts" where "id" = ?',
               [1],
               [{
@@ -641,7 +641,7 @@ module.exports = function(knex) {
               []
             );
             tester(
-              'oracle',
+              'oracledb',
               'select "first_name", "email" from "accounts" where "id" is null',
               [],
               []
@@ -687,7 +687,7 @@ module.exports = function(knex) {
               []
             );
             tester(
-              'oracle',
+              'oracledb',
               'select * from "accounts" where "id" = ?',
               [0],
               []
@@ -741,7 +741,7 @@ module.exports = function(knex) {
     });
 
     it('handles multi-column "where in" cases', function() {
-      if (knex.client.dialect !== 'sqlite3' && knex.client.dialect !== 'mssql') {
+      if (knex.client.driverName !== 'sqlite3' && knex.client.driverName !== 'mssql') {
         return knex('composite_key_test')
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
           .orderBy('status', 'desc')
@@ -792,8 +792,8 @@ module.exports = function(knex) {
                   status: 0
                 },
               ]); 
-            tester('oracle',
-              'select * from "composite_key_test" where ("column_a","column_b") in ((?, ?),(?, ?)) order by "status" desc',
+            tester('oracledb',
+              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
               [1,1,1,2],
               [{
                 column_a: 1,
@@ -811,7 +811,7 @@ module.exports = function(knex) {
     });
 
     it('handles multi-column "where in" cases with where', function() {
-      if (knex.client.dialect !== 'sqlite3' && knex.client.dialect !== 'mssql') {
+      if (knex.client.driverName !== 'sqlite3' && knex.client.driverName !== 'mssql') {
         return knex('composite_key_test')
           .where('status', 1)
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
@@ -844,8 +844,8 @@ module.exports = function(knex) {
                 details: 'One, One, One',
                 status: 1
               }]);
-            tester('oracle',
-              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?),(?, ?))',
+            tester('oracledb',
+              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
               [1,1,1,1,2],
               [{
                 column_a: 1,
@@ -877,7 +877,7 @@ module.exports = function(knex) {
     });
 
     it('does where(raw)', function() {
-      if (knex.client.dialect === 'oracle') {
+      if (knex.client.driverName === 'oracledb') {
         // special case for oracle
         return knex('accounts')
           .whereExists(function() {
@@ -908,7 +908,7 @@ module.exports = function(knex) {
     });
 
     it("Allows for knex.Raw passed to the `where` clause", function() {
-      if (knex.client.dialect === 'oracle') {
+      if (knex.client.driverName === 'oracledb') {
         return knex('accounts').where(knex.raw('"id" = 2')).select('email', 'logins');
       } else {
         return knex('accounts').where(knex.raw('id = 2')).select('email', 'logins');
@@ -928,7 +928,7 @@ module.exports = function(knex) {
     });
 
     it('always returns the response object from raw', function() {
-      if (knex.client.dialect === 'postgresql') {
+      if (knex.client.driverName === 'pg') {
         return knex.raw('select id from accounts').then(function(resp) {
           assert(Array.isArray(resp.rows) === true);
         });
@@ -936,7 +936,7 @@ module.exports = function(knex) {
     });
 
     it('properly escapes identifiers, #737', function() {
-      if (knex.client.dialect === 'postgresql') {
+      if (knex.client.driverName === 'pg') {
         const query = knex.select('id","name').from('test').toSQL();
         assert(query.sql === 'select "id"",""name" from "test"');
       }
@@ -957,7 +957,7 @@ module.exports = function(knex) {
     });
 
     it('select for update locks selected row', function() {
-      if (knex.client.dialect === 'sqlite3') { 
+      if (knex.client.driverName === 'sqlite3') { 
         return;
       }
 
@@ -978,7 +978,7 @@ module.exports = function(knex) {
     });  
 
     it('select for share prevents updating in other transaction', function() {
-      if (knex.client.dialect === 'sqlite3' || knex.client.dialect === 'oracle') {
+      if (knex.client.driverName === 'sqlite3' || knex.client.driverName === 'oracledb') {
         return;
       }
 
@@ -997,7 +997,7 @@ module.exports = function(knex) {
           }).catch(err => {
             // mssql fails because it tires to rollback at the same time when update query is running
             // hopefully for share really works though...
-            if (knex.client.dialect == 'mssql') {
+            if (knex.client.driverName == 'mssql') {
               expect(err.message).to.be.contain("Can't rollback transaction. There is a request in progress");
             } else {
               expect(err.message).to.be.contain('Defined query timeout of 100ms exceeded when running query');

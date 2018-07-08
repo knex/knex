@@ -50,7 +50,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'oracle',
+            'oracledb',
             'select sum("logins") from "accounts"',
             [],
             [{
@@ -83,12 +83,12 @@ module.exports = function(knex) {
         tester('mysql', 'select avg(`logins`) from `accounts`', [], checkResRange.bind(null, 'avg(`logins`)'));
         // sqlite: 1.6666666666666667
         tester('sqlite3', 'select avg(`logins`) from `accounts`', [], checkResRange.bind(null, 'avg(`logins`)'));
-        // postgres: '1.6666666666666667'
+        // pg: '1.6666666666666667'
         tester('pg', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'avg'));
-        // postgres: '1.6666666666666667'
+        // pg-redshift: '1.6666666666666667'
         tester('pg-redshift', 'select avg("logins") from "accounts"', [], checkResRangeMssql.bind(null, 'avg'));
         // oracle: 1.66666666666667
-        tester('oracle', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'AVG("LOGINS")'));
+        tester('oracledb', 'select avg("logins") from "accounts"', [], checkResRange.bind(null, 'AVG("LOGINS")'));
         // mssql: 1
         tester('mssql', 'select avg([logins]) from [accounts]', [], checkResRangeMssql.bind(null, ''));
       });
@@ -131,7 +131,7 @@ module.exports = function(knex) {
           }]
         );
         tester(
-          'oracle',
+          'oracledb',
           'select count("id") from "accounts"',
           [],
           [{
@@ -194,7 +194,7 @@ module.exports = function(knex) {
           }]
         );
         tester(
-          'oracle',
+          'oracledb',
           'select count("id"), max("logins"), min("logins") from "accounts"',
           [],
           [{
@@ -259,13 +259,13 @@ module.exports = function(knex) {
             }]
         );
         tester(
-            'oracle',
+            'oracledb',
             'select count(distinct "id"), sum(distinct "logins"), avg(distinct "logins") from "accounts"',
             [],
             [{
-              'COUNT(DISTINCT "ID")': 6,
-              'SUM(DISTINCT "LOGINS")': 3,
-              'AVG(DISTINCT "LOGINS")': 1.5
+              'COUNT(DISTINCT"ID")': 6,
+              'SUM(DISTINCT"LOGINS")': 3,
+              'AVG(DISTINCT"LOGINS")': 1.5
             }]
         );
         tester(
@@ -281,7 +281,7 @@ module.exports = function(knex) {
     });
 
     const testWithMultipleColumns = knex.client.driverName === 'mysql' || 
-      knex.client.driverName === 'postgresql';
+      knex.client.driverName === 'pg';
 
     it('supports countDistinct with multiple columns', function() {
       if (!testWithMultipleColumns) {
@@ -380,7 +380,7 @@ module.exports = function(knex) {
           }]
         );
         tester(
-          'oracle',
+          'oracledb',
           'select count("id") from "accounts" group by "logins" order by "logins" asc',
           [],
           [{
@@ -435,7 +435,7 @@ module.exports = function(knex) {
             }]
           );
           tester(
-            'oracle',
+            'oracledb',
             'select count("id") from "accounts" group by "first_name"',
             [],
             [{
