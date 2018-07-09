@@ -25,7 +25,12 @@ matrix:
   - node_js: "10"
     env: TEST_ORACLEDB=true NODE_VER=6 KNEX_TEST_TIMEOUT=60000
   allow_failures:
-  - env: TEST_ORACLEDB=true
+  - node_js: "10"
+    env: TEST_ORACLEDB=true NODE_VER=10 KNEX_TEST_TIMEOUT=60000
+  - node_js: "10"
+    env: TEST_ORACLEDB=true NODE_VER=8 KNEX_TEST_TIMEOUT=60000
+  - node_js: "10"
+    env: TEST_ORACLEDB=true NODE_VER=6 KNEX_TEST_TIMEOUT=60000
 
 install:
   - if [ -z $TEST_ORACLEDB ]; then npm i; fi
