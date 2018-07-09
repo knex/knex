@@ -8,19 +8,22 @@ const toxicli = new toxiproxy.Toxiproxy('http://localhost:8474');
 const rp = require('request-promise-native');
 const _ = require('lodash');
 
-async function stdMysqlQuery(con, sql) {  
+async function stdMysqlQuery(con, sql) {
   return new Promise((resolve, reject) => {
     try {
-      con.query({
-        sql,
-        timeout: 500
-      }, function (error, results, fields) {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results);
+      con.query(
+        {
+          sql,
+          timeout: 500,
+        },
+        function(error, results, fields) {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
         }
-      });    
+      );
     } catch (err) {
       reject(err); // double sure...
     }
@@ -28,7 +31,7 @@ async function stdMysqlQuery(con, sql) {
 }
 
 const mysql2 = require('mysql2');
-let mysql2Con = {_fatalError: 'initmefirst'};
+let mysql2Con = { _fatalError: 'initmefirst' };
 async function mysql2Query(sql) {
   // recreate connection on fatal error
   if (mysql2Con._fatalError) {
@@ -39,9 +42,9 @@ async function mysql2Query(sql) {
       password: 'mysqlrootpassword',
       port: 23306,
       connectTimeout: 500,
-      debug: true
+      debug: true,
     });
-    mysql2Con.on('error', err => {
+    mysql2Con.on('error', (err) => {
       console.log('- STATS Mysql2 connection died:', err);
     });
   }
@@ -53,7 +56,7 @@ async function mysql2Query(sql) {
 
 const counters = {};
 function setMysqlQueryCounters(name) {
-  const counts = counters[name] = {queries: 0, results: 0, errors: 0};
+  const counts = (counters[name] = { queries: 0, results: 0, errors: 0 });
 }
 setMysqlQueryCounters('mysql2');
 
@@ -63,41 +66,49 @@ setInterval(() => {
   const reqsPerSec = {};
   for (let key of Object.keys(counters)) {
     reqsPerSec[key] = {
-      queries: (counters[key].queries - lastCounters[key].queries),
-      results: (counters[key].results - lastCounters[key].results),
-      errors: (counters[key].errors - lastCounters[key].errors),
-    }
+      queries: counters[key].queries - lastCounters[key].queries,
+      results: counters[key].results - lastCounters[key].results,
+      errors: counters[key].errors - lastCounters[key].errors,
+    };
   }
-  console.log('------------------------ STATS PER SECOND ------------------------');
-  console.dir(reqsPerSec, {colors: true});
-  console.log('------------------------------- EOS ------------------------------');
+  console.log(
+    '------------------------ STATS PER SECOND ------------------------'
+  );
+  console.dir(reqsPerSec, { colors: true });
+  console.log(
+    '------------------------------- EOS ------------------------------'
+  );
   lastCounters = _.cloneDeep(counters);
-}, 1000);  
+}, 1000);
 
 async function recreateProxy(serviceName, listenPort, proxyToPort) {
   try {
     await rp.delete({
-      url: `${toxicli.host}/proxies/${serviceName}`
-    });  
-  } catch(err) {}
+      url: `${toxicli.host}/proxies/${serviceName}`,
+    });
+  } catch (err) {}
 
   const proxy = await toxicli.createProxy({
     name: serviceName,
     listen: `0.0.0.0:${listenPort}`,
-    upstream: `${serviceName}:${proxyToPort}`
+    upstream: `${serviceName}:${proxyToPort}`,
   });
 
   // add some latency
-  await proxy.addToxic(new toxiproxy.Toxic(proxy, {
-    type: 'latency',
-    attributes: {latency: 1, jitter: 1}
-  }));
+  await proxy.addToxic(
+    new toxiproxy.Toxic(proxy, {
+      type: 'latency',
+      attributes: { latency: 1, jitter: 1 },
+    })
+  );
 
   // cause connections to be closed every some transferred bytes
-  await proxy.addToxic(new toxiproxy.Toxic(proxy, {
-    type: 'limit_data',
-    attributes: {bytes: 1000}
-  }));
+  await proxy.addToxic(
+    new toxiproxy.Toxic(proxy, {
+      type: 'limit_data',
+      attributes: { bytes: 1000 },
+    })
+  );
 }
 
 async function main() {
@@ -107,7 +118,7 @@ async function main() {
   async function loopQueries(prefix, query) {
     const counts = counters[prefix];
 
-    while(true) {
+    while (true) {
       try {
         counts.queries += 1;
         // without this delay we might endup to busy failure loop
@@ -124,9 +135,11 @@ async function main() {
   loopQueries('mysql2', () => mysql2Query('select 1'));
 
   // wait forever
-  while(true) {
+  while (true) {
     await Bluebird.delay(1000);
   }
 }
 
-main().then(() => console.log('DONE')).catch(err => console.log(err));
+main()
+  .then(() => console.log('DONE'))
+  .catch((err) => console.log(err));

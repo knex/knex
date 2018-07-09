@@ -1,20 +1,18 @@
-
 // PostgreSQL Column Compiler
 // -------
 
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
 
-import { assign } from 'lodash'
+import { assign } from 'lodash';
 
 function ColumnCompiler_PG() {
   ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['nullable', 'defaultTo', 'comment']
+  this.modifiers = ['nullable', 'defaultTo', 'comment'];
 }
 inherits(ColumnCompiler_PG, ColumnCompiler);
 
 assign(ColumnCompiler_PG.prototype, {
-
   // Types
   // ------
   bigincrements: 'bigserial primary key',
@@ -35,7 +33,9 @@ assign(ColumnCompiler_PG.prototype, {
     const values = allowed.join("', '");
 
     if (options.useNative) {
-      this.tableCompiler.unshiftQuery(`create type "${options.enumName}" as enum ('${values}')`);
+      this.tableCompiler.unshiftQuery(
+        `create type "${options.enumName}" as enum ('${values}')`
+      );
 
       return `"${options.enumName}"`;
     }
@@ -50,14 +50,14 @@ assign(ColumnCompiler_PG.prototype, {
   floating: 'real',
   increments: 'serial primary key',
   json(jsonb) {
-    if (jsonb) this.client.logger.deprecate('json(true)', 'jsonb()')
+    if (jsonb) this.client.logger.deprecate('json(true)', 'jsonb()');
     return jsonColumn(this.client, jsonb);
   },
   jsonb() {
     return jsonColumn(this.client, true);
   },
   smallint: 'smallint',
-  tinyint:  'smallint',
+  tinyint: 'smallint',
   datetime(without) {
     return without ? 'timestamp' : 'timestamptz';
   },
@@ -72,15 +72,19 @@ assign(ColumnCompiler_PG.prototype, {
     const columnName = this.args[0] || this.defaults('columnName');
 
     this.pushAdditional(function() {
-      this.pushQuery(`comment on column ${this.tableCompiler.tableName()}.` +
-        this.formatter.wrap(columnName) + " is " + (comment ? `'${comment}'` : 'NULL'));
+      this.pushQuery(
+        `comment on column ${this.tableCompiler.tableName()}.` +
+          this.formatter.wrap(columnName) +
+          ' is ' +
+          (comment ? `'${comment}'` : 'NULL')
+      );
     }, comment);
-  }
-
-})
+  },
+});
 
 function jsonColumn(client, jsonb) {
-  if (!client.version || parseFloat(client.version) >= 9.2) return jsonb ? 'jsonb' : 'json';
+  if (!client.version || parseFloat(client.version) >= 9.2)
+    return jsonb ? 'jsonb' : 'json';
   return 'text';
 }
 

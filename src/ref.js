@@ -6,9 +6,9 @@ class Ref extends Raw {
   constructor(client, ref) {
     super(client);
 
-    this.ref     = ref;
+    this.ref = ref;
     this._schema = null;
-    this._alias  = null;
+    this._alias = null;
   }
 
   withSchema(schema) {
@@ -24,17 +24,13 @@ class Ref extends Raw {
   }
 
   toSQL() {
-    const string = this._schema
-      ? `${this._schema}.${this.ref}`
-      : this.ref;
+    const string = this._schema ? `${this._schema}.${this.ref}` : this.ref;
 
     const formatter = this.client.formatter(this);
 
     const ref = formatter.columnize(string);
 
-    const sql = this._alias
-      ? `${ref} as ${formatter.wrap(this._alias)}`
-      : ref;
+    const sql = this._alias ? `${ref} as ${formatter.wrap(this._alias)}` : ref;
 
     this.set(sql, []);
 
@@ -42,4 +38,4 @@ class Ref extends Raw {
   }
 }
 
-export default Ref
+export default Ref;
