@@ -5,8 +5,8 @@ import {
   isUndefined,
   isPlainObject,
   isArray,
-  isTypedArray
-} from 'lodash'
+  isTypedArray,
+} from 'lodash';
 
 // Check if the first argument is an array, otherwise uses all arguments as an
 // array.
@@ -24,23 +24,22 @@ export function normalizeArr() {
 export function containsUndefined(mixed) {
   let argContainsUndefined = false;
 
-  if (isTypedArray(mixed))
-    return false;
+  if (isTypedArray(mixed)) return false;
 
-  if(mixed && isFunction(mixed.toSQL)) {
+  if (mixed && isFunction(mixed.toSQL)) {
     //Any QueryBuilder or Raw will automatically be validated during compile.
     return argContainsUndefined;
   }
 
-  if(isArray(mixed)) {
-    for(let i = 0; i < mixed.length; i++) {
-      if(argContainsUndefined) break;
+  if (isArray(mixed)) {
+    for (let i = 0; i < mixed.length; i++) {
+      if (argContainsUndefined) break;
       argContainsUndefined = this.containsUndefined(mixed[i]);
     }
-  } else if(isPlainObject(mixed)) {
-    for(const key in mixed) {
+  } else if (isPlainObject(mixed)) {
+    for (const key in mixed) {
       if (mixed.hasOwnProperty(key)) {
-        if(argContainsUndefined) break;
+        if (argContainsUndefined) break;
         argContainsUndefined = this.containsUndefined(mixed[key]);
       }
     }
@@ -60,5 +59,5 @@ export function addQueryContext(Target) {
     }
     this._queryContext = context;
     return this;
-  }
+  };
 }

@@ -1,14 +1,13 @@
-
 // MySQL Column Compiler
 // -------
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
 
-import { assign } from 'lodash'
+import { assign } from 'lodash';
 
 function ColumnCompiler_MSSQL() {
   ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['nullable', 'defaultTo', 'first', 'after', 'comment']
+  this.modifiers = ['nullable', 'defaultTo', 'first', 'after', 'comment'];
 }
 inherits(ColumnCompiler_MSSQL, ColumnCompiler);
 
@@ -16,7 +15,6 @@ inherits(ColumnCompiler_MSSQL, ColumnCompiler);
 // ------
 
 assign(ColumnCompiler_MSSQL.prototype, {
-
   increments: 'int identity(1,1) not null primary key',
 
   bigincrements: 'bigint identity(1,1) not null primary key',
@@ -24,7 +22,7 @@ assign(ColumnCompiler_MSSQL.prototype, {
   bigint: 'bigint',
 
   double(precision, scale) {
-    return 'float'; 
+    return 'float';
   },
 
   floating(precision, scale) {
@@ -33,8 +31,8 @@ assign(ColumnCompiler_MSSQL.prototype, {
   },
 
   integer(length) {
-    length = length ? `(${this._num(length, 11)})` : ''
-    return `int${length}`
+    length = length ? `(${this._num(length, 11)})` : '';
+    return `int${length}`;
   },
 
   mediumint: 'int',
@@ -42,8 +40,8 @@ assign(ColumnCompiler_MSSQL.prototype, {
   smallint: 'smallint',
 
   tinyint(length) {
-    length = length ? `(${this._num(length, 1)})` : ''
-    return `tinyint${length}`
+    length = length ? `(${this._num(length, 1)})` : '';
+    return `tinyint${length}`;
   },
 
   varchar(length) {
@@ -74,7 +72,7 @@ assign(ColumnCompiler_MSSQL.prototype, {
   },
 
   binary(length) {
-    return length ? `varbinary(${this._num(length)})` : 'varbinary(max)'
+    return length ? `varbinary(${this._num(length)})` : 'varbinary(max)';
   },
 
   bool: 'bit',
@@ -83,11 +81,14 @@ assign(ColumnCompiler_MSSQL.prototype, {
   // ------
 
   defaultTo(value) {
-    const defaultVal = ColumnCompiler_MSSQL.super_.prototype.defaultTo.apply(this, arguments);
+    const defaultVal = ColumnCompiler_MSSQL.super_.prototype.defaultTo.apply(
+      this,
+      arguments
+    );
     if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
-      return defaultVal
+      return defaultVal;
     }
-    return ''
+    return '';
   },
 
   first() {
@@ -102,11 +103,12 @@ assign(ColumnCompiler_MSSQL.prototype, {
 
   comment(comment) {
     if (comment && comment.length > 255) {
-      this.client.logger.warn('Your comment is longer than the max comment length for MSSQL')
+      this.client.logger.warn(
+        'Your comment is longer than the max comment length for MSSQL'
+      );
     }
-    return ''
-  }
-
-})
+    return '';
+  },
+});
 
 export default ColumnCompiler_MSSQL;
