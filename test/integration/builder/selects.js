@@ -1106,12 +1106,11 @@ module.exports = function(knex) {
       ) {
         return;
       }
-
-      return knex('test_default_table')
-        .insert({ string: 'making sure there is a row to lock' })
-        .then(() => {
-          return knex
-            .transaction((trx) => {
+      return (
+        knex('test_default_table')
+          .insert({ string: 'making sure there is a row to lock' })
+          .then(() => {
+            return knex.transaction((trx) => {
               // select all from test table and lock
               return trx('test_default_table')
                 .forShare()
@@ -1123,24 +1122,27 @@ module.exports = function(knex) {
                       .timeout(100);
                   });
                 });
-            })
-            .then((res) => {
-              expect('Second query should have timed out').to.be.false;
-            })
-            .catch((err) => {
-              // mssql fails because it tires to rollback at the same time when update query is running
-              // hopefully for share really works though...
-              if (knex.client.driverName == 'mssql') {
-                expect(err.message).to.be.contain(
-                  "Can't rollback transaction. There is a request in progress"
-                );
-              } else {
-                expect(err.message).to.be.contain(
-                  'Defined query timeout of 100ms exceeded when running query'
-                );
-              }
             });
-        });
+          })
+          // If it takes longer than this, the transaction has errored.
+          .timeout(300)
+          .then((res) => {
+            expect('Second query should have timed out').to.be.false;
+          })
+          .catch((err) => {
+            // mssql fails because it tires to rollback at the same time when update query is running
+            // hopefully for share really works though...
+            if (knex.client.driverName == 'mssql') {
+              expect(err.message).to.be.contain(
+                "Can't rollback transaction. There is a request in progress"
+              );
+            } else {
+              expect(err.message).to.be.contain(
+                'Defined query timeout of 100ms exceeded when running query'
+              );
+            }
+          })
+      );
     });
   });
 };
