@@ -20,6 +20,7 @@ bin/db.sqlite3
 # Bench stuff
 test/bench/temp
 test/coverage/*
+.nyc_output
 
 #VsCode workspace
 .vscode
