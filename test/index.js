@@ -4,16 +4,16 @@
 
 require('source-map-support').install();
 
-global.sinon = require("sinon");
+global.sinon = require('sinon');
 
-const chai = global.chai = require("chai");
+const chai = (global.chai = require('chai'));
 
-chai.use(require("sinon-chai"));
+chai.use(require('sinon-chai'));
 chai.should();
 
-const Promise   = global.testPromise = require('bluebird');
+const Promise = (global.testPromise = require('bluebird'));
 global.expect = chai.expect;
-global.d      = new Date();
+global.d = new Date();
 
 Promise.longStackTraces();
 
@@ -30,12 +30,12 @@ describe('Query Building Tests', function() {
   require('./unit/schema/mssql');
   require('./unit/schema/oracledb');
   require('./unit/migrate/migration-list-resolver');
-  require('./unit/seed/seeder')
+  require('./unit/seed/seeder');
 });
 
 describe('Integration Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-  require('./integration')
+  require('./integration');
 });
 
 const config = require('./knexfile');
@@ -46,6 +46,6 @@ if (config.oracledb) {
   });
 }
 
-if(config.postgres) {
+if (config.postgres) {
   require('./unit/dialects/postgres');
 }

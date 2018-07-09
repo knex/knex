@@ -10,7 +10,10 @@ describe('migration-list-resolver', () => {
   describe('listAll', () => {
     let absoluteConfigDirectory;
     before(() => {
-      absoluteConfigDirectory = path.resolve(process.cwd(), 'test/integration/migrate/migration');
+      absoluteConfigDirectory = path.resolve(
+        process.cwd(),
+        'test/integration/migrate/migration'
+      );
       mockFs({
         'test/integration/migrate/migration': {
           'co-migration.co': 'co migation content',
@@ -21,8 +24,8 @@ describe('migration-list-resolver', () => {
           'litcoffee-migration.litcoffee': 'litcoffee migation content',
           'ls-migration.ls': 'ls migation content',
           'ts-migration.ts': 'ts migation content',
-          'useless.txt': 'i am not a migration'
-        }
+          'useless.txt': 'i am not a migration',
+        },
       });
     });
 
@@ -31,7 +34,8 @@ describe('migration-list-resolver', () => {
     });
 
     it('should include all supported extensions by default', () => {
-      return migrationListResolver.listAll(absoluteConfigDirectory)
+      return migrationListResolver
+        .listAll(absoluteConfigDirectory)
         .then((list) => {
           expect(list).to.eql([
             'co-migration.co',
@@ -41,19 +45,17 @@ describe('migration-list-resolver', () => {
             'js-migration.js',
             'litcoffee-migration.litcoffee',
             'ls-migration.ls',
-            'ts-migration.ts'
-          ])
-        })
+            'ts-migration.ts',
+          ]);
+        });
     });
 
-    it('should include only files with specified extensions', function () {
-      return migrationListResolver.listAll(absoluteConfigDirectory, ['.ts', '.js'])
+    it('should include only files with specified extensions', function() {
+      return migrationListResolver
+        .listAll(absoluteConfigDirectory, ['.ts', '.js'])
         .then((list) => {
-          expect(list).to.eql([
-            'js-migration.js',
-            'ts-migration.ts',
-          ])
-        })
+          expect(list).to.eql(['js-migration.js', 'ts-migration.ts']);
+        });
     });
   });
 });
