@@ -97,6 +97,31 @@ function testquery(chain, valuesToCheck, selectedClients) {
   })
 }
 
+function testToWhereClauseSQL(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
+  Object.keys(valuesToCheck).forEach(function(key) {
+    var newChain = chain.clone()
+    newChain.client = selectedClients[key]
+    var result = newChain.toWhereClauseSQL()
+    var expectedSql = valuesToCheck[key].sql;
+    var expectedBindings = valuesToCheck[key].bindings;
+    expect(result.sql).to.equal(expectedSql)
+    expect(result.bindings.length).to.equal(expectedBindings.length);
+    expect(result.bindings).to.deep.equal(expectedBindings);
+  })
+}
+
+function testToWhereClauseString(chain, valuesToCheck, selectedClients) {
+  selectedClients = selectedClients || clients;
+  Object.keys(valuesToCheck).forEach(function(key) {
+    var newChain = chain.clone()
+    newChain.client = selectedClients[key]
+    var sqlString  = newChain.toWhereClauseString()
+    var checkValue = valuesToCheck[key]
+    expect(checkValue).to.equal(sqlString)
+  })
+}
+
 describe("Custom identifier wrapping", function() {
   var customWrapperConfig = {
     wrapIdentifier: (value, clientImpl, context) => {
@@ -5521,6 +5546,101 @@ describe("QueryBuilder", function() {
         mssql: 'select [one], [sometable].[two] as [Two] from [sometable]',
         'pg-redshift': 'select "one", "sometable"."two" as "Two" from "sometable"',
         oracledb: 'select "one", "sometable"."two" as "Two" from "sometable"',
+      });
+    });
+  });
+
+  describe('toWhereClauseSQL()/toWhereClauseString()', function() {
+    var builder1 = qb().table('test').where('id', 1).andWhere('name', 'knex');
+    var builder2 = qb().table('test')
+      .where({
+        first_name: 'Test',
+        last_name: 'User',
+      })
+      .whereNot({
+        first_name: 'Test',
+        last_name: 'User',
+      })
+      .whereIn('id', [1,2,3])
+      .orWhereIn('id', [3,2,1])
+      .whereNull('updated_at')
+      .whereNotNull('updated_at')
+      .whereExists(function() {
+        this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+      })
+      .whereNotExists(function() {
+        this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+      })
+      .whereBetween('date', ['2018-01-01', '2018-06-28'])
+      .whereNotBetween('date', ['2018-01-01', '2018-06-28'])
+      .whereRaw('1 = ?', 0);
+
+    it('toWhereClauseSQL()', function() {
+      testToWhereClauseSQL(builder1, {
+        postgres: {
+          sql: '"id" = ? and "name" = ?',
+          bindings: [1, 'knex']
+        },
+        mysql: {
+          sql: '`id` = ? and `name` = ?',
+          bindings: [1, 'knex']
+        },
+        mssql: {
+          sql: '[id] = ? and [name] = ?',
+          bindings: [1, 'knex']
+        },
+        redshift: {
+          sql: '"id" = ? and "name" = ?',
+          bindings: [1, 'knex']
+        },
+        oracle: {
+          sql: '"id" = ? and "name" = ?',
+          bindings: [1, 'knex']
+        },
+      });
+
+      testToWhereClauseSQL(
+        builder2,
+        {
+          postgres: {
+            sql: '"first_name" = ? and "last_name" = ? and not "first_name" = ? and not "last_name" = ? and "id" in (?, ?, ?) or "id" in (?, ?, ?) and "updated_at" is null and "updated_at" is not null and exists (select * from "accounts" where users.account_id = accounts.id) and not exists (select * from "accounts" where users.account_id = accounts.id) and "date" between ? and ? and "date" not between ? and ? and 1 = ?',
+            bindings: ['Test', 'User', 'Test', 'User', 1, 2, 3, 3, 2, 1, '2018-01-01', '2018-06-28', '2018-01-01', '2018-06-28', 0]
+          },
+          mysql: {
+            sql: '`first_name` = ? and `last_name` = ? and not `first_name` = ? and not `last_name` = ? and `id` in (?, ?, ?) or `id` in (?, ?, ?) and `updated_at` is null and `updated_at` is not null and exists (select * from `accounts` where users.account_id = accounts.id) and not exists (select * from `accounts` where users.account_id = accounts.id) and `date` between ? and ? and `date` not between ? and ? and 1 = ?',
+            bindings: ['Test', 'User', 'Test', 'User', 1, 2, 3, 3, 2, 1, '2018-01-01', '2018-06-28', '2018-01-01', '2018-06-28', 0]
+          },
+          mssql: {
+            sql: '[first_name] = ? and [last_name] = ? and not [first_name] = ? and not [last_name] = ? and [id] in (?, ?, ?) or [id] in (?, ?, ?) and [updated_at] is null and [updated_at] is not null and exists (select * from [accounts] where users.account_id = accounts.id) and not exists (select * from [accounts] where users.account_id = accounts.id) and [date] between ? and ? and [date] not between ? and ? and 1 = ?',
+            bindings: ['Test', 'User', 'Test', 'User', 1, 2, 3, 3, 2, 1, '2018-01-01', '2018-06-28', '2018-01-01', '2018-06-28', 0]
+          },
+          redshift: {
+            sql: '"first_name" = ? and "last_name" = ? and not "first_name" = ? and not "last_name" = ? and "id" in (?, ?, ?) or "id" in (?, ?, ?) and "updated_at" is null and "updated_at" is not null and exists (select * from "accounts" where users.account_id = accounts.id) and not exists (select * from "accounts" where users.account_id = accounts.id) and "date" between ? and ? and "date" not between ? and ? and 1 = ?',
+            bindings: ['Test', 'User', 'Test', 'User', 1, 2, 3, 3, 2, 1, '2018-01-01', '2018-06-28', '2018-01-01', '2018-06-28', 0]
+          },
+          oracle: {
+            sql: '"first_name" = ? and "last_name" = ? and not "first_name" = ? and not "last_name" = ? and "id" in (?, ?, ?) or "id" in (?, ?, ?) and "updated_at" is null and "updated_at" is not null and exists (select * from "accounts" where users.account_id = accounts.id) and not exists (select * from "accounts" where users.account_id = accounts.id) and "date" between ? and ? and "date" not between ? and ? and 1 = ?',
+            bindings: ['Test', 'User', 'Test', 'User', 1, 2, 3, 3, 2, 1, '2018-01-01', '2018-06-28', '2018-01-01', '2018-06-28', 0]
+          },
+        }
+      );
+    });
+
+    it('toWhereClauseString()', function() {
+      testToWhereClauseString(builder1, {
+        postgres: '"id" = 1 and "name" = \'knex\'',
+        mysql: '`id` = 1 and `name` = \'knex\'',
+        mssql: '[id] = 1 and [name] = \'knex\'',
+        redshift: '"id" = 1 and "name" = \'knex\'',
+        oracle: '"id" = 1 and "name" = \'knex\'',
+      });
+
+      testToWhereClauseString(builder2, {
+        postgres: '"first_name" = \'Test\' and "last_name" = \'User\' and not "first_name" = \'Test\' and not "last_name" = \'User\' and "id" in (1, 2, 3) or "id" in (3, 2, 1) and "updated_at" is null and "updated_at" is not null and exists (select * from "accounts" where users.account_id = accounts.id) and not exists (select * from "accounts" where users.account_id = accounts.id) and "date" between \'2018-01-01\' and \'2018-06-28\' and "date" not between \'2018-01-01\' and \'2018-06-28\' and 1 = 0',
+        mysql: '`first_name` = \'Test\' and `last_name` = \'User\' and not `first_name` = \'Test\' and not `last_name` = \'User\' and `id` in (1, 2, 3) or `id` in (3, 2, 1) and `updated_at` is null and `updated_at` is not null and exists (select * from `accounts` where users.account_id = accounts.id) and not exists (select * from `accounts` where users.account_id = accounts.id) and `date` between \'2018-01-01\' and \'2018-06-28\' and `date` not between \'2018-01-01\' and \'2018-06-28\' and 1 = 0',
+        mssql: '[first_name] = \'Test\' and [last_name] = \'User\' and not [first_name] = \'Test\' and not [last_name] = \'User\' and [id] in (1, 2, 3) or [id] in (3, 2, 1) and [updated_at] is null and [updated_at] is not null and exists (select * from [accounts] where users.account_id = accounts.id) and not exists (select * from [accounts] where users.account_id = accounts.id) and [date] between \'2018-01-01\' and \'2018-06-28\' and [date] not between \'2018-01-01\' and \'2018-06-28\' and 1 = 0',
+        redshift: '"first_name" = \'Test\' and "last_name" = \'User\' and not "first_name" = \'Test\' and not "last_name" = \'User\' and "id" in (1, 2, 3) or "id" in (3, 2, 1) and "updated_at" is null and "updated_at" is not null and exists (select * from "accounts" where users.account_id = accounts.id) and not exists (select * from "accounts" where users.account_id = accounts.id) and "date" between \'2018-01-01\' and \'2018-06-28\' and "date" not between \'2018-01-01\' and \'2018-06-28\' and 1 = 0',
+        oracle: '"first_name" = \'Test\' and "last_name" = \'User\' and not "first_name" = \'Test\' and not "last_name" = \'User\' and "id" in (1, 2, 3) or "id" in (3, 2, 1) and "updated_at" is null and "updated_at" is not null and exists (select * from "accounts" where users.account_id = accounts.id) and not exists (select * from "accounts" where users.account_id = accounts.id) and "date" between \'2018-01-01\' and \'2018-06-28\' and "date" not between \'2018-01-01\' and \'2018-06-28\' and 1 = 0',
       });
     });
   });
