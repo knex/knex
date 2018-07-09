@@ -2,8 +2,8 @@
 
 var tape = require('tape');
 var omit = require('lodash/omit');
-var QueryBuilder = require('../../lib/query/builder');
-var Client = require('../../lib/client');
+var QueryBuilder = require('../../lib/query/builder').default;
+var Client = require('../../lib/client').default;
 
 tape('accumulates multiple update calls #647', function(t) {
   t.plan(1);

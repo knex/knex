@@ -1,7 +1,7 @@
 import { isUndefined } from 'lodash';
+import Promise from 'bluebird';
+import Transaction from '../../transaction';
 
-const Promise = require('bluebird');
-const Transaction = require('../../transaction');
 const debugTx = require('debug')('knex:tx');
 
 export default class Oracle_Transaction extends Transaction {

@@ -16,6 +16,7 @@ import {
 import Formatter from './formatter';
 import saveAsyncStack from './util/save-async-stack';
 import uuid from 'uuid';
+import interfaceFns from './interface';
 
 const debugBindings = debug('knex:bindings');
 
@@ -190,7 +191,7 @@ function replaceKeyBindings(raw, formatter) {
 
 // Allow the `Raw` object to be utilized with full access to the relevant
 // promise API.
-require('./interface')(Raw);
+interfaceFns(Raw);
 helpers.addQueryContext(Raw);
 
 export default Raw;

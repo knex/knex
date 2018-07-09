@@ -5,7 +5,7 @@ import { assign, isUndefined } from 'lodash';
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of
 // properly formatted / bound query strings.
-function SchemaCompiler(client, builder) {
+export function SchemaCompiler(client, builder) {
   this.builder = builder;
   this.client = client;
   this.schema = builder._schema;

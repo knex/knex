@@ -1,11 +1,11 @@
 import { isString, tail } from 'lodash';
-import ColumnCompiler from './columncompiler';
-import TableCompiler from './tablecompiler';
-import SchemaCompiler from './compiler';
 
 // Push a new query onto the compiled "sequence" stack,
 // creating a new formatter, returning the compiler.
 export function pushQuery(query) {
+  const { ColumnCompiler } = require('./columncompiler');
+  const { TableCompiler } = require('./tablecompiler');
+  const { SchemaCompiler } = require('./compiler');
   if (!query) return;
   if (isString(query)) {
     query = { sql: query };
@@ -43,6 +43,9 @@ export function pushAdditional(fn) {
 // Unshift a new query onto the compiled "sequence" stack,
 // creating a new formatter, returning the compiler.
 export function unshiftQuery(query) {
+  const { ColumnCompiler } = require('./columncompiler');
+  const { TableCompiler } = require('./tablecompiler');
+  const { SchemaCompiler } = require('./compiler');
   if (!query) return;
   if (isString(query)) {
     query = { sql: query };

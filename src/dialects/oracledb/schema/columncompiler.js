@@ -1,9 +1,8 @@
-const inherits = require('inherits');
-const ColumnCompiler_Oracle = require('../../oracle/schema/columncompiler');
-
+import inherits from 'inherits';
 import { assign } from 'lodash';
+import ColumnCompiler_Oracle from '../../oracle/schema/columncompiler';
 
-function ColumnCompiler_Oracledb() {
+export default function ColumnCompiler_Oracledb() {
   ColumnCompiler_Oracle.apply(this, arguments);
 }
 
@@ -20,5 +19,3 @@ assign(ColumnCompiler_Oracledb.prototype, {
     return without ? 'timestamp' : 'timestamp with local time zone';
   },
 });
-
-module.exports = ColumnCompiler_Oracledb;

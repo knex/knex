@@ -3,8 +3,8 @@
 'use strict';
 
 var sinon = require('sinon');
-var MySQL_Client = require('../../../lib/dialects/mysql');
-var MySQL2_Client = require('../../../lib/dialects/mysql2');
+var MySQL_Client = require('../../../lib/dialects/mysql').default;
+var MySQL2_Client = require('../../../lib/dialects/mysql2').default;
 
 module.exports = function(dialect) {
   describe(dialect + ' SchemaBuilder', function() {

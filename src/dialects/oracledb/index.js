@@ -1,18 +1,17 @@
 // Oracledb Client
 // -------
-const _ = require('lodash');
-const inherits = require('inherits');
-const QueryCompiler = require('./query/compiler');
-const ColumnCompiler = require('./schema/columncompiler');
-const BlobHelper = require('./utils').BlobHelper;
-const ReturningHelper = require('./utils').ReturningHelper;
-const Promise = require('bluebird');
-const stream = require('stream');
-const Transaction = require('./transaction');
-const Client_Oracle = require('../oracle');
-const Oracle_Formatter = require('../oracle/formatter');
+import _ from 'lodash';
+import inherits from 'inherits';
+import QueryCompiler from './query/compiler';
+import ColumnCompiler from './schema/columncompiler';
+import { BlobHelper, ReturningHelper } from './utils';
+import Promise from 'bluebird';
+import stream from 'stream';
+import Transaction from './transaction';
+import Client_Oracle from '../oracle';
+import Oracle_Formatter from '../oracle/formatter';
 
-function Client_Oracledb() {
+export default function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
   // Node.js only have 4 background threads by default, oracledb needs one by connection
   if (this.driver) {
@@ -404,5 +403,3 @@ class Oracledb_Formatter extends Oracle_Formatter {
     return this.unwrapRaw(value, true) || '?';
   }
 }
-
-module.exports = Client_Oracledb;

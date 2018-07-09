@@ -4,10 +4,7 @@ const debug = require('debug')('knex:tx');
 
 import { assign, isUndefined } from 'lodash';
 
-function Transaction_MySQL2() {
-  Transaction.apply(this, arguments);
-}
-inherits(Transaction_MySQL2, Transaction);
+class Transaction_MySQL2 extends Transaction {}
 
 assign(Transaction_MySQL2.prototype, {
   query(conn, sql, status, value) {

@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import { each, toArray } from 'lodash';
 import { addQueryContext } from '../helpers';
 import saveAsyncStack from '../util/save-async-stack';
+import interfaceFns from '../interface';
 
 // Constructor for the builder instance, typically called from
 // `knex.builder`, accepting the current `knex` instance,
@@ -65,7 +66,7 @@ each(
   }
 );
 
-require('../interface')(SchemaBuilder);
+interfaceFns(SchemaBuilder);
 addQueryContext(SchemaBuilder);
 
 SchemaBuilder.prototype.withSchema = function(schemaName) {

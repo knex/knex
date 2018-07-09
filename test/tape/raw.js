@@ -1,7 +1,7 @@
 'use strict';
 
-var Raw = require('../../lib/raw');
-var Client = require('../../lib/client');
+var Raw = require('../../lib/raw').default;
+var Client = require('../../lib/client').default;
 var test = require('tape');
 var _ = require('lodash');
 

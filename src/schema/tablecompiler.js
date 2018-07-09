@@ -16,7 +16,7 @@ import {
   isUndefined,
 } from 'lodash';
 
-function TableCompiler(client, tableBuilder) {
+export function TableCompiler(client, tableBuilder) {
   this.client = client;
   this.tableBuilder = tableBuilder;
   this.method = tableBuilder._method;

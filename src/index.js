@@ -28,7 +28,7 @@ export default function Knex(config) {
   } else {
     const clientName = config.client || config.dialect;
     Dialect = require(`./dialects/${aliases[clientName] ||
-      clientName}/index.js`);
+      clientName}/index.js`).default;
   }
   if (typeof config.connection === 'string') {
     config = assign({}, config, {

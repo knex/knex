@@ -1,10 +1,9 @@
-const _ = require('lodash');
-const inherits = require('inherits');
-const Oracle_Compiler = require('../../oracle/query/compiler');
-const ReturningHelper = require('../utils').ReturningHelper;
-const BlobHelper = require('../utils').BlobHelper;
+import _ from 'lodash';
+import inherits from 'inherits';
+import Oracle_Compiler from '../../oracle/query/compiler';
+import { ReturningHelper, BlobHelper } from '../utils';
 
-function Oracledb_Compiler(client, builder) {
+export default function Oracledb_Compiler(client, builder) {
   Oracle_Compiler.call(this, client, builder);
 }
 inherits(Oracledb_Compiler, Oracle_Compiler);
@@ -361,5 +360,3 @@ _.assign(Oracledb_Compiler.prototype, {
     return sql;
   },
 });
-
-module.exports = Oracledb_Compiler;

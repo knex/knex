@@ -24,6 +24,7 @@ import {
   includes,
 } from 'lodash';
 import saveAsyncStack from '../util/save-async-stack';
+import interfaceFns from '../interface';
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
@@ -1067,7 +1068,7 @@ Builder.prototype.into = Builder.prototype.table;
 Builder.prototype.del = Builder.prototype.delete;
 
 // Attach all of the top level promise methods that should be chainable.
-require('../interface')(Builder);
+interfaceFns(Builder);
 helpers.addQueryContext(Builder);
 
 export default Builder;

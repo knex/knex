@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape');
-var Client = require('../../lib/dialects/sqlite3');
+var Client = require('../../lib/dialects/sqlite3').default;
 var tarn = require('tarn');
 var Pool = tarn.Pool;
 var knexfile = require('../knexfile');

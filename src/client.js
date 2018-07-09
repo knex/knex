@@ -31,7 +31,7 @@ const debugBindings = require('debug')('knex:bindings');
 
 // The base client provides the general structure
 // for a dialect specific client object.
-function Client(config = {}) {
+export function Client(config = {}) {
   this.config = config;
   this.logger = new Logger(config);
 

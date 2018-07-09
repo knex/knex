@@ -5,9 +5,9 @@
 var tableSql;
 
 var sinon = require('sinon');
-var SQLite3_Client = require('../../../lib/dialects/sqlite3');
+var SQLite3_Client = require('../../../lib/dialects/sqlite3').default;
 var client = new SQLite3_Client({});
-var SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
+var SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl').default;
 
 var _ = require('lodash');
 var equal = require('assert').equal;
