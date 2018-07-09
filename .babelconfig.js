@@ -1,8 +1,15 @@
 'use strict';
 
-var isDev = process.env.npm_lifecycle_event === 'dev';
-var presets = [
-  ["env", Object.assign({"loose": true}, isDev ? {"targets": {"node": "current"}} : {})]
+const isDev = process.env.npm_lifecycle_event === 'dev';
+const presets = [
+  ["env",
+    Object.assign(
+      {"loose": true},
+      isDev ?
+        {"targets": {"node": "current"}} :
+        {"targets": {"node": "6"}}
+        )
+  ]
 ];
 
 module.exports = {

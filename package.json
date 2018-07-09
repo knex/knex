@@ -68,10 +68,8 @@
   "buildDependencies": [
     "babel-cli",
     "babel-plugin-add-module-exports",
-    "babel-plugin-lodash",
     "babel-plugin-transform-runtime",
-    "babel-preset-es2015",
-    "babel-preset-es2015-loose",
+    "babel-preset-env",
     "rimraf"
   ],
   "scripts": {
