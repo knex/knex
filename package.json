@@ -151,5 +151,12 @@
     "scripts/*"
   ],
   "license": "MIT",
-  "tonicExampleFilename": "scripts/runkit-example.js"
+  "tonicExampleFilename": "scripts/runkit-example.js",
+  "nyc": {
+    "check-coverage": true,
+    "lines": 100,
+    "statements": 100,
+    "functions": 100,
+    "branches": 100
+  }
 }
