@@ -1,7 +1,7 @@
 import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
 
-import { filter } from 'lodash';
+import { filter, values } from 'lodash';
 
 // Table Compiler
 // -------
@@ -132,7 +132,7 @@ TableCompiler_SQLite3.prototype.renameColumn = function(from, to) {
 
 TableCompiler_SQLite3.prototype.dropColumn = function() {
   const compiler = this;
-  const columns = Object.values(arguments);
+  const columns = values(arguments);
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {
