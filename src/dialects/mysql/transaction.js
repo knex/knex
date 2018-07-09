@@ -1,5 +1,4 @@
 import Transaction from '../../transaction';
-import inherits from 'inherits';
 import Debug from 'debug';
 import { assign, isUndefined } from 'lodash';
 

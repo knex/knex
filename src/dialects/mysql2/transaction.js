@@ -1,5 +1,4 @@
 import Transaction from '../../transaction';
-import inherits from 'inherits';
 const debug = require('debug')('knex:tx');
 
 import { assign, isUndefined } from 'lodash';
