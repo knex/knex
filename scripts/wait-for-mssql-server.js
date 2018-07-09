@@ -1,15 +1,15 @@
 const PAUSE_BETWEEN_CONNECTIONS = 2000;
-const CONNECTION_ATTEMPTS = 3 * 60 * 1000 / PAUSE_BETWEEN_CONNECTIONS; // roughly 3 minutes
+const CONNECTION_ATTEMPTS = (3 * 60 * 1000) / PAUSE_BETWEEN_CONNECTIONS; // roughly 3 minutes
 
 const Connection = require('tedious').Connection;
 
 const config = {
-  userName: "sa",
-  password: "S0meVeryHardPassword",
-  server: "localhost",
+  userName: 'sa',
+  password: 'S0meVeryHardPassword',
+  server: 'localhost',
   options: {
-    database: "knex_test",
-  }
+    database: 'knex_test',
+  },
 };
 
 let didConnect = false;
@@ -18,17 +18,19 @@ let tryCount = 0;
 function tryToConnect() {
   tryCount++;
   if (tryCount > CONNECTION_ATTEMPTS) {
-    console.log("Giving up... it fails if it fails");
+    console.log('Giving up... it fails if it fails');
     process.exit(1);
   }
 
-  console.log("Connecting... to mssql");
+  console.log('Connecting... to mssql');
 
   const connection = new Connection(config);
 
   connection.on('end', () => {
     if (!didConnect) {
-      console.log(`Couldnt connnect yet... try again in ${PAUSE_BETWEEN_CONNECTIONS}ms...`);
+      console.log(
+        `Couldnt connnect yet... try again in ${PAUSE_BETWEEN_CONNECTIONS}ms...`
+      );
       setTimeout(tryToConnect, PAUSE_BETWEEN_CONNECTIONS);
     }
   });
@@ -42,10 +44,10 @@ function tryToConnect() {
 
   connection.on('connect', (err) => {
     if (!err) {
-      console.log("Connecting mssql server was a great success!");
+      console.log('Connecting mssql server was a great success!');
       didConnect = true;
     } else {
-      console.log("Error was passed to connect event.");
+      console.log('Error was passed to connect event.');
     }
     connection.close();
   });

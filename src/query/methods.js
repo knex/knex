@@ -1,4 +1,3 @@
-
 // All properties we can use to start a query chain
 // from the `knex` object, e.g. `knex.select('*').from(...`
 export default [
@@ -85,5 +84,5 @@ export default [
   'delete',
   'truncate',
   'transacting',
-  'connection'
+  'connection',
 ];
