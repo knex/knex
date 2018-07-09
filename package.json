@@ -50,7 +50,7 @@
     "nyc": "^12.0.2",
     "json-loader": "^0.5.7",
     "lint-staged": "^7.2.0",
-    "mocha": "^3.5.3",
+    "mocha": "^5.2.0",
     "mock-fs": "^4.5.0",
     "mssql": "^4.1.0",
     "mysql": "^2.15.0",
@@ -84,15 +84,15 @@
     "build": "yarn clean && tsc && yarn copy",
     "clean": "rimraf ./lib",
     "copy": "copyfiles -u 1 \"src/**/*.stub\" lib",
-    "debug_test": "node --inspect-brk ./node_modules/.bin/_mocha -t 0 test/index.js",
+    "debug_test": "node --inspect-brk ./node_modules/.bin/_mocha --exit -t 0 test/index.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "dev": "yarn build && tsc -w",
     "lint": "tslint src/**",
-    "plaintest": "mocha -t 10000 -b -R spec test/index.js && yarn tape",
+    "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && yarn tape",
     "pre_test": "yarn lint && yarn build",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node --inspect-brk test/tape/index.js",
-    "test": "yarn pre_test && nyc mocha --check-leaks --globals __core-js_shared__ -t 10000 -b -R spec test/index.js && yarn tape",
+    "test": "yarn pre_test && nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 -b -R spec test/index.js && yarn tape",
     "oracledb:test": "docker rmi -f --no-prune knex-test-oracledb && docker build -f scripts/oracle-tests-Dockerfile --tag knex-test-oracledb . && docker run --rm -i -t -e KNEX_TEST_TIMEOUT=$KNEX_TEST_TIMEOUT -e NODE_VER=$NODE_VER knex-test-oracledb",
     "mssql:init": "docker-compose -f scripts/mssql-docker-compose.yml up --no-start && docker-compose -f scripts/mssql-docker-compose.yml start",
     "postmssql:init": "node scripts/wait-for-mssql-server.js && yarn mssql:logs || (yarn mssql:logs;false)",
@@ -155,5 +155,12 @@
     "scripts/*"
   ],
   "license": "MIT",
-  "tonicExampleFilename": "scripts/runkit-example.js"
+  "tonicExampleFilename": "scripts/runkit-example.js",
+  "nyc": {
+    "check-coverage": true,
+    "lines": 85,
+    "statements": 83,
+    "functions": 83,
+    "branches": 72
+  }
 }
