@@ -4,6 +4,7 @@ dist: trusty
 sudo: required
 
 cache:
+  yarn: true
   directories:
   - "node_modules"
 
@@ -24,7 +25,7 @@ matrix:
   - node_js: "10"
     env: TEST_ORACLEDB=true NODE_VER=6 KNEX_TEST_TIMEOUT=60000
 
-install: 
+install:
   - if [ -z $TEST_ORACLEDB ]; then npm i; fi
 
 before_script:
