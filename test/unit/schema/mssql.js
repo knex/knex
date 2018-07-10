@@ -240,6 +240,75 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].bindings[1]).to.equal('foo');
   });
 
+  it('test has table', function() {
+    tableSql = client
+      .schemaBuilder()
+      .hasTable('users')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'select object_id from sys.tables where object_id = object_id(?)'
+    );
+    expect(tableSql[0].bindings[0]).to.equal('[users]');
+  });
+
+  it('test has table with schema', function() {
+    tableSql = client
+      .schemaBuilder()
+      .withSchema('schema')
+      .hasTable('users')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'select object_id from sys.tables where object_id = object_id(?)'
+    );
+    expect(tableSql[0].bindings[0]).to.equal('[schema].[users]');
+  });
+
+  it('test rename table with schema', function() {
+    tableSql = client
+      .schemaBuilder()
+      .withSchema('schema')
+      .renameTable('users', 'foo')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('exec sp_rename ?, ?');
+    expect(tableSql[0].bindings[0]).to.equal('schema.users');
+    expect(tableSql[0].bindings[1]).to.equal('foo');
+  });
+
+  it('test has column', function() {
+    tableSql = client
+      .schemaBuilder()
+      .hasColumn('users', 'foo')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'select object_id from sys.columns where name = ? and object_id = object_id(?)'
+    );
+    expect(tableSql[0].bindings[0]).to.equal('foo');
+    expect(tableSql[0].bindings[1]).to.equal('[users]');
+  });
+
+  it('test has column with schema', function() {
+    tableSql = client
+      .schemaBuilder()
+      .withSchema('schema')
+      .hasColumn('users', 'foo')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'select object_id from sys.columns where name = ? and object_id = object_id(?)'
+    );
+    expect(tableSql[0].bindings[0]).to.equal('foo');
+    expect(tableSql[0].bindings[1]).to.equal('[schema].[users]');
+  });
+
   it('test adding primary key', function() {
     tableSql = client
       .schemaBuilder()
