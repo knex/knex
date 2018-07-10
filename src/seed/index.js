@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
-import { filter, includes, map, bind, template, each, extend } from 'lodash';
+import { filter, includes, map, bind, template, each } from 'lodash';
 
 // The new seeds we're performing, typically called from the `knex.seed`
 // interface on the main `knex` object. Passes the `knex` instance performing
@@ -138,24 +138,22 @@ class Seeder {
   }
 
   setConfig(config) {
-    return extend(
-      {
-        extension: 'js',
-        directory: './seeds',
-        loadExtensions: [
-          '.co',
-          '.coffee',
-          '.eg',
-          '.iced',
-          '.js',
-          '.litcoffee',
-          '.ls',
-          '.ts',
-        ],
-      },
-      this.config || {},
-      config
-    );
+    return {
+      extension: 'js',
+      directory: './seeds',
+      loadExtensions: [
+        '.co',
+        '.coffee',
+        '.eg',
+        '.iced',
+        '.js',
+        '.litcoffee',
+        '.ls',
+        '.ts',
+      ],
+      ...this.config,
+      ...config,
+    };
   }
 }
 

@@ -4,8 +4,6 @@ import Client from './client';
 import makeKnex from './util/make-knex';
 import parseConnection from './util/parse-connection';
 
-import { assign } from 'lodash';
-
 // The client names we'll allow in the `{name: lib}` pairing.
 const aliases = {
   pg: 'postgres',
@@ -15,7 +13,7 @@ const aliases = {
 
 export default function Knex(config) {
   if (typeof config === 'string') {
-    return new Knex(assign(parseConnection(config), arguments[2]));
+    return new Knex({ ...parseConnection(config), ...arguments[1] });
   }
   let Dialect;
   if (arguments.length === 0 || (!config.client && !config.dialect)) {
@@ -31,9 +29,10 @@ export default function Knex(config) {
       clientName}/index.js`).default;
   }
   if (typeof config.connection === 'string') {
-    config = assign({}, config, {
+    config = {
+      ...config,
       connection: parseConnection(config.connection).connection,
-    });
+    };
   }
   return makeKnex(new Dialect(config).init());
 }

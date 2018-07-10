@@ -2,7 +2,7 @@
 // ------
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, identity } from 'lodash';
+import { identity } from 'lodash';
 
 class QueryCompiler_MySQL extends QueryCompiler {
   _emptyInsertValue = '() values ()';

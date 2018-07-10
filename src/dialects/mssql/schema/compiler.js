@@ -2,8 +2,6 @@
 // -------
 import SchemaCompiler from '../../../schema/compiler';
 
-import { assign } from 'lodash';
-
 class SchemaCompiler_MSSQL extends SchemaCompiler {
   dropTablePrefix = 'DROP TABLE ';
 

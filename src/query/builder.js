@@ -7,7 +7,6 @@ import Raw from '../raw';
 import * as helpers from '../helpers';
 import JoinClause from './joinclause';
 import {
-  assign,
   clone,
   each,
   isBoolean,

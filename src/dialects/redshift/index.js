@@ -1,7 +1,7 @@
 // Redshift
 // -------
 import Client_PG from '../postgres';
-import { assign, map } from 'lodash';
+import { map } from 'lodash';
 
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';

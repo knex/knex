@@ -2,7 +2,7 @@
 // -------
 import Promise from 'bluebird';
 
-import { isUndefined, map, assign, defaults } from 'lodash';
+import { isUndefined, map, defaults } from 'lodash';
 
 import Client from '../../client';
 

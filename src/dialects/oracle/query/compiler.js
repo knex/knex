@@ -3,7 +3,6 @@
 // Oracle Query Builder & Compiler
 // ------
 import {
-  assign,
   isPlainObject,
   isEmpty,
   isString,

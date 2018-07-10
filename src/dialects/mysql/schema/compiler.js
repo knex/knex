@@ -2,8 +2,6 @@
 // -------
 import SchemaCompiler from '../../../schema/compiler';
 
-import { assign } from 'lodash';
-
 class SchemaCompiler_MySQL extends SchemaCompiler {
   // Rename a table on the schema.
   renameTable(tableName, to) {

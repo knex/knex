@@ -1,15 +1,7 @@
 // SQLite3 Query Builder & Compiler
 
 import QueryCompiler from '../../../query/compiler';
-import {
-  assign,
-  each,
-  isEmpty,
-  isString,
-  noop,
-  reduce,
-  identity,
-} from 'lodash';
+import { each, isEmpty, isString, noop, reduce, identity } from 'lodash';
 
 class QueryCompiler_SQLite3 extends QueryCompiler {
   constructor(client, builder) {

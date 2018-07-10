@@ -6,7 +6,7 @@
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-import { extend, each, toArray, isString, isFunction } from 'lodash';
+import { each, toArray, isString, isFunction } from 'lodash';
 import * as helpers from '../helpers';
 
 class TableBuilder {
@@ -37,7 +37,7 @@ TableBuilder.prototype.setSchema = function(schemaName) {
 // rather than creating the table.
 TableBuilder.prototype.toSQL = function() {
   if (this._method === 'alter') {
-    extend(this, AlterMethods);
+    Object.assign(this, AlterMethods);
   }
   this._fn.call(this, this);
   return this.client.tableCompiler(this).toSQL();
@@ -246,7 +246,7 @@ TableBuilder.prototype.foreign = function(column, keyName) {
       return returnObj;
     },
     _columnBuilder(builder) {
-      extend(builder, returnObj);
+      Object.assign(builder, returnObj);
       returnObj = builder;
       return builder;
     },

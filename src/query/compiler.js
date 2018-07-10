@@ -6,7 +6,6 @@ import JoinClause from './joinclause';
 import debug from 'debug';
 
 import {
-  assign,
   bind,
   compact,
   groupBy,
@@ -61,7 +60,11 @@ class QueryCompiler {
 
     const query = {
       method,
-      options: reduce(this.options, assign, {}),
+      options: reduce(
+        this.options,
+        (result, opts) => ({ ...result, ...opts }),
+        {}
+      ),
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
       bindings: this.formatter.bindings || [],
@@ -83,7 +86,7 @@ class QueryCompiler {
     if (isString(val)) {
       query.sql = val;
     } else {
-      assign(query, val);
+      Object.assign(query, val);
     }
 
     if (method === 'select' || method === 'first') {

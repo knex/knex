@@ -4,7 +4,7 @@ import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
 import Trigger from './trigger';
 
-import { assign, map } from 'lodash';
+import { map } from 'lodash';
 
 // Table Compiler
 // ------

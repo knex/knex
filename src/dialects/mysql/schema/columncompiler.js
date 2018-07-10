@@ -2,8 +2,6 @@
 // -------
 import ColumnCompiler from '../../../schema/columncompiler';
 
-import { assign } from 'lodash';
-
 function supportsPreciseTimestamps(client) {
   if (!client.version) {
     const message =

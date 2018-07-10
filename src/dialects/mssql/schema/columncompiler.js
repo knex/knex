@@ -2,8 +2,6 @@
 // -------
 import ColumnCompiler from '../../../schema/columncompiler';
 
-import { assign } from 'lodash';
-
 class ColumnCompiler_MSSQL extends ColumnCompiler {
   modifiers = ['nullable', 'defaultTo', 'first', 'after', 'comment'];
 

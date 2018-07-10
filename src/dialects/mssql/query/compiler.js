@@ -2,9 +2,7 @@
 // ------
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, isEmpty, compact, identity } from 'lodash';
-
-class QueryCompiler_MSSQL extends QueryCompiler {}
+import { isEmpty, compact, identity } from 'lodash';
 
 const components = [
   'columns',
@@ -19,14 +17,14 @@ const components = [
   'offset',
 ];
 
-assign(QueryCompiler_MSSQL.prototype, {
-  _emptyInsertValue: 'default values',
+class QueryCompiler_MSSQL extends QueryCompiler {
+  _emptyInsertValue = 'default values';
 
   select() {
     const sql = this.with();
     const statements = components.map((component) => this[component](this));
     return sql + compact(statements).join(' ');
-  },
+  }
 
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
@@ -75,7 +73,7 @@ assign(QueryCompiler_MSSQL.prototype, {
       sql,
       returning,
     };
-  },
+  }
 
   // Compiles an `update` query, allowing for a return value.
   update() {
@@ -98,7 +96,7 @@ assign(QueryCompiler_MSSQL.prototype, {
         (!returning ? this._returning('rowcount', '@@rowcount') : ''),
       returning: returning || '@@rowcount',
     };
-  },
+  }
 
   // Compiles a `delete` query.
   del() {
@@ -115,7 +113,7 @@ assign(QueryCompiler_MSSQL.prototype, {
         (!returning ? this._returning('rowcount', '@@rowcount') : ''),
       returning: returning || '@@rowcount',
     };
-  },
+  }
 
   // Compiles the columns in the query, specifying if an item was distinct.
   columns() {
@@ -146,7 +144,7 @@ assign(QueryCompiler_MSSQL.prototype, {
       sql.join(', ') +
       (this.tableName ? ` from ${this.tableName}` : '')
     );
-  },
+  }
 
   _returning(method, value) {
     switch (method) {
@@ -162,23 +160,23 @@ assign(QueryCompiler_MSSQL.prototype, {
       case 'rowcount':
         return value ? ';select @@rowcount' : '';
     }
-  },
+  }
 
   // Compiles a `truncate` query.
   truncate() {
     return `truncate table ${this.tableName}`;
-  },
+  }
 
   forUpdate() {
     // this doesn't work exacltly as it should, one should also mention index while locking
     // https://stackoverflow.com/a/9818448/360060
     return 'with (UPDLOCK)';
-  },
+  }
 
   forShare() {
     // http://www.sqlteam.com/article/introduction-to-locking-in-sql-server
     return 'with (HOLDLOCK)';
-  },
+  }
 
   // Compiles a `columnInfo` query.
   columnInfo() {
@@ -220,18 +218,18 @@ assign(QueryCompiler_MSSQL.prototype, {
         return (column && out[column]) || out;
       },
     };
-  },
+  }
 
   top() {
     const noLimit = !this.single.limit && this.single.limit !== 0;
     const noOffset = !this.single.offset;
     if (noLimit || !noOffset) return '';
     return `top (${this.formatter.parameter(this.single.limit)})`;
-  },
+  }
 
   limit() {
     return '';
-  },
+  }
 
   offset() {
     const noLimit = !this.single.limit && this.single.limit !== 0;
@@ -246,8 +244,8 @@ assign(QueryCompiler_MSSQL.prototype, {
       )} rows only`;
     }
     return offset;
-  },
-});
+  }
+}
 
 // Set the QueryBuilder & QueryCompiler on the client object,
 // in case anyone wants to modify things to suit their own purposes.

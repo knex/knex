@@ -2,7 +2,7 @@
 // ------
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, reduce, identity } from 'lodash';
+import { reduce, identity } from 'lodash';
 
 class QueryCompiler_PG extends QueryCompiler {
   // Compiles a truncate query.
