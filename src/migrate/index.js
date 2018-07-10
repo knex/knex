@@ -20,10 +20,15 @@ import {
   template,
 } from 'lodash';
 
-class LockError extends Error {
+class MigrationLocked extends Error {
   constructor(msg) {
-    this.name = 'MigrationLocked';
-    this.message = msg;
+    super(msg);
+    this.name = this.constructor.name;
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, this.constructor);
+    } else {
+      this.stack = new Error(message).stack;
+    }
   }
 }
 
@@ -249,7 +254,7 @@ export default class Migrator {
         })
         .then(() => this._lockMigrations(trx));
     }).catch((err) => {
-      throw new LockError(err.message);
+      throw new MigrationLocked(err.message);
     });
   }
 
@@ -285,7 +290,7 @@ export default class Migrator {
         .catch((error) => {
           let cleanupReady = Promise.resolve();
 
-          if (error instanceof LockError) {
+          if (error instanceof MigrationLocked) {
             // If locking error do not free the lock.
             this.knex.client.logger.warn(
               `Can't take lock to run migrations: ${error.message}`

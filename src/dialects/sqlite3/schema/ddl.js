@@ -10,24 +10,24 @@ import { assign, uniqueId, find, identity, map, omit } from 'lodash';
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
 // for sqlite3 things.
-function SQLite3_DDL(client, tableCompiler, pragma, connection) {
-  this.client = client;
-  this.tableCompiler = tableCompiler;
-  this.pragma = pragma;
-  this.tableName = this.tableCompiler.tableNameRaw;
-  this.alteredName = uniqueId('_knex_temp_alter');
-  this.connection = connection;
-}
+class SQLite3_DDL {
+  constructor(client, tableCompiler, pragma, connection) {
+    this.client = client;
+    this.tableCompiler = tableCompiler;
+    this.pragma = pragma;
+    this.tableName = this.tableCompiler.tableNameRaw;
+    this.alteredName = uniqueId('_knex_temp_alter');
+    this.connection = connection;
+  }
 
-assign(SQLite3_DDL.prototype, {
-  getColumn: Promise.method(function(column) {
+  getColumn = Promise.method(function(column) {
     const currentCol = find(this.pragma, { name: column });
     if (!currentCol)
       throw new Error(
         `The column ${column} is not in the ${this.tableName} table`
       );
     return currentCol;
-  }),
+  });
 
   getTableSql() {
     return this.trx.raw(
@@ -35,28 +35,28 @@ assign(SQLite3_DDL.prototype, {
         this.tableName
       }"`
     );
-  },
+  }
 
-  renameTable: Promise.method(function() {
+  renameTable = Promise.method(function() {
     return this.trx.raw(
       `ALTER TABLE "${this.tableName}" RENAME TO "${this.alteredName}"`
     );
-  }),
+  });
 
   dropOriginal() {
     return this.trx.raw(`DROP TABLE "${this.tableName}"`);
-  },
+  }
 
   dropTempTable() {
     return this.trx.raw(`DROP TABLE "${this.alteredName}"`);
-  },
+  }
 
   copyData() {
     return this.trx
       .raw(`SELECT * FROM "${this.tableName}"`)
       .bind(this)
       .then(this.insertChunked(20, this.alteredName));
-  },
+  }
 
   reinsertData(iterator) {
     return function() {
@@ -65,7 +65,7 @@ assign(SQLite3_DDL.prototype, {
         .bind(this)
         .then(this.insertChunked(20, this.tableName, iterator));
     };
-  },
+  }
 
   insertChunked(amount, target, iterator) {
     iterator = iterator || identity;
@@ -92,7 +92,7 @@ assign(SQLite3_DDL.prototype, {
         0
       );
     };
-  },
+  }
 
   createTempTable(createTable) {
     return function() {
@@ -100,7 +100,7 @@ assign(SQLite3_DDL.prototype, {
         createTable.sql.replace(this.tableName, this.alteredName)
       );
     };
-  },
+  }
 
   _doReplace(sql, from, to) {
     const matched = sql.match(/^CREATE TABLE (\S+) \((.*)\)/);
@@ -186,10 +186,10 @@ assign(SQLite3_DDL.prototype, {
     return sql
       .replace(/\(.*\)/, () => `(${args.join(', ')})`)
       .replace(/,\s*([,)])/, '$1');
-  },
+  }
 
   // Boy, this is quite a method.
-  renameColumn: Promise.method(function(from, to) {
+  renameColumn = Promise.method(function(from, to) {
     return this.client.transaction(
       (trx) => {
         this.trx = trx;
@@ -222,9 +222,9 @@ assign(SQLite3_DDL.prototype, {
       },
       { connection: this.connection }
     );
-  }),
+  });
 
-  dropColumn: Promise.method(function(columns) {
+  dropColumn = Promise.method(function(columns) {
     return this.client.transaction(
       (trx) => {
         this.trx = trx;
@@ -254,7 +254,7 @@ assign(SQLite3_DDL.prototype, {
       },
       { connection: this.connection }
     );
-  }),
-});
+  });
+}
 
 export default SQLite3_DDL;

@@ -6,17 +6,17 @@ let PassThrough;
 // The "Runner" constructor takes a "builder" (query, schema, or raw)
 // and runs through each of the query statements, calling any additional
 // "output" method provided alongside the query and bindings.
-function Runner(client, builder) {
-  this.client = client;
-  this.builder = builder;
-  this.queries = [];
+class Runner {
+  constructor(client, builder) {
+    this.client = client;
+    this.builder = builder;
+    this.queries = [];
 
-  // The "connection" object is set on the runner when
-  // "run" is called.
-  this.connection = void 0;
-}
+    // The "connection" object is set on the runner when
+    // "run" is called.
+    this.connection = void 0;
+  }
 
-assign(Runner.prototype, {
   // "Run" the target, calling "toSQL" on the builder, returning
   // an object or array of queries to run, each of which are run on
   // a single connection.
@@ -54,7 +54,7 @@ assign(Runner.prototype, {
           this.builder.emit('end');
         })
     );
-  },
+  }
 
   // Stream the result set, by passing through to the dialect's streaming
   // capabilities. If the options are
@@ -111,17 +111,17 @@ assign(Runner.prototype, {
       if (!hasConnection) stream.emit('error', err);
     });
     return stream;
-  },
+  }
 
   // Allow you to pipe the stream to a writable stream.
   pipe(writable, options) {
     return this.stream(options).pipe(writable);
-  },
+  }
 
   // "Runs" a query, returning a promise. All queries specified by the builder are guaranteed
   // to run in sequence, and on the same connection, especially helpful when schema building
   // and dealing with foreign key constraints, etc.
-  query: Promise.method(function(obj) {
+  query = Promise.method(function(obj) {
     const { __knexUid, __knexTxId } = this.connection;
 
     this.builder.emit('query', assign({ __knexUid, __knexTxId }, obj));
@@ -206,7 +206,7 @@ assign(Runner.prototype, {
         );
         throw error;
       });
-  }),
+  });
 
   // In the case of the "schema builder" we call `queryArray`, which runs each
   // of the queries in sequence.
@@ -221,7 +221,7 @@ assign(Runner.prototype, {
               return memo;
             });
           }, []);
-  },
+  }
 
   // Check whether there's a transaction flag, and that it has a connection.
   ensureConnection() {
@@ -241,7 +241,7 @@ assign(Runner.prototype, {
         // need to return promise or null from handler to prevent warning from bluebird
         return this.client.releaseConnection(this.connection);
       });
-  },
-});
+  }
+}
 
 export default Runner;
