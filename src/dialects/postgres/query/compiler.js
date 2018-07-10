@@ -1,24 +1,17 @@
 // PostgreSQL Query Builder & Compiler
 // ------
-import inherits from 'inherits';
-
 import QueryCompiler from '../../../query/compiler';
 
 import { assign, reduce, identity } from 'lodash';
 
-function QueryCompiler_PG(client, builder) {
-  QueryCompiler.call(this, client, builder);
-}
-inherits(QueryCompiler_PG, QueryCompiler);
-
-assign(QueryCompiler_PG.prototype, {
+class QueryCompiler_PG extends QueryCompiler {
   // Compiles a truncate query.
   truncate() {
     return `truncate ${this.tableName} restart identity`;
-  },
+  }
 
   // is used if the an array with multiple empty values supplied
-  _defaultInsertValue: 'default',
+  _defaultInsertValue = 'default';
 
   // Compiles an `insert` query, allowing for multiple
   // inserts using a single query statement.
@@ -30,7 +23,7 @@ assign(QueryCompiler_PG.prototype, {
       sql: sql + this._returning(returning),
       returning,
     };
-  },
+  }
 
   // Compiles an `update` query, allowing for a return value.
   update() {
@@ -46,7 +39,7 @@ assign(QueryCompiler_PG.prototype, {
         this._returning(returning),
       returning,
     };
-  },
+  }
 
   // Compiles an `update` query, allowing for a return value.
   del() {
@@ -56,23 +49,23 @@ assign(QueryCompiler_PG.prototype, {
       sql: sql + this._returning(returning),
       returning,
     };
-  },
+  }
 
   aggregate(stmt) {
     return this._aggregate(stmt, { distinctParentheses: true });
-  },
+  }
 
   _returning(value) {
     return value ? ` returning ${this.formatter.columnize(value)}` : '';
-  },
+  }
 
   forUpdate() {
     return 'for update';
-  },
+  }
 
   forShare() {
     return 'for share';
-  },
+  }
 
   // Compiles a columnInfo query
   columnInfo() {
@@ -119,7 +112,7 @@ assign(QueryCompiler_PG.prototype, {
         return (column && out[column]) || out;
       },
     };
-  },
-});
+  }
+}
 
 export default QueryCompiler_PG;

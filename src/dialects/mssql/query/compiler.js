@@ -1,14 +1,10 @@
 // MSSQL Query Compiler
 // ------
-import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
 import { assign, isEmpty, compact, identity } from 'lodash';
 
-function QueryCompiler_MSSQL(client, builder) {
-  QueryCompiler.call(this, client, builder);
-}
-inherits(QueryCompiler_MSSQL, QueryCompiler);
+class QueryCompiler_MSSQL extends QueryCompiler {}
 
 const components = [
   'columns',

@@ -1,6 +1,5 @@
 // MySQL Client
 // -------
-import inherits from 'inherits';
 
 import Client from '../../client';
 import Promise from 'bluebird';
@@ -17,45 +16,40 @@ import { makeEscape } from '../../query/string';
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
 // 'lib/query/compiler', respectively.
-function Client_MySQL(config) {
-  Client.call(this, config);
-}
-inherits(Client_MySQL, Client);
+class Client_MySQL extends Client {
+  dialect = 'mysql';
 
-assign(Client_MySQL.prototype, {
-  dialect: 'mysql',
-
-  driverName: 'mysql',
+  driverName = 'mysql';
 
   _driver() {
     return require('mysql');
-  },
+  }
 
   queryCompiler() {
     return new QueryCompiler(this, ...arguments);
-  },
+  }
 
   schemaCompiler() {
     return new SchemaCompiler(this, ...arguments);
-  },
+  }
 
   tableCompiler() {
     return new TableCompiler(this, ...arguments);
-  },
+  }
 
   columnCompiler() {
     return new ColumnCompiler(this, ...arguments);
-  },
+  }
 
   transaction() {
     return new Transaction(this, ...arguments);
-  },
+  }
 
-  _escapeBinding: makeEscape(),
+  _escapeBinding = makeEscape();
 
   wrapIdentifierImpl(value) {
     return value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*';
-  },
+  }
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
@@ -74,7 +68,7 @@ assign(Client_MySQL.prototype, {
         resolver(connection);
       });
     });
-  },
+  }
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
@@ -84,7 +78,7 @@ assign(Client_MySQL.prototype, {
         connection.__knex__disposed = err;
       })
       .finally(() => connection.removeAllListeners());
-  },
+  }
 
   validateConnection(connection) {
     if (
@@ -94,7 +88,7 @@ assign(Client_MySQL.prototype, {
       return true;
     }
     return false;
-  },
+  }
 
   // Grab a connection, run the query via the MySQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
@@ -115,7 +109,7 @@ assign(Client_MySQL.prototype, {
 
       queryStream.pipe(stream);
     });
-  },
+  }
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
@@ -133,7 +127,7 @@ assign(Client_MySQL.prototype, {
         resolver(obj);
       });
     });
-  },
+  }
 
   // Process the response as returned from the query.
   processResponse(obj, runner) {
@@ -159,9 +153,9 @@ assign(Client_MySQL.prototype, {
       default:
         return response;
     }
-  },
+  }
 
-  canCancelQuery: true,
+  canCancelQuery = true;
 
   cancelQuery(connectionToKill) {
     const acquiringConn = this.acquireConnection();
@@ -185,7 +179,7 @@ assign(Client_MySQL.prototype, {
         // in a non-blocking fashion
         acquiringConn.then((conn) => this.releaseConnection(conn));
       });
-  },
-});
+  }
+}
 
 export default Client_MySQL;

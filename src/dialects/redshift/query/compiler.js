@@ -1,21 +1,14 @@
 // Redshift Query Builder & Compiler
 // ------
-import inherits from 'inherits';
-
 import QueryCompiler from '../../../query/compiler';
 import QueryCompiler_PG from '../../postgres/query/compiler';
 
 import { assign, reduce, identity } from 'lodash';
 
-function QueryCompiler_Redshift(client, builder) {
-  QueryCompiler_PG.call(this, client, builder);
-}
-inherits(QueryCompiler_Redshift, QueryCompiler_PG);
-
-assign(QueryCompiler_Redshift.prototype, {
+class QueryCompiler_Redshift extends QueryCompiler_PG {
   truncate() {
     return `truncate ${this.tableName.toLowerCase()}`;
-  },
+  }
 
   // Compiles an `insert` query, allowing for multiple
   // inserts using a single query statement.
@@ -26,7 +19,7 @@ assign(QueryCompiler_Redshift.prototype, {
     return {
       sql,
     };
-  },
+  }
 
   // Compiles an `update` query, warning on unsupported returning
   update() {
@@ -35,7 +28,7 @@ assign(QueryCompiler_Redshift.prototype, {
     return {
       sql,
     };
-  },
+  }
 
   // Compiles an `delete` query, warning on unsupported returning
   del() {
@@ -44,7 +37,7 @@ assign(QueryCompiler_Redshift.prototype, {
     return {
       sql,
     };
-  },
+  }
 
   // simple: if trying to return, warn
   _slightReturn() {
@@ -53,19 +46,19 @@ assign(QueryCompiler_Redshift.prototype, {
         'insert/update/delete returning is not supported by redshift dialect'
       );
     }
-  },
+  }
 
   forUpdate() {
     this.client.logger.warn('table lock is not supported by redshift dialect');
     return '';
-  },
+  }
 
   forShare() {
     this.client.logger.warn(
       'lock for share is not supported by redshift dialect'
     );
     return '';
-  },
+  }
 
   // Compiles a columnInfo query
   columnInfo() {
@@ -115,7 +108,7 @@ assign(QueryCompiler_Redshift.prototype, {
         return (column && out[column]) || out;
       },
     };
-  },
-});
+  }
+}
 
 export default QueryCompiler_Redshift;

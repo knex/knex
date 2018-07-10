@@ -1,6 +1,5 @@
 // Raw
 // -------
-import inherits from 'inherits';
 import * as helpers from './helpers';
 import { EventEmitter } from 'events';
 import debug from 'debug';
@@ -26,23 +25,23 @@ const fakeClient = {
   },
 };
 
-function Raw(client = fakeClient) {
-  this.client = client;
+class Raw extends EventEmitter {
+  constructor(client = fakeClient) {
+    super();
+    this.client = client;
 
-  this.sql = '';
-  this.bindings = [];
+    this.sql = '';
+    this.bindings = [];
 
-  // Todo: Deprecate
-  this._wrappedBefore = undefined;
-  this._wrappedAfter = undefined;
-  if (client && client.config) {
-    this._debug = client.config.debug;
-    saveAsyncStack(this, 4);
+    // Todo: Deprecate
+    this._wrappedBefore = undefined;
+    this._wrappedAfter = undefined;
+    if (client && client.config) {
+      this._debug = client.config.debug;
+      saveAsyncStack(this, 4);
+    }
   }
-}
-inherits(Raw, EventEmitter);
 
-assign(Raw.prototype, {
   set(sql, bindings) {
     this.sql = sql;
     this.bindings =
@@ -51,7 +50,7 @@ assign(Raw.prototype, {
         : [bindings];
 
     return this;
-  },
+  }
 
   timeout(ms, { cancel } = {}) {
     if (isNumber(ms) && ms > 0) {
@@ -62,19 +61,19 @@ assign(Raw.prototype, {
       }
     }
     return this;
-  },
+  }
 
   // Wraps the current sql with `before` and `after`.
   wrap(before, after) {
     this._wrappedBefore = before;
     this._wrappedAfter = after;
     return this;
-  },
+  }
 
   // Calls `toString` on the Knex object.
   toString() {
     return this.toQuery();
-  },
+  }
 
   // Returns the raw sql for the query.
   toSQL(method, tz) {
@@ -120,8 +119,8 @@ assign(Raw.prototype, {
     obj.__knexQueryUid = uuid.v4();
 
     return obj;
-  },
-});
+  }
+}
 
 function replaceRawArrBindings(raw, formatter) {
   const expectedBindings = raw.bindings.length;

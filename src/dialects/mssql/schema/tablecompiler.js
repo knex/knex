@@ -2,7 +2,6 @@
 
 // MSSQL Table Builder & Compiler
 // -------
-import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
 import Promise from 'bluebird';
@@ -12,13 +11,9 @@ import { assign } from 'lodash';
 // Table Compiler
 // ------
 
-function TableCompiler_MSSQL() {
-  TableCompiler.apply(this, arguments);
-}
-inherits(TableCompiler_MSSQL, TableCompiler);
+class TableCompiler_MSSQL extends TableCompiler {
+  createAlterTableMethods = ['foreign', 'primary'];
 
-assign(TableCompiler_MSSQL.prototype, {
-  createAlterTableMethods: ['foreign', 'primary'],
   createQuery(columns, ifNot) {
     const createStatement = ifNot
       ? `if object_id('${this.tableName()}', 'U') is null CREATE TABLE `
@@ -39,15 +34,15 @@ assign(TableCompiler_MSSQL.prototype, {
     }
 
     this.pushQuery(sql);
-  },
+  }
 
-  lowerCase: false,
+  lowerCase = false;
 
-  addColumnsPrefix: 'ADD ',
+  addColumnsPrefix = 'ADD ';
 
-  dropColumnPrefix: 'DROP COLUMN ',
+  dropColumnPrefix = 'DROP COLUMN ';
 
-  alterColumnPrefix: 'ALTER COLUMN ',
+  alterColumnPrefix = 'ALTER COLUMN ';
 
   // Compiles column add.  Multiple columns need only one ADD clause (not one ADD per column) so core addColumns doesn't work.  #1348
   addColumns(columns, prefix) {
@@ -64,7 +59,7 @@ assign(TableCompiler_MSSQL.prototype, {
         bindings: columns.bindings,
       });
     }
-  },
+  }
 
   // Compiles column drop.  Multiple columns need only one DROP clause (not one DROP per column) so core dropColumn doesn't work.  #1348
   dropColumn() {
@@ -81,12 +76,12 @@ assign(TableCompiler_MSSQL.prototype, {
         this.dropColumnPrefix +
         drops.join(', ')
     );
-  },
+  }
 
   // Compiles the comment on the table.
-  comment() {},
+  comment() {}
 
-  changeType() {},
+  changeType() {}
 
   // Renames a column on the table.
   renameColumn(from, to) {
@@ -95,7 +90,7 @@ assign(TableCompiler_MSSQL.prototype, {
         this.tableName() + '.' + from
       )}, ${this.formatter.parameter(to)}, 'COLUMN'`
     );
-  },
+  }
 
   dropFKRefs(runner, refs) {
     const formatter = this.client.formatter(this.tableBuilder);
@@ -108,7 +103,7 @@ assign(TableCompiler_MSSQL.prototype, {
         });
       })
     );
-  },
+  }
   createFKRefs(runner, refs) {
     const formatter = this.client.formatter(this.tableBuilder);
 
@@ -137,7 +132,7 @@ assign(TableCompiler_MSSQL.prototype, {
         });
       })
     );
-  },
+  }
 
   index(columns, indexName) {
     indexName = indexName
@@ -148,7 +143,7 @@ assign(TableCompiler_MSSQL.prototype, {
         columns
       )})`
     );
-  },
+  }
 
   primary(columns, constraintName) {
     constraintName = constraintName
@@ -167,7 +162,7 @@ assign(TableCompiler_MSSQL.prototype, {
         )})`
       );
     }
-  },
+  }
 
   unique(columns, indexName) {
     indexName = indexName
@@ -189,7 +184,7 @@ assign(TableCompiler_MSSQL.prototype, {
         columns
       )}) WHERE ${whereAllTheColumnsAreNotNull}`
     );
-  },
+  }
 
   // Compile a drop index command.
   dropIndex(columns, indexName) {
@@ -197,7 +192,7 @@ assign(TableCompiler_MSSQL.prototype, {
       ? this.formatter.wrap(indexName)
       : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery(`DROP INDEX ${indexName} ON ${this.tableName()}`);
-  },
+  }
 
   // Compile a drop foreign key command.
   dropForeign(columns, indexName) {
@@ -207,7 +202,7 @@ assign(TableCompiler_MSSQL.prototype, {
     this.pushQuery(
       `ALTER TABLE ${this.tableName()} DROP CONSTRAINT ${indexName}`
     );
-  },
+  }
 
   // Compile a drop primary key command.
   dropPrimary(constraintName) {
@@ -217,7 +212,7 @@ assign(TableCompiler_MSSQL.prototype, {
     this.pushQuery(
       `ALTER TABLE ${this.tableName()} DROP CONSTRAINT ${constraintName}`
     );
-  },
+  }
 
   // Compile a drop unique key command.
   dropUnique(column, indexName) {
@@ -225,7 +220,7 @@ assign(TableCompiler_MSSQL.prototype, {
       ? this.formatter.wrap(indexName)
       : this._indexCommand('unique', this.tableNameRaw, column);
     this.pushQuery(`DROP INDEX ${indexName} ON ${this.tableName()}`);
-  },
-});
+  }
+}
 
 export default TableCompiler_MSSQL;

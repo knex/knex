@@ -19,13 +19,13 @@ import {
   max,
   template,
 } from 'lodash';
-import inherits from 'inherits';
 
-function LockError(msg) {
-  this.name = 'MigrationLocked';
-  this.message = msg;
+class LockError extends Error {
+  constructor(msg) {
+    this.name = 'MigrationLocked';
+    this.message = msg;
+  }
 }
-inherits(LockError, Error);
 
 const CONFIG_DEFAULT = Object.freeze({
   extension: 'js',

@@ -6,16 +6,16 @@ import assert from 'assert';
 
 // The "JoinClause" is an object holding any necessary info about a join,
 // including the type, and any associated tables & columns being joined.
-function JoinClause(table, type, schema) {
-  this.schema = schema;
-  this.table = table;
-  this.joinType = type;
-  this.and = this;
-  this.clauses = [];
-}
+class JoinClause {
+  constructor(table, type, schema) {
+    this.schema = schema;
+    this.table = table;
+    this.joinType = type;
+    this.and = this;
+    this.clauses = [];
+  }
 
-assign(JoinClause.prototype, {
-  grouping: 'join',
+  grouping = 'join';
 
   // Adds an "on" clause to the current join object.
   on(first, operator, second) {
@@ -65,12 +65,12 @@ assign(JoinClause.prototype, {
     }
     this.clauses.push(data);
     return this;
-  },
+  }
 
   // Adds a "using" clause to the current join.
   using(column) {
     return this.clauses.push({ type: 'onUsing', column, bool: this._bool() });
-  },
+  }
 
   /*// Adds an "and on" clause to the current join object.
   andOn() {
@@ -80,7 +80,7 @@ assign(JoinClause.prototype, {
   // Adds an "or on" clause to the current join object.
   orOn(first, operator, second) {
     return this._bool('or').on.apply(this, arguments);
-  },
+  }
 
   onBetween(column, values) {
     assert(
@@ -99,21 +99,21 @@ assign(JoinClause.prototype, {
       not: this._not(),
     });
     return this;
-  },
+  }
 
   onNotBetween(column, values) {
     return this._not(true).onBetween(column, values);
-  },
+  }
 
   orOnBetween(column, values) {
     return this._bool('or').onBetween(column, values);
-  },
+  }
 
   orOnNotBetween(column, values) {
     return this._bool('or')
       ._not(true)
       .onBetween(column, values);
-  },
+  }
 
   onIn(column, values) {
     if (Array.isArray(values) && values.length === 0) return this.on(1, '=', 0);
@@ -125,21 +125,21 @@ assign(JoinClause.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   onNotIn(column, values) {
     return this._not(true).onIn(column, values);
-  },
+  }
 
   orOnIn(column, values) {
     return this._bool('or').onIn(column, values);
-  },
+  }
 
   orOnNotIn(column, values) {
     return this._bool('or')
       ._not(true)
       .onIn(column, values);
-  },
+  }
 
   onNull(column) {
     this.clauses.push({
@@ -149,21 +149,21 @@ assign(JoinClause.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   orOnNull(callback) {
     return this._bool('or').onNull(callback);
-  },
+  }
 
   onNotNull(callback) {
     return this._not(true).onNull(callback);
-  },
+  }
 
   orOnNotNull(callback) {
     return this._not(true)
       ._bool('or')
       .onNull(callback);
-  },
+  }
 
   onExists(callback) {
     this.clauses.push({
@@ -173,27 +173,27 @@ assign(JoinClause.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   orOnExists(callback) {
     return this._bool('or').onExists(callback);
-  },
+  }
 
   onNotExists(callback) {
     return this._not(true).onExists(callback);
-  },
+  }
 
   orOnNotExists(callback) {
     return this._not(true)
       ._bool('or')
       .onExists(callback);
-  },
+  }
 
   // Explicitly set the type of join, useful within a function when creating a grouped join.
   type(type) {
     this.joinType = type;
     return this;
-  },
+  }
 
   _bool(bool) {
     if (arguments.length === 1) {
@@ -203,7 +203,7 @@ assign(JoinClause.prototype, {
     const ret = this._boolFlag || 'and';
     this._boolFlag = 'and';
     return ret;
-  },
+  }
 
   _not(val) {
     if (arguments.length === 1) {
@@ -213,14 +213,12 @@ assign(JoinClause.prototype, {
     const ret = this._notFlag;
     this._notFlag = false;
     return ret;
-  },
-});
+  }
 
-Object.defineProperty(JoinClause.prototype, 'or', {
-  get() {
+  get or() {
     return this._bool('or');
-  },
-});
+  }
+}
 
 JoinClause.prototype.andOn = JoinClause.prototype.on;
 JoinClause.prototype.andOnIn = JoinClause.prototype.onIn;

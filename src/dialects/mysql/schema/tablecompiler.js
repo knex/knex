@@ -2,7 +2,6 @@
 
 // MySQL Table Builder & Compiler
 // -------
-import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
 import Promise from 'bluebird';
 
@@ -11,12 +10,7 @@ import { assign } from 'lodash';
 // Table Compiler
 // ------
 
-function TableCompiler_MySQL() {
-  TableCompiler.apply(this, arguments);
-}
-inherits(TableCompiler_MySQL, TableCompiler);
-
-assign(TableCompiler_MySQL.prototype, {
+class TableCompiler_MySQL extends TableCompiler {
   createQuery(columns, ifNot) {
     const createStatement = ifNot
       ? 'create table if not exists '
@@ -50,22 +44,22 @@ assign(TableCompiler_MySQL.prototype, {
     }
 
     this.pushQuery(sql);
-  },
+  }
 
-  addColumnsPrefix: 'add ',
+  addColumnsPrefix = 'add ';
 
-  alterColumnsPrefix: 'modify ',
+  alterColumnsPrefix = 'modify ';
 
-  dropColumnPrefix: 'drop ',
+  dropColumnPrefix = 'drop ';
 
   // Compiles the comment on the table.
   comment(comment) {
     this.pushQuery(`alter table ${this.tableName()} comment = '${comment}'`);
-  },
+  }
 
   changeType() {
     // alter table + table + ' modify ' + wrapped + '// type';
-  },
+  }
 
   // Renames a column on the table.
   renameColumn(from, to) {
@@ -126,7 +120,7 @@ assign(TableCompiler_MySQL.prototype, {
           );
       },
     });
-  },
+  }
 
   getFKRefs(runner) {
     const formatter = this.client.formatter(this.tableBuilder);
@@ -150,7 +144,7 @@ assign(TableCompiler_MySQL.prototype, {
       sql,
       bindings: formatter.bindings,
     });
-  },
+  }
 
   dropFKRefs(runner, refs) {
     const formatter = this.client.formatter(this.tableBuilder);
@@ -164,7 +158,8 @@ assign(TableCompiler_MySQL.prototype, {
         });
       })
     );
-  },
+  }
+
   createFKRefs(runner, refs) {
     const formatter = this.client.formatter(this.tableBuilder);
 
@@ -193,7 +188,8 @@ assign(TableCompiler_MySQL.prototype, {
         });
       })
     );
-  },
+  }
+
   index(columns, indexName) {
     indexName = indexName
       ? this.formatter.wrap(indexName)
@@ -203,7 +199,7 @@ assign(TableCompiler_MySQL.prototype, {
         columns
       )})`
     );
-  },
+  }
 
   primary(columns, constraintName) {
     constraintName = constraintName
@@ -214,7 +210,7 @@ assign(TableCompiler_MySQL.prototype, {
         columns
       )})`
     );
-  },
+  }
 
   unique(columns, indexName) {
     indexName = indexName
@@ -225,7 +221,7 @@ assign(TableCompiler_MySQL.prototype, {
         columns
       )})`
     );
-  },
+  }
 
   // Compile a drop index command.
   dropIndex(columns, indexName) {
@@ -233,7 +229,7 @@ assign(TableCompiler_MySQL.prototype, {
       ? this.formatter.wrap(indexName)
       : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery(`alter table ${this.tableName()} drop index ${indexName}`);
-  },
+  }
 
   // Compile a drop foreign key command.
   dropForeign(columns, indexName) {
@@ -243,12 +239,12 @@ assign(TableCompiler_MySQL.prototype, {
     this.pushQuery(
       `alter table ${this.tableName()} drop foreign key ${indexName}`
     );
-  },
+  }
 
   // Compile a drop primary key command.
   dropPrimary() {
     this.pushQuery(`alter table ${this.tableName()} drop primary key`);
-  },
+  }
 
   // Compile a drop unique key command.
   dropUnique(column, indexName) {
@@ -256,7 +252,7 @@ assign(TableCompiler_MySQL.prototype, {
       ? this.formatter.wrap(indexName)
       : this._indexCommand('unique', this.tableNameRaw, column);
     this.pushQuery(`alter table ${this.tableName()} drop index ${indexName}`);
-  },
-});
+  }
+}
 
 export default TableCompiler_MySQL;
