@@ -6,18 +6,20 @@ import Raw from '../raw';
 import * as helpers from './helpers';
 import { groupBy, first, tail, has, isObject } from 'lodash';
 
-export function ColumnCompiler(client, tableCompiler, columnBuilder) {
-  this.client = client;
-  this.tableCompiler = tableCompiler;
-  this.columnBuilder = columnBuilder;
-  this.args = columnBuilder._args;
-  this.type = columnBuilder._type.toLowerCase();
-  this.grouped = groupBy(columnBuilder._statements, 'grouping');
-  this.modified = columnBuilder._modifiers;
-  this.isIncrements = this.type.indexOf('increments') !== -1;
-  this.formatter = client.formatter(columnBuilder);
-  this.sequence = [];
-  this.modifiers = [];
+export class ColumnCompiler {
+  constructor(client, tableCompiler, columnBuilder) {
+    this.client = client;
+    this.tableCompiler = tableCompiler;
+    this.columnBuilder = columnBuilder;
+    this.args = columnBuilder._args;
+    this.type = columnBuilder._type.toLowerCase();
+    this.grouped = groupBy(columnBuilder._statements, 'grouping');
+    this.modified = columnBuilder._modifiers;
+    this.isIncrements = this.type.indexOf('increments') !== -1;
+    this.formatter = client.formatter(columnBuilder);
+    this.sequence = [];
+    this.modifiers = [];
+  }
 }
 
 ColumnCompiler.prototype.pushQuery = helpers.pushQuery;

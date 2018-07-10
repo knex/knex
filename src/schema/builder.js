@@ -1,4 +1,3 @@
-import inherits from 'inherits';
 import { EventEmitter } from 'events';
 import { each, toArray } from 'lodash';
 import { addQueryContext } from '../helpers';
@@ -9,16 +8,18 @@ import interfaceFns from '../interface';
 // `knex.builder`, accepting the current `knex` instance,
 // and pulling out the `client` and `grammar` from the current
 // knex instance.
-function SchemaBuilder(client) {
-  this.client = client;
-  this._sequence = [];
+class SchemaBuilder extends EventEmitter {
+  constructor(client) {
+    super();
+    this.client = client;
+    this._sequence = [];
 
-  if (client.config) {
-    this._debug = client.config.debug;
-    saveAsyncStack(this, 4);
+    if (client.config) {
+      this._debug = client.config.debug;
+      saveAsyncStack(this, 4);
+    }
   }
 }
-inherits(SchemaBuilder, EventEmitter);
 
 // Each of the schema builder methods just add to the
 // "_sequence" array for consistency.

@@ -1,7 +1,6 @@
 // MSSQL Client
 // -------
 import { assign, map, flatten, values } from 'lodash';
-import inherits from 'inherits';
 
 import Client from '../../client';
 import Promise from 'bluebird';
@@ -20,29 +19,27 @@ const SQL_BIGINT_SAFE = { MIN: -9007199254740991, MAX: 9007199254740991 };
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler" objects, which
 // extend the base 'lib/query/builder' and 'lib/query/compiler', respectively.
-function Client_MSSQL(config = {}) {
-  // #1235 mssql module wants 'server', not 'host'. This is to enforce the same
-  // options object across all dialects.
-  if (config && config.connection && config.connection.host) {
-    config.connection.server = config.connection.host;
+class Client_MSSQL extends Client {
+  constructor(config = {}) {
+    super(config);
+    // #1235 mssql module wants 'server', not 'host'. This is to enforce the same
+    // options object across all dialects.
+    if (config && config.connection && config.connection.host) {
+      config.connection.server = config.connection.host;
+    }
+
+    // mssql always creates pool :( lets try to unpool it as much as possible
+    this.mssqlPoolSettings = {
+      min: 1,
+      max: 1,
+      idleTimeoutMillis: Number.MAX_SAFE_INTEGER,
+      evictionRunIntervalMillis: 0,
+    };
   }
 
-  // mssql always creates pool :( lets try to unpool it as much as possible
-  this.mssqlPoolSettings = {
-    min: 1,
-    max: 1,
-    idleTimeoutMillis: Number.MAX_SAFE_INTEGER,
-    evictionRunIntervalMillis: 0,
-  };
+  dialect = 'mssql';
 
-  Client.call(this, config);
-}
-inherits(Client_MSSQL, Client);
-
-assign(Client_MSSQL.prototype, {
-  dialect: 'mssql',
-
-  driverName: 'mssql',
+  driverName = 'mssql';
 
   _driver() {
     const tds = require('tedious');
@@ -173,35 +170,35 @@ assign(Client_MSSQL.prototype, {
     }
 
     return mssqlTedious;
-  },
+  }
 
   formatter() {
     return new MSSQL_Formatter(this, ...arguments);
-  },
+  }
 
   transaction() {
     return new Transaction(this, ...arguments);
-  },
+  }
 
   queryCompiler() {
     return new QueryCompiler(this, ...arguments);
-  },
+  }
 
   schemaCompiler() {
     return new SchemaCompiler(this, ...arguments);
-  },
+  }
 
   tableCompiler() {
     return new TableCompiler(this, ...arguments);
-  },
+  }
 
   columnCompiler() {
     return new ColumnCompiler(this, ...arguments);
-  },
+  }
 
   wrapIdentifierImpl(value) {
     return value !== '*' ? `[${value.replace(/\[/g, '[')}]` : '*';
-  },
+  }
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
@@ -221,7 +218,7 @@ assign(Client_MSSQL.prototype, {
         resolver(connection);
       });
     });
-  },
+  }
 
   validateConnection(connection) {
     if (connection.connected === true) {
@@ -229,7 +226,7 @@ assign(Client_MSSQL.prototype, {
     }
 
     return false;
-  },
+  }
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
@@ -238,7 +235,7 @@ assign(Client_MSSQL.prototype, {
       // some times close will reject just because pool has already been destoyed
       // internally by the driver there is nothing we can do in this case
     });
-  },
+  }
 
   // Position the bindings for the query.
   positionBindings(sql) {
@@ -247,7 +244,7 @@ assign(Client_MSSQL.prototype, {
       questionCount += 1;
       return `@p${questionCount}`;
     });
-  },
+  }
 
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
@@ -273,7 +270,7 @@ assign(Client_MSSQL.prototype, {
       req.pipe(stream);
       req.query(sql);
     });
-  },
+  }
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
@@ -299,7 +296,7 @@ assign(Client_MSSQL.prototype, {
         resolver(obj);
       });
     });
-  },
+  }
 
   // sets a request input parameter. Detects bigints and decimals and sets type appropriately.
   _setReqInput(req, i, binding) {
@@ -319,7 +316,7 @@ assign(Client_MSSQL.prototype, {
     } else {
       req.input(`p${i}`, binding);
     }
-  },
+  }
 
   // Process the response as returned from the query.
   processResponse(obj, runner) {
@@ -354,8 +351,8 @@ assign(Client_MSSQL.prototype, {
       default:
         return response;
     }
-  },
-});
+  }
+}
 
 class MSSQL_Formatter extends Formatter {
   // Accepts a string or array of columns to wrap as appropriate.

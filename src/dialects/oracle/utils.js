@@ -31,10 +31,12 @@ export function wrapSqlWithCatch(sql, errorNumberToCatch) {
   );
 }
 
-export function ReturningHelper(columnName) {
-  this.columnName = columnName;
-}
+export class ReturningHelper {
+  constructor(columnName) {
+    this.columnName = columnName;
+  }
 
-ReturningHelper.prototype.toString = function() {
-  return `[object ReturningHelper:${this.columnName}]`;
-};
+  toString() {
+    return `[object ReturningHelper:${this.columnName}]`;
+  }
+}

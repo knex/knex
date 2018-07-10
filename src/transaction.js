@@ -208,13 +208,9 @@ function makeTransactor(trx, connection, trxClient) {
 // We need to make a client object which always acquires the same
 // connection and does not release back into the pool.
 function makeTxClient(trx, client, connection) {
-  const trxClient = Object.create(client.constructor.prototype);
-  trxClient.config = client.config;
+  const trxClient = new client.constructor(client.config);
   trxClient.driver = client.driver;
-  trxClient.connectionSettings = client.connectionSettings;
   trxClient.transacting = true;
-  trxClient.valueForUndefined = client.valueForUndefined;
-  trxClient.logger = client.logger;
 
   trxClient.on('query', function(arg) {
     trx.emit('query', arg);

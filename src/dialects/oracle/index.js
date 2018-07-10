@@ -2,7 +2,6 @@
 // -------
 import { assign, map, flatten, values } from 'lodash';
 
-import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
 import { bufferToString } from '../../query/string';
@@ -19,47 +18,42 @@ import { ReturningHelper } from './utils';
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
 // 'lib/query/compiler', respectively.
-export default function Client_Oracle(config) {
-  Client.call(this, config);
-}
-inherits(Client_Oracle, Client);
+export default class Client_Oracle extends Client {
+  dialect = 'oracle';
 
-assign(Client_Oracle.prototype, {
-  dialect: 'oracle',
-
-  driverName: 'oracle',
+  driverName = 'oracle';
 
   _driver() {
     return require('oracle');
-  },
+  }
 
   transaction() {
     return new Transaction(this, ...arguments);
-  },
+  }
 
   formatter() {
     return new Formatter(this, ...arguments);
-  },
+  }
 
   queryCompiler() {
     return new QueryCompiler(this, ...arguments);
-  },
+  }
 
   schemaCompiler() {
     return new SchemaCompiler(this, ...arguments);
-  },
+  }
 
   columnBuilder() {
     return new ColumnBuilder(this, ...arguments);
-  },
+  }
 
   columnCompiler() {
     return new ColumnCompiler(this, ...arguments);
-  },
+  }
 
   tableCompiler() {
     return new TableCompiler(this, ...arguments);
-  },
+  }
 
   prepBindings(bindings) {
     return map(bindings, (value) => {
@@ -73,7 +67,7 @@ assign(Client_Oracle.prototype, {
       }
       return value;
     });
-  },
+  }
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
@@ -93,18 +87,18 @@ assign(Client_Oracle.prototype, {
         }
       );
     });
-  },
+  }
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
     return Promise.fromCallback(connection.close.bind(connection));
-  },
+  }
 
   // Return the database for the Oracle client.
   database() {
     return this.connectionSettings.database;
-  },
+  }
 
   // Position the bindings for the query.
   positionBindings(sql) {
@@ -113,7 +107,7 @@ assign(Client_Oracle.prototype, {
       questionCount += 1;
       return `:${questionCount}`;
     });
-  },
+  }
 
   _stream(connection, obj, stream, options) {
     return new Promise(function(resolver, rejecter) {
@@ -135,7 +129,7 @@ assign(Client_Oracle.prototype, {
         stream.emit('error', error);
       });
     });
-  },
+  }
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
@@ -162,7 +156,7 @@ assign(Client_Oracle.prototype, {
         }
         throw err;
       });
-  },
+  }
 
   // Process the response as returned from the query.
   processResponse(obj, runner) {
@@ -190,8 +184,8 @@ assign(Client_Oracle.prototype, {
       default:
         return response;
     }
-  },
-});
+  }
+}
 
 // If the error is any of these, we'll assume we need to
 // mark the connection as failed

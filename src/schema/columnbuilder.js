@@ -2,23 +2,24 @@ import { extend, each, toArray } from 'lodash';
 import { addQueryContext } from '../helpers';
 
 // The chainable interface off the original "column" method.
-export default function ColumnBuilder(client, tableBuilder, type, args) {
-  this.client = client;
-  this._method = 'add';
-  this._single = {};
-  this._modifiers = {};
-  this._statements = [];
-  this._type = columnAlias[type] || type;
-  this._args = args;
-  this._tableBuilder = tableBuilder;
+export default class ColumnBuilder {
+  constructor(client, tableBuilder, type, args) {
+    this.client = client;
+    this._method = 'add';
+    this._single = {};
+    this._modifiers = {};
+    this._statements = [];
+    this._type = columnAlias[type] || type;
+    this._args = args;
+    this._tableBuilder = tableBuilder;
 
-  // If we're altering the table, extend the object
-  // with the available "alter" methods.
-  if (tableBuilder._method === 'alter') {
-    extend(this, AlterMethods);
+    // If we're altering the table, extend the object
+    // with the available "alter" methods.
+    if (tableBuilder._method === 'alter') {
+      extend(this, AlterMethods);
+    }
   }
 }
-
 // All of the modifier methods that can be used to modify the current query.
 const modifiers = [
   'default',

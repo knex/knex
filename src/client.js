@@ -17,7 +17,6 @@ import ColumnBuilder from './schema/columnbuilder';
 import ColumnCompiler from './schema/columncompiler';
 
 import { Pool, TimeoutError } from 'tarn';
-import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
 import { makeEscape } from './query/string';
@@ -31,83 +30,87 @@ const debugBindings = require('debug')('knex:bindings');
 
 // The base client provides the general structure
 // for a dialect specific client object.
-export function Client(config = {}) {
-  this.config = config;
-  this.logger = new Logger(config);
-
-  //Client is a required field, so throw error if it's not supplied.
-  //If 'this.dialect' is set, then this is a 'super()' call, in which case
-  //'client' does not have to be set as it's already assigned on the client prototype.
-  if (!this.config.client && !this.dialect) {
-    throw new Error(`knex: Required configuration option 'client' is missing.`);
-  }
-
-  this.connectionSettings = cloneDeep(config.connection || {});
-  if (this.driverName && config.connection) {
-    this.initializeDriver();
-    if (!config.pool || (config.pool && config.pool.max !== 0)) {
-      this.initializePool(config);
+export class Client extends EventEmitter {
+  constructor(config = {}) {
+    super();
+    this.config = config;
+    this.logger = new Logger(config);
+    this.connectionSettings = cloneDeep(config.connection || {});
+    this.valueForUndefined = this.raw('DEFAULT');
+    if (config.useNullAsDefault) {
+      this.valueForUndefined = null;
     }
   }
-  this.valueForUndefined = this.raw('DEFAULT');
-  if (config.useNullAsDefault) {
-    this.valueForUndefined = null;
-  }
-}
-inherits(Client, EventEmitter);
 
-assign(Client.prototype, {
+  init() {
+    if (!this.config.client && !this.dialect) {
+      throw new Error(
+        `knex: Required configuration option 'client' is missing.`
+      );
+    }
+    if (this.driverName && this.config.connection) {
+      this.initializeDriver();
+      if (
+        !this.config.pool ||
+        (this.config.pool && this.config.pool.max !== 0)
+      ) {
+        this.initializePool(this.config);
+      }
+    }
+    return this;
+  }
+
   formatter(builder) {
     return new Formatter(this, builder);
-  },
+  }
 
   queryBuilder() {
     return new QueryBuilder(this);
-  },
+  }
 
   queryCompiler(builder) {
     return new QueryCompiler(this, builder);
-  },
+  }
 
   schemaBuilder() {
     return new SchemaBuilder(this);
-  },
+  }
 
   schemaCompiler(builder) {
     return new SchemaCompiler(this, builder);
-  },
+  }
 
   tableBuilder(type, tableName, fn) {
     return new TableBuilder(this, type, tableName, fn);
-  },
+  }
 
   tableCompiler(tableBuilder) {
     return new TableCompiler(this, tableBuilder);
-  },
+  }
 
   columnBuilder(tableBuilder, type, args) {
     return new ColumnBuilder(this, tableBuilder, type, args);
-  },
+  }
 
   columnCompiler(tableBuilder, columnBuilder) {
     return new ColumnCompiler(this, tableBuilder, columnBuilder);
-  },
+  }
 
   runner(builder) {
     return new Runner(this, builder);
-  },
+  }
 
   transaction(container, config, outerTx) {
     return new Transaction(this, container, config, outerTx);
-  },
+  }
 
   raw() {
     return new Raw(this).set(...arguments);
-  },
+  }
 
   ref() {
     return new Ref(this, ...arguments);
-  },
+  }
 
   _formatQuery(sql, bindings, timeZone) {
     bindings = bindings == null ? [] : [].concat(bindings);
@@ -120,15 +123,18 @@ assign(Client.prototype, {
         return match;
       }
       const value = bindings[index++];
+      if (typeof this._escapeBinding !== 'function') {
+        debugger;
+      }
       return this._escapeBinding(value, { timeZone });
     });
-  },
+  }
 
-  _escapeBinding: makeEscape({
+  _escapeBinding = makeEscape({
     escapeString(str) {
       return `'${str.replace(/'/g, "''")}'`;
     },
-  }),
+  });
 
   query(connection, obj) {
     if (typeof obj === 'string') obj = { sql: obj };
@@ -148,7 +154,7 @@ assign(Client.prototype, {
       this.emit('query-error', err, assign({ __knexUid, __knexTxId }, obj));
       throw err;
     });
-  },
+  }
 
   stream(connection, obj, stream, options) {
     if (typeof obj === 'string') obj = { sql: obj };
@@ -163,22 +169,22 @@ assign(Client.prototype, {
     obj.sql = this.positionBindings(obj.sql);
 
     return this._stream(connection, obj, stream, options);
-  },
+  }
 
   prepBindings(bindings) {
     return bindings;
-  },
+  }
 
   positionBindings(sql) {
     return sql;
-  },
+  }
 
   postProcessResponse(resp, queryContext) {
     if (this.config.postProcessResponse) {
       return this.config.postProcessResponse(resp, queryContext);
     }
     return resp;
-  },
+  }
 
   wrapIdentifier(value, queryContext) {
     return this.customWrapIdentifier(
@@ -186,18 +192,18 @@ assign(Client.prototype, {
       this.wrapIdentifierImpl,
       queryContext
     );
-  },
+  }
 
   customWrapIdentifier(value, origImpl, queryContext) {
     if (this.config.wrapIdentifier) {
       return this.config.wrapIdentifier(value, origImpl, queryContext);
     }
     return origImpl(value);
-  },
+  }
 
   wrapIdentifierImpl(value) {
     return value !== '*' ? `"${value.replace(/"/g, '""')}"` : '*';
-  },
+  }
 
   initializeDriver() {
     try {
@@ -208,11 +214,11 @@ assign(Client.prototype, {
       );
       process.exit(1);
     }
-  },
+  }
 
   poolDefaults() {
     return { min: 2, max: 10, propagateCreateError: true };
-  },
+  }
 
   getPoolSettings(poolConfig) {
     poolConfig = defaults({}, poolConfig, this.poolDefaults());
@@ -282,7 +288,7 @@ assign(Client.prototype, {
         return this.validateConnection(connection);
       },
     });
-  },
+  }
 
   initializePool(config = this.config) {
     if (this.pool) {
@@ -291,11 +297,11 @@ assign(Client.prototype, {
     }
 
     this.pool = new Pool(this.getPoolSettings(config.pool));
-  },
+  }
 
   validateConnection(connection) {
     return true;
-  },
+  }
 
   // Acquire a connection from the pool.
   acquireConnection() {
@@ -313,7 +319,7 @@ assign(Client.prototype, {
             'Are you missing a .transacting(trx) call?'
         );
       });
-  },
+  }
 
   // Releases a connection back to the connection pool,
   // returning a promise resolved when the connection is released.
@@ -326,7 +332,7 @@ assign(Client.prototype, {
     }
 
     return Promise.resolve();
-  },
+  }
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
@@ -347,28 +353,28 @@ assign(Client.prototype, {
 
         return Promise.reject(err);
       });
-  },
+  }
 
   // Return the database being used by this client.
   database() {
     return this.connectionSettings.database;
-  },
+  }
 
   toString() {
     return '[object KnexClient]';
-  },
+  }
 
-  canCancelQuery: false,
+  canCancelQuery = false;
 
   assertCanCancelQuery() {
     if (!this.canCancelQuery) {
       throw new Error('Query cancelling not supported for this dialect');
     }
-  },
+  }
 
   cancelQuery() {
     throw new Error('Query cancelling not supported for this dialect');
-  },
-});
+  }
+}
 
 export default Client;

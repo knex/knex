@@ -11,7 +11,6 @@
     "chalk": "2.3.2",
     "commander": "^2.16.0",
     "debug": "3.1.0",
-    "inherits": "~2.0.3",
     "interpret": "^1.1.0",
     "liftoff": "2.5.0",
     "lodash": "^4.17.10",
@@ -37,7 +36,6 @@
     "@types/mssql": "^4.0.8",
     "@types/bluebird": "^3.5.21",
     "@types/minimist": "^1.2.0",
-    "@types/inherits": "^0.0.30",
     "@types/debug": "^0.0.30",
     "@types/uuid": "^3.4.3",
     "@types/node": "^6.0.114",
@@ -88,7 +86,7 @@
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "dev": "yarn build && tsc -w",
     "lint": "tslint src/**",
-    "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && yarn tape",
+    "plaintest": "mocha --exit -t 10000 -R spec test/index.js && yarn tape",
     "pre_test": "yarn lint && yarn build",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node --inspect-brk test/tape/index.js",
@@ -158,9 +156,9 @@
   "tonicExampleFilename": "scripts/runkit-example.js",
   "nyc": {
     "check-coverage": true,
-    "lines": 85,
-    "statements": 83,
-    "functions": 83,
-    "branches": 72
+    "lines": 80,
+    "statements": 80,
+    "functions": 80,
+    "branches": 70
   }
 }

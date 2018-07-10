@@ -1,17 +1,11 @@
 import _ from 'lodash';
-import inherits from 'inherits';
 import Oracle_Compiler from '../../oracle/query/compiler';
 import { ReturningHelper, BlobHelper } from '../utils';
 
-export default function Oracledb_Compiler(client, builder) {
-  Oracle_Compiler.call(this, client, builder);
-}
-inherits(Oracledb_Compiler, Oracle_Compiler);
-
-_.assign(Oracledb_Compiler.prototype, {
+export default class Oracledb_Compiler extends Oracle_Compiler {
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
-  insert: function() {
+  insert() {
     const self = this;
     const outBindPrep = this._prepOutbindings(
       this.single.insert,
@@ -186,14 +180,9 @@ _.assign(Oracledb_Compiler.prototype, {
     }
 
     return sql;
-  },
+  }
 
-  _addReturningToSqlAndConvert: function(
-    sql,
-    outBinding,
-    tableName,
-    returning
-  ) {
+  _addReturningToSqlAndConvert(sql, outBinding, tableName, returning) {
     const self = this;
     const res = {
       sql: sql,
@@ -236,9 +225,9 @@ _.assign(Oracledb_Compiler.prototype, {
     res.returning = returning;
 
     return res;
-  },
+  }
 
-  _prepOutbindings: function(paramValues, paramReturning) {
+  _prepOutbindings(paramValues, paramReturning) {
     const result = {};
     let params = paramValues || [];
     let returning = paramReturning || [];
@@ -279,9 +268,9 @@ _.assign(Oracledb_Compiler.prototype, {
     result.outBinding = outBinding;
     result.values = params;
     return result;
-  },
+  }
 
-  update: function() {
+  update() {
     const self = this;
     const sql = {};
     const outBindPrep = this._prepOutbindings(
@@ -358,5 +347,5 @@ _.assign(Oracledb_Compiler.prototype, {
     }
 
     return sql;
-  },
-});
+  }
+}

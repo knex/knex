@@ -35,7 +35,7 @@ export default function Knex(config) {
       connection: parseConnection(config.connection).connection,
     });
   }
-  return makeKnex(new Dialect(config));
+  return makeKnex(new Dialect(config).init());
 }
 
 // Expose Client on the main Knex namespace.

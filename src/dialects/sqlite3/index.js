@@ -2,7 +2,6 @@
 // -------
 import Promise from 'bluebird';
 
-import inherits from 'inherits';
 import { isUndefined, map, assign, defaults } from 'lodash';
 
 import Client from '../../client';
@@ -13,50 +12,49 @@ import ColumnCompiler from './schema/columncompiler';
 import TableCompiler from './schema/tablecompiler';
 import SQLite3_DDL from './schema/ddl';
 
-function Client_SQLite3(config) {
-  Client.call(this, config);
-  if (isUndefined(config.useNullAsDefault)) {
-    this.logger.warn(
-      'sqlite does not support inserting default values. Set the ' +
-        '`useNullAsDefault` flag to hide this warning. ' +
-        '(see docs http://knexjs.org/#Builder-insert).'
-    );
+class Client_SQLite3 extends Client {
+  constructor(config) {
+    super(config);
+    if (isUndefined(config.useNullAsDefault)) {
+      this.logger.warn(
+        'sqlite does not support inserting default values. Set the ' +
+          '`useNullAsDefault` flag to hide this warning. ' +
+          '(see docs http://knexjs.org/#Builder-insert).'
+      );
+    }
   }
-}
-inherits(Client_SQLite3, Client);
 
-assign(Client_SQLite3.prototype, {
-  dialect: 'sqlite3',
+  dialect = 'sqlite3';
 
-  driverName: 'sqlite3',
+  driverName = 'sqlite3';
 
   _driver() {
     return require('sqlite3');
-  },
+  }
 
   schemaCompiler() {
     return new SchemaCompiler(this, ...arguments);
-  },
+  }
 
   queryCompiler() {
     return new QueryCompiler(this, ...arguments);
-  },
+  }
 
   columnCompiler() {
     return new ColumnCompiler(this, ...arguments);
-  },
+  }
 
   tableCompiler() {
     return new TableCompiler(this, ...arguments);
-  },
+  }
 
   ddl(compiler, pragma, connection) {
     return new SQLite3_DDL(this, compiler, pragma, connection);
-  },
+  }
 
   wrapIdentifierImpl(value) {
     return value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*';
-  },
+  }
 
   // Get a raw connection from the database, returning a promise with the connection object.
   acquireRawConnection() {
@@ -71,13 +69,13 @@ assign(Client_SQLite3.prototype, {
         }
       );
     });
-  },
+  }
 
   // Used to explicitly close a connection, called internally by the pool when
   // a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
     return Promise.fromCallback(connection.close.bind(connection));
-  },
+  }
 
   // Runs the query on the specified connection, providing the bindings and any
   // other necessary prep work.
@@ -110,7 +108,7 @@ assign(Client_SQLite3.prototype, {
         return resolver(obj);
       });
     });
-  },
+  }
 
   _stream(connection, sql, stream) {
     const client = this;
@@ -130,7 +128,7 @@ assign(Client_SQLite3.prototype, {
           stream.end();
         });
     });
-  },
+  }
 
   // Ensures the response is returned in the same format as other clients.
   processResponse(obj, runner) {
@@ -152,14 +150,14 @@ assign(Client_SQLite3.prototype, {
       default:
         return response;
     }
-  },
+  }
 
   poolDefaults() {
     return defaults(
       { min: 1, max: 1 },
       Client.prototype.poolDefaults.call(this)
     );
-  },
-});
+  }
+}
 
 export default Client_SQLite3;
