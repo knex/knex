@@ -35,11 +35,6 @@ export class Client extends EventEmitter {
     super();
     this.config = config;
     this.logger = new Logger(config);
-
-    //Client is a required field, so throw error if it's not supplied.
-    //If 'this.dialect' is set, then this is a 'super()' call, in which case
-    //'client' does not have to be set as it's already assigned on the client prototype.
-    // TODO: Make sure this isn't a breaking change.
     this.connectionSettings = cloneDeep(config.connection || {});
     this.valueForUndefined = this.raw('DEFAULT');
     if (config.useNullAsDefault) {
