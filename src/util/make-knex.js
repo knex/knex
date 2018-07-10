@@ -4,7 +4,6 @@ import Migrator from '../migrate';
 import Seeder from '../seed';
 import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
-import { assign } from 'lodash';
 import batchInsert from './batchInsert';
 
 export default function makeKnex(client) {
@@ -18,7 +17,7 @@ export default function makeKnex(client) {
     return tableName ? qb.table(tableName, options) : qb;
   }
 
-  assign(knex, {
+  Object.assign(knex, {
     Promise: require('bluebird'),
 
     // A new query builder instance.

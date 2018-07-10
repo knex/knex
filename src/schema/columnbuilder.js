@@ -1,4 +1,4 @@
-import { extend, each, toArray } from 'lodash';
+import { each, toArray } from 'lodash';
 import { addQueryContext } from '../helpers';
 
 // The chainable interface off the original "column" method.
@@ -16,7 +16,7 @@ export default class ColumnBuilder {
     // If we're altering the table, extend the object
     // with the available "alter" methods.
     if (tableBuilder._method === 'alter') {
-      extend(this, AlterMethods);
+      Object.assign(this, AlterMethods);
     }
   }
 }

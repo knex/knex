@@ -19,7 +19,8 @@ var pool = {
   },
 };
 
-var mysqlPool = _.extend({}, pool, {
+var mysqlPool = {
+  ...pool,
   afterCreate: function(connection, callback) {
     Promise.promisify(connection.query, { context: connection })(
       "SET sql_mode='TRADITIONAL';",
@@ -28,7 +29,7 @@ var mysqlPool = _.extend({}, pool, {
       callback(null, connection);
     });
   },
-});
+};
 
 var migrations = {
   directory: 'test/integration/migrate/migration',

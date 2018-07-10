@@ -1,6 +1,6 @@
 // PostgreSQL
 // -------
-import { assign, map, extend, isArray, isString, includes } from 'lodash';
+import { map, isArray, isString, includes } from 'lodash';
 import Client from '../../client';
 import Promise from 'bluebird';
 
@@ -225,7 +225,7 @@ class Client_PG extends Client {
   // and any other necessary prep work.
   _query(connection, obj) {
     let sql = obj.sql;
-    if (obj.options) sql = extend({ text: sql }, obj.options);
+    if (obj.options) sql = { text: sql, ...obj.options };
     return new Promise(function(resolver, rejecter) {
       connection.query(sql, obj.bindings, function(err, response) {
         if (err) return rejecter(err);

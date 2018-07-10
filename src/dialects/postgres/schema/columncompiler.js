@@ -2,8 +2,6 @@
 // -------
 import ColumnCompiler from '../../../schema/columncompiler';
 
-import { assign } from 'lodash';
-
 class ColumnCompiler_PG extends ColumnCompiler {
   modifiers = ['nullable', 'defaultTo', 'comment'];
 

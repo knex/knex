@@ -1,6 +1,6 @@
 // MSSQL Client
 // -------
-import { assign, map, flatten, values } from 'lodash';
+import { map, flatten, values } from 'lodash';
 
 import Client from '../../client';
 import Promise from 'bluebird';
@@ -84,7 +84,7 @@ class Client_MSSQL extends Client {
           userName: this.config.user,
           password: this.config.password,
           server: this.config.server,
-          options: Object.assign({}, this.config.options),
+          options: { ...this.config.options },
           domain: this.config.domain,
         };
 
@@ -204,7 +204,7 @@ class Client_MSSQL extends Client {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     return new Promise((resolver, rejecter) => {
-      const settings = Object.assign({}, this.connectionSettings);
+      const settings = { ...this.connectionSettings };
       settings.pool = this.mssqlPoolSettings;
 
       const connection = new this.driver.ConnectionPool(settings);

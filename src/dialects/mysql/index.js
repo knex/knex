@@ -10,7 +10,7 @@ import SchemaCompiler from './schema/compiler';
 import TableCompiler from './schema/tablecompiler';
 import ColumnCompiler from './schema/columncompiler';
 
-import { assign, map } from 'lodash';
+import { map } from 'lodash';
 import { makeEscape } from '../../query/string';
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
@@ -94,7 +94,7 @@ class Client_MySQL extends Client {
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream, options) {
     options = options || {};
-    const queryOptions = assign({ sql: obj.sql }, obj.options);
+    const queryOptions = { sql: obj.sql, ...obj.options };
     return new Promise((resolver, rejecter) => {
       stream.on('error', rejecter);
       stream.on('end', resolver);
@@ -120,7 +120,7 @@ class Client_MySQL extends Client {
         resolver();
         return;
       }
-      const queryOptions = assign({ sql: obj.sql }, obj.options);
+      const queryOptions = { sql: obj.sql, ...obj.options };
       connection.query(queryOptions, obj.bindings, function(err, rows, fields) {
         if (err) return rejecter(err);
         obj.response = [rows, fields];

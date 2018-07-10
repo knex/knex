@@ -20,7 +20,7 @@ import { Pool, TimeoutError } from 'tarn';
 import { EventEmitter } from 'events';
 
 import { makeEscape } from './query/string';
-import { assign, uniqueId, cloneDeep, defaults } from 'lodash';
+import { uniqueId, cloneDeep, defaults } from 'lodash';
 
 import Logger from './logger';
 
@@ -142,7 +142,7 @@ export class Client extends EventEmitter {
 
     const { __knexUid, __knexTxId } = connection;
 
-    this.emit('query', assign({ __knexUid, __knexTxId }, obj));
+    this.emit('query', { __knexUid, __knexTxId, ...obj });
     debugQuery(obj.sql, __knexTxId);
     debugBindings(obj.bindings, __knexTxId);
 
@@ -151,7 +151,7 @@ export class Client extends EventEmitter {
     return this._query(connection, obj).catch((err) => {
       err.message =
         this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message;
-      this.emit('query-error', err, assign({ __knexUid, __knexTxId }, obj));
+      this.emit('query-error', err, { __knexUid, __knexTxId, ...obj });
       throw err;
     });
   }
@@ -162,7 +162,7 @@ export class Client extends EventEmitter {
 
     const { __knexUid, __knexTxId } = connection;
 
-    this.emit('query', assign({ __knexUid, __knexTxId }, obj));
+    this.emit('query', { __knexUid, __knexTxId, ...obj });
     debugQuery(obj.sql, __knexTxId);
     debugBindings(obj.bindings, __knexTxId);
 
@@ -253,7 +253,8 @@ export class Client extends EventEmitter {
     // choose the smallest, positive timeout setting and set on poolConfig
     poolConfig.acquireTimeoutMillis = Math.min(...timeouts);
 
-    return Object.assign(poolConfig, {
+    return {
+      ...poolConfig,
       create: () => {
         return this.acquireRawConnection().tap((connection) => {
           connection.__knexUid = uniqueId('__knexUid');
@@ -287,7 +288,7 @@ export class Client extends EventEmitter {
 
         return this.validateConnection(connection);
       },
-    });
+    };
   }
 
   initializePool(config = this.config) {

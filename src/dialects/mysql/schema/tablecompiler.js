@@ -5,8 +5,6 @@
 import TableCompiler from '../../../schema/tablecompiler';
 import Promise from 'bluebird';
 
-import { assign } from 'lodash';
-
 // Table Compiler
 // ------
 

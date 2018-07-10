@@ -1,7 +1,6 @@
 // MySQL2 Client
 // -------
 import Client_MySQL from '../mysql';
-import { assign } from 'lodash';
 import Transaction from './transaction';
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"

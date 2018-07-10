@@ -3,8 +3,6 @@
 
 import ColumnCompiler_PG from '../../postgres/schema/columncompiler';
 
-import { assign } from 'lodash';
-
 class ColumnCompiler_Redshift extends ColumnCompiler_PG {
   bigincrements = 'bigint identity(1,1) primary key not null';
   binary = 'varchar(max)';

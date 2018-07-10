@@ -4,14 +4,7 @@ import * as helpers from './helpers';
 import { EventEmitter } from 'events';
 import debug from 'debug';
 
-import {
-  assign,
-  reduce,
-  isPlainObject,
-  isObject,
-  isUndefined,
-  isNumber,
-} from 'lodash';
+import { reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash';
 import Formatter from './formatter';
 import saveAsyncStack from './util/save-async-stack';
 import uuid from 'uuid';
@@ -99,7 +92,11 @@ class Raw extends EventEmitter {
       obj.sql = obj.sql + this._wrappedAfter;
     }
 
-    obj.options = reduce(this._options, assign, {});
+    obj.options = reduce(
+      this._options,
+      (result, opts) => ({ ...result, ...opts }),
+      {}
+    );
 
     if (this._timeout) {
       obj.timeout = this._timeout;

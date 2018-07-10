@@ -1,6 +1,6 @@
 import { pushQuery, pushAdditional, unshiftQuery } from './helpers';
 
-import { assign, isUndefined } from 'lodash';
+import { isUndefined } from 'lodash';
 
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of

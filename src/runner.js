@@ -1,4 +1,4 @@
-import { assign, isArray } from 'lodash';
+import { isArray } from 'lodash';
 import Promise from 'bluebird';
 
 let PassThrough;
@@ -124,7 +124,7 @@ class Runner {
   query = Promise.method(function(obj) {
     const { __knexUid, __knexTxId } = this.connection;
 
-    this.builder.emit('query', assign({ __knexUid, __knexTxId }, obj));
+    this.builder.emit('query', { __knexUid, __knexTxId, ...obj });
 
     let queryPromise = this.client.query(this.connection, obj);
 
@@ -144,14 +144,14 @@ class Runner {
         this.builder.emit(
           'query-response',
           postProcessedResponse,
-          assign({ __knexUid: this.connection.__knexUid }, obj),
+          { __knexUid: this.connection.__knexUid, ...obj },
           this.builder
         );
 
         this.client.emit(
           'query-response',
           postProcessedResponse,
-          assign({ __knexUid: this.connection.__knexUid }, obj),
+          { __knexUid: this.connection.__knexUid, ...obj },
           this.builder
         );
 
@@ -181,29 +181,26 @@ class Runner {
             this.connection.__knex__disposed = error;
 
             // cancellation failed
-            throw assign(cancelError, {
-              message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,
-              sql,
-              bindings,
-              timeout,
-            });
+            cancelError.message = `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`;
+            cancelError.sql = sql;
+            cancelError.bindings = bindings;
+            cancelError.timeout = timeout;
+            throw cancelError;
           })
           .then(() => {
             // cancellation succeeded, rethrow timeout error
-            throw assign(error, {
-              message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
-              sql,
-              bindings,
-              timeout,
-            });
+            error.message = `Defined query timeout of ${timeout}ms exceeded when running query.`;
+            error.sql = sql;
+            error.bindings = bindings;
+            error.timeout = timeout;
+            throw error;
           });
       })
       .catch((error) => {
-        this.builder.emit(
-          'query-error',
-          error,
-          assign({ __knexUid: this.connection.__knexUid }, obj)
-        );
+        this.builder.emit('query-error', error, {
+          __knexUid: this.connection.__knexUid,
+          ...obj,
+        });
         throw error;
       });
   });

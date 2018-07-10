@@ -1,6 +1,6 @@
 // Oracle Client
 // -------
-import { assign, map, flatten, values } from 'lodash';
+import { map, flatten, values } from 'lodash';
 
 import Client from '../../client';
 import Promise from 'bluebird';

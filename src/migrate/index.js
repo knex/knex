@@ -5,7 +5,6 @@ import path from 'path';
 import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
 import {
-  assign,
   bind,
   difference,
   each,
@@ -466,7 +465,7 @@ export default class Migrator {
   }
 
   setConfig(config) {
-    return assign({}, CONFIG_DEFAULT, this.config || {}, config);
+    return { ...CONFIG_DEFAULT, ...(this.config || {}), ...config };
   }
 }
 

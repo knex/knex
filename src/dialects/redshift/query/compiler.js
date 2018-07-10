@@ -3,7 +3,7 @@
 import QueryCompiler from '../../../query/compiler';
 import QueryCompiler_PG from '../../postgres/query/compiler';
 
-import { assign, reduce, identity } from 'lodash';
+import { reduce, identity } from 'lodash';
 
 class QueryCompiler_Redshift extends QueryCompiler_PG {
   truncate() {

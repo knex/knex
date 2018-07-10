@@ -1,4 +1,4 @@
-import { assign, uniq, map } from 'lodash';
+import { uniq, map } from 'lodash';
 import Raw from '../../../raw';
 import ColumnCompiler from '../../../schema/columncompiler';
 import Trigger from './trigger';
