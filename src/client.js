@@ -40,23 +40,29 @@ export class Client extends EventEmitter {
     //If 'this.dialect' is set, then this is a 'super()' call, in which case
     //'client' does not have to be set as it's already assigned on the client prototype.
     // TODO: Make sure this isn't a breaking change.
-    // if (!this.config.client && !this.dialect) {
-    //   throw new Error(
-    //     `knex: Required configuration option 'client' is missing.`
-    //   );
-    // }
-
     this.connectionSettings = cloneDeep(config.connection || {});
-    if (this.driverName && config.connection) {
-      this.initializeDriver();
-      if (!config.pool || (config.pool && config.pool.max !== 0)) {
-        this.initializePool(config);
-      }
-    }
     this.valueForUndefined = this.raw('DEFAULT');
     if (config.useNullAsDefault) {
       this.valueForUndefined = null;
     }
+  }
+
+  init() {
+    if (!this.config.client && !this.dialect) {
+      throw new Error(
+        `knex: Required configuration option 'client' is missing.`
+      );
+    }
+    if (this.driverName && this.config.connection) {
+      this.initializeDriver();
+      if (
+        !this.config.pool ||
+        (this.config.pool && this.config.pool.max !== 0)
+      ) {
+        this.initializePool(this.config);
+      }
+    }
+    return this;
   }
 
   formatter(builder) {
@@ -122,6 +128,9 @@ export class Client extends EventEmitter {
         return match;
       }
       const value = bindings[index++];
+      if (typeof this._escapeBinding !== 'function') {
+        debugger;
+      }
       return this._escapeBinding(value, { timeZone });
     });
   }

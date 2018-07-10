@@ -21,39 +21,37 @@ assign(Runner.prototype, {
   // an object or array of queries to run, each of which are run on
   // a single connection.
   run() {
-    const runner = this;
     return (
-      Promise.using(this.ensureConnection(), function(connection) {
-        runner.connection = connection;
+      Promise.using(this.ensureConnection(), (connection) => {
+        this.connection = connection;
 
-        runner.client.emit('start', runner.builder);
-        runner.builder.emit('start', runner.builder);
-        const sql = runner.builder.toSQL();
+        this.client.emit('start', this.builder);
+        this.builder.emit('start', this.builder);
+        const sql = this.builder.toSQL();
 
-        if (runner.builder._debug) {
-          runner.client.logger.debug(sql);
+        if (this.builder._debug) {
+          this.client.logger.debug(sql);
         }
-
         if (isArray(sql)) {
-          return runner.queryArray(sql);
+          return this.queryArray(sql);
         }
-        return runner.query(sql);
+        return this.query(sql);
       })
 
         // If there are any "error" listeners, we fire an error event
         // and then re-throw the error to be eventually handled by
         // the promise chain. Useful if you're wrapping in a custom `Promise`.
-        .catch(function(err) {
-          if (runner.builder._events && runner.builder._events.error) {
-            runner.builder.emit('error', err);
+        .catch((err) => {
+          if (this.builder._events && this.builder._events.error) {
+            this.builder.emit('error', err);
           }
           throw err;
         })
 
         // Fire a single "end" event on the builder when
         // all queries have successfully completed.
-        .tap(function() {
-          runner.builder.emit('end');
+        .tap(() => {
+          this.builder.emit('end');
         })
     );
   },
@@ -75,17 +73,14 @@ assign(Runner.prototype, {
     // Lazy-load the "PassThrough" dependency.
     PassThrough = PassThrough || require('stream').PassThrough;
 
-    const runner = this;
     const stream = new PassThrough({ objectMode: true });
 
     let hasConnection = false;
-    const promise = Promise.using(this.ensureConnection(), function(
-      connection
-    ) {
+    const promise = Promise.using(this.ensureConnection(), (connection) => {
       hasConnection = true;
-      runner.connection = connection;
+      this.connection = connection;
       try {
-        const sql = runner.builder.toSQL();
+        const sql = this.builder.toSQL();
 
         if (isArray(sql) && hasHandler) {
           throw new Error(
@@ -93,7 +88,7 @@ assign(Runner.prototype, {
           );
         }
 
-        return runner.client.stream(runner.connection, sql, stream, options);
+        return this.client.stream(this.connection, sql, stream, options);
       } catch (e) {
         stream.emit('error', e);
         throw e;
@@ -131,7 +126,6 @@ assign(Runner.prototype, {
 
     this.builder.emit('query', assign({ __knexUid, __knexTxId }, obj));
 
-    const runner = this;
     let queryPromise = this.client.query(this.connection, obj);
 
     if (obj.timeout) {
@@ -140,7 +134,7 @@ assign(Runner.prototype, {
 
     return queryPromise
       .then((resp) => {
-        const processedResponse = this.client.processResponse(resp, runner);
+        const processedResponse = this.client.processResponse(resp, this);
         const queryContext = this.builder.queryContext();
         const postProcessedResponse = this.client.postProcessResponse(
           processedResponse,

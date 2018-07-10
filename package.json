@@ -86,7 +86,7 @@
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "dev": "yarn build && tsc -w",
     "lint": "tslint src/**",
-    "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && yarn tape",
+    "plaintest": "mocha --exit -t 10000 -R spec test/index.js && yarn tape",
     "pre_test": "yarn lint && yarn build",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node --inspect-brk test/tape/index.js",

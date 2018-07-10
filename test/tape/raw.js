@@ -5,7 +5,7 @@ var Client = require('../../lib/client').default;
 var test = require('tape');
 var _ = require('lodash');
 
-var client = new Client({ client: 'mysql' });
+var client = new Client({ client: 'mysql' }).init();
 function raw(sql, bindings) {
   return new Raw(client).set(sql, bindings);
 }

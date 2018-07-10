@@ -11,12 +11,12 @@ var MSSQL_Client = require('../../../lib/dialects/mssql').default;
 
 // use driverName as key
 var clients = {
-  mysql: new MySQL_Client({}),
-  pg: new PG_Client({}),
-  'pg-redshift': new Redshift_Client({}),
-  oracledb: new Oracledb_Client({}),
-  sqlite3: new SQLite3_Client({}),
-  mssql: new MSSQL_Client({}),
+  mysql: new MySQL_Client({}).init(),
+  pg: new PG_Client({}).init(),
+  'pg-redshift': new Redshift_Client({}).init(),
+  oracledb: new Oracledb_Client({}).init(),
+  sqlite3: new SQLite3_Client({}).init(),
+  mssql: new MSSQL_Client({}).init(),
 };
 
 var useNullAsDefaultConfig = { useNullAsDefault: true };

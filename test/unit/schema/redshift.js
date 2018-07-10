@@ -6,7 +6,7 @@
 let tableSql;
 
 const Redshift_Client = require('../../../lib/dialects/redshift').default;
-const client = new Redshift_Client({});
+const client = new Redshift_Client({}).init();
 
 const equal = require('assert').equal;
 

@@ -8,8 +8,9 @@ import interfaceFns from '../interface';
 // `knex.builder`, accepting the current `knex` instance,
 // and pulling out the `client` and `grammar` from the current
 // knex instance.
-class SchemaBuilder {
+class SchemaBuilder extends EventEmitter {
   constructor(client) {
+    super();
     this.client = client;
     this._sequence = [];
 
