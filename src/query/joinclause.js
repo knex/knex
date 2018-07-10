@@ -1,5 +1,4 @@
-
-import { assign } from 'lodash'
+import { assign } from 'lodash';
 import assert from 'assert';
 
 // JoinClause
@@ -16,7 +15,6 @@ function JoinClause(table, type, schema) {
 }
 
 assign(JoinClause.prototype, {
-
   grouping: 'join',
 
   // Adds an "on" clause to the current join object.
@@ -25,7 +23,7 @@ assign(JoinClause.prototype, {
       this.clauses.push({
         type: 'onWrapped',
         value: first,
-        bool: this._bool()
+        bool: this._bool(),
       });
       return this;
     }
@@ -33,22 +31,37 @@ assign(JoinClause.prototype, {
     let data;
     const bool = this._bool();
     switch (arguments.length) {
-      case 1:  {
+      case 1: {
         if (typeof first === 'object' && typeof first.toSQL !== 'function') {
           const keys = Object.keys(first);
           let i = -1;
-          const method = bool === 'or' ? 'orOn' : 'on'
+          const method = bool === 'or' ? 'orOn' : 'on';
           while (++i < keys.length) {
-            this[method](keys[i], first[keys[i]])
+            this[method](keys[i], first[keys[i]]);
           }
           return this;
         } else {
-          data = {type: 'onRaw', value: first, bool};
+          data = { type: 'onRaw', value: first, bool };
         }
         break;
       }
-      case 2:  data = {type: 'onBasic', column: first, operator: '=', value: operator, bool}; break;
-      default: data = {type: 'onBasic', column: first, operator, value: second, bool};
+      case 2:
+        data = {
+          type: 'onBasic',
+          column: first,
+          operator: '=',
+          value: operator,
+          bool,
+        };
+        break;
+      default:
+        data = {
+          type: 'onBasic',
+          column: first,
+          operator,
+          value: second,
+          bool,
+        };
     }
     this.clauses.push(data);
     return this;
@@ -56,7 +69,7 @@ assign(JoinClause.prototype, {
 
   // Adds a "using" clause to the current join.
   using(column) {
-    return this.clauses.push({type: 'onUsing', column, bool: this._bool()});
+    return this.clauses.push({ type: 'onUsing', column, bool: this._bool() });
   },
 
   /*// Adds an "and on" clause to the current join object.
@@ -70,14 +83,20 @@ assign(JoinClause.prototype, {
   },
 
   onBetween(column, values) {
-    assert(Array.isArray(values), 'The second argument to onBetween must be an array.')
-    assert(values.length === 2, 'You must specify 2 values for the onBetween clause')
+    assert(
+      Array.isArray(values),
+      'The second argument to onBetween must be an array.'
+    );
+    assert(
+      values.length === 2,
+      'You must specify 2 values for the onBetween clause'
+    );
     this.clauses.push({
       type: 'onBetween',
       column,
       value: values,
       bool: this._bool(),
-      not: this._not()
+      not: this._not(),
     });
     return this;
   },
@@ -91,17 +110,19 @@ assign(JoinClause.prototype, {
   },
 
   orOnNotBetween(column, values) {
-    return this._bool('or')._not(true).onBetween(column, values);
+    return this._bool('or')
+      ._not(true)
+      .onBetween(column, values);
   },
 
   onIn(column, values) {
-    if (Array.isArray(values) && values.length === 0) return this.where(this._not());
+    if (Array.isArray(values) && values.length === 0) return this.on(1, '=', 0);
     this.clauses.push({
       type: 'onIn',
       column,
       value: values,
       not: this._not(),
-      bool: this._bool()
+      bool: this._bool(),
     });
     return this;
   },
@@ -115,7 +136,9 @@ assign(JoinClause.prototype, {
   },
 
   orOnNotIn(column, values) {
-    return this._bool('or')._not(true).onIn(column, values);
+    return this._bool('or')
+      ._not(true)
+      .onIn(column, values);
   },
 
   onNull(column) {
@@ -123,7 +146,7 @@ assign(JoinClause.prototype, {
       type: 'onNull',
       column,
       not: this._not(),
-      bool: this._bool()
+      bool: this._bool(),
     });
     return this;
   },
@@ -137,7 +160,9 @@ assign(JoinClause.prototype, {
   },
 
   orOnNotNull(callback) {
-    return this._not(true)._bool('or').onNull(callback);
+    return this._not(true)
+      ._bool('or')
+      .onNull(callback);
   },
 
   onExists(callback) {
@@ -145,7 +170,7 @@ assign(JoinClause.prototype, {
       type: 'onExists',
       value: callback,
       not: this._not(),
-      bool: this._bool()
+      bool: this._bool(),
     });
     return this;
   },
@@ -159,7 +184,9 @@ assign(JoinClause.prototype, {
   },
 
   orOnNotExists(callback) {
-    return this._not(true)._bool('or').onExists(callback);
+    return this._not(true)
+      ._bool('or')
+      .onExists(callback);
   },
 
   // Explicitly set the type of join, useful within a function when creating a grouped join.
@@ -187,23 +214,22 @@ assign(JoinClause.prototype, {
     this._notFlag = false;
     return ret;
   },
-
-})
-
-Object.defineProperty(JoinClause.prototype, 'or', {
-  get () {
-    return this._bool('or');
-  }
 });
 
-JoinClause.prototype.andOn = JoinClause.prototype.on
-JoinClause.prototype.andOnIn = JoinClause.prototype.onIn
-JoinClause.prototype.andOnNotIn = JoinClause.prototype.onNotIn
-JoinClause.prototype.andOnNull = JoinClause.prototype.onNull
-JoinClause.prototype.andOnNotNull = JoinClause.prototype.onNotNull
-JoinClause.prototype.andOnExists = JoinClause.prototype.onExists
-JoinClause.prototype.andOnNotExists = JoinClause.prototype.onNotExists
-JoinClause.prototype.andOnBetween = JoinClause.prototype.onBetween
-JoinClause.prototype.andOnNotBetween = JoinClause.prototype.onNotBetween
+Object.defineProperty(JoinClause.prototype, 'or', {
+  get() {
+    return this._bool('or');
+  },
+});
+
+JoinClause.prototype.andOn = JoinClause.prototype.on;
+JoinClause.prototype.andOnIn = JoinClause.prototype.onIn;
+JoinClause.prototype.andOnNotIn = JoinClause.prototype.onNotIn;
+JoinClause.prototype.andOnNull = JoinClause.prototype.onNull;
+JoinClause.prototype.andOnNotNull = JoinClause.prototype.onNotNull;
+JoinClause.prototype.andOnExists = JoinClause.prototype.onExists;
+JoinClause.prototype.andOnNotExists = JoinClause.prototype.onNotExists;
+JoinClause.prototype.andOnBetween = JoinClause.prototype.onBetween;
+JoinClause.prototype.andOnNotBetween = JoinClause.prototype.onNotBetween;
 
 export default JoinClause;

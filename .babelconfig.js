@@ -8,7 +8,6 @@ var presets = [
 module.exports = {
   "presets": presets,
   "plugins": [
-    "lodash",
     "transform-runtime",
     "add-module-exports"
   ]
