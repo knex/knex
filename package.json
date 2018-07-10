@@ -156,9 +156,9 @@
   "tonicExampleFilename": "scripts/runkit-example.js",
   "nyc": {
     "check-coverage": true,
-    "lines": 85,
-    "statements": 83,
-    "functions": 83,
-    "branches": 72
+    "lines": 80,
+    "statements": 80,
+    "functions": 80,
+    "branches": 70
   }
 }
