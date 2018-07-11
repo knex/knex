@@ -1,6 +1,6 @@
 'use strict';
 
-var knex = require('../../lib/index').default;
+var knex = require('../../lib/index').Knex;
 var test = require('tape');
 
 test('it should parse the connection string', function(t) {
