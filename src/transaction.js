@@ -209,6 +209,7 @@ function makeTransactor(trx, connection, trxClient) {
 // connection and does not release back into the pool.
 function makeTxClient(trx, client, connection) {
   const trxClient = Object.create(client.constructor.prototype);
+  trxClient.version = client.version;
   trxClient.config = client.config;
   trxClient.driver = client.driver;
   trxClient.connectionSettings = client.connectionSettings;
