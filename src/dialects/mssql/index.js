@@ -1,17 +1,14 @@
 // MSSQL Client
 // -------
-import { map, flatten, values } from 'lodash';
-
-import Client from '../../client';
 import Promise from 'bluebird';
-
-import Formatter from '../../formatter';
-import Transaction from './transaction';
-import QueryCompiler from './query/compiler';
-import SchemaCompiler from './schema/compiler';
-import TableCompiler from './schema/tablecompiler';
-import ColumnCompiler from './schema/columncompiler';
-
+import { flatten, map, values } from 'lodash';
+import { Client } from '../../client';
+import { Formatter } from '../../formatter';
+import { QueryCompiler_MSSQL } from './query/compiler';
+import { ColumnCompiler_MSSQL } from './schema/columncompiler';
+import { SchemaCompiler_MSSQL } from './schema/compiler';
+import { TableCompiler_MSSQL } from './schema/tablecompiler';
+import { Transaction_MSSQL } from './transaction';
 const { isArray } = Array;
 
 const SQL_INT4 = { MIN: -2147483648, MAX: 2147483647 };
@@ -19,7 +16,7 @@ const SQL_BIGINT_SAFE = { MIN: -9007199254740991, MAX: 9007199254740991 };
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler" objects, which
 // extend the base 'lib/query/builder' and 'lib/query/compiler', respectively.
-class Client_MSSQL extends Client {
+export class Client_MSSQL extends Client {
   constructor(config = {}) {
     super(config);
     // #1235 mssql module wants 'server', not 'host'. This is to enforce the same
@@ -177,23 +174,23 @@ class Client_MSSQL extends Client {
   }
 
   transaction() {
-    return new Transaction(this, ...arguments);
+    return new Transaction_MSSQL(this, ...arguments);
   }
 
   queryCompiler() {
-    return new QueryCompiler(this, ...arguments);
+    return new QueryCompiler_MSSQL(this, ...arguments);
   }
 
   schemaCompiler() {
-    return new SchemaCompiler(this, ...arguments);
+    return new SchemaCompiler_MSSQL(this, ...arguments);
   }
 
   tableCompiler() {
-    return new TableCompiler(this, ...arguments);
+    return new TableCompiler_MSSQL(this, ...arguments);
   }
 
   columnCompiler() {
-    return new ColumnCompiler(this, ...arguments);
+    return new ColumnCompiler_MSSQL(this, ...arguments);
   }
 
   wrapIdentifierImpl(value) {
@@ -354,7 +351,7 @@ class Client_MSSQL extends Client {
   }
 }
 
-class MSSQL_Formatter extends Formatter {
+export class MSSQL_Formatter extends Formatter {
   // Accepts a string or array of columns to wrap as appropriate.
   columnizeWithPrefix(prefix, target) {
     const columns = typeof target === 'string' ? [target] : target;

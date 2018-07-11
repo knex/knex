@@ -1,10 +1,10 @@
 // MySQL Query Compiler
 // ------
-import QueryCompiler from '../../../query/compiler';
+import { QueryCompiler } from '../../../query/compiler';
 
 import { identity } from 'lodash';
 
-class QueryCompiler_MySQL extends QueryCompiler {
+export class QueryCompiler_MySQL extends QueryCompiler {
   _emptyInsertValue = '() values ()';
 
   // Update method, including joins, wheres, order & limits.

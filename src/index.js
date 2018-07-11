@@ -1,8 +1,8 @@
-import Raw from './raw';
-import Client from './client';
+import { Raw } from './raw';
+import { Client } from './client';
 
-import makeKnex from './util/make-knex';
-import parseConnection from './util/parse-connection';
+import { makeKnex } from './util/make-knex';
+import { parseConnectionString } from './util/parse-connection';
 
 // The client names we'll allow in the `{name: lib}` pairing.
 const aliases = {
@@ -11,9 +11,9 @@ const aliases = {
   sqlite: 'sqlite3',
 };
 
-export default function Knex(config) {
+export function Knex(config) {
   if (typeof config === 'string') {
-    return new Knex({ ...parseConnection(config), ...arguments[1] });
+    return new Knex({ ...parseConnectionString(config), ...arguments[1] });
   }
   let Dialect;
   if (arguments.length === 0 || (!config.client && !config.dialect)) {
@@ -31,7 +31,7 @@ export default function Knex(config) {
   if (typeof config.connection === 'string') {
     config = {
       ...config,
-      connection: parseConnection(config.connection).connection,
+      connection: parseConnectionString(config.connection).connection,
     };
   }
   return makeKnex(new Dialect(config).init());

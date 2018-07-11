@@ -1,11 +1,11 @@
 // Redshift Query Builder & Compiler
 // ------
-import QueryCompiler from '../../../query/compiler';
-import QueryCompiler_PG from '../../postgres/query/compiler';
+import { QueryCompiler } from '../../../query/compiler';
+import { QueryCompiler_PG } from '../../postgres/query/compiler';
 
 import { reduce, identity } from 'lodash';
 
-class QueryCompiler_Redshift extends QueryCompiler_PG {
+export class QueryCompiler_Redshift extends QueryCompiler_PG {
   truncate() {
     return `truncate ${this.tableName.toLowerCase()}`;
   }

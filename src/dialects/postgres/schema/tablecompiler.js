@@ -3,11 +3,11 @@
 // PostgreSQL Table Builder & Compiler
 // -------
 
-import TableCompiler from '../../../schema/tablecompiler';
+import { TableCompiler } from '../../../schema/tablecompiler';
 
 import { has } from 'lodash';
 
-class TableCompiler_PG extends TableCompiler {
+export class TableCompiler_PG extends TableCompiler {
   // Compile a rename column command.
   renameColumn(from, to) {
     return this.pushQuery({

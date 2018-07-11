@@ -3,16 +3,15 @@
 import Promise from 'bluebird';
 
 import { isUndefined, map, defaults } from 'lodash';
+import { Client } from '../../client';
 
-import Client from '../../client';
+import { QueryCompiler_SQLite3 } from './query/compiler';
+import { SchemaCompiler_SQLite3 } from './schema/compiler';
+import { ColumnCompiler_SQLite3 } from './schema/columncompiler';
+import { TableCompiler_SQLite3 } from './schema/tablecompiler';
+import { SQLite3_DDL } from './schema/ddl';
 
-import QueryCompiler from './query/compiler';
-import SchemaCompiler from './schema/compiler';
-import ColumnCompiler from './schema/columncompiler';
-import TableCompiler from './schema/tablecompiler';
-import SQLite3_DDL from './schema/ddl';
-
-class Client_SQLite3 extends Client {
+export class Client_SQLite3 extends Client {
   constructor(config) {
     super(config);
     if (isUndefined(config.useNullAsDefault)) {
@@ -33,19 +32,19 @@ class Client_SQLite3 extends Client {
   }
 
   schemaCompiler() {
-    return new SchemaCompiler(this, ...arguments);
+    return new SchemaCompiler_SQLite3(this, ...arguments);
   }
 
   queryCompiler() {
-    return new QueryCompiler(this, ...arguments);
+    return new QueryCompiler_SQLite3(this, ...arguments);
   }
 
   columnCompiler() {
-    return new ColumnCompiler(this, ...arguments);
+    return new ColumnCompiler_SQLite3(this, ...arguments);
   }
 
   tableCompiler() {
-    return new TableCompiler(this, ...arguments);
+    return new TableCompiler_SQLite3(this, ...arguments);
   }
 
   ddl(compiler, pragma, connection) {

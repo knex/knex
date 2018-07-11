@@ -5,10 +5,10 @@ import { EventEmitter } from 'events';
 import debug from 'debug';
 
 import { reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash';
-import Formatter from './formatter';
-import saveAsyncStack from './util/save-async-stack';
+import { Formatter } from './formatter';
+import { saveAsyncStack } from './util/save-async-stack';
 import uuid from 'uuid';
-import interfaceFns from './interface';
+import { interfaceFns } from './interface';
 
 const debugBindings = debug('knex:bindings');
 
@@ -18,7 +18,7 @@ const fakeClient = {
   },
 };
 
-class Raw extends EventEmitter {
+export class Raw extends EventEmitter {
   constructor(client = fakeClient) {
     super();
     this.client = client;

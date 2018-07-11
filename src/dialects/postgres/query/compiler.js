@@ -1,10 +1,10 @@
 // PostgreSQL Query Builder & Compiler
 // ------
-import QueryCompiler from '../../../query/compiler';
+import { QueryCompiler } from '../../../query/compiler';
 
 import { reduce, identity } from 'lodash';
 
-class QueryCompiler_PG extends QueryCompiler {
+export class QueryCompiler_PG extends QueryCompiler {
   // Compiles a truncate query.
   truncate() {
     return `truncate ${this.tableName} restart identity`;

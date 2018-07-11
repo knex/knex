@@ -1,8 +1,8 @@
 // MySQL Column Compiler
 // -------
-import ColumnCompiler from '../../../schema/columncompiler';
+import { ColumnCompiler } from '../../../schema/columncompiler';
 
-class ColumnCompiler_MSSQL extends ColumnCompiler {
+export class ColumnCompiler_MSSQL extends ColumnCompiler {
   modifiers = ['nullable', 'defaultTo', 'first', 'after', 'comment'];
 
   increments = 'int identity(1,1) not null primary key';

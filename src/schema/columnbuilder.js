@@ -2,7 +2,7 @@ import { each, toArray } from 'lodash';
 import { addQueryContext } from '../helpers';
 
 // The chainable interface off the original "column" method.
-export default class ColumnBuilder {
+export class ColumnBuilder {
   constructor(client, tableBuilder, type, args) {
     this.client = client;
     this._method = 'add';
@@ -113,3 +113,5 @@ const columnAlias = {
   string: 'varchar',
   bigint: 'bigInteger',
 };
+
+export default ColumnBuilder;

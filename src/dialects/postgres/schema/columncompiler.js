@@ -1,8 +1,8 @@
 // PostgreSQL Column Compiler
 // -------
-import ColumnCompiler from '../../../schema/columncompiler';
+import { ColumnCompiler } from '../../../schema/columncompiler';
 
-class ColumnCompiler_PG extends ColumnCompiler {
+export class ColumnCompiler_PG extends ColumnCompiler {
   modifiers = ['nullable', 'defaultTo', 'comment'];
 
   // Types

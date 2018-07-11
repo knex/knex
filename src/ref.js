@@ -1,8 +1,6 @@
-'use strict';
+import { Raw } from './raw';
 
-import Raw from './raw';
-
-class Ref extends Raw {
+export class Ref extends Raw {
   constructor(client, ref) {
     super(client);
 

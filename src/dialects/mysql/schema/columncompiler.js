@@ -1,6 +1,6 @@
 // MySQL Column Compiler
 // -------
-import ColumnCompiler from '../../../schema/columncompiler';
+import { ColumnCompiler } from '../../../schema/columncompiler';
 
 function supportsPreciseTimestamps(client) {
   if (!client.version) {
@@ -15,7 +15,7 @@ function supportsPreciseTimestamps(client) {
   return client.version && parseFloat(client.version) > 5.5;
 }
 
-class ColumnCompiler_MySQL extends ColumnCompiler {
+export class ColumnCompiler_MySQL extends ColumnCompiler {
   modifiers = [
     'unsigned',
     'nullable',

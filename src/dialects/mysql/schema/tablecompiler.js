@@ -2,13 +2,13 @@
 
 // MySQL Table Builder & Compiler
 // -------
-import TableCompiler from '../../../schema/tablecompiler';
+import { TableCompiler } from '../../../schema/tablecompiler';
 import Promise from 'bluebird';
 
 // Table Compiler
 // ------
 
-class TableCompiler_MySQL extends TableCompiler {
+export class TableCompiler_MySQL extends TableCompiler {
   createQuery(columns, ifNot) {
     const createStatement = ifNot
       ? 'create table if not exists '

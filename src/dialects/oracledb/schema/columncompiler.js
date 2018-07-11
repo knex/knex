@@ -1,6 +1,6 @@
-import ColumnCompiler_Oracle from '../../oracle/schema/columncompiler';
+import { ColumnCompiler_Oracle } from '../../oracle/schema/columncompiler';
 
-export default class ColumnCompiler_Oracledb extends ColumnCompiler_Oracle {
+export class ColumnCompiler_Oracledb extends ColumnCompiler_Oracle {
   time = 'timestamp with local time zone';
 
   datetime(without) {
@@ -11,3 +11,5 @@ export default class ColumnCompiler_Oracledb extends ColumnCompiler_Oracle {
     return without ? 'timestamp' : 'timestamp with local time zone';
   }
 }
+
+export default ColumnCompiler_Oracledb;

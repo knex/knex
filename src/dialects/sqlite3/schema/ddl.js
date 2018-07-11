@@ -10,7 +10,7 @@ import { uniqueId, find, identity, map, omit } from 'lodash';
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
 // for sqlite3 things.
-class SQLite3_DDL {
+export class SQLite3_DDL {
   constructor(client, tableCompiler, pragma, connection) {
     this.client = client;
     this.tableCompiler = tableCompiler;

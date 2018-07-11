@@ -1,15 +1,15 @@
 /* eslint max-len:0 */
 import * as utils from '../utils';
-import TableCompiler from '../../../schema/tablecompiler';
+import { TableCompiler } from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
-import Trigger from './trigger';
+import { trigger } from './trigger';
 
 import { map } from 'lodash';
 
 // Table Compiler
 // ------
 
-class TableCompiler_Oracle extends TableCompiler {
+export class TableCompiler_Oracle extends TableCompiler {
   addColumns(columns, prefix) {
     if (columns.sql.length > 0) {
       prefix = prefix || this.addColumnsPrefix;
@@ -36,7 +36,7 @@ class TableCompiler_Oracle extends TableCompiler {
     // Remove quotes around tableName
     const tableName = this.tableName().slice(1, -1);
     return this.pushQuery(
-      Trigger.renameColumnTrigger(this.client.logger, tableName, from, to)
+      trigger.renameColumnTrigger(this.client.logger, tableName, from, to)
     );
   }
 

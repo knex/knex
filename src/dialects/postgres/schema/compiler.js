@@ -1,9 +1,9 @@
 // PostgreSQL Schema Compiler
 // -------
 
-import SchemaCompiler from '../../../schema/compiler';
+import { SchemaCompiler } from '../../../schema/compiler';
 
-class SchemaCompiler_PG extends SchemaCompiler {
+export class SchemaCompiler_PG extends SchemaCompiler {
   // Check whether the current table
   hasTable(tableName) {
     let sql = 'select * from information_schema.tables where table_name = ?';

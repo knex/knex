@@ -1,10 +1,10 @@
-import Transaction from '../../transaction';
+import { Transaction } from '../../transaction';
 import Debug from 'debug';
 import { isUndefined } from 'lodash';
 
 const debug = Debug('knex:tx');
 
-class Transaction_MySQL extends Transaction {
+export class Transaction_MySQL extends Transaction {
   query(conn, sql, status, value) {
     const t = this;
     const q = this.trxClient

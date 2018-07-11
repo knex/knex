@@ -5,4 +5,4 @@
 //     For details and documentation:
 //     http://knexjs.org
 
-module.exports = require('./lib/index').default;
+module.exports = require('./lib/index').Knex;

@@ -1,12 +1,12 @@
 import { uniq, map } from 'lodash';
-import Raw from '../../../raw';
-import ColumnCompiler from '../../../schema/columncompiler';
-import Trigger from './trigger';
+import { Raw } from '../../../raw';
+import { ColumnCompiler } from '../../../schema/columncompiler';
+import { trigger } from './trigger';
 
 // Column Compiler
 // -------
 
-class ColumnCompiler_Oracle extends ColumnCompiler {
+export class ColumnCompiler_Oracle extends ColumnCompiler {
   modifiers = ['defaultTo', 'checkIn', 'nullable', 'comment'];
 
   // helper function for pushAdditional in increments() and bigincrements()
@@ -14,7 +14,7 @@ class ColumnCompiler_Oracle extends ColumnCompiler {
     // TODO Add warning that sequence etc is created
     this.pushAdditional(function() {
       const tableName = this.tableCompiler.tableNameRaw;
-      const createTriggerSQL = Trigger.createAutoIncrementTrigger(
+      const createTriggerSQL = trigger.createAutoIncrementTrigger(
         this.client.logger,
         tableName
       );

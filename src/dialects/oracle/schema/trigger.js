@@ -1,6 +1,6 @@
 import * as utils from '../utils';
 
-const trigger = {
+export const trigger = {
   renameColumnTrigger: function(logger, tableName, columnName, to) {
     const triggerName = utils.generateCombinedName(
       logger,

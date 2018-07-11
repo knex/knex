@@ -19,14 +19,14 @@ import {
   template,
 } from 'lodash';
 
-class MigrationLocked extends Error {
+export class MigrationLocked extends Error {
   constructor(msg) {
     super(msg);
     this.name = this.constructor.name;
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
     } else {
-      this.stack = new Error(message).stack;
+      this.stack = new Error(msg).stack;
     }
   }
 }
@@ -52,7 +52,7 @@ const CONFIG_DEFAULT = Object.freeze({
 // The new migration we're performing, typically called from the `knex.migrate`
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the migration.
-export default class Migrator {
+export class Migrator {
   constructor(knex) {
     this.knex = knex;
     this.config = this.setConfig(knex.client.config.migrations);
@@ -529,3 +529,5 @@ function getSchemaBuilder(trxOrKnex, schemaName) {
     ? trxOrKnex.schema.withSchema(schemaName)
     : trxOrKnex.schema;
 }
+
+export default Migrator;

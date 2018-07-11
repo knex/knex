@@ -1,28 +1,22 @@
 import Promise from 'bluebird';
-
-import Raw from './raw';
-import Ref from './ref';
-import Runner from './runner';
-import Formatter from './formatter';
-import Transaction from './transaction';
-
-import QueryBuilder from './query/builder';
-import QueryCompiler from './query/compiler';
-
-import SchemaBuilder from './schema/builder';
-import SchemaCompiler from './schema/compiler';
-import TableBuilder from './schema/tablebuilder';
-import TableCompiler from './schema/tablecompiler';
-import ColumnBuilder from './schema/columnbuilder';
-import ColumnCompiler from './schema/columncompiler';
-
-import { Pool, TimeoutError } from 'tarn';
 import { EventEmitter } from 'events';
-
+import { cloneDeep, defaults, uniqueId } from 'lodash';
+import { Pool, TimeoutError } from 'tarn';
+import { Formatter } from './formatter';
+import { Logger } from './logger';
+import { Builder } from './query/builder';
+import { QueryCompiler } from './query/compiler';
 import { makeEscape } from './query/string';
-import { uniqueId, cloneDeep, defaults } from 'lodash';
-
-import Logger from './logger';
+import { Raw } from './raw';
+import { Ref } from './ref';
+import { Runner } from './runner';
+import { SchemaBuilder } from './schema/builder';
+import { ColumnBuilder } from './schema/columnbuilder';
+import { ColumnCompiler } from './schema/columncompiler';
+import { SchemaCompiler } from './schema/compiler';
+import { TableBuilder } from './schema/tablebuilder';
+import { TableCompiler } from './schema/tablecompiler';
+import { Transaction } from './transaction';
 
 const debug = require('debug')('knex:client');
 const debugQuery = require('debug')('knex:query');
@@ -65,7 +59,7 @@ export class Client extends EventEmitter {
   }
 
   queryBuilder() {
-    return new QueryBuilder(this);
+    return new Builder(this);
   }
 
   queryCompiler(builder) {
@@ -123,9 +117,6 @@ export class Client extends EventEmitter {
         return match;
       }
       const value = bindings[index++];
-      if (typeof this._escapeBinding !== 'function') {
-        debugger;
-      }
       return this._escapeBinding(value, { timeZone });
     });
   }

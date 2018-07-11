@@ -1,24 +1,25 @@
 // Oracledb Client
 // -------
-import _ from 'lodash';
-import QueryCompiler from './query/compiler';
-import ColumnCompiler from './schema/columncompiler';
-import { BlobHelper, ReturningHelper } from './utils';
 import Promise from 'bluebird';
+import _ from 'lodash';
 import stream from 'stream';
-import Transaction from './transaction';
-import Client_Oracle from '../oracle';
-import Oracle_Formatter from '../oracle/formatter';
+import { Oracle_Transaction } from './transaction';
+import { Client_Oracle } from '../oracle';
+import { Oracle_Formatter } from '../oracle/formatter';
+import { Oracledb_Compiler } from './query/compiler';
+import { ColumnCompiler_Oracledb } from './schema/columncompiler';
+import { BlobHelper, ReturningHelper } from './utils';
 
-export default class Client_Oracledb extends Client_Oracle {
-  constructor(config) {
-    super(config);
+export class Client_Oracledb extends Client_Oracle {
+  init() {
+    super.init();
     // Node.js only have 4 background threads by default, oracledb needs one by connection
     if (this.driver) {
       process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || 1;
       process.env.UV_THREADPOOL_SIZE =
         parseInt(process.env.UV_THREADPOOL_SIZE) + this.driver.poolMax;
     }
+    return this;
   }
 
   driverName = 'oracledb';
@@ -45,16 +46,16 @@ export default class Client_Oracledb extends Client_Oracle {
   }
 
   queryCompiler() {
-    return new QueryCompiler(this, ...arguments);
+    return new Oracledb_Compiler(this, ...arguments);
   }
   columnCompiler() {
-    return new ColumnCompiler(this, ...arguments);
+    return new ColumnCompiler_Oracledb(this, ...arguments);
   }
   formatter() {
     return new Oracledb_Formatter(this, ...arguments);
   }
   transaction() {
-    return new Transaction(this, ...arguments);
+    return new Oracle_Transaction(this, ...arguments);
   }
 
   prepBindings(bindings) {
@@ -399,7 +400,7 @@ function readStream(stream, cb) {
   });
 }
 
-class Oracledb_Formatter extends Oracle_Formatter {
+export class Oracledb_Formatter extends Oracle_Formatter {
   // Checks whether a value is a function... if it is, we compile it
   // otherwise we check whether it's a raw
   parameter(value) {
@@ -411,3 +412,5 @@ class Oracledb_Formatter extends Oracle_Formatter {
     return this.unwrapRaw(value, true) || '?';
   }
 }
+
+export default Client_Oracledb;

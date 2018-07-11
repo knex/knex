@@ -1,7 +1,7 @@
-import Formatter from '../../formatter';
+import { Formatter } from '../../formatter';
 import { ReturningHelper } from './utils';
 
-export default class Oracle_Formatter extends Formatter {
+export class Oracle_Formatter extends Formatter {
   alias(first, second) {
     return first + ' ' + second;
   }
@@ -16,3 +16,5 @@ export default class Oracle_Formatter extends Formatter {
     return super.parameter(value, notSetValue);
   }
 }
+
+export default Oracle_Formatter;

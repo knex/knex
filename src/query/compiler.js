@@ -1,10 +1,6 @@
 // Query Compiler
 // -------
-import * as helpers from '../helpers';
-import Raw from '../raw';
-import JoinClause from './joinclause';
 import debug from 'debug';
-
 import {
   bind,
   compact,
@@ -17,6 +13,9 @@ import {
   reduce,
 } from 'lodash';
 import uuid from 'uuid';
+import * as helpers from '../helpers';
+import { Raw } from '../raw';
+import { JoinClause } from './joinclause';
 
 const debugBindings = debug('knex:bindings');
 
@@ -36,7 +35,7 @@ const components = [
 // The "QueryCompiler" takes all of the query statements which
 // have been gathered in the "QueryBuilder" and turns them into a
 // properly formatted / bound query string.
-class QueryCompiler {
+export class QueryCompiler {
   constructor(client, builder) {
     this.client = client;
     this.method = builder._method || 'select';

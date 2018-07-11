@@ -1,38 +1,38 @@
 // Redshift
 // -------
-import Client_PG from '../postgres';
+import { Client_PG } from '../postgres';
 import { map } from 'lodash';
 
-import Transaction from './transaction';
-import QueryCompiler from './query/compiler';
-import ColumnBuilder from './schema/columnbuilder';
-import ColumnCompiler from './schema/columncompiler';
-import TableCompiler from './schema/tablecompiler';
-import SchemaCompiler from './schema/compiler';
+import { Redshift_Transaction } from './transaction';
+import { QueryCompiler_Redshift } from './query/compiler';
+import { ColumnBuilder_Redshift } from './schema/columnbuilder';
+import { ColumnCompiler_Redshift } from './schema/columncompiler';
+import { TableCompiler_Redshift } from './schema/tablecompiler';
+import { SchemaCompiler_Redshift } from './schema/compiler';
 
-class Client_Redshift extends Client_PG {
+export class Client_Redshift extends Client_PG {
   transaction() {
-    return new Transaction(this, ...arguments);
+    return new Redshift_Transaction(this, ...arguments);
   }
 
   queryCompiler() {
-    return new QueryCompiler(this, ...arguments);
+    return new QueryCompiler_Redshift(this, ...arguments);
   }
 
   columnBuilder() {
-    return new ColumnBuilder(this, ...arguments);
+    return new ColumnBuilder_Redshift(this, ...arguments);
   }
 
   columnCompiler() {
-    return new ColumnCompiler(this, ...arguments);
+    return new ColumnCompiler_Redshift(this, ...arguments);
   }
 
   tableCompiler() {
-    return new TableCompiler(this, ...arguments);
+    return new TableCompiler_Redshift(this, ...arguments);
   }
 
   schemaCompiler() {
-    return new SchemaCompiler(this, ...arguments);
+    return new SchemaCompiler_Redshift(this, ...arguments);
   }
 
   dialect = 'redshift';

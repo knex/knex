@@ -1,12 +1,11 @@
 import { EventEmitter } from 'events';
+import { FunctionHelper } from '../functionhelper';
+import { Migrator } from '../migrate';
+import { QueryInterface } from '../query/methods';
+import { Seeder } from '../seed';
+import { batchInsert } from './batchInsert';
 
-import Migrator from '../migrate';
-import Seeder from '../seed';
-import FunctionHelper from '../functionhelper';
-import QueryInterface from '../query/methods';
-import batchInsert from './batchInsert';
-
-export default function makeKnex(client) {
+export function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
   function knex(tableName, options) {
     const qb = knex.queryBuilder();
@@ -137,3 +136,5 @@ export default function makeKnex(client) {
 
   return knex;
 }
+
+export default makeKnex;
