@@ -1,6 +1,6 @@
 import { isEmpty, isArray, map, clone, each } from 'lodash';
 
-export default function interfaceFns(Target) {
+export function interfaceFns(Target) {
   Target.prototype.toQuery = function(tz) {
     let data = this.toSQL(this._method, tz);
     if (!isArray(data)) data = [data];
@@ -109,3 +109,5 @@ export default function interfaceFns(Target) {
     }
   );
 }
+
+export default interfaceFns;

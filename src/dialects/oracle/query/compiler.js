@@ -11,7 +11,7 @@ import {
   compact,
   identity,
 } from 'lodash';
-import QueryCompiler from '../../../query/compiler';
+import { QueryCompiler } from '../../../query/compiler';
 import { ReturningHelper } from '../utils';
 
 const components = [
@@ -31,7 +31,7 @@ const components = [
 // Set the "Formatter" to use for the queries,
 // ensuring that all parameterized values (even across sub-queries)
 // are properly built into the same query.
-class QueryCompiler_Oracle extends QueryCompiler {
+export class QueryCompiler_Oracle extends QueryCompiler {
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
   insert() {

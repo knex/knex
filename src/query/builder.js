@@ -3,9 +3,9 @@
 import assert from 'assert';
 import { EventEmitter } from 'events';
 
-import Raw from '../raw';
+import { Raw } from '../raw';
 import * as helpers from '../helpers';
-import JoinClause from './joinclause';
+import { JoinClause } from './joinclause';
 import {
   clone,
   each,
@@ -21,12 +21,12 @@ import {
   reject,
   includes,
 } from 'lodash';
-import saveAsyncStack from '../util/save-async-stack';
-import interfaceFns from '../interface';
+import { saveAsyncStack } from '../util/save-async-stack';
+import { interfaceFns } from '../interface';
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
-class Builder extends EventEmitter {
+export class Builder extends EventEmitter {
   constructor(client) {
     super();
     this.client = client;

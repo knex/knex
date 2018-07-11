@@ -2,7 +2,7 @@
 // Used for designating column definitions
 // during the table "create" / "alter" statements.
 // -------
-import Raw from '../raw';
+import { Raw } from '../raw';
 import * as helpers from './helpers';
 import { groupBy, first, tail, has, isObject } from 'lodash';
 

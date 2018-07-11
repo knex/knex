@@ -1,13 +1,13 @@
 // Oracle Schema Compiler
 // -------
-import SchemaCompiler from '../../../schema/compiler';
+import { SchemaCompiler } from '../../../schema/compiler';
 import * as utils from '../utils';
-import Trigger from './trigger';
+import { trigger } from './trigger';
 
-class SchemaCompiler_Oracle extends SchemaCompiler {
+export class SchemaCompiler_Oracle extends SchemaCompiler {
   // Rename a table on the schema.
   renameTable(tableName, to) {
-    const renameTable = Trigger.renameTableAndAutoIncrementTrigger(
+    const renameTable = trigger.renameTableAndAutoIncrementTrigger(
       this.client.logger,
       tableName,
       to

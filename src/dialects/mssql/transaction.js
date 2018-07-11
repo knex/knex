@@ -1,9 +1,9 @@
 import Promise from 'bluebird';
-import Transaction from '../../transaction';
+import { Transaction } from '../../transaction';
 import { isUndefined } from 'lodash';
 const debug = require('debug')('knex:tx');
 
-export default class Transaction_MSSQL extends Transaction {
+export class Transaction_MSSQL extends Transaction {
   begin(conn) {
     debug('%s: begin', this.txid);
     return conn.tx_.begin().then(this._resolver, this._rejecter);
@@ -92,3 +92,5 @@ export default class Transaction_MSSQL extends Transaction {
       });
   }
 }
+
+export default Transaction_MSSQL;

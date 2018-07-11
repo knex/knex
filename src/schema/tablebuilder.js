@@ -9,7 +9,7 @@
 import { each, toArray, isString, isFunction } from 'lodash';
 import * as helpers from '../helpers';
 
-class TableBuilder {
+export class TableBuilder {
   constructor(client, method, tableName, fn) {
     this.client = client;
     this._fn = fn;

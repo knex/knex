@@ -1,13 +1,13 @@
 // SQLite3: Column Builder & Compiler
 // -------
-import SchemaCompiler from '../../../schema/compiler';
+import { SchemaCompiler } from '../../../schema/compiler';
 
 import { some } from 'lodash';
 
 // Schema Compiler
 // -------
 
-class SchemaCompiler_SQLite3 extends SchemaCompiler {
+export class SchemaCompiler_SQLite3 extends SchemaCompiler {
   // Compile the query to determine if a table exists.
   hasTable(tableName) {
     const sql =

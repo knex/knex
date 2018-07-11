@@ -1,17 +1,17 @@
 // MySQL2 Client
 // -------
-import Client_MySQL from '../mysql';
-import Transaction from './transaction';
+import { Client_MySQL } from '../mysql';
+import { Transaction_MySQL2 } from './transaction';
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
 // 'lib/query/compiler', respectively.
-class Client_MySQL2 extends Client_MySQL {
+export class Client_MySQL2 extends Client_MySQL {
   // The "dialect", for reference elsewhere.
   driverName = 'mysql2';
 
   transaction() {
-    return new Transaction(this, ...arguments);
+    return new Transaction_MySQL2(this, ...arguments);
   }
 
   _driver() {

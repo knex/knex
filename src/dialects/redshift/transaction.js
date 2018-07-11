@@ -1,7 +1,7 @@
 import Promise from 'bluebird';
-import Transaction from '../../transaction';
+import { Transaction } from '../../transaction';
 
-export default class Redshift_Transaction extends Transaction {
+export class Redshift_Transaction extends Transaction {
   savepoint(conn) {
     this.trxClient.logger('Redshift does not support savepoints.');
     return Promise.resolve();
@@ -17,3 +17,5 @@ export default class Redshift_Transaction extends Transaction {
     return Promise.resolve();
   }
 }
+
+export default Redshift_Transaction;

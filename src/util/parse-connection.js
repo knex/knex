@@ -1,7 +1,7 @@
 import url from 'url';
 import { parse as parsePG } from 'pg-connection-string';
 
-export default function parseConnectionString(str) {
+export function parseConnectionString(str) {
   const parsed = url.parse(str);
   let { protocol } = parsed;
   if (protocol === null) {
@@ -56,3 +56,5 @@ function connectionObject(parsed) {
   }
   return connection;
 }
+
+export default parseConnectionString;

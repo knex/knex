@@ -1,16 +1,16 @@
 // PostgreSQL
 // -------
 import { map, isArray, isString, includes } from 'lodash';
-import Client from '../../client';
+import { Client } from '../../client';
 import Promise from 'bluebird';
 
-import QueryCompiler from './query/compiler';
-import ColumnCompiler from './schema/columncompiler';
-import TableCompiler from './schema/tablecompiler';
-import SchemaCompiler from './schema/compiler';
+import { QueryCompiler_PG } from './query/compiler';
+import { ColumnCompiler_PG } from './schema/columncompiler';
+import { TableCompiler_PG } from './schema/tablecompiler';
+import { SchemaCompiler_PG } from './schema/compiler';
 import { makeEscape } from '../../query/string';
 
-class Client_PG extends Client {
+export class Client_PG extends Client {
   constructor(config) {
     super(config);
     if (config.returning) {
@@ -27,19 +27,19 @@ class Client_PG extends Client {
   }
 
   queryCompiler() {
-    return new QueryCompiler(this, ...arguments);
+    return new QueryCompiler_PG(this, ...arguments);
   }
 
   columnCompiler() {
-    return new ColumnCompiler(this, ...arguments);
+    return new ColumnCompiler_PG(this, ...arguments);
   }
 
   schemaCompiler() {
-    return new SchemaCompiler(this, ...arguments);
+    return new SchemaCompiler_PG(this, ...arguments);
   }
 
   tableCompiler() {
-    return new TableCompiler(this, ...arguments);
+    return new TableCompiler_PG(this, ...arguments);
   }
 
   dialect = 'postgresql';

@@ -1,6 +1,6 @@
 // MSSQL Query Compiler
 // ------
-import QueryCompiler from '../../../query/compiler';
+import { QueryCompiler } from '../../../query/compiler';
 
 import { isEmpty, compact, identity } from 'lodash';
 
@@ -17,7 +17,7 @@ const components = [
   'offset',
 ];
 
-class QueryCompiler_MSSQL extends QueryCompiler {
+export class QueryCompiler_MSSQL extends QueryCompiler {
   _emptyInsertValue = 'default values';
 
   select() {
@@ -247,6 +247,4 @@ class QueryCompiler_MSSQL extends QueryCompiler {
   }
 }
 
-// Set the QueryBuilder & QueryCompiler on the client object,
-// in case anyone wants to modify things to suit their own purposes.
 export default QueryCompiler_MSSQL;

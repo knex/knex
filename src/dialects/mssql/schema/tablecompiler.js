@@ -2,14 +2,14 @@
 
 // MSSQL Table Builder & Compiler
 // -------
-import TableCompiler from '../../../schema/tablecompiler';
+import { TableCompiler } from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
 import Promise from 'bluebird';
 
 // Table Compiler
 // ------
 
-class TableCompiler_MSSQL extends TableCompiler {
+export class TableCompiler_MSSQL extends TableCompiler {
   createAlterTableMethods = ['foreign', 'primary'];
 
   createQuery(columns, ifNot) {

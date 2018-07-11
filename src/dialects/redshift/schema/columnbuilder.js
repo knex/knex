@@ -1,8 +1,8 @@
 'use strict';
 
-import ColumnBuilder from '../../../schema/columnbuilder';
+import { ColumnBuilder } from '../../../schema/columnbuilder';
 
-class ColumnBuilder_Redshift extends ColumnBuilder {
+export class ColumnBuilder_Redshift extends ColumnBuilder {
   // primary needs to set not null on non-preexisting columns, or fail
   primary(...args) {
     this.notNullable();

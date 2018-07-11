@@ -1,11 +1,11 @@
-import TableCompiler from '../../../schema/tablecompiler';
+import { TableCompiler } from '../../../schema/tablecompiler';
 
 import { filter, values } from 'lodash';
 
 // Table Compiler
 // -------
 
-class TableCompiler_SQLite3 extends TableCompiler {
+export class TableCompiler_SQLite3 extends TableCompiler {
   primaryKey = undefined;
 
   // Create a new table.

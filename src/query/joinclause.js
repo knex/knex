@@ -5,7 +5,7 @@ import assert from 'assert';
 
 // The "JoinClause" is an object holding any necessary info about a join,
 // including the type, and any associated tables & columns being joined.
-class JoinClause {
+export class JoinClause {
   constructor(table, type, schema) {
     this.schema = schema;
     this.table = table;

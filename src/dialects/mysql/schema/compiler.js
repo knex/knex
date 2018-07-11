@@ -1,8 +1,8 @@
 // MySQL Schema Compiler
 // -------
-import SchemaCompiler from '../../../schema/compiler';
+import { SchemaCompiler } from '../../../schema/compiler';
 
-class SchemaCompiler_MySQL extends SchemaCompiler {
+export class SchemaCompiler_MySQL extends SchemaCompiler {
   // Rename a table on the schema.
   renameTable(tableName, to) {
     this.pushQuery(

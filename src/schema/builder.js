@@ -1,14 +1,14 @@
 import { EventEmitter } from 'events';
 import { each, toArray } from 'lodash';
 import { addQueryContext } from '../helpers';
-import saveAsyncStack from '../util/save-async-stack';
-import interfaceFns from '../interface';
+import { interfaceFns } from '../interface';
+import { saveAsyncStack } from '../util/save-async-stack';
 
 // Constructor for the builder instance, typically called from
 // `knex.builder`, accepting the current `knex` instance,
 // and pulling out the `client` and `grammar` from the current
 // knex instance.
-class SchemaBuilder extends EventEmitter {
+export class SchemaBuilder extends EventEmitter {
   constructor(client) {
     super();
     this.client = client;

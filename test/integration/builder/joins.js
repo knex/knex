@@ -1766,7 +1766,6 @@ module.exports = function(knex) {
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function(res) {
-              console.log('RESULT:', res.length);
               return res.length === 30;
             }
           );
@@ -1791,6 +1790,7 @@ module.exports = function(knex) {
 
     it('supports joins with overlapping column names', function() {
       if (knex.client.driverName === 'oracledb') {
+        // eslint-disable-next-line
         console.warn('Overlapping column names not supported with oracle');
         return;
       }

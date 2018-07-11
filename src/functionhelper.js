@@ -1,6 +1,6 @@
 // FunctionHelper
 // -------
-class FunctionHelper {
+export class FunctionHelper {
   constructor(client) {
     this.client = client;
   }

@@ -16,7 +16,7 @@ function log(message, userFn, colorFn) {
   console.log(colorFn ? colorFn(message) : message);
 }
 
-class Logger {
+export class Logger {
   constructor(config) {
     const { log: { debug, warn, error, deprecate } = {} } = config;
 

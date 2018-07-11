@@ -8,6 +8,7 @@
     "strict": true,
     "module": "commonjs",
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "importHelpers": true
   }
 }

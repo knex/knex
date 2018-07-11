@@ -6,7 +6,7 @@ let PassThrough;
 // The "Runner" constructor takes a "builder" (query, schema, or raw)
 // and runs through each of the query statements, calling any additional
 // "output" method provided alongside the query and bindings.
-class Runner {
+export class Runner {
   constructor(client, builder) {
     this.client = client;
     this.builder = builder;

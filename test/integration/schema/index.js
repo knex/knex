@@ -261,7 +261,7 @@ module.exports = function(knex) {
             })
             .testSql(function(tester) {
               tester('pg', [
-                "create type \"foo_type\" as enum ('a', 'b', 'c')",
+                `create type "foo_type" as enum ('a', 'b', 'c')`,
                 'create table "native_enum_test" ("foo_column" "foo_type" not null, "id" uuid not null)',
               ]);
             });
@@ -345,9 +345,9 @@ module.exports = function(knex) {
               'create index `test_table_one_logins_index` on `test_table_one` (`logins`)',
             ]);
             tester('oracledb', [
-              `create table \"test_table_one\" (\"id\" number(20, 0) not null primary key, \"first_name\" varchar2(255), \"last_name\" varchar2(255), \"email\" varchar2(255) null, \"logins\" integer default '1', \"balance\" float default '0', \"about\" varchar2(4000), \"created_at\" timestamp with local time zone, \"updated_at\" timestamp with local time zone)`,
+              `create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default '1', "balance" float default '0', "about" varchar2(4000), "created_at" timestamp with local time zone, "updated_at" timestamp with local time zone)`,
               'comment on table "test_table_one" is \'A table comment.\'',
-              `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE \"test_table_one_seq\"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_one';  execute immediate ('create or replace trigger \"test_table_one_autoinc_trg\"  BEFORE INSERT on \"test_table_one\"  for each row  declare  checking number := 1;  begin    if (:new.\"' || PK_NAME || '\" is null) then      while checking >= 1 loop        select \"test_table_one_seq\".nextval into :new.\"' || PK_NAME || '\" from dual;        select count(\"' || PK_NAME || '\") into checking from \"test_table_one\"        where \"' || PK_NAME || '\" = :new.\"' || PK_NAME || '\";      end loop;    end if;  end;'); END;`,
+              `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE "test_table_one_seq"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_one';  execute immediate ('create or replace trigger "test_table_one_autoinc_trg"  BEFORE INSERT on "test_table_one"  for each row  declare  checking number := 1;  begin    if (:new."' || PK_NAME || '" is null) then      while checking >= 1 loop        select "test_table_one_seq".nextval into :new."' || PK_NAME || '" from dual;        select count("' || PK_NAME || '") into checking from "test_table_one"        where "' || PK_NAME || '" = :new."' || PK_NAME || '";      end loop;    end if;  end;'); END;`,
               'comment on column "test_table_one"."logins" is \'\'',
               'comment on column "test_table_one"."about" is \'A comment.\'',
               'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "test_table_one" ("first_name")',
@@ -656,7 +656,7 @@ module.exports = function(knex) {
               "create table `bool_test` (`one` boolean, `two` boolean default '0', `three` boolean default '1', `four` boolean default '1', `five` boolean default '0')",
             ]);
             tester('oracledb', [
-              "create table \"bool_test\" (\"one\" number(1, 0) check (\"one\" in ('0', '1')), \"two\" number(1, 0) default '0' check (\"two\" in ('0', '1')), \"three\" number(1, 0) default '1' check (\"three\" in ('0', '1')), \"four\" number(1, 0) default '1' check (\"four\" in ('0', '1')), \"five\" number(1, 0) default '0' check (\"five\" in ('0', '1')))",
+              `create table "bool_test" ("one" number(1, 0) check ("one" in ('0', '1')), "two" number(1, 0) default '0' check ("two" in ('0', '1')), "three" number(1, 0) default '1' check ("three" in ('0', '1')), "four" number(1, 0) default '1' check ("four" in ('0', '1')), "five" number(1, 0) default '0' check ("five" in ('0', '1')))`,
             ]);
             tester('mssql', [
               "CREATE TABLE [bool_test] ([one] bit, [two] bit default '0', [three] bit default '1', [four] bit default '1', [five] bit default '0')",

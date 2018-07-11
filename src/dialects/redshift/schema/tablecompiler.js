@@ -4,9 +4,9 @@
 // -------
 
 import { has } from 'lodash';
-import TableCompiler_PG from '../../postgres/schema/tablecompiler';
+import { TableCompiler_PG } from '../../postgres/schema/tablecompiler';
 
-class TableCompiler_Redshift extends TableCompiler_PG {
+export class TableCompiler_Redshift extends TableCompiler_PG {
   index(columns, indexName, indexType) {
     this.client.logger.warn(
       'Redshift does not support the creation of indexes.'

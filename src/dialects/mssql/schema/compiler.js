@@ -1,8 +1,8 @@
 // MySQL Schema Compiler
 // -------
-import SchemaCompiler from '../../../schema/compiler';
+import { SchemaCompiler } from '../../../schema/compiler';
 
-class SchemaCompiler_MSSQL extends SchemaCompiler {
+export class SchemaCompiler_MSSQL extends SchemaCompiler {
   dropTablePrefix = 'DROP TABLE ';
 
   dropTableIfExists(tableName) {

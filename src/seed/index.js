@@ -10,7 +10,7 @@ import { filter, includes, map, bind, template, each } from 'lodash';
 // The new seeds we're performing, typically called from the `knex.seed`
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the seeds.
-class Seeder {
+export class Seeder {
   constructor(knex) {
     this.knex = knex;
     this.config = this.setConfig(knex.client.config.seeds);

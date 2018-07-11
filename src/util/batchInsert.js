@@ -1,12 +1,7 @@
 import { isNumber, isArray, chunk, flatten } from 'lodash';
 import Promise from 'bluebird';
 
-export default function batchInsert(
-  client,
-  tableName,
-  batch,
-  chunkSize = 1000
-) {
+export function batchInsert(client, tableName, batch, chunkSize = 1000) {
   let returning = void 0;
   let autoTransaction = true;
   let transaction = null;
@@ -77,3 +72,5 @@ export default function batchInsert(
 
   return wrapper;
 }
+
+export default batchInsert;

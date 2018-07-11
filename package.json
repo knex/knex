@@ -20,7 +20,8 @@
     "tarn": "^1.1.4",
     "tildify": "1.2.0",
     "uuid": "^3.3.2",
-    "v8flags": "^3.1.1"
+    "v8flags": "^3.1.1",
+    "tslib": "^1.9.3"
   },
   "lint-staged": {
     "*.{js,json}": [
@@ -126,9 +127,9 @@
     "web": "https://github.com/tgriesser"
   },
   "browser": {
-    "./lib/migrate/index.js": "./lib/util/noop.js",
-    "./lib/bin/cli.js": "./lib/util/noop.js",
-    "./lib/seed/index.js": "./lib/util/noop.js",
+    "./lib/migrate/index.js": "lodash/noop",
+    "./lib/bin/cli.js": "lodash/noop",
+    "./lib/seed/index.js": "lodash/noop",
     "mssql": false,
     "mssql/lib/base": false,
     "tedious": false,
@@ -141,8 +142,8 @@
     "oracledb": false
   },
   "react-native": {
-    "./lib/migrate": "./lib/util/noop.js",
-    "./lib/seed": "./lib/util/noop.js"
+    "./lib/migrate": "lodash/noop",
+    "./lib/seed": "lodash/noop"
   },
   "files": [
     "CONTRIBUTING.md",

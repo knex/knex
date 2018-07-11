@@ -1,22 +1,20 @@
 // MySQL Client
 // -------
 
-import Client from '../../client';
 import Promise from 'bluebird';
-
-import Transaction from './transaction';
-import QueryCompiler from './query/compiler';
-import SchemaCompiler from './schema/compiler';
-import TableCompiler from './schema/tablecompiler';
-import ColumnCompiler from './schema/columncompiler';
-
 import { map } from 'lodash';
+import { Client } from '../../client';
 import { makeEscape } from '../../query/string';
+import { QueryCompiler_MySQL } from './query/compiler';
+import { ColumnCompiler_MySQL } from './schema/columncompiler';
+import { SchemaCompiler_MySQL } from './schema/compiler';
+import { TableCompiler_MySQL } from './schema/tablecompiler';
+import { Transaction_MySQL } from './transaction';
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
 // 'lib/query/compiler', respectively.
-class Client_MySQL extends Client {
+export class Client_MySQL extends Client {
   dialect = 'mysql';
 
   driverName = 'mysql';
@@ -26,23 +24,23 @@ class Client_MySQL extends Client {
   }
 
   queryCompiler() {
-    return new QueryCompiler(this, ...arguments);
+    return new QueryCompiler_MySQL(this, ...arguments);
   }
 
   schemaCompiler() {
-    return new SchemaCompiler(this, ...arguments);
+    return new SchemaCompiler_MySQL(this, ...arguments);
   }
 
   tableCompiler() {
-    return new TableCompiler(this, ...arguments);
+    return new TableCompiler_MySQL(this, ...arguments);
   }
 
   columnCompiler() {
-    return new ColumnCompiler(this, ...arguments);
+    return new ColumnCompiler_MySQL(this, ...arguments);
   }
 
   transaction() {
-    return new Transaction(this, ...arguments);
+    return new Transaction_MySQL(this, ...arguments);
   }
 
   _escapeBinding = makeEscape();

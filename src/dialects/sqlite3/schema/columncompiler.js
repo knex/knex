@@ -1,9 +1,9 @@
-import ColumnCompiler from '../../../schema/columncompiler';
+import { ColumnCompiler } from '../../../schema/columncompiler';
 
 // Column Compiler
 // -------
 
-class ColumnCompiler_SQLite3 extends ColumnCompiler {
+export class ColumnCompiler_SQLite3 extends ColumnCompiler {
   modifiers = ['nullable', 'defaultTo'];
   double = 'float';
   decimal = 'float';

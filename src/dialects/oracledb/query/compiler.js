@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import Oracle_Compiler from '../../oracle/query/compiler';
+import { QueryCompiler_Oracle } from '../../oracle/query/compiler';
 import { ReturningHelper, BlobHelper } from '../utils';
 
-export default class Oracledb_Compiler extends Oracle_Compiler {
+export class Oracledb_Compiler extends QueryCompiler_Oracle {
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
   insert() {
@@ -349,3 +349,5 @@ export default class Oracledb_Compiler extends Oracle_Compiler {
     return sql;
   }
 }
+
+export default Oracledb_Compiler;
