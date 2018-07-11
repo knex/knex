@@ -1,0 +1,7 @@
+{
+  "parser": "babel-eslint",
+  "extends": ["plugin:import/errors", "plugin:import/warnings"],
+  "rules": {
+    "import/no-named-as-default": false
+  }
+}
