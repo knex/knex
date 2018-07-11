@@ -42,6 +42,10 @@ function Client(config = {}) {
     throw new Error(`knex: Required configuration option 'client' is missing.`);
   }
 
+  if (config.version) {
+    this.version = config.version;
+  }
+
   this.connectionSettings = cloneDeep(config.connection || {});
   if (this.driverName && config.connection) {
     this.initializeDriver();
