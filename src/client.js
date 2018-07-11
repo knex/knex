@@ -34,6 +34,9 @@ export class Client extends EventEmitter {
     if (config.useNullAsDefault) {
       this.valueForUndefined = null;
     }
+    if (config.version) {
+      this.version = config.version;
+    }
   }
 
   init() {

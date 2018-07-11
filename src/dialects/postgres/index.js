@@ -20,10 +20,6 @@ export class Client_PG extends Client {
     if (config.searchPath) {
       this.searchPath = config.searchPath;
     }
-
-    if (config.version) {
-      this.version = config.version;
-    }
   }
 
   queryCompiler() {
