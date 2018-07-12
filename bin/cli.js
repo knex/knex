@@ -192,7 +192,7 @@ function invoke(env) {
 }
 
 var cli = new Liftoff({
-  name: 'knex',
+  name: '@heisian/knex',
   extensions: interpret.jsVariants,
   v8flags: require('v8flags')
 });
