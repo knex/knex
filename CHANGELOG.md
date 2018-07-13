@@ -1,6 +1,12 @@
 
 # Master (Unreleased)
 
+# 0.15.1 - 12 Jul, 2018
+
+### Bug fixes:
+
+- Fix warning erroneously displayed for mysql #2705
+
 # 0.15.0 - 1 Jul, 2018
 
 ### Breaking Changes:
