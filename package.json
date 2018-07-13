@@ -85,7 +85,7 @@
     "lint": "eslint src/**",
     "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && npm run tape",
     "prepublish": "npm run babel",
-    "pre_test": "npm run lint && npm run build",
+    "pre_test": "npm run lint",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node --inspect-brk test/tape/index.js",
     "test": "npm run pre_test && nyc mocha --exit --check-leaks -t 10000 -R spec test/index.js && npm run tape",
