@@ -120,7 +120,7 @@ assign(Builder.prototype, {
   // Adds a column or columns to the list of "columns"
   // being selected on the query.
   columns(column) {
-    if (!column) return this;
+    if (!column && column !== 0) return this;
     this._statements.push({
       grouping: 'columns',
       value: helpers.normalizeArr.apply(null, arguments),
