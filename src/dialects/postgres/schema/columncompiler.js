@@ -1,29 +1,21 @@
 // PostgreSQL Column Compiler
 // -------
+import { ColumnCompiler } from '../../../schema/columncompiler';
 
-import inherits from 'inherits';
-import ColumnCompiler from '../../../schema/columncompiler';
+export class ColumnCompiler_PG extends ColumnCompiler {
+  modifiers = ['nullable', 'defaultTo', 'comment'];
 
-import { assign } from 'lodash';
-
-function ColumnCompiler_PG() {
-  ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['nullable', 'defaultTo', 'comment'];
-}
-inherits(ColumnCompiler_PG, ColumnCompiler);
-
-assign(ColumnCompiler_PG.prototype, {
   // Types
   // ------
-  bigincrements: 'bigserial primary key',
-  bigint: 'bigint',
-  binary: 'bytea',
+  bigincrements = 'bigserial primary key';
+  bigint = 'bigint';
+  binary = 'bytea';
 
   bit(column) {
     return column.length !== false ? `bit(${column.length})` : 'bit';
-  },
+  }
 
-  bool: 'boolean',
+  bool = 'boolean';
 
   // Create the column definition for an enum type.
   // Using method "2" here: http://stackoverflow.com/a/10984951/525714
@@ -40,31 +32,31 @@ assign(ColumnCompiler_PG.prototype, {
       return `"${options.enumName}"`;
     }
     return `text check (${this.formatter.wrap(this.args[0])} in ('${values}'))`;
-  },
+  }
 
-  double: 'double precision',
+  double = 'double precision';
   decimal(precision, scale) {
     if (precision === null) return 'decimal';
     return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
-  },
-  floating: 'real',
-  increments: 'serial primary key',
+  }
+  floating = 'real';
+  increments = 'serial primary key';
   json(jsonb) {
     if (jsonb) this.client.logger.deprecate('json(true)', 'jsonb()');
     return jsonColumn(this.client, jsonb);
-  },
+  }
   jsonb() {
     return jsonColumn(this.client, true);
-  },
-  smallint: 'smallint',
-  tinyint: 'smallint',
+  }
+  smallint = 'smallint';
+  tinyint = 'smallint';
   datetime(without) {
     return without ? 'timestamp' : 'timestamptz';
-  },
+  }
   timestamp(without) {
     return without ? 'timestamp' : 'timestamptz';
-  },
-  uuid: 'uuid',
+  }
+  uuid = 'uuid';
 
   // Modifiers:
   // ------
@@ -79,8 +71,8 @@ assign(ColumnCompiler_PG.prototype, {
           (comment ? `'${comment}'` : 'NULL')
       );
     }, comment);
-  },
-});
+  }
+}
 
 function jsonColumn(client, jsonb) {
   if (!client.version || parseFloat(client.version) >= 9.2)

@@ -1,14 +1,13 @@
-const Utils = require('../oracle/utils');
+export * from '../oracle/utils';
 
-function BlobHelper(columnName, value) {
-  this.columnName = columnName;
-  this.value = value;
-  this.returning = false;
+export class BlobHelper {
+  constructor(columnName, value) {
+    this.columnName = columnName;
+    this.value = value;
+    this.returning = false;
+  }
+
+  toString() {
+    return '[object BlobHelper:' + this.columnName + ']';
+  }
 }
-
-BlobHelper.prototype.toString = function() {
-  return '[object BlobHelper:' + this.columnName + ']';
-};
-
-Utils.BlobHelper = BlobHelper;
-module.exports = Utils;

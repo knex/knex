@@ -1,39 +1,39 @@
 import { pushQuery, pushAdditional, unshiftQuery } from './helpers';
 
-import { assign, isUndefined } from 'lodash';
+import { isUndefined } from 'lodash';
 
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of
 // properly formatted / bound query strings.
-function SchemaCompiler(client, builder) {
-  this.builder = builder;
-  this.client = client;
-  this.schema = builder._schema;
-  this.formatter = client.formatter(builder);
-  this.sequence = [];
-}
+export class SchemaCompiler {
+  constructor(client, builder) {
+    this.builder = builder;
+    this.client = client;
+    this.schema = builder._schema;
+    this.formatter = client.formatter(builder);
+    this.sequence = [];
+  }
 
-assign(SchemaCompiler.prototype, {
-  pushQuery: pushQuery,
+  pushQuery = pushQuery;
 
-  pushAdditional: pushAdditional,
+  pushAdditional = pushAdditional;
 
-  unshiftQuery: unshiftQuery,
+  unshiftQuery = unshiftQuery;
 
-  createTable: buildTable('create'),
+  createTable = buildTable('create');
 
-  createTableIfNotExists: buildTable('createIfNot'),
+  createTableIfNotExists = buildTable('createIfNot');
 
-  alterTable: buildTable('alter'),
+  alterTable = buildTable('alter');
 
-  dropTablePrefix: 'drop table ',
+  dropTablePrefix = 'drop table ';
 
   dropTable(tableName) {
     this.pushQuery(
       this.dropTablePrefix +
         this.formatter.wrap(prefixedTableName(this.schema, tableName))
     );
-  },
+  }
 
   dropTableIfExists(tableName) {
     this.pushQuery(
@@ -41,11 +41,11 @@ assign(SchemaCompiler.prototype, {
         'if exists ' +
         this.formatter.wrap(prefixedTableName(this.schema, tableName))
     );
-  },
+  }
 
   raw(sql, bindings) {
     this.sequence.push(this.client.raw(sql, bindings).toSQL());
-  },
+  }
 
   toSQL() {
     const sequence = this.builder._sequence;
@@ -54,8 +54,8 @@ assign(SchemaCompiler.prototype, {
       this[query.method].apply(this, query.args);
     }
     return this.sequence;
-  },
-});
+  }
+}
 
 function buildTable(type) {
   return function(tableName, fn) {

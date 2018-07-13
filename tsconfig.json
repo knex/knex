@@ -1,0 +1,14 @@
+{
+  "exclude": ["bin", "test", "scripts", "lib", "knex.js"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib",
+    "allowJs": true,
+    "target": "es2015",
+    "strict": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "importHelpers": true
+  }
+}

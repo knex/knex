@@ -1,12 +1,10 @@
-import Transaction from '../../transaction';
+import { Transaction } from '../../transaction';
 import Debug from 'debug';
-import { assign, isUndefined } from 'lodash';
+import { isUndefined } from 'lodash';
 
 const debug = Debug('knex:tx');
 
-class Transaction_MySQL extends Transaction {}
-
-assign(Transaction_MySQL.prototype, {
+export class Transaction_MySQL extends Transaction {
   query(conn, sql, status, value) {
     const t = this;
     const q = this.trxClient
@@ -39,7 +37,7 @@ assign(Transaction_MySQL.prototype, {
       t._completed = true;
     }
     return q;
-  },
-});
+  }
+}
 
 export default Transaction_MySQL;

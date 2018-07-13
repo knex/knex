@@ -7,12 +7,10 @@
     "node": ">=6"
   },
   "dependencies": {
-    "babel-runtime": "^6.26.0",
     "bluebird": "^3.5.1",
     "chalk": "2.3.2",
     "commander": "^2.16.0",
     "debug": "3.1.0",
-    "inherits": "~2.0.3",
     "interpret": "^1.1.0",
     "liftoff": "2.5.0",
     "lodash": "^4.17.10",
@@ -22,7 +20,8 @@
     "tarn": "^1.1.4",
     "tildify": "1.2.0",
     "uuid": "^3.3.2",
-    "v8flags": "^3.1.1"
+    "v8flags": "^3.1.1",
+    "tslib": "^1.9.3"
   },
   "lint-staged": {
     "*.{js,json}": [
@@ -31,17 +30,23 @@
     ]
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.110",
+    "@types/mysql": "^2.15.5",
+    "@types/pg": "^7.4.10",
+    "@types/sqlite3": "^3.1.3",
+    "@types/mssql": "^4.0.8",
+    "@types/bluebird": "^3.5.21",
+    "@types/minimist": "^1.2.0",
+    "@types/debug": "^0.0.30",
+    "@types/uuid": "^3.4.3",
+    "@types/node": "^6.0.114",
     "JSONStream": "^1.3.3",
     "async": "^2.6.1",
-    "babel-cli": "^6.26.0",
     "babel-eslint": "^8.2.5",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
+    "copyfiles": "^2.0.0",
     "coveralls": "^3.0.2",
-    "eslint": "5.0.1",
-    "eslint-config-prettier": "^2.9.0",
+    "eslint": "^5.1.0",
     "eslint-plugin-import": "^2.13.0",
     "husky": "^0.14.3",
     "json-loader": "^0.5.7",
@@ -63,35 +68,36 @@
     "tap-spec": "^4.1.1",
     "tape": "^4.9.1",
     "through": "^2.3.8",
-    "toxiproxy-node-client": "^2.0.6"
+    "toxiproxy-node-client": "^2.0.6",
+    "ts-node": "^7.0.0",
+    "tslint": "^5.10.0",
+    "tslint-config-prettier": "^1.13.0",
+    "typescript": "2.9.1"
   },
   "buildDependencies": [
-    "babel-cli",
-    "babel-plugin-add-module-exports",
-    "babel-plugin-lodash",
-    "babel-plugin-transform-runtime",
-    "babel-preset-es2015",
-    "babel-preset-es2015-loose",
-    "rimraf"
+    "rimraf",
+    "copyfiles",
+    "typescript"
   ],
   "scripts": {
     "precommit": "lint-staged",
+    "prepublishOnly": "yarn build",
     "format": "prettier --write \"{src,bin,scripts,test}/**/*.js\"",
-    "build": "npm run babel",
-    "debug_test": "node --inspect-brk ./node_modules/.bin/_mocha -- --exit -t 0 test/index.js",
-    "babel": "rimraf ./lib && babel src --out-dir lib --copy-files",
+    "build": "yarn clean && tsc && yarn copy",
+    "clean": "rimraf ./lib",
+    "copy": "copyfiles -u 1 \"src/**/*.stub\" lib",
+    "debug_test": "node --inspect-brk ./node_modules/.bin/_mocha --exit -t 0 test/index.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "dev": "rimraf ./lib && babel -w src --out-dir lib --copy-files",
-    "lint": "eslint src/**",
-    "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && npm run tape",
-    "prepublish": "npm run babel",
-    "pre_test": "npm run lint",
+    "dev": "yarn build && tsc -w",
+    "lint": "yarn eslint \"test/**/*.js\" \"src/**/*.js\" && tslint src/**",
+    "plaintest": "mocha --exit -t 10000 -R spec test/index.js && yarn tape",
+    "pre_test": "yarn lint && yarn build",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node --inspect-brk test/tape/index.js",
-    "test": "npm run pre_test && nyc mocha --exit --check-leaks -t 10000 -R spec test/index.js && npm run tape",
+    "test": "yarn pre_test && nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 -b -R spec test/index.js && yarn tape",
     "oracledb:test": "docker rmi -f --no-prune knex-test-oracledb && docker build -f scripts/oracle-tests-Dockerfile --tag knex-test-oracledb . && docker run --rm -i -t -e KNEX_TEST_TIMEOUT=$KNEX_TEST_TIMEOUT -e NODE_VER=$NODE_VER knex-test-oracledb",
     "mssql:init": "docker-compose -f scripts/mssql-docker-compose.yml up --no-start && docker-compose -f scripts/mssql-docker-compose.yml start",
-    "postmssql:init": "node scripts/wait-for-mssql-server.js && npm run mssql:logs || (npm run mssql:logs;false)",
+    "postmssql:init": "node scripts/wait-for-mssql-server.js && yarn mssql:logs || (yarn mssql:logs;false)",
     "mssql:logs": "docker-compose -f scripts/mssql-docker-compose.yml logs",
     "mssql:test": "DB=mssql npm test",
     "mssql:destroy": "docker-compose -f scripts/mssql-docker-compose.yml stop",
@@ -121,9 +127,9 @@
     "web": "https://github.com/tgriesser"
   },
   "browser": {
-    "./lib/migrate/index.js": "./lib/util/noop.js",
-    "./lib/bin/cli.js": "./lib/util/noop.js",
-    "./lib/seed/index.js": "./lib/util/noop.js",
+    "./lib/migrate/index.js": "lodash/noop",
+    "./lib/bin/cli.js": "lodash/noop",
+    "./lib/seed/index.js": "lodash/noop",
     "mssql": false,
     "mssql/lib/base": false,
     "tedious": false,
@@ -136,8 +142,8 @@
     "oracledb": false
   },
   "react-native": {
-    "./lib/migrate": "./lib/util/noop.js",
-    "./lib/seed": "./lib/util/noop.js"
+    "./lib/migrate": "lodash/noop",
+    "./lib/seed": "lodash/noop"
   },
   "files": [
     "CONTRIBUTING.md",
@@ -153,10 +159,10 @@
   "license": "MIT",
   "tonicExampleFilename": "scripts/runkit-example.js",
   "nyc": {
-    "check-coverage": true,
-    "lines": 85,
-    "statements": 83,
-    "functions": 83,
-    "branches": 72
+    "check-coverage": false,
+    "lines": 80,
+    "statements": 80,
+    "functions": 80,
+    "branches": 70
   }
 }

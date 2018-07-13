@@ -1,5 +1,5 @@
-import QueryBuilder from './query/builder';
-import Raw from './raw';
+import { Builder } from './query/builder';
+import { Raw } from './raw';
 import { transform } from 'lodash';
 
 // Valid values for the `order by` clause generation.
@@ -60,7 +60,7 @@ const operators = transform(
   {}
 );
 
-export default class Formatter {
+export class Formatter {
   constructor(client, builder) {
     this.client = client;
     this.builder = builder;
@@ -129,7 +129,7 @@ export default class Formatter {
 
   unwrapRaw(value, isParameter) {
     let query;
-    if (value instanceof QueryBuilder) {
+    if (value instanceof Builder) {
       query = this.client.queryCompiler(value).toSQL();
       if (query.bindings) {
         this.bindings = this.bindings.concat(query.bindings);
@@ -247,7 +247,7 @@ export default class Formatter {
         const compiled = this.compileCallback(queryOrIdentifier);
         compiled.as = alias; // enforces the object's alias
         ret.push(this.outputQuery(compiled, true));
-      } else if (queryOrIdentifier instanceof QueryBuilder) {
+      } else if (queryOrIdentifier instanceof Builder) {
         ret.push(
           this.alias(
             `(${this.wrap(queryOrIdentifier)})`,
@@ -285,3 +285,5 @@ export default class Formatter {
     return wrapped.join('.');
   }
 }
+
+export default Formatter;

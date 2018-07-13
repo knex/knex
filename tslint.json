@@ -1,0 +1,64 @@
+{
+  "extends": ["tslint-config-prettier"],
+  "rules": {
+    "ban": false,
+    "class-name": true,
+    "curly": true,
+    "eofline": false,
+    "forin": true,
+    "indent": [true, "spaces"],
+    "interface-name": [true, "never-prefix"],
+    "jsdoc-format": true,
+    "jsx-no-lambda": false,
+    "jsx-no-multiline-js": false,
+    "jsx-boolean-value": false,
+    "label-position": true,
+    "no-any": false,
+    "no-arg": true,
+    "no-bitwise": true,
+    "no-console": [
+      false,
+      "log",
+      "error",
+      "debug",
+      "info",
+      "time",
+      "timeEnd",
+      "trace"
+    ],
+    "no-consecutive-blank-lines": false,
+    "no-construct": true,
+    "no-debugger": true,
+    "no-duplicate-variable": true,
+    "no-empty": false,
+    "no-eval": true,
+    "no-default-export": true,
+    "no-shadowed-variable": true,
+    "no-string-literal": true,
+    "no-switch-case-fall-through": true,
+    "no-trailing-whitespace": false,
+    "no-unused-expression": true,
+    "one-line": [
+      true,
+      "check-catch",
+      "check-else",
+      "check-open-brace",
+      "check-whitespace"
+    ],
+    "radix": true,
+    "switch-default": true,
+    "trailing-comma": [false],
+    "triple-equals": [true, "allow-null-check"],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore",
+      "allow-pascal-case"
+    ],
+    "whitespace": false
+  },
+  "linterOptions": {
+    "exclude": ["**/*.json"]
+  }
+}

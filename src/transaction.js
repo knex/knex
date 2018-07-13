@@ -1,18 +1,16 @@
 // Transaction
 // -------
 import Promise from 'bluebird';
-import { EventEmitter } from 'events';
 import Debug from 'debug';
-
-import makeKnex from './util/make-knex';
+import { EventEmitter } from 'events';
+import { isUndefined, uniqueId } from 'lodash';
+import { makeKnex } from './util/make-knex';
 
 const debug = Debug('knex:tx');
 
-import { uniqueId, isUndefined } from 'lodash';
-
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
-export default class Transaction extends EventEmitter {
+export class Transaction extends EventEmitter {
   constructor(client, container, config, outerTx) {
     super();
 
@@ -208,14 +206,9 @@ function makeTransactor(trx, connection, trxClient) {
 // We need to make a client object which always acquires the same
 // connection and does not release back into the pool.
 function makeTxClient(trx, client, connection) {
-  const trxClient = Object.create(client.constructor.prototype);
-  trxClient.version = client.version;
-  trxClient.config = client.config;
+  const trxClient = new client.constructor(client.config);
   trxClient.driver = client.driver;
-  trxClient.connectionSettings = client.connectionSettings;
   trxClient.transacting = true;
-  trxClient.valueForUndefined = client.valueForUndefined;
-  trxClient.logger = client.logger;
 
   trxClient.on('query', function(arg) {
     trx.emit('query', arg);
@@ -298,3 +291,5 @@ promiseInterface.forEach(function(method) {
     return this._promise[method].apply(this._promise, arguments);
   };
 });
+
+export default Transaction;

@@ -1,12 +1,7 @@
 // Query Compiler
 // -------
-import * as helpers from '../helpers';
-import Raw from '../raw';
-import JoinClause from './joinclause';
 import debug from 'debug';
-
 import {
-  assign,
   bind,
   compact,
   groupBy,
@@ -18,22 +13,11 @@ import {
   reduce,
 } from 'lodash';
 import uuid from 'uuid';
+import * as helpers from '../helpers';
+import { Raw } from '../raw';
+import { JoinClause } from './joinclause';
 
 const debugBindings = debug('knex:bindings');
-
-// The "QueryCompiler" takes all of the query statements which
-// have been gathered in the "QueryBuilder" and turns them into a
-// properly formatted / bound query string.
-function QueryCompiler(client, builder) {
-  this.client = client;
-  this.method = builder._method || 'select';
-  this.options = builder._options;
-  this.single = builder._single;
-  this.timeout = builder._timeout || false;
-  this.cancelOnTimeout = builder._cancelOnTimeout || false;
-  this.grouped = groupBy(builder._statements, 'grouping');
-  this.formatter = client.formatter(builder);
-}
 
 const components = [
   'columns',
@@ -48,9 +32,23 @@ const components = [
   'lock',
 ];
 
-assign(QueryCompiler.prototype, {
+// The "QueryCompiler" takes all of the query statements which
+// have been gathered in the "QueryBuilder" and turns them into a
+// properly formatted / bound query string.
+export class QueryCompiler {
+  constructor(client, builder) {
+    this.client = client;
+    this.method = builder._method || 'select';
+    this.options = builder._options;
+    this.single = builder._single;
+    this.timeout = builder._timeout || false;
+    this.cancelOnTimeout = builder._cancelOnTimeout || false;
+    this.grouped = groupBy(builder._statements, 'grouping');
+    this.formatter = client.formatter(builder);
+  }
+
   // Used when the insert call is empty.
-  _emptyInsertValue: 'default values',
+  _emptyInsertValue = 'default values';
 
   // Collapse the builder into a single object
   toSQL(method, tz) {
@@ -61,7 +59,11 @@ assign(QueryCompiler.prototype, {
 
     const query = {
       method,
-      options: reduce(this.options, assign, {}),
+      options: reduce(
+        this.options,
+        (result, opts) => ({ ...result, ...opts }),
+        {}
+      ),
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
       bindings: this.formatter.bindings || [],
@@ -83,7 +85,7 @@ assign(QueryCompiler.prototype, {
     if (isString(val)) {
       query.sql = val;
     } else {
-      assign(query, val);
+      Object.assign(query, val);
     }
 
     if (method === 'select' || method === 'first') {
@@ -101,7 +103,7 @@ assign(QueryCompiler.prototype, {
     }
 
     return query;
-  },
+  }
 
   // Compiles the `select` statement, or nested sub-selects by calling each of
   // the component compilers, trimming out the empties, and returning a
@@ -112,7 +114,7 @@ assign(QueryCompiler.prototype, {
     const statements = components.map((component) => this[component](this));
     sql += compact(statements).join(' ');
     return sql;
-  },
+  }
 
   pluck() {
     let toPluck = this.single.pluck;
@@ -123,7 +125,7 @@ assign(QueryCompiler.prototype, {
       sql: this.select(),
       pluck: toPluck,
     };
-  },
+  }
 
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
@@ -161,7 +163,7 @@ assign(QueryCompiler.prototype, {
       }
     }
     return sql;
-  },
+  }
 
   // Compiles the "update" query.
   update() {
@@ -176,7 +178,7 @@ assign(QueryCompiler.prototype, {
       updateData.join(', ') +
       (wheres ? ` ${wheres}` : '')
     );
-  },
+  }
 
   // Compiles the columns in the query, specifying if an item was distinct.
   columns() {
@@ -206,7 +208,7 @@ assign(QueryCompiler.prototype, {
         ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
         : '')
     );
-  },
+  }
 
   _aggregate(stmt, { aliasSeparator = ' as ', distinctParentheses } = {}) {
     const value = stmt.value;
@@ -257,16 +259,16 @@ assign(QueryCompiler.prototype, {
     }
 
     return aggregateString(value);
-  },
+  }
 
   aggregate(stmt) {
     return this._aggregate(stmt);
-  },
+  }
 
   aggregateRaw(stmt) {
     const distinct = stmt.aggregateDistinct ? 'distinct ' : '';
     return `${stmt.method}(${distinct + this.formatter.unwrapRaw(stmt.value)})`;
-  },
+  }
 
   // Compiles all each of the `join` clauses on the query,
   // including any nested join queries.
@@ -299,7 +301,7 @@ assign(QueryCompiler.prototype, {
       }
     }
     return sql;
-  },
+  }
 
   onBetween(statement) {
     return (
@@ -311,7 +313,7 @@ assign(QueryCompiler.prototype, {
         ' and '
       )
     );
-  },
+  }
 
   onNull(statement) {
     return (
@@ -319,7 +321,7 @@ assign(QueryCompiler.prototype, {
       ' is ' +
       this._not(statement, 'null')
     );
-  },
+  }
 
   onExists(statement) {
     return (
@@ -328,7 +330,7 @@ assign(QueryCompiler.prototype, {
       this.formatter.rawOrFn(statement.value) +
       ')'
     );
-  },
+  }
 
   onIn(statement) {
     if (Array.isArray(statement.column)) return this.multiOnIn(statement);
@@ -338,7 +340,7 @@ assign(QueryCompiler.prototype, {
       this._not(statement, 'in ') +
       this.wrap(this.formatter.parameterize(statement.value))
     );
-  },
+  }
 
   multiOnIn(statement) {
     let i = -1,
@@ -349,7 +351,7 @@ assign(QueryCompiler.prototype, {
       sql += this.formatter.parameterize(statement.value[i]);
     }
     return sql + '))';
-  },
+  }
 
   // Compiles all `where` statements on the query.
   where() {
@@ -376,15 +378,15 @@ assign(QueryCompiler.prototype, {
       }
     }
     return sql.length > 1 ? sql.join(' ') : '';
-  },
+  }
 
   group() {
     return this._groupsOrders('group');
-  },
+  }
 
   order() {
     return this._groupsOrders('order');
-  },
+  }
 
   // Compiles the `having` statements.
   having() {
@@ -405,16 +407,16 @@ assign(QueryCompiler.prototype, {
       }
     }
     return sql.length > 1 ? sql.join(' ') : '';
-  },
+  }
 
   havingRaw(statement) {
     return this._not(statement, '') + this.formatter.unwrapRaw(statement.value);
-  },
+  }
 
   havingWrapped(statement) {
     const val = this.formatter.rawOrFn(statement.value, 'where');
     return (val && this._not(statement, '') + '(' + val.slice(6) + ')') || '';
-  },
+  }
 
   havingBasic(statement) {
     return (
@@ -425,7 +427,7 @@ assign(QueryCompiler.prototype, {
       ' ' +
       this.formatter.parameter(statement.value)
     );
-  },
+  }
 
   havingNull(statement) {
     return (
@@ -433,7 +435,7 @@ assign(QueryCompiler.prototype, {
       ' is ' +
       this._not(statement, 'null')
     );
-  },
+  }
 
   havingExists(statement) {
     return (
@@ -442,7 +444,7 @@ assign(QueryCompiler.prototype, {
       this.formatter.rawOrFn(statement.value) +
       ')'
     );
-  },
+  }
 
   havingBetween(statement) {
     return (
@@ -454,7 +456,7 @@ assign(QueryCompiler.prototype, {
         ' and '
       )
     );
-  },
+  }
 
   havingIn(statement) {
     if (Array.isArray(statement.column)) return this.multiHavingIn(statement);
@@ -464,7 +466,7 @@ assign(QueryCompiler.prototype, {
       this._not(statement, 'in ') +
       this.wrap(this.formatter.parameterize(statement.value))
     );
-  },
+  }
 
   multiHavingIn(statement) {
     let i = -1,
@@ -475,7 +477,7 @@ assign(QueryCompiler.prototype, {
       sql += this.formatter.parameterize(statement.value[i]);
     }
     return sql + '))';
-  },
+  }
 
   // Compile the "union" queries attached to the main query.
   union() {
@@ -495,24 +497,24 @@ assign(QueryCompiler.prototype, {
       }
     }
     return sql;
-  },
+  }
 
   // If we haven't specified any columns or a `tableName`, we're assuming this
   // is only being used for unions.
   onlyUnions() {
     return !this.grouped.columns && this.grouped.union && !this.tableName;
-  },
+  }
 
   limit() {
     const noLimit = !this.single.limit && this.single.limit !== 0;
     if (noLimit) return '';
     return `limit ${this.formatter.parameter(this.single.limit)}`;
-  },
+  }
 
   offset() {
     if (!this.single.offset) return '';
     return `offset ${this.formatter.parameter(this.single.offset)}`;
-  },
+  }
 
   // Compiles a `delete` query.
   del() {
@@ -524,19 +526,19 @@ assign(QueryCompiler.prototype, {
       `delete from ${this.single.only ? 'only ' : ''}${tableName}` +
       (wheres ? ` ${wheres}` : '')
     );
-  },
+  }
 
   // Compiles a `truncate` query.
   truncate() {
     return `truncate ${this.tableName}`;
-  },
+  }
 
   // Compiles the "locks".
   lock() {
     if (this.single.lock) {
       return this[this.single.lock]();
     }
-  },
+  }
 
   // Compile the "counter".
   counter() {
@@ -551,7 +553,7 @@ assign(QueryCompiler.prototype, {
     );
     this.single.update = toUpdate;
     return this.update();
-  },
+  }
 
   // On Clause
   // ------
@@ -577,7 +579,7 @@ assign(QueryCompiler.prototype, {
       return `(${sql})`;
     }
     return '';
-  },
+  }
 
   onBasic(clause) {
     return (
@@ -587,15 +589,15 @@ assign(QueryCompiler.prototype, {
       ' ' +
       this.formatter.wrap(clause.value)
     );
-  },
+  }
 
   onRaw(clause) {
     return this.formatter.unwrapRaw(clause.value);
-  },
+  }
 
   onUsing(clause) {
     return this.formatter.wrap(clause.column);
-  },
+  }
 
   // Where Clause
   // ------
@@ -610,7 +612,7 @@ assign(QueryCompiler.prototype, {
 
     const values = this.formatter.values(statement.value);
     return `${columns} ${this._not(statement, 'in ')}${values}`;
-  },
+  }
 
   whereNull(statement) {
     return (
@@ -618,7 +620,7 @@ assign(QueryCompiler.prototype, {
       ' is ' +
       this._not(statement, 'null')
     );
-  },
+  }
 
   // Compiles a basic "where" clause.
   whereBasic(statement) {
@@ -630,7 +632,7 @@ assign(QueryCompiler.prototype, {
       ' ' +
       this.formatter.parameter(statement.value)
     );
-  },
+  }
 
   whereExists(statement) {
     return (
@@ -639,12 +641,12 @@ assign(QueryCompiler.prototype, {
       this.formatter.rawOrFn(statement.value) +
       ')'
     );
-  },
+  }
 
   whereWrapped(statement) {
     const val = this.formatter.rawOrFn(statement.value, 'where');
     return (val && this._not(statement, '') + '(' + val.slice(6) + ')') || '';
-  },
+  }
 
   whereBetween(statement) {
     return (
@@ -656,17 +658,17 @@ assign(QueryCompiler.prototype, {
         ' and '
       )
     );
-  },
+  }
 
   // Compiles a "whereRaw" query.
   whereRaw(statement) {
     return this._not(statement, '') + this.formatter.unwrapRaw(statement.value);
-  },
+  }
 
   wrap(str) {
     if (str.charAt(0) !== '(') return `(${str})`;
     return str;
-  },
+  }
 
   // Compiles all `with` statements on the query.
   with() {
@@ -683,7 +685,7 @@ assign(QueryCompiler.prototype, {
       sql.push(val);
     }
     return 'with ' + sql.join(', ') + ' ';
-  },
+  }
 
   withWrapped(statement) {
     const val = this.formatter.rawOrFn(statement.value);
@@ -692,13 +694,13 @@ assign(QueryCompiler.prototype, {
         this.formatter.columnize(statement.alias) + ' as (' + val + ')') ||
       ''
     );
-  },
+  }
 
   // Determines whether to add a "not" prefix to the where clause.
   _not(statement, str) {
     if (statement.not) return `not ${str}`;
     return str;
-  },
+  }
 
   _prepInsert(data) {
     const isRaw = this.formatter.rawOrFn(data);
@@ -733,7 +735,7 @@ assign(QueryCompiler.prototype, {
       columns,
       values,
     };
-  },
+  }
 
   // "Preps" the update.
   _prepUpdate(data) {
@@ -760,7 +762,7 @@ assign(QueryCompiler.prototype, {
     }
 
     return vals;
-  },
+  }
 
   // Compiles the `order by` statements.
   _groupsOrders(type) {
@@ -779,15 +781,9 @@ assign(QueryCompiler.prototype, {
       return column + direction;
     });
     return sql.length ? type + ' by ' + sql.join(', ') : '';
-  },
-});
+  }
 
-QueryCompiler.prototype.first = QueryCompiler.prototype.select;
-
-// Get the table name, wrapping it if necessary.
-// Implemented as a property to prevent ordering issues as described in #704.
-Object.defineProperty(QueryCompiler.prototype, 'tableName', {
-  get() {
+  get tableName() {
     if (!this._tableName) {
       // Only call this.formatter.wrap() the first time this property is accessed.
       let tableName = this.single.table;
@@ -798,7 +794,9 @@ Object.defineProperty(QueryCompiler.prototype, 'tableName', {
       this._tableName = tableName ? this.formatter.wrap(tableName) : '';
     }
     return this._tableName;
-  },
-});
+  }
+}
+
+QueryCompiler.prototype.first = QueryCompiler.prototype.select;
 
 export default QueryCompiler;

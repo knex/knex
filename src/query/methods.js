@@ -1,6 +1,6 @@
 // All properties we can use to start a query chain
 // from the `knex` object, e.g. `knex.select('*').from(...`
-export default [
+export const QueryInterface = [
   'with',
   'select',
   'as',
@@ -86,3 +86,5 @@ export default [
   'transacting',
   'connection',
 ];
+
+export default QueryInterface;

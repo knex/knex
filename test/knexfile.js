@@ -19,7 +19,7 @@ var pool = {
   },
 };
 
-var mysqlPool = _.extend({}, pool, {
+var mysqlPool = Object.assign({}, pool, {
   afterCreate: function(connection, callback) {
     Promise.promisify(connection.query, { context: connection })(
       "SET sql_mode='TRADITIONAL';",

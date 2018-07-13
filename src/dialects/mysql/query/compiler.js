@@ -1,17 +1,11 @@
 // MySQL Query Compiler
 // ------
-import inherits from 'inherits';
-import QueryCompiler from '../../../query/compiler';
+import { QueryCompiler } from '../../../query/compiler';
 
-import { assign, identity } from 'lodash';
+import { identity } from 'lodash';
 
-function QueryCompiler_MySQL(client, builder) {
-  QueryCompiler.call(this, client, builder);
-}
-inherits(QueryCompiler_MySQL, QueryCompiler);
-
-assign(QueryCompiler_MySQL.prototype, {
-  _emptyInsertValue: '() values ()',
+export class QueryCompiler_MySQL extends QueryCompiler {
+  _emptyInsertValue = '() values ()';
 
   // Update method, including joins, wheres, order & limits.
   update() {
@@ -29,15 +23,15 @@ assign(QueryCompiler_MySQL.prototype, {
       (order ? ` ${order}` : '') +
       (limit ? ` ${limit}` : '')
     );
-  },
+  }
 
   forUpdate() {
     return 'for update';
-  },
+  }
 
   forShare() {
     return 'lock in share mode';
-  },
+  }
 
   // Compiles a `columnInfo` query.
   columnInfo() {
@@ -65,7 +59,7 @@ assign(QueryCompiler_MySQL.prototype, {
         return (column && out[column]) || out;
       },
     };
-  },
+  }
 
   limit() {
     const noLimit = !this.single.limit && this.single.limit !== 0;
@@ -78,8 +72,8 @@ assign(QueryCompiler_MySQL.prototype, {
         ? '18446744073709551615'
         : this.formatter.parameter(this.single.limit);
     return `limit ${limit}`;
-  },
-});
+  }
+}
 
 // Set the QueryBuilder & QueryCompiler on the client object,
 // in case anyone wants to modify things to suit their own purposes.

@@ -3,8 +3,8 @@
 'use strict';
 
 var sinon = require('sinon');
-var MSSQL_Client = require('../../../lib/dialects/mssql');
-var client = new MSSQL_Client();
+var MSSQL_Client = require('../../../lib/dialects/mssql').default;
+var client = new MSSQL_Client().init();
 
 describe('MSSQL SchemaBuilder', function() {
   var tableSql;

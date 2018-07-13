@@ -1,49 +1,39 @@
 // Redshift Column Compiler
 // -------
 
-import inherits from 'inherits';
-import ColumnCompiler_PG from '../../postgres/schema/columncompiler';
+import { ColumnCompiler_PG } from '../../postgres/schema/columncompiler';
 
-import { assign } from 'lodash';
-
-function ColumnCompiler_Redshift() {
-  ColumnCompiler_PG.apply(this, arguments);
-}
-inherits(ColumnCompiler_Redshift, ColumnCompiler_PG);
-
-assign(ColumnCompiler_Redshift.prototype, {
-  // Types:
-  // ------
-  bigincrements: 'bigint identity(1,1) primary key not null',
-  binary: 'varchar(max)',
+export class ColumnCompiler_Redshift extends ColumnCompiler_PG {
+  bigincrements = 'bigint identity(1,1) primary key not null';
+  binary = 'varchar(max)';
   bit(column) {
     return column.length !== false ? `char(${column.length})` : 'char(1)';
-  },
-  blob: 'varchar(max)',
-  enu: 'varchar(255)',
-  enum: 'varchar(255)',
-  increments: 'integer identity(1,1) primary key not null',
-  json: 'varchar(max)',
-  jsonb: 'varchar(max)',
-  longblob: 'varchar(max)',
-  mediumblob: 'varchar(16777218)',
-  set: 'text',
-  text: 'varchar(max)',
+  }
+  blob = 'varchar(max)';
+  enu = 'varchar(255)';
+  enum = 'varchar(255)';
+  increments = 'integer identity(1,1) primary key not null';
+  json = 'varchar(max)';
+  jsonb = 'varchar(max)';
+  longblob = 'varchar(max)';
+  mediumblob = 'varchar(16777218)';
+  set = 'text';
+  text = 'varchar(max)';
   datetime(without) {
     return without ? 'timestamp' : 'timestamptz';
-  },
+  }
   timestamp(without) {
     return without ? 'timestamp' : 'timestamptz';
-  },
-  tinyblob: 'varchar(256)',
-  uuid: 'char(36)',
-  varbinary: 'varchar(max)',
-  bigint: 'bigint',
-  bool: 'boolean',
-  double: 'double precision',
-  floating: 'real',
-  smallint: 'smallint',
-  tinyint: 'smallint',
+  }
+  tinyblob = 'varchar(256)';
+  uuid = 'char(36)';
+  varbinary = 'varchar(max)';
+  bigint = 'bigint';
+  bool = 'boolean';
+  double = 'double precision';
+  floating = 'real';
+  smallint = 'smallint';
+  tinyint = 'smallint';
 
   // Modifiers:
   // ------
@@ -56,7 +46,7 @@ assign(ColumnCompiler_Redshift.prototype, {
           (comment ? `'${comment}'` : 'NULL')
       );
     }, comment);
-  },
-});
+  }
+}
 
 export default ColumnCompiler_Redshift;

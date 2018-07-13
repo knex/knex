@@ -1,70 +1,65 @@
-import { assign, uniq, map } from 'lodash';
-import inherits from 'inherits';
-import Raw from '../../../raw';
-import ColumnCompiler from '../../../schema/columncompiler';
-import Trigger from './trigger';
+import { uniq, map } from 'lodash';
+import { Raw } from '../../../raw';
+import { ColumnCompiler } from '../../../schema/columncompiler';
+import { trigger } from './trigger';
 
 // Column Compiler
 // -------
 
-function ColumnCompiler_Oracle() {
-  ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['defaultTo', 'checkIn', 'nullable', 'comment'];
-}
-inherits(ColumnCompiler_Oracle, ColumnCompiler);
+export class ColumnCompiler_Oracle extends ColumnCompiler {
+  modifiers = ['defaultTo', 'checkIn', 'nullable', 'comment'];
 
-assign(ColumnCompiler_Oracle.prototype, {
   // helper function for pushAdditional in increments() and bigincrements()
   _createAutoIncrementTriggerAndSequence() {
     // TODO Add warning that sequence etc is created
     this.pushAdditional(function() {
       const tableName = this.tableCompiler.tableNameRaw;
-      const createTriggerSQL = Trigger.createAutoIncrementTrigger(
+      const createTriggerSQL = trigger.createAutoIncrementTrigger(
         this.client.logger,
         tableName
       );
       this.pushQuery(createTriggerSQL);
     });
-  },
+  }
 
   increments() {
     this._createAutoIncrementTriggerAndSequence();
     return 'integer not null primary key';
-  },
+  }
 
   bigincrements() {
     this._createAutoIncrementTriggerAndSequence();
     return 'number(20, 0) not null primary key';
-  },
+  }
 
   floating(precision) {
     const parsedPrecision = this._num(precision, 0);
     return `float${parsedPrecision ? `(${parsedPrecision})` : ''}`;
-  },
+  }
 
   double(precision, scale) {
     // if (!precision) return 'number'; // TODO: Check If default is ok
     return `number(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
-  },
+  }
 
   decimal(precision, scale) {
     if (precision === null) return 'decimal';
     return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
-  },
+  }
 
   integer(length) {
     return length ? `number(${this._num(length, 11)})` : 'integer';
-  },
+  }
 
-  tinyint: 'smallint',
+  tinyint = 'smallint';
 
-  smallint: 'smallint',
+  smallint = 'smallint';
 
-  mediumint: 'integer',
+  mediumint = 'integer';
 
-  biginteger: 'number(20, 0)',
+  biginteger = 'number(20, 0)';
 
-  text: 'clob',
+  text = 'clob';
 
   enu(allowed) {
     allowed = uniq(allowed);
@@ -77,31 +72,31 @@ assign(ColumnCompiler_Oracle.prototype, {
     this.columnBuilder._modifiers.checkIn = [allowed];
 
     return `varchar2(${maxLength})`;
-  },
+  }
 
-  time: 'timestamp with time zone',
+  time = 'timestamp with time zone';
 
   datetime(without) {
     return without ? 'timestamp' : 'timestamp with time zone';
-  },
+  }
 
   timestamp(without) {
     return without ? 'timestamp' : 'timestamp with time zone';
-  },
+  }
 
-  bit: 'clob',
+  bit = 'clob';
 
-  json: 'clob',
+  json = 'clob';
 
   bool() {
     // implicitly add the check for 0 and 1
     this.columnBuilder._modifiers.checkIn = [[0, 1]];
     return 'number(1, 0)';
-  },
+  }
 
   varchar(length) {
     return `varchar2(${this._num(length, 255)})`;
-  },
+  }
 
   // Modifiers
   // ------
@@ -118,7 +113,7 @@ assign(ColumnCompiler_Oracle.prototype, {
           "'"
       );
     }, comment);
-  },
+  }
 
   checkIn(value) {
     // TODO: Maybe accept arguments also as array
@@ -133,7 +128,7 @@ assign(ColumnCompiler_Oracle.prototype, {
       value = `'${value}'`;
     }
     return `check (${this.formatter.wrap(this.args[0])} in (${value}))`;
-  },
-});
+  }
+}
 
 export default ColumnCompiler_Oracle;

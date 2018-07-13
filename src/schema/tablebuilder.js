@@ -6,23 +6,25 @@
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-import { extend, each, toArray, isString, isFunction } from 'lodash';
+import { each, toArray, isString, isFunction } from 'lodash';
 import * as helpers from '../helpers';
 
-function TableBuilder(client, method, tableName, fn) {
-  this.client = client;
-  this._fn = fn;
-  this._method = method;
-  this._schemaName = undefined;
-  this._tableName = tableName;
-  this._statements = [];
-  this._single = {};
+export class TableBuilder {
+  constructor(client, method, tableName, fn) {
+    this.client = client;
+    this._fn = fn;
+    this._method = method;
+    this._schemaName = undefined;
+    this._tableName = tableName;
+    this._statements = [];
+    this._single = {};
 
-  if (!isFunction(this._fn)) {
-    throw new TypeError(
-      'A callback function must be supplied to calls against `.createTable` ' +
-        'and `.table`'
-    );
+    if (!isFunction(this._fn)) {
+      throw new TypeError(
+        'A callback function must be supplied to calls against `.createTable` ' +
+          'and `.table`'
+      );
+    }
   }
 }
 
@@ -35,7 +37,7 @@ TableBuilder.prototype.setSchema = function(schemaName) {
 // rather than creating the table.
 TableBuilder.prototype.toSQL = function() {
   if (this._method === 'alter') {
-    extend(this, AlterMethods);
+    Object.assign(this, AlterMethods);
   }
   this._fn.call(this, this);
   return this.client.tableCompiler(this).toSQL();
@@ -244,7 +246,7 @@ TableBuilder.prototype.foreign = function(column, keyName) {
       return returnObj;
     },
     _columnBuilder(builder) {
-      extend(builder, returnObj);
+      Object.assign(builder, returnObj);
       returnObj = builder;
       return builder;
     },

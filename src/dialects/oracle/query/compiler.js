@@ -3,7 +3,6 @@
 // Oracle Query Builder & Compiler
 // ------
 import {
-  assign,
   isPlainObject,
   isEmpty,
   isString,
@@ -12,8 +11,7 @@ import {
   compact,
   identity,
 } from 'lodash';
-import inherits from 'inherits';
-import QueryCompiler from '../../../query/compiler';
+import { QueryCompiler } from '../../../query/compiler';
 import { ReturningHelper } from '../utils';
 
 const components = [
@@ -33,12 +31,7 @@ const components = [
 // Set the "Formatter" to use for the queries,
 // ensuring that all parameterized values (even across sub-queries)
 // are properly built into the same query.
-function QueryCompiler_Oracle(client, builder) {
-  QueryCompiler.call(this, client, builder);
-}
-inherits(QueryCompiler_Oracle, QueryCompiler);
-
-assign(QueryCompiler_Oracle.prototype, {
+export class QueryCompiler_Oracle extends QueryCompiler {
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
   insert() {
@@ -166,7 +159,7 @@ assign(QueryCompiler_Oracle.prototype, {
     }
 
     return sql;
-  },
+  }
 
   // Update method, including joins, wheres, order & limits.
   update() {
@@ -189,16 +182,16 @@ assign(QueryCompiler_Oracle.prototype, {
     }
 
     return this._addReturningToSqlAndConvert(sql, returning, this.tableName);
-  },
+  }
 
   // Compiles a `truncate` query.
   truncate() {
     return `truncate table ${this.tableName}`;
-  },
+  }
 
   forUpdate() {
     return 'for update';
-  },
+  }
 
   forShare() {
     // lock for share is not directly supported by oracle
@@ -207,7 +200,7 @@ assign(QueryCompiler_Oracle.prototype, {
       'lock for share is not supported by oracle dialect'
     );
     return '';
-  },
+  }
 
   // Compiles a `columnInfo` query.
   columnInfo() {
@@ -246,7 +239,7 @@ assign(QueryCompiler_Oracle.prototype, {
         return (column && out[column]) || out;
       },
     };
-  },
+  }
 
   select() {
     let query = this.with();
@@ -255,11 +248,11 @@ assign(QueryCompiler_Oracle.prototype, {
     });
     query += compact(statements).join(' ');
     return this._surroundQueryWithLimitAndOffset(query);
-  },
+  }
 
   aggregate(stmt) {
     return this._aggregate(stmt, { aliasSeparator: ' ' });
-  },
+  }
 
   // for single commands only
   _addReturningToSqlAndConvert(sql, returning, tableName) {
@@ -283,7 +276,7 @@ assign(QueryCompiler_Oracle.prototype, {
     res.outParams = [returningHelper];
     res.returning = returning;
     return res;
-  },
+  }
 
   _surroundQueryWithLimitAndOffset(query) {
     let { limit } = this.single;
@@ -313,8 +306,8 @@ assign(QueryCompiler_Oracle.prototype, {
       'where rownum_ > ' +
       this.formatter.parameter(offset)
     );
-  },
-});
+  }
+}
 
 // Compiles the `select` statement, or nested sub-selects
 // by calling each of the component compilers, trimming out

@@ -4,6 +4,7 @@ dist: trusty
 sudo: required
 
 cache:
+  yarn: true
   directories:
   - "node_modules"
 
@@ -45,8 +46,8 @@ before_script:
 script:
   - if [ -z $TEST_ORACLEDB ]; then npm test; else npm run oracledb:test; fi
 
-after_success:
-  - if [ -z $TEST_ORACLEDB ]; then npm run coveralls; fi
+# after_success:
+#   - if [ -z $TEST_ORACLEDB ]; then npm run coveralls; fi
 
 notifications:
   email: false

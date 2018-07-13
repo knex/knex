@@ -1,35 +1,24 @@
 // SQLite3 Query Builder & Compiler
 
-import inherits from 'inherits';
-import QueryCompiler from '../../../query/compiler';
-import {
-  assign,
-  each,
-  isEmpty,
-  isString,
-  noop,
-  reduce,
-  identity,
-} from 'lodash';
+import { QueryCompiler } from '../../../query/compiler';
+import { each, isEmpty, isString, noop, reduce, identity } from 'lodash';
 
-function QueryCompiler_SQLite3(client, builder) {
-  QueryCompiler.call(this, client, builder);
+export class QueryCompiler_SQLite3 extends QueryCompiler {
+  constructor(client, builder) {
+    super(client, builder);
 
-  const { returning } = this.single;
+    const { returning } = this.single;
 
-  if (returning) {
-    this.client.logger.warn(
-      '.returning() is not supported by sqlite3 and will not have any effect.'
-    );
+    if (returning) {
+      this.client.logger.warn(
+        '.returning() is not supported by sqlite3 and will not have any effect.'
+      );
+    }
   }
-}
-inherits(QueryCompiler_SQLite3, QueryCompiler);
-
-assign(QueryCompiler_SQLite3.prototype, {
   // The locks are not applicable in SQLite3
-  forShare: emptyStr,
+  forShare = () => '';
 
-  forUpdate: emptyStr,
+  forUpdate = () => '';
 
   // SQLite requires us to build the multi-row insert as a listing of select with
   // unions joining them together. So we'll build out this list of columns and
@@ -104,7 +93,7 @@ assign(QueryCompiler_SQLite3.prototype, {
       blocks[i] = block.join(', ');
     }
     return sql + ' select ' + blocks.join(' union all select ');
-  },
+  }
 
   // Compile a truncate table statement into SQL.
   truncate() {
@@ -117,7 +106,7 @@ assign(QueryCompiler_SQLite3.prototype, {
         }).catch(noop);
       },
     };
-  },
+  }
 
   // Compiles a `columnInfo` query
   columnInfo() {
@@ -154,7 +143,7 @@ assign(QueryCompiler_SQLite3.prototype, {
         return (column && out[column]) || out;
       },
     };
-  },
+  }
 
   limit() {
     const noLimit = !this.single.limit && this.single.limit !== 0;
@@ -165,11 +154,7 @@ assign(QueryCompiler_SQLite3.prototype, {
     return `limit ${this.formatter.parameter(
       noLimit ? -1 : this.single.limit
     )}`;
-  },
-});
-
-function emptyStr() {
-  return '';
+  }
 }
 
 export default QueryCompiler_SQLite3;

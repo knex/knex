@@ -1,22 +1,15 @@
 /* eslint max-len:0 */
-
-import inherits from 'inherits';
 import * as utils from '../utils';
-import TableCompiler from '../../../schema/tablecompiler';
+import { TableCompiler } from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
-import Trigger from './trigger';
+import { trigger } from './trigger';
 
-import { assign, map } from 'lodash';
+import { map } from 'lodash';
 
 // Table Compiler
 // ------
 
-function TableCompiler_Oracle() {
-  TableCompiler.apply(this, arguments);
-}
-inherits(TableCompiler_Oracle, TableCompiler);
-
-assign(TableCompiler_Oracle.prototype, {
+export class TableCompiler_Oracle extends TableCompiler {
   addColumns(columns, prefix) {
     if (columns.sql.length > 0) {
       prefix = prefix || this.addColumnsPrefix;
@@ -36,16 +29,16 @@ assign(TableCompiler_Oracle.prototype, {
         bindings: columns.bindings,
       });
     }
-  },
+  }
 
   // Compile a rename column command.
   renameColumn(from, to) {
     // Remove quotes around tableName
     const tableName = this.tableName().slice(1, -1);
     return this.pushQuery(
-      Trigger.renameColumnTrigger(this.client.logger, tableName, from, to)
+      trigger.renameColumnTrigger(this.client.logger, tableName, from, to)
     );
-  },
+  }
 
   compileAdd(builder) {
     const table = this.formatter.wrap(builder);
@@ -53,7 +46,7 @@ assign(TableCompiler_Oracle.prototype, {
     return this.pushQuery({
       sql: `alter table ${table} ${columns.join(', ')}`,
     });
-  },
+  }
 
   // Adds the "create" query to the query sequence.
   createQuery(columns, ifNot) {
@@ -64,16 +57,16 @@ assign(TableCompiler_Oracle.prototype, {
       bindings: columns.bindings,
     });
     if (this.single.comment) this.comment(this.single.comment);
-  },
+  }
 
   // Compiles the comment on the table.
   comment(comment) {
     this.pushQuery(`comment on table ${this.tableName()} is '${comment}'`);
-  },
+  }
 
-  addColumnsPrefix: 'add ',
+  addColumnsPrefix = 'add ';
 
-  alterColumnsPrefix: 'modify ',
+  alterColumnsPrefix = 'modify ';
 
   dropColumn() {
     const columns = helpers.normalizeArr.apply(null, arguments);
@@ -82,17 +75,17 @@ assign(TableCompiler_Oracle.prototype, {
         columns
       )})`
     );
-  },
+  }
 
   changeType() {
     // alter table + table + ' modify ' + wrapped + '// type';
-  },
+  }
 
   _indexCommand(type, tableName, columns) {
     return this.formatter.wrap(
       utils.generateCombinedName(this.client.logger, type, tableName, columns)
     );
-  },
+  }
 
   primary(columns, constraintName) {
     constraintName = constraintName
@@ -103,7 +96,7 @@ assign(TableCompiler_Oracle.prototype, {
         columns
       )})`
     );
-  },
+  }
 
   dropPrimary(constraintName) {
     constraintName = constraintName
@@ -112,7 +105,7 @@ assign(TableCompiler_Oracle.prototype, {
     this.pushQuery(
       `alter table ${this.tableName()} drop constraint ${constraintName}`
     );
-  },
+  }
 
   index(columns, indexName) {
     indexName = indexName
@@ -124,14 +117,14 @@ assign(TableCompiler_Oracle.prototype, {
         this.formatter.columnize(columns) +
         ')'
     );
-  },
+  }
 
   dropIndex(columns, indexName) {
     indexName = indexName
       ? this.formatter.wrap(indexName)
       : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery(`drop index ${indexName}`);
-  },
+  }
 
   unique(columns, indexName) {
     indexName = indexName
@@ -143,7 +136,7 @@ assign(TableCompiler_Oracle.prototype, {
         this.formatter.columnize(columns) +
         ')'
     );
-  },
+  }
 
   dropUnique(columns, indexName) {
     indexName = indexName
@@ -152,7 +145,7 @@ assign(TableCompiler_Oracle.prototype, {
     this.pushQuery(
       `alter table ${this.tableName()} drop constraint ${indexName}`
     );
-  },
+  }
 
   dropForeign(columns, indexName) {
     indexName = indexName
@@ -161,7 +154,7 @@ assign(TableCompiler_Oracle.prototype, {
     this.pushQuery(
       `alter table ${this.tableName()} drop constraint ${indexName}`
     );
-  },
-});
+  }
+}
 
 export default TableCompiler_Oracle;

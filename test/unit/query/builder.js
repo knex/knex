@@ -2,21 +2,21 @@
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
-var MySQL_Client = require('../../../lib/dialects/mysql');
-var PG_Client = require('../../../lib/dialects/postgres');
-var Redshift_Client = require('../../../lib/dialects/redshift');
-var Oracledb_Client = require('../../../lib/dialects/oracledb');
-var SQLite3_Client = require('../../../lib/dialects/sqlite3');
-var MSSQL_Client = require('../../../lib/dialects/mssql');
+var MySQL_Client = require('../../../lib/dialects/mysql').default;
+var PG_Client = require('../../../lib/dialects/postgres').default;
+var Redshift_Client = require('../../../lib/dialects/redshift').default;
+var Oracledb_Client = require('../../../lib/dialects/oracledb').default;
+var SQLite3_Client = require('../../../lib/dialects/sqlite3').default;
+var MSSQL_Client = require('../../../lib/dialects/mssql').default;
 
 // use driverName as key
 var clients = {
-  mysql: new MySQL_Client({}),
-  pg: new PG_Client({}),
-  'pg-redshift': new Redshift_Client({}),
-  oracledb: new Oracledb_Client({}),
-  sqlite3: new SQLite3_Client({}),
-  mssql: new MSSQL_Client({}),
+  mysql: new MySQL_Client({}).init(),
+  pg: new PG_Client({}).init(),
+  'pg-redshift': new Redshift_Client({}).init(),
+  oracledb: new Oracledb_Client({}).init(),
+  sqlite3: new SQLite3_Client({}).init(),
+  mssql: new MSSQL_Client({}).init(),
 };
 
 var useNullAsDefaultConfig = { useNullAsDefault: true };

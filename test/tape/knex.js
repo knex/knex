@@ -1,6 +1,6 @@
 'use strict';
 
-var knex = require('../../lib/index');
+var knex = require('../../lib/index').Knex;
 var test = require('tape');
 
 test('it should parse the connection string', function(t) {
@@ -20,7 +20,7 @@ test('it should parse the connection string', function(t) {
 
 test('it should allow to use proprietary dialect', function(t) {
   t.plan(2);
-  var Client = require('../../lib/dialects/mysql');
+  var Client = require('../../lib/dialects/mysql').default;
   var knexObj = knex({
     client: Client,
     connection: {

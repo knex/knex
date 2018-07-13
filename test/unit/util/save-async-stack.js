@@ -1,6 +1,6 @@
 'use strict';
 /*global expect, describe, it*/
-var saveAsyncStack = require('../../../lib/util/save-async-stack');
+var saveAsyncStack = require('../../../lib/util/save-async-stack').default;
 var chai = require('chai');
 
 describe('saveAsyncStack', function() {

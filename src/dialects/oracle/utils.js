@@ -1,4 +1,4 @@
-function generateCombinedName(logger, postfix, name, subNames) {
+export function generateCombinedName(logger, postfix, name, subNames) {
   const crypto = require('crypto');
   const limit = 30;
   if (!Array.isArray(subNames)) subNames = subNames ? [subNames] : [];
@@ -22,7 +22,7 @@ function generateCombinedName(logger, postfix, name, subNames) {
   return result;
 }
 
-function wrapSqlWithCatch(sql, errorNumberToCatch) {
+export function wrapSqlWithCatch(sql, errorNumberToCatch) {
   return (
     `begin execute immediate '${sql.replace(/'/g, "''")}'; ` +
     `exception when others then if sqlcode != ${errorNumberToCatch} then raise; ` +
@@ -31,12 +31,12 @@ function wrapSqlWithCatch(sql, errorNumberToCatch) {
   );
 }
 
-function ReturningHelper(columnName) {
-  this.columnName = columnName;
+export class ReturningHelper {
+  constructor(columnName) {
+    this.columnName = columnName;
+  }
+
+  toString() {
+    return `[object ReturningHelper:${this.columnName}]`;
+  }
 }
-
-ReturningHelper.prototype.toString = function() {
-  return `[object ReturningHelper:${this.columnName}]`;
-};
-
-export { generateCombinedName, wrapSqlWithCatch, ReturningHelper };

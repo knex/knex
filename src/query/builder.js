@@ -1,14 +1,12 @@
 // Builder
 // -------
 import assert from 'assert';
-import inherits from 'inherits';
 import { EventEmitter } from 'events';
 
-import Raw from '../raw';
+import { Raw } from '../raw';
 import * as helpers from '../helpers';
-import JoinClause from './joinclause';
+import { JoinClause } from './joinclause';
 import {
-  assign,
   clone,
   each,
   isBoolean,
@@ -23,36 +21,37 @@ import {
   reject,
   includes,
 } from 'lodash';
-import saveAsyncStack from '../util/save-async-stack';
+import { saveAsyncStack } from '../util/save-async-stack';
+import { interfaceFns } from '../interface';
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
-function Builder(client) {
-  this.client = client;
-  this.and = this;
-  this._single = {};
-  this._statements = [];
-  this._method = 'select';
-  if (client.config) {
-    saveAsyncStack(this, 5);
-    this._debug = client.config.debug;
+export class Builder extends EventEmitter {
+  constructor(client) {
+    super();
+    this.client = client;
+    this.and = this;
+    this._single = {};
+    this._statements = [];
+    this._method = 'select';
+    if (client.config) {
+      saveAsyncStack(this, 5);
+      this._debug = client.config.debug;
+    }
+    // Internal flags used in the builder.
+    this._joinFlag = 'inner';
+    this._boolFlag = 'and';
+    this._notFlag = false;
   }
-  // Internal flags used in the builder.
-  this._joinFlag = 'inner';
-  this._boolFlag = 'and';
-  this._notFlag = false;
-}
-inherits(Builder, EventEmitter);
 
-assign(Builder.prototype, {
   toString() {
     return this.toQuery();
-  },
+  }
 
   // Convert the current query "toSQL"
   toSQL(method, tz) {
     return this.client.queryCompiler(this).toSQL(method || this._method, tz);
-  },
+  }
 
   // Create a shallow clone of the current query builder.
   clone() {
@@ -71,7 +70,7 @@ assign(Builder.prototype, {
     }
 
     return cloned;
-  },
+  }
 
   timeout(ms, { cancel } = {}) {
     if (isNumber(ms) && ms > 0) {
@@ -82,7 +81,7 @@ assign(Builder.prototype, {
       }
     }
     return this;
-  },
+  }
 
   // With
   // ------
@@ -101,7 +100,7 @@ assign(Builder.prototype, {
     throw new Error(
       'with() second argument must be a function / QueryBuilder or a raw'
     );
-  },
+  }
 
   // Helper for compiling any advanced `with` queries.
   withWrapped(alias, query) {
@@ -112,7 +111,7 @@ assign(Builder.prototype, {
       value: query,
     });
     return this;
-  },
+  }
 
   // Select
   // ------
@@ -126,20 +125,20 @@ assign(Builder.prototype, {
       value: helpers.normalizeArr.apply(null, arguments),
     });
     return this;
-  },
+  }
 
   // Allow for a sub-select to be explicitly aliased as a column,
   // without needing to compile the query in a where.
   as(column) {
     this._single.as = column;
     return this;
-  },
+  }
 
   // Prepends the `schemaName` on `tableName` defined by `.table` and `.join`.
   withSchema(schemaName) {
     this._single.schema = schemaName;
     return this;
-  },
+  }
 
   // Sets the `tableName` on the query.
   // Alias to "from" for select and "into" for insert statements
@@ -151,7 +150,7 @@ assign(Builder.prototype, {
     this._single.table = tableName;
     this._single.only = options.only === true;
     return this;
-  },
+  }
 
   // Adds a `distinct` clause to the query.
   distinct() {
@@ -161,7 +160,7 @@ assign(Builder.prototype, {
       distinct: true,
     });
     return this;
-  },
+  }
 
   // Adds a join clause to the query, allowing for advanced joins
   // with an anonymous function as the second argument.
@@ -183,36 +182,36 @@ assign(Builder.prototype, {
     }
     this._statements.push(join);
     return this;
-  },
+  }
 
   // JOIN blocks:
   innerJoin() {
     return this._joinType('inner').join.apply(this, arguments);
-  },
+  }
   leftJoin() {
     return this._joinType('left').join.apply(this, arguments);
-  },
+  }
   leftOuterJoin() {
     return this._joinType('left outer').join.apply(this, arguments);
-  },
+  }
   rightJoin() {
     return this._joinType('right').join.apply(this, arguments);
-  },
+  }
   rightOuterJoin() {
     return this._joinType('right outer').join.apply(this, arguments);
-  },
+  }
   outerJoin() {
     return this._joinType('outer').join.apply(this, arguments);
-  },
+  }
   fullOuterJoin() {
     return this._joinType('full outer').join.apply(this, arguments);
-  },
+  }
   crossJoin() {
     return this._joinType('cross').join.apply(this, arguments);
-  },
+  }
   joinRaw() {
     return this._joinType('raw').join.apply(this, arguments);
-  },
+  }
 
   // The where function can be used in several ways:
   // The most basic is `where(key, value)`, which expands to
@@ -290,9 +289,9 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
   // Adds an `or where` clause to the query.
-  orWhere: function orWhere() {
+  orWhere() {
     this._bool('or');
     const obj = arguments[0];
     if (isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
@@ -303,17 +302,17 @@ assign(Builder.prototype, {
       });
     }
     return this.where.apply(this, arguments);
-  },
+  }
 
   // Adds an `not where` clause to the query.
   whereNot() {
     return this._not(true).where.apply(this, arguments);
-  },
+  }
 
   // Adds an `or not where` clause to the query.
   orWhereNot() {
     return this._bool('or').whereNot.apply(this, arguments);
-  },
+  }
 
   // Processes an object literal provided in a "where" clause.
   _objectWhere(obj) {
@@ -323,7 +322,7 @@ assign(Builder.prototype, {
       this[boolVal + 'Where' + notVal](key, obj[key]);
     }
     return this;
-  },
+  }
 
   // Adds a raw `where` clause to the query.
   whereRaw(sql, bindings) {
@@ -336,11 +335,11 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   orWhereRaw(sql, bindings) {
     return this._bool('or').whereRaw(sql, bindings);
-  },
+  }
 
   // Helper for compiling any advanced `where` queries.
   whereWrapped(callback) {
@@ -352,7 +351,7 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   // Adds a `where exists` clause to the query.
   whereExists(callback) {
@@ -364,22 +363,22 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   // Adds an `or where exists` clause to the query.
   orWhereExists(callback) {
     return this._bool('or').whereExists(callback);
-  },
+  }
 
   // Adds a `where not exists` clause to the query.
   whereNotExists(callback) {
     return this._not(true).whereExists(callback);
-  },
+  }
 
   // Adds a `or where not exists` clause to the query.
   orWhereNotExists(callback) {
     return this._bool('or').whereNotExists(callback);
-  },
+  }
 
   // Adds a `where in` clause to the query.
   whereIn(column, values) {
@@ -394,24 +393,24 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   // Adds a `or where in` clause to the query.
   orWhereIn(column, values) {
     return this._bool('or').whereIn(column, values);
-  },
+  }
 
   // Adds a `where not in` clause to the query.
   whereNotIn(column, values) {
     return this._not(true).whereIn(column, values);
-  },
+  }
 
   // Adds a `or where not in` clause to the query.
   orWhereNotIn(column, values) {
     return this._bool('or')
       ._not(true)
       .whereIn(column, values);
-  },
+  }
 
   // Adds a `where null` clause to the query.
   whereNull(column) {
@@ -423,22 +422,22 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   // Adds a `or where null` clause to the query.
   orWhereNull(column) {
     return this._bool('or').whereNull(column);
-  },
+  }
 
   // Adds a `where not null` clause to the query.
   whereNotNull(column) {
     return this._not(true).whereNull(column);
-  },
+  }
 
   // Adds a `or where not null` clause to the query.
   orWhereNotNull(column) {
     return this._bool('or').whereNotNull(column);
-  },
+  }
 
   // Adds a `where between` clause to the query.
   whereBetween(column, values) {
@@ -459,22 +458,22 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   // Adds a `where not between` clause to the query.
   whereNotBetween(column, values) {
     return this._not(true).whereBetween(column, values);
-  },
+  }
 
   // Adds a `or where between` clause to the query.
   orWhereBetween(column, values) {
     return this._bool('or').whereBetween(column, values);
-  },
+  }
 
   // Adds a `or where not between` clause to the query.
   orWhereNotBetween(column, values) {
     return this._bool('or').whereNotBetween(column, values);
-  },
+  }
 
   // Adds a `group by` clause to the query.
   groupBy(item) {
@@ -487,7 +486,7 @@ assign(Builder.prototype, {
       value: helpers.normalizeArr.apply(null, arguments),
     });
     return this;
-  },
+  }
 
   // Adds a raw `group by` clause to the query.
   groupByRaw(sql, bindings) {
@@ -498,7 +497,7 @@ assign(Builder.prototype, {
       value: raw,
     });
     return this;
-  },
+  }
 
   // Adds a `order by` clause to the query.
   orderBy(column, direction) {
@@ -509,7 +508,7 @@ assign(Builder.prototype, {
       direction,
     });
     return this;
-  },
+  }
 
   // Add a raw `order by` clause to the query.
   orderByRaw(sql, bindings) {
@@ -520,7 +519,7 @@ assign(Builder.prototype, {
       value: raw,
     });
     return this;
-  },
+  }
 
   // Add a union statement to the query.
   union(callbacks, wrap) {
@@ -546,7 +545,7 @@ assign(Builder.prototype, {
       this.union(callbacks, wrap);
     }
     return this;
-  },
+  }
 
   // Adds a union all statement to the query.
   unionAll(callback, wrap) {
@@ -557,7 +556,7 @@ assign(Builder.prototype, {
       wrap: wrap || false,
     });
     return this;
-  },
+  }
 
   // Adds a `having` clause to the query.
   having(column, operator, value) {
@@ -581,9 +580,9 @@ assign(Builder.prototype, {
       not: this._not(),
     });
     return this;
-  },
+  }
 
-  orHaving: function orHaving() {
+  orHaving() {
     this._bool('or');
     const obj = arguments[0];
     if (isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
@@ -594,7 +593,7 @@ assign(Builder.prototype, {
       });
     }
     return this.having.apply(this, arguments);
-  },
+  }
 
   // Helper for compiling any advanced `having` queries.
   havingWrapped(callback) {
@@ -606,7 +605,7 @@ assign(Builder.prototype, {
       not: this._not(),
     });
     return this;
-  },
+  }
 
   havingNull(column) {
     this._statements.push({
@@ -617,21 +616,21 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   orHavingNull(callback) {
     return this._bool('or').havingNull(callback);
-  },
+  }
 
   havingNotNull(callback) {
     return this._not(true).havingNull(callback);
-  },
+  }
 
   orHavingNotNull(callback) {
     return this._not(true)
       ._bool('or')
       .havingNull(callback);
-  },
+  }
 
   havingExists(callback) {
     this._statements.push({
@@ -642,21 +641,21 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   orHavingExists(callback) {
     return this._bool('or').havingExists(callback);
-  },
+  }
 
   havingNotExists(callback) {
     return this._not(true).havingExists(callback);
-  },
+  }
 
   orHavingNotExists(callback) {
     return this._not(true)
       ._bool('or')
       .havingExists(callback);
-  },
+  }
 
   havingBetween(column, values) {
     assert(
@@ -676,21 +675,21 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   orHavingBetween(column, values) {
     return this._bool('or').havingBetween(column, values);
-  },
+  }
 
   havingNotBetween(column, values) {
     return this._not(true).havingBetween(column, values);
-  },
+  }
 
   orHavingNotBetween(column, values) {
     return this._not(true)
       ._bool('or')
       .havingBetween(column, values);
-  },
+  }
 
   havingIn(column, values) {
     if (Array.isArray(values) && isEmpty(values))
@@ -704,24 +703,24 @@ assign(Builder.prototype, {
       bool: this._bool(),
     });
     return this;
-  },
+  }
 
   // Adds a `or where in` clause to the query.
   orHavingIn(column, values) {
     return this._bool('or').havingIn(column, values);
-  },
+  }
 
   // Adds a `where not in` clause to the query.
   havingNotIn(column, values) {
     return this._not(true).havingIn(column, values);
-  },
+  }
 
   // Adds a `or where not in` clause to the query.
   orHavingNotIn(column, values) {
     return this._bool('or')
       ._not(true)
       .havingIn(column, values);
-  },
+  }
 
   // Adds a raw `having` clause to the query.
   havingRaw(sql, bindings) {
@@ -734,17 +733,17 @@ assign(Builder.prototype, {
       not: this._not(),
     });
     return this;
-  },
+  }
 
   orHavingRaw(sql, bindings) {
     return this._bool('or').havingRaw(sql, bindings);
-  },
+  }
 
   // Only allow a single "offset" to be set for the current query.
   offset(value) {
     this._single.offset = value;
     return this;
-  },
+  }
 
   // Only allow a single "limit" to be set for the current query.
   limit(value) {
@@ -755,32 +754,32 @@ assign(Builder.prototype, {
       this._single.limit = val;
     }
     return this;
-  },
+  }
 
   // Retrieve the "count" result of the query.
   count(column) {
     return this._aggregate('count', column || '*');
-  },
+  }
 
   // Retrieve the minimum value of a given column.
   min(column) {
     return this._aggregate('min', column);
-  },
+  }
 
   // Retrieve the maximum value of a given column.
   max(column) {
     return this._aggregate('max', column);
-  },
+  }
 
   // Retrieve the sum of the values of a given column.
   sum(column) {
     return this._aggregate('sum', column);
-  },
+  }
 
   // Retrieve the average of the values of a given column.
   avg(column) {
     return this._aggregate('avg', column);
-  },
+  }
 
   // Retrieve the "count" of the distinct results of the query.
   countDistinct() {
@@ -793,27 +792,27 @@ assign(Builder.prototype, {
     }
 
     return this._aggregate('count', columns, true);
-  },
+  }
 
   // Retrieve the sum of the distinct values of a given column.
   sumDistinct(column) {
     return this._aggregate('sum', column, true);
-  },
+  }
 
   // Retrieve the vg of the distinct results of the query.
   avgDistinct(column) {
     return this._aggregate('avg', column, true);
-  },
+  }
 
   // Increments a column's value by the specified amount.
   increment(column, amount) {
     return this._counter(column, amount);
-  },
+  }
 
   // Decrements a column's value by the specified amount.
   decrement(column, amount) {
     return this._counter(column, amount, '-');
-  },
+  }
 
   // Sets the values for a `select` query, informing that only the first
   // row should be returned (limit 1).
@@ -832,7 +831,7 @@ assign(Builder.prototype, {
     this._method = 'first';
     this.limit(1);
     return this;
-  },
+  }
 
   // Pluck a column from a query.
   pluck(column) {
@@ -844,25 +843,25 @@ assign(Builder.prototype, {
       value: column,
     });
     return this;
-  },
+  }
 
   // Remove everything from select clause
   clearSelect() {
     this._clearGrouping('columns');
     return this;
-  },
+  }
 
   // Remove everything from select clause
   clearWhere() {
     this._clearGrouping('where');
     return this;
-  },
+  }
 
   // Remove everything from select clause
   clearOrder() {
     this._clearGrouping('order');
     return this;
-  },
+  }
 
   // Insert & Update
   // ------
@@ -873,7 +872,7 @@ assign(Builder.prototype, {
     if (!isEmpty(returning)) this.returning(returning);
     this._single.insert = values;
     return this;
-  },
+  }
 
   // Sets the values for an `update`, allowing for both
   // `.update(key, value, [returning])` and `.update(obj, [returning])` syntaxes.
@@ -900,13 +899,13 @@ assign(Builder.prototype, {
     if (!isEmpty(ret)) this.returning(ret);
     this._single.update = obj;
     return this;
-  },
+  }
 
   // Sets the returning value for the query.
   returning(returning) {
     this._single.returning = returning;
     return this;
-  },
+  }
 
   // Delete
   // ------
@@ -916,7 +915,7 @@ assign(Builder.prototype, {
     this._method = 'del';
     if (!isEmpty(ret)) this.returning(ret);
     return this;
-  },
+  }
 
   // Truncates a table, ends the query chain.
   truncate(tableName) {
@@ -925,26 +924,26 @@ assign(Builder.prototype, {
       this._single.table = tableName;
     }
     return this;
-  },
+  }
 
   // Retrieves columns for the table specified by `knex(tableName)`
   columnInfo(column) {
     this._method = 'columnInfo';
     this._single.columnInfo = column;
     return this;
-  },
+  }
 
   // Set a lock for update constraint.
   forUpdate() {
     this._single.lock = 'forUpdate';
     return this;
-  },
+  }
 
   // Set a lock for share constraint.
   forShare() {
     this._single.lock = 'forShare';
     return this;
-  },
+  }
 
   // Takes a JS object of methods to call and calls them
   fromJS(obj) {
@@ -959,14 +958,14 @@ assign(Builder.prototype, {
       }
     });
     return this;
-  },
+  }
 
   // Passes query to provided callback function, useful for e.g. composing
   // domain-specific helpers
   modify(callback) {
     callback.apply(this, [this].concat(tail(arguments)));
     return this;
-  },
+  }
 
   // ----------------------------------------------------------------------
 
@@ -981,7 +980,7 @@ assign(Builder.prototype, {
       symbol: symbol || '+',
     };
     return this;
-  },
+  }
 
   // Helper to get or set the "boolFlag" value.
   _bool(val) {
@@ -992,7 +991,7 @@ assign(Builder.prototype, {
     const ret = this._boolFlag;
     this._boolFlag = 'and';
     return ret;
-  },
+  }
 
   // Helper to get or set the "notFlag" value.
   _not(val) {
@@ -1003,7 +1002,7 @@ assign(Builder.prototype, {
     const ret = this._notFlag;
     this._notFlag = false;
     return ret;
-  },
+  }
 
   // Helper to get or set the "joinFlag" value.
   _joinType(val) {
@@ -1014,7 +1013,7 @@ assign(Builder.prototype, {
     const ret = this._joinFlag || 'inner';
     this._joinFlag = 'inner';
     return ret;
-  },
+  }
 
   // Helper for compiling any aggregate queries.
   _aggregate(method, column, aggregateDistinct) {
@@ -1026,25 +1025,21 @@ assign(Builder.prototype, {
       aggregateDistinct: aggregateDistinct || false,
     });
     return this;
-  },
+  }
 
   // Helper function for clearing or reseting a grouping type from the builder
   _clearGrouping(grouping) {
     this._statements = reject(this._statements, { grouping });
-  },
-});
+  }
 
-Object.defineProperty(Builder.prototype, 'or', {
-  get() {
+  get or() {
     return this._bool('or');
-  },
-});
+  }
 
-Object.defineProperty(Builder.prototype, 'not', {
-  get() {
+  get not() {
     return this._not(true);
-  },
-});
+  }
+}
 
 Builder.prototype.select = Builder.prototype.columns;
 Builder.prototype.column = Builder.prototype.columns;
@@ -1067,7 +1062,7 @@ Builder.prototype.into = Builder.prototype.table;
 Builder.prototype.del = Builder.prototype.delete;
 
 // Attach all of the top level promise methods that should be chainable.
-require('../interface')(Builder);
+interfaceFns(Builder);
 helpers.addQueryContext(Builder);
 
 export default Builder;

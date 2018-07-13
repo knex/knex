@@ -1,10 +1,10 @@
 import { isUndefined } from 'lodash';
+import Promise from 'bluebird';
+import { Transaction } from '../../transaction';
 
-const Promise = require('bluebird');
-const Transaction = require('../../transaction');
 const debugTx = require('debug')('knex:tx');
 
-export default class Oracle_Transaction extends Transaction {
+export class Oracle_Transaction extends Transaction {
   // disable autocommit to allow correct behavior (default is true)
   begin() {
     return Promise.resolve();
@@ -68,3 +68,5 @@ export default class Oracle_Transaction extends Transaction {
     });
   }
 }
+
+export default Oracle_Transaction;

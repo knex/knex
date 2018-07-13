@@ -1,13 +1,11 @@
 import { EventEmitter } from 'events';
+import { FunctionHelper } from '../functionhelper';
+import { Migrator } from '../migrate';
+import { QueryInterface } from '../query/methods';
+import { Seeder } from '../seed';
+import { batchInsert } from './batchInsert';
 
-import Migrator from '../migrate';
-import Seeder from '../seed';
-import FunctionHelper from '../functionhelper';
-import QueryInterface from '../query/methods';
-import { assign } from 'lodash';
-import batchInsert from './batchInsert';
-
-export default function makeKnex(client) {
+export function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
   function knex(tableName, options) {
     const qb = knex.queryBuilder();
@@ -18,7 +16,7 @@ export default function makeKnex(client) {
     return tableName ? qb.table(tableName, options) : qb;
   }
 
-  assign(knex, {
+  Object.assign(knex, {
     Promise: require('bluebird'),
 
     // A new query builder instance.
@@ -138,3 +136,5 @@ export default function makeKnex(client) {
 
   return knex;
 }
+
+export default makeKnex;

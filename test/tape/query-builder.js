@@ -2,8 +2,8 @@
 
 var tape = require('tape');
 var omit = require('lodash/omit');
-var QueryBuilder = require('../../lib/query/builder');
-var Client = require('../../lib/client');
+var QueryBuilder = require('../../lib/query/builder').default;
+var Client = require('../../lib/client').default;
 
 tape('accumulates multiple update calls #647', function(t) {
   t.plan(1);
@@ -14,7 +14,7 @@ tape('accumulates multiple update calls #647', function(t) {
 
 tape('allows for object syntax in join', function(t) {
   t.plan(1);
-  var qb = new QueryBuilder(new Client({ client: 'mysql' }));
+  var qb = new QueryBuilder(new Client({ client: 'mysql' }).init());
   var sql = qb
     .table('users')
     .innerJoin('accounts', {
@@ -29,7 +29,7 @@ tape('allows for object syntax in join', function(t) {
 });
 
 tape('clones correctly', function(t) {
-  var qb = new QueryBuilder(new Client({ client: 'mysql' }));
+  var qb = new QueryBuilder(new Client({ client: 'mysql' }).init());
   var original = qb
     .table('users')
     .debug()

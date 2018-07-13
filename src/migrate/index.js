@@ -5,7 +5,6 @@ import path from 'path';
 import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
 import {
-  assign,
   bind,
   difference,
   each,
@@ -19,13 +18,18 @@ import {
   max,
   template,
 } from 'lodash';
-import inherits from 'inherits';
 
-function LockError(msg) {
-  this.name = 'MigrationLocked';
-  this.message = msg;
+export class MigrationLocked extends Error {
+  constructor(msg) {
+    super(msg);
+    this.name = this.constructor.name;
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, this.constructor);
+    } else {
+      this.stack = new Error(msg).stack;
+    }
+  }
 }
-inherits(LockError, Error);
 
 const CONFIG_DEFAULT = Object.freeze({
   extension: 'js',
@@ -48,7 +52,7 @@ const CONFIG_DEFAULT = Object.freeze({
 // The new migration we're performing, typically called from the `knex.migrate`
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the migration.
-export default class Migrator {
+export class Migrator {
   constructor(knex) {
     this.knex = knex;
     this.config = this.setConfig(knex.client.config.migrations);
@@ -249,7 +253,7 @@ export default class Migrator {
         })
         .then(() => this._lockMigrations(trx));
     }).catch((err) => {
-      throw new LockError(err.message);
+      throw new MigrationLocked(err.message);
     });
   }
 
@@ -285,7 +289,7 @@ export default class Migrator {
         .catch((error) => {
           let cleanupReady = Promise.resolve();
 
-          if (error instanceof LockError) {
+          if (error instanceof MigrationLocked) {
             // If locking error do not free the lock.
             this.knex.client.logger.warn(
               `Can't take lock to run migrations: ${error.message}`
@@ -461,7 +465,7 @@ export default class Migrator {
   }
 
   setConfig(config) {
-    return assign({}, CONFIG_DEFAULT, this.config || {}, config);
+    return { ...CONFIG_DEFAULT, ...(this.config || {}), ...config };
   }
 }
 
@@ -525,3 +529,5 @@ function getSchemaBuilder(trxOrKnex, schemaName) {
     ? trxOrKnex.schema.withSchema(schemaName)
     : trxOrKnex.schema;
 }
+
+export default Migrator;

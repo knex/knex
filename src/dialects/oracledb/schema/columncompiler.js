@@ -1,24 +1,15 @@
-const inherits = require('inherits');
-const ColumnCompiler_Oracle = require('../../oracle/schema/columncompiler');
+import { ColumnCompiler_Oracle } from '../../oracle/schema/columncompiler';
 
-import { assign } from 'lodash';
+export class ColumnCompiler_Oracledb extends ColumnCompiler_Oracle {
+  time = 'timestamp with local time zone';
 
-function ColumnCompiler_Oracledb() {
-  ColumnCompiler_Oracle.apply(this, arguments);
+  datetime(without) {
+    return without ? 'timestamp' : 'timestamp with local time zone';
+  }
+
+  timestamp(without) {
+    return without ? 'timestamp' : 'timestamp with local time zone';
+  }
 }
 
-inherits(ColumnCompiler_Oracledb, ColumnCompiler_Oracle);
-
-assign(ColumnCompiler_Oracledb.prototype, {
-  time: 'timestamp with local time zone',
-
-  datetime: function(without) {
-    return without ? 'timestamp' : 'timestamp with local time zone';
-  },
-
-  timestamp: function(without) {
-    return without ? 'timestamp' : 'timestamp with local time zone';
-  },
-});
-
-module.exports = ColumnCompiler_Oracledb;
+export default ColumnCompiler_Oracledb;

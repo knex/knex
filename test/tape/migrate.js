@@ -1,7 +1,7 @@
 'use strict';
 
 var tape = require('tape');
-var Migrator = require('../../lib/migrate/index.js');
+var Migrator = require('../../lib/migrate/index.js').default;
 
 tape('migrate: constructor uses config.migrations', function(t) {
   t.plan(1);

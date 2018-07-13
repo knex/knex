@@ -3,8 +3,8 @@
 'use strict';
 
 var sinon = require('sinon');
-var Oracle_Client = require('../../../lib/dialects/oracle');
-var client = new Oracle_Client({});
+var Oracle_Client = require('../../../lib/dialects/oracle').default;
+var client = new Oracle_Client({}).init();
 
 describe('Oracle SchemaBuilder', function() {
   var tableSql;

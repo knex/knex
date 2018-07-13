@@ -1,7 +1,7 @@
 'use strict';
 
 var tape = require('tape');
-var Seed = require('../../lib/seed/index.js');
+var Seed = require('../../lib/seed/index.js').default;
 
 tape('checks config.seeds for seed config', function(t) {
   t.plan(1);

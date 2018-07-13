@@ -1,6 +1,6 @@
 'use strict';
 /*global expect, describe, it*/
-var _interface = require('../../lib/interface');
+var _interface = require('../../lib/interface').default;
 var chai = require('chai');
 
 describe('interface', function() {

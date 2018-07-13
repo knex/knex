@@ -1,54 +1,52 @@
 // PostgreSQL
 // -------
-import { assign, map, extend, isArray, isString, includes } from 'lodash';
-import inherits from 'inherits';
-import Client from '../../client';
+import { map, isArray, isString, includes } from 'lodash';
+import { Client } from '../../client';
 import Promise from 'bluebird';
 
-import QueryCompiler from './query/compiler';
-import ColumnCompiler from './schema/columncompiler';
-import TableCompiler from './schema/tablecompiler';
-import SchemaCompiler from './schema/compiler';
+import { QueryCompiler_PG } from './query/compiler';
+import { ColumnCompiler_PG } from './schema/columncompiler';
+import { TableCompiler_PG } from './schema/tablecompiler';
+import { SchemaCompiler_PG } from './schema/compiler';
 import { makeEscape } from '../../query/string';
 
-function Client_PG(config) {
-  Client.apply(this, arguments);
-  if (config.returning) {
-    this.defaultReturning = config.returning;
+export class Client_PG extends Client {
+  constructor(config) {
+    super(config);
+    if (config.returning) {
+      this.defaultReturning = config.returning;
+    }
+
+    if (config.searchPath) {
+      this.searchPath = config.searchPath;
+    }
   }
 
-  if (config.searchPath) {
-    this.searchPath = config.searchPath;
-  }
-}
-inherits(Client_PG, Client);
-
-assign(Client_PG.prototype, {
   queryCompiler() {
-    return new QueryCompiler(this, ...arguments);
-  },
+    return new QueryCompiler_PG(this, ...arguments);
+  }
 
   columnCompiler() {
-    return new ColumnCompiler(this, ...arguments);
-  },
+    return new ColumnCompiler_PG(this, ...arguments);
+  }
 
   schemaCompiler() {
-    return new SchemaCompiler(this, ...arguments);
-  },
+    return new SchemaCompiler_PG(this, ...arguments);
+  }
 
   tableCompiler() {
-    return new TableCompiler(this, ...arguments);
-  },
+    return new TableCompiler_PG(this, ...arguments);
+  }
 
-  dialect: 'postgresql',
+  dialect = 'postgresql';
 
-  driverName: 'pg',
+  driverName = 'pg';
 
   _driver() {
     return require('pg');
-  },
+  }
 
-  _escapeBinding: makeEscape({
+  _escapeBinding = makeEscape({
     escapeArray(val, esc) {
       return esc(arrayString(val, esc));
     },
@@ -85,7 +83,7 @@ assign(Client_PG.prototype, {
       }
       return JSON.stringify(val);
     },
-  }),
+  });
 
   wrapIdentifierImpl(value) {
     if (value === '*') return value;
@@ -99,7 +97,7 @@ assign(Client_PG.prototype, {
     }
 
     return `"${value.replace(/"/g, '""')}"${arrayAccessor}`;
-  },
+  }
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
@@ -128,13 +126,13 @@ assign(Client_PG.prototype, {
     }).tap(function setSearchPath(connection) {
       return client.setSchemaSearchPath(connection);
     });
-  },
+  }
 
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
     return Promise.fromCallback(connection.end.bind(connection));
-  },
+  }
 
   // In PostgreSQL, we need to do a version check to do some feature
   // checking on the database.
@@ -145,7 +143,7 @@ assign(Client_PG.prototype, {
         resolver(/^PostgreSQL (.*?)( |$)/.exec(resp.rows[0].version)[1]);
       });
     });
-  },
+  }
 
   // Position the bindings for the query. The escape sequence for question mark
   // is \? (e.g. knex.raw("\\?") since javascript requires '\' to be escaped too...)
@@ -159,7 +157,7 @@ assign(Client_PG.prototype, {
         return `$${questionCount}`;
       }
     });
-  },
+  }
 
   setSchemaSearchPath(connection, searchPath) {
     let path = searchPath || this.searchPath;
@@ -195,7 +193,7 @@ assign(Client_PG.prototype, {
         resolver(true);
       });
     });
-  },
+  }
 
   _stream(connection, obj, stream, options) {
     const PGQueryStream = process.browser
@@ -217,13 +215,13 @@ assign(Client_PG.prototype, {
       stream.on('end', resolver);
       queryStream.pipe(stream);
     });
-  },
+  }
 
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query(connection, obj) {
     let sql = obj.sql;
-    if (obj.options) sql = extend({ text: sql }, obj.options);
+    if (obj.options) sql = { text: sql, ...obj.options };
     return new Promise(function(resolver, rejecter) {
       connection.query(sql, obj.bindings, function(err, response) {
         if (err) return rejecter(err);
@@ -231,7 +229,7 @@ assign(Client_PG.prototype, {
         resolver(obj);
       });
     });
-  },
+  }
 
   // Ensures the response is returned in the same format as other clients.
   processResponse(obj, runner) {
@@ -261,8 +259,8 @@ assign(Client_PG.prototype, {
       return resp.rowCount;
     }
     return resp;
-  },
-});
+  }
+}
 
 function arrayString(arr, esc) {
   let result = '{';

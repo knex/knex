@@ -4,7 +4,7 @@
 const _ = require('lodash');
 const assert = require('assert');
 const Promise = testPromise;
-const Runner = require('../../../lib/runner');
+const Runner = require('../../../lib/runner').default;
 
 module.exports = function(knex) {
   describe('Selects', function() {
@@ -328,7 +328,7 @@ module.exports = function(knex) {
       knex('accounts')
         .select()
         .asCallback(function() {
-          console.log(this.undefinedVar.test);
+          console.log(this.undefinedVar.test); // eslint-disable-line
         });
     });
 

@@ -1,21 +1,14 @@
 // Raw
 // -------
-import inherits from 'inherits';
 import * as helpers from './helpers';
 import { EventEmitter } from 'events';
 import debug from 'debug';
 
-import {
-  assign,
-  reduce,
-  isPlainObject,
-  isObject,
-  isUndefined,
-  isNumber,
-} from 'lodash';
-import Formatter from './formatter';
-import saveAsyncStack from './util/save-async-stack';
+import { reduce, isPlainObject, isObject, isUndefined, isNumber } from 'lodash';
+import { Formatter } from './formatter';
+import { saveAsyncStack } from './util/save-async-stack';
 import uuid from 'uuid';
+import { interfaceFns } from './interface';
 
 const debugBindings = debug('knex:bindings');
 
@@ -25,23 +18,23 @@ const fakeClient = {
   },
 };
 
-function Raw(client = fakeClient) {
-  this.client = client;
+export class Raw extends EventEmitter {
+  constructor(client = fakeClient) {
+    super();
+    this.client = client;
 
-  this.sql = '';
-  this.bindings = [];
+    this.sql = '';
+    this.bindings = [];
 
-  // Todo: Deprecate
-  this._wrappedBefore = undefined;
-  this._wrappedAfter = undefined;
-  if (client && client.config) {
-    this._debug = client.config.debug;
-    saveAsyncStack(this, 4);
+    // Todo: Deprecate
+    this._wrappedBefore = undefined;
+    this._wrappedAfter = undefined;
+    if (client && client.config) {
+      this._debug = client.config.debug;
+      saveAsyncStack(this, 4);
+    }
   }
-}
-inherits(Raw, EventEmitter);
 
-assign(Raw.prototype, {
   set(sql, bindings) {
     this.sql = sql;
     this.bindings =
@@ -50,7 +43,7 @@ assign(Raw.prototype, {
         : [bindings];
 
     return this;
-  },
+  }
 
   timeout(ms, { cancel } = {}) {
     if (isNumber(ms) && ms > 0) {
@@ -61,19 +54,19 @@ assign(Raw.prototype, {
       }
     }
     return this;
-  },
+  }
 
   // Wraps the current sql with `before` and `after`.
   wrap(before, after) {
     this._wrappedBefore = before;
     this._wrappedAfter = after;
     return this;
-  },
+  }
 
   // Calls `toString` on the Knex object.
   toString() {
     return this.toQuery();
-  },
+  }
 
   // Returns the raw sql for the query.
   toSQL(method, tz) {
@@ -99,7 +92,11 @@ assign(Raw.prototype, {
       obj.sql = obj.sql + this._wrappedAfter;
     }
 
-    obj.options = reduce(this._options, assign, {});
+    obj.options = reduce(
+      this._options,
+      (result, opts) => ({ ...result, ...opts }),
+      {}
+    );
 
     if (this._timeout) {
       obj.timeout = this._timeout;
@@ -119,8 +116,8 @@ assign(Raw.prototype, {
     obj.__knexQueryUid = uuid.v4();
 
     return obj;
-  },
-});
+  }
+}
 
 function replaceRawArrBindings(raw, formatter) {
   const expectedBindings = raw.bindings.length;
@@ -190,7 +187,7 @@ function replaceKeyBindings(raw, formatter) {
 
 // Allow the `Raw` object to be utilized with full access to the relevant
 // promise API.
-require('./interface')(Raw);
+interfaceFns(Raw);
 helpers.addQueryContext(Raw);
 
 export default Raw;

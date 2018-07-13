@@ -1,6 +1,6 @@
 'use strict';
 
-var parseConnection = require('../../lib/util/parse-connection');
+var parseConnection = require('../../lib/util/parse-connection').default;
 var test = require('tape');
 
 test('parses standard connections', function(t) {
