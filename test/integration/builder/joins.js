@@ -1915,10 +1915,7 @@ module.exports = function(knex) {
               },
               {
                 id: 3,
-                email: knex('accounts')
-                  .whereNot({ id: 3 })
-                  .select('email')
-                  .limit(1),
+                email: 'random@email.com',
                 testcolumn: 70,
               },
             ])
