@@ -6634,17 +6634,45 @@ describe('QueryBuilder', function() {
         }),
       {
         mysql: {
-          sql: 'select * from `accounts` inner join `table1` using `id`',
+          sql: 'select * from `accounts` inner join `table1` using (`id`)',
         },
         mssql: {
           //sql: 'select * from [accounts] inner join [table1] on [accounts].[id] = [table1].[id]'
-          sql: 'select * from [accounts] inner join [table1] using [id]',
+          sql: 'select * from [accounts] inner join [table1] using ([id])',
         },
         pg: {
-          sql: 'select * from "accounts" inner join "table1" using "id"',
+          sql: 'select * from "accounts" inner join "table1" using ("id")',
         },
         'pg-redshift': {
-          sql: 'select * from "accounts" inner join "table1" using "id"',
+          sql: 'select * from "accounts" inner join "table1" using ("id")',
+        },
+      }
+    );
+
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .innerJoin('table1', function() {
+          this.using(['id', 'test']);
+        }),
+      {
+        mysql: {
+          sql:
+            'select * from `accounts` inner join `table1` using (`id`, `test`)',
+        },
+        mssql: {
+          //sql: 'select * from [accounts] inner join [table1] on [accounts].[id] = [table1].[id]'
+          sql:
+            'select * from [accounts] inner join [table1] using ([id], [test])',
+        },
+        pg: {
+          sql:
+            'select * from "accounts" inner join "table1" using ("id", "test")',
+        },
+        'pg-redshift': {
+          sql:
+            'select * from "accounts" inner join "table1" using ("id", "test")',
         },
       }
     );
