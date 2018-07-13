@@ -8139,4 +8139,14 @@ describe('QueryBuilder', function() {
       );
     });
   });
+
+  it('Can call knex.select(0)', function() {
+    testquery(qb().select(0), {
+      pg: 'select 0',
+      mysql: 'select 0',
+      mssql: 'select 0',
+      'pg-redshift': 'select 0',
+      oracledb: 'select 0',
+    });
+  });
 });
