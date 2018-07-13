@@ -34,7 +34,11 @@ export default class Container extends Component {
   };
 
   initKnex() {
-    this.knex = Knex({client: this.state.language})
+    const config = {client: this.state.language};
+    if (this.state.language === 'mysql') {
+      config.version = '5.7'
+    }
+    this.knex = Knex(config)
     this.knex.client.transacting = true
     this.trx = this.knex
     this.registry.forEach(component => component.forceUpdate())

@@ -23,6 +23,7 @@ const devEntryBundle = [
   entryFile,
 ]
 const plugins = [
+  new webpack.IgnorePlugin(/package\.json/, /mssql/),
   new webpack.NoErrorsPlugin(),
   new ExtractTextPlugin('[name].css'),
   new webpack.DefinePlugin({
