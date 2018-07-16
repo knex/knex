@@ -153,7 +153,7 @@ node 8 and node-oracledb driver installed and copies local knex directory in
 to be able to run the tests.
 
 ```
-npm run oracledb:test
+NODE_VER=10 npm run oracledb:test
 ```
 
 You can also manually start shell in the docker image and run build commands manually:

@@ -1,46 +1,82 @@
 import QueryBuilder from './query/builder';
 import Raw from './raw';
-import {transform} from 'lodash'
+import { transform } from 'lodash';
 
 // Valid values for the `order by` clause generation.
 const orderBys = ['asc', 'desc'];
 
 // Turn this into a lookup map
-const operators = transform([
-  '=', '<', '>', '<=', '>=', '<>', '!=',
-  'like', 'not like', 'between', 'not between',
-  'ilike', 'not ilike', 'exists', 'not exist',
-  'rlike', 'not rlike', 'regexp', 'not regexp',
-  '&', '|', '^', '<<', '>>', '~', '~*', '!~', '!~*',
-  '#', '&&', '@>', '<@', '||', '&<', '&>', '-|-', '@@', '!!',
-  ['?', '\\?'],
-  ['?|', '\\?|'],
-  ['?&', '\\?&'],
-], (result, key) => {
-  if (Array.isArray(key)) {
-    result[key[0]] = key[1];
-  } else {
-    result[key] = key;
-  }
-}, {});
+const operators = transform(
+  [
+    '=',
+    '<',
+    '>',
+    '<=',
+    '>=',
+    '<>',
+    '!=',
+    'like',
+    'not like',
+    'between',
+    'not between',
+    'ilike',
+    'not ilike',
+    'exists',
+    'not exist',
+    'rlike',
+    'not rlike',
+    'regexp',
+    'not regexp',
+    '&',
+    '|',
+    '^',
+    '<<',
+    '>>',
+    '~',
+    '~*',
+    '!~',
+    '!~*',
+    '#',
+    '&&',
+    '@>',
+    '<@',
+    '||',
+    '&<',
+    '&>',
+    '-|-',
+    '@@',
+    '!!',
+    ['?', '\\?'],
+    ['?|', '\\?|'],
+    ['?&', '\\?&'],
+  ],
+  (result, key) => {
+    if (Array.isArray(key)) {
+      result[key[0]] = key[1];
+    } else {
+      result[key] = key;
+    }
+  },
+  {}
+);
 
 export default class Formatter {
-
   constructor(client, builder) {
-    this.client = client
-    this.builder = builder
-    this.bindings = []
+    this.client = client;
+    this.builder = builder;
+    this.bindings = [];
   }
 
   // Accepts a string or array of columns to wrap as appropriate.
   columnize(target) {
     const columns = Array.isArray(target) ? target : [target];
-    let str = '', i = -1;
+    let str = '',
+      i = -1;
     while (++i < columns.length) {
-      if (i > 0) str += ', '
-      str += this.wrap(columns[i])
+      if (i > 0) str += ', ';
+      str += this.wrap(columns[i]);
     }
-    return str
+    return str;
   }
 
   // Turns a list of values into a list of ?'s, joining them with commas unless
@@ -48,10 +84,11 @@ export default class Formatter {
   parameterize(values, notSetValue) {
     if (typeof values === 'function') return this.parameter(values);
     values = Array.isArray(values) ? values : [values];
-    let str = '', i = -1;
+    let str = '',
+      i = -1;
     while (++i < values.length) {
-      if (i > 0) str += ', '
-      str += this.parameter(values[i] === undefined ? notSetValue : values[i])
+      if (i > 0) str += ', ';
+      str += this.parameter(values[i] === undefined ? notSetValue : values[i]);
     }
     return str;
   }
@@ -67,7 +104,9 @@ export default class Formatter {
   values(values) {
     if (Array.isArray(values)) {
       if (Array.isArray(values[0])) {
-        return `(${values.map(value => `(${this.parameterize(value)})`).join(', ')})`;
+        return `(${values
+          .map((value) => `(${this.parameterize(value)})`)
+          .join(', ')})`;
       }
       return `(${this.parameterize(values)})`;
     }
@@ -91,7 +130,7 @@ export default class Formatter {
   unwrapRaw(value, isParameter) {
     let query;
     if (value instanceof QueryBuilder) {
-      query = this.client.queryCompiler(value).toSQL()
+      query = this.client.queryCompiler(value).toSQL();
       if (query.bindings) {
         this.bindings = this.bindings.concat(query.bindings);
       }
@@ -99,11 +138,11 @@ export default class Formatter {
     }
     if (value instanceof Raw) {
       value.client = this.client;
-      query = value.toSQL()
+      query = value.toSQL();
       if (query.bindings) {
         this.bindings = this.bindings.concat(query.bindings);
       }
-      return query.sql
+      return query.sql;
     }
     if (isParameter) {
       this.bindings.push(value);
@@ -192,7 +231,7 @@ export default class Formatter {
         (isParameter || compiled.as)
       ) {
         sql = `(${sql})`;
-        if (compiled.as) return this.alias(sql, this.wrap(compiled.as))
+        if (compiled.as) return this.alias(sql, this.wrap(compiled.as));
       }
     }
     return sql;
@@ -209,15 +248,19 @@ export default class Formatter {
         compiled.as = alias; // enforces the object's alias
         ret.push(this.outputQuery(compiled, true));
       } else if (queryOrIdentifier instanceof QueryBuilder) {
-        ret.push(this.alias(
-          `(${this.wrap(queryOrIdentifier)})`,
-          this.wrapAsIdentifier(alias))
+        ret.push(
+          this.alias(
+            `(${this.wrap(queryOrIdentifier)})`,
+            this.wrapAsIdentifier(alias)
+          )
         );
       } else {
-        ret.push(this.alias(this.wrap(queryOrIdentifier), this.wrapAsIdentifier(alias)))
+        ret.push(
+          this.alias(this.wrap(queryOrIdentifier), this.wrapAsIdentifier(alias))
+        );
       }
     }
-    return ret.join(', ')
+    return ret.join(', ');
   }
 
   // Coerce to string to prevent strange errors when it's not a string.
@@ -241,5 +284,4 @@ export default class Formatter {
     }
     return wrapped.join('.');
   }
-
 }

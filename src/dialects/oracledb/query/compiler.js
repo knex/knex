@@ -14,19 +14,35 @@ _.assign(Oracledb_Compiler.prototype, {
   // inserts using a single query statement.
   insert: function() {
     const self = this;
-    const outBindPrep = this._prepOutbindings(this.single.insert, this.single.returning);
+    const outBindPrep = this._prepOutbindings(
+      this.single.insert,
+      this.single.returning
+    );
     const outBinding = outBindPrep.outBinding;
     let returning = outBindPrep.returning;
     const insertValues = outBindPrep.values;
 
-    if (Array.isArray(insertValues) && insertValues.length === 1 && _.isEmpty(insertValues[0])) {
-      return this._addReturningToSqlAndConvert('insert into ' +
-        this.tableName +
-        ' (' + this.formatter.wrap(this.single.returning) + ') values (default)',
-      outBinding[0], this.tableName, returning);
+    if (
+      Array.isArray(insertValues) &&
+      insertValues.length === 1 &&
+      _.isEmpty(insertValues[0])
+    ) {
+      return this._addReturningToSqlAndConvert(
+        'insert into ' +
+          this.tableName +
+          ' (' +
+          this.formatter.wrap(this.single.returning) +
+          ') values (default)',
+        outBinding[0],
+        this.tableName,
+        returning
+      );
     }
 
-    if (_.isEmpty(this.single.insert) && typeof this.single.insert !== 'function') {
+    if (
+      _.isEmpty(this.single.insert) &&
+      typeof this.single.insert !== 'function'
+    ) {
       return '';
     }
 
@@ -35,34 +51,52 @@ _.assign(Oracledb_Compiler.prototype, {
     const sql = {};
 
     if (_.isString(insertData)) {
-      return this._addReturningToSqlAndConvert('insert into ' +
-        this.tableName + ' ' + insertData, outBinding[0],
-      this.tableName, returning);
+      return this._addReturningToSqlAndConvert(
+        'insert into ' + this.tableName + ' ' + insertData,
+        outBinding[0],
+        this.tableName,
+        returning
+      );
     }
 
     if (insertData.values.length === 1) {
-      return this._addReturningToSqlAndConvert('insert into ' +
-        this.tableName + ' (' + this.formatter.columnize(insertData.columns) +
-        ') values (' + this.formatter.parameterize(insertData.values[0]) + ')',
-      outBinding[0], this.tableName, returning);
+      return this._addReturningToSqlAndConvert(
+        'insert into ' +
+          this.tableName +
+          ' (' +
+          this.formatter.columnize(insertData.columns) +
+          ') values (' +
+          this.formatter.parameterize(insertData.values[0]) +
+          ')',
+        outBinding[0],
+        this.tableName,
+        returning
+      );
     }
 
-    const insertDefaultsOnly = (insertData.columns.length === 0);
+    const insertDefaultsOnly = insertData.columns.length === 0;
     sql.returning = returning;
-    sql.sql = 'begin ' +
+    sql.sql =
+      'begin ' +
       _.map(insertData.values, function(value, index) {
-        const parameterizedValues = !insertDefaultsOnly ?
-          self.formatter.parameterize(value, self.client.valueForUndefined) :
-          '';
+        const parameterizedValues = !insertDefaultsOnly
+          ? self.formatter.parameterize(value, self.client.valueForUndefined)
+          : '';
         let subSql = 'insert into ' + self.tableName;
 
         if (insertDefaultsOnly) {
           // No columns given so only the default value
-          subSql += ' (' + self.formatter.wrap(self.single.returning) + ') values (default)';
+          subSql +=
+            ' (' +
+            self.formatter.wrap(self.single.returning) +
+            ') values (default)';
         } else {
-          subSql += ' (' +
+          subSql +=
+            ' (' +
             self.formatter.columnize(insertData.columns) +
-            ') values (' + parameterizedValues + ')';
+            ') values (' +
+            parameterizedValues +
+            ')';
         }
 
         let returningClause = '';
@@ -110,16 +144,19 @@ _.assign(Oracledb_Compiler.prototype, {
           .replace(', DEFAULT', '')
           .replace('EMPTY_BLOB(), ', '')
           .replace(', EMPTY_BLOB()', '');
-        return'execute immediate \'' + subSql.replace(/'/g, "''") +
-          ((parameterizedValuesWithoutDefaultAndBlob || value) ?
-            '\' using ' :
-            '') +
+        return (
+          "execute immediate '" +
+          subSql.replace(/'/g, "''") +
+          (parameterizedValuesWithoutDefaultAndBlob || value
+            ? "' using "
+            : '') +
           parameterizedValuesWithoutDefaultAndBlob +
-          ((parameterizedValuesWithoutDefaultAndBlob && outClause) ?
-            ',' :
-            '') +
-          outClause + ';';
-      }).join(' ') + 'end;';
+          (parameterizedValuesWithoutDefaultAndBlob && outClause ? ',' : '') +
+          outClause +
+          ';'
+        );
+      }).join(' ') +
+      'end;';
 
     sql.outBinding = outBinding;
     if (returning[0] === '*') {
@@ -128,29 +165,47 @@ _.assign(Oracledb_Compiler.prototype, {
       // Generate select statement with special order by
       // to keep the order because 'in (..)' may change the order
       sql.returningSql = function() {
-        return 'select * from ' + self.tableName +
-        ' where ROWID in (' + this.outBinding.map(function(v, i) {
-          return ':' + (i + 1);
-        }).join(', ') + ')' +
-        ' order by case ROWID ' + this.outBinding.map(function(v, i) {
-          return 'when CHARTOROWID(:' + (i + 1) + ') then ' + i;
-        }).join(' ') + ' end';
+        return (
+          'select * from ' +
+          self.tableName +
+          ' where ROWID in (' +
+          this.outBinding
+            .map(function(v, i) {
+              return ':' + (i + 1);
+            })
+            .join(', ') +
+          ')' +
+          ' order by case ROWID ' +
+          this.outBinding
+            .map(function(v, i) {
+              return 'when CHARTOROWID(:' + (i + 1) + ') then ' + i;
+            })
+            .join(' ') +
+          ' end'
+        );
       };
     }
 
     return sql;
   },
 
-  _addReturningToSqlAndConvert: function(sql, outBinding, tableName, returning) {
+  _addReturningToSqlAndConvert: function(
+    sql,
+    outBinding,
+    tableName,
+    returning
+  ) {
     const self = this;
     const res = {
-      sql: sql
+      sql: sql,
     };
 
     if (!outBinding) {
       return res;
     }
-    const returningValues = Array.isArray(outBinding) ? outBinding : [outBinding];
+    const returningValues = Array.isArray(outBinding)
+      ? outBinding
+      : [outBinding];
     let returningClause = '';
     let intoClause = '';
     // Build returning and into clauses
@@ -174,7 +229,7 @@ _.assign(Oracledb_Compiler.prototype, {
       res.sql += ' returning ' + returningClause + ' into ' + intoClause;
     }
     res.outBinding = [outBinding];
-    if(returning[0] === '*') {
+    if (returning[0] === '*') {
       res.returningSql = function() {
         return 'select * from ' + self.tableName + ' where ROWID = :1';
       };
@@ -216,7 +271,7 @@ _.assign(Oracledb_Compiler.prototype, {
           }
           outBinding[index].push(values[key]);
         }
-        if(_.isUndefined(value)) {
+        if (_.isUndefined(value)) {
           delete params[index][key];
         }
       });
@@ -230,7 +285,10 @@ _.assign(Oracledb_Compiler.prototype, {
   update: function() {
     const self = this;
     const sql = {};
-    const outBindPrep = this._prepOutbindings(this.single.update, this.single.returning);
+    const outBindPrep = this._prepOutbindings(
+      this.single.update,
+      this.single.returning
+    );
     const outBinding = outBindPrep.outBinding;
     const returning = outBindPrep.returning;
 
@@ -240,7 +298,10 @@ _.assign(Oracledb_Compiler.prototype, {
     let returningClause = '';
     let intoClause = '';
 
-    if (_.isEmpty(this.single.update) && typeof this.single.update !== 'function') {
+    if (
+      _.isEmpty(this.single.update) &&
+      typeof this.single.update !== 'function'
+    ) {
       return '';
     }
 
@@ -264,16 +325,17 @@ _.assign(Oracledb_Compiler.prototype, {
 
     sql.outBinding = outBinding;
     sql.returning = returning;
-    sql.sql = 'update ' +
+    sql.sql =
+      'update ' +
       this.tableName +
-      ' set ' + updates.join(', ') + (where ? ' ' + where : '');
-    if(outBinding.length && !_.isEmpty(outBinding[0])) {
+      ' set ' +
+      updates.join(', ') +
+      (where ? ' ' + where : '');
+    if (outBinding.length && !_.isEmpty(outBinding[0])) {
       sql.sql += ' returning ' + returningClause + ' into' + intoClause;
     }
     if (returning[0] === '*') {
-
       sql.returningSql = function() {
-
         let sql = 'select * from ' + self.tableName;
         const modifiedRowsCount = this.rowsAffected.length || this.rowsAffected;
         let returningSqlIn = ' where ROWID in (';
@@ -283,7 +345,8 @@ _.assign(Oracledb_Compiler.prototype, {
         for (let i = 0; i < modifiedRowsCount; i++) {
           if (this.returning[0] === '*') {
             returningSqlIn += ':' + (i + 1) + ', ';
-            returningSqlOrderBy += 'when CHARTOROWID(:' + (i + 1) + ') then ' + i + ' ';
+            returningSqlOrderBy +=
+              'when CHARTOROWID(:' + (i + 1) + ') then ' + i + ' ';
           }
         }
         if (this.returning[0] === '*') {
@@ -291,13 +354,12 @@ _.assign(Oracledb_Compiler.prototype, {
           returningSqlIn = returningSqlIn.slice(0, -2);
           returningSqlOrderBy = returningSqlOrderBy.slice(0, -1);
         }
-        return sql += returningSqlIn + returningSqlOrderBy + ' end';
+        return (sql += returningSqlIn + returningSqlOrderBy + ' end');
       };
     }
 
     return sql;
-  }
-
+  },
 });
 
 module.exports = Oracledb_Compiler;

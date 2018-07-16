@@ -1,14 +1,14 @@
 /* eslint no-console:0 */
 
 import chalk from 'chalk';
-import {isFunction, isNil} from 'lodash';
+import { isFunction, isNil } from 'lodash';
 
 function log(message, userFn, colorFn) {
-  if(!isNil(userFn) && !isFunction(userFn)) {
+  if (!isNil(userFn) && !isFunction(userFn)) {
     throw new TypeError('Extensions to knex logger must be functions!');
   }
 
-  if(isFunction(userFn)) {
+  if (isFunction(userFn)) {
     userFn(message);
     return;
   }
@@ -18,18 +18,11 @@ function log(message, userFn, colorFn) {
 
 class Logger {
   constructor(config) {
-    const {
-      log: {
-        debug,
-        warn,
-        error,
-        deprecate
-      } = {}
-    } = config;
+    const { log: { debug, warn, error, deprecate } = {} } = config;
 
-    this._debug     = debug;
-    this._warn      = warn;
-    this._error     = error;
+    this._debug = debug;
+    this._warn = warn;
+    this._error = error;
     this._deprecate = deprecate;
   }
 
@@ -38,7 +31,7 @@ class Logger {
   }
 
   warn(message) {
-    log(message, this._warn,chalk.yellow);
+    log(message, this._warn, chalk.yellow);
   }
 
   error(message) {
