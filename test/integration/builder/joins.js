@@ -1907,10 +1907,7 @@ module.exports = function(knex) {
             knex(joinName).insert([
               {
                 id: 3,
-                email: knex('accounts')
-                  .where({ id: 3 })
-                  .select('email')
-                  .limit(1),
+                email: 'test3@example.com',
                 testcolumn: 50,
               },
               {
