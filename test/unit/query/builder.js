@@ -45,7 +45,7 @@ function ref(ref) {
 }
 
 function client() {
-  return clients.postgres;
+  return clients.pg;
 }
 
 function verifySqlResult(dialect, expectedObj, sqlObj) {
