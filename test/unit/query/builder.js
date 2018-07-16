@@ -44,6 +44,10 @@ function ref(ref) {
   return clients.pg.ref(ref);
 }
 
+function client() {
+  return clients.postgres;
+}
+
 function verifySqlResult(dialect, expectedObj, sqlObj) {
   Object.keys(expectedObj).forEach(function(key) {
     if (typeof expectedObj[key] === 'function') {
@@ -8137,6 +8141,16 @@ describe('QueryBuilder', function() {
           oracledb: 'select "one", "sometable"."two" as "Two" from "sometable"',
         }
       );
+    });
+  });
+
+  it('Can call knex.select(0)', function() {
+    testquery(qb().select(0), {
+      pg: 'select 0',
+      mysql: 'select 0',
+      mssql: 'select 0',
+      'pg-redshift': 'select 0',
+      oracledb: 'select 0',
     });
   });
 
