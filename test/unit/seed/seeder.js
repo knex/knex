@@ -5,18 +5,18 @@
 var mockFs = require('mock-fs');
 var knex = require('../../../knex');
 
-describe('Seeder.loadExtensions', function () {
+describe('Seeder.loadExtensions', function() {
   var config = {
     client: 'pg',
     connection: {
       user: 'postgres',
       password: '',
       host: '127.0.0.1',
-      database: 'knex_test'
+      database: 'knex_test',
     },
     seeds: {
-      directory: 'test/integration/seed/seeds'
-    }
+      directory: 'test/integration/seed/seeds',
+    },
   };
   var seeder;
 
@@ -31,7 +31,7 @@ describe('Seeder.loadExtensions', function () {
         'litcoffee-seed.litcoffee': 'litcoffee seed content',
         'ls-seed.ls': 'ls seed content',
         'ts-seed.ts': 'ts seed content',
-        'useless.txt': 'i am not a seed'
+        'useless.txt': 'i am not a seed',
       },
     });
   });
@@ -40,34 +40,30 @@ describe('Seeder.loadExtensions', function () {
     mockFs.restore();
   });
 
-  beforeEach(function () {
+  beforeEach(function() {
     seeder = knex(config).seed;
   });
 
-  it('should include all supported extensions by default', function () {
-    return seeder._listAll()
-      .then(function(list){
-        expect(list).to.eql([
-          'co-seed.co',
-          'coffee-seed.coffee',
-          'eg-seed.eg',
-          'iced-seed.iced',
-          'js-seed.js',
-          'litcoffee-seed.litcoffee',
-          'ls-seed.ls',
-          'ts-seed.ts'
-        ])
-      })
+  it('should include all supported extensions by default', function() {
+    return seeder._listAll().then(function(list) {
+      expect(list).to.eql([
+        'co-seed.co',
+        'coffee-seed.coffee',
+        'eg-seed.eg',
+        'iced-seed.iced',
+        'js-seed.js',
+        'litcoffee-seed.litcoffee',
+        'ls-seed.ls',
+        'ts-seed.ts',
+      ]);
+    });
   });
 
-  it('should list only files with specified extensions', function () {
-    return seeder._listAll({ loadExtensions: ['.ts', '.js'] })
-      .then(function(list){
-        expect(list).to.eql([
-          'js-seed.js',
-          'ts-seed.ts',
-        ])
-      })
+  it('should list only files with specified extensions', function() {
+    return seeder
+      ._listAll({ loadExtensions: ['.ts', '.js'] })
+      .then(function(list) {
+        expect(list).to.eql(['js-seed.js', 'ts-seed.ts']);
+      });
   });
-
 });

@@ -1,7 +1,6 @@
-
 // PostgreSQL
 // -------
-import { assign, map, extend, isArray, isString, includes } from 'lodash'
+import { assign, map, extend, isArray, isString, includes } from 'lodash';
 import inherits from 'inherits';
 import Client from '../../client';
 import Promise from 'bluebird';
@@ -10,7 +9,7 @@ import QueryCompiler from './query/compiler';
 import ColumnCompiler from './schema/columncompiler';
 import TableCompiler from './schema/tablecompiler';
 import SchemaCompiler from './schema/compiler';
-import {makeEscape} from '../../query/string'
+import { makeEscape } from '../../query/string';
 
 function Client_PG(config) {
   Client.apply(this, arguments);
@@ -21,29 +20,24 @@ function Client_PG(config) {
   if (config.searchPath) {
     this.searchPath = config.searchPath;
   }
-
-  if (config.version) {
-    this.version = config.version;
-  }
 }
 inherits(Client_PG, Client);
 
 assign(Client_PG.prototype, {
-
   queryCompiler() {
-    return new QueryCompiler(this, ...arguments)
+    return new QueryCompiler(this, ...arguments);
   },
 
   columnCompiler() {
-    return new ColumnCompiler(this, ...arguments)
+    return new ColumnCompiler(this, ...arguments);
   },
 
   schemaCompiler() {
-    return new SchemaCompiler(this, ...arguments)
+    return new SchemaCompiler(this, ...arguments);
   },
 
   tableCompiler() {
-    return new TableCompiler(this, ...arguments)
+    return new TableCompiler(this, ...arguments);
   },
 
   dialect: 'postgresql',
@@ -51,44 +45,46 @@ assign(Client_PG.prototype, {
   driverName: 'pg',
 
   _driver() {
-    return require('pg')
+    return require('pg');
   },
 
   _escapeBinding: makeEscape({
     escapeArray(val, esc) {
-      return esc(arrayString(val, esc))
+      return esc(arrayString(val, esc));
     },
     escapeString(str) {
-      let hasBackslash = false
-      let escaped = '\''
+      let hasBackslash = false;
+      let escaped = "'";
       for (let i = 0; i < str.length; i++) {
-        const c = str[i]
-        if (c === '\'') {
-          escaped += c + c
+        const c = str[i];
+        if (c === "'") {
+          escaped += c + c;
         } else if (c === '\\') {
-          escaped += c + c
-          hasBackslash = true
+          escaped += c + c;
+          hasBackslash = true;
         } else {
-          escaped += c
+          escaped += c;
         }
       }
-      escaped += '\''
+      escaped += "'";
       if (hasBackslash === true) {
-        escaped = 'E' + escaped
+        escaped = 'E' + escaped;
       }
-      return escaped
+      return escaped;
     },
     escapeObject(val, prepareValue, timezone, seen = []) {
       if (val && typeof val.toPostgres === 'function') {
         seen = seen || [];
         if (seen.indexOf(val) !== -1) {
-          throw new Error(`circular reference detected while preparing "${val}" for query`);
+          throw new Error(
+            `circular reference detected while preparing "${val}" for query`
+          );
         }
         seen.push(val);
         return prepareValue(val.toPostgres(prepareValue), seen);
       }
       return JSON.stringify(val);
-    }
+    },
   }),
 
   wrapIdentifierImpl(value) {
@@ -116,11 +112,11 @@ assign(Client_PG.prototype, {
           return rejecter(err);
         }
         connection.on('error', (err) => {
-          connection.__knex__disposed = err
-        })
+          connection.__knex__disposed = err;
+        });
         connection.on('end', (err) => {
           connection.__knex__disposed = err || 'Connection ended unexpectedly';
-        })
+        });
         if (!client.version) {
           return client.checkVersion(connection).then(function(version) {
             client.version = version;
@@ -137,7 +133,7 @@ assign(Client_PG.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    return Promise.fromCallback(connection.end.bind(connection))
+    return Promise.fromCallback(connection.end.bind(connection));
   },
 
   // In PostgreSQL, we need to do a version check to do some feature
@@ -155,7 +151,7 @@ assign(Client_PG.prototype, {
   // is \? (e.g. knex.raw("\\?") since javascript requires '\' to be escaped too...)
   positionBindings(sql) {
     let questionCount = 0;
-    return sql.replace(/(\\*)(\?)/g, function (match, escapes) {
+    return sql.replace(/(\\*)(\?)/g, function(match, escapes) {
       if (escapes.length % 2) {
         return '?';
       } else {
@@ -166,22 +162,27 @@ assign(Client_PG.prototype, {
   },
 
   setSchemaSearchPath(connection, searchPath) {
-    let path = (searchPath || this.searchPath);
+    let path = searchPath || this.searchPath;
 
     if (!path) return Promise.resolve(true);
 
-    if(!isArray(path) && !isString(path)) {
-      throw new TypeError(`knex: Expected searchPath to be Array/String, got: ${typeof path}`);
+    if (!isArray(path) && !isString(path)) {
+      throw new TypeError(
+        `knex: Expected searchPath to be Array/String, got: ${typeof path}`
+      );
     }
 
-    if(isString(path)) {
-      if(includes(path, ',')) {
+    if (isString(path)) {
+      if (includes(path, ',')) {
         const parts = path.split(',');
-        const arraySyntax = `[${map(parts, (searchPath) => `'${searchPath}'`).join(', ')}]`;
+        const arraySyntax = `[${map(
+          parts,
+          (searchPath) => `'${searchPath}'`
+        ).join(', ')}]`;
         this.logger.warn(
-          `Detected comma in searchPath "${path}".`
-          +
-          `If you are trying to specify multiple schemas, use Array syntax: ${arraySyntax}`);
+          `Detected comma in searchPath "${path}".` +
+            `If you are trying to specify multiple schemas, use Array syntax: ${arraySyntax}`
+        );
       }
       path = [path];
     }
@@ -197,17 +198,21 @@ assign(Client_PG.prototype, {
   },
 
   _stream(connection, obj, stream, options) {
-    const PGQueryStream = process.browser ? undefined : require('pg-query-stream');
+    const PGQueryStream = process.browser
+      ? undefined
+      : require('pg-query-stream');
     const sql = obj.sql;
 
     return new Promise(function(resolver, rejecter) {
-      const queryStream = connection.query(new PGQueryStream(sql, obj.bindings, options));
+      const queryStream = connection.query(
+        new PGQueryStream(sql, obj.bindings, options)
+      );
 
       queryStream.on('error', function(error) {
         rejecter(error);
         stream.emit('error', error);
       });
-      
+
       // 'end' IS propagated by .pipe, by default
       stream.on('end', resolver);
       queryStream.pipe(stream);
@@ -218,7 +223,7 @@ assign(Client_PG.prototype, {
   // and any other necessary prep work.
   _query(connection, obj) {
     let sql = obj.sql;
-    if (obj.options) sql = extend({text: sql}, obj.options);
+    if (obj.options) sql = extend({ text: sql }, obj.options);
     return new Promise(function(resolver, rejecter) {
       connection.query(sql, obj.bindings, function(err, response) {
         if (err) return rejecter(err);
@@ -256,26 +261,25 @@ assign(Client_PG.prototype, {
       return resp.rowCount;
     }
     return resp;
-  }
-
-})
+  },
+});
 
 function arrayString(arr, esc) {
-  let result = '{'
-  for (let i = 0 ; i < arr.length; i++) {
-    if (i > 0) result += ','
-    const val = arr[i]
+  let result = '{';
+  for (let i = 0; i < arr.length; i++) {
+    if (i > 0) result += ',';
+    const val = arr[i];
     if (val === null || typeof val === 'undefined') {
-      result += 'NULL'
+      result += 'NULL';
     } else if (Array.isArray(val)) {
-      result += arrayString(val, esc)
+      result += arrayString(val, esc);
     } else if (typeof val === 'number') {
-      result += val
+      result += val;
     } else {
-      result += JSON.stringify(typeof val === 'string' ? val : esc(val))
+      result += JSON.stringify(typeof val === 'string' ? val : esc(val));
     }
   }
-  return result + '}'
+  return result + '}';
 }
 
-export default Client_PG
+export default Client_PG;

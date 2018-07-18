@@ -1,11 +1,10 @@
-
 // Redshift Column Compiler
 // -------
 
 import inherits from 'inherits';
 import ColumnCompiler_PG from '../../postgres/schema/columncompiler';
 
-import { assign } from 'lodash'
+import { assign } from 'lodash';
 
 function ColumnCompiler_Redshift() {
   ColumnCompiler_PG.apply(this, arguments);
@@ -44,16 +43,20 @@ assign(ColumnCompiler_Redshift.prototype, {
   double: 'double precision',
   floating: 'real',
   smallint: 'smallint',
-  tinyint:  'smallint',
+  tinyint: 'smallint',
 
   // Modifiers:
   // ------
   comment(comment) {
     this.pushAdditional(function() {
-      this.pushQuery(`comment on column ${this.tableCompiler.tableName()}.` +
-        this.formatter.wrap(this.args[0]) + " is " + (comment ? `'${comment}'` : 'NULL'));
+      this.pushQuery(
+        `comment on column ${this.tableCompiler.tableName()}.` +
+          this.formatter.wrap(this.args[0]) +
+          ' is ' +
+          (comment ? `'${comment}'` : 'NULL')
+      );
     }, comment);
-  }
-})
+  },
+});
 
 export default ColumnCompiler_Redshift;

@@ -5,18 +5,18 @@
 var mockFs = require('mock-fs');
 var knex = require('../../../knex');
 
-describe('Migrator.loadExtensions', function () {
+describe('Migrator.loadExtensions', function() {
   var config = {
     client: 'pg',
     connection: {
       user: 'postgres',
       password: '',
       host: '127.0.0.1',
-      database: 'knex_test'
+      database: 'knex_test',
     },
     migrations: {
-      directory: 'test/integration/migrate/migration'
-    }
+      directory: 'test/integration/migrate/migration',
+    },
   };
   var migrator;
 
@@ -31,8 +31,8 @@ describe('Migrator.loadExtensions', function () {
         'litcoffee-migration.litcoffee': 'litcoffee migation content',
         'ls-migration.ls': 'ls migation content',
         'ts-migration.ts': 'ts migation content',
-        'useless.txt': 'i am not a migration'
-      }
+        'useless.txt': 'i am not a migration',
+      },
     });
   });
 
@@ -40,34 +40,30 @@ describe('Migrator.loadExtensions', function () {
     mockFs.restore();
   });
 
-  beforeEach(function () {
+  beforeEach(function() {
     migrator = knex(config).migrate;
   });
 
-  it('should include all supported extensions by default', function () {
-    return migrator._listAll()
-      .then(function(list){
-        expect(list).to.eql([
-          'co-migration.co',
-          'coffee-migration.coffee',
-          'eg-migration.eg',
-          'iced-migration.iced',
-          'js-migration.js',
-          'litcoffee-migration.litcoffee',
-          'ls-migration.ls',
-          'ts-migration.ts'
-        ])
-      })
+  it('should include all supported extensions by default', function() {
+    return migrator._listAll().then(function(list) {
+      expect(list).to.eql([
+        'co-migration.co',
+        'coffee-migration.coffee',
+        'eg-migration.eg',
+        'iced-migration.iced',
+        'js-migration.js',
+        'litcoffee-migration.litcoffee',
+        'ls-migration.ls',
+        'ts-migration.ts',
+      ]);
+    });
   });
 
-  it('should include only files with specified extensions', function () {
-    return migrator._listAll({ loadExtensions: ['.ts', '.js'] })
-      .then(function(list){
-        expect(list).to.eql([
-          'js-migration.js',
-          'ts-migration.ts',
-        ])
-      })
+  it('should include only files with specified extensions', function() {
+    return migrator
+      ._listAll({ loadExtensions: ['.ts', '.js'] })
+      .then(function(list) {
+        expect(list).to.eql(['js-migration.js', 'ts-migration.ts']);
+      });
   });
-
 });

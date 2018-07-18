@@ -1,9 +1,8 @@
-
 // Redshift
 // -------
 import inherits from 'inherits';
 import Client_PG from '../postgres';
-import { assign, map, } from 'lodash'
+import { assign, map } from 'lodash';
 
 import Transaction from './transaction';
 import QueryCompiler from './query/compiler';
@@ -13,17 +12,17 @@ import TableCompiler from './schema/tablecompiler';
 import SchemaCompiler from './schema/compiler';
 
 function Client_Redshift(config) {
-  Client_PG.apply(this, arguments)
+  Client_PG.apply(this, arguments);
 }
-inherits(Client_Redshift, Client_PG)
+inherits(Client_Redshift, Client_PG);
 
 assign(Client_Redshift.prototype, {
   transaction() {
-    return new Transaction(this, ...arguments)
+    return new Transaction(this, ...arguments);
   },
 
   queryCompiler() {
-    return new QueryCompiler(this, ...arguments)
+    return new QueryCompiler(this, ...arguments);
   },
 
   columnBuilder() {
@@ -31,23 +30,23 @@ assign(Client_Redshift.prototype, {
   },
 
   columnCompiler() {
-    return new ColumnCompiler(this, ...arguments)
+    return new ColumnCompiler(this, ...arguments);
   },
 
   tableCompiler() {
-    return new TableCompiler(this, ...arguments)
+    return new TableCompiler(this, ...arguments);
   },
 
   schemaCompiler() {
-    return new SchemaCompiler(this, ...arguments)
+    return new SchemaCompiler(this, ...arguments);
   },
-  
+
   dialect: 'redshift',
 
   driverName: 'pg-redshift',
 
   _driver() {
-    return require('pg')
+    return require('pg');
   },
 
   // Ensures the response is returned in the same format as other clients.
@@ -68,7 +67,7 @@ assign(Client_Redshift.prototype, {
       return resp.rowCount;
     }
     return resp;
-  }
-})
+  },
+});
 
 export default Client_Redshift;
