@@ -73,6 +73,16 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-crossJoin">crossJoin</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-joinRaw">joinRaw</a></li>
 
+          <li><b><a href="#Builder-on">On Methods:</a></b></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onIn">onIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotIn">onNotIn</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNull">onNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotNull">onNotNull</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onExists">onExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotExists">onNotExists</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onBetween">onBetween</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onNotBetween">onNotBetween</a></li>
+
           <li><b><a href="#Builder-havings">Having Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-having">having</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingIn">havingIn</a></li>
@@ -84,16 +94,6 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-havingBetween">havingBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingNotBetween">havingNotBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingRaw">havingRaw</a></li>
-
-          <li><b><a href="#Builder-on">On Methods:</a></b></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-onIn">onIn</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-onNotIn">onNotIn</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-onNull">onNull</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-onNotNull">onNotNull</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-onExists">onExists</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-onNotExists">onNotExists</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-onBetween">onBetween</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-onNotBetween">onNotBetween</a></li>
 
           <li><b><a href="#Builder-clear">Clear Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-clearSelect">clearSelect</a></li>
