@@ -302,36 +302,54 @@ export default [
   {
     type: "method",
     method: "dateTime",
-    example: "table.dateTime(name)",
-    description: "Adds a dateTime column.",
-    children: [    ]
+    example: "table.dateTime(name, [precision])",
+    description: "Adds a dateTime column, with optional precision for MySQL.",
+    children: [{
+      type: 'text',
+      content: "In MySQL a precision argument may be passed as the second argument to specify precision:"
+    }, {
+      type: 'code',
+      language: 'js',
+      content: `table.datetime('some_time', 6).defaultTo(knex.fn.now(6))`
+    }]
   },
   {
     type: "method",
     method: "time",
-    example: "table.time(name)",
-    description: "Adds a time column. Not supported on Amazon Redshift.",
-    children: [    ]
+    example: "table.time(name, [precision])",
+    description: "Adds a time column, with optional precision for MySQL. Not supported on Amazon Redshift.",
+    children: [{
+      type: 'text',
+      content: "In MySQL a precision argument may be passed as the second argument to specify precision:"
+    }, {
+      type: 'code',
+      language: 'js',
+      content: `table.time('some_time', 6)`
+    }]
   },
   {
     type: "method",
     method: "timestamp",
-    example: "table.timestamp(name, [standard])",
-    description: "Adds a timestamp column, defaulting to timestamptz in PostgreSQL unless true is passed as the second argument. For Example:",
+    example: "table.timestamp(name, [useTz], [precision])",
+    description: "Adds a timestamp column, defaulting to timestamptz in PostgreSQL unless true is passed as the second argument.",
     children: [{
       type: 'code',
       language: 'js',
       content: `table.timestamp('created_at').defaultTo(knex.fn.now());`
     }, {
       type: 'text',
-      content: "Note that there's an issue of microsecond information being lost when stored on MySQL versions older than 5.6.4. If you need this kind of precision read the timestamps method documention below for further details."
+      content: "In MySQL a precision argument may be passed as the second argument to specify precision:"
+    }, {
+      type: 'code',
+      language: 'js',
+      content: `table.timestamp('created_at', 6).defaultTo(knex.fn.now(6));`
     }]
   },
   {
     type: "method",
     method: "timestamps",
     example: "table.timestamps([useTimestamps], [defaultToNow])",
-    description: "Adds created_at and updated_at columns on the database, setting each to dateTime types. When true is passed as the first argument a timestamp type is used instead. Both colums default to being not null and using the current timestamp when true is passed as the second argument. Note that on MySQL the timestamps will only have second precision by default because versions of MySQL Server older than 5.6.4 don't support storing microseconds. You can enable microsecond precision by specifying version 5.6 or greater in your settings when initializing Knex.",
+    description: "Adds created_at and updated_at columns on the database, setting each to dateTime types. When true is passed as the first argument a timestamp type is used instead. Both colums default to being not null and using the current timestamp when true is passed as the second argument. Note that on MySQL the .timestamps() only have seconds precision, to get better precision use the .datetime or .timestamp methods directly with precision.",
     children: [    ]
   },
   {

@@ -128,10 +128,6 @@ export default [
     `
   },
   {
-    type: "info",
-    content: "Note: The database version can be specified when using the MySQL adapter to take advantage of increased timestamp precision that is available in versions 5.6.4 and newer. In older versions the microsecond information is lost when storing datetime or timestamp values. The default in Knex is to not use microsecond precision, but this will change in a future version so, if you are using a version of MySQL older than 5.6.4, it is strongly advised to include the version in your options."
-  },
-  {
     type: "code",
     language: "js",
     content: `
