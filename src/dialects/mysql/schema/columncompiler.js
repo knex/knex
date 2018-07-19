@@ -85,6 +85,10 @@ assign(ColumnCompiler_MySQL.prototype, {
       : 'timestamp';
   },
 
+  time(precision) {
+    return typeof precision === 'number' ? `time(${precision})` : 'time';
+  },
+
   bit(length) {
     return length ? `bit(${this._num(length)})` : 'bit';
   },

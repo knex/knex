@@ -772,34 +772,15 @@ module.exports = function(dialect) {
     });
 
     it('test adding precise time stamp', function() {
-      client.version = '5.6';
       tableSql = client
         .schemaBuilder()
         .table('users', function() {
-          this.timestamp('foo');
+          this.timestamp('foo', 6);
         })
         .toSQL();
-      delete client.version;
-
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add `foo` timestamp(6)'
-      );
-    });
-
-    it('test adding precise time stamps', function() {
-      client.version = '5.6';
-      tableSql = client
-        .schemaBuilder()
-        .table('users', function() {
-          this.timestamps();
-        })
-        .toSQL();
-      delete client.version;
-
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
-        'alter table `users` add `created_at` datetime(6), add `updated_at` datetime(6)'
       );
     });
 
