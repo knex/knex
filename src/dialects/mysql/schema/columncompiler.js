@@ -5,19 +5,6 @@ import ColumnCompiler from '../../../schema/columncompiler';
 
 import { assign } from 'lodash';
 
-function supportsPreciseTimestamps(client) {
-  if (!client.version) {
-    const message =
-      'To get rid of this warning you should specify the mysql dialect version in ' +
-      'your knex configuration. Currently this defaults to 5.5, but in a future ' +
-      'release it will default to 5.6 which supports high precision timestamps. ' +
-      'See http://knexjs.org/#Schema-timestamps for more information.';
-    client.logger.warn(message);
-  }
-
-  return client.version && parseFloat(client.version) > 5.5;
-}
-
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
   this.modifiers = [
@@ -86,14 +73,20 @@ assign(ColumnCompiler_MySQL.prototype, {
     return `enum('${allowed.join("', '")}')`;
   },
 
-  datetime() {
-    return supportsPreciseTimestamps(this.client) ? 'datetime(6)' : 'datetime';
+  datetime(precision) {
+    return typeof precision === 'number'
+      ? `datetime(${precision})`
+      : 'datetime';
   },
 
-  timestamp() {
-    return supportsPreciseTimestamps(this.client)
-      ? 'timestamp(6)'
+  timestamp(precision) {
+    return typeof precision === 'number'
+      ? `timestamp(${precision})`
       : 'timestamp';
+  },
+
+  time(precision) {
+    return typeof precision === 'number' ? `time(${precision})` : 'time';
   },
 
   bit(length) {
