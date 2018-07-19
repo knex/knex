@@ -1,6 +1,12 @@
 
 # Master (Unreleased)
 
+# 0.15.2 - 19 Jul, 2018
+
+### Changes:
+
+- Rolled back changes introduced by #2542, in favor of opt-in behavior by adding a precision option in `date` / `timestamp` / `datetime` / `knex.fn.now` (#2715, #2721)
+
 # 0.15.1 - 12 Jul, 2018
 
 ### Bug fixes:
