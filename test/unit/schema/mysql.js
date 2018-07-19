@@ -771,7 +771,7 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding precise time stamp', function() {
+    it('test adding precise timestamp', function() {
       tableSql = client
         .schemaBuilder()
         .table('users', function() {
@@ -781,6 +781,19 @@ module.exports = function(dialect) {
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add `foo` timestamp(6)'
+      );
+    });
+
+    it('test adding precise datetime', function() {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function() {
+          this.datetime('foo', 6);
+        })
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `foo` datetime(6)'
       );
     });
 
