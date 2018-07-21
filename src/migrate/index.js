@@ -390,8 +390,8 @@ export default class Migrator {
   _latestBatchNumber(trx = this.knex) {
     return trx
       .from(getTableName(this.config.tableName, this.config.schemaName))
-      .max('batch as max_batch')
-      .then((obj) => obj[0].max_batch || 0);
+      .max('batch as max')
+      .then((obj) => obj[0].max || 0);
   }
 
   // If transaction config for a single migration is defined, use that.
