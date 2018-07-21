@@ -33,11 +33,9 @@ assign(ColumnCompiler_PG.prototype, {
     const values = allowed.join("', '");
 
     if (options.useNative) {
-      if (!options.existingType) {
-        this.tableCompiler.unshiftQuery(
-          `create type "${options.enumName}" as enum ('${values}')`
-        );
-      }
+      this.tableCompiler.unshiftQuery(
+        `create type "${options.enumName}" as enum ('${values}')`
+      );
 
       return `"${options.enumName}"`;
     }
