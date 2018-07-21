@@ -62,7 +62,9 @@ assign(ColumnCompiler_MSSQL.prototype, {
 
   datetime: 'datetime',
 
-  timestamp: 'datetime',
+  timestamp(useTz) {
+    return useTz ? 'datetimeoffset' : 'datetime';
+  },
 
   bit(length) {
     if (length > 1) {
