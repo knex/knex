@@ -1,9 +1,11 @@
 import Promise from 'bluebird';
-import { filter, map } from 'lodash';
+import { filter, map, flatten } from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import { getTableName } from './table-resolver';
 import { ensureTable } from './table-creator';
+
+const readDirAsync = Promise.promisify(fs.readdir, { context: fs });
 
 export const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
   '.co',
@@ -19,16 +21,41 @@ export const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
 // Lists all available migration versions, as a sorted array.
 export function listAll(
   absoluteConfigDir,
-  loadExtensions = DEFAULT_LOAD_EXTENSIONS
+  loadExtensions = DEFAULT_LOAD_EXTENSIONS,
+  sortDirsSeparately = false
 ) {
-  return Promise.promisify(fs.readdir, { context: fs })(absoluteConfigDir).then(
-    (migrations) => {
-      return filter(migrations, function(value) {
-        const extension = path.extname(value);
-        return loadExtensions.includes(extension);
-      }).sort();
+  if (!Array.isArray(absoluteConfigDir)) {
+    absoluteConfigDir = [absoluteConfigDir];
+  }
+
+  const readMigrationsPromises = absoluteConfigDir.map((configDir) => {
+    return readDirAsync(configDir);
+  });
+
+  return Promise.all(readMigrationsPromises).then((allMigrations) => {
+    let filteredMigrations = allMigrations.map((migrations) => {
+      return filterMigrations(migrations, loadExtensions);
+    });
+    if (sortDirsSeparately) {
+      filteredMigrations = filteredMigrations.map((migrations) => {
+        return migrations.sort();
+      });
     }
-  );
+
+    let combinedMigrations = flatten(filteredMigrations);
+    if (!sortDirsSeparately) {
+      combinedMigrations = combinedMigrations.sort();
+    }
+
+    return combinedMigrations;
+  });
+}
+
+function filterMigrations(migrations, loadExtensions) {
+  return filter(migrations, (value) => {
+    const extension = path.extname(value);
+    return loadExtensions.includes(extension);
+  });
 }
 
 // Lists all migrations that have been completed for the current db, as an
