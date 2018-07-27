@@ -7992,6 +7992,26 @@ describe('QueryBuilder', function() {
         }
       );
     });
+
+    it('with places bindings in correct order', () => {
+      testquery(
+        qb()
+          .with(
+            'updated_group',
+            qb()
+              .table('group')
+              .update({ group_name: 'bar' })
+              .where({ group_id: 1 })
+              .returning('group_id')
+          )
+          .table('user')
+          .update({ name: 'foo' })
+          .where({ group_id: 1 }),
+        {
+          pg: `with "updated_group" as (update "group" set "group_name" = 'bar' where "group_id" = 1 returning "group_id") update "user" set "name" = 'foo' where "group_id" = 1`,
+        }
+      );
+    });
   });
 
   it('#1710, properly escapes arrays in where clauses in postgresql', function() {
