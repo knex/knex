@@ -42,6 +42,7 @@ const CONFIG_DEFAULT = Object.freeze({
   schemaName: null,
   directory: './migrations',
   disableTransactions: false,
+  sortDirsSeparately: false,
 });
 
 // The new migration we're performing, typically called from the `knex.migrate`
@@ -111,7 +112,8 @@ export default class Migrator {
       ),
       migrationListResolver.listAll(
         this._absoluteConfigDir(),
-        this.config.loadExtensions
+        this.config.loadExtensions,
+        this.config.sortDirsSeparately
       ),
     ]).spread((db, code) => db.length - code.length);
   }

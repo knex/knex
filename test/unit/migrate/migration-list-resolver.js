@@ -7,7 +7,7 @@ const migrationListResolver = require('../../../lib/migrate/migration-list-resol
 const path = require('path');
 
 describe('migration-list-resolver', () => {
-  describe('listAll', () => {
+  describe('listAll - single directory', () => {
     let absoluteConfigDirectory;
     before(() => {
       absoluteConfigDirectory = path.resolve(
@@ -55,6 +55,62 @@ describe('migration-list-resolver', () => {
         .listAll(absoluteConfigDirectory, ['.ts', '.js'])
         .then((list) => {
           expect(list).to.eql(['js-migration.js', 'ts-migration.ts']);
+        });
+    });
+  });
+
+  describe('listAll - multiple directories', () => {
+    let absoluteConfigDirectory;
+    before(() => {
+      absoluteConfigDirectory = [
+        path.resolve(process.cwd(), 'test/integration/migrate/migration'),
+        path.resolve(process.cwd(), 'test/integration/migrate/seeds'),
+      ];
+      mockFs({
+        'test/integration/migrate/migration': {
+          '006_migration.js': 'dummy',
+          '001_migration.js': 'dummy',
+          '005_migration.js': 'dummy',
+        },
+        'test/integration/migrate/seeds': {
+          '004_migration.js': 'dummy',
+          '002_migration.js': 'dummy',
+          '003_migration.js': 'dummy',
+        },
+      });
+    });
+
+    after(() => {
+      mockFs.restore();
+    });
+
+    it('should include files from both folders, sorted globally', () => {
+      return migrationListResolver
+        .listAll(absoluteConfigDirectory)
+        .then((list) => {
+          expect(list).to.eql([
+            '001_migration.js',
+            '002_migration.js',
+            '003_migration.js',
+            '004_migration.js',
+            '005_migration.js',
+            '006_migration.js',
+          ]);
+        });
+    });
+
+    it('should include files from both folders, sorted within their folders', () => {
+      return migrationListResolver
+        .listAll(absoluteConfigDirectory, ['.js'], true)
+        .then((list) => {
+          expect(list).to.eql([
+            '001_migration.js',
+            '005_migration.js',
+            '006_migration.js',
+            '002_migration.js',
+            '003_migration.js',
+            '004_migration.js',
+          ]);
         });
     });
   });
