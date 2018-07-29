@@ -7,7 +7,7 @@ import Promise from 'bluebird';
 import {
   assign,
   bind,
-  difference,
+  differenceWith,
   each,
   filter,
   get,
@@ -65,17 +65,14 @@ export default class Migrator {
       .listAllAndCompleted(this.config, this.knex, this._absoluteConfigDir())
       .tap(validateMigrationList)
       .spread((all, completed) => {
-        const migrations = difference(all, completed);
+        const migrations = getNewMigrations(all, completed);
 
         const transactionForAll =
           !this.config.disableTransactions &&
           isEmpty(
-            filter(migrations, (name) => {
-              const migration = require(path.join(
-                this._absoluteConfigDir(),
-                name
-              ));
-              return !this._useTransaction(migration);
+            filter(migrations, (migration) => {
+              const migrationContent = require(resolveMigrationPath(migration));
+              return !this._useTransaction(migrationContent);
             })
           );
 
@@ -215,7 +212,9 @@ export default class Migrator {
                 )
               : []
         )
-        .then((completed) => (migrations = difference(migrations, completed)))
+        .then(
+          (completed) => (migrations = getNewMigrations(migrations, completed))
+        )
         .then(() =>
           Promise.all(
             map(migrations, bind(this._validateMigrationStructure, this))
@@ -269,17 +268,19 @@ export default class Migrator {
 
   // Validates some migrations by requiring and checking for an `up` and `down`
   // function.
-  _validateMigrationStructure(name) {
-    const migration = require(path.join(this._absoluteConfigDir(), name));
+  _validateMigrationStructure(migration) {
+    const migrationContent = require(resolveMigrationPath(migration));
     if (
-      typeof migration.up !== 'function' ||
-      typeof migration.down !== 'function'
+      typeof migrationContent.up !== 'function' ||
+      typeof migrationContent.down !== 'function'
     ) {
       throw new Error(
-        `Invalid migration: ${name} must have both an up and down function`
+        `Invalid migration: ${
+          migration.file
+        } must have both an up and down function`
       );
     }
-    return name;
+    return migration;
   }
 
   // Generates the stub template for the current migration, returning a compiled
@@ -329,8 +330,8 @@ export default class Migrator {
   // Otherwise, rely on the common config. This allows enabling/disabling
   // transaction for a single migration at will, regardless of the common
   // config.
-  _useTransaction(migration, allTransactionsDisabled) {
-    const singleTransactionValue = get(migration, 'config.transaction');
+  _useTransaction(migrationContent, allTransactionsDisabled) {
+    const singleTransactionValue = get(migrationContent, 'config.transaction');
 
     return isBoolean(singleTransactionValue)
       ? singleTransactionValue
@@ -342,23 +343,26 @@ export default class Migrator {
   _waterfallBatch(batchNo, migrations, direction, trx) {
     const trxOrKnex = trx || this.knex;
     const { tableName, schemaName, disableTransactions } = this.config;
-    const directory = this._absoluteConfigDir();
     let current = Promise.bind({ failed: false, failedOn: 0 });
     const log = [];
     each(migrations, (migration) => {
-      const name = migration;
+      const directory = migration.directory;
+      const name = migration.file;
       this._activeMigration.fileName = name;
-      migration = require(directory + '/' + name);
+      const migrationContent = require(directory + '/' + name);
 
       // We're going to run each of the migrations in the current "up".
       current = current
         .then(() => {
-          if (!trx && this._useTransaction(migration, disableTransactions)) {
-            return this._transaction(migration, direction, name);
+          if (
+            !trx &&
+            this._useTransaction(migrationContent, disableTransactions)
+          ) {
+            return this._transaction(migrationContent, direction, name);
           }
           return warnPromise(
             this.knex,
-            migration[direction](trxOrKnex, Promise),
+            migrationContent[direction](trxOrKnex, Promise),
             name
           );
         })
@@ -383,11 +387,11 @@ export default class Migrator {
     return current.thenReturn([batchNo, log]);
   }
 
-  _transaction(migration, direction, name) {
+  _transaction(migrationContent, direction, name) {
     return this.knex.transaction((trx) => {
       return warnPromise(
         this.knex,
-        migration[direction](trx, Promise),
+        migrationContent[direction](trx, Promise),
         name,
         () => {
           trx.commit();
@@ -409,7 +413,7 @@ export default class Migrator {
 function validateMigrationList(migrations) {
   const all = migrations[0];
   const completed = migrations[1];
-  const diff = difference(completed, all);
+  const diff = getMissingMigrations(completed, all);
   if (!isEmpty(diff)) {
     throw new Error(
       `The migration directory is corrupt, the following files are missing: ${diff.join(
@@ -419,12 +423,28 @@ function validateMigrationList(migrations) {
   }
 }
 
+function getMissingMigrations(completed, all) {
+  return differenceWith(completed, all, (completedMigration, allMigration) => {
+    return completedMigration === allMigration.file;
+  });
+}
+
+function getNewMigrations(all, completed) {
+  return differenceWith(all, completed, (allMigration, completedMigration) => {
+    return completedMigration === allMigration.file;
+  });
+}
+
 function warnPromise(knex, value, name, fn) {
   if (!value || typeof value.then !== 'function') {
     knex.client.logger.warn(`migration ${name} did not return a promise`);
     if (fn && typeof fn === 'function') fn();
   }
   return value;
+}
+
+function resolveMigrationPath(migration) {
+  return path.join(migration.directory, migration.file);
 }
 
 // Ensure that we have 2 places for each of the date segments.

@@ -38,14 +38,46 @@ describe('migration-list-resolver', () => {
         .listAll(absoluteConfigDirectory)
         .then((list) => {
           expect(list).to.eql([
-            'co-migration.co',
-            'coffee-migration.coffee',
-            'eg-migration.eg',
-            'iced-migration.iced',
-            'js-migration.js',
-            'litcoffee-migration.litcoffee',
-            'ls-migration.ls',
-            'ts-migration.ts',
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'co-migration.co',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'coffee-migration.coffee',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'eg-migration.eg',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'iced-migration.iced',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'js-migration.js',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'litcoffee-migration.litcoffee',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'ls-migration.ls',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'ts-migration.ts',
+            },
           ]);
         });
     });
@@ -54,7 +86,18 @@ describe('migration-list-resolver', () => {
       return migrationListResolver
         .listAll(absoluteConfigDirectory, ['.ts', '.js'])
         .then((list) => {
-          expect(list).to.eql(['js-migration.js', 'ts-migration.ts']);
+          expect(list).to.eql([
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'js-migration.js',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: 'ts-migration.ts',
+            },
+          ]);
         });
     });
   });
@@ -89,12 +132,33 @@ describe('migration-list-resolver', () => {
         .listAll(absoluteConfigDirectory)
         .then((list) => {
           expect(list).to.eql([
-            '001_migration.js',
-            '002_migration.js',
-            '003_migration.js',
-            '004_migration.js',
-            '005_migration.js',
-            '006_migration.js',
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: '001_migration.js',
+            },
+            {
+              directory: 'C:\\sources\\knex\\test\\integration\\migrate\\seeds',
+              file: '002_migration.js',
+            },
+            {
+              directory: 'C:\\sources\\knex\\test\\integration\\migrate\\seeds',
+              file: '003_migration.js',
+            },
+            {
+              directory: 'C:\\sources\\knex\\test\\integration\\migrate\\seeds',
+              file: '004_migration.js',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: '005_migration.js',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: '006_migration.js',
+            },
           ]);
         });
     });
@@ -104,12 +168,33 @@ describe('migration-list-resolver', () => {
         .listAll(absoluteConfigDirectory, ['.js'], true)
         .then((list) => {
           expect(list).to.eql([
-            '001_migration.js',
-            '005_migration.js',
-            '006_migration.js',
-            '002_migration.js',
-            '003_migration.js',
-            '004_migration.js',
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: '001_migration.js',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: '005_migration.js',
+            },
+            {
+              directory:
+                'C:\\sources\\knex\\test\\integration\\migrate\\migration',
+              file: '006_migration.js',
+            },
+            {
+              directory: 'C:\\sources\\knex\\test\\integration\\migrate\\seeds',
+              file: '002_migration.js',
+            },
+            {
+              directory: 'C:\\sources\\knex\\test\\integration\\migrate\\seeds',
+              file: '003_migration.js',
+            },
+            {
+              directory: 'C:\\sources\\knex\\test\\integration\\migrate\\seeds',
+              file: '004_migration.js',
+            },
           ]);
         });
     });

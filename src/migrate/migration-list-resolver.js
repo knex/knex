@@ -1,5 +1,5 @@
 import Promise from 'bluebird';
-import { filter, map, flatten } from 'lodash';
+import { filter, map, flatten, sortBy } from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import { getTableName } from './table-resolver';
@@ -28,11 +28,13 @@ export function listAll(
     absoluteConfigDir = [absoluteConfigDir];
   }
 
+  // Get a list of files in all specified migration directories
   const readMigrationsPromises = absoluteConfigDir.map((configDir) => {
     return readDirAsync(configDir);
   });
 
   return Promise.all(readMigrationsPromises).then((allMigrations) => {
+    // Filter out files with irrelevant extensions
     let filteredMigrations = allMigrations.map((migrations) => {
       return filterMigrations(migrations, loadExtensions);
     });
@@ -41,10 +43,19 @@ export function listAll(
         return migrations.sort();
       });
     }
+    filteredMigrations = filteredMigrations.map((migrations, index) => {
+      const absoluteDir = absoluteConfigDir[index];
+      return migrations.map((migration) => {
+        return {
+          directory: absoluteDir,
+          file: migration,
+        };
+      });
+    });
 
     let combinedMigrations = flatten(filteredMigrations);
     if (!sortDirsSeparately) {
-      combinedMigrations = combinedMigrations.sort();
+      combinedMigrations = sortBy(combinedMigrations, 'file');
     }
 
     return combinedMigrations;
