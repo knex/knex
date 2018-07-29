@@ -152,10 +152,15 @@ export default class Migrator {
   // Ensures a folder for the migrations exist, dependent on the migration
   // config settings.
   _ensureFolder() {
-    const dir = this._absoluteConfigDir();
-    return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
-      Promise.promisify(mkdirp)(dir)
-    );
+    const dirs = this._absoluteConfigDir();
+
+    const promises = dirs.map((dir) => {
+      return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
+        Promise.promisify(mkdirp)(dir)
+      );
+    });
+
+    return Promise.all(promises);
   }
 
   _isLocked(trx) {
@@ -298,13 +303,18 @@ export default class Migrator {
   // passing any `variables` given in the config to the template.
   _writeNewMigration(name, tmpl) {
     const { config } = this;
-    const dir = this._absoluteConfigDir();
+    const dirs = this._absoluteConfigDir();
     if (name[0] === '-') name = name.slice(1);
     const filename = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
-    return Promise.promisify(fs.writeFile, { context: fs })(
-      path.join(dir, filename),
-      tmpl(config.variables || {})
-    ).return(path.join(dir, filename));
+
+    const promises = dirs.map((dir) => {
+      return Promise.promisify(fs.writeFile, { context: fs })(
+        path.join(dir, filename),
+        tmpl(config.variables || {})
+      ).return(path.join(dir, filename));
+    });
+
+    return Promise.all(promises);
   }
 
   // Get the last batch of migrations, by name, ordered by insert id in reverse
@@ -401,7 +411,12 @@ export default class Migrator {
   }
 
   _absoluteConfigDir() {
-    return path.resolve(process.cwd(), this.config.directory);
+    const directories = Array.isArray(this.config.directory)
+      ? this.config.directory
+      : [this.config.directory];
+    return directories.map((directory) => {
+      return path.resolve(process.cwd(), directory);
+    });
   }
 
   setConfig(config) {
