@@ -5314,6 +5314,34 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('insert with primarykey/identitykey is set using queryContext identityInsert=true', function() {
+    testsql(
+      qb()
+        .queryContext({ identityInsert: true })
+        .into("users")
+        .insert({ id: 1, email: "foo" }),
+      {
+        mysql: {
+          sql: "insert into `users` (`email`, `id`) values (?, ?)",
+          bindings: ["foo", 1]
+        },
+        mssql: {
+          sql:
+            "SET IDENTITY_INSERT [users] ON; insert into [users] ([email], [id]) values (?, ?); SET IDENTITY_INSERT [users] OFF;",
+          bindings: ["foo", 1]
+        },
+        pg: {
+          sql: 'insert into "users" ("email", "id") values (?, ?)',
+          bindings: ["foo", 1]
+        },
+        'pg-redshift': {
+          sql: 'insert into "users" ("email", "id") values (?, ?)',
+          bindings: ["foo", 1]
+        }
+      }
+    );
+  });
+
   it('update method', function() {
     testsql(
       qb()

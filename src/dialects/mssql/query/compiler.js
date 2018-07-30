@@ -35,6 +35,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
   insert() {
+    const queryContext = this.formatter.builder._queryContext || {};
     const insertValues = this.single.insert || [];
     let sql = this.with() + `insert into ${this.tableName} `;
     const { returning } = this.single;
@@ -75,6 +76,12 @@ assign(QueryCompiler_MSSQL.prototype, {
         sql = '';
       }
     }
+
+    if(queryContext && queryContext.identityInsert) {
+      sql = `SET IDENTITY_INSERT ${this.tableName} ON; ${sql}; `;
+      sql += `SET IDENTITY_INSERT ${this.tableName} OFF;`;
+    }
+
     return {
       sql,
       returning,

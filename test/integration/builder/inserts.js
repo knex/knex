@@ -1300,5 +1300,63 @@ module.exports = function(knex) {
           });
       });
     });
+
+    it('should allow to set primarykey/identitykey value during insert using queryContext', function() {
+      return knex.schema
+        .dropTableIfExists('test_default_table4')
+        .then(function() {
+          return knex.schema.createTable('test_default_table4', function(qb) {
+            qb.increments().primary();
+            qb.string('string').defaultTo('hello');
+            qb.text('text').nullable();
+          });
+        })
+        .then(function() {
+          return knex('test_default_table4')
+            .queryContext({ identityInsert: true })
+            .insert({
+              id: 1,
+              string: 'Lorem ipsum Dolore labore incididunt enim.',
+              text: 'Some text',
+            }, 'id').testSql(function(tester) {
+              tester(
+                'mysql',
+                'insert into `test_default_table4` (`id`, `string`, `text`) values (?, ?, ?)',
+                [1, 'Lorem ipsum Dolore labore incididunt enim.', 'Some text'],
+                [1]
+              );
+              tester(
+                'pg',
+                'insert into "test_default_table4" ("id", "string", "text") values (?, ?, ?) returning "id"',
+                [1, 'Lorem ipsum Dolore labore incididunt enim.', 'Some text'],
+                [1]
+              );
+              tester(
+                'pg-redshift',
+                'insert into "test_default_table4" ("id", "string", "text") values (?, ?, ?) returning "id"',
+                [1, 'Lorem ipsum Dolore labore incididunt enim.', 'Some text'],
+                1
+              );
+              tester(
+                'sqlite3',
+                'insert into `test_default_table4` (`id`, `string`, `text`) values (?, ?, ?)',
+                [1, 'Lorem ipsum Dolore labore incididunt enim.', 'Some text'],
+                [1]
+              );
+              tester(
+                'oracledb',
+                "insert into \"test_default_table4\" (\"id\", \"string\", \"text\") values (?, ?, ?) returning ROWID into ?",
+                [1, 'Lorem ipsum Dolore labore incididunt enim.', 'Some text', function (v) { return v.toString() === '[object ReturningHelper:id]';}],
+                [1]
+              );
+              tester(
+                'mssql',
+                'SET IDENTITY_INSERT [test_default_table4] ON; insert into [test_default_table4] ([id], [string], [text]) output inserted.[id] values (?, ?, ?); SET IDENTITY_INSERT [test_default_table4] OFF;',
+                [1, 'Lorem ipsum Dolore labore incididunt enim.', 'Some text'],
+                [1]
+              );
+            });
+        });
+    });
   });
 };
