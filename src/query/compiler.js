@@ -742,10 +742,7 @@ assign(QueryCompiler.prototype, {
         0
       );
 
-      data[column] = this.client.raw('??' + ' ' + '+' + ' ' + '?', [
-        column,
-        value,
-      ]);
+      data[column] = this.client.raw('?? + ?', [column, value]);
     }
 
     data = omitBy(data, isUndefined);
