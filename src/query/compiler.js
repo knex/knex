@@ -16,6 +16,7 @@ import {
   map,
   omitBy,
   reduce,
+  has,
 } from 'lodash';
 import uuid from 'uuid';
 
@@ -538,21 +539,6 @@ assign(QueryCompiler.prototype, {
     }
   },
 
-  // Compile the "counter".
-  counter() {
-    const { counter } = this.single;
-    const toUpdate = {};
-    toUpdate[counter.column] = this.client.raw(
-      this.formatter.wrap(counter.column) +
-        ' ' +
-        (counter.symbol || '+') +
-        ' ' +
-        counter.amount
-    );
-    this.single.update = toUpdate;
-    return this.update();
-  },
-
   // On Clause
   // ------
 
@@ -736,7 +722,32 @@ assign(QueryCompiler.prototype, {
   },
 
   // "Preps" the update.
-  _prepUpdate(data) {
+  _prepUpdate(data = {}) {
+    const { counter = [] } = this.single;
+    const grouped = groupBy(counter, 'column');
+
+    for (const column in grouped) {
+      //Skip?
+      if (has(data, column)) {
+        //Needed?
+        this.client.logger.warn(
+          `increment/decrement called for a column that has already been specified in main .update() call. Ignoring increment/decrement and using value from .update() call.`
+        );
+        continue;
+      }
+
+      const value = reduce(
+        grouped[column],
+        (memo, item) => memo + item.amount,
+        0
+      );
+
+      data[column] = this.client.raw('??' + ' ' + '+' + ' ' + '?', [
+        column,
+        value,
+      ]);
+    }
+
     data = omitBy(data, isUndefined);
     const vals = [];
     const columns = Object.keys(data);
