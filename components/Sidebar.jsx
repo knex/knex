@@ -168,7 +168,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-decimal">decimal</a></li>
           <li>– <a href="#Schema-boolean">boolean</a></li>
           <li>– <a href="#Schema-date">date</a></li>
-          <li>– <a href="#Schema-dateTime">dateTime</a></li>
+          <li>– <a href="#Schema-datetime">datetime</a></li>
           <li>– <a href="#Schema-time">time</a></li>
           <li>– <a href="#Schema-timestamp">timestamp</a></li>
           <li>– <a href="#Schema-timestamps">timestamps</a></li>
