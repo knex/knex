@@ -736,13 +736,19 @@ assign(QueryCompiler.prototype, {
         continue;
       }
 
-      const value = reduce(
+      let value = reduce(
         grouped[column],
         (memo, item) => memo + item.amount,
         0
       );
 
-      data[column] = this.client.raw('?? + ?', [column, value]);
+      const symbol = value < 0 ? '-' : '+';
+
+      if (symbol === '-') {
+        value = -value;
+      }
+
+      data[column] = this.client.raw(`?? ${symbol} ?`, [column, value]);
     }
 
     data = omitBy(data, isUndefined);

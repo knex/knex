@@ -5620,7 +5620,7 @@ describe('QueryBuilder', function() {
     );
   });
 
-  it('Can chain increments', () => {
+  it('Can chain increment', () => {
     testsql(
       qb()
         .into('users')
@@ -5649,7 +5649,7 @@ describe('QueryBuilder', function() {
     );
   });
 
-  it('Can chain increments and decrements in same build-chain', () => {
+  it('Can chain increment and decrement in same build-chain', () => {
     testsql(
       qb()
         .into('users')
@@ -5658,27 +5658,27 @@ describe('QueryBuilder', function() {
         .decrement('balance', 100),
       {
         pg: {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [-90, 1],
+          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+          bindings: [90, 1],
         },
         mysql: {
-          sql: 'update `users` set `balance` = `balance` + ? where `id` = ?',
-          bindings: [-90, 1],
+          sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
+          bindings: [90, 1],
         },
         mssql: {
           sql:
-            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
-          bindings: [-90, 1],
+            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+          bindings: [90, 1],
         },
         'pg-redshift': {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [-90, 1],
+          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+          bindings: [90, 1],
         },
       }
     );
   });
 
-  it('Can chain increments / decrements with .update in same build-chain', () => {
+  it('Can chain increment / decrement with .update in same build-chain', () => {
     testsql(
       qb()
         .into('users')
@@ -5691,29 +5691,29 @@ describe('QueryBuilder', function() {
       {
         pg: {
           sql:
-            'update "users" set "email" = ?, "balance" = "balance" + ? where "id" = ?',
-          bindings: ['foo@bar.com', -90, 1],
+            'update "users" set "email" = ?, "balance" = "balance" - ? where "id" = ?',
+          bindings: ['foo@bar.com', 90, 1],
         },
         mysql: {
           sql:
-            'update `users` set `email` = ?, `balance` = `balance` + ? where `id` = ?',
-          bindings: ['foo@bar.com', -90, 1],
+            'update `users` set `email` = ?, `balance` = `balance` - ? where `id` = ?',
+          bindings: ['foo@bar.com', 90, 1],
         },
         mssql: {
           sql:
-            'update [users] set [email] = ?, [balance] = [balance] + ? where [id] = ?;select @@rowcount',
-          bindings: ['foo@bar.com', -90, 1],
+            'update [users] set [email] = ?, [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+          bindings: ['foo@bar.com', 90, 1],
         },
         'pg-redshift': {
           sql:
-            'update "users" set "email" = ?, "balance" = "balance" + ? where "id" = ?',
-          bindings: ['foo@bar.com', -90, 1],
+            'update "users" set "email" = ?, "balance" = "balance" - ? where "id" = ?',
+          bindings: ['foo@bar.com', 90, 1],
         },
       }
     );
   });
 
-  it('Can chain increments / decrements with .update in same build-chain and ignores increment/decrement if column is also supplied in .update', () => {
+  it('Can chain increment / decrement with .update in same build-chain and ignores increment/decrement if column is also supplied in .update', () => {
     testsql(
       qb()
         .into('users')
@@ -5745,7 +5745,7 @@ describe('QueryBuilder', function() {
     );
   });
 
-  it('Can use object syntax for increments/decrements', () => {
+  it('Can use object syntax for increment/decrement', () => {
     testsql(
       qb()
         .into('users')
@@ -5761,23 +5761,23 @@ describe('QueryBuilder', function() {
       {
         pg: {
           sql:
-            'update "users" set "balance" = "balance" + ?, "times" = "times" + ?, "value" = "value" + ?, "subvalue" = "subvalue" + ? where "id" = ?',
-          bindings: [10, 1, -50, -30, 1],
+            'update "users" set "balance" = "balance" + ?, "times" = "times" + ?, "value" = "value" - ?, "subvalue" = "subvalue" - ? where "id" = ?',
+          bindings: [10, 1, 50, 30, 1],
         },
         mysql: {
           sql:
-            'update `users` set `balance` = `balance` + ?, `times` = `times` + ?, `value` = `value` + ?, `subvalue` = `subvalue` + ? where `id` = ?',
-          bindings: [10, 1, -50, -30, 1],
+            'update `users` set `balance` = `balance` + ?, `times` = `times` + ?, `value` = `value` - ?, `subvalue` = `subvalue` - ? where `id` = ?',
+          bindings: [10, 1, 50, 30, 1],
         },
         mssql: {
           sql:
-            'update [users] set [balance] = [balance] + ?, [times] = [times] + ?, [value] = [value] + ?, [subvalue] = [subvalue] + ? where [id] = ?;select @@rowcount',
-          bindings: [10, 1, -50, -30, 1],
+            'update [users] set [balance] = [balance] + ?, [times] = [times] + ?, [value] = [value] - ?, [subvalue] = [subvalue] - ? where [id] = ?;select @@rowcount',
+          bindings: [10, 1, 50, 30, 1],
         },
         'pg-redshift': {
           sql:
-            'update "users" set "balance" = "balance" + ?, "times" = "times" + ?, "value" = "value" + ?, "subvalue" = "subvalue" + ? where "id" = ?',
-          bindings: [10, 1, -50, -30, 1],
+            'update "users" set "balance" = "balance" + ?, "times" = "times" + ?, "value" = "value" - ?, "subvalue" = "subvalue" - ? where "id" = ?',
+          bindings: [10, 1, 50, 30, 1],
         },
       }
     );
@@ -5854,21 +5854,21 @@ describe('QueryBuilder', function() {
         .decrement('balance', 10),
       {
         mysql: {
-          sql: 'update `users` set `balance` = `balance` + ? where `id` = ?',
-          bindings: [-10, 1],
+          sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
+          bindings: [10, 1],
         },
         mssql: {
           sql:
-            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
-          bindings: [-10, 1],
+            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+          bindings: [10, 1],
         },
         pg: {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [-10, 1],
+          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+          bindings: [10, 1],
         },
         'pg-redshift': {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [-10, 1],
+          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+          bindings: [10, 1],
         },
       }
     );
@@ -5882,21 +5882,21 @@ describe('QueryBuilder', function() {
         .decrement('balance', 1.23),
       {
         mysql: {
-          sql: 'update `users` set `balance` = `balance` + ? where `id` = ?',
-          bindings: [-1.23, 1],
+          sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
+          bindings: [1.23, 1],
         },
         mssql: {
           sql:
-            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
-          bindings: [-1.23, 1],
+            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+          bindings: [1.23, 1],
         },
         pg: {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [-1.23, 1],
+          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+          bindings: [1.23, 1],
         },
         'pg-redshift': {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [-1.23, 1],
+          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+          bindings: [1.23, 1],
         },
       }
     );
