@@ -26,17 +26,7 @@ function getClauseFromArguments(compilerType, bool, first, operator, second) {
   } else {
     switch (arguments.length) {
       case 3: {
-        if (typeof first === 'object' && typeof first.toSQL !== 'function') {
-          const keys = Object.keys(first);
-          let i = -1;
-          const method = bool === 'or' ? 'orOn' : 'on';
-          while (++i < keys.length) {
-            this[method](keys[i], first[keys[i]]);
-          }
-          return this;
-        } else {
-          data = { type: 'onRaw', value: first, bool };
-        }
+        data = { type: 'onRaw', value: first, bool };
         break;
       }
       case 4:
@@ -66,7 +56,17 @@ assign(JoinClause.prototype, {
   grouping: 'join',
 
   // Adds an "on" clause to the current join object.
-  on() {
+  on(first) {
+    if (typeof first === 'object' && typeof first.toSQL !== 'function') {
+      const keys = Object.keys(first);
+      let i = -1;
+      const method = this._bool() === 'or' ? 'orOn' : 'on';
+      while (++i < keys.length) {
+        this[method](keys[i], first[keys[i]]);
+      }
+      return this;
+    }
+
     const data = getClauseFromArguments('onBasic', this._bool(), ...arguments);
 
     if (data) {
@@ -91,7 +91,17 @@ assign(JoinClause.prototype, {
     return this._bool('or').on.apply(this, arguments);
   },
 
-  onVal() {
+  onVal(first) {
+    if (typeof first === 'object' && typeof first.toSQL !== 'function') {
+      const keys = Object.keys(first);
+      let i = -1;
+      const method = this._bool() === 'or' ? 'orOnVal' : 'onVal';
+      while (++i < keys.length) {
+        this[method](keys[i], first[keys[i]]);
+      }
+      return this;
+    }
+
     const data = getClauseFromArguments('onVal', this._bool(), ...arguments);
 
     if (data) {
