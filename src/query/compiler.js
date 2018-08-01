@@ -589,6 +589,16 @@ assign(QueryCompiler.prototype, {
     );
   },
 
+  onVal(clause) {
+    return (
+      this.formatter.wrap(clause.column) +
+      ' ' +
+      this.formatter.operator(clause.operator) +
+      ' ' +
+      this.formatter.parameter(clause.value)
+    );
+  },
+
   onRaw(clause) {
     return this.formatter.unwrapRaw(clause.value);
   },
