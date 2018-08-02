@@ -14,7 +14,10 @@ export function getCharsetAndCollation(single, connectionSettings, driverName) {
     };
   }
 
-  return getMappedCharsetAndCollation(connectionSettings.charset, driverName);
+  return getMappedCharsetAndCollation(
+    connectionSettings.charset.toUpperCase(),
+    driverName
+  );
 }
 
 function getMappedCharsetAndCollation(charset, driverName) {
@@ -72,13 +75,12 @@ function getCollationFromCollationNumber(charset, charsetMap, aliases) {
     return charset;
   }
   // It is an alias, so now we must find the default collation for that charset
-  return _.findKey(
-    charsetMap,
-    (value, key) =>
-      key !== charset && charsetMap[charset.toUpperCase()] === value
-  );
+  return _.findKey(charsetMap, (value, key) => {
+    return key !== charset && charsetMap[charset] === value;
+  });
 }
 
+// Taken from https://github.com/mysqljs/mysql/blob/cf5d1e396a343ffa0fba23b3791d2dd5da20f30e/lib/protocol/constants/charsets.js#L222-L262
 const mysqlAliases = [
   'ARMSCII8',
   'ASCII',
@@ -122,6 +124,7 @@ const mysqlAliases = [
   'UTF32',
 ];
 
+// Taken from https://github.com/sidorares/node-mysql2/blob/2e3bb731ab97ac6fdac77c6c2b9cc7633a727118/lib/constants/charsets.js#L247-L288
 const mysql2Aliases = [
   'BIG5',
   'DEC8',
