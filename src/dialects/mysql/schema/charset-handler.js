@@ -60,10 +60,8 @@ function getMappedCharsetAndCollation(charset, driverName) {
  * The aliases are different charsets, so we check which alias maps to the
  * collation number our given charset also maps to
  */
-function getCharsetFromCollationNumber(charset, charsetMap, aliases) {
-  return aliases.find(
-    (alias) => charsetMap[alias] === charsetMap[charset.toUpperCase()]
-  );
+function getCharsetFromCollationNumber(charset) {
+  return charset.split('_')[0];
 }
 
 function getCollationFromCollationNumber(charset, charsetMap, aliases) {

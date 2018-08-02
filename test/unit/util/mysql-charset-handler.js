@@ -13,5 +13,13 @@ describe('getCharsetAndCollation', function() {
         charset: 'UTF8MB4',
         collation: 'UTF8MB4_GENERAL_CI',
       });
+    chai
+      .expect(
+        getCharsetAndCollation({}, { charset: 'utf8mb4_unicode_ci' }, 'mysql')
+      )
+      .to.deep.equal({
+        charset: 'UTF8MB4',
+        collation: 'UTF8MB4_UNICODE_CI',
+      });
   });
 });

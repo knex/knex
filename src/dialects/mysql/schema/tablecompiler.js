@@ -35,7 +35,7 @@ assign(TableCompiler_MySQL.prototype, {
     const { charset, collation } = getCharsetAndCollation(
       this.single,
       conn,
-      this.driverName
+      client.driverName
     );
     const engine = this.single.engine || '';
 
