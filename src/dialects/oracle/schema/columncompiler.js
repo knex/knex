@@ -21,7 +21,8 @@ assign(ColumnCompiler_Oracle.prototype, {
       const tableName = this.tableCompiler.tableNameRaw;
       const createTriggerSQL = Trigger.createAutoIncrementTrigger(
         this.client.logger,
-        tableName
+        tableName,
+        this.client.config.connection.user
       );
       this.pushQuery(createTriggerSQL);
     });
