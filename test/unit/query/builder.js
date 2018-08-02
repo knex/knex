@@ -2043,6 +2043,80 @@ describe('QueryBuilder', function() {
         bindings: [1, 2, 3],
       },
     });
+
+    var arrayChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .union([
+        qb()
+          .select('*')
+          .from('users')
+          .where({ id: 2 }),
+        qb()
+          .select('*')
+          .from('users')
+          .where({ id: 3 }),
+      ]);
+    testsql(arrayChain, {
+      mysql: {
+        sql:
+          'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    var multipleArgumentsChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .union(
+        qb()
+          .select('*')
+          .from('users')
+          .where({ id: 2 }),
+        qb()
+          .select('*')
+          .from('users')
+          .where({ id: 3 })
+      );
+    testsql(multipleArgumentsChain, {
+      mysql: {
+        sql:
+          'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+    });
   });
 
   it('multiple union alls', function() {
