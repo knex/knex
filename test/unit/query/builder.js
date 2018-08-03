@@ -2015,12 +2015,11 @@ describe('QueryBuilder', function() {
           .from('users')
           .where('id', '=', 2)
       )
-      .union(
-        qb()
-          .select('*')
+      .union(function() {
+        this.select('*')
           .from('users')
-          .where('id', '=', 3)
-      );
+          .where('id', '=', 3);
+      });
     testsql(chain, {
       mysql: {
         sql:
@@ -2053,30 +2052,27 @@ describe('QueryBuilder', function() {
           .select('*')
           .from('users')
           .where({ id: 2 }),
-        qb()
-          .select('*')
-          .from('users')
-          .where({ id: 3 }),
+        raw('select * from users where id = ?', [3]),
       ]);
     testsql(arrayChain, {
       mysql: {
         sql:
-          'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+          'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from users where id = ?',
         bindings: [1, 2, 3],
       },
       mssql: {
         sql:
-          'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from [users] where [id] = ?',
+          'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from users where id = ?',
         bindings: [1, 2, 3],
       },
       pg: {
         sql:
-          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from users where id = ?',
         bindings: [1, 2, 3],
       },
       'pg-redshift': {
         sql:
-          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from users where id = ?',
         bindings: [1, 2, 3],
       },
     });
@@ -2090,30 +2086,27 @@ describe('QueryBuilder', function() {
           .select('*')
           .from('users')
           .where({ id: 2 }),
-        qb()
-          .select('*')
-          .from('users')
-          .where({ id: 3 })
+        raw('select * from users where id = ?', [3])
       );
     testsql(multipleArgumentsChain, {
       mysql: {
         sql:
-          'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from `users` where `id` = ?',
+          'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from users where id = ?',
         bindings: [1, 2, 3],
       },
       mssql: {
         sql:
-          'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from [users] where [id] = ?',
+          'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from users where id = ?',
         bindings: [1, 2, 3],
       },
       pg: {
         sql:
-          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from users where id = ?',
         bindings: [1, 2, 3],
       },
       'pg-redshift': {
         sql:
-          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from users where id = ?',
         bindings: [1, 2, 3],
       },
     });
