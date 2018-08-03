@@ -44,6 +44,10 @@ function ref(ref) {
   return clients.pg.ref(ref);
 }
 
+function client() {
+  return clients.pg;
+}
+
 function verifySqlResult(dialect, expectedObj, sqlObj) {
   Object.keys(expectedObj).forEach(function(key) {
     if (typeof expectedObj[key] === 'function') {
@@ -8214,6 +8218,35 @@ describe('QueryBuilder', function() {
       mssql: 'select 0',
       'pg-redshift': 'select 0',
       oracledb: 'select 0',
+    });
+  });
+
+  describe('knex.cast()', function() {
+    it('Generates correct SQL', function() {
+      testquery(
+        qb().select([
+          client().castInt(ref('id')),
+          client().castBigInt(ref('id')),
+          client().castText(1),
+          client().castFloat('500'),
+          client().castDecimal(ref('Amount')),
+          client().castReal(ref('column')),
+          client().castBool(1),
+          client().castJson(ref('json_column')),
+        ]),
+        {
+          postgres:
+            'select CAST("id" AS integer), CAST("id" AS bigint), CAST(1 AS text), CAST(\'500\' AS float), CAST("Amount" AS decimal), CAST("column" AS real), CAST(1 AS boolean), to_jsonb("json_column")',
+          mysql:
+            "select CAST(`id` AS integer), CAST(`id` AS bigint), CAST(1 AS text), CAST('500' AS float), CAST(`Amount` AS decimal), CAST(`column` AS real), CAST(1 AS boolean), to_jsonb(`json_column`)",
+          mssql:
+            "select CAST([id] AS integer), CAST([id] AS bigint), CAST(1 AS text), CAST('500' AS float), CAST([Amount] AS decimal), CAST([column] AS real), CAST(1 AS boolean), to_jsonb([json_column])",
+          redshift:
+            'select CAST("id" AS integer), CAST("id" AS bigint), CAST(1 AS text), CAST(\'500\' AS float), CAST("Amount" AS decimal), CAST("column" AS real), CAST(1 AS boolean), to_jsonb("json_column")',
+          oracle:
+            'select CAST("id" AS integer), CAST("id" AS bigint), CAST(1 AS text), CAST(\'500\' AS float), CAST("Amount" AS decimal), CAST("column" AS real), CAST(1 AS boolean), to_jsonb("json_column")',
+        }
+      );
     });
   });
 });

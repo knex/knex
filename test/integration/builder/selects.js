@@ -1068,6 +1068,22 @@ module.exports = function(knex) {
         });
     });
 
+    it('knex.cast()', function() {
+      return knex('accounts')
+        .select([
+          knex.castText(knex.ref('id')).as('text'),
+          knex.castInt('1000').as('int'),
+        ])
+        .where({ id: 3 })
+        .first()
+        .then(function(row) {
+          expect(row.text).to.equal('3');
+          expect(row.int).to.equal(1000);
+
+          return true;
+        });
+    });
+
     it('select for update locks selected row', function() {
       if (knex.client.driverName === 'sqlite3') {
         return;

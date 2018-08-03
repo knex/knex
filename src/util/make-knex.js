@@ -6,6 +6,7 @@ import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
 import { assign } from 'lodash';
 import batchInsert from './batchInsert';
+import { addCast } from '../cast';
 
 export default function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
@@ -54,6 +55,8 @@ export default function makeKnex(client) {
       return client.ref(ref);
     },
   });
+
+  addCast(knex, client);
 
   // Hook up the "knex" object as an EventEmitter.
   const ee = new EventEmitter();

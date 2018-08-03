@@ -2,6 +2,7 @@ import Promise from 'bluebird';
 
 import Raw from './raw';
 import Ref from './ref';
+import { addCast } from './cast';
 import Runner from './runner';
 import Formatter from './formatter';
 import Transaction from './transaction';
@@ -374,5 +375,7 @@ assign(Client.prototype, {
     throw new Error('Query cancelling not supported for this dialect');
   },
 });
+
+addCast(Client.prototype);
 
 export default Client;
