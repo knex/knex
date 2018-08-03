@@ -233,7 +233,7 @@ export default [
   },
   {
     type: "text",
-    content: "If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both."
+    content: "If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both. To manually initialize a destroyed connection pool, you may use knex.initialize([config]), if no config is passed, it will use the first knex configuration used."
   },
   {
     type: "heading",
