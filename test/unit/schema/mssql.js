@@ -787,7 +787,9 @@ describe('MSSQL SchemaBuilder', function() {
     tableSql = client
       .schemaBuilder()
       .table('users', function() {
-        this.timestamp('foo', true);
+        this.timestamp('foo', {
+          useTz: true,
+        });
       })
       .toSQL();
 
