@@ -6,7 +6,6 @@ import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
 import {
   assign,
-  bind,
   differenceWith,
   each,
   filter,
@@ -14,7 +13,6 @@ import {
   isBoolean,
   isEmpty,
   isUndefined,
-  map,
   max,
   template,
 } from 'lodash';
@@ -95,7 +93,7 @@ export default class Migrator {
         .tap(validateMigrationList)
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
-          return this._runBatch(map(migrations, 'name'), 'down');
+          return this._runBatch(migrations, 'down');
         });
     });
   }
@@ -122,7 +120,7 @@ export default class Migrator {
     return migrationListResolver
       .listCompleted(this.config.tableName, this.config.schemaName, this.knex)
       .then((completed) => {
-        const val = max(map(completed, (value) => value.split('_')[0]));
+        const val = max(completed.map((value) => value.split('_')[0]));
         return isUndefined(val) ? 'none' : val;
       });
   }
@@ -221,9 +219,7 @@ export default class Migrator {
           (completed) => (migrations = getNewMigrations(migrations, completed))
         )
         .then(() =>
-          Promise.all(
-            map(migrations, bind(this._validateMigrationStructure, this))
-          )
+          Promise.all(migrations.map(this._validateMigrationStructure))
         )
         .then(() => this._latestBatchNumber(trx))
         .then((batchNo) => {
@@ -304,28 +300,36 @@ export default class Migrator {
   _writeNewMigration(name, tmpl) {
     const { config } = this;
     const dirs = this._absoluteConfigDir();
+    if (dirs.length > 1) {
+      throw new Error(
+        'Cannot specify multiple directories when creating a new migration'
+      );
+    }
+    const dir = dirs[0];
+
     if (name[0] === '-') name = name.slice(1);
     const filename = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
 
-    const promises = dirs.map((dir) => {
-      return Promise.promisify(fs.writeFile, { context: fs })(
-        path.join(dir, filename),
-        tmpl(config.variables || {})
-      ).return(path.join(dir, filename));
-    });
-
-    return Promise.all(promises);
+    return Promise.promisify(fs.writeFile, { context: fs })(
+      path.join(dir, filename),
+      tmpl(config.variables || {})
+    ).return(path.join(dir, filename));
   }
 
   // Get the last batch of migrations, by name, ordered by insert id in reverse
   // order.
-  _getLastBatch() {
+  _getLastBatch([allMigrations, doneMigrations]) {
     const { tableName, schemaName } = this.config;
     return getTable(this.knex, tableName, schemaName)
       .where('batch', function(qb) {
         qb.max('batch').from(getTableName(tableName, schemaName));
       })
-      .orderBy('id', 'desc');
+      .orderBy('id', 'desc')
+      .map((migration) => {
+        return allMigrations.find((entry) => {
+          return entry.file === migration.name;
+        });
+      });
   }
 
   // Returns the latest batch number.

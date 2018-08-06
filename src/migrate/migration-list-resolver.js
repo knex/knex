@@ -1,5 +1,5 @@
 import Promise from 'bluebird';
-import { filter, map, flatten, sortBy } from 'lodash';
+import { filter, flatten, sortBy } from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import { getTableName } from './table-resolver';
@@ -79,7 +79,11 @@ export function listCompleted(tableName, schemaName, trxOrKnex) {
         .orderBy('id')
         .select('name')
     )
-    .then((migrations) => map(migrations, 'name'));
+    .then((migrations) =>
+      migrations.map((migration) => {
+        return migration.name;
+      })
+    );
 }
 
 // Gets the migration list from the migration directory specified in config, as well as
