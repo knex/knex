@@ -257,7 +257,16 @@ module.exports = function(knex) {
         });
       });
 
-      it.only('should create tables specified in both directories', () => {
+      after(() => {
+        return knex.migrate.rollback({
+          directory: [
+            'test/integration/migrate/test',
+            'test/integration/migrate/test2',
+          ],
+        });
+      });
+
+      it('should create tables specified in both directories', () => {
         // Map the table names to promises that evaluate chai expectations to
         // confirm that the table exists
         const expectedTables = [
