@@ -176,7 +176,11 @@ assign(Builder.prototype, {
     } else if (joinType === 'raw') {
       join = new JoinClause(this.client.raw(table, first), 'raw');
     } else {
-      join = new JoinClause(table, joinType, schema);
+      join = new JoinClause(
+        table,
+        joinType,
+        table instanceof Builder ? undefined : schema
+      );
       if (arguments.length > 1) {
         join.on.apply(join, toArray(arguments).slice(1));
       }

@@ -84,6 +84,7 @@ assign(QueryCompiler_MSSQL.prototype, {
   // Compiles an `update` query, allowing for a return value.
   update() {
     const top = this.top();
+    const withSQL = this.with();
     const updates = this._prepUpdate(this.single.update);
     const join = this.join();
     const where = this.where();
@@ -91,7 +92,7 @@ assign(QueryCompiler_MSSQL.prototype, {
     const { returning } = this.single;
     return {
       sql:
-        this.with() +
+        withSQL +
         `update ${top ? top + ' ' : ''}${this.tableName}` +
         ' set ' +
         updates.join(', ') +
@@ -107,12 +108,13 @@ assign(QueryCompiler_MSSQL.prototype, {
   // Compiles a `delete` query.
   del() {
     // Make sure tableName is processed by the formatter first.
+    const withSQL = this.with();
     const { tableName } = this;
     const wheres = this.where();
     const { returning } = this.single;
     return {
       sql:
-        this.with() +
+        withSQL +
         `delete from ${tableName}` +
         (returning ? ` ${this._returning('del', returning)}` : '') +
         (wheres ? ` ${wheres}` : '') +
