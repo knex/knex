@@ -60,9 +60,9 @@ assign(ColumnCompiler_MSSQL.prototype, {
 
   uuid: 'uniqueidentifier',
 
-  datetime: 'datetime',
+  datetime: 'datetime2',
 
-  timestamp: 'datetime',
+  timestamp: 'datetime2',
 
   bit(length) {
     if (length > 1) {
