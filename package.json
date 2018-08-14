@@ -51,6 +51,7 @@
     "mssql": "^4.1.0",
     "mysql": "^2.15.0",
     "mysql2": "^1.5.3",
+    "node-firebird": "^0.8.6",
     "nyc": "^12.0.2",
     "pg": "^7.4.3",
     "pg-query-stream": "^1.1.1",
@@ -133,7 +134,8 @@
     "pg-query-stream": false,
     "oracle": false,
     "sqlite3": false,
-    "oracledb": false
+    "oracledb": false,
+    "firebird": false
   },
   "react-native": {
     "./lib/migrate": "./lib/util/noop.js",
