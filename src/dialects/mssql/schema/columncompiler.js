@@ -60,10 +60,10 @@ assign(ColumnCompiler_MSSQL.prototype, {
 
   uuid: 'uniqueidentifier',
 
-  datetime: 'datetime',
+  datetime: 'datetime2',
 
   timestamp({ useTz = false } = {}) {
-    return useTz ? 'datetimeoffset' : 'datetime';
+    return useTz ? 'datetimeoffset' : 'datetime2';
   },
 
   bit(length) {

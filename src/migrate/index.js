@@ -354,7 +354,11 @@ export default class Migrator {
           if (!trx && this._useTransaction(migration, disableTransactions)) {
             return this._transaction(migration, direction, name);
           }
-          return warnPromise(migration[direction](trxOrKnex, Promise), name);
+          return warnPromise(
+            this.knex,
+            migration[direction](trxOrKnex, Promise),
+            name
+          );
         })
         .then(() => {
           log.push(path.join(directory, name));
@@ -379,9 +383,14 @@ export default class Migrator {
 
   _transaction(migration, direction, name) {
     return this.knex.transaction((trx) => {
-      return warnPromise(migration[direction](trx, Promise), name, () => {
-        trx.commit();
-      });
+      return warnPromise(
+        this.knex,
+        migration[direction](trx, Promise),
+        name,
+        () => {
+          trx.commit();
+        }
+      );
     });
   }
 
@@ -408,9 +417,9 @@ function validateMigrationList(migrations) {
   }
 }
 
-function warnPromise(value, name, fn) {
+function warnPromise(knex, value, name, fn) {
   if (!value || typeof value.then !== 'function') {
-    this.knex.client.logger.warn(`migration ${name} did not return a promise`);
+    knex.client.logger.warn(`migration ${name} did not return a promise`);
     if (fn && typeof fn === 'function') fn();
   }
   return value;

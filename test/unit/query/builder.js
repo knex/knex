@@ -2015,12 +2015,11 @@ describe('QueryBuilder', function() {
           .from('users')
           .where('id', '=', 2)
       )
-      .union(
-        qb()
-          .select('*')
+      .union(function() {
+        this.select('*')
           .from('users')
-          .where('id', '=', 3)
-      );
+          .where('id', '=', 3);
+      });
     testsql(chain, {
       mysql: {
         sql:
@@ -2040,6 +2039,74 @@ describe('QueryBuilder', function() {
       'pg-redshift': {
         sql:
           'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    var arrayChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .union([
+        qb()
+          .select('*')
+          .from('users')
+          .where({ id: 2 }),
+        raw('select * from users where id = ?', [3]),
+      ]);
+    testsql(arrayChain, {
+      mysql: {
+        sql:
+          'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    var multipleArgumentsChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .union(
+        qb()
+          .select('*')
+          .from('users')
+          .where({ id: 2 }),
+        raw('select * from users where id = ?', [3])
+      );
+    testsql(multipleArgumentsChain, {
+      mysql: {
+        sql:
+          'select * from `users` where `id` = ? union select * from `users` where `id` = ? union select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? union select * from [users] where [id] = ? union select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? union select * from "users" where "id" = ? union select * from users where id = ?',
         bindings: [1, 2, 3],
       },
     });
@@ -7992,6 +8059,26 @@ describe('QueryBuilder', function() {
         }
       );
     });
+
+    it('with places bindings in correct order', () => {
+      testquery(
+        qb()
+          .with(
+            'updated_group',
+            qb()
+              .table('group')
+              .update({ group_name: 'bar' })
+              .where({ group_id: 1 })
+              .returning('group_id')
+          )
+          .table('user')
+          .update({ name: 'foo' })
+          .where({ group_id: 1 }),
+        {
+          pg: `with "updated_group" as (update "group" set "group_name" = 'bar' where "group_id" = 1 returning "group_id") update "user" set "name" = 'foo' where "group_id" = 1`,
+        }
+      );
+    });
   });
 
   it('#1710, properly escapes arrays in where clauses in postgresql', function() {
@@ -8148,5 +8235,36 @@ describe('QueryBuilder', function() {
       'pg-redshift': 'select 0',
       oracledb: 'select 0',
     });
+  });
+
+  it('join with subquery using .withSchema', function() {
+    testsql(
+      qb()
+        .from('departments')
+        .withSchema('foo')
+        .join(
+          qb()
+            .from('trainees')
+            .withSchema('foo')
+            .groupBy('department_id')
+            .select('department_id', raw('count(*)'))
+            .as('trainee_cnts'),
+          'trainee_cnts.department_id',
+          'departments.id'
+        )
+        .select('departments.*', 'trainee_cnts.count as trainee_cnt'),
+      {
+        pg:
+          'select "departments".*, "trainee_cnts"."count" as "trainee_cnt" from "foo"."departments" inner join (select "department_id", count(*) from "foo"."trainees" group by "department_id") as "trainee_cnts" on "trainee_cnts"."department_id" = "departments"."id"',
+        mysql:
+          'select `departments`.*, `trainee_cnts`.`count` as `trainee_cnt` from `foo`.`departments` inner join (select `department_id`, count(*) from `foo`.`trainees` group by `department_id`) as `trainee_cnts` on `trainee_cnts`.`department_id` = `departments`.`id`',
+        mssql:
+          'select [departments].*, [trainee_cnts].[count] as [trainee_cnt] from [foo].[departments] inner join (select [department_id], count(*) from [foo].[trainees] group by [department_id]) as [trainee_cnts] on [trainee_cnts].[department_id] = [departments].[id]',
+        'pg-redshift':
+          'select "departments".*, "trainee_cnts"."count" as "trainee_cnt" from "foo"."departments" inner join (select "department_id", count(*) from "foo"."trainees" group by "department_id") as "trainee_cnts" on "trainee_cnts"."department_id" = "departments"."id"',
+        oracledb:
+          'select "departments".*, "trainee_cnts"."count" "trainee_cnt" from "foo"."departments" inner join (select "department_id", count(*) from "foo"."trainees" group by "department_id") "trainee_cnts" on "trainee_cnts"."department_id" = "departments"."id"',
+      }
+    );
   });
 });
