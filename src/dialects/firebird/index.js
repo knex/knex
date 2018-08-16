@@ -14,8 +14,42 @@ import TableCompiler from './schema/tablecompiler';
 import ColumnCompiler from './schema/columncompiler';
 import Formatter from './formatter';
 
-import { assign, map } from 'lodash';
+import { assign, map, isObject, isFunction, each, upperCase } from 'lodash';
 import { makeEscape } from '../../query/string';
+
+function ab2str(arrayBuffer) {
+  return String.fromCharCode.apply(null, new global.Uint16Array(arrayBuffer));
+}
+
+function str2ab(str) {
+  const buf = new global.ArrayBuffer(str.length * 2); // 2 bytes for each char
+  const bufView = new global.Uint16Array(buf);
+  for (let i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+
+  return buf;
+}
+
+function parseResults(results) {
+  if (Array.isArray(results)) {
+    results = map(results, function(item) {
+      return parseResults(item);
+    });
+  } else if (
+    isObject(results) &&
+    isFunction(results.toJSON) &&
+    upperCase(results.toJSON().type) === 'BUFFER'
+  ) {
+    results = ab2str(results);
+  } else if (isObject(results)) {
+    each(results, function(value, key) {
+      results[key] = parseResults(value);
+    });
+  }
+
+  return results;
+}
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
@@ -116,8 +150,11 @@ assign(Client_Firebird.prototype, {
       case 'select':
       case 'pluck':
       case 'first':
-        if (method === 'pluck') return map(rows, obj.pluck);
-        return method === 'first' ? rows[0] : rows;
+        if (method === 'pluck') {
+          return parseResults(map(rows, obj.pluck));
+        }
+
+        return parseResults(method === 'first' ? rows[0] : rows);
       case 'insert':
         return bindings;
       case 'del':

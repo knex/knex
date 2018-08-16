@@ -3,7 +3,20 @@
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
 
-import { assign, isEmpty, identity } from 'lodash';
+import { assign, compact, isEmpty, identity } from 'lodash';
+
+const components = [
+  'limit',
+  'columns',
+  'join',
+  'where',
+  'union',
+  'group',
+  'having',
+  'order',
+  'offset',
+  'lock',
+];
 
 function QueryCompiler_Firebird(client, builder) {
   QueryCompiler.call(this, client, builder);
@@ -73,15 +86,57 @@ assign(QueryCompiler_Firebird.prototype, {
     const updates = this._prepUpdate(this.single.update);
     const where = this.where();
     const order = this.order();
-    const limit = this.limit();
+    // const limit = this.limit();
     return (
       `update ${this.tableName}` +
       (join ? ` ${join}` : '') +
       ' set ' +
       updates.join(', ') +
       (where ? ` ${where}` : '') +
-      (order ? ` ${order}` : '') +
-      (limit ? ` ${limit}` : '')
+      (order ? ` ${order}` : '')
+      // (limit ? ` ${limit}` : '')
+    );
+  },
+
+  // Compiles the `select` statement, or nested sub-selects by calling each of
+  // the component compilers, trimming out the empties, and returning a
+  // generated query string.
+  select() {
+    let sql = this.with();
+    sql += 'select ';
+
+    const statements = components.map((component) => this[component](this));
+    sql += compact(statements).join(' ');
+    return sql;
+  },
+
+  // Compiles the columns in the query, specifying if an item was distinct.
+  columns() {
+    let distinct = false;
+    if (this.onlyUnions()) return '';
+    const columns = this.grouped.columns || [];
+    let i = -1,
+      sql = [];
+    if (columns) {
+      while (++i < columns.length) {
+        const stmt = columns[i];
+        if (stmt.distinct) distinct = true;
+        if (stmt.type === 'aggregate') {
+          sql.push(this.aggregate(stmt));
+        } else if (stmt.type === 'aggregateRaw') {
+          sql.push(this.aggregateRaw(stmt));
+        } else if (stmt.value && stmt.value.length > 0) {
+          sql.push(this.formatter.columnize(stmt.value));
+        }
+      }
+    }
+    if (sql.length === 0) sql = ['*'];
+    return (
+      `${distinct ? 'distinct ' : ''}` +
+      sql.join(', ') +
+      (this.tableName
+        ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
+        : '')
     );
   },
 
