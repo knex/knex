@@ -5,8 +5,8 @@ import inherits from 'inherits';
 import { assign } from 'lodash';
 import Formatter from '../../formatter';
 
-function Firebird_Formatter(client) {
-  Formatter.call(this, client);
+function Firebird_Formatter(client, builder) {
+  Formatter.call(this, client, builder);
 }
 inherits(Firebird_Formatter, Formatter);
 
