@@ -1,6 +1,10 @@
 
 # Master (Unreleased)
 
+### Breaking Changes:
+
+- Dropped support for MSSQL older than 2008.
+
 # 0.15.2 - 19 Jul, 2018
 
 ### Changes:
