@@ -209,8 +209,13 @@ assign(Client_PG.prototype, {
       );
 
       queryStream.on('error', function(error) {
-        rejecter(error);
         stream.emit('error', error);
+      });
+      // 'error' is not propagated by .pipe, but it breaks the pipe
+      stream.on('error', function(error) {
+        // Ensure the queryStream is closed so the connection can be released.
+        queryStream.close();
+        rejecter(error);
       });
 
       // 'end' IS propagated by .pipe, by default
