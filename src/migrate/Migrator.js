@@ -25,6 +25,7 @@ import {
 } from './table-resolver';
 import { getSchemaBuilder } from './table-creator';
 import * as migrationListResolver from './migration-list-resolver';
+import { FsMigrations } from './sources/fs-migrations';
 
 function LockError(msg) {
   this.name = 'MigrationLocked';
@@ -60,7 +61,7 @@ export default class Migrator {
   latest(config) {
     this.config = this.setConfig(config);
     return migrationListResolver
-      .listAllAndCompleted(this.config, this.knex, this._absoluteConfigDir())
+      .listAllAndCompleted(this.config, this.knex)
       .tap(validateMigrationList)
       .spread((all, completed) => {
         const migrations = getNewMigrations(all, completed);
@@ -68,9 +69,9 @@ export default class Migrator {
         const transactionForAll =
           !this.config.disableTransactions &&
           isEmpty(
-            filter(migrations, (migration) => {
-              const migrationContent = require(resolveMigrationPath(migration));
-              return !this._useTransaction(migrationContent);
+            filter(migrations, (name) => {
+              const migration = this.config.migrationSource.getMigration(name);
+              return !this._useTransaction(migration);
             })
           );
 
@@ -89,7 +90,7 @@ export default class Migrator {
     return Promise.try(() => {
       this.config = this.setConfig(config);
       return migrationListResolver
-        .listAllAndCompleted(this.config, this.knex, this._absoluteConfigDir())
+        .listAllAndCompleted(this.config, this.knex)
         .tap(validateMigrationList)
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
@@ -106,9 +107,8 @@ export default class Migrator {
         '*'
       ),
       migrationListResolver.listAll(
-        this._absoluteConfigDir(),
-        this.config.loadExtensions,
-        this.config.sortDirsSeparately
+        this.config.migrationSource,
+        this.config.loadExtensions
       ),
     ]).spread((db, code) => db.length - code.length);
   }
@@ -150,7 +150,7 @@ export default class Migrator {
   // Ensures a folder for the migrations exist, dependent on the migration
   // config settings.
   _ensureFolder() {
-    const dirs = this._absoluteConfigDir();
+    const dirs = this._absoluteConfigDirs();
 
     const promises = dirs.map((dir) => {
       return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
@@ -277,7 +277,7 @@ export default class Migrator {
     ) {
       throw new Error(
         `Invalid migration: ${
-          migration.file
+          migration
         } must have both an up and down function`
       );
     }
@@ -299,7 +299,7 @@ export default class Migrator {
   // passing any `variables` given in the config to the template.
   _writeNewMigration(name, tmpl) {
     const { config } = this;
-    const dirs = this._absoluteConfigDir();
+    const dirs = this._absoluteConfigDirs();
     const dir = dirs.slice(-1)[0]; // Get last specified directory
 
     if (name[0] === '-') name = name.slice(1);
@@ -313,7 +313,7 @@ export default class Migrator {
 
   // Get the last batch of migrations, by name, ordered by insert id in reverse
   // order.
-  _getLastBatch([allMigrations, doneMigrations]) {
+  _getLastBatch([allMigrations]) {
     const { tableName, schemaName } = this.config;
     return getTable(this.knex, tableName, schemaName)
       .where('batch', function(qb) {
@@ -322,7 +322,7 @@ export default class Migrator {
       .orderBy('id', 'desc')
       .map((migration) => {
         return allMigrations.find((entry) => {
-          return entry.file === migration.name;
+          return entry === migration.name;
         });
       });
   }
@@ -355,10 +355,9 @@ export default class Migrator {
     let current = Promise.bind({ failed: false, failedOn: 0 });
     const log = [];
     each(migrations, (migration) => {
-      const directory = migration.directory;
-      const name = migration.file;
+      const name = migration;
       this._activeMigration.fileName = name;
-      const migrationContent = require(directory + '/' + name);
+      const migrationContent = this.config.migrationSource.getMigration(name);
 
       // We're going to run each of the migrations in the current "up".
       current = current
@@ -376,7 +375,7 @@ export default class Migrator {
           );
         })
         .then(() => {
-          log.push(path.join(directory, name));
+          log.push(name);
           if (direction === 'up') {
             return trxOrKnex.into(getTableName(tableName, schemaName)).insert({
               name,
@@ -409,7 +408,8 @@ export default class Migrator {
     });
   }
 
-  _absoluteConfigDir() {
+  /** Returns  */
+  _absoluteConfigDirs() {
     const directories = Array.isArray(this.config.directory)
       ? this.config.directory
       : [this.config.directory];
@@ -419,7 +419,11 @@ export default class Migrator {
   }
 
   setConfig(config) {
-    return assign({}, CONFIG_DEFAULT, this.config || {}, config);
+    const newConfig = assign({}, CONFIG_DEFAULT, this.config || {}, config);
+    if ((config && !config.migrationSource) || !newConfig.migrationSource) {
+      newConfig.migrationSource = new FsMigrations(newConfig.directory);
+    }
+    return newConfig;
   }
 }
 
@@ -439,13 +443,13 @@ function validateMigrationList(migrations) {
 
 function getMissingMigrations(completed, all) {
   return differenceWith(completed, all, (completedMigration, allMigration) => {
-    return completedMigration === allMigration.file;
+    return completedMigration === allMigration;
   });
 }
 
 function getNewMigrations(all, completed) {
   return differenceWith(all, completed, (allMigration, completedMigration) => {
-    return completedMigration === allMigration.file;
+    return completedMigration === allMigration;
   });
 }
 
@@ -455,10 +459,6 @@ function warnPromise(knex, value, name, fn) {
     if (fn && typeof fn === 'function') fn();
   }
   return value;
-}
-
-function resolveMigrationPath(migration) {
-  return path.join(migration.directory, migration.file);
 }
 
 // Ensure that we have 2 places for each of the date segments.

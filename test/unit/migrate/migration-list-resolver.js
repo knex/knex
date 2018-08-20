@@ -7,18 +7,17 @@ const chaiSubset = require('chai-subset-in-order');
 const { expect } = require('chai');
 const mockFs = require('mock-fs');
 const migrationListResolver = require('../../../lib/migrate/migration-list-resolver');
+const FsMigrations = require('../../../lib/migrate/sources/fs-migrations')
+  .FsMigrations;
 const path = require('path');
 
 chai.use(chaiSubset);
 
 describe('migration-list-resolver', () => {
-  describe('listAll - single directory', () => {
-    let absoluteConfigDirectory;
+  describe('listAll', () => {
+    let migrationSource;
     before(() => {
-      absoluteConfigDirectory = path.resolve(
-        process.cwd(),
-        'test/integration/migrate/migration'
-      );
+      migrationSource = new FsMigrations('test/integration/migrate/migration');
       mockFs({
         'test/integration/migrate/migration': {
           'co-migration.co': 'co migation content',
@@ -39,33 +38,27 @@ describe('migration-list-resolver', () => {
     });
 
     it('should include all supported extensions by default', () => {
-      return migrationListResolver
-        .listAll(absoluteConfigDirectory)
-        .then((list) => {
-          expect(list).to.containSubsetInOrder([
-            { file: 'co-migration.co' },
-            { file: 'coffee-migration.coffee' },
-            { file: 'eg-migration.eg' },
-            { file: 'iced-migration.iced' },
-            { file: 'js-migration.js' },
-            { file: 'litcoffee-migration.litcoffee' },
-            { file: 'ls-migration.ls' },
-            { file: 'ts-migration.ts' },
-          ]);
-
-          expect(list[0].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/migration'
-          );
-        });
+      return migrationListResolver.listAll(migrationSource).then((list) => {
+        expect(list).to.eql([
+          'co-migration.co',
+          'coffee-migration.coffee',
+          'eg-migration.eg',
+          'iced-migration.iced',
+          'js-migration.js',
+          'litcoffee-migration.litcoffee',
+          'ls-migration.ls',
+          'ts-migration.ts',
+        ]);
+      });
     });
 
     it('should include only files with specified extensions', function() {
       return migrationListResolver
-        .listAll(absoluteConfigDirectory, ['.ts', '.js'])
+        .listAll(migrationSource, ['.ts', '.js'])
         .then((list) => {
-          expect(list).to.containSubsetInOrder([
-            { file: 'js-migration.js' },
-            { file: 'ts-migration.ts' },
+          expect(list).to.eql([
+            'js-migration.js',
+            'ts-migration.ts',
           ]);
 
           expect(list[0].directory.replace(/\\/g, '/')).to.include(
@@ -104,13 +97,13 @@ describe('migration-list-resolver', () => {
       return migrationListResolver
         .listAll(absoluteConfigDirectory)
         .then((list) => {
-          expect(list).to.containSubsetInOrder([
-            { file: '001_migration.js' },
-            { file: '002_migration.js' },
-            { file: '003_migration.js' },
-            { file: '004_migration.js' },
-            { file: '005_migration.js' },
-            { file: '006_migration.js' },
+          expect(list).to.eql([
+            '001_migration.js',
+            '002_migration.js',
+            '003_migration.js',
+            '004_migration.js',
+            '005_migration.js',
+            '006_migration.js',
           ]);
 
           expect(list[0].directory.replace(/\\/g, '/')).to.include(
@@ -132,13 +125,13 @@ describe('migration-list-resolver', () => {
       return migrationListResolver
         .listAll(absoluteConfigDirectory, ['.js'], true)
         .then((list) => {
-          expect(list).to.containSubsetInOrder([
-            { file: '001_migration.js' },
-            { file: '005_migration.js' },
-            { file: '006_migration.js' },
-            { file: '002_migration.js' },
-            { file: '003_migration.js' },
-            { file: '004_migration.js' },
+          expect(list).to.eql([
+            '001_migration.js',
+            '005_migration.js',
+            '006_migration.js',
+            '002_migration.js',
+            '003_migration.js',
+            '004_migration.js',
           ]);
 
           expect(list[0].directory.replace(/\\/g, '/')).to.include(
