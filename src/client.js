@@ -28,6 +28,7 @@ import Logger from './logger';
 const debug = require('debug')('knex:client');
 const debugQuery = require('debug')('knex:query');
 const debugBindings = require('debug')('knex:bindings');
+const { POOL_CONFIG_OPTIONS } = require('./constants');
 
 // The base client provides the general structure
 // for a dialect specific client object.
@@ -38,7 +39,8 @@ function Client(config = {}) {
   //Client is a required field, so throw error if it's not supplied.
   //If 'this.dialect' is set, then this is a 'super()' call, in which case
   //'client' does not have to be set as it's already assigned on the client prototype.
-  if (!this.config.client && !this.dialect) {
+  const dbClient = this.config.client || this.dialect;
+  if (!dbClient) {
     throw new Error(`knex: Required configuration option 'client' is missing.`);
   }
 
@@ -221,17 +223,7 @@ assign(Client.prototype, {
   getPoolSettings(poolConfig) {
     poolConfig = defaults({}, poolConfig, this.poolDefaults());
 
-    [
-      'maxWaitingClients',
-      'testOnBorrow',
-      'fifo',
-      'priorityRange',
-      'autostart',
-      'evictionRunIntervalMillis',
-      'numTestsPerRun',
-      'softIdleTimeoutMillis',
-      'Promise',
-    ].forEach((option) => {
+    POOL_CONFIG_OPTIONS.forEach((option) => {
       if (option in poolConfig) {
         this.logger.warn(
           [
