@@ -30,7 +30,7 @@ export class FsMigrations {
     });
 
     return Promise.all(readMigrationsPromises).then((allMigrations) => {
-      const relativeMigrations = allMigrations.reduce(
+      const migrations = allMigrations.reduce(
         (acc, migrationDirectory) => {
           // When true, files inside the folder should be sorted
           if (this.sortDirsSeparately) {
@@ -38,8 +38,7 @@ export class FsMigrations {
           }
 
           migrationDirectory.files
-            .map((file) => path.join(migrationDirectory.configDir, file))
-            .forEach((relativeMigation) => acc.push(relativeMigation));
+            .forEach((file) => acc.push({ file, directory: migrationDirectory.configDir }));
 
           return acc;
         },
@@ -47,19 +46,21 @@ export class FsMigrations {
       );
 
       // If true we have already sorted the migrations inside the folders
+      // return the migrations fully qualified
       if (this.sortDirsSeparately) {
-        return relativeMigrations;
+        return migrations
+          .map((migration) => path.join(migration.configDir, migration.file));
       }
 
-      return relativeMigrations.sort();
+      return migrations.map(migration => migration.file).sort();
     });
   }
 
-  getMigration(name) {
-    return require(resolveMigrationPath(name));
+  getMigrationName(migration) {
+    return require(migration.file);
   }
-}
 
-function resolveMigrationPath(migration) {
-  return path.join(migration.directory, migration.file);
+  getMigration(migration) {
+    return require(path.join(migration.directory, migration.file));
+  }
 }

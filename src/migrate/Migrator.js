@@ -64,6 +64,7 @@ export default class Migrator {
       .listAllAndCompleted(this.config, this.knex)
       .tap(validateMigrationList)
       .spread((all, completed) => {
+        console.log('@@@', all, completed)
         const migrations = getNewMigrations(all, completed);
 
         const transactionForAll =
@@ -269,19 +270,20 @@ export default class Migrator {
 
   // Validates some migrations by requiring and checking for an `up` and `down`
   // function.
-  _validateMigrationStructure(migration) {
-    const migrationContent = require(resolveMigrationPath(migration));
+  _validateMigrationStructure(name) {
+    const migrationContent = this.config.migrationSource.getMigration(name);
     if (
       typeof migrationContent.up !== 'function' ||
       typeof migrationContent.down !== 'function'
     ) {
       throw new Error(
         `Invalid migration: ${
-          migration
+          name
         } must have both an up and down function`
       );
     }
-    return migration;
+
+    return name;
   }
 
   // Generates the stub template for the current migration, returning a compiled

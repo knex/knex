@@ -57,24 +57,15 @@ describe('migration-list-resolver', () => {
         .listAll(migrationSource, ['.ts', '.js'])
         .then((list) => {
           expect(list).to.eql([
-            'js-migration.js',
-            'ts-migration.ts',
+            'test/integration/migrate/migration/js-migration.js',
+            'test/integration/migrate/migration/ts-migration.ts',
           ]);
-
-          expect(list[0].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/migration'
-          );
         });
     });
   });
 
   describe('listAll - multiple directories', () => {
-    let absoluteConfigDirectory;
     before(() => {
-      absoluteConfigDirectory = [
-        path.resolve(process.cwd(), 'test/integration/migrate/migration'),
-        path.resolve(process.cwd(), 'test/integration/migrate/seeds'),
-      ];
       mockFs({
         'test/integration/migrate/migration': {
           '006_migration.js': 'dummy',
@@ -94,8 +85,13 @@ describe('migration-list-resolver', () => {
     });
 
     it('should include files from both folders, sorted globally', () => {
+      const migrationSource = new FsMigrations([
+        'test/integration/migrate/migration',
+        'test/integration/migrate/seeds'
+      ]);
+
       return migrationListResolver
-        .listAll(absoluteConfigDirectory)
+        .listAll(migrationSource)
         .then((list) => {
           expect(list).to.eql([
             '001_migration.js',
@@ -105,47 +101,26 @@ describe('migration-list-resolver', () => {
             '005_migration.js',
             '006_migration.js',
           ]);
-
-          expect(list[0].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/migration'
-          );
-          expect(list[1].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/seeds'
-          );
-          expect(list[2].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/seeds'
-          );
-          expect(list[3].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/seeds'
-          );
         });
     });
 
     it('should include files from both folders, sorted within their folders', () => {
+      const migrationSource = new FsMigrations([
+        'test/integration/migrate/migration',
+        'test/integration/migrate/seeds'
+      ], true);
+
       return migrationListResolver
-        .listAll(absoluteConfigDirectory, ['.js'], true)
+        .listAll(migrationSource, ['.js'])
         .then((list) => {
           expect(list).to.eql([
-            '001_migration.js',
-            '005_migration.js',
-            '006_migration.js',
-            '002_migration.js',
-            '003_migration.js',
-            '004_migration.js',
+            'test/integration/migrate/migration/001_migration.js',
+            'test/integration/migrate/migration/005_migration.js',
+            'test/integration/migrate/migration/006_migration.js',
+            'test/integration/migrate/seeds/002_migration.js',
+            'test/integration/migrate/seeds/003_migration.js',
+            'test/integration/migrate/seeds/004_migration.js',
           ]);
-
-          expect(list[0].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/migration'
-          );
-          expect(list[1].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/migration'
-          );
-          expect(list[2].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/migration'
-          );
-          expect(list[3].directory.replace(/\\/g, '/')).to.include(
-            'knex/test/integration/migrate/seeds'
-          );
         });
     });
   });

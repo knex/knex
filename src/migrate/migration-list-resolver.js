@@ -1,10 +1,8 @@
 import Promise from 'bluebird';
-import { filter, map } from 'lodash';
+import { filter } from 'lodash';
 import path from 'path';
 import { getTableName } from './table-resolver';
 import { ensureTable } from './table-creator';
-
-const readDirAsync = Promise.promisify(fs.readdir, { context: fs });
 
 export const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
   '.co',
