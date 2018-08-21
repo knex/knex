@@ -352,11 +352,11 @@ export default class Migrator {
       current = current
         .then(() => {
           if (!trx && this._useTransaction(migration, disableTransactions)) {
-            return this._transaction(migration, direction, name);
+            return this._transaction(migration, direction, name, this.config);
           }
           return warnPromise(
             this.knex,
-            migration[direction](trxOrKnex, Promise),
+            migration[direction](trxOrKnex, Promise, this.config),
             name
           );
         })
@@ -381,11 +381,11 @@ export default class Migrator {
     return current.thenReturn([batchNo, log]);
   }
 
-  _transaction(migration, direction, name) {
+  _transaction(migration, direction, name, config) {
     return this.knex.transaction((trx) => {
       return warnPromise(
         this.knex,
-        migration[direction](trx, Promise),
+        migration[direction](trx, Promise, config),
         name,
         () => {
           trx.commit();
