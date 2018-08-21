@@ -54,15 +54,6 @@ Knex.Client = Client;
 /* eslint no-console:0 */
 
 Object.defineProperties(Knex, {
-  VERSION: {
-    get() {
-      console.warn(
-        'Knex.VERSION is deprecated, you can get the module version' +
-          "by running require('knex/package').version"
-      );
-      return '0.12.6';
-    },
-  },
   Promise: {
     get() {
       console.warn(
