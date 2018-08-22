@@ -1,6 +1,9 @@
 
 # Master (Unreleased)
 
+### Breaking Changes:
+
+- Use datetime2 for MSSQL datetime + timestamp types. This change is incompatible with MSSQL older than 2008 #2757
 - Knex.VERSION() method was removed, run "require('knex/package').version" instead.
 
 # 0.15.2 - 19 Jul, 2018
