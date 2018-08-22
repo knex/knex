@@ -1,6 +1,8 @@
 
 # Master (Unreleased)
 
+- Knex.VERSION() method was removed, run "require('knex/package').version" instead.
+
 # 0.15.2 - 19 Jul, 2018
 
 ### Changes:

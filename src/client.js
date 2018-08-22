@@ -39,6 +39,12 @@ function Client(config = {}) {
   //Client is a required field, so throw error if it's not supplied.
   //If 'this.dialect' is set, then this is a 'super()' call, in which case
   //'client' does not have to be set as it's already assigned on the client prototype.
+
+  if (this.dialect) {
+    this.logger.warn(
+      `Using 'this.dialect' is deprecated and support for it will be removed in the future. Please use configuration option 'client' instead.`
+    );
+  }
   const dbClient = this.config.client || this.dialect;
   if (!dbClient) {
     throw new Error(`knex: Required configuration option 'client' is missing.`);

@@ -12,7 +12,6 @@ const SUPPORTED_CLIENTS = Object.freeze(
     'mssql',
     'mysql',
     'mysql2',
-    'oracle',
     'oracledb',
     'postgres',
     'redshift',
