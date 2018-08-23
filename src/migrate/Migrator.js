@@ -300,12 +300,7 @@ export default class Migrator {
   _writeNewMigration(name, tmpl) {
     const { config } = this;
     const dirs = this._absoluteConfigDir();
-    if (dirs.length > 1) {
-      throw new Error(
-        'Cannot specify multiple directories when creating a new migration'
-      );
-    }
-    const dir = dirs[0];
+    const dir = dirs.slice(-1)[0]; // Get last specified directory
 
     if (name[0] === '-') name = name.slice(1);
     const filename = yyyymmddhhmmss() + '_' + name + '.' + config.extension;

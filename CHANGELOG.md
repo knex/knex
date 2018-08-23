@@ -1,9 +1,9 @@
 
 # Master (Unreleased)
 
-# 0.15.2 - 19 Jul, 2018
+- Introduced support for specifying multiple directories for the Migrator #2735
 
-- Introduced support for specifying multiple directories for the Migrator
+# 0.15.2 - 19 Jul, 2018
 
 ### Changes:
 
