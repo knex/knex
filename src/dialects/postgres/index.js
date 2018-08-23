@@ -1,4 +1,3 @@
-
 // PostgreSQL
 // -------
 import { assign, map, extend, isArray, isString, includes } from 'lodash';
@@ -276,20 +275,18 @@ assign(Client_PG.prototype, {
     // Purposely not putting timeout on `pg_terminate_backend` execution because erroring
     // early there would release the `connectionToKill` back to the pool with
     // a `KILL QUERY` command yet to finish.
-    return acquiringConn
-      .timeout(100)
-      .then((conn) => this.query(conn, {
+    return acquiringConn.then((conn) => {
+      return this.query(conn, {
         method: 'raw',
         sql: 'SELECT pg_terminate_backend(?);',
         bindings: [connectionToKill.processID],
         options: {},
-      }))
-      .finally(() => {
+      }).then(() => {
         // NOT returning this promise because we want to release the connection
         // in a non-blocking fashion
-        acquiringConn
-          .then((conn) => this.releaseConnection(conn));
+        this.releaseConnection(conn);
       });
+    });
   },
 });
 

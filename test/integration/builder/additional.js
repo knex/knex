@@ -759,7 +759,10 @@ module.exports = function(knex) {
       }
 
       // Only mysql/postgres query cancelling supported for now
-      if (!_.startsWith(driverName, 'mysql') && !_.startsWith(driverName, 'pg')) {
+      if (
+        !_.startsWith(driverName, 'mysql') &&
+        !_.startsWith(driverName, 'pg')
+      ) {
         expect(addTimeout).to.throw(
           'Query cancelling not supported for this dialect'
         );
@@ -775,10 +778,10 @@ module.exports = function(knex) {
         },
         mysql2: function() {
           return knex.raw('SHOW PROCESSLIST');
-        }
+        },
       };
 
-      if(!getProcessesQueries.hasOwnProperty(driverName)) {
+      if (!getProcessesQueries.hasOwnProperty(driverName)) {
         throw new Error('Missing test query for driverName: ' + driverName);
       }
 
@@ -810,9 +813,9 @@ module.exports = function(knex) {
               var processes;
               var sleepProcess;
 
-              if(_.startsWith(driverName, 'pg')) {
+              if (_.startsWith(driverName, 'pg')) {
                 processes = results.rows;
-                sleepProcess = _.find(processes, {query: query.toString()});
+                sleepProcess = _.find(processes, { query: query.toString() });
               } else {
                 processes = results[0];
                 sleepProcess = _.find(processes, {
@@ -826,73 +829,60 @@ module.exports = function(knex) {
 
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
       // Only mysql/postgres query cancelling supported for now
-      var driverName = knex.client.config.driverName;
-      if (!_.startsWith(driverName, 'mysql') && !_.startsWith(driverName, 'pg')) {
+      var driverName = knex.client.driverName;
+      if (
+        !_.startsWith(driverName, 'mysql') &&
+        !_.startsWith(driverName, 'pg')
+      ) {
         return;
       }
 
       //To make this test easier, I'm changing the pool settings to max 1.
-      var knexConfig = _.clone(knex.client.config);
+      // Also setting acquireTimeoutMillis to lower as not to wait the default time
+      var knexConfig = _.cloneDeep(knex.client.config);
       knexConfig.pool.min = 0;
       knexConfig.pool.max = 1;
+      knexConfig.pool.acquireTimeoutMillis = 100;
 
       var knexDb = new Knex(knexConfig);
 
-      return knexDb
-        .raw('SELECT SLEEP(1)')
-        .timeout(1, { cancel: true })
-        .then(
-          function() {
-            throw new Error("Shouldn't have gotten here.");
-          },
-          function(error) {
-            expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
-              timeout: 1,
-              name: 'TimeoutError',
-              message:
-                'After query timeout of 1ms exceeded, cancelling of query failed.',
-            });
-          }
-        )
-        .finally(() => knexDb.destroy());
       var testQueries = {
-        'pg': function() {
+        pg: function() {
           return knexDb.raw('SELECT pg_sleep(10)');
         },
-        'mysql': function() {
+        mysql: function() {
           return knexDb.raw('SELECT SLEEP(10)');
         },
-        'mysql2': function() {
+        mysql2: function() {
           return knexDb.raw('SELECT SLEEP(10)');
         },
         mssql: function() {
-          return knexDb.raw('WAITFOR DELAY \'00:00:10\'');
+          return knexDb.raw("WAITFOR DELAY '00:00:10'");
         },
         oracle: function() {
           return knexDb.raw('begin dbms_lock.sleep(10); end;');
-        }
+        },
       };
 
-      if(!testQueries.hasOwnProperty(driverName)) {
+      if (!testQueries.hasOwnProperty(driverName)) {
         throw new Error('Missing test query for dialect: ' + driverName);
       }
 
       var query = testQueries[driverName]();
 
       return query
-        .timeout(1, {cancel: true})
-        .then(
-          function() {
-            throw new Error("Shouldn't have gotten here.");
-          },
-          function(error) {
-            expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
-              timeout: 1,
-              name:    'TimeoutError',
-              message: 'After query timeout of 1ms exceeded, cancelling of query failed.'
-            });
-          }
-        )
+        .timeout(1, { cancel: true })
+        .then(function() {
+          throw new Error("Shouldn't have gotten here.");
+        })
+        .catch(function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 1,
+            name: 'TimeoutError',
+            message:
+              'After query timeout of 1ms exceeded, cancelling of query failed.',
+          });
+        })
         .finally(() => knexDb.destroy());
     });
 
