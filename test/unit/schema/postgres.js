@@ -6,7 +6,7 @@ var tableSql;
 
 var sinon = require('sinon');
 var PG_Client = require('../../../lib/dialects/postgres');
-var client = new PG_Client({});
+var client = new PG_Client({ client: 'pg' });
 var knex = require('../../../knex');
 
 var equal = require('assert').equal;

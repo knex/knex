@@ -40,9 +40,9 @@ function Client(config = {}) {
   //If 'this.dialect' is set, then this is a 'super()' call, in which case
   //'client' does not have to be set as it's already assigned on the client prototype.
 
-  if (this.dialect) {
+  if (this.dialect && !this.config.client) {
     this.logger.warn(
-      `Using 'this.dialect' is deprecated and support for it will be removed in the future. Please use configuration option 'client' instead.`
+      `Using 'this.dialect' to identify the client is deprecated and support for it will be removed in the future. Please use configuration option 'client' instead.`
     );
   }
   const dbClient = this.config.client || this.dialect;

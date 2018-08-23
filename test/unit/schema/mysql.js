@@ -11,10 +11,10 @@ module.exports = function(dialect) {
     var client;
     switch (dialect) {
       case 'mysql':
-        client = new MySQL_Client();
+        client = new MySQL_Client({ client: 'mysql' });
         break;
       case 'mysql2':
-        client = new MySQL2_Client();
+        client = new MySQL2_Client({ client: 'mysql2' });
         break;
     }
 

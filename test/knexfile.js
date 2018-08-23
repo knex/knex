@@ -104,7 +104,7 @@ var testConfigs = {
   },
 
   sqlite3: {
-    dialect: 'sqlite3',
+    client: 'sqlite3',
     connection: testConfig.sqlite3 || {
       filename: __dirname + '/test.sqlite3',
     },

@@ -6,7 +6,7 @@ var tableSql;
 
 var sinon = require('sinon');
 var SQLite3_Client = require('../../../lib/dialects/sqlite3');
-var client = new SQLite3_Client({});
+var client = new SQLite3_Client({ client: 'sqlite3' });
 var SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 
 var _ = require('lodash');
