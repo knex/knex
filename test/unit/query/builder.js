@@ -22,18 +22,22 @@ var clients = {
 var useNullAsDefaultConfig = { useNullAsDefault: true };
 // use driverName as key
 var clientsWithNullAsDefault = {
-  mysql: new MySQL_Client({ ...useNullAsDefaultConfig, client: 'mysql' }),
-  pg: new PG_Client({ ...useNullAsDefaultConfig, client: 'pg' }),
-  'pg-redshift': new Redshift_Client({
-    ...useNullAsDefaultConfig,
-    client: 'redshift',
-  }),
-  oracledb: new Oracledb_Client({
-    ...useNullAsDefaultConfig,
-    client: 'oracledb',
-  }),
-  sqlite3: new SQLite3_Client({ ...useNullAsDefaultConfig, client: 'sqlite3' }),
-  mssql: new MSSQL_Client({ ...useNullAsDefaultConfig, client: 'mssql' }),
+  mysql: new MySQL_Client(
+    Object.assign({ client: 'mysql' }, useNullAsDefaultConfig)
+  ),
+  pg: new PG_Client(Object.assign({ client: 'mysql' }, useNullAsDefaultConfig)),
+  'pg-redshift': new Redshift_Client(
+    Object.assign({ client: 'redshift' }, useNullAsDefaultConfig)
+  ),
+  oracledb: new Oracledb_Client(
+    Object.assign({ client: 'oracledb' }, useNullAsDefaultConfig)
+  ),
+  sqlite3: new SQLite3_Client(
+    Object.assign({ client: 'sqlite3' }, useNullAsDefaultConfig)
+  ),
+  mssql: new MSSQL_Client(
+    Object.assign({ client: 'mssql' }, useNullAsDefaultConfig)
+  ),
 };
 
 // note: as a workaround, we are using postgres here, since that's using the default " field wrapping
@@ -116,18 +120,22 @@ describe('Custom identifier wrapping', function() {
 
   // use driverName as key
   var clientsWithCustomIdentifierWrapper = {
-    mysql: new MySQL_Client({ ...customWrapperConfig, client: 'mysql' }),
-    pg: new PG_Client({ ...customWrapperConfig, client: 'pg' }),
-    'pg-redshift': new Redshift_Client({
-      ...customWrapperConfig,
-      client: 'redshift',
-    }),
-    oracledb: new Oracledb_Client({
-      ...customWrapperConfig,
-      client: 'oracledb',
-    }),
-    sqlite3: new SQLite3_Client({ ...customWrapperConfig, client: 'sqlite3' }),
-    mssql: new MSSQL_Client({ ...customWrapperConfig, client: 'mssql' }),
+    mysql: new MySQL_Client(
+      Object.assign({ client: 'mysql' }, customWrapperConfig)
+    ),
+    pg: new PG_Client(Object.assign({ client: 'pg' }, customWrapperConfig)),
+    'pg-redshift': new Redshift_Client(
+      Object.assign({ client: 'redshift' }, customWrapperConfig)
+    ),
+    oracledb: new Oracledb_Client(
+      Object.assign({ client: 'oracledb' }, customWrapperConfig)
+    ),
+    sqlite3: new SQLite3_Client(
+      Object.assign({ client: 'sqlite3' }, customWrapperConfig)
+    ),
+    mssql: new MSSQL_Client(
+      Object.assign({ client: 'mssql' }, customWrapperConfig)
+    ),
   };
 
   it('should use custom wrapper', () => {
