@@ -756,7 +756,7 @@ describe('MSSQL SchemaBuilder', function() {
       .toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime2');
   });
 
   it('test adding time', function() {
@@ -780,7 +780,23 @@ describe('MSSQL SchemaBuilder', function() {
       .toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime2');
+  });
+
+  it('test adding time stamp with timezone', function() {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function() {
+        this.timestamp('foo', {
+          useTz: true,
+        });
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ADD [foo] datetimeoffset'
+    );
   });
 
   it('test adding time stamps', function() {
@@ -793,7 +809,7 @@ describe('MSSQL SchemaBuilder', function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'ALTER TABLE [users] ADD [created_at] datetime, [updated_at] datetime'
+      'ALTER TABLE [users] ADD [created_at] datetime2, [updated_at] datetime2'
     );
   });
 
@@ -850,7 +866,7 @@ describe('MSSQL SchemaBuilder', function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'CREATE TABLE [default_raw_test] ([created_at] datetime default GETDATE())'
+      'CREATE TABLE [default_raw_test] ([created_at] datetime2 default GETDATE())'
     );
   });
 
@@ -878,7 +894,7 @@ describe('MSSQL SchemaBuilder', function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'CREATE TABLE [default_raw_test] ([created_at] datetime default GETDATE())'
+      'CREATE TABLE [default_raw_test] ([created_at] datetime2 default GETDATE())'
     );
   });
 
