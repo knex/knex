@@ -496,4 +496,50 @@ module.exports = function(knex) {
       });
     }
   });
+
+  describe('knex.migrate.latest with custom config parameter for table name', function() {
+    before(function() {
+      return knex.migrate.latest({
+        directory: 'test/integration/migrate/test',
+        customTableName: 'migration_test_2_1a',
+      });
+    });
+
+    it('should create all specified tables and columns', function() {
+      var tables = [
+        'migration_test_1',
+        'migration_test_2',
+        'migration_test_2_1a',
+      ];
+      return Promise.map(tables, function(table) {
+        return knex.schema.hasTable(table).then(function(exists) {
+          expect(exists).to.equal(true);
+          if (exists) {
+            return Promise.all([
+              knex.schema.hasColumn(table, 'id').then(function(exists) {
+                expect(exists).to.equal(true);
+              }),
+              knex.schema.hasColumn(table, 'name').then(function(exists) {
+                expect(exists).to.equal(true);
+              }),
+            ]);
+          }
+        });
+      });
+    });
+
+    it('should not create unexpected tables', function() {
+      var table = 'migration_test_2_1';
+      knex.schema.hasTable(table).then(function(exists) {
+        expect(exists).to.equal(false);
+      });
+    });
+
+    after(function() {
+      return knex.migrate.rollback({
+        directory: 'test/integration/migrate/test',
+        customTableName: 'migration_test_2_1a',
+      });
+    });
+  });
 };
