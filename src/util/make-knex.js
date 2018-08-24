@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import Migrator from '../migrate';
+import Migrator from '../migrate/Migrator';
 import Seeder from '../seed';
 import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';

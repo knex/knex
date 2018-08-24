@@ -783,6 +783,22 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime2');
   });
 
+  it('test adding time stamp with timezone', function() {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function() {
+        this.timestamp('foo', {
+          useTz: true,
+        });
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ADD [foo] datetimeoffset'
+    );
+  });
+
   it('test adding time stamps', function() {
     tableSql = client
       .schemaBuilder()
