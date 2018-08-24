@@ -6,15 +6,13 @@ import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
 import {
   assign,
-  bind,
-  difference,
+  differenceWith,
   each,
   filter,
   get,
   isBoolean,
   isEmpty,
   isUndefined,
-  map,
   max,
   template,
 } from 'lodash';
@@ -42,6 +40,7 @@ const CONFIG_DEFAULT = Object.freeze({
   schemaName: null,
   directory: './migrations',
   disableTransactions: false,
+  sortDirsSeparately: false,
 });
 
 // The new migration we're performing, typically called from the `knex.migrate`
@@ -64,17 +63,14 @@ export default class Migrator {
       .listAllAndCompleted(this.config, this.knex, this._absoluteConfigDir())
       .tap(validateMigrationList)
       .spread((all, completed) => {
-        const migrations = difference(all, completed);
+        const migrations = getNewMigrations(all, completed);
 
         const transactionForAll =
           !this.config.disableTransactions &&
           isEmpty(
-            filter(migrations, (name) => {
-              const migration = require(path.join(
-                this._absoluteConfigDir(),
-                name
-              ));
-              return !this._useTransaction(migration);
+            filter(migrations, (migration) => {
+              const migrationContent = require(resolveMigrationPath(migration));
+              return !this._useTransaction(migrationContent);
             })
           );
 
@@ -97,7 +93,7 @@ export default class Migrator {
         .tap(validateMigrationList)
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
-          return this._runBatch(map(migrations, 'name'), 'down');
+          return this._runBatch(migrations, 'down');
         });
     });
   }
@@ -111,7 +107,8 @@ export default class Migrator {
       ),
       migrationListResolver.listAll(
         this._absoluteConfigDir(),
-        this.config.loadExtensions
+        this.config.loadExtensions,
+        this.config.sortDirsSeparately
       ),
     ]).spread((db, code) => db.length - code.length);
   }
@@ -123,7 +120,7 @@ export default class Migrator {
     return migrationListResolver
       .listCompleted(this.config.tableName, this.config.schemaName, this.knex)
       .then((completed) => {
-        const val = max(map(completed, (value) => value.split('_')[0]));
+        const val = max(completed.map((value) => value.split('_')[0]));
         return isUndefined(val) ? 'none' : val;
       });
   }
@@ -153,10 +150,15 @@ export default class Migrator {
   // Ensures a folder for the migrations exist, dependent on the migration
   // config settings.
   _ensureFolder() {
-    const dir = this._absoluteConfigDir();
-    return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
-      Promise.promisify(mkdirp)(dir)
-    );
+    const dirs = this._absoluteConfigDir();
+
+    const promises = dirs.map((dir) => {
+      return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
+        Promise.promisify(mkdirp)(dir)
+      );
+    });
+
+    return Promise.all(promises);
   }
 
   _isLocked(trx) {
@@ -213,11 +215,11 @@ export default class Migrator {
                 )
               : []
         )
-        .then((completed) => (migrations = difference(migrations, completed)))
+        .then(
+          (completed) => (migrations = getNewMigrations(migrations, completed))
+        )
         .then(() =>
-          Promise.all(
-            map(migrations, bind(this._validateMigrationStructure, this))
-          )
+          Promise.all(migrations.map(this._validateMigrationStructure))
         )
         .then(() => this._latestBatchNumber(trx))
         .then((batchNo) => {
@@ -267,17 +269,19 @@ export default class Migrator {
 
   // Validates some migrations by requiring and checking for an `up` and `down`
   // function.
-  _validateMigrationStructure(name) {
-    const migration = require(path.join(this._absoluteConfigDir(), name));
+  _validateMigrationStructure(migration) {
+    const migrationContent = require(resolveMigrationPath(migration));
     if (
-      typeof migration.up !== 'function' ||
-      typeof migration.down !== 'function'
+      typeof migrationContent.up !== 'function' ||
+      typeof migrationContent.down !== 'function'
     ) {
       throw new Error(
-        `Invalid migration: ${name} must have both an up and down function`
+        `Invalid migration: ${
+          migration.file
+        } must have both an up and down function`
       );
     }
-    return name;
+    return migration;
   }
 
   // Generates the stub template for the current migration, returning a compiled
@@ -295,9 +299,12 @@ export default class Migrator {
   // passing any `variables` given in the config to the template.
   _writeNewMigration(name, tmpl) {
     const { config } = this;
-    const dir = this._absoluteConfigDir();
+    const dirs = this._absoluteConfigDir();
+    const dir = dirs.slice(-1)[0]; // Get last specified directory
+
     if (name[0] === '-') name = name.slice(1);
     const filename = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
+
     return Promise.promisify(fs.writeFile, { context: fs })(
       path.join(dir, filename),
       tmpl(config.variables || {})
@@ -306,13 +313,18 @@ export default class Migrator {
 
   // Get the last batch of migrations, by name, ordered by insert id in reverse
   // order.
-  _getLastBatch() {
+  _getLastBatch([allMigrations, doneMigrations]) {
     const { tableName, schemaName } = this.config;
     return getTable(this.knex, tableName, schemaName)
       .where('batch', function(qb) {
         qb.max('batch').from(getTableName(tableName, schemaName));
       })
-      .orderBy('id', 'desc');
+      .orderBy('id', 'desc')
+      .map((migration) => {
+        return allMigrations.find((entry) => {
+          return entry.file === migration.name;
+        });
+      });
   }
 
   // Returns the latest batch number.
@@ -327,8 +339,8 @@ export default class Migrator {
   // Otherwise, rely on the common config. This allows enabling/disabling
   // transaction for a single migration at will, regardless of the common
   // config.
-  _useTransaction(migration, allTransactionsDisabled) {
-    const singleTransactionValue = get(migration, 'config.transaction');
+  _useTransaction(migrationContent, allTransactionsDisabled) {
+    const singleTransactionValue = get(migrationContent, 'config.transaction');
 
     return isBoolean(singleTransactionValue)
       ? singleTransactionValue
@@ -340,23 +352,26 @@ export default class Migrator {
   _waterfallBatch(batchNo, migrations, direction, trx) {
     const trxOrKnex = trx || this.knex;
     const { tableName, schemaName, disableTransactions } = this.config;
-    const directory = this._absoluteConfigDir();
     let current = Promise.bind({ failed: false, failedOn: 0 });
     const log = [];
     each(migrations, (migration) => {
-      const name = migration;
+      const directory = migration.directory;
+      const name = migration.file;
       this._activeMigration.fileName = name;
-      migration = require(directory + '/' + name);
+      const migrationContent = require(directory + '/' + name);
 
       // We're going to run each of the migrations in the current "up".
       current = current
         .then(() => {
-          if (!trx && this._useTransaction(migration, disableTransactions)) {
-            return this._transaction(migration, direction, name);
+          if (
+            !trx &&
+            this._useTransaction(migrationContent, disableTransactions)
+          ) {
+            return this._transaction(migrationContent, direction, name);
           }
           return warnPromise(
             this.knex,
-            migration[direction](trxOrKnex, Promise),
+            migrationContent[direction](trxOrKnex, Promise),
             name
           );
         })
@@ -381,11 +396,11 @@ export default class Migrator {
     return current.thenReturn([batchNo, log]);
   }
 
-  _transaction(migration, direction, name) {
+  _transaction(migrationContent, direction, name) {
     return this.knex.transaction((trx) => {
       return warnPromise(
         this.knex,
-        migration[direction](trx, Promise),
+        migrationContent[direction](trx, Promise),
         name,
         () => {
           trx.commit();
@@ -395,7 +410,12 @@ export default class Migrator {
   }
 
   _absoluteConfigDir() {
-    return path.resolve(process.cwd(), this.config.directory);
+    const directories = Array.isArray(this.config.directory)
+      ? this.config.directory
+      : [this.config.directory];
+    return directories.map((directory) => {
+      return path.resolve(process.cwd(), directory);
+    });
   }
 
   setConfig(config) {
@@ -407,7 +427,7 @@ export default class Migrator {
 function validateMigrationList(migrations) {
   const all = migrations[0];
   const completed = migrations[1];
-  const diff = difference(completed, all);
+  const diff = getMissingMigrations(completed, all);
   if (!isEmpty(diff)) {
     throw new Error(
       `The migration directory is corrupt, the following files are missing: ${diff.join(
@@ -417,12 +437,28 @@ function validateMigrationList(migrations) {
   }
 }
 
+function getMissingMigrations(completed, all) {
+  return differenceWith(completed, all, (completedMigration, allMigration) => {
+    return completedMigration === allMigration.file;
+  });
+}
+
+function getNewMigrations(all, completed) {
+  return differenceWith(all, completed, (allMigration, completedMigration) => {
+    return completedMigration === allMigration.file;
+  });
+}
+
 function warnPromise(knex, value, name, fn) {
   if (!value || typeof value.then !== 'function') {
     knex.client.logger.warn(`migration ${name} did not return a promise`);
     if (fn && typeof fn === 'function') fn();
   }
   return value;
+}
+
+function resolveMigrationPath(migration) {
+  return path.join(migration.directory, migration.file);
 }
 
 // Ensure that we have 2 places for each of the date segments.

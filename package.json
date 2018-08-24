@@ -39,6 +39,7 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
+    "chai-subset-in-order": "^2.1.2",
     "coveralls": "^3.0.2",
     "eslint": "5.4.0",
     "eslint-config-prettier": "^3.0.1",

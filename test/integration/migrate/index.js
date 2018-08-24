@@ -1,10 +1,10 @@
 /*global after, before, describe, expect, it*/
 'use strict';
 
-var equal = require('assert').equal;
-var path = require('path');
-var rimraf = require('rimraf');
-var Promise = require('bluebird');
+const equal = require('assert').equal;
+const path = require('path');
+const rimraf = require('rimraf');
+const Promise = require('bluebird');
 
 module.exports = function(knex) {
   require('rimraf').sync(path.join(__dirname, './migration'));
@@ -31,7 +31,11 @@ module.exports = function(knex) {
       });
     });
 
-    var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
+    const tables = [
+      'migration_test_1',
+      'migration_test_2',
+      'migration_test_2_1',
+    ];
 
     describe('knex.migrate.status', function() {
       this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
@@ -243,6 +247,45 @@ module.exports = function(knex) {
       });
     });
 
+    describe('knex.migrate.latest - multiple directories', () => {
+      before(() => {
+        return knex.migrate.latest({
+          directory: [
+            'test/integration/migrate/test',
+            'test/integration/migrate/test2',
+          ],
+        });
+      });
+
+      after(() => {
+        return knex.migrate.rollback({
+          directory: [
+            'test/integration/migrate/test',
+            'test/integration/migrate/test2',
+          ],
+        });
+      });
+
+      it('should create tables specified in both directories', () => {
+        // Map the table names to promises that evaluate chai expectations to
+        // confirm that the table exists
+        const expectedTables = [
+          'migration_test_1',
+          'migration_test_2',
+          'migration_test_2_1',
+          'migration_test_3',
+          'migration_test_4',
+          'migration_test_4_1',
+        ];
+
+        return Promise.map(expectedTables, function(table) {
+          return knex.schema.hasTable(table).then(function(exists) {
+            expect(exists).to.equal(true);
+          });
+        });
+      });
+    });
+
     describe('knex.migrate.rollback', function() {
       it('should delete the most recent batch from the migration log', function() {
         return knex.migrate
@@ -250,9 +293,12 @@ module.exports = function(knex) {
           .spread(function(batchNo, log) {
             expect(batchNo).to.equal(1);
             expect(log).to.have.length(2);
-            var migrationPath = ['test', 'integration', 'migrate', 'test'].join(
-              path.sep
-            ); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
+            const migrationPath = [
+              'test',
+              'integration',
+              'migrate',
+              'test',
+            ].join(path.sep); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
             expect(log[0]).to.contain(migrationPath);
             return knex('knex_migrations')
               .select('*')
@@ -323,7 +369,7 @@ module.exports = function(knex) {
         }
       ).then(function(res) {
         // One should fail:
-        var hasLockError =
+        const hasLockError =
           res[0] === 'MigrationLocked' || res[1] === 'MigrationLocked';
         expect(hasLockError).to.equal(true);
 

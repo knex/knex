@@ -2,12 +2,17 @@
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
+const chai = require('chai');
+const chaiSubset = require('chai-subset-in-order');
+const { expect } = require('chai');
 const mockFs = require('mock-fs');
 const migrationListResolver = require('../../../lib/migrate/migration-list-resolver');
 const path = require('path');
 
+chai.use(chaiSubset);
+
 describe('migration-list-resolver', () => {
-  describe('listAll', () => {
+  describe('listAll - single directory', () => {
     let absoluteConfigDirectory;
     before(() => {
       absoluteConfigDirectory = path.resolve(
@@ -37,16 +42,20 @@ describe('migration-list-resolver', () => {
       return migrationListResolver
         .listAll(absoluteConfigDirectory)
         .then((list) => {
-          expect(list).to.eql([
-            'co-migration.co',
-            'coffee-migration.coffee',
-            'eg-migration.eg',
-            'iced-migration.iced',
-            'js-migration.js',
-            'litcoffee-migration.litcoffee',
-            'ls-migration.ls',
-            'ts-migration.ts',
+          expect(list).to.containSubsetInOrder([
+            { file: 'co-migration.co' },
+            { file: 'coffee-migration.coffee' },
+            { file: 'eg-migration.eg' },
+            { file: 'iced-migration.iced' },
+            { file: 'js-migration.js' },
+            { file: 'litcoffee-migration.litcoffee' },
+            { file: 'ls-migration.ls' },
+            { file: 'ts-migration.ts' },
           ]);
+
+          expect(list[0].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/migration'
+          );
         });
     });
 
@@ -54,7 +63,96 @@ describe('migration-list-resolver', () => {
       return migrationListResolver
         .listAll(absoluteConfigDirectory, ['.ts', '.js'])
         .then((list) => {
-          expect(list).to.eql(['js-migration.js', 'ts-migration.ts']);
+          expect(list).to.containSubsetInOrder([
+            { file: 'js-migration.js' },
+            { file: 'ts-migration.ts' },
+          ]);
+
+          expect(list[0].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/migration'
+          );
+        });
+    });
+  });
+
+  describe('listAll - multiple directories', () => {
+    let absoluteConfigDirectory;
+    before(() => {
+      absoluteConfigDirectory = [
+        path.resolve(process.cwd(), 'test/integration/migrate/migration'),
+        path.resolve(process.cwd(), 'test/integration/migrate/seeds'),
+      ];
+      mockFs({
+        'test/integration/migrate/migration': {
+          '006_migration.js': 'dummy',
+          '001_migration.js': 'dummy',
+          '005_migration.js': 'dummy',
+        },
+        'test/integration/migrate/seeds': {
+          '004_migration.js': 'dummy',
+          '002_migration.js': 'dummy',
+          '003_migration.js': 'dummy',
+        },
+      });
+    });
+
+    after(() => {
+      mockFs.restore();
+    });
+
+    it('should include files from both folders, sorted globally', () => {
+      return migrationListResolver
+        .listAll(absoluteConfigDirectory)
+        .then((list) => {
+          expect(list).to.containSubsetInOrder([
+            { file: '001_migration.js' },
+            { file: '002_migration.js' },
+            { file: '003_migration.js' },
+            { file: '004_migration.js' },
+            { file: '005_migration.js' },
+            { file: '006_migration.js' },
+          ]);
+
+          expect(list[0].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/migration'
+          );
+          expect(list[1].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/seeds'
+          );
+          expect(list[2].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/seeds'
+          );
+          expect(list[3].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/seeds'
+          );
+        });
+    });
+
+    it('should include files from both folders, sorted within their folders', () => {
+      return migrationListResolver
+        .listAll(absoluteConfigDirectory, ['.js'], true)
+        .then((list) => {
+          expect(list).to.containSubsetInOrder([
+            { file: '001_migration.js' },
+            { file: '005_migration.js' },
+            { file: '006_migration.js' },
+            { file: '002_migration.js' },
+            { file: '003_migration.js' },
+            { file: '004_migration.js' },
+          ]);
+
+          expect(list[0].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/migration'
+          );
+          expect(list[1].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/migration'
+          );
+          expect(list[2].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/migration'
+          );
+          expect(list[3].directory.replace(/\\/g, '/')).to.include(
+            'knex/test/integration/migrate/seeds'
+          );
         });
     });
   });
