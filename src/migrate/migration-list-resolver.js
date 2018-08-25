@@ -21,13 +21,14 @@ export function listAll(
   loadExtensions = DEFAULT_LOAD_EXTENSIONS
 ) {
   return migrationSource.getMigrations().then((migrations) => {
-    return filterMigrations(migrations, loadExtensions);
+    return filterMigrations(migrationSource, migrations, loadExtensions);
   });
 }
 
-function filterMigrations(migrations, loadExtensions) {
-  return filter(migrations, (value) => {
-    const extension = path.extname(value);
+function filterMigrations(migrationSource, migrations, loadExtensions) {
+  return filter(migrations, (migration) => {
+    const migrationName = migrationSource.getMigrationName(migration);
+    const extension = path.extname(migrationName);
     return loadExtensions.includes(extension);
   });
 }

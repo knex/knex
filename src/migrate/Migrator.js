@@ -62,17 +62,22 @@ export default class Migrator {
     this.config = this.setConfig(config);
     return migrationListResolver
       .listAllAndCompleted(this.config, this.knex)
-      .tap(validateMigrationList)
+      .tap((value) => validateMigrationList(this.config.migrationSource, value))
       .spread((all, completed) => {
-        console.log('@@@', all, completed)
-        const migrations = getNewMigrations(all, completed);
+        const migrations = getNewMigrations(
+          this.config.migrationSource,
+          all,
+          completed
+        );
 
         const transactionForAll =
           !this.config.disableTransactions &&
           isEmpty(
-            filter(migrations, (name) => {
-              const migration = this.config.migrationSource.getMigration(name);
-              return !this._useTransaction(migration);
+            filter(migrations, (migration) => {
+              const migrationContents = this.config.migrationSource.getMigration(
+                migration
+              );
+              return !this._useTransaction(migrationContents);
             })
           );
 
@@ -92,7 +97,9 @@ export default class Migrator {
       this.config = this.setConfig(config);
       return migrationListResolver
         .listAllAndCompleted(this.config, this.knex)
-        .tap(validateMigrationList)
+        .tap((value) =>
+          validateMigrationList(this.config.migrationSource, value)
+        )
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
           return this._runBatch(migrations, 'down');
@@ -217,10 +224,17 @@ export default class Migrator {
               : []
         )
         .then(
-          (completed) => (migrations = getNewMigrations(migrations, completed))
+          (completed) =>
+            (migrations = getNewMigrations(
+              this.config.migrationSource,
+              migrations,
+              completed
+            ))
         )
         .then(() =>
-          Promise.all(migrations.map(this._validateMigrationStructure))
+          Promise.all(
+            migrations.map(this._validateMigrationStructure.bind(this))
+          )
         )
         .then(() => this._latestBatchNumber(trx))
         .then((batchNo) => {
@@ -277,9 +291,7 @@ export default class Migrator {
       typeof migrationContent.down !== 'function'
     ) {
       throw new Error(
-        `Invalid migration: ${
-          name
-        } must have both an up and down function`
+        `Invalid migration: ${name} must have both an up and down function`
       );
     }
 
@@ -324,7 +336,10 @@ export default class Migrator {
       .orderBy('id', 'desc')
       .map((migration) => {
         return allMigrations.find((entry) => {
-          return entry === migration.name;
+          return (
+            this.config.migrationSource.getMigrationName(entry) ===
+            migration.name
+          );
         });
       });
   }
@@ -357,9 +372,11 @@ export default class Migrator {
     let current = Promise.bind({ failed: false, failedOn: 0 });
     const log = [];
     each(migrations, (migration) => {
-      const name = migration;
+      const name = this.config.migrationSource.getMigrationName(migration);
       this._activeMigration.fileName = name;
-      const migrationContent = this.config.migrationSource.getMigration(name);
+      const migrationContent = this.config.migrationSource.getMigration(
+        migration
+      );
 
       // We're going to run each of the migrations in the current "up".
       current = current
@@ -423,17 +440,20 @@ export default class Migrator {
   setConfig(config) {
     const newConfig = assign({}, CONFIG_DEFAULT, this.config || {}, config);
     if ((config && !config.migrationSource) || !newConfig.migrationSource) {
-      newConfig.migrationSource = new FsMigrations(newConfig.directory);
+      newConfig.migrationSource = new FsMigrations(
+        newConfig.directory,
+        newConfig.sortDirsSeparately
+      );
     }
     return newConfig;
   }
 }
 
 // Validates that migrations are present in the appropriate directories.
-function validateMigrationList(migrations) {
+function validateMigrationList(migrationSource, migrations) {
   const all = migrations[0];
   const completed = migrations[1];
-  const diff = getMissingMigrations(completed, all);
+  const diff = getMissingMigrations(migrationSource, completed, all);
   if (!isEmpty(diff)) {
     throw new Error(
       `The migration directory is corrupt, the following files are missing: ${diff.join(
@@ -443,15 +463,19 @@ function validateMigrationList(migrations) {
   }
 }
 
-function getMissingMigrations(completed, all) {
+function getMissingMigrations(migrationSource, completed, all) {
   return differenceWith(completed, all, (completedMigration, allMigration) => {
-    return completedMigration === allMigration;
+    return (
+      completedMigration === migrationSource.getMigrationName(allMigration)
+    );
   });
 }
 
-function getNewMigrations(all, completed) {
+function getNewMigrations(migrationSource, all, completed) {
   return differenceWith(all, completed, (allMigration, completedMigration) => {
-    return completedMigration === allMigration;
+    return (
+      completedMigration === migrationSource.getMigrationName(allMigration)
+    );
   });
 }
 

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import Promise from 'bluebird';
+import { sortBy } from 'lodash';
 
 const readDirAsync = Promise.promisify(fs.readdir, { context: fs });
 
@@ -30,37 +31,35 @@ export class FsMigrations {
     });
 
     return Promise.all(readMigrationsPromises).then((allMigrations) => {
-      const migrations = allMigrations.reduce(
-        (acc, migrationDirectory) => {
-          // When true, files inside the folder should be sorted
-          if (this.sortDirsSeparately) {
-            migrationDirectory.files = migrationDirectory.files.sort();
-          }
+      const migrations = allMigrations.reduce((acc, migrationDirectory) => {
+        // When true, files inside the folder should be sorted
+        if (this.sortDirsSeparately) {
+          migrationDirectory.files = migrationDirectory.files.sort();
+        }
 
-          migrationDirectory.files
-            .forEach((file) => acc.push({ file, directory: migrationDirectory.configDir }));
+        migrationDirectory.files.forEach((file) =>
+          acc.push({ file, directory: migrationDirectory.configDir })
+        );
 
-          return acc;
-        },
-        []
-      );
+        return acc;
+      }, []);
 
       // If true we have already sorted the migrations inside the folders
       // return the migrations fully qualified
       if (this.sortDirsSeparately) {
-        return migrations
-          .map((migration) => path.join(migration.configDir, migration.file));
+        return migrations;
       }
 
-      return migrations.map(migration => migration.file).sort();
+      return sortBy(migrations, 'file');
     });
   }
 
   getMigrationName(migration) {
-    return require(migration.file);
+    return migration.file;
   }
 
   getMigration(migration) {
-    return require(path.join(migration.directory, migration.file));
+    const absoluteDir = path.resolve(process.cwd(), migration.directory);
+    return require(path.join(absoluteDir, migration.file));
   }
 }

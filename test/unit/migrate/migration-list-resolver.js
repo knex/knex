@@ -40,14 +40,38 @@ describe('migration-list-resolver', () => {
     it('should include all supported extensions by default', () => {
       return migrationListResolver.listAll(migrationSource).then((list) => {
         expect(list).to.eql([
-          'co-migration.co',
-          'coffee-migration.coffee',
-          'eg-migration.eg',
-          'iced-migration.iced',
-          'js-migration.js',
-          'litcoffee-migration.litcoffee',
-          'ls-migration.ls',
-          'ts-migration.ts',
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'co-migration.co',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'coffee-migration.coffee',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'eg-migration.eg',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'iced-migration.iced',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'js-migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'litcoffee-migration.litcoffee',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'ls-migration.ls',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'ts-migration.ts',
+          },
         ]);
       });
     });
@@ -57,8 +81,14 @@ describe('migration-list-resolver', () => {
         .listAll(migrationSource, ['.ts', '.js'])
         .then((list) => {
           expect(list).to.eql([
-            'test/integration/migrate/migration/js-migration.js',
-            'test/integration/migrate/migration/ts-migration.ts',
+            {
+              directory: 'test/integration/migrate/migration',
+              file: 'js-migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/migration',
+              file: 'ts-migration.ts',
+            },
           ]);
         });
     });
@@ -87,39 +117,76 @@ describe('migration-list-resolver', () => {
     it('should include files from both folders, sorted globally', () => {
       const migrationSource = new FsMigrations([
         'test/integration/migrate/migration',
-        'test/integration/migrate/seeds'
+        'test/integration/migrate/seeds',
       ]);
 
-      return migrationListResolver
-        .listAll(migrationSource)
-        .then((list) => {
-          expect(list).to.eql([
-            '001_migration.js',
-            '002_migration.js',
-            '003_migration.js',
-            '004_migration.js',
-            '005_migration.js',
-            '006_migration.js',
-          ]);
-        });
+      return migrationListResolver.listAll(migrationSource).then((list) => {
+        expect(list).to.eql([
+          {
+            directory: 'test/integration/migrate/migration',
+            file: '001_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/seeds',
+            file: '002_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/seeds',
+            file: '003_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/seeds',
+            file: '004_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: '005_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: '006_migration.js',
+          },
+        ]);
+      });
     });
 
     it('should include files from both folders, sorted within their folders', () => {
-      const migrationSource = new FsMigrations([
-        'test/integration/migrate/migration',
-        'test/integration/migrate/seeds'
-      ], true);
+      const migrationSource = new FsMigrations(
+        [
+          'test/integration/migrate/migration',
+          'test/integration/migrate/seeds',
+        ],
+        true
+      );
 
       return migrationListResolver
         .listAll(migrationSource, ['.js'])
         .then((list) => {
           expect(list).to.eql([
-            'test/integration/migrate/migration/001_migration.js',
-            'test/integration/migrate/migration/005_migration.js',
-            'test/integration/migrate/migration/006_migration.js',
-            'test/integration/migrate/seeds/002_migration.js',
-            'test/integration/migrate/seeds/003_migration.js',
-            'test/integration/migrate/seeds/004_migration.js',
+            {
+              directory: 'test/integration/migrate/migration',
+              file: '001_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/migration',
+              file: '005_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/migration',
+              file: '006_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/seeds',
+              file: '002_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/seeds',
+              file: '003_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/seeds',
+              file: '004_migration.js',
+            },
           ]);
         });
     });
