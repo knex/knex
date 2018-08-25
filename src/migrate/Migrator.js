@@ -284,18 +284,23 @@ export default class Migrator {
 
   // Validates some migrations by requiring and checking for an `up` and `down`
   // function.
-  _validateMigrationStructure(name) {
-    const migrationContent = this.config.migrationSource.getMigration(name);
+  _validateMigrationStructure(migration) {
+    const migrationName = this.config.migrationSource.getMigrationName(
+      migration
+    );
+    const migrationContent = this.config.migrationSource.getMigration(
+      migration
+    );
     if (
       typeof migrationContent.up !== 'function' ||
       typeof migrationContent.down !== 'function'
     ) {
       throw new Error(
-        `Invalid migration: ${name} must have both an up and down function`
+        `Invalid migration: ${migrationName} must have both an up and down function`
       );
     }
 
-    return name;
+    return migration;
   }
 
   // Generates the stub template for the current migration, returning a compiled
