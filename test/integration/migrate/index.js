@@ -5,6 +5,7 @@ const equal = require('assert').equal;
 const path = require('path');
 const rimraf = require('rimraf');
 const Promise = require('bluebird');
+const testMemoryMigrations = require('./memory-migrations');
 
 module.exports = function(knex) {
   require('rimraf').sync(path.join(__dirname, './migration'));
@@ -538,5 +539,40 @@ module.exports = function(knex) {
         });
       });
     }
+  });
+
+  describe('migrationSource config', function() {
+    const migrationSource = {
+      getMigrations() {
+        console.log('???', Object.keys(testMemoryMigrations).sort());
+        return Promise.resolve(Object.keys(testMemoryMigrations).sort());
+      },
+      getMigrationName(migration) {
+        return migration;
+      },
+      getMigration(migration) {
+        return testMemoryMigrations[migration];
+      },
+    };
+
+    before(() => {
+      return knex.migrate.latest({
+        migrationSource,
+      });
+    });
+
+    after(() => {
+      return knex.migrate.rollback({
+        migrationSource,
+      });
+    });
+
+    it('can accept a custom migration source', function() {
+      return knex.schema
+        .hasColumn('migration_source_test_1', 'name')
+        .then(function(exists) {
+          expect(exists).to.equal(true);
+        });
+    });
   });
 };
