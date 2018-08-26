@@ -25,7 +25,7 @@ import {
 } from './table-resolver';
 import { getSchemaBuilder } from './table-creator';
 import * as migrationListResolver from './migration-list-resolver';
-import { FsMigrations } from './sources/fs-migrations';
+import FsMigrations from './sources/fs-migrations';
 
 function LockError(msg) {
   this.name = 'MigrationLocked';
@@ -444,12 +444,29 @@ export default class Migrator {
 
   setConfig(config) {
     const newConfig = assign({}, CONFIG_DEFAULT, this.config || {}, config);
-    if ((config && !config.migrationSource) || !newConfig.migrationSource) {
+
+    // If migrationSource is not specified, but fs related config has been specified
+    // recreate the FsMigration source so the new filesystem related settings
+    // are used
+    if (
+      config &&
+      !config.migrationSource &&
+      (config.directory || config.sortDirsSeparately !== undefined)
+    ) {
       newConfig.migrationSource = new FsMigrations(
         newConfig.directory,
         newConfig.sortDirsSeparately
       );
     }
+
+    //
+    if (!newConfig.migrationSource) {
+      newConfig.migrationSource = new FsMigrations(
+        newConfig.directory,
+        newConfig.sortDirsSeparately
+      );
+    }
+
     return newConfig;
   }
 }

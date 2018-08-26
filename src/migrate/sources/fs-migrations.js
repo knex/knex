@@ -5,7 +5,7 @@ import { sortBy } from 'lodash';
 
 const readDirAsync = Promise.promisify(fs.readdir, { context: fs });
 
-export class FsMigrations {
+export default class FsMigrations {
   constructor(migrationDirectories, sortDirsSeparately) {
     this.sortDirsSeparately = sortDirsSeparately;
 

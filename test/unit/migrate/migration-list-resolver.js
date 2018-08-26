@@ -3,15 +3,10 @@
 'use strict';
 
 const chai = require('chai');
-const chaiSubset = require('chai-subset-in-order');
 const { expect } = require('chai');
 const mockFs = require('mock-fs');
 const migrationListResolver = require('../../../lib/migrate/migration-list-resolver');
-const FsMigrations = require('../../../lib/migrate/sources/fs-migrations')
-  .FsMigrations;
-const path = require('path');
-
-chai.use(chaiSubset);
+const FsMigrations = require('../../../lib/migrate/sources/fs-migrations');
 
 describe('migration-list-resolver', () => {
   describe('listAll', () => {
