@@ -459,7 +459,7 @@ export default class Migrator {
       );
     }
 
-    //
+    // Ensure a migrationSource is set
     if (!newConfig.migrationSource) {
       newConfig.migrationSource = new FsMigrations(
         newConfig.directory,
