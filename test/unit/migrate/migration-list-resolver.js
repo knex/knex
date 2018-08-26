@@ -6,7 +6,8 @@ const chai = require('chai');
 const { expect } = require('chai');
 const mockFs = require('mock-fs');
 const migrationListResolver = require('../../../lib/migrate/migration-list-resolver');
-const FsMigrations = require('../../../lib/migrate/sources/fs-migrations');
+const FsMigrations = require('../../../lib/migrate/sources/fs-migrations')
+  .default;
 
 describe('migration-list-resolver', () => {
   describe('listAll', () => {

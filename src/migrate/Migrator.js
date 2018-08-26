@@ -25,7 +25,7 @@ import {
 } from './table-resolver';
 import { getSchemaBuilder } from './table-creator';
 import * as migrationListResolver from './migration-list-resolver';
-import FsMigrations from './sources/fs-migrations';
+import FsMigrations, { DEFAULT_LOAD_EXTENSIONS } from './sources/fs-migrations';
 
 function LockError(msg) {
   this.name = 'MigrationLocked';
@@ -36,7 +36,7 @@ inherits(LockError, Error);
 
 const CONFIG_DEFAULT = Object.freeze({
   extension: 'js',
-  loadExtensions: migrationListResolver.DEFAULT_LOAD_EXTENSIONS,
+  loadExtensions: DEFAULT_LOAD_EXTENSIONS,
   tableName: 'knex_migrations',
   schemaName: null,
   directory: './migrations',
@@ -114,10 +114,7 @@ export default class Migrator {
       getTable(this.knex, this.config.tableName, this.config.schemaName).select(
         '*'
       ),
-      migrationListResolver.listAll(
-        this.config.migrationSource,
-        this.config.loadExtensions
-      ),
+      migrationListResolver.listAll(this.config.migrationSource),
     ]).spread((db, code) => db.length - code.length);
   }
 
@@ -451,11 +448,14 @@ export default class Migrator {
     if (
       config &&
       !config.migrationSource &&
-      (config.directory || config.sortDirsSeparately !== undefined)
+      (config.directory ||
+        config.sortDirsSeparately !== undefined ||
+        config.loadExtensions)
     ) {
       newConfig.migrationSource = new FsMigrations(
         newConfig.directory,
-        newConfig.sortDirsSeparately
+        newConfig.sortDirsSeparately,
+        newConfig.loadExtensions
       );
     }
 
