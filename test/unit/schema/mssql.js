@@ -4,7 +4,7 @@
 
 var sinon = require('sinon');
 var MSSQL_Client = require('../../../lib/dialects/mssql');
-var client = new MSSQL_Client();
+var client = new MSSQL_Client({ client: 'mssql' });
 
 describe('MSSQL SchemaBuilder', function() {
   var tableSql;
