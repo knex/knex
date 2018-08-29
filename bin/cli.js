@@ -1,15 +1,38 @@
 #!/usr/bin/env node
 /* eslint no-console:0, no-var:0 */
 var Liftoff = require('liftoff');
-var Promise = require('bluebird');
 var interpret = require('interpret');
 var path = require('path');
 var chalk = require('chalk');
 var tildify = require('tildify');
 var commander = require('commander');
 var argv = require('minimist')(process.argv.slice(2));
-var fs = Promise.promisifyAll(require('fs'));
+var fs = require('fs');
 var cliPkg = require('../package');
+
+function readFile(path) {
+  return new Promise(function(resolve, reject) {
+    fs.readFile(path, function(err, content) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(content);
+      }
+    });
+  });
+}
+
+function writeFile(path, content) {
+  return new Promise(function(resolve, reject) {
+    fs.writeFile(path, content, function(err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
 
 function exit(text) {
   if (text instanceof Error) {
@@ -112,15 +135,14 @@ function invoke(env) {
       }
       checkLocalModule(env);
       var stubPath = `./knexfile.${type}`;
-      pending = fs
-        .readFileAsync(
-          path.dirname(env.modulePath) +
-            '/lib/migrate/stub/knexfile-' +
-            type +
-            '.stub'
-        )
+      pending = readFile(
+        path.dirname(env.modulePath) +
+          '/lib/migrate/stub/knexfile-' +
+          type +
+          '.stub'
+      )
         .then(function(code) {
-          return fs.writeFileAsync(stubPath, code);
+          return writeFile(stubPath, code);
         })
         .then(function() {
           success(chalk.green(`Created ${stubPath}`));
