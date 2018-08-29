@@ -596,7 +596,7 @@ assign(QueryCompiler.prototype, {
   },
 
   onUsing(clause) {
-    return this.formatter.wrap(clause.column);
+    return '(' + this.formatter.columnize(clause.column) + ')';
   },
 
   // Where Clause
