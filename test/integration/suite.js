@@ -6,7 +6,7 @@ module.exports = function(knex) {
   var sinon = require('sinon');
 
   describe(knex.client.dialect + ' | ' + knex.client.driverName, function() {
-    this.dialect = knex.client.dialect;
+    this.client = knex.client.dialect;
     this.driverName = knex.client.driverName;
 
     after(function() {
