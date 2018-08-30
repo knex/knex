@@ -281,7 +281,7 @@ assign(Client_PG.prototype, {
         sql: 'SELECT pg_terminate_backend(?);',
         bindings: [connectionToKill.processID],
         options: {},
-      }).then(() => {
+      }).finally(() => {
         // NOT returning this promise because we want to release the connection
         // in a non-blocking fashion
         this.releaseConnection(conn);
