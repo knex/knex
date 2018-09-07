@@ -50,7 +50,7 @@ const CONFIG_DEFAULT = Object.freeze({
 export default class Migrator {
   constructor(knex) {
     this.knex = knex;
-    this.config = this.setConfig(knex.client.config.migrations);
+    this.config = getMergedConfig(knex.client.config.migrations);
 
     this._activeMigration = {
       fileName: null,
@@ -59,7 +59,8 @@ export default class Migrator {
 
   // Migrators to the latest configuration.
   latest(config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
+
     return migrationListResolver
       .listAllAndCompleted(this.config, this.knex)
       .tap((value) => validateMigrationList(this.config.migrationSource, value))
@@ -94,7 +95,8 @@ export default class Migrator {
   // Rollback the last "batch" of migrations that were run.
   rollback(config) {
     return Promise.try(() => {
-      this.config = this.setConfig(config);
+      this.config = getMergedConfig(config, this.config);
+
       return migrationListResolver
         .listAllAndCompleted(this.config, this.knex)
         .tap((value) =>
@@ -108,7 +110,7 @@ export default class Migrator {
   }
 
   status(config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
 
     return Promise.all([
       getTable(this.knex, this.config.tableName, this.config.schemaName).select(
@@ -121,7 +123,8 @@ export default class Migrator {
   // Retrieves and returns the current migration version we're on, as a promise.
   // If no migrations have been run yet, return "none".
   currentVersion(config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
+
     return migrationListResolver
       .listCompleted(this.config.tableName, this.config.schemaName, this.knex)
       .then((completed) => {
@@ -131,7 +134,8 @@ export default class Migrator {
   }
 
   forceFreeMigrationsLock(config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
+
     const lockTable = getLockTableName(this.config.tableName);
     return getSchemaBuilder(this.knex, this.config.schemaName)
       .hasTable(lockTable)
@@ -140,7 +144,8 @@ export default class Migrator {
 
   // Creates a new migration, with a given name.
   make(name, config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
+
     if (!name) {
       return Promise.reject(
         new Error('A name must be specified for the generated migration')
@@ -438,37 +443,34 @@ export default class Migrator {
       return path.resolve(process.cwd(), directory);
     });
   }
+}
 
-  setConfig(config) {
-    const newConfig = assign({}, CONFIG_DEFAULT, this.config || {}, config);
+export function getMergedConfig(config, currentConfig) {
+  // config is the user specified config, mergedConfig has defaults and current config
+  // applied to it.
+  const mergedConfig = assign({}, CONFIG_DEFAULT, currentConfig || {}, config);
 
-    // If migrationSource is not specified, but fs related config has been specified
-    // recreate the FsMigration source so the new filesystem related settings
-    // are used
-    if (
-      config &&
-      !config.migrationSource &&
-      (config.directory ||
-        config.sortDirsSeparately !== undefined ||
-        config.loadExtensions)
-    ) {
-      newConfig.migrationSource = new FsMigrations(
-        newConfig.directory,
-        newConfig.sortDirsSeparately,
-        newConfig.loadExtensions
-      );
-    }
-
-    // Ensure a migrationSource is set
-    if (!newConfig.migrationSource) {
-      newConfig.migrationSource = new FsMigrations(
-        newConfig.directory,
-        newConfig.sortDirsSeparately
-      );
-    }
-
-    return newConfig;
+  if (
+    config &&
+    // If user specifies any FS related config,
+    // clear existing FsMigrations migrationSource
+    (config.directory ||
+      config.sortDirsSeparately !== undefined ||
+      config.loadExtensions)
+  ) {
+    mergedConfig.migrationSource = null;
   }
+
+  // If the user has not specified any configs, we need to
+  // default to fs migrations to maintain compatibility
+  if (!mergedConfig.migrationSource) {
+    mergedConfig.migrationSource = new FsMigrations(
+      mergedConfig.directory,
+      mergedConfig.sortDirsSeparately
+    );
+  }
+
+  return mergedConfig;
 }
 
 // Validates that migrations are present in the appropriate directories.
