@@ -2,7 +2,7 @@
 
 const tape = require('tape');
 const Migrator = require('../../lib/migrate/Migrator').default;
-const mergeConfig = require('../../lib/migrate/Migrator').mergeConfig;
+const mergeConfig = require('../../lib/migrate/Migrator').getMergedConfig;
 
 tape('migrate: constructor uses config.migrations', function(t) {
   t.plan(1);
