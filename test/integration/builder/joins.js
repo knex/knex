@@ -1889,5 +1889,55 @@ module.exports = function(knex) {
           );
         });
     });
+
+    if (knex.client.driverName !== 'mssql') {
+      it('Can use .using()', () => {
+        let joinName = 'accounts_join_test';
+
+        return knex.schema
+          .dropTableIfExists(joinName)
+          .then(() =>
+            knex.schema.createTable(joinName, (table) => {
+              table.bigint('id');
+              table.string('email');
+              table.integer('testcolumn');
+            })
+          )
+          .then(() =>
+            knex(joinName).insert([
+              {
+                id: 3,
+                email: 'test3@example.com',
+                testcolumn: 50,
+              },
+              {
+                id: 3,
+                email: 'random@email.com',
+                testcolumn: 70,
+              },
+            ])
+          )
+          .then(() =>
+            knex('accounts').join(joinName, (builder) =>
+              builder.using(['id', 'email'])
+            )
+          )
+          .then((rows) => {
+            expect(rows.length).to.equal(1);
+            expect(rows[0].testcolumn).to.equal(50);
+
+            return knex('accounts')
+              .join(joinName, (builder) => builder.using(['id']))
+              .orderBy('testcolumn');
+          })
+          .then((rows) => {
+            expect(rows.length).to.equal(2);
+            expect(rows[0].testcolumn).to.equal(50);
+            expect(rows[1].testcolumn).to.equal(70);
+
+            return true;
+          });
+      });
+    }
   });
 };
