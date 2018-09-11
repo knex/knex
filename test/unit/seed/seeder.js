@@ -2,9 +2,8 @@
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
-var _ = require('lodash');
 var mockFs = require('mock-fs');
-var Knex = require('../../../knex');
+var knex = require('../../../knex');
 
 describe('Seeder.loadExtensions', function() {
   var config = {
