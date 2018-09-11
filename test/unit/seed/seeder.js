@@ -2,8 +2,9 @@
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
+var _ = require('lodash');
 var mockFs = require('mock-fs');
-var knex = require('../../../knex');
+var Knex = require('../../../knex');
 
 describe('Seeder.loadExtensions', function() {
   var config = {
@@ -65,5 +66,36 @@ describe('Seeder.loadExtensions', function() {
       .then(function(list) {
         expect(list).to.eql(['js-seed.js', 'ts-seed.ts']);
       });
+  });
+
+  var config = require('../../knexfile');
+  var knex = Knex(config['sqlite3']);
+  it.only('Overwrite knex.logger functions using config', () => {
+    var knexConfig = _.clone(knex.client.config);
+
+    var callCount = 0;
+    var assertCall = function(expectedMessage, message) {
+      expect(message).to.equal(expectedMessage);
+      callCount++;
+    };
+
+    knexConfig.log = {
+      warn: assertCall.bind(null, 'test'),
+      error: assertCall.bind(null, 'test'),
+      debug: assertCall.bind(null, 'test'),
+      deprecate: assertCall.bind(null, 'test is deprecated, please use test2'),
+    };
+
+    //Sqlite warning message
+    knexConfig.useNullAsDefault = true;
+
+    var knexDb = new knex(knexConfig);
+
+    knexDb.client.logger.warn('test');
+    knexDb.client.logger.error('test');
+    knexDb.client.logger.debug('test');
+    knexDb.client.logger.deprecate('test', 'test2');
+
+    expect(callCount).to.equal(4);
   });
 });
