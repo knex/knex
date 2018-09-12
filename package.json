@@ -7,7 +7,7 @@
     "node": ">=6"
   },
   "dependencies": {
-    "babel-runtime": "^6.26.0",
+    "@babel/runtime": "^7.0.0",
     "bluebird": "^3.5.1",
     "chalk": "2.4.1",
     "commander": "^2.17.1",
@@ -33,11 +33,12 @@
   "devDependencies": {
     "JSONStream": "^1.3.4",
     "async": "^2.6.1",
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.2.6",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.7.0",
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "babel-eslint": "^9.0.0",
+    "babel-plugin-add-module-exports": "^0.3.3",
+    "@babel/plugin-transform-runtime": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
     "chai": "^4.1.2",
     "chai-subset-in-order": "^2.1.2",
     "coveralls": "^3.0.2",
