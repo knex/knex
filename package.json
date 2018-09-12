@@ -48,7 +48,7 @@
     "json-loader": "^0.5.7",
     "lint-staged": "^7.2.2",
     "mocha": "^5.2.0",
-    "mock-fs": "^4.6.0",
+    "mock-fs": "^4.7.0",
     "mssql": "^4.1.0",
     "mysql": "^2.16.0",
     "mysql2": "^1.6.1",

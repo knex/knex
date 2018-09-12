@@ -25,6 +25,7 @@ import {
 } from './table-resolver';
 import { getSchemaBuilder } from './table-creator';
 import * as migrationListResolver from './migration-list-resolver';
+import FsMigrations, { DEFAULT_LOAD_EXTENSIONS } from './sources/fs-migrations';
 
 function LockError(msg) {
   this.name = 'MigrationLocked';
@@ -35,7 +36,7 @@ inherits(LockError, Error);
 
 const CONFIG_DEFAULT = Object.freeze({
   extension: 'js',
-  loadExtensions: migrationListResolver.DEFAULT_LOAD_EXTENSIONS,
+  loadExtensions: DEFAULT_LOAD_EXTENSIONS,
   tableName: 'knex_migrations',
   schemaName: null,
   directory: './migrations',
@@ -49,7 +50,7 @@ const CONFIG_DEFAULT = Object.freeze({
 export default class Migrator {
   constructor(knex) {
     this.knex = knex;
-    this.config = this.setConfig(knex.client.config.migrations);
+    this.config = getMergedConfig(knex.client.config.migrations);
 
     this._activeMigration = {
       fileName: null,
@@ -58,19 +59,26 @@ export default class Migrator {
 
   // Migrators to the latest configuration.
   latest(config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
+
     return migrationListResolver
-      .listAllAndCompleted(this.config, this.knex, this._absoluteConfigDir())
-      .tap(validateMigrationList)
+      .listAllAndCompleted(this.config, this.knex)
+      .tap((value) => validateMigrationList(this.config.migrationSource, value))
       .spread((all, completed) => {
-        const migrations = getNewMigrations(all, completed);
+        const migrations = getNewMigrations(
+          this.config.migrationSource,
+          all,
+          completed
+        );
 
         const transactionForAll =
           !this.config.disableTransactions &&
           isEmpty(
             filter(migrations, (migration) => {
-              const migrationContent = require(resolveMigrationPath(migration));
-              return !this._useTransaction(migrationContent);
+              const migrationContents = this.config.migrationSource.getMigration(
+                migration
+              );
+              return !this._useTransaction(migrationContents);
             })
           );
 
@@ -87,10 +95,13 @@ export default class Migrator {
   // Rollback the last "batch" of migrations that were run.
   rollback(config) {
     return Promise.try(() => {
-      this.config = this.setConfig(config);
+      this.config = getMergedConfig(config, this.config);
+
       return migrationListResolver
-        .listAllAndCompleted(this.config, this.knex, this._absoluteConfigDir())
-        .tap(validateMigrationList)
+        .listAllAndCompleted(this.config, this.knex)
+        .tap((value) =>
+          validateMigrationList(this.config.migrationSource, value)
+        )
         .then((val) => this._getLastBatch(val))
         .then((migrations) => {
           return this._runBatch(migrations, 'down');
@@ -99,24 +110,21 @@ export default class Migrator {
   }
 
   status(config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
 
     return Promise.all([
       getTable(this.knex, this.config.tableName, this.config.schemaName).select(
         '*'
       ),
-      migrationListResolver.listAll(
-        this._absoluteConfigDir(),
-        this.config.loadExtensions,
-        this.config.sortDirsSeparately
-      ),
+      migrationListResolver.listAll(this.config.migrationSource),
     ]).spread((db, code) => db.length - code.length);
   }
 
   // Retrieves and returns the current migration version we're on, as a promise.
   // If no migrations have been run yet, return "none".
   currentVersion(config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
+
     return migrationListResolver
       .listCompleted(this.config.tableName, this.config.schemaName, this.knex)
       .then((completed) => {
@@ -126,7 +134,8 @@ export default class Migrator {
   }
 
   forceFreeMigrationsLock(config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
+
     const lockTable = getLockTableName(this.config.tableName);
     return getSchemaBuilder(this.knex, this.config.schemaName)
       .hasTable(lockTable)
@@ -135,7 +144,8 @@ export default class Migrator {
 
   // Creates a new migration, with a given name.
   make(name, config) {
-    this.config = this.setConfig(config);
+    this.config = getMergedConfig(config, this.config);
+
     if (!name) {
       return Promise.reject(
         new Error('A name must be specified for the generated migration')
@@ -150,7 +160,7 @@ export default class Migrator {
   // Ensures a folder for the migrations exist, dependent on the migration
   // config settings.
   _ensureFolder() {
-    const dirs = this._absoluteConfigDir();
+    const dirs = this._absoluteConfigDirs();
 
     const promises = dirs.map((dir) => {
       return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
@@ -216,10 +226,17 @@ export default class Migrator {
               : []
         )
         .then(
-          (completed) => (migrations = getNewMigrations(migrations, completed))
+          (completed) =>
+            (migrations = getNewMigrations(
+              this.config.migrationSource,
+              migrations,
+              completed
+            ))
         )
         .then(() =>
-          Promise.all(migrations.map(this._validateMigrationStructure))
+          Promise.all(
+            migrations.map(this._validateMigrationStructure.bind(this))
+          )
         )
         .then(() => this._latestBatchNumber(trx))
         .then((batchNo) => {
@@ -270,17 +287,21 @@ export default class Migrator {
   // Validates some migrations by requiring and checking for an `up` and `down`
   // function.
   _validateMigrationStructure(migration) {
-    const migrationContent = require(resolveMigrationPath(migration));
+    const migrationName = this.config.migrationSource.getMigrationName(
+      migration
+    );
+    const migrationContent = this.config.migrationSource.getMigration(
+      migration
+    );
     if (
       typeof migrationContent.up !== 'function' ||
       typeof migrationContent.down !== 'function'
     ) {
       throw new Error(
-        `Invalid migration: ${
-          migration.file
-        } must have both an up and down function`
+        `Invalid migration: ${migrationName} must have both an up and down function`
       );
     }
+
     return migration;
   }
 
@@ -299,7 +320,7 @@ export default class Migrator {
   // passing any `variables` given in the config to the template.
   _writeNewMigration(name, tmpl) {
     const { config } = this;
-    const dirs = this._absoluteConfigDir();
+    const dirs = this._absoluteConfigDirs();
     const dir = dirs.slice(-1)[0]; // Get last specified directory
 
     if (name[0] === '-') name = name.slice(1);
@@ -313,7 +334,7 @@ export default class Migrator {
 
   // Get the last batch of migrations, by name, ordered by insert id in reverse
   // order.
-  _getLastBatch([allMigrations, doneMigrations]) {
+  _getLastBatch([allMigrations]) {
     const { tableName, schemaName } = this.config;
     return getTable(this.knex, tableName, schemaName)
       .where('batch', function(qb) {
@@ -322,7 +343,10 @@ export default class Migrator {
       .orderBy('id', 'desc')
       .map((migration) => {
         return allMigrations.find((entry) => {
-          return entry.file === migration.name;
+          return (
+            this.config.migrationSource.getMigrationName(entry) ===
+            migration.name
+          );
         });
       });
   }
@@ -355,10 +379,11 @@ export default class Migrator {
     let current = Promise.bind({ failed: false, failedOn: 0 });
     const log = [];
     each(migrations, (migration) => {
-      const directory = migration.directory;
-      const name = migration.file;
+      const name = this.config.migrationSource.getMigrationName(migration);
       this._activeMigration.fileName = name;
-      const migrationContent = require(directory + '/' + name);
+      const migrationContent = this.config.migrationSource.getMigration(
+        migration
+      );
 
       // We're going to run each of the migrations in the current "up".
       current = current
@@ -376,7 +401,7 @@ export default class Migrator {
           );
         })
         .then(() => {
-          log.push(path.join(directory, name));
+          log.push(name);
           if (direction === 'up') {
             return trxOrKnex.into(getTableName(tableName, schemaName)).insert({
               name,
@@ -409,7 +434,8 @@ export default class Migrator {
     });
   }
 
-  _absoluteConfigDir() {
+  /** Returns  */
+  _absoluteConfigDirs() {
     const directories = Array.isArray(this.config.directory)
       ? this.config.directory
       : [this.config.directory];
@@ -417,17 +443,41 @@ export default class Migrator {
       return path.resolve(process.cwd(), directory);
     });
   }
+}
 
-  setConfig(config) {
-    return assign({}, CONFIG_DEFAULT, this.config || {}, config);
+export function getMergedConfig(config, currentConfig) {
+  // config is the user specified config, mergedConfig has defaults and current config
+  // applied to it.
+  const mergedConfig = assign({}, CONFIG_DEFAULT, currentConfig || {}, config);
+
+  if (
+    config &&
+    // If user specifies any FS related config,
+    // clear existing FsMigrations migrationSource
+    (config.directory ||
+      config.sortDirsSeparately !== undefined ||
+      config.loadExtensions)
+  ) {
+    mergedConfig.migrationSource = null;
   }
+
+  // If the user has not specified any configs, we need to
+  // default to fs migrations to maintain compatibility
+  if (!mergedConfig.migrationSource) {
+    mergedConfig.migrationSource = new FsMigrations(
+      mergedConfig.directory,
+      mergedConfig.sortDirsSeparately
+    );
+  }
+
+  return mergedConfig;
 }
 
 // Validates that migrations are present in the appropriate directories.
-function validateMigrationList(migrations) {
+function validateMigrationList(migrationSource, migrations) {
   const all = migrations[0];
   const completed = migrations[1];
-  const diff = getMissingMigrations(completed, all);
+  const diff = getMissingMigrations(migrationSource, completed, all);
   if (!isEmpty(diff)) {
     throw new Error(
       `The migration directory is corrupt, the following files are missing: ${diff.join(
@@ -437,15 +487,19 @@ function validateMigrationList(migrations) {
   }
 }
 
-function getMissingMigrations(completed, all) {
+function getMissingMigrations(migrationSource, completed, all) {
   return differenceWith(completed, all, (completedMigration, allMigration) => {
-    return completedMigration === allMigration.file;
+    return (
+      completedMigration === migrationSource.getMigrationName(allMigration)
+    );
   });
 }
 
-function getNewMigrations(all, completed) {
+function getNewMigrations(migrationSource, all, completed) {
   return differenceWith(all, completed, (allMigration, completedMigration) => {
-    return completedMigration === allMigration.file;
+    return (
+      completedMigration === migrationSource.getMigrationName(allMigration)
+    );
   });
 }
 
@@ -455,10 +509,6 @@ function warnPromise(knex, value, name, fn) {
     if (fn && typeof fn === 'function') fn();
   }
   return value;
-}
-
-function resolveMigrationPath(migration) {
-  return path.join(migration.directory, migration.file);
 }
 
 // Ensure that we have 2 places for each of the date segments.
