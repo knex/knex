@@ -136,5 +136,6 @@ export default function makeKnex(client) {
 
   client.makeKnex = makeKnex;
 
+  knex.userParams = {};
   return knex;
 }

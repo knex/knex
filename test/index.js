@@ -35,7 +35,7 @@ describe('Query Building Tests', function() {
 
 describe('Integration Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-  require('./integration');
+  //require('./integration');
 });
 
 const config = require('./knexfile');
@@ -48,4 +48,5 @@ if (config.oracledb) {
 
 if (config.postgres) {
   require('./unit/dialects/postgres');
+  //require('./integration/builder/additional');
 }
