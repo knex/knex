@@ -4,7 +4,7 @@ import Migrator from '../migrate/Migrator';
 import Seeder from '../seed';
 import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
-import { assign, clone } from 'lodash';
+import { assign } from 'lodash';
 import batchInsert from './batchInsert';
 
 export default function makeKnex(client) {
