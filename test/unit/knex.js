@@ -43,6 +43,20 @@ describe('knex', () => {
     expect(knexWithParams.migrate).to.be.a('object');
   });
 
+  it('supports passing user params in config', () => {
+    const knexWithParams = Knex({
+      client: 'sqlite',
+      userParams: {
+        userParam: '451',
+      },
+    });
+
+    expect(knexWithParams).to.be.a('function');
+    expect(knexWithParams.userParams).to.deep.equal({ userParam: '451' });
+    expect(knexWithParams.client.config.client).to.equal('sqlite');
+    expect(knexWithParams.migrate).to.be.a('object');
+  });
+
   it('migrator of a copy with userParams has reference to correct Knex', () => {
     const knex = Knex({
       client: 'sqlite',
@@ -64,6 +78,20 @@ describe('knex', () => {
       expect(trx.userParams).to.deep.equal({
         userParam: '451',
       });
+      done();
+      return Promise.resolve();
+    });
+  });
+
+  it('creating transaction copy with user params should throw an error', (done) => {
+    const knex = Knex(sqliteConfig);
+
+    knex.transaction((trx) => {
+      expect(() => {
+        trx.withUserParams({ userParam: '451' });
+      }).to.throw(
+        /Cannot set user params on a transaction - it can only inherit params from main knex instance/
+      );
       done();
       return Promise.resolve();
     });
