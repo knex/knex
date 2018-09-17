@@ -11,10 +11,10 @@ module.exports = function(dialect) {
     var client;
     switch (dialect) {
       case 'mysql':
-        client = new MySQL_Client();
+        client = new MySQL_Client({ client: 'mysql' });
         break;
       case 'mysql2':
-        client = new MySQL2_Client();
+        client = new MySQL2_Client({ client: 'mysql2' });
         break;
     }
 
@@ -771,35 +771,29 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding precise time stamp', function() {
-      client.version = '5.6';
+    it('test adding precise timestamp', function() {
       tableSql = client
         .schemaBuilder()
         .table('users', function() {
-          this.timestamp('foo');
+          this.timestamp('foo', 6);
         })
         .toSQL();
-      delete client.version;
-
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add `foo` timestamp(6)'
       );
     });
 
-    it('test adding precise time stamps', function() {
-      client.version = '5.6';
+    it('test adding precise datetime', function() {
       tableSql = client
         .schemaBuilder()
         .table('users', function() {
-          this.timestamps();
+          this.datetime('foo', 6);
         })
         .toSQL();
-      delete client.version;
-
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'alter table `users` add `created_at` datetime(6), add `updated_at` datetime(6)'
+        'alter table `users` add `foo` datetime(6)'
       );
     });
 

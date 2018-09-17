@@ -166,11 +166,12 @@ assign(QueryCompiler.prototype, {
   // Compiles the "update" query.
   update() {
     // Make sure tableName is processed by the formatter first.
+    const withSQL = this.with();
     const { tableName } = this;
     const updateData = this._prepUpdate(this.single.update);
     const wheres = this.where();
     return (
-      this.with() +
+      withSQL +
       `update ${this.single.only ? 'only ' : ''}${tableName}` +
       ' set ' +
       updateData.join(', ') +
@@ -518,9 +519,10 @@ assign(QueryCompiler.prototype, {
   del() {
     // Make sure tableName is processed by the formatter first.
     const { tableName } = this;
+    const withSQL = this.with();
     const wheres = this.where();
     return (
-      this.with() +
+      withSQL +
       `delete from ${this.single.only ? 'only ' : ''}${tableName}` +
       (wheres ? ` ${wheres}` : '')
     );
@@ -594,7 +596,7 @@ assign(QueryCompiler.prototype, {
   },
 
   onUsing(clause) {
-    return this.formatter.wrap(clause.column);
+    return '(' + this.formatter.columnize(clause.column) + ')';
   },
 
   // Where Clause

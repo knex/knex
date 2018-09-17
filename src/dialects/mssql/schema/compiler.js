@@ -23,7 +23,7 @@ assign(SchemaCompiler_MSSQL.prototype, {
   renameTable(tableName, to) {
     this.pushQuery(
       `exec sp_rename ${this.formatter.parameter(
-        tableName
+        prefixedTableName(this.schema, tableName)
       )}, ${this.formatter.parameter(to)}`
     );
   },
@@ -31,8 +31,9 @@ assign(SchemaCompiler_MSSQL.prototype, {
   // Check whether a table exists on the query.
   hasTable(tableName) {
     const formattedTable = this.formatter.parameter(
-      this.formatter.wrap(tableName)
+      this.formatter.wrap(prefixedTableName(this.schema, tableName))
     );
+
     const sql =
       `select object_id from sys.tables ` +
       `where object_id = object_id(${formattedTable})`;
@@ -43,7 +44,7 @@ assign(SchemaCompiler_MSSQL.prototype, {
   hasColumn(tableName, column) {
     const formattedColumn = this.formatter.parameter(column);
     const formattedTable = this.formatter.parameter(
-      this.formatter.wrap(tableName)
+      this.formatter.wrap(prefixedTableName(this.schema, tableName))
     );
     const sql =
       `select object_id from sys.columns ` +

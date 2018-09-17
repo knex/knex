@@ -20,10 +20,6 @@ function Client_PG(config) {
   if (config.searchPath) {
     this.searchPath = config.searchPath;
   }
-
-  if (config.version) {
-    this.version = config.version;
-  }
 }
 inherits(Client_PG, Client);
 

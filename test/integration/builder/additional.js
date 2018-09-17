@@ -318,6 +318,7 @@ module.exports = function(knex) {
     it('should allow using .fn-methods to create raw statements', function() {
       expect(knex.fn.now().prototype === knex.raw().prototype);
       expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
+      expect(knex.fn.now(6).toQuery()).to.equal('CURRENT_TIMESTAMP(6)');
     });
 
     it('gets the columnInfo', function() {

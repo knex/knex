@@ -4,7 +4,7 @@
 
 var sinon = require('sinon');
 var MSSQL_Client = require('../../../lib/dialects/mssql');
-var client = new MSSQL_Client();
+var client = new MSSQL_Client({ client: 'mssql' });
 
 describe('MSSQL SchemaBuilder', function() {
   var tableSql;
@@ -238,6 +238,75 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('exec sp_rename ?, ?');
     expect(tableSql[0].bindings[0]).to.equal('users');
     expect(tableSql[0].bindings[1]).to.equal('foo');
+  });
+
+  it('test has table', function() {
+    tableSql = client
+      .schemaBuilder()
+      .hasTable('users')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'select object_id from sys.tables where object_id = object_id(?)'
+    );
+    expect(tableSql[0].bindings[0]).to.equal('[users]');
+  });
+
+  it('test has table with schema', function() {
+    tableSql = client
+      .schemaBuilder()
+      .withSchema('schema')
+      .hasTable('users')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'select object_id from sys.tables where object_id = object_id(?)'
+    );
+    expect(tableSql[0].bindings[0]).to.equal('[schema].[users]');
+  });
+
+  it('test rename table with schema', function() {
+    tableSql = client
+      .schemaBuilder()
+      .withSchema('schema')
+      .renameTable('users', 'foo')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('exec sp_rename ?, ?');
+    expect(tableSql[0].bindings[0]).to.equal('schema.users');
+    expect(tableSql[0].bindings[1]).to.equal('foo');
+  });
+
+  it('test has column', function() {
+    tableSql = client
+      .schemaBuilder()
+      .hasColumn('users', 'foo')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'select object_id from sys.columns where name = ? and object_id = object_id(?)'
+    );
+    expect(tableSql[0].bindings[0]).to.equal('foo');
+    expect(tableSql[0].bindings[1]).to.equal('[users]');
+  });
+
+  it('test has column with schema', function() {
+    tableSql = client
+      .schemaBuilder()
+      .withSchema('schema')
+      .hasColumn('users', 'foo')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'select object_id from sys.columns where name = ? and object_id = object_id(?)'
+    );
+    expect(tableSql[0].bindings[0]).to.equal('foo');
+    expect(tableSql[0].bindings[1]).to.equal('[schema].[users]');
   });
 
   it('test adding primary key', function() {
@@ -687,7 +756,7 @@ describe('MSSQL SchemaBuilder', function() {
       .toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime2');
   });
 
   it('test adding time', function() {
@@ -711,7 +780,23 @@ describe('MSSQL SchemaBuilder', function() {
       .toSQL();
 
     equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime');
+    expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime2');
+  });
+
+  it('test adding time stamp with timezone', function() {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function() {
+        this.timestamp('foo', {
+          useTz: true,
+        });
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ADD [foo] datetimeoffset'
+    );
   });
 
   it('test adding time stamps', function() {
@@ -724,7 +809,7 @@ describe('MSSQL SchemaBuilder', function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'ALTER TABLE [users] ADD [created_at] datetime, [updated_at] datetime'
+      'ALTER TABLE [users] ADD [created_at] datetime2, [updated_at] datetime2'
     );
   });
 
@@ -781,7 +866,7 @@ describe('MSSQL SchemaBuilder', function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'CREATE TABLE [default_raw_test] ([created_at] datetime default GETDATE())'
+      'CREATE TABLE [default_raw_test] ([created_at] datetime2 default GETDATE())'
     );
   });
 
@@ -809,7 +894,7 @@ describe('MSSQL SchemaBuilder', function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'CREATE TABLE [default_raw_test] ([created_at] datetime default GETDATE())'
+      'CREATE TABLE [default_raw_test] ([created_at] datetime2 default GETDATE())'
     );
   });
 

@@ -120,7 +120,7 @@ assign(Builder.prototype, {
   // Adds a column or columns to the list of "columns"
   // being selected on the query.
   columns(column) {
-    if (!column) return this;
+    if (!column && column !== 0) return this;
     this._statements.push({
       grouping: 'columns',
       value: helpers.normalizeArr.apply(null, arguments),
@@ -176,7 +176,11 @@ assign(Builder.prototype, {
     } else if (joinType === 'raw') {
       join = new JoinClause(this.client.raw(table, first), 'raw');
     } else {
-      join = new JoinClause(table, joinType, schema);
+      join = new JoinClause(
+        table,
+        joinType,
+        table instanceof Builder ? undefined : schema
+      );
       if (arguments.length > 1) {
         join.on.apply(join, toArray(arguments).slice(1));
       }

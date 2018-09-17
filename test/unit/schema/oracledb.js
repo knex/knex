@@ -4,7 +4,7 @@
 
 var sinon = require('sinon');
 var Oracle_Client = require('../../../lib/dialects/oracledb');
-var client = new Oracle_Client({});
+var client = new Oracle_Client({ client: 'oracledb' });
 
 describe('OracleDb SchemaBuilder', function() {
   var tableSql;

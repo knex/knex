@@ -1,6 +1,24 @@
 
 # Master (Unreleased)
 
+### Breaking Changes:
+
+- Use datetime2 for MSSQL datetime + timestamp types. This change is incompatible with MSSQL older than 2008 #2757
+- Introduced support for specifying multiple directories for the Migrator #2735
+- Knex.VERSION() method was removed, run "require('knex/package').version" instead #2776
+
+# 0.15.2 - 19 Jul, 2018
+
+### Changes:
+
+- Rolled back changes introduced by #2542, in favor of opt-in behavior by adding a precision option in `date` / `timestamp` / `datetime` / `knex.fn.now` (#2715, #2721)
+
+# 0.15.1 - 12 Jul, 2018
+
+### Bug fixes:
+
+- Fix warning erroneously displayed for mysql #2705
+
 # 0.15.0 - 1 Jul, 2018
 
 ### Breaking Changes:
