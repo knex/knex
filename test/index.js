@@ -48,5 +48,4 @@ if (config.oracledb) {
 
 if (config.postgres) {
   require('./unit/dialects/postgres');
-  require('./integration/builder/additional');
 }
