@@ -4,7 +4,7 @@ import Migrator from '../migrate/Migrator';
 import Seeder from '../seed';
 import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
-import { assign } from 'lodash';
+import { assign, clone } from 'lodash';
 import batchInsert from './batchInsert';
 
 export default function makeKnex(client) {
@@ -52,6 +52,12 @@ export default function makeKnex(client) {
 
     ref(ref) {
       return client.ref(ref);
+    },
+
+    withUserParams(params) {
+      const knexClone = clone(this);
+      knexClone.userParams = params;
+      return knexClone;
     },
   });
 

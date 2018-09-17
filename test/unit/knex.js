@@ -27,4 +27,12 @@ describe('knex', () => {
       });
     }).not.to.throw();
   });
+
+  it('supports creating copy with userParams', () => {
+    const knex = Knex({
+      client: 'sqlite',
+    });
+    const knexWithParams = knex.withUserParams({ userParam: '451' });
+    expect(knexWithParams.userParams).to.deep.equal({ userParam: '451' });
+  });
 });

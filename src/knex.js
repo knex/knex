@@ -4,7 +4,6 @@ import Client from './client';
 import makeKnex from './util/make-knex';
 import parseConnection from './util/parse-connection';
 import { SUPPORTED_CLIENTS, CLIENT_ALIASES } from './constants';
-import { clone } from 'lodash';
 
 export default function Knex(config) {
   // If config is string, try to parse it
@@ -72,10 +71,4 @@ Knex.raw = (sql, bindings) => {
     'global Knex.raw is deprecated, use knex.raw (chain off an initialized knex object)'
   );
   return new Raw().set(sql, bindings);
-};
-
-Knex.withUserParams = (params) => {
-  const knexClone = clone(this);
-  knexClone.userParams = params;
-  return knexClone;
 };
