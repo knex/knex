@@ -55,7 +55,7 @@ export default function makeKnex(client) {
     },
 
     withUserParams(params) {
-      const knexClone = clone(this);
+      const knexClone = shallowClone(knex); // We need to include getters in our clone
       knexClone.userParams = params;
       return knexClone;
     },
@@ -144,4 +144,11 @@ export default function makeKnex(client) {
 
   knex.userParams = {};
   return knex;
+}
+
+function shallowClone(obj) {
+  return Object.create(
+    Object.getPrototypeOf(obj),
+    Object.getOwnPropertyDescriptors(obj)
+  );
 }

@@ -32,7 +32,11 @@ describe('knex', () => {
     const knex = Knex({
       client: 'sqlite',
     });
+
     const knexWithParams = knex.withUserParams({ userParam: '451' });
+
     expect(knexWithParams.userParams).to.deep.equal({ userParam: '451' });
+    expect(knexWithParams.client.config.client).to.equal('sqlite');
+    expect(knexWithParams.migrate).to.be.a('object');
   });
 });
