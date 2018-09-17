@@ -37,7 +37,9 @@ export default function makeKnex(client) {
     // Runs a new transaction, taking a container and returning a promise
     // for when the transaction is resolved.
     transaction(container, config) {
-      return client.transaction(container, config);
+      const trx = client.transaction(container, config);
+      trx.userParams = this.userParams;
+      return trx;
     },
 
     // Typically never needed, initializes the pool for a knex client.
@@ -55,7 +57,7 @@ export default function makeKnex(client) {
     },
 
     withUserParams(params) {
-      const knexClone = shallowClone(knex); // We need to include getters in our clone
+      const knexClone = shallowCloneFunction(knex); // We need to include getters in our clone
       redefineProperties(knexClone);
       knexClone.userParams = params;
       return knexClone;
@@ -132,9 +134,13 @@ function redefineProperties(knex) {
   });
 }
 
-function shallowClone(obj) {
-  return Object.create(
-    Object.getPrototypeOf(obj),
-    Object.getOwnPropertyDescriptors(obj)
+function shallowCloneFunction(originalFunction) {
+  const clonedFunction = originalFunction.bind(
+    Object.create(
+      Object.getPrototypeOf(originalFunction),
+      Object.getOwnPropertyDescriptors(originalFunction)
+    )
   );
+  Object.assign(clonedFunction, originalFunction);
+  return clonedFunction;
 }

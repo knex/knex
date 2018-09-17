@@ -186,6 +186,7 @@ export default class Transaction extends EventEmitter {
 // last savepoint - otherwise it rolls back the transaction.
 function makeTransactor(trx, connection, trxClient) {
   const transactor = makeKnex(trxClient);
+  transactor.userParams = trx.userParams;
 
   transactor.transaction = function(container, options) {
     return trxClient.transaction(container, options, trx);
