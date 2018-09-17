@@ -56,6 +56,7 @@ export default function makeKnex(client) {
 
     withUserParams(params) {
       const knexClone = shallowClone(knex); // We need to include getters in our clone
+      redefineProperties(knexClone);
       knexClone.userParams = params;
       return knexClone;
     },
@@ -77,54 +78,7 @@ export default function makeKnex(client) {
   });
 
   knex.client = client;
-
-  const VERSION = '0.12.6';
-
-  Object.defineProperties(knex, {
-    __knex__: {
-      get() {
-        knex.client.logger.warn(
-          'knex.__knex__ is deprecated, you can get the module version' +
-            "by running require('knex/package').version"
-        );
-        return VERSION;
-      },
-    },
-
-    VERSION: {
-      get() {
-        knex.client.logger.warn(
-          'knex.VERSION is deprecated, you can get the module version' +
-            "by running require('knex/package').version"
-        );
-        return VERSION;
-      },
-    },
-
-    schema: {
-      get() {
-        return client.schemaBuilder();
-      },
-    },
-
-    migrate: {
-      get() {
-        return new Migrator(knex);
-      },
-    },
-
-    seed: {
-      get() {
-        return new Seeder(knex);
-      },
-    },
-
-    fn: {
-      get() {
-        return new FunctionHelper(client);
-      },
-    },
-  });
+  redefineProperties(knex);
 
   // Passthrough all "start" and "query" events to the knex object.
   client.on('start', function(obj) {
@@ -144,6 +98,38 @@ export default function makeKnex(client) {
 
   knex.userParams = {};
   return knex;
+}
+
+function redefineProperties(knex) {
+  Object.defineProperties(knex, {
+    schema: {
+      get() {
+        return knex.client.schemaBuilder();
+      },
+      configurable: true,
+    },
+
+    migrate: {
+      get() {
+        return new Migrator(knex);
+      },
+      configurable: true,
+    },
+
+    seed: {
+      get() {
+        return new Seeder(knex);
+      },
+      configurable: true,
+    },
+
+    fn: {
+      get() {
+        return new FunctionHelper(knex.client);
+      },
+      configurable: true,
+    },
+  });
 }
 
 function shallowClone(obj) {

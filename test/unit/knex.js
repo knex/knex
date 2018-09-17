@@ -39,4 +39,16 @@ describe('knex', () => {
     expect(knexWithParams.client.config.client).to.equal('sqlite');
     expect(knexWithParams.migrate).to.be.a('object');
   });
+
+  it('migrator of a copy with userParams has reference to correct Knex', () => {
+    const knex = Knex({
+      client: 'sqlite',
+    });
+
+    const knexWithParams = knex.withUserParams({ userParam: '451' });
+
+    expect(knexWithParams.migrate.knex.userParams).to.deep.equal({
+      userParam: '451',
+    });
+  });
 });
