@@ -8,11 +8,11 @@ module.exports = function(api) {
       '@babel/preset-env',
       Object.assign(
         {},
-        isDev ? { targets: { node: 'current' } } : { targets: { node: '6' } }
+        isDev ? { targets: { node: 'current' } } : { targets: { node: 6 } }
       ),
     ],
   ];
-  const plugins = ['@babel/transform-runtime', 'add-module-exports'];
+  const plugins = ['add-module-exports'];
 
   api.cache(() => process.env.NODE_ENV); // Invalidate cache when building for a different environment
   return {
