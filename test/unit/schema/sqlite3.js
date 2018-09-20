@@ -11,7 +11,6 @@ const SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 
 const _ = require('lodash');
 const { equal, deepEqual } = require('assert');
-const { expect } = require('chai');
 
 describe('SQLite SchemaBuilder', function() {
   it('basic create table', function() {
