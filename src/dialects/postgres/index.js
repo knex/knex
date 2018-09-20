@@ -272,16 +272,21 @@ assign(Client_PG.prototype, {
     // early there would release the `connectionToKill` back to the pool with
     // a `KILL QUERY` command yet to finish.
     return acquiringConn.then((conn) => {
-      return this.query(conn, {
-        method: 'raw',
-        sql: 'SELECT pg_terminate_backend(?);',
-        bindings: [connectionToKill.processID],
-        options: {},
-      }).finally(() => {
-        // NOT returning this promise because we want to release the connection
-        // in a non-blocking fashion
-        this.releaseConnection(conn);
-      });
+      return this._wrappedCancelQueryCall(conn, connectionToKill).finally(
+        () => {
+          // NOT returning this promise because we want to release the connection
+          // in a non-blocking fashion
+          this.releaseConnection(conn);
+        }
+      );
+    });
+  },
+  _wrappedCancelQueryCall(conn, connectionToKill) {
+    return this.query(conn, {
+      method: 'raw',
+      sql: 'SELECT pg_terminate_backend(?);',
+      bindings: [connectionToKill.processID],
+      options: {},
     });
   },
 });
