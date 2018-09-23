@@ -9180,6 +9180,156 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('#1982 - should allow query comments in querybuilder', () => {
+    testsql(
+      qb()
+        .from('testtable')
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
+      {
+        mysql: {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from `testtable`',
+          bindings: [],
+        },
+        oracledb: {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          bindings: [],
+        },
+        mssql: {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from [testtable]',
+          bindings: [],
+        },
+        pg: {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('#1982 (2) - should throw error on non string', () => {
+    try {
+      testsql(
+        qb()
+          .from('testtable')
+          .comment({ prop: 'val' }),
+        {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+          oracledb: {
+            sql: '',
+            bindings: [],
+          },
+          mssql: {
+            sql: '',
+            bindings: [],
+          },
+          pg: {
+            sql: '',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: '',
+            bindings: [],
+          },
+        }
+      );
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Comment must be a string');
+    }
+  });
+
+  it('#1982 (3) - should throw error when there is subcomments', () => {
+    try {
+      testsql(
+        qb()
+          .from('testtable')
+          .comment('/* Hello world'),
+        {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+          oracledb: {
+            sql: '',
+            bindings: [],
+          },
+          mssql: {
+            sql: '',
+            bindings: [],
+          },
+          pg: {
+            sql: '',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: '',
+            bindings: [],
+          },
+        }
+      );
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Cannot include /*, */, ? in comment');
+    }
+  });
+
+  it('#1982 (4) - should throw error when there is question mark', () => {
+    try {
+      testsql(
+        qb()
+          .from('testtable')
+          .comment('?'),
+        {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+          oracledb: {
+            sql: '',
+            bindings: [],
+          },
+          mssql: {
+            sql: '',
+            bindings: [],
+          },
+          pg: {
+            sql: '',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: '',
+            bindings: [],
+          },
+        }
+      );
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Cannot include /*, */, ? in comment');
+    }
+  });
+
   it('#4199 - allows hint comments in subqueries', () => {
     testsql(
       qb()
