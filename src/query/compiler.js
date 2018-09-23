@@ -28,6 +28,7 @@ function QueryCompiler(client, builder) {
   this.client = client;
   this.method = builder._method || 'select';
   this.options = builder._options;
+  this.queryComments = builder._comments;
   this.single = builder._single;
   this.timeout = builder._timeout || false;
   this.cancelOnTimeout = builder._cancelOnTimeout || false;
@@ -36,6 +37,7 @@ function QueryCompiler(client, builder) {
 }
 
 const components = [
+  'comments',
   'columns',
   'join',
   'where',
@@ -207,6 +209,12 @@ assign(QueryCompiler.prototype, {
         ? ` from ${this.single.only ? 'only ' : ''}${this.tableName}`
         : '')
     );
+  },
+
+  // Add comments to the query
+  comments() {
+    if (!this.queryComments.length) return '';
+    return this.queryComments.map((comment) => comment.comment).join(' ');
   },
 
   _aggregate(stmt, { aliasSeparator = ' as ', distinctParentheses } = {}) {

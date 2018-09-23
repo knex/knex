@@ -7478,6 +7478,36 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('#1982 - should allow query comments in querybuilder', function() {
+    testsql(
+      qb()
+        .from('testtable')
+        .comment('/* Added comment */'),
+      {
+        mysql: {
+          sql: '/* Added comment */ select * from `testtable`',
+          bindings: [],
+        },
+        oracledb: {
+          sql: '/* Added comment */ select * from "testtable"',
+          bindings: [],
+        },
+        mssql: {
+          sql: '/* Added comment */ select * from [testtable]',
+          bindings: [],
+        },
+        pg: {
+          sql: '/* Added comment */ select * from "testtable"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: '/* Added comment */ select * from "testtable"',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('Any undefined binding in a SELECT query should throw an error', function() {
     var qbuilders = [
       qb()

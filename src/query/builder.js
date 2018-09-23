@@ -31,6 +31,7 @@ function Builder(client) {
   this.client = client;
   this.and = this;
   this._single = {};
+  this._comments = [];
   this._statements = [];
   this._method = 'select';
   if (client.config) {
@@ -59,6 +60,7 @@ assign(Builder.prototype, {
     const cloned = new this.constructor(this.client);
     cloned._method = this._method;
     cloned._single = clone(this._single);
+    cloned._comments = clone(this._comments);
     cloned._statements = clone(this._statements);
     cloned._debug = this._debug;
 
@@ -124,6 +126,14 @@ assign(Builder.prototype, {
     this._statements.push({
       grouping: 'columns',
       value: helpers.normalizeArr.apply(null, arguments),
+    });
+    return this;
+  },
+
+  // Adds a comment to the query
+  comment(txt) {
+    this._comments.push({
+      comment: txt,
     });
     return this;
   },

@@ -17,6 +17,7 @@ import QueryCompiler from '../../../query/compiler';
 import { ReturningHelper } from '../utils';
 
 const components = [
+  'comments',
   'columns',
   'join',
   'where',
