@@ -838,6 +838,13 @@ assign(Builder.prototype, {
     return this;
   },
 
+  // Use existing connection to execute the query
+  // Same value that client.acquireConnection() for an according client returns should be passed
+  connection(_connection) {
+    this._connection = _connection;
+    return this;
+  },
+
   // Pluck a column from a query.
   pluck(column) {
     this._method = 'pluck';
