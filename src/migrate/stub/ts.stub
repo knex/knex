@@ -1,15 +1,15 @@
 import * as Knex from "knex";
 
-exports.up = function (knex: Knex): Promise<any> {
+export async function up(knex: Knex): Promise<Knex.SchemaBuilder> {
     <% if (d.tableName) { %>
-    return knex.schema.createTable("<%= d.tableName %>", function (t) {
+    return knex.schema.createTable("<%= d.tableName %>", function (t: Knex.AlterTableBuilder) {
         t.increments();
         t.timestamps();
     });
     <% } %>
 };
 
-exports.down = function (knex: Knex): Promise<any> {
+export async function down(knex: Knex): Promise<Knex.SchemaBuilder> {
     <% if (d.tableName) { %>
     return knex.schema.dropTable("<%= d.tableName %>");
     <% } %>
