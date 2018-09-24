@@ -61,6 +61,7 @@ assign(Builder.prototype, {
     cloned._single = clone(this._single);
     cloned._statements = clone(this._statements);
     cloned._debug = this._debug;
+    cloned._connection = this._connection;
 
     // `_option` is assigned by the `Interface` mixin.
     if (!isUndefined(this._options)) {
