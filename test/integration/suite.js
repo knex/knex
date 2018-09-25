@@ -13,20 +13,21 @@ module.exports = function(knex) {
       return knex.destroy();
     });
 
-    require('./schema')(knex);
-    require('./migrate')(knex);
+    require('./schema')(knex.withUserParams({}));
+    require('./migrate')(knex.withUserParams({}));
 
-    require('./seed')(knex);
-    require('./builder/inserts')(knex);
-    require('./builder/selects')(knex);
-    require('./builder/unions')(knex);
-    require('./builder/joins')(knex);
-    require('./builder/aggregate')(knex);
-    require('./builder/updates')(knex);
-    require('./builder/transaction')(knex);
-    require('./builder/deletes')(knex);
-    require('./builder/additional')(knex);
-    require('./datatype/bigint')(knex);
+    require('./seed')(knex.withUserParams({}));
+    require('./builder/inserts')(knex.withUserParams({}));
+    require('./builder/selects')(knex.withUserParams({}));
+    require('./builder/unions')(knex.withUserParams({}));
+    require('./builder/joins')(knex.withUserParams({}));
+    require('./builder/aggregate')(knex.withUserParams({}));
+    require('./builder/updates')(knex.withUserParams({}));
+    require('./builder/transaction')(knex.withUserParams({}));
+    require('./builder/deletes')(knex.withUserParams({}));
+    require('./builder/additional')(knex.withUserParams({}));
+    require('./builder/additional')(knex.withUserParams({}));
+    require('./datatype/bigint')(knex.withUserParams({}));
 
     describe('knex.destroy', function() {
       it('should allow destroying the pool with knex.destroy', function() {

@@ -64,12 +64,6 @@ export default function makeKnex(client) {
     },
   });
 
-  // Hook up the "knex" object as an EventEmitter.
-  const ee = new EventEmitter();
-  for (const key in ee) {
-    knex[key] = ee[key];
-  }
-
   // Allow chaining methods from the root object, before
   // any other information is specified.
   QueryInterface.forEach(function(method) {
@@ -81,20 +75,6 @@ export default function makeKnex(client) {
 
   knex.client = client;
   redefineProperties(knex);
-
-  // Passthrough all "start" and "query" events to the knex object.
-  client.on('start', function(obj) {
-    knex.emit('start', obj);
-  });
-  client.on('query', function(obj) {
-    knex.emit('query', obj);
-  });
-  client.on('query-error', function(err, obj) {
-    knex.emit('query-error', err, obj);
-  });
-  client.on('query-response', function(response, obj, builder) {
-    knex.emit('query-response', response, obj, builder);
-  });
 
   client.makeKnex = makeKnex;
 
@@ -131,6 +111,26 @@ function redefineProperties(knex) {
       },
       configurable: true,
     },
+  });
+
+  // Hook up the "knex" object as an EventEmitter.
+  const ee = new EventEmitter();
+  for (const key in ee) {
+    knex[key] = ee[key];
+  }
+
+  // Passthrough all "start" and "query" events to the knex object.
+  knex.client.on('start', function(obj) {
+    knex.emit('start', obj);
+  });
+  knex.client.on('query', function(obj) {
+    knex.emit('query', obj);
+  });
+  knex.client.on('query-error', function(err, obj) {
+    knex.emit('query-error', err, obj);
+  });
+  knex.client.on('query-response', function(response, obj, builder) {
+    knex.emit('query-response', response, obj, builder);
   });
 }
 
