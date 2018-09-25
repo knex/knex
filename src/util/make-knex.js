@@ -58,6 +58,14 @@ export default function makeKnex(client) {
 
     withUserParams(params) {
       const knexClone = shallowCloneFunction(knex); // We need to include getters in our clone
+      if (knex.client) {
+        knexClone.client = Object.assign({}, knex.client); // Clone client to avoid leaking listeners that are set on it
+        const parentPrototype = Object.getPrototypeOf(knex.client);
+        if (parentPrototype) {
+          Object.setPrototypeOf(knexClone.client, parentPrototype);
+        }
+      }
+
       redefineProperties(knexClone);
       knexClone.userParams = params;
       return knexClone;
