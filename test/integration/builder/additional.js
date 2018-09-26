@@ -759,13 +759,34 @@ module.exports = function(knex) {
         return query.timeout(200, { cancel: true });
       }
 
-      // Only mysql query cancelling supported for now
-      if (!_.startsWith(driverName, 'mysql')) {
+      // Only mysql/postgres query cancelling supported for now
+      if (
+        !_.startsWith(driverName, 'mysql') &&
+        !_.startsWith(driverName, 'pg')
+      ) {
         expect(addTimeout).to.throw(
           'Query cancelling not supported for this dialect'
         );
         return;
       }
+
+      var getProcessesQueries = {
+        pg: function() {
+          return knex.raw('SELECT * from pg_stat_activity');
+        },
+        mysql: function() {
+          return knex.raw('SHOW PROCESSLIST');
+        },
+        mysql2: function() {
+          return knex.raw('SHOW PROCESSLIST');
+        },
+      };
+
+      if (!getProcessesQueries.hasOwnProperty(driverName)) {
+        throw new Error('Missing test query for driverName: ' + driverName);
+      }
+
+      var getProcessesQuery = getProcessesQueries[driverName]();
 
       return addTimeout()
         .then(function() {
@@ -787,49 +808,153 @@ module.exports = function(knex) {
             .then()
             .delay(50)
             .then(function() {
-              return knex.raw('SHOW PROCESSLIST');
+              return getProcessesQuery;
             })
             .then(function(results) {
-              var processes = results[0];
-              var sleepProcess = _.find(processes, {
-                Info: 'SELECT SLEEP(10)',
-              });
+              var processes;
+              var sleepProcess;
+
+              if (_.startsWith(driverName, 'pg')) {
+                processes = results.rows;
+                sleepProcess = _.find(processes, { query: query.toString() });
+              } else {
+                processes = results[0];
+                sleepProcess = _.find(processes, {
+                  Info: 'SELECT SLEEP(10)',
+                });
+              }
               expect(sleepProcess).to.equal(undefined);
             });
         });
     });
 
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
-      // Only mysql query cancelling supported for now
-      var driverName = knex.client.config.driverName;
-      if (!_.startsWith(driverName, 'mysql')) {
+      // Only mysql/postgres query cancelling supported for now
+      var driverName = knex.client.driverName;
+      if (
+        !_.startsWith(driverName, 'mysql') &&
+        !_.startsWith(driverName, 'pg')
+      ) {
         return;
       }
 
-      //To make this test easier, I'm changing the pool settings to max 1.
-      var knexConfig = _.clone(knex.client.config);
+      // To make this test easier, I'm changing the pool settings to max 1.
+      // Also setting acquireTimeoutMillis to lower as not to wait the default time
+      var knexConfig = _.cloneDeep(knex.client.config);
       knexConfig.pool.min = 0;
       knexConfig.pool.max = 1;
+      knexConfig.pool.acquireTimeoutMillis = 100;
 
       var knexDb = new Knex(knexConfig);
 
-      return knexDb
-        .raw('SELECT SLEEP(1)')
+      var testQueries = {
+        pg: function() {
+          return knexDb.raw('SELECT pg_sleep(10)');
+        },
+        mysql: function() {
+          return knexDb.raw('SELECT SLEEP(10)');
+        },
+        mysql2: function() {
+          return knexDb.raw('SELECT SLEEP(10)');
+        },
+        mssql: function() {
+          return knexDb.raw("WAITFOR DELAY '00:00:10'");
+        },
+        oracle: function() {
+          return knexDb.raw('begin dbms_lock.sleep(10); end;');
+        },
+      };
+
+      if (!testQueries.hasOwnProperty(driverName)) {
+        throw new Error('Missing test query for dialect: ' + driverName);
+      }
+
+      var query = testQueries[driverName]();
+
+      return query
         .timeout(1, { cancel: true })
-        .then(
-          function() {
-            throw new Error("Shouldn't have gotten here.");
-          },
-          function(error) {
-            expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
-              timeout: 1,
-              name: 'TimeoutError',
-              message:
-                'After query timeout of 1ms exceeded, cancelling of query failed.',
-            });
-          }
-        )
+        .then(function() {
+          throw new Error("Shouldn't have gotten here.");
+        })
+        .catch(function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 1,
+            name: 'TimeoutError',
+            message:
+              'After query timeout of 1ms exceeded, cancelling of query failed.',
+          });
+        })
         .finally(() => knexDb.destroy());
+    });
+
+    it('.timeout(ms, {cancel: true}) should release connections after failing if connection cancellation throws an error', function() {
+      // Only mysql/postgres query cancelling supported for now
+      var driverName = knex.client.driverName;
+      if (!_.startsWith(driverName, 'pg')) {
+        return;
+      }
+
+      // To make this test easier, I'm changing the pool settings to max 1.
+      // Also setting acquireTimeoutMillis to lower as not to wait the default time
+      var knexConfig = _.cloneDeep(knex.client.config);
+      knexConfig.pool.min = 0;
+      knexConfig.pool.max = 2;
+      knexConfig.pool.acquireTimeoutMillis = 100;
+
+      var knexDb = new Knex(knexConfig);
+
+      var rawTestQueries = {
+        pg: (sleepSeconds) => `SELECT pg_sleep(${sleepSeconds})`,
+      };
+
+      if (!rawTestQueries.hasOwnProperty(driverName)) {
+        throw new Error('Missing test query for driverName: ' + driverName);
+      }
+
+      const getTestQuery = (sleepSeconds = 10) => {
+        const rawTestQuery = rawTestQueries[driverName](sleepSeconds);
+        return knexDb.raw(rawTestQuery);
+      };
+
+      const knexPrototype = Object.getPrototypeOf(knexDb.client);
+      const originalWrappedCancelQueryCall =
+        knexPrototype._wrappedCancelQueryCall;
+      knexPrototype._wrappedCancelQueryCall = (conn) => {
+        return knexPrototype.query(conn, {
+          method: 'raw',
+          sql: 'TestError',
+        });
+      };
+
+      const queryTimeout = 10;
+      const secondQueryTimeout = 11;
+
+      return getTestQuery()
+        .timeout(queryTimeout, { cancel: true })
+        .then(function() {
+          throw new Error("Shouldn't have gotten here.");
+        })
+        .catch(function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: queryTimeout,
+            name: 'error',
+            message: `After query timeout of ${queryTimeout}ms exceeded, cancelling of query failed.`,
+          });
+        })
+        .then(() => {
+          knexPrototype._wrappedCancelQueryCall = originalWrappedCancelQueryCall;
+          return getTestQuery().timeout(secondQueryTimeout, { cancel: true });
+        })
+        .catch(function(error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: secondQueryTimeout,
+            name: 'TimeoutError',
+            message: `Defined query timeout of ${secondQueryTimeout}ms exceeded when running query.`,
+          });
+        })
+        .finally(() => {
+          return knexDb.destroy();
+        });
     });
 
     it('Event: query-response', function() {

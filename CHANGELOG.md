@@ -4,8 +4,29 @@
 ### Breaking Changes:
 
 - Use datetime2 for MSSQL datetime + timestamp types. This change is incompatible with MSSQL older than 2008 #2757
-- Introduced support for specifying multiple directories for the Migrator #2735
 - Knex.VERSION() method was removed, run "require('knex/package').version" instead #2776
+- Knex transpilation now targets Node.js 6, meaning it will no longer run on older Node.js versions #2813
+
+### New features:
+
+- Introduced abstraction for getting migrations to make migration bundling easier #2775
+- Allow timestamp with timezone on mssql databases #2724
+- Feature/2690: Multiple migration directories #2735
+
+### Bug fixes:
+
+- #2758: Implement fail-fast logic for dialect resolution #2776
+- Fixed identifier wrapping for `using()`. Use columnize instead of wrap in using(). #2713
+- Fix issues with warnPromise when migration does not return a promise.… #2730
+- Compile with before update so that bindings are put in correct order #2733
+- Fix join using builder withSchema. #2744
+
+### Test / internal changes
+
+- Update nyc version #2810
+- Add tests for multiple union arguments with callbacks and builders #2749
+- Update dependencies #2772
+- Separate migration generator #2786
 
 # 0.15.2 - 19 Jul, 2018
 

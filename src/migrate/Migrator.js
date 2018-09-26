@@ -1,8 +1,5 @@
 // Migrator
 // -------
-import fs from 'fs';
-import path from 'path';
-import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
 import {
   assign,
@@ -14,7 +11,6 @@ import {
   isEmpty,
   isUndefined,
   max,
-  template,
 } from 'lodash';
 import inherits from 'inherits';
 import {
@@ -26,6 +22,7 @@ import {
 import { getSchemaBuilder } from './table-creator';
 import * as migrationListResolver from './migration-list-resolver';
 import FsMigrations, { DEFAULT_LOAD_EXTENSIONS } from './sources/fs-migrations';
+import MigrationGenerator from './MigrationGenerator';
 
 function LockError(msg) {
   this.name = 'MigrationLocked';
@@ -51,6 +48,7 @@ export default class Migrator {
   constructor(knex) {
     this.knex = knex;
     this.config = getMergedConfig(knex.client.config.migrations);
+    this.generator = new MigrationGenerator(knex.client.config.migrations);
 
     this._activeMigration = {
       fileName: null,
@@ -145,30 +143,7 @@ export default class Migrator {
   // Creates a new migration, with a given name.
   make(name, config) {
     this.config = getMergedConfig(config, this.config);
-
-    if (!name) {
-      return Promise.reject(
-        new Error('A name must be specified for the generated migration')
-      );
-    }
-
-    return this._ensureFolder(config)
-      .then((val) => this._generateStubTemplate(val))
-      .then((val) => this._writeNewMigration(name, val));
-  }
-
-  // Ensures a folder for the migrations exist, dependent on the migration
-  // config settings.
-  _ensureFolder() {
-    const dirs = this._absoluteConfigDirs();
-
-    const promises = dirs.map((dir) => {
-      return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
-        Promise.promisify(mkdirp)(dir)
-      );
-    });
-
-    return Promise.all(promises);
+    return this.generator.make(name, this.config);
   }
 
   _isLocked(trx) {
@@ -305,33 +280,6 @@ export default class Migrator {
     return migration;
   }
 
-  // Generates the stub template for the current migration, returning a compiled
-  // template.
-  _generateStubTemplate() {
-    const stubPath =
-      this.config.stub ||
-      path.join(__dirname, 'stub', this.config.extension + '.stub');
-    return Promise.promisify(fs.readFile, { context: fs })(stubPath).then(
-      (stub) => template(stub.toString(), { variable: 'd' })
-    );
-  }
-
-  // Write a new migration to disk, using the config and generated filename,
-  // passing any `variables` given in the config to the template.
-  _writeNewMigration(name, tmpl) {
-    const { config } = this;
-    const dirs = this._absoluteConfigDirs();
-    const dir = dirs.slice(-1)[0]; // Get last specified directory
-
-    if (name[0] === '-') name = name.slice(1);
-    const filename = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
-
-    return Promise.promisify(fs.writeFile, { context: fs })(
-      path.join(dir, filename),
-      tmpl(config.variables || {})
-    ).return(path.join(dir, filename));
-  }
-
   // Get the last batch of migrations, by name, ordered by insert id in reverse
   // order.
   _getLastBatch([allMigrations]) {
@@ -433,16 +381,6 @@ export default class Migrator {
       );
     });
   }
-
-  /** Returns  */
-  _absoluteConfigDirs() {
-    const directories = Array.isArray(this.config.directory)
-      ? this.config.directory
-      : [this.config.directory];
-    return directories.map((directory) => {
-      return path.resolve(process.cwd(), directory);
-    });
-  }
 }
 
 export function getMergedConfig(config, currentConfig) {
@@ -509,24 +447,4 @@ function warnPromise(knex, value, name, fn) {
     if (fn && typeof fn === 'function') fn();
   }
   return value;
-}
-
-// Ensure that we have 2 places for each of the date segments.
-function padDate(segment) {
-  segment = segment.toString();
-  return segment[1] ? segment : `0${segment}`;
-}
-
-// Get a date object in the correct format, without requiring a full out library
-// like "moment.js".
-function yyyymmddhhmmss() {
-  const d = new Date();
-  return (
-    d.getFullYear().toString() +
-    padDate(d.getMonth() + 1) +
-    padDate(d.getDate()) +
-    padDate(d.getHours()) +
-    padDate(d.getMinutes()) +
-    padDate(d.getSeconds())
-  );
 }
