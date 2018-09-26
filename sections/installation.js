@@ -211,8 +211,8 @@ export default [
   {
     type: "text",
     content: [
-      "The client created by the configuration initializes a connection pool, using the [generic-pool](https://github.com/coopernurse/node-pool) library. This connection pool has a default setting of a `min: 2, max: 10` for the MySQL and PG libraries, and a single connection for sqlite3 (due to issues with utilizing multiple connections on a single file). To change the config settings for the pool, pass a `pool` option as one of the keys in the initialize block.",
-      "Checkout the [generic-pool](https://github.com/coopernurse/node-pool) library for more information."
+      "The client created by the configuration initializes a connection pool, using the [tarn.js](https://github.com/vincit/tarn.js) library. This connection pool has a default setting of a `min: 2, max: 10` for the MySQL and PG libraries, and a single connection for sqlite3 (due to issues with utilizing multiple connections on a single file). To change the config settings for the pool, pass a `pool` option as one of the keys in the initialize block.",
+      "Checkout the [tarn.js](https://github.com/vincit/tarn.js) library for more information."
     ]
   },
   {
