@@ -6,12 +6,15 @@
 - Use datetime2 for MSSQL datetime + timestamp types. This change is incompatible with MSSQL older than 2008 #2757
 - Knex.VERSION() method was removed, run "require('knex/package').version" instead #2776
 - Knex transpilation now targets Node.js 6, meaning it will no longer run on older Node.js versions #2813
+- Add json type support for SQLite #2814
 
 ### New features:
 
 - Introduced abstraction for getting migrations to make migration bundling easier #2775
 - Allow timestamp with timezone on mssql databases #2724
 - Feature/2690: Multiple migration directories #2735
+- Allow cloning query builder with .userParams({}) assigned to it #2802
+- Kill queries after timeout for PostgreSQL #2636
 
 ### Bug fixes:
 
@@ -27,6 +30,7 @@
 - Add tests for multiple union arguments with callbacks and builders #2749
 - Update dependencies #2772
 - Separate migration generator #2786
+- Fix ES6 support #2821
 
 # 0.15.2 - 19 Jul, 2018
 
