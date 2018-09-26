@@ -7,6 +7,7 @@
     "node": ">=6"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.0.0",
     "bluebird": "^3.5.2",
     "chalk": "2.4.1",
     "commander": "^2.18.0",
