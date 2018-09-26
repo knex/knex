@@ -69,6 +69,9 @@ assign(Builder.prototype, {
     if (!isUndefined(this._queryContext)) {
       cloned._queryContext = clone(this._queryContext);
     }
+    if (!isUndefined(this._connection)) {
+      cloned._connection = this._connection;
+    }
 
     return cloned;
   },
@@ -835,6 +838,13 @@ assign(Builder.prototype, {
     this.select.apply(this, args);
     this._method = 'first';
     this.limit(1);
+    return this;
+  },
+
+  // Use existing connection to execute the query
+  // Same value that client.acquireConnection() for an according client returns should be passed
+  connection(_connection) {
+    this._connection = _connection;
     return this;
   },
 
