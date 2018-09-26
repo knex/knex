@@ -81,9 +81,9 @@ export default class Migrator {
           );
 
         if (transactionForAll) {
-          return this.knex.transaction((trx) =>
-            this._runBatch(migrations, 'up', trx)
-          );
+          return this.knex.transaction((trx) => {
+            return this._runBatch(migrations, 'up', trx);
+          });
         } else {
           return this._runBatch(migrations, 'up');
         }
