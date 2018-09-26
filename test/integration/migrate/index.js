@@ -294,9 +294,12 @@ module.exports = function(knex) {
           .spread(function(batchNo, log) {
             expect(batchNo).to.equal(1);
             expect(log).to.have.length(2);
-            var migrationPath = ['test', 'integration', 'migrate', 'test'].join(
-              path.sep
-            ); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
+            const migrationPath = [
+              'test',
+              'integration',
+              'migrate',
+              'test',
+            ].join(path.sep); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
             expect(log[0]).to.contain(batchNo);
             return knex('knex_migrations')
               .select('*')
@@ -572,6 +575,54 @@ module.exports = function(knex) {
         .hasColumn('migration_source_test_1', 'name')
         .then(function(exists) {
           expect(exists).to.equal(true);
+        });
+    });
+  });
+
+  describe('knex.migrate.latest with custom config parameter for table name', function() {
+    before(function() {
+      return knex
+        .withUserParams({ customTableName: 'migration_test_2_1a' })
+        .migrate.latest({
+          directory: 'test/integration/migrate/test',
+        });
+    });
+
+    it('should create all specified tables and columns', function() {
+      const tables = [
+        'migration_test_1',
+        'migration_test_2',
+        'migration_test_2_1a',
+      ];
+      return Promise.map(tables, function(table) {
+        return knex.schema.hasTable(table).then(function(exists) {
+          expect(exists).to.equal(true);
+          if (exists) {
+            return Promise.all([
+              knex.schema.hasColumn(table, 'id').then(function(exists) {
+                expect(exists).to.equal(true);
+              }),
+              knex.schema.hasColumn(table, 'name').then(function(exists) {
+                expect(exists).to.equal(true);
+              }),
+            ]);
+          }
+        });
+      });
+    });
+
+    it('should not create unexpected tables', function() {
+      const table = 'migration_test_2_1';
+      knex.schema.hasTable(table).then(function(exists) {
+        expect(exists).to.equal(false);
+      });
+    });
+
+    after(function() {
+      return knex
+        .withUserParams({ customTableName: 'migration_test_2_1a' })
+        .migrate.rollback({
+          directory: 'test/integration/migrate/test',
         });
     });
   });

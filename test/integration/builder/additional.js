@@ -861,27 +861,71 @@ module.exports = function(knex) {
         });
     });
 
-    it('Event: query-error', function() {
+    it('Event: does not duplicate listeners on a copy with user params', function() {
       var queryCount = 0;
-      var onQueryError = function(error, obj) {
+
+      var onQueryResponse = function(response, obj, builder) {
         queryCount++;
+        expect(response).to.be.an('array');
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
         expect(obj.__knexQueryUid).to.be.a('string');
-        expect(error).to.be.an('object');
+        expect(builder).to.be.an('object');
+      };
+      knex.on('query-response', onQueryResponse);
+      const knexCopy = knex.withUserParams({});
+
+      return knexCopy('accounts')
+        .select()
+        .on('query-response', onQueryResponse)
+        .then(function() {
+          return knexCopy.transaction(function(tr) {
+            return tr('accounts')
+              .select()
+              .on('query-response', onQueryResponse); //Transactions should emit the event as well
+          });
+        })
+        .then(function() {
+          expect(Object.keys(knex._events).length).to.equal(1);
+          expect(Object.keys(knexCopy._events).length).to.equal(0);
+          knex.removeListener('query-response', onQueryResponse);
+          expect(Object.keys(knex._events).length).to.equal(0);
+          expect(queryCount).to.equal(4);
+        });
+    });
+
+    it('Event: query-error', function() {
+      var queryCountKnex = 0;
+      var queryCountBuilder = 0;
+      var onQueryErrorKnex = function(error, obj) {
+        queryCountKnex++;
+        expect(obj).to.be.an('object');
+        expect(obj.__knexUid).to.be.a('string');
+        expect(obj.__knexQueryUid).to.be.a('string');
+        expect(error).to.be.an('error');
       };
 
-      knex.on('query-error', onQueryError);
+      var onQueryErrorBuilder = function(error, obj) {
+        queryCountBuilder++;
+        expect(obj).to.be.an('object');
+        expect(obj.__knexUid).to.be.a('string');
+        expect(obj.__knexQueryUid).to.be.a('string');
+        expect(error).to.be.an('error');
+      };
+
+      knex.on('query-error', onQueryErrorKnex);
 
       return knex
         .raw('Broken query')
-        .on('query-error', onQueryError)
+        .on('query-error', onQueryErrorBuilder)
         .then(function() {
           expect(true).to.equal(false); //Should not be resolved
         })
         .catch(function() {
-          knex.removeListener('query-error', onQueryError);
-          expect(queryCount).to.equal(2);
+          knex.removeListener('query-error', onQueryErrorKnex);
+          knex.removeListener('query-error', onQueryErrorBuilder);
+          expect(queryCountBuilder).to.equal(1);
+          expect(queryCountKnex).to.equal(1);
         });
     });
 

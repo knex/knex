@@ -45,7 +45,11 @@ export default function Knex(config) {
       connection: parseConnection(config.connection).connection,
     });
   }
-  return makeKnex(new Dialect(config));
+  const newKnex = makeKnex(new Dialect(config));
+  if (config.userParams) {
+    newKnex.userParams = config.userParams;
+  }
+  return newKnex;
 }
 
 // Expose Client on the main Knex namespace.
