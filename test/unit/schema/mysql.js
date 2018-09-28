@@ -300,6 +300,20 @@ module.exports = function(dialect) {
       );
     });
 
+    it('test adding prefix index', function() {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function() {
+          this.index(['foo', 'bar(128)'], 'baz');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add index `baz`(`foo`, `bar`(128))'
+      );
+    });
+
     it('test adding foreign key', function() {
       tableSql = client
         .schemaBuilder()
