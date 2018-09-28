@@ -11,7 +11,7 @@ import SchemaCompiler from './schema/compiler';
 import TableCompiler from './schema/tablecompiler';
 import ColumnCompiler from './schema/columncompiler';
 
-import { assign, map } from 'lodash';
+import { assign, map, parseInt } from 'lodash';
 import { makeEscape } from '../../query/string';
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
@@ -54,7 +54,16 @@ assign(Client_MySQL.prototype, {
   _escapeBinding: makeEscape(),
 
   wrapIdentifierImpl(value) {
-    return value !== '*' ? `\`${value.replace(/`/g, '``')}\`` : '*';
+    const subPartIndex = value.indexOf('(');
+    let subPart = '';
+    if (subPartIndex !== -1) {
+      const length = parseInt(value.slice(subPartIndex + 1, -1));
+      if (!isNaN(length)) {
+        value = value.slice(0, subPartIndex);
+        subPart = '(' + length + ')';
+      }
+    }
+    return value !== '*' ? `\`${value.replace(/`/g, '``')}\`` + subPart : '*';
   },
 
   // Get a raw connection, called by the `pool` whenever a new
