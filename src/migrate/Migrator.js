@@ -39,7 +39,6 @@ const CONFIG_DEFAULT = Object.freeze({
   globOptions: DEFAULT_GLOB_OPTIONS,
   tableName: 'knex_migrations',
   schemaName: null,
-  directory: './migrations',
   disableTransactions: false,
   sortDirsSeparately: false,
 });
@@ -386,7 +385,7 @@ export default class Migrator {
   }
 }
 
-export function getMergedConfig(config, currentConfig) {
+export async function getMergedConfig(config, currentConfig) {
   // config is the user specified config, mergedConfig has defaults and current config
   // applied to it.
   const mergedConfig = assign({}, CONFIG_DEFAULT, currentConfig || {}, config);
@@ -410,6 +409,11 @@ export function getMergedConfig(config, currentConfig) {
       mergedConfig.sortDirsSeparately,
       mergedConfig.globOptions
     );
+  }
+
+  if (!mergedConfig.directory) {
+    const directory = await mergedConfig.migrationSource.getMigrationDirs();
+    mergedConfig.directory = directory;
   }
 
   return mergedConfig;

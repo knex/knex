@@ -7,14 +7,16 @@ const rimraf = require('rimraf');
 const Promise = require('bluebird');
 const testMemoryMigrations = require('./memory-migrations');
 
+const CONFIG = {
+  globPatterns: 'test/integration/migrate/test/*.js',
+};
+
 module.exports = function(knex) {
   require('rimraf').sync(path.join(__dirname, './migration'));
 
   before(function() {
     // make sure lock was not left from previous failed test run
-    return knex.migrate.forceFreeMigrationsLock({
-      directory: 'test/integration/migrate/test',
-    });
+    return knex.migrate.forceFreeMigrationsLock(CONFIG);
   });
 
   describe('knex.migrate', function() {
@@ -42,15 +44,11 @@ module.exports = function(knex) {
       this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
 
       beforeEach(function() {
-        return knex.migrate.latest({
-          directory: 'test/integration/migrate/test',
-        });
+        return knex.migrate.latest(CONFIG);
       });
 
       afterEach(function() {
-        return knex.migrate.rollback({
-          directory: 'test/integration/migrate/test',
-        });
+        return knex.migrate.rollback(CONFIG);
       });
 
       it('should create a migrations lock table', function() {
@@ -68,23 +66,17 @@ module.exports = function(knex) {
       });
 
       it('should return 0 if code matches DB', function() {
-        return knex.migrate
-          .status({ directory: 'test/integration/migrate/test' })
-          .then(function(migrationLevel) {
-            expect(migrationLevel).to.equal(0);
-          });
+        return knex.migrate.status(CONFIG).then(function(migrationLevel) {
+          expect(migrationLevel).to.equal(0);
+        });
       });
 
       it('should return a negative number if the DB is behind', function() {
-        return knex.migrate
-          .rollback({ directory: 'test/integration/migrate/test' })
-          .then(function() {
-            return knex.migrate
-              .status({ directory: 'test/integration/migrate/test' })
-              .then(function(migrationLevel) {
-                expect(migrationLevel).to.equal(-2);
-              });
+        return knex.migrate.rollback(CONFIG).then(function() {
+          return knex.migrate.status(CONFIG).then(function(migrationLevel) {
+            expect(migrationLevel).to.equal(-2);
           });
+        });
       });
 
       it('should return a positive number if the DB is ahead', function() {
@@ -112,7 +104,7 @@ module.exports = function(knex) {
             }),
         ]).spread(function(migration1, migration2, migration3) {
           return knex.migrate
-            .status({ directory: 'test/integration/migrate/test' })
+            .status(CONFIG)
             .then(function(migrationLevel) {
               expect(migrationLevel).to.equal(3);
             })
@@ -135,9 +127,7 @@ module.exports = function(knex) {
 
     describe('knex.migrate.latest', function() {
       before(function() {
-        return knex.migrate.latest({
-          directory: 'test/integration/migrate/test',
-        });
+        return knex.migrate.latest(CONFIG);
       });
 
       it('should remove the record in the lock table once finished', function() {
@@ -153,11 +143,9 @@ module.exports = function(knex) {
         return knex('knex_migrations_lock')
           .update({ is_locked: 1 })
           .then(function() {
-            return knex.migrate
-              .latest({ directory: 'test/integration/migrate/test' })
-              .then(function() {
-                throw new Error('then should not execute');
-              });
+            return knex.migrate.latest(CONFIG).then(function() {
+              throw new Error('then should not execute');
+            });
           })
           .catch(function(error) {
             expect(error).to.have.property(
@@ -176,7 +164,7 @@ module.exports = function(knex) {
 
       it('should release lock if non-locking related error is thrown', function() {
         return knex.migrate
-          .latest({ directory: 'test/integration/migrate/test' })
+          .latest(CONFIG)
           .then(function() {
             throw new Error('then should not execute');
           })
@@ -251,19 +239,13 @@ module.exports = function(knex) {
     describe('knex.migrate.latest - multiple directories', () => {
       before(() => {
         return knex.migrate.latest({
-          directory: [
-            'test/integration/migrate/test',
-            'test/integration/migrate/test2',
-          ],
+          globPatterns: 'test/integration/migrate/{test2,test}/*.js',
         });
       });
 
       after(() => {
         return knex.migrate.rollback({
-          directory: [
-            'test/integration/migrate/test',
-            'test/integration/migrate/test2',
-          ],
+          globPatterns: 'test/integration/migrate/{test2,test}/*.js',
         });
       });
 
@@ -289,24 +271,19 @@ module.exports = function(knex) {
 
     describe('knex.migrate.rollback', function() {
       it('should delete the most recent batch from the migration log', function() {
-        return knex.migrate
-          .rollback({ directory: 'test/integration/migrate/test' })
-          .spread(function(batchNo, log) {
-            expect(batchNo).to.equal(1);
-            expect(log).to.have.length(2);
-            const migrationPath = [
-              'test',
-              'integration',
-              'migrate',
-              'test',
-            ].join(path.sep); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
-            expect(log[0]).to.contain(batchNo);
-            return knex('knex_migrations')
-              .select('*')
-              .then(function(data) {
-                expect(data.length).to.equal(0);
-              });
-          });
+        return knex.migrate.rollback(CONFIG).spread(function(batchNo, log) {
+          expect(batchNo).to.equal(1);
+          expect(log).to.have.length(2);
+          const migrationPath = ['test', 'integration', 'migrate', 'test'].join(
+            path.sep
+          ); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
+          expect(log[0]).to.contain(batchNo);
+          return knex('knex_migrations')
+            .select('*')
+            .then(function(data) {
+              expect(data.length).to.equal(0);
+            });
+        });
       });
 
       it('should drop tables as specified in the batch', function() {
@@ -325,16 +302,14 @@ module.exports = function(knex) {
 
   describe('knex.migrate.latest in parallel', function() {
     afterEach(function() {
-      return knex.migrate.rollback({
-        directory: 'test/integration/migrate/test',
-      });
+      return knex.migrate.rollback(CONFIG);
     });
 
     if (knex.client.driverName === 'pg' || knex.client.driverName === 'mssql') {
       it('is able to run two migrations in parallel (if no implicit DDL commits)', function() {
         return Promise.all([
-          knex.migrate.latest({ directory: 'test/integration/migrate/test' }),
-          knex.migrate.latest({ directory: 'test/integration/migrate/test' }),
+          knex.migrate.latest(CONFIG),
+          knex.migrate.latest(CONFIG),
         ]).then(function() {
           return knex('knex_migrations')
             .select('*')
@@ -350,7 +325,7 @@ module.exports = function(knex) {
         [
           knex.migrate
             .latest({
-              directory: 'test/integration/migrate/test',
+              ...CONFIG,
               disableTransactions: true,
             })
             .catch(function(err) {
@@ -358,7 +333,7 @@ module.exports = function(knex) {
             }),
           knex.migrate
             .latest({
-              directory: 'test/integration/migrate/test',
+              ...CONFIG,
               disableTransactions: true,
             })
             .catch(function(err) {
@@ -389,7 +364,7 @@ module.exports = function(knex) {
       before(function() {
         return knex.migrate
           .latest({
-            directory: 'test/integration/migrate/test_with_invalid',
+            globPatterns: 'test/integration/migrate/test_with_invalid/*.js',
             disableTransactions: true,
           })
           .catch(function() {});
@@ -407,7 +382,7 @@ module.exports = function(knex) {
 
       after(function() {
         return knex.migrate.rollback({
-          directory: 'test/integration/migrate/test_with_invalid',
+          globPatterns: 'test/integration/migrate/test_with_invalid/*.js',
         });
       });
     });
@@ -416,8 +391,8 @@ module.exports = function(knex) {
       before(function() {
         return knex.migrate
           .latest({
-            directory:
-              'test/integration/migrate/test_per_migration_trx_disabled',
+            globPatterns:
+              'test/integration/migrate/test_per_migration_trx_disabled/*.js',
           })
           .catch(function() {});
       });
@@ -440,7 +415,8 @@ module.exports = function(knex) {
 
       after(function() {
         return knex.migrate.rollback({
-          directory: 'test/integration/migrate/test_per_migration_trx_disabled',
+          globPatterns:
+            'test/integration/migrate/test_per_migration_trx_disabled/*.js',
         });
       });
     });
@@ -449,8 +425,8 @@ module.exports = function(knex) {
       before(function() {
         return knex.migrate
           .latest({
-            directory:
-              'test/integration/migrate/test_per_migration_trx_enabled',
+            globPatterns:
+              'test/integration/migrate/test_per_migration_trx_enabled/*.js',
             disableTransactions: true,
           })
           .catch(function() {});
@@ -485,7 +461,8 @@ module.exports = function(knex) {
 
       after(function() {
         return knex.migrate.rollback({
-          directory: 'test/integration/migrate/test_per_migration_trx_enabled',
+          globPatterns:
+            'test/integration/migrate/test_per_migration_trx_enabled/*.js',
         });
       });
     });
@@ -502,7 +479,7 @@ module.exports = function(knex) {
         it('should create changelog in the correct schema without transactions', function(done) {
           knex.migrate
             .latest({
-              directory: 'test/integration/migrate/test',
+              globPatterns: 'test/integration/migrate/test/*.js',
               disableTransactions: true,
               schemaName: 'testschema',
             })
@@ -519,7 +496,7 @@ module.exports = function(knex) {
         it('should create changelog in the correct schema with transactions', function(done) {
           knex.migrate
             .latest({
-              directory: 'test/integration/migrate/test',
+              globPatterns: 'test/integration/migrate/test/*.js',
               disableTransactions: false,
               schemaName: 'testschema',
             })
@@ -535,7 +512,7 @@ module.exports = function(knex) {
 
         afterEach(function() {
           return knex.migrate.rollback({
-            directory: 'test/integration/migrate/test',
+            globPatterns: 'test/integration/migrate/test/*.js',
             disableTransactions: true,
             schemaName: 'testschema',
           });
@@ -584,7 +561,7 @@ module.exports = function(knex) {
       return knex
         .withUserParams({ customTableName: 'migration_test_2_1a' })
         .migrate.latest({
-          directory: 'test/integration/migrate/test',
+          globPatterns: 'test/integration/migrate/test/*.js',
         });
     });
 
@@ -622,7 +599,7 @@ module.exports = function(knex) {
       return knex
         .withUserParams({ customTableName: 'migration_test_2_1a' })
         .migrate.rollback({
-          directory: 'test/integration/migrate/test',
+          globPatterns: 'test/integration/migrate/test/*.js',
         });
     });
   });

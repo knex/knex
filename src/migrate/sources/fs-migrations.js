@@ -1,6 +1,6 @@
 import path from 'path';
 import globby from 'globby';
-import { sortBy, assign, flatMap, groupBy } from 'lodash';
+import { sortBy, assign, flatMap, groupBy, uniq } from 'lodash';
 
 export const DEFAULT_GLOB_PATTERNS = Object.freeze([
   './migrations/*.{co,coffee,eg,iced,js,litcoffee,ls,ts}',
@@ -42,6 +42,17 @@ export default class FsMigrations {
           return sortBy(matches, 'file');
         }
       });
+  }
+
+  /**
+   * Gets the migration directories
+   * @returns Promise<string[]>
+   */
+  getMigrationDirs() {
+    // Get a list of files in all specified migration directories
+    return this.getMigrations().then((matches) =>
+      uniq(matches.map((match) => match.directory))
+    );
   }
 
   getMigrationName(migration) {

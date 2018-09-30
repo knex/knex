@@ -7,8 +7,8 @@
 - Knex.VERSION() method was removed, run "require('knex/package').version" instead #2776
 - Knex transpilation now targets Node.js 6, meaning it will no longer run on older Node.js versions #2813
 - Add json type support for SQLite #2814
-- Options `directory` and `loadExtensions` superseded by glob pattern matching options `globPatterns` handed over to [globby](https://github.com/sindresorhus/globby)
-
+- Option `loadExtensions` superseded by [globby](https://github.com/sindresorhus/globby) pattern matching options `globPatterns`
+  
 ### New features:
 
 - Introduced abstraction for getting migrations to make migration bundling easier #2775
