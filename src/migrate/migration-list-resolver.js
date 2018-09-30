@@ -3,8 +3,8 @@ import { getTableName } from './table-resolver';
 import { ensureTable } from './table-creator';
 
 // Lists all available migration versions, as a sorted array.
-export function listAll(migrationSource, loadExtensions) {
-  return migrationSource.getMigrations(loadExtensions);
+export function listAll(migrationSource, globPatterns, globby) {
+  return migrationSource.getMigrations(globPatterns, globby);
 }
 
 // Lists all migrations that have been completed for the current db, as an

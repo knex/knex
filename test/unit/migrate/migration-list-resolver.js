@@ -13,7 +13,9 @@ describe('migration-list-resolver', () => {
   describe('listAll', () => {
     let migrationSource;
     before(() => {
-      migrationSource = new FsMigrations('test/integration/migrate/migration');
+      migrationSource = new FsMigrations(
+        'test/integration/migrate/migration/*.{co,coffee,eg,iced,js,litcoffee,ls,ts}'
+      );
       mockFs({
         'test/integration/migrate/migration': {
           'co-migration.co': 'co migation content',
@@ -74,7 +76,7 @@ describe('migration-list-resolver', () => {
 
     it('should include only files with specified extensions', function() {
       return migrationListResolver
-        .listAll(migrationSource, ['.ts', '.js'])
+        .listAll(migrationSource, ['**/*.ts', '**/*.js'])
         .then((list) => {
           expect(list).to.eql([
             {
@@ -111,10 +113,9 @@ describe('migration-list-resolver', () => {
     });
 
     it('should include files from both folders, sorted globally', () => {
-      const migrationSource = new FsMigrations([
-        'test/integration/migrate/migration',
-        'test/integration/migrate/seeds',
-      ]);
+      const migrationSource = new FsMigrations(
+        'test/integration/migrate/{migration,seeds}/*'
+      );
 
       return migrationListResolver.listAll(migrationSource).then((list) => {
         expect(list).to.eql([
@@ -156,7 +157,7 @@ describe('migration-list-resolver', () => {
       );
 
       return migrationListResolver
-        .listAll(migrationSource, ['.js'])
+        .listAll(migrationSource, ['**/*.js'])
         .then((list) => {
           expect(list).to.eql([
             {

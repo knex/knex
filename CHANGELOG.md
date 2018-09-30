@@ -7,6 +7,7 @@
 - Knex.VERSION() method was removed, run "require('knex/package').version" instead #2776
 - Knex transpilation now targets Node.js 6, meaning it will no longer run on older Node.js versions #2813
 - Add json type support for SQLite #2814
+- Options `directory` and `loadExtensions` superseded by glob pattern matching options `globPatterns` handed over to [globby](https://github.com/sindresorhus/globby)
 
 ### New features:
 
@@ -15,6 +16,7 @@
 - Feature/2690: Multiple migration directories #2735
 - Allow cloning query builder with .userParams({}) assigned to it #2802
 - Kill queries after timeout for PostgreSQL #2636
+- Option [`globOptions.gitignore=false`](https://github.com/sindresorhus/globby#gitignore) available for configuration of globbing behaviour.
 
 ### Bug fixes:
 
