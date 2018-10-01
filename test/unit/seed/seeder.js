@@ -15,7 +15,8 @@ describe('Seeder.loadExtensions', function() {
       database: 'knex_test',
     },
     seeds: {
-      directory: 'test/integration/seed/seeds',
+      globPatterns:
+        'test/integration/seed/seeds/*.{co,coffee,eg,iced,js,litcoffee,ls,ts}',
     },
   };
   var seeder;
@@ -59,9 +60,9 @@ describe('Seeder.loadExtensions', function() {
     });
   });
 
-  it('should list only files with specified extensions', function() {
+  it('should list only files with specified globPatterns', function() {
     return seeder
-      ._listAll({ loadExtensions: ['.ts', '.js'] })
+      ._listAll({ globPatterns: ['test/integration/seed/seeds/*.{js,ts}'] })
       .then(function(list) {
         expect(list).to.eql(['js-seed.js', 'ts-seed.ts']);
       });

@@ -17,7 +17,7 @@ module.exports = function(knex) {
   describe('knex.seed.run', function() {
     it('should run all seed files in the configured seed directory', function() {
       return knex.seed
-        .run({ directory: 'test/integration/seed/test' })
+        .run({ globPatterns: 'test/integration/seed/test/*.js' })
         .spread(function(data) {
           expect(path.basename(data[0])).to.equal('seed1.js');
           expect(path.basename(data[1])).to.equal('seed2.js');

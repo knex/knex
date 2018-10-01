@@ -1,77 +1,63 @@
-import fs from 'fs';
 import path from 'path';
-import Promise from 'bluebird';
-import { sortBy, filter } from 'lodash';
+import globby from 'globby';
+import { sortBy, assign, flatMap, groupBy, uniq } from 'lodash';
 
-const readDirAsync = Promise.promisify(fs.readdir, { context: fs });
-
-export const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
-  '.co',
-  '.coffee',
-  '.eg',
-  '.iced',
-  '.js',
-  '.litcoffee',
-  '.ls',
-  '.ts',
+export const DEFAULT_GLOB_PATTERNS = Object.freeze([
+  './migrations/*.{co,coffee,eg,iced,js,litcoffee,ls,ts}',
+  '!*.{spec,test}.{co,coffee,eg,iced,js,litcoffee,ls,ts}',
 ]);
 
-export default class FsMigrations {
-  constructor(migrationDirectories, sortDirsSeparately, loadExtensions) {
-    this.sortDirsSeparately = sortDirsSeparately;
+export const DEFAULT_SEED_GLOB_PATTERNS = Object.freeze([
+  './seeds/*.{co,coffee,eg,iced,js,litcoffee,ls,ts}',
+  '!*.{spec,test}.{co,coffee,eg,iced,js,litcoffee,ls,ts}',
+]);
 
-    if (!Array.isArray(migrationDirectories)) {
-      migrationDirectories = [migrationDirectories];
+export const DEFAULT_GLOB_OPTIONS = {
+  gitignore: false,
+};
+
+export default class FsMigrations {
+  constructor(globPatterns, sortDirsSeparately, globbyConfig) {
+    if (globPatterns && !Array.isArray(globPatterns)) {
+      globPatterns = [globPatterns];
     }
-    this.migrationsPaths = migrationDirectories;
-    this.loadExtensions = loadExtensions || DEFAULT_LOAD_EXTENSIONS;
+
+    this.globPatterns = globPatterns || DEFAULT_GLOB_PATTERNS;
+    this.sortDirsSeparately = sortDirsSeparately || false;
+    this.globbyConfig = assign({}, DEFAULT_GLOB_OPTIONS, globbyConfig || {});
   }
 
   /**
    * Gets the migration names
    * @returns Promise<string[]>
    */
-  getMigrations(loadExtensions) {
+  getMigrations(globPatterns = this.globPatterns) {
     // Get a list of files in all specified migration directories
-    const readMigrationsPromises = this.migrationsPaths.map((configDir) => {
-      const absoluteDir = path.resolve(process.cwd(), configDir);
-      return readDirAsync(absoluteDir).then((files) => ({
-        files,
-        configDir,
-        absoluteDir,
-      }));
-    });
-
-    return Promise.all(readMigrationsPromises).then((allMigrations) => {
-      const migrations = allMigrations.reduce((acc, migrationDirectory) => {
-        // When true, files inside the folder should be sorted
+    return globby(globPatterns, this.globbyConfig)
+      .then((matches) => {
+        return matches.map((file) => ({
+          file: path.basename(file),
+          directory: path.dirname(file),
+        }));
+      })
+      .then((matches) => {
         if (this.sortDirsSeparately) {
-          migrationDirectory.files = migrationDirectory.files.sort();
+          return flatMap(groupBy(matches, 'directory'));
+        } else {
+          return sortBy(matches, 'file');
         }
+      });
+  }
 
-        migrationDirectory.files.forEach((file) =>
-          acc.push({ file, directory: migrationDirectory.configDir })
-        );
-
-        return acc;
-      }, []);
-
-      // If true we have already sorted the migrations inside the folders
-      // return the migrations fully qualified
-      if (this.sortDirsSeparately) {
-        return filterMigrations(
-          this,
-          migrations,
-          loadExtensions || this.loadExtensions
-        );
-      }
-
-      return filterMigrations(
-        this,
-        sortBy(migrations, 'file'),
-        loadExtensions || this.loadExtensions
-      );
-    });
+  /**
+   * Gets the migration directories
+   * @returns string[]
+   */
+  getMigrationDirs(globPatterns = this.globPatterns) {
+    // Get a list of all specified migration directories
+    const matches = globby.sync(globPatterns, this.globbyConfig);
+    const result = matches.map((file) => path.dirname(file));
+    return uniq(result);
   }
 
   getMigrationName(migration) {
@@ -82,12 +68,4 @@ export default class FsMigrations {
     const absoluteDir = path.resolve(process.cwd(), migration.directory);
     return require(path.join(absoluteDir, migration.file));
   }
-}
-
-function filterMigrations(migrationSource, migrations, loadExtensions) {
-  return filter(migrations, (migration) => {
-    const migrationName = migrationSource.getMigrationName(migration);
-    const extension = path.extname(migrationName);
-    return loadExtensions.includes(extension);
-  });
 }

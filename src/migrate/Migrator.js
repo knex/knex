@@ -21,7 +21,10 @@ import {
 } from './table-resolver';
 import { getSchemaBuilder } from './table-creator';
 import * as migrationListResolver from './migration-list-resolver';
-import FsMigrations, { DEFAULT_LOAD_EXTENSIONS } from './sources/fs-migrations';
+import FsMigrations, {
+  DEFAULT_GLOB_PATTERNS,
+  DEFAULT_GLOB_OPTIONS,
+} from './sources/fs-migrations';
 import MigrationGenerator from './MigrationGenerator';
 
 function LockError(msg) {
@@ -32,11 +35,10 @@ function LockError(msg) {
 inherits(LockError, Error);
 
 const CONFIG_DEFAULT = Object.freeze({
-  extension: 'js',
-  loadExtensions: DEFAULT_LOAD_EXTENSIONS,
+  globPatterns: DEFAULT_GLOB_PATTERNS,
+  globOptions: DEFAULT_GLOB_OPTIONS,
   tableName: 'knex_migrations',
   schemaName: null,
-  directory: './migrations',
   disableTransactions: false,
   sortDirsSeparately: false,
 });
@@ -403,9 +405,15 @@ export function getMergedConfig(config, currentConfig) {
   // default to fs migrations to maintain compatibility
   if (!mergedConfig.migrationSource) {
     mergedConfig.migrationSource = new FsMigrations(
-      mergedConfig.directory,
-      mergedConfig.sortDirsSeparately
+      mergedConfig.globPatterns,
+      mergedConfig.sortDirsSeparately,
+      mergedConfig.globOptions
     );
+  }
+
+  if (!mergedConfig.directory) {
+    const directory = mergedConfig.migrationSource.getMigrationDirs();
+    mergedConfig.directory = directory || [];
   }
 
   return mergedConfig;

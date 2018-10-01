@@ -43,7 +43,7 @@ export default class MigrationGenerator {
   _generateStubTemplate() {
     const stubPath =
       this.config.stub ||
-      path.join(__dirname, 'stub', this.config.extension + '.stub');
+      path.join(__dirname, 'stub', (this.config.extension || 'js') + '.stub');
 
     return Promise.promisify(fs.readFile, { context: fs })(stubPath).then(
       (stub) => template(stub.toString(), { variable: 'd' })
