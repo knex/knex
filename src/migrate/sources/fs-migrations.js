@@ -7,6 +7,11 @@ export const DEFAULT_GLOB_PATTERNS = Object.freeze([
   '!*.{spec,test}.{co,coffee,eg,iced,js,litcoffee,ls,ts}',
 ]);
 
+export const DEFAULT_SEED_GLOB_PATTERNS = Object.freeze([
+  './seeds/*.{co,coffee,eg,iced,js,litcoffee,ls,ts}',
+  '!*.{spec,test}.{co,coffee,eg,iced,js,litcoffee,ls,ts}',
+]);
+
 export const DEFAULT_GLOB_OPTIONS = {
   gitignore: false,
 };
@@ -46,13 +51,13 @@ export default class FsMigrations {
 
   /**
    * Gets the migration directories
-   * @returns Promise<string[]>
+   * @returns string[]
    */
-  getMigrationDirs() {
-    // Get a list of files in all specified migration directories
-    return this.getMigrations().then((matches) =>
-      uniq(matches.map((match) => match.directory))
-    );
+  getMigrationDirs(globPatterns = this.globPatterns) {
+    // Get a list of all specified migration directories
+    const matches = globby.sync(globPatterns, this.globbyConfig);
+    const result = matches.map((file) => path.dirname(file));
+    return uniq(result);
   }
 
   getMigrationName(migration) {

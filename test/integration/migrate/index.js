@@ -9,6 +9,7 @@ const testMemoryMigrations = require('./memory-migrations');
 
 const CONFIG = {
   globPatterns: 'test/integration/migrate/test/*.js',
+  directory: 'test/integration/migrate/test',
 };
 
 module.exports = function(knex) {
@@ -274,9 +275,6 @@ module.exports = function(knex) {
         return knex.migrate.rollback(CONFIG).spread(function(batchNo, log) {
           expect(batchNo).to.equal(1);
           expect(log).to.have.length(2);
-          const migrationPath = ['test', 'integration', 'migrate', 'test'].join(
-            path.sep
-          ); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
           expect(log[0]).to.contain(batchNo);
           return knex('knex_migrations')
             .select('*')

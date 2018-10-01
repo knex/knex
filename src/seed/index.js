@@ -5,7 +5,13 @@ import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
-import { filter, includes, map, bind, template, each, extend } from 'lodash';
+import globby from 'globby';
+import { map, template, extend, bind, each } from 'lodash';
+
+import FsMigrations, {
+  DEFAULT_SEED_GLOB_PATTERNS,
+  DEFAULT_GLOB_OPTIONS,
+} from '../migrate/sources/fs-migrations';
 
 // The new seeds we're performing, typically called from the `knex.seed`
 // interface on the main `knex` object. Passes the `knex` instance performing
@@ -41,17 +47,7 @@ Seeder.prototype.make = function(name, config) {
 // Lists all available seed files as a sorted array.
 Seeder.prototype._listAll = Promise.method(function(config) {
   this.config = this.setConfig(config);
-  const loadExtensions = this.config.loadExtensions;
-  return Promise.promisify(fs.readdir, { context: fs })(
-    this._absoluteConfigDir()
-  )
-    .bind(this)
-    .then((seeds) =>
-      filter(seeds, function(value) {
-        const extension = path.extname(value);
-        return includes(loadExtensions, extension);
-      }).sort()
-    );
+  return globby.sync(this.config.globPatterns, this.globbyConfig).sort();
 });
 
 // Gets the seed file list from the specified seed directory.
@@ -133,24 +129,29 @@ Seeder.prototype._waterfallBatch = function(seeds) {
 };
 
 Seeder.prototype._absoluteConfigDir = function() {
-  return path.resolve(process.cwd(), this.config.directory);
+  if (!Array.isArray(this.config.directories)) {
+    return path.resolve(process.cwd(), this.config.directories);
+  }
+  return path.resolve(process.cwd(), this.config.directories[0]);
 };
 
-Seeder.prototype.setConfig = function(config) {
+Seeder.prototype.setConfig = function(config = {}) {
+  const globPatterns = config.globPatterns || DEFAULT_SEED_GLOB_PATTERNS;
+  const globOptions = config.globOptions || DEFAULT_GLOB_OPTIONS;
+  const fsMigrations = new FsMigrations(
+    globPatterns,
+    config.sortDirsSeparately,
+    globOptions
+  );
+
+  const directories = fsMigrations.getMigrationDirs(globPatterns);
+
   return extend(
     {
+      directories: directories || [],
       extension: 'js',
-      directory: './seeds',
-      loadExtensions: [
-        '.co',
-        '.coffee',
-        '.eg',
-        '.iced',
-        '.js',
-        '.litcoffee',
-        '.ls',
-        '.ts',
-      ],
+      globPatterns,
+      globOptions,
     },
     this.config || {},
     config

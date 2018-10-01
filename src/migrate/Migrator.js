@@ -385,7 +385,7 @@ export default class Migrator {
   }
 }
 
-export async function getMergedConfig(config, currentConfig) {
+export function getMergedConfig(config, currentConfig) {
   // config is the user specified config, mergedConfig has defaults and current config
   // applied to it.
   const mergedConfig = assign({}, CONFIG_DEFAULT, currentConfig || {}, config);
@@ -412,8 +412,8 @@ export async function getMergedConfig(config, currentConfig) {
   }
 
   if (!mergedConfig.directory) {
-    const directory = await mergedConfig.migrationSource.getMigrationDirs();
-    mergedConfig.directory = directory;
+    const directory = mergedConfig.migrationSource.getMigrationDirs();
+    mergedConfig.directory = directory || [];
   }
 
   return mergedConfig;
