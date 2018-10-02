@@ -6023,6 +6023,34 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('lock only some tables for update', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('foo')
+        .where('bar', '=', 'baz')
+        .forUpdate('lo', 'rem'),
+      {
+        mysql: {
+          sql: 'select * from `foo` where `bar` = ? for update',
+          bindings: ['baz'],
+        },
+        pg: {
+          sql: 'select * from "foo" where "bar" = ? for update of "lo", "rem"',
+          bindings: ['baz'],
+        },
+        mssql: {
+          sql: 'select * from [foo] with (UPDLOCK) where [bar] = ?',
+          bindings: ['baz'],
+        },
+        oracledb: {
+          sql: 'select * from "foo" where "bar" = ? for update',
+          bindings: ['baz'],
+        },
+      }
+    );
+  });
+
   it('allows insert values of sub-select, #121', function() {
     testsql(
       qb()
