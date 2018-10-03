@@ -15,6 +15,7 @@
 - Feature/2690: Multiple migration directories #2735
 - Allow cloning query builder with .userParams({}) assigned to it #2802
 - Kill queries after timeout for PostgreSQL #2636
+- Allow table names with `forUpdate`/`forShare` #2834
 
 ### Bug fixes:
 
