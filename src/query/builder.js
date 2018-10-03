@@ -225,6 +225,14 @@ assign(Builder.prototype, {
   // The most basic is `where(key, value)`, which expands to
   // where key = value.
   where(column, operator, value) {
+    return this._addWhere(...arguments);
+  },
+
+  whereColumn(column, operator, rightColumn) {
+    return this._addWhere(...arguments);
+  },
+
+  _addWhere(column, operator, value, asColumn = false) {
     // Support "where true || where false"
     if (column === false || column === true) {
       return this.where(1, '=', column ? 1 : 0);
@@ -295,11 +303,13 @@ assign(Builder.prototype, {
       value,
       not: this._not(),
       bool: this._bool(),
+      asColumn,
     });
     return this;
   },
+
   // Adds an `or where` clause to the query.
-  orWhere: function orWhere() {
+  orWhere() {
     this._bool('or');
     const obj = arguments[0];
     if (isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
@@ -310,6 +320,19 @@ assign(Builder.prototype, {
       });
     }
     return this.where.apply(this, arguments);
+  },
+
+  orWhereColumn() {
+    this._bool('or');
+    const obj = arguments[0];
+    if (isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
+      return this.whereWrapped(function() {
+        for (const key in obj) {
+          this.andWhere(key, obj[key]);
+        }
+      });
+    }
+    return this.whereColumn.apply(this, arguments);
   },
 
   // Adds an `not where` clause to the query.
