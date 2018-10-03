@@ -7,6 +7,7 @@ import { assign, isUndefined } from 'lodash';
 // properly formatted / bound query strings.
 function SchemaCompiler(client, builder) {
   this.builder = builder;
+  this._commonBuilder = this.builder;
   this.client = client;
   this.schema = builder._schema;
   this.formatter = client.formatter(builder);

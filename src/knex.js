@@ -3,6 +3,7 @@ import Client from './client';
 
 import makeKnex from './util/make-knex';
 import parseConnection from './util/parse-connection';
+import fakeClient from './util/fake-client';
 import { SUPPORTED_CLIENTS, CLIENT_ALIASES } from './constants';
 
 export default function Knex(config) {
@@ -74,5 +75,5 @@ Knex.raw = (sql, bindings) => {
   console.warn(
     'global Knex.raw is deprecated, use knex.raw (chain off an initialized knex object)'
   );
-  return new Raw().set(sql, bindings);
+  return new Raw(fakeClient).set(sql, bindings);
 };
