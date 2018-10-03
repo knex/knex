@@ -303,7 +303,7 @@ assign(Builder.prototype, {
 
   whereColumn(column, operator, rightColumn) {
     this._asColumnFlag = true;
-    this.where.apply(this, ...arguments);
+    this.where.apply(this, arguments);
     this._asColumnFlag = false;
     return this;
   },
