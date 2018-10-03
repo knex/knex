@@ -640,7 +640,9 @@ assign(QueryCompiler.prototype, {
       ' ' +
       this.formatter.operator(statement.operator) +
       ' ' +
-      this.formatter.parameter(statement.value)
+      (statement.asColumn
+        ? this.formatter.wrap(statement.value)
+        : this.formatter.parameter(statement.value))
     );
   },
 

@@ -41,6 +41,7 @@ function Builder(client) {
   this._joinFlag = 'inner';
   this._boolFlag = 'and';
   this._notFlag = false;
+  this._asColumnFlag = false;
 }
 inherits(Builder, EventEmitter);
 
@@ -295,11 +296,20 @@ assign(Builder.prototype, {
       value,
       not: this._not(),
       bool: this._bool(),
+      asColumn: this._asColumnFlag,
     });
     return this;
   },
+
+  whereColumn(column, operator, rightColumn) {
+    this._asColumnFlag = true;
+    this.where.apply(this, arguments);
+    this._asColumnFlag = false;
+    return this;
+  },
+
   // Adds an `or where` clause to the query.
-  orWhere: function orWhere() {
+  orWhere() {
     this._bool('or');
     const obj = arguments[0];
     if (isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
@@ -312,14 +322,35 @@ assign(Builder.prototype, {
     return this.where.apply(this, arguments);
   },
 
+  orWhereColumn() {
+    this._bool('or');
+    const obj = arguments[0];
+    if (isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
+      return this.whereWrapped(function() {
+        for (const key in obj) {
+          this.andWhereColumn(key, '=', obj[key]);
+        }
+      });
+    }
+    return this.whereColumn.apply(this, arguments);
+  },
+
   // Adds an `not where` clause to the query.
   whereNot() {
     return this._not(true).where.apply(this, arguments);
   },
 
+  whereNotColumn() {
+    return this._not(true).whereColumn.apply(this, arguments);
+  },
+
   // Adds an `or not where` clause to the query.
   orWhereNot() {
     return this._bool('or').whereNot.apply(this, arguments);
+  },
+
+  orWhereNotColumn() {
+    return this._bool('or').whereNotColumn.apply(this, arguments);
   },
 
   // Processes an object literal provided in a "where" clause.
@@ -1063,7 +1094,9 @@ Object.defineProperty(Builder.prototype, 'not', {
 Builder.prototype.select = Builder.prototype.columns;
 Builder.prototype.column = Builder.prototype.columns;
 Builder.prototype.andWhereNot = Builder.prototype.whereNot;
+Builder.prototype.andWhereNotColumn = Builder.prototype.whereNotColumn;
 Builder.prototype.andWhere = Builder.prototype.where;
+Builder.prototype.andWhereColumn = Builder.prototype.whereColumn;
 Builder.prototype.andWhereRaw = Builder.prototype.whereRaw;
 Builder.prototype.andWhereBetween = Builder.prototype.whereBetween;
 Builder.prototype.andWhereNotBetween = Builder.prototype.whereNotBetween;

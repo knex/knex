@@ -790,6 +790,22 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('whereColumn', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .whereColumn('users.id', '=', 'users.otherId'),
+      {
+        mysql: 'select * from `users` where `users`.`id` = `users`.`otherId`',
+        pg: 'select * from "users" where "users"."id" = "users"."otherId"',
+        'pg-redshift':
+          'select * from "users" where "users"."id" = "users"."otherId"',
+        mssql: 'select * from [users] where [users].[id] = [users].[otherId]',
+      }
+    );
+  });
+
   it('where not', function() {
     testsql(
       qb()
