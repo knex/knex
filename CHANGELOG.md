@@ -1,4 +1,3 @@
-
 # Master (Unreleased)
 
 ### Breaking Changes:
@@ -15,6 +14,8 @@
 - Feature/2690: Multiple migration directories #2735
 - Allow cloning query builder with .userParams({}) assigned to it #2802
 - Kill queries after timeout for PostgreSQL #2636
+- Added `onVal` and the associated `not` / `and` / `or` methods for using values in `on` clauses within joins.
+- Added `whereColumn` and the associated `not` / `and` / `or` methods for using columns on the right side of a where clause.
 
 ### Bug fixes:
 
@@ -49,7 +50,7 @@
 ### Breaking Changes:
 
 - Stop executing tests on Node 4 and 5. #2451 (not supported anymore)
-- `json` data type is no longer converted to `text` within a schema builder migration for MySQL databases (note that JSON data type is only supported for MySQL 5.7.8+)  #2635
+- `json` data type is no longer converted to `text` within a schema builder migration for MySQL databases (note that JSON data type is only supported for MySQL 5.7.8+) #2635
 - Removed WebSQL dialect #2461
 - Drop mariadb support #2681
 - Primary Key for Migration Lock Table #2569. This shouldn't affect to old loc tables, but if you like to have your locktable to have primary key, delete the old table and it will be recreated when migrations are ran next time.
@@ -74,7 +75,7 @@
 
 - Create timestamp columns with microsecond precision on MySQL 5.6 and newer #2542
 - Allow storing stacktrace, where builder is initialized to be able trace back where certain query was created #2500 #2505
-- Added 'ref' function #2509, no need for knex.raw('??', ['id']) anymore, one can do  knex.ref('id')
+- Added 'ref' function #2509, no need for knex.raw('??', ['id']) anymore, one can do knex.ref('id')
 - Support postgresql connection uri protocol #2609
 - Add support for native enums on Postgres #2632
 - Allow overwriting log functions #2625
@@ -133,7 +134,7 @@
 
 - Added stress test, which uses TCP proxy to simulate flaky connection #2460
 - Removed old docker tests, new stress test setup (#2474)
-- Removed unused property __cid on the base client (#2481)
+- Removed unused property \_\_cid on the base client (#2481)
 - Changed rm to rimraf in 'npm run dev' (#2483)
 - Changed babel preset and use latest node as target when running dev (#2484)
 
@@ -238,19 +239,23 @@
 # 0.13.0 - 29 Apr, 2017
 
 ### Breaking Changes:
+
 - Multiple concurrent migration runners blocks instead of throwing error when possible #1962
 - Fixed transaction promise mutation issue #1991
 
 ### Other Changes:
+
 - Allow passing version of connected db in configuration file #1993
 - Bugfixes on batchInsert and transactions for mysql/maria #1992
 - Add fetchAsString optional parameter to oracledb dialect #1998
 - fix: escapeObject parameter order for Postgres dialect. #2003
 
 # 0.12.9 - 23 Mar, 2017
+
 - Fixed unhandled exception in batchInsert when the rows to be inserted resulted in duplicate key violation #1880
 
 # 0.12.8 - 15 Mar, 2017
+
 - Added clearSelect and clearWhere to query builder #1912
 - Properly close Postgres query streams on error #1935
 - Transactions should never reject with undefined #1970
@@ -259,9 +264,11 @@
 # 0.12.7 - 17 Feb, 2017
 
 ### Accidental Breaking Change:
+
 - Ensure that 'client' is provided in knex config object #1822
 
 ### Other Changes:
+
 - Support custom foreign key names #1311, #1726
 - Fixed named bindings to work with queries containing `:`-chars #1890
 - Exposed more promise functions #1896
@@ -275,27 +282,32 @@
 - Fixed MSSQL incorect query build when locks are used #1707
 - Allow to use `first` method as aliased select #1784
 - Alter column for nullability, type and default value #46, #1759
-- Add more having* methods / join clause on* methods  #1674
+- Add more having* methods / join clause on* methods #1674
 - Compatibility fixes and cleanups #1788, #1792, #1794, #1814, #1857, #1649
 
 # 0.12.6 - 19 Oct, 2016
+
 - Address warnings mentioned in #1388 (#1740)
 - Remove postinstall script (#1746)
 
 # 0.12.5 - 12 Oct, 2016
+
 - Fix broken 0.12.4 build (removed from npm)
 - Fix #1733, #920, incorrect postgres array bindings
 
 # 0.12.3 - 9 Oct, 2016
+
 - Fix #1703, #1694 - connections should be returned to pool if acquireConnectionTimeout is triggered
 - Fix #1710 regression in postgres array escaping
 
 # 0.12.2 - 27 Sep, 2016
+
 - Restore pool min: 1 for sqlite3, #1701
 - Fix for connection error after it's closed / released, #1691
 - Fix oracle prefetchRowCount setting, #1675
 
 # 0.12.1 - 16 Sep, 2016
+
 - Fix MSSQL sql execution error, #1669
 - Added DEBUG=knex:bindings for debugging query bindings, #1557
 
@@ -498,6 +510,7 @@
 - Heavy refactoring internal APIs (public APIs should not be affected)
 
 ### "Other Changes:
+
 - Allow mysql2 to use non-default port, #588
 - Support creating & dropping extensions in PostgreSQL, #540
 - CLI support for knexfiles that do not provide environment keys, #527
@@ -636,7 +649,7 @@
 
 # 0.6.5 - June 9, 2014
 
-- Add missing _ require to WebSQL builds
+- Add missing \_ require to WebSQL builds
 
 # 0.6.4 - June 9, 2014
 
@@ -678,7 +691,6 @@
 - `.join('table.column', 'otherTable.column')` as shorthand for .join('table.column', '=', 'otherTable.column')
 - Streams are supported for selects, passing through to the streaming capabilities of node-mysql and node-postgres
 - For More information, see this [pull-request](https://github.com/tgriesser/knex/pull/252)
-
 
 # 0.5.15 - June 4, 2014
 
@@ -743,7 +755,7 @@
 
 # 0.5.1 - Dec 12, 2013
 
-- The [returning](#Builder-returning) in PostgreSQL may now accept * or an array of columns to return. If either of these are passed, the response will be an array of objects rather than an array of values. Updates may also now use a `returning` value. (#132)
+- The [returning](#Builder-returning) in PostgreSQL may now accept \* or an array of columns to return. If either of these are passed, the response will be an array of objects rather than an array of values. Updates may also now use a `returning` value. (#132)
 - Added `bigint` and `bigserial` type to PostgreSQL. (#111)
 - Fix for the [specificType](#Schema-specificType) schema call (#118)
 - Several fixes for migrations, including migration file path fixes, passing a Promise constructor to the migration `up` and `down` methods, allowing the "knex" module to be used globally, file ordering on migrations, and other small improvements. (#112-115, #125, #135)
