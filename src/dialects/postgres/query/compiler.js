@@ -75,8 +75,12 @@ assign(QueryCompiler_PG.prototype, {
     for (let i = 0; i < tables.length; i++) {
       let tableName = tables[i];
 
-      if (tableName && schemaName) tableName = `${schemaName}.${tableName}`;
-      if (tableName) sql.push(this.formatter.wrap(tableName));
+      if (tableName) {
+        if (schemaName) {
+          tableName = `${schemaName}.${tableName}`;
+        }
+        sql.push(this.formatter.wrap(tableName));
+      }
     }
 
     return sql.join(', ');
