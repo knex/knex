@@ -634,14 +634,16 @@ assign(QueryCompiler.prototype, {
 
   // Compiles a basic "where" clause.
   whereBasic(statement) {
-    return this._not(statement, '') +
+    return (
+      this._not(statement, '') +
       this.formatter.wrap(statement.column) +
       ' ' +
       this.formatter.operator(statement.operator) +
       ' ' +
-      statement.asColumn
-      ? this.formatter.wrap(statement.value)
-      : this.formatter.parameter(statement.value);
+      (statement.asColumn
+        ? this.formatter.wrap(statement.value)
+        : this.formatter.parameter(statement.value))
+    );
   },
 
   whereExists(statement) {
