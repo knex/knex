@@ -41,6 +41,7 @@ function Builder(client) {
   this._joinFlag = 'inner';
   this._boolFlag = 'and';
   this._notFlag = false;
+  this._asColumnFlag = false;
 }
 inherits(Builder, EventEmitter);
 
@@ -225,17 +226,6 @@ assign(Builder.prototype, {
   // The most basic is `where(key, value)`, which expands to
   // where key = value.
   where(column, operator, value) {
-    return this._addWhere(...arguments);
-  },
-
-  whereColumn(column, operator, rightColumn) {
-    if (arguments.length === 2) {
-      return this.whereColumn(column, '=', operator);
-    }
-    return this._addWhere(column, operator, rightColumn, true);
-  },
-
-  _addWhere(column, operator, value, asColumn = false) {
     // Support "where true || where false"
     if (column === false || column === true) {
       return this.where(1, '=', column ? 1 : 0);
@@ -306,8 +296,15 @@ assign(Builder.prototype, {
       value,
       not: this._not(),
       bool: this._bool(),
-      asColumn,
+      asColumn: this._asColumnFlag,
     });
+    return this;
+  },
+
+  whereColumn(column, operator, rightColumn) {
+    this._asColumnFlag = true;
+    this.where.apply(this, ...arguments);
+    this._asColumnFlag = false;
     return this;
   },
 
@@ -343,9 +340,17 @@ assign(Builder.prototype, {
     return this._not(true).where.apply(this, arguments);
   },
 
+  whereNotColumn() {
+    return this._not(true).whereColumn.apply(this, arguments);
+  },
+
   // Adds an `or not where` clause to the query.
   orWhereNot() {
     return this._bool('or').whereNot.apply(this, arguments);
+  },
+
+  orWhereNotColumn() {
+    return this._bool('or').whereNotColumn.apply(this, arguments);
   },
 
   // Processes an object literal provided in a "where" clause.
@@ -1089,6 +1094,7 @@ Object.defineProperty(Builder.prototype, 'not', {
 Builder.prototype.select = Builder.prototype.columns;
 Builder.prototype.column = Builder.prototype.columns;
 Builder.prototype.andWhereNot = Builder.prototype.whereNot;
+Builder.prototype.andWhereNotColumn = Builder.prototype.whereNotColumn;
 Builder.prototype.andWhere = Builder.prototype.where;
 Builder.prototype.andWhereColumn = Builder.prototype.whereColumn;
 Builder.prototype.andWhereRaw = Builder.prototype.whereRaw;
