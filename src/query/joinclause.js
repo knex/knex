@@ -91,18 +91,18 @@ assign(JoinClause.prototype, {
     return this._bool('or').on.apply(this, arguments);
   },
 
-  onVal(first) {
+  onColumn(first) {
     if (typeof first === 'object' && typeof first.toSQL !== 'function') {
       const keys = Object.keys(first);
       let i = -1;
-      const method = this._bool() === 'or' ? 'orOnVal' : 'onVal';
+      const method = this._bool() === 'or' ? 'orOnColumn' : 'onColumn';
       while (++i < keys.length) {
         this[method](keys[i], first[keys[i]]);
       }
       return this;
     }
 
-    const data = getClauseFromArguments('onVal', this._bool(), ...arguments);
+    const data = getClauseFromArguments('onColumn', this._bool(), ...arguments);
 
     if (data) {
       this.clauses.push(data);
@@ -111,12 +111,12 @@ assign(JoinClause.prototype, {
     return this;
   },
 
-  andOnVal() {
-    return this.onVal(...arguments);
+  andOnColumn() {
+    return this.onColumn(...arguments);
   },
 
-  orOnVal() {
-    return this._bool('or').onVal(...arguments);
+  orOnColumn() {
+    return this._bool('or').onColumn(...arguments);
   },
 
   onBetween(column, values) {

@@ -591,7 +591,7 @@ assign(QueryCompiler.prototype, {
     );
   },
 
-  onVal(clause) {
+  onColumn(clause) {
     return (
       this.formatter.wrap(clause.column) +
       ' ' +
