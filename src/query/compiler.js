@@ -591,6 +591,16 @@ assign(QueryCompiler.prototype, {
     );
   },
 
+  onVal(clause) {
+    return (
+      this.formatter.wrap(clause.column) +
+      ' ' +
+      this.formatter.operator(clause.operator) +
+      ' ' +
+      this.formatter.parameter(clause.value)
+    );
+  },
+
   onRaw(clause) {
     return this.formatter.unwrapRaw(clause.value);
   },
@@ -630,7 +640,9 @@ assign(QueryCompiler.prototype, {
       ' ' +
       this.formatter.operator(statement.operator) +
       ' ' +
-      this.formatter.parameter(statement.value)
+      (statement.asColumn
+        ? this.formatter.wrap(statement.value)
+        : this.formatter.parameter(statement.value))
     );
   },
 

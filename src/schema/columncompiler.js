@@ -10,6 +10,7 @@ function ColumnCompiler(client, tableCompiler, columnBuilder) {
   this.client = client;
   this.tableCompiler = tableCompiler;
   this.columnBuilder = columnBuilder;
+  this._commonBuilder = this.columnBuilder;
   this.args = columnBuilder._args;
   this.type = columnBuilder._type.toLowerCase();
   this.grouped = groupBy(columnBuilder._statements, 'grouping');
