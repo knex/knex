@@ -229,7 +229,10 @@ assign(Builder.prototype, {
   },
 
   whereColumn(column, operator, rightColumn) {
-    return this._addWhere(...arguments);
+    if (arguments.length === 2) {
+      return this.whereColumn(column, '=', operator);
+    }
+    return this._addWhere(column, operator, rightColumn, true);
   },
 
   _addWhere(column, operator, value, asColumn = false) {
@@ -328,7 +331,7 @@ assign(Builder.prototype, {
     if (isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
       return this.whereWrapped(function() {
         for (const key in obj) {
-          this.andWhere(key, obj[key]);
+          this.andWhereColumn(key, '=', obj[key]);
         }
       });
     }
@@ -1087,6 +1090,7 @@ Builder.prototype.select = Builder.prototype.columns;
 Builder.prototype.column = Builder.prototype.columns;
 Builder.prototype.andWhereNot = Builder.prototype.whereNot;
 Builder.prototype.andWhere = Builder.prototype.where;
+Builder.prototype.andWhereColumn = Builder.prototype.whereColumn;
 Builder.prototype.andWhereRaw = Builder.prototype.whereRaw;
 Builder.prototype.andWhereBetween = Builder.prototype.whereBetween;
 Builder.prototype.andWhereNotBetween = Builder.prototype.whereNotBetween;
