@@ -140,6 +140,19 @@ assign(SQLite3_DDL.prototype, {
     }
     args.push(defs.slice(ptr, i));
 
+    // Backwards compatible for double quoted sqlite databases
+    // Detect CREATE TABLE "accounts" ("id"...)
+    // The "from" and "to" field use backsticks, because this is the default notation for
+    // SQlite3 since Knex 0.14.
+    // e.g. from: `about`
+    //
+    // We have to replace the from+to field with double slashes in case you created your SQlite3
+    // database with Knex < 0.14.
+    if (sql.match(/CREATE\sTABLE\s".*"\s\("/)) {
+      from = from.replace(/[`]/g, '"');
+      to = to.replace(/[`]/g, '"');
+    }
+
     args = args.map(function(item) {
       let split = item.split(' ');
 
