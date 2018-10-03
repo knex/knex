@@ -19,6 +19,7 @@ import {
 function TableCompiler(client, tableBuilder) {
   this.client = client;
   this.tableBuilder = tableBuilder;
+  this._commonBuilder = this.tableBuilder;
   this.method = tableBuilder._method;
   this.schemaNameRaw = tableBuilder._schemaName;
   this.tableNameRaw = tableBuilder._tableName;
