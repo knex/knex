@@ -167,7 +167,8 @@ assign(Client_Firebird.prototype, {
         }
         return rows.affectedRows;
       default:
-        return bindings;
+        response[0] = parseResults(response[0]);
+        return response;
     }
   },
   ping: function ping(resource, callback) {
