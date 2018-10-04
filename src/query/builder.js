@@ -982,12 +982,14 @@ assign(Builder.prototype, {
   // Set a lock for update constraint.
   forUpdate() {
     this._single.lock = 'forUpdate';
+    this._single.lockTables = helpers.normalizeArr.apply(null, arguments);
     return this;
   },
 
   // Set a lock for share constraint.
   forShare() {
     this._single.lock = 'forShare';
+    this._single.lockTables = helpers.normalizeArr.apply(null, arguments);
     return this;
   },
 

@@ -14,6 +14,7 @@
 - Feature/2690: Multiple migration directories #2735
 - Allow cloning query builder with .userParams({}) assigned to it #2802
 - Kill queries after timeout for PostgreSQL #2636
+- Allow table names with `forUpdate`/`forShare` #2834
 - Added `onVal` and the associated `not` / `and` / `or` methods for using values in `on` clauses within joins.
 - Added `whereColumn` and the associated `not` / `and` / `or` methods for using columns on the right side of a where clause.
 
