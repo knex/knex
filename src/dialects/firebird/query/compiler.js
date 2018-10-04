@@ -62,7 +62,7 @@ assign(QueryCompiler_Firebird.prototype, {
               `${this.formatter.columnize(insertData.columns)}) values (`;
           sql += `${this.formatter.parameterize(insertData.values[i])});`;
         }
-        sql += ' end';
+        // sql += ' end';
       } else if (insertValues.length === 1 && insertValues[0]) {
         sql += returningSql + this._emptyInsertValue;
       } else {
@@ -70,9 +70,9 @@ assign(QueryCompiler_Firebird.prototype, {
       }
     }
 
-    if (sql) {
-      sql = 'execute block as begin ' + sql;
-    }
+    // if (sql) {
+    //   sql = 'execute block as begin ' + sql;
+    // }
 
     return {
       sql: sql,
