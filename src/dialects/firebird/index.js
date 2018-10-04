@@ -156,9 +156,18 @@ assign(Client_Firebird.prototype, {
 
         return parseResults(method === 'first' ? rows[0] : rows);
       case 'insert':
-        return bindings;
       case 'del':
       case 'update':
+        if (rows && obj.returning) {
+          return [rows[obj.returning]];
+        }
+
+        if (rows && rows.affectedRows) {
+          rows.affectedRows;
+        } else {
+          rows.affectedRows = [0];
+        }
+        return rows.affectedRows;
       case 'counter':
         if (rows && rows.affectedRows) {
           rows.affectedRows;

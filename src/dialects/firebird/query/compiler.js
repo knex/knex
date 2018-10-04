@@ -51,7 +51,7 @@ assign(QueryCompiler_Firebird.prototype, {
     const insertData = this._prepInsert(insertValues);
     sql += `(${this.formatter.columnize(insertData.columns)}) values (`;
     if (typeof insertData === 'string') {
-      sql += insertData;
+      sql += `${insertData} ${returningSql}`;
     } else {
       if (insertData.columns.length) {
         let i = -1;
@@ -60,7 +60,9 @@ assign(QueryCompiler_Firebird.prototype, {
             sql +=
               ` insert into ${this.tableName} (` +
               `${this.formatter.columnize(insertData.columns)}) values (`;
-          sql += `${this.formatter.parameterize(insertData.values[i])});`;
+          sql += `${this.formatter.parameterize(
+            insertData.values[i]
+          )}) ${returningSql};`;
         }
         // sql += ' end';
       } else if (insertValues.length === 1 && insertValues[0]) {
@@ -86,6 +88,7 @@ assign(QueryCompiler_Firebird.prototype, {
     const updates = this._prepUpdate(this.single.update);
     const where = this.where();
     const order = this.order();
+    const { returning } = this.single;
     // const limit = this.limit();
     return (
       `update ${this.tableName}` +
@@ -93,8 +96,22 @@ assign(QueryCompiler_Firebird.prototype, {
       ' set ' +
       updates.join(', ') +
       (where ? ` ${where}` : '') +
-      (order ? ` ${order}` : '')
+      (order ? ` ${order}` : '') +
+      (returning ? ` ${this._returning('update', returning) + ''}` : '')
       // (limit ? ` ${limit}` : '')
+    );
+  },
+
+  // Compiles a `delete` query.
+  del() {
+    // Make sure tableName is processed by the formatter first.
+    const { tableName } = this;
+    const { returning } = this.single;
+    const wheres = this.where();
+    return (
+      `delete from ${tableName}` +
+      (wheres ? ` ${wheres}` : '') +
+      (returning ? ` ${this._returning('del', returning) + ''}` : '')
     );
   },
 
@@ -225,6 +242,19 @@ assign(QueryCompiler_Firebird.prototype, {
     if (!this.single.offset) return '';
 
     return `skip ${this.formatter.parameter(this.single.offset)}`;
+  },
+
+  _returning: function _returning(method, value) {
+    switch (method) {
+      case 'update':
+      case 'insert':
+      case 'del':
+        return value
+          ? `returning ${this.formatter.columnizeWithPrefix('', value)}`
+          : '';
+      default:
+        return '';
+    }
   },
 });
 
