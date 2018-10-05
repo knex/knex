@@ -5620,13 +5620,13 @@ describe('QueryBuilder', function() {
     );
   });
 
-  it('Can chain increment', () => {
+  it('Calling increment multiple times on same column overwrites the previous value', () => {
     testsql(
       qb()
         .into('users')
         .where('id', '=', 1)
         .increment('balance', 10)
-        .increment('balance', 10),
+        .increment('balance', 20),
       {
         pg: {
           sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
@@ -5649,13 +5649,13 @@ describe('QueryBuilder', function() {
     );
   });
 
-  it('Can chain increment and decrement in same build-chain', () => {
+  it('Calling increment and then decrement will overwrite the previous value', () => {
     testsql(
       qb()
         .into('users')
         .where('id', '=', 1)
         .increment('balance', 10)
-        .decrement('balance', 100),
+        .decrement('balance', 90),
       {
         pg: {
           sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
@@ -5678,6 +5678,64 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('Calling decrement multiple times on same column overwrites the previous value', () => {
+    testsql(
+      qb()
+        .into('users')
+        .where('id', '=', 1)
+        .decrement('balance', 10)
+        .decrement('balance', 20),
+      {
+        pg: {
+          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+          bindings: [20, 1],
+        },
+        mysql: {
+          sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
+          bindings: [20, 1],
+        },
+        mssql: {
+          sql:
+            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+          bindings: [20, 1],
+        },
+        'pg-redshift': {
+          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+          bindings: [20, 1],
+        },
+      }
+    );
+  });
+
+  it('Calling decrement and then increment will overwrite the previous value', () => {
+    testsql(
+      qb()
+        .into('users')
+        .where('id', '=', 1)
+        .decrement('balance', 10)
+        .increment('balance', 90),
+      {
+        pg: {
+          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
+          bindings: [90, 1],
+        },
+        mysql: {
+          sql: 'update `users` set `balance` = `balance` + ? where `id` = ?',
+          bindings: [90, 1],
+        },
+        mssql: {
+          sql:
+            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
+          bindings: [90, 1],
+        },
+        'pg-redshift': {
+          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
+          bindings: [90, 1],
+        },
+      }
+    );
+  });
+
   it('Can chain increment / decrement with .update in same build-chain', () => {
     testsql(
       qb()
@@ -5687,27 +5745,27 @@ describe('QueryBuilder', function() {
           email: 'foo@bar.com',
         })
         .increment('balance', 10)
-        .decrement('balance', 100),
+        .decrement('subbalance', 100),
       {
         pg: {
           sql:
-            'update "users" set "email" = ?, "balance" = "balance" - ? where "id" = ?',
-          bindings: ['foo@bar.com', 90, 1],
+            'update "users" set "email" = ?, "balance" = "balance" + ?, "subbalance" = "subbalance" - ? where "id" = ?',
+          bindings: ['foo@bar.com', 10, 100, 1],
         },
         mysql: {
           sql:
-            'update `users` set `email` = ?, `balance` = `balance` - ? where `id` = ?',
-          bindings: ['foo@bar.com', 90, 1],
+            'update `users` set `email` = ?, `balance` = `balance` + ?, `subbalance` = `subbalance` - ? where `id` = ?',
+          bindings: ['foo@bar.com', 10, 100, 1],
         },
         mssql: {
           sql:
-            'update [users] set [email] = ?, [balance] = [balance] - ? where [id] = ?;select @@rowcount',
-          bindings: ['foo@bar.com', 90, 1],
+            'update [users] set [email] = ?, [balance] = [balance] + ?, [subbalance] = [subbalance] - ? where [id] = ?;select @@rowcount',
+          bindings: ['foo@bar.com', 10, 100, 1],
         },
         'pg-redshift': {
           sql:
-            'update "users" set "email" = ?, "balance" = "balance" - ? where "id" = ?',
-          bindings: ['foo@bar.com', 90, 1],
+            'update "users" set "email" = ?, "balance" = "balance" + ?, "subbalance" = "subbalance" - ? where "id" = ?',
+          bindings: ['foo@bar.com', 10, 100, 1],
         },
       }
     );

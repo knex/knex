@@ -833,7 +833,7 @@ assign(Builder.prototype, {
 
   // Clears increments/decrements
   clearCounters() {
-    this._single.counter = [];
+    this._single.counter = {};
 
     return this;
   },
@@ -999,12 +999,9 @@ assign(Builder.prototype, {
 
     this._method = 'update';
 
-    this._single.counter = this._single.counter || [];
+    this._single.counter = this._single.counter || {};
 
-    this._single.counter.push({
-      column,
-      amount,
-    });
+    this._single.counter[column] = amount;
 
     return this;
   },

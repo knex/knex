@@ -17,6 +17,7 @@ import {
   omitBy,
   reduce,
   has,
+  keys,
 } from 'lodash';
 import uuid from 'uuid';
 
@@ -723,10 +724,9 @@ assign(QueryCompiler.prototype, {
 
   // "Preps" the update.
   _prepUpdate(data = {}) {
-    const { counter = [] } = this.single;
-    const grouped = groupBy(counter, 'column');
+    const { counter = {} } = this.single;
 
-    for (const column in grouped) {
+    for (const column of keys(counter)) {
       //Skip?
       if (has(data, column)) {
         //Needed?
@@ -736,11 +736,7 @@ assign(QueryCompiler.prototype, {
         continue;
       }
 
-      let value = reduce(
-        grouped[column],
-        (memo, item) => memo + item.amount,
-        0
-      );
+      let value = counter[column];
 
       const symbol = value < 0 ? '-' : '+';
 
@@ -752,9 +748,11 @@ assign(QueryCompiler.prototype, {
     }
 
     data = omitBy(data, isUndefined);
+
     const vals = [];
     const columns = Object.keys(data);
     let i = -1;
+
     while (++i < columns.length) {
       vals.push(
         this.formatter.wrap(columns[i]) +
