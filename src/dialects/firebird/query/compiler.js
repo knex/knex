@@ -244,6 +244,46 @@ assign(QueryCompiler_Firebird.prototype, {
     return `skip ${this.formatter.parameter(this.single.offset)}`;
   },
 
+  havingBasic(statement) {
+    let column = this.formatter.wrap(statement.column);
+    const operator = this.formatter.operator(statement.operator);
+    let value = this.formatter.parameter(statement.value);
+
+    if (operator === 'like' || operator === 'not like') {
+      column = `lower(${column})`;
+      value = `lower(${value})`;
+    }
+
+    return this._not(statement, '') + column + ' ' + operator + ' ' + value;
+  },
+
+  onBasic(clause) {
+    let column = this.formatter.wrap(clause.column);
+    const operator = this.formatter.operator(clause.operator);
+    let value = this.formatter.wrap(clause.value);
+
+    if (operator === 'like' || operator === 'not like') {
+      column = `lower(${column})`;
+      value = `lower(${value})`;
+    }
+
+    return column + ' ' + operator + ' ' + value;
+  },
+
+  // Compiles a basic "where" clause.
+  whereBasic(statement) {
+    let column = this.formatter.wrap(statement.column);
+    const operator = this.formatter.operator(statement.operator);
+    let value = this.formatter.parameter(statement.value);
+
+    if (operator === 'like' || operator === 'not like') {
+      column = `lower(${column})`;
+      value = `lower(${value})`;
+    }
+
+    return this._not(statement, '') + column + ' ' + operator + ' ' + value;
+  },
+
   _returning: function _returning(method, value) {
     switch (method) {
       case 'update':
