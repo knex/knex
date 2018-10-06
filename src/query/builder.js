@@ -844,13 +844,36 @@ assign(Builder.prototype, {
   },
 
   // Increments a column's value by the specified amount.
-  increment(column, amount) {
+  increment(column, amount = 1) {
+    if (isObject(column)) {
+      for (const key in column) {
+        this._counter(key, column[key]);
+      }
+
+      return this;
+    }
+
     return this._counter(column, amount);
   },
 
   // Decrements a column's value by the specified amount.
-  decrement(column, amount) {
-    return this._counter(column, amount, '-');
+  decrement(column, amount = 1) {
+    if (isObject(column)) {
+      for (const key in column) {
+        this._counter(key, -column[key]);
+      }
+
+      return this;
+    }
+
+    return this._counter(column, -amount);
+  },
+
+  // Clears increments/decrements
+  clearCounters() {
+    this._single.counter = {};
+
+    return this;
   },
 
   // Sets the values for a `select` query, informing that only the first
@@ -1018,15 +1041,15 @@ assign(Builder.prototype, {
   // ----------------------------------------------------------------------
 
   // Helper for the incrementing/decrementing queries.
-  _counter(column, amount, symbol) {
-    let amt = parseFloat(amount);
-    if (isNaN(amt)) amt = 1;
-    this._method = 'counter';
-    this._single.counter = {
-      column,
-      amount: amt,
-      symbol: symbol || '+',
-    };
+  _counter(column, amount) {
+    amount = parseFloat(amount);
+
+    this._method = 'update';
+
+    this._single.counter = this._single.counter || {};
+
+    this._single.counter[column] = amount;
+
     return this;
   },
 
