@@ -94,7 +94,9 @@ TableCompiler_SQLite3.prototype.primaryKeys = function() {
     if (constraintName) {
       constraintName = ' constraint ' + this.formatter.wrap(constraintName);
     }
-    return `,${constraintName} primary key (${this.formatter.columnize(columns)})`;
+    return `,${constraintName} primary key (${this.formatter.columnize(
+      columns
+    )})`;
   }
 };
 

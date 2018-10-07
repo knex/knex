@@ -8683,28 +8683,29 @@ describe('QueryBuilder', function() {
         })
         .from({ p: 'wp_posts' })
         .leftJoin({ price: 'wp_postmeta' }, (builder) => {
-          builder.onVal((q) => {
-            q.onVal('price.meta_key', '_regular_price').andOnVal(
-              'price_meta_key',
-              '_regular_price'
-            );
-          })
+          builder
+            .onVal((q) => {
+              q.onVal('price.meta_key', '_regular_price').andOnVal(
+                'price_meta_key',
+                '_regular_price'
+              );
+            })
             .orOnVal((q) => {
               q.onVal('price_meta.key', '_regular_price');
-            })
+            });
         }),
       {
-        pg:            {
+        pg: {
           sql:
             'select "p"."ID" as "id", "p"."post_status" as "status", "p"."post_title" as "name", "price"."meta_value" as "price", "p"."post_date_gmt" as "createdAt", "p"."post_modified_gmt" as "updatedAt" from "wp_posts" as "p" left join "wp_postmeta" as "price" on ("price"."meta_key" = ? and "price_meta_key" = ?) or ("price_meta"."key" = ?)',
           bindings: ['_regular_price', '_regular_price', '_regular_price'],
         },
-        mysql:         {
+        mysql: {
           sql:
             'select `p`.`ID` as `id`, `p`.`post_status` as `status`, `p`.`post_title` as `name`, `price`.`meta_value` as `price`, `p`.`post_date_gmt` as `createdAt`, `p`.`post_modified_gmt` as `updatedAt` from `wp_posts` as `p` left join `wp_postmeta` as `price` on (`price`.`meta_key` = ? and `price_meta_key` = ?) or (`price_meta`.`key` = ?)',
           bindings: ['_regular_price', '_regular_price', '_regular_price'],
         },
-        mssql:         {
+        mssql: {
           sql:
             'select [p].[ID] as [id], [p].[post_status] as [status], [p].[post_title] as [name], [price].[meta_value] as [price], [p].[post_date_gmt] as [createdAt], [p].[post_modified_gmt] as [updatedAt] from [wp_posts] as [p] left join [wp_postmeta] as [price] on ([price].[meta_key] = ? and [price_meta_key] = ?) or ([price_meta].[key] = ?)',
           bindings: ['_regular_price', '_regular_price', '_regular_price'],
@@ -8714,10 +8715,12 @@ describe('QueryBuilder', function() {
             'select "p"."ID" as "id", "p"."post_status" as "status", "p"."post_title" as "name", "price"."meta_value" as "price", "p"."post_date_gmt" as "createdAt", "p"."post_modified_gmt" as "updatedAt" from "wp_posts" as "p" left join "wp_postmeta" as "price" on ("price"."meta_key" = ? and "price_meta_key" = ?) or ("price_meta"."key" = ?)',
           bindings: ['_regular_price', '_regular_price', '_regular_price'],
         },
-        oracledb:      {
+        oracledb: {
           sql:
             'select "p"."ID" "id", "p"."post_status" "status", "p"."post_title" "name", "price"."meta_value" "price", "p"."post_date_gmt" "createdAt", "p"."post_modified_gmt" "updatedAt" from "wp_posts" "p" left join "wp_postmeta" "price" on ("price"."meta_key" = ? and "price_meta_key" = ?) or ("price_meta"."key" = ?)',
           bindings: ['_regular_price', '_regular_price', '_regular_price'],
         },
-      })});
+      }
+    );
+  });
 });

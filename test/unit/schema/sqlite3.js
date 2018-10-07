@@ -169,14 +169,20 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it("adding primary key with specific identifier", function() {
-    tableSql = client.schemaBuilder().createTable('users', function(table) {
-      table.string('foo');
-      table.primary('foo', 'pk-users');
-    }).toSQL();
+  it('adding primary key with specific identifier', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function(table) {
+        table.string('foo');
+        table.primary('foo', 'pk-users');
+      })
+      .toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), constraint "pk-users" primary key ("foo"))');
+    equal(
+      tableSql[0].sql,
+      'create table "users" ("foo" varchar(255), constraint "pk-users" primary key ("foo"))'
+    );
   });
 
   it('adding composite primary key', function() {
@@ -226,13 +232,19 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it("adding primary key fluently with specific identifier", function() {
-    tableSql = client.schemaBuilder().createTable('users', function(table) {
-      table.string('foo').primary('pk-users');
-    }).toSQL();
+  it('adding primary key fluently with specific identifier', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function(table) {
+        table.string('foo').primary('pk-users');
+      })
+      .toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), constraint "pk-users" primary key ("foo"))');
+    equal(
+      tableSql[0].sql,
+      'create table "users" ("foo" varchar(255), constraint "pk-users" primary key ("foo"))'
+    );
   });
 
   it('adding foreign key', function() {
@@ -255,15 +267,24 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it("adding foreign key with specific identifier", function() {
-    tableSql = client.schemaBuilder().createTable('users', function(table) {
-      table.string('foo').primary();
-      table.string('order_id');
-      table.foreign('order_id', 'fk-users-orders').references('id').on('orders');
-    }).toSQL();
+  it('adding foreign key with specific identifier', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function(table) {
+        table.string('foo').primary();
+        table.string('order_id');
+        table
+          .foreign('order_id', 'fk-users-orders')
+          .references('id')
+          .on('orders');
+      })
+      .toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'create table "users" ("foo" varchar(255), "order_id" varchar(255), constraint "fk-users-orders" foreign key("order_id") references "orders"("id"), primary key ("foo"))');
+    equal(
+      tableSql[0].sql,
+      'create table "users" ("foo" varchar(255), "order_id" varchar(255), constraint "fk-users-orders" foreign key("order_id") references "orders"("id"), primary key ("foo"))'
+    );
   });
 
   it('adding foreign key fluently', function() {
