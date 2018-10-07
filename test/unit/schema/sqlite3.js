@@ -181,7 +181,7 @@ describe('SQLite SchemaBuilder', function() {
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table "users" ("foo" varchar(255), constraint "pk-users" primary key ("foo"))'
+      'create table `users` (`foo` varchar(255), constraint `pk-users` primary key (`foo`))'
     );
   });
 
@@ -200,20 +200,22 @@ describe('SQLite SchemaBuilder', function() {
       tableSql[0].sql,
       'create table `users` (`foo` varchar(255), `order_id` varchar(255), primary key (`foo`, `order_id`))'
     );
+  });
 
+  it('adding composite primary key with specific identifier', function() {
     tableSql = client
       .schemaBuilder()
       .createTable('users', function(table) {
         table.string('foo');
         table.string('order_id');
-        table.primary('foo', 'order_id');
+        table.primary(['foo', 'order_id'], 'pk-users');
       })
       .toSQL();
 
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table `users` (`foo` varchar(255), `order_id` varchar(255), primary key (`foo`, `order_id`))'
+      'create table `users` (`foo` varchar(255), `order_id` varchar(255), constraint `pk-users` primary key (`foo`, `order_id`))'
     );
   });
 
@@ -243,7 +245,7 @@ describe('SQLite SchemaBuilder', function() {
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table "users" ("foo" varchar(255), constraint "pk-users" primary key ("foo"))'
+      'create table `users` (`foo` varchar(255), constraint `pk-users` primary key (`foo`))'
     );
   });
 
@@ -283,7 +285,7 @@ describe('SQLite SchemaBuilder', function() {
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table "users" ("foo" varchar(255), "order_id" varchar(255), constraint "fk-users-orders" foreign key("order_id") references "orders"("id"), primary key ("foo"))'
+      'create table `users` (`foo` varchar(255), `order_id` varchar(255), constraint `fk-users-orders` foreign key(`order_id`) references `orders`(`id`), primary key (`foo`))'
     );
   });
 
