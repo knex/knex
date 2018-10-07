@@ -5,10 +5,11 @@
 [![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.svg?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
 [![Dependencies Status](https://david-dm.org/tgriesser/knex.svg)](https://david-dm.org/tgriesser/knex)
 [![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex)
+[![Language Grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/tgriesser/knex.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tgriesser/knex/context:javascript)
 
 > **A SQL query builder that is _flexible_, _portable_, and _fun_ to use!**
 
-A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle(including Oracle Wallet Authentication), WebSQL) query builder for
+A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle(including Oracle Wallet Authentication)) query builder for
 Node.js and the Browser, featuring:
 
 - [transactions](http://knexjs.org/#Transactions)
@@ -18,11 +19,15 @@ Node.js and the Browser, featuring:
 - a [thorough test suite](https://travis-ci.org/tgriesser/knex)
 - the ability to [run in the Browser](http://knexjs.org/#Installation-browser)
 
+Node.js versions 6+ are supported.
+
 [Read the full documentation to get started!](http://knexjs.org)
 
 For support and questions, join the `#bookshelf` channel on freenode IRC
 
-For an Object Relational Mapper, see: http://bookshelfjs.org
+For an Object Relational Mapper, see:
+- http://bookshelfjs.org
+- https://github.com/Vincit/objection.js
 
 To see the SQL that Knex will generate for a given query, see: [Knex Query Lab](http://michaelavila.com/knex-querylab/)
 

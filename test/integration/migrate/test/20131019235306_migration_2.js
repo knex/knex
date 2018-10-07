@@ -1,21 +1,23 @@
 'use strict';
 
-
 exports.up = function(knex, promise) {
-  return promise.all([
-    knex.schema
-      .createTable('migration_test_2', function(t) {
+  const tableName2 = knex.userParams.customTableName || 'migration_test_2_1';
+  return knex.schema
+    .createTable('migration_test_2', function(t) {
+      t.increments();
+      t.string('name');
+    })
+    .then(() =>
+      knex.schema.createTable(tableName2, function(t) {
         t.increments();
         t.string('name');
-      }),
-      knex.schema
-        .createTable('migration_test_2_1', function(t) {
-          t.increments();
-          t.string('name');
-        })
-  ]);
+      })
+    );
 };
 
 exports.down = function(knex, promise) {
-  return promise.all([knex.schema.dropTable('migration_test_2'), knex.schema.dropTable('migration_test_2_1')]);
+  const tableName2 = knex.userParams.customTableName || 'migration_test_2_1';
+  return knex.schema
+    .dropTable('migration_test_2')
+    .then(() => knex.schema.dropTable(tableName2));
 };

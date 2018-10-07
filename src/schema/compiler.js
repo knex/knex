@@ -1,24 +1,25 @@
+import { pushQuery, pushAdditional, unshiftQuery } from './helpers';
 
-import { pushQuery, pushAdditional } from './helpers';
-
-import { assign } from 'lodash'
+import { assign, isUndefined } from 'lodash';
 
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of
 // properly formatted / bound query strings.
 function SchemaCompiler(client, builder) {
-  this.builder = builder
-  this.client = client
+  this.builder = builder;
+  this._commonBuilder = this.builder;
+  this.client = client;
   this.schema = builder._schema;
-  this.formatter = client.formatter()
-  this.sequence = []
+  this.formatter = client.formatter(builder);
+  this.sequence = [];
 }
 
 assign(SchemaCompiler.prototype, {
-
   pushQuery: pushQuery,
 
   pushAdditional: pushAdditional,
+
+  unshiftQuery: unshiftQuery,
 
   createTable: buildTable('create'),
 
@@ -30,14 +31,16 @@ assign(SchemaCompiler.prototype, {
 
   dropTable(tableName) {
     this.pushQuery(
-      this.dropTablePrefix + this.formatter.wrap(prefixedTableName(this.schema, tableName))
+      this.dropTablePrefix +
+        this.formatter.wrap(prefixedTableName(this.schema, tableName))
     );
   },
 
   dropTableIfExists(tableName) {
     this.pushQuery(
-      this.dropTablePrefix + 'if exists ' +
-      this.formatter.wrap(prefixedTableName(this.schema, tableName))
+      this.dropTablePrefix +
+        'if exists ' +
+        this.formatter.wrap(prefixedTableName(this.schema, tableName))
     );
   },
 
@@ -52,13 +55,18 @@ assign(SchemaCompiler.prototype, {
       this[query.method].apply(this, query.args);
     }
     return this.sequence;
-  }
-
-})
+  },
+});
 
 function buildTable(type) {
   return function(tableName, fn) {
     const builder = this.client.tableBuilder(type, tableName, fn);
+
+    // pass queryContext down to tableBuilder but do not overwrite it if already set
+    const queryContext = this.builder.queryContext();
+    if (!isUndefined(queryContext) && isUndefined(builder.queryContext())) {
+      builder.queryContext(queryContext);
+    }
 
     builder.setSchema(this.schema);
     const sql = builder.toSQL();

@@ -1,9 +1,12 @@
 yarn.lock
+package-lock.json
 raw
 *.sw?
 .idea
 .DS_Store
 .vagrant
+*.sublime-project
+*.sublime-workspace
 node_modules
 test.sqlite3
 npm-debug.log
@@ -17,3 +20,7 @@ bin/db.sqlite3
 # Bench stuff
 test/bench/temp
 test/coverage/*
+.nyc_output
+
+#VsCode workspace
+.vscode

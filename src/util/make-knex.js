@@ -1,36 +1,33 @@
-
 import { EventEmitter } from 'events';
 
-import Migrator from '../migrate';
+import Migrator from '../migrate/Migrator';
 import Seeder from '../seed';
 import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
-import * as helpers from '../helpers';
-import { assign } from 'lodash'
+import { assign } from 'lodash';
 import batchInsert from './batchInsert';
 
 export default function makeKnex(client) {
-
   // The object we're potentially using to kick off an initial chain.
   function knex(tableName, options) {
-    const qb = knex.queryBuilder()
-    if (!tableName) helpers.warn(
-      'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
-    );
-    return tableName ? qb.table(tableName, options) : qb
+    const qb = knex.queryBuilder();
+    if (!tableName)
+      client.logger.warn(
+        'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
+      );
+    return tableName ? qb.table(tableName, options) : qb;
   }
 
   assign(knex, {
-
     Promise: require('bluebird'),
 
     // A new query builder instance.
     queryBuilder() {
-      return client.queryBuilder()
+      return client.queryBuilder();
     },
 
     raw() {
-      return client.raw.apply(client, arguments)
+      return client.raw.apply(client, arguments);
     },
 
     batchInsert(table, batch, chunkSize = 1000) {
@@ -40,103 +37,118 @@ export default function makeKnex(client) {
     // Runs a new transaction, taking a container and returning a promise
     // for when the transaction is resolved.
     transaction(container, config) {
-      return client.transaction(container, config)
+      const trx = client.transaction(container, config);
+      trx.userParams = this.userParams;
+      return trx;
     },
 
     // Typically never needed, initializes the pool for a knex client.
     initialize(config) {
-      return client.initialize(config)
+      return client.initializePool(config);
     },
 
     // Convenience method for tearing down the pool.
     destroy(callback) {
-      return client.destroy(callback)
-    }
+      return client.destroy(callback);
+    },
 
-  })
+    ref(ref) {
+      return client.ref(ref);
+    },
 
-  // Hook up the "knex" object as an EventEmitter.
-  const ee = new EventEmitter()
-  for (const key in ee) {
-    knex[key] = ee[key]
-  }
+    withUserParams(params) {
+      const knexClone = shallowCloneFunction(knex); // We need to include getters in our clone
+      if (knex.client) {
+        knexClone.client = Object.assign({}, knex.client); // Clone client to avoid leaking listeners that are set on it
+        const parentPrototype = Object.getPrototypeOf(knex.client);
+        if (parentPrototype) {
+          Object.setPrototypeOf(knexClone.client, parentPrototype);
+        }
+      }
+
+      redefineProperties(knexClone);
+      knexClone.userParams = params;
+      return knexClone;
+    },
+  });
 
   // Allow chaining methods from the root object, before
   // any other information is specified.
   QueryInterface.forEach(function(method) {
     knex[method] = function() {
-      const builder = knex.queryBuilder()
-      return builder[method].apply(builder, arguments)
-    }
-  })
+      const builder = knex.queryBuilder();
+      return builder[method].apply(builder, arguments);
+    };
+  });
 
-  knex.client = client
+  knex.client = client;
+  redefineProperties(knex);
 
-  const VERSION = '0.12.6'
+  client.makeKnex = makeKnex;
 
+  knex.userParams = {};
+  return knex;
+}
+
+function redefineProperties(knex) {
   Object.defineProperties(knex, {
-
-    __knex__: {
-      get() {
-        helpers.warn(
-          'knex.__knex__ is deprecated, you can get the module version' +
-          "by running require('knex/package').version"
-        )
-        return VERSION
-      }
-    },
-
-    VERSION: {
-      get() {
-        helpers.warn(
-          'knex.VERSION is deprecated, you can get the module version' +
-          "by running require('knex/package').version"
-        )
-        return VERSION
-      }
-    },
-
     schema: {
       get() {
-        return client.schemaBuilder()
-      }
+        return knex.client.schemaBuilder();
+      },
+      configurable: true,
     },
 
     migrate: {
       get() {
-        return new Migrator(knex)
-      }
+        return new Migrator(knex);
+      },
+      configurable: true,
     },
 
     seed: {
       get() {
-        return new Seeder(knex)
-      }
+        return new Seeder(knex);
+      },
+      configurable: true,
     },
 
     fn: {
       get() {
-        return new FunctionHelper(client)
-      }
-    }
+        return new FunctionHelper(knex.client);
+      },
+      configurable: true,
+    },
+  });
 
-  })
+  // Hook up the "knex" object as an EventEmitter.
+  const ee = new EventEmitter();
+  for (const key in ee) {
+    knex[key] = ee[key];
+  }
 
   // Passthrough all "start" and "query" events to the knex object.
-  client.on('start', function(obj) {
-    knex.emit('start', obj)
-  })
-  client.on('query', function(obj) {
-    knex.emit('query', obj)
-  })
-  client.on('query-error', function(err, obj) {
-    knex.emit('query-error', err, obj)
-  })
-  client.on('query-response', function(response, obj, builder) {
-    knex.emit('query-response', response, obj, builder)
-  })
+  knex.client.on('start', function(obj) {
+    knex.emit('start', obj);
+  });
+  knex.client.on('query', function(obj) {
+    knex.emit('query', obj);
+  });
+  knex.client.on('query-error', function(err, obj) {
+    knex.emit('query-error', err, obj);
+  });
+  knex.client.on('query-response', function(response, obj, builder) {
+    knex.emit('query-response', response, obj, builder);
+  });
+}
 
-  client.makeKnex = makeKnex
-
-  return knex
+function shallowCloneFunction(originalFunction) {
+  const clonedFunction = originalFunction.bind(
+    Object.create(
+      Object.getPrototypeOf(originalFunction),
+      Object.getOwnPropertyDescriptors(originalFunction)
+    )
+  );
+  Object.assign(clonedFunction, originalFunction);
+  return clonedFunction;
 }

@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  mssql:
+    image: microsoft/mssql-server-linux:2017-latest
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=S0meVeryHardPassword
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P 'S0meVeryHardPassword' -Q 'select 1'
+  initmssqlknexdb:
+    image: microsoft/mssql-server-linux:2017-latest
+    links:
+      - mssql
+    depends_on:
+      - mssql
+    entrypoint:
+      - bash 
+      - -c 
+      - '/opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P S0meVeryHardPassword -d master -Q "CREATE DATABASE knex_test"'
+    restart: on-failure

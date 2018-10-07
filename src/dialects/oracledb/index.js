@@ -1,4 +1,3 @@
-
 // Oracledb Client
 // -------
 const _ = require('lodash');
@@ -9,18 +8,17 @@ const BlobHelper = require('./utils').BlobHelper;
 const ReturningHelper = require('./utils').ReturningHelper;
 const Promise = require('bluebird');
 const stream = require('stream');
-const helpers = require('../../helpers');
 const Transaction = require('./transaction');
 const Client_Oracle = require('../oracle');
 const Oracle_Formatter = require('../oracle/formatter');
-const Buffer = require('safe-buffer').Buffer;
 
 function Client_Oracledb() {
   Client_Oracle.apply(this, arguments);
   // Node.js only have 4 background threads by default, oracledb needs one by connection
   if (this.driver) {
     process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || 1;
-    process.env.UV_THREADPOOL_SIZE += this.driver.poolMax;
+    process.env.UV_THREADPOOL_SIZE =
+      parseInt(process.env.UV_THREADPOOL_SIZE) + this.driver.poolMax;
   }
 }
 inherits(Client_Oracledb, Client_Oracle);
@@ -37,7 +35,9 @@ Client_Oracledb.prototype._driver = function() {
       type = type.toUpperCase();
       if (oracledb[type]) {
         if (type !== 'NUMBER' && type !== 'DATE' && type !== 'CLOB') {
-          helpers.warn('Only "date", "number" and "clob" are supported for fetchAsString');
+          this.logger.warn(
+            'Only "date", "number" and "clob" are supported for fetchAsString'
+          );
         }
         client.fetchAsString.push(oracledb[type]);
       }
@@ -47,25 +47,25 @@ Client_Oracledb.prototype._driver = function() {
 };
 
 Client_Oracledb.prototype.queryCompiler = function() {
-  return new QueryCompiler(this, ...arguments)
-}
+  return new QueryCompiler(this, ...arguments);
+};
 Client_Oracledb.prototype.columnCompiler = function() {
-  return new ColumnCompiler(this, ...arguments)
-}
+  return new ColumnCompiler(this, ...arguments);
+};
 Client_Oracledb.prototype.formatter = function() {
-  return new Oracledb_Formatter(this)
-}
+  return new Oracledb_Formatter(this, ...arguments);
+};
 Client_Oracledb.prototype.transaction = function() {
-  return new Transaction(this, ...arguments)
-}
+  return new Transaction(this, ...arguments);
+};
 
 Client_Oracledb.prototype.prepBindings = function(bindings) {
   return _.map(bindings, (value) => {
     if (value instanceof BlobHelper && this.driver) {
-      return {type: this.driver.BLOB, dir: this.driver.BIND_OUT};
+      return { type: this.driver.BLOB, dir: this.driver.BIND_OUT };
       // Returning helper always use ROWID as string
     } else if (value instanceof ReturningHelper && this.driver) {
-      return {type: this.driver.STRING, dir: this.driver.BIND_OUT};
+      return { type: this.driver.STRING, dir: this.driver.BIND_OUT };
     } else if (typeof value === 'boolean') {
       return value ? 1 : 0;
     }
@@ -78,22 +78,22 @@ Client_Oracledb.prototype.prepBindings = function(bindings) {
 Client_Oracledb.prototype.acquireRawConnection = function() {
   const client = this;
   const asyncConnection = new Promise(function(resolver, rejecter) {
-
     // If external authentication dont have to worry about username/password and
     // if not need to set the username and password
-    const oracleDbConfig = client.connectionSettings.externalAuth ?
-      { externalAuth : client.connectionSettings.externalAuth } :
-      {
-        user : client.connectionSettings.user,
-        password : client.connectionSettings.password
-      }
+    const oracleDbConfig = client.connectionSettings.externalAuth
+      ? { externalAuth: client.connectionSettings.externalAuth }
+      : {
+          user: client.connectionSettings.user,
+          password: client.connectionSettings.password,
+        };
 
     // In the case of external authentication connection string will be given
-    oracleDbConfig.connectString =  client.connectionSettings.connectString ||
-        (client.connectionSettings.host + '/' + client.connectionSettings.database);
+    oracleDbConfig.connectString =
+      client.connectionSettings.connectString ||
+      client.connectionSettings.host + '/' + client.connectionSettings.database;
 
     if (client.connectionSettings.prefetchRowCount) {
-      oracleDbConfig.prefetchRows = client.connectionSettings.prefetchRowCount
+      oracleDbConfig.prefetchRows = client.connectionSettings.prefetchRowCount;
     }
 
     if (!_.isUndefined(client.connectionSettings.stmtCacheSize)) {
@@ -133,11 +133,14 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
         options = options || {};
         options.outFormat = client.driver.OBJECT;
         if (options.resultSet) {
-          connection.execute(sql, bindParams || [], options, function(err, result) {
+          connection.execute(sql, bindParams || [], options, function(
+            err,
+            result
+          ) {
             if (err) {
               return cb(err);
             }
-            const fetchResult = {rows: [], resultSet: result.resultSet};
+            const fetchResult = { rows: [], resultSet: result.resultSet };
             const numRows = 100;
             const fetchRowsFromRS = function(connection, resultSet, numRows) {
               resultSet.getRows(numRows, function(err, rows) {
@@ -180,7 +183,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
                   const row = results.rows[i];
                   for (const column in row) {
                     if (row[column] instanceof stream.Readable) {
-                      lobs.push({index: i, key: column, stream: row[column]});
+                      lobs.push({ index: i, key: column, stream: row[column] });
                     }
                   }
                 }
@@ -188,7 +191,6 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
             }
             Promise.each(lobs, function(lob) {
               return new Promise(function(lobResolve, lobReject) {
-
                 readStream(lob.stream, function(err, d) {
                   if (err) {
                     if (results.resultSet) {
@@ -202,19 +204,22 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
                   lobResolve();
                 });
               });
-            }).then(function() {
-              if (results.resultSet) {
-                results.resultSet.close(function(err) {
-                  if (err) {
-                    return resultReject(err);
-                  }
-                  return resultResolve(results);
-                });
+            }).then(
+              function() {
+                if (results.resultSet) {
+                  results.resultSet.close(function(err) {
+                    if (err) {
+                      return resultReject(err);
+                    }
+                    return resultResolve(results);
+                  });
+                }
+                resultResolve(results);
+              },
+              function(err) {
+                resultReject(err);
               }
-              resultResolve(results);
-            }, function(err) {
-              resultReject(err);
-            });
+            );
           });
         });
       };
@@ -227,98 +232,104 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
 // Used to explicitly close a connection, called internally by the pool
 // when a connection times out or the pool is shutdown.
 Client_Oracledb.prototype.destroyRawConnection = function(connection) {
-  connection.release()
+  return connection.release();
 };
 
 // Runs the query on the specified connection, providing the bindings
 // and any other necessary prep work.
 Client_Oracledb.prototype._query = function(connection, obj) {
-  // Convert ? params into positional bindings (:1)
-  obj.sql = this.positionBindings(obj.sql);
-  obj.bindings = this.prepBindings(obj.bindings) || [];
-
   return new Promise(function(resolver, rejecter) {
     if (!obj.sql) {
       return rejecter(new Error('The query is empty'));
     }
-    const options = {autoCommit: false};
+    const options = { autoCommit: false };
     if (obj.method === 'select') {
       options.resultSet = true;
     }
-    connection.executeAsync(obj.sql, obj.bindings, options).then(function(response) {
-      // Flatten outBinds
-      let outBinds = _.flatten(response.outBinds);
-      obj.response = response.rows || [];
-      obj.rowsAffected = response.rows ? response.rows.rowsAffected : response.rowsAffected;
+    connection
+      .executeAsync(obj.sql, obj.bindings, options)
+      .then(function(response) {
+        // Flatten outBinds
+        let outBinds = _.flatten(response.outBinds);
+        obj.response = response.rows || [];
+        obj.rowsAffected = response.rows
+          ? response.rows.rowsAffected
+          : response.rowsAffected;
 
-      if (obj.method === 'update') {
-        const modifiedRowsCount = obj.rowsAffected.length || obj.rowsAffected;
-        const updatedObjOutBinding = [];
-        const updatedOutBinds = [];
-        const updateOutBinds = (i) => function(value, index) {
-          const OutBindsOffset = index * modifiedRowsCount;
-          updatedOutBinds.push(outBinds[i + OutBindsOffset]);
-        };
+        if (obj.method === 'update') {
+          const modifiedRowsCount = obj.rowsAffected.length || obj.rowsAffected;
+          const updatedObjOutBinding = [];
+          const updatedOutBinds = [];
+          const updateOutBinds = (i) =>
+            function(value, index) {
+              const OutBindsOffset = index * modifiedRowsCount;
+              updatedOutBinds.push(outBinds[i + OutBindsOffset]);
+            };
 
-        for (let i = 0; i < modifiedRowsCount; i++) {
-          updatedObjOutBinding.push(obj.outBinding[0]);
-          _.each(obj.outBinding[0], updateOutBinds(i));
+          for (let i = 0; i < modifiedRowsCount; i++) {
+            updatedObjOutBinding.push(obj.outBinding[0]);
+            _.each(obj.outBinding[0], updateOutBinds(i));
+          }
+          outBinds = updatedOutBinds;
+          obj.outBinding = updatedObjOutBinding;
         }
-        outBinds = updatedOutBinds;
-        obj.outBinding = updatedObjOutBinding;
-      }
 
-      if (!obj.returning && outBinds.length === 0) {
-        return connection.commitAsync().then(function() {
-          resolver(obj);
-        });
-      }
-      const rowIds = [];
-      let offset = 0;
-      Promise.each(obj.outBinding, function(ret, line) {
-        offset = offset + (obj.outBinding[line - 1] ? obj.outBinding[line - 1].length : 0);
-        return Promise.each(ret, function(out, index) {
-          return new Promise(function(bindResolver, bindRejecter) {
-            if (out instanceof BlobHelper) {
-              const blob = outBinds[index + offset];
-              if (out.returning) {
-                obj.response[line] = obj.response[line] || {};
-                obj.response[line][out.columnName] = out.value;
-              }
-              blob.on('error', function(err) {
-                bindRejecter(err);
-              });
-              blob.on('finish', function() {
-                bindResolver();
-              });
-              blob.write(out.value);
-              blob.end();
-            } else if (obj.outBinding[line][index] === 'ROWID') {
-              rowIds.push(outBinds[index + offset]);
-              bindResolver();
-            } else {
-              obj.response[line] = obj.response[line] || {};
-              obj.response[line][out] = outBinds[index + offset];
-              bindResolver();
-            }
+        if (!obj.returning && outBinds.length === 0) {
+          return connection.commitAsync().then(function() {
+            resolver(obj);
           });
-        });
-      }).then(function() {
-        return connection.commitAsync();
-      }).then(function() {
-        if (obj.returningSql) {
-          return connection.executeAsync(obj.returningSql(), rowIds, {resultSet: true})
-            .then(function(response) {
-              obj.response = response.rows;
-              return obj;
-            }, rejecter);
         }
-        return obj;
-      }, rejecter)
-        .then(function(obj) {
-          resolver(obj);
-        });
-    }, rejecter);
+        const rowIds = [];
+        let offset = 0;
+        Promise.each(obj.outBinding, function(ret, line) {
+          offset =
+            offset +
+            (obj.outBinding[line - 1] ? obj.outBinding[line - 1].length : 0);
+          return Promise.each(ret, function(out, index) {
+            return new Promise(function(bindResolver, bindRejecter) {
+              if (out instanceof BlobHelper) {
+                const blob = outBinds[index + offset];
+                if (out.returning) {
+                  obj.response[line] = obj.response[line] || {};
+                  obj.response[line][out.columnName] = out.value;
+                }
+                blob.on('error', function(err) {
+                  bindRejecter(err);
+                });
+                blob.on('finish', function() {
+                  bindResolver();
+                });
+                blob.write(out.value);
+                blob.end();
+              } else if (obj.outBinding[line][index] === 'ROWID') {
+                rowIds.push(outBinds[index + offset]);
+                bindResolver();
+              } else {
+                obj.response[line] = obj.response[line] || {};
+                obj.response[line][out] = outBinds[index + offset];
+                bindResolver();
+              }
+            });
+          });
+        })
+          .then(function() {
+            return connection.commitAsync();
+          })
+          .then(function() {
+            if (obj.returningSql) {
+              return connection
+                .executeAsync(obj.returningSql(), rowIds, { resultSet: true })
+                .then(function(response) {
+                  obj.response = response.rows;
+                  return obj;
+                }, rejecter);
+            }
+            return obj;
+          }, rejecter)
+          .then(function(obj) {
+            resolver(obj);
+          });
+      }, rejecter);
   });
 };
 
@@ -358,7 +369,6 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
     case 'select':
     case 'pluck':
     case 'first':
-      response = helpers.skim(response);
       if (obj.method === 'pluck') {
         response = _.map(response, obj.pluck);
       }
@@ -383,7 +393,6 @@ Client_Oracledb.prototype.processResponse = function(obj, runner) {
 };
 
 class Oracledb_Formatter extends Oracle_Formatter {
-
   // Checks whether a value is a function... if it is, we compile it
   // otherwise we check whether it's a raw
   parameter(value) {
@@ -394,7 +403,6 @@ class Oracledb_Formatter extends Oracle_Formatter {
     }
     return this.unwrapRaw(value, true) || '?';
   }
-
 }
 
 module.exports = Client_Oracledb;
