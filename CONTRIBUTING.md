@@ -56,7 +56,7 @@ console.log('Gimme all the data:', await knex('fooobar'));
 
 ## What is minimal code to reproduce bug and why I have to provide that when I can just tell whats the problem is
 
-Writing minimal reproduction code for the problem is timeconsuming and some times it also really hard when for
+Writing minimal reproduction code for the problem is time-consuming and some times it also really hard when for
 example when the original code where the bug happens is written using express or mocha. So why it is necessary
 for me to commit so much time to it when the problem is in `knex`? Contributors should be grateful that I reported
 the bug I found.
@@ -116,7 +116,6 @@ You can optionally specify which dialects to test using the `DB` environment var
 - mysql2
 - postgres
 - sqlite3
-- maria
 - oracledb
 - mssql
 
