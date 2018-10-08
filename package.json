@@ -3,6 +3,7 @@
   "version": "0.16.0-next2",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
+  "types": "types/knex.d.ts",
   "engines": {
     "node": ">=6"
   },
@@ -33,6 +34,7 @@
   "devDependencies": {
     "JSONStream": "^1.3.4",
     "async": "^2.6.1",
+    "@types/node": "*",
     "@babel/cli": "^7.1.0",
     "@babel/core": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
