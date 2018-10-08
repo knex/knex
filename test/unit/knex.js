@@ -119,4 +119,10 @@ describe('knex', () => {
       return Promise.resolve();
     });
   });
+
+  it('throws if client module has not been installed', () => {
+    expect(knex({ client: 'oracle' })).to.throw(
+      /Knex: run\n$ npm install oracle/
+    );
+  });
 });
