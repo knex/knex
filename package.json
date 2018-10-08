@@ -11,7 +11,7 @@
     "bluebird": "^3.5.2",
     "chalk": "2.4.1",
     "commander": "^2.18.0",
-    "debug": "3.1.0",
+    "debug": "4.0.1",
     "inherits": "~2.0.3",
     "interpret": "^1.1.0",
     "liftoff": "2.5.0",
@@ -36,15 +36,15 @@
     "@babel/cli": "^7.1.0",
     "@babel/core": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
-    "babel-eslint": "^9.0.0",
+    "babel-eslint": "^10.0.1",
     "babel-plugin-add-module-exports": "^1.0.0",
     "chai": "^4.1.2",
     "chai-subset-in-order": "^2.1.2",
     "coveralls": "^3.0.2",
-    "eslint": "5.6.0",
+    "eslint": "5.6.1",
     "eslint-config-prettier": "^3.0.1",
     "eslint-plugin-import": "^2.14.0",
-    "husky": "^0.14.3",
+    "husky": "^1.1.1",
     "json-loader": "^0.5.7",
     "lint-staged": "^7.2.2",
     "mocha": "^5.2.0",
@@ -73,7 +73,6 @@
     "rimraf"
   ],
   "scripts": {
-    "precommit": "lint-staged",
     "format": "prettier --write \"{src,bin,scripts,test}/**/*.js\"",
     "build": "npm run babel",
     "debug_test": "node --inspect-brk ./node_modules/.bin/_mocha -- --exit -t 0 test/index.js",
@@ -156,5 +155,10 @@
     "statements": 82,
     "functions": 83,
     "branches": 69
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
