@@ -31,8 +31,19 @@ const POOL_CONFIG_OPTIONS = Object.freeze([
   'Promise',
 ]);
 
+const SUPPORTED_CLUSTERS = Object.freeze(['mysql']);
+
+const CLUSTER_CONFIG_OPTIONS = Object.freeze([
+  'canRetry',
+  'removeNodeErrorCount',
+  'restoreNodeTimeout',
+  'defaultSelector',
+]);
+
 module.exports = {
   CLIENT_ALIASES,
   SUPPORTED_CLIENTS,
   POOL_CONFIG_OPTIONS,
+  SUPPORTED_CLUSTERS,
+  CLUSTER_CONFIG_OPTIONS,
 };

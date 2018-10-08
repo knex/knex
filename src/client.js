@@ -299,6 +299,29 @@ assign(Client.prototype, {
     return true;
   },
 
+  addToCluster(clusterConfig) {
+    this._errorCount = 0;
+    this.offlineUntil = 0;
+    this.isClusterNode = true;
+  },
+  _decreaseErrorCount() {
+    this._errorCount -= 1;
+    this._errorCount = Math.max(this._errorCount, 0);
+  },
+
+  _increaseErrorCount() {
+    this._errorCount += 1;
+    if (this.removeNode_ErrorCount > this._errorCount) {
+      return;
+    }
+    if (this.restoreNodeTimeout > 0) {
+      // Set it offline
+      this.offlineUntil = process.uptime > this.restoreNodeTimeout;
+      // Reset it ready for when it is back online
+      this._errorCount = 0;
+    }
+  },
+
   // Acquire a connection from the pool.
   acquireConnection() {
     if (!this.pool) {
@@ -307,7 +330,16 @@ assign(Client.prototype, {
 
     return Promise.try(() => this.pool.acquire().promise)
       .tap((connection) => {
+        if (this.isClusterNode) {
+          this._decreaseErrorCount();
+        }
         debug('acquired connection from pool: %s', connection.__knexUid);
+      })
+      .catch((err) => {
+        if (this.isClusterNode) {
+          this._increaseErrorCount();
+        }
+        throw err;
       })
       .catch(TimeoutError, () => {
         throw new Promise.TimeoutError(

@@ -6,6 +6,7 @@ import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
 import { assign } from 'lodash';
 import batchInsert from './batchInsert';
+import { ClientRequest } from 'http';
 
 export default function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
@@ -50,6 +51,14 @@ export default function makeKnex(client) {
     // Convenience method for tearing down the pool.
     destroy(callback) {
       return client.destroy(callback);
+    },
+
+    isOnline(time) {
+      return client.offlineUntil < time;
+    },
+
+    addToCluster(clusterConfig) {
+      return client.addToCluster(clusterConfig);
     },
 
     ref(ref) {
