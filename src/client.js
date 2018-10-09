@@ -303,7 +303,8 @@ assign(Client.prototype, {
     this._errorCount = 0;
     this.offlineUntil = 0;
     this.isClusterNode = true;
-    this.restoreNodeTimeout = clusterConfig.restoreNodeTimeout || 0;
+    this._removeNodeErrorCount = clusterConfig.removeNodeErrorCount || 5;
+    this._restoreNodeTimeout = clusterConfig.restoreNodeTimeout || 0;
   },
   _decreaseErrorCount() {
     this._errorCount -= 1;
@@ -312,7 +313,7 @@ assign(Client.prototype, {
 
   _increaseErrorCount() {
     this._errorCount += 1;
-    if (this.removeNode_ErrorCount > this._errorCount) {
+    if (this._removeNodeErrorCount > this._errorCount) {
       return;
     }
     if (this.restoreNodeTimeout > 0) {

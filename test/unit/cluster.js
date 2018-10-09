@@ -89,7 +89,7 @@ describe('Cluster tests', () => {
     });
   });
 
-  describe.only('pool auto removal tests', () => {
+  describe('pool auto removal tests', () => {
     it('doesnt return a failing pool', () => {
       const clusterConfig = getClusterConfig();
       const cluster = new KnexCluster(clusterConfig);
@@ -136,6 +136,29 @@ describe('Cluster tests', () => {
   });
 
   describe('rejection tests', () => {
+    it('throws if an unknown cluster config is used', () => {
+      const clusterConfig = getClusterConfig();
+      clusterConfig.unsupportedItem = true;
+      const throwingFunction = () => {
+        new KnexCluster(clusterConfig);
+      };
+      const expectedError = 'knex: Unsupported config item: unsupportedItem';
+      expect(throwingFunction).to.throw(expectedError);
+    });
+
+    it('throws if an unsupported pool is added', () => {
+      const clusterConfig = getClusterConfig();
+      const cluster = new KnexCluster(clusterConfig);
+      const connectionConfig = getConnectionConfig();
+      connectionConfig.client = 'unsupportedClient';
+      const throwingFunction = () => {
+        cluster.add('MASTER', connectionConfig);
+      };
+      const expectedError =
+        'knex: Clustering for unsupportedClient is not yet supported';
+      expect(throwingFunction).to.throw(expectedError);
+    });
+
     it('throws if a duplicate pool is added', () => {
       const clusterConfig = getClusterConfig();
       const connectionConfig = getConnectionConfig();

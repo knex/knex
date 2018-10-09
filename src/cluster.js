@@ -22,24 +22,43 @@ const _getValidPools = (cluster, name) => {
   return filteredPools;
 };
 
-export default function KnexCluster(config) {
-  // check this dialect supports clusters;
-  // create a new config
-  // create a cluster of knex objects
-  this.config = config;
-  this._defaultSelector = config.defaultSelector || 'RR';
-  this.cluster = {};
-  this._roundRobin = {};
-}
-
-const getRandom = (myArray) => {
+const _getRandom = (myArray) => {
   const floor = Math.floor;
   const random = Math.random;
   return myArray[floor(random() * myArray.length)];
 };
 
+const parseConfig = (config) => {
+  const parsedConfig = {};
+  for (const name in config) {
+    if (!CLUSTER_CONFIG_OPTIONS.includes(name)) {
+      throw new Error('knex: Unsupported config item: ' + name);
+    }
+    if (!config.hasOwnProperty(name)) {
+      continue;
+    }
+    parsedConfig[name] = config[name];
+  }
+  return parsedConfig;
+};
+
+export default function KnexCluster(config) {
+  // check this dialect supports clusters;
+  // create a new config
+  // create a cluster of knex objects
+  this.config = parseConfig(config);
+  this._defaultSelector = config.defaultSelector || 'RR';
+  this.cluster = {};
+  this._roundRobin = {};
+}
+
 assign(KnexCluster.prototype, {
   add(poolName, poolConfig) {
+    if (!SUPPORTED_CLUSTERS.includes(poolConfig.client)) {
+      throw new Error(
+        `knex: Clustering for ${poolConfig.client} is not yet supported`
+      );
+    }
     if (this.cluster[poolName] !== undefined) {
       throw new Error(
         `knex: Pool ${poolName} is already defined in knexCluster`
@@ -84,7 +103,7 @@ assign(KnexCluster.prototype, {
       case 'RR':
         return this._getRoundRobin(name, pools);
       case 'RANDOM':
-        return getRandom(name, pools);
+        return _getRandom(name, pools);
       default:
         throw new Error(`knex: Unknown selector option ${selector}`);
     }
