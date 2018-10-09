@@ -1,10 +1,10 @@
 import Raw from './raw';
 import Client from './client';
-
 import makeKnex from './util/make-knex';
 import parseConnection from './util/parse-connection';
 import fakeClient from './util/fake-client';
 import { SUPPORTED_CLIENTS, CLIENT_ALIASES } from './constants';
+import KnexCluster from './cluster';
 
 export default function Knex(config) {
   // If config is string, try to parse it
@@ -77,3 +77,5 @@ Knex.raw = (sql, bindings) => {
   );
   return new Raw(fakeClient).set(sql, bindings);
 };
+
+Knex.KnexCluster = KnexCluster;

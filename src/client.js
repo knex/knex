@@ -303,6 +303,7 @@ assign(Client.prototype, {
     this._errorCount = 0;
     this.offlineUntil = 0;
     this.isClusterNode = true;
+    this.restoreNodeTimeout = clusterConfig.restoreNodeTimeout || 0;
   },
   _decreaseErrorCount() {
     this._errorCount -= 1;
@@ -316,7 +317,7 @@ assign(Client.prototype, {
     }
     if (this.restoreNodeTimeout > 0) {
       // Set it offline
-      this.offlineUntil = process.uptime > this.restoreNodeTimeout;
+      this.offlineUntil = process.uptime() > this.restoreNodeTimeout;
       // Reset it ready for when it is back online
       this._errorCount = 0;
     }
