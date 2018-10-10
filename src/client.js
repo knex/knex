@@ -215,10 +215,9 @@ assign(Client.prototype, {
     try {
       this.driver = this._driver();
     } catch (e) {
-      this.logger.error(
-        `Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`
-      );
-      process.exit(1);
+      const message = `Knex: run\n$ npm install ${this.driverName} --save`;
+      this.logger.error(`${message}\n${e.message}\n${e.stack}`);
+      throw new Error(`${message}\n${e.message}`);
     }
   },
 

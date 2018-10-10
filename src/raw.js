@@ -13,19 +13,12 @@ import {
   isUndefined,
   isNumber,
 } from 'lodash';
-import Formatter from './formatter';
 import saveAsyncStack from './util/save-async-stack';
 import uuid from 'uuid';
 
 const debugBindings = debug('knex:bindings');
 
-const fakeClient = {
-  formatter(builder) {
-    return new Formatter(fakeClient, builder);
-  },
-};
-
-function Raw(client = fakeClient) {
+function Raw(client) {
   this.client = client;
 
   this.sql = '';

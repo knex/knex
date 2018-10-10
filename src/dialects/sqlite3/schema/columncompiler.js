@@ -22,4 +22,6 @@ ColumnCompiler_SQLite3.prototype.enu = function(allowed) {
   )}'))`;
 };
 
+ColumnCompiler_SQLite3.prototype.json = 'json';
+
 export default ColumnCompiler_SQLite3;

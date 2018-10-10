@@ -1,21 +1,22 @@
 {
   "name": "knex",
-  "version": "0.15.2",
+  "version": "0.16.0-next2",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
+  "types": "types/knex.d.ts",
   "engines": {
     "node": ">=6"
   },
   "dependencies": {
-    "babel-runtime": "^6.26.0",
-    "bluebird": "^3.5.1",
+    "@babel/polyfill": "^7.0.0",
+    "bluebird": "^3.5.2",
     "chalk": "2.4.1",
-    "commander": "^2.17.1",
-    "debug": "3.1.0",
+    "commander": "^2.18.0",
+    "debug": "4.0.1",
     "inherits": "~2.0.3",
     "interpret": "^1.1.0",
     "liftoff": "2.5.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "minimist": "1.2.0",
     "mkdirp": "^0.5.1",
     "pg-connection-string": "2.0.0",
@@ -33,18 +34,19 @@
   "devDependencies": {
     "JSONStream": "^1.3.4",
     "async": "^2.6.1",
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.2.6",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.7.0",
+    "@types/node": "*",
+    "@babel/cli": "^7.1.0",
+    "@babel/core": "^7.1.0",
+    "@babel/preset-env": "^7.1.0",
+    "babel-eslint": "^10.0.1",
+    "babel-plugin-add-module-exports": "^1.0.0",
     "chai": "^4.1.2",
     "chai-subset-in-order": "^2.1.2",
     "coveralls": "^3.0.2",
-    "eslint": "5.6.0",
+    "eslint": "5.6.1",
     "eslint-config-prettier": "^3.0.1",
     "eslint-plugin-import": "^2.14.0",
-    "husky": "^0.14.3",
+    "husky": "^1.1.1",
     "json-loader": "^0.5.7",
     "lint-staged": "^7.2.2",
     "mocha": "^5.2.0",
@@ -55,9 +57,9 @@
     "nyc": "^13.0.1",
     "pg": "^7.4.3",
     "pg-query-stream": "^1.1.1",
-    "prettier": "^1.14.2",
+    "prettier": "^1.14.3",
     "rimraf": "^2.6.2",
-    "sinon": "^6.3.3",
+    "sinon": "^6.3.4",
     "sinon-chai": "^3.2.0",
     "source-map-support": "^0.5.9",
     "sqlite3": "^4.0.2",
@@ -67,16 +69,12 @@
     "toxiproxy-node-client": "^2.0.6"
   },
   "buildDependencies": [
-    "babel-cli",
+    "@babel/cli",
     "babel-plugin-add-module-exports",
-    "babel-plugin-lodash",
-    "babel-plugin-transform-runtime",
-    "babel-preset-es2015",
-    "babel-preset-es2015-loose",
+    "@babel/preset-env",
     "rimraf"
   ],
   "scripts": {
-    "precommit": "lint-staged",
     "format": "prettier --write \"{src,bin,scripts,test}/**/*.js\"",
     "build": "npm run babel",
     "debug_test": "node --inspect-brk ./node_modules/.bin/_mocha -- --exit -t 0 test/index.js",
@@ -89,7 +87,7 @@
     "pre_test": "npm run lint",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node --inspect-brk test/tape/index.js",
-    "test": "npm run pre_test && nyc mocha --exit --check-leaks -t 10000 -R spec test/index.js && npm run tape",
+    "test": "npm run pre_test && nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 -R spec test/index.js && npm run tape",
     "oracledb:test": "docker rmi -f --no-prune knex-test-oracledb && docker build -f scripts/oracle-tests-Dockerfile --tag knex-test-oracledb . && docker run --rm -i -t -e KNEX_TEST_TIMEOUT=$KNEX_TEST_TIMEOUT -e NODE_VER=$NODE_VER knex-test-oracledb",
     "mssql:init": "docker-compose -f scripts/mssql-docker-compose.yml up --no-start && docker-compose -f scripts/mssql-docker-compose.yml start",
     "postmssql:init": "node scripts/wait-for-mssql-server.js && npm run mssql:logs || (npm run mssql:logs;false)",
@@ -155,9 +153,14 @@
   "tonicExampleFilename": "scripts/runkit-example.js",
   "nyc": {
     "check-coverage": true,
-    "lines": 85,
-    "statements": 83,
+    "lines": 84,
+    "statements": 82,
     "functions": 83,
-    "branches": 72
+    "branches": 69
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
