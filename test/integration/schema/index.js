@@ -492,8 +492,8 @@ module.exports = function(knex) {
             tester('sqlite3', [
               'create table `test_foreign_table_two` (`id` integer not null primary key autoincrement, `fkey_two` integer, `fkey_three` integer, `fkey_four` integer, ' +
                 'foreign key(`fkey_two`) references `test_table_two`(`id`), ' +
-                'foreign key(`fkey_three`) references `test_table_two`(`id`), ' +
-                'foreign key(`fkey_four`) references `test_table_two`(`id`))',
+                'constraint `fk_fkey_three` foreign key(`fkey_three`) references `test_table_two`(`id`), ' +
+                'constraint `fk_fkey_four` foreign key(`fkey_four`) references `test_table_two`(`id`))',
             ]);
             tester('oracledb', [
               'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer)',
@@ -1280,6 +1280,361 @@ module.exports = function(knex) {
               expect(err.code).to.equal('SQLITE_ERROR');
             });
         });
+      });
+    });
+    it('supports named primary keys', function() {
+      var constraintName = 'pk-test';
+      var tableName = 'namedpk';
+      var expectedRes = [
+        {
+          type: 'table',
+          name: tableName,
+          tbl_name: tableName,
+          sql:
+            'CREATE TABLE "' +
+            tableName +
+            '" ("test" varchar(255), "test2" varchar(255), constraint "' +
+            constraintName +
+            '" primary key ("test"))',
+        },
+      ];
+      return knex.transaction(function(tr) {
+        return tr.schema
+          .dropTableIfExists(tableName)
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test').primary(constraintName);
+              table.string('test2');
+            });
+          })
+          .then(function() {
+            if (/sqlite/i.test(knex.client.dialect)) {
+              //For SQLite inspect metadata to make sure the constraint exists
+              tr.select('type', 'name', 'tbl_name', 'sql')
+                .from('sqlite_master')
+                .where({
+                  type: 'table',
+                  name: tableName,
+                })
+                .then(function(value) {
+                  expect(value).to.deep.have.same.members(
+                    expectedRes,
+                    'Constraint "' + constraintName + '" not correctly created.'
+                  );
+                  return Promise.resolve();
+                });
+            } else {
+              return tr.schema.table(tableName, function(table) {
+                // For everything else just drop the constraint by name to check existence
+                table.dropPrimary(constraintName);
+              });
+            }
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(tableName);
+          })
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test');
+              table.string('test2');
+              table.primary('test', constraintName);
+            });
+          })
+          .then(function() {
+            if (/sqlite/i.test(knex.client.dialect)) {
+              //For SQLite inspect metadata to make sure the constraint exists
+              tr.select('type', 'name', 'tbl_name', 'sql')
+                .from('sqlite_master')
+                .where({
+                  type: 'table',
+                  name: tableName,
+                })
+                .then(function(value) {
+                  expect(value).to.deep.have.same.members(
+                    expectedRes,
+                    'Constraint "' + constraintName + '" not correctly created.'
+                  );
+                  return Promise.resolve();
+                });
+            } else {
+              return tr.schema.table(tableName, function(table) {
+                // For everything else just drop the constraint by name to check existence
+                table.dropPrimary(constraintName);
+              });
+            }
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(tableName);
+          })
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test');
+              table.string('test2');
+              table.primary(['test', 'test2'], constraintName);
+            });
+          })
+          .then(function() {
+            if (/sqlite/i.test(knex.client.dialect)) {
+              //For SQLite inspect metadata to make sure the constraint exists
+              var expectedRes = [
+                {
+                  type: 'table',
+                  name: tableName,
+                  tbl_name: tableName,
+                  sql:
+                    'CREATE TABLE "' +
+                    tableName +
+                    '" ("test" varchar(255), "test2" varchar(255), constraint "' +
+                    constraintName +
+                    '" primary key ("test", "test2"))',
+                },
+              ];
+              tr.select('type', 'name', 'tbl_name', 'sql')
+                .from('sqlite_master')
+                .where({
+                  type: 'table',
+                  name: tableName,
+                })
+                .then(function(value) {
+                  expect(value).to.deep.have.same.members(
+                    expectedRes,
+                    'Constraint "' + constraintName + '" not correctly created.'
+                  );
+                  return Promise.resolve();
+                });
+            } else {
+              return tr.schema.table(tableName, function(table) {
+                // For everything else just drop the constraint by name to check existence
+                table.dropPrimary(constraintName);
+              });
+            }
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(tableName);
+          });
+      });
+    });
+
+    it('supports named unique keys', function() {
+      var singleUniqueName = 'uk-single';
+      var multiUniqueName = 'uk-multi';
+      var tableName = 'nameduk';
+      return knex.transaction(function(tr) {
+        return tr.schema
+          .dropTableIfExists(tableName)
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test').unique(singleUniqueName);
+            });
+          })
+          .then(function() {
+            if (/sqlite/i.test(knex.client.dialect)) {
+              //For SQLite inspect metadata to make sure the constraint exists
+              var expectedRes = [
+                {
+                  type: 'index',
+                  name: singleUniqueName,
+                  tbl_name: tableName,
+                  sql:
+                    'CREATE UNIQUE INDEX "' +
+                    singleUniqueName +
+                    '" on "' +
+                    tableName +
+                    '" ("test")',
+                },
+              ];
+              tr.select('type', 'name', 'tbl_name', 'sql')
+                .from('sqlite_master')
+                .where({
+                  type: 'index',
+                  tbl_name: tableName,
+                  name: singleUniqueName,
+                })
+                .then(function(value) {
+                  expect(value).to.deep.have.same.members(
+                    expectedRes,
+                    'Constraint "' +
+                      singleUniqueName +
+                      '" not correctly created.'
+                  );
+                  return Promise.resolve();
+                });
+            } else {
+              return tr.schema.table(tableName, function(table) {
+                // For everything else just drop the constraint by name to check existence
+                table.dropUnique('test', singleUniqueName);
+              });
+            }
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(tableName);
+          })
+          .then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.string('test');
+              table.string('test2');
+            });
+          })
+          .then(function() {
+            return tr.schema.table(tableName, function(table) {
+              table.unique('test', singleUniqueName);
+              table.unique(['test', 'test2'], multiUniqueName);
+            });
+          })
+          .then(function() {
+            if (/sqlite/i.test(knex.client.dialect)) {
+              //For SQLite inspect metadata to make sure the constraint exists
+              var expectedRes = [
+                {
+                  type: 'index',
+                  name: singleUniqueName,
+                  tbl_name: tableName,
+                  sql:
+                    'CREATE UNIQUE INDEX "' +
+                    singleUniqueName +
+                    '" on "' +
+                    tableName +
+                    '" ("test")',
+                },
+                {
+                  type: 'index',
+                  name: multiUniqueName,
+                  tbl_name: tableName,
+                  sql:
+                    'CREATE UNIQUE INDEX "' +
+                    multiUniqueName +
+                    '" on "' +
+                    tableName +
+                    '" ("test", "test2")',
+                },
+              ];
+              tr.select('type', 'name', 'tbl_name', 'sql')
+                .from('sqlite_master')
+                .where({
+                  type: 'index',
+                  tbl_name: tableName,
+                })
+                .then(function(value) {
+                  expect(value).to.deep.have.same.members(
+                    expectedRes,
+                    'Either "' +
+                      singleUniqueName +
+                      '" or "' +
+                      multiUniqueName +
+                      '" is missing.'
+                  );
+                  return Promise.resolve();
+                });
+            } else {
+              return tr.schema.table(tableName, function(table) {
+                // For everything else just drop the constraint by name to check existence
+                table.dropUnique('test', singleUniqueName);
+                table.dropUnique(['test', 'test2'], multiUniqueName);
+              });
+            }
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(tableName);
+          });
+      });
+    });
+
+    it('supports named foreign keys', function() {
+      var userTableName = 'nfk_user';
+      var groupTableName = 'nfk_group';
+      var joinTableName = 'nfk_user_group';
+      var userConstraint = ['fk', joinTableName, userTableName].join('-');
+      var groupConstraint = ['fk', joinTableName, groupTableName].join('-');
+      return knex.transaction(function(tr) {
+        return tr.schema
+          .dropTableIfExists(joinTableName)
+          .then(function() {
+            return tr.schema.dropTableIfExists(userTableName);
+          })
+          .then(function() {
+            return tr.schema.dropTableIfExists(groupTableName);
+          })
+          .then(function() {
+            return tr.schema.createTable(userTableName, function(table) {
+              table.uuid('id').primary();
+              table.string('name').unique();
+            });
+          })
+          .then(function() {
+            return tr.schema.createTable(groupTableName, function(table) {
+              table.uuid('id').primary();
+              table.string('name').unique();
+            });
+          })
+          .then(function() {
+            return tr.schema.createTable(joinTableName, function(table) {
+              table
+                .uuid('user')
+                .references('id')
+                .inTable(userTableName)
+                .withKeyName(['fk', joinTableName, userTableName].join('-'));
+              table.uuid('group');
+              table.primary(['user', 'group']);
+              table
+                .foreign(
+                  'group',
+                  ['fk', joinTableName, groupTableName].join('-')
+                )
+                .references('id')
+                .inTable(groupTableName);
+            });
+          })
+          .then(function() {
+            if (/sqlite/i.test(knex.client.dialect)) {
+              var expectedRes = [
+                {
+                  type: 'table',
+                  name: joinTableName,
+                  tbl_name: joinTableName,
+                  sql:
+                    'CREATE TABLE "' +
+                    joinTableName +
+                    '" ("user" char(36), "group" char(36), constraint "' +
+                    userConstraint +
+                    '" foreign key("user") references "' +
+                    userTableName +
+                    '"("id"), constraint "' +
+                    groupConstraint +
+                    '" foreign key("group") references "' +
+                    groupTableName +
+                    '"("id"), primary key ("user", "group"))',
+                },
+              ];
+              tr.select('type', 'name', 'tbl_name', 'sql')
+                .from('sqlite_master')
+                .where({
+                  type: 'table',
+                  name: joinTableName,
+                })
+                .then(function(value) {
+                  expect(value).to.deep.have.same.members(
+                    expectedRes,
+                    'Named foreign key not correctly created.'
+                  );
+                  return Promise.resolve();
+                });
+            } else {
+              return tr.schema.table(joinTableName, function(table) {
+                table.dropForeign('user', userConstraint);
+                table.dropForeign('group', groupConstraint);
+              });
+            }
+          })
+          .then(function() {
+            return tr.schema
+              .dropTableIfExists(userTableName)
+              .then(function() {
+                return tr.schema.dropTableIfExists(groupTableName);
+              })
+              .then(function() {
+                return tr.schema.dropTableIfExists(joinTableName);
+              });
+          });
       });
     });
   });

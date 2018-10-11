@@ -169,6 +169,22 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
+  it('adding primary key with specific identifier', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function(table) {
+        table.string('foo');
+        table.primary('foo', 'pk-users');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(
+      tableSql[0].sql,
+      'create table `users` (`foo` varchar(255), constraint `pk-users` primary key (`foo`))'
+    );
+  });
+
   it('adding composite primary key', function() {
     tableSql = client
       .schemaBuilder()
@@ -184,20 +200,22 @@ describe('SQLite SchemaBuilder', function() {
       tableSql[0].sql,
       'create table `users` (`foo` varchar(255), `order_id` varchar(255), primary key (`foo`, `order_id`))'
     );
+  });
 
+  it('adding composite primary key with specific identifier', function() {
     tableSql = client
       .schemaBuilder()
       .createTable('users', function(table) {
         table.string('foo');
         table.string('order_id');
-        table.primary('foo', 'order_id');
+        table.primary(['foo', 'order_id'], 'pk-users');
       })
       .toSQL();
 
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table `users` (`foo` varchar(255), `order_id` varchar(255), primary key (`foo`, `order_id`))'
+      'create table `users` (`foo` varchar(255), `order_id` varchar(255), constraint `pk-users` primary key (`foo`, `order_id`))'
     );
   });
 
@@ -213,6 +231,21 @@ describe('SQLite SchemaBuilder', function() {
     equal(
       tableSql[0].sql,
       'create table `users` (`foo` varchar(255), primary key (`foo`))'
+    );
+  });
+
+  it('adding primary key fluently with specific identifier', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function(table) {
+        table.string('foo').primary('pk-users');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(
+      tableSql[0].sql,
+      'create table `users` (`foo` varchar(255), constraint `pk-users` primary key (`foo`))'
     );
   });
 
@@ -236,8 +269,25 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  // SQLite3 doesn't support named foreign keys
-  // it("adding foreign key with specific identifier throws an error");
+  it('adding foreign key with specific identifier', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function(table) {
+        table.string('foo').primary();
+        table.string('order_id');
+        table
+          .foreign('order_id', 'fk-users-orders')
+          .references('id')
+          .on('orders');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(
+      tableSql[0].sql,
+      'create table `users` (`foo` varchar(255), `order_id` varchar(255), constraint `fk-users-orders` foreign key(`order_id`) references `orders`(`id`), primary key (`foo`))'
+    );
+  });
 
   it('adding foreign key fluently', function() {
     tableSql = client
