@@ -11,28 +11,29 @@
 
 - Introduced abstraction for getting migrations to make migration bundling easier #2775
 - Allow timestamp with timezone on mssql databases #2724
-- Feature/2690: Multiple migration directories #2735
+- Allow specifying multiple migration directories #2735
 - Allow cloning query builder with .userParams({}) assigned to it #2802
+- Allow chaining of increment, decrement, and update #2740
 - Kill queries after timeout for PostgreSQL #2636
 - Allow table names with `forUpdate`/`forShare` #2834
-- Added `onVal` and the associated `not` / `and` / `or` methods for using values in `on` clauses within joins.
 - Added `whereColumn` and the associated `not` / `and` / `or` methods for using columns on the right side of a where clause.
+- Added support for named unique, primary and foreign keys to SQLite3 #2840
+- Manage TypeScript types internally #2845
 
 ### Bug fixes:
 
-- #2758: Implement fail-fast logic for dialect resolution #2776
-- Fixed identifier wrapping for `using()`. Use columnize instead of wrap in using(). #2713
-- Fix issues with warnPromise when migration does not return a promise.… #2730
+- Implement fail-fast logic for dialect resolution #2776
+- Fixed identifier wrapping for `using()`. Use columnize instead of wrap in using() #2713
+- Fix issues with warnPromise when migration does not return a promise #2730
 - Compile with before update so that bindings are put in correct order #2733
-- Fix join using builder withSchema. #2744
+- Fix join using builder withSchema #2744
+- Throw instead of process.exit when client module missing #2843
 
 ### Test / internal changes
 
-- Update nyc version #2810
 - Add tests for multiple union arguments with callbacks and builders #2749
-- Update dependencies #2772
+- Update dependencies #2772 #2810 #2842 #2848
 - Separate migration generator #2786
-- Fix ES6 support #2821
 
 # 0.15.2 - 19 Jul, 2018
 
