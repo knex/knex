@@ -5,7 +5,7 @@
 - Use datetime2 for MSSQL datetime + timestamp types. This change is incompatible with MSSQL older than 2008 #2757
 - Knex.VERSION() method was removed, run "require('knex/package').version" instead #2776
 - Knex transpilation now targets Node.js 6, meaning it will no longer run on older Node.js versions #2813
-- Add json type support for SQLite #2814
+- Add json type support for SQLite 3.9+ (tested to work with Node package 'sqlite3' 4.0.2) #2814
 
 ### New features:
 
@@ -14,11 +14,11 @@
 - Allow specifying multiple migration directories #2735
 - Allow cloning query builder with .userParams({}) assigned to it #2802
 - Allow chaining of increment, decrement, and update #2740
-- Kill queries after timeout for PostgreSQL #2636
 - Allow table names with `forUpdate`/`forShare` #2834
 - Added `whereColumn` and the associated `not` / `and` / `or` methods for using columns on the right side of a where clause #2837
 - Added support for named unique, primary and foreign keys to SQLite3 #2840
 - Added `onVal` and the associated `not` / `and` / `or` methods for using values in `on` clauses within joins #2746
+- Kill queries after timeout for PostgreSQL #2636
 - Manage TypeScript types internally #2845
 
 ### Bug fixes:
