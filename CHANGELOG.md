@@ -16,8 +16,9 @@
 - Allow chaining of increment, decrement, and update #2740
 - Kill queries after timeout for PostgreSQL #2636
 - Allow table names with `forUpdate`/`forShare` #2834
-- Added `whereColumn` and the associated `not` / `and` / `or` methods for using columns on the right side of a where clause.
+- Added `whereColumn` and the associated `not` / `and` / `or` methods for using columns on the right side of a where clause #2837
 - Added support for named unique, primary and foreign keys to SQLite3 #2840
+- Added `onVal` and the associated `not` / `and` / `or` methods for using values in `on` clauses within joins #2746
 - Manage TypeScript types internally #2845
 
 ### Bug fixes:
