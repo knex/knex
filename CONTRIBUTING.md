@@ -56,8 +56,8 @@ console.log('Gimme all the data:', await knex('fooobar'));
 
 ## What is minimal code to reproduce bug and why I have to provide that when I can just tell whats the problem is
 
-Writing minimal reproduction code for the problem is timeconsuming and some times it also really hard when for
-example when the original code where the bug happens is written using express or mocha. So why it is necessary
+Writing minimal reproduction code for the problem is time-consuming and sometimes it is also really hard, for
+example when the original code where the bug happens is written using express or mocha. So why is it necessary
 for me to commit so much time to it when the problem is in `knex`? Contributors should be grateful that I reported
 the bug I found.
 
@@ -69,12 +69,12 @@ saves lots of time.
 tl;dr list:
 
 1. Actually in most of the cases developer already figures out what was the problem when writing the minimal test case
-   or if there was problem how stuff was initilized or how async code was written it is easy to point out the problem.
+   or if there was problem how stuff was initialized or how async code was written it is easy to point out the problem.
 
 2. It motivates developer to actually try out if the bug really exist by not having to figure out from incomplete example
    environment in which and how bug actually manifests.
 
-3. There are curently very few people fixing knex issues and if one has to put easily 15-30 minutes time to issue just
+3. There are currently very few people fixing knex issues and if one has to put easily 15-30 minutes time to issue just
    to see that I cannot reproduce this issue it just wastes development hours that were available for improving knex.
 
 Test case should initialize needed tables, insert needed data and fail...
@@ -116,7 +116,6 @@ You can optionally specify which dialects to test using the `DB` environment var
 - mysql2
 - postgres
 - sqlite3
-- maria
 - oracledb
 - mssql
 

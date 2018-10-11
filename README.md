@@ -9,8 +9,8 @@
 
 > **A SQL query builder that is _flexible_, _portable_, and _fun_ to use!**
 
-A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle(including Oracle Wallet Authentication)) query builder for
-Node.js and the Browser, featuring:
+A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
+Node.js, featuring:
 
 - [transactions](http://knexjs.org/#Transactions)
 - [connection pooling](http://knexjs.org/#Installation-pooling)
@@ -36,7 +36,7 @@ To see the SQL that Knex will generate for a given query, see: [Knex Query Lab](
 We have several examples [on the website](http://knexjs.org). Here is the first one to get you started:
 
 ```js
-var knex = require('knex')({
+const knex = require('knex')({
   dialect: 'sqlite3',
   connection: {
     filename: './data.db'
