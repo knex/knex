@@ -35,6 +35,7 @@
 - Add tests for multiple union arguments with callbacks and builders #2749
 - Update dependencies #2772 #2810 #2842 #2848
 - Separate migration generator #2786
+- Use Babel 7 #2813
 
 # 0.15.2 - 19 Jul, 2018
 
