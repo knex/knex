@@ -457,8 +457,11 @@ declare namespace Knex {
     //TODO: Promise?
     columnInfo(column?: string): Bluebird<ColumnInfo>;
 
-    forUpdate(): QueryBuilder;
-    forShare(): QueryBuilder;
+    forUpdate(...tableNames: string[]): QueryBuilder;
+    forUpdate(tableNames: string[]): QueryBuilder;
+
+    forShare(...tableNames: string[]): QueryBuilder;
+    forShare(tableNames: string[]): QueryBuilder;
 
     toSQL(): Sql;
 
