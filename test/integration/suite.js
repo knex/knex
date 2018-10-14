@@ -3,7 +3,7 @@
 'use strict';
 
 module.exports = function(knex) {
-  var sinon = require('sinon');
+  const sinon = require('sinon');
 
   describe(knex.client.dialect + ' | ' + knex.client.driverName, function() {
     this.client = knex.client.dialect;
@@ -30,7 +30,7 @@ module.exports = function(knex) {
 
     describe('knex.destroy', function() {
       it('should allow destroying the pool with knex.destroy', function() {
-        var spy = sinon.spy(knex.client.pool, 'destroy');
+        const spy = sinon.spy(knex.client.pool, 'destroy');
         return knex
           .destroy()
           .then(function() {
@@ -54,7 +54,7 @@ module.exports = function(knex) {
       expect(knex.client.pool).to.equal(undefined);
       knex.initialize();
       expect(knex.client.pool.destroyed).to.equal(false);
-      let waitForDestroy = knex.destroy();
+      const waitForDestroy = knex.destroy();
       expect(knex.client.pool.destroyed).to.equal(true);
       return waitForDestroy.then(() => {
         expect(knex.client.pool).to.equal(undefined);

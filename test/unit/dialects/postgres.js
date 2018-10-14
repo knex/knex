@@ -1,8 +1,9 @@
-var knex = require('../../../knex');
+const knex = require('../../../knex');
+const expect = require('chai').expect;
 
 describe('Postgres Unit Tests', function() {
   it('Validates searchPath as Array/String', function() {
-    var knexInstance = knex({
+    const knexInstance = knex({
       client: 'pg',
     });
 
@@ -14,7 +15,7 @@ describe('Postgres Unit Tests', function() {
       knexInstance.client.setSchemaSearchPath(null, 4);
     }).to.throw(TypeError);
 
-    var fakeQueryFn = function(expectedSearchPath) {
+    const fakeQueryFn = function(expectedSearchPath) {
       return {
         query: function(sql, callback) {
           try {

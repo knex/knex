@@ -2,13 +2,13 @@
 
 'use strict';
 
-var sinon = require('sinon');
-var MSSQL_Client = require('../../../lib/dialects/mssql');
-var client = new MSSQL_Client({ client: 'mssql' });
+const sinon = require('sinon');
+const MSSQL_Client = require('../../../lib/dialects/mssql');
+const client = new MSSQL_Client({ client: 'mssql' });
 
 describe('MSSQL SchemaBuilder', function() {
-  var tableSql;
-  var equal = require('assert').equal;
+  let tableSql;
+  const equal = require('assert').equal;
 
   it('test basic create table with charset and collate', function() {
     tableSql = client.schemaBuilder().createTable('users', function(table) {

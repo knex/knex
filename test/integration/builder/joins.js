@@ -2,6 +2,8 @@
 
 'use strict';
 
+const expect = require('chai').expect;
+
 module.exports = function(knex) {
   describe('Joins', function() {
     it('uses inner join by default', function() {
@@ -1892,7 +1894,7 @@ module.exports = function(knex) {
 
     if (knex.client.driverName !== 'mssql') {
       it('Can use .using()', () => {
-        let joinName = 'accounts_join_test';
+        const joinName = 'accounts_join_test';
 
         return knex.schema
           .dropTableIfExists(joinName)

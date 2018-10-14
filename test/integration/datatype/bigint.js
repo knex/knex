@@ -2,20 +2,20 @@
 
 'use strict';
 
-var Promise = testPromise;
+const Promise = testPromise;
 
 module.exports = function(knex) {
-  var bigintTimestamp = 1464294366973;
-  var negativeBigintTimestamp = -1464294366973;
-  var unsafeBigint = 99071992547409911;
-  var negativeUnsafeBigint = -99071992547409911;
+  const bigintTimestamp = 1464294366973;
+  const negativeBigintTimestamp = -1464294366973;
+  const unsafeBigint = 99071992547409911;
+  const negativeUnsafeBigint = -99071992547409911;
 
   it('#test number mssql should not allow unsafe bigint', function() {
     if (!/mssql/i.test(knex.client.driverName)) {
       return Promise.resolve();
     }
-    var constraintName = 'pk_id';
-    var tableName = 'bigint_test';
+    const constraintName = 'pk_id';
+    const tableName = 'bigint_test';
     return knex
       .transaction(function(tr) {
         return tr.schema.dropTableIfExists(tableName).then(function() {
@@ -53,8 +53,8 @@ module.exports = function(knex) {
     if (!/mssql/i.test(knex.client.dialect)) {
       return Promise.resolve();
     }
-    var constraintName = 'pk_id';
-    var tableName = 'bigint_test';
+    const constraintName = 'pk_id';
+    const tableName = 'bigint_test';
     return knex
       .transaction(function(tr) {
         return tr.schema.dropTableIfExists(tableName).then(function() {
@@ -104,8 +104,8 @@ module.exports = function(knex) {
       return;
     }
 
-    var tableName = 'decimal_test';
-    var value = 123.4567;
+    const tableName = 'decimal_test';
+    const value = 123.4567;
 
     return knex
       .transaction(function(tr) {

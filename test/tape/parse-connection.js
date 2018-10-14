@@ -1,7 +1,7 @@
 'use strict';
 
-var parseConnection = require('../../lib/util/parse-connection');
-var test = require('tape');
+const parseConnection = require('../../lib/util/parse-connection');
+const test = require('tape');
 
 test('parses standard connections', function(t) {
   t.plan(1);
@@ -38,7 +38,7 @@ test('parses standard connections without password', function(t) {
 
 test('parses mssql connections, aliasing host to server', function(t) {
   t.plan(1);
-  var mssql = {
+  const mssql = {
     client: 'mssql',
     connection: {
       user: 'username',

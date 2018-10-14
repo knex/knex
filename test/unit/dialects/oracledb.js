@@ -1,13 +1,14 @@
 // global it, describe, expect
 
 'use strict';
-var _ = require('lodash');
-var expect = require('chai').expect;
-var knex = require('../../../knex');
-var config = require('../../knexfile');
+const _ = require('lodash');
+const expect = require('chai').expect;
+const knex = require('../../../knex');
+const config = require('../../knexfile');
+const sinon = require('sinon');
 
 describe('OracleDb externalAuth', function() {
-  var knexInstance = knex({
+  const knexInstance = knex({
     client: 'oracledb',
     connection: {
       user: 'user',
@@ -18,14 +19,14 @@ describe('OracleDb externalAuth', function() {
       database: 'database',
     },
   });
-  var spy;
+  let spy;
 
   before(function() {
     spy = sinon.spy(knexInstance.client.driver, 'getConnection');
   });
 
   it('externalAuth and connectString should be sent to the getConnection', function() {
-    var connectionWithExternalAuth = {
+    const connectionWithExternalAuth = {
       connectString: 'connect-string',
       externalAuth: true,
     };
@@ -43,10 +44,10 @@ describe('OracleDb externalAuth', function() {
 
 describe('OracleDb parameters', function() {
   describe('with fetchAsString parameter', function() {
-    var knexClient;
+    let knexClient;
 
     before(function() {
-      var conf = _.clone(config.oracledb);
+      const conf = _.clone(config.oracledb);
       conf.fetchAsString = ['number', 'DATE', 'cLOb'];
       knexClient = knex(conf);
       return knexClient;
@@ -76,7 +77,7 @@ describe('OracleDb parameters', function() {
   });
 
   describe('without fetchAsString parameter', function() {
-    var knexClient;
+    let knexClient;
 
     before(function() {
       knexClient = knex(config.oracledb);

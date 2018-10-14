@@ -1,21 +1,21 @@
 'use strict';
 
-var tape = require('tape');
-var omit = require('lodash/omit');
-var QueryBuilder = require('../../lib/query/builder');
-var Client = require('../../lib/client');
+const tape = require('tape');
+const omit = require('lodash/omit');
+const QueryBuilder = require('../../lib/query/builder');
+const Client = require('../../lib/client');
 
 tape('accumulates multiple update calls #647', function(t) {
   t.plan(1);
-  var qb = new QueryBuilder({});
+  const qb = new QueryBuilder({});
   qb.update('a', 1).update('b', 2);
   t.deepEqual(qb._single.update, { a: 1, b: 2 });
 });
 
 tape('allows for object syntax in join', function(t) {
   t.plan(1);
-  var qb = new QueryBuilder(new Client({ client: 'mysql' }));
-  var sql = qb
+  const qb = new QueryBuilder(new Client({ client: 'mysql' }));
+  const sql = qb
     .table('users')
     .innerJoin('accounts', {
       'accounts.id': 'users.account_id',
@@ -29,8 +29,8 @@ tape('allows for object syntax in join', function(t) {
 });
 
 tape('clones correctly', function(t) {
-  var qb = new QueryBuilder(new Client({ client: 'mysql' }));
-  var original = qb
+  const qb = new QueryBuilder(new Client({ client: 'mysql' }));
+  const original = qb
     .table('users')
     .debug()
     .innerJoin('accounts', {
@@ -38,7 +38,7 @@ tape('clones correctly', function(t) {
       'accounts.owner_id': 'users.id',
     });
 
-  var cloned = original.clone();
+  const cloned = original.clone();
 
   t.notEqual(original, cloned);
 

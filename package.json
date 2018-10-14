@@ -84,6 +84,7 @@
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "dev": "rimraf ./lib && babel -w src --out-dir lib --copy-files",
     "lint": "eslint src/**",
+    "lint-test": "eslint test/**",
     "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && npm run tape",
     "prepublish": "npm run babel",
     "pre_test": "npm run lint",

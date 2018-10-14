@@ -345,9 +345,9 @@ module.exports = function(knex) {
               'create index `test_table_one_logins_index` on `test_table_one` (`logins`)',
             ]);
             tester('oracledb', [
-              `create table \"test_table_one\" (\"id\" number(20, 0) not null primary key, \"first_name\" varchar2(255), \"last_name\" varchar2(255), \"email\" varchar2(255) null, \"logins\" integer default '1', \"balance\" float default '0', \"about\" varchar2(4000), \"created_at\" timestamp with local time zone, \"updated_at\" timestamp with local time zone)`,
+              `create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default '1', "balance" float default '0', "about" varchar2(4000), "created_at" timestamp with local time zone, "updated_at" timestamp with local time zone)`,
               'comment on table "test_table_one" is \'A table comment.\'',
-              `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE \"test_table_one_seq\"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_one';  execute immediate ('create or replace trigger \"test_table_one_autoinc_trg\"  BEFORE INSERT on \"test_table_one\"  for each row  declare  checking number := 1;  begin    if (:new.\"' || PK_NAME || '\" is null) then      while checking >= 1 loop        select \"test_table_one_seq\".nextval into :new.\"' || PK_NAME || '\" from dual;        select count(\"' || PK_NAME || '\") into checking from \"test_table_one\"        where \"' || PK_NAME || '\" = :new.\"' || PK_NAME || '\";      end loop;    end if;  end;'); END;`,
+              `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE "test_table_one_seq"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_one';  execute immediate ('create or replace trigger "test_table_one_autoinc_trg"  BEFORE INSERT on "test_table_one"  for each row  declare  checking number := 1;  begin    if (:new."' || PK_NAME || '" is null) then      while checking >= 1 loop        select "test_table_one_seq".nextval into :new."' || PK_NAME || '" from dual;        select count("' || PK_NAME || '") into checking from "test_table_one"        where "' || PK_NAME || '" = :new."' || PK_NAME || '";      end loop;    end if;  end;'); END;`,
               'comment on column "test_table_one"."logins" is \'\'',
               'comment on column "test_table_one"."about" is \'A comment.\'',
               'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "test_table_one" ("first_name")',
@@ -512,7 +512,7 @@ module.exports = function(knex) {
       });
 
       it('rejects setting foreign key where tableName is not typeof === string', function() {
-        let builder = knex.schema.createTable(
+        const builder = knex.schema.createTable(
           'invalid_inTable_param_test',
           function(table) {
             const createInvalidUndefinedInTableSchema = function() {
@@ -1283,9 +1283,9 @@ module.exports = function(knex) {
       });
     });
     it('supports named primary keys', function() {
-      var constraintName = 'pk-test';
-      var tableName = 'namedpk';
-      var expectedRes = [
+      const constraintName = 'pk-test';
+      const tableName = 'namedpk';
+      const expectedRes = [
         {
           type: 'table',
           name: tableName,
@@ -1376,7 +1376,7 @@ module.exports = function(knex) {
           .then(function() {
             if (/sqlite/i.test(knex.client.dialect)) {
               //For SQLite inspect metadata to make sure the constraint exists
-              var expectedRes = [
+              const expectedRes = [
                 {
                   type: 'table',
                   name: tableName,
@@ -1416,9 +1416,9 @@ module.exports = function(knex) {
     });
 
     it('supports named unique keys', function() {
-      var singleUniqueName = 'uk-single';
-      var multiUniqueName = 'uk-multi';
-      var tableName = 'nameduk';
+      const singleUniqueName = 'uk-single';
+      const multiUniqueName = 'uk-multi';
+      const tableName = 'nameduk';
       return knex.transaction(function(tr) {
         return tr.schema
           .dropTableIfExists(tableName)
@@ -1430,7 +1430,7 @@ module.exports = function(knex) {
           .then(function() {
             if (/sqlite/i.test(knex.client.dialect)) {
               //For SQLite inspect metadata to make sure the constraint exists
-              var expectedRes = [
+              const expectedRes = [
                 {
                   type: 'index',
                   name: singleUniqueName,
@@ -1484,7 +1484,7 @@ module.exports = function(knex) {
           .then(function() {
             if (/sqlite/i.test(knex.client.dialect)) {
               //For SQLite inspect metadata to make sure the constraint exists
-              var expectedRes = [
+              const expectedRes = [
                 {
                   type: 'index',
                   name: singleUniqueName,
@@ -1540,11 +1540,11 @@ module.exports = function(knex) {
     });
 
     it('supports named foreign keys', function() {
-      var userTableName = 'nfk_user';
-      var groupTableName = 'nfk_group';
-      var joinTableName = 'nfk_user_group';
-      var userConstraint = ['fk', joinTableName, userTableName].join('-');
-      var groupConstraint = ['fk', joinTableName, groupTableName].join('-');
+      const userTableName = 'nfk_user';
+      const groupTableName = 'nfk_group';
+      const joinTableName = 'nfk_user_group';
+      const userConstraint = ['fk', joinTableName, userTableName].join('-');
+      const groupConstraint = ['fk', joinTableName, groupTableName].join('-');
       return knex.transaction(function(tr) {
         return tr.schema
           .dropTableIfExists(joinTableName)
@@ -1586,7 +1586,7 @@ module.exports = function(knex) {
           })
           .then(function() {
             if (/sqlite/i.test(knex.client.dialect)) {
-              var expectedRes = [
+              const expectedRes = [
                 {
                   type: 'table',
                   name: joinTableName,

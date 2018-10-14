@@ -2,10 +2,10 @@
 
 'use strict';
 
-var _ = require('lodash');
+const _ = require('lodash');
 
 module.exports = function(knex) {
-  var client = knex.client;
+  const client = knex.client;
 
   // allowed driver name of a client
   const allowedClients = [
@@ -46,7 +46,7 @@ module.exports = function(knex) {
         testSqlTester(qb, val, statement, bindings, returnval);
       });
     } else if (client.driverName === driverName) {
-      var sql = qb.toSQL();
+      const sql = qb.toSQL();
 
       if (statement) {
         if (Array.isArray(sql)) {
@@ -63,9 +63,9 @@ module.exports = function(knex) {
         }
       }
       if (returnval !== undefined && returnval !== null) {
-        var oldThen = qb.then;
+        const oldThen = qb.then;
         qb.then = function() {
-          var promise = oldThen.apply(this, []);
+          let promise = oldThen.apply(this, []);
           promise = promise.tap(function(resp) {
             if (typeof returnval === 'function') {
               expect(!!returnval(resp)).to.equal(true);
@@ -107,28 +107,28 @@ module.exports = function(knex) {
   }
 
   function makeTestSQL(builder) {
-    var tester = testSqlTester.bind(null, builder);
+    const tester = testSqlTester.bind(null, builder);
     return function(handler) {
       handler(tester);
       return this;
     };
   }
 
-  var originalRaw = client.raw;
-  var originalQueryBuilder = client.queryBuilder;
-  var originalSchemaBuilder = client.schemaBuilder;
+  const originalRaw = client.raw;
+  const originalQueryBuilder = client.queryBuilder;
+  const originalSchemaBuilder = client.schemaBuilder;
   client.raw = function() {
-    var raw = originalRaw.apply(this, arguments);
+    const raw = originalRaw.apply(this, arguments);
     raw.testSql = makeTestSQL(raw);
     return raw;
   };
   client.queryBuilder = function() {
-    var qb = originalQueryBuilder.apply(this, arguments);
+    const qb = originalQueryBuilder.apply(this, arguments);
     qb.testSql = makeTestSQL(qb);
     return qb;
   };
   client.schemaBuilder = function() {
-    var sb = originalSchemaBuilder.apply(this, arguments);
+    const sb = originalSchemaBuilder.apply(this, arguments);
     sb.testSql = makeTestSQL(sb);
     return sb;
   };

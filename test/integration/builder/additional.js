@@ -135,7 +135,7 @@ module.exports = function(knex) {
     // TODO: This doesn't work on oracle yet.
     if (['pg', 'mssql'].includes(knex.client.driverName)) {
       describe('returning with wrapIdentifier and postProcessResponse`', () => {
-        let origHooks = {};
+        const origHooks = {};
 
         before('setup custom hooks', () => {
           origHooks.postProcessResponse =
