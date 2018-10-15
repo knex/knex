@@ -1,8 +1,7 @@
-/*global after, before, beforeEach, expect, describe, it*/
+/*global after, before, beforeEach, describe, it*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
-const chai = require('chai');
 const { expect } = require('chai');
 const mockFs = require('mock-fs');
 const migrationListResolver = require('../../../lib/migrate/migration-list-resolver');

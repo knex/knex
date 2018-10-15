@@ -1,5 +1,5 @@
 'use strict';
-/*global expect, describe, it*/
+/*global describe, it*/
 const _interface = require('../../lib/interface');
 const chai = require('chai');
 

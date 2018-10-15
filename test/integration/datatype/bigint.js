@@ -82,7 +82,6 @@ module.exports = function(knex) {
           .select('*');
       })
       .map(function(row) {
-        console.log(row);
         expect(row.id).to.equal('positive');
       })
       .then(function() {
@@ -91,7 +90,6 @@ module.exports = function(knex) {
           .select('*');
       })
       .map(function(row) {
-        console.log(row);
         expect(row.id).to.equal('negative');
       })
       .catch(function(err) {

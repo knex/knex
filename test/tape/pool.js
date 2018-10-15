@@ -31,7 +31,7 @@ test(`pool evicts dead resources when factory.validate rejects`, (t) => {
     },
   });
 
-  const connections = Bluebird.resolve(Array.from(Array(5)))
+  Bluebird.resolve(Array.from(Array(5)))
     .map(() => {
       return pool.acquire().promise.catch((e) => {
         t.fail('1# Could not get resource from pool');

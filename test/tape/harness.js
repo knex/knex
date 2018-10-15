@@ -18,12 +18,6 @@ module.exports = function(tableName, knex) {
     }
 
     return tape(name, function(t) {
-      let hasPlanned = false;
-
-      t.on('plan', function() {
-        hasPlanned = true;
-      });
-
       const disposable = Promise.resolve(true).disposer(function() {
         return knex.truncate(tableName).finally(function() {
           t.end();

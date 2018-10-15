@@ -69,7 +69,7 @@ test('it should use knex supported dialect', function(t) {
 test('it should throw error if client is omitted in config', function(t) {
   t.plan(1);
   try {
-    const knexObj = knex({});
+    knex({});
     t.deepEqual(true, false); //Don't reach this point
   } catch (error) {
     t.deepEqual(
