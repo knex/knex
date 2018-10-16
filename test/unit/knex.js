@@ -121,7 +121,7 @@ describe('knex', () => {
   });
 
   it('throws if client module has not been installed', () => {
-    expect(knex({ client: 'oracle' })).to.throw(
+    expect(Knex({ client: 'oracle' })).to.throw(
       /Knex: run\n$ npm install oracle/
     );
   });

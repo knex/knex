@@ -1,8 +1,7 @@
 // global it, describe, expect
 
 'use strict';
-const _ = require('lodash');
-const expect = require('chai').expect;
+const sinon = require('sinon');
 const DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 
 describe('Unit: Sqlite3 - renameColumn', function() {

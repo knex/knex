@@ -328,7 +328,7 @@ module.exports = function(knex) {
       knex('accounts')
         .select()
         .asCallback(function() {
-          console.log(this.undefinedVar.test);
+          this.undefinedVar.test;
         });
     });
 

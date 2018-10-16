@@ -1,7 +1,7 @@
 'use strict';
-var tape = require('tape');
-var Promise = require('bluebird');
-var debug = require('debug')('knex:tests');
+const tape = require('tape');
+const Promise = require('bluebird');
+const debug = require('debug')('knex:tests');
 
 module.exports = function(tableName, knex) {
   return function(name, dialects, cb) {
@@ -18,20 +18,14 @@ module.exports = function(tableName, knex) {
     }
 
     return tape(name, function(t) {
-      var hasPlanned = false;
-
-      t.on('plan', function() {
-        hasPlanned = true;
-      });
-
-      var disposable = Promise.resolve(true).disposer(function() {
+      const disposable = Promise.resolve(true).disposer(function() {
         return knex.truncate(tableName).finally(function() {
           t.end();
         });
       });
 
       Promise.using(disposable, function() {
-        var val = cb(t);
+        const val = cb(t);
         if (val && typeof val.then === 'function') {
           return val.catch(function(err) {
             t.error(err);

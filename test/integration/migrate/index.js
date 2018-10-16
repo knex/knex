@@ -294,12 +294,6 @@ module.exports = function(knex) {
           .spread(function(batchNo, log) {
             expect(batchNo).to.equal(1);
             expect(log).to.have.length(2);
-            const migrationPath = [
-              'test',
-              'integration',
-              'migrate',
-              'test',
-            ].join(path.sep); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
             expect(log[0]).to.contain(batchNo);
             return knex('knex_migrations')
               .select('*')
@@ -547,7 +541,6 @@ module.exports = function(knex) {
   describe('migrationSource config', function() {
     const migrationSource = {
       getMigrations() {
-        console.log('???', Object.keys(testMemoryMigrations).sort());
         return Promise.resolve(Object.keys(testMemoryMigrations).sort());
       },
       getMigrationName(migration) {

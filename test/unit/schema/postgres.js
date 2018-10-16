@@ -2,19 +2,19 @@
 
 'use strict';
 
-var tableSql;
+let tableSql;
 
-var sinon = require('sinon');
-var PG_Client = require('../../../lib/dialects/postgres');
-var client = new PG_Client({ client: 'pg' });
-var knex = require('../../../knex');
+const sinon = require('sinon');
+const PG_Client = require('../../../lib/dialects/postgres');
+const client = new PG_Client({ client: 'pg' });
+const knex = require('../../../knex');
 
-var equal = require('assert').equal;
+const equal = require('assert').equal;
 
 describe('PostgreSQL Config', function() {
-  var knexInstance;
-  var version;
-  var config = {
+  let knexInstance;
+  let version;
+  const config = {
     client: 'pg',
     connection: {
       user: 'postgres',
@@ -1072,7 +1072,7 @@ describe('PostgreSQL SchemaBuilder', function() {
   });
 
   it('allows creating an extension', function() {
-    var sql = client
+    const sql = client
       .schemaBuilder()
       .createExtension('test')
       .toSQL();
@@ -1080,7 +1080,7 @@ describe('PostgreSQL SchemaBuilder', function() {
   });
 
   it('allows dropping an extension', function() {
-    var sql = client
+    const sql = client
       .schemaBuilder()
       .dropExtension('test')
       .toSQL();
@@ -1088,7 +1088,7 @@ describe('PostgreSQL SchemaBuilder', function() {
   });
 
   it("allows creating an extension only if it doesn't exist", function() {
-    var sql = client
+    const sql = client
       .schemaBuilder()
       .createExtensionIfNotExists('test')
       .toSQL();
@@ -1096,7 +1096,7 @@ describe('PostgreSQL SchemaBuilder', function() {
   });
 
   it('allows dropping an extension only if it exists', function() {
-    var sql = client
+    const sql = client
       .schemaBuilder()
       .dropExtensionIfExists('test')
       .toSQL();

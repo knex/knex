@@ -1,18 +1,18 @@
 'use strict';
 
-var test = require('tape');
-var Client = require('../../lib/dialects/sqlite3');
-var tarn = require('tarn');
-var Pool = tarn.Pool;
-var knexfile = require('../knexfile');
-var makeKnex = require('../../knex');
+const test = require('tape');
+const Client = require('../../lib/dialects/sqlite3');
+const tarn = require('tarn');
+const Pool = tarn.Pool;
+const knexfile = require('../knexfile');
+const makeKnex = require('../../knex');
 const Bluebird = require('bluebird');
 
 test(`pool evicts dead resources when factory.validate rejects`, (t) => {
   t.plan(10);
 
   let i = 0;
-  let pool = new Pool({
+  const pool = new Pool({
     min: 2,
     max: 5,
     idleTimeoutMillis: 100,
@@ -31,7 +31,7 @@ test(`pool evicts dead resources when factory.validate rejects`, (t) => {
     },
   });
 
-  let connections = Bluebird.resolve(Array.from(Array(5)))
+  Bluebird.resolve(Array.from(Array(5)))
     .map(() => {
       return pool.acquire().promise.catch((e) => {
         t.fail('1# Could not get resource from pool');
@@ -78,7 +78,7 @@ test(`pool evicts dead resources when factory.validate rejects`, (t) => {
 });
 
 test('#822, pool config, max: 0 should skip pool construction', function(t) {
-  var client = new Client({
+  const client = new Client({
     connection: { filename: ':memory:' },
     pool: { max: 0 },
   });
@@ -92,7 +92,7 @@ test('#822, pool config, max: 0 should skip pool construction', function(t) {
 });
 
 test('#823, should not skip pool construction pool config is not defined', function(t) {
-  var client = new Client({ connection: { filename: ':memory:' } });
+  const client = new Client({ connection: { filename: ':memory:' } });
   try {
     t.ok(client.pool instanceof Pool);
     t.end();
@@ -117,7 +117,7 @@ test('#2321 dead connections are not evicted from pool', (t) => {
       .delay(50) // wait driver to notice connection errors (2ms was enough locally)
       .then(() => {
         // all connections are dead, so they should be evicted from pool and this should work
-        return Promise.all(
+        return Bluebird.all(
           Array.from(Array(10)).map(() =>
             knex.select(1).then(() => t.pass('Read data'))
           )

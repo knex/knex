@@ -2,9 +2,9 @@
 
 'use strict';
 
-var uuid = require('uuid');
-var _ = require('lodash');
-var Promise = require('bluebird');
+const uuid = require('uuid');
+const _ = require('lodash');
+const Promise = require('bluebird');
 
 module.exports = function(knex) {
   describe('Inserts', function() {
@@ -778,9 +778,9 @@ module.exports = function(knex) {
     });
 
     it('should not mutate the array passed in', function() {
-      var a = { enum_value: 'a', uuid: uuid.v4() };
-      var b = { enum_value: 'c', uuid: uuid.v4() };
-      var x = [a, b];
+      const a = { enum_value: 'a', uuid: uuid.v4() };
+      const b = { enum_value: 'c', uuid: uuid.v4() };
+      const x = [a, b];
 
       return knex('datatype_test')
         .insert(x)
@@ -902,7 +902,7 @@ module.exports = function(knex) {
     });
 
     it('should take an array of columns to return in oracle or postgres', function() {
-      var insertData = {
+      const insertData = {
         account_id: 10,
         details:
           'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -1013,14 +1013,14 @@ module.exports = function(knex) {
       if (/redshift/i.test(knex.client.driverName)) {
         return;
       }
-      var insertData = {
+      const insertData = {
         account_id: 10,
         details:
           'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
         status: 0,
       };
 
-      var returningColumn = '*';
+      const returningColumn = '*';
       return knex('test_table_two')
         .insert(insertData, returningColumn)
         .testSql(function(tester) {
@@ -1098,15 +1098,15 @@ module.exports = function(knex) {
     });
 
     describe('batchInsert', function() {
-      var driverName = knex.client.driverName;
-      var fiftyLengthString =
+      const driverName = knex.client.driverName;
+      const fiftyLengthString =
         'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
-      var items = [];
-      var amountOfItems = 100;
-      var amountOfColumns = 30;
-      for (var i = 0; i < amountOfItems; i++) {
-        var item = {};
-        for (var x = 0; x < amountOfColumns; x++) {
+      const items = [];
+      const amountOfItems = 100;
+      const amountOfColumns = 30;
+      for (let i = 0; i < amountOfItems; i++) {
+        const item = {};
+        for (let x = 0; x < amountOfColumns; x++) {
           item['Col' + x] = fiftyLengthString;
         }
         items.push(item);
@@ -1115,7 +1115,7 @@ module.exports = function(knex) {
       beforeEach(function() {
         return knex.schema.dropTableIfExists('BatchInsert').then(function() {
           return knex.schema.createTable('BatchInsert', function(table) {
-            for (var i = 0; i < amountOfColumns; i++) {
+            for (let i = 0; i < amountOfColumns; i++) {
               table.string('Col' + i, 50);
             }
           });
@@ -1138,7 +1138,7 @@ module.exports = function(knex) {
             return knex('BatchInsert').select();
           })
           .then(function(result) {
-            var count = result.length;
+            const count = result.length;
             expect(count).to.equal(amountOfItems);
           });
       });
@@ -1160,7 +1160,7 @@ module.exports = function(knex) {
               );
             })
             .then(function() {
-              var rows = [{ col: 'a' }, { col: 'a' }];
+              const rows = [{ col: 'a' }, { col: 'a' }];
               return knex.batchInsert(
                 'batchInsertDuplicateKey',
                 rows,

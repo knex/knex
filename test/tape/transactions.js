@@ -1,8 +1,8 @@
 'use strict';
-var Promise = require('bluebird');
-var harness = require('./harness');
-var tape = require('tape');
-var JSONStream = require('JSONStream');
+const Promise = require('bluebird');
+const harness = require('./harness');
+const tape = require('tape');
+const JSONStream = require('JSONStream');
 
 module.exports = function(knex) {
   tape(knex.client.driverName + ' - transactions: before', function(t) {
@@ -17,7 +17,7 @@ module.exports = function(knex) {
       });
   });
 
-  var test = harness('test_table', knex);
+  const test = harness('test_table', knex);
 
   test('transaction', function(t) {
     return knex
@@ -35,9 +35,9 @@ module.exports = function(knex) {
   });
 
   test('transaction rollback on returned rejected promise', function(t) {
-    var testError = new Error('Not inserting');
-    var trxQueryCount = 0;
-    var trxRejected;
+    const testError = new Error('Not inserting');
+    let trxQueryCount = 0;
+    let trxRejected;
     return knex
       .transaction(function(trx) {
         return trx
@@ -57,7 +57,7 @@ module.exports = function(knex) {
       .finally(function() {
         // BEGIN, INSERT, ROLLBACK
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-        var expectedQueryCount =
+        const expectedQueryCount =
           knex.client.driverName === 'oracledb' ||
           knex.client.driverName === 'mssql'
             ? 1
@@ -78,9 +78,9 @@ module.exports = function(knex) {
   });
 
   test('transaction rollback on error throw', function(t) {
-    var testError = new Error('Boo!!!');
-    var trxQueryCount = 0;
-    var trxRejected;
+    const testError = new Error('Boo!!!');
+    let trxQueryCount = 0;
+    let trxRejected;
     return knex
       .transaction(function() {
         throw testError;
@@ -95,7 +95,7 @@ module.exports = function(knex) {
       .finally(function() {
         // BEGIN, ROLLBACK
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-        var expectedQueryCount =
+        const expectedQueryCount =
           knex.client.driverName === 'oracledb' ||
           knex.client.driverName === 'mssql'
             ? 0
@@ -110,10 +110,10 @@ module.exports = function(knex) {
   });
 
   test('transaction savepoint rollback on returned rejected promise', function(t) {
-    var testError = new Error('Rolling Back Savepoint');
-    var trx1QueryCount = 0;
-    var trx2QueryCount = 0;
-    var trx2Rejected;
+    const testError = new Error('Rolling Back Savepoint');
+    let trx1QueryCount = 0;
+    let trx2QueryCount = 0;
+    let trx2Rejected;
     return knex
       .transaction(function(trx1) {
         return trx1
@@ -151,12 +151,12 @@ module.exports = function(knex) {
         // trx1: BEGIN, INSERT, ROLLBACK
         // trx2: SAVEPOINT, INSERT, SELECT, ROLLBACK TO SAVEPOINT
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-        var expectedTrx1QueryCount =
+        let expectedTrx1QueryCount =
           knex.client.driverName === 'oracledb' ||
           knex.client.driverName === 'mssql'
             ? 1
             : 3;
-        var expectedTrx2QueryCount = 4;
+        const expectedTrx2QueryCount = 4;
         expectedTrx1QueryCount += expectedTrx2QueryCount;
         t.equal(
           trx1QueryCount,
@@ -179,10 +179,10 @@ module.exports = function(knex) {
   });
 
   test('transaction savepoint rollback on error throw', function(t) {
-    var testError = new Error('Rolling Back Savepoint');
-    var trx1QueryCount = 0;
-    var trx2QueryCount = 0;
-    var trx2Rejected;
+    const testError = new Error('Rolling Back Savepoint');
+    let trx1QueryCount = 0;
+    let trx2QueryCount = 0;
+    let trx2Rejected;
     return knex
       .transaction(function(trx1) {
         return trx1
@@ -212,12 +212,12 @@ module.exports = function(knex) {
         // trx1: BEGIN, INSERT, ROLLBACK
         // trx2: SAVEPOINT, ROLLBACK TO SAVEPOINT
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-        var expectedTrx1QueryCount =
+        let expectedTrx1QueryCount =
           knex.client.driverName === 'oracledb' ||
           knex.client.driverName === 'mssql'
             ? 1
             : 3;
-        var expectedTrx2QueryCount = 2;
+        const expectedTrx2QueryCount = 2;
         expectedTrx1QueryCount += expectedTrx2QueryCount;
         t.equal(
           trx1QueryCount,
@@ -240,7 +240,7 @@ module.exports = function(knex) {
   });
 
   test('sibling nested transactions - second created after first one commits', function(t) {
-    var secondTransactionCompleted = false;
+    let secondTransactionCompleted = false;
     return knex
       .transaction(function(trx) {
         return trx
@@ -295,7 +295,7 @@ module.exports = function(knex) {
   });
 
   test('sibling nested transactions - second created after first one rolls back by returning a rejected promise', function(t) {
-    var secondTransactionCompleted = false;
+    let secondTransactionCompleted = false;
     return knex
       .transaction(function(trx) {
         return trx
@@ -362,7 +362,7 @@ module.exports = function(knex) {
   });
 
   test('sibling nested transactions - second created after first one rolls back by throwing', function(t) {
-    var secondTransactionCompleted = false;
+    let secondTransactionCompleted = false;
     return knex
       .transaction(function(trx) {
         return trx
@@ -417,7 +417,7 @@ module.exports = function(knex) {
   });
 
   test('sibling nested transactions - first commits data even though second one rolls back by returning a rejected promise', function(t) {
-    var secondTransactionCompleted = false;
+    let secondTransactionCompleted = false;
     return knex
       .transaction(function(trx) {
         return trx
@@ -451,7 +451,7 @@ module.exports = function(knex) {
   });
 
   test('sibling nested transactions - first commits data even though second one rolls back by throwing', function(t) {
-    var secondTransactionCompleted = false;
+    let secondTransactionCompleted = false;
     return knex
       .transaction(function(trx) {
         return trx
@@ -480,7 +480,7 @@ module.exports = function(knex) {
   });
 
   test('#625 - streams/transactions', 'postgresql', function(t) {
-    var cid,
+    let cid,
       queryCount = 0;
 
     return knex
@@ -492,7 +492,7 @@ module.exports = function(knex) {
           }
         )
           .then(function() {
-            var stream = tx.table('test_table').stream();
+            const stream = tx.table('test_table').stream();
             stream.on('end', function() {
               tx.commit();
               t.equal(queryCount, 5, 'Five queries run');
@@ -514,7 +514,7 @@ module.exports = function(knex) {
   });
 
   test('#785 - skipping extra transaction statements after commit / rollback', function(t) {
-    var queryCount = 0;
+    let queryCount = 0;
 
     return knex
       .transaction(function(trx) {
@@ -546,7 +546,7 @@ module.exports = function(knex) {
       })
       .finally(function() {
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-        var expectedQueryCount =
+        const expectedQueryCount =
           knex.client.driverName === 'oracledb' ||
           knex.client.driverName === 'mssql'
             ? 1

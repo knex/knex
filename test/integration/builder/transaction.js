@@ -2,10 +2,10 @@
 
 'use strict';
 
-var Promise = testPromise;
-var Knex = require('../../../knex');
-var _ = require('lodash');
-var sinon = require('sinon');
+const Promise = testPromise;
+const Knex = require('../../../knex');
+const _ = require('lodash');
+const sinon = require('sinon');
 
 module.exports = function(knex) {
   // Certain dialects do not have proper insert with returning, so if this is true
@@ -59,7 +59,7 @@ module.exports = function(knex) {
     });
 
     it('should be able to commit transactions', function() {
-      var id = null;
+      let id = null;
       return knex
         .transaction(function(t) {
           knex('accounts')
@@ -101,8 +101,8 @@ module.exports = function(knex) {
     });
 
     it('should be able to rollback transactions', function() {
-      var id = null;
-      var err = new Error('error message');
+      let id = null;
+      const err = new Error('error message');
       return knex
         .transaction(function(t) {
           knex('accounts')
@@ -142,7 +142,7 @@ module.exports = function(knex) {
     });
 
     it('should be able to commit transactions with a resolved trx query', function() {
-      var id = null;
+      let id = null;
       return knex
         .transaction(function(trx) {
           return trx('accounts')
@@ -181,9 +181,9 @@ module.exports = function(knex) {
     });
 
     it('should be able to rollback transactions with rejected trx query', function() {
-      var id = null;
-      var err = new Error('error message');
-      var __knexUid,
+      let id = null;
+      const err = new Error('error message');
+      let __knexUid,
         count = 0;
       return knex
         .transaction(function(trx) {
@@ -218,7 +218,7 @@ module.exports = function(knex) {
         })
         .catch(function(msg) {
           // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-          var expectedCount =
+          const expectedCount =
             knex.client.driverName === 'oracledb' ||
             knex.client.driverName === 'mssql'
               ? 2
@@ -235,9 +235,9 @@ module.exports = function(knex) {
     });
 
     it('should be able to run schema methods', function() {
-      var __knexUid,
+      let __knexUid,
         count = 0;
-      var err = new Error('error message');
+      const err = new Error('error message');
       if (knex.client.driverName === 'pg') {
         return knex
           .transaction(function(trx) {
@@ -254,7 +254,7 @@ module.exports = function(knex) {
                 return trx('test_schema_transactions').count('*');
               })
               .then(function(resp) {
-                var _count = parseInt(resp[0].count, 10);
+                const _count = parseInt(resp[0].count, 10);
                 expect(_count).to.equal(1);
                 throw err;
               });
@@ -274,7 +274,7 @@ module.exports = function(knex) {
             expect(e.code).to.equal('42P01');
           });
       } else {
-        var id = null;
+        let id = null;
         return knex
           .transaction(function(trx) {
             return trx('accounts')
@@ -362,7 +362,7 @@ module.exports = function(knex) {
     });
 
     it('#855 - Query Event should trigger on Transaction Client AND main Client', function() {
-      var queryEventTriggered = false;
+      let queryEventTriggered = false;
 
       knex.once('query', function(queryData) {
         queryEventTriggered = true;
@@ -387,17 +387,17 @@ module.exports = function(knex) {
 
     it('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function() {
       //To make this test easier, I'm changing the pool settings to max 1.
-      var knexConfig = _.clone(knex.client.config);
+      const knexConfig = _.clone(knex.client.config);
       knexConfig.pool.min = 0;
       knexConfig.pool.max = 1;
       knexConfig.acquireConnectionTimeout = 1000;
 
-      var knexDb = new Knex(knexConfig);
+      const knexDb = new Knex(knexConfig);
 
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
 
       return knexDb.transaction(function(trx) {
-        var sql = 'SELECT 1';
+        let sql = 'SELECT 1';
         if (knex.client.driverName === 'oracledb') {
           sql = 'SELECT 1 FROM DUAL';
         }
@@ -458,8 +458,8 @@ module.exports = function(knex) {
      */
     if (knex.client.driverName === 'mssql') {
       it('should rollback when transaction aborts', function() {
-        var insertedId = null;
-        var originalError = null;
+        let insertedId = null;
+        let originalError = null;
 
         function transactionAbortingQuery(transaction) {
           return transaction.schema.createTable(
@@ -541,7 +541,7 @@ module.exports = function(knex) {
     });
 
     it('#1052 - transaction promise mutating', function() {
-      var transactionReturning = knex.transaction(function(trx) {
+      const transactionReturning = knex.transaction(function(trx) {
         return trx
           .insert({
             first_name: 'foo',
@@ -597,7 +597,7 @@ module.exports = function(knex) {
 
     it('connection should contain __knexTxId which is also exposed in query event', function() {
       return knex.transaction(function(trx) {
-        var builder = trx.select().from('accounts');
+        const builder = trx.select().from('accounts');
 
         trx.on('query', function(obj) {
           expect(typeof obj.__knexTxId).to.equal(typeof '');

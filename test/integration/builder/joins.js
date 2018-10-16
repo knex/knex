@@ -2,6 +2,8 @@
 
 'use strict';
 
+const expect = require('chai').expect;
+
 module.exports = function(knex) {
   describe('Joins', function() {
     it('uses inner join by default', function() {
@@ -1766,7 +1768,6 @@ module.exports = function(knex) {
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function(res) {
-              console.log('RESULT:', res.length);
               return res.length === 30;
             }
           );
@@ -1791,7 +1792,6 @@ module.exports = function(knex) {
 
     it('supports joins with overlapping column names', function() {
       if (knex.client.driverName === 'oracledb') {
-        console.warn('Overlapping column names not supported with oracle');
         return;
       }
 
@@ -1892,7 +1892,7 @@ module.exports = function(knex) {
 
     if (knex.client.driverName !== 'mssql') {
       it('Can use .using()', () => {
-        let joinName = 'accounts_join_test';
+        const joinName = 'accounts_join_test';
 
         return knex.schema
           .dropTableIfExists(joinName)
