@@ -61,7 +61,9 @@ assign(Client_MSSQL.prototype, {
 
     // TODO: remove mssql implementation all together and use tedious directly
 
+    /* istanbul ignore next */
     const mssqlVersion = require('mssql/package.json').version;
+    /* istanbul ignore next */
     if (mssqlVersion === '4.1.0') {
       mssqlTedious.ConnectionPool.prototype.release = release;
       mssqlTedious.ConnectionPool.prototype._poolCreate = _poolCreate;
@@ -75,6 +77,7 @@ assign(Client_MSSQL.prototype, {
       }
     }
 
+    /* istanbul ignore next */
     // in some rare situations release is called when stream is interrupted, but
     // after pool is already destroyed
     function release(connection) {
@@ -82,7 +85,7 @@ assign(Client_MSSQL.prototype, {
         this.pool.release(connection);
       }
     }
-
+    /* istanbul ignore next */
     function _poolCreate() {
       // implementation is copy-pasted from https://github.com/tediousjs/node-mssql/pull/614
       return new base.Promise((resolve, reject) => {
