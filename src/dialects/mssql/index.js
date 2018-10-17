@@ -62,15 +62,18 @@ assign(Client_MSSQL.prototype, {
     // TODO: remove mssql implementation all together and use tedious directly
 
     const mssqlVersion = require('mssql/package.json').version;
-    if (mssqlVersion !== '4.1.0') {
-      throw new Error(
-        'This knex version does not support any other mssql version except 4.1.0 ' +
-          '(knex patches bug in its implementation)'
-      );
+    if (mssqlVersion === '4.1.0') {
+      mssqlTedious.ConnectionPool.prototype.release = release;
+      mssqlTedious.ConnectionPool.prototype._poolCreate = _poolCreate;
+    } else {
+      const [major] = mssqlVersion.split('.');
+      // if version is not ^5.0.0
+      if (major < 5) {
+        throw new Error(
+          'This knex version does not support mssql versions below 5.0.0'
+        );
+      }
     }
-
-    mssqlTedious.ConnectionPool.prototype.release = release;
-    mssqlTedious.ConnectionPool.prototype._poolCreate = _poolCreate;
 
     // in some rare situations release is called when stream is interrupted, but
     // after pool is already destroyed
