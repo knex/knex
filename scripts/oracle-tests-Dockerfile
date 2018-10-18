@@ -34,8 +34,8 @@ RUN echo 'module.exports = {\
 
 ENV ORACLE_HOME /u01/app/oracle/product/11.2.0/xe
 ENV ORACLE_SID XE 
-ENV OCI_LIB_DIR /u01/app/oracle/product/11.2../../lib
-ENV LD_LIBRARY_PATH /u01/app/oracle/product/11.2../../lib
+ENV OCI_LIB_DIR /u01/app/oracle/product/11.2.0/xe/lib
+ENV LD_LIBRARY_PATH /u01/app/oracle/product/11.2.0/xe/lib
 ENV KNEX_TEST /oracle-config.js
 ENV DB "sqlite3 oracledb"
 ENV KNEX_TIMEOUT 60000
