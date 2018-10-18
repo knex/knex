@@ -741,7 +741,10 @@ module.exports = function(knex) {
         .createTable('DatesTest', function(table) {
           table.increments('id').primary();
           table.dateTime('dateTimeCol');
-          table.timestamp('timeStampCol').defaultTo(null); // MySQL defaults TIMESTAMP columns to current timestamp
+          table
+            .timestamp('timeStampCol')
+            .nullable()
+            .defaultTo(null); // MySQL defaults TIMESTAMP columns to current timestamp
           table.date('dateCol');
           table.time('timeCol');
         })
