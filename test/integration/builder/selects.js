@@ -735,6 +735,40 @@ module.exports = function(knex) {
       });
     });
 
+    it('#1276 - Dates NULL should be returned as NULL, not as new Date(null)', function() {
+      return knex.schema
+        .dropTableIfExists('DatesTest')
+        .createTable('DatesTest', function(table) {
+          table.increments('id').primary();
+          table.dateTime('dateTimeCol');
+          table
+            .timestamp('timeStampCol')
+            .nullable()
+            .defaultTo(null); // MySQL defaults TIMESTAMP columns to current timestamp
+          table.date('dateCol');
+          table.time('timeCol');
+        })
+        .then(function() {
+          return knex('DatesTest').insert([
+            {
+              dateTimeCol: null,
+              timeStampCol: null,
+              dateCol: null,
+              timeCol: null,
+            },
+          ]);
+        })
+        .then(function() {
+          return knex('DatesTest').select();
+        })
+        .then(function(rows) {
+          expect(rows[0].dateTimeCol).to.equal(null);
+          expect(rows[0].timeStampCol).to.equal(null);
+          expect(rows[0].dateCol).to.equal(null);
+          expect(rows[0].timeCol).to.equal(null);
+        });
+    });
+
     it('has a "distinct" clause', function() {
       return Promise.all([
         knex('accounts')
