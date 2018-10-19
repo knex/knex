@@ -22,6 +22,7 @@ Node.js, featuring:
 Node.js versions 6+ are supported.
 
 [Read the full documentation to get started!](http://knexjs.org)
+[Or check out our Recipes wiki to search for solutions to some specific problems](https://github.com/tgriesser/knex/wiki/Recipes)
 
 For support and questions, join the `#bookshelf` channel on freenode IRC
 
