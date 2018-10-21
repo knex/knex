@@ -750,6 +750,32 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('clear limits and offsets', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .offset(5)
+        .limit(10)
+        .clearLimit()
+        .clearOffset(),
+      {
+        mysql: {
+          sql: 'select * from `users`',
+        },
+        mssql: {
+          sql: 'select * from [users]',
+        },
+        pg: {
+          sql: 'select * from "users"',
+        },
+        'pg-redshift': {
+          sql: 'select * from "users"',
+        },
+      }
+    );
+  });
+
   it('basic wheres', function() {
     testsql(
       qb()
