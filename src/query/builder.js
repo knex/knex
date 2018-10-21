@@ -934,13 +934,13 @@ assign(Builder.prototype, {
 
   // Remove limit
   clearLimit() {
-    delete this._single.limit;
+    this._single.limit = undefined;
     return this;
   },
 
   // Remove offset
   clearOffset() {
-    delete this._single.offset;
+    this._single.offset = undefined;
     return this;
   },
 
