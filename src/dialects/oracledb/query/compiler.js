@@ -19,7 +19,7 @@ _.assign(Oracledb_Compiler.prototype, {
       this.single.returning
     );
     const outBinding = outBindPrep.outBinding;
-    let returning = outBindPrep.returning;
+    const returning = outBindPrep.returning;
     const insertValues = outBindPrep.values;
 
     if (
