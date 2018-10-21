@@ -251,8 +251,7 @@ assign(Client_MSSQL.prototype, {
 
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
-  _stream(connection, obj, stream, options) {
-    options = options || {};
+  _stream(connection, obj, stream) {
     if (!obj || typeof obj === 'string') obj = { sql: obj };
     return new Promise((resolver, rejecter) => {
       stream.on('error', (err) => {

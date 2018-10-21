@@ -1,4 +1,4 @@
-var warning = process.env['CI'] ? 2 : 1;
+const warning = process.env['CI'] ? 2 : 1;
 
 module.exports = {
   parser: 'babel-eslint',

@@ -160,8 +160,6 @@ _.assign(Oracledb_Compiler.prototype, {
 
     sql.outBinding = outBinding;
     if (returning[0] === '*') {
-      returning = returning.slice(0, -1);
-
       // Generate select statement with special order by
       // to keep the order because 'in (..)' may change the order
       sql.returningSql = function() {
