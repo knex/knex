@@ -939,7 +939,7 @@ assign(Builder.prototype, {
   },
 
   // Remove offset
-  clearLimit() {
+  clearOffset() {
     delete this._single.offset;
     return this;
   },
