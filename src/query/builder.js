@@ -932,6 +932,18 @@ assign(Builder.prototype, {
     return this;
   },
 
+  // Remove limit
+  clearLimit() {
+    delete this._single.limit;
+    return this;
+  },
+
+  // Remove offset
+  clearLimit() {
+    delete this._single.offset;
+    return this;
+  },
+
   // Insert & Update
   // ------
 
