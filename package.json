@@ -83,7 +83,7 @@
     "dev": "rimraf ./lib && babel -w src --out-dir lib --copy-files",
     "lint": "eslint '{src,test}/**/*.js'",
     "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && npm run tape",
-    "prepublish": "npm run babel",
+    "prepare": "npm run babel",
     "pre_test": "npm run lint",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node --inspect-brk test/tape/index.js",
