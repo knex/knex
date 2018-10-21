@@ -14,7 +14,7 @@ import {
   isNumber,
 } from 'lodash';
 import saveAsyncStack from './util/save-async-stack';
-import uuid from 'uuid';
+import uuid from 'uuid-random';
 
 const debugBindings = debug('knex:bindings');
 
@@ -109,7 +109,7 @@ assign(Raw.prototype, {
       );
     }
 
-    obj.__knexQueryUid = uuid.v4();
+    obj.__knexQueryUid = uuid();
 
     return obj;
   },

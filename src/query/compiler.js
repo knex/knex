@@ -19,7 +19,7 @@ import {
   has,
   keys,
 } from 'lodash';
-import uuid from 'uuid';
+import uuid from 'uuid-random';
 
 const debugBindings = debug('knex:bindings');
 
@@ -67,7 +67,7 @@ assign(QueryCompiler.prototype, {
       timeout: this.timeout,
       cancelOnTimeout: this.cancelOnTimeout,
       bindings: this.formatter.bindings || [],
-      __knexQueryUid: uuid.v4(),
+      __knexQueryUid: uuid(),
     };
 
     Object.defineProperties(query, {
