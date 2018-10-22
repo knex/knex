@@ -301,9 +301,9 @@ export default [
   },
   {
     type: "method",
-    method: "dateTime",
-    example: "table.dateTime(name, [precision])",
-    description: "Adds a dateTime column, with optional precision for MySQL.",
+    method: "datetime",
+    example: "table.datetime(name, [precision])",
+    description: "Adds a datetime column, with optional precision for MySQL.",
     children: [{
       type: 'text',
       content: "In MySQL a precision argument may be passed as the second argument to specify precision:"
@@ -349,7 +349,7 @@ export default [
     type: "method",
     method: "timestamps",
     example: "table.timestamps([useTimestamps], [defaultToNow])",
-    description: "Adds created_at and updated_at columns on the database, setting each to dateTime types. When true is passed as the first argument a timestamp type is used instead. Both colums default to being not null and using the current timestamp when true is passed as the second argument. Note that on MySQL the .timestamps() only have seconds precision, to get better precision use the .datetime or .timestamp methods directly with precision.",
+    description: "Adds created_at and updated_at columns on the database, setting each to datetime types. When true is passed as the first argument a timestamp type is used instead. Both colums default to being not null and using the current timestamp when true is passed as the second argument. Note that on MySQL the .timestamps() only have seconds precision, to get better precision use the .datetime or .timestamp methods directly with precision.",
     children: [    ]
   },
   {
