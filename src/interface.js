@@ -18,7 +18,7 @@ export default function(Target) {
         err.originalStack = err.stack;
         const firstLine = err.stack.split('\n')[0];
         this._asyncStack.unshift(firstLine);
-        // put the fake more helpful "async" stack on the thrown error
+        // put the fake more helpful "async" stack on the throw error
         err.stack = this._asyncStack.join('\n');
         throw err;
       });
@@ -35,7 +35,7 @@ export default function(Target) {
     return this;
   };
 
-  // Sets an explicit "connnection" we wish to use for this query.
+  // Sets an explicit "connection" we wish to use for this query.
   Target.prototype.connection = function(connection) {
     this._connection = connection;
     return this;
