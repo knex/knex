@@ -18,7 +18,7 @@ export default function(Target) {
         err.originalStack = err.stack;
         const firstLine = err.stack.split('\n')[0];
         this._asyncStack.unshift(firstLine);
-        // put the fake more helpful "async" stack on the throw error
+        // put the fake more helpful "async" stack on the thrown error
         err.stack = this._asyncStack.join('\n');
         throw err;
       });
