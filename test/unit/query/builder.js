@@ -2472,6 +2472,60 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('order by array', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .orderBy(['email', { column: 'age', order: 'desc' }]),
+      {
+        mysql: {
+          sql: 'select * from `users` order by `email` asc, `age` desc',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] order by [email] asc, [age] desc',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select * from "users" order by "email" asc, "age" desc',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" order by "email" asc, "age" desc',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('order by array without order', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .orderBy([{ column: 'email' }, { column: 'age', order: 'desc' }]),
+      {
+        mysql: {
+          sql: 'select * from `users` order by `email` asc, `age` desc',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] order by [email] asc, [age] desc',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select * from "users" order by "email" asc, "age" desc',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" order by "email" asc, "age" desc',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('raw group bys', function() {
     testsql(
       qb()
