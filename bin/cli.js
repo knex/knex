@@ -10,6 +10,7 @@ var commander = require('commander');
 var argv = require('minimist')(process.argv.slice(2));
 var fs = Promise.promisifyAll(require('fs'));
 var cliPkg = require('../package');
+var { isObject } = require('lodash');
 
 function exit(text) {
   if (text instanceof Error) {
@@ -35,25 +36,27 @@ function checkLocalModule(env) {
   }
 }
 
-function mkConfigObj(env, commander) {
-  env.configuration = {
+function mkConfigObj(opts) {
+  let envName = opts.env || process.env.NODE_ENV || 'development';
+  let useNullAsDefault = opts.client === 'sqlite3';
+  return {
     ext: 'js',
-    [commander.env || process.env.NODE_ENV || 'development']: {
-      useNullAsDefault: commander.client === 'sqlite3',
-      client: commander.client,
-      connection: commander.connection,
+    [envName]: {
+      useNullAsDefault,
+      client: opts.client,
+      connection: opts.connection,
       migrations: {
-        directory: commander.migrationsDirectory,
+        directory: opts.migrationsDirectory,
       },
     },
   };
 }
 
-function initKnex(env, commander) {
+function initKnex(env, opts) {
   checkLocalModule(env);
 
   if (!env.configuration) {
-    if (commander.client) mkConfigObj(env, commander);
+    if (opts.client) env.configuration = mkConfigObj(opts);
     else
       exit(
         'No knexfile found in this directory. Specify a path with --knexfile'
@@ -68,12 +71,11 @@ function initKnex(env, commander) {
     );
   }
 
-  var environment = commander.env || process.env.NODE_ENV;
+  var environment = opts.env || process.env.NODE_ENV;
   var defaultEnv = 'development';
-  var config =
-    typeof env.configuration == 'object'
-      ? env.configuration
-      : require(env.configuration);
+  var config = isObject(env.configuration)
+    ? env.configuration
+    : require(env.configuration);
 
   if (!environment && typeof config[defaultEnv] === 'object') {
     environment = defaultEnv;
@@ -112,11 +114,11 @@ function invoke(env) {
     .option('--debug', 'Run with debugging.')
     .option('--knexfile [path]', 'Specify the knexfile path.')
     .option('--cwd [path]', 'Specify the working directory.')
-    .option('--client [name]', 'Set DB client whitout a knexfile.')
-    .option('--connection [address]', 'Set DB connection whitout a knexfile.')
+    .option('--client [name]', 'Set DB client without a knexfile.')
+    .option('--connection [address]', 'Set DB connection without a knexfile.')
     .option(
       '--migrations-directory [path]',
-      'Set migrations directory whitout a knexfile.'
+      'Set migrations directory without a knexfile.'
     )
     .option(
       '--env [name]',
@@ -164,7 +166,7 @@ function invoke(env) {
       'Specify the stub extension (default js)'
     )
     .action(function(name) {
-      var instance = initKnex(env, commander);
+      var instance = initKnex(env, commander.opts());
       var ext = (
         argv.x ||
         env.configuration.ext ||
@@ -182,7 +184,7 @@ function invoke(env) {
     .command('migrate:latest')
     .description('        Run all migrations that have not yet been run.')
     .action(function() {
-      pending = initKnex(env, commander)
+      pending = initKnex(env, commander.opts())
         .migrate.latest()
         .spread(function(batchNo, log) {
           if (log.length === 0) {
@@ -200,7 +202,7 @@ function invoke(env) {
     .command('migrate:rollback')
     .description('        Rollback the last set of migrations performed.')
     .action(function() {
-      pending = initKnex(env)
+      pending = initKnex(env, commander.opts())
         .migrate.rollback()
         .spread(function(batchNo, log) {
           if (log.length === 0) {
@@ -219,7 +221,7 @@ function invoke(env) {
     .command('migrate:currentVersion')
     .description('        View the current version for the migration.')
     .action(function() {
-      pending = initKnex(env)
+      pending = initKnex(env, commander.opts())
         .migrate.currentVersion()
         .then(function(version) {
           success(chalk.green('Current Version: ') + chalk.blue(version));
@@ -235,7 +237,7 @@ function invoke(env) {
       'Specify the stub extension (default js)'
     )
     .action(function(name) {
-      var instance = initKnex(env, this);
+      var instance = initKnex(env, commander.opts());
       var ext = (argv.x || env.configuration.split('.').pop()).toLowerCase();
       pending = instance.seed
         .make(name, { extension: ext })
@@ -249,7 +251,7 @@ function invoke(env) {
     .command('seed:run')
     .description('        Run seed files.')
     .action(function() {
-      pending = initKnex(env)
+      pending = initKnex(env, commander.opts())
         .seed.run()
         .spread(function(log) {
           if (log.length === 0) {
