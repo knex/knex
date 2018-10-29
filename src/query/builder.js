@@ -541,7 +541,7 @@ assign(Builder.prototype, {
   // Adds a `order by` clause to the query.
   orderBy(column, direction) {
     if (Array.isArray(column)) {
-      return this.orderByArray(column);
+      return this._orderByArray(column);
     }
     this._statements.push({
       grouping: 'order',
@@ -553,7 +553,7 @@ assign(Builder.prototype, {
   },
 
   // Adds a `order by` with multiple columns to the query.
-  orderByArray(columnDefs) {
+  _orderByArray(columnDefs) {
     for (let i = 0; i < columnDefs.length; i++) {
       const columnInfo = columnDefs[i];
       if (isObject(columnInfo)) {
