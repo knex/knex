@@ -132,6 +132,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-debug">debug</a></li>
           <li>– <a href="#Builder-connection">connection</a></li>
           <li>– <a href="#Builder-options">options</a></li>
+          <li>- <a href="#Builder-queryContext">queryContext</a></li>
         </ul>
 
         <a className="toc_title" href="#Transactions">
