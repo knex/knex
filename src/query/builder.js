@@ -563,7 +563,7 @@ assign(Builder.prototype, {
           value: columnInfo['column'],
           direction: columnInfo['order'],
         });
-      } else if (typeof columnInfo === 'string') {
+      } else if (isString(columnInfo)) {
         this._statements.push({
           grouping: 'order',
           type: 'orderByBasic',
