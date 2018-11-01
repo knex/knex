@@ -64,12 +64,14 @@ test('Create a migration file', (temp)=>
 );
 
 test('Run migrations', (temp)=>
-    fs.promises.writeFile(temp+'/migrations/000_create_rule_table.js', `
-        exports.up = (knex)=> knex.schema.createTable('rules', (table)=> {
-            table.string('name');
-        });
-        exports.down = (knex)=> knex.schema.dropTable('rules');
-    `)
+    (new Promise((resolve, reject)=>
+        fs.writeFile(temp+'/migrations/000_create_rule_table.js', `
+            exports.up = (knex)=> knex.schema.createTable('rules', (table)=> {
+                table.string('name');
+            });
+            exports.down = (knex)=> knex.schema.dropTable('rules');
+        `, (err)=> err ? reject(err) : resolve())
+    ))
     .then(()=>
         assertExec(`${KNEX} migrate:latest \
                    --client=sqlite3 --connection=${temp}/db \
