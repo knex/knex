@@ -186,6 +186,7 @@ function invoke(env) {
   commander
     .command('migrate:latest')
     .description('        Run all migrations that have not yet been run.')
+    .option('--verbose', 'verbose')
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.latest()
@@ -194,8 +195,8 @@ function invoke(env) {
             success(chalk.cyan('Already up to date'));
           }
           success(
-            chalk.green(`Batch ${batchNo} run: ${log.length} migrations \n`) +
-              chalk.cyan(log.join('\n'))
+            chalk.green(`Batch ${batchNo} run: ${log.length} migrations`) +
+              (argv.verbose ? `\n${chalk.cyan(log.join('\n'))}` : '')
           );
         })
         .catch(exit);
@@ -204,6 +205,7 @@ function invoke(env) {
   commander
     .command('migrate:rollback')
     .description('        Rollback the last set of migrations performed.')
+    .option('--verbose', 'verbose')
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.rollback()
@@ -213,8 +215,8 @@ function invoke(env) {
           }
           success(
             chalk.green(
-              `Batch ${batchNo} rolled back: ${log.length} migrations \n`
-            ) + chalk.cyan(log.join('\n'))
+              `Batch ${batchNo} rolled back: ${log.length} migrations`
+            ) + (argv.verbose ? `\n${chalk.cyan(log.join('\n'))}` : '')
           );
         })
         .catch(exit);
@@ -259,6 +261,7 @@ function invoke(env) {
   commander
     .command('seed:run')
     .description('        Run seed files.')
+    .option('--verbose', 'verbose')
     .action(() => {
       pending = initKnex(env, commander.opts())
         .seed.run()
@@ -267,9 +270,8 @@ function invoke(env) {
             success(chalk.cyan('No seed files exist'));
           }
           success(
-            chalk.green(
-              `Ran ${log.length} seed files \n${chalk.cyan(log.join('\n'))}`
-            )
+            chalk.green(`Ran ${log.length} seed files`) +
+              (argv.verbose ? `\n${chalk.cyan(log.join('\n'))}` : '')
           );
         })
         .catch(exit);
