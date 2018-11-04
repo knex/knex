@@ -678,12 +678,14 @@ assign(QueryCompiler.prototype, {
     if (!withs) return;
     const sql = [];
     let i = -1;
+    let recursive = '';
     while (++i < withs.length) {
       const stmt = withs[i];
+      if (stmt.recursive) recursive = 'recursive ';
       const val = this[stmt.type](stmt);
       sql.push(val);
     }
-    return 'with ' + sql.join(', ') + ' ';
+    return 'with ' + recursive + sql.join(', ') + ' ';
   },
 
   withWrapped(statement) {
