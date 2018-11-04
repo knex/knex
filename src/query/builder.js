@@ -47,7 +47,7 @@ inherits(Builder, EventEmitter);
 
 const validateWithArgs = function(alias, statement, method) {
   if (typeof alias !== 'string') {
-    throw new Error(method + '() first argument must be a string');
+    throw new Error(`${method}() first argument must be a string`);
   }
   if (
     typeof statement === 'function' ||
@@ -57,7 +57,7 @@ const validateWithArgs = function(alias, statement, method) {
     return;
   }
   throw new Error(
-    method + '() second argument must be a function / QueryBuilder or a raw'
+    `${method}() second argument must be a function / QueryBuilder or a raw`
   );
 };
 

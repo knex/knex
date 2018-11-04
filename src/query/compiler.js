@@ -678,14 +678,16 @@ assign(QueryCompiler.prototype, {
     if (!withs) return;
     const sql = [];
     let i = -1;
-    let recursive = '';
+    let isRecursive = false;
     while (++i < withs.length) {
       const stmt = withs[i];
-      if (stmt.recursive) recursive = 'recursive ';
+      if (stmt.recursive) {
+        isRecursive = true;
+      }
       const val = this[stmt.type](stmt);
       sql.push(val);
     }
-    return 'with ' + recursive + sql.join(', ') + ' ';
+    return `with ${isRecursive ? 'recursive ' : ''}${sql.join(', ')} `;
   },
 
   withWrapped(statement) {
