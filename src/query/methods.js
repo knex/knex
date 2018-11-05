@@ -2,6 +2,7 @@
 // from the `knex` object, e.g. `knex.select('*').from(...`
 export default [
   'with',
+  'withRecursive',
   'select',
   'as',
   'columns',

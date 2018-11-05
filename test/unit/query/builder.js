@@ -8308,6 +8308,44 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it("nested and chained wrapped 'withRecursive' clause", function() {
+    testsql(
+      qb()
+        .withRecursive('firstWithClause', function() {
+          this.withRecursive('firstWithSubClause', function() {
+            this.select('foo')
+              .as('foz')
+              .from('users');
+          })
+            .select('*')
+            .from('firstWithSubClause');
+        })
+        .withRecursive('secondWithClause', function() {
+          this.withRecursive('secondWithSubClause', function() {
+            this.select('bar')
+              .as('baz')
+              .from('users');
+          })
+            .select('*')
+            .from('secondWithSubClause');
+        })
+        .select('*')
+        .from('secondWithClause'),
+      {
+        mssql:
+          'with recursive [firstWithClause] as (with recursive [firstWithSubClause] as ((select [foo] from [users]) as [foz]) select * from [firstWithSubClause]), [secondWithClause] as (with recursive [secondWithSubClause] as ((select [bar] from [users]) as [baz]) select * from [secondWithSubClause]) select * from [secondWithClause]',
+        sqlite3:
+          'with recursive `firstWithClause` as (with recursive `firstWithSubClause` as ((select `foo` from `users`) as `foz`) select * from `firstWithSubClause`), `secondWithClause` as (with recursive `secondWithSubClause` as ((select `bar` from `users`) as `baz`) select * from `secondWithSubClause`) select * from `secondWithClause`',
+        pg:
+          'with recursive "firstWithClause" as (with recursive "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with recursive "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+        'pg-redshift':
+          'with recursive "firstWithClause" as (with recursive "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with recursive "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+        oracledb:
+          'with recursive "firstWithClause" as (with recursive "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with recursive "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+      }
+    );
+  });
+
   describe('#2263, update / delete queries in with syntax', () => {
     it('with update query passed as raw', () => {
       testquery(
