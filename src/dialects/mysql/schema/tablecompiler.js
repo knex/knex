@@ -199,8 +199,9 @@ assign(TableCompiler_MySQL.prototype, {
       ? this.formatter.wrap(indexName)
       : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery(
-      `alter table ${this.tableName()} add ${indexType ||
-        ''} index ${indexName}(${this.formatter.columnize(columns)})`
+      `alter table ${this.tableName()} add${
+        indexType ? ` ${indexType}` : ''
+      } index ${indexName}(${this.formatter.columnize(columns)})`
     );
   },
 

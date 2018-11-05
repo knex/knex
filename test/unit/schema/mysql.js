@@ -300,7 +300,7 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding index with type', function() {
+    it('test adding index with an index type', function() {
       tableSql = client
         .schemaBuilder()
         .table('users', function() {
