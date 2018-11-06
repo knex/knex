@@ -560,12 +560,37 @@ assign(Builder.prototype, {
 
   // Adds a `order by` clause to the query.
   orderBy(column, direction) {
+    if (Array.isArray(column)) {
+      return this._orderByArray(column);
+    }
     this._statements.push({
       grouping: 'order',
       type: 'orderByBasic',
       value: column,
       direction,
     });
+    return this;
+  },
+
+  // Adds a `order by` with multiple columns to the query.
+  _orderByArray(columnDefs) {
+    for (let i = 0; i < columnDefs.length; i++) {
+      const columnInfo = columnDefs[i];
+      if (isObject(columnInfo)) {
+        this._statements.push({
+          grouping: 'order',
+          type: 'orderByBasic',
+          value: columnInfo['column'],
+          direction: columnInfo['order'],
+        });
+      } else if (isString(columnInfo)) {
+        this._statements.push({
+          grouping: 'order',
+          type: 'orderByBasic',
+          value: columnInfo,
+        });
+      }
+    }
     return this;
   },
 
