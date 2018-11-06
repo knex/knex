@@ -8,7 +8,7 @@
 
 * Node.js older than 6 is no longer supported, make sure to update your environment;
 
-* MSSQL: Creating a unique index on the table that is targeted by stored procedures that was created with QUOTED_IDENTIFIER = OFF fails.
+* MSSQL: Creating a unique index on the table targeted by stored procedures that were created with QUOTED_IDENTIFIER = OFF fails.
 
 You can use this query to identify all affected stored procedures:
 
