@@ -1,7 +1,67 @@
 const knex = require('../../../knex');
 const expect = require('chai').expect;
+const sinon = require('sinon');
+const pgDialect = require('../../../lib/dialects/postgres/index.js');
+const pg = require('pg');
+const Promise = require('bluebird');
+const _ = require('lodash');
 
 describe('Postgres Unit Tests', function() {
+  let checkVersionStub;
+  before(() => {
+    const fakeConnection = {
+      query: (...args) => {
+        const cb = args.find((arg) => {
+          return _.isFunction(arg);
+        });
+        cb();
+      },
+      on: _.noop,
+    };
+
+    checkVersionStub = sinon
+      .stub(pgDialect.prototype, 'checkVersion')
+      .callsFake(function() {
+        return Promise.resolve('9.6');
+      });
+
+    sinon.stub(pg.Client.prototype, 'connect').callsFake(function(cb) {
+      cb(null, fakeConnection);
+    });
+  });
+  after(() => {
+    sinon.restore();
+  });
+
+  it('does not resolve client version if specified explicitly', (done) => {
+    const knexInstance = knex({
+      client: 'postgresql',
+      version: '10.5',
+      connection: {
+        pool: {},
+      },
+    });
+    knexInstance.raw('select 1 as 1').then((result) => {
+      expect(checkVersionStub.notCalled).to.equal(true);
+      knexInstance.destroy();
+      done();
+    });
+  });
+
+  it('resolve client version if not specified explicitly', (done) => {
+    const knexInstance = knex({
+      client: 'postgresql',
+      connection: {
+        pool: {},
+      },
+    });
+    knexInstance.raw('select 1 as 1').then((result) => {
+      expect(checkVersionStub.calledOnce).to.equal(true);
+      knexInstance.destroy();
+      done();
+    });
+  });
+
   it('Validates searchPath as Array/String', function() {
     const knexInstance = knex({
       client: 'pg',
