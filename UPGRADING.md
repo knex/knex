@@ -2,7 +2,7 @@
 
 ### Upgrading to version 0.16.0+
 
-* MSSQL older than 2008 is no longer supported, make sure to update your DB;
+* MSSQL: DB versions older than 2008 are no longer supported, make sure to update your DB;
 
 ### Upgrading to version 0.15.0+
 
@@ -20,7 +20,7 @@ WHERE uses_quoted_identifier = 0;
 
 The only known solution is to recreate all stored procedures with QUOTED_IDENTIFIER = OFF
 
-* `mariadb` dialect is no longer supported.
+* MariaDB: `mariadb` dialect is no longer supported;
 
 Instead, use "mysql" or "mysql2" dialects.
 
