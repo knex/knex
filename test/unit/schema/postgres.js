@@ -894,6 +894,52 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
+  it('adding enum with useNative and existingType', function() {
+    tableSql = client
+      .schemaBuilder()
+      .raw("create type \"foo_type\" as enum ('bar', 'baz')")
+      .table('users', function(table) {
+        table
+          .enu('foo', ['bar', 'baz'], {
+            useNative: true,
+            existingType: true,
+            enumName: 'foo_type',
+          })
+          .notNullable();
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      "create type \"foo_type\" as enum ('bar', 'baz')"
+    );
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users" add column "foo" "foo_type" not null'
+    );
+  });
+
+  it('adding enum with useNative and existingType works without enum values', function() {
+    tableSql = client
+      .schemaBuilder()
+      .raw("create type \"foo_type\" as enum ('bar', 'baz')")
+      .table('users', function(table) {
+        table
+          .enu('foo', undefined, {
+            useNative: true,
+            existingType: true,
+            enumName: 'foo_type',
+          })
+          .notNullable();
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      "create type \"foo_type\" as enum ('bar', 'baz')"
+    );
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users" add column "foo" "foo_type" not null'
+    );
+  });
+
   it('adding date', function() {
     tableSql = client
       .schemaBuilder()
