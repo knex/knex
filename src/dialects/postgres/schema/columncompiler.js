@@ -30,7 +30,10 @@ assign(ColumnCompiler_PG.prototype, {
   enu(allowed, options) {
     options = options || {};
 
-    const values = allowed.join("', '");
+    const values =
+      options.useNative && options.existingType
+        ? undefined
+        : allowed.join("', '");
 
     if (options.useNative) {
       if (!options.existingType) {

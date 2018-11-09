@@ -274,7 +274,7 @@ module.exports = function(knex) {
               return knex.schema
                 .createTable('native_enum_test', function(table) {
                   table
-                    .enum('foo_column', ['a', 'b', 'c'], {
+                    .enum('foo_column', null, {
                       useNative: true,
                       enumName: 'foo_type',
                       existingType: true,
