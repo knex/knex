@@ -300,6 +300,20 @@ module.exports = function(dialect) {
       );
     });
 
+    it('test adding index with an index type', function() {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function() {
+          this.index(['foo', 'bar'], 'baz', 'FULLTEXT');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add FULLTEXT index `baz`(`foo`, `bar`)'
+      );
+    });
+
     it('test adding foreign key', function() {
       tableSql = client
         .schemaBuilder()
