@@ -7,7 +7,7 @@ import fakeClient from './util/fake-client';
 import { SUPPORTED_CLIENTS, CLIENT_ALIASES } from './constants';
 
 export default function Knex(config) {
-  // If config is string, try to parse it
+  // If config is a string, try to parse it
   if (typeof config === 'string') {
     const parsedConfig = Object.assign(parseConnection(config), arguments[2]);
     return new Knex(parsedConfig);

@@ -2472,6 +2472,60 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('order by array', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .orderBy(['email', { column: 'age', order: 'desc' }]),
+      {
+        mysql: {
+          sql: 'select * from `users` order by `email` asc, `age` desc',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] order by [email] asc, [age] desc',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select * from "users" order by "email" asc, "age" desc',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" order by "email" asc, "age" desc',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('order by array without order', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .orderBy([{ column: 'email' }, { column: 'age', order: 'desc' }]),
+      {
+        mysql: {
+          sql: 'select * from `users` order by `email` asc, `age` desc',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] order by [email] asc, [age] desc',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select * from "users" order by "email" asc, "age" desc',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" order by "email" asc, "age" desc',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('raw group bys', function() {
     testsql(
       qb()
@@ -8304,6 +8358,44 @@ describe('QueryBuilder', function() {
           'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
         oracledb:
           'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+      }
+    );
+  });
+
+  it("nested and chained wrapped 'withRecursive' clause", function() {
+    testsql(
+      qb()
+        .withRecursive('firstWithClause', function() {
+          this.withRecursive('firstWithSubClause', function() {
+            this.select('foo')
+              .as('foz')
+              .from('users');
+          })
+            .select('*')
+            .from('firstWithSubClause');
+        })
+        .withRecursive('secondWithClause', function() {
+          this.withRecursive('secondWithSubClause', function() {
+            this.select('bar')
+              .as('baz')
+              .from('users');
+          })
+            .select('*')
+            .from('secondWithSubClause');
+        })
+        .select('*')
+        .from('secondWithClause'),
+      {
+        mssql:
+          'with recursive [firstWithClause] as (with recursive [firstWithSubClause] as ((select [foo] from [users]) as [foz]) select * from [firstWithSubClause]), [secondWithClause] as (with recursive [secondWithSubClause] as ((select [bar] from [users]) as [baz]) select * from [secondWithSubClause]) select * from [secondWithClause]',
+        sqlite3:
+          'with recursive `firstWithClause` as (with recursive `firstWithSubClause` as ((select `foo` from `users`) as `foz`) select * from `firstWithSubClause`), `secondWithClause` as (with recursive `secondWithSubClause` as ((select `bar` from `users`) as `baz`) select * from `secondWithSubClause`) select * from `secondWithClause`',
+        pg:
+          'with recursive "firstWithClause" as (with recursive "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with recursive "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+        'pg-redshift':
+          'with recursive "firstWithClause" as (with recursive "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with recursive "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+        oracledb:
+          'with recursive "firstWithClause" as (with recursive "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with recursive "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
       }
     );
   });

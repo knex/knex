@@ -266,6 +266,29 @@ module.exports = function(knex) {
               ]);
             });
         });
+
+        it('uses an existing native type when useNative and existingType are specified', function() {
+          return knex
+            .raw("create type \"foo_type\" as enum ('a', 'b', 'c')")
+            .then(() => {
+              return knex.schema
+                .createTable('native_enum_test', function(table) {
+                  table
+                    .enum('foo_column', null, {
+                      useNative: true,
+                      enumName: 'foo_type',
+                      existingType: true,
+                    })
+                    .notNull();
+                  table.uuid('id').notNull();
+                })
+                .testSql(function(tester) {
+                  tester('pg', [
+                    'create table "native_enum_test" ("foo_column" "foo_type" not null, "id" uuid not null)',
+                  ]);
+                });
+            });
+        });
       });
 
       it('Callback function must be supplied', function() {

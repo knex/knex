@@ -45,6 +45,22 @@ function Builder(client) {
 }
 inherits(Builder, EventEmitter);
 
+const validateWithArgs = function(alias, statement, method) {
+  if (typeof alias !== 'string') {
+    throw new Error(`${method}() first argument must be a string`);
+  }
+  if (
+    typeof statement === 'function' ||
+    statement instanceof Builder ||
+    statement instanceof Raw
+  ) {
+    return;
+  }
+  throw new Error(
+    `${method}() second argument must be a function / QueryBuilder or a raw`
+  );
+};
+
 assign(Builder.prototype, {
   toString() {
     return this.toQuery();
@@ -92,19 +108,8 @@ assign(Builder.prototype, {
   // ------
 
   with(alias, statement) {
-    if (typeof alias !== 'string') {
-      throw new Error('with() first argument must be a string');
-    }
-    if (
-      typeof statement === 'function' ||
-      statement instanceof Builder ||
-      statement instanceof Raw
-    ) {
-      return this.withWrapped(alias, statement);
-    }
-    throw new Error(
-      'with() second argument must be a function / QueryBuilder or a raw'
-    );
+    validateWithArgs(alias, statement, 'with');
+    return this.withWrapped(alias, statement);
   },
 
   // Helper for compiling any advanced `with` queries.
@@ -115,6 +120,21 @@ assign(Builder.prototype, {
       alias: alias,
       value: query,
     });
+    return this;
+  },
+
+  // With Recursive
+  // ------
+
+  withRecursive(alias, statement) {
+    validateWithArgs(alias, statement, 'withRecursive');
+    return this.withRecursiveWrapped(alias, statement);
+  },
+
+  // Helper for compiling any advanced `withRecursive` queries.
+  withRecursiveWrapped(alias, query) {
+    this.withWrapped(alias, query);
+    this._statements[this._statements.length - 1].recursive = true;
     return this;
   },
 
@@ -540,12 +560,37 @@ assign(Builder.prototype, {
 
   // Adds a `order by` clause to the query.
   orderBy(column, direction) {
+    if (Array.isArray(column)) {
+      return this._orderByArray(column);
+    }
     this._statements.push({
       grouping: 'order',
       type: 'orderByBasic',
       value: column,
       direction,
     });
+    return this;
+  },
+
+  // Adds a `order by` with multiple columns to the query.
+  _orderByArray(columnDefs) {
+    for (let i = 0; i < columnDefs.length; i++) {
+      const columnInfo = columnDefs[i];
+      if (isObject(columnInfo)) {
+        this._statements.push({
+          grouping: 'order',
+          type: 'orderByBasic',
+          value: columnInfo['column'],
+          direction: columnInfo['order'],
+        });
+      } else if (isString(columnInfo)) {
+        this._statements.push({
+          grouping: 'order',
+          type: 'orderByBasic',
+          value: columnInfo,
+        });
+      }
+    }
     return this;
   },
 

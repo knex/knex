@@ -385,7 +385,8 @@ declare namespace Knex {
   interface GroupBy extends RawQueryBuilder, ColumnNameQueryBuilder {}
 
   interface OrderBy {
-    (columnName: string, direction?: string): QueryBuilder;
+    (columnName: string, order?: string): QueryBuilder;
+    (columnDefs: Array<string | { column: string; order?: string }>): QueryBuilder;
   }
 
   interface Union {
