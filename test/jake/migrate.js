@@ -5,7 +5,7 @@
 
 const os = require('os');
 const fs = require('fs');
-const rimrafSync = require('rimraf').sync();
+const rimrafSync = require('rimraf').sync;
 const path = require('path');
 const sqlite3 = require('sqlite3');
 const { assert } = require('chai');
