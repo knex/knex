@@ -60,7 +60,7 @@ function initKnex(env, opts) {
       env.configuration = mkConfigObj(opts);
     } else {
       exit(
-        'No knexfile found in this directory. Specify a path with --knexfile or pass'
+        'No knexfile found in this directory. Specify a path with --knexfile or pass --client and --connection params in commandline'
       );
     }
   }
