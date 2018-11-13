@@ -80,7 +80,7 @@ function initKnex(env, opts) {
   let environment = opts.env || process.env.NODE_ENV;
   const defaultEnv = 'development';
 
-  let config = env.configurationж;
+  let config = env.configuration;
 
   if (!environment && typeof config[defaultEnv] === 'object') {
     environment = defaultEnv;
