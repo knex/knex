@@ -190,15 +190,14 @@ export default class Migrator {
       this._getLock(trx)
         // When there is a wrapping transaction, some migrations
         // could have been done while waiting for the lock:
-        .then(
-          () =>
-            trx
-              ? migrationListResolver.listCompleted(
-                  this.config.tableName,
-                  this.config.schemaName,
-                  trx
-                )
-              : []
+        .then(() =>
+          trx
+            ? migrationListResolver.listCompleted(
+                this.config.tableName,
+                this.config.schemaName,
+                trx
+              )
+            : []
         )
         .then(
           (completed) =>
