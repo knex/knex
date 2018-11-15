@@ -176,13 +176,15 @@ module.exports = function(knex) {
 
       it('should release lock if non-locking related error is thrown', function() {
         return knex.migrate
-          .latest({ directory: 'test/integration/migrate/test' })
+          .latest({ directory: 'test/integration/migrate/test_with_invalid' })
           .then(function() {
             throw new Error('then should not execute');
           })
           .catch(function(error) {
             // This will fail because of the invalid migration
-            expect(error).to.have.property('message');
+            expect(error)
+              .to.have.property('message')
+              .that.includes('unknown_table');
             return knex('knex_migrations_lock').select('*');
           })
           .then(function(data) {
@@ -606,7 +608,7 @@ module.exports = function(knex) {
 
     it('should not create unexpected tables', function() {
       const table = 'migration_test_2_1';
-      knex.schema.hasTable(table).then(function(exists) {
+      return knex.schema.hasTable(table).then(function(exists) {
         expect(exists).to.equal(false);
       });
     });
