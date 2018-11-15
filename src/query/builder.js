@@ -829,7 +829,7 @@ assign(Builder.prototype, {
     if (isNaN(val)) {
       this.client.logger.warn('A valid integer must be provided to offset');
     } else {
-      this._single.offset = value;
+      this._single.offset = val;
     }
     return this;
   },
