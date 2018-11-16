@@ -133,7 +133,7 @@ assign(Runner.prototype, {
 
     const runner = this;
 
-    if (global.printAll) {
+    if (global.print) {
       runner.client.logger.debug(obj.sql);
 
       return;

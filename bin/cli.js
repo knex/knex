@@ -237,14 +237,14 @@ function invoke(env) {
     });
 
   commander
-    .command('migrate:printAll')
+    .command('migrate:print')
     .description('Print all migrations on directory')
     .option('--direction', 'Specify migration direction to print')
     .action(function() {
       const direction = argv.direction || 'all';
 
       pending = initKnex(env)
-        .migrate.printAll(direction)
+        .migrate.print(direction)
         .then(function() {
           process.exit(0);
         })
