@@ -132,6 +132,13 @@ assign(Runner.prototype, {
     this.builder.emit('query', assign({ __knexUid, __knexTxId }, obj));
 
     const runner = this;
+
+    if (global.printAll) {
+      runner.client.logger.debug(obj.sql);
+
+      return;
+    }
+
     let queryPromise = this.client.query(this.connection, obj);
 
     if (obj.timeout) {

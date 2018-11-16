@@ -237,6 +237,21 @@ function invoke(env) {
     });
 
   commander
+    .command('migrate:printAll')
+    .description('Print all migrations on directory')
+    .option('--direction', 'Specify migration direction to print')
+    .action(function() {
+      const direction = argv.direction || 'all';
+
+      pending = initKnex(env)
+        .migrate.printAll(direction)
+        .then(function() {
+          process.exit(0);
+        })
+        .catch(exit);
+    });
+
+  commander
     .command('seed:make <name>')
     .description('        Create a named seed file.')
     .option(

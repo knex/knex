@@ -204,6 +204,7 @@ export default class Migrator {
                 trx
               )
             : []
+<<<<<<< HEAD:src/migrate/Migrator.js
         )
         .then(
           (completed) =>
@@ -212,6 +213,8 @@ export default class Migrator {
               migrations,
               completed
             ))
+=======
+>>>>>>> Added new command to print migrations:src/migrate/index.js
         )
         .then(() =>
           Promise.all(
