@@ -119,7 +119,7 @@ Seeder.prototype._waterfallBatch = function(seeds) {
   const seedDirectory = this._absoluteConfigDir();
   let current = Promise.bind({ failed: false, failedOn: 0 });
   const log = [];
-  each(seeds, function(seed) {
+  each(seeds, (seed) => {
     const name = path.join(seedDirectory, seed);
     seed = require(name);
 

@@ -4,7 +4,8 @@ import Client from './client';
 import makeKnex from './util/make-knex';
 import parseConnection from './util/parse-connection';
 import fakeClient from './util/fake-client';
-import { SUPPORTED_CLIENTS, CLIENT_ALIASES } from './constants';
+import { SUPPORTED_CLIENTS } from './constants';
+import { resolveClientNameWithAliases } from './helpers';
 
 export default function Knex(config) {
   // If config is a string, try to parse it
@@ -36,8 +37,8 @@ export default function Knex(config) {
       );
     }
 
-    Dialect = require(`./dialects/${CLIENT_ALIASES[clientName] ||
-      clientName}/index.js`);
+    const resolvedClientName = resolveClientNameWithAliases(clientName);
+    Dialect = require(`./dialects/${resolvedClientName}/index.js`);
   }
 
   // If config connection parameter is passed as string, try to parse it

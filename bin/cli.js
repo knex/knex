@@ -10,7 +10,7 @@ const commander = require('commander');
 const argv = require('minimist')(process.argv.slice(2));
 const fs = Promise.promisifyAll(require('fs'));
 const cliPkg = require('../package');
-const { isObject } = require('lodash');
+const { resolveClientNameWithAliases } = require('../lib/helpers');
 
 function exit(text) {
   if (text instanceof Error) {
@@ -38,7 +38,8 @@ function checkLocalModule(env) {
 
 function mkConfigObj(opts) {
   const envName = opts.env || process.env.NODE_ENV || 'development';
-  const useNullAsDefault = opts.client === 'sqlite3';
+  const resolvedClientName = resolveClientNameWithAliases(opts.client);
+  const useNullAsDefault = resolvedClientName === 'sqlite3';
   return {
     ext: 'js',
     [envName]: {

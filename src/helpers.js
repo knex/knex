@@ -7,6 +7,7 @@ import {
   isArray,
   isTypedArray,
 } from 'lodash';
+import { CLIENT_ALIASES } from './constants';
 
 // Check if the first argument is an array, otherwise uses all arguments as an
 // array.
@@ -60,4 +61,8 @@ export function addQueryContext(Target) {
     this._queryContext = context;
     return this;
   };
+}
+
+export function resolveClientNameWithAliases(clientName) {
+  return CLIENT_ALIASES[clientName] || clientName;
 }
