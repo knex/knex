@@ -6528,7 +6528,6 @@ describe('QueryBuilder', function() {
         },
         clientsWithCustomLoggerForTestWarnings
       );
-      throw new Error('Should not reach this point');
     } catch (error) {
       expect(error.message).to.equal(
         'A valid integer must be provided to limit'
@@ -6563,7 +6562,6 @@ describe('QueryBuilder', function() {
         },
         clientsWithCustomLoggerForTestWarnings
       );
-      throw new Error('Should not reach this point');
     } catch (error) {
       expect(error.message).to.equal(
         'A valid integer must be provided to offset'
