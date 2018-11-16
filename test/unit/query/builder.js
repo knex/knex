@@ -6548,7 +6548,7 @@ describe('QueryBuilder', function() {
             bindings: [10],
           },
           mssql: {
-            sql: 'select * from [test] limit ?',
+            sql: 'select top (?) * from [test]',
             bindings: [10],
           },
           pg: {
