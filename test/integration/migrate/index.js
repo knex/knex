@@ -174,17 +174,30 @@ module.exports = function(knex) {
           });
       });
 
-      it('should release lock if non-locking related error is thrown', function() {
-        return knex.migrate
-          .latest({ directory: 'test/integration/migrate/test' })
+      it('should report failing migration', function() {
+        const migrator = knex.migrate;
+        return migrator
+          .latest({ directory: 'test/integration/migrate/test_with_invalid' })
           .then(function() {
             throw new Error('then should not execute');
           })
           .catch(function(error) {
             // This will fail because of the invalid migration
-            expect(error).to.have.property('message');
-            return knex('knex_migrations_lock').select('*');
-          })
+            expect(error)
+              .to.have.property('message')
+              .that.includes('unknown_table');
+            expect(migrator)
+              .to.have.property('_activeMigration')
+              .to.have.property(
+                'fileName',
+                '20150109002832_invalid_migration.js'
+              );
+          });
+      });
+
+      it('should release lock if non-locking related error is thrown', function() {
+        return knex('knex_migrations_lock')
+          .select('*')
           .then(function(data) {
             expect(data[0].is_locked).to.not.be.ok;
           });
@@ -606,7 +619,7 @@ module.exports = function(knex) {
 
     it('should not create unexpected tables', function() {
       const table = 'migration_test_2_1';
-      knex.schema.hasTable(table).then(function(exists) {
+      return knex.schema.hasTable(table).then(function(exists) {
         expect(exists).to.equal(false);
       });
     });
