@@ -238,8 +238,8 @@ function invoke(env) {
 
   commander
     .command('migrate:print')
-    .description('Print all migrations on directory')
-    .option('--direction', 'Specify migration direction to print')
+    .description('Print all migrations in directory')
+    .option('--direction', 'Specify migration direction to print. It can be "up" or "down"')
     .action(function() {
       const direction = argv.direction || 'all';
 
