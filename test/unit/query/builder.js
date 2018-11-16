@@ -40,6 +40,32 @@ var clientsWithNullAsDefault = {
   ),
 };
 
+var customLoggerConfig = {
+  log: {
+    warn: function(message) {
+      throw new Error(message);
+    },
+  },
+};
+var clientsWithCustomLoggerForTestWarnings = {
+  mysql: new MySQL_Client(
+    Object.assign({ client: 'mysql' }, customLoggerConfig)
+  ),
+  pg: new PG_Client(Object.assign({ client: 'pg' }, customLoggerConfig)),
+  'pg-redshift': new Redshift_Client(
+    Object.assign({ client: 'redshift' }, customLoggerConfig)
+  ),
+  oracledb: new Oracledb_Client(
+    Object.assign({ client: 'oracledb' }, customLoggerConfig)
+  ),
+  sqlite3: new SQLite3_Client(
+    Object.assign({ client: 'sqlite3' }, customLoggerConfig)
+  ),
+  mssql: new MSSQL_Client(
+    Object.assign({ client: 'mssql' }, customLoggerConfig)
+  ),
+};
+
 // note: as a workaround, we are using postgres here, since that's using the default " field wrapping
 // otherwise subquery cloning would need to be fixed. See: https://github.com/tgriesser/knex/pull/2063
 function qb() {
@@ -6474,6 +6500,39 @@ describe('QueryBuilder', function() {
         },
       }
     );
+  });
+
+  it('should throw warning with null call in limit', function() {
+    try {
+      testsql(
+        qb()
+          .from('test')
+          .limit(null),
+        {
+          mysql: {
+            sql: 'select * from `test`',
+            bindings: [],
+          },
+          mssql: {
+            sql: 'select * from [test]',
+            bindings: [],
+          },
+          pg: {
+            sql: 'select * from "test"',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: 'select * from "test"',
+            bindings: [],
+          },
+        },
+        clientsWithCustomLoggerForTestWarnings
+      );
+    } catch (error) {
+      expect(error.message).to.equal(
+        'A valid integer must be provided to limit'
+      );
+    }
   });
 
   it('allows passing builder into where clause, #162', function() {
