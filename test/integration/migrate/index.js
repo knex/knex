@@ -174,8 +174,9 @@ module.exports = function(knex) {
           });
       });
 
-      it('should release lock if non-locking related error is thrown', function() {
-        return knex.migrate
+      it('should report failing migration', function() {
+        const migrator = knex.migrate;
+        return migrator
           .latest({ directory: 'test/integration/migrate/test_with_invalid' })
           .then(function() {
             throw new Error('then should not execute');
@@ -185,8 +186,18 @@ module.exports = function(knex) {
             expect(error)
               .to.have.property('message')
               .that.includes('unknown_table');
-            return knex('knex_migrations_lock').select('*');
-          })
+            expect(migrator)
+              .to.have.property('_activeMigration')
+              .to.have.property(
+                'fileName',
+                '20150109002832_invalid_migration.js'
+              );
+          });
+      });
+
+      it('should release lock if non-locking related error is thrown', function() {
+        return knex('knex_migrations_lock')
+          .select('*')
           .then(function(data) {
             expect(data[0].is_locked).to.not.be.ok;
           });
