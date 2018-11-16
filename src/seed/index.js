@@ -119,14 +119,16 @@ Seeder.prototype._waterfallBatch = function(seeds) {
   const seedDirectory = this._absoluteConfigDir();
   let current = Promise.bind({ failed: false, failedOn: 0 });
   const log = [];
-  each(seeds, function(seed) {
+  each(seeds, (seed) => {
     const name = path.join(seedDirectory, seed);
     seed = require(name);
 
     // Run each seed file.
-    current = current.then(() => seed.seed(knex, Promise)).then(function() {
-      log.push(name);
-    });
+    current = current
+      .then(() => seed.seed(knex, Promise))
+      .then(() => {
+        log.push(name);
+      });
   });
 
   return current.thenReturn([log]);
