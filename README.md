@@ -23,7 +23,7 @@ Node.js versions 6+ are supported.
 
 [Read the full documentation to get started!](http://knexjs.org)  
 [Or check out our Recipes wiki to search for solutions to some specific problems](https://github.com/tgriesser/knex/wiki/Recipes)  
-If upgrading from older version, see [Upgrading instructions] (https://github.com/tgriesser/knex/blob/master/UPGRADING.md)
+If upgrading from older version, see [Upgrading instructions](https://github.com/tgriesser/knex/blob/master/UPGRADING.md)
 
 For support and questions, join the `#bookshelf` channel on freenode IRC
 
