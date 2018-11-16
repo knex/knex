@@ -25,7 +25,7 @@ var clientsWithNullAsDefault = {
   mysql: new MySQL_Client(
     Object.assign({ client: 'mysql' }, useNullAsDefaultConfig)
   ),
-  pg: new PG_Client(Object.assign({ client: 'mysql' }, useNullAsDefaultConfig)),
+  pg: new PG_Client(Object.assign({ client: 'pg' }, useNullAsDefaultConfig)),
   'pg-redshift': new Redshift_Client(
     Object.assign({ client: 'redshift' }, useNullAsDefaultConfig)
   ),
