@@ -6535,6 +6535,40 @@ describe('QueryBuilder', function() {
     }
   });
 
+  it('should throw warning with null call in offset', function() {
+    try {
+      testsql(
+        qb()
+          .from('test')
+          .limit(10)
+          .offset(null),
+        {
+          mysql: {
+            sql: 'select * from `test` limit ?',
+            bindings: [10],
+          },
+          mssql: {
+            sql: 'select * from [test] limit ?',
+            bindings: [10],
+          },
+          pg: {
+            sql: 'select * from "test" limit ?',
+            bindings: [10],
+          },
+          'pg-redshift': {
+            sql: 'select * from "test" limit ?',
+            bindings: [10],
+          },
+        },
+        clientsWithCustomLoggerForTestWarnings
+      );
+    } catch (error) {
+      expect(error.message).to.equal(
+        'A valid integer must be provided to offset'
+      );
+    }
+  });
+
   it('allows passing builder into where clause, #162', function() {
     var chain = qb()
       .from('chapter')
