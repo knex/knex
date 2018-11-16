@@ -126,7 +126,7 @@ Seeder.prototype._waterfallBatch = function(seeds) {
     // Run each seed file.
     current = current
       .then(() => seed.seed(knex, Promise))
-      .then(function() {
+      .then(() => {
         log.push(name);
       });
   });
