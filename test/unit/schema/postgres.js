@@ -9,7 +9,7 @@ const PG_Client = require('../../../lib/dialects/postgres');
 const client = new PG_Client({ client: 'pg' });
 const knex = require('../../../knex');
 
-const equal = require('assert').equal;
+const equal = require('chai').assert.equal;
 
 describe('PostgreSQL Config', function() {
   let knexInstance;

@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const Promise = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
+const { noop } = require('lodash');
 
 describe('knex', () => {
   describe('supports passing existing connection', () => {
@@ -90,6 +91,46 @@ describe('knex', () => {
     expect(knexWithParams.migrate.knex.userParams).to.deep.equal({
       userParam: '451',
     });
+  });
+
+  it('sets correct postProcessResponse for builders instantiated from clone', () => {
+    const knex = Knex({
+      client: 'sqlite',
+      postProcessResponse: noop,
+    });
+
+    const knexWithParams = knex.withUserParams();
+    knexWithParams.client.config.postProcessResponse = null;
+    const builderForTable = knex('tableName');
+    const builderWithParamsForTable = knexWithParams('tableName');
+
+    expect(knex.client.config.postProcessResponse).to.equal(noop);
+    expect(knexWithParams.client.config.postProcessResponse).to.equal(null);
+    expect(builderForTable.client.config.postProcessResponse).to.equal(noop);
+    expect(
+      builderWithParamsForTable.client.config.postProcessResponse
+    ).to.equal(null);
+  });
+
+  it('sets correct postProcessResponse for chained builders', () => {
+    const knex = Knex({
+      client: 'sqlite',
+      postProcessResponse: noop,
+    });
+
+    const knexWithParams = knex.withUserParams();
+    knexWithParams.client.config.postProcessResponse = null;
+    const builderForTable = knex('tableName').where('1 = 1');
+    const builderWithParamsForTable = knexWithParams('tableName').where(
+      '1 = 1'
+    );
+
+    expect(knex.client.config.postProcessResponse).to.equal(noop);
+    expect(knexWithParams.client.config.postProcessResponse).to.equal(null);
+    expect(builderForTable.client.config.postProcessResponse).to.equal(noop);
+    expect(
+      builderWithParamsForTable.client.config.postProcessResponse
+    ).to.equal(null);
   });
 
   it('transaction of a copy with userParams retains userparams', (done) => {

@@ -46,10 +46,12 @@ const CONFIG_DEFAULT = Object.freeze({
 // the migration.
 export default class Migrator {
   constructor(knex) {
-    this.knex = knex;
-    this.config = getMergedConfig(knex.client.config.migrations);
-    this.generator = new MigrationGenerator(knex.client.config.migrations);
+    // Clone knex instance and remove post-processing that is unnecessary for internal queries from a cloned config
+    this.knex = knex.withUserParams(knex.userParams);
+    this.knex.client.config.wrapIdentifier = null;
+    this.knex.client.config.postProcessResponse = null;
 
+    this.generator = new MigrationGenerator(knex.client.config.migrations);
     this._activeMigration = {
       fileName: null,
     };
