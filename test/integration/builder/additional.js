@@ -958,7 +958,7 @@ module.exports = function(knex) {
     });
 
     it('Event: query-response', function() {
-      const queryCount = 0;
+      let queryCount = 0;
 
       const onQueryResponse = function(response, obj, builder) {
         queryCount++;
@@ -987,7 +987,7 @@ module.exports = function(knex) {
     });
 
     it('Event: does not duplicate listeners on a copy with user params', function() {
-      const queryCount = 0;
+      let queryCount = 0;
 
       const onQueryResponse = function(response, obj, builder) {
         queryCount++;
@@ -1020,8 +1020,8 @@ module.exports = function(knex) {
     });
 
     it('Event: query-error', function() {
-      const queryCountKnex = 0;
-      const queryCountBuilder = 0;
+      let queryCountKnex = 0;
+      let queryCountBuilder = 0;
       const onQueryErrorKnex = function(error, obj) {
         queryCountKnex++;
         expect(obj).to.be.an('object');
@@ -1120,7 +1120,7 @@ module.exports = function(knex) {
     it('Overwrite knex.logger functions using config', () => {
       const knexConfig = _.clone(knex.client.config);
 
-      const callCount = 0;
+      let callCount = 0;
       const assertCall = function(expectedMessage, message) {
         expect(message).to.equal(expectedMessage);
         callCount++;
