@@ -6,11 +6,12 @@ import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
 import { assign } from 'lodash';
 import batchInsert from './batchInsert';
+import * as bluebird from 'bluebird';
 
 export default function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
   function knex(tableName, options) {
-    return knexInternal(knex.context, tableName, options);
+    return createQueryBuilder(knex.context, tableName, options);
   }
   redefineProperties(knex, client);
   return knex;
@@ -19,8 +20,6 @@ export default function makeKnex(client) {
 function initContext(knexFn) {
   const knexContext = knexFn.context || {};
   assign(knexContext, {
-    Promise: require('bluebird'),
-
     queryBuilder() {
       return this.client.queryBuilder();
     },
@@ -95,7 +94,7 @@ function redefineProperties(knex, client) {
       set(context) {
         knex._context = context;
 
-        // Redefine public API for knex instance
+        // Redefine public API for knex instance that would be proxying methods from correct context
         knex.raw = context.raw;
         knex.batchInsert = context.batchInsert;
         knex.transaction = context.transaction;
@@ -158,6 +157,7 @@ function redefineProperties(knex, client) {
   });
 
   initContext(knex);
+  knex.Promise = bluebird;
   knex.client = client;
   knex.client.makeKnex = makeKnex;
   knex.userParams = {};
@@ -183,7 +183,7 @@ function redefineProperties(knex, client) {
   });
 }
 
-function knexInternal(knexContext, tableName, options) {
+function createQueryBuilder(knexContext, tableName, options) {
   const qb = knexContext.queryBuilder();
   if (!tableName)
     knexContext.client.logger.warn(
@@ -200,7 +200,7 @@ function shallowCloneFunction(originalFunction) {
 
   const knexContext = {};
   const knexFnWrapper = (tableName, options) => {
-    return knexInternal(knexContext, tableName, options);
+    return createQueryBuilder(knexContext, tableName, options);
   };
 
   const clonedFunction = knexFnWrapper.bind(fnContext);

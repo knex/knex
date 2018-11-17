@@ -166,4 +166,20 @@ describe('knex', () => {
       /Knex: run\n$ npm install oracle/
     );
   });
+
+  describe('async stack traces', () => {
+    it('should capture stack trace on query builder instantiation', () => {
+      const knex = Knex({
+        ...sqliteConfig,
+        asyncStackTraces: true,
+      });
+
+      return knex('some_nonexisten_table')
+        .select()
+        .catch((err) => {
+          expect(err.stack.split('\n')[1]).to.match(/at createQueryBuilder \(/); // the index 1 might need adjustment if the code is refactored
+          expect(typeof err.originalStack).to.equal('string');
+        });
+    });
+  });
 });
