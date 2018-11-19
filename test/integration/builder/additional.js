@@ -2,9 +2,9 @@
 /*eslint no-var:0, max-len:0 */
 'use strict';
 
-var Knex = require('../../../knex');
-var _ = require('lodash');
-var Promise = require('bluebird');
+const Knex = require('../../../knex');
+const _ = require('lodash');
+const Promise = require('bluebird');
 
 module.exports = function(knex) {
   describe('Additional', function() {
@@ -198,7 +198,7 @@ module.exports = function(knex) {
         .select()
         .limit(1)
         .then(function(accounts) {
-          var firstAccount = accounts[0];
+          const firstAccount = accounts[0];
           return knex('accounts')
             .select()
             .limit(1)
@@ -210,9 +210,9 @@ module.exports = function(knex) {
     });
 
     it('should forward the .mapSeries() function from bluebird', function() {
-      var asyncTask = function() {
+      const asyncTask = function() {
         return new Promise(function(resolve, reject) {
-          var output = asyncTask.num++;
+          const output = asyncTask.num++;
           setTimeout(function() {
             resolve(output);
           }, Math.random() * 200);
@@ -220,7 +220,7 @@ module.exports = function(knex) {
       };
       asyncTask.num = 1;
 
-      var returnedValues = [];
+      const returnedValues = [];
       return knex('accounts')
         .select()
         .limit(3)
@@ -237,7 +237,7 @@ module.exports = function(knex) {
     });
 
     it('should forward the .delay() function from bluebird', function() {
-      var startTime = new Date().valueOf();
+      const startTime = new Date().valueOf();
       return knex('accounts')
         .select()
         .limit(1)
@@ -292,7 +292,7 @@ module.exports = function(knex) {
     });
 
     it('should allow raw queries directly with `knex.raw`', function() {
-      var tables = {
+      const tables = {
         mysql: 'SHOW TABLES',
         mysql2: 'SHOW TABLES',
         pg:
@@ -533,7 +533,7 @@ module.exports = function(knex) {
     });
 
     it('should allow renaming a column', function() {
-      var countColumn;
+      let countColumn;
       switch (knex.client.driverName) {
         case 'oracledb':
           countColumn = 'COUNT(*)';
@@ -545,8 +545,8 @@ module.exports = function(knex) {
           countColumn = 'count(*)';
           break;
       }
-      var count,
-        inserts = [];
+      let count;
+      const inserts = [];
       _.times(40, function(i) {
         inserts.push({
           email: 'email' + i,
@@ -603,7 +603,7 @@ module.exports = function(knex) {
     });
 
     it('should allow dropping a column', function() {
-      var countColumn;
+      let countColumn;
       switch (knex.client.driverName) {
         case 'oracledb':
           countColumn = 'COUNT(*)';
@@ -615,7 +615,7 @@ module.exports = function(knex) {
           countColumn = 'count(*)';
           break;
       }
-      var count;
+      let count;
       return knex
         .count('*')
         .from('accounts')
@@ -671,14 +671,14 @@ module.exports = function(knex) {
     });
 
     it('.timeout() should throw TimeoutError', function() {
-      var driverName = knex.client.driverName;
+      const driverName = knex.client.driverName;
       if (driverName === 'sqlite3') {
         return;
       } //TODO -- No built-in support for sleeps
       if (/redshift/.test(driverName)) {
         return;
       }
-      var testQueries = {
+      const testQueries = {
         pg: function() {
           return knex.raw('SELECT pg_sleep(1)');
         },
@@ -700,7 +700,7 @@ module.exports = function(knex) {
         throw new Error('Missing test query for driver: ' + driverName);
       }
 
-      var query = testQueries[driverName]();
+      const query = testQueries[driverName]();
 
       return query
         .timeout(200)
@@ -718,7 +718,7 @@ module.exports = function(knex) {
     });
 
     it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
-      var driverName = knex.client.driverName;
+      const driverName = knex.client.driverName;
       if (driverName === 'sqlite3') {
         return;
       } //TODO -- No built-in support for sleeps
@@ -731,7 +731,7 @@ module.exports = function(knex) {
       // A subsequent query will acquire the connection (still in-use) and hang
       // until the first query finishes. Setting a sleep time longer than the
       // mocha timeout exposes this behavior.
-      var testQueries = {
+      const testQueries = {
         pg: function() {
           return knex.raw('SELECT pg_sleep(10)');
         },
@@ -753,7 +753,7 @@ module.exports = function(knex) {
         throw new Error('Missing test query for driverName: ' + driverName);
       }
 
-      var query = testQueries[driverName]();
+      const query = testQueries[driverName]();
 
       function addTimeout() {
         return query.timeout(200, { cancel: true });
@@ -770,7 +770,7 @@ module.exports = function(knex) {
         return;
       }
 
-      var getProcessesQueries = {
+      const getProcessesQueries = {
         pg: function() {
           return knex.raw('SELECT * from pg_stat_activity');
         },
@@ -786,7 +786,7 @@ module.exports = function(knex) {
         throw new Error('Missing test query for driverName: ' + driverName);
       }
 
-      var getProcessesQuery = getProcessesQueries[driverName]();
+      const getProcessesQuery = getProcessesQueries[driverName]();
 
       return addTimeout()
         .then(function() {
@@ -811,8 +811,8 @@ module.exports = function(knex) {
               return getProcessesQuery;
             })
             .then(function(results) {
-              var processes;
-              var sleepProcess;
+              let processes;
+              let sleepProcess;
 
               if (_.startsWith(driverName, 'pg')) {
                 processes = results.rows;
@@ -830,7 +830,7 @@ module.exports = function(knex) {
 
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', function() {
       // Only mysql/postgres query cancelling supported for now
-      var driverName = knex.client.driverName;
+      const driverName = knex.client.driverName;
       if (
         !_.startsWith(driverName, 'mysql') &&
         !_.startsWith(driverName, 'pg')
@@ -840,14 +840,14 @@ module.exports = function(knex) {
 
       // To make this test easier, I'm changing the pool settings to max 1.
       // Also setting acquireTimeoutMillis to lower as not to wait the default time
-      var knexConfig = _.cloneDeep(knex.client.config);
+      const knexConfig = _.cloneDeep(knex.client.config);
       knexConfig.pool.min = 0;
       knexConfig.pool.max = 1;
       knexConfig.pool.acquireTimeoutMillis = 100;
 
-      var knexDb = new Knex(knexConfig);
+      const knexDb = new Knex(knexConfig);
 
-      var testQueries = {
+      const testQueries = {
         pg: function() {
           return knexDb.raw('SELECT pg_sleep(10)');
         },
@@ -869,7 +869,7 @@ module.exports = function(knex) {
         throw new Error('Missing test query for dialect: ' + driverName);
       }
 
-      var query = testQueries[driverName]();
+      const query = testQueries[driverName]();
 
       return query
         .timeout(1, { cancel: true })
@@ -889,21 +889,21 @@ module.exports = function(knex) {
 
     it('.timeout(ms, {cancel: true}) should release connections after failing if connection cancellation throws an error', function() {
       // Only mysql/postgres query cancelling supported for now
-      var driverName = knex.client.driverName;
+      const driverName = knex.client.driverName;
       if (!_.startsWith(driverName, 'pg')) {
         return;
       }
 
       // To make this test easier, I'm changing the pool settings to max 1.
       // Also setting acquireTimeoutMillis to lower as not to wait the default time
-      var knexConfig = _.cloneDeep(knex.client.config);
+      const knexConfig = _.cloneDeep(knex.client.config);
       knexConfig.pool.min = 0;
       knexConfig.pool.max = 2;
       knexConfig.pool.acquireTimeoutMillis = 100;
 
-      var knexDb = new Knex(knexConfig);
+      const knexDb = new Knex(knexConfig);
 
-      var rawTestQueries = {
+      const rawTestQueries = {
         pg: (sleepSeconds) => `SELECT pg_sleep(${sleepSeconds})`,
       };
 
@@ -958,9 +958,9 @@ module.exports = function(knex) {
     });
 
     it('Event: query-response', function() {
-      var queryCount = 0;
+      let queryCount = 0;
 
-      var onQueryResponse = function(response, obj, builder) {
+      const onQueryResponse = function(response, obj, builder) {
         queryCount++;
         expect(response).to.be.an('array');
         expect(obj).to.be.an('object');
@@ -987,9 +987,9 @@ module.exports = function(knex) {
     });
 
     it('Event: does not duplicate listeners on a copy with user params', function() {
-      var queryCount = 0;
+      let queryCount = 0;
 
-      var onQueryResponse = function(response, obj, builder) {
+      const onQueryResponse = function(response, obj, builder) {
         queryCount++;
         expect(response).to.be.an('array');
         expect(obj).to.be.an('object');
@@ -1020,9 +1020,9 @@ module.exports = function(knex) {
     });
 
     it('Event: query-error', function() {
-      var queryCountKnex = 0;
-      var queryCountBuilder = 0;
-      var onQueryErrorKnex = function(error, obj) {
+      let queryCountKnex = 0;
+      let queryCountBuilder = 0;
+      const onQueryErrorKnex = function(error, obj) {
         queryCountKnex++;
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
@@ -1030,7 +1030,7 @@ module.exports = function(knex) {
         expect(error).to.be.an('error');
       };
 
-      var onQueryErrorBuilder = function(error, obj) {
+      const onQueryErrorBuilder = function(error, obj) {
         queryCountBuilder++;
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
@@ -1058,7 +1058,7 @@ module.exports = function(knex) {
       return knex('accounts')
         .insert({ last_name: 'Start event test' })
         .then(function() {
-          var queryBuilder = knex('accounts').select();
+          const queryBuilder = knex('accounts').select();
 
           queryBuilder.on('start', function(builder) {
             //Alter builder prior to compilation
@@ -1075,13 +1075,13 @@ module.exports = function(knex) {
     });
 
     it("Event 'query' should not emit native sql string", function() {
-      var builder = knex('accounts')
+      const builder = knex('accounts')
         .where('id', 1)
         .select();
 
       builder.on('query', function(obj) {
-        var native = builder.toSQL().toNative().sql;
-        var sql = builder.toSQL().sql;
+        const native = builder.toSQL().toNative().sql;
+        const sql = builder.toSQL().sql;
 
         //Only assert if they diff to begin with.
         //IE Maria does not diff
@@ -1101,16 +1101,6 @@ module.exports = function(knex) {
       after(() => {
         delete knex.client.config.asyncStackTraces;
       });
-      it('should capture stack trace on query builder instantiation', () => {
-        return knex('some_nonexisten_table')
-          .select()
-          .catch((err) => {
-            expect(err.stack.split('\n')[1]).to.match(
-              /at Function\.queryBuilder \(/
-            ); // the index 1 might need adjustment if the code is refactored
-            expect(typeof err.originalStack).to.equal('string');
-          });
-      });
       it('should capture stack trace on raw query', () => {
         return knex.raw('select * from some_nonexisten_table').catch((err) => {
           expect(err.stack.split('\n')[2]).to.match(/at Function\.raw \(/); // the index 2 might need adjustment if the code is refactored
@@ -1128,10 +1118,10 @@ module.exports = function(knex) {
     });
 
     it('Overwrite knex.logger functions using config', () => {
-      var knexConfig = _.clone(knex.client.config);
+      const knexConfig = _.clone(knex.client.config);
 
-      var callCount = 0;
-      var assertCall = function(expectedMessage, message) {
+      let callCount = 0;
+      const assertCall = function(expectedMessage, message) {
         expect(message).to.equal(expectedMessage);
         callCount++;
       };
@@ -1149,7 +1139,7 @@ module.exports = function(knex) {
       //Sqlite warning message
       knexConfig.useNullAsDefault = true;
 
-      var knexDb = new Knex(knexConfig);
+      const knexDb = new Knex(knexConfig);
 
       knexDb.client.logger.warn('test');
       knexDb.client.logger.error('test');

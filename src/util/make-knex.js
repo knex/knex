@@ -6,28 +6,26 @@ import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
 import { assign } from 'lodash';
 import batchInsert from './batchInsert';
+import * as bluebird from 'bluebird';
 
 export default function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
   function knex(tableName, options) {
-    const qb = knex.queryBuilder();
-    if (!tableName)
-      client.logger.warn(
-        'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
-      );
-    return tableName ? qb.table(tableName, options) : qb;
+    return createQueryBuilder(knex.context, tableName, options);
   }
+  redefineProperties(knex, client);
+  return knex;
+}
 
-  assign(knex, {
-    Promise: require('bluebird'),
-
-    // A new query builder instance.
+function initContext(knexFn) {
+  const knexContext = knexFn.context || {};
+  assign(knexContext, {
     queryBuilder() {
-      return client.queryBuilder();
+      return this.client.queryBuilder();
     },
 
     raw() {
-      return client.raw.apply(client, arguments);
+      return this.client.raw.apply(this.client, arguments);
     },
 
     batchInsert(table, batch, chunkSize = 1000) {
@@ -37,41 +35,48 @@ export default function makeKnex(client) {
     // Runs a new transaction, taking a container and returning a promise
     // for when the transaction is resolved.
     transaction(container, config) {
-      const trx = client.transaction(container, config);
+      const trx = this.client.transaction(container, config);
       trx.userParams = this.userParams;
       return trx;
     },
 
     // Typically never needed, initializes the pool for a knex client.
     initialize(config) {
-      return client.initializePool(config);
+      return this.client.initializePool(config);
     },
 
     // Convenience method for tearing down the pool.
     destroy(callback) {
-      return client.destroy(callback);
+      return this.client.destroy(callback);
     },
 
     ref(ref) {
-      return client.ref(ref);
+      return this.client.ref(ref);
     },
 
     withUserParams(params) {
-      const knexClone = shallowCloneFunction(knex); // We need to include getters in our clone
-      if (knex.client) {
-        knexClone.client = Object.assign({}, knex.client); // Clone client to avoid leaking listeners that are set on it
-        const parentPrototype = Object.getPrototypeOf(knex.client);
+      const knexClone = shallowCloneFunction(knexFn); // We need to include getters in our clone
+      if (this.client) {
+        knexClone.client = Object.assign({}, this.client); // Clone client to avoid leaking listeners that are set on it
+        knexClone.client.config = Object.assign({}, this.client.config); // Clone client config to make sure they can be modified independently
+        const parentPrototype = Object.getPrototypeOf(this.client);
         if (parentPrototype) {
           Object.setPrototypeOf(knexClone.client, parentPrototype);
         }
       }
 
-      redefineProperties(knexClone);
+      redefineProperties(knexClone, knexClone.client);
       knexClone.userParams = params;
       return knexClone;
     },
   });
 
+  if (!knexFn.context) {
+    knexFn.context = knexContext;
+  }
+}
+
+function redefineProperties(knex, client) {
   // Allow chaining methods from the root object, before
   // any other information is specified.
   QueryInterface.forEach(function(method) {
@@ -81,17 +86,47 @@ export default function makeKnex(client) {
     };
   });
 
-  knex.client = client;
-  redefineProperties(knex);
-
-  client.makeKnex = makeKnex;
-
-  knex.userParams = {};
-  return knex;
-}
-
-function redefineProperties(knex) {
   Object.defineProperties(knex, {
+    context: {
+      get() {
+        return knex._context;
+      },
+      set(context) {
+        knex._context = context;
+
+        // Redefine public API for knex instance that would be proxying methods from correct context
+        knex.raw = context.raw;
+        knex.batchInsert = context.batchInsert;
+        knex.transaction = context.transaction;
+        knex.initialize = context.initialize;
+        knex.destroy = context.destroy;
+        knex.ref = context.ref;
+        knex.withUserParams = context.withUserParams;
+        knex.queryBuilder = context.queryBuilder;
+      },
+      configurable: true,
+    },
+
+    client: {
+      get() {
+        return knex.context.client;
+      },
+      set(client) {
+        knex.context.client = client;
+      },
+      configurable: true,
+    },
+
+    userParams: {
+      get() {
+        return knex.context.userParams;
+      },
+      set(userParams) {
+        knex.context.userParams = userParams;
+      },
+      configurable: true,
+    },
+
     schema: {
       get() {
         return knex.client.schemaBuilder();
@@ -121,6 +156,12 @@ function redefineProperties(knex) {
     },
   });
 
+  initContext(knex);
+  knex.Promise = bluebird;
+  knex.client = client;
+  knex.client.makeKnex = makeKnex;
+  knex.userParams = {};
+
   // Hook up the "knex" object as an EventEmitter.
   const ee = new EventEmitter();
   for (const key in ee) {
@@ -142,13 +183,28 @@ function redefineProperties(knex) {
   });
 }
 
+function createQueryBuilder(knexContext, tableName, options) {
+  const qb = knexContext.queryBuilder();
+  if (!tableName)
+    knexContext.client.logger.warn(
+      'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
+    );
+  return tableName ? qb.table(tableName, options) : qb;
+}
+
 function shallowCloneFunction(originalFunction) {
-  const clonedFunction = originalFunction.bind(
-    Object.create(
-      Object.getPrototypeOf(originalFunction),
-      Object.getOwnPropertyDescriptors(originalFunction)
-    )
+  const fnContext = Object.create(
+    Object.getPrototypeOf(originalFunction),
+    Object.getOwnPropertyDescriptors(originalFunction)
   );
+
+  const knexContext = {};
+  const knexFnWrapper = (tableName, options) => {
+    return createQueryBuilder(knexContext, tableName, options);
+  };
+
+  const clonedFunction = knexFnWrapper.bind(fnContext);
   Object.assign(clonedFunction, originalFunction);
+  clonedFunction._context = knexContext;
   return clonedFunction;
 }

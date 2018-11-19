@@ -7,6 +7,7 @@ import {
   each,
   filter,
   get,
+  isFunction,
   isBoolean,
   isEmpty,
   isUndefined,
@@ -46,10 +47,15 @@ const CONFIG_DEFAULT = Object.freeze({
 // the migration.
 export default class Migrator {
   constructor(knex) {
-    this.knex = knex;
-    this.config = getMergedConfig(knex.client.config.migrations);
-    this.generator = new MigrationGenerator(knex.client.config.migrations);
+    // Clone knex instance and remove post-processing that is unnecessary for internal queries from a cloned config
+    this.knex = isFunction(knex)
+      ? knex.withUserParams(knex.userParams)
+      : Object.assign({}, knex);
+    this.knex.client.config.wrapIdentifier = null;
+    this.knex.client.config.postProcessResponse = null;
 
+    this.config = getMergedConfig(this.knex.client.config.migrations);
+    this.generator = new MigrationGenerator(this.knex.client.config.migrations);
     this._activeMigration = {
       fileName: null,
     };
