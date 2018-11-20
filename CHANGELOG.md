@@ -5,7 +5,7 @@
 - Use datetime2 for MSSQL datetime + timestamp types. This change is incompatible with MSSQL older than 2008 #2757
 - Knex.VERSION() method was removed, run "require('knex/package').version" instead #2776
 - Knex transpilation now targets Node.js 6, meaning it will no longer run on older Node.js versions #2813
-- Add json type support for SQLite 3.9+ (tested to work with Node package 'sqlite3' 4.0.2) #2814
+- Add json type support for SQLite 3.9+ (tested to work with Node package 'sqlite3' 4.0.2+) #2814
 
 ### New features:
 
@@ -16,7 +16,12 @@
 - Allow chaining of increment, decrement, and update #2740
 - Allow table names with `forUpdate`/`forShare` #2834
 - Added `whereColumn` and the associated `not` / `and` / `or` methods for using columns on the right side of a where clause #2837
+- Added `whereRecursive` method to make self-referential CTEs possible #2889
 - Added support for named unique, primary and foreign keys to SQLite3 #2840
+- Added support for generating new migration and seed files without knexfile #2884 #2905
+- Added support for multiple columns in `.orderBy()` #2881
+- Added option of `existingType` to `.enum()` method to support repeated use of enums #2719
+- Added option to pass `indexType` for MySQL dialect #2890
 - Added `onVal` and the associated `not` / `and` / `or` methods for using values in `on` clauses within joins #2746
 - Kill queries after timeout for PostgreSQL #2636
 - Manage TypeScript types internally #2845
@@ -29,12 +34,15 @@
 - Compile with before update so that bindings are put in correct order #2733
 - Fix join using builder withSchema #2744
 - Throw instead of process.exit when client module missing #2843
+- Display correct filename of a migration that failed #2910
+- Fixed support of knexSnakeCaseWrappers in migrations #2914
 
 ### Test / internal changes
 
 - Add tests for multiple union arguments with callbacks and builders #2749
-- Update dependencies #2772 #2810 #2842 #2848
+- Update dependencies #2772 #2810 #2842 #2848 #2893 #2904
 - Separate migration generator #2786
+- Do not postprocess internal queries in Migrator #2914
 - Use Babel 7 #2813
 
 # 0.15.2 - 19 Jul, 2018
