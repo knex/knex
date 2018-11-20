@@ -28,6 +28,7 @@ RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.s
 RUN . $HOME/.nvm/nvm.sh && nvm install 6
 RUN . $HOME/.nvm/nvm.sh && nvm install 8
 RUN . $HOME/.nvm/nvm.sh && nvm install 10
+RUN . $HOME/.nvm/nvm.sh && nvm install 11
 
 RUN echo 'module.exports = {\
   oracledb: {\
@@ -39,7 +40,7 @@ RUN echo 'module.exports = {\
 }' > /oracle-config.js
 
 ENV ORACLE_HOME /u01/app/oracle/product/11.2.0/xe
-ENV ORACLE_SID XE 
+ENV ORACLE_SID XE
 ENV OCI_LIB_DIR /u01/app/oracle/product/11.2.0/xe/lib
 ENV LD_LIBRARY_PATH /u01/app/oracle/product/11.2.0/xe/lib
 ENV KNEX_TEST /oracle-config.js
@@ -55,4 +56,4 @@ CMD /usr/sbin/startup.sh && \
   npm install && \
   npm install oracledb && \
   npm run build && \
-  npm run plaintest  
+  npm run plaintest
