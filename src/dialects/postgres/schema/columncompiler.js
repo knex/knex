@@ -63,11 +63,15 @@ assign(ColumnCompiler_PG.prototype, {
   },
   smallint: 'smallint',
   tinyint: 'smallint',
-  datetime(without) {
-    return without ? 'timestamp' : 'timestamptz';
+  datetime(useTz = true, precision) {
+    return `${useTz ? 'timestamptz' : 'timestamp'}${
+      precision ? '(' + precision + ')' : ''
+    }`;
   },
-  timestamp(without) {
-    return without ? 'timestamp' : 'timestamptz';
+  timestamp(useTz = true, precision) {
+    return `${useTz ? 'timestamptz' : 'timestamp'}${
+      precision ? '(' + precision + ')' : ''
+    }`;
   },
   uuid: 'uuid',
 
