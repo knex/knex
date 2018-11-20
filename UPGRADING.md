@@ -3,6 +3,7 @@
 ### Upgrading to version 0.16.0+
 
 * MSSQL: DB versions older than 2008 are no longer supported, make sure to update your DB;
+* PostgreSQL: second argument for `table.datetime(name, [useTz], [precision])` and `table.timestamp(name, [useTz], [precision])` now correctly expects `TRUE` value for `timestamptz` and `FALSE` for `timestamp` type. In previous versions this behaviour was reversed. 
 
 ### Upgrading to version 0.15.0+
 
