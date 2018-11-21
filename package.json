@@ -87,7 +87,7 @@
     "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && npm run tape",
     "prepublish": "npm run babel",
     "pre_test": "npm run lint",
-    "bin_test": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/*.js",
+    "bin_test": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/*",
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node --inspect-brk test/tape/index.js",
     "test": "npm run pre_test && nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 -R spec test/index.js && npm run tape && npm run bin_test",

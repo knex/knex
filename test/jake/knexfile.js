@@ -13,7 +13,7 @@ const taskList = [];
 
 test(taskList, 'Run migrations with knexfile passed', (temp) => {
   return assertExec(
-    `node ${KNEX} migrate:latest --knexfile=../test/jake/knexfile`
+    `node ${KNEX} migrate:latest --knexfile=../test/jake/knexfile/knexfile.js`
   );
 });
 
