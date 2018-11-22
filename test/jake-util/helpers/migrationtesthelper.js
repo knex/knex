@@ -28,16 +28,22 @@ function test(taskList, description, func) {
   const taskName = description.replace(/[^a-z0-9]/g, '');
   taskList.push(taskName);
   task(taskName, { async: true }, async () => {
-    try {
-      await func(tempFolder);
-      console.log('☑ ' + description);
-    } catch (err) {
-      console.log('☒ ' + err.message);
-      process.exit(1);
-    } finally {
-      rimrafSync(tmpDirPath);
-      rimrafSync('test/jake/test.sqlite3');
-    }
+    let itFails = false;
+    func(tempFolder)
+      .then(() => {
+        console.log('☑ ' + description);
+      })
+      .catch((err) => {
+        console.log('☒ ' + err.message);
+        itFails = true;
+      })
+      .then(() => {
+        rimrafSync(tmpDirPath);
+        rimrafSync('test/jake/test.sqlite3');
+        if (itFails) {
+          process.exit(1);
+        }
+      });
   });
 }
 
