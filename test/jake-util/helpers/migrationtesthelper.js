@@ -27,7 +27,7 @@ function test(taskList, description, func) {
   desc(description);
   const taskName = description.replace(/[^a-z0-9]/g, '');
   taskList.push(taskName);
-  task(taskName, { async: true }, async () => {
+  task(taskName, { async: true }, () => {
     let itFails = false;
     func(tempFolder)
       .then(() => {
