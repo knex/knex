@@ -192,6 +192,10 @@ module.exports = function(knex) {
                 'fileName',
                 '20150109002832_invalid_migration.js'
               );
+          })
+          .then(function(data) {
+            // Clean up lock for other tests
+            return knex('knex_migrations_lock').update({ is_locked: 0 });
           });
       });
 
