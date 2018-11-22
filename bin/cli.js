@@ -56,7 +56,7 @@ function mkConfigObj(opts) {
 function initKnex(env, opts) {
   checkLocalModule(env);
 
-  if (!env.pathToKnexFile) {
+  if (!opts.knexfile) {
     if (opts.client) {
       env.configuration = mkConfigObj(opts);
     } else {
@@ -67,7 +67,7 @@ function initKnex(env, opts) {
   }
   // If knexfile is specified
   else {
-    env.configuration = require(env.pathToKnexFile);
+    env.configuration = require(opts.knexfile);
   }
 
   if (process.cwd() !== env.cwd) {
@@ -97,7 +97,10 @@ function initKnex(env, opts) {
     process.exit(1);
   }
 
-  if (argv.debug !== undefined) config.debug = argv.debug;
+  if (argv.debug !== undefined) {
+    config.debug = argv.debug;
+  }
+
   const knex = require(env.modulePath);
   return knex(config);
 }
@@ -297,7 +300,6 @@ cli.on('requireFail', function(name) {
 cli.launch(
   {
     cwd: argv.cwd,
-    pathToKnexFile: argv.knexfile,
     require: argv.require,
     completion: argv.completion,
   },
