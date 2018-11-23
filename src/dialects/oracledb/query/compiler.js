@@ -284,7 +284,7 @@ _.assign(Oracledb_Compiler.prototype, {
     const self = this;
     const sql = {};
     const outBindPrep = this._prepOutbindings(
-      this.single.update,
+      this.single.update || this.single.counter,
       this.single.returning
     );
     const outBinding = outBindPrep.outBinding;
@@ -297,7 +297,7 @@ _.assign(Oracledb_Compiler.prototype, {
     let intoClause = '';
 
     if (
-      _.isEmpty(this.single.update) &&
+      _.isEmpty(updates) &&
       typeof this.single.update !== 'function'
     ) {
       return '';
