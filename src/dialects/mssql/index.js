@@ -72,7 +72,7 @@ assign(Client_MSSQL.prototype, {
       // if version is not ^5.0.0
       if (major < 5) {
         throw new Error(
-          'This knex version does not support mssql versions below 5.0.0'
+          'This knex version only supports mssql driver versions 4.1.0 and 5.0.0+'
         );
       }
     }
