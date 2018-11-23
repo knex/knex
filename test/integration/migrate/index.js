@@ -195,6 +195,8 @@ module.exports = function(knex) {
           })
           .then(function(data) {
             // Clean up lock for other tests
+            // TODO: Remove this code to reproduce https://github.com/tgriesser/knex/issues/2925
+            // It is only relevant for Oracle, most likely there is a bug somewhere that needs fixing
             return knex('knex_migrations_lock').update({ is_locked: 0 });
           });
       });
