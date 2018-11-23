@@ -25,6 +25,7 @@
 - Added `onVal` and the associated `not` / `and` / `or` methods for using values in `on` clauses within joins #2746
 - Kill queries after timeout for PostgreSQL #2636
 - Manage TypeScript types internally #2845
+- Support 5.0.0+ versions of mssql driver #2861
 
 ### Bug fixes:
 
