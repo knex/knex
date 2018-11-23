@@ -1,5 +1,3 @@
-'use strict';
-
 import Raw from './raw';
 
 class Ref extends Raw {
