@@ -1,7 +1,5 @@
 /*global describe, expect, it*/
 
-'use strict';
-
 let tableSql;
 
 const sinon = require('sinon');
@@ -996,7 +994,7 @@ describe('PostgreSQL SchemaBuilder', function() {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.timestamp('foo', true);
+        table.timestamp('foo', false);
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -1009,7 +1007,7 @@ describe('PostgreSQL SchemaBuilder', function() {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.timestamp('foo', false);
+        table.timestamp('foo', true);
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -1028,6 +1026,32 @@ describe('PostgreSQL SchemaBuilder', function() {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add column "foo" timestamptz(2)'
+    );
+  });
+
+  it('adding timestamp with options object', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.timestamp('foo', { useTz: true, precision: 3 });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz(3)'
+    );
+  });
+
+  it('adding datetime with options object', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', { useTz: true, precision: 3 });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz(3)'
     );
   });
 

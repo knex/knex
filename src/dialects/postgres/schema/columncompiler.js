@@ -3,8 +3,7 @@
 
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
-
-import { assign } from 'lodash';
+import { isObject } from 'lodash';
 
 function ColumnCompiler_PG() {
   ColumnCompiler.apply(this, arguments);
@@ -12,7 +11,7 @@ function ColumnCompiler_PG() {
 }
 inherits(ColumnCompiler_PG, ColumnCompiler);
 
-assign(ColumnCompiler_PG.prototype, {
+Object.assign(ColumnCompiler_PG.prototype, {
   // Types
   // ------
   bigincrements: 'bigserial primary key',
@@ -63,13 +62,21 @@ assign(ColumnCompiler_PG.prototype, {
   },
   smallint: 'smallint',
   tinyint: 'smallint',
-  datetime(useTz = true, precision) {
-    return `${useTz ? 'timestamptz' : 'timestamp'}${
+  datetime(withoutTz = false, precision) {
+    if (isObject(withoutTz)) {
+      ({ withoutTz, precision } = withoutTz);
+    }
+
+    return `${withoutTz ? 'timestamp' : 'timestamptz'}${
       precision ? '(' + precision + ')' : ''
     }`;
   },
-  timestamp(useTz = true, precision) {
-    return `${useTz ? 'timestamptz' : 'timestamp'}${
+  timestamp(withoutTz = false, precision) {
+    if (isObject(withoutTz)) {
+      ({ withoutTz, precision } = withoutTz);
+    }
+
+    return `${withoutTz ? 'timestamp' : 'timestamptz'}${
       precision ? '(' + precision + ')' : ''
     }`;
   },
