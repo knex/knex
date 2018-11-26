@@ -1,7 +1,5 @@
 /*global describe, expect, it*/
 
-'use strict';
-
 const sinon = require('sinon');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const MySQL2_Client = require('../../../lib/dialects/mysql2');
@@ -719,11 +717,11 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding date', function() {
+    it('test adding date', () => {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.date('foo');
+        .table('users', (table) => {
+          table.date('foo');
         })
         .toSQL();
 
@@ -731,11 +729,11 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` date');
     });
 
-    it('test adding date time', function() {
+    it('test adding date time', () => {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.dateTime('foo');
+        .table('users', (table) => {
+          table.dateTime('foo');
         })
         .toSQL();
 
@@ -745,11 +743,25 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding time', function() {
+    it('test adding date time with options object', () => {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.time('foo');
+        .table('users', (table) => {
+          table.dateTime('foo', { precision: 3 });
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `foo` datetime(3)'
+      );
+    });
+
+    it('test adding time', () => {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', (table) => {
+          table.time('foo');
         })
         .toSQL();
 
@@ -757,17 +769,43 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` time');
     });
 
-    it('test adding time stamp', function() {
+    it('test adding time with options object', () => {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.timestamp('foo');
+        .table('users', (table) => {
+          table.time('foo', { precision: 3 });
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` time(3)');
+    });
+
+    it('test adding time stamp', () => {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', (table) => {
+          table.timestamp('foo');
         })
         .toSQL();
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add `foo` timestamp'
+      );
+    });
+
+    it('test adding time stamp with options object', () => {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', (table) => {
+          table.timestamp('foo', { precision: 3 });
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `foo` timestamp(3)'
       );
     });
 

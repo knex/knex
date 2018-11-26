@@ -3,6 +3,7 @@
 ### Upgrading to version 0.16.0+
 
 * MSSQL: DB versions older than 2008 are no longer supported, make sure to update your DB;
+* PostgreSQL|MySQL: it is recommended to use options object for `table.datetime` and `table.timestamp` methods instead of argument options. See documentation for these methods for more details. 
 
 ### Upgrading to version 0.15.0+
 
