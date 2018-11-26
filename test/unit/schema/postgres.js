@@ -1033,12 +1033,12 @@ describe('PostgreSQL SchemaBuilder', function() {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.timestamp('foo', { useTz: true, precision: 3 });
+        table.timestamp('foo', { useTz: false, precision: 3 });
       })
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "foo" timestamptz(3)'
+      'alter table "users" add column "foo" timestamp(3)'
     );
   });
 
@@ -1046,12 +1046,12 @@ describe('PostgreSQL SchemaBuilder', function() {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.datetime('foo', { useTz: true, precision: 3 });
+        table.datetime('foo', { useTz: false, precision: 3 });
       })
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "foo" timestamptz(3)'
+      'alter table "users" add column "foo" timestamp(3)'
     );
   });
 

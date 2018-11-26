@@ -63,20 +63,26 @@ Object.assign(ColumnCompiler_PG.prototype, {
   smallint: 'smallint',
   tinyint: 'smallint',
   datetime(withoutTz = false, precision) {
+    let useTz;
     if (isObject(withoutTz)) {
-      ({ withoutTz, precision } = withoutTz);
+      ({ useTz, precision } = withoutTz);
+    } else {
+      useTz = !withoutTz;
     }
 
-    return `${withoutTz ? 'timestamp' : 'timestamptz'}${
+    return `${useTz ? 'timestamptz' : 'timestamp'}${
       precision ? '(' + precision + ')' : ''
     }`;
   },
   timestamp(withoutTz = false, precision) {
+    let useTz;
     if (isObject(withoutTz)) {
-      ({ withoutTz, precision } = withoutTz);
+      ({ useTz, precision } = withoutTz);
+    } else {
+      useTz = !withoutTz;
     }
 
-    return `${withoutTz ? 'timestamp' : 'timestamptz'}${
+    return `${useTz ? 'timestamptz' : 'timestamp'}${
       precision ? '(' + precision + ')' : ''
     }`;
   },
