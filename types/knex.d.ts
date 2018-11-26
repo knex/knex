@@ -467,6 +467,8 @@ declare namespace Knex {
     toSQL(): Sql;
 
     on(event: string, callback: Function): QueryBuilder;
+
+    queryContext(context: any): QueryBuilder;
   }
 
   interface Sql {
@@ -532,6 +534,7 @@ declare namespace Knex {
     dropTableIfExists(tableName: string): SchemaBuilder;
     raw(statement: string): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
+    queryContext(context: any): SchemaBuilder;
   }
 
   interface TableBuilder {
@@ -588,6 +591,7 @@ declare namespace Knex {
     dropPrimary(constraintName?: string): TableBuilder;
     dropIndex(columnNames: (string | Raw)[], indexName?: string): TableBuilder;
     dropTimestamps(): ColumnBuilder;
+    queryContext(context: any): TableBuilder;
   }
 
   interface CreateTableBuilder extends TableBuilder {}
@@ -615,6 +619,7 @@ declare namespace Knex {
     nullable(): ColumnBuilder;
     comment(value: string): ColumnBuilder;
     alter(): ColumnBuilder;
+    queryContext(context: any): ColumnBuilder;
   }
 
   interface ForeignConstraintBuilder {
