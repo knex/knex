@@ -36,7 +36,7 @@ const plugins = [
 export default {
 
   resolve: {
-    extensions: ['', '.js', '.jsx'],
+    extensions: ['.js', '.jsx'],
   },
 
   devtool: 'source-map',
@@ -50,12 +50,16 @@ export default {
     path: path.join(__dirname, '../build'),
     publicPath: options.debug ? `${webpackDevServerAddress}/build/` : '/build/',
   },
+  
+  node: {
+    fs: 'empty'
+  },
 
   module: {
     loaders: [
       {
         test: /\.md$/i,
-        loader: 'raw'
+        loader: 'raw-loader'
       },
       {
         test: /\.jsx?$/,
@@ -67,11 +71,14 @@ export default {
       },
       {
         test: /\.css/,
-        loader: ExtractTextPlugin.extract('style', `css${cssSourceMap}`)
+        loader: ExtractTextPlugin.extract({ 
+          fallback: 'style-loader', 
+          use: `css-loader${cssSourceMap}` 
+        })
       },
       {
         test: /\.json$/,
-        loader: 'json'
+        loader: 'json-loader'
       },
       {
         test: /\.jpe?g$|\.gif$|\.png|\.ico$/,
