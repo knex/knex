@@ -156,6 +156,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
           <li>– <a href="#Schema-table">table</a></li>
           <li>– <a href="#Schema-raw">raw</a></li>
+          <li>– <a href="#Schema-queryContext">queryContext</a></li>
           <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
           <li>– <a href="#Schema-dropColumn">dropColumn</a></li>
           <li>– <a href="#Schema-dropColumns">dropColumns</a></li>
@@ -192,6 +193,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-dropForeign">dropForeign</a></li>
           <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
           <li>– <a href="#Schema-dropPrimary">dropPrimary</a></li>
+          <li>– <a href="#Schema-table-queryContext">queryContext</a></li>
           <li><a href="#Chainable"><b>Chainable:</b></a></li>
           <li>– <a href="#Schema-alter">alter</a></li>
           <li>– <a href="#Schema-index">index</a></li>
