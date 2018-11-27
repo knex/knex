@@ -9,6 +9,7 @@
 
 ### New features:
 
+- Support passing explicit connection to query builder (#2817)
 - Introduced abstraction for getting migrations to make migration bundling easier #2775
 - Allow timestamp with timezone on mssql databases #2724
 - Allow specifying multiple migration directories #2735
@@ -26,6 +27,8 @@
 - Kill queries after timeout for PostgreSQL #2636
 - Manage TypeScript types internally #2845
 - Support 5.0.0+ versions of mssql driver #2861
+- Typescript migration stub #2816
+- Options object for passing timestamp parameters + regression tests #2919
 
 ### Bug fixes:
 
@@ -37,6 +40,12 @@
 - Throw instead of process.exit when client module missing #2843
 - Display correct filename of a migration that failed #2910
 - Fixed support of knexSnakeCaseWrappers in migrations #2914
+- SQlite3 renameColunm quote fix #2833
+- Adjust typing for forUpdate()/forShare() variant with table names #2858
+- Fix execution of Oracle tests on Node 11 #2920
+- Fix failures in oracle test bench and added it back to mandatory CI tests #2924
+- Knex client knexfile resolution fix #2923
+- Add queryContext to type declarations #2931
 
 ### Test / internal changes
 
@@ -45,6 +54,13 @@
 - Separate migration generator #2786
 - Do not postprocess internal queries in Migrator #2914
 - Use Babel 7 #2813
+- Introduce LGTM.com badge #2755
+- Cleanup based on analysis by https://lgtm.com #2870
+- Add test for retrieving null dates #2865
+- Add link to wiki #2866
+- Add tests for specifying explicit pg version #2895
+- Execute tests on Node.js 11 #2873
+- Version upgrade guide #2894
 
 # 0.15.2 - 19 Jul, 2018
 
