@@ -56,22 +56,21 @@ function mkConfigObj(opts) {
 function initKnex(env, opts) {
   checkLocalModule(env);
 
-  if (!opts.knexfile) {
-    if (opts.client) {
-      env.configuration = mkConfigObj(opts);
-    } else {
-      exit(
-        'No knexfile found in this directory. Specify a path with --knexfile or pass --client and --connection params in commandline'
-      );
-    }
+  // Check if all the options are present to generate a proper config object
+  if (opts.client && opts.connection && opts.migrations && opts.directory) {
+    env.configuration = mkConfigObj(opts);
   }
-  // If knexfile is specified
+  // Otherwise use knexfile resolution
   else {
-    env.configuration = require(opts.knexfile);
+    const knexfilePath = opts.knexfile
+      ? path.resolve(opts.knexfile)
+      : path.resolve(process.cwd(), 'knexfile.js');
+    env.configuration = require(knexfilePath);
   }
 
   if (process.cwd() !== env.cwd) {
-    process.chdir(env.cwd);
+    // Resolve path to eliminate ambiguity
+    process.chdir(path.resolve(env.cwd));
     console.log(
       'Working directory changed to',
       chalk.magenta(tildify(env.cwd))
