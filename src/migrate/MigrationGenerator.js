@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import Promise from 'bluebird';
-import { template } from 'lodash';
+import { each, template } from 'lodash';
 import { getMergedConfig } from './Migrator';
 
 export default class MigrationGenerator {
@@ -22,6 +22,41 @@ export default class MigrationGenerator {
     return this._ensureFolder(config)
       .then((val) => this._generateStubTemplate(val))
       .then((val) => this._writeNewMigration(name, val));
+  }
+
+  print(migrationListResolver, config, direction) {
+    return migrationListResolver
+      .listAll(config.migrationSource)
+      .then((migrationFiles) => {
+        let current = Promise.bind({ failed: false, failedOn: 0 });
+
+        each(migrationFiles, (migrationFile) => {
+          const directory = config.directory;
+          const migration = require(directory + '/' + migrationFile);
+
+          if (direction === 'up' || direction === 'all') {
+            current = current.then(() => {
+              /* eslint-disable no-console */
+              console.log(`\n${migrationFile}`);
+              console.log('======== UP ==========');
+              /* eslint-enable no-console */
+              return migration['up'](this.knex, Promise);
+            });
+          }
+
+          if (direction === 'down' || direction === 'all') {
+            current = current.then(() => {
+              /* eslint-disable no-console */
+              console.log(`\n${migrationFile}`);
+              console.log('======== DOWN ==========');
+              /* eslint-enable no-console */
+              return migration['down'](this.knex, Promise);
+            });
+          }
+        });
+
+        return current.thenReturn();
+      });
   }
 
   // Ensures a folder for the migrations exist, dependent on the migration

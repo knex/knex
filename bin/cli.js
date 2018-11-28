@@ -27,11 +27,13 @@ function success(text) {
 }
 
 function checkMigrationDirection(direction) {
-  if (!direction) return;
+  if (!direction) {
+    return;
+  }
 
   if (direction !== 'up' && direction !== 'down') {
     console.log(chalk.red('Direction is invalid'));
-    exit('Try to pass: up or down.');
+    exit('Supported directions: up, down');
   }
 }
 
@@ -252,13 +254,14 @@ function invoke(env) {
       '--direction',
       'Specify migration direction to print. It can be "up" or "down"'
     )
-    .action(function() {
-      checkMigrationDirection(argv.direction);
-      const direction = argv.direction || 'all';
+    .action(() => {
+      const directionOption = argv.direction && argv.direction.toLowerCase();
+      checkMigrationDirection(directionOption);
+      const direction = directionOption || 'all';
 
-      pending = initKnex(env)
+      pending = initKnex(env, commander.opts())
         .migrate.print(direction)
-        .then(function() {
+        .then(() => {
           process.exit(0);
         })
         .catch(exit);

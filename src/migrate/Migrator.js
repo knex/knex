@@ -152,6 +152,12 @@ export default class Migrator {
     return this.generator.make(name, this.config);
   }
 
+  print(direction) {
+    global.print = true;
+
+    return this.generator.print(migrationListResolver, this.config, direction);
+  }
+
   _isLocked(trx) {
     const tableName = getLockTableName(this.config.tableName);
     return getTable(this.knex, tableName, this.config.schemaName)
