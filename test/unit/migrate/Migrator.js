@@ -40,13 +40,13 @@ describe('Migrator', () => {
   describe('uses postProcessResponse for migrations', (done) => {
     let migrationSource;
     let knex;
-    before(() => {
+    beforeEach(() => {
       migrationSource = new FsMigrations(
         'test/unit/migrate/processed-migrations/'
       );
     });
 
-    after(() => {
+    afterEach(() => {
       knex.destroy();
     });
 
