@@ -54,6 +54,26 @@ function initContext(knexFn) {
       return this.client.ref(ref);
     },
 
+    disableProcessing() {
+      if (this.userParams.isProcessingDisabled) {
+        return;
+      }
+      this.userParams.wrapIdentifier = this.client.config.wrapIdentifier;
+      this.userParams.postProcessResponse = this.client.config.postProcessResponse;
+      this.client.config.wrapIdentifier = null;
+      this.client.config.postProcessResponse = null;
+      this.userParams.isProcessingDisabled = true;
+    },
+
+    enableProcessing() {
+      if (!this.userParams.isProcessingDisabled) {
+        return;
+      }
+      this.client.config.wrapIdentifier = this.userParams.wrapIdentifier;
+      this.client.config.postProcessResponse = this.userParams.postProcessResponse;
+      this.userParams.isProcessingDisabled = false;
+    },
+
     withUserParams(params) {
       const knexClone = shallowCloneFunction(knexFn); // We need to include getters in our clone
       if (this.client) {
@@ -103,6 +123,8 @@ function redefineProperties(knex, client) {
         knex.ref = context.ref;
         knex.withUserParams = context.withUserParams;
         knex.queryBuilder = context.queryBuilder;
+        knex.disableProcessing = context.disableProcessing;
+        knex.enableProcessing = context.enableProcessing;
       },
       configurable: true,
     },

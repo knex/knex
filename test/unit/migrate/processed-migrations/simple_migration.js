@@ -5,5 +5,5 @@ exports.up = (knex) => {
 };
 
 exports.down = (knex) => {
-  return knex.schema.dropTable('rules');
+  return knex.schema.dropTable('old_users');
 };

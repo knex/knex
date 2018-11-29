@@ -8,10 +8,11 @@ describe('Migrator', () => {
   describe('does not use postProcessResponse for internal queries', (done) => {
     let migrationSource;
     let knex;
-    before(() => {
+    beforeEach(() => {
       migrationSource = new FsMigrations('test/unit/migrate/migrations/');
       knex = Knex({
         ...sqliteConfig,
+        connection: ':memory:',
         migrationSource,
         postProcessResponse: () => {
           throw new Error('Response was processed');
@@ -19,10 +20,8 @@ describe('Migrator', () => {
       });
     });
 
-    after(() => {
-      return knex.migrate.rollback({
-        directory: 'test/unit/migrate/migrations',
-      });
+    afterEach(() => {
+      knex.destroy();
     });
 
     it('latest', (done) => {
@@ -48,14 +47,13 @@ describe('Migrator', () => {
     });
 
     after(() => {
-      return knex.migrate.rollback({
-        directory: 'test/unit/migrate/processed-migrations',
-      });
+      knex.destroy();
     });
 
     it('latest', (done) => {
       knex = Knex({
         ...sqliteConfig,
+        connection: ':memory:',
         migrationSource,
         postProcessResponse: () => {
           done();
