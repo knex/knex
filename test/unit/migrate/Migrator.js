@@ -13,7 +13,7 @@ describe('Migrator', () => {
       knex = Knex({
         ...sqliteConfig,
         migrationSource,
-        postProcessResponse: (a, b, c) => {
+        postProcessResponse: () => {
           throw new Error('Response was processed');
         },
       });
