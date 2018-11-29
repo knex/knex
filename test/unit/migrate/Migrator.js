@@ -13,9 +13,15 @@ describe('Migrator', () => {
       knex = Knex({
         ...sqliteConfig,
         migrationSource,
-        postProcessResponse: () => {
+        postProcessResponse: (a, b, c) => {
           throw new Error('Response was processed');
         },
+      });
+    });
+
+    after(() => {
+      return knex.migrate.rollback({
+        directory: 'test/unit/migrate/migrations',
       });
     });
 
@@ -28,6 +34,38 @@ describe('Migrator', () => {
           .then(() => {
             done();
           });
+      }).not.to.throw();
+    });
+  });
+
+  describe('uses postProcessResponse for migrations', (done) => {
+    let migrationSource;
+    let knex;
+    before(() => {
+      migrationSource = new FsMigrations(
+        'test/unit/migrate/processed-migrations/'
+      );
+    });
+
+    after(() => {
+      return knex.migrate.rollback({
+        directory: 'test/unit/migrate/processed-migrations',
+      });
+    });
+
+    it('latest', (done) => {
+      knex = Knex({
+        ...sqliteConfig,
+        migrationSource,
+        postProcessResponse: () => {
+          done();
+        },
+      });
+
+      expect(() => {
+        knex.migrate.latest({
+          directory: 'test/unit/migrate/processed-migrations',
+        });
       }).not.to.throw();
     });
   });
