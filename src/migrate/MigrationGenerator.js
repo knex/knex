@@ -24,33 +24,36 @@ export default class MigrationGenerator {
       .then((val) => this._writeNewMigration(name, val));
   }
 
-  print(migrationListResolver, config, direction) {
+  print(migrationListResolver, knex, config, direction) {
     return migrationListResolver
       .listAll(config.migrationSource)
       .then((migrationFiles) => {
         let current = Promise.bind({ failed: false, failedOn: 0 });
 
         each(migrationFiles, (migrationFile) => {
-          const directory = config.directory;
-          const migration = require(directory + '/' + migrationFile);
+          const directory = path.resolve(
+            process.cwd(),
+            migrationFile.directory
+          );
+          const migration = require(directory + '/' + migrationFile.file);
 
           if (direction === 'up' || direction === 'all') {
             current = current.then(() => {
               /* eslint-disable no-console */
-              console.log(`\n${migrationFile}`);
+              console.log(`\n${migrationFile.file}`);
               console.log('======== UP ==========');
               /* eslint-enable no-console */
-              return migration['up'](this.knex, Promise);
+              return migration['up'](knex, Promise);
             });
           }
 
           if (direction === 'down' || direction === 'all') {
             current = current.then(() => {
               /* eslint-disable no-console */
-              console.log(`\n${migrationFile}`);
+              console.log(`\n${migrationFile.file}`);
               console.log('======== DOWN ==========');
               /* eslint-enable no-console */
-              return migration['down'](this.knex, Promise);
+              return migration['down'](knex, Promise);
             });
           }
         });

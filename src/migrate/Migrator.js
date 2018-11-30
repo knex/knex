@@ -155,7 +155,9 @@ export default class Migrator {
   print(direction) {
     global.print = true;
 
-    return this.generator.print(migrationListResolver, this.config, direction);
+    return this.generator
+      .print(migrationListResolver, this.knex, this.config, direction)
+      .finally(() => delete global.print);
   }
 
   _isLocked(trx) {

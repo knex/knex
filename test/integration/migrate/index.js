@@ -331,6 +331,22 @@ module.exports = function(knex) {
       });
     });
 
+    describe('knex.migrate.print', function() {
+      before(function() {
+        return knex.migrate.print('all');
+      });
+      after(function() {
+        delete global.print;
+      });
+      it('should not execute the migrations', function() {
+        return knex('knex_migrations')
+          .select('*')
+          .then(function(data) {
+            expect(data.length).to.equal(0);
+          });
+      });
+    });
+
     after(function() {
       rimraf.sync(path.join(__dirname, './migration'));
     });
