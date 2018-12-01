@@ -11,6 +11,7 @@ const argv = require('minimist')(process.argv.slice(2));
 const fs = Promise.promisifyAll(require('fs'));
 const cliPkg = require('../package');
 const { resolveClientNameWithAliases } = require('../lib/helpers');
+const DEFAULT_EXT = 'js';
 
 function exit(text) {
   if (text instanceof Error) {
@@ -41,7 +42,7 @@ function mkConfigObj(opts) {
   const resolvedClientName = resolveClientNameWithAliases(opts.client);
   const useNullAsDefault = resolvedClientName === 'sqlite3';
   return {
-    ext: 'js',
+    ext: DEFAULT_EXT,
     [envName]: {
       useNullAsDefault,
       client: opts.client,
@@ -55,27 +56,27 @@ function mkConfigObj(opts) {
 
 function initKnex(env, opts) {
   checkLocalModule(env);
-
-  if (!opts.knexfile) {
-    if (opts.client) {
-      env.configuration = mkConfigObj(opts);
-    } else {
-      exit(
-        'No knexfile found in this directory. Specify a path with --knexfile or pass --client and --connection params in commandline'
-      );
-    }
-  }
-  // If knexfile is specified
-  else {
-    env.configuration = require(opts.knexfile);
-  }
-
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
     console.log(
       'Working directory changed to',
       chalk.magenta(tildify(env.cwd))
     );
+  }
+
+  if (!opts.knexfile) {
+    env.configuration = mkConfigObj(opts);
+  }
+  // If knexfile is specified
+  else {
+    const resolvedKnexfilePath = path.resolve(opts.knexfile);
+    env.configuration = require(resolvedKnexfilePath);
+
+    if (!env.configuration) {
+      exit(
+        'No knexfile found in this directory. Specify a path with --knexfile or pass --client and --connection params in commandline'
+      );
+    }
   }
 
   let environment = opts.env || process.env.NODE_ENV;
@@ -106,7 +107,8 @@ function initKnex(env, opts) {
 }
 
 function invoke(env) {
-  env.modulePath = env.modulePath || process.env.KNEX_PATH;
+  env.modulePath = env.modulePath || env.knexpath || process.env.KNEX_PATH;
+
   const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
   let pending = null;
 
@@ -122,6 +124,7 @@ function invoke(env) {
     )
     .option('--debug', 'Run with debugging.')
     .option('--knexfile [path]', 'Specify the knexfile path.')
+    .option('--knexpath [path]', 'Specify the path to knex instance.')
     .option('--cwd [path]', 'Specify the working directory.')
     .option('--client [name]', 'Set DB client without a knexfile.')
     .option('--connection [address]', 'Set DB connection without a knexfile.')
@@ -147,7 +150,7 @@ function invoke(env) {
         exit(`Invalid filetype specified: ${type}`);
       }
       if (env.configuration) {
-        exit(`Error: ${env.configuration} already exists`);
+        exit(`Error: ${env.knexfile} already exists`);
       }
       checkLocalModule(env);
       const stubPath = `./knexfile.${type}`;
@@ -178,7 +181,11 @@ function invoke(env) {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
       const instance = initKnex(env, opts);
-      const ext = (argv.x || env.configuration.ext).toLowerCase();
+      const ext = (
+        argv.x ||
+        env.configuration.ext ||
+        DEFAULT_EXT
+      ).toLowerCase();
       pending = instance.migrate
         .make(name, { extension: ext })
         .then((name) => {
@@ -247,7 +254,11 @@ function invoke(env) {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
       const instance = initKnex(env, opts);
-      const ext = (argv.x || env.configuration.ext).toLowerCase();
+      const ext = (
+        argv.x ||
+        env.configuration.ext ||
+        DEFAULT_EXT
+      ).toLowerCase();
       pending = instance.seed
         .make(name, { extension: ext })
         .then((name) => {
@@ -299,7 +310,9 @@ cli.on('requireFail', function(name) {
 
 cli.launch(
   {
-    cwd: argv.cwd,
+    cwd: argv.cwd || process.cwd(),
+    knexfile: argv.knexfile,
+    knexpath: argv.knexpath,
     require: argv.require,
     completion: argv.completion,
   },

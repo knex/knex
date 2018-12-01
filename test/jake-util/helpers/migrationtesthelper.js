@@ -29,7 +29,7 @@ function test(taskList, description, func) {
   taskList.push(taskName);
   task(taskName, { async: true }, () => {
     let itFails = false;
-    func(tempFolder)
+    return func(tempFolder)
       .then(() => {
         console.log('☑ ' + description);
       })

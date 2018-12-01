@@ -10,8 +10,7 @@ const path = require('path');
 const sqlite3 = require('sqlite3');
 const { assert } = require('chai');
 
-const KNEX_PATH = path.normalize(__dirname + '/../../knex.js');
-const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
+const KNEX = path.normalize(__dirname + '/../../../bin/cli.js');
 
 /* * * HELPERS * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -19,7 +18,7 @@ function assertExec(cmd, desc) {
   desc = desc || 'Run ' + cmd;
   return new Promise((resolve, reject) => {
     let stderr = '';
-    const bin = jake.createExec([`KNEX_PATH=${KNEX_PATH} ${cmd}`]);
+    const bin = jake.createExec([cmd]);
     bin.addListener('error', (msg, code) =>
       reject(Error(desc + ' FAIL. ' + stderr))
     );
@@ -123,4 +122,8 @@ test('Run migrations', (temp) =>
     )
     .then((row) => assert.equal(row.name, '000_create_rule_table.js')));
 
-task('default', taskList);
+//task('default', taskList);
+
+module.exports = {
+  taskList,
+};
