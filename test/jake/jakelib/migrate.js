@@ -122,8 +122,6 @@ test('Run migrations', (temp) =>
     )
     .then((row) => assert.equal(row.name, '000_create_rule_table.js')));
 
-//task('default', taskList);
-
 module.exports = {
   taskList,
 };

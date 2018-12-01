@@ -27,8 +27,6 @@ test(taskList, 'resolves knexfile correctly with cwd specified', (temp) => {
   );
 });
 
-//task('default', taskList);
-
 module.exports = {
   taskList,
 };
