@@ -310,7 +310,7 @@ cli.on('requireFail', function(name) {
 
 cli.launch(
   {
-    cwd: argv.cwd || process.cwd(),
+    cwd: argv.cwd,
     knexfile: argv.knexfile,
     knexpath: argv.knexpath,
     require: argv.require,
