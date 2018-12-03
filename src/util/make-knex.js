@@ -54,6 +54,8 @@ function initContext(knexFn) {
       return this.client.ref(ref);
     },
 
+    // Do not document this as public API until naming and API is improved for general consumption
+    // This method exists to disable processing of internal queries in migrations
     disableProcessing() {
       if (this.userParams.isProcessingDisabled) {
         return;
@@ -65,6 +67,8 @@ function initContext(knexFn) {
       this.userParams.isProcessingDisabled = true;
     },
 
+    // Do not document this as public API until naming and API is improved for general consumption
+    // This method exists to enable execution of non-internal queries with consistent identifier naming in migrations
     enableProcessing() {
       if (!this.userParams.isProcessingDisabled) {
         return;

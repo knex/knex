@@ -51,20 +51,24 @@ describe('Migrator', () => {
     });
 
     it('latest', (done) => {
+      let wasPostProcessed = false;
       knex = Knex({
         ...sqliteConfig,
         connection: ':memory:',
         migrationSource,
         postProcessResponse: () => {
-          done();
+          wasPostProcessed = true;
         },
       });
 
-      expect(() => {
-        knex.migrate.latest({
+      knex.migrate
+        .latest({
           directory: 'test/unit/migrate/processed-migrations',
+        })
+        .then(() => {
+          expect(wasPostProcessed).to.equal(true);
+          done();
         });
-      }).not.to.throw();
     });
   });
 });
