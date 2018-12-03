@@ -8,15 +8,20 @@ describe('Migrator', () => {
   describe('does not use postProcessResponse for internal queries', (done) => {
     let migrationSource;
     let knex;
-    before(() => {
+    beforeEach(() => {
       migrationSource = new FsMigrations('test/unit/migrate/migrations/');
       knex = Knex({
         ...sqliteConfig,
+        connection: ':memory:',
         migrationSource,
         postProcessResponse: () => {
           throw new Error('Response was processed');
         },
       });
+    });
+
+    afterEach(() => {
+      knex.destroy();
     });
 
     it('latest', (done) => {
@@ -29,6 +34,41 @@ describe('Migrator', () => {
             done();
           });
       }).not.to.throw();
+    });
+  });
+
+  describe('uses postProcessResponse for migrations', (done) => {
+    let migrationSource;
+    let knex;
+    beforeEach(() => {
+      migrationSource = new FsMigrations(
+        'test/unit/migrate/processed-migrations/'
+      );
+    });
+
+    afterEach(() => {
+      knex.destroy();
+    });
+
+    it('latest', (done) => {
+      let wasPostProcessed = false;
+      knex = Knex({
+        ...sqliteConfig,
+        connection: ':memory:',
+        migrationSource,
+        postProcessResponse: () => {
+          wasPostProcessed = true;
+        },
+      });
+
+      knex.migrate
+        .latest({
+          directory: 'test/unit/migrate/processed-migrations',
+        })
+        .then(() => {
+          expect(wasPostProcessed).to.equal(true);
+          done();
+        });
     });
   });
 });

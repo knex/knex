@@ -296,10 +296,7 @@ _.assign(Oracledb_Compiler.prototype, {
     let returningClause = '';
     let intoClause = '';
 
-    if (
-      _.isEmpty(updates) &&
-      typeof this.single.update !== 'function'
-    ) {
+    if (_.isEmpty(updates) && typeof this.single.update !== 'function') {
       return '';
     }
 
