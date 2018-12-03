@@ -1,5 +1,7 @@
 # Master (Unreleased)
 
+# 0.16.1 - 28 Nov, 2018
+
 ### Breaking Changes:
 
 - Use datetime2 for MSSQL datetime + timestamp types. This change is incompatible with MSSQL older than 2008 #2757
@@ -19,7 +21,7 @@
 - Added `whereColumn` and the associated `not` / `and` / `or` methods for using columns on the right side of a where clause #2837
 - Added `whereRecursive` method to make self-referential CTEs possible #2889
 - Added support for named unique, primary and foreign keys to SQLite3 #2840
-- Added support for generating new migration and seed files without knexfile #2884 #2905
+- Added support for generating new migration and seed files without knexfile #2884 #2905 #2935
 - Added support for multiple columns in `.orderBy()` #2881
 - Added option of `existingType` to `.enum()` method to support repeated use of enums #2719
 - Added option to pass `indexType` for MySQL dialect #2890
@@ -52,8 +54,8 @@
 - Add tests for multiple union arguments with callbacks and builders #2749
 - Update dependencies #2772 #2810 #2842 #2848 #2893 #2904
 - Separate migration generator #2786
-- Do not postprocess internal queries in Migrator #2914
-- Use Babel 7 #2813
+- Do not postprocess internal queries in Migrator #2914 #2934
+- Use Babel 7 #2813 
 - Introduce LGTM.com badge #2755
 - Cleanup based on analysis by https://lgtm.com #2870
 - Add test for retrieving null dates #2865
@@ -61,6 +63,12 @@
 - Add tests for specifying explicit pg version #2895
 - Execute tests on Node.js 11 #2873
 - Version upgrade guide #2894
+
+# 0.16.0 - 27 Nov, 2018
+
+### Changes:
+
+- THIS RELEASE WAS UNPUBLISHED FROM NPM BECAUSE IT HAD BROKEN MIGRATIONS USING `postprocessResponse` FEATURE (#2644) 
 
 # 0.15.2 - 19 Jul, 2018
 
