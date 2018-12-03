@@ -1,0 +1,16 @@
+#!/usr/bin/env jake
+'use strict';
+/* eslint-disable no-undef */
+/* eslint-disable no-console */
+
+const knexfileTests = require('./jakelib/knexfile').taskList;
+const migrateTests = require('./jakelib/migrate').taskList;
+
+const tests = [
+  ...knexfileTests,
+  ...migrateTests,
+];
+
+task('default', tests, () => {
+  console.log('All done.');
+});
