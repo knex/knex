@@ -50,7 +50,6 @@ function initKnex(env, opts) {
     );
   }
 
-  // Check if all the options are present to generate a proper config object
   if (!opts.knexfile) {
     const configuration = tryLoadingDefaultConfiguration();
     env.configuration = configuration || mkConfigObj(opts);
