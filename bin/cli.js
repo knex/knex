@@ -10,8 +10,11 @@ const commander = require('commander');
 const argv = require('minimist')(process.argv.slice(2));
 const fs = Promise.promisifyAll(require('fs'));
 const cliPkg = require('../package');
-const { resolveClientNameWithAliases } = require('../lib/helpers');
-const DEFAULT_EXT = 'js';
+const {
+  mkConfigObj,
+  tryLoadingDefaultConfiguration,
+} = require('./utils/cli-config-utils');
+const { DEFAULT_EXT } = require('./utils/constants');
 
 function exit(text) {
   if (text instanceof Error) {
@@ -33,25 +36,8 @@ function checkLocalModule(env) {
       chalk.red('No local knex install found in:'),
       chalk.magenta(tildify(env.cwd))
     );
-    exit('Try running: npm install knex.');
+    exit('Try running: npm install knex');
   }
-}
-
-function mkConfigObj(opts) {
-  const envName = opts.env || process.env.NODE_ENV || 'development';
-  const resolvedClientName = resolveClientNameWithAliases(opts.client);
-  const useNullAsDefault = resolvedClientName === 'sqlite3';
-  return {
-    ext: DEFAULT_EXT,
-    [envName]: {
-      useNullAsDefault,
-      client: opts.client,
-      connection: opts.connection,
-      migrations: {
-        directory: opts.migrationsDirectory,
-      },
-    },
-  };
 }
 
 function initKnex(env, opts) {
@@ -64,8 +50,10 @@ function initKnex(env, opts) {
     );
   }
 
+  // Check if all the options are present to generate a proper config object
   if (!opts.knexfile) {
-    env.configuration = mkConfigObj(opts);
+    const configuration = tryLoadingDefaultConfiguration();
+    env.configuration = configuration || mkConfigObj(opts);
   }
   // If knexfile is specified
   else {
@@ -74,7 +62,7 @@ function initKnex(env, opts) {
 
     if (!env.configuration) {
       exit(
-        'No knexfile found in this directory. Specify a path with --knexfile or pass --client and --connection params in commandline'
+        'Knexfile not found. Specify a path with --knexfile or pass --client and --connection params in commandline'
       );
     }
   }
