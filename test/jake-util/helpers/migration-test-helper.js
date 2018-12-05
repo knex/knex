@@ -20,6 +20,23 @@ function assertExec(cmd, desc) {
   });
 }
 
+function assertExecError(cmd, desc) {
+  desc = desc || 'Run ' + cmd;
+  return new Promise((resolve, reject) => {
+    let stderr = '';
+    console.log(`Executing: ${cmd}`);
+    const bin = jake.createExec([cmd]);
+    bin.addListener('error', (msg, code) => {
+      resolve(stderr);
+    });
+    bin.addListener('cmdEnd', () => {
+      throw new Error('Error was expected, but none thrown');
+    });
+    bin.addListener('stderr', (data) => (stderr += data.toString()));
+    bin.run();
+  });
+}
+
 function test(taskList, description, func) {
   const tmpDirPath = os.tmpdir() + '/knex-test-';
   rimrafSync(tmpDirPath);
@@ -39,7 +56,7 @@ function test(taskList, description, func) {
       })
       .then(() => {
         rimrafSync(tmpDirPath);
-        rimrafSync('test/jake/test.sqlite3');
+        rimrafSync(__dirname + '/../test.sqlite3');
         if (itFails) {
           process.exit(1);
         }
@@ -49,5 +66,6 @@ function test(taskList, description, func) {
 
 module.exports = {
   assertExec,
+  assertExecError,
   test,
 };
