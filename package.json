@@ -44,7 +44,7 @@
     "chai-subset-in-order": "^2.1.2",
     "coveralls": "^3.0.2",
     "cross-env": "^5.2.0",
-    "eslint": "5.9.0",
+    "eslint": "5.10.0",
     "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-import": "^2.14.0",
     "husky": "^1.2.0",

@@ -1,11 +1,20 @@
 const Knex = require('../../lib/index');
 const { expect } = require('chai');
-const Promise = require('bluebird');
+const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
 const { noop } = require('lodash');
 
 describe('knex', () => {
+  it('preserves global Bluebird Promise', () => {
+    const oldPromise = global.Promise;
+    global.Promise = bluebird;
+    expect(Promise.map).to.be.a('function'); // eslint-disable-line no-undef
+    require('../../knex');
+    expect(Promise.map).to.be.a('function'); // eslint-disable-line no-undef
+    global.Promise = oldPromise;
+  });
+
   describe('supports passing existing connection', () => {
     let connection;
     beforeEach(() => {
@@ -143,7 +152,7 @@ describe('knex', () => {
         userParam: '451',
       });
       done();
-      return Promise.resolve();
+      return bluebird.resolve();
     });
   });
 
@@ -157,7 +166,7 @@ describe('knex', () => {
         /Cannot set user params on a transaction - it can only inherit params from main knex instance/
       );
       done();
-      return Promise.resolve();
+      return bluebird.resolve();
     });
   });
 
