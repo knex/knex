@@ -150,7 +150,8 @@
     "knex.js",
     "LICENSE",
     "CHANGELOG.md",
-    "scripts/*"
+    "scripts/*",
+    "types/*"
   ],
   "license": "MIT",
   "tonicExampleFilename": "scripts/runkit-example.js",
