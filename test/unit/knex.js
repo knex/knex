@@ -7,10 +7,12 @@ const { noop } = require('lodash');
 
 describe('knex', () => {
   it('preserves global Bluebird Promise', () => {
+    const oldPromise = global.Promise;
     global.Promise = bluebird;
     expect(Promise.map).to.be.a('function'); // eslint-disable-line no-undef
     require('../../knex');
     expect(Promise.map).to.be.a('function'); // eslint-disable-line no-undef
+    global.Promise = oldPromise;
   });
 
   describe('supports passing existing connection', () => {
