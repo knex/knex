@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.16.2 - 10 Dec, 2018
+
+### Bug fixes:
+
+- Add TypeScript types to the "files" entry so they are properly included in the release.
+
 # 0.16.1 - 28 Nov, 2018
 
 ### Breaking Changes:
@@ -55,7 +61,7 @@
 - Update dependencies #2772 #2810 #2842 #2848 #2893 #2904
 - Separate migration generator #2786
 - Do not postprocess internal queries in Migrator #2914 #2934
-- Use Babel 7 #2813 
+- Use Babel 7 #2813
 - Introduce LGTM.com badge #2755
 - Cleanup based on analysis by https://lgtm.com #2870
 - Add test for retrieving null dates #2865
@@ -68,7 +74,7 @@
 
 ### Changes:
 
-- THIS RELEASE WAS UNPUBLISHED FROM NPM BECAUSE IT HAD BROKEN MIGRATIONS USING `postprocessResponse` FEATURE (#2644) 
+- THIS RELEASE WAS UNPUBLISHED FROM NPM BECAUSE IT HAD BROKEN MIGRATIONS USING `postprocessResponse` FEATURE (#2644)
 
 # 0.15.2 - 19 Jul, 2018
 
