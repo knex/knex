@@ -5631,7 +5631,7 @@ describe('QueryBuilder', function() {
     );
   });
 
-  it('update method with joins mysql', function() {
+  it('update method with joins on mysql and postgresql', function() {
     testsql(
       qb()
         .from('users')
@@ -5651,12 +5651,12 @@ describe('QueryBuilder', function() {
         },
         pg: {
           sql:
-            'update "users" set "email" = ?, "name" = ? where "users"."id" = ?',
+            'update "users" set "email" = ?, "name" = ? from "users" inner join "orders" on "users"."id" = "orders"."user_id" where "users"."id" = ?',
           bindings: ['foo', 'bar', 1],
         },
         'pg-redshift': {
           sql:
-            'update "users" set "email" = ?, "name" = ? where "users"."id" = ?',
+            'update "users" set "email" = ?, "name" = ? from "users" inner join "orders" on "users"."id" = "orders"."user_id" where "users"."id" = ?',
           bindings: ['foo', 'bar', 1],
         },
       }
@@ -6633,7 +6633,7 @@ describe('QueryBuilder', function() {
     );
   });
 
-  it('does an update with join on mysql, #191', function() {
+  it('does an update with join on mysql and postgresql, #191', function() {
     var setObj = { 'tblPerson.City': 'Boonesville' };
     var query = qb()
       .table('tblPerson')
@@ -6660,12 +6660,12 @@ describe('QueryBuilder', function() {
       },
       pg: {
         sql:
-          'update "tblPerson" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
+          'update "tblPerson" set "tblPerson"."City" = ? from "tblPerson" inner join "tblPersonData" on "tblPersonData"."PersonId" = "tblPerson"."PersonId" where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
         bindings: ['Boonesville', 1, 5],
       },
       'pg-redshift': {
         sql:
-          'update "tblPerson" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
+          'update "tblPerson" set "tblPerson"."City" = ? from "tblPerson" inner join "tblPersonData" on "tblPersonData"."PersonId" = "tblPerson"."PersonId" where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
         bindings: ['Boonesville', 1, 5],
       },
     });
