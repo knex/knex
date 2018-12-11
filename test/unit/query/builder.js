@@ -5499,6 +5499,40 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('update method with joins', function() {
+    testsql(
+      qb()
+        .innerJoin('orders', function() {
+          this.on(`users.id`, `orders.userId`).andOn(`orders.status`, 'paid');
+        })
+        .update({ email: 'foo', name: 'bar' })
+        .table('users')
+        .where('id', '=', 1),
+      {
+        mysql: {
+          sql:
+            'update `users` inner join `orders` on `users`.`id` = `orders`.`userId` and `orders`.`status` = `paid` set `email` = ?, `name` = ? where `id` = ?',
+          bindings: ['foo', 'bar', 1],
+        },
+        mssql: {
+          sql:
+            'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[userId] and [orders].[status] = [paid] where [id] = ?;select @@rowcount',
+          bindings: ['foo', 'bar', 1],
+        },
+        pg: {
+          sql:
+            'update "users" set "email" = ?, "name" = ? from "users" inner join "orders" on "users"."id" = "orders"."userId" and "orders"."status" = "paid" where "id" = ?',
+          bindings: ['foo', 'bar', 1],
+        },
+        'pg-redshift': {
+          sql:
+            'update "users" set "email" = ?, "name" = ? from "users" inner join "orders" on "users"."id" = "orders"."userId" and "orders"."status" = "paid" where "id" = ?',
+          bindings: ['foo', 'bar', 1],
+        },
+      }
+    );
+  });
+
   it('update only method', function() {
     testsql(
       qb()

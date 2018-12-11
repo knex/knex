@@ -34,6 +34,7 @@ assign(QueryCompiler_PG.prototype, {
 
   // Compiles an `update` query, allowing for a return value.
   update() {
+    const join = this.join();
     const withSQL = this.with();
     const updateData = this._prepUpdate(this.single.update);
     const wheres = this.where();
@@ -43,6 +44,7 @@ assign(QueryCompiler_PG.prototype, {
         withSQL +
         `update ${this.single.only ? 'only ' : ''}${this.tableName} ` +
         `set ${updateData.join(', ')}` +
+        (join ? ` from ${this.tableName} ${join}` : '') +
         (wheres ? ` ${wheres}` : '') +
         this._returning(returning),
       returning,

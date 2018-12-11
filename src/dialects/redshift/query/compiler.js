@@ -30,7 +30,21 @@ assign(QueryCompiler_Redshift.prototype, {
 
   // Compiles an `update` query, warning on unsupported returning
   update() {
-    const sql = QueryCompiler.prototype.update.apply(this, arguments);
+    // Make sure tableName is processed by the formatter first.
+    const withSQL = this.with();
+    const join = this.join();
+    const tableName = this.tableName;
+    const updateData = this._prepUpdate(this.single.update);
+    const wheres = this.where();
+
+    const sql =
+      withSQL +
+      `update ${this.single.only ? 'only ' : ''}${tableName}` +
+      ' set ' +
+      updateData.join(', ') +
+      (join ? ` from ${this.tableName} ${join}` : '') +
+      (wheres ? ` ${wheres}` : '');
+
     this._slightReturn();
     return {
       sql,
