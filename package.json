@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
+    "@types/bluebird": "^3.5.3",
     "bluebird": "^3.5.3",
     "chalk": "2.4.1",
     "commander": "^2.19.0",
