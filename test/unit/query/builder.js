@@ -6499,7 +6499,7 @@ describe('QueryBuilder', function() {
           sql: 'select * from "test"',
           bindings: [],
         },
-      },
+      }
     );
   });
 
