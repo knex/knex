@@ -6476,6 +6476,33 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('should clear offset when passing null', function() {
+    testsql(
+      qb()
+        .from('test')
+        .offset(10)
+        .offset(null),
+      {
+        mysql: {
+          sql: 'select * from `test`',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [test]',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select * from "test"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select * from "test"',
+          bindings: [],
+        },
+      },
+    );
+  });
+
   it('allows passing builder into where clause, #162', function() {
     var chain = qb()
       .from('chapter')
