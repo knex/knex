@@ -1061,6 +1061,42 @@ assign(Builder.prototype, {
     return this;
   },
 
+  // Skips locked rows when using a lock constraint.
+  skipLocked() {
+    const { _method } = this;
+    if (!includes(['pluck', 'first', 'select'], _method)) {
+      throw new Error(`Cannot chain .skipLocked() on "${_method}" query!`);
+    }
+    if (!includes(['forShare', 'forUpdate'], this._single.lock)) {
+      throw new Error(
+        '.skipLocked() can only be used after a call to .forShare() or .forUpdate()!'
+      );
+    }
+    if (this._single.waitMode) {
+      throw new Error('.skipLocked() cannot be used with .noWait()!');
+    }
+    this._single.waitMode = 'skipLocked';
+    return this;
+  },
+
+  // Causes error when acessing a locked row instead of waiting for it to be released.
+  noWait() {
+    const { _method } = this;
+    if (!includes(['pluck', 'first', 'select'], _method)) {
+      throw new Error(`Cannot chain .noWait() on "${_method}" query!`);
+    }
+    if (!includes(['forShare', 'forUpdate'], this._single.lock)) {
+      throw new Error(
+        '.noWait() can only be used after a call to .forShare() or .forUpdate()!'
+      );
+    }
+    if (this._single.waitMode) {
+      throw new Error('.noWait() cannot be used with .skipLocked()!');
+    }
+    this._single.waitMode = 'noWait';
+    return this;
+  },
+
   // Takes a JS object of methods to call and calls them
   fromJS(obj) {
     each(obj, (val, key) => {

@@ -1225,5 +1225,83 @@ module.exports = function(knex) {
             });
         });
     });
+
+    it('forUpdate().skipLocked() should return the first non-locked row', function() {
+      if (knex.client.driverName === 'sqlite3') {
+        return;
+      }
+      const rowName = 'row for skipLocked() test';
+      return knex('test_default_table')
+        .insert([
+          { string: rowName, tinyint: 1 },
+          { string: rowName, tinyint: 2 },
+        ])
+        .then(() => {
+          return knex
+            .transaction((trx) => {
+              // select and lock only the first row from this test
+              return trx('test_default_table')
+                .where({ string: rowName })
+                .orderBy('tinyint', 'asc')
+                .first()
+                .forUpdate()
+                .then((res) => {
+                  // try to lock the second row
+                  return knex('test_default_table')
+                    .where({ string: rowName })
+                    .orderBy('tinyint', 'asc')
+                    .forUpdate()
+                    .skipLocked()
+                    .first();
+                });
+            })
+            .then((res) => {
+              expect(res.tinyint).to.equal(2);
+            });
+        });
+    });
+
+    it('forUpdate().noWait() should reject immediately when a row is locked', function() {
+      if (knex.client.driverName === 'sqlite3') {
+        return;
+      }
+      const rowName = 'row for noWait() test';
+      return knex('test_default_table')
+        .insert([
+          { string: rowName, tinyint: 1 },
+          { string: rowName, tinyint: 2 },
+        ])
+        .then(() => {
+          return knex
+            .transaction((trx) => {
+              // select and lock only the first row from this test
+              return trx('test_default_table')
+                .where({ string: rowName })
+                .orderBy('tinyint', 'asc')
+                .first()
+                .forUpdate()
+                .then((res) => {
+                  // try to lock the second row
+                  return knex('test_default_table')
+                    .where({ string: rowName })
+                    .orderBy('tinyint', 'asc')
+                    .forUpdate()
+                    .noWait()
+                    .first();
+                });
+            })
+            .then((res) => {
+              expect(
+                'The query should have been cancelled when trying to select a locked row'
+              ).to.be.false;
+            })
+            .catch((err) => {
+              // TODO: handle errors from more databases
+              if (knex.client.driverName === 'pg') {
+                expect(err.message).to.contain('could not obtain lock on row');
+              }
+            });
+        });
+    });
   });
 };

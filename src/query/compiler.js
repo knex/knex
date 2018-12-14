@@ -48,6 +48,7 @@ const components = [
   'limit',
   'offset',
   'lock',
+  'waitMode',
 ];
 
 assign(QueryCompiler.prototype, {
@@ -539,6 +540,13 @@ assign(QueryCompiler.prototype, {
   lock() {
     if (this.single.lock) {
       return this[this.single.lock]();
+    }
+  },
+
+  // Compiles the wait mode on the locks.
+  waitMode() {
+    if (this.single.waitMode) {
+      return this[this.single.waitMode]();
     }
   },
 

@@ -102,6 +102,14 @@ assign(QueryCompiler_PG.prototype, {
     );
   },
 
+  skipLocked() {
+    return 'skip locked';
+  },
+
+  noWait() {
+    return 'nowait';
+  },
+
   // Compiles a columnInfo query
   columnInfo() {
     const column = this.single.columnInfo;

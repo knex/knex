@@ -6377,6 +6377,40 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('lock for update with skip locked #1937', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('foo')
+        .first()
+        .forUpdate()
+        .skipLocked(),
+      {
+        pg: {
+          sql: 'select * from "foo" limit ? for update skip locked',
+          bindings: [1],
+        },
+      }
+    );
+  });
+
+  it('lock for update with nowait #1937', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('foo')
+        .first()
+        .forUpdate()
+        .noWait(),
+      {
+        pg: {
+          sql: 'select * from "foo" limit ? for update nowait',
+          bindings: [1],
+        },
+      }
+    );
+  });
+
   it('allows insert values of sub-select, #121', function() {
     testsql(
       qb()
