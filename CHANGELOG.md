@@ -1,10 +1,14 @@
 # Master (Unreleased)
 
+### Bug fixes:
+
+- @babel/polyfill loaded multiple times #2955
+
 # 0.16.2 - 10 Dec, 2018
 
 ### Bug fixes:
 
-- Add TypeScript types to the "files" entry so they are properly included in the release.
+- Add TypeScript types to the "files" entry so they are properly included in the release #2943
 
 # 0.16.1 - 28 Nov, 2018
 
