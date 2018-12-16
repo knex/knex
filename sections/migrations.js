@@ -230,6 +230,7 @@ export default [
       "`disableTransactions`: don't run migrations inside transactions (default `false`)",
       "`sortDirsSeparately`: if true and multiple directories are specified, all migrations from a single directory will be executed before executing migrations in the next folder (default `false`)",
       "`loadExtensions`: array of file extensions which knex will treat as migrations. For example, if you have typescript transpiled into javascript in the same folder, you want to execute only javascript migrations. In this case, set `loadExtensions` to `['.js']` (Notice the dot!) (default `['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts']`)",
+      "`migrationSource`: specify a custom migration source, see [Custom Migration Source](#custom-migration-source) for more info (default filesystem)"
     ]
   },
   {
@@ -302,18 +303,98 @@ export default [
     description: "Retrieves and returns the current migration version, as a promise. If there aren't any migrations run yet, returns \"none\" as the value for the currentVersion.",
     children: [    ]
   },
-	{
-		type: "heading",
-		size: "md",
-		content: "Notes about locks",
-		href: "Notes-about-locks"
-	},
-	{
-		type: "text",
-		content: "A lock system is there to prevent multiple processes from running the same migration batch in the same time. When a batch of migrations is about to be run, the migration system first tries to get a lock using a `SELECT ... FOR UPDATE` statement (preventing race conditions from happening). If it can get a lock, the migration batch will run. If it can't, it will wait until the lock is released."
-	},
-	{
-		type: "text",
-		content: "Please note that if your process unfortunately crashes, the lock will have to be *manually* removed in order to let migrations run again. The locks are saved in a table called \"`tableName`_lock\"; it has a column called `is_locked` that you need to set to `0` in order to release the lock. The `index` column in the lock table exists for compatibility with some database clusters that require a primary key, but is otherwise unused."
-	}
+  {
+    type: "heading",
+    size: "md",
+    content: "Notes about locks",
+    href: "Notes-about-locks"
+  },
+  {
+    type: "text",
+    content: "A lock system is there to prevent multiple processes from running the same migration batch in the same time. When a batch of migrations is about to be run, the migration system first tries to get a lock using a `SELECT ... FOR UPDATE` statement (preventing race conditions from happening). If it can get a lock, the migration batch will run. If it can't, it will wait until the lock is released."
+  },
+  {
+    type: "text",
+    content: "Please note that if your process unfortunately crashes, the lock will have to be *manually* removed in order to let migrations run again. The locks are saved in a table called \"`tableName`_lock\"; it has a column called `is_locked` that you need to set to `0` in order to release the lock. The `index` column in the lock table exists for compatibility with some database clusters that require a primary key, but is otherwise unused."
+  },
+  {
+    type: "heading",
+    size: "md",
+    content: "Custom migraiton sources",
+    href: "custom-migration-sources"
+  },
+  {
+    type: "text",
+    content: "Knex supports custom migration sources, allowing you full control of where your migrations come from. This can be useful for custom folder structures, when bundling with webpack/browserify and other scenarios."
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      // Create a custom migration source class
+      class MyMigrationSource {
+        // Must return a Promise containing a list of migrations. 
+        // Migrations can be whatever you want, they will be passed as
+        // arguments to getMigrationName and getMigration
+        getMigrations() {
+          // In this example we are just returning migration names
+          return Promise.resolve(['migration1'])
+        }
+
+        getMigrationName(migration) {
+          return migration;
+        }
+
+        getMigration(migration) {
+          switch(migration) {
+            case 'migration1':
+              return {
+                up(knex)   { /* ... * / }
+                down(knex) { /* ... * / }
+              }
+          }
+        },
+      }
+
+      // pass an instance of your migration source as knex config
+      knex.migrations.latest({ migrationSource: new MyMigrationSource() })
+    `
+  },
+  {
+    type: "heading",
+    size: "sm",
+    content: "Webpack migration source example",
+  },
+  {
+    type: "text",
+    content: "An example of how to create a migration source where migrations are included in a webpack bundle."
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+    class WebpackMigrationSource {
+      constructor(migrationContext) {
+        this.migrationContext = migrationContext;
+      }
+
+      getMigrations() {
+          return Promise.resolve(this.migrationContext.keys().sort())
+      }
+
+      getMigrationName(migration) {
+        return migration
+      }
+  
+      getMigration(migration) {
+          return this.migrationContext(migration)
+      }
+    }
+
+    // pass an instance of your migration source as knex config
+    knex.migrations.latest({
+      migrationSource: new WebpackMigrationSource(require.context('./migrations', false, /\.js$/))
+    })
+    `
+  },
 ]
