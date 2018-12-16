@@ -11,7 +11,7 @@ import ReactDOMServer from 'react-dom/server'
 import Documentation from '../components/Documentation'
 const {version} = require('knex/package')
 
-const DOC_URL = 'https://rawgit.com/tgriesser/knex/master/CHANGELOG.md'
+const DOC_URL = 'https://cdn.jsdelivr.net/gh/tgriesser/knex@master/CHANGELOG.md'
 
 https.get(DOC_URL, (res) => {
   let changelog = ''
