@@ -408,10 +408,10 @@ export default [
     example: "table.json(name)",
     children: [{
       type: 'text',
-      content: `Adds a json column, using the built-in json type in postgresql and mysql, defaulting to a text column in older versions or in unsupported databases.`
+      content: `Adds a json column, using the built-in json type in PostgreSQL, MySQL and SQLite, defaulting to a text column in older versions or in unsupported databases.`
     }, {
       type: 'text',
-      content: `For postgresql, due to incompatibility between native array and json types, when setting an array (or a value that could be an array) as the value of a json or jsonb column, you should use JSON.stringify() to convert your value to a string prior to passing it to the query builder, e.g.`
+      content: `For PostgreSQL, due to incompatibility between native array and json types, when setting an array (or a value that could be an array) as the value of a json or jsonb column, you should use JSON.stringify() to convert your value to a string prior to passing it to the query builder, e.g.`
     }, {
       type: 'code',
       language: 'js',
@@ -433,7 +433,7 @@ export default [
     type: "method",
     method: "uuid",
     example: "table.uuid(name)",
-    description: "Adds a uuid column - this uses the built-in uuid type in postgresql, and falling back to a char(36) in other databases.",
+    description: "Adds a uuid column - this uses the built-in uuid type in PostgreSQL, and falling back to a char(36) in other databases.",
     children: [    ]
   },
   {
