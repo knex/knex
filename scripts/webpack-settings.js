@@ -17,6 +17,7 @@ const webpackDevServerAddress = `http://${ip.address()}:${options.port}`
 const cssSourceMap = options.debug ? '?sourceMap' : ''
 
 const entryFile = path.join(__dirname, '../components/client.jsx')
+
 const devEntryBundle = [
   'webpack/hot/dev-server',
   `webpack-dev-server/client?${webpackDevServerAddress}`,
@@ -24,7 +25,7 @@ const devEntryBundle = [
 ]
 const plugins = [
   new webpack.IgnorePlugin(/package\.json/, /mssql/),
-  new webpack.NoErrorsPlugin(),
+  new webpack.NoEmitOnErrorsPlugin(),
   new ExtractTextPlugin('[name].css'),
   new webpack.DefinePlugin({
     'process.env': {
@@ -52,11 +53,11 @@ export default {
   },
   
   node: {
-    fs: 'empty'
+    fs: 'empty',
   },
 
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.md$/i,
         loader: 'raw-loader'
@@ -75,10 +76,6 @@ export default {
           fallback: 'style-loader', 
           use: `css-loader${cssSourceMap}` 
         })
-      },
-      {
-        test: /\.json$/,
-        loader: 'json-loader'
       },
       {
         test: /\.jpe?g$|\.gif$|\.png|\.ico$/,
