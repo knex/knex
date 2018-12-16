@@ -1722,7 +1722,7 @@ export default [
     type: "method",
     method: "increment",
     example: ".increment(column, amount)",
-    description: "Increments a column value by the specified amount.",
+    description: "Increments a column value by the specified amount. Object syntax is supported for `column`.",
     children: [
       {
         type: "runnable",
@@ -1731,6 +1731,17 @@ export default [
             .where('userid', '=', 1)
             .increment('balance', 10)
         `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('accounts')
+            .where('id', '=', 1)
+            .increment({
+              balance: 10,
+              times: 1,
+            })
+        `
       }
     ]
   },
@@ -1738,12 +1749,42 @@ export default [
     type: "method",
     method: "decrement",
     example: ".decrement(column, amount)",
-    description: "Decrements a column value by the specified amount.",
+    description: "Decrements a column value by the specified amount. Object syntax is supported for `column`.",
     children: [
       {
         type: "runnable",
         content: `
           knex('accounts').where('userid', '=', 1).decrement('balance', 5)
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('accounts')
+            .where('id', '=', 1)
+            .decrement({
+              balance: 50,
+            })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "clearCounters",
+    example: ".clearCounters()",
+    description: "Clears all increments/decrements clauses from the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('accounts')
+            .where('id', '=', 1)
+            .update({ email: 'foo@bar.com' })
+            .decrement({
+              balance: 50,
+            })
+            .clearCounters()
         `
       }
     ]
