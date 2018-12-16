@@ -1323,7 +1323,7 @@ export default [
     type: "method",
     method: "insert",
     example: ".insert(data, [returning])",
-    description: "Creates an insert query, taking either a hash of properties to be inserted into the row, or an array of inserts, to be executed as a single insert command. Resolves the promise / fulfills the callback with an array containing the first insert id of the inserted model, or an array containing all inserted ids for postgresql, or a row count for Amazon Redshift.",
+    description: "Creates an insert query, taking either a hash of properties to be inserted into the row, or an array of inserts, to be executed as a single insert command. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](##Builder-returning)",
     children: [
       {
         type: "runnable",
@@ -1343,7 +1343,7 @@ export default [
         type: "runnable",
         content: `
           // Returns [2] in \"mysql\", \"sqlite\"; [2, 3] in \"postgresql\"
-          knex.insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], 'id').into('books')
+          knex.insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], ['id']).into('books')
         `
       }
     ]
@@ -1410,7 +1410,7 @@ export default [
     type: "method",
     method: "update",
     example: ".update(data, [returning]) / .update(key, value, [returning])",
-    description: "Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. Resolves the promise / fulfills the callback with the number of affected rows for the query. If a key to be updated has value undefined it is ignored.",
+    description: "Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the updated rows with specified columns. It's a shortcut for [returning method](##Builder-returning)",
     children: [
       {
         type: "runnable",
@@ -1428,6 +1428,18 @@ export default [
         content: `
           // Returns [1] in \"mysql\", \"sqlite\", \"oracle\"; [] in \"postgresql\" unless the 'returning' parameter is set.
           knex('books').update('title', 'Slaughterhouse Five')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          // Returns [2] in \"mysql\", \"sqlite\"; [2, 3] in \"postgresql\"
+          knex('books')
+            .where({ id: 42 })
+            .update({ title: 'The Hitchhiker\'s Guide to the Galaxy' }, ['id', 'title'])
+            .then((updatedRows) => {
+              // updatedRows === [{id: 42, title: 'The Hitchhiker\'s Guide to the Galaxy'}]
+            })
         `
       }
     ]
