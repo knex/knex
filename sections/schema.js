@@ -343,6 +343,13 @@ export default [
       type: 'code',
       language: 'js',
       content: `table.timestamp('created_at', 6).defaultTo(knex.fn.now(6));`
+    }, {
+      type: 'text',
+      content: "In MSSQL an option argument may be passed as the second argument to specify whether or not use timezone:"
+    }, {
+      type: 'code',
+      language: 'js',
+      content: `table.timestamp('created_at', { useTz: true });`
     }]
   },
   {
