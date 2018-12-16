@@ -1311,7 +1311,7 @@ export default [
       },
       {
         type: "runnable",
-        context: `
+        content: `
           knex.select('*').from('users').whereNull('last_name').union(
             knex.raw('select * from users where first_name is null'),
             knex.raw('select * from users where email is null')

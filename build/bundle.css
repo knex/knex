@@ -1,2 +1,288 @@
-.hljs{display:block;overflow-x:auto;padding:.5em;color:#333;background:#f8f8f8}.hljs-comment,.hljs-quote{color:#998;font-style:italic}.hljs-keyword,.hljs-selector-tag,.hljs-subst{color:#333;font-weight:700}.hljs-literal,.hljs-number,.hljs-tag .hljs-attr,.hljs-template-variable,.hljs-variable{color:teal}.hljs-doctag,.hljs-string{color:#d14}.hljs-section,.hljs-selector-id,.hljs-title{color:#900;font-weight:700}.hljs-subst{font-weight:400}.hljs-class .hljs-title,.hljs-type{color:#458;font-weight:700}.hljs-attribute,.hljs-name,.hljs-tag{color:navy;font-weight:400}.hljs-link,.hljs-regexp{color:#009926}.hljs-bullet,.hljs-symbol{color:#990073}.hljs-built_in,.hljs-builtin-name{color:#0086b3}.hljs-meta{color:#999;font-weight:700}.hljs-deletion{background:#fdd}.hljs-addition{background:#dfd}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}body{font-size:14px;line-height:22px;background:#fefffc;color:#000;font-family:Helvetica Neue,Helvetica,Arial}.interface{font-family:Lucida Grande,Lucida Sans Unicode,Helvetica,Arial,sans-serif!important}.more-changelog{display:none}div#sidebar{background:#fff;position:fixed;top:0;left:0;bottom:0;width:200px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:15px 0 30px 30px;border-right:1px solid #bbb;box-shadow:0 0 20px #ccc;-webkit-box-shadow:0 0 20px #ccc;-moz-box-shadow:0 0 20px #ccc}a.toc_title,a.toc_title:visited{display:block;color:#000;font-weight:700;margin-top:15px}a.toc_title:hover{text-decoration:underline}#sidebar .version{font-size:10px;font-weight:400}ul.toc_section{font-size:11px;line-height:14px;margin:5px 0 0;padding-left:0;list-style-type:none;font-family:Lucida Grande}.toc_section li{cursor:pointer;margin:0 0 3px}.toc_section li a{text-decoration:none;color:#000}.toc_section li a:hover{text-decoration:underline}div.container{width:550px;margin:40px 0 50px 260px}div.container ul.small{font-size:12px}.info,.warning{font-size:12px;line-height:18px;font-style:italic}p{margin:20px 0;width:550px}a,a:visited{color:#444}a:active,a:hover{color:#000}h1,h2,h3,h4,h5,h6{padding-top:15px}h2{font-size:20px}b.header{font-size:16px;line-height:30px}span.small{font-size:12px;font-style:italic}span.alias{font-size:14px;font-style:italic;margin-left:20px}ul{list-style-type:circle;padding:0 0 0 20px}li{width:500px;margin-bottom:10px}code,pre,tt{font-family:Monaco,Consolas,Lucida Console,monospace;font-size:12px;line-height:18px;font-style:normal}tt{padding:0 3px;background:#fff;border:1px solid #ddd;zoom:1}pre{font-size:12px;padding:2px 0 2px 15px;border-left:5px solid #bbb;margin:0 0 30px}@media only screen and (-o-min-device-pixel-ratio:3/2) and (max-width:640px),only screen and (-webkit-min-device-pixel-ratio:1.5) and (max-width:640px),only screen and (min-device-pixel-ratio:1.5) and (max-width:640px){img{max-width:100%}div#sidebar{-webkit-overflow-scrolling:initial;position:relative;width:90%;height:120px;left:0;top:-7px;padding:10px 0 10px 30px;border:0}img#logo{width:auto;height:auto}div.container{margin:0;width:100%}div.container ul,p{max-width:98%;overflow-x:scroll}pre{overflow:scroll}}div.language{position:fixed;top:0;right:140px;padding:5px}div.language select{float:right}pre code.hljs{display:inline-block;background:inherit;margin-left:inherit;padding-left:0;max-width:800px;overflow-x:auto}
+/*
+
+github.com style (c) Vasily Polovnyov <vast@whiteants.net>
+
+*/
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #333;
+  background: #f8f8f8;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #998;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+  color: #333;
+  font-weight: bold;
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag .hljs-attr {
+  color: #008080;
+}
+
+.hljs-string,
+.hljs-doctag {
+  color: #d14;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+  color: #900;
+  font-weight: bold;
+}
+
+.hljs-subst {
+  font-weight: normal;
+}
+
+.hljs-type,
+.hljs-class .hljs-title {
+  color: #458;
+  font-weight: bold;
+}
+
+.hljs-tag,
+.hljs-name,
+.hljs-attribute {
+  color: #000080;
+  font-weight: normal;
+}
+
+.hljs-regexp,
+.hljs-link {
+  color: #009926;
+}
+
+.hljs-symbol,
+.hljs-bullet {
+  color: #990073;
+}
+
+.hljs-built_in,
+.hljs-builtin-name {
+  color: #0086b3;
+}
+
+.hljs-meta {
+  color: #999;
+  font-weight: bold;
+}
+
+.hljs-deletion {
+  background: #fdd;
+}
+
+.hljs-addition {
+  background: #dfd;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+body {
+  font-size: 14px;
+  line-height: 22px;
+  background: #FEFFFC;
+  color: #000;
+  font-family: Helvetica Neue, Helvetica, Arial;
+}
+
+.interface {
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
+}
+
+.more-changelog {
+  display: none;
+}
+
+div#sidebar {
+  background: #fff;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 15px 0 30px 30px;
+  border-right: 1px solid #bbb;
+  box-shadow: 0 0 20px #ccc; -webkit-box-shadow: 0 0 20px #ccc; -moz-box-shadow: 0 0 20px #ccc;
+}
+a.toc_title, a.toc_title:visited {
+  display: block;
+  color: black;
+  font-weight: bold;
+  margin-top: 15px;
+}
+a.toc_title:hover {
+  text-decoration: underline;
+}
+
+#sidebar .version {
+  font-size: 10px;
+  font-weight: normal;
+}
+
+ul.toc_section {
+  font-size: 11px;
+  line-height: 14px;
+  margin: 5px 0 0 0;
+  padding-left: 0px;
+  list-style-type: none;
+  font-family: Lucida Grande;
+}
+.toc_section li {
+  cursor: pointer;
+  margin: 0 0 3px 0;
+}
+.toc_section li a {
+  text-decoration: none;
+  color: black;
+}
+.toc_section li a:hover {
+  text-decoration: underline;
+}
+
+div.container {
+  width: 550px;
+  margin: 40px 0 50px 260px;
+}
+div.container ul.small {
+  font-size: 12px;
+}
+
+.info,
+.warning {
+  font-size: 12px;
+  line-height: 18px;
+  font-style: italic;
+}
+
+p {
+  margin: 20px 0;
+  width: 550px;
+}
+a, a:visited {
+  color: #444;
+}
+a:active, a:hover {
+  color: #000;
+}
+h1, h2, h3, h4, h5, h6 {
+  padding-top: 15px;
+}
+h2 {
+  font-size: 20px;
+}
+
+b.header {
+  font-size: 16px;
+  line-height: 30px;
+}
+span.small {
+  font-size: 12px;
+  font-style: italic;
+}
+span.alias {
+  font-size: 14px;
+  font-style: italic;
+  margin-left: 20px;
+}
+
+ul {
+  list-style-type: circle;
+  padding: 0 0 0 20px;
+}
+li {
+  width: 500px;
+  margin-bottom: 10px;
+}
+code, pre, tt {
+  font-family: Monaco, Consolas, "Lucida Console", monospace;
+  font-size: 12px;
+  line-height: 18px;
+  font-style: normal;
+}
+tt {
+  padding: 0px 3px;
+  background: #fff;
+  border: 1px solid #ddd;
+  zoom: 1;
+}
+pre {
+  font-size: 12px;
+  padding: 2px 0 2px 15px;
+  border-left: 5px solid #bbb;
+  margin: 0px 0 30px;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5) and (max-width: 640px),
+      only screen and (-o-min-device-pixel-ratio: 3/2) and (max-width: 640px),
+      only screen and (min-device-pixel-ratio: 1.5) and (max-width: 640px) {
+  img {
+    max-width: 100%;
+  }
+  div#sidebar {
+    -webkit-overflow-scrolling: initial;
+    position: relative;
+    width: 90%;
+    height: 120px;
+    left: 0;
+    top: -7px;
+    padding: 10px 0 10px 30px;
+    border: 0;
+  }
+  img#logo {
+    width: auto;
+    height: auto;
+  }
+  div.container {
+    margin: 0;
+    width: 100%;
+  }
+  p, div.container ul {
+    max-width: 98%;
+    overflow-x: scroll;
+  }
+  pre {
+    overflow: scroll;
+  }
+}
+
+div.language {
+  position: fixed;
+  top: 0;
+  right: 140px;
+  padding: 5px;
+}
+div.language select {
+  float: right;
+}
+
+pre code.hljs {
+  display: inline-block;
+  background: inherit;
+  margin-left: inherit;
+  padding-left: 0px;
+  max-width: 800px;
+  overflow-x: auto;
+}
+
 /*# sourceMappingURL=bundle.css.map*/
