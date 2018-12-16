@@ -1923,8 +1923,26 @@ export default [
   {
     type: "method",
     method: "connection",
-    description: " _ **(incomplete)** - This feature was incorrectly documented as functional._ <br/>If implemented, the method would set the db connection to use for the query without using the connection pool.",
-    children: [    ]
+    example: ".connection(dbConnection)",
+    description: "The method sets the db connection to use for the query without using the connection pool. You should pass to it the same object that acquireConnection() for the corresponding driver returns",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          const Pool = require('pg-pool')
+          const pool = new Pool({ ... })
+          const connection = await pool.connect();
+            try {
+              return await knex.connection(connection); // knex here is a query builder with query already built
+            } catch (error) {
+              // Process error
+            } finally {
+              connection.release();
+            }
+        `
+      }
+    ]
   },
   {
     type: "method",
