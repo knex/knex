@@ -7,6 +7,7 @@
 
 // Should be safe to remove after support for Node.js 6 is dropped
 if (
+  process &&
   process.versions &&
   process.versions.node &&
   process.versions.node.startsWith('6.')
