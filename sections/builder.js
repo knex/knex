@@ -1053,12 +1053,38 @@ export default [
     type: "method",
     method: "orderBy",
     example: ".orderBy(column, [direction])",
-    description: "Adds an order by clause to the query.",
+    description: "Adds an order by clause to the query. column can be string, or list mixed with string and object.",
     children: [
+      {
+        type: "text",
+        content: "Single Column:"
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').orderBy('email')
+        `
+      },
       {
         type: "runnable",
         content: `
           knex('users').orderBy('name', 'desc')
+        `
+      },
+      {
+        type: "text",
+        content: "Multiple Columns:"
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').orderBy(['email', { column: 'age', order: 'desc' }])
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').orderBy([{ column: 'email' }, { column: 'age', order: 'desc' }])
         `
       }
     ]
