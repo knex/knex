@@ -163,6 +163,24 @@ export default [
   },
   {
     type: "method",
+    method: "withRecursive",
+    example: ".withRecursive(alias, function|raw)",
+    description: "Indentical to the `with` method except \"recursive\" is appended to \"with\" to make self-referential CTEs possible.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.withRecursive('ancestors', (qb) => {
+            qb.select('*').from('people').where('people.id', 1).union((qb) => {
+              qb.select('*').from('people').join('ancestors', 'ancestors.parentId', 'people.id')
+            })
+          }).select('*').from('ancestors')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "withSchema",
     example: ".withSchema([schemaName])",
     description: "Specifies the schema to be used as prefix of table name.",

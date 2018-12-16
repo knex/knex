@@ -48,6 +48,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-column">column</a></li>
           <li>– <a href="#Builder-from">from</a></li>
           <li>– <a href="#Builder-with">with</a></li>
+          <li>– <a href="#Builder-withRecursive">withRecursive</a></li>
           <li>– <a href="#Builder-withSchema">withSchema</a></li>
 
           <li><b><a href="#Builder-wheres">Where Methods:</a></b></li>
