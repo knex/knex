@@ -1291,14 +1291,31 @@ export default [
     type: "method",
     method: "union",
     example: ".union([*queries], [wrap])",
-    description: "Creates a union query, taking an array or a list of callbacks to build the union statement, with optional boolean wrap. The queries will be individually wrapped in parentheses with a true wrap parameter.",
+    description: "Creates a union query, taking an array or a list of callbacks, builders, or raw statements to build the union statement, with optional boolean wrap. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses.",
     children: [
       {
         type: "runnable",
         content: `
           knex.select('*').from('users').whereNull('last_name').union(function() {
-            this.select('*').from('users').whereNull('first_name');
+            this.select('*').from('users').whereNull('first_name')
           })
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').whereNull('last_name').union([
+            knex.select('*').from('users').whereNull('first_name')
+          ])
+        `
+      },
+      {
+        type: "runnable",
+        context: `
+          knex.select('*').from('users').whereNull('last_name').union(
+            knex.raw('select * from users where first_name is null'),
+            knex.raw('select * from users where email is null')
+          )
         `
       }
     ]
