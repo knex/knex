@@ -47,7 +47,7 @@ export default [
     type: "method",
     method: "timeout",
     example: ".timeout(ms, options={cancel: boolean})",
-    description: "Sets a timeout for the query and will throw a TimeoutError if the timeout is exceeded. The error contains information about the query, bindings, and the timeout that was set. Useful for complex queries that you want to make sure are not taking too long to execute. Optional second argument for passing options:*   **cancel**: if `true`, cancel query if timeout is reached. **NOTE:** only supported in MySQL and MariaDB for now.",
+    description: "Sets a timeout for the query and will throw a TimeoutError if the timeout is exceeded. The error contains information about the query, bindings, and the timeout that was set. Useful for complex queries that you want to make sure are not taking too long to execute. Optional second argument for passing options:*   **cancel**: if `true`, cancel query if timeout is reached. **NOTE:** only supported in MySQL and PostgreSQL for now.",
     children: [
       {
         type: "runnable",
@@ -58,7 +58,7 @@ export default [
       {
         type: "runnable",
         content: `
-          knex.select().from('books').timeout(1000, {cancel: true}) // MySQL and MariaDB only
+          knex.select().from('books').timeout(1000, {cancel: true}) // MySQL and PostgreSQL only
         `
       }
     ]
