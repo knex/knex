@@ -100,6 +100,7 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-clearSelect">clearSelect</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-clearWhere">clearWhere</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-clearOrder">clearOrder</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearCounters">clearCounters</a></li>
 
           <li>– <a href="#Builder-distinct">distinct</a></li>
           <li>– <a href="#Builder-groupBy">groupBy</a></li>
@@ -124,7 +125,6 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-avg">avg</a></li>
           <li>– <a href="#Builder-increment">increment</a></li>
           <li>– <a href="#Builder-decrement">decrement</a></li>
-          <li>– <a href="#Builder-clearCounters">clearCounters</a></li>
           <li>– <a href="#Builder-truncate">truncate</a></li>
           <li>– <a href="#Builder-pluck">pluck</a></li>
           <li>– <a href="#Builder-first">first</a></li>

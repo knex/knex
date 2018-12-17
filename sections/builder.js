@@ -1006,6 +1006,26 @@ export default [
   },
   {
     type: "method",
+    method: "clearCounters",
+    example: ".clearCounters()",
+    description: "Clears all increments/decrements clauses from the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('accounts')
+            .where('id', '=', 1)
+            .update({ email: 'foo@bar.com' })
+            .decrement({
+              balance: 50,
+            })
+            .clearCounters()
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "distinct",
     example: ".distinct()",
     description: "Sets a distinct clause on the query.",
@@ -1838,26 +1858,6 @@ export default [
             .decrement({
               balance: 50,
             })
-        `
-      }
-    ]
-  },
-  {
-    type: "method",
-    method: "clearCounters",
-    example: ".clearCounters()",
-    description: "Clears all increments/decrements clauses from the query.",
-    children: [
-      {
-        type: "runnable",
-        content: `
-          knex('accounts')
-            .where('id', '=', 1)
-            .update({ email: 'foo@bar.com' })
-            .decrement({
-              balance: 50,
-            })
-            .clearCounters()
         `
       }
     ]
