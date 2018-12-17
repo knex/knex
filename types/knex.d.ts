@@ -2,7 +2,7 @@
 // -----
 // Originally based on contributions to DefinitelyTyped:
 // Definitions by: Qubo <https://github.com/tkQubo>
-//                 Pablo RodrÃ­guez <https://github.com/MeLlamoPablo>
+//                 Pablo Rodríguez <https://github.com/MeLlamoPablo>
 //                 Matt R. Wilson <https://github.com/mastermatt>
 //                 Satana Charuwichitratana <https://github.com/micksatana>
 //                 Shrey Jain <https://github.com/shreyjain1994>
@@ -216,7 +216,7 @@ declare namespace Knex {
   }
 
   interface Select extends ColumnNameQueryBuilder {
-    (aliases: { [alias: string]: string }): QueryBuilder;
+    (aliases: { [alias: string]: string | Knex.Raw }): QueryBuilder;
   }
 
   interface Table {
@@ -233,24 +233,24 @@ declare namespace Knex {
 
   interface Join {
     (raw: Raw): QueryBuilder;
-    (tableName: TableName | QueryCallback, clause: JoinCallback): QueryBuilder;
+    (tableName: TableName | Identifier | QueryCallback, clause: JoinCallback): QueryBuilder;
     (
-      tableName: TableName | QueryCallback,
+      tableName: TableName | Identifier | QueryCallback,
       columns: { [key: string]: string | number | Raw }
     ): QueryBuilder;
-    (tableName: TableName | QueryCallback, raw: Raw): QueryBuilder;
+    (tableName: TableName | Identifier | QueryCallback, raw: Raw): QueryBuilder;
     (
-      tableName: TableName | QueryCallback,
+      tableName: TableName | Identifier | QueryCallback,
       column1: string,
       column2: string
     ): QueryBuilder;
     (
-      tableName: TableName | QueryCallback,
+      tableName: TableName | Identifier | QueryCallback,
       column1: string,
       raw: Raw
     ): QueryBuilder;
     (
-      tableName: TableName | QueryCallback,
+      tableName: TableName | Identifier | QueryCallback,
       column1: string,
       operator: string,
       column2: string
@@ -307,13 +307,13 @@ declare namespace Knex {
   }
 
   interface JoinRaw {
-    (tableName: string, binding?: Value): QueryBuilder;
+    (tableName: string, binding?: ValueMap): QueryBuilder;
   }
 
   interface With extends WithRaw, WithWrapped {}
 
   interface WithRaw {
-    (alias: string, raw: Raw): QueryBuilder;
+    (alias: string, raw: Raw | QueryBuilder): QueryBuilder;
     (alias: string, sql: string, bindings?: Value[] | Object): QueryBuilder;
   }
 
@@ -423,8 +423,8 @@ declare namespace Knex {
   }
 
   interface RawQueryBuilder {
-    (sql: string, ...bindings: (Value | QueryBuilder)[]): QueryBuilder;
-    (sql: string, bindings: (Value | QueryBuilder)[] | ValueMap): QueryBuilder;
+    (sql: string, ...bindings: (ValueMap | QueryBuilder)[]): QueryBuilder;
+    (sql: string, bindings: (ValueMap | QueryBuilder)[] | ValueMap): QueryBuilder;
     (raw: Raw): QueryBuilder;
   }
 
@@ -432,12 +432,13 @@ declare namespace Knex {
 
   interface Raw extends events.EventEmitter, ChainableInterface {
     wrap(before: string, after: string): Raw;
+    toSQL(): Sql;
   }
 
   interface RawBuilder {
     (value: Value): Raw;
-    (sql: string, ...bindings: (Value | QueryBuilder)[]): Raw;
-    (sql: string, bindings: (Value | QueryBuilder)[] | ValueMap): Raw;
+    (sql: string, ...bindings: (ValueMap | QueryBuilder)[]): Raw;
+    (sql: string, bindings: (ValueMap | QueryBuilder)[] | ValueMap): Raw;
   }
 
   //
