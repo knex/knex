@@ -57,6 +57,8 @@ function initKnex(env, opts) {
   // If knexfile is specified
   else {
     const resolvedKnexfilePath = path.resolve(opts.knexfile);
+    const knexfileDir = path.dirname(resolvedKnexfilePath);
+    process.chdir(knexfileDir);
     env.configuration = require(resolvedKnexfilePath);
 
     if (!env.configuration) {
