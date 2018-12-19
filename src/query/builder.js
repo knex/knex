@@ -1072,7 +1072,7 @@ assign(Builder.prototype, {
         '.skipLocked() can only be used after a call to .forShare() or .forUpdate()!'
       );
     }
-    if (this._single.waitMode) {
+    if (this._single.waitMode === 'noWait') {
       throw new Error('.skipLocked() cannot be used with .noWait()!');
     }
     this._single.waitMode = 'skipLocked';
@@ -1090,7 +1090,7 @@ assign(Builder.prototype, {
         '.noWait() can only be used after a call to .forShare() or .forUpdate()!'
       );
     }
-    if (this._single.waitMode) {
+    if (this._single.waitMode === 'skipLocked') {
       throw new Error('.noWait() cannot be used with .skipLocked()!');
     }
     this._single.waitMode = 'noWait';
