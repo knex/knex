@@ -1302,6 +1302,10 @@ module.exports = function(knex) {
                     'could not obtain lock on row'
                   );
                   break;
+                case 'mysql':
+                case 'mysql2':
+                  expect(err.message).to.contain('Lock wait timeout exceeded');
+                  break;
                 default:
                   // unsupported database
                   throw err;
