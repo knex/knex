@@ -5,3 +5,4 @@ npm-debug.log
 .vagrant
 build/CHANGELOG.md
 build/version.js
+package-lock.json
