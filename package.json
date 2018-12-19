@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "npm update knex && babel-node scripts/dev.js",
     "build": "npm update knex && babel-node scripts/build.js",
-    "serve": "static"
+    "serve": "static",
+    "cleanrebuild": "rm -fr node_modules && npm install && npm run build && npm run serve"
   },
   "devDependencies": {
     "ajv": "^6.6.1",
