@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.16.2",
+  "version": "0.16.3",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "types": "types/knex.d.ts",
@@ -96,7 +96,7 @@
     "mssql:init": "docker-compose -f scripts/mssql-docker-compose.yml up --no-start && docker-compose -f scripts/mssql-docker-compose.yml start",
     "postmssql:init": "node scripts/wait-for-mssql-server.js && npm run mssql:logs || (npm run mssql:logs;false)",
     "mssql:logs": "docker-compose -f scripts/mssql-docker-compose.yml logs",
-    "mssql:test": "DB=mssql npm test",
+    "mssql:test": "DB=mssql npm run plaintest",
     "mssql:destroy": "docker-compose -f scripts/mssql-docker-compose.yml stop",
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
     "stress:test": "node scripts/stress-test/knex-stress-test.js |  grep -A 5 -B 60 -- '- STATS '",

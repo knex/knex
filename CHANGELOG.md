@@ -1,5 +1,7 @@
 # Master (Unreleased)
 
+# 0.16.3 - 19 Dec, 2018
+
 ### Bug fixes:
 
 - @babel/polyfill loaded multiple times #2955
