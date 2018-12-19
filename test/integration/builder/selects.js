@@ -1296,9 +1296,15 @@ module.exports = function(knex) {
               ).to.be.false;
             })
             .catch((err) => {
-              // TODO: handle errors from more databases
-              if (knex.client.driverName === 'pg') {
-                expect(err.message).to.contain('could not obtain lock on row');
+              switch (knex.client.driverName) {
+                case 'pg':
+                  expect(err.message).to.contain(
+                    'could not obtain lock on row'
+                  );
+                  break;
+                default:
+                  // unsupported database
+                  throw err;
               }
             });
         });
