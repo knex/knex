@@ -230,7 +230,7 @@ export default [
       "`disableTransactions`: don't run migrations inside transactions (default `false`)",
       "`sortDirsSeparately`: if true and multiple directories are specified, all migrations from a single directory will be executed before executing migrations in the next folder (default `false`)",
       "`loadExtensions`: array of file extensions which knex will treat as migrations. For example, if you have typescript transpiled into javascript in the same folder, you want to execute only javascript migrations. In this case, set `loadExtensions` to `['.js']` (Notice the dot!) (default `['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts']`)",
-      "`migrationSource`: specify a custom migration source, see [Custom Migration Source](#custom-migration-source) for more info (default filesystem)"
+      "`migrationSource`: specify a custom migration source, see [Custom Migration Source](#custom-migration-sources) for more info (default filesystem)"
     ]
   },
   {
@@ -320,7 +320,7 @@ export default [
   {
     type: "heading",
     size: "md",
-    content: "Custom migraiton sources",
+    content: "Custom migration sources",
     href: "custom-migration-sources"
   },
   {
