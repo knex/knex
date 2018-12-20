@@ -1072,7 +1072,7 @@ export default [
   {
     type: "method",
     method: "orderBy",
-    example: ".orderBy(column, [direction])",
+    example: ".orderBy(column|columns, [direction])",
     description: "Adds an order by clause to the query. column can be string, or list mixed with string and object.",
     children: [
       {
