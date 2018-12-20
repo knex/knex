@@ -99,8 +99,8 @@ export default class Migrator {
       });
   }
 
-  // Rollback the last "batch" of migrations that were run.
-  rollback(config) {
+  // Rollback the last "batch", or all, of migrations that were run.
+  rollback(config, all = false) {
     return Promise.try(() => {
       this.config = getMergedConfig(config, this.config);
 
@@ -109,7 +109,7 @@ export default class Migrator {
         .tap((value) =>
           validateMigrationList(this.config.migrationSource, value)
         )
-        .then((val) => this._getLastBatch(val))
+        .then((val) => (all ? val[0] : this._getLastBatch(val)))
         .then((migrations) => {
           return this._runBatch(migrations, 'down');
         });

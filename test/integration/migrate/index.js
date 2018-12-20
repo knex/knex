@@ -331,6 +331,53 @@ module.exports = function(knex) {
       });
     });
 
+    describe('knex.migrate.rollback - all', () => {
+      before(() => {
+        return knex.migrate
+          .latest({
+            directory: ['test/integration/migrate/test'],
+          })
+          .then(function() {
+            return knex.migrate.latest({
+              directory: [
+                'test/integration/migrate/test',
+                'test/integration/migrate/test2',
+              ],
+            });
+          });
+      });
+
+      it('should delete all batches from the migration log', () => {
+        return knex.migrate
+          .rollback(
+            {
+              directory: [
+                'test/integration/migrate/test',
+                'test/integration/migrate/test2',
+              ],
+            },
+            true
+          )
+          .spread(function(batchNo, log) {
+            expect(batchNo).to.equal(2);
+            expect(log).to.have.length(4);
+            return knex('knex_migrations')
+              .select('*')
+              .then(function(data) {
+                expect(data.length).to.equal(0);
+              });
+          });
+      });
+
+      it('should drop tables as specified in the batch', () => {
+        return Promise.map(tables, function(table) {
+          return knex.schema.hasTable(table).then(function(exists) {
+            expect(!!exists).to.equal(false);
+          });
+        });
+      });
+    });
+
     after(function() {
       rimraf.sync(path.join(__dirname, './migration'));
     });
