@@ -360,7 +360,6 @@ module.exports = function(knex) {
             true
           )
           .spread(function(batchNo, log) {
-            console.log(`Batch ${batchNo}, log: ${JSON.stringify(log)}`);
             expect(batchNo).to.equal(2);
             expect(log).to.have.length(4);
             return knex('knex_migrations')
