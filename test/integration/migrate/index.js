@@ -348,7 +348,6 @@ module.exports = function(knex) {
       });
 
       it('should delete all batches from the migration log', function() {
-        debugger;
         return knex.migrate
           .rollback(
             {
