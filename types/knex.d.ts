@@ -498,6 +498,7 @@ declare namespace Knex {
       writable: T,
       options?: { [key: string]: any }
     ): stream.PassThrough;
+    asCallback(callback: Function): this;
   }
 
   interface Transaction extends Knex {
