@@ -347,7 +347,7 @@ module.exports = function(knex) {
           });
       });
 
-      it('should delete all batches from the migration log', function() {
+      it('should delete all batches from the migration log', () => {
         return knex.migrate
           .rollback(
             {
@@ -369,7 +369,7 @@ module.exports = function(knex) {
           });
       });
 
-      it('should drop tables as specified in the batch', function() {
+      it('should drop tables as specified in the batch', () => {
         return Promise.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
             expect(!!exists).to.equal(false);
