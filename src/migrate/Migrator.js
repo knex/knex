@@ -423,7 +423,8 @@ export function getMergedConfig(config, currentConfig) {
   if (!mergedConfig.migrationSource) {
     mergedConfig.migrationSource = new FsMigrations(
       mergedConfig.directory,
-      mergedConfig.sortDirsSeparately
+      mergedConfig.sortDirsSeparately,
+      mergedConfig.loadExtensions
     );
   }
 
