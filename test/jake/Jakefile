@@ -5,10 +5,12 @@
 
 const knexfileTests = require('./jakelib/knexfile-test').taskList;
 const migrateTests = require('./jakelib/migrate-test').taskList;
+const seedTests = require('./jakelib/seed-test').taskList;
 
 const tests = [
   ...knexfileTests,
   ...migrateTests,
+  ...seedTests
 ];
 
 task('default', tests, () => {

@@ -8,7 +8,7 @@
     "node": ">=6"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.0.0",
+    "@babel/polyfill": "^7.2.5",
     "@types/bluebird": "^3.5.25",
     "bluebird": "^3.5.3",
     "chalk": "2.4.1",
@@ -24,7 +24,7 @@
     "tarn": "^1.1.4",
     "tildify": "1.2.0",
     "uuid": "^3.3.2",
-    "v8flags": "^3.1.1"
+    "v8flags": "^3.1.2"
   },
   "lint-staged": {
     "*.{js,json}": [
@@ -33,9 +33,9 @@
     ]
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.0",
+    "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
-    "@babel/preset-env": "^7.2.0",
+    "@babel/preset-env": "^7.2.3",
     "@types/node": "*",
     "JSONStream": "^1.3.5",
     "async": "^2.6.1",
@@ -124,9 +124,9 @@
     "web": "https://github.com/tgriesser"
   },
   "browser": {
-    "./lib/migrate/index.js": "./lib/util/noop.js",
+    "./lib/migrate/Migrator.js": "./lib/util/noop.js",
     "./lib/bin/cli.js": "./lib/util/noop.js",
-    "./lib/seed/index.js": "./lib/util/noop.js",
+    "./lib/seed/Seeder.js": "./lib/util/noop.js",
     "mssql": false,
     "mssql/lib/base": false,
     "tedious": false,

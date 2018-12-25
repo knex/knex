@@ -128,6 +128,20 @@ Seeder.prototype._waterfallBatch = function(seeds) {
       .then(() => seed.seed(knex, Promise))
       .then(() => {
         log.push(name);
+      })
+      .catch((originalError) => {
+        const error = new Error(
+          `Error while executing "${name}" seed: ${originalError.message}`
+        );
+        error.original = originalError;
+        error.stack =
+          error.stack
+            .split('\n')
+            .slice(0, 2)
+            .join('\n') +
+          '\n' +
+          originalError.stack;
+        throw error;
       });
   });
 
