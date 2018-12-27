@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 
 import Migrator from '../migrate/Migrator';
-import Seeder from '../seed';
+import Seeder from '../seed/Seeder';
 import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
 import { assign } from 'lodash';
