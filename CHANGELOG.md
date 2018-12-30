@@ -1,10 +1,17 @@
 # Master (Unreleased)
 
+# 0.16.3 - 19 Dec, 2018
+
+### Bug fixes:
+
+- @babel/polyfill loaded multiple times #2955
+- Resolve migrations and seeds relatively to knexfile directory when specified (the way it used to be before 0.16.1) #2952
+
 # 0.16.2 - 10 Dec, 2018
 
 ### Bug fixes:
 
-- Add TypeScript types to the "files" entry so they are properly included in the release.
+- Add TypeScript types to the "files" entry so they are properly included in the release #2943
 
 # 0.16.1 - 28 Nov, 2018
 

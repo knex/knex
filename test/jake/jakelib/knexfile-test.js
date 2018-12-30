@@ -24,6 +24,12 @@ test(taskList, 'Run migrations with knexfile passed', (temp) => {
   );
 });
 
+test(taskList, 'Resolves migrations relatively to knexfile', (temp) => {
+  return assertExec(
+    `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile.js --knexpath=../knex.js`
+  );
+});
+
 test(taskList, 'Throws informative error when no knexfile is found', (temp) => {
   return assertExecError(
     `node ${KNEX} migrate:latest --knexpath=../knex.js`

@@ -54,6 +54,8 @@ function initKnex(env, opts) {
   // If knexfile is specified
   else {
     const resolvedKnexfilePath = path.resolve(opts.knexfile);
+    const knexfileDir = path.dirname(resolvedKnexfilePath);
+    process.chdir(knexfileDir);
     env.configuration = require(resolvedKnexfilePath);
 
     if (!env.configuration) {
@@ -178,6 +180,7 @@ function invoke(env) {
   commander
     .command('migrate:latest')
     .description('        Run all migrations that have not yet been run.')
+    .option('--verbose', 'verbose')
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.latest()
@@ -186,8 +189,8 @@ function invoke(env) {
             success(color.cyan('Already up to date'));
           }
           success(
-            color.green(`Batch ${batchNo} run: ${log.length} migrations \n`) +
-              color.cyan(log.join('\n'))
+            color.green(`Batch ${batchNo} run: ${log.length} migrations`) +
+              (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
           );
         })
         .catch(exit);
@@ -196,6 +199,7 @@ function invoke(env) {
   commander
     .command('migrate:rollback')
     .description('        Rollback the last set of migrations performed.')
+    .option('--verbose', 'verbose')
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.rollback()
@@ -205,8 +209,8 @@ function invoke(env) {
           }
           success(
             color.green(
-              `Batch ${batchNo} rolled back: ${log.length} migrations \n`
-            ) + color.cyan(log.join('\n'))
+              `Batch ${batchNo} rolled back: ${log.length} migrations`
+            ) + (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
           );
         })
         .catch(exit);
@@ -251,6 +255,7 @@ function invoke(env) {
   commander
     .command('seed:run')
     .description('        Run seed files.')
+    .option('--verbose', 'verbose')
     .action(() => {
       pending = initKnex(env, commander.opts())
         .seed.run()
@@ -259,7 +264,8 @@ function invoke(env) {
             success(color.cyan('No seed files exist'));
           }
           success(
-            color.green(`Ran ${log.length} seed files \n${color.cyan(log.join('\n'))}`)
+            color.green(`Ran ${log.length} seed files`) +
+              (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
           );
         })
         .catch(exit);
