@@ -156,6 +156,10 @@ assign(QueryCompiler_SQLite3.prototype, {
     };
   },
 
+  aggregate(stmt) {
+    return this._aggregate(stmt, { fromDistinct: true });
+  },
+
   limit() {
     const noLimit = !this.single.limit && this.single.limit !== 0;
     if (noLimit && !this.single.offset) return '';
