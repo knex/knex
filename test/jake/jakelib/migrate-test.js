@@ -9,24 +9,12 @@ const rimrafSync = require('rimraf').sync;
 const path = require('path');
 const sqlite3 = require('sqlite3');
 const { assert } = require('chai');
+const { assertExec } = require('../../jake-util/helpers/migration-test-helper');
+const knexfile = require('../../jake-util/knexfile/knexfile.js');
 
 const KNEX = path.normalize(__dirname + '/../../../bin/cli.js');
 
 /* * * HELPERS * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-function assertExec(cmd, desc) {
-  desc = desc || 'Run ' + cmd;
-  return new Promise((resolve, reject) => {
-    let stderr = '';
-    const bin = jake.createExec([cmd]);
-    bin.addListener('error', (msg, code) =>
-      reject(Error(desc + ' FAIL. ' + stderr))
-    );
-    bin.addListener('cmdEnd', resolve);
-    bin.addListener('stderr', (data) => (stderr += data.toString()));
-    bin.run();
-  });
-}
 
 const taskList = [];
 function test(description, func) {
@@ -121,6 +109,47 @@ test('Run migrations', (temp) =>
         )
     )
     .then((row) => assert.equal(row.name, '000_create_rule_table.js')));
+
+test('migrate:latest prints non verbose logs', (temp) => {
+  const db = knexfile.connection.filename;
+  if (fs.existsSync(db)) {
+    fs.unlinkSync(db);
+  }
+
+  return assertExec(
+    `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile/knexfile.js --knexpath=../knex.js`
+  ).then(({ stdout }) => {
+    assert.include(stdout, 'Batch 1 run: 1 migrations');
+    assert.notInclude(stdout, 'simple_migration.js');
+  });
+});
+
+test('migrate:rollback prints non verbose logs', (temp) => {
+  return assertExec(
+    `node ${KNEX} migrate:rollback --knexfile=test/jake-util/knexfile/knexfile.js --knexpath=../knex.js`
+  ).then(({ stdout }) => {
+    assert.include(stdout, 'Batch 1 rolled back: 1 migrations');
+    assert.notInclude(stdout, 'simple_migration.js');
+  });
+});
+
+test('migrate:latest prints verbose logs', (temp) => {
+  return assertExec(
+    `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile/knexfile.js --knexpath=../knex.js --verbose`
+  ).then(({ stdout }) => {
+    assert.include(stdout, 'Batch 1 run: 1 migrations');
+    assert.include(stdout, 'simple_migration.js');
+  });
+});
+
+test('migrate:rollback prints verbose logs', (temp) => {
+  return assertExec(
+    `node ${KNEX} migrate:rollback --knexfile=test/jake-util/knexfile/knexfile.js --knexpath=../knex.js --verbose`
+  ).then(({ stdout }) => {
+    assert.include(stdout, 'Batch 1 rolled back: 1 migrations');
+    assert.include(stdout, 'simple_migration.js');
+  });
+});
 
 module.exports = {
   taskList,
