@@ -2,7 +2,7 @@
 // -----
 // Originally based on contributions to DefinitelyTyped:
 // Definitions by: Qubo <https://github.com/tkQubo>
-//                 Pablo Rodríguez <https://github.com/MeLlamoPablo>
+//                 Pablo Rodrï¿½guez <https://github.com/MeLlamoPablo>
 //                 Matt R. Wilson <https://github.com/mastermatt>
 //                 Satana Charuwichitratana <https://github.com/micksatana>
 //                 Shrey Jain <https://github.com/shreyjain1994>
@@ -307,7 +307,7 @@ declare namespace Knex {
   }
 
   interface JoinRaw {
-    (tableName: string, binding?: ValueMap): QueryBuilder;
+    (tableName: string, binding?: Value | ValueMap): QueryBuilder;
   }
 
   interface With extends WithRaw, WithWrapped {}
@@ -423,8 +423,8 @@ declare namespace Knex {
   }
 
   interface RawQueryBuilder {
-    (sql: string, ...bindings: (ValueMap | QueryBuilder)[]): QueryBuilder;
-    (sql: string, bindings: (ValueMap | QueryBuilder)[] | ValueMap): QueryBuilder;
+    (sql: string, ...bindings: (Value | QueryBuilder)[]): QueryBuilder;
+    (sql: string, bindings: (Value | QueryBuilder)[] | ValueMap): QueryBuilder;
     (raw: Raw): QueryBuilder;
   }
 
@@ -437,8 +437,8 @@ declare namespace Knex {
 
   interface RawBuilder {
     (value: Value): Raw;
-    (sql: string, ...bindings: (ValueMap | QueryBuilder)[]): Raw;
-    (sql: string, bindings: (ValueMap | QueryBuilder)[] | ValueMap): Raw;
+    (sql: string, ...bindings: (Value | QueryBuilder)[]): Raw;
+    (sql: string, bindings: (Value | QueryBuilder)[] | ValueMap): Raw;
   }
 
   //
