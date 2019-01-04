@@ -216,7 +216,7 @@ declare namespace Knex {
   }
 
   interface Select extends ColumnNameQueryBuilder {
-    (aliases: { [alias: string]: string }): QueryBuilder;
+    (aliases: { [alias: string]: string | Knex.Raw }): QueryBuilder;
   }
 
   interface Table {
@@ -233,24 +233,24 @@ declare namespace Knex {
 
   interface Join {
     (raw: Raw): QueryBuilder;
-    (tableName: TableName | QueryCallback, clause: JoinCallback): QueryBuilder;
+    (tableName: TableName | Identifier | QueryCallback, clause: JoinCallback): QueryBuilder;
     (
-      tableName: TableName | QueryCallback,
+      tableName: TableName | Identifier | QueryCallback,
       columns: { [key: string]: string | number | Raw }
     ): QueryBuilder;
-    (tableName: TableName | QueryCallback, raw: Raw): QueryBuilder;
+    (tableName: TableName | Identifier | QueryCallback, raw: Raw): QueryBuilder;
     (
-      tableName: TableName | QueryCallback,
+      tableName: TableName | Identifier | QueryCallback,
       column1: string,
       column2: string
     ): QueryBuilder;
     (
-      tableName: TableName | QueryCallback,
+      tableName: TableName | Identifier | QueryCallback,
       column1: string,
       raw: Raw
     ): QueryBuilder;
     (
-      tableName: TableName | QueryCallback,
+      tableName: TableName | Identifier | QueryCallback,
       column1: string,
       operator: string,
       column2: string
@@ -307,13 +307,13 @@ declare namespace Knex {
   }
 
   interface JoinRaw {
-    (tableName: string, binding?: Value): QueryBuilder;
+    (tableName: string, binding?: Value | ValueMap): QueryBuilder;
   }
 
   interface With extends WithRaw, WithWrapped {}
 
   interface WithRaw {
-    (alias: string, raw: Raw): QueryBuilder;
+    (alias: string, raw: Raw | QueryBuilder): QueryBuilder;
     (alias: string, sql: string, bindings?: Value[] | Object): QueryBuilder;
   }
 
@@ -432,6 +432,7 @@ declare namespace Knex {
 
   interface Raw extends events.EventEmitter, ChainableInterface {
     wrap(before: string, after: string): Raw;
+    toSQL(): Sql;
   }
 
   interface RawBuilder {
