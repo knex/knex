@@ -44,7 +44,10 @@ function initKnex(env, opts) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
-    console.log('Working directory changed to', color.magenta(tildify(env.cwd)));
+    console.log(
+      'Working directory changed to',
+      color.magenta(tildify(env.cwd))
+    );
   }
 
   if (!opts.knexfile) {
@@ -102,7 +105,10 @@ function invoke(env) {
     .version(
       color.blue('Knex CLI version: ', color.green(cliPkg.version)) +
         '\n' +
-        color.blue('Local Knex version: ', color.green(env.modulePackage.version)) +
+        color.blue(
+          'Local Knex version: ',
+          color.green(env.modulePackage.version)
+        ) +
         '\n'
     )
     .option('--debug', 'Run with debugging.')

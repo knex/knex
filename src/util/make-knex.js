@@ -4,7 +4,7 @@ import Migrator from '../migrate/Migrator';
 import Seeder from '../seed/Seeder';
 import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
-import { assign } from 'lodash';
+import { assign, merge } from 'lodash';
 import batchInsert from './batchInsert';
 import * as bluebird from 'bluebird';
 
@@ -13,6 +13,7 @@ export default function makeKnex(client) {
   function knex(tableName, options) {
     return createQueryBuilder(knex.context, tableName, options);
   }
+
   redefineProperties(knex, client);
   return knex;
 }
@@ -81,12 +82,9 @@ function initContext(knexFn) {
     withUserParams(params) {
       const knexClone = shallowCloneFunction(knexFn); // We need to include getters in our clone
       if (this.client) {
-        knexClone.client = Object.assign({}, this.client); // Clone client to avoid leaking listeners that are set on it
+        knexClone.client = Object.create(this.client.constructor.prototype); // Clone client to avoid leaking listeners that are set on it
+        merge(knexClone.client, this.client);
         knexClone.client.config = Object.assign({}, this.client.config); // Clone client config to make sure they can be modified independently
-        const parentPrototype = Object.getPrototypeOf(this.client);
-        if (parentPrototype) {
-          Object.setPrototypeOf(knexClone.client, parentPrototype);
-        }
       }
 
       redefineProperties(knexClone, knexClone.client);
@@ -194,18 +192,33 @@ function redefineProperties(knex, client) {
     knex[key] = ee[key];
   }
 
+  if (knex._internalListeners) {
+    knex._internalListeners.forEach(({ eventName, listener }) => {
+      knex.client.removeListener(eventName, listener); // Remove duplicates for copies
+    });
+  }
+  knex._internalListeners = [];
+
   // Passthrough all "start" and "query" events to the knex object.
-  knex.client.on('start', function(obj) {
+  _addInternalListener(knex, 'start', (obj) => {
     knex.emit('start', obj);
   });
-  knex.client.on('query', function(obj) {
+  _addInternalListener(knex, 'query', (obj) => (obj) => {
     knex.emit('query', obj);
   });
-  knex.client.on('query-error', function(err, obj) {
+  _addInternalListener(knex, 'query-error', (err, obj) => {
     knex.emit('query-error', err, obj);
   });
-  knex.client.on('query-response', function(response, obj, builder) {
+  _addInternalListener(knex, 'query-response', (response, obj, builder) => {
     knex.emit('query-response', response, obj, builder);
+  });
+}
+
+function _addInternalListener(knex, eventName, listener) {
+  knex.client.on(eventName, listener);
+  knex._internalListeners.push({
+    eventName,
+    listener,
   });
 }
 

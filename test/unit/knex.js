@@ -98,8 +98,52 @@ describe('knex', () => {
     const knexWithParams = knex.withUserParams({ userParam: '451' });
 
     expect(knexWithParams.migrate.knex.userParams).to.deep.equal({
+      isProcessingDisabled: true,
+      postProcessResponse: undefined,
       userParam: '451',
+      wrapIdentifier: undefined,
     });
+  });
+
+  it('copying does not result in duplicate EventEmitters', () => {
+    const knex = Knex({
+      client: 'sqlite',
+    });
+    const knexWithParams = knex.withUserParams();
+
+    expect(knex.client.listeners('start').length).to.equal(1);
+    expect(knex.client.listeners('query').length).to.equal(1);
+    expect(knex.client.listeners('query-error').length).to.equal(1);
+    expect(knex.client.listeners('query-response').length).to.equal(1);
+
+    expect(knexWithParams.client.listeners('start').length).to.equal(1);
+    expect(knexWithParams.client.listeners('query').length).to.equal(1);
+    expect(knexWithParams.client.listeners('query-error').length).to.equal(1);
+    expect(knexWithParams.client.listeners('query-response').length).to.equal(
+      1
+    );
+  });
+
+  it('adding listener to copy does not affect base knex', () => {
+    const knex = Knex({
+      client: 'sqlite',
+    });
+
+    expect(knex.client.listeners('start').length).to.equal(1);
+    expect(knex.client.listeners('query').length).to.equal(1);
+    expect(knex.client.listeners('query-error').length).to.equal(1);
+    expect(knex.client.listeners('query-response').length).to.equal(1);
+
+    const knexWithParams = knex.withUserParams();
+    knexWithParams.client.on('query', (obj) => {
+      knexWithParams.emit('query', obj);
+    });
+
+    expect(knex.client.listeners('start').length).to.equal(1);
+    expect(knex.client.listeners('query').length).to.equal(1);
+    expect(knex.client.listeners('query-error').length).to.equal(1);
+    expect(knex.client.listeners('query-response').length).to.equal(1);
+    expect(knexWithParams.client.listeners('query').length).to.equal(2);
   });
 
   it('sets correct postProcessResponse for builders instantiated from clone', () => {
@@ -171,8 +215,10 @@ describe('knex', () => {
   });
 
   it('throws if client module has not been installed', () => {
-    expect(Knex({ client: 'oracle' })).to.throw(
-      /Knex: run\n$ npm install oracle/
+    expect(() => {
+      Knex({ client: 'oracledb', connection: {} });
+    }).to.throw(
+      "Knex: run\n$ npm install oracledb --save\nCannot find module 'oracledb'"
     );
   });
 
