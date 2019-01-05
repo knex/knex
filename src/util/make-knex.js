@@ -203,7 +203,7 @@ function redefineProperties(knex, client) {
   _addInternalListener(knex, 'start', (obj) => {
     knex.emit('start', obj);
   });
-  _addInternalListener(knex, 'query', (obj) => (obj) => {
+  _addInternalListener(knex, 'query', (obj) => {
     knex.emit('query', obj);
   });
   _addInternalListener(knex, 'query-error', (err, obj) => {
