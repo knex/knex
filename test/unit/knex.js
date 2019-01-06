@@ -238,10 +238,9 @@ describe('knex', () => {
 
   describe('async stack traces', () => {
     it('should capture stack trace on query builder instantiation', () => {
-      const knex = Knex({
-        ...sqliteConfig,
-        asyncStackTraces: true,
-      });
+      const knex = Knex(
+        Object.assign({}, sqliteConfig, { asyncStackTraces: true })
+      );
 
       return knex('some_nonexisten_table')
         .select()
