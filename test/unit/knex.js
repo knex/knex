@@ -105,7 +105,7 @@ describe('knex', () => {
     });
   });
 
-  it('copying does not result in duplicate EventEmitters', () => {
+  it('copying does not result in duplicate listeners', () => {
     const knex = Knex({
       client: 'sqlite',
     });
@@ -122,6 +122,20 @@ describe('knex', () => {
     expect(knexWithParams.client.listeners('query-response').length).to.equal(
       1
     );
+  });
+
+  it('listeners added to knex directly get copied correctly', () => {
+    const knex = Knex({
+      client: 'sqlite',
+    });
+    const onQueryResponse = function(response, obj, builder) {};
+    expect(knex.listeners('query-response').length).to.equal(0);
+    knex.on('query-response', onQueryResponse);
+
+    const knexWithParams = knex.withUserParams();
+
+    expect(knex.listeners('query-response').length).to.equal(1);
+    expect(knexWithParams.listeners('query-response').length).to.equal(1);
   });
 
   it('adding listener to copy does not affect base knex', () => {

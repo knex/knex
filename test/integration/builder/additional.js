@@ -986,7 +986,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('Event: does not duplicate listeners on a copy with user params', function() {
+    it('Event: preserves listeners on a copy with user params', function() {
       let queryCount = 0;
 
       const onQueryResponse = function(response, obj, builder) {
@@ -1012,7 +1012,7 @@ module.exports = function(knex) {
         })
         .then(function() {
           expect(Object.keys(knex._events).length).to.equal(1);
-          expect(Object.keys(knexCopy._events).length).to.equal(0);
+          expect(Object.keys(knexCopy._events).length).to.equal(1);
           knex.removeListener('query-response', onQueryResponse);
           expect(Object.keys(knex._events).length).to.equal(0);
           expect(queryCount).to.equal(4);

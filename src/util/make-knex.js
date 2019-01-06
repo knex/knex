@@ -88,6 +88,10 @@ function initContext(knexFn) {
       }
 
       redefineProperties(knexClone, knexClone.client);
+      _copyEventListeners('query', knexFn, knexClone);
+      _copyEventListeners('query-error', knexFn, knexClone);
+      _copyEventListeners('query-response', knexFn, knexClone);
+      _copyEventListeners('start', knexFn, knexClone);
       knexClone.userParams = params;
       return knexClone;
     },
@@ -96,6 +100,12 @@ function initContext(knexFn) {
   if (!knexFn.context) {
     knexFn.context = knexContext;
   }
+}
+function _copyEventListeners(eventName, sourceKnex, targetKnex) {
+  const listeners = sourceKnex.listeners(eventName);
+  listeners.forEach((listener) => {
+    targetKnex.on(eventName, listener);
+  });
 }
 
 function redefineProperties(knex, client) {
