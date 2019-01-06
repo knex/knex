@@ -7,6 +7,7 @@ import QueryInterface from '../query/methods';
 import { assign, merge } from 'lodash';
 import batchInsert from './batchInsert';
 import * as bluebird from 'bluebird';
+import { isNode6 } from './version-helper';
 
 export default function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
@@ -202,7 +203,9 @@ function redefineProperties(knex, client) {
     knex[key] = ee[key];
   }
 
-  if (knex._internalListeners) {
+  // Unfortunately, something seems to be broken in Node 6 and removing events from a clone also mutates original Knex,
+  // which is highly undesireable
+  if (knex._internalListeners && !isNode6()) {
     knex._internalListeners.forEach(({ eventName, listener }) => {
       knex.client.removeListener(eventName, listener); // Remove duplicates for copies
     });

@@ -4,6 +4,7 @@ const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
 const { noop } = require('lodash');
+const { isNode6 } = require('../../lib/util/version-helper');
 
 describe('knex', () => {
   it('preserves global Bluebird Promise', () => {
@@ -106,6 +107,10 @@ describe('knex', () => {
   });
 
   it('copying does not result in duplicate listeners', () => {
+    if (isNode6()) {
+      return;
+    }
+
     const knex = Knex({
       client: 'sqlite',
     });
@@ -139,6 +144,10 @@ describe('knex', () => {
   });
 
   it('adding listener to copy does not affect base knex', () => {
+    if (isNode6()) {
+      return;
+    }
+
     const knex = Knex({
       client: 'sqlite',
     });

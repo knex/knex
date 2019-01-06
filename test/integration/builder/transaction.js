@@ -6,6 +6,7 @@ const Promise = testPromise;
 const Knex = require('../../../knex');
 const _ = require('lodash');
 const sinon = require('sinon');
+const { isNode6 } = require('../../../lib/util/version-helper');
 
 module.exports = function(knex) {
   // Certain dialects do not have proper insert with returning, so if this is true
@@ -362,6 +363,10 @@ module.exports = function(knex) {
     });
 
     it('#855 - Query Event should trigger on Transaction Client AND main Client', function() {
+      if (isNode6()) {
+        return;
+      }
+
       let queryEventTriggered = false;
 
       knex.once('query', function(queryData) {
