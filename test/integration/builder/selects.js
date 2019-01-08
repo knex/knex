@@ -1264,9 +1264,15 @@ module.exports = function(knex) {
     });
 
     it('forUpdate().noWait() should reject immediately when a row is locked', function() {
-      if (knex.client.driverName === 'sqlite3') {
+      // enable test only on supported databases
+      if (
+        knex.client.driverName !== 'pg' &&
+        knex.client.driverName !== 'mysql' &&
+        knex.client.driverName !== 'mysql2'
+      ) {
         return;
       }
+
       const rowName = 'row for noWait() test';
       return knex('test_default_table')
         .insert([
