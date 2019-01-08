@@ -464,6 +464,10 @@ declare namespace Knex {
     forShare(...tableNames: string[]): QueryBuilder;
     forShare(tableNames: string[]): QueryBuilder;
 
+    skipLocked(): QueryBuilder;
+
+    noWait(): QueryBuilder;
+
     toSQL(): Sql;
 
     on(event: string, callback: Function): QueryBuilder;
