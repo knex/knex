@@ -1312,7 +1312,13 @@ module.exports = function(knex) {
                   break;
                 case 'mysql':
                 case 'mysql2':
-                  expect(err.message).to.contain('Lock wait timeout exceeded');
+                  // mysql
+                  expect(err.message).to.contain(
+                    'lock(s) could not be acquired immediately'
+                  );
+                  // mariadb
+                  // TODO: detect if test is being run on mysql or mariadb to check for the correct error message
+                  // expect(err.message).to.contain('Lock wait timeout exceeded');
                   break;
                 default:
                   // unsupported database
