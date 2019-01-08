@@ -1264,12 +1264,8 @@ module.exports = function(knex) {
     });
 
     it('forUpdate().noWait() should reject immediately when a row is locked', function() {
-      // enable test only on supported databases
-      if (
-        knex.client.driverName !== 'pg' &&
-        knex.client.driverName !== 'mysql' &&
-        knex.client.driverName !== 'mysql2'
-      ) {
+      // TODO: enable this test on MySQL when updating test suite to MySQL 8.0
+      if (knex.client.driverName !== 'pg') {
         return;
       }
 
