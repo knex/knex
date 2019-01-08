@@ -1227,9 +1227,11 @@ module.exports = function(knex) {
     });
 
     it('forUpdate().skipLocked() should return the first non-locked row', function() {
-      if (knex.client.driverName === 'sqlite3') {
+      // TODO: enable this test on MySQL when updating test suite to MySQL 8.0
+      if (knex.client.driverName !== 'pg') {
         return;
       }
+
       const rowName = 'row for skipLocked() test';
       return knex('test_default_table')
         .insert([
