@@ -256,6 +256,13 @@ Client_Oracledb.prototype._query = function(connection, obj) {
           ? response.rows.rowsAffected
           : response.rowsAffected;
 
+          //added for outbind parameter 
+          if (obj.method == 'raw') {
+            return resolver({
+              response: outBinds
+            });
+          }
+
         if (obj.method === 'update') {
           const modifiedRowsCount = obj.rowsAffected.length || obj.rowsAffected;
           const updatedObjOutBinding = [];
