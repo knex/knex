@@ -8,8 +8,6 @@
     "node": ">=6"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.2.5",
-    "@types/bluebird": "^3.5.25",
     "bluebird": "^3.5.3",
     "colorette": "1.0.7",
     "commander": "^2.19.0",
@@ -33,6 +31,8 @@
     ]
   },
   "devDependencies": {
+    "@babel/polyfill": "^7.2.5",
+    "@types/bluebird": "^3.5.25",
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.2.3",
