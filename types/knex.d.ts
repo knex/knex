@@ -433,6 +433,7 @@ declare namespace Knex {
   interface Raw extends events.EventEmitter, ChainableInterface {
     wrap(before: string, after: string): Raw;
     toSQL(): Sql;
+    queryContext(context: any): Raw;
   }
 
   interface RawBuilder {
