@@ -27,6 +27,14 @@ assign(QueryCompiler_Firebird.prototype, {
   _emptyInsertValue: '() values ()',
   // InsertValue: '() values ()',
 
+  forUpdate() {
+    return 'FOR UPDATE WITH LOCK';
+  },
+
+  forShare() {
+    return 'WITH LOCK';
+  },
+
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
   insert() {

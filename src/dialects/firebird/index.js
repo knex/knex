@@ -98,7 +98,7 @@ assign(Client_Firebird.prototype, {
     if (value === '*') return value;
     const matched = value.match(/(.*?)(\[[0-9]\])/);
     if (matched) return this.wrapIdentifierImpl(matched[1]) + matched[2];
-    return '' + value.replace(/"/g, '""') + '';
+    return ('' + value + '').toUpperCase();
   },
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
@@ -142,7 +142,7 @@ assign(Client_Firebird.prototype, {
   processResponse(obj, runner) {
     if (obj == null) return;
     const { response, method } = obj;
-    const rows = response[0];
+    let rows = response[0];
     const fields = response[1];
     const bindings = response[2];
     if (obj.output) return obj.output.call(runner, rows, fields);
@@ -164,8 +164,11 @@ assign(Client_Firebird.prototype, {
 
         if (rows && rows.affectedRows) {
           rows.affectedRows;
-        } else {
-          rows.affectedRows = [0];
+        } else if (!rows) {
+          // Firebird affectedRows not implemented
+          rows = {
+            affectedRows: [0],
+          };
         }
         return rows.affectedRows;
       case 'counter':

@@ -2,8 +2,9 @@
 // -------
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
+import Trigger from './trigger';
 
-import { assign } from 'lodash';
+import { assign, first } from 'lodash';
 
 function ColumnCompiler_Firebird() {
   ColumnCompiler.apply(this, arguments);
@@ -22,9 +23,35 @@ inherits(ColumnCompiler_Firebird, ColumnCompiler);
 // ------
 
 assign(ColumnCompiler_Firebird.prototype, {
-  increments: 'int not null primary key',
+  _createAutoIncrementTriggerAndSequence() {
+    // TODO Add warning that sequence etc is created
+    this.pushAdditional(function() {
+      const tableName = this.tableCompiler.tableNameRaw;
+      const createAutoIncrementSQL = Trigger.createAutoIncrementSequence(
+        this.client.logger,
+        tableName
+      );
+      this.pushQuery(createAutoIncrementSQL);
 
-  bigincrements: 'bigint not null primary key',
+      const autoIncrementColumnName = first(this.args);
+      const createTriggerSQL = Trigger.createAutoIncrementTrigger(
+        this.client.logger,
+        tableName,
+        autoIncrementColumnName
+      );
+      this.pushQuery(createTriggerSQL);
+    });
+  },
+
+  increments() {
+    this._createAutoIncrementTriggerAndSequence();
+    return 'integer not null primary key';
+  },
+
+  bigincrements() {
+    this._createAutoIncrementTriggerAndSequence();
+    return 'bigint not null primary key';
+  },
 
   bigint: 'bigint',
 

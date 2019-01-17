@@ -18,7 +18,7 @@ inherits(TableCompiler_Firebird, TableCompiler);
 assign(TableCompiler_Firebird.prototype, {
   createQuery(columns, ifNot) {
     const createStatement = ifNot
-      ? `if (not exists(select 1 from rdb$relations where rdb$relation_name = 'EMPLOYEE')) then 
+      ? `if (not exists(select 1 from rdb$relations where rdb$relation_name = '${this.tableName()}')) then 
       execute statement ' create table `
       : 'create table ';
 

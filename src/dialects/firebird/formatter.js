@@ -5,6 +5,8 @@ import inherits from 'inherits';
 import { assign } from 'lodash';
 import Formatter from '../../formatter';
 
+const reservedColumnNames = ['index'];
+
 function Firebird_Formatter(client, builder) {
   Formatter.call(this, client, builder);
 }
@@ -28,6 +30,15 @@ assign(Firebird_Formatter.prototype, {
       str += prefix + this.wrap(columns[i]);
     }
     return str;
+  },
+  wrapAsIdentifier(value) {
+    if (reservedColumnNames.indexOf(value) !== -1) {
+      value = `"${value}"`;
+    }
+    return Formatter.prototype.wrapAsIdentifier.call(
+      this,
+      (value || '').trim()
+    );
   },
 });
 

@@ -11,6 +11,7 @@ const aliases = {
   pg: 'postgres',
   postgresql: 'postgres',
   sqlite: 'sqlite3',
+  firebird: 'firebird',
 };
 
 export default function Knex(config) {

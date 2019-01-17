@@ -36,8 +36,8 @@ assign(SchemaCompiler_Firebird.prototype, {
     this.pushQuery({
       sql: `select trim(rdb$relation_name)
         from rdb$relations
-        where trim(rdb$relation_name) like ? and rdb$view_blr is null and (rdb$system_flag is null or rdb$system_flag = 0);`,
-      bindings: [this.formatter.parameter(tableName)],
+        where trim(rdb$relation_name) = ? and rdb$view_blr is null and (rdb$system_flag is null or rdb$system_flag = 0);`,
+      bindings: [tableName],
       output: function output(resp) {
         return resp.length > 0;
       },
