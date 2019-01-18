@@ -227,7 +227,7 @@ assign(Client_PG.prototype, {
       values: obj.bindings || [],
     };
 
-    if (obj.opts) {
+    if (obj.options) {
       queryConfig = extend(queryConfig, obj.options);
     }
 
