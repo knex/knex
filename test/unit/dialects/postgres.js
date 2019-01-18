@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 
 describe('Postgres Unit Tests', function() {
-  let checkVersionStub;
+  let checkVersionStub, querySpy;
   before(() => {
     const fakeConnection = {
       query: (...args) => {
@@ -18,6 +18,7 @@ describe('Postgres Unit Tests', function() {
       },
       on: _.noop,
     };
+    querySpy = sinon.spy(fakeConnection, 'query');
 
     checkVersionStub = sinon
       .stub(pgDialect.prototype, 'checkVersion')
@@ -28,6 +29,9 @@ describe('Postgres Unit Tests', function() {
     sinon.stub(pg.Client.prototype, 'connect').callsFake(function(cb) {
       cb(null, fakeConnection);
     });
+  });
+  afterEach(() => {
+    querySpy.resetHistory();
   });
   after(() => {
     sinon.restore();
@@ -102,5 +106,24 @@ describe('Postgres Unit Tests', function() {
           'public'
         );
       });
+  });
+  it('Uses documented query config as param when providing bindings', (done) => {
+    const knexInstance = knex({
+      client: 'postgresql',
+      connection: {},
+    });
+    knexInstance.raw('select 1 as ?', ['foo']).then((result) => {
+      sinon.assert.calledOnce(querySpy);
+      sinon.assert.calledWithExactly(
+        querySpy,
+        {
+          text: 'select 1 as $1',
+          values: ['foo'],
+        },
+        sinon.match.func
+      );
+      knexInstance.destroy();
+      done();
+    });
   });
 });
