@@ -76,6 +76,7 @@
     "rimraf"
   ],
   "scripts": {
+    "postinstall": "npm run babel",
     "precommit": "lint-staged",
     "format": "prettier --write \"{src,bin,scripts,test}/**/*.js\"",
     "build": "npm run babel",
