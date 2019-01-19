@@ -42,12 +42,13 @@ function checkLocalModule(env) {
 
 function initKnex(env, opts) {
   checkLocalModule(env);
-  if (process.cwd() !== env.cwd) {
-    process.chdir(env.cwd);
-    console.log('Working directory changed to', color.magenta(tildify(env.cwd)));
-  }
 
   if (!opts.knexfile) {
+    if (process.cwd() !== env.cwd) {
+      process.chdir(env.cwd);
+      console.log('Working directory changed to', color.magenta(tildify(env.cwd)));
+    }
+
     const configuration = tryLoadingDefaultConfiguration();
     env.configuration = configuration || mkConfigObj(opts);
   }
@@ -296,8 +297,7 @@ cli.on('requireFail', function(name) {
 cli.launch(
   {
     cwd: argv.cwd,
-    knexfile: argv.knexfile,
-    knexpath: argv.knexpath,
+    configPath: argv.knexfile,
     require: argv.require,
     completion: argv.completion,
   },
