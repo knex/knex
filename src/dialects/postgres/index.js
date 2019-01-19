@@ -222,10 +222,17 @@ assign(Client_PG.prototype, {
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query(connection, obj) {
-    let sql = obj.sql;
-    if (obj.options) sql = extend({ text: sql }, obj.options);
+    let queryConfig = {
+      text: obj.sql,
+      values: obj.bindings || [],
+    };
+
+    if (obj.options) {
+      queryConfig = extend(queryConfig, obj.options);
+    }
+
     return new Promise(function(resolver, rejecter) {
-      connection.query(sql, obj.bindings, function(err, response) {
+      connection.query(queryConfig, function(err, response) {
         if (err) return rejecter(err);
         obj.response = response;
         resolver(obj);
