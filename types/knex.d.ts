@@ -583,7 +583,7 @@ declare namespace Knex {
     uuid(columnName: string): ColumnBuilder;
     comment(val: string): TableBuilder;
     specificType(columnName: string, type: string): ColumnBuilder;
-    primary(columnNames: string[]): TableBuilder;
+    primary(columnNames: string[], constraintName?: string): TableBuilder;
     index(
       columnNames: (string | Raw)[],
       indexName?: string,
