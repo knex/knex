@@ -825,11 +825,13 @@ declare namespace Knex {
 
   interface MigratorConfig {
     database?: string;
-    directory?: string;
+    directory?: string | string[];
     extension?: string;
     tableName?: string;
-    disableTransactions?: boolean;
     schemaName?: string;
+    disableTransactions?: boolean;
+    sortDirsSeparately?: boolean;
+    
   }
 
   interface SeedsConfig {
