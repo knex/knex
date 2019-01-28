@@ -829,6 +829,7 @@ declare namespace Knex {
     extension?: string;
     tableName?: string;
     disableTransactions?: boolean;
+    schemaName?: string;
   }
 
   interface SeedsConfig {
