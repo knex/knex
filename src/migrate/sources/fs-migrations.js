@@ -3,7 +3,8 @@ import path from 'path';
 import Promise from 'bluebird';
 import { sortBy, filter } from 'lodash';
 
-const readDirAsync = (path) => Promise.promisify(fs.readdir, { context: fs })(path);
+const readDirAsync = (path) =>
+  Promise.promisify(fs.readdir, { context: fs })(path);
 
 export const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
   '.co',

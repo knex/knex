@@ -9,13 +9,19 @@ const { isNode6 } = require('./lib/util/version-helper');
 
 // Should be safe to remove after support for Node.js 6 is dropped
 if (isNode6()) {
-  const oldPromise = global.Promise;
+  try {
+    const oldPromise = global.Promise;
 
-  require('@babel/polyfill');
+    require('@babel/polyfill');
 
-  // Preserve any Promise overrides set globally prior to importing knex
-  if (oldPromise) {
-    global.Promise = oldPromise;
+    // Preserve any Promise overrides set globally prior to importing knex
+    if (oldPromise) {
+      global.Promise = oldPromise;
+    }
+  } catch (e) {
+    throw new Error(
+      `You are using Node.js 6. Please consider upgrading to Node.js 8+ or add '@babel/polyfill' dependency to the project (knex will automatically load it).`
+    );
   }
 }
 
