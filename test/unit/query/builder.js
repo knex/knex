@@ -2190,6 +2190,330 @@ describe('QueryBuilder', function() {
     });
   });
 
+  it('intersects', function() {
+    var chain = qb()
+      .select('*')
+      .from('users')
+      .where('id', '=', 1)
+      .intersect(function() {
+        this.select('*')
+          .from('users')
+          .where('id', '=', 2);
+      });
+
+    testsql(chain, {
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? intersect select * from [users] where [id] = ?',
+        bindings: [1, 2],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2],
+      },
+      oracledb: {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2],
+      },
+      sqlite3: {
+        sql:
+          'select * from `users` where `id` = ? intersect select * from `users` where `id` = ?',
+        bindings: [1, 2],
+      },
+    });
+
+    var multipleArgumentsChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .intersect(
+        function() {
+          this.select('*')
+            .from('users')
+            .where({ id: 2 });
+        },
+        function() {
+          this.select('*')
+            .from('users')
+            .where({ id: 3 });
+        }
+      );
+    testsql(multipleArgumentsChain, {
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? intersect select * from [users] where [id] = ? intersect select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      oracledb: {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      sqlite3: {
+        sql:
+          'select * from `users` where `id` = ? intersect select * from `users` where `id` = ? intersect select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    var arrayChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .intersect([
+        function() {
+          this.select('*')
+            .from('users')
+            .where({ id: 2 });
+        },
+        function() {
+          this.select('*')
+            .from('users')
+            .where({ id: 3 });
+        },
+      ]);
+    testsql(arrayChain, {
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? intersect select * from [users] where [id] = ? intersect select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      oracledb: {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      sqlite3: {
+        sql:
+          'select * from `users` where `id` = ? intersect select * from `users` where `id` = ? intersect select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+  });
+
+  it('wraps intersects', function() {
+    var wrappedChain = qb()
+      .select('*')
+      .from('users')
+      .where('id', 'in', function() {
+        this.table('users')
+          .max('id')
+          .intersect(function() {
+            this.table('users').min('id');
+          }, true);
+      });
+    testsql(wrappedChain, {
+      mssql: {
+        sql:
+          'select * from [users] where [id] in (select max([id]) from [users] intersect (select min([id]) from [users]))',
+        bindings: [],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" in (select max("id") from "users" intersect (select min("id") from "users"))',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" in (select max("id") from "users" intersect (select min("id") from "users"))',
+        bindings: [],
+      },
+    });
+
+    // worthwhile since we're playing games with the 'wrap' specification with arguments
+    var multipleArgumentsWrappedChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .intersect(
+        function() {
+          this.select('*')
+            .from('users')
+            .where({ id: 2 });
+        },
+        function() {
+          this.select('*')
+            .from('users')
+            .where({ id: 3 });
+        },
+        true
+      );
+    testsql(multipleArgumentsWrappedChain, {
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? intersect (select * from [users] where [id] = ?) intersect (select * from [users] where [id] = ?)',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    var arrayWrappedChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .intersect(
+        [
+          function() {
+            this.select('*')
+              .from('users')
+              .where({ id: 2 });
+          },
+          function() {
+            this.select('*')
+              .from('users')
+              .where({ id: 3 });
+          },
+        ],
+        true
+      );
+    testsql(arrayWrappedChain, {
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? intersect (select * from [users] where [id] = ?) intersect (select * from [users] where [id] = ?)',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+    });
+  });
+
+  it('multiple intersects', function() {
+    var chain = qb()
+      .select('*')
+      .from('users')
+      .where('id', '=', 1)
+      .intersect(
+        qb()
+          .select('*')
+          .from('users')
+          .where('id', '=', 2)
+      )
+      .intersect(function() {
+        this.select('*')
+          .from('users')
+          .where('id', '=', 3);
+      });
+    testsql(chain, {
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? intersect select * from [users] where [id] = ? intersect select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    var arrayChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .intersect([
+        qb()
+          .select('*')
+          .from('users')
+          .where({ id: 2 }),
+        raw('select * from users where id = ?', [3]),
+      ]);
+    testsql(arrayChain, {
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? intersect select * from [users] where [id] = ? intersect select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    var multipleArgumentsChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .intersect(
+        qb()
+          .select('*')
+          .from('users')
+          .where({ id: 2 }),
+        raw('select * from users where id = ?', [3])
+      );
+    testsql(multipleArgumentsChain, {
+      mssql: {
+        sql:
+          'select * from [users] where [id] = ? intersect select * from [users] where [id] = ? intersect select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'select * from "users" where "id" = ? intersect select * from "users" where "id" = ? intersect select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+  });
+
   it('sub select where ins', function() {
     testsql(
       qb()

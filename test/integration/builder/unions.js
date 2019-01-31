@@ -112,4 +112,120 @@ module.exports = function(knex) {
         );
     });
   });
+
+  if (
+    ['pg', 'mssql', 'pg-redshift', 'oracledb', 'sqlite3'].includes(
+      knex.client.driverName
+    )
+  ) {
+    describe('intersects', function() {
+      it('handles intersects with a callback', function() {
+        return knex('accounts')
+          .select('*')
+          .where('id', '=', 1)
+          .intersect(function() {
+            this.select('*')
+              .from('accounts')
+              .where('id', 2);
+          });
+      });
+
+      it('handles intersects with an array of callbacks', function() {
+        return knex('accounts')
+          .select('*')
+          .where('id', '=', 1)
+          .intersect([
+            function() {
+              this.select('*')
+                .from('accounts')
+                .where('id', 2);
+            },
+            function() {
+              this.select('*')
+                .from('accounts')
+                .where('id', 3);
+            },
+          ]);
+      });
+
+      it('handles intersects with a list of callbacks', function() {
+        return knex('accounts')
+          .select('*')
+          .where('id', '=', 1)
+          .intersect(
+            function() {
+              this.select('*')
+                .from('accounts')
+                .where('id', 2);
+            },
+            function() {
+              this.select('*')
+                .from('accounts')
+                .where('id', 3);
+            }
+          );
+      });
+
+      it('handles intersects with an array of builders', function() {
+        return knex('accounts')
+          .select('*')
+          .where('id', '=', 1)
+          .intersect([
+            knex
+              .select('*')
+              .from('accounts')
+              .where('id', 2),
+            knex
+              .select('*')
+              .from('accounts')
+              .where('id', 3),
+          ]);
+      });
+
+      it('handles intersects with a list of builders', function() {
+        return knex('accounts')
+          .select('*')
+          .where('id', '=', 1)
+          .intersect(
+            knex
+              .select('*')
+              .from('accounts')
+              .where('id', 2),
+            knex
+              .select('*')
+              .from('accounts')
+              .where('id', 3)
+          );
+      });
+
+      it('handles intersects with a raw query', function() {
+        return knex('accounts')
+          .select('*')
+          .where('id', '=', 1)
+          .intersect(
+            knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 2])
+          );
+      });
+
+      it('handles intersects with an array raw queries', function() {
+        return knex('accounts')
+          .select('*')
+          .where('id', '=', 1)
+          .intersect([
+            knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 2]),
+            knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 3]),
+          ]);
+      });
+
+      it('handles intersects with a list of raw queries', function() {
+        return knex('accounts')
+          .select('*')
+          .where('id', '=', 1)
+          .intersect(
+            knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 2]),
+            knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 3])
+          );
+      });
+    });
+  }
 };
