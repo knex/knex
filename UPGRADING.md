@@ -4,7 +4,8 @@
 
 * MSSQL: DB versions older than 2008 are no longer supported, make sure to update your DB;
 * PostgreSQL|MySQL: it is recommended to use options object for `table.datetime` and `table.timestamp` methods instead of argument options. See documentation for these methods for more details; 
-* Node 6: There are known issues with duplicate event listeners when using knex.js with Node 6 (resulting in MaxListenersExceededWarning under certain use-cases (such as reusing single knex instance to run migrations or seeds multiple times)). Please upgrade to Node 8+ as soon as possible (knex 0.17.0 will be dropping Node 6 support altogether).
+* Node 6: There are known issues with duplicate event listeners when using knex.js with Node.js 6 (resulting in MaxListenersExceededWarning under certain use-cases (such as reusing single knex instance to run migrations or seeds multiple times)). Please upgrade to Node.js 8+ as soon as possible (knex 0.17.0 will be dropping Node.js 6 support altogether);
+* Node 6: Please add '@babel/polyfill' production dependency to the project when using Node.js 6 (it will be loaded by knex automatically).
 
 ### Upgrading to version 0.15.0+
 
