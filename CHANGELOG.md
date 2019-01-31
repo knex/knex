@@ -1,5 +1,26 @@
 # Master (Unreleased)
 
+### New features:
+
+- Boolean param for rollback() to rollback all migrations #2968
+- seed:run print the file name of the failing seed #2972 #2973
+- verbose option to CLI commands #2887
+
+### Bug fixes:
+
+- Respect "loadExtensions" configuration #2969
+- Typings: Allow to pass query builders, identifiers and raw in various places as parameters #2960
+- Typings: toNative() definition #2996
+- Typings: .asCallback() #2963
+- Typings: queryContext() type definition Knex.Raw #3002
+- Typings: Add "constraintName" arg to primary() #3006
+- Typings: schemaName in MigratorConfig #3016
+
+### Test / internal changes:
+
+- swap chalk→colorette / minimist→getopts #2718
+- Always use well documented pg client query() config argument #3004
+
 # 0.16.3 - 19 Dec, 2018
 
 ### Bug fixes:
