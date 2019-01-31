@@ -1,3 +1,5 @@
+const { isNode6 } = require('./lib/util/version-helper');
+
 // Knex.js
 // --------------
 //     (c) 2013-present Tim Griesser
@@ -6,12 +8,7 @@
 //     http://knexjs.org
 
 // Should be safe to remove after support for Node.js 6 is dropped
-if (
-  process &&
-  process.versions &&
-  process.versions.node &&
-  process.versions.node.startsWith('6.')
-) {
+if (isNode6()) {
   const oldPromise = global.Promise;
 
   require('@babel/polyfill');

@@ -31,6 +31,8 @@ describe('Query Building Tests', function() {
   require('./unit/schema/oracledb');
   require('./unit/migrate/migration-list-resolver');
   require('./unit/seed/seeder');
+  // require('./unit/interface'); ToDo Uncomment after fixed
+  require('./unit/knex');
 });
 
 describe('Integration Tests', function() {
