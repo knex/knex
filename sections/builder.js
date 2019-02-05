@@ -1412,7 +1412,7 @@ export default [
     type: "method",
     method: "returning",
     example: ".returning(column) / .returning([column1, column2, ...])",
-    description: "Utilized by PostgreSQL, MSSQL, and Oracle databases, the \"returning\" method specifies which column should be returned by the insert and update methods. Passed column parameter may be a string or an array of strings. When an array of string is passed in, makes the SQL result to be reported as an array of values from the specified column. When passed in an array of strings, makes the SQL result be reported as an array of objects, each containing a single property for each of the specified columns. The returning method is is entirely unsupported on Amazon Redshift and has no support for multiple inserts on MySQL and SQLite.",
+    description: "Utilized by PostgreSQL, MSSQL, and Oracle databases, the returning method specifies which column should be returned by the insert and update methods. Passed column parameter may be a string or an array of strings. When passed in a string, makes the SQL result be reported as an array of values from the specified column. When passed in an array of strings, makes the SQL result be reported as an array of objects, each containing a single property for each of the specified columns. The returning method is not supported on Amazon Redshift.",
     children: [
       {
         type: "runnable",
