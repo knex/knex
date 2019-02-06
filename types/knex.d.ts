@@ -27,7 +27,6 @@ type Value =
   | Array<boolean>
   | Buffer
   | Knex.Raw;
-type ValueMap = { [key: string]: Value | Knex.QueryBuilder };
 type ColumnName =
   | string
   | Knex.Raw
@@ -306,6 +305,10 @@ declare namespace Knex {
     type(type: string): JoinClause;
   }
 
+  interface ValueMap {
+    [key: string]: Value | Knex.QueryBuilder;
+  }
+
   interface JoinRaw {
     (tableName: string, binding?: Value | ValueMap): QueryBuilder;
   }
@@ -422,9 +425,11 @@ declare namespace Knex {
     (columnNames: ColumnName[]): QueryBuilder;
   }
 
+  type RawBinding = (Value | QueryBuilder)[];
+
   interface RawQueryBuilder {
-    (sql: string, ...bindings: (Value | QueryBuilder)[]): QueryBuilder;
-    (sql: string, bindings: (Value | QueryBuilder)[] | ValueMap): QueryBuilder;
+    (sql: string, ...bindings: RawBinding): QueryBuilder;
+    (sql: string, bindings: RawBinding | ValueMap): QueryBuilder;
     (raw: Raw): QueryBuilder;
   }
 
@@ -438,8 +443,8 @@ declare namespace Knex {
 
   interface RawBuilder {
     (value: Value): Raw;
-    (sql: string, ...bindings: (Value | QueryBuilder)[]): Raw;
-    (sql: string, bindings: (Value | QueryBuilder)[] | ValueMap): Raw;
+    (sql: string, ...bindings: RawBinding): Raw;
+    (sql: string, bindings: RawBinding | ValueMap): Raw;
   }
 
   //
