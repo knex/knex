@@ -2,6 +2,11 @@
 
 'use strict';
 
+const {
+  wrapIdentifier,
+  postProcessResponse,
+} = require('../../../lib/util/snake-case-mappers');
+
 const Promise = testPromise;
 
 module.exports = function(knex) {
@@ -914,12 +919,47 @@ module.exports = function(knex) {
     });
 
     describe('hasColumn', function() {
-      it('checks whether a column exists, resolving with a boolean', function() {
-        return knex.schema
-          .hasColumn('accounts', 'first_name')
-          .then(function(exists) {
-            expect(exists).to.equal(true);
+      describe('without mappers', function() {
+        it('checks whether a column exists, resolving with a boolean', function() {
+          return knex.schema
+            .hasColumn('accounts', 'first_name')
+            .then(function(exists) {
+              expect(exists).to.equal(true);
+            });
+        });
+      });
+
+      describe('using snakeCaseMappers', function() {
+        describe('sqlite and mysql only', function() {
+          if (
+            !knex ||
+            !knex.client ||
+            !(
+              /sqlite3/i.test(knex.client.driverName) ||
+              /mysql/i.test(knex.client.driverName)
+            )
+          ) {
+            return Promise.resolve();
+          }
+
+          beforeEach(function() {
+            knex.client.config.postProcessResponse = postProcessResponse;
+            knex.client.config.wrapIdentifier = wrapIdentifier;
           });
+
+          afterEach(function() {
+            knex.client.config.postProcessResponse = null;
+            knex.client.config.wrapIdentifier = null;
+          });
+
+          it('checks whether a column exists, resolving with a boolean', function() {
+            return knex.schema
+              .hasColumn('accounts', 'firstName')
+              .then(function(exists) {
+                expect(exists).to.equal(true);
+              });
+          });
+        });
       });
     });
 
@@ -1015,103 +1055,225 @@ module.exports = function(knex) {
     });
 
     describe('renameColumn', function() {
-      before(function() {
-        return knex.schema
-          .createTable('rename_column_test', function(tbl) {
-            tbl
-              .increments('id_test')
-              .unsigned()
-              .primary();
-            tbl
-              .integer('parent_id_test')
-              .unsigned()
-              .references('id_test')
-              .inTable('rename_column_test');
-          })
-          .createTable('rename_column_foreign_test', function(tbl) {
-            tbl
-              .increments('id')
-              .unsigned()
-              .primary();
-            tbl
-              .integer('foreign_id_test')
-              .unsigned()
-              .references('id_test')
-              .inTable('rename_column_test');
-          })
-          .createTable('rename_col_test', function(tbl) {
-            tbl.integer('colnameint').defaultTo(1);
-            tbl
-              .string('colnamestring')
-              .defaultTo('knex')
-              .notNullable();
-          })
-          .then(function() {
-            // without data, the column isn't found??
-            return knex
-              .insert({ parent_id_test: 1 })
-              .into('rename_column_test');
-          });
-      });
-
-      after(function() {
-        return knex.schema
-          .dropTable('rename_column_foreign_test')
-          .dropTable('rename_column_test')
-          .dropTable('rename_col_test');
-      });
-
-      it('renames the column', function() {
-        return knex.schema
-          .table('rename_column_test', function(tbl) {
-            return tbl.renameColumn('id_test', 'id');
-          })
-          .then(function() {
-            return knex.schema.hasColumn('rename_column_test', 'id');
-          })
-          .then(function(exists) {
-            expect(exists).to.equal(true);
-          });
-      });
-
-      it('successfully renames a column referenced in a foreign key', function() {
-        return knex.schema.table('rename_column_test', function(tbl) {
-          tbl.renameColumn('parent_id_test', 'parent_id');
-        });
-      });
-
-      it('successfully renames a column referenced by another table', function() {
-        return knex.schema.table('rename_column_test', function(tbl) {
-          tbl.renameColumn('id', 'id_new');
-        });
-      });
-
-      it('#933 - .renameColumn should not drop null or default value', function() {
-        const tableName = 'rename_col_test';
-        return knex.transaction(function(tr) {
-          const getColInfo = () => tr(tableName).columnInfo();
-          return getColInfo()
-            .then(function(colInfo) {
-              expect(String(colInfo.colnameint.defaultValue)).to.contain('1');
-              // Using contain because of different response per dialect.
-              // IE mysql 'knex', postgres 'knex::character varying'
-              expect(colInfo.colnamestring.defaultValue).to.contain('knex');
-              expect(colInfo.colnamestring.nullable).to.equal(false);
-              return tr.schema.table(tableName, function(table) {
-                table.renameColumn('colnameint', 'colnameintchanged');
-                table.renameColumn('colnamestring', 'colnamestringchanged');
-              });
+      describe('without mappers', function() {
+        before(function() {
+          return knex.schema
+            .createTable('rename_column_test', function(tbl) {
+              tbl
+                .increments('id_test')
+                .unsigned()
+                .primary();
+              tbl
+                .integer('parent_id_test')
+                .unsigned()
+                .references('id_test')
+                .inTable('rename_column_test');
             })
-            .then(getColInfo)
-            .then(function(columnInfo) {
-              expect(
-                String(columnInfo.colnameintchanged.defaultValue)
-              ).to.contain('1');
-              expect(columnInfo.colnamestringchanged.defaultValue).to.contain(
-                'knex'
-              );
-              expect(columnInfo.colnamestringchanged.nullable).to.equal(false);
+            .createTable('rename_column_foreign_test', function(tbl) {
+              tbl
+                .increments('id')
+                .unsigned()
+                .primary();
+              tbl
+                .integer('foreign_id_test')
+                .unsigned()
+                .references('id_test')
+                .inTable('rename_column_test');
+            })
+            .createTable('rename_col_test', function(tbl) {
+              tbl.integer('colnameint').defaultTo(1);
+              tbl
+                .string('colnamestring')
+                .defaultTo('knex')
+                .notNullable();
+            })
+            .then(function() {
+              // without data, the column isn't found??
+              return knex
+                .insert({ parent_id_test: 1 })
+                .into('rename_column_test');
             });
+        });
+
+        after(function() {
+          return knex.schema
+            .dropTable('rename_column_foreign_test')
+            .dropTable('rename_column_test')
+            .dropTable('rename_col_test');
+        });
+
+        it('renames the column', function() {
+          return knex.schema
+            .table('rename_column_test', function(tbl) {
+              return tbl.renameColumn('id_test', 'id');
+            })
+            .then(function() {
+              return knex.schema.hasColumn('rename_column_test', 'id');
+            })
+            .then(function(exists) {
+              expect(exists).to.equal(true);
+            });
+        });
+
+        it('successfully renames a column referenced in a foreign key', function() {
+          return knex.schema.table('rename_column_test', function(tbl) {
+            tbl.renameColumn('parent_id_test', 'parent_id');
+          });
+        });
+
+        it('successfully renames a column referenced by another table', function() {
+          return knex.schema.table('rename_column_test', function(tbl) {
+            tbl.renameColumn('id', 'id_new');
+          });
+        });
+
+        it('#933 - .renameColumn should not drop null or default value', function() {
+          const tableName = 'rename_col_test';
+          return knex.transaction(function(tr) {
+            const getColInfo = () => tr(tableName).columnInfo();
+            return getColInfo()
+              .then(function(colInfo) {
+                expect(String(colInfo.colnameint.defaultValue)).to.contain('1');
+                // Using contain because of different response per dialect.
+                // IE mysql 'knex', postgres 'knex::character varying'
+                expect(colInfo.colnamestring.defaultValue).to.contain('knex');
+                expect(colInfo.colnamestring.nullable).to.equal(false);
+                return tr.schema.table(tableName, function(table) {
+                  table.renameColumn('colnameint', 'colnameintchanged');
+                  table.renameColumn('colnamestring', 'colnamestringchanged');
+                });
+              })
+              .then(getColInfo)
+              .then(function(columnInfo) {
+                expect(
+                  String(columnInfo.colnameintchanged.defaultValue)
+                ).to.contain('1');
+                expect(columnInfo.colnamestringchanged.defaultValue).to.contain(
+                  'knex'
+                );
+                expect(columnInfo.colnamestringchanged.nullable).to.equal(
+                  false
+                );
+              });
+          });
+        });
+      });
+
+      describe('sqlite3 only', function() {
+        describe('using snakeCaseMappers', function() {
+          const tableName = 'camel_case_rename_column_test';
+          if (
+            !knex ||
+            !knex.client ||
+            !/sqlite3/i.test(knex.client.driverName)
+          ) {
+            return Promise.resolve();
+          }
+
+          beforeEach(function() {
+            knex.client.config.postProcessResponse = postProcessResponse;
+            knex.client.config.wrapIdentifier = wrapIdentifier;
+
+            return knex.schema
+              .createTable(tableName, function(tbl) {
+                tbl.integer('field_foo');
+                tbl.integer('other_field');
+              })
+              .then(function() {
+                // Data is necessary to "force" the sqlite3 dialect to actually
+                // attempt to copy data to the temp table, triggering errors
+                // if columns were not correctly copied/created/dropped.
+                return knex
+                  .insert({
+                    field_foo: 1,
+                    other_field: 1,
+                  })
+                  .into(tableName);
+              });
+          });
+
+          afterEach(function() {
+            knex.client.config.postProcessResponse = null;
+            knex.client.config.wrapIdentifier = null;
+
+            return knex.schema.dropTable(tableName);
+          });
+
+          for (const from of ['field_foo', 'fieldFoo']) {
+            for (const to of ['field_bar', 'fieldBar']) {
+              it(`renames the column from '${from}' to '${to}'`, function() {
+                return knex.schema
+                  .table(tableName, function(tbl) {
+                    return tbl.renameColumn(from, to);
+                  })
+                  .then(function() {
+                    return knex.schema.hasColumn(tableName, 'field_bar');
+                  })
+                  .then(function(exists) {
+                    expect(exists).to.equal(true);
+                  });
+              });
+            }
+          }
+        });
+      });
+    });
+
+    describe('dropColumn', function() {
+      describe('sqlite3 only', function() {
+        describe('using snakeCaseMappers', function() {
+          const tableName = 'camel_case_drop_column_test';
+          if (
+            !knex ||
+            !knex.client ||
+            !/sqlite3/i.test(knex.client.driverName)
+          ) {
+            return Promise.resolve();
+          }
+
+          beforeEach(function() {
+            knex.client.config.postProcessResponse = postProcessResponse;
+            knex.client.config.wrapIdentifier = wrapIdentifier;
+
+            return knex.schema
+              .createTable(tableName, function(tbl) {
+                tbl.integer('other_field');
+                tbl.integer('field_foo');
+              })
+              .then(function() {
+                // Data is necessary to "force" the sqlite3 dialect to actually
+                // attempt to copy data to the temp table, triggering errors
+                // if columns were not correctly copied/created/dropped.
+                return knex
+                  .insert({
+                    field_foo: 1,
+                    other_field: 1,
+                  })
+                  .into(tableName);
+              });
+          });
+
+          afterEach(function() {
+            knex.client.config.postProcessResponse = null;
+            knex.client.config.wrapIdentifier = null;
+
+            return knex.schema.dropTable(tableName);
+          });
+
+          for (const columnName of ['field_foo', 'fieldFoo']) {
+            it(`drops the column when spelled '${columnName}'`, function() {
+              return knex.schema
+                .table(tableName, function(tbl) {
+                  return tbl.dropColumn(columnName);
+                })
+                .then(function() {
+                  return knex.schema.hasColumn(tableName, 'field_foo');
+                })
+                .then(function(exists) {
+                  expect(exists).to.equal(false);
+                });
+            });
+          }
         });
       });
     });

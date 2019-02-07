@@ -5,7 +5,16 @@
 // -------
 
 import Promise from 'bluebird';
-import { assign, uniqueId, find, identity, map, omit } from 'lodash';
+import {
+  assign,
+  uniqueId,
+  find,
+  identity,
+  map,
+  omit,
+  invert,
+  fromPairs,
+} from 'lodash';
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
@@ -21,7 +30,12 @@ function SQLite3_DDL(client, tableCompiler, pragma, connection) {
 
 assign(SQLite3_DDL.prototype, {
   getColumn: Promise.method(function(column) {
-    const currentCol = find(this.pragma, { name: column });
+    const currentCol = find(this.pragma, (col) => {
+      return (
+        this.client.wrapIdentifier(col.name) ===
+        this.client.wrapIdentifier(column)
+      );
+    });
     if (!currentCol)
       throw new Error(
         `The column ${column} is not in the ${this.tableName} table`
@@ -217,6 +231,14 @@ assign(SQLite3_DDL.prototype, {
             if (sql === newSql) {
               throw new Error('Unable to find the column to change');
             }
+            const { from: mappedFrom, to: mappedTo } = invert(
+              this.client.postProcessResponse(
+                invert({
+                  from,
+                  to,
+                })
+              )
+            );
             return Promise.bind(this)
               .then(this.createTempTable(createTable))
               .then(this.copyData)
@@ -226,8 +248,8 @@ assign(SQLite3_DDL.prototype, {
               })
               .then(
                 this.reinsertData(function(row) {
-                  row[to] = row[from];
-                  return omit(row, from);
+                  row[mappedTo] = row[mappedFrom];
+                  return omit(row, mappedFrom);
                 })
               )
               .then(this.dropTempTable);
@@ -254,6 +276,11 @@ assign(SQLite3_DDL.prototype, {
             if (sql === newSql) {
               throw new Error('Unable to find the column to change');
             }
+            const mappedColumns = Object.keys(
+              this.client.postProcessResponse(
+                fromPairs(columns.map((column) => [column, column]))
+              )
+            );
             return Promise.bind(this)
               .then(this.createTempTable(createTable))
               .then(this.copyData)
@@ -261,7 +288,7 @@ assign(SQLite3_DDL.prototype, {
               .then(function() {
                 return this.trx.raw(newSql);
               })
-              .then(this.reinsertData((row) => omit(row, ...columns)))
+              .then(this.reinsertData((row) => omit(row, ...mappedColumns)))
               .then(this.dropTempTable);
           });
       },
