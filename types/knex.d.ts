@@ -576,8 +576,8 @@ declare namespace Knex {
       makeDefaultNow?: boolean
     ): ColumnBuilder;
     binary(columnName: string, length?: number): ColumnBuilder;
-    enum(columnName: string, values: Value[]): ColumnBuilder;
-    enu(columnName: string, values: Value[]): ColumnBuilder;
+    enum(columnName: string, values: Value[], options?: EnumOptions): ColumnBuilder;
+    enu(columnName: string, values: Value[], options?: EnumOptions): ColumnBuilder;
     json(columnName: string): ColumnBuilder;
     jsonb(columnName: string): ColumnBuilder;
     uuid(columnName: string): ColumnBuilder;
@@ -831,7 +831,6 @@ declare namespace Knex {
     schemaName?: string;
     disableTransactions?: boolean;
     sortDirsSeparately?: boolean;
-    
   }
 
   interface SeedsConfig {
@@ -849,6 +848,11 @@ declare namespace Knex {
   interface FunctionHelper {
     now(): Raw;
   }
+
+  interface EnumOptions {
+    useNative: boolean;
+    enumName: string;
+}
 
   //
   // Clients
