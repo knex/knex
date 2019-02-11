@@ -817,7 +817,7 @@ declare namespace Knex {
     acquireTimeoutMillis?: number;
     fifo?: boolean;
     autostart?: boolean;
-    evictionRunIntervalMillis?: number;
+    reapIntervalMillis?: number;
     numTestsPerRun?: number;
     softIdleTimeoutMillis?: number;
     Promise?: any;

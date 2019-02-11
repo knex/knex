@@ -32,7 +32,7 @@ function Client_MSSQL(config = {}) {
     min: 1,
     max: 1,
     idleTimeoutMillis: Number.MAX_SAFE_INTEGER,
-    evictionRunIntervalMillis: 0,
+    reapIntervalMillis: 0,
   };
 
   Client.call(this, config);
