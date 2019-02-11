@@ -8677,6 +8677,80 @@ describe('QueryBuilder', function() {
     });
   });
 
+  it('should warn to user when use `.returning()` function in MySQL', function() {
+    var loggerConfigForTestingWarnings = {
+      log: {
+        warn: function(message) {
+          if (
+            message ===
+            '.returning() is not supported by mysql and will not have any effect.'
+          ) {
+            throw new Error(message);
+          }
+        },
+      },
+    };
+
+    var mysqlClientForWarnings = new MySQL_Client(
+      Object.assign({ client: 'mysql' }, loggerConfigForTestingWarnings)
+    );
+
+    expect(function() {
+      testsql(
+        qb()
+          .into('users')
+          .insert({ email: 'foo' })
+          .returning('id'),
+        {
+          mysql: {
+            sql: 'insert into `users` (`email`) values (?)',
+            bindings: ['foo'],
+          },
+        },
+        {
+          mysql: mysqlClientForWarnings,
+        }
+      );
+    }).to.throw(Error);
+  });
+
+  it('should warn to user when use `.returning()` function in SQLite3', function() {
+    var loggerConfigForTestingWarnings = {
+      log: {
+        warn: function(message) {
+          if (
+            message ===
+            '.returning() is not supported by sqlite3 and will not have any effect.'
+          ) {
+            throw new Error(message);
+          }
+        },
+      },
+    };
+
+    var sqlite3ClientForWarnings = new SQLite3_Client(
+      Object.assign({ client: 'sqlite3' }, loggerConfigForTestingWarnings)
+    );
+
+    expect(function() {
+      testsql(
+        qb()
+          .into('users')
+          .insert({ email: 'foo' })
+          .returning('id'),
+        {
+          sqlite3: {
+            sql: 'insert into `users` (`email`) values (?)',
+            bindings: ['foo'],
+          },
+        },
+        {
+          sqlite3: sqlite3ClientForWarnings,
+        }
+      );
+    }).to.throw(Error);
+  });
+
   it('join with subquery using .withSchema', function() {
     testsql(
       qb()
