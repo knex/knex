@@ -25,7 +25,7 @@ const POOL_CONFIG_OPTIONS = Object.freeze([
   'fifo',
   'priorityRange',
   'autostart',
-  'reapIntervalMillis',
+  'evictionRunIntervalMillis',
   'numTestsPerRun',
   'softIdleTimeoutMillis',
   'Promise',
