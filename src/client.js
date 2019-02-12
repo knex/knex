@@ -291,7 +291,11 @@ assign(Client.prototype, {
       return;
     }
 
-    this.pool = new Pool(this.getPoolSettings(config.pool));
+    const { onError, ...poolConfig } = config.pool;
+    this.pool = new Pool(this.getPoolSettings(poolConfig));
+    if (onError) {
+      this.pool.on('error', onError);
+    }
   },
 
   validateConnection(connection) {
