@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
-const { noop } = require('lodash');
+const { noop, omit } = require('lodash');
 const { isNode6 } = require('../../lib/util/version-helper');
 
 describe('knex', () => {
@@ -35,6 +35,18 @@ describe('knex', () => {
           expect(result[0].value).to.equal('0');
           done();
         });
+    });
+  });
+
+  it('supports getConnection for dynamic connection settings', (done) => {
+    const config = omit(sqliteConfig, ['connection']);
+
+    config.getConnection = () => bluebird.resolve(sqliteConfig.connection);
+
+    const knex = Knex(config);
+    knex.select(knex.raw('"0" as value')).then((result) => {
+      expect(result[0].value).to.equal('0');
+      done();
     });
   });
 

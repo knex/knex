@@ -77,21 +77,16 @@ assign(Client_Oracle.prototype, {
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
-  acquireRawConnection() {
+  acquireRawConnection(settings) {
     return new Promise((resolver, rejecter) => {
-      this.driver.connect(
-        this.connectionSettings,
-        (err, connection) => {
-          if (err) return rejecter(err);
-          Promise.promisifyAll(connection);
-          if (this.connectionSettings.prefetchRowCount) {
-            connection.setPrefetchRowCount(
-              this.connectionSettings.prefetchRowCount
-            );
-          }
-          resolver(connection);
+      this.driver.connect(settings, (err, connection) => {
+        if (err) return rejecter(err);
+        Promise.promisifyAll(connection);
+        if (settings.prefetchRowCount) {
+          connection.setPrefetchRowCount(settings.prefetchRowCount);
         }
-      );
+        resolver(connection);
+      });
     });
   },
 
@@ -99,11 +94,6 @@ assign(Client_Oracle.prototype, {
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
     return Promise.fromCallback(connection.close.bind(connection));
-  },
-
-  // Return the database for the Oracle client.
-  database() {
-    return this.connectionSettings.database;
   },
 
   // Position the bindings for the query.

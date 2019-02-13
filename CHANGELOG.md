@@ -5,6 +5,7 @@
 - Boolean param for rollback() to rollback all migrations #2968
 - seed:run print the file name of the failing seed #2972 #2973
 - verbose option to CLI commands #2887
+- `getConnection` configuration option (function) to provide connection settings dynamically #2732
 
 ### Bug fixes:
 

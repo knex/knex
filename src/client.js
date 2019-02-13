@@ -55,7 +55,7 @@ function Client(config = {}) {
   }
 
   this.connectionSettings = cloneDeep(config.connection || {});
-  if (this.driverName && config.connection) {
+  if (this.driverName && (config.connection || config.getConnection)) {
     this.initializeDriver();
     if (!config.pool || (config.pool && config.pool.max !== 0)) {
       this.initializePool(config);
@@ -225,6 +225,15 @@ assign(Client.prototype, {
     return { min: 2, max: 10, propagateCreateError: true };
   },
 
+  getConnectionSettings() {
+    if (typeof this.config.getConnection === 'function') {
+      return Promise.resolve(
+        this.config.getConnection(this.connectionSettings)
+      );
+    }
+    return Promise.resolve(this.connectionSettings);
+  },
+
   getPoolSettings(poolConfig) {
     poolConfig = defaults({}, poolConfig, this.poolDefaults());
 
@@ -250,13 +259,15 @@ assign(Client.prototype, {
 
     return Object.assign(poolConfig, {
       create: () => {
-        return this.acquireRawConnection().tap((connection) => {
-          connection.__knexUid = uniqueId('__knexUid');
+        return this.getConnectionSettings()
+          .then((settings) => this.acquireRawConnection(settings))
+          .tap((connection) => {
+            connection.__knexUid = uniqueId('__knexUid');
 
-          if (poolConfig.afterCreate) {
-            return Promise.promisify(poolConfig.afterCreate)(connection);
-          }
-        });
+            if (poolConfig.afterCreate) {
+              return Promise.promisify(poolConfig.afterCreate)(connection);
+            }
+          });
       },
 
       destroy: (connection) => {

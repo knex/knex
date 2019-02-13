@@ -21,12 +21,6 @@ const SQL_BIGINT_SAFE = { MIN: -9007199254740991, MAX: 9007199254740991 };
 // Always initialize with the "QueryBuilder" and "QueryCompiler" objects, which
 // extend the base 'lib/query/builder' and 'lib/query/compiler', respectively.
 function Client_MSSQL(config = {}) {
-  // #1235 mssql module wants 'server', not 'host'. This is to enforce the same
-  // options object across all dialects.
-  if (config && config.connection && config.connection.host) {
-    config.connection.server = config.connection.host;
-  }
-
   // mssql always creates pool :( lets try to unpool it as much as possible
   this.mssqlPoolSettings = {
     min: 1,
@@ -211,12 +205,17 @@ assign(Client_MSSQL.prototype, {
 
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
-  acquireRawConnection() {
+  acquireRawConnection(settings) {
     return new Promise((resolver, rejecter) => {
-      const settings = Object.assign({}, this.connectionSettings);
-      settings.pool = this.mssqlPoolSettings;
+      const connectionSettings = Object.assign({}, connectionSettings);
+      connectionSettings.pool = this.mssqlPoolSettings;
+      // #1235 mssql module wants 'server', not 'host'. This is to enforce the same
+      // options object across all dialects.
+      if (connectionSettings.host) {
+        connectionSettings.server = connectionSettings.host;
+      }
 
-      const connection = new this.driver.ConnectionPool(settings);
+      const connection = new this.driver.ConnectionPool(connectionSettings);
       connection.connect((err) => {
         if (err) {
           return rejecter(err);

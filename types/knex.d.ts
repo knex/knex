@@ -233,7 +233,10 @@ declare namespace Knex {
 
   interface Join {
     (raw: Raw): QueryBuilder;
-    (tableName: TableName | Identifier | QueryCallback, clause: JoinCallback): QueryBuilder;
+    (
+      tableName: TableName | Identifier | QueryCallback,
+      clause: JoinCallback
+    ): QueryBuilder;
     (
       tableName: TableName | Identifier | QueryCallback,
       columns: { [key: string]: string | number | Raw }
@@ -386,7 +389,9 @@ declare namespace Knex {
 
   interface OrderBy {
     (columnName: string, order?: string): QueryBuilder;
-    (columnDefs: Array<string | { column: string; order?: string }>): QueryBuilder;
+    (
+      columnDefs: Array<string | { column: string; order?: string }>
+    ): QueryBuilder;
   }
 
   interface Union {
@@ -831,7 +836,6 @@ declare namespace Knex {
     schemaName?: string;
     disableTransactions?: boolean;
     sortDirsSeparately?: boolean;
-    
   }
 
   interface SeedsConfig {
@@ -861,7 +865,7 @@ declare namespace Knex {
     driverName: string;
     connectionSettings: object;
 
-    acquireRawConnection(): Promise<any>;
+    acquireRawConnection(settings: object): Promise<any>;
     destroyRawConnection(connection: any): Promise<void>;
     validateConnection(connection: any): Promise<boolean>;
   }
