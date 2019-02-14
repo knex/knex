@@ -605,41 +605,41 @@ assign(Builder.prototype, {
     return this;
   },
 
-  // Add a union statement to the query.
-  union(callbacks, wrap) {
-    if (arguments.length === 1 || (arguments.length === 2 && isBoolean(wrap))) {
+  _union(args, clause) {
+    let callbacks = args[0];
+    let wrap = args[1];
+    if (args.length === 1 || (args.length === 2 && isBoolean(wrap))) {
       if (!Array.isArray(callbacks)) {
         callbacks = [callbacks];
       }
       for (let i = 0, l = callbacks.length; i < l; i++) {
         this._statements.push({
           grouping: 'union',
-          clause: 'union',
+          clause: clause,
           value: callbacks[i],
           wrap: wrap || false,
         });
       }
     } else {
-      callbacks = toArray(arguments).slice(0, arguments.length - 1);
-      wrap = arguments[arguments.length - 1];
+      callbacks = toArray(args).slice(0, args.length - 1);
+      wrap = args[args.length - 1];
       if (!isBoolean(wrap)) {
         callbacks.push(wrap);
         wrap = false;
       }
-      this.union(callbacks, wrap);
+      this._union([callbacks, wrap], clause);
     }
     return this;
   },
 
+  // Add a union statement to the query.
+  union() {
+    return this._union(arguments, 'union');
+  },
+
   // Adds a union all statement to the query.
-  unionAll(callback, wrap) {
-    this._statements.push({
-      grouping: 'union',
-      clause: 'union all',
-      value: callback,
-      wrap: wrap || false,
-    });
-    return this;
+  unionAll(callbacks, wrap) {
+    return this._union(arguments, 'union all');
   },
 
   // Adds a `having` clause to the query.
