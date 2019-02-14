@@ -207,7 +207,7 @@ assign(Client_MSSQL.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection(settings) {
     return new Promise((resolver, rejecter) => {
-      const connectionSettings = Object.assign({}, connectionSettings);
+      const connectionSettings = Object.assign({}, settings);
       connectionSettings.pool = this.mssqlPoolSettings;
       // #1235 mssql module wants 'server', not 'host'. This is to enforce the same
       // options object across all dialects.
