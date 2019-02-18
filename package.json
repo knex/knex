@@ -37,6 +37,7 @@
     "knex": "*",
     "marked": "^0.5.2",
     "node-static": "^0.7.11",
+    "nodemon": "^1.18.10",
     "portfinder": "^1.0.6",
     "raw-loader": "^1.0.0",
     "react": "^15.3.0",
@@ -44,11 +45,13 @@
     "style-loader": "^0.23.1",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.14",
     "yargs": "^4.8.1"
   },
   "author": {
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {}
 }
