@@ -653,12 +653,7 @@ export default [
     type: "method",
     method: "primary",
     example: "column.primary([constraintName]); table.primary(columns, [constraintName])",
-    description: `
-      When called on a single column it will set that column as the primary key for a table.
-      If you need to create a composite primary key, call it on a table with an array of column names instead.
-      Constraint name defaults to \`tablename_pkey\` unless \`constraintName\` is specified.
-      On Amazon Redshift, all columns included in a primary key must be not nullable.
-    `,
+    description: "When called on a single column it will set that column as the primary key for a table. If you need to create a composite primary key, call it on a table with an array of column names instead. Constraint name defaults to `tablename_pkey` unless `constraintName` is specified. On Amazon Redshift, all columns included in a primary key must be not nullable.",
     children: [    ]
   },
   {
