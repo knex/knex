@@ -216,7 +216,9 @@ assign(QueryCompiler.prototype, {
   // Add comments to the query
   comments() {
     if (!this.queryComments.length) return '';
-    return this.queryComments.map((comment) => comment.comment).join(' ');
+    return this.queryComments
+      .map((comment) => `/* ${comment.comment} */`)
+      .join(' ');
   },
 
   _aggregate(stmt, { aliasSeparator = ' as ', distinctParentheses } = {}) {

@@ -7836,7 +7836,7 @@ describe('QueryBuilder', function() {
     testsql(
       qb()
         .from('testtable')
-        .comment('/* Added comment */'),
+        .comment('Added comment'),
       {
         mysql: {
           sql: '/* Added comment */ select * from `testtable`',
