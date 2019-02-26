@@ -1,6 +1,6 @@
 /* eslint no-console:0 */
 
-import chalk from 'chalk';
+import color from 'colorette';
 import { isFunction, isNil } from 'lodash';
 
 function log(message, userFn, colorFn) {
@@ -31,17 +31,17 @@ class Logger {
   }
 
   warn(message) {
-    log(message, this._warn, chalk.yellow);
+    log(message, this._warn, color.yellow);
   }
 
   error(message) {
-    log(message, this._error, chalk.red);
+    log(message, this._error, color.red);
   }
 
   deprecate(method, alternative) {
     const message = `${method} is deprecated, please use ${alternative}`;
 
-    log(message, this._deprecate, chalk.yellow);
+    log(message, this._deprecate, color.yellow);
   }
 }
 

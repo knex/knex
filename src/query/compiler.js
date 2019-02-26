@@ -16,6 +16,8 @@ import {
   map,
   omitBy,
   reduce,
+  has,
+  keys,
 } from 'lodash';
 import uuid from 'uuid';
 
@@ -548,21 +550,6 @@ assign(QueryCompiler.prototype, {
     }
   },
 
-  // Compile the "counter".
-  counter() {
-    const { counter } = this.single;
-    const toUpdate = {};
-    toUpdate[counter.column] = this.client.raw(
-      this.formatter.wrap(counter.column) +
-        ' ' +
-        (counter.symbol || '+') +
-        ' ' +
-        counter.amount
-    );
-    this.single.update = toUpdate;
-    return this.update();
-  },
-
   // On Clause
   // ------
 
@@ -596,6 +583,16 @@ assign(QueryCompiler.prototype, {
       this.formatter.operator(clause.operator) +
       ' ' +
       this.formatter.wrap(clause.value)
+    );
+  },
+
+  onVal(clause) {
+    return (
+      this.formatter.wrap(clause.column) +
+      ' ' +
+      this.formatter.operator(clause.operator) +
+      ' ' +
+      this.formatter.parameter(clause.value)
     );
   },
 
@@ -638,7 +635,9 @@ assign(QueryCompiler.prototype, {
       ' ' +
       this.formatter.operator(statement.operator) +
       ' ' +
-      this.formatter.parameter(statement.value)
+      (statement.asColumn
+        ? this.formatter.wrap(statement.value)
+        : this.formatter.parameter(statement.value))
     );
   },
 
@@ -687,12 +686,16 @@ assign(QueryCompiler.prototype, {
     if (!withs) return;
     const sql = [];
     let i = -1;
+    let isRecursive = false;
     while (++i < withs.length) {
       const stmt = withs[i];
+      if (stmt.recursive) {
+        isRecursive = true;
+      }
       const val = this[stmt.type](stmt);
       sql.push(val);
     }
-    return 'with ' + sql.join(', ') + ' ';
+    return `with ${isRecursive ? 'recursive ' : ''}${sql.join(', ')} `;
   },
 
   withWrapped(statement) {
@@ -746,11 +749,36 @@ assign(QueryCompiler.prototype, {
   },
 
   // "Preps" the update.
-  _prepUpdate(data) {
+  _prepUpdate(data = {}) {
+    const { counter = {} } = this.single;
+
+    for (const column of keys(counter)) {
+      //Skip?
+      if (has(data, column)) {
+        //Needed?
+        this.client.logger.warn(
+          `increment/decrement called for a column that has already been specified in main .update() call. Ignoring increment/decrement and using value from .update() call.`
+        );
+        continue;
+      }
+
+      let value = counter[column];
+
+      const symbol = value < 0 ? '-' : '+';
+
+      if (symbol === '-') {
+        value = -value;
+      }
+
+      data[column] = this.client.raw(`?? ${symbol} ?`, [column, value]);
+    }
+
     data = omitBy(data, isUndefined);
+
     const vals = [];
     const columns = Object.keys(data);
     let i = -1;
+
     while (++i < columns.length) {
       vals.push(
         this.formatter.wrap(columns[i]) +

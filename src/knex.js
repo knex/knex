@@ -3,10 +3,12 @@ import Client from './client';
 
 import makeKnex from './util/make-knex';
 import parseConnection from './util/parse-connection';
-import { SUPPORTED_CLIENTS, CLIENT_ALIASES } from './constants';
+import fakeClient from './util/fake-client';
+import { SUPPORTED_CLIENTS } from './constants';
+import { resolveClientNameWithAliases } from './helpers';
 
 export default function Knex(config) {
-  // If config is string, try to parse it
+  // If config is a string, try to parse it
   if (typeof config === 'string') {
     const parsedConfig = Object.assign(parseConnection(config), arguments[2]);
     return new Knex(parsedConfig);
@@ -35,8 +37,8 @@ export default function Knex(config) {
       );
     }
 
-    Dialect = require(`./dialects/${CLIENT_ALIASES[clientName] ||
-      clientName}/index.js`);
+    const resolvedClientName = resolveClientNameWithAliases(clientName);
+    Dialect = require(`./dialects/${resolvedClientName}/index.js`);
   }
 
   // If config connection parameter is passed as string, try to parse it
@@ -45,7 +47,11 @@ export default function Knex(config) {
       connection: parseConnection(config.connection).connection,
     });
   }
-  return makeKnex(new Dialect(config));
+  const newKnex = makeKnex(new Dialect(config));
+  if (config.userParams) {
+    newKnex.userParams = config.userParams;
+  }
+  return newKnex;
 }
 
 // Expose Client on the main Knex namespace.
@@ -70,5 +76,5 @@ Knex.raw = (sql, bindings) => {
   console.warn(
     'global Knex.raw is deprecated, use knex.raw (chain off an initialized knex object)'
   );
-  return new Raw().set(sql, bindings);
+  return new Raw(fakeClient).set(sql, bindings);
 };

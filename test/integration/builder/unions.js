@@ -87,7 +87,9 @@ module.exports = function(knex) {
       return knex('accounts')
         .select('*')
         .where('id', '=', 1)
-        .union(knex.raw('select * from accounts where id = ?', [2]));
+        .union(
+          knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 2])
+        );
     });
 
     it('handles unions with an array raw queries', function() {
@@ -95,8 +97,8 @@ module.exports = function(knex) {
         .select('*')
         .where('id', '=', 1)
         .union([
-          knex.raw('select * from accounts where id = ?', [2]),
-          knex.raw('select * from accounts where id = ?', [3]),
+          knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 2]),
+          knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 3]),
         ]);
     });
 
@@ -105,8 +107,8 @@ module.exports = function(knex) {
         .select('*')
         .where('id', '=', 1)
         .union(
-          knex.raw('select * from accounts where id = ?', [2]),
-          knex.raw('select * from accounts where id = ?', [3])
+          knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 2]),
+          knex.raw('select * from ?? where ?? = ?', ['accounts', 'id', 3])
         );
     });
   });

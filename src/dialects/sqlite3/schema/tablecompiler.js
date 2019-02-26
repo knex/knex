@@ -1,7 +1,7 @@
 import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
 
-import { filter } from 'lodash';
+import { filter, values } from 'lodash';
 
 // Table Compiler
 // -------
@@ -89,8 +89,14 @@ TableCompiler_SQLite3.prototype.primary = TableCompiler_SQLite3.prototype.foreig
 TableCompiler_SQLite3.prototype.primaryKeys = function() {
   const pks = filter(this.grouped.alterTable || [], { method: 'primary' });
   if (pks.length > 0 && pks[0].args.length > 0) {
-    const args = Array.isArray(pks[0].args[0]) ? pks[0].args[0] : pks[0].args;
-    return `, primary key (${this.formatter.columnize(args)})`;
+    const columns = pks[0].args[0];
+    let constraintName = pks[0].args[1] || '';
+    if (constraintName) {
+      constraintName = ' constraint ' + this.formatter.wrap(constraintName);
+    }
+    return `,${constraintName} primary key (${this.formatter.columnize(
+      columns
+    )})`;
   }
 };
 
@@ -104,7 +110,11 @@ TableCompiler_SQLite3.prototype.foreignKeys = function() {
     const column = this.formatter.columnize(foreign.column);
     const references = this.formatter.columnize(foreign.references);
     const foreignTable = this.formatter.wrap(foreign.inTable);
-    sql += `, foreign key(${column}) references ${foreignTable}(${references})`;
+    let constraintName = foreign.keyName || '';
+    if (constraintName) {
+      constraintName = ' constraint ' + this.formatter.wrap(constraintName);
+    }
+    sql += `,${constraintName} foreign key(${column}) references ${foreignTable}(${references})`;
     if (foreign.onDelete) sql += ` on delete ${foreign.onDelete}`;
     if (foreign.onUpdate) sql += ` on update ${foreign.onUpdate}`;
   }
@@ -132,7 +142,7 @@ TableCompiler_SQLite3.prototype.renameColumn = function(from, to) {
 
 TableCompiler_SQLite3.prototype.dropColumn = function() {
   const compiler = this;
-  const columns = Object.values(arguments);
+  const columns = values(arguments);
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {

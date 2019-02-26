@@ -3,8 +3,7 @@
 
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
-
-import { assign } from 'lodash';
+import { isObject } from 'lodash';
 
 function ColumnCompiler_PG() {
   ColumnCompiler.apply(this, arguments);
@@ -12,7 +11,7 @@ function ColumnCompiler_PG() {
 }
 inherits(ColumnCompiler_PG, ColumnCompiler);
 
-assign(ColumnCompiler_PG.prototype, {
+Object.assign(ColumnCompiler_PG.prototype, {
   // Types
   // ------
   bigincrements: 'bigserial primary key',
@@ -30,12 +29,17 @@ assign(ColumnCompiler_PG.prototype, {
   enu(allowed, options) {
     options = options || {};
 
-    const values = allowed.join("', '");
+    const values =
+      options.useNative && options.existingType
+        ? undefined
+        : allowed.join("', '");
 
     if (options.useNative) {
-      this.tableCompiler.unshiftQuery(
-        `create type "${options.enumName}" as enum ('${values}')`
-      );
+      if (!options.existingType) {
+        this.tableCompiler.unshiftQuery(
+          `create type "${options.enumName}" as enum ('${values}')`
+        );
+      }
 
       return `"${options.enumName}"`;
     }
@@ -58,11 +62,29 @@ assign(ColumnCompiler_PG.prototype, {
   },
   smallint: 'smallint',
   tinyint: 'smallint',
-  datetime(without) {
-    return without ? 'timestamp' : 'timestamptz';
+  datetime(withoutTz = false, precision) {
+    let useTz;
+    if (isObject(withoutTz)) {
+      ({ useTz, precision } = withoutTz);
+    } else {
+      useTz = !withoutTz;
+    }
+
+    return `${useTz ? 'timestamptz' : 'timestamp'}${
+      precision ? '(' + precision + ')' : ''
+    }`;
   },
-  timestamp(without) {
-    return without ? 'timestamp' : 'timestamptz';
+  timestamp(withoutTz = false, precision) {
+    let useTz;
+    if (isObject(withoutTz)) {
+      ({ useTz, precision } = withoutTz);
+    } else {
+      useTz = !withoutTz;
+    }
+
+    return `${useTz ? 'timestamptz' : 'timestamp'}${
+      precision ? '(' + precision + ')' : ''
+    }`;
   },
   uuid: 'uuid',
 

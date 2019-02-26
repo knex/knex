@@ -187,6 +187,14 @@ export default class Transaction extends EventEmitter {
 function makeTransactor(trx, connection, trxClient) {
   const transactor = makeKnex(trxClient);
 
+  transactor.withUserParams = () => {
+    throw new Error(
+      'Cannot set user params on a transaction - it can only inherit params from main knex instance'
+    );
+  };
+
+  transactor.userParams = trx.userParams;
+
   transactor.transaction = function(container, options) {
     return trxClient.transaction(container, options, trx);
   };

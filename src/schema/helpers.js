@@ -1,7 +1,4 @@
 import { isString, tail } from 'lodash';
-import ColumnCompiler from './columncompiler';
-import TableCompiler from './tablecompiler';
-import SchemaCompiler from './compiler';
 
 // Push a new query onto the compiled "sequence" stack,
 // creating a new formatter, returning the compiler.
@@ -15,16 +12,7 @@ export function pushQuery(query) {
   }
   this.sequence.push(query);
 
-  let builder;
-  if (this instanceof ColumnCompiler) {
-    builder = this.columnBuilder;
-  } else if (this instanceof TableCompiler) {
-    builder = this.tableBuilder;
-  } else if (this instanceof SchemaCompiler) {
-    builder = this.builder;
-  }
-
-  this.formatter = this.client.formatter(builder);
+  this.formatter = this.client.formatter(this._commonBuilder);
 }
 
 // Used in cases where we need to push some additional column specific statements.
@@ -52,14 +40,5 @@ export function unshiftQuery(query) {
   }
   this.sequence.unshift(query);
 
-  let builder;
-  if (this instanceof ColumnCompiler) {
-    builder = this.columnBuilder;
-  } else if (this instanceof TableCompiler) {
-    builder = this.tableBuilder;
-  } else if (this instanceof SchemaCompiler) {
-    builder = this.builder;
-  }
-
-  this.formatter = this.client.formatter(builder);
+  this.formatter = this.client.formatter(this._commonBuilder);
 }

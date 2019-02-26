@@ -1,8 +1,8 @@
 /*global describe, it, expect*/
 'use strict';
 
-var path = require('path');
-var rimraf = require('rimraf');
+const path = require('path');
+const rimraf = require('rimraf');
 
 module.exports = function(knex) {
   describe('knex.seed.make', function() {

@@ -1,11 +1,11 @@
 'use strict';
-/*global expect, describe, it*/
-var _interface = require('../../lib/interface');
-var chai = require('chai');
+/*global describe, it*/
+const _interface = require('../../lib/interface');
+const chai = require('chai');
 
 describe('interface', function() {
   it('catch and rethrow with an async stack trace', function(done) {
-    var error = new Error('Some SQL error');
+    const error = new Error('Some SQL error');
     function SomeClass() {
       this.client = {
         config: {
@@ -31,7 +31,7 @@ describe('interface', function() {
     }
 
     _interface(SomeClass);
-    var fakeInstance = new SomeClass();
+    const fakeInstance = new SomeClass();
     fakeInstance._asyncStack = ['line1', 'line2', 'line3'];
     fakeInstance.then();
   });

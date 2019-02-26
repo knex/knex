@@ -19,7 +19,7 @@ _.assign(Oracledb_Compiler.prototype, {
       this.single.returning
     );
     const outBinding = outBindPrep.outBinding;
-    let returning = outBindPrep.returning;
+    const returning = outBindPrep.returning;
     const insertValues = outBindPrep.values;
 
     if (
@@ -160,8 +160,6 @@ _.assign(Oracledb_Compiler.prototype, {
 
     sql.outBinding = outBinding;
     if (returning[0] === '*') {
-      returning = returning.slice(0, -1);
-
       // Generate select statement with special order by
       // to keep the order because 'in (..)' may change the order
       sql.returningSql = function() {
@@ -286,7 +284,7 @@ _.assign(Oracledb_Compiler.prototype, {
     const self = this;
     const sql = {};
     const outBindPrep = this._prepOutbindings(
-      this.single.update,
+      this.single.update || this.single.counter,
       this.single.returning
     );
     const outBinding = outBindPrep.outBinding;
@@ -298,10 +296,7 @@ _.assign(Oracledb_Compiler.prototype, {
     let returningClause = '';
     let intoClause = '';
 
-    if (
-      _.isEmpty(this.single.update) &&
-      typeof this.single.update !== 'function'
-    ) {
+    if (_.isEmpty(updates) && typeof this.single.update !== 'function') {
       return '';
     }
 

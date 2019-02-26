@@ -61,17 +61,23 @@ assign(Client_MSSQL.prototype, {
 
     // TODO: remove mssql implementation all together and use tedious directly
 
+    /* istanbul ignore next */
     const mssqlVersion = require('mssql/package.json').version;
-    if (mssqlVersion !== '4.1.0') {
-      throw new Error(
-        'This knex version does not support any other mssql version except 4.1.0 ' +
-          '(knex patches bug in its implementation)'
-      );
+    /* istanbul ignore next */
+    if (mssqlVersion === '4.1.0') {
+      mssqlTedious.ConnectionPool.prototype.release = release;
+      mssqlTedious.ConnectionPool.prototype._poolCreate = _poolCreate;
+    } else {
+      const [major] = mssqlVersion.split('.');
+      // if version is not ^5.0.0
+      if (major < 5) {
+        throw new Error(
+          'This knex version only supports mssql driver versions 4.1.0 and 5.0.0+'
+        );
+      }
     }
 
-    mssqlTedious.ConnectionPool.prototype.release = release;
-    mssqlTedious.ConnectionPool.prototype._poolCreate = _poolCreate;
-
+    /* istanbul ignore next */
     // in some rare situations release is called when stream is interrupted, but
     // after pool is already destroyed
     function release(connection) {
@@ -79,7 +85,7 @@ assign(Client_MSSQL.prototype, {
         this.pool.release(connection);
       }
     }
-
+    /* istanbul ignore next */
     function _poolCreate() {
       // implementation is copy-pasted from https://github.com/tediousjs/node-mssql/pull/614
       return new base.Promise((resolve, reject) => {
@@ -251,8 +257,7 @@ assign(Client_MSSQL.prototype, {
 
   // Grab a connection, run the query via the MSSQL streaming interface,
   // and pass that through to the stream we've sent back to the client.
-  _stream(connection, obj, stream, options) {
-    options = options || {};
+  _stream(connection, obj, stream) {
     if (!obj || typeof obj === 'string') obj = { sql: obj };
     return new Promise((resolver, rejecter) => {
       stream.on('error', (err) => {

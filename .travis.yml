@@ -10,14 +10,16 @@ cache:
 matrix:
   fast_finish: true
   include:
+  - node_js: "11"
+    env: DB="mssql mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
   - node_js: "10"
     env: DB="mssql mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
   - node_js: "8"
     env: DB="mssql mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
-  - node_js: "7"
-    env: DB="mssql mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
   - node_js: "6"
     env: DB="mssql mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
+  - node_js: "10"
+    env: TEST_ORACLEDB=true NODE_VER=11 KNEX_TEST_TIMEOUT=60000
   - node_js: "10" # node_js env is just used to have npm command availabe, all test code is ran in docker container
     env: TEST_ORACLEDB=true NODE_VER=10 KNEX_TEST_TIMEOUT=60000
   - node_js: "10"
@@ -25,6 +27,8 @@ matrix:
   - node_js: "10"
     env: TEST_ORACLEDB=true NODE_VER=6 KNEX_TEST_TIMEOUT=60000
   allow_failures:
+  - node_js: "10"
+    env: TEST_ORACLEDB=true NODE_VER=11 KNEX_TEST_TIMEOUT=60000
   - node_js: "10"
     env: TEST_ORACLEDB=true NODE_VER=10 KNEX_TEST_TIMEOUT=60000
   - node_js: "10"

@@ -14,7 +14,7 @@ assign(Transaction_MySQL2.prototype, {
         (err) => err.code === 'ER_SP_DOES_NOT_EXIST',
         () => {
           this.trxClient.logger.warn(
-            'Transaction was implicitly committed, do not mix transactions and' +
+            'Transaction was implicitly committed, do not mix transactions and ' +
               'DDL with MySQL (#805)'
           );
         }

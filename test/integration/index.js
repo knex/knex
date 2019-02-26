@@ -2,12 +2,12 @@
 
 'use strict';
 
-var knex = require('../../knex');
-var logger = require('./logger');
-var config = require('../knexfile');
-var fs = require('fs');
+const knex = require('../../knex');
+const logger = require('./logger');
+const config = require('../knexfile');
+const fs = require('fs');
 
-var Promise = require('bluebird');
+const Promise = require('bluebird');
 
 Promise.each(Object.keys(config), function(dialectName) {
   return require('./suite')(logger(knex(config[dialectName])));

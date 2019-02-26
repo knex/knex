@@ -328,7 +328,7 @@ module.exports = function(knex) {
       knex('accounts')
         .select()
         .asCallback(function() {
-          console.log(this.undefinedVar.test);
+          this.undefinedVar.test;
         });
     });
 
@@ -735,6 +735,40 @@ module.exports = function(knex) {
       });
     });
 
+    it('#1276 - Dates NULL should be returned as NULL, not as new Date(null)', function() {
+      return knex.schema
+        .dropTableIfExists('DatesTest')
+        .createTable('DatesTest', function(table) {
+          table.increments('id').primary();
+          table.dateTime('dateTimeCol');
+          table
+            .timestamp('timeStampCol')
+            .nullable()
+            .defaultTo(null); // MySQL defaults TIMESTAMP columns to current timestamp
+          table.date('dateCol');
+          table.time('timeCol');
+        })
+        .then(function() {
+          return knex('DatesTest').insert([
+            {
+              dateTimeCol: null,
+              timeStampCol: null,
+              dateCol: null,
+              timeCol: null,
+            },
+          ]);
+        })
+        .then(function() {
+          return knex('DatesTest').select();
+        })
+        .then(function(rows) {
+          expect(rows[0].dateTimeCol).to.equal(null);
+          expect(rows[0].timeStampCol).to.equal(null);
+          expect(rows[0].dateCol).to.equal(null);
+          expect(rows[0].timeCol).to.equal(null);
+        });
+    });
+
     it('has a "distinct" clause', function() {
       return Promise.all([
         knex('accounts')
@@ -1095,6 +1129,55 @@ module.exports = function(knex) {
               expect(err.message).to.be.contain(
                 'Defined query timeout of 100ms exceeded when running query'
               );
+            });
+        });
+    });
+
+    it('select for update locks only some tables, #2834', function() {
+      if (knex.client.driverName !== 'pg') {
+        return;
+      }
+
+      return knex('test_default_table')
+        .insert({ string: 'making sure there is a row to lock', tinyint: 1 })
+        .then(() => {
+          return knex('test_default_table2')
+            .insert({
+              string: 'making sure there is a row to lock',
+              tinyint: 1,
+            })
+            .then(() => {
+              return knex
+                .transaction((trx) => {
+                  // select all from two test tables and lock only one table
+                  return trx('test_default_table')
+                    .innerJoin(
+                      'test_default_table2',
+                      'test_default_table.tinyint',
+                      'test_default_table2.tinyint'
+                    )
+                    .forUpdate('test_default_table')
+                    .then((res) => {
+                      // try to select stuff from unlocked table should not hang...
+                      return knex('test_default_table2')
+                        .forUpdate()
+                        .timeout(150);
+                    })
+                    .then((res) => {
+                      // try to select stuff from table in other connection should just hang...
+                      return knex('test_default_table')
+                        .forUpdate()
+                        .timeout(100);
+                    });
+                })
+                .then((res) => {
+                  expect('Second query should have timed out').to.be.false;
+                })
+                .catch((err) => {
+                  expect(err.message).to.be.contain(
+                    'Defined query timeout of 100ms exceeded when running query'
+                  );
+                });
             });
         });
     });

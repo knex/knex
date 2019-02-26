@@ -222,10 +222,17 @@ assign(Client_PG.prototype, {
   // Runs the query on the specified connection, providing the bindings
   // and any other necessary prep work.
   _query(connection, obj) {
-    let sql = obj.sql;
-    if (obj.options) sql = extend({ text: sql }, obj.options);
+    let queryConfig = {
+      text: obj.sql,
+      values: obj.bindings || [],
+    };
+
+    if (obj.options) {
+      queryConfig = extend(queryConfig, obj.options);
+    }
+
     return new Promise(function(resolver, rejecter) {
-      connection.query(sql, obj.bindings, function(err, response) {
+      connection.query(queryConfig, function(err, response) {
         if (err) return rejecter(err);
         obj.response = response;
         resolver(obj);
@@ -261,6 +268,33 @@ assign(Client_PG.prototype, {
       return resp.rowCount;
     }
     return resp;
+  },
+
+  canCancelQuery: true,
+  cancelQuery(connectionToKill) {
+    const acquiringConn = this.acquireConnection();
+
+    // Error out if we can't acquire connection in time.
+    // Purposely not putting timeout on `pg_terminate_backend` execution because erroring
+    // early there would release the `connectionToKill` back to the pool with
+    // a `KILL QUERY` command yet to finish.
+    return acquiringConn.then((conn) => {
+      return this._wrappedCancelQueryCall(conn, connectionToKill).finally(
+        () => {
+          // NOT returning this promise because we want to release the connection
+          // in a non-blocking fashion
+          this.releaseConnection(conn);
+        }
+      );
+    });
+  },
+  _wrappedCancelQueryCall(conn, connectionToKill) {
+    return this.query(conn, {
+      method: 'raw',
+      sql: 'SELECT pg_terminate_backend(?);',
+      bindings: [connectionToKill.processID],
+      options: {},
+    });
   },
 });
 

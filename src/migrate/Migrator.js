@@ -7,6 +7,7 @@ import {
   each,
   filter,
   get,
+  isFunction,
   isBoolean,
   isEmpty,
   isUndefined,
@@ -46,10 +47,18 @@ const CONFIG_DEFAULT = Object.freeze({
 // the migration.
 export default class Migrator {
   constructor(knex) {
-    this.knex = knex;
-    this.config = getMergedConfig(knex.client.config.migrations);
-    this.generator = new MigrationGenerator(knex.client.config.migrations);
+    // Clone knex instance and remove post-processing that is unnecessary for internal queries from a cloned config
+    if (isFunction(knex)) {
+      this.knex = knex.withUserParams({
+        ...knex.userParams,
+      });
+      this.knex.disableProcessing();
+    } else {
+      this.knex = Object.assign({}, knex);
+    }
 
+    this.config = getMergedConfig(this.knex.client.config.migrations);
+    this.generator = new MigrationGenerator(this.knex.client.config.migrations);
     this._activeMigration = {
       fileName: null,
     };
@@ -81,17 +90,17 @@ export default class Migrator {
           );
 
         if (transactionForAll) {
-          return this.knex.transaction((trx) =>
-            this._runBatch(migrations, 'up', trx)
-          );
+          return this.knex.transaction((trx) => {
+            return this._runBatch(migrations, 'up', trx);
+          });
         } else {
           return this._runBatch(migrations, 'up');
         }
       });
   }
 
-  // Rollback the last "batch" of migrations that were run.
-  rollback(config) {
+  // Rollback the last "batch", or all, of migrations that were run.
+  rollback(config, all = false) {
     return Promise.try(() => {
       this.config = getMergedConfig(config, this.config);
 
@@ -100,7 +109,7 @@ export default class Migrator {
         .tap((value) =>
           validateMigrationList(this.config.migrationSource, value)
         )
-        .then((val) => this._getLastBatch(val))
+        .then((val) => (all ? val[0] : this._getLastBatch(val)))
         .then((migrations) => {
           return this._runBatch(migrations, 'down');
         });
@@ -190,15 +199,14 @@ export default class Migrator {
       this._getLock(trx)
         // When there is a wrapping transaction, some migrations
         // could have been done while waiting for the lock:
-        .then(
-          () =>
-            trx
-              ? migrationListResolver.listCompleted(
-                  this.config.tableName,
-                  this.config.schemaName,
-                  trx
-                )
-              : []
+        .then(() =>
+          trx
+            ? migrationListResolver.listCompleted(
+                this.config.tableName,
+                this.config.schemaName,
+                trx
+              )
+            : []
         )
         .then(
           (completed) =>
@@ -336,19 +344,30 @@ export default class Migrator {
       // We're going to run each of the migrations in the current "up".
       current = current
         .then(() => {
+          this._activeMigration.fileName = name;
           if (
             !trx &&
             this._useTransaction(migrationContent, disableTransactions)
           ) {
-            return this._transaction(migrationContent, direction, name);
+            this.knex.enableProcessing();
+            return this._transaction(
+              this.knex,
+              migrationContent,
+              direction,
+              name
+            );
           }
-          return warnPromise(
-            this.knex,
+
+          trxOrKnex.enableProcessing();
+          return checkPromise(
+            this.knex.client.logger,
             migrationContent[direction](trxOrKnex, Promise),
             name
           );
         })
         .then(() => {
+          trxOrKnex.disableProcessing();
+          this.knex.disableProcessing();
           log.push(name);
           if (direction === 'up') {
             return trxOrKnex.into(getTableName(tableName, schemaName)).insert({
@@ -369,10 +388,10 @@ export default class Migrator {
     return current.thenReturn([batchNo, log]);
   }
 
-  _transaction(migrationContent, direction, name) {
-    return this.knex.transaction((trx) => {
-      return warnPromise(
-        this.knex,
+  _transaction(knex, migrationContent, direction, name) {
+    return knex.transaction((trx) => {
+      return checkPromise(
+        knex.client.logger,
         migrationContent[direction](trx, Promise),
         name,
         () => {
@@ -404,7 +423,8 @@ export function getMergedConfig(config, currentConfig) {
   if (!mergedConfig.migrationSource) {
     mergedConfig.migrationSource = new FsMigrations(
       mergedConfig.directory,
-      mergedConfig.sortDirsSeparately
+      mergedConfig.sortDirsSeparately,
+      mergedConfig.loadExtensions
     );
   }
 
@@ -441,10 +461,12 @@ function getNewMigrations(migrationSource, all, completed) {
   });
 }
 
-function warnPromise(knex, value, name, fn) {
-  if (!value || typeof value.then !== 'function') {
-    knex.client.logger.warn(`migration ${name} did not return a promise`);
-    if (fn && typeof fn === 'function') fn();
+function checkPromise(logger, migrationPromise, name, commitFn) {
+  if (!migrationPromise || typeof migrationPromise.then !== 'function') {
+    logger.warn(`migration ${name} did not return a promise`);
+    if (commitFn) {
+      commitFn();
+    }
   }
-  return value;
+  return migrationPromise;
 }
