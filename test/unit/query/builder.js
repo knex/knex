@@ -7836,30 +7836,74 @@ describe('QueryBuilder', function() {
     testsql(
       qb()
         .from('testtable')
-        .comment('Added comment'),
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
       {
         mysql: {
-          sql: '/* Added comment */ select * from `testtable`',
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from `testtable`',
           bindings: [],
         },
         oracledb: {
-          sql: '/* Added comment */ select * from "testtable"',
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
           bindings: [],
         },
         mssql: {
-          sql: '/* Added comment */ select * from [testtable]',
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from [testtable]',
           bindings: [],
         },
         pg: {
-          sql: '/* Added comment */ select * from "testtable"',
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
           bindings: [],
         },
         'pg-redshift': {
-          sql: '/* Added comment */ select * from "testtable"',
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
           bindings: [],
         },
       }
     );
+  });
+
+  it('#1982 (2) - should throw error on non string', function() {
+    try {
+      testsql(
+        qb()
+          .from('testtable')
+          .comment({ prop: 'val' }),
+        {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+          oracledb: {
+            sql: '',
+            bindings: [],
+          },
+          mssql: {
+            sql: '',
+            bindings: [],
+          },
+          pg: {
+            sql: '',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: '',
+            bindings: [],
+          },
+        }
+      );
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Comment must be a string');
+    }
   });
 
   it('Any undefined binding in a SELECT query should throw an error', function() {

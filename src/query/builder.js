@@ -156,6 +156,9 @@ assign(Builder.prototype, {
 
   // Adds a comment to the query
   comment(txt) {
+    if (!isString(txt)) {
+      throw new Error('Comment must be a string');
+    }
     this._comments.push({
       comment: txt,
     });

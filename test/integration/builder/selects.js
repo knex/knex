@@ -735,6 +735,51 @@ module.exports = function(knex) {
       });
     });
 
+    it('#1982 - Allow comments in db', function() {
+      return knex('accounts')
+        .comment('Integration Comment')
+        .select('first_name', 'email')
+        .where({ id: null })
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            '/* Integration Comment */ select `first_name`, `email` from `accounts` where `id` is null',
+            [],
+            []
+          );
+          tester(
+            'pg',
+            '/* Integration Comment */ select "first_name", "email" from "accounts" where "id" is null',
+            [],
+            []
+          );
+          tester(
+            'pg-redshift',
+            '/* Integration Comment */ select "first_name", "email" from "accounts" where "id" is null',
+            [],
+            []
+          );
+          tester(
+            'sqlite3',
+            '/* Integration Comment */ select `first_name`, `email` from `accounts` where `id` is null',
+            [],
+            []
+          );
+          tester(
+            'oracledb',
+            '/* Integration Comment */ select "first_name", "email" from "accounts" where "id" is null',
+            [],
+            []
+          );
+          tester(
+            'mssql',
+            '/* Integration Comment */ select [first_name], [email] from [accounts] where [id] is null',
+            [],
+            []
+          );
+        });
+    });
+
     it('#1276 - Dates NULL should be returned as NULL, not as new Date(null)', function() {
       return knex.schema
         .dropTableIfExists('DatesTest')
