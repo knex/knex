@@ -739,44 +739,10 @@ module.exports = function(knex) {
       return knex('accounts')
         .comment('Integration Comment')
         .select('first_name', 'email')
-        .where({ id: null })
-        .testSql(function(tester) {
-          tester(
-            'mysql',
-            '/* Integration Comment */ select `first_name`, `email` from `accounts` where `id` is null',
-            [],
-            []
-          );
-          tester(
-            'pg',
-            '/* Integration Comment */ select "first_name", "email" from "accounts" where "id" is null',
-            [],
-            []
-          );
-          tester(
-            'pg-redshift',
-            '/* Integration Comment */ select "first_name", "email" from "accounts" where "id" is null',
-            [],
-            []
-          );
-          tester(
-            'sqlite3',
-            '/* Integration Comment */ select `first_name`, `email` from `accounts` where `id` is null',
-            [],
-            []
-          );
-          tester(
-            'oracledb',
-            '/* Integration Comment */ select "first_name", "email" from "accounts" where "id" is null',
-            [],
-            []
-          );
-          tester(
-            'mssql',
-            '/* Integration Comment */ select [first_name], [email] from [accounts] where [id] is null',
-            [],
-            []
-          );
+        .where({ id: 1 })
+        .then(function(results) {
+          expect(results).to.have.length(1);
+          return true;
         });
     });
 

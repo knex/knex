@@ -159,6 +159,9 @@ assign(Builder.prototype, {
     if (!isString(txt)) {
       throw new Error('Comment must be a string');
     }
+    if (txt.indexOf('/*') !== -1 || txt.indexOf('*/') !== -1) {
+      throw new Error('Cannot include /* or */ in comment');
+    }
     this._comments.push({
       comment: txt,
     });
