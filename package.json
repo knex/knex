@@ -44,6 +44,30 @@
     "uuid": "^3.3.3",
     "v8flags": "^3.1.3"
   },
+  "peerDependencies": {
+    "mssql": "^5.1.0",
+    "mysql": "^2.17.1",
+    "mysql2": "^1.7.0",
+    "pg": "^7.12.1",
+    "sqlite3": "^4.1.0"
+  },
+  "peerDependenciesMeta": {
+    "mssql": {
+      "optional": true
+    },
+    "mysql": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "sqlite3": {
+      "optional": true
+    }
+  },
   "lint-staged": {
     "*.{js,json}": [
       "prettier --write",
