@@ -6,6 +6,7 @@ const path = require('path');
 const rimraf = require('rimraf');
 const Promise = require('bluebird');
 const testMemoryMigrations = require('./memory-migrations');
+const { isNode6 } = require('../../../lib/util/version-helper');
 
 module.exports = function(knex) {
   require('rimraf').sync(path.join(__dirname, './migration'));
@@ -18,6 +19,23 @@ module.exports = function(knex) {
   });
 
   describe('knex.migrate', function() {
+    it('should not fail drop-and-recreate-column operation when using async/await', () => {
+      it('drop-and-recreate with async/await works correctly', () => {
+        if (isNode6()) {
+          return Promise.resolve(true);
+        }
+        return knex.migrate
+          .latest({
+            directory: 'test/integration/migrate/drop-and-recreate',
+          })
+          .then(() => {
+            return knex.migrate.rollback({
+              directory: 'test/integration/migrate/drop-and-recreate',
+            });
+          });
+      });
+    });
+
     it('should create a new migration file with the create method', function() {
       return knex.migrate.make('test').then(function(name) {
         name = path.basename(name);
