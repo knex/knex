@@ -120,7 +120,7 @@ module.exports = function(knex) {
       knex.client.driverName
     )
   ) {
-    describe.only('intersects', function() {
+    describe('intersects', function() {
       before(function() {
         return knex.schema.createTable('intersect_test', function(t) {
           t.integer('id');
@@ -166,7 +166,7 @@ module.exports = function(knex) {
       });
 
       after(function() {
-        return knex.schema.dropTableIfExists('intersect_test');
+        return knex.schema.dropTable('intersect_test');
       });
 
       it('handles intersects with a callback', function() {

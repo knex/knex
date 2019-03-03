@@ -2191,7 +2191,7 @@ describe('QueryBuilder', function() {
   });
 
   it('intersects', function() {
-    var chain = qb()
+    const chain = qb()
       .select('*')
       .from('users')
       .where('id', '=', 1)
@@ -2229,7 +2229,7 @@ describe('QueryBuilder', function() {
       },
     });
 
-    var multipleArgumentsChain = qb()
+    const multipleArgumentsChain = qb()
       .select('*')
       .from('users')
       .where({ id: 1 })
