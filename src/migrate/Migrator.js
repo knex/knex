@@ -49,10 +49,17 @@ export default class Migrator {
   constructor(knex) {
     // Clone knex instance and remove post-processing that is unnecessary for internal queries from a cloned config
     if (isFunction(knex)) {
-      this.knex = knex.withUserParams({
-        ...knex.userParams,
-      });
-      this.knex.disableProcessing();
+      if (!knex.isTransaction) {
+        this.knex = knex.withUserParams({
+          ...knex.userParams,
+        });
+        this.knex.disableProcessing();
+      } else {
+        this.knex = knex;
+        this.knex.client.logger.warn(
+          'Running migrations in transaction. Make sure you are not using any custom identifier wrappers on original knex instance - they will not be disabled.'
+        );
+      }
     } else {
       this.knex = Object.assign({}, knex);
     }

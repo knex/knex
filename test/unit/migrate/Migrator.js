@@ -26,13 +26,50 @@ describe('Migrator', () => {
 
     it('latest', (done) => {
       expect(() => {
-        knex.migrate
+        return knex.migrate
           .latest({
             directory: 'test/unit/migrate/migrations',
           })
           .then(() => {
             done();
           });
+      }).not.to.throw();
+    });
+  });
+
+  describe('supports running migrations in transaction', (done) => {
+    let migrationSource;
+    let knex;
+    let wasProcessed = false;
+    beforeEach(() => {
+      migrationSource = new FsMigrations('test/unit/migrate/migrations/');
+      knex = Knex({
+        ...sqliteConfig,
+        connection: ':memory:',
+        migrationSource,
+        postProcessResponse: (response) => {
+          wasProcessed = true;
+          return response;
+        },
+      });
+    });
+
+    afterEach(() => {
+      knex.destroy();
+    });
+
+    it('latest', (done) => {
+      expect(() => {
+        return knex.transaction((txn) => {
+          txn.migrate
+            .latest({
+              directory: 'test/unit/migrate/migrations',
+            })
+            .then(() => {
+              expect(wasProcessed).to.equal(true);
+              done();
+            });
+        });
       }).not.to.throw();
     });
   });
