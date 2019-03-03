@@ -19,15 +19,43 @@ module.exports = function(knex) {
   });
 
   describe('knex.migrate', function() {
+    it('should not fail drop-and-recreate-column operation when using promise chain', () => {
+      return knex.migrate
+        .latest({
+          directory: 'test/integration/migrate/drop-and-recreate',
+        })
+        .then(() => {
+          return knex.migrate.rollback({
+            directory: 'test/integration/migrate/drop-and-recreate',
+          });
+        });
+    });
+
+    if (knex.client.driverName === 'pg') {
+      it('should not fail drop-and-recreate-column operation when using promise chain and schema', () => {
+        return knex.migrate
+          .latest({
+            directory: 'test/integration/migrate/drop-and-recreate-with-schema',
+          })
+          .then(() => {
+            return knex.migrate.rollback({
+              directory:
+                'test/integration/migrate/drop-and-recreate-with-schema',
+            });
+          });
+      });
+    }
+
     if (!isNode6()) {
       it('should not fail drop-and-recreate-column operation when using async/await', () => {
         return knex.migrate
           .latest({
-            directory: 'test/integration/migrate/drop-and-recreate',
+            directory: 'test/integration/migrate/async-await-drop-and-recreate',
           })
           .then(() => {
             return knex.migrate.rollback({
-              directory: 'test/integration/migrate/drop-and-recreate',
+              directory:
+                'test/integration/migrate/async-await-drop-and-recreate',
             });
           });
       });
@@ -37,12 +65,13 @@ module.exports = function(knex) {
       it('should not fail drop-and-recreate-column operation when using async/await and schema', () => {
         return knex.migrate
           .latest({
-            directory: 'test/integration/migrate/drop-and-recreate-with-schema',
+            directory:
+              'test/integration/migrate/async-await-drop-and-recreate-with-schema',
           })
           .then(() => {
             return knex.migrate.rollback({
               directory:
-                'test/integration/migrate/drop-and-recreate-with-schema',
+                'test/integration/migrate/async-await-drop-and-recreate-with-schema',
             });
           });
       });

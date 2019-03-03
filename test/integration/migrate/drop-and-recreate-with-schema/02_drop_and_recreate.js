@@ -1,14 +1,15 @@
 exports.up = async (knex) => {
-  await knex.schema
-    .withSchema('dummySchema')
+  return knex.schema
+    .withSchema('dummy_schema')
     .table('old_users', function(table) {
       table.dropColumn('officeId');
-    });
-
-  await knex.schema
-    .withSchema('dummySchema')
-    .table('old_users', function(table) {
-      table.string('officeId', 255);
+    })
+    .then(() => {
+      return knex
+        .withSchema('dummy_schema')
+        .schema.table('old_users', function(table) {
+          table.string('officeId', 255);
+        });
     });
 };
 

@@ -1,14 +1,19 @@
-exports.up = async (knex) => {
-  await knex.raw('CREATE SCHEMA dummySchema');
-  await knex.schema
-    .withSchema('dummySchema')
-    .createTable('old_users', (table) => {
-      table.string('name');
-      table.string('officeId');
-    });
+exports.up = (knex) => {
+  return knex.raw('CREATE SCHEMA dummy_schema').then(() => {
+    return knex.schema
+      .withSchema('dummy_schema')
+      .createTable('old_users', (table) => {
+        table.string('name');
+        table.string('officeId');
+      });
+  });
 };
 
-exports.down = async (knex) => {
-  await knex.schema.withSchema('dummySchema').dropTable('old_users');
-  await knex.raw('DROP SCHEMA dummySchema CASCADE');
+exports.down = (knex) => {
+  return knex.schema
+    .withSchema('dummy_schema')
+    .dropTable('old_users')
+    .then(() => {
+      return knex.raw('DROP SCHEMA dummy_schema CASCADE');
+    });
 };
