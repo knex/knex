@@ -37,11 +37,12 @@ module.exports = function(knex) {
       it('should not fail drop-and-recreate-column operation when using async/await and schema', () => {
         return knex.migrate
           .latest({
-            directory: 'test/integration/migrate/drop-and-recreate',
+            directory: 'test/integration/migrate/drop-and-recreate-with-schema',
           })
           .then(() => {
             return knex.migrate.rollback({
-              directory: 'test/integration/migrate/drop-and-recreate',
+              directory:
+                'test/integration/migrate/drop-and-recreate-with-schema',
             });
           });
       });
