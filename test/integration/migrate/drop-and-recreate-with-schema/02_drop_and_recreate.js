@@ -1,4 +1,4 @@
-exports.up = async (knex) => {
+exports.up = (knex) => {
   return knex.schema
     .withSchema('dummy_schema')
     .table('old_users', function(table) {

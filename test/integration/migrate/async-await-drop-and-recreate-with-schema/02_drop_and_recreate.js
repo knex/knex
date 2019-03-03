@@ -12,4 +12,4 @@ exports.up = async (knex) => {
     });
 };
 
-exports.down = (knex) => {};
+exports.down = async (knex) => {};
