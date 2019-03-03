@@ -5,9 +5,9 @@ exports.up = async (knex) => {
       table.dropColumn('officeId');
     })
     .then(() => {
-      return knex
+      return knex.schema
         .withSchema('dummy_schema')
-        .schema.table('old_users', function(table) {
+        .table('old_users', function(table) {
           table.string('officeId', 255);
         });
     });
