@@ -136,6 +136,9 @@ declare namespace Knex {
     orderBy: OrderBy;
     orderByRaw: RawQueryBuilder;
 
+    // Intersect
+    intersect: Intersect;
+
     // Union
     union: Union;
     unionAll(callback: QueryCallback): QueryBuilder;
@@ -387,6 +390,18 @@ declare namespace Knex {
   interface OrderBy {
     (columnName: string, order?: string): QueryBuilder;
     (columnDefs: Array<string | { column: string; order?: string }>): QueryBuilder;
+  }
+
+  interface Intersect {
+    (
+      callback: QueryCallback | QueryBuilder | Raw,
+      wrap?: boolean
+    ): QueryBuilder;
+    (
+      callbacks: (QueryCallback | QueryBuilder | Raw)[],
+      wrap?: boolean
+    ): QueryBuilder;
+    (...callbacks: (QueryCallback | QueryBuilder | Raw)[]): QueryBuilder;
   }
 
   interface Union {
