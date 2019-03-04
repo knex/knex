@@ -35,7 +35,7 @@ export default function(Target) {
     return this;
   };
 
-  // Sets an explicit "connnection" we wish to use for this query.
+  // Sets an explicit "connection" we wish to use for this query.
   Target.prototype.connection = function(connection) {
     this._connection = connection;
     return this;

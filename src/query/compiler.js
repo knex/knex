@@ -16,6 +16,8 @@ import {
   map,
   omitBy,
   reduce,
+  has,
+  keys,
 } from 'lodash';
 import uuid from 'uuid';
 
@@ -166,11 +168,12 @@ assign(QueryCompiler.prototype, {
   // Compiles the "update" query.
   update() {
     // Make sure tableName is processed by the formatter first.
+    const withSQL = this.with();
     const { tableName } = this;
     const updateData = this._prepUpdate(this.single.update);
     const wheres = this.where();
     return (
-      this.with() +
+      withSQL +
       `update ${this.single.only ? 'only ' : ''}${tableName}` +
       ' set ' +
       updateData.join(', ') +
@@ -518,9 +521,10 @@ assign(QueryCompiler.prototype, {
   del() {
     // Make sure tableName is processed by the formatter first.
     const { tableName } = this;
+    const withSQL = this.with();
     const wheres = this.where();
     return (
-      this.with() +
+      withSQL +
       `delete from ${this.single.only ? 'only ' : ''}${tableName}` +
       (wheres ? ` ${wheres}` : '')
     );
@@ -536,21 +540,6 @@ assign(QueryCompiler.prototype, {
     if (this.single.lock) {
       return this[this.single.lock]();
     }
-  },
-
-  // Compile the "counter".
-  counter() {
-    const { counter } = this.single;
-    const toUpdate = {};
-    toUpdate[counter.column] = this.client.raw(
-      this.formatter.wrap(counter.column) +
-        ' ' +
-        (counter.symbol || '+') +
-        ' ' +
-        counter.amount
-    );
-    this.single.update = toUpdate;
-    return this.update();
   },
 
   // On Clause
@@ -589,12 +578,22 @@ assign(QueryCompiler.prototype, {
     );
   },
 
+  onVal(clause) {
+    return (
+      this.formatter.wrap(clause.column) +
+      ' ' +
+      this.formatter.operator(clause.operator) +
+      ' ' +
+      this.formatter.parameter(clause.value)
+    );
+  },
+
   onRaw(clause) {
     return this.formatter.unwrapRaw(clause.value);
   },
 
   onUsing(clause) {
-    return this.formatter.wrap(clause.column);
+    return '(' + this.formatter.columnize(clause.column) + ')';
   },
 
   // Where Clause
@@ -628,7 +627,9 @@ assign(QueryCompiler.prototype, {
       ' ' +
       this.formatter.operator(statement.operator) +
       ' ' +
-      this.formatter.parameter(statement.value)
+      (statement.asColumn
+        ? this.formatter.wrap(statement.value)
+        : this.formatter.parameter(statement.value))
     );
   },
 
@@ -677,12 +678,16 @@ assign(QueryCompiler.prototype, {
     if (!withs) return;
     const sql = [];
     let i = -1;
+    let isRecursive = false;
     while (++i < withs.length) {
       const stmt = withs[i];
+      if (stmt.recursive) {
+        isRecursive = true;
+      }
       const val = this[stmt.type](stmt);
       sql.push(val);
     }
-    return 'with ' + sql.join(', ') + ' ';
+    return `with ${isRecursive ? 'recursive ' : ''}${sql.join(', ')} `;
   },
 
   withWrapped(statement) {
@@ -736,11 +741,36 @@ assign(QueryCompiler.prototype, {
   },
 
   // "Preps" the update.
-  _prepUpdate(data) {
+  _prepUpdate(data = {}) {
+    const { counter = {} } = this.single;
+
+    for (const column of keys(counter)) {
+      //Skip?
+      if (has(data, column)) {
+        //Needed?
+        this.client.logger.warn(
+          `increment/decrement called for a column that has already been specified in main .update() call. Ignoring increment/decrement and using value from .update() call.`
+        );
+        continue;
+      }
+
+      let value = counter[column];
+
+      const symbol = value < 0 ? '-' : '+';
+
+      if (symbol === '-') {
+        value = -value;
+      }
+
+      data[column] = this.client.raw(`?? ${symbol} ?`, [column, value]);
+    }
+
     data = omitBy(data, isUndefined);
+
     const vals = [];
     const columns = Object.keys(data);
     let i = -1;
+
     while (++i < columns.length) {
       vals.push(
         this.formatter.wrap(columns[i]) +

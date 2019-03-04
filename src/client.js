@@ -28,6 +28,7 @@ import Logger from './logger';
 const debug = require('debug')('knex:client');
 const debugQuery = require('debug')('knex:query');
 const debugBindings = require('debug')('knex:bindings');
+const { POOL_CONFIG_OPTIONS } = require('./constants');
 
 // The base client provides the general structure
 // for a dialect specific client object.
@@ -38,7 +39,14 @@ function Client(config = {}) {
   //Client is a required field, so throw error if it's not supplied.
   //If 'this.dialect' is set, then this is a 'super()' call, in which case
   //'client' does not have to be set as it's already assigned on the client prototype.
-  if (!this.config.client && !this.dialect) {
+
+  if (this.dialect && !this.config.client) {
+    this.logger.warn(
+      `Using 'this.dialect' to identify the client is deprecated and support for it will be removed in the future. Please use configuration option 'client' instead.`
+    );
+  }
+  const dbClient = this.config.client || this.dialect;
+  if (!dbClient) {
     throw new Error(`knex: Required configuration option 'client' is missing.`);
   }
 
@@ -207,10 +215,9 @@ assign(Client.prototype, {
     try {
       this.driver = this._driver();
     } catch (e) {
-      this.logger.error(
-        `Knex: run\n$ npm install ${this.driverName} --save\n${e.stack}`
-      );
-      process.exit(1);
+      const message = `Knex: run\n$ npm install ${this.driverName} --save`;
+      this.logger.error(`${message}\n${e.message}\n${e.stack}`);
+      throw new Error(`${message}\n${e.message}`);
     }
   },
 
@@ -221,17 +228,7 @@ assign(Client.prototype, {
   getPoolSettings(poolConfig) {
     poolConfig = defaults({}, poolConfig, this.poolDefaults());
 
-    [
-      'maxWaitingClients',
-      'testOnBorrow',
-      'fifo',
-      'priorityRange',
-      'autostart',
-      'evictionRunIntervalMillis',
-      'numTestsPerRun',
-      'softIdleTimeoutMillis',
-      'Promise',
-    ].forEach((option) => {
+    POOL_CONFIG_OPTIONS.forEach((option) => {
       if (option in poolConfig) {
         this.logger.warn(
           [

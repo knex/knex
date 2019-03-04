@@ -102,7 +102,7 @@ assign(Runner.prototype, {
 
     // If a function is passed to handle the stream, send the stream
     // there and return the promise, otherwise just return the stream
-    // and the promise will take care of itsself.
+    // and the promise will take care of itself.
     if (hasHandler) {
       handler(stream);
       return promise;
@@ -110,7 +110,7 @@ assign(Runner.prototype, {
 
     // Emit errors on the stream if the error occurred before a connection
     // could be acquired.
-    // If the connection was acquired, assume the error occured in the client
+    // If the connection was acquired, assume the error occurred in the client
     // code and has already been emitted on the stream. Don't emit it twice.
     promise.catch(function(err) {
       if (!hasConnection) stream.emit('error', err);
@@ -231,6 +231,11 @@ assign(Runner.prototype, {
 
   // Check whether there's a transaction flag, and that it has a connection.
   ensureConnection() {
+    // Use override from a builder if passed
+    if (this.builder._connection) {
+      return Promise.resolve(this.builder._connection);
+    }
+
     if (this.connection) {
       return Promise.resolve(this.connection);
     }

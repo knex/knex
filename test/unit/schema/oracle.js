@@ -2,13 +2,13 @@
 
 'use strict';
 
-var sinon = require('sinon');
-var Oracle_Client = require('../../../lib/dialects/oracle');
-var client = new Oracle_Client({});
+const sinon = require('sinon');
+const Oracle_Client = require('../../../lib/dialects/oracle');
+const client = new Oracle_Client({ client: 'oracledb' });
 
 describe('Oracle SchemaBuilder', function() {
-  var tableSql;
-  var equal = require('assert').equal;
+  let tableSql;
+  const equal = require('assert').equal;
 
   it('test basic create table with charset and collate', function() {
     tableSql = client.schemaBuilder().createTable('users', function(table) {

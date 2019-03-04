@@ -2,16 +2,15 @@
 
 'use strict';
 
-var tableSql;
+let tableSql;
 
-var sinon = require('sinon');
-var SQLite3_Client = require('../../../lib/dialects/sqlite3');
-var client = new SQLite3_Client({});
-var SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
+const sinon = require('sinon');
+const SQLite3_Client = require('../../../lib/dialects/sqlite3');
+const client = new SQLite3_Client({ client: 'sqlite3' });
+const SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 
-var _ = require('lodash');
-var equal = require('assert').equal;
-var deepEqual = require('assert').deepEqual;
+const _ = require('lodash');
+const { equal, deepEqual } = require('assert');
 
 describe('SQLite SchemaBuilder', function() {
   it('basic create table', function() {
@@ -30,6 +29,19 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
+  it('create json table', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('user', function(table) {
+        table.json('preferences');
+      })
+      .table('user', function(t) {})
+      .toSQL();
+    expect(tableSql[0].sql).to.equal(
+      'create table `user` (`preferences` json)'
+    );
+  });
+
   it('basic alter table', function() {
     tableSql = client
       .schemaBuilder()
@@ -40,7 +52,7 @@ describe('SQLite SchemaBuilder', function() {
       .toSQL();
 
     equal(2, tableSql.length);
-    var expected = [
+    const expected = [
       'alter table `users` add column `id` integer not null primary key autoincrement',
       'alter table `users` add column `email` varchar(255)',
     ];
@@ -157,6 +169,22 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
+  it('adding primary key with specific identifier', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function(table) {
+        table.string('foo');
+        table.primary('foo', 'pk-users');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(
+      tableSql[0].sql,
+      'create table `users` (`foo` varchar(255), constraint `pk-users` primary key (`foo`))'
+    );
+  });
+
   it('adding composite primary key', function() {
     tableSql = client
       .schemaBuilder()
@@ -172,20 +200,22 @@ describe('SQLite SchemaBuilder', function() {
       tableSql[0].sql,
       'create table `users` (`foo` varchar(255), `order_id` varchar(255), primary key (`foo`, `order_id`))'
     );
+  });
 
+  it('adding composite primary key with specific identifier', function() {
     tableSql = client
       .schemaBuilder()
       .createTable('users', function(table) {
         table.string('foo');
         table.string('order_id');
-        table.primary('foo', 'order_id');
+        table.primary(['foo', 'order_id'], 'pk-users');
       })
       .toSQL();
 
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table `users` (`foo` varchar(255), `order_id` varchar(255), primary key (`foo`, `order_id`))'
+      'create table `users` (`foo` varchar(255), `order_id` varchar(255), constraint `pk-users` primary key (`foo`, `order_id`))'
     );
   });
 
@@ -201,6 +231,21 @@ describe('SQLite SchemaBuilder', function() {
     equal(
       tableSql[0].sql,
       'create table `users` (`foo` varchar(255), primary key (`foo`))'
+    );
+  });
+
+  it('adding primary key fluently with specific identifier', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function(table) {
+        table.string('foo').primary('pk-users');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(
+      tableSql[0].sql,
+      'create table `users` (`foo` varchar(255), constraint `pk-users` primary key (`foo`))'
     );
   });
 
@@ -224,8 +269,25 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  // SQLite3 doesn't support named foreign keys
-  // it("adding foreign key with specific identifier throws an error");
+  it('adding foreign key with specific identifier', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function(table) {
+        table.string('foo').primary();
+        table.string('order_id');
+        table
+          .foreign('order_id', 'fk-users-orders')
+          .references('id')
+          .on('orders');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(
+      tableSql[0].sql,
+      'create table `users` (`foo` varchar(255), `order_id` varchar(255), constraint `fk-users-orders` foreign key(`order_id`) references `orders`(`id`), primary key (`foo`))'
+    );
+  });
 
   it('adding foreign key fluently', function() {
     tableSql = client
@@ -605,7 +667,7 @@ describe('SQLite SchemaBuilder', function() {
       .toSQL();
 
     equal(2, tableSql.length);
-    var expected = [
+    const expected = [
       'alter table `users` add column `created_at` datetime',
       'alter table `users` add column `updated_at` datetime',
     ];
@@ -649,19 +711,19 @@ describe('SQLite SchemaBuilder', function() {
       return client
         .schemaBuilder()
         .table('foo', function() {
-          var doReplace = SQLite3_DDL.prototype._doReplace;
+          const doReplace = SQLite3_DDL.prototype._doReplace;
 
-          var sql1 =
+          const sql1 =
             'CREATE TABLE `foo` (`id` integer not null primary key autoincrement, ' +
             '"parent_id_test" integer, foreign key("parent_id") references `foo`(`id`))';
-          var sql2 =
+          const sql2 =
             'CREATE TABLE `foo` (`id` integer not null primary key autoincrement, ' +
             '"parent_id_test" integer, foreign key("parent_id") references `bar`(`id`))';
 
-          var sql1b =
+          const sql1b =
             'CREATE TABLE `foo` ("id_foo" integer not null primary key autoincrement, ' +
             '"parent_id_test" integer, foreign key("parent_id") references `foo`("id_foo"))';
-          var sql2b =
+          const sql2b =
             'CREATE TABLE `foo` ("id_foo" integer not null primary key autoincrement, ' +
             '"parent_id_test" integer, foreign key("parent_id") references `bar`(`id`))';
 

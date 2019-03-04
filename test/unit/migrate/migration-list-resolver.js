@@ -1,19 +1,18 @@
-/*global after, before, beforeEach, expect, describe, it*/
+/*global after, before, describe, it*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
+const { expect } = require('chai');
 const mockFs = require('mock-fs');
 const migrationListResolver = require('../../../lib/migrate/migration-list-resolver');
-const path = require('path');
+const FsMigrations = require('../../../lib/migrate/sources/fs-migrations')
+  .default;
 
 describe('migration-list-resolver', () => {
   describe('listAll', () => {
-    let absoluteConfigDirectory;
+    let migrationSource;
     before(() => {
-      absoluteConfigDirectory = path.resolve(
-        process.cwd(),
-        'test/integration/migrate/migration'
-      );
+      migrationSource = new FsMigrations('test/integration/migrate/migration');
       mockFs({
         'test/integration/migrate/migration': {
           'co-migration.co': 'co migation content',
@@ -34,27 +33,156 @@ describe('migration-list-resolver', () => {
     });
 
     it('should include all supported extensions by default', () => {
-      return migrationListResolver
-        .listAll(absoluteConfigDirectory)
-        .then((list) => {
-          expect(list).to.eql([
-            'co-migration.co',
-            'coffee-migration.coffee',
-            'eg-migration.eg',
-            'iced-migration.iced',
-            'js-migration.js',
-            'litcoffee-migration.litcoffee',
-            'ls-migration.ls',
-            'ts-migration.ts',
-          ]);
-        });
+      return migrationListResolver.listAll(migrationSource).then((list) => {
+        expect(list).to.eql([
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'co-migration.co',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'coffee-migration.coffee',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'eg-migration.eg',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'iced-migration.iced',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'js-migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'litcoffee-migration.litcoffee',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'ls-migration.ls',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'ts-migration.ts',
+          },
+        ]);
+      });
     });
 
     it('should include only files with specified extensions', function() {
       return migrationListResolver
-        .listAll(absoluteConfigDirectory, ['.ts', '.js'])
+        .listAll(migrationSource, ['.ts', '.js'])
         .then((list) => {
-          expect(list).to.eql(['js-migration.js', 'ts-migration.ts']);
+          expect(list).to.eql([
+            {
+              directory: 'test/integration/migrate/migration',
+              file: 'js-migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/migration',
+              file: 'ts-migration.ts',
+            },
+          ]);
+        });
+    });
+  });
+
+  describe('listAll - multiple directories', () => {
+    before(() => {
+      mockFs({
+        'test/integration/migrate/migration': {
+          '006_migration.js': 'dummy',
+          '001_migration.js': 'dummy',
+          '005_migration.js': 'dummy',
+        },
+        'test/integration/migrate/seeds': {
+          '004_migration.js': 'dummy',
+          '002_migration.js': 'dummy',
+          '003_migration.js': 'dummy',
+        },
+      });
+    });
+
+    after(() => {
+      mockFs.restore();
+    });
+
+    it('should include files from both folders, sorted globally', () => {
+      const migrationSource = new FsMigrations([
+        'test/integration/migrate/migration',
+        'test/integration/migrate/seeds',
+      ]);
+
+      return migrationListResolver.listAll(migrationSource).then((list) => {
+        expect(list).to.eql([
+          {
+            directory: 'test/integration/migrate/migration',
+            file: '001_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/seeds',
+            file: '002_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/seeds',
+            file: '003_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/seeds',
+            file: '004_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: '005_migration.js',
+          },
+          {
+            directory: 'test/integration/migrate/migration',
+            file: '006_migration.js',
+          },
+        ]);
+      });
+    });
+
+    it('should include files from both folders, sorted within their folders', () => {
+      const migrationSource = new FsMigrations(
+        [
+          'test/integration/migrate/migration',
+          'test/integration/migrate/seeds',
+        ],
+        true
+      );
+
+      return migrationListResolver
+        .listAll(migrationSource, ['.js'])
+        .then((list) => {
+          expect(list).to.eql([
+            {
+              directory: 'test/integration/migrate/migration',
+              file: '001_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/migration',
+              file: '005_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/migration',
+              file: '006_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/seeds',
+              file: '002_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/seeds',
+              file: '003_migration.js',
+            },
+            {
+              directory: 'test/integration/migrate/seeds',
+              file: '004_migration.js',
+            },
+          ]);
         });
     });
   });

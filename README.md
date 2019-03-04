@@ -5,11 +5,12 @@
 [![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.svg?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
 [![Dependencies Status](https://david-dm.org/tgriesser/knex.svg)](https://david-dm.org/tgriesser/knex)
 [![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex)
+[![Language Grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/tgriesser/knex.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tgriesser/knex/context:javascript)
 
 > **A SQL query builder that is _flexible_, _portable_, and _fun_ to use!**
 
-A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle(including Oracle Wallet Authentication)) query builder for
-Node.js and the Browser, featuring:
+A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
+Node.js, featuring:
 
 - [transactions](http://knexjs.org/#Transactions)
 - [connection pooling](http://knexjs.org/#Installation-pooling)
@@ -20,7 +21,9 @@ Node.js and the Browser, featuring:
 
 Node.js versions 6+ are supported.
 
-[Read the full documentation to get started!](http://knexjs.org)
+[Read the full documentation to get started!](http://knexjs.org)  
+[Or check out our Recipes wiki to search for solutions to some specific problems](https://github.com/tgriesser/knex/wiki/Recipes)  
+If upgrading from older version, see [Upgrading instructions](https://github.com/tgriesser/knex/blob/master/UPGRADING.md)
 
 For support and questions, join the `#bookshelf` channel on freenode IRC
 
@@ -35,7 +38,7 @@ To see the SQL that Knex will generate for a given query, see: [Knex Query Lab](
 We have several examples [on the website](http://knexjs.org). Here is the first one to get you started:
 
 ```js
-var knex = require('knex')({
+const knex = require('knex')({
   dialect: 'sqlite3',
   connection: {
     filename: './data.db'

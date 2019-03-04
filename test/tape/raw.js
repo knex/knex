@@ -1,11 +1,11 @@
 'use strict';
 
-var Raw = require('../../lib/raw');
-var Client = require('../../lib/client');
-var test = require('tape');
-var _ = require('lodash');
+const Raw = require('../../lib/raw');
+const Client = require('../../lib/client');
+const test = require('tape');
+const _ = require('lodash');
 
-var client = new Client({ client: 'mysql' });
+const client = new Client({ client: 'mysql' });
 function raw(sql, bindings) {
   return new Raw(client).set(sql, bindings);
 }
@@ -72,7 +72,7 @@ test('allows for :val: to be interpolated when identifiers with dots', function(
 
 test('allows for options in raw queries, #605', function(t) {
   t.plan(1);
-  var x = raw("select 'foo', 'bar';")
+  const x = raw("select 'foo', 'bar';")
     .options({ rowMode: 'array' })
     .toSQL();
 
@@ -87,7 +87,7 @@ test('allows for options in raw queries, #605', function(t) {
 test('raw bindings are optional, #853', function(t) {
   t.plan(2);
 
-  var sql = raw('select * from ? where id=?', [raw('foo'), 4]).toSQL();
+  const sql = raw('select * from ? where id=?', [raw('foo'), 4]).toSQL();
 
   t.equal(sql.sql, 'select * from foo where id=?');
 

@@ -34,12 +34,13 @@ assign(QueryCompiler_PG.prototype, {
 
   // Compiles an `update` query, allowing for a return value.
   update() {
+    const withSQL = this.with();
     const updateData = this._prepUpdate(this.single.update);
     const wheres = this.where();
     const { returning } = this.single;
     return {
       sql:
-        this.with() +
+        withSQL +
         `update ${this.single.only ? 'only ' : ''}${this.tableName} ` +
         `set ${updateData.join(', ')}` +
         (wheres ? ` ${wheres}` : '') +
@@ -66,12 +67,39 @@ assign(QueryCompiler_PG.prototype, {
     return value ? ` returning ${this.formatter.columnize(value)}` : '';
   },
 
+  // Join array of table names and apply default schema.
+  _tableNames(tables) {
+    const schemaName = this.single.schema;
+    const sql = [];
+
+    for (let i = 0; i < tables.length; i++) {
+      let tableName = tables[i];
+
+      if (tableName) {
+        if (schemaName) {
+          tableName = `${schemaName}.${tableName}`;
+        }
+        sql.push(this.formatter.wrap(tableName));
+      }
+    }
+
+    return sql.join(', ');
+  },
+
   forUpdate() {
-    return 'for update';
+    const tables = this.single.lockTables || [];
+
+    return (
+      'for update' + (tables.length ? ' of ' + this._tableNames(tables) : '')
+    );
   },
 
   forShare() {
-    return 'for share';
+    const tables = this.single.lockTables || [];
+
+    return (
+      'for share' + (tables.length ? ' of ' + this._tableNames(tables) : '')
+    );
   },
 
   // Compiles a columnInfo query

@@ -3,7 +3,7 @@
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
 
-import { assign } from 'lodash';
+import { isObject } from 'lodash';
 
 function ColumnCompiler_MySQL() {
   ColumnCompiler.apply(this, arguments);
@@ -22,7 +22,7 @@ inherits(ColumnCompiler_MySQL, ColumnCompiler);
 // Types
 // ------
 
-assign(ColumnCompiler_MySQL.prototype, {
+Object.assign(ColumnCompiler_MySQL.prototype, {
   increments: 'int unsigned not null auto_increment primary key',
 
   bigincrements: 'bigint unsigned not null auto_increment primary key',
@@ -74,18 +74,30 @@ assign(ColumnCompiler_MySQL.prototype, {
   },
 
   datetime(precision) {
+    if (isObject(precision)) {
+      ({ precision } = precision);
+    }
+
     return typeof precision === 'number'
       ? `datetime(${precision})`
       : 'datetime';
   },
 
   timestamp(precision) {
+    if (isObject(precision)) {
+      ({ precision } = precision);
+    }
+
     return typeof precision === 'number'
       ? `timestamp(${precision})`
       : 'timestamp';
   },
 
   time(precision) {
+    if (isObject(precision)) {
+      ({ precision } = precision);
+    }
+
     return typeof precision === 'number' ? `time(${precision})` : 'time';
   },
 

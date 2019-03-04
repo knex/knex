@@ -31,6 +31,8 @@ describe('Query Building Tests', function() {
   require('./unit/schema/oracledb');
   require('./unit/migrate/migration-list-resolver');
   require('./unit/seed/seeder');
+  // require('./unit/interface'); ToDo Uncomment after fixed
+  require('./unit/knex');
 });
 
 describe('Integration Tests', function() {
@@ -48,4 +50,11 @@ if (config.oracledb) {
 
 if (config.postgres) {
   require('./unit/dialects/postgres');
+}
+
+if (config.sqlite3) {
+  describe('Sqlite driver tests', function() {
+    this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+    require('./unit/dialects/sqlite3');
+  });
 }

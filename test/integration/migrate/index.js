@@ -1,10 +1,11 @@
 /*global after, before, describe, expect, it*/
 'use strict';
 
-var equal = require('assert').equal;
-var path = require('path');
-var rimraf = require('rimraf');
-var Promise = require('bluebird');
+const equal = require('assert').equal;
+const path = require('path');
+const rimraf = require('rimraf');
+const Promise = require('bluebird');
+const testMemoryMigrations = require('./memory-migrations');
 
 module.exports = function(knex) {
   require('rimraf').sync(path.join(__dirname, './migration'));
@@ -31,7 +32,11 @@ module.exports = function(knex) {
       });
     });
 
-    var tables = ['migration_test_1', 'migration_test_2', 'migration_test_2_1'];
+    const tables = [
+      'migration_test_1',
+      'migration_test_2',
+      'migration_test_2_1',
+    ];
 
     describe('knex.migrate.status', function() {
       this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
@@ -169,17 +174,36 @@ module.exports = function(knex) {
           });
       });
 
-      it('should release lock if non-locking related error is thrown', function() {
-        return knex.migrate
-          .latest({ directory: 'test/integration/migrate/test' })
+      it('should report failing migration', function() {
+        const migrator = knex.migrate;
+        return migrator
+          .latest({ directory: 'test/integration/migrate/test_with_invalid' })
           .then(function() {
             throw new Error('then should not execute');
           })
           .catch(function(error) {
             // This will fail because of the invalid migration
-            expect(error).to.have.property('message');
-            return knex('knex_migrations_lock').select('*');
+            expect(error)
+              .to.have.property('message')
+              .that.includes('unknown_table');
+            expect(migrator)
+              .to.have.property('_activeMigration')
+              .to.have.property(
+                'fileName',
+                '20150109002832_invalid_migration.js'
+              );
           })
+          .then(function(data) {
+            // Clean up lock for other tests
+            // TODO: Remove this code to reproduce https://github.com/tgriesser/knex/issues/2925
+            // It is only relevant for Oracle, most likely there is a bug somewhere that needs fixing
+            return knex('knex_migrations_lock').update({ is_locked: 0 });
+          });
+      });
+
+      it('should release lock if non-locking related error is thrown', function() {
+        return knex('knex_migrations_lock')
+          .select('*')
           .then(function(data) {
             expect(data[0].is_locked).to.not.be.ok;
           });
@@ -243,6 +267,45 @@ module.exports = function(knex) {
       });
     });
 
+    describe('knex.migrate.latest - multiple directories', () => {
+      before(() => {
+        return knex.migrate.latest({
+          directory: [
+            'test/integration/migrate/test',
+            'test/integration/migrate/test2',
+          ],
+        });
+      });
+
+      after(() => {
+        return knex.migrate.rollback({
+          directory: [
+            'test/integration/migrate/test',
+            'test/integration/migrate/test2',
+          ],
+        });
+      });
+
+      it('should create tables specified in both directories', () => {
+        // Map the table names to promises that evaluate chai expectations to
+        // confirm that the table exists
+        const expectedTables = [
+          'migration_test_1',
+          'migration_test_2',
+          'migration_test_2_1',
+          'migration_test_3',
+          'migration_test_4',
+          'migration_test_4_1',
+        ];
+
+        return Promise.map(expectedTables, function(table) {
+          return knex.schema.hasTable(table).then(function(exists) {
+            expect(exists).to.equal(true);
+          });
+        });
+      });
+    });
+
     describe('knex.migrate.rollback', function() {
       it('should delete the most recent batch from the migration log', function() {
         return knex.migrate
@@ -250,10 +313,7 @@ module.exports = function(knex) {
           .spread(function(batchNo, log) {
             expect(batchNo).to.equal(1);
             expect(log).to.have.length(2);
-            var migrationPath = ['test', 'integration', 'migrate', 'test'].join(
-              path.sep
-            ); //Test fails on windows if explicitly defining /test/integration/.. ~wubzz
-            expect(log[0]).to.contain(migrationPath);
+            expect(log[0]).to.contain(batchNo);
             return knex('knex_migrations')
               .select('*')
               .then(function(data) {
@@ -263,6 +323,53 @@ module.exports = function(knex) {
       });
 
       it('should drop tables as specified in the batch', function() {
+        return Promise.map(tables, function(table) {
+          return knex.schema.hasTable(table).then(function(exists) {
+            expect(!!exists).to.equal(false);
+          });
+        });
+      });
+    });
+
+    describe('knex.migrate.rollback - all', () => {
+      before(() => {
+        return knex.migrate
+          .latest({
+            directory: ['test/integration/migrate/test'],
+          })
+          .then(function() {
+            return knex.migrate.latest({
+              directory: [
+                'test/integration/migrate/test',
+                'test/integration/migrate/test2',
+              ],
+            });
+          });
+      });
+
+      it('should delete all batches from the migration log', () => {
+        return knex.migrate
+          .rollback(
+            {
+              directory: [
+                'test/integration/migrate/test',
+                'test/integration/migrate/test2',
+              ],
+            },
+            true
+          )
+          .spread(function(batchNo, log) {
+            expect(batchNo).to.equal(2);
+            expect(log).to.have.length(4);
+            return knex('knex_migrations')
+              .select('*')
+              .then(function(data) {
+                expect(data.length).to.equal(0);
+              });
+          });
+      });
+
+      it('should drop tables as specified in the batch', () => {
         return Promise.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
             expect(!!exists).to.equal(false);
@@ -323,7 +430,7 @@ module.exports = function(knex) {
         }
       ).then(function(res) {
         // One should fail:
-        var hasLockError =
+        const hasLockError =
           res[0] === 'MigrationLocked' || res[1] === 'MigrationLocked';
         expect(hasLockError).to.equal(true);
 
@@ -495,5 +602,87 @@ module.exports = function(knex) {
         });
       });
     }
+  });
+
+  describe('migrationSource config', function() {
+    const migrationSource = {
+      getMigrations() {
+        return Promise.resolve(Object.keys(testMemoryMigrations).sort());
+      },
+      getMigrationName(migration) {
+        return migration;
+      },
+      getMigration(migration) {
+        return testMemoryMigrations[migration];
+      },
+    };
+
+    before(() => {
+      return knex.migrate.latest({
+        migrationSource,
+      });
+    });
+
+    after(() => {
+      return knex.migrate.rollback({
+        migrationSource,
+      });
+    });
+
+    it('can accept a custom migration source', function() {
+      return knex.schema
+        .hasColumn('migration_source_test_1', 'name')
+        .then(function(exists) {
+          expect(exists).to.equal(true);
+        });
+    });
+  });
+
+  describe('knex.migrate.latest with custom config parameter for table name', function() {
+    before(function() {
+      return knex
+        .withUserParams({ customTableName: 'migration_test_2_1a' })
+        .migrate.latest({
+          directory: 'test/integration/migrate/test',
+        });
+    });
+
+    it('should create all specified tables and columns', function() {
+      const tables = [
+        'migration_test_1',
+        'migration_test_2',
+        'migration_test_2_1a',
+      ];
+      return Promise.map(tables, function(table) {
+        return knex.schema.hasTable(table).then(function(exists) {
+          expect(exists).to.equal(true);
+          if (exists) {
+            return Promise.all([
+              knex.schema.hasColumn(table, 'id').then(function(exists) {
+                expect(exists).to.equal(true);
+              }),
+              knex.schema.hasColumn(table, 'name').then(function(exists) {
+                expect(exists).to.equal(true);
+              }),
+            ]);
+          }
+        });
+      });
+    });
+
+    it('should not create unexpected tables', function() {
+      const table = 'migration_test_2_1';
+      return knex.schema.hasTable(table).then(function(exists) {
+        expect(exists).to.equal(false);
+      });
+    });
+
+    after(function() {
+      return knex
+        .withUserParams({ customTableName: 'migration_test_2_1a' })
+        .migrate.rollback({
+          directory: 'test/integration/migrate/test',
+        });
+    });
   });
 };

@@ -41,8 +41,25 @@ function Builder(client) {
   this._joinFlag = 'inner';
   this._boolFlag = 'and';
   this._notFlag = false;
+  this._asColumnFlag = false;
 }
 inherits(Builder, EventEmitter);
+
+const validateWithArgs = function(alias, statement, method) {
+  if (typeof alias !== 'string') {
+    throw new Error(`${method}() first argument must be a string`);
+  }
+  if (
+    typeof statement === 'function' ||
+    statement instanceof Builder ||
+    statement instanceof Raw
+  ) {
+    return;
+  }
+  throw new Error(
+    `${method}() second argument must be a function / QueryBuilder or a raw`
+  );
+};
 
 assign(Builder.prototype, {
   toString() {
@@ -69,6 +86,9 @@ assign(Builder.prototype, {
     if (!isUndefined(this._queryContext)) {
       cloned._queryContext = clone(this._queryContext);
     }
+    if (!isUndefined(this._connection)) {
+      cloned._connection = this._connection;
+    }
 
     return cloned;
   },
@@ -88,19 +108,8 @@ assign(Builder.prototype, {
   // ------
 
   with(alias, statement) {
-    if (typeof alias !== 'string') {
-      throw new Error('with() first argument must be a string');
-    }
-    if (
-      typeof statement === 'function' ||
-      statement instanceof Builder ||
-      statement instanceof Raw
-    ) {
-      return this.withWrapped(alias, statement);
-    }
-    throw new Error(
-      'with() second argument must be a function / QueryBuilder or a raw'
-    );
+    validateWithArgs(alias, statement, 'with');
+    return this.withWrapped(alias, statement);
   },
 
   // Helper for compiling any advanced `with` queries.
@@ -111,6 +120,21 @@ assign(Builder.prototype, {
       alias: alias,
       value: query,
     });
+    return this;
+  },
+
+  // With Recursive
+  // ------
+
+  withRecursive(alias, statement) {
+    validateWithArgs(alias, statement, 'withRecursive');
+    return this.withRecursiveWrapped(alias, statement);
+  },
+
+  // Helper for compiling any advanced `withRecursive` queries.
+  withRecursiveWrapped(alias, query) {
+    this.withWrapped(alias, query);
+    this._statements[this._statements.length - 1].recursive = true;
     return this;
   },
 
@@ -176,7 +200,11 @@ assign(Builder.prototype, {
     } else if (joinType === 'raw') {
       join = new JoinClause(this.client.raw(table, first), 'raw');
     } else {
-      join = new JoinClause(table, joinType, schema);
+      join = new JoinClause(
+        table,
+        joinType,
+        table instanceof Builder ? undefined : schema
+      );
       if (arguments.length > 1) {
         join.on.apply(join, toArray(arguments).slice(1));
       }
@@ -288,11 +316,20 @@ assign(Builder.prototype, {
       value,
       not: this._not(),
       bool: this._bool(),
+      asColumn: this._asColumnFlag,
     });
     return this;
   },
+
+  whereColumn(column, operator, rightColumn) {
+    this._asColumnFlag = true;
+    this.where.apply(this, arguments);
+    this._asColumnFlag = false;
+    return this;
+  },
+
   // Adds an `or where` clause to the query.
-  orWhere: function orWhere() {
+  orWhere() {
     this._bool('or');
     const obj = arguments[0];
     if (isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
@@ -305,14 +342,35 @@ assign(Builder.prototype, {
     return this.where.apply(this, arguments);
   },
 
+  orWhereColumn() {
+    this._bool('or');
+    const obj = arguments[0];
+    if (isObject(obj) && !isFunction(obj) && !(obj instanceof Raw)) {
+      return this.whereWrapped(function() {
+        for (const key in obj) {
+          this.andWhereColumn(key, '=', obj[key]);
+        }
+      });
+    }
+    return this.whereColumn.apply(this, arguments);
+  },
+
   // Adds an `not where` clause to the query.
   whereNot() {
     return this._not(true).where.apply(this, arguments);
   },
 
+  whereNotColumn() {
+    return this._not(true).whereColumn.apply(this, arguments);
+  },
+
   // Adds an `or not where` clause to the query.
   orWhereNot() {
     return this._bool('or').whereNot.apply(this, arguments);
+  },
+
+  orWhereNotColumn() {
+    return this._bool('or').whereNotColumn.apply(this, arguments);
   },
 
   // Processes an object literal provided in a "where" clause.
@@ -502,12 +560,37 @@ assign(Builder.prototype, {
 
   // Adds a `order by` clause to the query.
   orderBy(column, direction) {
+    if (Array.isArray(column)) {
+      return this._orderByArray(column);
+    }
     this._statements.push({
       grouping: 'order',
       type: 'orderByBasic',
       value: column,
       direction,
     });
+    return this;
+  },
+
+  // Adds a `order by` with multiple columns to the query.
+  _orderByArray(columnDefs) {
+    for (let i = 0; i < columnDefs.length; i++) {
+      const columnInfo = columnDefs[i];
+      if (isObject(columnInfo)) {
+        this._statements.push({
+          grouping: 'order',
+          type: 'orderByBasic',
+          value: columnInfo['column'],
+          direction: columnInfo['order'],
+        });
+      } else if (isString(columnInfo)) {
+        this._statements.push({
+          grouping: 'order',
+          type: 'orderByBasic',
+          value: columnInfo,
+        });
+      }
+    }
     return this;
   },
 
@@ -556,6 +639,32 @@ assign(Builder.prototype, {
       value: callback,
       wrap: wrap || false,
     });
+    return this;
+  },
+
+  // Adds an intersect statement to the query
+  intersect(callbacks, wrap) {
+    if (arguments.length === 1 || (arguments.length === 2 && isBoolean(wrap))) {
+      if (!Array.isArray(callbacks)) {
+        callbacks = [callbacks];
+      }
+      for (let i = 0, l = callbacks.length; i < l; i++) {
+        this._statements.push({
+          grouping: 'union',
+          clause: 'intersect',
+          value: callbacks[i],
+          wrap: wrap || false,
+        });
+      }
+    } else {
+      callbacks = toArray(arguments).slice(0, arguments.length - 1);
+      wrap = arguments[arguments.length - 1];
+      if (!isBoolean(wrap)) {
+        callbacks.push(wrap);
+        wrap = false;
+      }
+      this.intersect(callbacks, wrap);
+    }
     return this;
   },
 
@@ -806,13 +915,36 @@ assign(Builder.prototype, {
   },
 
   // Increments a column's value by the specified amount.
-  increment(column, amount) {
+  increment(column, amount = 1) {
+    if (isObject(column)) {
+      for (const key in column) {
+        this._counter(key, column[key]);
+      }
+
+      return this;
+    }
+
     return this._counter(column, amount);
   },
 
   // Decrements a column's value by the specified amount.
-  decrement(column, amount) {
-    return this._counter(column, amount, '-');
+  decrement(column, amount = 1) {
+    if (isObject(column)) {
+      for (const key in column) {
+        this._counter(key, -column[key]);
+      }
+
+      return this;
+    }
+
+    return this._counter(column, -amount);
+  },
+
+  // Clears increments/decrements
+  clearCounters() {
+    this._single.counter = {};
+
+    return this;
   },
 
   // Sets the values for a `select` query, informing that only the first
@@ -831,6 +963,13 @@ assign(Builder.prototype, {
     this.select.apply(this, args);
     this._method = 'first';
     this.limit(1);
+    return this;
+  },
+
+  // Use existing connection to execute the query
+  // Same value that client.acquireConnection() for an according client returns should be passed
+  connection(_connection) {
+    this._connection = _connection;
     return this;
   },
 
@@ -937,12 +1076,14 @@ assign(Builder.prototype, {
   // Set a lock for update constraint.
   forUpdate() {
     this._single.lock = 'forUpdate';
+    this._single.lockTables = helpers.normalizeArr.apply(null, arguments);
     return this;
   },
 
   // Set a lock for share constraint.
   forShare() {
     this._single.lock = 'forShare';
+    this._single.lockTables = helpers.normalizeArr.apply(null, arguments);
     return this;
   },
 
@@ -971,15 +1112,15 @@ assign(Builder.prototype, {
   // ----------------------------------------------------------------------
 
   // Helper for the incrementing/decrementing queries.
-  _counter(column, amount, symbol) {
-    let amt = parseFloat(amount);
-    if (isNaN(amt)) amt = 1;
-    this._method = 'counter';
-    this._single.counter = {
-      column,
-      amount: amt,
-      symbol: symbol || '+',
-    };
+  _counter(column, amount) {
+    amount = parseFloat(amount);
+
+    this._method = 'update';
+
+    this._single.counter = this._single.counter || {};
+
+    this._single.counter[column] = amount;
+
     return this;
   },
 
@@ -1049,7 +1190,9 @@ Object.defineProperty(Builder.prototype, 'not', {
 Builder.prototype.select = Builder.prototype.columns;
 Builder.prototype.column = Builder.prototype.columns;
 Builder.prototype.andWhereNot = Builder.prototype.whereNot;
+Builder.prototype.andWhereNotColumn = Builder.prototype.whereNotColumn;
 Builder.prototype.andWhere = Builder.prototype.where;
+Builder.prototype.andWhereColumn = Builder.prototype.whereColumn;
 Builder.prototype.andWhereRaw = Builder.prototype.whereRaw;
 Builder.prototype.andWhereBetween = Builder.prototype.whereBetween;
 Builder.prototype.andWhereNotBetween = Builder.prototype.whereNotBetween;

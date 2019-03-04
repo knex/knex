@@ -184,7 +184,7 @@ assign(QueryCompiler_Oracle.prototype, {
     }
 
     // always wrap returning argument in array
-    if (returning && !Array.isArray(returning)) {
+    if (!Array.isArray(returning)) {
       returning = [returning];
     }
 
