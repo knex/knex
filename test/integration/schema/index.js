@@ -436,26 +436,16 @@ module.exports = function(knex) {
           })
           .testSql(function(tester) {
             tester('mysql', [
-              'create table `test_table_three` (`main` int not null, `paragraph` text) default character set utf8 engine = InnoDB',
-              'alter table `test_table_three` add primary key `test_table_three_pkey`(`main`)',
+              'create table `test_table_numerics` (`integer_column` int(5), `tinyint_column` tinyint(5), `smallint_column` smallint, `mediumint_column` mediumint, `bigint_column` bigint) default character set utf8 engine = InnoDB',
             ]);
             tester('pg', [
-              'create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')',
-              'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
-            ]);
-            tester('pg-redshift', [
-              'create table "test_table_three" ("main" integer not null, "paragraph" varchar(max) default \'Lorem ipsum Qui quis qui in.\')',
-              'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
+              'create table \\"test_table_numerics\\" (\\"integer_column\\" integer, \\"tinyint_column\\" smallint, \\"smallint_column\\" smallint, \\"mediumint_column\\" integer, \\"bigint_column\\" bigint)',
             ]);
             tester('sqlite3', [
-              "create table `test_table_three` (`main` integer not null, `paragraph` text default 'Lorem ipsum Qui quis qui in.', primary key (`main`))",
-            ]);
-            tester('oracledb', [
-              'create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')',
-              'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
+              'create table `test_table_numerics` (`integer_column` integer, `tinyint_column` tinyint, `smallint_column` integer, `mediumint_column` integer, `bigint_column` bigint)',
             ]);
             tester('mssql', [
-              'CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))',
+              'CREATE TABLE [test_table_numerics] ([integer_column] int, [tinyint_column] tinyint(5), [smallint_column] smallint, [mediumint_column] int, [bigint_column] bigint)',
             ]);
           });
       });
@@ -784,6 +774,26 @@ module.exports = function(knex) {
               t.dropColumn('one');
               t.dropColumn('two');
               t.dropColumn('three');
+            });
+          });
+      });
+
+      it('handles creating numeric columns with specified length correctly', function() {
+        return knex.schema
+          .createTable('test_table_numerics', function(table) {
+            table.integer('integer_column', 5);
+            table.tinyint('tinyint_column', 5);
+            table.smallint('smallint_column', 5);
+            table.mediumint('mediumint_column', 5);
+            table.bigint('bigint_column', 5);
+          })
+          .then(function() {
+            return knex.schema.table('test_table_numerics', function(t) {
+              t.dropColumn('integer_column');
+              t.dropColumn('tinyint_column');
+              t.dropColumn('smallint_column');
+              t.dropColumn('mediumint_column');
+              t.dropColumn('bigint_column');
             });
           });
       });
