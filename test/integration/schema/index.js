@@ -428,12 +428,11 @@ module.exports = function(knex) {
         return knex.schema
           .createTable('test_table_numerics', function(table) {
             table.engine('InnoDB');
-            table
-              .integer('integer_column', 5)
-              .tinyint('tinyint_column', 5)
-              .smallint('smallint_column', 5)
-              .mediumint('mediumint_column', 5)
-              .bigint('bigint_column', 5);
+            table.integer('integer_column', 5);
+            table.tinyint('tinyint_column', 5);
+            table.smallint('smallint_column', 5);
+            table.mediumint('mediumint_column', 5);
+            table.bigint('bigint_column', 5);
           })
           .testSql(function(tester) {
             tester('mysql', [
