@@ -439,7 +439,7 @@ module.exports = function(knex) {
               'create table `test_table_numerics` (`integer_column` int(5), `tinyint_column` tinyint(5), `smallint_column` smallint, `mediumint_column` mediumint, `bigint_column` bigint) default character set utf8 engine = InnoDB',
             ]);
             tester('pg', [
-              'create table \\"test_table_numerics\\" (\\"integer_column\\" integer, \\"tinyint_column\\" smallint, \\"smallint_column\\" smallint, \\"mediumint_column\\" integer, \\"bigint_column\\" bigint)',
+              'create table "test_table_numerics" ("integer_column" integer, "tinyint_column" smallint, "smallint_column" smallint, "mediumint_column" integer, "bigint_column" bigint)',
             ]);
             tester('sqlite3', [
               'create table `test_table_numerics` (`integer_column` integer, `tinyint_column` tinyint, `smallint_column` integer, `mediumint_column` integer, `bigint_column` bigint)',
@@ -780,7 +780,7 @@ module.exports = function(knex) {
 
       it('handles creating numeric columns with specified length correctly', function() {
         return knex.schema
-          .createTable('test_table_numerics', function(table) {
+          .createTable('test_table_numerics2', function(table) {
             table.integer('integer_column', 5);
             table.tinyint('tinyint_column', 5);
             table.smallint('smallint_column', 5);
