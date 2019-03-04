@@ -445,8 +445,11 @@ module.exports = function(knex) {
               'create table `test_table_numerics` (`integer_column` integer, `tinyint_column` tinyint, `smallint_column` integer, `mediumint_column` integer, `bigint_column` bigint)',
             ]);
             tester('mssql', [
-              'CREATE TABLE [test_table_numerics] ([integer_column] int, [tinyint_column] tinyint(5), [smallint_column] smallint, [mediumint_column] int, [bigint_column] bigint)',
+              'CREATE TABLE [test_table_numerics] ([integer_column] int, [tinyint_column] tinyint, [smallint_column] smallint, [mediumint_column] int, [bigint_column] bigint)',
             ]);
+          })
+          .then(function() {
+            return knex.schema.dropTable('test_table_numerics');
           });
       });
 
@@ -788,13 +791,7 @@ module.exports = function(knex) {
             table.bigint('bigint_column', 5);
           })
           .then(function() {
-            return knex.schema.table('test_table_numerics', function(t) {
-              t.dropColumn('integer_column');
-              t.dropColumn('tinyint_column');
-              t.dropColumn('smallint_column');
-              t.dropColumn('mediumint_column');
-              t.dropColumn('bigint_column');
-            });
+            return knex.schema.dropTable('test_table_numerics2');
           });
       });
 
