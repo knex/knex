@@ -1,4 +1,4 @@
-/*global describe, it, expect, testPromise*/
+/*global it, expect, testPromise*/
 
 'use strict';
 
