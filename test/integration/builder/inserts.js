@@ -1,4 +1,4 @@
-/*global before, describe, expect, it, d*/
+/*global describe, expect, it, d*/
 
 'use strict';
 
