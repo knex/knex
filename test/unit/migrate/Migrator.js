@@ -41,6 +41,7 @@ describe('Migrator', () => {
     let migrationSource;
     let knex;
     let wasProcessed = false;
+    let wasWrapped = false;
     beforeEach(() => {
       migrationSource = new FsMigrations('test/unit/migrate/migrations/');
       knex = Knex({
@@ -50,6 +51,10 @@ describe('Migrator', () => {
         postProcessResponse: (response) => {
           wasProcessed = true;
           return response;
+        },
+        wrapIdentifier: (value, wrap) => {
+          wasWrapped = true;
+          return wrap(value);
         },
       });
     });
@@ -66,7 +71,8 @@ describe('Migrator', () => {
               directory: 'test/unit/migrate/migrations',
             })
             .then(() => {
-              expect(wasProcessed).to.equal(true);
+              expect(wasProcessed).to.equal(false);
+              expect(wasWrapped).to.equal(false);
               done();
             });
         });
@@ -93,8 +99,9 @@ describe('Migrator', () => {
         ...sqliteConfig,
         connection: ':memory:',
         migrationSource,
-        postProcessResponse: () => {
+        postProcessResponse: (response) => {
           wasPostProcessed = true;
+          return response;
         },
       });
 

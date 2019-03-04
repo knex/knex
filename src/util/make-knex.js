@@ -59,7 +59,7 @@ function initContext(knexFn) {
     // Do not document this as public API until naming and API is improved for general consumption
     // This method exists to disable processing of internal queries in migrations
     disableProcessing() {
-      if (this.isTransaction || this.userParams.isProcessingDisabled) {
+      if (this.userParams.isProcessingDisabled) {
         return;
       }
       this.userParams.wrapIdentifier = this.client.config.wrapIdentifier;
@@ -72,7 +72,7 @@ function initContext(knexFn) {
     // Do not document this as public API until naming and API is improved for general consumption
     // This method exists to enable execution of non-internal queries with consistent identifier naming in migrations
     enableProcessing() {
-      if (this.isTransaction || !this.userParams.isProcessingDisabled) {
+      if (!this.userParams.isProcessingDisabled) {
         return;
       }
       this.client.config.wrapIdentifier = this.userParams.wrapIdentifier;

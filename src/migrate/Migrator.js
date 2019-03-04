@@ -53,17 +53,15 @@ export default class Migrator {
         this.knex = knex.withUserParams({
           ...knex.userParams,
         });
-        this.knex.disableProcessing();
       } else {
         this.knex = knex;
-        this.knex.client.logger.warn(
-          'Running migrations in explicitly passed transaction. Make sure you are not using any custom identifier wrappers on original knex instance (wrapIdentifier param) - they will not be disabled when executing internal queries and may result in them failing.'
-        );
       }
     } else {
       this.knex = Object.assign({}, knex);
+      this.knex.userParams = this.knex.userParams || {};
     }
 
+    this.knex.disableProcessing();
     this.config = getMergedConfig(this.knex.client.config.migrations);
     this.generator = new MigrationGenerator(this.knex.client.config.migrations);
     this._activeMigration = {
