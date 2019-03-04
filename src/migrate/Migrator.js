@@ -70,9 +70,7 @@ export default class Migrator {
 
   // Migrators to the latest configuration.
   latest(config) {
-    if (this.knex.disableProcessing) {
-      this.knex.disableProcessing();
-    }
+    this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
 
     return migrationListResolver
@@ -108,9 +106,7 @@ export default class Migrator {
 
   // Rollback the last "batch", or all, of migrations that were run.
   rollback(config, all = false) {
-    if (this.knex.disableProcessing) {
-      this.knex.disableProcessing();
-    }
+    this._disableProcessing();
     return Promise.try(() => {
       this.config = getMergedConfig(config, this.config);
 
@@ -127,9 +123,7 @@ export default class Migrator {
   }
 
   status(config) {
-    if (this.knex.disableProcessing) {
-      this.knex.disableProcessing();
-    }
+    this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
 
     return Promise.all([
@@ -143,9 +137,7 @@ export default class Migrator {
   // Retrieves and returns the current migration version we're on, as a promise.
   // If no migrations have been run yet, return "none".
   currentVersion(config) {
-    if (this.knex.disableProcessing) {
-      this.knex.disableProcessing();
-    }
+    this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
 
     return migrationListResolver
@@ -169,6 +161,12 @@ export default class Migrator {
   make(name, config) {
     this.config = getMergedConfig(config, this.config);
     return this.generator.make(name, this.config);
+  }
+
+  _disableProcessing() {
+    if (this.knex.disableProcessing) {
+      this.knex.disableProcessing();
+    }
   }
 
   _isLocked(trx) {
