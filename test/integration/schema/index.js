@@ -424,6 +424,43 @@ module.exports = function(knex) {
           });
       });
 
+      it('handles numeric length correctly', function() {
+        return knex.schema
+          .createTable('test_table_numerics', function(table) {
+            table.engine('InnoDB');
+            table
+              .integer('integer_column', 5)
+              .tinyint('tinyint_column', 5)
+              .smallint('smallint_column', 5)
+              .mediumint('mediumint_column', 5)
+              .bigint('bigint_column', 5);
+          })
+          .testSql(function(tester) {
+            tester('mysql', [
+              'create table `test_table_three` (`main` int not null, `paragraph` text) default character set utf8 engine = InnoDB',
+              'alter table `test_table_three` add primary key `test_table_three_pkey`(`main`)',
+            ]);
+            tester('pg', [
+              'create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')',
+              'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
+            ]);
+            tester('pg-redshift', [
+              'create table "test_table_three" ("main" integer not null, "paragraph" varchar(max) default \'Lorem ipsum Qui quis qui in.\')',
+              'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
+            ]);
+            tester('sqlite3', [
+              "create table `test_table_three` (`main` integer not null, `paragraph` text default 'Lorem ipsum Qui quis qui in.', primary key (`main`))",
+            ]);
+            tester('oracledb', [
+              'create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')',
+              'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
+            ]);
+            tester('mssql', [
+              'CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))',
+            ]);
+          });
+      });
+
       it('supports the enum and uuid columns', function() {
         // NB: redshift does not...
         return knex.schema
