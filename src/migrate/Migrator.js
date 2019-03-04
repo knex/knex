@@ -57,7 +57,7 @@ export default class Migrator {
       } else {
         this.knex = knex;
         this.knex.client.logger.warn(
-          'Running migrations in explicitly passed transaction. Make sure you are not using any custom identifier wrappers on original knex instance - they will not be disabled when executing internal queries and may result in them failing.'
+          'Running migrations in explicitly passed transaction. Make sure you are not using any custom identifier wrappers on original knex instance (wrapIdentifier param) - they will not be disabled when executing internal queries and may result in them failing.'
         );
       }
     } else {
