@@ -447,6 +447,35 @@ module.exports = function(knex) {
           });
       });
 
+      it('handles numeric length correctly', function() {
+        return knex.schema
+          .createTable('test_table_numerics', function(table) {
+            table.engine('InnoDB');
+            table.integer('integer_column', 5);
+            table.tinyint('tinyint_column', 5);
+            table.smallint('smallint_column', 5);
+            table.mediumint('mediumint_column', 5);
+            table.bigint('bigint_column', 5);
+          })
+          .testSql(function(tester) {
+            tester('mysql', [
+              'create table `test_table_numerics` (`integer_column` int(5), `tinyint_column` tinyint(5), `smallint_column` smallint, `mediumint_column` mediumint, `bigint_column` bigint) default character set utf8 engine = InnoDB',
+            ]);
+            tester('pg', [
+              'create table "test_table_numerics" ("integer_column" integer, "tinyint_column" smallint, "smallint_column" smallint, "mediumint_column" integer, "bigint_column" bigint)',
+            ]);
+            tester('sqlite3', [
+              'create table `test_table_numerics` (`integer_column` integer, `tinyint_column` tinyint, `smallint_column` integer, `mediumint_column` integer, `bigint_column` bigint)',
+            ]);
+            tester('mssql', [
+              'CREATE TABLE [test_table_numerics] ([integer_column] int, [tinyint_column] tinyint, [smallint_column] smallint, [mediumint_column] int, [bigint_column] bigint)',
+            ]);
+          })
+          .then(function() {
+            return knex.schema.dropTable('test_table_numerics');
+          });
+      });
+
       it('supports the enum and uuid columns', function() {
         // NB: redshift does not...
         return knex.schema
@@ -772,6 +801,20 @@ module.exports = function(knex) {
               t.dropColumn('two');
               t.dropColumn('three');
             });
+          });
+      });
+
+      it('handles creating numeric columns with specified length correctly', function() {
+        return knex.schema
+          .createTable('test_table_numerics2', function(table) {
+            table.integer('integer_column', 5);
+            table.tinyint('tinyint_column', 5);
+            table.smallint('smallint_column', 5);
+            table.mediumint('mediumint_column', 5);
+            table.bigint('bigint_column', 5);
+          })
+          .then(function() {
+            return knex.schema.dropTable('test_table_numerics2');
           });
       });
 

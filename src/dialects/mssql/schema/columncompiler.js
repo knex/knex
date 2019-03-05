@@ -30,18 +30,18 @@ assign(ColumnCompiler_MSSQL.prototype, {
     return `float`;
   },
 
-  integer(length) {
-    length = length ? `(${this._num(length, 11)})` : '';
-    return `int${length}`;
+  integer() {
+    // mssql does not support length
+    return 'int';
   },
 
   mediumint: 'int',
 
   smallint: 'smallint',
 
-  tinyint(length) {
-    length = length ? `(${this._num(length, 1)})` : '';
-    return `tinyint${length}`;
+  tinyint() {
+    // mssql does not support length
+    return 'tinyint';
   },
 
   varchar(length) {
