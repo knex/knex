@@ -103,7 +103,7 @@ export default class Migrator {
 
   // Rollback the last "batch", or all, of migrations that were run.
   rollback(config, all = false) {
-    const trx = this.knex.isTransaction ? this.knex : null;
+    const trx = this.knex.isTransaction ? this.knex : undefined;
     return Promise.try(() => {
       this.config = getMergedConfig(config, this.config);
 

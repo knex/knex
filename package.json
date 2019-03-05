@@ -86,6 +86,7 @@
     "dev": "rimraf ./lib && babel -w src --out-dir lib --copy-files",
     "lint": "eslint '{src,test}/**/*.js'",
     "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && npm run tape",
+    "plaintest:sqlite": "cross-env DB=sqlite3 npm run plaintest",
     "prepublish": "npm run babel",
     "pre_test": "npm run lint",
     "bin_test": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/Jakefile",
