@@ -605,7 +605,7 @@ assign(Builder.prototype, {
     return this;
   },
 
-  _union(args, clause) {
+  _union(clause, args) {
     let callbacks = args[0];
     let wrap = args[1];
     if (args.length === 1 || (args.length === 2 && isBoolean(wrap))) {
@@ -627,19 +627,19 @@ assign(Builder.prototype, {
         callbacks.push(wrap);
         wrap = false;
       }
-      this._union([callbacks, wrap], clause);
+      this._union(clause, [callbacks, wrap]);
     }
     return this;
   },
 
   // Add a union statement to the query.
-  union() {
-    return this._union(arguments, 'union');
+  union(...args) {
+    return this._union('union', ...args);
   },
 
   // Adds a union all statement to the query.
-  unionAll(callbacks, wrap) {
-    return this._union(arguments, 'union all');
+  unionAll(...args) {
+    return this._union('union all', ...args);
   },
 
   // Adds a `having` clause to the query.
