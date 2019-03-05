@@ -1,7 +1,6 @@
 // PostgreSQL Schema Compiler
 // -------
 
-
 import inherits from 'inherits';
 import SchemaCompiler from '../../../schema/compiler';
 
@@ -19,7 +18,7 @@ SchemaCompiler_PG.prototype.hasTable = function(tableName) {
     sql += ' and table_schema = ?';
     bindings.push(this.schema);
   } else {
-    sql += ' and table_schema = current_schema';
+    sql += ' and table_schema = current_schema()';
   }
 
   this.pushQuery({
@@ -27,20 +26,21 @@ SchemaCompiler_PG.prototype.hasTable = function(tableName) {
     bindings,
     output(resp) {
       return resp.rows.length > 0;
-    }
+    },
   });
 };
 
 // Compile the query to determine if a column exists in a table.
 SchemaCompiler_PG.prototype.hasColumn = function(tableName, columnName) {
-  let sql = 'select * from information_schema.columns where table_name = ? and column_name = ?';
+  let sql =
+    'select * from information_schema.columns where table_name = ? and column_name = ?';
   const bindings = [tableName, columnName];
 
   if (this.schema) {
     sql += ' and table_schema = ?';
     bindings.push(this.schema);
   } else {
-    sql += ' and table_schema = current_schema';
+    sql += ' and table_schema = current_schema()';
   }
 
   this.pushQuery({
@@ -48,7 +48,7 @@ SchemaCompiler_PG.prototype.hasColumn = function(tableName, columnName) {
     bindings,
     output(resp) {
       return resp.rows.length > 0;
-    }
+    },
   });
 };
 
@@ -60,7 +60,9 @@ SchemaCompiler_PG.prototype.qualifiedTableName = function(tableName) {
 // Compile a rename table command.
 SchemaCompiler_PG.prototype.renameTable = function(from, to) {
   this.pushQuery(
-    `alter table ${this.qualifiedTableName(from)} rename to ${this.formatter.wrap(to)}`
+    `alter table ${this.qualifiedTableName(
+      from
+    )} rename to ${this.formatter.wrap(to)}`
   );
 };
 
@@ -69,7 +71,9 @@ SchemaCompiler_PG.prototype.createSchema = function(schemaName) {
 };
 
 SchemaCompiler_PG.prototype.createSchemaIfNotExists = function(schemaName) {
-  this.pushQuery(`create schema if not exists ${this.formatter.wrap(schemaName)}`);
+  this.pushQuery(
+    `create schema if not exists ${this.formatter.wrap(schemaName)}`
+  );
 };
 
 SchemaCompiler_PG.prototype.dropSchema = function(schemaName) {
@@ -85,15 +89,21 @@ SchemaCompiler_PG.prototype.dropExtension = function(extensionName) {
 };
 
 SchemaCompiler_PG.prototype.dropExtensionIfExists = function(extensionName) {
-  this.pushQuery(`drop extension if exists ${this.formatter.wrap(extensionName)}`);
+  this.pushQuery(
+    `drop extension if exists ${this.formatter.wrap(extensionName)}`
+  );
 };
 
 SchemaCompiler_PG.prototype.createExtension = function(extensionName) {
   this.pushQuery(`create extension ${this.formatter.wrap(extensionName)}`);
 };
 
-SchemaCompiler_PG.prototype.createExtensionIfNotExists = function(extensionName) {
-  this.pushQuery(`create extension if not exists ${this.formatter.wrap(extensionName)}`);
+SchemaCompiler_PG.prototype.createExtensionIfNotExists = function(
+  extensionName
+) {
+  this.pushQuery(
+    `create extension if not exists ${this.formatter.wrap(extensionName)}`
+  );
 };
 
 export default SchemaCompiler_PG;

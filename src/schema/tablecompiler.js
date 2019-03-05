@@ -2,28 +2,42 @@
 
 // Table Compiler
 // -------
-import { pushAdditional, pushQuery } from './helpers';
+import { pushAdditional, pushQuery, unshiftQuery } from './helpers';
 import * as helpers from '../helpers';
-import { groupBy, reduce, map, first, tail, isEmpty, indexOf, isArray } from 'lodash'
+import {
+  groupBy,
+  reduce,
+  map,
+  first,
+  tail,
+  isEmpty,
+  indexOf,
+  isArray,
+  isUndefined,
+} from 'lodash';
 
 function TableCompiler(client, tableBuilder) {
-  this.client = client
+  this.client = client;
+  this.tableBuilder = tableBuilder;
+  this._commonBuilder = this.tableBuilder;
   this.method = tableBuilder._method;
   this.schemaNameRaw = tableBuilder._schemaName;
   this.tableNameRaw = tableBuilder._tableName;
   this.single = tableBuilder._single;
   this.grouped = groupBy(tableBuilder._statements, 'grouping');
-  this.formatter = client.formatter();
+  this.formatter = client.formatter(tableBuilder);
   this.sequence = [];
-  this._formatting = client.config && client.config.formatting
+  this._formatting = client.config && client.config.formatting;
 }
 
-TableCompiler.prototype.pushQuery = pushQuery
+TableCompiler.prototype.pushQuery = pushQuery;
 
-TableCompiler.prototype.pushAdditional = pushAdditional
+TableCompiler.prototype.pushAdditional = pushAdditional;
+
+TableCompiler.prototype.unshiftQuery = unshiftQuery;
 
 // Convert the tableCompiler toSQL
-TableCompiler.prototype.toSQL = function () {
+TableCompiler.prototype.toSQL = function() {
   this[this.method]();
   return this.sequence;
 };
@@ -37,9 +51,9 @@ TableCompiler.prototype.lowerCase = true;
 // of the columns to build them into a single string,
 // and then run through anything else and push it to the query sequence.
 TableCompiler.prototype.createAlterTableMethods = null;
-TableCompiler.prototype.create = function (ifNot) {
+TableCompiler.prototype.create = function(ifNot) {
   const columnBuilders = this.getColumns();
-  const columns = columnBuilders.map(col => col.toSQL());
+  const columns = columnBuilders.map((col) => col.toSQL());
   const columnTypes = this.getColumnTypes(columns);
   if (this.createAlterTableMethods) {
     this.alterTableForCreate(columnTypes);
@@ -51,19 +65,19 @@ TableCompiler.prototype.create = function (ifNot) {
 };
 
 // Only create the table if it doesn't exist.
-TableCompiler.prototype.createIfNot = function () {
+TableCompiler.prototype.createIfNot = function() {
   this.create(true);
 };
 
 // If we're altering the table, we need to one-by-one
 // go through and handle each of the queries associated
 // with altering the table's schema.
-TableCompiler.prototype.alter = function () {
-  const addColBuilders   = this.getColumns();
-  const addColumns       = addColBuilders.map(col => col.toSQL());
+TableCompiler.prototype.alter = function() {
+  const addColBuilders = this.getColumns();
+  const addColumns = addColBuilders.map((col) => col.toSQL());
   const alterColBuilders = this.getColumns('alter');
-  const alterColumns     = alterColBuilders.map(col => col.toSQL());
-  const addColumnTypes   = this.getColumnTypes(addColumns);
+  const alterColumns = alterColBuilders.map((col) => col.toSQL());
+  const addColumnTypes = this.getColumnTypes(addColumns);
   const alterColumnTypes = this.getColumnTypes(alterColumns);
 
   this.addColumns(addColumnTypes);
@@ -73,39 +87,78 @@ TableCompiler.prototype.alter = function () {
   this.alterTable();
 };
 
-TableCompiler.prototype.foreign = function (foreignData) {
+TableCompiler.prototype.foreign = function(foreignData) {
   if (foreignData.inTable && foreignData.references) {
-    const keyName = foreignData.keyName ? this.formatter.wrap(foreignData.keyName) : this._indexCommand('foreign', this.tableNameRaw, foreignData.column);
+    const keyName = foreignData.keyName
+      ? this.formatter.wrap(foreignData.keyName)
+      : this._indexCommand('foreign', this.tableNameRaw, foreignData.column);
     const column = this.formatter.columnize(foreignData.column);
     const references = this.formatter.columnize(foreignData.references);
     const inTable = this.formatter.wrap(foreignData.inTable);
-    const onUpdate = foreignData.onUpdate ? (this.lowerCase ? ' on update ' : ' ON UPDATE ') + foreignData.onUpdate : '';
-    const onDelete = foreignData.onDelete ? (this.lowerCase ? ' on delete ' : ' ON DELETE ') + foreignData.onDelete : '';
+    const onUpdate = foreignData.onUpdate
+      ? (this.lowerCase ? ' on update ' : ' ON UPDATE ') + foreignData.onUpdate
+      : '';
+    const onDelete = foreignData.onDelete
+      ? (this.lowerCase ? ' on delete ' : ' ON DELETE ') + foreignData.onDelete
+      : '';
     if (this.lowerCase) {
-      this.pushQuery((!this.forCreate ? `alter table ${this.tableName()} add ` : '') + 'constraint ' + keyName + ' ' +
-        'foreign key (' + column + ') references ' + inTable + ' (' + references + ')' + onUpdate + onDelete);
+      this.pushQuery(
+        (!this.forCreate ? `alter table ${this.tableName()} add ` : '') +
+          'constraint ' +
+          keyName +
+          ' ' +
+          'foreign key (' +
+          column +
+          ') references ' +
+          inTable +
+          ' (' +
+          references +
+          ')' +
+          onUpdate +
+          onDelete
+      );
     } else {
-      this.pushQuery((!this.forCreate ? `ALTER TABLE ${this.tableName()} ADD ` : '') + 'CONSTRAINT ' + keyName + ' ' +
-        'FOREIGN KEY (' + column + ') REFERENCES ' + inTable + ' (' + references + ')' + onUpdate + onDelete);
+      this.pushQuery(
+        (!this.forCreate ? `ALTER TABLE ${this.tableName()} ADD ` : '') +
+          'CONSTRAINT ' +
+          keyName +
+          ' ' +
+          'FOREIGN KEY (' +
+          column +
+          ') REFERENCES ' +
+          inTable +
+          ' (' +
+          references +
+          ')' +
+          onUpdate +
+          onDelete
+      );
     }
   }
 };
 
 // Get all of the column sql & bindings individually for building the table queries.
-TableCompiler.prototype.getColumnTypes = columns =>
-  reduce(map(columns, first), function (memo, column) {
-    memo.sql.push(column.sql);
-    memo.bindings.concat(column.bindings);
-    return memo;
-  }, { sql: [], bindings: [] })
-;
+TableCompiler.prototype.getColumnTypes = (columns) =>
+  reduce(
+    map(columns, first),
+    function(memo, column) {
+      memo.sql.push(column.sql);
+      memo.bindings.concat(column.bindings);
+      return memo;
+    },
+    { sql: [], bindings: [] }
+  );
 
 // Adds all of the additional queries from the "column"
-TableCompiler.prototype.columnQueries = function (columns) {
-  const queries = reduce(map(columns, tail), function (memo, column) {
-    if (!isEmpty(column)) return memo.concat(column);
-    return memo;
-  }, []);
+TableCompiler.prototype.columnQueries = function(columns) {
+  const queries = reduce(
+    map(columns, tail),
+    function(memo, column) {
+      if (!isEmpty(column)) return memo.concat(column);
+      return memo;
+    },
+    []
+  );
   for (const q of queries) {
     this.pushQuery(q);
   }
@@ -115,7 +168,7 @@ TableCompiler.prototype.columnQueries = function (columns) {
 TableCompiler.prototype.addColumnsPrefix = 'add column ';
 
 // All of the columns to "add" for the query
-TableCompiler.prototype.addColumns = function (columns, prefix) {
+TableCompiler.prototype.addColumns = function(columns, prefix) {
   prefix = prefix || this.addColumnsPrefix;
 
   if (columns.sql.length > 0) {
@@ -123,8 +176,12 @@ TableCompiler.prototype.addColumns = function (columns, prefix) {
       return prefix + column;
     });
     this.pushQuery({
-      sql: (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') + this.tableName() + ' ' + columnSql.join(', '),
-      bindings: columns.bindings
+      sql:
+        (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') +
+        this.tableName() +
+        ' ' +
+        columnSql.join(', '),
+      bindings: columns.bindings,
     });
   }
 };
@@ -132,39 +189,50 @@ TableCompiler.prototype.addColumns = function (columns, prefix) {
 // Alter column
 TableCompiler.prototype.alterColumnsPrefix = 'alter column ';
 
-TableCompiler.prototype.alterColumns = function (columns, colBuilders) {
+TableCompiler.prototype.alterColumns = function(columns, colBuilders) {
   if (columns.sql.length > 0) {
     this.addColumns(columns, this.alterColumnsPrefix, colBuilders);
   }
 };
 
 // Compile the columns as needed for the current create or alter table
-TableCompiler.prototype.getColumns = function (method) {
+TableCompiler.prototype.getColumns = function(method) {
   const columns = this.grouped.columns || [];
-  method        = method || 'add';
+  method = method || 'add';
+
+  const queryContext = this.tableBuilder.queryContext();
 
   return columns
-    .filter(column => column.builder._method === method)
-    .map(column => this.client.columnCompiler(this, column.builder));
+    .filter((column) => column.builder._method === method)
+    .map((column) => {
+      // pass queryContext down to columnBuilder but do not overwrite it if already set
+      if (
+        !isUndefined(queryContext) &&
+        isUndefined(column.builder.queryContext())
+      ) {
+        column.builder.queryContext(queryContext);
+      }
+      return this.client.columnCompiler(this, column.builder);
+    });
 };
 
-TableCompiler.prototype.tableName = function () {
-  const name = this.schemaNameRaw ?
-    `${this.schemaNameRaw}.${this.tableNameRaw}`
+TableCompiler.prototype.tableName = function() {
+  const name = this.schemaNameRaw
+    ? `${this.schemaNameRaw}.${this.tableNameRaw}`
     : this.tableNameRaw;
 
   return this.formatter.wrap(name);
 };
 
 // Generate all of the alter column statements necessary for the query.
-TableCompiler.prototype.alterTable = function () {
+TableCompiler.prototype.alterTable = function() {
   const alterTable = this.grouped.alterTable || [];
   for (let i = 0, l = alterTable.length; i < l; i++) {
     const statement = alterTable[i];
     if (this[statement.method]) {
       this[statement.method].apply(this, statement.args);
     } else {
-      helpers.error(`Debug: ${statement.method} does not exist`);
+      this.client.logger.error(`Debug: ${statement.method} does not exist`);
     }
   }
   for (const item in this.single) {
@@ -172,7 +240,7 @@ TableCompiler.prototype.alterTable = function () {
   }
 };
 
-TableCompiler.prototype.alterTableForCreate = function (columnTypes) {
+TableCompiler.prototype.alterTableForCreate = function(columnTypes) {
   this.forCreate = true;
   const savedSequence = this.sequence;
   const alterTable = this.grouped.alterTable || [];
@@ -188,44 +256,50 @@ TableCompiler.prototype.alterTableForCreate = function (columnTypes) {
       this[statement.method].apply(this, statement.args);
       columnTypes.sql.push(this.sequence[0].sql);
     } else {
-      helpers.error(`Debug: ${statement.method} does not exist`);
+      this.client.logger.error(`Debug: ${statement.method} does not exist`);
     }
   }
   this.sequence = savedSequence;
   this.forCreate = false;
 };
 
-
 // Drop the index on the current table.
-TableCompiler.prototype.dropIndex = function (value) {
+TableCompiler.prototype.dropIndex = function(value) {
   this.pushQuery(`drop index${value}`);
 };
 
 // Drop the unique
-TableCompiler.prototype.dropUnique =
-TableCompiler.prototype.dropForeign = function () {
+TableCompiler.prototype.dropUnique = TableCompiler.prototype.dropForeign = function() {
   throw new Error('Method implemented in the dialect driver');
 };
 
 TableCompiler.prototype.dropColumnPrefix = 'drop column ';
-TableCompiler.prototype.dropColumn = function () {
+TableCompiler.prototype.dropColumn = function() {
   const columns = helpers.normalizeArr.apply(null, arguments);
   const drops = map(isArray(columns) ? columns : [columns], (column) => {
     return this.dropColumnPrefix + this.formatter.wrap(column);
   });
   this.pushQuery(
     (this.lowerCase ? 'alter table ' : 'ALTER TABLE ') +
-    this.tableName() + ' ' + drops.join(', ')
+      this.tableName() +
+      ' ' +
+      drops.join(', ')
   );
 };
 
 // If no name was specified for this index, we will create one using a basic
 // convention of the table name, followed by the columns, followed by an
 // index type, such as primary or index, which makes the index unique.
-TableCompiler.prototype._indexCommand = function (type, tableName, columns) {
+TableCompiler.prototype._indexCommand = function(type, tableName, columns) {
   if (!isArray(columns)) columns = columns ? [columns] : [];
   const table = tableName.replace(/\.|-/g, '_');
-  const indexName = (table + '_' + columns.join('_') + '_' + type).toLowerCase();
+  const indexName = (
+    table +
+    '_' +
+    columns.join('_') +
+    '_' +
+    type
+  ).toLowerCase();
   return this.formatter.wrap(indexName);
 };
 

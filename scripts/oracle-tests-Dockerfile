@@ -1,0 +1,59 @@
+FROM wnameless/oracle-xe-11g
+
+# Replace shell with bash so we can source files
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+# Set debconf to run non-interactively
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
+RUN apt-get update && apt-get install -y -q --no-install-recommends \
+  apt-transport-https \
+  build-essential \
+  ca-certificates \
+  curl \
+  git \
+  libssl-dev \
+  python \
+  rsync \
+  software-properties-common \
+  wget \
+  gpg-agent \
+  apt-utils \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install node 6,8,10 from nvm
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+
+# make sure that there is enough disk...
+RUN . $HOME/.nvm/nvm.sh && nvm install 6
+RUN . $HOME/.nvm/nvm.sh && nvm install 8
+RUN . $HOME/.nvm/nvm.sh && nvm install 10
+RUN . $HOME/.nvm/nvm.sh && nvm install 11
+
+RUN echo 'module.exports = {\
+  oracledb: {\
+    user          : "system",\
+    password      : "oracle",\
+    connectString : "localhost/XE",\
+    stmtCacheSize : 0\
+  }\
+}' > /oracle-config.js
+
+ENV ORACLE_HOME /u01/app/oracle/product/11.2.0/xe
+ENV ORACLE_SID XE
+ENV OCI_LIB_DIR /u01/app/oracle/product/11.2.0/xe/lib
+ENV LD_LIBRARY_PATH /u01/app/oracle/product/11.2.0/xe/lib
+ENV KNEX_TEST /oracle-config.js
+ENV DB "oracledb"
+ENV KNEX_TIMEOUT 60000
+
+ADD . knex
+
+CMD /usr/sbin/startup.sh && \
+  . $HOME/.nvm/nvm.sh && \
+  nvm use ${NODE_VER:-10} && \
+  cd knex && \
+  npm install && \
+  npm install oracledb && \
+  npm run build && \
+  npm run plaintest

@@ -1,8 +1,7 @@
 import inherits from 'inherits';
 import TableCompiler from '../../../schema/tablecompiler';
-import * as helpers from '../../../helpers';
 
-import { filter } from 'lodash'
+import { filter, values } from 'lodash';
 
 // Table Compiler
 // -------
@@ -15,7 +14,9 @@ inherits(TableCompiler_SQLite3, TableCompiler);
 
 // Create a new table.
 TableCompiler_SQLite3.prototype.createQuery = function(columns, ifNot) {
-  const createStatement = ifNot ? 'create table if not exists ' : 'create table ';
+  const createStatement = ifNot
+    ? 'create table if not exists '
+    : 'create table ';
   let sql = createStatement + this.tableName() + ' (' + columns.sql.join(', ');
 
   // SQLite forces primary keys to be added when the table is initially created
@@ -30,12 +31,12 @@ TableCompiler_SQLite3.prototype.createQuery = function(columns, ifNot) {
 
 TableCompiler_SQLite3.prototype.addColumns = function(columns, prefix) {
   if (prefix) {
-    throw new Error("Sqlite does not support alter column.");
+    throw new Error('Sqlite does not support alter column.');
   }
   for (let i = 0, l = columns.sql.length; i < l; i++) {
     this.pushQuery({
       sql: `alter table ${this.tableName()} add column ${columns.sql[i]}`,
-      bindings: columns.bindings[i]
+      bindings: columns.bindings[i],
     });
   }
 };
@@ -61,7 +62,9 @@ TableCompiler_SQLite3.prototype.unique = function(columns, indexName) {
     ? this.formatter.wrap(indexName)
     : this._indexCommand('unique', this.tableNameRaw, columns);
   columns = this.formatter.columnize(columns);
-  this.pushQuery(`create unique index ${indexName} on ${this.tableName()} (${columns})`);
+  this.pushQuery(
+    `create unique index ${indexName} on ${this.tableName()} (${columns})`
+  );
 };
 
 // Compile a plain index key command.
@@ -70,33 +73,48 @@ TableCompiler_SQLite3.prototype.index = function(columns, indexName) {
     ? this.formatter.wrap(indexName)
     : this._indexCommand('index', this.tableNameRaw, columns);
   columns = this.formatter.columnize(columns);
-  this.pushQuery(`create index ${indexName} on ${this.tableName()} (${columns})`);
+  this.pushQuery(
+    `create index ${indexName} on ${this.tableName()} (${columns})`
+  );
 };
 
-TableCompiler_SQLite3.prototype.primary =
-TableCompiler_SQLite3.prototype.foreign = function() {
+TableCompiler_SQLite3.prototype.primary = TableCompiler_SQLite3.prototype.foreign = function() {
   if (this.method !== 'create' && this.method !== 'createIfNot') {
-    helpers.warn('SQLite3 Foreign & Primary keys may only be added on create');
+    this.client.logger.warn(
+      'SQLite3 Foreign & Primary keys may only be added on create'
+    );
   }
 };
 
 TableCompiler_SQLite3.prototype.primaryKeys = function() {
-  const pks = filter(this.grouped.alterTable || [], {method: 'primary'});
+  const pks = filter(this.grouped.alterTable || [], { method: 'primary' });
   if (pks.length > 0 && pks[0].args.length > 0) {
-    const args = Array.isArray(pks[0].args[0]) ? pks[0].args[0] : pks[0].args;
-    return `, primary key (${this.formatter.columnize(args)})`;
+    const columns = pks[0].args[0];
+    let constraintName = pks[0].args[1] || '';
+    if (constraintName) {
+      constraintName = ' constraint ' + this.formatter.wrap(constraintName);
+    }
+    return `,${constraintName} primary key (${this.formatter.columnize(
+      columns
+    )})`;
   }
 };
 
 TableCompiler_SQLite3.prototype.foreignKeys = function() {
   let sql = '';
-  const foreignKeys = filter(this.grouped.alterTable || [], {method: 'foreign'});
+  const foreignKeys = filter(this.grouped.alterTable || [], {
+    method: 'foreign',
+  });
   for (let i = 0, l = foreignKeys.length; i < l; i++) {
     const foreign = foreignKeys[i].args[0];
     const column = this.formatter.columnize(foreign.column);
     const references = this.formatter.columnize(foreign.references);
     const foreignTable = this.formatter.wrap(foreign.inTable);
-    sql += `, foreign key(${column}) references ${foreignTable}(${references})`;
+    let constraintName = foreign.keyName || '';
+    if (constraintName) {
+      constraintName = ' constraint ' + this.formatter.wrap(constraintName);
+    }
+    sql += `,${constraintName} foreign key(${column}) references ${foreignTable}(${references})`;
     if (foreign.onDelete) sql += ` on delete ${foreign.onDelete}`;
     if (foreign.onUpdate) sql += ` on update ${foreign.onUpdate}`;
   }
@@ -104,7 +122,9 @@ TableCompiler_SQLite3.prototype.foreignKeys = function() {
 };
 
 TableCompiler_SQLite3.prototype.createTableBlock = function() {
-  return this.getColumns().concat().join(',');
+  return this.getColumns()
+    .concat()
+    .join(',');
 };
 
 // Compile a rename column command... very complex in sqlite
@@ -113,19 +133,23 @@ TableCompiler_SQLite3.prototype.renameColumn = function(from, to) {
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {
-      return compiler.client.ddl(compiler, pragma, this.connection).renameColumn(from, to);
-    }
+      return compiler.client
+        .ddl(compiler, pragma, this.connection)
+        .renameColumn(from, to);
+    },
   });
 };
 
 TableCompiler_SQLite3.prototype.dropColumn = function() {
   const compiler = this;
-  const columns = Object.values(arguments);
+  const columns = values(arguments);
   this.pushQuery({
     sql: `PRAGMA table_info(${this.tableName()})`,
     output(pragma) {
-      return compiler.client.ddl(compiler, pragma, this.connection).dropColumn(columns);
-    }
+      return compiler.client
+        .ddl(compiler, pragma, this.connection)
+        .dropColumn(columns);
+    },
   });
 };
 

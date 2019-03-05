@@ -1,21 +1,17 @@
-
 // PostgreSQL Column Compiler
 // -------
 
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
-import * as helpers from '../../../helpers';
-
-import { assign } from 'lodash'
+import { isObject } from 'lodash';
 
 function ColumnCompiler_PG() {
   ColumnCompiler.apply(this, arguments);
-  this.modifiers = ['nullable', 'defaultTo', 'comment']
+  this.modifiers = ['nullable', 'defaultTo', 'comment'];
 }
 inherits(ColumnCompiler_PG, ColumnCompiler);
 
-assign(ColumnCompiler_PG.prototype, {
-
+Object.assign(ColumnCompiler_PG.prototype, {
   // Types
   // ------
   bigincrements: 'bigserial primary key',
@@ -30,27 +26,65 @@ assign(ColumnCompiler_PG.prototype, {
 
   // Create the column definition for an enum type.
   // Using method "2" here: http://stackoverflow.com/a/10984951/525714
-  enu(allowed) {
-    return `text check (${this.formatter.wrap(this.args[0])} in ('${allowed.join("', '")}'))`;
+  enu(allowed, options) {
+    options = options || {};
+
+    const values =
+      options.useNative && options.existingType
+        ? undefined
+        : allowed.join("', '");
+
+    if (options.useNative) {
+      if (!options.existingType) {
+        this.tableCompiler.unshiftQuery(
+          `create type "${options.enumName}" as enum ('${values}')`
+        );
+      }
+
+      return `"${options.enumName}"`;
+    }
+    return `text check (${this.formatter.wrap(this.args[0])} in ('${values}'))`;
   },
 
   double: 'double precision',
+  decimal(precision, scale) {
+    if (precision === null) return 'decimal';
+    return `decimal(${this._num(precision, 8)}, ${this._num(scale, 2)})`;
+  },
   floating: 'real',
   increments: 'serial primary key',
   json(jsonb) {
-    if (jsonb) helpers.deprecate('json(true)', 'jsonb()')
+    if (jsonb) this.client.logger.deprecate('json(true)', 'jsonb()');
     return jsonColumn(this.client, jsonb);
   },
   jsonb() {
     return jsonColumn(this.client, true);
   },
   smallint: 'smallint',
-  tinyint:  'smallint',
-  datetime(without) {
-    return without ? 'timestamp' : 'timestamptz';
+  tinyint: 'smallint',
+  datetime(withoutTz = false, precision) {
+    let useTz;
+    if (isObject(withoutTz)) {
+      ({ useTz, precision } = withoutTz);
+    } else {
+      useTz = !withoutTz;
+    }
+
+    return `${useTz ? 'timestamptz' : 'timestamp'}${
+      precision ? '(' + precision + ')' : ''
+    }`;
   },
-  timestamp(without) {
-    return without ? 'timestamp' : 'timestamptz';
+  timestamp(withoutTz = false, precision) {
+    let useTz;
+    if (isObject(withoutTz)) {
+      ({ useTz, precision } = withoutTz);
+    } else {
+      useTz = !withoutTz;
+    }
+
+    return `${useTz ? 'timestamptz' : 'timestamp'}${
+      precision ? '(' + precision + ')' : ''
+    }`;
   },
   uuid: 'uuid',
 
@@ -58,17 +92,21 @@ assign(ColumnCompiler_PG.prototype, {
   // ------
   comment(comment) {
     const columnName = this.args[0] || this.defaults('columnName');
-    
-    this.pushAdditional(function() {
-      this.pushQuery(`comment on column ${this.tableCompiler.tableName()}.` +
-        this.formatter.wrap(columnName) + " is " + (comment ? `'${comment}'` : 'NULL'));
-    }, comment);
-  }
 
-})
+    this.pushAdditional(function() {
+      this.pushQuery(
+        `comment on column ${this.tableCompiler.tableName()}.` +
+          this.formatter.wrap(columnName) +
+          ' is ' +
+          (comment ? `'${comment}'` : 'NULL')
+      );
+    }, comment);
+  },
+});
 
 function jsonColumn(client, jsonb) {
-  if (!client.version || parseFloat(client.version) >= 9.2) return jsonb ? 'jsonb' : 'json';
+  if (!client.version || parseFloat(client.version) >= 9.2)
+    return jsonb ? 'jsonb' : 'json';
   return 'text';
 }
 
