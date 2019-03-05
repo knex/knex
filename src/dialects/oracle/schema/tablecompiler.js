@@ -6,7 +6,7 @@ import TableCompiler from '../../../schema/tablecompiler';
 import * as helpers from '../../../helpers';
 import Trigger from './trigger';
 
-import { assign, map } from 'lodash'
+import { assign, map } from 'lodash';
 
 // Table Compiler
 // ------
@@ -17,7 +17,6 @@ function TableCompiler_Oracle() {
 inherits(TableCompiler_Oracle, TableCompiler);
 
 assign(TableCompiler_Oracle.prototype, {
-
   addColumns(columns, prefix) {
     if (columns.sql.length > 0) {
       prefix = prefix || this.addColumnsPrefix;
@@ -42,15 +41,17 @@ assign(TableCompiler_Oracle.prototype, {
   // Compile a rename column command.
   renameColumn(from, to) {
     // Remove quotes around tableName
-    const tableName = this.tableName().slice(1, -1)
-    return this.pushQuery(Trigger.renameColumnTrigger(tableName, from, to));
+    const tableName = this.tableName().slice(1, -1);
+    return this.pushQuery(
+      Trigger.renameColumnTrigger(this.client.logger, tableName, from, to)
+    );
   },
 
   compileAdd(builder) {
     const table = this.formatter.wrap(builder);
     const columns = this.prefixArray('add column', this.getColumns(builder));
     return this.pushQuery({
-      sql: `alter table ${table} ${columns.join(', ')}`
+      sql: `alter table ${table} ${columns.join(', ')}`,
     });
   },
 
@@ -60,7 +61,7 @@ assign(TableCompiler_Oracle.prototype, {
     this.pushQuery({
       // catch "name is already used by an existing object" for workaround for "if not exists"
       sql: ifNot ? utils.wrapSqlWithCatch(sql, -955) : sql,
-      bindings: columns.bindings
+      bindings: columns.bindings,
     });
     if (this.single.comment) this.comment(this.single.comment);
   },
@@ -76,7 +77,11 @@ assign(TableCompiler_Oracle.prototype, {
 
   dropColumn() {
     const columns = helpers.normalizeArr.apply(null, arguments);
-    this.pushQuery(`alter table ${this.tableName()} drop (${this.formatter.columnize(columns)})`);
+    this.pushQuery(
+      `alter table ${this.tableName()} drop (${this.formatter.columnize(
+        columns
+      )})`
+    );
   },
 
   changeType() {
@@ -84,46 +89,79 @@ assign(TableCompiler_Oracle.prototype, {
   },
 
   _indexCommand(type, tableName, columns) {
-    return this.formatter.wrap(utils.generateCombinedName(type, tableName, columns));
+    return this.formatter.wrap(
+      utils.generateCombinedName(this.client.logger, type, tableName, columns)
+    );
   },
 
   primary(columns, constraintName) {
-    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
-    this.pushQuery(`alter table ${this.tableName()} add constraint ${constraintName} primary key (${this.formatter.columnize(columns)})`);
+    constraintName = constraintName
+      ? this.formatter.wrap(constraintName)
+      : this.formatter.wrap(`${this.tableNameRaw}_pkey`);
+    this.pushQuery(
+      `alter table ${this.tableName()} add constraint ${constraintName} primary key (${this.formatter.columnize(
+        columns
+      )})`
+    );
   },
 
   dropPrimary(constraintName) {
-    constraintName = constraintName ? this.formatter.wrap(constraintName) : this.formatter.wrap(this.tableNameRaw + '_pkey');
-    this.pushQuery(`alter table ${this.tableName()} drop constraint ${constraintName}`);
+    constraintName = constraintName
+      ? this.formatter.wrap(constraintName)
+      : this.formatter.wrap(this.tableNameRaw + '_pkey');
+    this.pushQuery(
+      `alter table ${this.tableName()} drop constraint ${constraintName}`
+    );
   },
 
   index(columns, indexName) {
-    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
-    this.pushQuery(`create index ${indexName} on ${this.tableName()}` +
-      ' (' + this.formatter.columnize(columns) + ')');
+    indexName = indexName
+      ? this.formatter.wrap(indexName)
+      : this._indexCommand('index', this.tableNameRaw, columns);
+    this.pushQuery(
+      `create index ${indexName} on ${this.tableName()}` +
+        ' (' +
+        this.formatter.columnize(columns) +
+        ')'
+    );
   },
 
   dropIndex(columns, indexName) {
-    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('index', this.tableNameRaw, columns);
+    indexName = indexName
+      ? this.formatter.wrap(indexName)
+      : this._indexCommand('index', this.tableNameRaw, columns);
     this.pushQuery(`drop index ${indexName}`);
   },
 
   unique(columns, indexName) {
-    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-    this.pushQuery(`alter table ${this.tableName()} add constraint ${indexName}` +
-      ' unique (' + this.formatter.columnize(columns) + ')');
+    indexName = indexName
+      ? this.formatter.wrap(indexName)
+      : this._indexCommand('unique', this.tableNameRaw, columns);
+    this.pushQuery(
+      `alter table ${this.tableName()} add constraint ${indexName}` +
+        ' unique (' +
+        this.formatter.columnize(columns) +
+        ')'
+    );
   },
 
   dropUnique(columns, indexName) {
-    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('unique', this.tableNameRaw, columns);
-    this.pushQuery(`alter table ${this.tableName()} drop constraint ${indexName}`);
+    indexName = indexName
+      ? this.formatter.wrap(indexName)
+      : this._indexCommand('unique', this.tableNameRaw, columns);
+    this.pushQuery(
+      `alter table ${this.tableName()} drop constraint ${indexName}`
+    );
   },
 
   dropForeign(columns, indexName) {
-    indexName = indexName ? this.formatter.wrap(indexName) : this._indexCommand('foreign', this.tableNameRaw, columns);
-    this.pushQuery(`alter table ${this.tableName()} drop constraint ${indexName}`);
-  }
-
-})
+    indexName = indexName
+      ? this.formatter.wrap(indexName)
+      : this._indexCommand('foreign', this.tableNameRaw, columns);
+    this.pushQuery(
+      `alter table ${this.tableName()} drop constraint ${indexName}`
+    );
+  },
+});
 
 export default TableCompiler_Oracle;

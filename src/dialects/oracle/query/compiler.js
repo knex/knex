@@ -2,14 +2,29 @@
 
 // Oracle Query Builder & Compiler
 // ------
-import { assign, isPlainObject, isEmpty, isString, map, reduce, compact, identity } from 'lodash'
+import {
+  assign,
+  isPlainObject,
+  isEmpty,
+  isString,
+  map,
+  reduce,
+  compact,
+  identity,
+} from 'lodash';
 import inherits from 'inherits';
 import QueryCompiler from '../../../query/compiler';
-import * as helpers from '../../../helpers';
 import { ReturningHelper } from '../utils';
 
 const components = [
-  'columns', 'join', 'where', 'union', 'group', 'having', 'order', 'lock'
+  'columns',
+  'join',
+  'where',
+  'union',
+  'group',
+  'having',
+  'order',
+  'lock',
 ];
 
 // Query Compiler
@@ -19,20 +34,19 @@ const components = [
 // ensuring that all parameterized values (even across sub-queries)
 // are properly built into the same query.
 function QueryCompiler_Oracle(client, builder) {
-  QueryCompiler.call(this, client, builder)
+  QueryCompiler.call(this, client, builder);
 }
-inherits(QueryCompiler_Oracle, QueryCompiler)
+inherits(QueryCompiler_Oracle, QueryCompiler);
 
 assign(QueryCompiler_Oracle.prototype, {
-
   // Compiles an "insert" query, allowing for multiple
   // inserts using a single query statement.
   insert() {
-    let insertValues = this.single.insert || []
+    let insertValues = this.single.insert || [];
     let { returning } = this.single;
 
     if (!Array.isArray(insertValues) && isPlainObject(this.single.insert)) {
-      insertValues = [this.single.insert]
+      insertValues = [this.single.insert];
     }
 
     // always wrap returning argument in array
@@ -40,11 +54,24 @@ assign(QueryCompiler_Oracle.prototype, {
       returning = [returning];
     }
 
-    if (Array.isArray(insertValues) && insertValues.length === 1 && isEmpty(insertValues[0])) {
-      return this._addReturningToSqlAndConvert(`insert into ${this.tableName} (${this.formatter.wrap(this.single.returning)}) values (default)`, returning, this.tableName);
+    if (
+      Array.isArray(insertValues) &&
+      insertValues.length === 1 &&
+      isEmpty(insertValues[0])
+    ) {
+      return this._addReturningToSqlAndConvert(
+        `insert into ${this.tableName} (${this.formatter.wrap(
+          this.single.returning
+        )}) values (default)`,
+        returning,
+        this.tableName
+      );
     }
 
-    if (isEmpty(this.single.insert) && typeof this.single.insert !== 'function') {
+    if (
+      isEmpty(this.single.insert) &&
+      typeof this.single.insert !== 'function'
+    ) {
       return '';
     }
 
@@ -53,54 +80,89 @@ assign(QueryCompiler_Oracle.prototype, {
     const sql = {};
 
     if (isString(insertData)) {
-      return this._addReturningToSqlAndConvert(`insert into ${this.tableName} ${insertData}`, returning);
+      return this._addReturningToSqlAndConvert(
+        `insert into ${this.tableName} ${insertData}`,
+        returning
+      );
     }
 
     if (insertData.values.length === 1) {
-      return this._addReturningToSqlAndConvert(`insert into ${this.tableName} (${this.formatter.columnize(insertData.columns)}) values (${this.formatter.parameterize(insertData.values[0])})`, returning, this.tableName);
+      return this._addReturningToSqlAndConvert(
+        `insert into ${this.tableName} (${this.formatter.columnize(
+          insertData.columns
+        )}) values (${this.formatter.parameterize(insertData.values[0])})`,
+        returning,
+        this.tableName
+      );
     }
 
-    const insertDefaultsOnly = (insertData.columns.length === 0);
+    const insertDefaultsOnly = insertData.columns.length === 0;
 
-    sql.sql = 'begin ' + map(insertData.values, (value) => {
-      let returningHelper;
-      const parameterizedValues = !insertDefaultsOnly ? this.formatter.parameterize(value, this.client.valueForUndefined) : '';
-      const returningValues = Array.isArray(returning) ? returning : [returning];
-      let subSql = `insert into ${this.tableName} `;
+    sql.sql =
+      'begin ' +
+      map(insertData.values, (value) => {
+        let returningHelper;
+        const parameterizedValues = !insertDefaultsOnly
+          ? this.formatter.parameterize(value, this.client.valueForUndefined)
+          : '';
+        const returningValues = Array.isArray(returning)
+          ? returning
+          : [returning];
+        let subSql = `insert into ${this.tableName} `;
 
-      if (returning) {
-        returningHelper = new ReturningHelper(returningValues.join(':'));
-        sql.outParams = (sql.outParams || []).concat(returningHelper);
-      }
+        if (returning) {
+          returningHelper = new ReturningHelper(returningValues.join(':'));
+          sql.outParams = (sql.outParams || []).concat(returningHelper);
+        }
 
-      if (insertDefaultsOnly) {
-        // no columns given so only the default value
-        subSql += `(${this.formatter.wrap(this.single.returning)}) values (default)`;
-      } else {
-        subSql += `(${this.formatter.columnize(insertData.columns)}) values (${parameterizedValues})`;
-      }
-      subSql += (returning ? ` returning ROWID into ${this.formatter.parameter(returningHelper)}` : '');
+        if (insertDefaultsOnly) {
+          // no columns given so only the default value
+          subSql += `(${this.formatter.wrap(
+            this.single.returning
+          )}) values (default)`;
+        } else {
+          subSql += `(${this.formatter.columnize(
+            insertData.columns
+          )}) values (${parameterizedValues})`;
+        }
+        subSql += returning
+          ? ` returning ROWID into ${this.formatter.parameter(returningHelper)}`
+          : '';
 
-      // pre bind position because subSql is an execute immediate parameter
-      // later position binding will only convert the ? params
+        // pre bind position because subSql is an execute immediate parameter
+        // later position binding will only convert the ? params
 
-      subSql = this.formatter.client.positionBindings(subSql);
+        subSql = this.formatter.client.positionBindings(subSql);
 
-      const parameterizedValuesWithoutDefault = parameterizedValues.replace('DEFAULT, ', '').replace(', DEFAULT', '');
-      return `execute immediate '${subSql.replace(/'/g, "''")}` +
-        ((parameterizedValuesWithoutDefault || returning) ? '\' using ' : '') +
-        parameterizedValuesWithoutDefault +
-        ((parameterizedValuesWithoutDefault && returning) ? ', ' : '') +
-        (returning ? 'out ?' : '') + ';';
-    }).join(' ') + 'end;';
+        const parameterizedValuesWithoutDefault = parameterizedValues
+          .replace('DEFAULT, ', '')
+          .replace(', DEFAULT', '');
+        return (
+          `execute immediate '${subSql.replace(/'/g, "''")}` +
+          (parameterizedValuesWithoutDefault || returning ? "' using " : '') +
+          parameterizedValuesWithoutDefault +
+          (parameterizedValuesWithoutDefault && returning ? ', ' : '') +
+          (returning ? 'out ?' : '') +
+          ';'
+        );
+      }).join(' ') +
+      'end;';
 
     if (returning) {
       sql.returning = returning;
       // generate select statement with special order by to keep the order because 'in (..)' may change the order
-      sql.returningSql = `select ${this.formatter.columnize(returning)}` +
-        ' from ' + this.tableName +
-        ' where ROWID in (' + sql.outParams.map((v, i) => `:${i + 1}`).join(', ') + ')' +
-        ' order by case ROWID ' + sql.outParams.map((v, i) => `when CHARTOROWID(:${i + 1}) then ${i}`).join(' ') + ' end';
+      sql.returningSql =
+        `select ${this.formatter.columnize(returning)}` +
+        ' from ' +
+        this.tableName +
+        ' where ROWID in (' +
+        sql.outParams.map((v, i) => `:${i + 1}`).join(', ') +
+        ')' +
+        ' order by case ROWID ' +
+        sql.outParams
+          .map((v, i) => `when CHARTOROWID(:${i + 1}) then ${i}`)
+          .join(' ') +
+        ' end';
     }
 
     return sql;
@@ -111,8 +173,10 @@ assign(QueryCompiler_Oracle.prototype, {
     const updates = this._prepUpdate(this.single.update);
     const where = this.where();
     let { returning } = this.single;
-    const sql = `update ${this.tableName}` +
-      ' set ' + updates.join(', ') +
+    const sql =
+      `update ${this.tableName}` +
+      ' set ' +
+      updates.join(', ') +
       (where ? ` ${where}` : '');
 
     if (!returning) {
@@ -120,7 +184,7 @@ assign(QueryCompiler_Oracle.prototype, {
     }
 
     // always wrap returning argument in array
-    if (returning && !Array.isArray(returning)) {
+    if (!Array.isArray(returning)) {
       returning = [returning];
     }
 
@@ -139,7 +203,9 @@ assign(QueryCompiler_Oracle.prototype, {
   forShare() {
     // lock for share is not directly supported by oracle
     // use LOCK TABLE .. IN SHARE MODE; instead
-    helpers.warn('lock for share is not supported by oracle dialect');
+    this.client.logger.warn(
+      'lock for share is not supported by oracle dialect'
+    );
     return '';
   },
 
@@ -164,17 +230,21 @@ assign(QueryCompiler_Oracle.prototype, {
     return {
       sql: sql,
       output(resp) {
-        const out = reduce(resp, function(columns, val) {
-          columns[val.COLUMN_NAME] = {
-            type: val.DATA_TYPE,
-            defaultValue: val.DATA_DEFAULT,
-            maxLength: val.CHAR_COL_DECL_LENGTH,
-            nullable: (val.NULLABLE === 'Y')
-          };
-          return columns;
-        }, {});
-        return column && out[column] || out;
-      }
+        const out = reduce(
+          resp,
+          function(columns, val) {
+            columns[val.COLUMN_NAME] = {
+              type: val.DATA_TYPE,
+              defaultValue: val.DATA_DEFAULT,
+              maxLength: val.CHAR_COL_DECL_LENGTH,
+              nullable: val.NULLABLE === 'Y',
+            };
+            return columns;
+          },
+          {}
+        );
+        return (column && out[column]) || out;
+      },
     };
   },
 
@@ -194,7 +264,7 @@ assign(QueryCompiler_Oracle.prototype, {
   // for single commands only
   _addReturningToSqlAndConvert(sql, returning, tableName) {
     const res = {
-      sql
+      sql,
     };
 
     if (!returning) {
@@ -203,39 +273,52 @@ assign(QueryCompiler_Oracle.prototype, {
 
     const returningValues = Array.isArray(returning) ? returning : [returning];
     const returningHelper = new ReturningHelper(returningValues.join(':'));
-    res.sql = sql + ' returning ROWID into ' + this.formatter.parameter(returningHelper);
-    res.returningSql = `select ${this.formatter.columnize(returning)} from ${tableName} where ROWID = :1`;
+    res.sql =
+      sql +
+      ' returning ROWID into ' +
+      this.formatter.parameter(returningHelper);
+    res.returningSql = `select ${this.formatter.columnize(
+      returning
+    )} from ${tableName} where ROWID = :1`;
     res.outParams = [returningHelper];
     res.returning = returning;
     return res;
   },
 
   _surroundQueryWithLimitAndOffset(query) {
-    let { limit } = this.single
-    const { offset } = this.single
-    const hasLimit = (limit || limit === 0 || limit === '0');
+    let { limit } = this.single;
+    const { offset } = this.single;
+    const hasLimit = limit || limit === 0 || limit === '0';
     limit = +limit;
 
     if (!hasLimit && !offset) return query;
-    query = query || "";
+    query = query || '';
 
     if (hasLimit && !offset) {
-      return `select * from (${query}) where rownum <= ${this.formatter.parameter(limit)}`;
+      return `select * from (${query}) where rownum <= ${this.formatter.parameter(
+        limit
+      )}`;
     }
 
-    const endRow = +(offset) + (hasLimit ? limit : 10000000000000);
+    const endRow = +offset + (hasLimit ? limit : 10000000000000);
 
-    return "select * from " +
-           "(select row_.*, ROWNUM rownum_ from (" + query + ") row_ " +
-           "where rownum <= " + this.formatter.parameter(endRow) + ") " +
-           "where rownum_ > " + this.formatter.parameter(offset);
-  }
-
-})
+    return (
+      'select * from ' +
+      '(select row_.*, ROWNUM rownum_ from (' +
+      query +
+      ') row_ ' +
+      'where rownum <= ' +
+      this.formatter.parameter(endRow) +
+      ') ' +
+      'where rownum_ > ' +
+      this.formatter.parameter(offset)
+    );
+  },
+});
 
 // Compiles the `select` statement, or nested sub-selects
 // by calling each of the component compilers, trimming out
 // the empties, and returning a generated query string.
-QueryCompiler_Oracle.prototype.first = QueryCompiler_Oracle.prototype.select
+QueryCompiler_Oracle.prototype.first = QueryCompiler_Oracle.prototype.select;
 
 export default QueryCompiler_Oracle;

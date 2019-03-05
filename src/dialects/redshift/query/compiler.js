@@ -1,11 +1,9 @@
-
 // Redshift Query Builder & Compiler
 // ------
 import inherits from 'inherits';
 
 import QueryCompiler from '../../../query/compiler';
 import QueryCompiler_PG from '../../postgres/query/compiler';
-import * as helpers from '../../../helpers';
 
 import { assign, reduce, identity } from 'lodash';
 
@@ -49,19 +47,23 @@ assign(QueryCompiler_Redshift.prototype, {
   },
 
   // simple: if trying to return, warn
-  _slightReturn(){
+  _slightReturn() {
     if (this.single.isReturning) {
-      helpers.warn('insert/update/delete returning is not supported by redshift dialect');
+      this.client.logger.warn(
+        'insert/update/delete returning is not supported by redshift dialect'
+      );
     }
   },
 
   forUpdate() {
-    helpers.warn('table lock is not supported by redshift dialect');
+    this.client.logger.warn('table lock is not supported by redshift dialect');
     return '';
   },
 
   forShare() {
-    helpers.warn('lock for share is not supported by redshift dialect');
+    this.client.logger.warn(
+      'lock for share is not supported by redshift dialect'
+    );
     return '';
   },
 
@@ -79,8 +81,12 @@ assign(QueryCompiler_Redshift.prototype, {
       schema = this.client.customWrapIdentifier(schema, identity);
     }
 
-    let sql = 'select * from information_schema.columns where table_name = ? and table_catalog = ?';
-    const bindings = [table.toLowerCase(), this.client.database().toLowerCase()];
+    let sql =
+      'select * from information_schema.columns where table_name = ? and table_catalog = ?';
+    const bindings = [
+      table.toLowerCase(),
+      this.client.database().toLowerCase(),
+    ];
 
     if (schema) {
       sql += ' and table_schema = ?';
@@ -93,19 +99,23 @@ assign(QueryCompiler_Redshift.prototype, {
       sql,
       bindings,
       output(resp) {
-        const out = reduce(resp.rows, function(columns, val) {
-          columns[val.column_name] = {
-            type: val.data_type,
-            maxLength: val.character_maximum_length,
-            nullable: (val.is_nullable === 'YES'),
-            defaultValue: val.column_default
-          };
-          return columns;
-        }, {});
-        return column && out[column] || out;
-      }
+        const out = reduce(
+          resp.rows,
+          function(columns, val) {
+            columns[val.column_name] = {
+              type: val.data_type,
+              maxLength: val.character_maximum_length,
+              nullable: val.is_nullable === 'YES',
+              defaultValue: val.column_default,
+            };
+            return columns;
+          },
+          {}
+        );
+        return (column && out[column]) || out;
+      },
     };
-  }
-})
+  },
+});
 
 export default QueryCompiler_Redshift;
