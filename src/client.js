@@ -250,12 +250,20 @@ assign(Client.prototype, {
 
     return Object.assign(poolConfig, {
       create: () => {
-        return this.acquireRawConnection().tap((connection) => {
-          connection.__knexUid = uniqueId('__knexUid');
+        const beforePromise = poolConfig.beforeCreate ?
+          Promise.promisify(poolConfig.beforeCreate)(this.connectionSettings) :
+          Promise.resolve(this.connectionSettings);
 
-          if (poolConfig.afterCreate) {
-            return Promise.promisify(poolConfig.afterCreate)(connection);
-          }
+        return beforePromise.then(connectionSettings => {
+          this.connectionSettings = connectionSettings;
+        }).then(() => {
+          return this.acquireRawConnection().tap((connection) => {
+            connection.__knexUid = uniqueId('__knexUid');
+
+            if (poolConfig.afterCreate) {
+              return Promise.promisify(poolConfig.afterCreate)(connection);
+            }
+          });
         });
       },
 
