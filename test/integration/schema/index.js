@@ -1223,7 +1223,7 @@ module.exports = function(knex) {
         });
       });
 
-      describe('sqlite3 only', function() {
+      if (knex.client.driverName === 'sqlite3') {
         describe('using wrapIdentifier and postProcessResponse', function() {
           const tableName = 'processor_test';
 
@@ -1273,20 +1273,13 @@ module.exports = function(knex) {
             }
           }
         });
-      });
+      }
     });
 
     describe('dropColumn', function() {
-      describe('sqlite3 only', function() {
+      if (knex.client.driverName === 'sqlite3') {
         describe('using wrapIdentifier and postProcessResponse', function() {
           const tableName = 'processor_drop_column_test';
-          if (
-            !knex ||
-            !knex.client ||
-            !/sqlite3/i.test(knex.client.driverName)
-          ) {
-            return Promise.resolve();
-          }
 
           beforeEach(function() {
             knex.client.config.postProcessResponse = postProcessResponse;
@@ -1332,13 +1325,13 @@ module.exports = function(knex) {
             });
           }
         });
-      });
+      }
     });
 
     describe('withSchema', function() {
       describe('mssql only', function() {
         if (!knex || !knex.client || !/mssql/i.test(knex.client.dialect)) {
-          return Promise.resolve();
+          return Promise.resolve(true);
         }
 
         const columnName = 'test';
@@ -1422,7 +1415,7 @@ module.exports = function(knex) {
     it('should warn attempting to create primary from nonexistent columns', function() {
       // Redshift only
       if (!knex || !knex.client || !/redshift/i.test(knex.client.driverName)) {
-        return Promise.resolve();
+        return Promise.resolve(true);
       }
       const tableName = 'no_test_column';
       const constraintName = 'testconstraintname';
