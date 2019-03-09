@@ -23,12 +23,20 @@ function SQLite3_DDL(client, tableCompiler, pragma, connection) {
   this.client = client;
   this.tableCompiler = tableCompiler;
   this.pragma = pragma;
-  this.tableName = this.tableCompiler.tableNameRaw;
+  this.tableNameRaw = this.tableCompiler.tableNameRaw;
   this.alteredName = uniqueId('_knex_temp_alter');
   this.connection = connection;
+  this.formatter =
+    client && client.config && client.config.wrapIdentifier
+      ? client.config.wrapIdentifier
+      : (value) => value;
 }
 
 assign(SQLite3_DDL.prototype, {
+  tableName() {
+    return this.formatter(this.tableNameRaw, (value) => value);
+  },
+
   getColumn: Promise.method(function(column) {
     const currentCol = find(this.pragma, (col) => {
       return (
@@ -38,27 +46,31 @@ assign(SQLite3_DDL.prototype, {
     });
     if (!currentCol)
       throw new Error(
-        `The column ${column} is not in the ${this.tableName} table`
+        `The column ${column} is not in the ${this.tableName()} table`
       );
     return currentCol;
   }),
 
   getTableSql() {
-    return this.trx.raw(
-      `SELECT name, sql FROM sqlite_master WHERE type="table" AND name="${
-        this.tableName
-      }"`
-    );
+    this.trx.disableProcessing();
+    return this.trx
+      .raw(
+        `SELECT name, sql FROM sqlite_master WHERE type="table" AND name="${this.tableName()}"`
+      )
+      .then((result) => {
+        this.trx.enableProcessing();
+        return result;
+      });
   },
 
   renameTable: Promise.method(function() {
     return this.trx.raw(
-      `ALTER TABLE "${this.tableName}" RENAME TO "${this.alteredName}"`
+      `ALTER TABLE "${this.tableName()}" RENAME TO "${this.alteredName}"`
     );
   }),
 
   dropOriginal() {
-    return this.trx.raw(`DROP TABLE "${this.tableName}"`);
+    return this.trx.raw(`DROP TABLE "${this.tableName()}"`);
   },
 
   dropTempTable() {
@@ -67,7 +79,7 @@ assign(SQLite3_DDL.prototype, {
 
   copyData() {
     return this.trx
-      .raw(`SELECT * FROM "${this.tableName}"`)
+      .raw(`SELECT * FROM "${this.tableName()}"`)
       .bind(this)
       .then(this.insertChunked(20, this.alteredName));
   },
@@ -77,7 +89,7 @@ assign(SQLite3_DDL.prototype, {
       return this.trx
         .raw(`SELECT * FROM "${this.alteredName}"`)
         .bind(this)
-        .then(this.insertChunked(20, this.tableName, iterator));
+        .then(this.insertChunked(20, this.tableName(), iterator));
     };
   },
 
@@ -111,7 +123,7 @@ assign(SQLite3_DDL.prototype, {
   createTempTable(createTable) {
     return function() {
       return this.trx.raw(
-        createTable.sql.replace(this.tableName, this.alteredName)
+        createTable.sql.replace(this.tableName(), this.alteredName)
       );
     };
   },

@@ -2,12 +2,33 @@
 
 'use strict';
 
-const {
-  wrapIdentifier,
-  postProcessResponse,
-} = require('../../../lib/util/snake-case-mappers');
-
+const _ = require('lodash');
 const Promise = testPromise;
+
+const wrapIdentifier = (value, wrap) => {
+  return wrap(value ? value.toUpperCase() : value);
+};
+
+function mapObject(obj) {
+  return _.transform(
+    obj,
+    (result, value, key) => {
+      result[key.toUpperCase()] = value;
+    },
+    {}
+  );
+}
+
+const postProcessResponse = (response) => {
+  if (Array.isArray(response)) {
+    return response.map(mapObject);
+  } else {
+    if (_.isObject(response)) {
+      return mapObject(response);
+    }
+    return response;
+  }
+};
 
 module.exports = function(knex) {
   describe('Schema', function() {
@@ -962,7 +983,7 @@ module.exports = function(knex) {
     });
 
     describe('hasColumn', function() {
-      describe('without mappers', function() {
+      describe('without processors', function() {
         it('checks whether a column exists, resolving with a boolean', function() {
           return knex.schema
             .hasColumn('accounts', 'first_name')
@@ -972,7 +993,7 @@ module.exports = function(knex) {
         });
       });
 
-      describe('using snakeCaseMappers', function() {
+      describe('using processorss', function() {
         describe('sqlite and mysql only', function() {
           if (
             !knex ||
@@ -999,7 +1020,7 @@ module.exports = function(knex) {
             return knex.schema
               .hasColumn('accounts', 'firstName')
               .then(function(exists) {
-                expect(exists).to.equal(true);
+                expect(exists).to.equal(false);
               });
           });
         });
@@ -1009,7 +1030,7 @@ module.exports = function(knex) {
     describe('addColumn', function() {
       describe('mysql only', function() {
         if (!knex || !knex.client || !/mysql/i.test(knex.client.driverName)) {
-          return Promise.resolve();
+          return Promise.resolve(true);
         }
 
         before(function() {
@@ -1203,17 +1224,10 @@ module.exports = function(knex) {
       });
 
       describe('sqlite3 only', function() {
-        describe('using snakeCaseMappers', function() {
-          const tableName = 'camel_case_rename_column_test';
-          if (
-            !knex ||
-            !knex.client ||
-            !/sqlite3/i.test(knex.client.driverName)
-          ) {
-            return Promise.resolve();
-          }
+        describe('using wrapIdentifier and postProcessResponse', function() {
+          const tableName = 'processor_test';
 
-          beforeEach(function() {
+          beforeEach(() => {
             knex.client.config.postProcessResponse = postProcessResponse;
             knex.client.config.wrapIdentifier = wrapIdentifier;
 
@@ -1242,12 +1256,12 @@ module.exports = function(knex) {
             return knex.schema.dropTable(tableName);
           });
 
-          for (const from of ['field_foo', 'fieldFoo']) {
-            for (const to of ['field_bar', 'fieldBar']) {
+          for (const from of ['field_foo', 'FIELD_FOO']) {
+            for (const to of ['field_bar', 'FIELD_BAR']) {
               it(`renames the column from '${from}' to '${to}'`, function() {
                 return knex.schema
                   .table(tableName, function(tbl) {
-                    return tbl.renameColumn(from, to);
+                    return tbl.renameColumn('field_foo', 'field_bar');
                   })
                   .then(function() {
                     return knex.schema.hasColumn(tableName, 'field_bar');
@@ -1264,8 +1278,8 @@ module.exports = function(knex) {
 
     describe('dropColumn', function() {
       describe('sqlite3 only', function() {
-        describe('using snakeCaseMappers', function() {
-          const tableName = 'camel_case_drop_column_test';
+        describe('using wrapIdentifier and postProcessResponse', function() {
+          const tableName = 'processor_drop_column_test';
           if (
             !knex ||
             !knex.client ||
@@ -1303,7 +1317,7 @@ module.exports = function(knex) {
             return knex.schema.dropTable(tableName);
           });
 
-          for (const columnName of ['field_foo', 'fieldFoo']) {
+          for (const columnName of ['field_foo', 'FIELD_FOO']) {
             it(`drops the column when spelled '${columnName}'`, function() {
               return knex.schema
                 .table(tableName, function(tbl) {
