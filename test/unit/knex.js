@@ -227,17 +227,16 @@ describe('knex', () => {
     const knex = Knex(sqliteConfig);
     const trxPromise = knex.transaction();
 
+    let transaction;
     trxPromise
       .then((trx) => {
+        transaction = trx;
         expect(trx.client.transacting).to.equal(true);
-        knex
-          .transacting(trx)
-          .select(knex.raw('SELECT 1 AS 1'))
-          .then((result) => {
-            expect(result).to.equal(1);
-            done();
-          });
-        return trx.commit();
+        return knex.transacting(trx).select(knex.raw('1 as result'));
+      })
+      .then((rows) => {
+        expect(rows[0].result).to.equal(1);
+        return transaction.commit();
       })
       .then(() => {
         done();
