@@ -34,7 +34,12 @@ module.exports = function(knex) {
             .first();
         })
         .then((rows) => {
-          expect(rows.deleted_at).to.equal(null);
+          if (['mysql', 'mysql2'].includes(knex.client.driverName)) {
+            // 5.7.10+ does not accept null for timestamp with default DB configuration anymore
+            expect(rows.deleted_at).to.be.a('date');
+          } else {
+            expect(rows.deleted_at).to.equal(null);
+          }
         })
         .then(() => {
           return knex.migrate.rollback({
