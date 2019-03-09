@@ -5,21 +5,31 @@
 - Boolean param for rollback() to rollback all migrations #2968
 - seed:run print the file name of the failing seed #2972 #2973
 - verbose option to CLI commands #2887
+- mysql warn `.returning()` does not have any effect #3039
+- add intersect() #3023
 
 ### Bug fixes:
 
 - Respect "loadExtensions" configuration #2969
+- Fix event listener duplication when using Migrator #2982
+- Fix fs-migrations breaking docs #3022
 - Typings: Allow to pass query builders, identifiers and raw in various places as parameters #2960
 - Typings: toNative() definition #2996
-- Typings: .asCallback() #2963
+- Typings: asCallback() definition #2963
 - Typings: queryContext() type definition Knex.Raw #3002
-- Typings: Add "constraintName" arg to primary() #3006
-- Typings: schemaName in MigratorConfig #3016
+- Typings: Add "constraintName" arg to primary() definition #3006
+- Typings: Add missing schemaName in MigratorConfig #3016
+- Typings: Add missing supported parameter types and toSQL method #2960
+- Typings: Update enum arguments to reflect latest signature #3043
+- Typings: Add size parameter to integer method #3074
+- Dependencies: Fix security warning #3082 
+- Do not use unsupported column width/length arguments on data types int and tinyint in MSSQL #2738
 
 ### Test / internal changes:
 
-- swap chalk→colorette / minimist→getopts #2718
+- Swap chalk→colorette / minimist→getopts #2718
 - Always use well documented pg client query() config argument #3004
+- Do not bundle polyfills with knex #3024
 
 # 0.16.3 - 19 Dec, 2018
 

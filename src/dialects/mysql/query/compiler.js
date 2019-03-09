@@ -7,6 +7,14 @@ import { assign, identity } from 'lodash';
 
 function QueryCompiler_MySQL(client, builder) {
   QueryCompiler.call(this, client, builder);
+
+  const { returning } = this.single;
+
+  if (returning) {
+    this.client.logger.warn(
+      '.returning() is not supported by mysql and will not have any effect.'
+    );
+  }
 }
 inherits(QueryCompiler_MySQL, QueryCompiler);
 

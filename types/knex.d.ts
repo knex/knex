@@ -136,6 +136,9 @@ declare namespace Knex {
     orderBy: OrderBy;
     orderByRaw: RawQueryBuilder;
 
+    // Intersect
+    intersect: Intersect;
+
     // Union
     union: Union;
     unionAll(callback: QueryCallback): QueryBuilder;
@@ -389,6 +392,18 @@ declare namespace Knex {
     (columnDefs: Array<string | { column: string; order?: string }>): QueryBuilder;
   }
 
+  interface Intersect {
+    (
+      callback: QueryCallback | QueryBuilder | Raw,
+      wrap?: boolean
+    ): QueryBuilder;
+    (
+      callbacks: (QueryCallback | QueryBuilder | Raw)[],
+      wrap?: boolean
+    ): QueryBuilder;
+    (...callbacks: (QueryCallback | QueryBuilder | Raw)[]): QueryBuilder;
+  }
+
   interface Union {
     (
       callback: QueryCallback | QueryBuilder | Raw,
@@ -552,7 +567,7 @@ declare namespace Knex {
     dropColumn(columnName: string): TableBuilder;
     dropColumns(...columnNames: string[]): TableBuilder;
     renameColumn(from: string, to: string): ColumnBuilder;
-    integer(columnName: string): ColumnBuilder;
+    integer(columnName: string, length: number): ColumnBuilder;
     bigInteger(columnName: string): ColumnBuilder;
     text(columnName: string, textType?: string): ColumnBuilder;
     string(columnName: string, length?: number): ColumnBuilder;
@@ -576,8 +591,8 @@ declare namespace Knex {
       makeDefaultNow?: boolean
     ): ColumnBuilder;
     binary(columnName: string, length?: number): ColumnBuilder;
-    enum(columnName: string, values: Value[]): ColumnBuilder;
-    enu(columnName: string, values: Value[]): ColumnBuilder;
+    enum(columnName: string, values: Value[], options?: EnumOptions): ColumnBuilder;
+    enu(columnName: string, values: Value[], options?: EnumOptions): ColumnBuilder;
     json(columnName: string): ColumnBuilder;
     jsonb(columnName: string): ColumnBuilder;
     uuid(columnName: string): ColumnBuilder;
@@ -831,7 +846,6 @@ declare namespace Knex {
     schemaName?: string;
     disableTransactions?: boolean;
     sortDirsSeparately?: boolean;
-    
   }
 
   interface SeedsConfig {
@@ -849,6 +863,12 @@ declare namespace Knex {
   interface FunctionHelper {
     now(): Raw;
   }
+
+  interface EnumOptions {
+    useNative: boolean;
+    existingType: boolean;
+    enumName: string;
+}
 
   //
   // Clients

@@ -56,6 +56,7 @@ export default [
   'orderByRaw',
   'union',
   'unionAll',
+  'intersect',
   'having',
   'havingRaw',
   'orHaving',
