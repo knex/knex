@@ -17,6 +17,8 @@ export default class Transaction extends EventEmitter {
     super();
 
     const txid = (this.txid = uniqueId('trx'));
+
+    // If there is no container provided, assume user wants to get instance of transaction and use it directly
     if (!container) {
       this.initPromise = new Promise((resolve, reject) => {
         this.initRejectFn = reject;
