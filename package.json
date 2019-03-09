@@ -8,7 +8,6 @@
     "node": ">=6"
   },
   "dependencies": {
-    "@types/bluebird": "^3.5.26",
     "bluebird": "^3.5.3",
     "colorette": "1.0.7",
     "commander": "^2.19.0",
