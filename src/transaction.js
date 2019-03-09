@@ -17,6 +17,14 @@ export default class Transaction extends EventEmitter {
     super();
 
     const txid = (this.txid = uniqueId('trx'));
+    if (!container) {
+      this.initPromise = new Promise((resolve, reject) => {
+        this.initRejectFn = reject;
+        container = (transactor) => {
+          resolve(transactor);
+        };
+      });
+    }
 
     this.client = client;
     this.logger = client.logger;
@@ -67,7 +75,12 @@ export default class Transaction extends EventEmitter {
             }
             return null;
           })
-          .catch((e) => this._rejecter(e));
+          .catch((e) => {
+            if (this.initRejectFn) {
+              this.initRejectFn();
+            }
+            return this._rejecter(e);
+          });
 
         return new Promise((resolver, rejecter) => {
           this._resolver = resolver;

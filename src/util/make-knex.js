@@ -34,12 +34,21 @@ function initContext(knexFn) {
       return batchInsert(this, table, batch, chunkSize);
     },
 
-    // Runs a new transaction, taking a container and returning a promise
-    // for when the transaction is resolved.
+    // Creates a new transaction.
+    // If container is provided, returns a promise for when the transaction is resolved.
+    // If container is not provided, returns a promise with a transaction that is resolved
+    // when transaction is ready to be used.
     transaction(container, config) {
       const trx = this.client.transaction(container, config);
       trx.userParams = this.userParams;
-      return trx;
+
+      if (container) {
+        return trx;
+      }
+      // If no container was passed, assume user wants to get a transaction and use it directly
+      else {
+        return trx.initPromise;
+      }
     },
 
     // Typically never needed, initializes the pool for a knex client.
