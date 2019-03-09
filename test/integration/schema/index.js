@@ -994,13 +994,13 @@ module.exports = function(knex) {
       });
 
       describe('using processorss', function() {
-        describe('sqlite and mysql only', function() {
+        describe('sqlite and pg only', function() {
           if (
             !knex ||
             !knex.client ||
             !(
               /sqlite3/i.test(knex.client.driverName) ||
-              /mysql/i.test(knex.client.driverName)
+              /pg/i.test(knex.client.driverName)
             )
           ) {
             return Promise.resolve();
