@@ -6386,10 +6386,6 @@ describe('QueryBuilder', function() {
         .forUpdate()
         .skipLocked(),
       {
-        mysql: {
-          sql: 'select * from `foo` limit ? for update skip locked',
-          bindings: [1],
-        },
         pg: {
           sql: 'select * from "foo" limit ? for update skip locked',
           bindings: [1],
@@ -6407,10 +6403,6 @@ describe('QueryBuilder', function() {
         .forUpdate()
         .noWait(),
       {
-        mysql: {
-          sql: 'select * from `foo` limit ? for update nowait',
-          bindings: [1],
-        },
         pg: {
           sql: 'select * from "foo" limit ? for update nowait',
           bindings: [1],
