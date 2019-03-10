@@ -42,8 +42,13 @@ interface Knex extends Knex.QueryInterface {
   __knex__: string;
 
   raw: Knex.RawBuilder;
+  transaction(
+    transactionScope?: undefined | null,
+    config?: any
+  ): Bluebird<Knex.Transaction>;
   transaction<T>(
-    transactionScope?: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void
+    transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void,
+    config?: any
   ): Bluebird<T>;
   destroy(callback: Function): void;
   destroy(): Bluebird<void>;
