@@ -357,7 +357,7 @@ export default [
       }
 
       // pass an instance of your migration source as knex config
-      knex.migrations.latest({ migrationSource: new MyMigrationSource() })
+      knex.migrate.latest({ migrationSource: new MyMigrationSource() })
     `
   },
   {
@@ -392,7 +392,7 @@ export default [
     }
 
     // pass an instance of your migration source as knex config
-    knex.migrations.latest({
+    knex.migrate.latest({
       migrationSource: new WebpackMigrationSource(require.context('./migrations', false, /\.js$/))
     })
     `
