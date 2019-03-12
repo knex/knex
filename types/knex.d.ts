@@ -62,7 +62,7 @@ interface Knex extends Knex.QueryInterface {
   on(eventName: string, callback: Function): Knex.QueryBuilder;
 }
 
-declare function Knex(config: Knex.Config): Knex;
+declare function Knex(config: Knex.Config | string): Knex;
 
 declare namespace Knex {
   //
