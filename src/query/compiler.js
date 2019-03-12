@@ -550,6 +550,16 @@ assign(QueryCompiler.prototype, {
     }
   },
 
+  // Fail on unsupported databases
+  skipLocked() {
+    throw new Error('.skipLocked() is currently only supported on PostgreSQL');
+  },
+
+  // Fail on unsupported databases
+  noWait() {
+    throw new Error('.noWait() is currently only supported on PostgreSQL');
+  },
+
   // On Clause
   // ------
 
