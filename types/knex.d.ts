@@ -875,7 +875,7 @@ declare namespace Knex {
   //
 
   class Client extends events.EventEmitter {
-    constructor(config: Config);
+    constructor(config: Config | string);
     config: Config;
     dialect: string;
     driverName: string;
