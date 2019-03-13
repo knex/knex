@@ -2,7 +2,9 @@
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
+const Promise = require('bluebird');
 const { expect } = require('chai');
+const sinon = require('sinon');
 const mockFs = require('mock-fs');
 const migrationListResolver = require('../../../lib/migrate/migration-list-resolver');
 const FsMigrations = require('../../../lib/migrate/sources/fs-migrations')
@@ -183,6 +185,25 @@ describe('migration-list-resolver', () => {
               file: '004_migration.js',
             },
           ]);
+        });
+    });
+  });
+
+  describe('listAllAndCompleted', () => {
+    it('should pass loadExtensions param to listAll', () => {
+      after(() => {
+        sinon.restore();
+      });
+
+      const migrationSource = new FsMigrations([], true);
+
+      const stub = sinon
+        .stub(migrationSource, 'getMigrations')
+        .callsFake(() => Promise.resolve(true));
+      return migrationListResolver
+        .listAll(migrationSource, ['.ts'])
+        .then(() => {
+          sinon.assert.calledWith(stub, ['.ts']);
         });
     });
   });

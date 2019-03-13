@@ -62,7 +62,7 @@
     "pg-query-stream": "^2.0.0",
     "prettier": "^1.16.2",
     "rimraf": "^2.6.3",
-    "sinon": "^7.2.3",
+    "sinon": "^7.2.7",
     "sinon-chai": "^3.3.0",
     "source-map-support": "^0.5.10",
     "sqlite3": "^4.0.6",
