@@ -428,8 +428,8 @@ declare namespace Knex {
   type RawBinding = (Value | QueryBuilder)[];
 
   interface RawQueryBuilder {
-    (sql: string, ...bindings: RawBinding): QueryBuilder;
-    (sql: string, bindings: RawBinding | ValueMap): QueryBuilder;
+    (sql: string, ...bindings: (Value | QueryBuilder)[] | RawBinding): QueryBuilder;
+    (sql: string, bindings: (Value | QueryBuilder)[] | RawBinding | ValueMap): QueryBuilder;
     (raw: Raw): QueryBuilder;
   }
 
@@ -443,8 +443,8 @@ declare namespace Knex {
 
   interface RawBuilder {
     (value: Value): Raw;
-    (sql: string, ...bindings: RawBinding): Raw;
-    (sql: string, bindings: RawBinding | ValueMap): Raw;
+    (sql: string, ...bindings: (Value | QueryBuilder)[] | RawBinding): Raw;
+    (sql: string, bindings: (Value | QueryBuilder)[] | RawBinding | ValueMap): Raw;
   }
 
   //
