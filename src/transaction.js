@@ -193,7 +193,8 @@ function makeTransactor(trx, connection, trxClient) {
     );
   };
 
-  transactor.userParams = trx.userParams;
+  transactor.isTransaction = true;
+  transactor.userParams = trx.userParams || {};
 
   transactor.transaction = function(container, options) {
     return trxClient.transaction(container, options, trx);

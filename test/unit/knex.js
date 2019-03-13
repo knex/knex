@@ -99,10 +99,7 @@ describe('knex', () => {
     const knexWithParams = knex.withUserParams({ userParam: '451' });
 
     expect(knexWithParams.migrate.knex.userParams).to.deep.equal({
-      isProcessingDisabled: true,
-      postProcessResponse: undefined,
       userParam: '451',
-      wrapIdentifier: undefined,
     });
   });
 
