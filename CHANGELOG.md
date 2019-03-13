@@ -7,12 +7,16 @@
 - verbose option to CLI commands #2887
 - mysql warn `.returning()` does not have any effect #3039
 - add intersect() #3023
+- Improved format for TS stubs #3080
 
 ### Bug fixes:
 
 - Respect "loadExtensions" configuration #2969
 - Fix event listener duplication when using Migrator #2982
 - Fix fs-migrations breaking docs #3022
+- Fix sqlite3 drop/renameColumn() breaks with postProcessResponse #3040
+- Fix transaction support for migrations #3084
+- Fix Migrator not working with TypeScript #3041
 - Typings: Allow to pass query builders, identifiers and raw in various places as parameters #2960
 - Typings: toNative() definition #2996
 - Typings: asCallback() definition #2963
@@ -22,6 +26,7 @@
 - Typings: Add missing supported parameter types and toSQL method #2960
 - Typings: Update enum arguments to reflect latest signature #3043
 - Typings: Add size parameter to integer method #3074
+- Typings: Add 'string' as accepted Knex constructor type definition #3105
 - Dependencies: Fix security warning #3082 
 - Do not use unsupported column width/length arguments on data types int and tinyint in MSSQL #2738
 
