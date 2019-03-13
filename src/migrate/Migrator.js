@@ -49,12 +49,16 @@ export default class Migrator {
   constructor(knex) {
     // Clone knex instance and remove post-processing that is unnecessary for internal queries from a cloned config
     if (isFunction(knex)) {
-      this.knex = knex.withUserParams({
-        ...knex.userParams,
-      });
-      this.knex.disableProcessing();
+      if (!knex.isTransaction) {
+        this.knex = knex.withUserParams({
+          ...knex.userParams,
+        });
+      } else {
+        this.knex = knex;
+      }
     } else {
       this.knex = Object.assign({}, knex);
+      this.knex.userParams = this.knex.userParams || {};
     }
 
     this.config = getMergedConfig(this.knex.client.config.migrations);
@@ -66,6 +70,7 @@ export default class Migrator {
 
   // Migrators to the latest configuration.
   latest(config) {
+    this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
 
     return migrationListResolver
@@ -104,6 +109,7 @@ export default class Migrator {
   // Rollback the last "batch", or all, of migrations that were run.
   rollback(config, all = false) {
     const trx = this.knex.isTransaction ? this.knex : undefined;
+    this._disableProcessing();
     return Promise.try(() => {
       this.config = getMergedConfig(config, this.config);
 
@@ -120,6 +126,7 @@ export default class Migrator {
   }
 
   status(config) {
+    this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
 
     return Promise.all([
@@ -133,6 +140,7 @@ export default class Migrator {
   // Retrieves and returns the current migration version we're on, as a promise.
   // If no migrations have been run yet, return "none".
   currentVersion(config) {
+    this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
 
     return migrationListResolver
@@ -156,6 +164,12 @@ export default class Migrator {
   make(name, config) {
     this.config = getMergedConfig(config, this.config);
     return this.generator.make(name, this.config);
+  }
+
+  _disableProcessing() {
+    if (this.knex.disableProcessing) {
+      this.knex.disableProcessing();
+    }
   }
 
   _isLocked(trx) {

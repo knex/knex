@@ -62,7 +62,7 @@ interface Knex extends Knex.QueryInterface {
   on(eventName: string, callback: Function): Knex.QueryBuilder;
 }
 
-declare function Knex(config: Knex.Config): Knex;
+declare function Knex(config: Knex.Config | string): Knex;
 
 declare namespace Knex {
   //
@@ -567,7 +567,7 @@ declare namespace Knex {
     dropColumn(columnName: string): TableBuilder;
     dropColumns(...columnNames: string[]): TableBuilder;
     renameColumn(from: string, to: string): ColumnBuilder;
-    integer(columnName: string, length: number): ColumnBuilder;
+    integer(columnName: string, length?: number): ColumnBuilder;
     bigInteger(columnName: string): ColumnBuilder;
     text(columnName: string, textType?: string): ColumnBuilder;
     string(columnName: string, length?: number): ColumnBuilder;
