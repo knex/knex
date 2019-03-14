@@ -154,6 +154,8 @@ declare namespace Knex {
     // Clear
     clearSelect(): QueryBuilder;
     clearWhere(): QueryBuilder;
+    clearOrder(): QueryBuilder;
+    clearCounters(): QueryBuilder;
 
     // Paging
     offset(offset: number): QueryBuilder;
