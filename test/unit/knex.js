@@ -223,6 +223,46 @@ describe('knex', () => {
       });
   });
 
+  it('passes queryContext to wrapIdentifier in raw query in transaction', () => {
+    const knex = Knex(
+      Object.assign({}, sqliteConfig, {
+        wrapIdentifier: (str, origImpl, queryContext) => {
+          if (!queryContext) {
+            throw Error('We should have queryContext here right?');
+          }
+
+          if (str === 'iAmGoingToBeConvertedToId') {
+            str = 'id';
+          }
+          return origImpl(str);
+        },
+      })
+    );
+
+    return knex.transaction((trx) => {
+      return trx.schema
+        .queryContext({ someStuff: true })
+        .dropTableIfExists('test')
+        .then(() => {
+          return trx.schema
+            .queryContext({ someStuff: true })
+            .createTable('test', (table) => {
+              table.increments('id');
+              table.string('text');
+            });
+        })
+        .then(() => {
+          return trx('test')
+            .queryContext({ someStuff: true })
+            .select('id')
+            .whereRaw('id = ??', 'iAmGoingToBeConvertedToId');
+        })
+        .then(() => {
+          return trx.schema.queryContext({ someStuff: true }).dropTable('test');
+        });
+    });
+  });
+
   it('sets correct postProcessResponse for chained builders', () => {
     const knex = Knex({
       client: 'sqlite',
