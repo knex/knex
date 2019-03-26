@@ -53,6 +53,7 @@ export default [
   'groupBy',
   'groupByRaw',
   'orderBy',
+  'inRandomOrder',
   'orderByRaw',
   'union',
   'unionAll',
