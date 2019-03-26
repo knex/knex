@@ -604,6 +604,16 @@ assign(Builder.prototype, {
     });
     return this;
   },
+  
+  // Add a `inRandomOrder` clause to the query.
+  inRandomOrder() {
+    this._statements.push({
+      grouping: 'order',
+      type: 'orderByRaw',
+      value: 'RAND()',
+    });
+    return this;
+  },
 
   // Add a union statement to the query.
   union(callbacks, wrap) {
