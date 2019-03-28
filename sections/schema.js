@@ -302,15 +302,15 @@ export default [
   {
     type: "method",
     method: "datetime",
-    example: "table.datetime(name, [precision])",
-    description: "Adds a datetime column, with optional precision for MySQL.",
+    example: "table.datetime(name, options={[useTz: boolean], [precision: number]})",
+    description: "Adds a datetime column. By default PostgreSQL creates column with timezone (timestamptz type). This behaviour can be overriden by passing the useTz option (which is by default true for PostgreSQL). MySQL and MSSQL do not have useTz option.",
     children: [{
       type: 'text',
-      content: "In MySQL a precision argument may be passed as the second argument to specify precision:"
+      content: "A precision option may be passed:"
     }, {
       type: 'code',
       language: 'js',
-      content: `table.datetime('some_time', 6).defaultTo(knex.fn.now(6))`
+      content: `table.datetime('some_time', { precision: 6 }).defaultTo(knex.fn.now(6))`
     }]
   },
   {
@@ -320,32 +320,32 @@ export default [
     description: "Adds a time column, with optional precision for MySQL. Not supported on Amazon Redshift.",
     children: [{
       type: 'text',
-      content: "In MySQL a precision argument may be passed as the second argument to specify precision:"
+      content: "In MySQL a precision option may be passed:"
     }, {
       type: 'code',
       language: 'js',
-      content: `table.time('some_time', 6)`
+      content: `table.time('some_time', { precision: 6 })`
     }]
   },
   {
     type: "method",
     method: "timestamp",
-    example: "table.timestamp(name, [useTz], [precision])",
-    description: "Adds a timestamp column, defaulting to timestamptz in PostgreSQL unless true is passed as the second argument.",
+    example: "table.timestamp(name, options={[useTz: boolean], [precision: number]})",
+    description: "Adds a timestamp column. By default PostgreSQL creates column with timezone (timestamptz type) and MSSQL does not (datetime2). This behaviour can be overriden by passing the useTz option (which is by default false for MSSQL and true for PostgreSQL). MySQL does not have useTz option.",
     children: [{
       type: 'code',
       language: 'js',
       content: `table.timestamp('created_at').defaultTo(knex.fn.now());`
     }, {
       type: 'text',
-      content: "In MySQL a precision argument may be passed as the second argument to specify precision:"
+      content: "In PostgreSQL and MySQL a precision option may be passed:"
     }, {
       type: 'code',
       language: 'js',
-      content: `table.timestamp('created_at', 6).defaultTo(knex.fn.now(6));`
+      content: `table.timestamp('created_at', { precision: 6 }).defaultTo(knex.fn.now(6));`
     }, {
       type: 'text',
-      content: "In MSSQL an option argument may be passed as the second argument to specify whether or not use timezone:"
+      content: "In PostgreSQL and MSSQL a timezone option may be passed:"
     }, {
       type: 'code',
       language: 'js',
