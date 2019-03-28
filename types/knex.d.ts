@@ -239,7 +239,7 @@ declare namespace Knex {
     (tableName: TableName | Identifier | QueryCallback, clause: JoinCallback): QueryBuilder;
     (
       tableName: TableName | Identifier | QueryCallback,
-      columns: { [key: string]: string | number | Raw }
+      columns: { [key: string]: string | number | boolean | Raw }
     ): QueryBuilder;
     (tableName: TableName | Identifier | QueryCallback, raw: Raw): QueryBuilder;
     (
