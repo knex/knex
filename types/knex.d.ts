@@ -141,7 +141,7 @@ declare namespace Knex {
 
     // Union
     union: Union;
-    unionAll(callback: QueryCallback): QueryBuilder;
+    unionAll: Union;
 
     // Having
     having: Having;
