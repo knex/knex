@@ -634,12 +634,12 @@ assign(Builder.prototype, {
 
   // Add a union statement to the query.
   union(...args) {
-    return this._union('union', ...args);
+    return this._union('union', args);
   },
 
   // Adds a union all statement to the query.
   unionAll(...args) {
-    return this._union('union all', ...args);
+    return this._union('union all', args);
   },
 
   // Adds a `having` clause to the query.
