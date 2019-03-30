@@ -25,6 +25,7 @@
     "child-process-promise": "^2.0.3",
     "colors": "^1.1.2",
     "css-loader": "^2.0.1",
+    "dedent": "^0.7.0",
     "eslint": "^3.2.2",
     "eslint-config-rackt": "^1.1.1",
     "eslint-plugin-import": "^1.12.0",

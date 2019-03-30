@@ -58,7 +58,11 @@ const env = {
   NODE_ENV: 'production'
 }
 
-runCmd('docs-server', 'node_modules/.bin/babel-node scripts/server.js', { env }).then(() => {
+const isWin = process.platform === "win32"
+const prefix = isWin ? 'call ' : ''
+const extension = isWin ? '.cmd' : ''
+
+runCmd('docs-server', `${prefix}node_modules/.bin/babel-node${extension} scripts/server.js`, { env }).then(() => {
   console.log('Building webpack for production'.cyan)
-  return runCmd('webpack', `node_modules/.bin/webpack -p --config scripts/webpack.config.js`, { env })
+  return runCmd('webpack', `${prefix}node_modules/.bin/webpack${extension} -p --config scripts/webpack.config.js`, { env })
 })
