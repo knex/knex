@@ -19,6 +19,30 @@ module.exports = function(knex) {
   });
 
   describe('knex.migrate', function() {
+    it('should not fail on null default for timestamp', () => {
+      return knex.migrate
+        .latest({
+          directory: 'test/integration/migrate/null_timestamp_default',
+        })
+        .then(() => {
+          return knex.into('null_date').insert({});
+        })
+        .then(() => {
+          return knex
+            .from('null_date')
+            .select()
+            .first();
+        })
+        .then((rows) => {
+          expect(rows.deleted_at).to.equal(null);
+        })
+        .then(() => {
+          return knex.migrate.rollback({
+            directory: 'test/integration/migrate/null_timestamp_default',
+          });
+        });
+    });
+
     it('should not fail drop-and-recreate-column operation when using promise chain', () => {
       return knex.migrate
         .latest({

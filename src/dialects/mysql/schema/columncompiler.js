@@ -117,6 +117,13 @@ Object.assign(ColumnCompiler_MySQL.prototype, {
   // ------
 
   defaultTo(value) {
+    // MySQL defaults to null by default, but breaks down if you pass it explicitly
+    // Note that in MySQL versions up to 5.7, logic related to updating
+    // timestamps when no explicit value is passed is quite insane - https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_explicit_defaults_for_timestamp
+    if (value === null || value === undefined) {
+      return;
+    }
+
     const defaultVal = ColumnCompiler_MySQL.super_.prototype.defaultTo.apply(
       this,
       arguments
