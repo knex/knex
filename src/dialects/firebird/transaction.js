@@ -4,6 +4,10 @@ import Debug from 'debug';
 const debug = Debug('knex:tx');
 
 export default class Transaction_Firebird extends Transaction {
+  begin(conn) {
+    return this.query(conn, 'SET TRANSACTION');
+  }
+
   query(conn, sql, status, value) {
     const t = this;
     const q = this.trxClient
