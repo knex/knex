@@ -27,7 +27,7 @@ const trigger = {
         IF (NEW."${autoIncrementColumnName}" IS NULL) THEN
         BEGIN
           NEW."${autoIncrementColumnName}" = NEXT VALUE FOR ${sequenceName};
-        END;
+        END
       END;
     `;
   },
