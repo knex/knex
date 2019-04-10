@@ -6,7 +6,7 @@
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-import { extend, each, toArray, isString, isFunction } from 'lodash';
+import { extend, each, toArray, isString, isFunction, isPlainObject, trim } from 'lodash';
 import * as helpers from '../helpers';
 
 function TableBuilder(client, method, tableName, fn) {
@@ -17,6 +17,10 @@ function TableBuilder(client, method, tableName, fn) {
   this._tableName = tableName;
   this._statements = [];
   this._single = {};
+  this._timestampsColumns = {
+      created_at: 'created_at',
+      updated_at: 'updated_at'
+  };
 
   if (!isFunction(this._fn)) {
     throw new TypeError(
@@ -172,11 +176,25 @@ each(columnTypes, function(type) {
   };
 });
 
+// Rename the columns of "timestamps"
+TableBuilder.prototype.renameTimestamps = function (params) {
+  if (isPlainObject(params)) {
+    const timestampsColumns = this._timestampsColumns;
+    const columns = Object.keys(timestampsColumns);
+    for (const column of columns) {
+        if (isString(params[column]) && trim(params[column]).length > 0) {
+            timestampsColumns[column] = trim(params[column]);
+        }
+    }
+  }
+}
+
 // The "timestamps" call is really just sets the `created_at` and `updated_at` columns.
 TableBuilder.prototype.timestamps = function timestamps() {
   const method = arguments[0] === true ? 'timestamp' : 'datetime';
-  const createdAt = this[method]('created_at');
-  const updatedAt = this[method]('updated_at');
+  const timestampsColumns = this._timestampsColumns;
+  const createdAt = this[method](timestampsColumns.created_at);
+  const updatedAt = this[method](timestampsColumns.updated_at);
   if (arguments[1] === true) {
     const now = this.client.raw('CURRENT_TIMESTAMP');
     createdAt.notNullable().defaultTo(now);
