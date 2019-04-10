@@ -222,7 +222,7 @@ assign(Client.prototype, {
   },
 
   poolDefaults() {
-    return { min: 2, max: 10, propagateCreateError: true };
+    return { min: 2, max: 10, propagateCreateError: false };
   },
 
   getPoolSettings(poolConfig) {
