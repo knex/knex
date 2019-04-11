@@ -26,7 +26,12 @@ SchemaCompiler_SQLite3.prototype.hasColumn = function(tableName, column) {
   this.pushQuery({
     sql: `PRAGMA table_info(${this.formatter.wrap(tableName)})`,
     output(resp) {
-      return some(resp, { name: column });
+      return some(resp, (col) => {
+        return (
+          this.client.wrapIdentifier(col.name) ===
+          this.client.wrapIdentifier(column)
+        );
+      });
     },
   });
 };
