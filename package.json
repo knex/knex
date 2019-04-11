@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.16.4",
+  "version": "0.16.5",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "types": "types/knex.d.ts",
@@ -8,6 +8,7 @@
     "node": ">=6"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.4.3",
     "@types/bluebird": "^3.5.26",
     "bluebird": "^3.5.4",
     "colorette": "1.0.7",
@@ -34,7 +35,6 @@
   "devDependencies": {
     "@babel/cli": "^7.4.3",
     "@babel/core": "^7.4.3",
-    "@babel/polyfill": "^7.4.3",
     "@babel/preset-env": "^7.4.3",
     "@types/node": "^11.11.3",
     "JSONStream": "^1.3.5",
