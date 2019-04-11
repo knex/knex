@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import Transaction from '../../transaction';
 import Debug from 'debug';
 
@@ -5,7 +6,20 @@ const debug = Debug('knex:tx');
 
 export default class Transaction_Firebird extends Transaction {
   begin(conn) {
-    return this.query(conn, 'SET TRANSACTION');
+    this.trxClient.logger.warn('Firebird does not support transaction begin.');
+    return Promise.resolve();
+  }
+
+  commit(conn, value) {
+    this._completed = true;
+    return this._resolver(value);
+  }
+
+  rollback(conn, error) {
+    this.trxClient.logger.warn(
+      'Firebird does not support transaction rollback.'
+    );
+    return Promise.reject(error);
   }
 
   query(conn, sql, status, value) {

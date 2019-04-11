@@ -28,11 +28,13 @@ assign(QueryCompiler_Firebird.prototype, {
   // InsertValue: '() values ()',
 
   forUpdate() {
-    return 'FOR UPDATE WITH LOCK';
+    return '';
+    // return 'FOR UPDATE WITH LOCK';
   },
 
   forShare() {
-    return 'WITH LOCK';
+    return '';
+    // return 'WITH LOCK';
   },
 
   // Compiles an "insert" query, allowing for multiple
@@ -40,6 +42,7 @@ assign(QueryCompiler_Firebird.prototype, {
   insert() {
     const insertValues = this.single.insert || [];
     let sql = 'insert into ' + this.tableName + ' ';
+    let end = '';
     const { returning } = this.single;
     const returningSql = returning
       ? this._returning('insert', returning) + ' '
@@ -56,6 +59,13 @@ assign(QueryCompiler_Firebird.prototype, {
       };
     }
 
+    if (insertValues.length > 0) {
+      sql = `execute block as begin
+      ${sql} `;
+      end = `
+      end;`;
+    }
+
     const insertData = this._prepInsert(insertValues);
     sql += `(${this.formatter.columnize(insertData.columns)}) values (`;
     if (typeof insertData === 'string') {
@@ -64,15 +74,17 @@ assign(QueryCompiler_Firebird.prototype, {
       if (insertData.columns.length) {
         let i = -1;
         while (++i < insertData.values.length) {
-          if (i !== 0)
+          if (i !== 0) {
             sql +=
               ` insert into ${this.tableName} (` +
               `${this.formatter.columnize(insertData.columns)}) values (`;
-          sql += `${this.formatter.parameterize(
-            insertData.values[i]
-          )}) ${returningSql};`;
+          }
+
+          sql += `${this.formatter.parameterize(insertData.values[i])});
+          `;
         }
-        // sql += ' end';
+        sql += ` ${returningSql}${insertValues.length > 0 ? '' : ';'}`;
+        sql += end;
       } else if (insertValues.length === 1 && insertValues[0]) {
         sql += returningSql + this._emptyInsertValue;
       } else {

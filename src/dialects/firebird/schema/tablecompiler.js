@@ -18,13 +18,13 @@ inherits(TableCompiler_Firebird, TableCompiler);
 assign(TableCompiler_Firebird.prototype, {
   createQuery(columns, ifNot) {
     const createStatement = ifNot
-      ? `if (not exists(select 1 from rdb$relations where rdb$relation_name = '${this.tableName()}')) then 
-      execute statement ' create table `
+      ? `EXECUTE BLOCK AS BEGIN if (not exists(select 1 from rdb$relations where lower(rdb$relation_name) = lower('${this.tableName()}'))) then 
+      execute statement 'create table `
       : 'create table ';
 
     const sql = `${createStatement}${this.tableName()} (${columns.sql.join(
       ', '
-    )});`;
+    )});${ifNot ? "'; END;" : ''}`;
 
     this.pushQuery({
       sql: sql,
@@ -45,10 +45,6 @@ assign(TableCompiler_Firebird.prototype, {
     this.pushQuery(`comment on table ${this.tableName()} is '${_comment}';`);
   },
 
-  changeType() {
-    // alter table + table + ' modify ' + wrapped + '// type';
-  },
-
   // Renames a column on the table.
   renameColumn(from, to) {
     const table = this.tableName();
@@ -62,7 +58,21 @@ assign(TableCompiler_Firebird.prototype, {
   },
 
   index(columns, indexName) {
-    this.client.logger.warn('table index pending implementation');
+    indexName = indexName
+      ? this.formatter.wrap(indexName)
+      : this._indexCommand('index', this.tableNameRaw, columns);
+    this.pushQuery(
+      `create index ${indexName} on ${this.tableName()} (${this.formatter.columnize(
+        columns
+      )});`
+    );
+  },
+
+  dropIndex(columns, indexName) {
+    indexName = indexName
+      ? this.formatter.wrap(indexName)
+      : this._indexCommand('index', this.tableNameRaw, columns);
+    this.pushQuery(`drop index ${indexName};`);
   },
 
   primary(columns) {
@@ -74,29 +84,70 @@ assign(TableCompiler_Firebird.prototype, {
   },
 
   unique(columns, indexName) {
-    this.client.logger.warn('table unique pending implementation');
-  },
-
-  // Compile a drop index command.
-  dropIndex: function dropIndex(columns, indexName) {
-    this.client.logger.warn('table drop index pending implementation');
-  },
-
-  // Compile a drop foreign key command.
-  dropForeign: function dropForeign(columns, indexName) {
-    this.client.logger.warn('table drop foreign pending implementation');
-  },
-
-  // Compile a drop primary key command.
-  dropPrimary: function dropPrimary(pkConstraintName) {
+    indexName = indexName
+      ? this.formatter.wrap(indexName)
+      : this._indexCommand('unique', this.tableNameRaw, columns);
     this.pushQuery(
-      `alter table ${this.tableName()} drop constraint ${pkConstraintName}`
+      `create unique index ${indexName} on ${this.tableName()} (${this.formatter.columnize(
+        columns
+      )});`
     );
   },
 
-  // Compile a drop unique key command.
-  dropUnique: function dropUnique(column, indexName) {
-    this.client.logger.warn('table drop unique pending implementation');
+  dropUnique(column, indexName) {
+    indexName = indexName
+      ? this.formatter.wrap(indexName)
+      : this._indexCommand('unique', this.tableNameRaw, column);
+    this.pushQuery(`drop index ${indexName};`);
+  },
+
+  foreign(foreignData) {
+    if (foreignData.inTable && foreignData.references) {
+      const column = this.formatter.columnize(foreignData.column);
+      const references = this.formatter.columnize(foreignData.references);
+      const inTable = this.formatter.wrap(foreignData.inTable);
+      const keyName = foreignData.keyName
+        ? this.formatter.wrap(foreignData.keyName)
+        : this._indexCommand('fk', this.tableNameRaw, foreignData.column);
+      const onUpdate = foreignData.onUpdate
+        ? ' on update ' + foreignData.onUpdate
+        : '';
+      const onDelete = foreignData.onDelete
+        ? ' on delete ' + foreignData.onDelete
+        : '';
+
+      this.pushQuery(
+        (!this.forCreate ? `alter table ${this.tableName()} add ` : '') +
+          'constraint ' +
+          keyName +
+          ' ' +
+          'foreign key (' +
+          column +
+          ') references ' +
+          inTable +
+          ' (' +
+          references +
+          ')' +
+          onUpdate +
+          onDelete
+      );
+    }
+  },
+
+  dropForeign(columns, foreignConstraintName) {
+    foreignConstraintName = foreignConstraintName
+      ? this.formatter.wrap(foreignConstraintName)
+      : this._indexCommand('foreign', this.tableNameRaw, columns);
+    this.pushQuery(
+      `alter table ${this.tableName()} drop constraint ${foreignConstraintName}`
+    );
+  },
+
+  // Compile a drop primary key command.
+  dropPrimary(pkConstraintName) {
+    this.pushQuery(
+      `alter table ${this.tableName()} drop constraint ${pkConstraintName}`
+    );
   },
 });
 

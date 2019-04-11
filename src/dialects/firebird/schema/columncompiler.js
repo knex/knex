@@ -10,8 +10,8 @@ function ColumnCompiler_Firebird() {
   ColumnCompiler.apply(this, arguments);
   this.modifiers = [
     'unsigned',
-    'nullable',
     'defaultTo',
+    'nullable',
     'first',
     'after',
     'comment',
