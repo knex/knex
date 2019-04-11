@@ -1343,8 +1343,8 @@ export default [
   {
     type: "method",
     method: "unionAll",
-    example: ".unionAll(query)",
-    description: "Creates a union all query, with the same method signature as the union method.",
+    example: ".unionAll([*queries], [wrap])",
+    description: "Creates a union all query, with the same method signature as the union method.  If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses.",
     children: [
       {
         type: "runnable",
@@ -1352,6 +1352,23 @@ export default [
           knex.select('*').from('users').whereNull('last_name').unionAll(function() {
             this.select('*').from('users').whereNull('first_name');
           })
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').whereNull('last_name').unionAll([
+            knex.select('*').from('users').whereNull('first_name')
+          ])
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').whereNull('last_name').unionAll(
+            knex.raw('select * from users where first_name is null'),
+            knex.raw('select * from users where email is null')
+          )
         `
       }
     ]
