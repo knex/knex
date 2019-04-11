@@ -1027,8 +1027,8 @@ export default [
   {
     type: "method",
     method: "distinct",
-    example: ".distinct()",
-    description: "Sets a distinct clause on the query.",
+    example: ".distinct([*columns])",
+    description: "Sets a distinct clause on the query. If the parameter is falsy or empty array, method falls back to '*'.",
     children: [
       {
         type: "runnable",
@@ -1036,7 +1036,14 @@ export default [
           // select distinct 'first_name' from customers
           knex('customers')
             .distinct('first_name', 'last_name')
-            .select()
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+            // select which eleminates duplicate rows
+           knex('customers')
+            .distinct()
         `
       }
     ]
