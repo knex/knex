@@ -1,5 +1,9 @@
 # Master (Unreleased)
 
+# 0.16.5 - 11 Apr, 2019
+
+- Bundle polyfills with knex for 0.16.x line again #3139
+
 # 0.16.4 - 11 Apr, 2019
 
 ### New features:
