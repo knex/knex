@@ -1,5 +1,7 @@
 # Master (Unreleased)
 
+# 0.16.4 - 11 Apr, 2019
+
 ### New features:
 
 - Boolean param for rollback() to rollback all migrations #2968
