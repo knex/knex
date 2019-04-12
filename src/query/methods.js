@@ -79,6 +79,7 @@ export default [
   'clearSelect',
   'clearWhere',
   'clearOrder',
+  'clearHaving',
   'insert',
   'update',
   'returning',
