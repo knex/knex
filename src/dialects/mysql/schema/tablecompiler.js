@@ -97,6 +97,9 @@ assign(TableCompiler_MySQL.prototype, {
 
                 if (String(column.Null).toUpperCase() !== 'YES') {
                   sql += ` NOT NULL`;
+                } else {
+                  // This doesn't matter for most cases except Timestamp, where this is important
+                  sql += ` NULL`;
                 }
                 if (column.Default !== void 0 && column.Default !== null) {
                   sql += ` DEFAULT '${column.Default}'`;

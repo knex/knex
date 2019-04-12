@@ -5,7 +5,16 @@
 // -------
 
 import Promise from 'bluebird';
-import { assign, uniqueId, find, identity, map, omit } from 'lodash';
+import {
+  assign,
+  uniqueId,
+  find,
+  identity,
+  map,
+  omit,
+  invert,
+  fromPairs,
+} from 'lodash';
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
@@ -14,37 +23,54 @@ function SQLite3_DDL(client, tableCompiler, pragma, connection) {
   this.client = client;
   this.tableCompiler = tableCompiler;
   this.pragma = pragma;
-  this.tableName = this.tableCompiler.tableNameRaw;
+  this.tableNameRaw = this.tableCompiler.tableNameRaw;
   this.alteredName = uniqueId('_knex_temp_alter');
   this.connection = connection;
+  this.formatter =
+    client && client.config && client.config.wrapIdentifier
+      ? client.config.wrapIdentifier
+      : (value) => value;
 }
 
 assign(SQLite3_DDL.prototype, {
+  tableName() {
+    return this.formatter(this.tableNameRaw, (value) => value);
+  },
+
   getColumn: Promise.method(function(column) {
-    const currentCol = find(this.pragma, { name: column });
+    const currentCol = find(this.pragma, (col) => {
+      return (
+        this.client.wrapIdentifier(col.name) ===
+        this.client.wrapIdentifier(column)
+      );
+    });
     if (!currentCol)
       throw new Error(
-        `The column ${column} is not in the ${this.tableName} table`
+        `The column ${column} is not in the ${this.tableName()} table`
       );
     return currentCol;
   }),
 
   getTableSql() {
-    return this.trx.raw(
-      `SELECT name, sql FROM sqlite_master WHERE type="table" AND name="${
-        this.tableName
-      }"`
-    );
+    this.trx.disableProcessing();
+    return this.trx
+      .raw(
+        `SELECT name, sql FROM sqlite_master WHERE type="table" AND name="${this.tableName()}"`
+      )
+      .then((result) => {
+        this.trx.enableProcessing();
+        return result;
+      });
   },
 
   renameTable: Promise.method(function() {
     return this.trx.raw(
-      `ALTER TABLE "${this.tableName}" RENAME TO "${this.alteredName}"`
+      `ALTER TABLE "${this.tableName()}" RENAME TO "${this.alteredName}"`
     );
   }),
 
   dropOriginal() {
-    return this.trx.raw(`DROP TABLE "${this.tableName}"`);
+    return this.trx.raw(`DROP TABLE "${this.tableName()}"`);
   },
 
   dropTempTable() {
@@ -53,7 +79,7 @@ assign(SQLite3_DDL.prototype, {
 
   copyData() {
     return this.trx
-      .raw(`SELECT * FROM "${this.tableName}"`)
+      .raw(`SELECT * FROM "${this.tableName()}"`)
       .bind(this)
       .then(this.insertChunked(20, this.alteredName));
   },
@@ -63,7 +89,7 @@ assign(SQLite3_DDL.prototype, {
       return this.trx
         .raw(`SELECT * FROM "${this.alteredName}"`)
         .bind(this)
-        .then(this.insertChunked(20, this.tableName, iterator));
+        .then(this.insertChunked(20, this.tableName(), iterator));
     };
   },
 
@@ -97,7 +123,7 @@ assign(SQLite3_DDL.prototype, {
   createTempTable(createTable) {
     return function() {
       return this.trx.raw(
-        createTable.sql.replace(this.tableName, this.alteredName)
+        createTable.sql.replace(this.tableName(), this.alteredName)
       );
     };
   },
@@ -217,6 +243,14 @@ assign(SQLite3_DDL.prototype, {
             if (sql === newSql) {
               throw new Error('Unable to find the column to change');
             }
+            const { from: mappedFrom, to: mappedTo } = invert(
+              this.client.postProcessResponse(
+                invert({
+                  from,
+                  to,
+                })
+              )
+            );
             return Promise.bind(this)
               .then(this.createTempTable(createTable))
               .then(this.copyData)
@@ -226,8 +260,8 @@ assign(SQLite3_DDL.prototype, {
               })
               .then(
                 this.reinsertData(function(row) {
-                  row[to] = row[from];
-                  return omit(row, from);
+                  row[mappedTo] = row[mappedFrom];
+                  return omit(row, mappedFrom);
                 })
               )
               .then(this.dropTempTable);
@@ -254,6 +288,11 @@ assign(SQLite3_DDL.prototype, {
             if (sql === newSql) {
               throw new Error('Unable to find the column to change');
             }
+            const mappedColumns = Object.keys(
+              this.client.postProcessResponse(
+                fromPairs(columns.map((column) => [column, column]))
+              )
+            );
             return Promise.bind(this)
               .then(this.createTempTable(createTable))
               .then(this.copyData)
@@ -261,7 +300,7 @@ assign(SQLite3_DDL.prototype, {
               .then(function() {
                 return this.trx.raw(newSql);
               })
-              .then(this.reinsertData((row) => omit(row, ...columns)))
+              .then(this.reinsertData((row) => omit(row, ...mappedColumns)))
               .then(this.dropTempTable);
           });
       },

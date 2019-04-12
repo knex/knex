@@ -1,18 +1,29 @@
 # Master (Unreleased)
 
+# 0.16.5 - 11 Apr, 2019
+
+- Bundle polyfills with knex for 0.16.x line again #3139
+
+# 0.16.4 - 11 Apr, 2019
+
 ### New features:
 
 - Boolean param for rollback() to rollback all migrations #2968
 - seed:run print the file name of the failing seed #2972 #2973
 - verbose option to CLI commands #2887
-- mysql warn `.returning()` does not have any effect #3039
 - add intersect() #3023
+- Improved format for TS stubs #3080
+- MySQL: Support nullable timestamps #3100
+- MySQL: Warn `.returning()` does not have any effect #3039
 
 ### Bug fixes:
 
 - Respect "loadExtensions" configuration #2969
 - Fix event listener duplication when using Migrator #2982
 - Fix fs-migrations breaking docs #3022
+- Fix sqlite3 drop/renameColumn() breaks with postProcessResponse #3040
+- Fix transaction support for migrations #3084
+- Fix queryContext not being passed to raw queries #3111
 - Typings: Allow to pass query builders, identifiers and raw in various places as parameters #2960
 - Typings: toNative() definition #2996
 - Typings: asCallback() definition #2963
@@ -22,8 +33,15 @@
 - Typings: Add missing supported parameter types and toSQL method #2960
 - Typings: Update enum arguments to reflect latest signature #3043
 - Typings: Add size parameter to integer method #3074
+- Typings: Add 'string' as accepted Knex constructor type definition #3105
+- Typings: Add boolean as a column name in join #3121
+- Typings: Add missing clearOrder & clearCounters types #3109
 - Dependencies: Fix security warning #3082 
 - Do not use unsupported column width/length arguments on data types int and tinyint in MSSQL #2738
+
+### Changes:
+
+- Make unionAll()'s call signature match union() #3055
 
 ### Test / internal changes:
 

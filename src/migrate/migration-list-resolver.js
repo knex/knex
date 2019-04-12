@@ -28,7 +28,7 @@ export function listCompleted(tableName, schemaName, trxOrKnex) {
 // the list of completed migrations to check what should be run.
 export function listAllAndCompleted(config, trxOrKnex) {
   return Promise.all([
-    listAll(config.migrationSource),
+    listAll(config.migrationSource, config.loadExtensions),
     listCompleted(config.tableName, config.schemaName, trxOrKnex),
   ]);
 }

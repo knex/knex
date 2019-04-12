@@ -62,7 +62,7 @@ interface Knex extends Knex.QueryInterface {
   on(eventName: string, callback: Function): Knex.QueryBuilder;
 }
 
-declare function Knex(config: Knex.Config): Knex;
+declare function Knex(config: Knex.Config | string): Knex;
 
 declare namespace Knex {
   //
@@ -141,7 +141,7 @@ declare namespace Knex {
 
     // Union
     union: Union;
-    unionAll(callback: QueryCallback): QueryBuilder;
+    unionAll: Union;
 
     // Having
     having: Having;
@@ -154,6 +154,8 @@ declare namespace Knex {
     // Clear
     clearSelect(): QueryBuilder;
     clearWhere(): QueryBuilder;
+    clearOrder(): QueryBuilder;
+    clearCounters(): QueryBuilder;
 
     // Paging
     offset(offset: number): QueryBuilder;
@@ -239,7 +241,7 @@ declare namespace Knex {
     (tableName: TableName | Identifier | QueryCallback, clause: JoinCallback): QueryBuilder;
     (
       tableName: TableName | Identifier | QueryCallback,
-      columns: { [key: string]: string | number | Raw }
+      columns: { [key: string]: string | number | boolean | Raw }
     ): QueryBuilder;
     (tableName: TableName | Identifier | QueryCallback, raw: Raw): QueryBuilder;
     (
@@ -567,7 +569,7 @@ declare namespace Knex {
     dropColumn(columnName: string): TableBuilder;
     dropColumns(...columnNames: string[]): TableBuilder;
     renameColumn(from: string, to: string): ColumnBuilder;
-    integer(columnName: string, length: number): ColumnBuilder;
+    integer(columnName: string, length?: number): ColumnBuilder;
     bigInteger(columnName: string): ColumnBuilder;
     text(columnName: string, textType?: string): ColumnBuilder;
     string(columnName: string, length?: number): ColumnBuilder;
