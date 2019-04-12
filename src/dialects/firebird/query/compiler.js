@@ -80,8 +80,9 @@ assign(QueryCompiler_Firebird.prototype, {
               `${this.formatter.columnize(insertData.columns)}) values (`;
           }
 
-          sql += `${this.formatter.parameterize(insertData.values[i])});
-          `;
+          sql += `${this.formatter.parameterize(insertData.values[i])})${
+            returningSql.length === 0 ? ';' : ''
+          }`;
         }
         sql += ` ${returningSql}${insertValues.length > 0 ? '' : ';'}`;
         sql += end;
