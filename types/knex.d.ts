@@ -150,6 +150,10 @@ declare namespace Knex {
     orHaving: Having;
     orHavingRaw: RawQueryBuilder;
     havingIn: HavingIn;
+    orHavingNotBetween: OrHavingNotBetween;
+    havingNotBetween: HavingNotBetween;
+    orHavingBetween: OrHavingBetween;
+    havingBetween: HavingBetween;
 
     // Clear
     clearSelect(): QueryBuilder;
@@ -431,6 +435,23 @@ declare namespace Knex {
   interface HavingIn {
     (columnName: string, values: Value[]): QueryBuilder;
   }
+
+  interface OrHavingNotBetween {
+    (columnName: string, values: Value[]): QueryBuilder;
+  }
+
+  interface HavingNotBetween {
+    (columnName: string, values: Value[]): QueryBuilder;
+  }
+
+  interface OrHavingBetween {
+    (columnName: string, values: Value[]): QueryBuilder;
+  }
+
+  interface HavingBetween {
+    (columnName: string, values: Value[]): QueryBuilder;
+  }
+
 
   // commons
 
