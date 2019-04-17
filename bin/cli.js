@@ -18,7 +18,9 @@ const { DEFAULT_EXT } = require('./utils/constants');
 
 function exit(text) {
   if (text instanceof Error) {
-    console.error(color.red(text.stack));
+    console.error(
+      color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
+    );
   } else {
     console.error(color.red(text));
   }
