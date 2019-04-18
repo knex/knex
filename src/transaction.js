@@ -162,6 +162,7 @@ export default class Transaction extends EventEmitter {
   // via config or getting one off the client. The disposer will be called once
   // the original promise is marked completed.
   acquireConnection(client, config, txid) {
+    const t = this;
     const configConnection = config && config.connection;
     return Promise.try(() => configConnection || client.acquireConnection())
       .then(function(connection) {
@@ -170,6 +171,7 @@ export default class Transaction extends EventEmitter {
         return connection;
       })
       .disposer(function(connection) {
+        connection.__knexTxId = t.outerTx ? t.outerTx.txid : undefined;
         if (!configConnection) {
           debug('%s: releasing connection', txid);
           client.releaseConnection(connection);

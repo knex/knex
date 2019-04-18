@@ -54,6 +54,7 @@ export default class Oracle_Transaction extends Transaction {
       });
     }).disposer(function(connection) {
       debugTx('%s: releasing connection', t.txid);
+      connection.__knexTxId = t.outerTx ? t.outerTx.txid : undefined;
       connection.isTransaction = false;
       connection.commitAsync().then(function(err) {
         if (err) {

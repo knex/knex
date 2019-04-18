@@ -74,6 +74,7 @@ export default class Transaction_MSSQL extends Transaction {
         }
       })
       .disposer(function(conn) {
+        conn.__knexTxId = t.outerTx ? t.outerTx.txid : undefined;
         if (t.outerTx) return;
         if (conn.tx_) {
           if (!t._completed) {

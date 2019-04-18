@@ -51,6 +51,7 @@ export default class Oracle_Transaction extends Transaction {
       })
       .disposer((connection) => {
         debugTx('%s: releasing connection', t.txid);
+        connection.__knexTxId = t.outerTx ? t.outerTx.txid : undefined;
         connection.setAutoCommit(true);
         if (!config.connection) {
           t.client.releaseConnection(connection);
