@@ -2,7 +2,6 @@
 // -------
 import inherits from 'inherits';
 import ColumnCompiler from '../../../schema/columncompiler';
-import Raw from '../../../raw';
 import Trigger from './trigger';
 
 import { assign, first } from 'lodash';
@@ -118,23 +117,9 @@ assign(ColumnCompiler_Firebird.prototype, {
       this,
       arguments
     );
-
-    if (
-      !(value instanceof Raw) &&
-      (this.type === 'bigint' ||
-        this.type === 'double' ||
-        this.type === 'integer' ||
-        this.type === 'mediumint' ||
-        this.type === 'smallint' ||
-        this.type === 'tinyint')
-    ) {
-      return value;
-    }
-
     if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
       return defaultVal;
     }
-
     return '';
   },
 
