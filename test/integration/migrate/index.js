@@ -37,7 +37,7 @@ module.exports = function(knex) {
         .then((rows) => {
           expect(rows.deleted_at).to.equal(null);
         })
-        .then(() => {
+        .finally(() => {
           return knex.migrate.rollback({
             directory: 'test/integration/migrate/null_timestamp_default',
           });
