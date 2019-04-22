@@ -9,6 +9,14 @@ const trigger = {
       CREATE SEQUENCE ${sequenceName};
     `;
   },
+  dropAutoIncrementSequence: function(logger, tableName) {
+    const sequenceName = utils
+      .generateCombinedName(logger, 'seq', tableName)
+      .toUpperCase();
+    return `
+      DROP SEQUENCE ${sequenceName};
+    `;
+  },
   createAutoIncrementTrigger: function(
     logger,
     tableName,
