@@ -17,13 +17,11 @@ assign(SchemaCompiler_Firebird.prototype, {
   dropTable(tableName) {
     SchemaCompiler_Firebird.super_.prototype.dropTable.apply(this, arguments);
 
-    this.pushAdditional(function() {
-      const dropAutoIncrementSQL = Trigger.dropAutoIncrementSequence(
-        this.client.logger,
-        tableName
-      );
-      this.pushQuery(dropAutoIncrementSQL);
-    });
+    const dropAutoIncrementSQL = Trigger.dropAutoIncrementSequence(
+      this.client.logger,
+      tableName
+    );
+    this.pushQuery(dropAutoIncrementSQL);
   },
 
   dropTableIfExists(tableName) {
@@ -40,13 +38,11 @@ assign(SchemaCompiler_Firebird.prototype, {
 
     this.pushQuery(queryDrop);
 
-    this.pushAdditional(function() {
-      const dropAutoIncrementSQL = Trigger.dropAutoIncrementSequence(
-        this.client.logger,
-        tableName
-      );
-      this.pushQuery(dropAutoIncrementSQL);
-    });
+    const dropAutoIncrementSQL = Trigger.dropAutoIncrementSequence(
+      this.client.logger,
+      tableName
+    );
+    this.pushQuery(dropAutoIncrementSQL);
   },
   // Rename a table on the schema.
   renameTable(tableName, to) {
