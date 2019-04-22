@@ -97,7 +97,7 @@ assign(ColumnCompiler_Firebird.prototype, {
 
   enu: 'varchar(100)',
 
-  datetime: 'datetime',
+  datetime: 'timestamp',
 
   timestamp: 'timestamp',
 
