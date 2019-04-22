@@ -101,12 +101,31 @@ times maybe someone looks into it.
 
 ### The Easy Way
 
-By default, Knex runs tests against MySQL (using [mysql](https://github.com/felixge/node-mysql) and [mysql2](https://github.com/sidorares/node-mysql2)), Postgres, and SQLite. The easiest way to run the tests is by creating the database `'knex_test'` and granting permissions to the database's default username:
+By default, Knex runs tests against sqlite3, postgresql, mysql, mysql2, mssql and oracledb drivers. All databases can be initialized and ran with docker.
 
-- **MySQL**: _root_
-- **Postgres**: _postgres_
+Docker databases can be started and initialized and started with:
 
-No setup is required for SQLite.
+```bash
+npm run db:start
+```
+
+and stopped with:
+
+```bash
+npm run db:stop
+```
+
+### Installing support for oracledb
+
+Oracle has started providing precompiled driver libs for all the platforms, which makes it viable to run oracle tests also locally against oracledb running in docker.
+
+Check message when running
+
+```bash
+npm install oracledb
+```
+
+and download driver library binary packages and unzip it to ~/lib directory.
 
 ### Specifying Databases
 
@@ -133,7 +152,9 @@ $ KNEX_TEST='./path/to/my/config.js' npm test
 
 ### Creating Postgres User
 
-Depending on your setup you might not have the default postgres user. To create a new user, login to Postgres and use the following queries to add the user. This assumes you've already created the `knex_test` database.
+If you are running tests agains own local database one might need to setup test user and databse for knex to connect.
+
+To create a new user, login to Postgres and use the following queries to add the user. This assumes you've already created the `knex_test` database.
 
 ```
 CREATE ROLE postgres WITH LOGIN PASSWORD '';
@@ -144,46 +165,6 @@ Once this is done, check it works by attempting to login:
 
 ```
 psql -h localhost -U postgres -d knex_test
-```
-
-### Running OracleDB tests in docker
-
-Since node-oracledb driver is so hard to install on every platform, oracle tests
-are actually ran inside docker container. Container has Oracle XE g11,
-node 8 and node-oracledb driver installed and copies local knex directory in
-to be able to run the tests.
-
-```
-NODE_VER=10 npm run oracledb:test
-```
-
-You can also manually start shell in the docker image and run build commands manually:
-
-```
-docker run -i -t knex-test-oracledb /bin/bash
-
-root@34f1f1cd20cf:/#
-
-/usr/sbin/startup.sh
-cd knex
-npm install
-npm install oracledb
-npm test
-```
-
-### Runnin MSSQL SQL Server tests
-
-SQL Server needs to be started as docker container before running tests
-
-```
-# start mssql docker container
-npm run mssql:init
-
-# run tests, do changes etc.
-npm run mssql:test
-
-# stop mssql container
-npm run mssql:destroy
 ```
 
 ## Want to be Collaborator?
