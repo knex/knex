@@ -19,7 +19,7 @@ services:
     entrypoint:
       - bash
       - -c
-      - 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P S0meVeryHardPassword -d master -Q "CREATE DATABASE knex_test"; do sleep 3; done'
+      - 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P S0meVeryHardPassword -d master -Q "CREATE DATABASE knex_test"; do sleep 5; done'
 
   mysql:
     image: mysql
@@ -31,6 +31,21 @@ services:
       - MYSQL_DATABASE=knex_test
       - MYSQL_USER=testuser
       - MYSQL_PASSWORD=testpassword
+    healthcheck:
+      test:
+        [
+          'CMD',
+          '/usr/bin/mysql',
+          '-hlocalhost',
+          '-utestuser',
+          '-ptestpassword',
+          '-e',
+          'SELECT 1',
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: always
   waitmysql:
     image: mysql
     links:
@@ -40,7 +55,7 @@ services:
     entrypoint:
       - bash
       - -c
-      - 'until /usr/bin/mysql -hmysql -utestuser -ptestpassword -e "SELECT 1"; do sleep 3; done'
+      - 'until /usr/bin/mysql -hmysql -utestuser -ptestpassword -e "SELECT 1"; do sleep 5; done'
 
   postgres:
     image: postgres:10-alpine
@@ -59,7 +74,7 @@ services:
     entrypoint:
       - bash
       - -c
-      - 'until /usr/local/bin/psql postgres://testuser:knextest@postgres/knex_test -c "SELECT 1"; do sleep 3; done'
+      - 'until /usr/local/bin/psql postgres://testuser:knextest@postgres/knex_test -c "SELECT 1"; do sleep 5; done'
 
   oracledbxe:
     image: quillbuilduser/oracle-18-xe
@@ -78,4 +93,4 @@ services:
     entrypoint:
       - bash
       - -c
-      - 'until /opt/oracle/product/18c/dbhomeXE/bin/sqlplus -s sys/Oracle18@oracledbxe/XE as sysdba <<< "SELECT 13376411 FROM DUAL; exit;" | grep "13376411"; do echo "Could not connect to oracle... sleep for a while"; sleep 3; done'
+      - 'until /opt/oracle/product/18c/dbhomeXE/bin/sqlplus -s sys/Oracle18@oracledbxe/XE as sysdba <<< "SELECT 13376411 FROM DUAL; exit;" | grep "13376411"; do echo "Could not connect to oracle... sleep for a while"; sleep 5; done'

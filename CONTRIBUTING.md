@@ -97,6 +97,8 @@ main();
 Usually issues without reproduction code available are just closed and if the same issue is reported multiple
 times maybe someone looks into it.
 
+One easy way to setup database for your reproduction is to use database from knex's docker-compose setup (npm run db:start) and by checking the connection settings from tests' `knexfile.js` <TODO: add link / copy paste connection details here>.
+
 ## Integration Tests
 
 ### The Easy Way

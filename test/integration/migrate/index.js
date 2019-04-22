@@ -21,18 +21,20 @@ module.exports = function(knex) {
 
   describe('knex.migrate', function() {
     it('should not fail on null default for timestamp', () => {
-      return knex.migrate
-        .latest({
-          directory: 'test/integration/migrate/null_timestamp_default',
+      return knex.schema
+        .dropTableIfExists('null_date')
+        .then(() => {
+          return knex.migrate.latest({
+            directory: 'test/integration/migrate/null_timestamp_default',
+          });
         })
         .then(() => {
-          return knex.into('null_date').insert({});
+          return knex.into('null_date').insert({
+            dummy: 'cannot insert empty object',
+          });
         })
         .then(() => {
-          return knex
-            .from('null_date')
-            .select()
-            .first();
+          return knex('null_date').first();
         })
         .then((rows) => {
           expect(rows.deleted_at).to.equal(null);

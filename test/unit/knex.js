@@ -2,7 +2,6 @@ const Knex = require('../../lib/index');
 const { expect } = require('chai');
 const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
-const oracleConf = require('../knexfile').oracledb;
 const sqlite3 = require('sqlite3');
 const { noop } = require('lodash');
 const { isNode6 } = require('../../lib/util/version-helper');
