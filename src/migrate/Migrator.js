@@ -105,6 +105,7 @@ export default class Migrator {
       });
   }
 
+  // Run only the next migration or the next migrations up to a specific migration
   up(config, toFile) {
     this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
@@ -118,21 +119,8 @@ export default class Migrator {
           all,
           completed
         );
-        let upToIndex = 1;
 
-        if (toFile) {
-          const indexOfToMigration = findIndex(migrations, (migration) => {
-            return migration.file === toFile;
-          });
-
-          if (indexOfToMigration === -1) {
-            throw new Error(`Migration ${toFile} not found.`);
-          }
-
-          upToIndex = indexOfToMigration + 1;
-        }
-
-        const migrationsToRun = migrations.slice(0, upToIndex);
+        const migrationsToRun = getMigrationSubset(migrations, 'up', toFile);
 
         const transactionForAll =
           !this.config.disableTransactions &&
@@ -182,6 +170,7 @@ export default class Migrator {
     });
   }
 
+  // Roll back the last migration or roll back to (but not including) a specific migration
   down(config, toFile) {
     this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
@@ -190,30 +179,13 @@ export default class Migrator {
       .listAllAndCompleted(this.config, this.knex)
       .tap((value) => validateMigrationList(this.config.migrationSource, value))
       .spread((all, completed) => {
-        const completedMigrations = getCompletedMigrations(
+        const migrations = getCompletedMigrations(
           this.config.migrationSource,
           all,
           completed
-        ).reverse();
+        );
 
-        let upToIndex = 1;
-
-        if (toFile) {
-          const indexOfToMigration = findIndex(
-            completedMigrations,
-            (migration) => {
-              return migration.file === toFile;
-            }
-          );
-
-          if (indexOfToMigration === -1) {
-            throw new Error(`Migration ${toFile} not found.`);
-          }
-
-          upToIndex = indexOfToMigration;
-        }
-
-        const migrationsToRun = completedMigrations.slice(0, upToIndex);
+        const migrationsToRun = getMigrationSubset(migrations, 'down', toFile);
 
         return this._runBatch(migrationsToRun, 'down');
       });
@@ -554,6 +526,28 @@ function validateMigrationList(migrationSource, migrations) {
       )}`
     );
   }
+}
+
+function getMigrationSubset(migrations, direction, toFile) {
+  const migrationCopy =
+    direction === 'up' ? migrations.slice() : migrations.slice().reverse();
+
+  if (!toFile) {
+    return migrationCopy.slice(0, 1);
+  }
+
+  const indexOfToMigration = findIndex(migrationCopy, (migration) => {
+    return migration.file === toFile;
+  });
+
+  if (indexOfToMigration === -1) {
+    throw new Error(`Migration ${toFile} not found`);
+  }
+
+  const upToIndex =
+    direction === 'up' ? indexOfToMigration + 1 : indexOfToMigration;
+
+  return migrationCopy.slice(0, upToIndex);
 }
 
 function getCompletedMigrations(migrationSource, all, completed) {
