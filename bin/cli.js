@@ -203,6 +203,31 @@ function invoke(env) {
     });
 
   commander
+    .command('migrate:up')
+    .description('        Run the next migration.')
+    .option(
+      '--to <migration>',
+      'The migration file name to run up to and include'
+    )
+    .action((cmd) => {
+      pending = initKnex(env, commander.opts())
+        .migrate.up(null, cmd.to)
+        .spread((batchNo, log) => {
+          if (log.length === 0) {
+            success(color.cyan('Already up to date'));
+          }
+          success(
+            color.green(
+              `Batch ${batchNo} ran the following migrations:\n${log.join(
+                '\n'
+              )}`
+            )
+          );
+        })
+        .catch(exit);
+    });
+
+  commander
     .command('migrate:rollback')
     .description('        Rollback the last set of migrations performed.')
     .option('--verbose', 'verbose')

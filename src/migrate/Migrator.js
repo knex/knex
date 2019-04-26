@@ -6,6 +6,7 @@ import {
   differenceWith,
   each,
   filter,
+  findIndex,
   get,
   isFunction,
   isBoolean,
@@ -100,6 +101,56 @@ export default class Migrator {
           });
         } else {
           return this._runBatch(migrations, 'up');
+        }
+      });
+  }
+
+  up(config, toFile) {
+    this._disableProcessing();
+    this.config = getMergedConfig(config, this.config);
+
+    return migrationListResolver
+      .listAllAndCompleted(this.config, this.knex)
+      .tap((value) => validateMigrationList(this.config.migrationSource, value))
+      .spread((all, completed) => {
+        const migrations = getNewMigrations(
+          this.config.migrationSource,
+          all,
+          completed
+        );
+        let upToIndex = 1;
+
+        if (toFile) {
+          const indexOfToMigration = findIndex(migrations, (migration) => {
+            return migration.file === toFile;
+          });
+
+          if (indexOfToMigration === -1) {
+            throw new Error(`Migration ${toFile} not found.`);
+          }
+
+          upToIndex = indexOfToMigration + 1;
+        }
+
+        const migrationsToRun = migrations.slice(0, upToIndex);
+
+        const transactionForAll =
+          !this.config.disableTransactions &&
+          isEmpty(
+            filter(migrationsToRun, (migration) => {
+              const migrationContents = this.config.migrationSource.getMigration(
+                migration
+              );
+              return !this._useTransaction(migrationContents);
+            })
+          );
+
+        if (transactionForAll) {
+          return this.knex.transaction((trx) => {
+            return this._runBatch(migrationsToRun, 'up', trx);
+          });
+        } else {
+          return this._runBatch(migrationsToRun, 'up');
         }
       });
   }
