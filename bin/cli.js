@@ -230,10 +230,11 @@ function invoke(env) {
   commander
     .command('migrate:rollback')
     .description('        Rollback the last set of migrations performed.')
+    .option('--all', 'rollback all migrations')
     .option('--verbose', 'verbose')
-    .action(() => {
+    .action((cmd) => {
       pending = initKnex(env, commander.opts())
-        .migrate.rollback()
+        .migrate.rollback(null, cmd.all)
         .spread((batchNo, log) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
