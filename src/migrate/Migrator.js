@@ -169,9 +169,11 @@ export default class Migrator {
         .then((val) => {
           const [allMigrations, completedMigrations] = val;
           return all
-            ? filter(allMigrations, (migration) => {
-                return completedMigrations.includes(migration.file);
-              }).reverse()
+            ? allMigrations
+                .filter((migration) => {
+                  return completedMigrations.includes(migration.file);
+                })
+                .reverse()
             : this._getLastBatch(val);
         })
         .then((migrations) => {
