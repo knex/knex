@@ -207,7 +207,7 @@ function invoke(env) {
     .description('        Run the next migration.')
     .option(
       '--to <migration>',
-      'The migration file name to run up to and include'
+      'The migration file name to run up to (inclusive)'
     )
     .action((cmd) => {
       pending = initKnex(env, commander.opts())
@@ -245,6 +245,29 @@ function invoke(env) {
           );
         })
         .catch(exit);
+    });
+
+  commander
+    .command('migrate:down')
+    .description('        Rollback the last migration performed.')
+    .option(
+      '--to <migration>',
+      'The migration file name to migrate down to (exclusive)'
+    )
+    .action((cmd) => {
+      pending = initKnex(env, commander.opts())
+        .migrate.down(null, cmd.to)
+        .spread((batchNo, log) => {
+          if (log.length === 0) {
+            success(color.cyan('Already at the base migration'));
+          }
+
+          success(
+            color.green(
+              `The following migrations were rolled back:\n${log.join('\n')}`
+            )
+          );
+        });
     });
 
   commander

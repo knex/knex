@@ -173,6 +173,43 @@ export default class Migrator {
     });
   }
 
+  down(config, toFile) {
+    this._disableProcessing();
+    this.config = getMergedConfig(config, this.config);
+
+    return migrationListResolver
+      .listAllAndCompleted(this.config, this.knex)
+      .tap((value) => validateMigrationList(this.config.migrationSource, value))
+      .spread((all, completed) => {
+        const completedMigrations = getCompletedMigrations(
+          this.config.migrationSource,
+          all,
+          completed
+        ).reverse();
+
+        let upToIndex = 1;
+
+        if (toFile) {
+          const indexOfToMigration = findIndex(
+            completedMigrations,
+            (migration) => {
+              return migration.file === toFile;
+            }
+          );
+
+          if (indexOfToMigration === -1) {
+            throw new Error(`Migration ${toFile} not found.`);
+          }
+
+          upToIndex = indexOfToMigration;
+        }
+
+        const migrationsToRun = completedMigrations.slice(0, upToIndex);
+
+        return this._runBatch(migrationsToRun, 'down');
+      });
+  }
+
   status(config) {
     this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
@@ -508,6 +545,12 @@ function validateMigrationList(migrationSource, migrations) {
       )}`
     );
   }
+}
+
+function getCompletedMigrations(migrationSource, all, completed) {
+  return filter(all, (allMigration) => {
+    return completed.includes(migrationSource.getMigrationName(allMigration));
+  });
 }
 
 function getMissingMigrations(migrationSource, completed, all) {

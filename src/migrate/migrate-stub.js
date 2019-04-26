@@ -15,4 +15,5 @@ StubMigrate.prototype = {
   rollback: noSuchMethod,
   currentVersion: noSuchMethod,
   up: noSuchMethod,
+  down: noSuchMethod,
 };
