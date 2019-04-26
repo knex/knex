@@ -878,7 +878,9 @@ declare namespace Knex {
   interface Migrator {
     make(name: string, config?: MigratorConfig): Bluebird<string>;
     latest(config?: MigratorConfig): Bluebird<any>;
+    up(config?: MigratorConfig, to?: string): Bluebird<any>;
     rollback(config?: MigratorConfig, all?: boolean): Bluebird<any>;
+    down(config?: MigratorConfig, to?: string): Bluebird<any>;
     status(config?: MigratorConfig): Bluebird<number>;
     currentVersion(config?: MigratorConfig): Bluebird<string>;
   }
