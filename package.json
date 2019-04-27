@@ -3,7 +3,7 @@
   "version": "0.16.5",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
-  "types": "types/knex.d.ts",
+  "types": "types/index.d.ts",
   "engines": {
     "node": ">=6"
   },
