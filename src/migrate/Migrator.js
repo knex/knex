@@ -530,7 +530,7 @@ function validateMigrationList(migrationSource, migrations) {
 
 function getMigrationSubset(migrations, direction, toFile) {
   const migrationCopy =
-    direction === 'up' ? migrations.slice() : migrations.slice().reverse();
+    direction === 'up' ? [...migrations] : [...migrations].reverse();
 
   if (!toFile) {
     return migrationCopy.slice(0, 1);
