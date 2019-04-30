@@ -115,7 +115,17 @@ export default class Migrator {
         .tap((value) =>
           validateMigrationList(this.config.migrationSource, value)
         )
-        .then((val) => (all ? val[0] : this._getLastBatch(val)))
+        .then((val) => {
+          const [allMigrations, completedMigrations] = val;
+
+          return all
+            ? allMigrations
+                .filter((migration) => {
+                  return completedMigrations.includes(migration.file);
+                })
+                .reverse()
+            : this._getLastBatch(val);
+        })
         .then((migrations) => {
           return this._runBatch(migrations, 'down');
         });
