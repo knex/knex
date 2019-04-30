@@ -869,6 +869,8 @@ declare namespace Knex {
     schemaName?: string;
     disableTransactions?: boolean;
     sortDirsSeparately?: boolean;
+    loadExtensions?: string[];
+    migrationSource?: any;
   }
 
   interface SeedsConfig {
