@@ -35,6 +35,7 @@ const { POOL_CONFIG_OPTIONS } = require('./constants');
 function Client(config = {}) {
   this.config = config;
   this.logger = new Logger(config);
+  this.connection = null;
 
   //Client is a required field, so throw error if it's not supplied.
   //If 'this.dialect' is set, then this is a 'super()' call, in which case
@@ -304,8 +305,16 @@ assign(Client.prototype, {
       return Promise.reject(new Error('Unable to acquire a connection'));
     }
 
+    if (this.connection) {
+      return Promise.resolve(this.connection);
+    }
+
     return Promise.try(() => this.pool.acquire().promise)
       .tap((connection) => {
+        const poolConfig = this.config.pool;
+        if (poolConfig && poolConfig.min === 1 && poolConfig.max === 1) {
+          this.connection = connection;
+        }
         debug('acquired connection from pool: %s', connection.__knexUid);
       })
       .catch(TimeoutError, () => {
@@ -319,6 +328,9 @@ assign(Client.prototype, {
   // Releases a connection back to the connection pool,
   // returning a promise resolved when the connection is released.
   releaseConnection(connection) {
+    if (this.connection && this.connection.__knexUid === connection.__knexUid) {
+      return Promise.resolve();
+    }
     debug('releasing connection to pool: %s', connection.__knexUid);
     const didRelease = this.pool.release(connection);
 
