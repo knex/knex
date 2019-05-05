@@ -85,7 +85,7 @@
     "babel": "rimraf ./lib && babel src --out-dir lib --copy-files",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "dev": "rimraf ./lib && babel -w src --out-dir lib --copy-files",
-    "lint": "eslint '{src,test}/**/*.js'",
+    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
     "lint_types": "dtslint types",
     "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && npm run tape",
     "plaintest:sqlite": "cross-env DB=sqlite3 npm run plaintest",
