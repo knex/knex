@@ -5,18 +5,18 @@ sudo: required
 
 cache:
   directories:
-    - "node_modules"
+    - 'node_modules'
 
 matrix:
   fast_finish: true
   include:
-    - node_js: "12"
+    - node_js: '12'
       env: DB="mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
-    - node_js: "10"
+    - node_js: '10'
       env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
-    - node_js: "8"
+    - node_js: '8'
       env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
-    - node_js: "6"
+    - node_js: '6'
       env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
 install:
   - npm i
