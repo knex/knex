@@ -7,7 +7,7 @@ const knex = require('../../../knex');
 const config = require('../../knexfile');
 const sinon = require('sinon');
 
-describe.skip('OracleDb externalAuth', function() {
+describe('OracleDb externalAuth', function() {
   const knexInstance = knex({
     client: 'oracledb',
     connection: {
