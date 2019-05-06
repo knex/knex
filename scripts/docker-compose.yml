@@ -58,7 +58,7 @@ services:
       - 'until /usr/bin/mysql -hmysql -utestuser -ptestpassword -e "SELECT 1"; do sleep 5; done'
 
   postgres:
-    image: postgres:10-alpine
+    image: postgres:alpine
     ports:
       - '25432:5432'
     environment:
