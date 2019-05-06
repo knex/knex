@@ -851,7 +851,12 @@ assign(Builder.prototype, {
 
   // Only allow a single "offset" to be set for the current query.
   offset(value) {
-    this._single.offset = value;
+    const val = parseInt(value, 10);
+    if (isNaN(val)) {
+      this.client.logger.warn('A valid integer must be provided to offset');
+    } else {
+      this._single.offset = val;
+    }
     return this;
   },
 
