@@ -637,7 +637,7 @@ export default [
         t.increments().primary(); // add
         // drops previous default value from column, change type to string and add not nullable constraint
         t.string('username', 35).notNullable().alter();
-        // drops both not null contraint and the default value
+        // drops both not null constraint and the default value
         t.integer('age').alter();
       });
     `
