@@ -94,3 +94,13 @@ services:
       - bash
       - -c
       - 'until /opt/oracle/product/18c/dbhomeXE/bin/sqlplus -s sys/Oracle18@oracledbxe/XE as sysdba <<< "SELECT 13376411 FROM DUAL; exit;" | grep "13376411"; do echo "Could not connect to oracle... sleep for a while"; sleep 5; done'
+#  testrunner:
+#    image: node:10
+#    command:
+#      - bash
+#      - -c
+#      - 'apt update; apt install -y libaio1; sleep 12000'
+#    depends_on:
+#      - oracledbxe
+#    volumes:
+#      - ..:/knex
