@@ -65,6 +65,8 @@ addons:
     packages:
       - g++-4.8
       - gcc-4.8
+      - g++-5
+      - gcc-5
       - libmysqlclient-dev
       - libmysqlclient20
       - mysql-community-client
