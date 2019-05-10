@@ -7,7 +7,7 @@ const knex = require('../../../knex');
 const config = require('../../knexfile');
 const sinon = require('sinon');
 
-describe('OracleDb externalAuth (FAILS ON CI BUT NOT LOCALLY ON MACOS PLZ SOMEONE WITH LINUX FIX)', function() {
+describe('OracleDb externalAuth', function() {
   const knexInstance = knex({
     client: 'oracledb',
     connection: {
@@ -42,7 +42,7 @@ describe('OracleDb externalAuth (FAILS ON CI BUT NOT LOCALLY ON MACOS PLZ SOMEON
   });
 });
 
-describe('OracleDb parameters (FAILS ON CI BUT NOT LOCALLY ON MACOS PLZ SOMEONE WITH LINUX FIX)', function() {
+describe('OracleDb parameters', function() {
   describe('with fetchAsString parameter ', function() {
     let knexClient;
 

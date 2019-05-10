@@ -142,8 +142,9 @@ module.exports = function(knex) {
       });
     });
 
-    // TODO: This doesn't work on oracle yet.
-    if (['pg', 'mssql'].includes(knex.client.driverName)) {
+    if (!['pg', 'mssql'].includes(knex.client.driverName)) {
+      console.error('-------- TODO: fix tests for other dialects');
+    } else {
       describe('returning with wrapIdentifier and postProcessResponse`', () => {
         const origHooks = {};
 

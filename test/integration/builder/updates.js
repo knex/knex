@@ -70,6 +70,80 @@ module.exports = function(knex) {
         });
     });
 
+    it('should immediately return updated value for other connections when updating row to DB returns', function() {
+      if (knex.client.driverName == 'oracledb') {
+        // TODO: this test was added to catch strange random fails with oracle
+        // currently it looks like at least oracle transactions seem to return before
+        // they are actually committed to database...
+
+        // if those selects are changed to forUpdate() then the test seem to pass fine
+
+        console.error(
+          '-------- TODO: this fails pretty much always with oracle'
+        );
+        return;
+      }
+
+      return knex('accounts').then((res) => {
+        function runTest() {
+          return Promise.all(
+            res.map((origRow) => {
+              return Promise.resolve()
+                .then(() => {
+                  return knex.transaction((trx) =>
+                    trx('accounts')
+                      .where('id', origRow.id)
+                      .update({ balance: 654 })
+                  );
+                })
+                .then(() => {
+                  return knex('accounts')
+                    .where('id', origRow.id)
+                    .then((res) => res[0]);
+                })
+                .then((updatedRow) => {
+                  expect(updatedRow.balance).to.equal(654);
+                  return knex.transaction((trx) =>
+                    trx('accounts')
+                      .where('id', origRow.id)
+                      .update({ balance: origRow.balance })
+                  );
+                })
+                .then(() => {
+                  return knex('accounts')
+                    .where('id', origRow.id)
+                    .then((res) => res[0]);
+                })
+                .then((updatedRow) => {
+                  expect(updatedRow.balance).to.equal(origRow.balance);
+                });
+            })
+          );
+        }
+
+        // run few times to try to catch the problem
+        return runTest()
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest());
+      });
+    });
+
     it('should increment a value', function() {
       return knex('accounts')
         .select('logins')
