@@ -60,8 +60,6 @@ services:
 addons:
   postgresql: '9.6'
   apt:
-    sources:
-      - mysql-5.7-xenial
     packages:
       - g++-4.8
       - gcc-4.8
