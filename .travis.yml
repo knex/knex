@@ -67,6 +67,6 @@ addons:
       - gcc-5
       - libmysqlclient-dev
       - libmysqlclient20
-      - mysql-community-client
       - mysql-common
-      - mysql-community-server
+      - mysql-server
+      - mysql-client
