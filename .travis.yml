@@ -1,6 +1,6 @@
 # .travis.yml
 language: node_js
-dist: trusty
+dist: xenial
 sudo: required
 
 cache:
@@ -61,7 +61,7 @@ addons:
   postgresql: '9.6'
   apt:
     sources:
-      - mysql-5.7-trusty
+      - mysql-5.7-xenial
     packages:
       - g++-4.8
       - gcc-4.8
