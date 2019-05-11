@@ -1,6 +1,6 @@
 # .travis.yml
 language: node_js
-dist: trusty
+dist: xenial
 sudo: required
 
 cache:
@@ -10,7 +10,7 @@ cache:
 matrix:
   fast_finish: true
   include:
-  - node_js: "11"
+  - node_js: "12"
     env: DB="mssql mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
   - node_js: "10"
     env: DB="mssql mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
@@ -60,13 +60,9 @@ services:
 addons:
   postgresql: '9.6'
   apt:
-    sources:
-      - mysql-5.7-trusty
     packages:
-      - g++-4.8
-      - gcc-4.8
       - libmysqlclient-dev
       - libmysqlclient20
-      - mysql-community-client
       - mysql-common
-      - mysql-community-server
+      - mysql-server
+      - mysql-client
