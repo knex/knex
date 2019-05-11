@@ -151,6 +151,123 @@ test('migrate:rollback prints verbose logs', (temp) => {
   });
 });
 
+test('migrate:rollback --all rolls back all completed migrations', (temp) => {
+  return (
+    new Promise((resolve, reject) => {
+      fs.writeFile(
+        `${temp}/migrations/000_create_users_table.js`,
+        `
+        exports.up = (knex) => knex.schema
+          .createTable('users', (table) => {
+            table.integer('id');
+          });
+
+        exports.down = (knex) => knex.schema.dropTable('users');
+      `,
+        (err) => (err ? reject(err) : resolve())
+      );
+    })
+      .then(() => {
+        return assertExec(
+          `${KNEX} migrate:latest \
+      --client=sqlite3 \
+      --connection=${temp}/db \
+      --migrations-directory=${temp}/migrations`,
+          'create_users_table'
+        );
+      })
+
+      // .then(() => {
+      //   console.log(fs.readdirSync(`${temp}/migrations`));
+
+      //   return new sqlite3.Database(temp + '/db')
+      // })
+      // .then((db) => {
+      //   return new Promise((resolve, reject) => {
+      //     db.get('SELECT * FROM knex_migrations', function(err, row) {
+      //       console.log(err);
+      //       console.log(row)
+
+      //       return err ? reject(err) : resolve(row);
+      //     })
+      //   });
+      // })
+
+      .then(() => {
+        return new Promise((resolve, reject) => {
+          fs.writeFile(
+            `${temp}/migrations/001_add_columns_to_user_table.js`,
+            `
+          exports.up = (knex) => knex.schema
+            .table('users', (table) => {
+              table.string('name');
+            });
+
+          exports.down = (knex) => knex.schema
+            .table('users', (table) => {
+              table.dropColumn('name');
+            });
+        `,
+            (err) => (err ? reject(err) : resolve())
+          );
+        });
+      })
+      .then(() => {
+        return assertExec(
+          `${KNEX} migrate:latest \
+      --client=sqlite3 \
+      --connection=${temp}/db \
+      --migrations-directory=${temp}/migrations`,
+          'add_columns_to_user_table'
+        );
+      })
+
+      // .then(() => {
+      //   console.log(fs.readdirSync(`${temp}/migrations`));
+
+      //   return new sqlite3.Database(temp + '/db')
+      // })
+      // .then((db) => {
+      //   return new Promise((resolve, reject) => {
+      //     db.get('SELECT * FROM knex_migrations', function(err, row) {
+      //       console.log(err);
+      //       console.log(row)
+
+      //       return err ? reject(err) : resolve(row);
+      //     })
+      //   });
+      // })
+
+      .then(() => {
+        return new Promise((resolve, reject) => {
+          fs.writeFile(
+            `${temp}/migrations/003_add_age_to_user_table.js`,
+            `
+          exports.up = (knex) => knex.schema
+            .table('users', (table) => {
+              table.integer('age');
+            });
+  
+          exports.down = (knex) => knex.schema
+            .table('users', (table) => {
+              table.dropColumn('age');
+            });
+        `,
+            (err) => (err ? reject(err) : resolve())
+          );
+        });
+      })
+      .then(() => {
+        return assertExec(
+          `node ${KNEX} migrate:rollback --all --knexfile=test/jake-util/knexfile/knexfile.js --knexpath=../knex.js`
+        ).then(({ stdout }) => {
+          assert.include(stdout, 'Batch 2 rolled back: 2 migrations');
+          assert.notInclude(stdout, 'simple_migration.js');
+        });
+      })
+  );
+});
+
 module.exports = {
   taskList,
 };
