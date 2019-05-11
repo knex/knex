@@ -1384,7 +1384,7 @@ export default [
     type: "method",
     method: "insert",
     example: ".insert(data, [returning])",
-    description: "Creates an insert query, taking either a hash of properties to be inserted into the row, or an array of inserts, to be executed as a single insert command. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](##Builder-returning)",
+    description: "Creates an insert query, taking either a hash of properties to be inserted into the row, or an array of inserts, to be executed as a single insert command. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#Builder-returning)",
     children: [
       {
         type: "runnable",
@@ -1471,7 +1471,7 @@ export default [
     type: "method",
     method: "update",
     example: ".update(data, [returning]) / .update(key, value, [returning])",
-    description: "Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the updated rows with specified columns. It's a shortcut for [returning method](##Builder-returning)",
+    description: "Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the updated rows with specified columns. It's a shortcut for [returning method](#Builder-returning)",
     children: [
       {
         type: "runnable",
