@@ -20,6 +20,7 @@ matrix:
       env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
 install:
   - npm i
+  - (echo $DB | grep oracledb) && npm install oracledb || true
   - npm run build
 
 before_script:
