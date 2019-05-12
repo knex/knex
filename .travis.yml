@@ -30,7 +30,7 @@ before_script:
   - docker-compose -f scripts/docker-compose.yml exec oracledbxe yum install -y yum-utils
   - docker-compose -f scripts/docker-compose.yml exec oracledbxe yum-config-manager --enable ol7_oracle_instantclient
   - docker-compose -f scripts/docker-compose.yml exec oracledbxe yum install -y oracle-instantclient18.3-basiclite
-  - docker cp scripts_oracledbxe_1:/usr/lib/oracle/18.3/client64/lib/ ~/
+  - docker cp oracledbxe_container:/usr/lib/oracle/18.3/client64/lib/ ~/
   - sudo sh -c "echo $HOME/lib > /etc/ld.so.conf.d/oracle-instantclient.conf"
   - sudo ldconfig
 

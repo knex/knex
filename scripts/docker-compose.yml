@@ -78,6 +78,7 @@ services:
 
   oracledbxe:
     image: quillbuilduser/oracle-18-xe
+    container_name: oracledbxe_container
     ports:
       - '21521:1521'
     environment:
