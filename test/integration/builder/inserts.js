@@ -1099,7 +1099,6 @@ module.exports = function(knex) {
 
     describe('batchInsert (TODO: fix random oracle fail)', function() {
       if (knex.client.driverName == 'oracledb') {
-        this.skip();
         return;
       }
 

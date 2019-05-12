@@ -146,7 +146,6 @@ module.exports = function(knex) {
       const origHooks = {};
 
       if (!['pg', 'mssql'].includes(knex.client.driverName)) {
-        this.skip();
         return;
       }
 
