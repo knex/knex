@@ -93,7 +93,7 @@
     "plaintest:sqlite": "cross-env DB=sqlite3 npm run plaintest",
     "prepare": "npm run babel",
     "prepublishOnly": "npm run babel",
-    "pretest": "npm run lint && npm run lint:types",
+    "pretest": "npm run lint && npm run lint:types && npm run babel",
     "test": "nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 -R spec test/index.js && npm run test:tape && npm run test:cli",
     "test:tape": "node test/tape/index.js | tap-spec",
     "test:cli": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/Jakefile",
