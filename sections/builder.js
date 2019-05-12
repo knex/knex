@@ -1006,6 +1006,20 @@ export default [
   },
   {
     type: "method",
+    method: "clearHaving",
+    example: ".clearHaving()",
+    description: "Clears all having clauses from the query, excluding subqueries.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select().from('users').having('id', '>', 5).clearHaving()
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "clearCounters",
     example: ".clearCounters()",
     description: "Clears all increments/decrements clauses from the query.",
