@@ -91,6 +91,7 @@
     "plaintest": "mocha --exit -t 10000 -b -R spec test/index.js && npm run tape",
     "plaintest:sqlite": "cross-env DB=sqlite3 npm run plaintest",
     "prepare": "npm run babel",
+    "prepublishOnly": "npm run babel",
     "pre_test": "npm run lint && npm run lint_types",
     "bin_test": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/Jakefile",
     "tape": "node test/tape/index.js | tap-spec",
