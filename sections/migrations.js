@@ -84,6 +84,16 @@ export default [
     `
   },
   {
+    type: "text",
+    content: "To rollback all the completed migrations:"
+  },
+  {
+    type: "code",
+    content: `
+      $ knex migrate:rollback --all
+    `
+  },
+  {
     type: "heading",
     size: "lg",
     content: "Seed files",
