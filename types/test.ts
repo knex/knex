@@ -81,7 +81,7 @@ const main = async () => {
   await knex<User>('users').innerJoin<Department>(
     'departments',
     'users.departmentid',
-    'departments.id'
+    'departments.id',
   );
 
   // $ExpectType (User & Department)[]
@@ -89,7 +89,7 @@ const main = async () => {
     'departments',
     'users.departmentid',
     '=',
-    'departments.id'
+    'departments.id',
   );
 
   // $ExpectType (User & Department)[]
@@ -102,7 +102,7 @@ const main = async () => {
     .innerJoin<Department>(
       'departments',
       'users.departmentid',
-      'departments.id'
+      'departments.id',
     )
     .select('users.id', 'departments.id');
 
