@@ -228,6 +228,7 @@ declare namespace Knex {
     clearSelect(): QueryBuilder<TRecord, TResult>;
     clearWhere(): QueryBuilder<TRecord, TResult>;
     clearOrder(): QueryBuilder<TRecord, TResult>;
+    clearHaving(): QueryBuilder<TRecord, TResult>;
     clearCounters(): QueryBuilder<TRecord, TResult>;
 
     // Paging
