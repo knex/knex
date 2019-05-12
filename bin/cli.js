@@ -231,6 +231,28 @@ function invoke(env) {
     });
 
   commander
+    .command('migrate:up')
+    .description('        Run the next migration that has not yet been run.')
+    .action(() => {
+      pending = initKnex(env, commander.opts())
+        .migrate.up()
+        .spread((batchNo, log) => {
+          if (log.length === 0) {
+            success(color.cyan('Already up to date'));
+          }
+
+          success(
+            color.green(
+              `Batch ${batchNo} ran the following migrations:\n${log.join(
+                '\n'
+              )}`
+            )
+          );
+        })
+        .catch(exit);
+    });
+
+  commander
     .command('migrate:rollback')
     .description('        Rollback the last batch of migrations performed.')
     .option('--all', 'rollback all completed migrations')
