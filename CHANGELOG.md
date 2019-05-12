@@ -1,6 +1,17 @@
 # Master (Unreleased)
 
-# 0.16.6 - 12 May, 2019
+# 0.16.7 - 12 May, 2019
+
+### New features:
+
+- Add clearHaving function #3141
+- Add --all flag for rollback in CLI #3187
+
+### Typings
+
+- Add default values for generic types (fixes backwards compatibility broken by 0.16.6) #3189
+
+# 0.16.6 - 11 May, 2019
 
 ### New features:
 
