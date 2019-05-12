@@ -66,7 +66,7 @@ services:
       - POSTGRES_PASSWORD=knextest
       - POSTGRES_DB=knex_test
   waitpostgres:
-    image: postgres:10-alpine
+    image: postgres:alpine
     links:
       - postgres
     depends_on:
