@@ -27,10 +27,8 @@ type Value =
   | Buffer
   | Knex.Raw;
 
-type AnyQueryBuilder = Knex.QueryBuilder<any>;
-
 interface ValueMap {
-  [key: string]: Value | AnyQueryBuilder;
+  [key: string]: Value | Knex.QueryBuilder;
 }
 
 type ColumnDescriptor<TRecord, TResult> =
@@ -39,7 +37,7 @@ type ColumnDescriptor<TRecord, TResult> =
   | Knex.QueryBuilder<TRecord, TResult>
   | { [key: string]: string };
 
-type TableName = string | Knex.Raw | AnyQueryBuilder;
+type TableName = string | Knex.Raw | Knex.QueryBuilder;
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 type MaybeArray<T> = T | T[];
@@ -47,7 +45,9 @@ type ComparisionOperator = '=' | '>' | '>=' | '<' | '<=' | '<>';
 
 type MaybeArrayMember<T> = T extends (infer M)[] ? M : T;
 
-interface Boxed<T> { _value: T; }
+interface Boxed<T> {
+  _value: T;
+}
 
 interface DeferredKeySelection<TBase, TKeys extends string> {
   _base: TBase;
@@ -73,9 +73,11 @@ declare namespace DeferredKeySelection {
     infer Keys
   >
     ? Base extends {}
-      // Boxing is necessary to prevent distribution of conditional types:
-      // https://lorefnon.tech/2019/05/02/using-boxing-to-prevent-distribution-of-conditional-types/
-      ? Boxed<Keys> extends Boxed<keyof Base> ? Pick<Base, Keys & keyof Base> : any
+      ? // Boxing is necessary to prevent distribution of conditional types:
+        // https://lorefnon.tech/2019/05/02/using-boxing-to-prevent-distribution-of-conditional-types/
+        Boxed<Keys> extends Boxed<keyof Base>
+        ? Pick<Base, Keys & keyof Base>
+        : any
       : any
     : TSelection;
   type Resolve<TSelection> = TSelection extends DeferredKeySelection<any, any>
@@ -91,7 +93,7 @@ interface Identifier {
   [alias: string]: string;
 }
 
-interface Knex<TRecord extends {}, TResult>
+interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult> {
   <TRecord2 = TRecord, TResult2 = TResult>(
     tableName?: TableName | Identifier
@@ -138,7 +140,7 @@ declare namespace Knex {
   // QueryInterface
   //
 
-  interface QueryInterface<TRecord extends {}, TResult = unknown> {
+  interface QueryInterface<TRecord extends {} = any, TResult = unknown[]> {
     select: Select<TRecord, TResult>;
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
@@ -442,8 +444,14 @@ declare namespace Knex {
     (columnName: string): QueryBuilder<TRecord, TResult>;
   }
 
-  interface Select<TRecord extends {}, TResult extends unknown | {}[]>
+  interface Select<TRecord extends {} = any, TResult = unknown[]>
     extends ColumnNameQueryBuilder<TRecord, TResult> {
+    <TInnerRecord, TInnerResult, TResult2 = any[]>(
+      ...subQueryBuilders: QueryBuilder<TInnerRecord, TInnerResult>[]
+    ): QueryBuilder<TRecord, TResult2>;
+    <TInnerRecord, TInnerResult, TResult2 = any[]>(
+      subQueryBuilders: QueryBuilder<TInnerRecord, TInnerResult>[]
+    ): QueryBuilder<TRecord, TResult2>;
     <
       AliasUT extends { [alias: string]: string | Knex.Raw },
       TResult2 = DeferredKeySelection.Augment<
@@ -456,7 +464,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
   }
 
-  interface Table<TRecord extends {}, TResult extends {}> {
+  interface Table<TRecord extends {} = any, TResult extends {} = any> {
     <
       TRecord2 = TRecord,
       TResult2 = DeferredKeySelection.SetBase<
@@ -493,7 +501,7 @@ declare namespace Knex {
     (this: JoinClause, join: JoinClause): void;
   }
 
-  interface Join<TRecord extends {}, TResult extends {}> {
+  interface Join<TRecord extends {} = any, TResult = unknown[]> {
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
@@ -604,18 +612,18 @@ declare namespace Knex {
     type(type: string): JoinClause;
   }
 
-  interface JoinRaw<TRecord, TResult> {
+  interface JoinRaw<TRecord = any, TResult = unknown[]> {
     (tableName: string, binding?: Value | ValueMap): QueryBuilder<
       TRecord,
       TResult
     >;
   }
 
-  interface With<TRecordOuter, TResultOuter>
+  interface With<TRecordOuter = any, TResultOuter = unknown[]>
     extends WithRaw<TRecordOuter, TResultOuter>,
       WithWrapped<TRecordOuter, TResultOuter> {}
 
-  interface WithRaw<TRecordOuter, TResultOuter> {
+  interface WithRaw<TRecordOuter = any, TResultOuter = unknown[]> {
     <TRecordInner, TResultInner>(
       alias: string,
       raw: Raw | QueryBuilder<TRecordInner, TResultInner>
@@ -627,11 +635,11 @@ declare namespace Knex {
     ): QueryBuilder<TRecordOuter, TResultOuter>;
   }
 
-  interface WithSchema<TRecord, TResult> {
+  interface WithSchema<TRecord = any, TResult = unknown[]> {
     (schema: string): QueryBuilder<TRecord, TResult>;
   }
 
-  interface WithWrapped<TRecordOuter, TResultOuter> {
+  interface WithWrapped<TRecordOuter = any, TResultOuter = unknown[]> {
     <TRecordInner, TResultInner>(
       alias: string,
       queryBuilder: QueryBuilder<TRecordInner, TResultInner>
@@ -642,10 +650,13 @@ declare namespace Knex {
     ): QueryBuilder<TRecordOuter, TResultOuter>;
   }
 
-  type WhereResult<TRecord, TResult> = QueryBuilder<TRecord, TResult> &
+  type WhereResult<TRecord = any, TResult = unknown[]> = QueryBuilder<
+    TRecord,
+    TResult
+  > &
     ChainableInterface<TResult extends unknown ? TRecord[] : TResult[]>;
 
-  interface Where<TRecord, TResult>
+  interface Where<TRecord = any, TResult = unknown[]>
     extends WhereRaw<TRecord, TResult>,
       WhereWrapped<TRecord, TResult>,
       WhereNull<TRecord, TResult> {
@@ -693,21 +704,21 @@ declare namespace Knex {
     ): WhereResult<TRecord, TResult>;
   }
 
-  interface WhereRaw<TRecord, TResult>
+  interface WhereRaw<TRecord = any, TResult = unknown[]>
     extends RawQueryBuilder<TRecord, TResult> {
     (condition: boolean): WhereResult<TRecord, TResult>;
   }
 
-  interface WhereWrapped<TRecord, TResult> {
+  interface WhereWrapped<TRecord = any, TResult = unknown[]> {
     (callback: QueryCallback): WhereResult<TRecord, TResult>;
   }
 
-  interface WhereNull<TRecord, TResult> {
+  interface WhereNull<TRecord = any, TResult = unknown[]> {
     (columnName: keyof TRecord): WhereResult<TRecord, TResult>;
     (columnName: string): WhereResult<TRecord, TResult>;
   }
 
-  interface WhereBetween<TRecord, TResult> {
+  interface WhereBetween<TRecord = any, TResult = unknown[]> {
     <K extends keyof TRecord>(
       columnName: K,
       range: [TRecord[K], TRecord[K]]
@@ -715,14 +726,14 @@ declare namespace Knex {
     (columnName: string, range: [Value, Value]): WhereResult<TRecord, TResult>;
   }
 
-  interface WhereExists<TRecord, TResult> {
+  interface WhereExists<TRecord = any, TResult = unknown[]> {
     (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
     <TRecordInner, TResultInner>(
       query: QueryBuilder<TRecordInner, TResultInner>
     ): WhereResult<TRecord, TResult>;
   }
 
-  interface WhereIn<TRecord, TResult> {
+  interface WhereIn<TRecord = any, TResult = unknown[]> {
     <K extends keyof TRecord>(
       columnName: K,
       values: TRecord[K][] | QueryCallback
@@ -757,11 +768,11 @@ declare namespace Knex {
     ): WhereResult<TRecord, TResult>;
   }
 
-  interface GroupBy<TRecord, TResult>
+  interface GroupBy<TRecord = any, TResult = unknown[]>
     extends RawQueryBuilder<TRecord, TResult>,
       ColumnNameQueryBuilder<TRecord, TResult> {}
 
-  interface OrderBy<TRecord, TResult> {
+  interface OrderBy<TRecord = any, TResult = unknown[]> {
     (columnName: keyof TRecord, order?: 'asc' | 'desc'): QueryBuilder<
       TRecord,
       TResult
@@ -777,7 +788,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
   }
 
-  interface Intersect<TRecord, TResult> {
+  interface Intersect<TRecord = any, TResult = unknown[]> {
     (
       callback: QueryCallback | QueryBuilder<TRecord, TResult> | Raw,
       wrap?: boolean
@@ -791,7 +802,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
   }
 
-  interface Union<TRecord, TResult> {
+  interface Union<TRecord = any, TResult = unknown[]> {
     (
       callback: QueryCallback | QueryBuilder<TRecord, TResult> | Raw,
       wrap?: boolean
@@ -806,7 +817,7 @@ declare namespace Knex {
     // (...callbacks: QueryCallback[], wrap?: boolean): QueryInterface;
   }
 
-  interface Having<TRecord, TResult>
+  interface Having<TRecord = any, TResult = unknown[]>
     extends RawQueryBuilder<TRecord, TResult>,
       WhereWrapped<TRecord, TResult> {
     <K1 extends keyof TRecord, K2 extends keyof TRecord>(
@@ -823,7 +834,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
   }
 
-  interface HavingRange<TRecord, TResult> {
+  interface HavingRange<TRecord = any, TResult = unknown[]> {
     <K extends keyof TRecord>(
       columnName: K,
       values: TRecord[K][]
@@ -833,7 +844,7 @@ declare namespace Knex {
 
   // commons
 
-  interface ColumnNameQueryBuilder<TRecord, TResult extends unknown | {}[]> {
+  interface ColumnNameQueryBuilder<TRecord = any, TResult = unknown[]> {
     // When all columns are known to be keys of original record,
     // we can extend our selection by these columns
     (columnName: '*'): QueryBuilder<TRecord, TRecord>;
@@ -880,14 +891,14 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
   }
 
-  interface RawQueryBuilder<TRecord, TResult> {
+  interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
     <TResult2 = Partial<TRecord>[]>(
       sql: string,
-      ...bindings: (Value | QueryBuilder<any>)[]
+      ...bindings: (Value | QueryBuilder)[]
     ): QueryBuilder<TRecord, TResult2>;
     <TResult2 = Partial<TRecord>[]>(
       sql: string,
-      bindings: (Value | QueryBuilder<any>)[] | ValueMap
+      bindings: (Value | QueryBuilder)[] | ValueMap
     ): QueryBuilder<TRecord, TResult2>;
     <TResult2 = Partial<TRecord>[]>(raw: Raw<TResult2>): QueryBuilder<
       TRecord,
@@ -923,7 +934,7 @@ declare namespace Knex {
   // QueryBuilder
   //
 
-  type QueryCallback = <TRecord, TResult>(
+  type QueryCallback = <TRecord = any, TResult = unknown[]>(
     this: QueryBuilder<TRecord, TResult>,
     builder: QueryBuilder<TRecord, TResult>
   ) => void;
@@ -933,7 +944,10 @@ declare namespace Knex {
     ...args: any[]
   ) => void;
 
-  interface QueryBuilder<TRecord extends {}, TResult = Partial<TRecord>[]>
+  interface QueryBuilder<
+    TRecord extends {} = any,
+    TResult = Partial<TRecord>[]
+  >
     extends QueryInterface<TRecord, TResult>,
       ChainableInterface<ResolveResult<TResult>> {
     // [TODO] Doesn't seem to be available
@@ -979,7 +993,7 @@ declare namespace Knex {
   // Chainable interface
   //
 
-  interface ChainableInterface<T> extends Bluebird<T> {
+  interface ChainableInterface<T = any> extends Bluebird<T> {
     toQuery(): string;
     options(options: { [key: string]: any }): this;
     connection(connection: any): this;
@@ -998,7 +1012,7 @@ declare namespace Knex {
     asCallback(callback: Function): this;
   }
 
-  interface Transaction<T> extends Knex<any, T> {
+  interface Transaction<T = any> extends Knex<any, T> {
     savepoint(transactionScope: (trx: Transaction<T>) => any): Bluebird<T>;
     commit(value?: any): QueryBuilder<any, T>;
     rollback(error?: any): QueryBuilder<any, T>;

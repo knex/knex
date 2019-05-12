@@ -183,4 +183,12 @@ const main = async () => {
 
   // $ExpectType { [key: string]: string | number; }[]
   await knex('users').count('age');
+
+  // $ExpectType any[]
+  await knex('users').select(knex('foo').select('bar').as('colName'));
+
+  // $ExpectType any[]
+  await knex('users').whereNot(function() {
+    this.where('id', 1).orWhereNot('id', '>', 10);
+  });
 };
