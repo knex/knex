@@ -991,15 +991,21 @@ assign(Builder.prototype, {
     return this;
   },
 
-  // Remove everything from select clause
+  // Remove everything from where clause
   clearWhere() {
     this._clearGrouping('where');
     return this;
   },
 
-  // Remove everything from select clause
+  // Remove everything from order clause
   clearOrder() {
     this._clearGrouping('order');
+    return this;
+  },
+
+  // Remove everything from having clause
+  clearHaving() {
+    this._clearGrouping('having');
     return this;
   },
 
