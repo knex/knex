@@ -59,11 +59,9 @@ module.exports = function(knex) {
         });
     });
 
-    it('should be able to commit transactions', function() {
+    it('should be able to commit transactions (TODO: fix random oracle fail)', function() {
       if (knex.client.driverName == 'oracledb') {
-        console.error(
-          '-------- TODO: this fails randomly some times with oracle'
-        );
+        this.skip();
         return;
       }
 
@@ -149,11 +147,9 @@ module.exports = function(knex) {
         });
     });
 
-    it('should be able to commit transactions with a resolved trx query', function() {
+    it('should be able to commit transactions with a resolved trx query (TODO: fix random oracle fail)', function() {
       if (knex.client.driverName == 'oracledb') {
-        console.error(
-          '-------- TODO: this fails randomly some times with oracle'
-        );
+        this.skip();
         return;
       }
 

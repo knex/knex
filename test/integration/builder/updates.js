@@ -2,6 +2,8 @@
 
 'use strict';
 
+const Bluebird = require('bluebird');
+
 module.exports = function(knex) {
   describe('Updates', function() {
     it('should handle updates', function() {
@@ -70,7 +72,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should immediately return updated value for other connections when updating row to DB returns', function() {
+    it('should immediately return updated value for other connections when updating row to DB returns (TODO: fix oracle fail)', function() {
       if (knex.client.driverName == 'oracledb') {
         // TODO: this test was added to catch strange random fails with oracle
         // currently it looks like at least oracle transactions seem to return before
@@ -78,17 +80,15 @@ module.exports = function(knex) {
 
         // if those selects are changed to forUpdate() then the test seem to pass fine
 
-        console.error(
-          '-------- TODO: this fails pretty much always with oracle'
-        );
+        this.skip();
         return;
       }
 
       return knex('accounts').then((res) => {
         function runTest() {
-          return Promise.all(
+          return Bluebird.all(
             res.map((origRow) => {
-              return Promise.resolve()
+              return Bluebird.resolve()
                 .then(() => {
                   return knex.transaction((trx) =>
                     trx('accounts')

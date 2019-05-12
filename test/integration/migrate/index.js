@@ -226,11 +226,9 @@ module.exports = function(knex) {
         });
       });
 
-      it('should remove the record in the lock table once finished', function() {
+      it('should remove the record in the lock table once finished (TODO: fix random oracle fail)', function() {
         if (knex.client.driverName == 'oracledb') {
-          console.error(
-            '-------- TODO: this fails randomly some times with oracle'
-          );
+          this.skip();
           return;
         }
 
