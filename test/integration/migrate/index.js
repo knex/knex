@@ -2,6 +2,7 @@
 'use strict';
 
 const equal = require('assert').equal;
+const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
 const Promise = require('bluebird');
@@ -444,6 +445,51 @@ module.exports = function(knex) {
           .spread(function(batchNo, log) {
             expect(batchNo).to.equal(2);
             expect(log).to.have.length(4);
+            return knex('knex_migrations')
+              .select('*')
+              .then(function(data) {
+                expect(data.length).to.equal(0);
+              });
+          });
+      });
+
+      it('should drop tables as specified in the batch', () => {
+        return Promise.map(tables, function(table) {
+          return knex.schema.hasTable(table).then(function(exists) {
+            expect(!!exists).to.equal(false);
+          });
+        });
+      });
+    });
+
+    describe('knex.migrate.rollback - all', () => {
+      before(() => {
+        return knex.migrate.latest({
+          directory: ['test/integration/migrate/test'],
+        });
+      });
+
+      it('should only rollback migrations that have been completed and in reverse chronological order', () => {
+        return knex.migrate
+          .rollback(
+            {
+              directory: [
+                'test/integration/migrate/test',
+                'test/integration/migrate/test2',
+              ],
+            },
+            true
+          )
+          .spread(function(batchNo, log) {
+            expect(batchNo).to.equal(1);
+            expect(log).to.have.length(2);
+
+            fs.readdirSync('test/integration/migrate/test')
+              .reverse()
+              .forEach((fileName, index) => {
+                expect(fileName).to.equal(log[index]);
+              });
+
             return knex('knex_migrations')
               .select('*')
               .then(function(data) {

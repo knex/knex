@@ -18,7 +18,9 @@ const { DEFAULT_EXT } = require('./utils/constants');
 
 function exit(text) {
   if (text instanceof Error) {
-    console.error(color.red(text.stack));
+    console.error(
+      color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
+    );
   } else {
     console.error(color.red(text));
   }
@@ -204,11 +206,14 @@ function invoke(env) {
 
   commander
     .command('migrate:rollback')
-    .description('        Rollback the last set of migrations performed.')
+    .description('        Rollback the last batch of migrations performed.')
+    .option('--all', 'rollback all completed migrations')
     .option('--verbose', 'verbose')
-    .action(() => {
+    .action((cmd) => {
+      const { all } = cmd;
+
       pending = initKnex(env, commander.opts())
-        .migrate.rollback()
+        .migrate.rollback(null, all)
         .spread((batchNo, log) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
