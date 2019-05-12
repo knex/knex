@@ -582,6 +582,74 @@ module.exports = function(knex) {
       });
     });
 
+    describe('knex.migrate.up', () => {
+      afterEach(() => {
+        return knex.migrate.rollback(
+          { directory: 'test/integration/migrate/test' },
+          true
+        );
+      });
+
+      it('should only run the first migration if no migrations have run', function() {
+        return knex.migrate
+          .up({
+            directory: 'test/integration/migrate/test',
+          })
+          .then(() => {
+            return knex('knex_migrations')
+              .select('*')
+              .then(function(data) {
+                expect(data).to.have.length(1);
+                expect(path.basename(data[0].name)).to.equal(
+                  '20131019235242_migration_1.js'
+                );
+              });
+          });
+      });
+
+      it('should only run the next migration that has not yet run if other migrations have already run', function() {
+        return knex.migrate
+          .up({
+            directory: 'test/integration/migrate/test',
+          })
+          .then(() => {
+            return knex.migrate
+              .up({
+                directory: 'test/integration/migrate/test',
+              })
+              .then(() => {
+                return knex('knex_migrations')
+                  .select('*')
+                  .then(function(data) {
+                    expect(data).to.have.length(2);
+                    expect(path.basename(data[0].name)).to.equal(
+                      '20131019235242_migration_1.js'
+                    );
+                    expect(path.basename(data[1].name)).to.equal(
+                      '20131019235306_migration_2.js'
+                    );
+                  });
+              });
+          });
+      });
+
+      it('should not error and return a resolved promise if all migrations have already been run', function() {
+        return knex.migrate
+          .latest({
+            directory: 'test/integration/migrate/test',
+          })
+          .then(() => {
+            return knex.migrate
+              .up({
+                directory: 'test/integration/migrate/test',
+              })
+              .then((data) => {
+                expect(data).to.be.an('array');
+              });
+          });
+      });
+    });
+
     after(function() {
       rimraf.sync(path.join(__dirname, './migration'));
     });
