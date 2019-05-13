@@ -1,12 +1,11 @@
 exports.up = function(knex, Promise) {
-  return Promise.all([
-    knex.schema.createTable('null_date', function(t) {
-      t.increments('id').primary();
-      t.timestamp('deleted_at')
-        .nullable()
-        .defaultTo(null);
-    }),
-  ]);
+  return knex.schema.createTable('null_date', function(t) {
+    t.increments('id').primary();
+    t.string('dummy');
+    t.timestamp('deleted_at')
+      .nullable()
+      .defaultTo(null);
+  });
 };
 
 exports.down = (knex) => {
