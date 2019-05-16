@@ -558,7 +558,7 @@ module.exports = function(knex) {
           });
       });
 
-      it('should not error and return a resolved promise if all migrations have already been run', function() {
+      it('should not error if all migrations have already been run', function() {
         return knex.migrate
           .latest({
             directory: 'test/integration/migrate/test',
