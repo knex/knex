@@ -12,8 +12,246 @@ import * as events from 'events';
 import * as stream from 'stream';
 import * as Bluebird from 'bluebird';
 
+// # Generic type-level utilities
+
+// If T is object then make it a partial otherwise fallback to any
+//
+// This is primarily to prevent type incompatibilities where target can be unknown.
+// While unknown can be assigned to any, Partial<unknown> can't be.
+type SafePartial<T> = T extends {} ? Partial<T> : any;
+
+type MaybeArray<T> = T | T[];
+
+type StrKey<T> = string & keyof T;
+
+// If T is unknown then convert to any, else retain original
+type UnknownToAny<T> = unknown[] extends T
+  ? any[]
+  : unknown extends T
+  ? any
+  : T;
+
+// Intersection conditionally applied only when TParams is non-empty
+// This is primarily to keep the signatures more intuitive.
+type AugmentParams<TTarget, TParams> = {} extends TParams
+  ? TTarget
+  : TTarget & TParams;
+
+// Check if provided keys (expressed as a single or union type) are members of TBase
+type AreKeysOf<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
+  ? true
+  : false;
+
+// https://stackoverflow.com/a/50375286/476712
+type UnionToIntersection<U> = (U extends any
+  ? (k: U) => void
+  : never) extends ((k: infer I) => void)
+  ? I
+  : never;
+
+type ComparisionOperator = '=' | '>' | '>=' | '<' | '<=' | '<>';
+
+// If T is an array, get the type of member, else fall back to never
+type ArrayMember<T> = T extends (infer M)[] ? M : never;
+
+// If T is an array, get the type of member, else retain original
+type UnwrapArrayMember<T> = T extends (infer M)[] ? M : T;
+
+// Wrap a type in a container, making it an object type.
+// This is primarily useful in circumventing special handling of union/intersection in typescript
+interface Boxed<T> {
+  _value: T;
+}
+
+// If T can't be assigned to TBase fallback to an alternate type TAlt
+type IncompatibleToAlt<T, TBase, TAlt> = T extends TBase ? T : TAlt;
+
+// Boxing is necessary to prevent distribution of conditional types:
+// https://lorefnon.tech/2019/05/02/using-boxing-to-prevent-distribution-of-conditional-types/
+type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
+  ? Pick<TBase, TKeys & keyof TBase>
+  : any;
+
+// Retain the association of original keys with aliased keys at type level
+// to facilitates type-safe aliasing for object syntax
+type MappedAliasType<TBase, TAliasMapping> = {
+  [K in keyof TAliasMapping]: TAliasMapping[K] extends keyof TBase
+    ? TBase[TAliasMapping[K]]
+    : any
+};
+
+// Container type for situations when we want a partial/intersection eventually
+// but the keys being selected or additional properties being augmented are not
+// all known at once and we would want to effectively build up a partial/intersection
+// over multiple steps.
+interface DeferredKeySelection<
+  // The base of selection. In intermediate stages this may be unknown.
+  // If it remains unknown at the point of resolution, the selection will fall back to any
+  TBase,
+  // Union of keys to be selected
+  // In intermediate stages this may be never.
+  TKeys extends string,
+  // Changes how the resolution should behave if TKeys is never.
+  // If true, then we assume that some keys were selected, and if TKeys is never, we will fall back to any.
+  // If false, and TKeys is never, then we select TBase in its entirity
+  THasSelect extends true | false = false,
+  // Mapping of aliases <key in result> -> <key in TBase>
+  TAliasMapping extends {} = {},
+  // If enabled, then instead of extracting a partial, during resolution
+  // we will pick just a single property.
+  TSingle extends boolean = false
+> {
+  // These properties are not actually used, but exist simply because
+  // typescript doesn't end up happy when type parameters are unused
+  _base: TBase;
+  _hasSelection: THasSelect;
+  _keys: TKeys;
+  _aliases: TAliasMapping;
+  _single: TSingle;
+}
+
+// An companion namespace for DeferredKeySelection which provides type operators
+// to build up participants of intersection/partial over multiple invocations
+// and for final resolution.
+//
+// While the comments use wordings such as replacement and addition, it is important
+// to keep in mind that types are always immutable and all type operators return new altered types.
+declare namespace DeferredKeySelection {
+  type Any = DeferredKeySelection<any, any, any, any, any>;
+
+  // Replace the Base if already a deferred selection.
+  // If not, create a new deferred selection with specified base.
+  type SetBase<TSelection, TBase> = TSelection extends DeferredKeySelection<
+    any,
+    infer TKeys,
+    infer THasSelect,
+    infer TAliasMapping,
+    infer TSingle
+  >
+    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle>
+    : DeferredKeySelection<TBase, never>;
+
+  // If TSelection is already a deferred selection, then replace the base with TBase
+  // If unknown, create a new deferred selection with TBase as the base
+  // Else, retain original
+  //
+  // For practical reasons applicable to current context, we always return arrays of
+  // deferred selections. So, this particular operator may not be useful in generic contexts.
+  type ReplaceBase<TSelection, TBase> = UnwrapArrayMember<
+    TSelection
+  > extends DeferredKeySelection.Any
+    ? DeferredKeySelection.SetBase<UnwrapArrayMember<TSelection>, TBase>[]
+    : unknown extends UnwrapArrayMember<TSelection>
+    ? DeferredKeySelection.SetBase<unknown, TBase>[]
+    : TSelection;
+
+  // Type operators to substitute individual type parameters:
+
+  type SetSingle<
+    TSelection,
+    TSingle extends boolean
+  > = TSelection extends DeferredKeySelection<
+    infer TBase,
+    infer TKeys,
+    infer THasSelect,
+    infer TAliasMapping,
+    any
+  >
+    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle>
+    : never;
+
+  type AddKey<
+    TSelection,
+    TKey extends string
+  > = TSelection extends DeferredKeySelection<
+    infer TBase,
+    infer TKeys,
+    any,
+    infer TAliasMapping,
+    infer TSingle
+  >
+    ? DeferredKeySelection<TBase, TKeys | TKey, true, TAliasMapping, TSingle>
+    : DeferredKeySelection<unknown, TKey, true>;
+
+  type AddAliases<TSelection, T> = TSelection extends DeferredKeySelection<
+    infer TBase,
+    infer TKeys,
+    infer THasSelect,
+    infer TAliasMapping,
+    infer TSingle
+  >
+    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping & T, TSingle>
+    : DeferredKeySelection<unknown, never, false, T>;
+
+  // Convenience utility to set base, keys and aliases in a single type
+  // application
+  type Augment<T, TBase, TKey extends string, TAliasMapping = {}> = AddAliases<
+    AddKey<SetBase<T, TBase>, TKey>,
+    TAliasMapping
+  >;
+
+  // Core resolution logic -- Refer to docs for DeferredKeySelection for specifics
+  type ResolveOne<TSelection> = TSelection extends DeferredKeySelection<
+    infer TBase,
+    infer TKeys,
+    infer THasSelect,
+    infer TAliasMapping,
+    infer TSingle
+  >
+    ? TBase extends {}
+      ? TSingle extends true
+        ? TKeys extends keyof TBase
+          ? TBase[TKeys]
+          : any
+        : AugmentParams<
+            true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
+            MappedAliasType<TBase, TAliasMapping>
+          >
+      : any
+    : TSelection;
+
+  // Resolution logic lifted over arrays of deferred selections
+  type Resolve<TSelection> = TSelection extends DeferredKeySelection.Any
+    ? ResolveOne<TSelection>
+    : TSelection extends DeferredKeySelection.Any[]
+    ? ResolveOne<TSelection[0]>[]
+    : TSelection;
+}
+
+// Convenience alias and associated companion namespace for working
+// with DeferredSelection having TSingle=true.
+//
+// When TSingle=true in DeferredSelection, then we are effectively
+// deferring an index access operation (TBase[TKey]) over a potentially
+// unknown initial type of TBase and potentially never initial type of TKey
+
+interface DeferredIndex<TBase, TKey extends string>
+  extends DeferredKeySelection<TBase, TKey, false, {}, true> {}
+
+declare namespace DeferredIndex {
+  type Augment<
+    T,
+    TBase,
+    TKey extends string,
+    TAliasMapping = {}
+  > = DeferredKeySelection.SetSingle<
+    DeferredKeySelection.AddKey<DeferredKeySelection.SetBase<T, TBase>, TKey>,
+    true
+  >;
+}
+
+// If we have more categories of deferred selection in future,
+// this will combine all of them
+type ResolveResult<S> = DeferredKeySelection.Resolve<S>;
+
+// # Type-aliases for common type combinations
+
 type Callback = Function;
 type Client = Function;
+
+interface Identifier {
+  [alias: string]: string;
+}
 
 type Value =
   | string
@@ -42,134 +280,6 @@ type ColumnDescriptor<TRecord, TResult> =
 type TableName = string | Knex.Raw | Knex.QueryBuilder;
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
-
-type SafePartial<T> = T extends {} ? Partial<T> : any;
-
-type MaybeArray<T> = T | T[];
-
-type UnknownToAny<T> = unknown[] extends T
-  ? any[]
-  : unknown extends T
-  ? any
-  : T;
-
-type AugmentParams<TTarget, TParams> = {} extends TParams
-  ? TTarget
-  : TTarget & TParams;
-
-type AreKeysOf<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
-  ? true
-  : false;
-
-// https://stackoverflow.com/a/50375286/476712
-type UnionToIntersection<U> = (U extends any
-  ? (k: U) => void
-  : never) extends ((k: infer I) => void)
-  ? I
-  : never;
-
-type ComparisionOperator = '=' | '>' | '>=' | '<' | '<=' | '<>';
-
-type ArrayMember<T> = T extends (infer M)[] ? M : never;
-
-type MaybeArrayMember<T> = T extends (infer M)[] ? M : T;
-
-interface Boxed<T> {
-  _value: T;
-}
-
-type IncompatibleToAlt<T, TBase, TAlt> = T extends TBase ? T : TAlt;
-
-// Boxing is necessary to prevent distribution of conditional types:
-// https://lorefnon.tech/2019/05/02/using-boxing-to-prevent-distribution-of-conditional-types/
-type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
-  ? Pick<TBase, TKeys & keyof TBase>
-  : any;
-
-type MappedAliasType<TBase, TAliasMapping> = {
-  [K in keyof TAliasMapping]: TAliasMapping[K] extends keyof TBase
-    ? TBase[TAliasMapping[K]]
-    : any
-};
-
-interface DeferredKeySelection<
-  TBase,
-  TKeys extends string,
-  THasSelect extends true | false = false,
-  TAliasMapping extends {} = {}
-> {
-  _base: TBase;
-  _hasSelection: THasSelect;
-  _keys: TKeys;
-  _aliases: TAliasMapping;
-}
-
-declare namespace DeferredKeySelection {
-  type SetBase<TSelection, TBase> = TSelection extends DeferredKeySelection<
-    any,
-    infer TKeys,
-    infer THasSelect,
-    infer TAliasMapping
-  >
-    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping>
-    : DeferredKeySelection<TBase, never>;
-
-  type AddKey<
-    TSelection,
-    TKey extends string
-  > = TSelection extends DeferredKeySelection<
-    infer TBase,
-    infer TKeys,
-    any,
-    infer TAliasMapping
-  >
-    ? DeferredKeySelection<TBase, TKeys | TKey, true, TAliasMapping>
-    : DeferredKeySelection<unknown, TKey, true>;
-
-  type AddAliases<TSelection, T> = TSelection extends DeferredKeySelection<
-    infer TBase,
-    infer TKeys,
-    infer THasSelect,
-    infer TAliasMapping
-  >
-    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping & T>
-    : DeferredKeySelection<unknown, never, false, T>;
-
-  type Augment<T, TBase, TKey extends string, TAliasMapping = {}> = AddAliases<
-    AddKey<SetBase<T, TBase>, TKey>,
-    TAliasMapping
-  >;
-
-  type ResolveSingle<TSelection> = TSelection extends DeferredKeySelection<
-    infer TBase,
-    infer TKeys,
-    infer THasSelect,
-    infer TAliasMapping
-  >
-    ? TBase extends {}
-      ? AugmentParams<
-          true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
-          MappedAliasType<TBase, TAliasMapping>
-        >
-      : any
-    : TSelection;
-
-  type Resolve<TSelection> = TSelection extends DeferredKeySelection<
-    any,
-    any,
-    any
-  >
-    ? ResolveSingle<TSelection>
-    : TSelection extends DeferredKeySelection<any, any, any>[]
-    ? ResolveSingle<TSelection[0]>[]
-    : TSelection;
-}
-
-type ResolveResult<S> = DeferredKeySelection.Resolve<S>;
-
-interface Identifier {
-  [alias: string]: string;
-}
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult> {
@@ -302,7 +412,18 @@ declare namespace Knex {
     havingBetween: HavingRange<TRecord, TResult>;
 
     // Clear
-    clearSelect(): QueryBuilder<TRecord, TResult>;
+    clearSelect(): QueryBuilder<
+      TRecord,
+      UnwrapArrayMember<TResult> extends DeferredKeySelection<
+        infer TBase,
+        infer TKeys,
+        true,
+        any,
+        any
+      >
+        ? DeferredKeySelection<TBase, never>[]
+        : TResult
+    >;
     clearWhere(): QueryBuilder<TRecord, TResult>;
     clearOrder(): QueryBuilder<TRecord, TResult>;
     clearHaving(): QueryBuilder<TRecord, TResult>;
@@ -405,62 +526,134 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, number>;
 
     // Others
-    first: Select<TRecord, TResult>;
+    first: Select<TRecord, UnwrapArrayMember<TResult>>;
 
     pluck<K extends keyof TRecord>(
       column: K
     ): QueryBuilder<TRecord, TRecord[K][]>;
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
-    insert<TKey extends keyof TRecord, TResult2 = TRecord[TKey][]>(
+    insert<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       data: MaybeArray<SafePartial<TRecord>>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
-    insert<TKey extends keyof TRecord, TResult2 = Pick<TRecord, TKey>[]>(
+    insert<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       data: MaybeArray<SafePartial<TRecord>>,
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
-    insert<TResult2 extends {}>(
+    insert<
+      TKey extends string,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       data: MaybeArray<SafePartial<TRecord>>,
-      returning: string | string[]
+      returning: TKey
+    ): QueryBuilder<TRecord, TResult2>;
+    insert<
+      TKey extends string,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
+      data: MaybeArray<SafePartial<TRecord>>,
+      returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert(
       data: MaybeArray<SafePartial<TRecord>>
-    ): QueryBuilder<TRecord, number>;
+    ): QueryBuilder<TRecord, number[]>;
 
-    modify<TRecord2 extends {}, TResult2 extends {}>(
-      callback: QueryCallbackWithArgs,
+    modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
+      callback: QueryCallbackWithArgs<TRecord, any>,
       ...args: any[]
     ): QueryBuilder<TRecord2, TResult2>;
 
-    update<TKey extends keyof TRecord, TResult2 = TRecord[TKey][]>(
+    update<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       data: MaybeArray<SafePartial<TRecord>>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
-    update<TKey extends keyof TRecord, TResult2 = Pick<TRecord, TKey>[]>(
+    update<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       data: MaybeArray<SafePartial<TRecord>>,
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
-    update<TResult2 extends {}[] = SafePartial<TRecord>[]>(
+    update<
+      TKey extends string = string,
+      TResult2 extends {}[] = DeferredKeySelection.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       data: MaybeArray<SafePartial<TRecord>>,
-      returning: string | string[]
+      returning: TKey | TKey[]
+    ): QueryBuilder<TRecord, TResult2>;
+    update<
+      TKey extends string,
+      TResult2 extends {}[] = DeferredKeySelection.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
+      data: MaybeArray<SafePartial<TRecord>>,
+      returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update(
       data: MaybeArray<SafePartial<TRecord>>
     ): QueryBuilder<TRecord, number>;
     update<
-      K1 extends keyof TRecord,
-      K2 extends keyof TRecord,
-      TResult2 = TRecord[K2][]
+      K1 extends StrKey<TRecord>,
+      K2 extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        K2
+      >[]
     >(
       columnName: K1,
       value: TRecord[K1],
       returning: K1
     ): QueryBuilder<TRecord, TResult2>;
     update<
-      K1 extends keyof TRecord,
-      K2 extends keyof TRecord,
-      TResult2 = Pick<TRecord, K2>[]
+      K1 extends StrKey<TRecord>,
+      K2 extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        K2
+      >[]
     >(
       columnName: K1,
       value: TRecord[K1],
@@ -477,20 +670,47 @@ declare namespace Knex {
     ): QueryBuilder<TRecord>;
     update(columnName: string, value: Value): QueryBuilder<TRecord, number>;
 
-    returning<TKey extends keyof TRecord, TResult2 = TRecord[TKey][]>(
+    returning<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       column: TKey
     ): QueryBuilder<TRecord, TResult2>;
-    returning<TKey extends keyof TRecord, TResult2 = SafePick<TRecord, TKey>[]>(
+    returning<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.SetSingle<
+        DeferredKeySelection.Augment<UnwrapArrayMember<TResult>, TRecord, TKey>,
+        false
+      >[]
+    >(
       columns: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     returning<TResult2 = SafePartial<TRecord>[]>(
       column: string | string[]
     ): QueryBuilder<TRecord, TResult2>;
 
-    del<TKey extends keyof TRecord, TResult2 = TRecord[TKey][]>(
+    del<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       returning: TKey
     ): QueryBuilder<TRecord, TResult2[]>;
-    del<TKey extends keyof TRecord, TResult2 = SafePick<TRecord, TKey>[]>(
+    del<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2[]>;
     del<TResult2 = void>(
@@ -498,10 +718,24 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2[]>;
     del(): QueryBuilder<TRecord, number>;
 
-    delete<TKey extends keyof TRecord, TResult2 = TRecord[TKey][]>(
+    delete<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
-    delete<TKey extends keyof TRecord, TResult2 = SafePick<TRecord, TKey>[]>(
+    delete<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     delete<TResult2 = void>(
@@ -523,7 +757,7 @@ declare namespace Knex {
     <
       AliasUT extends (keyof TRecord | { [k: string]: keyof TRecord })[],
       TResult2 = DeferredKeySelection.Augment<
-        MaybeArrayMember<TResult>,
+        UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
@@ -535,7 +769,7 @@ declare namespace Knex {
     <
       AliasUT extends (keyof TRecord | { [k: string]: keyof TRecord })[],
       TResult2 = DeferredKeySelection.Augment<
-        MaybeArrayMember<TResult>,
+        UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
@@ -547,7 +781,7 @@ declare namespace Knex {
     <
       AliasUT extends (Dict | string)[],
       TResult2 = DeferredKeySelection.Augment<
-        MaybeArrayMember<TResult>,
+        UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
@@ -559,7 +793,7 @@ declare namespace Knex {
     <
       AliasUT extends (Dict | string)[],
       TResult2 = DeferredKeySelection.Augment<
-        MaybeArrayMember<TResult>,
+        UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
@@ -586,28 +820,19 @@ declare namespace Knex {
   interface Table<TRecord extends {} = any, TResult extends {} = any> {
     <
       TRecord2 = any,
-      TResult2 = DeferredKeySelection.SetBase<
-        MaybeArrayMember<TResult>,
-        TRecord2
-      >[]
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       tableName: TableName | Identifier
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = any,
-      TResult2 = DeferredKeySelection.SetBase<
-        MaybeArrayMember<TResult>,
-        TRecord2
-      >[]
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       callback: Function
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = any,
-      TResult2 = DeferredKeySelection.SetBase<
-        MaybeArrayMember<TResult>,
-        TRecord2
-      >[]
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
@@ -908,19 +1133,12 @@ declare namespace Knex {
   }
 
   interface Intersect<TRecord = any, TResult = unknown[]> {
-    (callback: MaybeArray<QueryCallback | Raw>, wrap?: boolean): QueryBuilder<
-      TRecord,
-      TResult
-    >;
-    <TInnerResult extends UnknownToAny<TResult> = UnknownToAny<TResult>>(
-      callback: MaybeArray<
-        QueryCallback | QueryBuilder<TRecord, TInnerResult> | Raw
-      >,
+    (
+      callback: MaybeArray<QueryCallback | QueryBuilder<TRecord, any> | Raw>,
       wrap?: boolean
     ): QueryBuilder<TRecord, TResult>;
-    (...callbacks: (QueryCallback | Raw)[]): QueryBuilder<TRecord, TResult>;
-    <TInnerResult extends UnknownToAny<TResult> = UnknownToAny<TResult>>(
-      ...callbacks: (QueryBuilder<TRecord, TInnerResult>)[]
+    (
+      ...callbacks: (QueryCallback | Raw | QueryBuilder<TRecord, any>)[]
     ): QueryBuilder<TRecord, TResult>;
   }
 
@@ -957,12 +1175,12 @@ declare namespace Knex {
   interface ColumnNameQueryBuilder<TRecord = any, TResult = unknown[]> {
     // When all columns are known to be keys of original record,
     // we can extend our selection by these columns
-    (columnName: '*'): QueryBuilder<TRecord, TRecord>;
+    (columnName: '*'): QueryBuilder<TRecord, TRecord[]>;
 
     <
       ColNameUT extends keyof TRecord,
       TResult2 = DeferredKeySelection.Augment<
-        MaybeArrayMember<TResult>,
+        UnwrapArrayMember<TResult>,
         TRecord,
         ColNameUT & string
       >[]
@@ -973,7 +1191,7 @@ declare namespace Knex {
     <
       ColNameUT extends keyof TRecord,
       TResult2 = DeferredKeySelection.Augment<
-        MaybeArrayMember<TResult>,
+        UnwrapArrayMember<TResult>,
         TRecord,
         ColNameUT & string
       >[]
@@ -985,7 +1203,7 @@ declare namespace Knex {
     // specify result type and if not widen the result to entire record type with any omissions permitted
     <
       TResult2 = DeferredKeySelection.Augment<
-        MaybeArrayMember<TResult>,
+        UnwrapArrayMember<TResult>,
         SafePartial<TRecord>,
         keyof TRecord & string
       >[]
@@ -995,7 +1213,7 @@ declare namespace Knex {
 
     <
       TResult2 = DeferredKeySelection.Augment<
-        MaybeArrayMember<TResult>,
+        UnwrapArrayMember<TResult>,
         SafePartial<TRecord>,
         keyof TRecord & string
       >[]
@@ -1047,11 +1265,12 @@ declare namespace Knex {
   // QueryBuilder
   //
 
-  type QueryCallback = <TRecord = any, TResult = unknown[]>(
+  type QueryCallback<TRecord = any, TResult = unknown[]> = (
     this: QueryBuilder<TRecord, TResult>,
     builder: QueryBuilder<TRecord, TResult>
   ) => void;
-  type QueryCallbackWithArgs = <TRecord, TResult>(
+
+  type QueryCallbackWithArgs<TRecord = any, TResult = unknown[]> = (
     this: QueryBuilder<TRecord, TResult>,
     builder: QueryBuilder<TRecord, TResult>,
     ...args: any[]
@@ -1125,7 +1344,8 @@ declare namespace Knex {
     asCallback(callback: Function): this;
   }
 
-  interface Transaction extends events.EventEmitter {
+  interface Transaction<TRecord extends {} = any, TResult = any>
+    extends Knex<TRecord, TResult> {
     query<TRecord extends {} = any, TResult = void>(
       conn: any,
       sql: any,
@@ -1135,12 +1355,8 @@ declare namespace Knex {
     savepoint<T = any>(
       transactionScope: (trx: Transaction) => any
     ): Bluebird<T>;
-    commit<TRecord extends {} = any, TResult = void>(
-      value?: any
-    ): QueryBuilder<TRecord, TResult>;
-    rollback<TRecord extends {} = any, TResult = void>(
-      error?: any
-    ): QueryBuilder<TRecord, TResult>;
+    commit(value?: any): QueryBuilder<TRecord, TResult>;
+    rollback(error?: any): QueryBuilder<TRecord, TResult>;
   }
 
   //
