@@ -8,9 +8,9 @@
 
 /// <reference types="node" />
 
-import * as events from 'events';
-import * as stream from 'stream';
-import * as Bluebird from 'bluebird';
+import events = require('events');
+import stream = require('stream');
+import Bluebird = require('bluebird');
 
 // # Generic type-level utilities
 
@@ -283,7 +283,7 @@ type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult> {
-  <TRecord2 = TRecord, TResult2 = TRecord2[]>(
+  <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
     tableName?: TableName | Identifier
   ): Knex.QueryBuilder<TRecord2, TResult2>;
   VERSION: string;
@@ -349,6 +349,7 @@ declare namespace Knex {
 
     // Withs
     with: With<TRecord, TResult>;
+    withRecursive: With<TRecord, TResult>;
     withRaw: WithRaw<TRecord, TResult>;
     withSchema: WithSchema<TRecord, TResult>;
     withWrapped: WithWrapped<TRecord, TResult>;
@@ -849,62 +850,62 @@ declare namespace Knex {
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
-      TResult2 = unknown
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       raw: Raw
-    ): QueryBuilder<TRecord2, TResult2> & ChainableInterface<TRecord2[]>;
+    ): QueryBuilder<TRecord2, TResult2>;
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
-      TResult2 = unknown
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       tableName: TableName | Identifier | QueryCallback,
       clause: JoinCallback
-    ): QueryBuilder<TRecord2, TResult2> & ChainableInterface<TRecord2[]>;
+    ): QueryBuilder<TRecord2, TResult2>;
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
-      TResult2 = unknown
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       tableName: TableName | Identifier | QueryCallback,
       columns: { [key: string]: string | number | boolean | Raw }
-    ): QueryBuilder<TRecord2, TResult2> & ChainableInterface<TRecord2[]>;
+    ): QueryBuilder<TRecord2, TResult2>;
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
-      TResult2 = unknown
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       tableName: TableName | Identifier | QueryCallback,
       raw: Raw
-    ): QueryBuilder<TRecord2, TResult2> & ChainableInterface<TRecord2[]>;
+    ): QueryBuilder<TRecord2, TResult2>;
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
-      TResult2 = unknown
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       tableName: TableName | Identifier | QueryCallback,
       column1: string,
       column2: string
-    ): QueryBuilder<TRecord2, TResult2> & ChainableInterface<TRecord2[]>;
+    ): QueryBuilder<TRecord2, TResult2>;
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
-      TResult2 = unknown
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       tableName: TableName | Identifier | QueryCallback,
       column1: string,
       raw: Raw
-    ): QueryBuilder<TRecord2, TResult2> & ChainableInterface<TRecord2[]>;
+    ): QueryBuilder<TRecord2, TResult2>;
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
-      TResult2 = unknown
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       tableName: TableName | Identifier | QueryCallback,
       column1: string,
       operator: string,
       column2: string
-    ): QueryBuilder<TRecord2, TResult2> & ChainableInterface<TRecord2[]>;
+    ): QueryBuilder<TRecord2, TResult2>;
   }
 
   interface JoinClause {
@@ -963,65 +964,59 @@ declare namespace Knex {
     >;
   }
 
-  interface With<TRecordOuter = any, TResultOuter = unknown[]>
-    extends WithRaw<TRecordOuter, TResultOuter>,
-      WithWrapped<TRecordOuter, TResultOuter> {}
+  interface With<TRecord = any, TResult = unknown[]>
+    extends WithRaw<TRecord, TResult>,
+      WithWrapped<TRecord, TResult> {}
 
-  interface WithRaw<TRecordOuter = any, TResultOuter = unknown[]> {
-    <TRecordInner, TResultInner>(
+  interface WithRaw<TRecord = any, TResult = unknown[]> {
+    (
       alias: string,
-      raw: Raw | QueryBuilder<TRecordInner, TResultInner>
-    ): QueryBuilder<TRecordOuter, TResultOuter>;
-    <TRecordInner, TResultInner>(
+      raw: Raw | QueryBuilder
+    ): QueryBuilder<TRecord, TResult>;
+    (
       alias: string,
       sql: string,
       bindings?: Value[] | Object
-    ): QueryBuilder<TRecordOuter, TResultOuter>;
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface WithSchema<TRecord = any, TResult = unknown[]> {
     (schema: string): QueryBuilder<TRecord, TResult>;
   }
 
-  interface WithWrapped<TRecordOuter = any, TResultOuter = unknown[]> {
-    <TRecordInner, TResultInner>(
+  interface WithWrapped<TRecord = any, TResult = unknown[]> {
+    (
       alias: string,
-      queryBuilder: QueryBuilder<TRecordInner, TResultInner>
-    ): QueryBuilder<TRecordOuter, TResultOuter>;
-    <TRecordInner, TResultInner>(
+      queryBuilder: QueryBuilder
+    ): QueryBuilder<TRecord, TResult>;
+    (
       alias: string,
-      callback: (queryBuilder: QueryBuilder<TRecordInner, TResultInner>) => any
-    ): QueryBuilder<TRecordOuter, TResultOuter>;
+      callback: (queryBuilder: QueryBuilder) => any
+    ): QueryBuilder<TRecord, TResult>;
   }
-
-  type WhereResult<TRecord = any, TResult = unknown[]> = QueryBuilder<
-    TRecord,
-    TResult
-  > &
-    ChainableInterface<TResult extends unknown ? TRecord[] : TResult[]>;
 
   interface Where<TRecord = any, TResult = unknown>
     extends WhereRaw<TRecord, TResult>,
       WhereWrapped<TRecord, TResult>,
       WhereNull<TRecord, TResult> {
-    (raw: Raw): WhereResult<TRecord, TResult>;
-    (callback: QueryCallback): WhereResult<TRecord, TResult>;
+    (raw: Raw): QueryBuilder<TRecord, TResult>;
+    (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
 
-    (object: SafePartial<TRecord>): WhereResult<TRecord, TResult>;
-    (object: Object): WhereResult<TRecord, TResult>;
+    (object: SafePartial<TRecord>): QueryBuilder<TRecord, TResult>;
+    (object: Object): QueryBuilder<TRecord, TResult>;
 
     <T extends keyof TRecord>(
       columnName: T,
       value: TRecord[T] | null
-    ): WhereResult<TRecord, TResult>;
-    (columnName: string, value: Value | null): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
+    (columnName: string, value: Value | null): QueryBuilder<TRecord, TResult>;
 
     <T extends keyof TRecord>(
       columnName: T,
       operator: ComparisionOperator,
       value: TRecord[T] | null
-    ): WhereResult<TRecord, TResult>;
-    (columnName: string, operator: string, value: Value | null): WhereResult<
+    ): QueryBuilder<TRecord, TResult>;
+    (columnName: string, operator: string, value: Value | null): QueryBuilder<
       TRecord,
       TResult
     >;
@@ -1030,14 +1025,14 @@ declare namespace Knex {
       columnName: T,
       operator: ComparisionOperator,
       value: QueryBuilder<TRecordInner, TResultInner>
-    ): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
     <TRecordInner, TResultInner>(
       columnName: string,
       operator: string,
       value: QueryBuilder<TRecordInner, TResultInner>
-    ): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
 
-    (left: Raw, operator: string, right: Value | null): WhereResult<
+    (left: Raw, operator: string, right: Value | null): QueryBuilder<
       TRecord,
       TResult
     >;
@@ -1045,71 +1040,71 @@ declare namespace Knex {
       left: Raw,
       operator: string,
       right: QueryBuilder<TRecordInner, TResultInner>
-    ): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereRaw<TRecord = any, TResult = unknown[]>
     extends RawQueryBuilder<TRecord, TResult> {
-    (condition: boolean): WhereResult<TRecord, TResult>;
+    (condition: boolean): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereWrapped<TRecord = any, TResult = unknown[]> {
-    (callback: QueryCallback): WhereResult<TRecord, TResult>;
+    (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereNull<TRecord = any, TResult = unknown[]> {
-    (columnName: keyof TRecord): WhereResult<TRecord, TResult>;
-    (columnName: string): WhereResult<TRecord, TResult>;
+    (columnName: keyof TRecord): QueryBuilder<TRecord, TResult>;
+    (columnName: string): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereBetween<TRecord = any, TResult = unknown[]> {
     <K extends keyof TRecord>(
       columnName: K,
       range: [TRecord[K], TRecord[K]]
-    ): WhereResult<TRecord, TResult>;
-    (columnName: string, range: [Value, Value]): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
+    (columnName: string, range: [Value, Value]): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereExists<TRecord = any, TResult = unknown[]> {
     (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
     <TRecordInner, TResultInner>(
       query: QueryBuilder<TRecordInner, TResultInner>
-    ): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereIn<TRecord = any, TResult = unknown[]> {
     <K extends keyof TRecord>(
       columnName: K,
       values: TRecord[K][] | QueryCallback
-    ): WhereResult<TRecord, TResult>;
-    (columnName: string, values: Value[] | QueryCallback): WhereResult<
+    ): QueryBuilder<TRecord, TResult>;
+    (columnName: string, values: Value[] | QueryCallback): QueryBuilder<
       TRecord,
       TResult
     >;
     <K extends keyof TRecord>(
       columnNames: K[],
       values: TRecord[K][][] | QueryCallback
-    ): WhereResult<TRecord, TResult>;
-    (columnNames: string[], values: Value[][] | QueryCallback): WhereResult<
+    ): QueryBuilder<TRecord, TResult>;
+    (columnNames: string[], values: Value[][] | QueryCallback): QueryBuilder<
       TRecord,
       TResult
     >;
     <K extends keyof TRecord, TRecordInner, TResultInner>(
       columnName: K,
       values: QueryBuilder<TRecordInner, TRecord[K]>
-    ): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
     <TRecordInner, TResultInner>(
       columnName: string,
       values: QueryBuilder<TRecordInner, TResultInner>
-    ): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
     <K extends keyof TRecord, TRecordInner, TResultInner>(
       columnNames: K[],
       values: QueryBuilder<TRecordInner, TRecord[K]>
-    ): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
     <TRecordInner, TResultInner>(
       columnNames: string[],
       values: QueryBuilder<TRecordInner, TResultInner>
-    ): WhereResult<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface GroupBy<TRecord = any, TResult = unknown[]>
@@ -1175,7 +1170,10 @@ declare namespace Knex {
   interface ColumnNameQueryBuilder<TRecord = any, TResult = unknown[]> {
     // When all columns are known to be keys of original record,
     // we can extend our selection by these columns
-    (columnName: '*'): QueryBuilder<TRecord, TRecord[]>;
+    (columnName: '*'): QueryBuilder<
+      TRecord,
+      DeferredKeySelection<TRecord, string>[]
+    >;
 
     <
       ColNameUT extends keyof TRecord,
