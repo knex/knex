@@ -89,7 +89,7 @@
     "debug:tape": "node --inspect-brk test/tape/index.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "dev": "rimraf ./lib && babel -w src --out-dir lib --copy-files",
-    "lint": "eslint '{src,test}/**/*.js'",
+    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
     "lint:types": "dtslint types",
     "prepare": "npm run babel",
     "prepublishOnly": "npm run babel",

@@ -1410,9 +1410,11 @@ declare namespace Knex {
     ): ColumnBuilder;
     boolean(columnName: string): ColumnBuilder;
     date(columnName: string): ColumnBuilder;
-    dateTime(columnName: string): ColumnBuilder;
+    dateTime(columnName: string, options?: {useTz?: boolean, precision?: number}): ColumnBuilder;
     time(columnName: string): ColumnBuilder;
-    timestamp(columnName: string, standard?: boolean): ColumnBuilder;
+    timestamp(columnName: string, options?: {useTz?: boolean, precision?: number}): ColumnBuilder;
+    /** @deprecated */
+    timestamp(columnName: string, withoutTz?: boolean, precision?: number): ColumnBuilder;
     timestamps(
       useTimestampType?: boolean,
       makeDefaultNow?: boolean
