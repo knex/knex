@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.17.0-next3",
+  "version": "0.17.0-next4",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "types": "types/index.d.ts",
@@ -48,12 +48,12 @@
     "cross-env": "^5.2.0",
     "dtslint": "^0.7.1",
     "eslint": "5.16.0",
-    "eslint-config-prettier": "^4.2.0",
+    "eslint-config-prettier": "^4.3.0",
     "eslint-plugin-import": "^2.17.2",
     "husky": "^1.3.1",
     "jake": "^8.1.1",
     "json-loader": "^0.5.7",
-    "lint-staged": "^8.1.6",
+    "lint-staged": "^8.1.7",
     "mocha": "^6.1.4",
     "mock-fs": "^4.9.0",
     "mssql": "^5.1.0",
@@ -62,7 +62,7 @@
     "nyc": "^14.1.1",
     "pg": "^7.11.0",
     "pg-query-stream": "^2.0.0",
-    "prettier": "^1.17.0",
+    "prettier": "^1.17.1",
     "rimraf": "^2.6.3",
     "sinon": "^7.3.2",
     "sinon-chai": "^3.3.0",
@@ -73,7 +73,7 @@
     "typescript": "^3.4.5",
     "through": "^2.3.8",
     "toxiproxy-node-client": "^2.0.6",
-    "webpack-cli": "^3.3.1"
+    "webpack-cli": "^3.3.2"
   },
   "buildDependencies": [
     "@babel/cli",
