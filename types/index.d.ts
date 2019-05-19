@@ -249,42 +249,16 @@ type ResolveResult<S> = DeferredKeySelection.Resolve<S>;
 type Callback = Function;
 type Client = Function;
 
-interface Identifier {
-  [alias: string]: string;
-}
-
-type Value =
-  | string
-  | number
-  | boolean
-  | Date
-  | Array<string>
-  | Array<number>
-  | Array<Date>
-  | Array<boolean>
-  | Buffer
-  | Knex.Raw;
-
 interface Dict<T = any> {
   [k: string]: T;
 }
-
-interface ValueDict extends Dict<Value | Knex.QueryBuilder> {}
-
-type ColumnDescriptor<TRecord, TResult> =
-  | string
-  | Knex.Raw
-  | Knex.QueryBuilder<TRecord, TResult>
-  | { [key: string]: string };
-
-type TableName = string | Knex.Raw | Knex.QueryBuilder;
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult> {
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
-    tableName?: TableName | Identifier
+    tableName?: Knex.TableDescriptor | Knex.AliasDict
   ): Knex.QueryBuilder<TRecord2, TResult2>;
   VERSION: string;
   __knex__: string;
@@ -296,7 +270,7 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   destroy(callback: Function): void;
   destroy(): Bluebird<void>;
   batchInsert(
-    tableName: TableName,
+    tableName: Knex.TableDescriptor,
     data: any[],
     chunkSize?: number
   ): Knex.QueryBuilder<TRecord, {}>;
@@ -321,6 +295,33 @@ declare function Knex<TRecord = any, TResult = unknown[]>(
 ): Knex<TRecord, TResult>;
 
 declare namespace Knex {
+  //
+  // Utility Types
+  //
+
+  type Value =
+    | string
+    | number
+    | boolean
+    | Date
+    | Array<string>
+    | Array<number>
+    | Array<Date>
+    | Array<boolean>
+    | Buffer
+    | Knex.Raw;
+
+  interface ValueDict extends Dict<Value | Knex.QueryBuilder> {}
+  interface AliasDict extends Dict<string> {}
+
+  type ColumnDescriptor<TRecord, TResult> =
+    | string
+    | Knex.Raw
+    | Knex.QueryBuilder<TRecord, TResult>
+    | Dict<string>;
+
+  type TableDescriptor = string | Knex.Raw | Knex.QueryBuilder;
+
   //
   // QueryInterface
   //
@@ -823,7 +824,7 @@ declare namespace Knex {
       TRecord2 = any,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      tableName: TableName | Identifier
+      tableName: TableDescriptor | AliasDict
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = any,
@@ -859,7 +860,7 @@ declare namespace Knex {
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      tableName: TableName | Identifier | QueryCallback,
+      tableName: TableDescriptor | AliasDict | QueryCallback,
       clause: JoinCallback
     ): QueryBuilder<TRecord2, TResult2>;
     <
@@ -867,7 +868,7 @@ declare namespace Knex {
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      tableName: TableName | Identifier | QueryCallback,
+      tableName: TableDescriptor | AliasDict | QueryCallback,
       columns: { [key: string]: string | number | boolean | Raw }
     ): QueryBuilder<TRecord2, TResult2>;
     <
@@ -875,7 +876,7 @@ declare namespace Knex {
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      tableName: TableName | Identifier | QueryCallback,
+      tableName: TableDescriptor | AliasDict | QueryCallback,
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
     <
@@ -883,7 +884,7 @@ declare namespace Knex {
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      tableName: TableName | Identifier | QueryCallback,
+      tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       column2: string
     ): QueryBuilder<TRecord2, TResult2>;
@@ -892,7 +893,7 @@ declare namespace Knex {
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      tableName: TableName | Identifier | QueryCallback,
+      tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
@@ -901,7 +902,7 @@ declare namespace Knex {
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      tableName: TableName | Identifier | QueryCallback,
+      tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       operator: string,
       column2: string
@@ -969,15 +970,11 @@ declare namespace Knex {
       WithWrapped<TRecord, TResult> {}
 
   interface WithRaw<TRecord = any, TResult = unknown[]> {
-    (
-      alias: string,
-      raw: Raw | QueryBuilder
-    ): QueryBuilder<TRecord, TResult>;
-    (
-      alias: string,
-      sql: string,
-      bindings?: Value[] | Object
-    ): QueryBuilder<TRecord, TResult>;
+    (alias: string, raw: Raw | QueryBuilder): QueryBuilder<TRecord, TResult>;
+    (alias: string, sql: string, bindings?: Value[] | Object): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   interface WithSchema<TRecord = any, TResult = unknown[]> {
@@ -985,10 +982,7 @@ declare namespace Knex {
   }
 
   interface WithWrapped<TRecord = any, TResult = unknown[]> {
-    (
-      alias: string,
-      queryBuilder: QueryBuilder
-    ): QueryBuilder<TRecord, TResult>;
+    (alias: string, queryBuilder: QueryBuilder): QueryBuilder<TRecord, TResult>;
     (
       alias: string,
       callback: (queryBuilder: QueryBuilder) => any
@@ -1220,14 +1214,16 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
   }
 
+  type RawBinding = Value | QueryBuilder;
+
   interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
     <TResult2 = SafePartial<TRecord>[]>(
       sql: string,
-      ...bindings: (Value | QueryBuilder)[]
+      ...bindings: RawBinding[]
     ): QueryBuilder<TRecord, TResult2>;
     <TResult2 = SafePartial<TRecord>[]>(
       sql: string,
-      bindings: (Value | QueryBuilder)[] | ValueDict
+      bindings: RawBinding[] | ValueDict
     ): QueryBuilder<TRecord, TResult2>;
     <TResult2 = SafePartial<TRecord>[]>(raw: Raw<TResult2>): QueryBuilder<
       TRecord,
