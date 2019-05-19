@@ -11,6 +11,7 @@
     "baseUrl": ".",
     "paths": {
       "knex": ["."]
-    }
+    },
+    "esModuleInterop": false
   }
 }

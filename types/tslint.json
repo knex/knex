@@ -8,6 +8,7 @@
     "no-empty-interface": false,
     "unified-signatures": false,
     "no-unnecessary-qualifier": false,
-    "strict-export-declare-modifiers": false
+    "strict-export-declare-modifiers": false,
+    "only-arrow-functions": false
   }
 }
