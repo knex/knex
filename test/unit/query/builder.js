@@ -750,6 +750,34 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('clear a having', function() {
+    testsql(
+      qb()
+        .table('users')
+        .having('id', '>', 100)
+        .clearHaving()
+        .having('id', '>', 10),
+      {
+        mysql: {
+          sql: 'select * from `users` having `id` > ?',
+          bindings: [10],
+        },
+        mssql: {
+          sql: 'select * from [users] having [id] > ?',
+          bindings: [10],
+        },
+        pg: {
+          sql: 'select * from "users" having "id" > ?',
+          bindings: [10],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" having "id" > ?',
+          bindings: [10],
+        },
+      }
+    );
+  });
+
   it('basic wheres', function() {
     testsql(
       qb()

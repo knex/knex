@@ -21,7 +21,7 @@ describe('Migrator', () => {
     });
 
     afterEach(() => {
-      knex.destroy();
+      return knex.destroy();
     });
 
     it('latest', (done) => {
@@ -60,7 +60,7 @@ describe('Migrator', () => {
     });
 
     afterEach(() => {
-      knex.destroy();
+      return knex.destroy();
     });
 
     it('latest', (done) => {
@@ -90,7 +90,7 @@ describe('Migrator', () => {
     });
 
     afterEach(() => {
-      knex.destroy();
+      return knex.destroy();
     });
 
     it('latest', (done) => {

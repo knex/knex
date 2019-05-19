@@ -1102,6 +1102,13 @@ module.exports = function(knex) {
         });
     });
 
+    it.skip('select forUpdate().first() bug in oracle (--------- TODO: FIX)', function() {
+      return knex('accounts')
+        .where('id', 1)
+        .forUpdate()
+        .first();
+    });
+
     it('select for update locks selected row', function() {
       if (knex.client.driverName === 'sqlite3') {
         return;

@@ -9,7 +9,7 @@ var Promise = require('bluebird');
 
 // excluding redshift, oracle, and mssql dialects from default integrations test
 var testIntegrationDialects = (
-  process.env.DB || 'mysql mysql2 postgres sqlite3'
+  process.env.DB || 'sqlite3 postgres mysql mysql2 mssql oracledb'
 ).match(/\w+/g);
 
 var pool = {
@@ -42,8 +42,11 @@ var testConfigs = {
   mysql: {
     client: 'mysql',
     connection: testConfig.mysql || {
+      port: 23306,
       database: 'knex_test',
-      user: 'root',
+      host: 'localhost',
+      user: 'testuser',
+      password: 'testpassword',
       charset: 'utf8',
     },
     pool: mysqlPool,
@@ -54,8 +57,11 @@ var testConfigs = {
   mysql2: {
     client: 'mysql2',
     connection: testConfig.mysql || {
+      port: 23306,
       database: 'knex_test',
-      user: 'root',
+      host: 'localhost',
+      user: 'testuser',
+      password: 'testpassword',
       charset: 'utf8',
     },
     pool: mysqlPool,
@@ -66,9 +72,9 @@ var testConfigs = {
   oracledb: {
     client: 'oracledb',
     connection: testConfig.oracledb || {
-      user: 'travis',
-      password: 'travis',
-      connectString: 'localhost/XE',
+      user: 'system',
+      password: 'Oracle18',
+      connectString: 'localhost:21521/XE',
       // https://github.com/oracle/node-oracledb/issues/525
       stmtCacheSize: 0,
     },
@@ -80,8 +86,11 @@ var testConfigs = {
     client: 'postgres',
     connection: testConfig.postgres || {
       adapter: 'postgresql',
+      port: 25432,
+      host: 'localhost',
       database: 'knex_test',
-      user: 'postgres',
+      user: 'testuser',
+      password: 'knextest',
     },
     pool: pool,
     migrations: migrations,
@@ -119,6 +128,7 @@ var testConfigs = {
       user: 'sa',
       password: 'S0meVeryHardPassword',
       server: 'localhost',
+      port: 21433,
       database: 'knex_test',
     },
     pool: pool,

@@ -43,7 +43,7 @@ describe('OracleDb externalAuth', function() {
 });
 
 describe('OracleDb parameters', function() {
-  describe('with fetchAsString parameter', function() {
+  describe('with fetchAsString parameter ', function() {
     let knexClient;
 
     before(function() {

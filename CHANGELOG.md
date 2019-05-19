@@ -1,5 +1,36 @@
 # Master (Unreleased)
 
+# 0.16.7 - 12 May, 2019
+
+### New features:
+
+- Add clearHaving function #3141
+- Add --all flag for rollback in CLI #3187
+
+### Typings
+
+- Add default values for generic types (fixes backwards compatibility broken by 0.16.6) #3189
+
+# 0.16.6 - 11 May, 2019
+
+### New features:
+
+- Add error detail log to knex CLI #3149
+
+### Bug fixes:
+
+- Fix order of migration rollback #3172
+
+### Typings
+
+- Make function types generic in type definitions #3168
+- Add missing types to MigratorConfig #3174
+- Add types for havingBetween, orHavingBetween, havingNotBetween and orHavingNotBetween #3144
+
+### Test / internal changes:
+
+- Execute CI tests on Node.js 12 #3171
+
 # 0.16.5 - 11 Apr, 2019
 
 - Bundle polyfills with knex for 0.16.x line again #3139
