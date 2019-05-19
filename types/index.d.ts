@@ -1695,6 +1695,7 @@ declare namespace Knex {
     rollback(config?: MigratorConfig, all?: boolean): Bluebird<any>;
     status(config?: MigratorConfig): Bluebird<number>;
     currentVersion(config?: MigratorConfig): Bluebird<string>;
+    up(config?: MigratorConfig): Bluebird<any>;
   }
 
   interface FunctionHelper {
