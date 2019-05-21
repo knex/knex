@@ -89,7 +89,12 @@ export default class Transaction extends EventEmitter {
           this._rejecter = rejecter;
         });
       }
-    );
+    ).catch((err) => {
+      if (this.initRejectFn) {
+        this.initRejectFn(err);
+      }
+      throw err;
+    });
 
     this._completed = false;
 
