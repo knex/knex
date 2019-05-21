@@ -13,8 +13,6 @@ var testIntegrationDialects = (
 ).match(/\w+/g);
 
 var pool = {
-  min: 0,
-  max: 2,
   afterCreate: function(connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
     callback(null, connection);
