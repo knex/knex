@@ -21,6 +21,7 @@ function mkConfigObj(opts) {
       connection: opts.connection,
       migrations: {
         directory: opts.migrationsDirectory,
+        tableName: opts.migrationsTableName,
       },
     },
   };
