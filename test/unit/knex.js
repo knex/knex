@@ -326,6 +326,24 @@ describe('knex', () => {
       });
   });
 
+  it('supports direct retrieval of a transaction from provider', () => {
+    const knex = Knex(sqliteConfig);
+    const trxProvider = knex.transactionProvider();
+    const trxPromise = trxProvider();
+
+    let transaction;
+    return trxPromise
+      .then((trx) => {
+        transaction = trx;
+        expect(trx.client.transacting).to.equal(true);
+        return knex.transacting(trx).select(knex.raw('1 as result'));
+      })
+      .then((rows) => {
+        expect(rows[0].result).to.equal(1);
+        return transaction.commit();
+      });
+  });
+
   it('creating transaction copy with user params should throw an error', () => {
     if (!sqliteConfig) {
       return;

@@ -51,6 +51,16 @@ function initContext(knexFn) {
       }
     },
 
+    transactionProvider(config) {
+      let trx;
+      return () => {
+        if (!trx) {
+          trx = this.transaction(config);
+        }
+        return trx;
+      };
+    },
+
     // Typically never needed, initializes the pool for a knex client.
     initialize(config) {
       return this.client.initializePool(config);
@@ -140,6 +150,7 @@ function redefineProperties(knex, client) {
         knex.raw = context.raw;
         knex.batchInsert = context.batchInsert;
         knex.transaction = context.transaction;
+        knex.transactionProvider = context.transactionProvider;
         knex.initialize = context.initialize;
         knex.destroy = context.destroy;
         knex.ref = context.ref;

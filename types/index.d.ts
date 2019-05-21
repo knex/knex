@@ -265,6 +265,9 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
 
   raw: Knex.RawBuilder;
 
+  transactionProvider(
+    config?: any
+  ): Function;
   transaction(
     transactionScope?: undefined | null,
     config?: any
