@@ -35,6 +35,22 @@ module.exports = function(knex) {
         });
     });
 
+    it('supports direct retrieval of a transaction without a callback', () => {
+      const trxPromise = knex.transaction();
+
+      let transaction;
+      return trxPromise
+        .then((trx) => {
+          transaction = trx;
+          expect(trx.client.transacting).to.equal(true);
+          return knex.transacting(trx).select(knex.raw('1 as result'));
+        })
+        .then((rows) => {
+          expect(rows[0].result).to.equal(1);
+          return transaction.commit();
+        });
+    });
+
     it('should throw when null transaction is sent to transacting', function() {
       return knex
         .transaction(function(t) {

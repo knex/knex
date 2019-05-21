@@ -310,26 +310,6 @@ describe('knex', () => {
     });
   });
 
-  it('supports direct retrieval of a transaction without a callback', (done) => {
-    const knex = Knex(sqliteConfig);
-    const trxPromise = knex.transaction();
-
-    let transaction;
-    trxPromise
-      .then((trx) => {
-        transaction = trx;
-        expect(trx.client.transacting).to.equal(true);
-        return knex.transacting(trx).select(knex.raw('1 as result'));
-      })
-      .then((rows) => {
-        expect(rows[0].result).to.equal(1);
-        return transaction.commit();
-      })
-      .then(() => {
-        done();
-      });
-  });
-
   it('creating transaction copy with user params should throw an error', () => {
     if (!sqliteConfig) {
       return;
