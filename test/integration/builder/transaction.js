@@ -37,13 +37,17 @@ module.exports = function(knex) {
 
     it('supports direct retrieval of a transaction without a callback', () => {
       const trxPromise = knex.transaction();
+      const query =
+        knex.client.driverName === 'oracledb'
+          ? 'select 1 from DUAL as result'
+          : '1 as result';
 
       let transaction;
       return trxPromise
         .then((trx) => {
           transaction = trx;
           expect(trx.client.transacting).to.equal(true);
-          return knex.transacting(trx).select(knex.raw('1 as result'));
+          return knex.transacting(trx).select(knex.raw(query));
         })
         .then((rows) => {
           expect(rows[0].result).to.equal(1);
