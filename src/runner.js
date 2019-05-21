@@ -138,9 +138,12 @@ assign(Runner.prototype, {
       queryPromise = queryPromise.timeout(obj.timeout);
     }
 
+    // Await the return value of client.processResponse; in the case of sqlite3's
+    // dropColumn()/renameColumn(), it will be a Promise for the transaction
+    // containing the complete rename procedure.
     return queryPromise
-      .then((resp) => {
-        const processedResponse = this.client.processResponse(resp, runner);
+      .then((resp) => this.client.processResponse(resp, runner))
+      .then((processedResponse) => {
         const queryContext = this.builder.queryContext();
         const postProcessedResponse = this.client.postProcessResponse(
           processedResponse,

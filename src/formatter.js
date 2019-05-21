@@ -138,6 +138,12 @@ export default class Formatter {
     }
     if (value instanceof Raw) {
       value.client = this.client;
+      if (this.builder._queryContext) {
+        value.queryContext = () => {
+          return this.builder._queryContext;
+        };
+      }
+
       query = value.toSQL();
       if (query.bindings) {
         this.bindings = this.bindings.concat(query.bindings);

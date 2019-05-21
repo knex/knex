@@ -3,7 +3,7 @@
 import inherits from 'inherits';
 import SchemaCompiler from '../../../schema/compiler';
 
-import { assign } from 'lodash';
+import { assign, some } from 'lodash';
 
 function SchemaCompiler_MySQL(client, builder) {
   SchemaCompiler.call(this, client, builder);
@@ -44,12 +44,14 @@ assign(SchemaCompiler_MySQL.prototype, {
   // Check whether a column exists on the schema.
   hasColumn(tableName, column) {
     this.pushQuery({
-      sql:
-        `show columns from ${this.formatter.wrap(tableName)}` +
-        ' like ' +
-        this.formatter.parameter(column),
+      sql: `show columns from ${this.formatter.wrap(tableName)}`,
       output(resp) {
-        return resp.length > 0;
+        return some(resp, (row) => {
+          return (
+            this.client.wrapIdentifier(row.Field) ===
+            this.client.wrapIdentifier(column)
+          );
+        });
       },
     });
   },
