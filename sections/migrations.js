@@ -27,6 +27,27 @@ export default [
   },
   {
     type: "text",
+    content: [
+      "The migration CLI accepts the following general command-line options. You can view help text and additional options for each command using `--help`. E.g. `knex migrate:latestVersion --help`."
+    ]
+  },
+  {
+    type: "list",
+    content: [
+      "`--debug`: Run with debugging",
+      "`--knexfile [path]`: Specify the knexfile path",
+      "`--knexpath [path]`: Specify the path to the knex instance",
+      "`--cwd [path]`: Specify the working directory",
+      "`--client [name]`: Set the DB client without a knexfile",
+      "`--connection [address]`: Set the DB connection without a knexfile",
+      "`--migrations-table-name`: Set the migration table name without a knexfile",
+      "`--migrations-directory`: Set the migrations directory without a knexfile",
+      "`--env`: environment, default: process.env.NODE_ENV || development",
+      "`--help`: Display help text for a particular command and exit."
+    ]
+  },
+  {
+    type: "text",
     content: "Migrations use a **knexfile**, which specify various configuration settings for the module. To create a new knexfile, run the following:"
   },
   {
