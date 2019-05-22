@@ -90,6 +90,48 @@ const main = async () => {
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users').select('id', 'age');
 
+  // $ExpectType { id: number; }[]
+  const r3 = await knex<User>('users').select(knex.ref('id'));
+
+  // $ExpectType (Pick<User, "name"> & { id: number; })[]
+  const r4 = await knex<User>('users').select(knex.ref('id'), 'name');
+  type _TR4 = ExtendsWitness<typeof r4[0], Pick<User, "id" | "name">>;
+
+  // $ExpectType (Pick<User, "name"> & { identifier: number; })[]
+  const r5 = await knex<User>('users').select(knex.ref('id').as('identifier'), 'name');
+  type _TR5 = ExtendsWitness<typeof r5[0], {identifier: number; name: string}>;
+
+  // $ExpectType (Pick<User, "name"> & { identifier: number; yearsSinceBirth: number; })[]
+  const r6 = await knex<User>('users').select(
+      knex.ref('id').as('identifier'),
+      'name',
+      knex.ref('age').as('yearsSinceBirth')
+  );
+  type _TR6 = ExtendsWitness<typeof r6[0], {identifier: number; name: string; yearsSinceBirth: number}>;
+
+  // $ExpectType { id: number; }[]
+  const r7 = await knex.select(knex.ref('id')).from<User>('users');
+  type _TR7 = ExtendsWitness<typeof r7[0], Pick<User, "id">>;
+
+  // $ExpectType (Pick<User, "name"> & { id: number; })[]
+  const r8 = await knex.select(knex.ref('id'), 'name').from<User>('users');
+  type _TR8 = ExtendsWitness<typeof r8[0], Pick<User, "id" | "name">>;
+
+  // $ExpectType (Pick<User, "name"> & { identifier: number; })[]
+  const r9 = await knex.select(knex.ref('id').as('identifier'), 'name').from<User>('users');
+  type _TR9 = ExtendsWitness<typeof r9[0], {identifier: number; name: string}>;
+
+  // $ExpectType (Pick<User, "name"> & { identifier: number; yearsSinceBirth: number; })[]
+  const r10 = await knex.select(
+      knex.ref('id').as('identifier'),
+      'name',
+      knex.ref('age').as('yearsSinceBirth')
+  ).from<User>('users');
+  type _TR10 = ExtendsWitness<typeof r10[0], {identifier: number; name: string; yearsSinceBirth: number}>;
+
+  // $ExpectType { id: number; age: any; }[]
+  await knex<User>('users').select(knex.ref('id'), {age: 'users.age'});
+
   // $ExpectType { identifier: number; username: string; }[]
   await knex<User>('users')
     .select('id', 'name')

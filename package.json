@@ -70,9 +70,9 @@
     "sqlite3": "^4.0.8",
     "tap-spec": "^5.0.0",
     "tape": "^4.10.1",
-    "typescript": "^3.4.5",
     "through": "^2.3.8",
     "toxiproxy-node-client": "^2.0.6",
+    "typescript": "^3.4.5",
     "webpack-cli": "^3.3.2"
   },
   "buildDependencies": [
