@@ -1,4 +1,4 @@
-const { DEFAULT_EXT } = require('./constants');
+const { DEFAULT_EXT, DEFAULT_TABLE_NAME } = require('./constants');
 const { resolveClientNameWithAliases } = require('../../lib/helpers');
 const fs = require('fs');
 
@@ -21,6 +21,7 @@ function mkConfigObj(opts) {
       connection: opts.connection,
       migrations: {
         directory: opts.migrationsDirectory,
+        tableName: opts.migrationsTableName || DEFAULT_TABLE_NAME,
       },
     },
   };

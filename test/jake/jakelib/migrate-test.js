@@ -94,9 +94,9 @@ test('Run migrations', (temp) =>
   )
     .then(() =>
       assertExec(`${KNEX} migrate:latest \
-                   --client=sqlite3 --connection=${temp}/db \
-                   --migrations-directory=${temp}/migrations \
-                   create_rule_table`)
+                 --client=sqlite3 --connection=${temp}/db \
+                 --migrations-directory=${temp}/migrations \
+                 create_rule_table`)
     )
     .then(() => assertExec(`ls ${temp}/db`, 'Find the database file'))
     .then(() => new sqlite3.Database(temp + '/db'))
@@ -109,6 +109,25 @@ test('Run migrations', (temp) =>
         )
     )
     .then((row) => assert.equal(row.name, '000_create_rule_table.js')));
+
+test('run migrations without knexfile and with --migrations-table-name', (temp) =>
+  assertExec(`${KNEX} migrate:latest \
+              --client=sqlite3  --connection=${temp}/db \
+              --migrations-directory=test/jake-util/knexfile_migrations \
+              --migrations-table-name=custom_migrations_table`)
+    .then(() => new sqlite3.Database(temp + '/db'))
+    .then(
+      (db) =>
+        new Promise((resolve, reject) =>
+          db.get(
+            "SELECT name FROM sqlite_master where type='table' AND name='custom_migrations_table'",
+            function(err, row) {
+              err ? reject(err) : resolve(row);
+            }
+          )
+        )
+    )
+    .then((row) => assert.equal(row.name, 'custom_migrations_table')));
 
 test('migrate:latest prints non verbose logs', (temp) => {
   const db = knexfile.connection.filename;
