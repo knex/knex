@@ -35,7 +35,7 @@ type UnknownToAny<T> = unknown[] extends T
 // This is primarily to keep the signatures more intuitive.
 type AugmentParams<TTarget, TParams> = {} extends TParams
   ? TTarget
-  : TTarget & TParams;
+    : {} & TTarget & TParams;
 
 // Check if provided keys (expressed as a single or union type) are members of TBase
 type AreKeysOf<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
@@ -68,13 +68,15 @@ type IncompatibleToAlt<T, TBase, TAlt> = T extends TBase ? T : TAlt;
 
 // Boxing is necessary to prevent distribution of conditional types:
 // https://lorefnon.tech/2019/05/02/using-boxing-to-prevent-distribution-of-conditional-types/
-type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
+type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<never>
+  ? {}
+  : Boxed<TKeys> extends Boxed<keyof TBase>
   ? Pick<TBase, TKeys & keyof TBase>
   : any;
 
 // Retain the association of original keys with aliased keys at type level
 // to facilitates type-safe aliasing for object syntax
-type MappedAliasType<TBase, TAliasMapping> = {
+type MappedAliasType<TBase, TAliasMapping> = {} & {
   [K in keyof TAliasMapping]: TAliasMapping[K] extends keyof TBase
     ? TBase[TAliasMapping[K]]
     : any
@@ -284,6 +286,7 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   migrate: Knex.Migrator;
   seed: any;
   fn: Knex.FunctionHelper;
+  ref: Knex.RefBuilder;
   on(
     eventName: string,
     callback: Function
@@ -755,26 +758,39 @@ declare namespace Knex {
     (columnName: string): QueryBuilder<TRecord, TResult>;
   }
 
+  type IntersectAliases<AliasUT> =
+     UnionToIntersection<
+       IncompatibleToAlt<
+         AliasUT extends (infer I)[]
+           ? I extends Ref<any, infer TMapping>
+             ? TMapping
+             : I
+           : never,
+         Dict,
+         {}
+       >
+      >;
+
   interface AliasQueryBuilder<TRecord extends {} = any, TResult = unknown[]> {
     <
-      AliasUT extends (keyof TRecord | { [k: string]: keyof TRecord })[],
+          AliasUT extends (keyof TRecord | Ref<any, any> | { [k: string]: keyof TRecord })[],
       TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
+        IntersectAliases<AliasUT>
       >[]
     >(
       ...aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
     <
-      AliasUT extends (keyof TRecord | { [k: string]: keyof TRecord })[],
+          AliasUT extends (keyof TRecord | Ref<any, any> | { [k: string]: keyof TRecord })[],
       TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
+        IntersectAliases<AliasUT>
       >[]
     >(
       aliases: AliasUT
@@ -786,7 +802,7 @@ declare namespace Knex {
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
+        IntersectAliases<AliasUT>
       >[]
     >(
       ...aliases: AliasUT
@@ -798,7 +814,7 @@ declare namespace Knex {
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
+        IntersectAliases<AliasUT>
       >[]
     >(
       aliases: AliasUT
@@ -1253,6 +1269,15 @@ declare namespace Knex {
       sql: string,
       bindings: QueryBuilder<TRecord, TResult>[] | ValueDict
     ): Raw<TResult>;
+  }
+
+  interface Ref<TSrc extends string, TMapping extends {}> extends Raw<string> {
+      withSchema(schema: string): this;
+      as<TAlias extends string>(alias: TAlias): Ref<TSrc, {[K in TAlias]: TSrc}>;
+  }
+
+  interface RefBuilder {
+      <TSrc extends string>(src: TSrc): Ref<TSrc, {[K in TSrc]: TSrc}>;
   }
 
   //
