@@ -39,7 +39,7 @@ module.exports = function(knex) {
       const trxPromise = knex.transaction();
       const query =
         knex.client.driverName === 'oracledb'
-          ? '1 as result from DUAL'
+          ? '1 as "result" from DUAL'
           : '1 as result';
 
       let transaction;
