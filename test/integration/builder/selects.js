@@ -824,10 +824,7 @@ module.exports = function(knex) {
     });
 
     it('handles multi-column "where in" cases', function() {
-      if (
-        knex.client.driverName !== 'sqlite3' &&
-        knex.client.driverName !== 'mssql'
-      ) {
+      if (knex.client.driverName !== 'mssql') {
         return knex('composite_key_test')
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
           .orderBy('status', 'desc')
@@ -893,6 +890,25 @@ module.exports = function(knex) {
             tester(
               'oracledb',
               'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
+              [1, 1, 1, 2],
+              [
+                {
+                  column_a: 1,
+                  column_b: 1,
+                  details: 'One, One, One',
+                  status: 1,
+                },
+                {
+                  column_a: 1,
+                  column_b: 2,
+                  details: 'One, Two, Zero',
+                  status: 0,
+                },
+              ]
+            );
+            tester(
+              'sqlite3',
+              'select * from `composite_key_test` where (`column_a`, `column_b`) in ( values (?, ?), (?, ?)) order by `status` desc',
               [1, 1, 1, 2],
               [
                 {
