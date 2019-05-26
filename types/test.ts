@@ -93,6 +93,42 @@ const main = async () => {
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users').select('id', 'age');
 
+  // $ExpectType any[]
+  await knex.raw('select * from users');
+
+  // $ExpectType any[]
+  await knex.raw(
+      'select * from users where id in ?',
+      knex('contacts').select('name')
+  );
+
+  // $ExpectType User[]
+  await knex.raw<User[]>(
+      'select * from users where id in ?',
+      knex('contacts').select('name')
+  );
+
+  // $ExpectType User[]
+  await knex.raw<User[]>(
+      'select * from users where departmentId in ?',
+      knex<Department>('departments').select('id')
+  );
+
+  // $ExpectType User[]
+  await knex.raw<User[]>(
+      'select * from users where departmentId in ? & active in ?',
+      [
+          knex<Department>('departments').select('name'),
+          [true, false]
+      ]
+  );
+
+  // $ExpectType User[]
+  await knex<User>('user').whereRaw('name = ?', 'L');
+
+  // $ExpectType User[]
+  await knex<User>('user').whereRaw('name = ?', 'L').clearWhere();
+
   // $ExpectType { id: number; }[]
   const r3 = await knex<User>('users').select(knex.ref('id'));
 
@@ -310,6 +346,13 @@ const main = async () => {
     .join('departments', 'departments.id', '=', 'users.department_id')
     .orderBy('name');
 
+  // $ExpectType Partial<User>[]
+  await knex
+    .select<Partial<User>[]>(['users.*', 'departments.name as depName'])
+    .from('users')
+    .join('departments', 'departments.id', '=', 'users.department_id')
+    .orderByRaw('name DESC');
+
   // $ExpectType User
   await knex<User>('users')
     .where({ id: 10 })
@@ -332,11 +375,23 @@ const main = async () => {
 
   // ## Aggregation:
 
-  // $ExpectType Partial<User>[]
+  // $ExpectType User[]
   await knex<User>('users')
     .groupBy('count')
     .orderBy('name', 'desc')
     .having('age', '>', 10);
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .groupByRaw('count')
+    .orderBy('name', 'desc')
+    .having('age', '>', 10);
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .groupByRaw('count')
+    .orderBy('name', 'desc')
+    .havingRaw('age > ?', [10]);
 
   // $ExpectType { [key: string]: string | number; }[]
   await knex<User>('users').count();

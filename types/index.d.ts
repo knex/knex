@@ -265,7 +265,7 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   VERSION: string;
   __knex__: string;
 
-  raw: Knex.RawBuilder;
+  raw: Knex.RawBuilder<TRecord, TResult>;
   transaction<T>(
     transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void
   ): Bluebird<T>;
@@ -1227,18 +1227,18 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
   }
 
-  type RawBinding = Value | QueryBuilder;
+  type RawBinding = Value | QueryBuilder<any, any>;
 
   interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
-    <TResult2 = SafePartial<TRecord>[]>(
+    <TResult2 = UnknownToAny<TResult>>(
       sql: string,
       ...bindings: RawBinding[]
     ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = SafePartial<TRecord>[]>(
+    <TResult2 = UnknownToAny<TResult>>(
       sql: string,
       bindings: RawBinding[] | ValueDict
     ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = SafePartial<TRecord>[]>(raw: Raw<TResult2>): QueryBuilder<
+    <TResult2 = UnknownToAny<TResult>>(raw: Raw<TResult2>): QueryBuilder<
       TRecord,
       TResult2
     >;
@@ -1254,18 +1254,10 @@ declare namespace Knex {
     queryContext(context: any): Raw<TResult>;
   }
 
-  interface RawBuilder {
-    <TResult>(value: Value): Raw<TResult>;
-    <TResult>(sql: string, ...bindings: Value[]): Raw<TResult>;
-    <TResult>(sql: string, bindings: Value[] | ValueDict): Raw<TResult>;
-    <TRecord, TResult>(
-      sql: string,
-      ...bindings: QueryBuilder<TRecord, TResult>[]
-    ): Raw<TResult>;
-    <TRecord, TResult>(
-      sql: string,
-      bindings: QueryBuilder<TRecord, TResult>[] | ValueDict
-    ): Raw<TResult>;
+  interface RawBuilder<TRecord extends {} = any, TResult = unknown[]> {
+    <TResult2 = UnknownToAny<TResult>>(value: Value): Raw<TResult2>;
+    <TResult2 = UnknownToAny<TResult>>(sql: string, ...bindings: RawBinding[]): Raw<TResult2>;
+    <TResult2 = UnknownToAny<TResult>>(sql: string, bindings: RawBinding[] | ValueDict): Raw<TResult2>;
   }
 
   interface Ref<TSrc extends string, TMapping extends {}> extends Raw<string> {
