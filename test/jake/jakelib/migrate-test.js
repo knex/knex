@@ -151,6 +151,266 @@ test('migrate:rollback prints verbose logs', (temp) => {
   });
 });
 
+test('migrate:rollback --all rolls back all completed migrations', (temp) => {
+  const migrationFile1 = '001_create_users_table.js';
+  const migrationFile2 = '002_add_age_column_to_users_table.js';
+  const migrationFile3 = '003_add_last_name_column_to_users_table.js';
+  const migrationFile4 = '004_add_email_to_users_table.js';
+
+  fs.writeFileSync(
+    `${temp}/migrations/${migrationFile1}`,
+    `
+      exports.up = (knex) => knex.schema
+        .createTable('users', (table) => {
+          table.string('first_name');
+        });
+
+      exports.down = (knex) => knex.schema.dropTable('users');
+    `
+  );
+
+  return assertExec(
+    `node ${KNEX} migrate:latest \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${temp}/migrations`,
+    'create_users_table'
+  )
+    .then(() => {
+      fs.writeFileSync(
+        `${temp}/migrations/${migrationFile2}`,
+        `
+          exports.up = (knex) => knex.schema
+            .table('users', (table) => {
+              table.integer('age');
+            });
+    
+          exports.down = (knex) => knex.schema
+            .table('users', (table) => {
+              table.dropColumn('age');
+            });
+        `
+      );
+
+      return assertExec(
+        `node ${KNEX} migrate:latest \
+        --client=sqlite3 \
+        --connection=${temp}/db \
+        --migrations-directory=${temp}/migrations`,
+        'add_age_column_to_users_table'
+      );
+    })
+    .then(() => {
+      fs.writeFileSync(
+        `${temp}/migrations/${migrationFile3}`,
+        `
+        exports.up = (knex) => knex.schema
+          .table('users', (table) => {
+            table.string('last_name');
+          });
+  
+        exports.down = (knex) => knex.schema
+          .table('users', (table) => {
+            table.dropColumn('last_name');
+          });
+      `
+      );
+
+      return assertExec(
+        `node ${KNEX} migrate:latest \
+      --client=sqlite3 \
+      --connection=${temp}/db \
+      --migrations-directory=${temp}/migrations`,
+        'add_last_name_column_to_user_table'
+      );
+    })
+    .then(() => {
+      fs.writeFileSync(
+        `${temp}/migrations/${migrationFile4}`,
+        `
+        exports.up = (knex) => knex.schema
+          .table('users', (table) => {
+            table.string('email');
+          });
+  
+        exports.down = (knex) => knex.schema
+          .table('users', (table) => {
+            table.dropColumn('email');
+          });
+      `
+      );
+    })
+    .then(() => {
+      const db = new sqlite3.Database(`${temp}/db`);
+
+      return new Promise((resolve, reject) =>
+        db.all('SELECT * FROM knex_migrations', (err, rows) => {
+          const migrationsWithoutMigrationTime = rows.map((row) => {
+            return {
+              id: row.id,
+              name: row.name,
+              batch: row.batch,
+            };
+          });
+
+          assert.includeDeepOrderedMembers(migrationsWithoutMigrationTime, [
+            {
+              id: 1,
+              name: migrationFile1,
+              batch: 1,
+            },
+            {
+              id: 2,
+              name: migrationFile2,
+              batch: 2,
+            },
+            {
+              id: 3,
+              name: migrationFile3,
+              batch: 3,
+            },
+          ]);
+
+          err ? reject(err) : resolve(rows);
+        })
+      );
+    })
+    .then(() => {
+      return assertExec(
+        `node ${KNEX} migrate:rollback --all \
+      --client=sqlite3 \
+      --connection=${temp}/db \
+      --migrations-directory=${temp}/migrations`
+      ).then(({ stdout }) => {
+        assert.include(stdout, 'Batch 3 rolled back: 3 migrations');
+      });
+    });
+});
+
+test('migrate:up runs only the next unrun migration', (temp) => {
+  const migrationFile1 = '001_create_books_table.js';
+  const migrationFile2 = '002_add_pages_column_to_books_table.js';
+
+  fs.writeFileSync(
+    `${temp}/migrations/${migrationFile1}`,
+    `
+      exports.up = (knex) => knex.schema
+        .createTable('books', (table) => {
+          table.string('title');
+        });
+
+      exports.down = (knex) => knex.schema.dropTable('books');
+    `
+  );
+
+  fs.writeFileSync(
+    `${temp}/migrations/${migrationFile2}`,
+    `
+      exports.up = (knex) => knex.schema
+        .table('books', (table) => {
+          table.integer('pages');
+        });
+
+      exports.down = (knex) => knex.schema
+        .table('books', (table) => {
+          table.dropColumn('pages');
+        });
+    `
+  );
+
+  return assertExec(
+    `node ${KNEX} migrate:up \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${temp}/migrations`,
+    'create_books_table'
+  )
+    .then(({ stdout }) => {
+      assert.include(
+        stdout,
+        `Batch 1 ran the following migrations:\n${migrationFile1}`
+      );
+
+      const db = new sqlite3.Database(`${temp}/db`);
+
+      return new Promise((resolve, reject) => {
+        db.all('SELECT * FROM knex_migrations', (err, rows) => {
+          const migrationsWithoutMigrationTime = rows.map((row) => {
+            return {
+              id: row.id,
+              name: row.name,
+              batch: row.batch,
+            };
+          });
+
+          assert.includeDeepOrderedMembers(migrationsWithoutMigrationTime, [
+            {
+              id: 1,
+              name: migrationFile1,
+              batch: 1,
+            },
+          ]);
+
+          err ? reject(err) : resolve(rows);
+        });
+      });
+    })
+    .then(() => {
+      return assertExec(
+        `node ${KNEX} migrate:up \
+        --client=sqlite3 \
+        --connection=${temp}/db \
+        --migrations-directory=${temp}/migrations`,
+        'create_books_table'
+      ).then(({ stdout }) => {
+        assert.include(
+          stdout,
+          `Batch 2 ran the following migrations:\n${migrationFile2}`
+        );
+
+        const db = new sqlite3.Database(`${temp}/db`);
+
+        return new Promise((resolve, reject) => {
+          db.all('SELECT * FROM knex_migrations', (err, rows) => {
+            const migrationsWithoutMigrationTime = rows.map((row) => {
+              return {
+                id: row.id,
+                name: row.name,
+                batch: row.batch,
+              };
+            });
+
+            assert.includeDeepOrderedMembers(migrationsWithoutMigrationTime, [
+              {
+                id: 1,
+                name: migrationFile1,
+                batch: 1,
+              },
+              {
+                id: 2,
+                name: migrationFile2,
+                batch: 2,
+              },
+            ]);
+
+            err ? reject(err) : resolve(rows);
+          });
+        });
+      });
+    })
+    .then(() => {
+      return assertExec(
+        `node ${KNEX} migrate:up \
+        --client=sqlite3 \
+        --connection=${temp}/db \
+        --migrations-directory=${temp}/migrations`,
+        'create_books_table'
+      ).then(({ stdout }) => {
+        assert.include(stdout, 'Already up to date');
+      });
+    });
+});
+
 module.exports = {
   taskList,
 };

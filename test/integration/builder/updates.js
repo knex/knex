@@ -2,6 +2,8 @@
 
 'use strict';
 
+const Bluebird = require('bluebird');
+
 module.exports = function(knex) {
   describe('Updates', function() {
     it('should handle updates', function() {
@@ -68,6 +70,78 @@ module.exports = function(knex) {
             0
           );
         });
+    });
+
+    it('should immediately return updated value for other connections when updating row to DB returns (TODO: fix oracle fail)', function() {
+      if (knex.client.driverName == 'oracledb') {
+        // TODO: this test was added to catch strange random fails with oracle
+        // currently it looks like at least oracle transactions seem to return before
+        // they are actually committed to database...
+
+        // if those selects are changed to forUpdate() then the test seem to pass fine
+
+        this.skip();
+        return;
+      }
+
+      return knex('accounts').then((res) => {
+        function runTest() {
+          return Bluebird.all(
+            res.map((origRow) => {
+              return Bluebird.resolve()
+                .then(() => {
+                  return knex.transaction((trx) =>
+                    trx('accounts')
+                      .where('id', origRow.id)
+                      .update({ balance: 654 })
+                  );
+                })
+                .then(() => {
+                  return knex('accounts')
+                    .where('id', origRow.id)
+                    .then((res) => res[0]);
+                })
+                .then((updatedRow) => {
+                  expect(updatedRow.balance).to.equal(654);
+                  return knex.transaction((trx) =>
+                    trx('accounts')
+                      .where('id', origRow.id)
+                      .update({ balance: origRow.balance })
+                  );
+                })
+                .then(() => {
+                  return knex('accounts')
+                    .where('id', origRow.id)
+                    .then((res) => res[0]);
+                })
+                .then((updatedRow) => {
+                  expect(updatedRow.balance).to.equal(origRow.balance);
+                });
+            })
+          );
+        }
+
+        // run few times to try to catch the problem
+        return runTest()
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest())
+          .then(() => runTest());
+      });
     });
 
     it('should increment a value', function() {
