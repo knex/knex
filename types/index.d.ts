@@ -269,11 +269,11 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
 
   transactionProvider(
     config?: any
-  ): () => Bluebird<Knex.Transaction>;
+  ): () => Promise<Knex.Transaction>;
   transaction(
     transactionScope?: undefined | null,
     config?: any
-  ): Bluebird<Knex.Transaction>;
+  ): Promise<Knex.Transaction>;
   transaction<T>(
     transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void,
     config?: any
