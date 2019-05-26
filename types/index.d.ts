@@ -267,7 +267,7 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
 
   transactionProvider(
     config?: any
-  ): Function;
+  ): () => Bluebird<Knex.Transaction>;
   transaction(
     transactionScope?: undefined | null,
     config?: any
