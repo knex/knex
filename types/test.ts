@@ -4,11 +4,20 @@ import * as Knex from 'knex';
 // import Knex from 'knex'
 // when "esModuleInterop": true
 
-const knex = Knex({
+const clientConfig = {
   client: 'sqlite3',
   connection: {
     filename: './mydb.sqlite',
   },
+};
+
+const knex = Knex(clientConfig);
+
+const knex2 = Knex({
+    ...clientConfig,
+    log: {
+        debug(msg: string) {}
+    }
 });
 
 knex.initialize();

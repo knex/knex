@@ -1553,6 +1553,7 @@ declare namespace Knex {
     useNullAsDefault?: boolean;
     searchPath?: string | string[];
     asyncStackTraces?: boolean;
+    log?: Logger;
   }
 
   interface ConnectionConfig {
@@ -1683,6 +1684,15 @@ declare namespace Knex {
     numTestsPerRun?: number;
     softIdleTimeoutMillis?: number;
     Promise?: any;
+  }
+
+  type LogFn = (message: string) => void;
+
+  interface Logger {
+    warn?: LogFn;
+    error?: LogFn;
+    debug?: LogFn;
+    deprecate?: (method: string, alternative: string) => void;
   }
 
   interface MigratorConfig {
