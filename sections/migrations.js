@@ -115,6 +115,16 @@ export default [
     `
   },
   {
+    type: "text",
+    content: "To run the next migration that has not yet been run"
+  },
+  {
+    type: "code",
+    content: `
+      $ knex migrate:up
+    `
+  },
+  {
     type: "heading",
     size: "lg",
     content: "Seed files",
@@ -341,6 +351,13 @@ export default [
     method: "rollback",
     example: "knex.migrate.rollback([config], [all])",
     description: "Rolls back the latest migration group. If the `all` parameter is truthy, all applied migrations will be rolled back instead of just the last batch. The default value for this parameter is `false`.",
+    children: [    ]
+  },
+  {
+    type: "method",
+    method: "up",
+    example: "knex.migrate.up([config])",
+    description: "Runs the next chronological migration that has not yet be run",
     children: [    ]
   },
   {
