@@ -258,7 +258,7 @@ interface Dict<T = any> {
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
-  extends Knex.QueryInterface<TRecord, TResult> {
+  extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
     tableName?: Knex.TableDescriptor | Knex.AliasDict
   ): Knex.QueryBuilder<TRecord2, TResult2>;
@@ -269,6 +269,7 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   transaction<T>(
     transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void
   ): Bluebird<T>;
+  initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
   destroy(): Bluebird<void>;
   batchInsert(
@@ -284,13 +285,9 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
 
   client: any;
   migrate: Knex.Migrator;
-  seed: any;
+  seed: Knex.Seeder;
   fn: Knex.FunctionHelper;
   ref: Knex.RefBuilder;
-  on(
-    eventName: string,
-    callback: Function
-  ): Knex.QueryBuilder<TRecord, TResult>;
 }
 
 declare function Knex<TRecord = any, TResult = unknown[]>(
@@ -582,9 +579,9 @@ declare namespace Knex {
       data: MaybeArray<SafePartial<TRecord>>,
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
-    insert(
+    insert<TResult2 = number[]>(
       data: MaybeArray<SafePartial<TRecord>>
-    ): QueryBuilder<TRecord, number[]>;
+    ): QueryBuilder<TRecord, TResult2>;
 
     modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
       callback: QueryCallbackWithArgs<TRecord, any>,
@@ -635,9 +632,9 @@ declare namespace Knex {
       data: MaybeArray<SafePartial<TRecord>>,
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
-    update(
+    update<TResult2 = number>(
       data: MaybeArray<SafePartial<TRecord>>
-    ): QueryBuilder<TRecord, number>;
+    ): QueryBuilder<TRecord, TResult2>;
     update<
       K1 extends StrKey<TRecord>,
       K2 extends StrKey<TRecord>,
@@ -668,12 +665,12 @@ declare namespace Knex {
       columnName: K,
       value: TRecord[K]
     ): QueryBuilder<TRecord, number>;
-    update(
+    update<TResult2 = SafePartial<TRecord>[]>(
       columnName: string,
       value: Value,
       returning: string | string[]
-    ): QueryBuilder<TRecord>;
-    update(columnName: string, value: Value): QueryBuilder<TRecord, number>;
+    ): QueryBuilder<TRecord, TResult2>;
+    update<TResult2 = number>(columnName: string, value: Value): QueryBuilder<TRecord, TResult2>;
 
     returning<
       TKey extends StrKey<TRecord>,
@@ -707,7 +704,7 @@ declare namespace Knex {
       >[]
     >(
       returning: TKey
-    ): QueryBuilder<TRecord, TResult2[]>;
+    ): QueryBuilder<TRecord, TResult2>;
     del<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredKeySelection.Augment<
@@ -718,10 +715,10 @@ declare namespace Knex {
     >(
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2[]>;
-    del<TResult2 = void>(
+    del<TResult2 = SafePartial<TRecord>[]>(
       returning: string | string[]
-    ): QueryBuilder<TRecord, TResult2[]>;
-    del(): QueryBuilder<TRecord, number>;
+    ): QueryBuilder<TRecord, TResult2>;
+    del<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
     delete<
       TKey extends StrKey<TRecord>,
@@ -743,10 +740,10 @@ declare namespace Knex {
     >(
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
-    delete<TResult2 = void>(
+    delete<TResult2 = any>(
       returning: string | string[]
     ): QueryBuilder<TRecord, TResult2>;
-    delete(): QueryBuilder<TRecord, number>;
+    delete<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
     truncate(): QueryBuilder<TRecord, void>;
 
@@ -1719,6 +1716,19 @@ declare namespace Knex {
     status(config?: MigratorConfig): Bluebird<number>;
     currentVersion(config?: MigratorConfig): Bluebird<string>;
     up(config?: MigratorConfig): Bluebird<any>;
+  }
+
+  interface SeederConfig {
+    extension?: string;
+    directory?: string;
+    loadExtensions?: string[];
+  }
+
+  class Seeder {
+    constructor(knex: Knex);
+    setConfig(config: SeederConfig): SeederConfig;
+    run(config?: SeederConfig): Bluebird<string[]>;
+    make(name: string, config?: SeederConfig): Bluebird<string>;
   }
 
   interface FunctionHelper {
