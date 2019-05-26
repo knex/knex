@@ -1,35 +1,38 @@
 # Master (Unreleased)
 
-# 0.16.7 - 12 May, 2019
+# 0.17.0 - 27 May, 2019
 
 ### New features:
 
 - Add clearHaving function #3141
 - Add --all flag for rollback in CLI #3187
+- Add error detail log to knex CLI #3149
+- Support multi-column whereIn in sqlite through values clause #3220
+- Allow users to specify the migrations "tableName" parameter via the CLI #3214
+- Unify object options handling for datetime/timestamp across dialects #3181
+- Add "up" command for migrations #3205
 
 ### Typings
 
 - Add default values for generic types (fixes backwards compatibility broken by 0.16.6) #3189
-
-# 0.16.6 - 11 May, 2019
-
-### New features:
-
-- Add error detail log to knex CLI #3149
+- Make function types generic in type definitions #3168
+- Add missing types to MigratorConfig #3174
+- Add types for havingBetween, orHavingBetween, havingNotBetween and orHavingNotBetween #3144
+- Update Knex.Config types to include log #3221
+- Fix some more cases of missing typings #3223
+- Support type safe refs #3215
+- Expose some utility types #3211
+- Fix issues with typings of joins and some conflicts with Bluebird typings #3209
 
 ### Bug fixes:
 
 - Fix order of migration rollback #3172
 
-### Typings
-
-- Make function types generic in type definitions #3168
-- Add missing types to MigratorConfig #3174
-- Add types for havingBetween, orHavingBetween, havingNotBetween and orHavingNotBetween #3144
-
 ### Test / internal changes:
 
 - Execute CI tests on Node.js 12 #3171
+- Docker-based test dbs #3157
+- Use cli-testlab for testing CLI #3191
 
 # 0.16.5 - 11 Apr, 2019
 
