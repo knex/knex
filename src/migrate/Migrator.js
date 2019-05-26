@@ -94,7 +94,9 @@ export default class Migrator {
             })
           );
 
-        if (transactionForAll) {
+        if (this.knex.isTransaction) {
+          return this._runBatch(migrations, 'up', this.knex);
+        } else if (transactionForAll) {
           return this.knex.transaction((trx) => {
             return this._runBatch(migrations, 'up', trx);
           });
@@ -143,6 +145,7 @@ export default class Migrator {
 
   // Rollback the last "batch", or all, of migrations that were run.
   rollback(config, all = false) {
+    const trx = this.knex.isTransaction ? this.knex : undefined;
     this._disableProcessing();
     return Promise.try(() => {
       this.config = getMergedConfig(config, this.config);
@@ -164,7 +167,7 @@ export default class Migrator {
             : this._getLastBatch(val);
         })
         .then((migrations) => {
-          return this._runBatch(migrations, 'down');
+          return this._runBatch(migrations, 'down', trx);
         });
     });
   }
