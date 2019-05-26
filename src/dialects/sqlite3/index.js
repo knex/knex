@@ -12,6 +12,7 @@ import SchemaCompiler from './schema/compiler';
 import ColumnCompiler from './schema/columncompiler';
 import TableCompiler from './schema/tablecompiler';
 import SQLite3_DDL from './schema/ddl';
+import SQLite3_Formatter from './formatter';
 
 function Client_SQLite3(config) {
   Client.call(this, config);
@@ -159,6 +160,10 @@ assign(Client_SQLite3.prototype, {
       { min: 1, max: 1 },
       Client.prototype.poolDefaults.call(this)
     );
+  },
+
+  formatter() {
+    return new SQLite3_Formatter(this, ...arguments);
   },
 });
 

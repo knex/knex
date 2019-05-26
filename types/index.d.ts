@@ -35,7 +35,7 @@ type UnknownToAny<T> = unknown[] extends T
 // This is primarily to keep the signatures more intuitive.
 type AugmentParams<TTarget, TParams> = {} extends TParams
   ? TTarget
-  : TTarget & TParams;
+    : {} & TTarget & TParams;
 
 // Check if provided keys (expressed as a single or union type) are members of TBase
 type AreKeysOf<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
@@ -68,13 +68,15 @@ type IncompatibleToAlt<T, TBase, TAlt> = T extends TBase ? T : TAlt;
 
 // Boxing is necessary to prevent distribution of conditional types:
 // https://lorefnon.tech/2019/05/02/using-boxing-to-prevent-distribution-of-conditional-types/
-type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
+type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<never>
+  ? {}
+  : Boxed<TKeys> extends Boxed<keyof TBase>
   ? Pick<TBase, TKeys & keyof TBase>
   : any;
 
 // Retain the association of original keys with aliased keys at type level
 // to facilitates type-safe aliasing for object syntax
-type MappedAliasType<TBase, TAliasMapping> = {
+type MappedAliasType<TBase, TAliasMapping> = {} & {
   [K in keyof TAliasMapping]: TAliasMapping[K] extends keyof TBase
     ? TBase[TAliasMapping[K]]
     : any
@@ -256,14 +258,14 @@ interface Dict<T = any> {
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
-  extends Knex.QueryInterface<TRecord, TResult> {
+  extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
     tableName?: Knex.TableDescriptor | Knex.AliasDict
   ): Knex.QueryBuilder<TRecord2, TResult2>;
   VERSION: string;
   __knex__: string;
 
-  raw: Knex.RawBuilder;
+  raw: Knex.RawBuilder<TRecord, TResult>;
 
   transactionProvider(
     config?: any
@@ -276,6 +278,7 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
     transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void,
     config?: any
   ): Bluebird<T>;
+  initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
   destroy(): Bluebird<void>;
   batchInsert(
@@ -291,12 +294,9 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
 
   client: any;
   migrate: Knex.Migrator;
-  seed: any;
+  seed: Knex.Seeder;
   fn: Knex.FunctionHelper;
-  on(
-    eventName: string,
-    callback: Function
-  ): Knex.QueryBuilder<TRecord, TResult>;
+  ref: Knex.RefBuilder;
 }
 
 declare function Knex<TRecord = any, TResult = unknown[]>(
@@ -588,9 +588,9 @@ declare namespace Knex {
       data: MaybeArray<SafePartial<TRecord>>,
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
-    insert(
+    insert<TResult2 = number[]>(
       data: MaybeArray<SafePartial<TRecord>>
-    ): QueryBuilder<TRecord, number[]>;
+    ): QueryBuilder<TRecord, TResult2>;
 
     modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
       callback: QueryCallbackWithArgs<TRecord, any>,
@@ -641,9 +641,9 @@ declare namespace Knex {
       data: MaybeArray<SafePartial<TRecord>>,
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
-    update(
+    update<TResult2 = number>(
       data: MaybeArray<SafePartial<TRecord>>
-    ): QueryBuilder<TRecord, number>;
+    ): QueryBuilder<TRecord, TResult2>;
     update<
       K1 extends StrKey<TRecord>,
       K2 extends StrKey<TRecord>,
@@ -674,12 +674,12 @@ declare namespace Knex {
       columnName: K,
       value: TRecord[K]
     ): QueryBuilder<TRecord, number>;
-    update(
+    update<TResult2 = SafePartial<TRecord>[]>(
       columnName: string,
       value: Value,
       returning: string | string[]
-    ): QueryBuilder<TRecord>;
-    update(columnName: string, value: Value): QueryBuilder<TRecord, number>;
+    ): QueryBuilder<TRecord, TResult2>;
+    update<TResult2 = number>(columnName: string, value: Value): QueryBuilder<TRecord, TResult2>;
 
     returning<
       TKey extends StrKey<TRecord>,
@@ -713,7 +713,7 @@ declare namespace Knex {
       >[]
     >(
       returning: TKey
-    ): QueryBuilder<TRecord, TResult2[]>;
+    ): QueryBuilder<TRecord, TResult2>;
     del<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredKeySelection.Augment<
@@ -724,10 +724,10 @@ declare namespace Knex {
     >(
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2[]>;
-    del<TResult2 = void>(
+    del<TResult2 = SafePartial<TRecord>[]>(
       returning: string | string[]
-    ): QueryBuilder<TRecord, TResult2[]>;
-    del(): QueryBuilder<TRecord, number>;
+    ): QueryBuilder<TRecord, TResult2>;
+    del<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
     delete<
       TKey extends StrKey<TRecord>,
@@ -749,10 +749,10 @@ declare namespace Knex {
     >(
       returning: TKey[]
     ): QueryBuilder<TRecord, TResult2>;
-    delete<TResult2 = void>(
+    delete<TResult2 = any>(
       returning: string | string[]
     ): QueryBuilder<TRecord, TResult2>;
-    delete(): QueryBuilder<TRecord, number>;
+    delete<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
     truncate(): QueryBuilder<TRecord, void>;
 
@@ -764,26 +764,39 @@ declare namespace Knex {
     (columnName: string): QueryBuilder<TRecord, TResult>;
   }
 
+  type IntersectAliases<AliasUT> =
+     UnionToIntersection<
+       IncompatibleToAlt<
+         AliasUT extends (infer I)[]
+           ? I extends Ref<any, infer TMapping>
+             ? TMapping
+             : I
+           : never,
+         Dict,
+         {}
+       >
+      >;
+
   interface AliasQueryBuilder<TRecord extends {} = any, TResult = unknown[]> {
     <
-      AliasUT extends (keyof TRecord | { [k: string]: keyof TRecord })[],
+          AliasUT extends (keyof TRecord | Ref<any, any> | { [k: string]: keyof TRecord })[],
       TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
+        IntersectAliases<AliasUT>
       >[]
     >(
       ...aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
     <
-      AliasUT extends (keyof TRecord | { [k: string]: keyof TRecord })[],
+          AliasUT extends (keyof TRecord | Ref<any, any> | { [k: string]: keyof TRecord })[],
       TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
+        IntersectAliases<AliasUT>
       >[]
     >(
       aliases: AliasUT
@@ -795,7 +808,7 @@ declare namespace Knex {
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
+        IntersectAliases<AliasUT>
       >[]
     >(
       ...aliases: AliasUT
@@ -807,7 +820,7 @@ declare namespace Knex {
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        UnionToIntersection<IncompatibleToAlt<ArrayMember<AliasUT>, Dict, {}>>
+        IntersectAliases<AliasUT>
       >[]
     >(
       aliases: AliasUT
@@ -1223,18 +1236,18 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
   }
 
-  type RawBinding = Value | QueryBuilder;
+  type RawBinding = Value | QueryBuilder<any, any>;
 
   interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
-    <TResult2 = SafePartial<TRecord>[]>(
+    <TResult2 = UnknownToAny<TResult>>(
       sql: string,
       ...bindings: RawBinding[]
     ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = SafePartial<TRecord>[]>(
+    <TResult2 = UnknownToAny<TResult>>(
       sql: string,
       bindings: RawBinding[] | ValueDict
     ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = SafePartial<TRecord>[]>(raw: Raw<TResult2>): QueryBuilder<
+    <TResult2 = UnknownToAny<TResult>>(raw: Raw<TResult2>): QueryBuilder<
       TRecord,
       TResult2
     >;
@@ -1250,18 +1263,19 @@ declare namespace Knex {
     queryContext(context: any): Raw<TResult>;
   }
 
-  interface RawBuilder {
-    <TResult>(value: Value): Raw<TResult>;
-    <TResult>(sql: string, ...bindings: Value[]): Raw<TResult>;
-    <TResult>(sql: string, bindings: Value[] | ValueDict): Raw<TResult>;
-    <TRecord, TResult>(
-      sql: string,
-      ...bindings: QueryBuilder<TRecord, TResult>[]
-    ): Raw<TResult>;
-    <TRecord, TResult>(
-      sql: string,
-      bindings: QueryBuilder<TRecord, TResult>[] | ValueDict
-    ): Raw<TResult>;
+  interface RawBuilder<TRecord extends {} = any, TResult = unknown[]> {
+    <TResult2 = UnknownToAny<TResult>>(value: Value): Raw<TResult2>;
+    <TResult2 = UnknownToAny<TResult>>(sql: string, ...bindings: RawBinding[]): Raw<TResult2>;
+    <TResult2 = UnknownToAny<TResult>>(sql: string, bindings: RawBinding[] | ValueDict): Raw<TResult2>;
+  }
+
+  interface Ref<TSrc extends string, TMapping extends {}> extends Raw<string> {
+      withSchema(schema: string): this;
+      as<TAlias extends string>(alias: TAlias): Ref<TSrc, {[K in TAlias]: TSrc}>;
+  }
+
+  interface RefBuilder {
+      <TSrc extends string>(src: TSrc): Ref<TSrc, {[K in TSrc]: TSrc}>;
   }
 
   //
@@ -1548,6 +1562,7 @@ declare namespace Knex {
     useNullAsDefault?: boolean;
     searchPath?: string | string[];
     asyncStackTraces?: boolean;
+    log?: Logger;
   }
 
   interface ConnectionConfig {
@@ -1680,6 +1695,15 @@ declare namespace Knex {
     Promise?: any;
   }
 
+  type LogFn = (message: string) => void;
+
+  interface Logger {
+    warn?: LogFn;
+    error?: LogFn;
+    debug?: LogFn;
+    deprecate?: (method: string, alternative: string) => void;
+  }
+
   interface MigratorConfig {
     database?: string;
     directory?: string | string[];
@@ -1703,6 +1727,19 @@ declare namespace Knex {
     status(config?: MigratorConfig): Bluebird<number>;
     currentVersion(config?: MigratorConfig): Bluebird<string>;
     up(config?: MigratorConfig): Bluebird<any>;
+  }
+
+  interface SeederConfig {
+    extension?: string;
+    directory?: string;
+    loadExtensions?: string[];
+  }
+
+  class Seeder {
+    constructor(knex: Knex);
+    setConfig(config: SeederConfig): SeederConfig;
+    run(config?: SeederConfig): Bluebird<string[]>;
+    make(name: string, config?: SeederConfig): Bluebird<string>;
   }
 
   interface FunctionHelper {

@@ -124,6 +124,10 @@ function invoke(env) {
       'Set migrations directory without a knexfile.'
     )
     .option(
+      '--migrations-table-name [path]',
+      'Set migrations table name without a knexfile.'
+    )
+    .option(
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'
     );

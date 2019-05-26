@@ -4,12 +4,24 @@ import * as Knex from 'knex';
 // import Knex from 'knex'
 // when "esModuleInterop": true
 
-const knex = Knex({
+const clientConfig = {
   client: 'sqlite3',
   connection: {
     filename: './mydb.sqlite',
   },
+};
+
+const knex = Knex(clientConfig);
+
+const knex2 = Knex({
+    ...clientConfig,
+    log: {
+        debug(msg: string) {}
+    }
 });
+
+knex.initialize();
+knex.initialize({});
 
 interface User {
   id: number;
@@ -89,6 +101,84 @@ const main = async () => {
 
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users').select('id', 'age');
+
+  // $ExpectType any[]
+  await knex.raw('select * from users');
+
+  // $ExpectType any[]
+  await knex.raw(
+      'select * from users where id in ?',
+      knex('contacts').select('name')
+  );
+
+  // $ExpectType User[]
+  await knex.raw<User[]>(
+      'select * from users where id in ?',
+      knex('contacts').select('name')
+  );
+
+  // $ExpectType User[]
+  await knex.raw<User[]>(
+      'select * from users where departmentId in ?',
+      knex<Department>('departments').select('id')
+  );
+
+  // $ExpectType User[]
+  await knex.raw<User[]>(
+      'select * from users where departmentId in ? & active in ?',
+      [
+          knex<Department>('departments').select('name'),
+          [true, false]
+      ]
+  );
+
+  // $ExpectType User[]
+  await knex<User>('user').whereRaw('name = ?', 'L');
+
+  // $ExpectType User[]
+  await knex<User>('user').whereRaw('name = ?', 'L').clearWhere();
+
+  // $ExpectType { id: number; }[]
+  const r3 = await knex<User>('users').select(knex.ref('id'));
+
+  // $ExpectType (Pick<User, "name"> & { id: number; })[]
+  const r4 = await knex<User>('users').select(knex.ref('id'), 'name');
+  type _TR4 = ExtendsWitness<typeof r4[0], Pick<User, "id" | "name">>;
+
+  // $ExpectType (Pick<User, "name"> & { identifier: number; })[]
+  const r5 = await knex<User>('users').select(knex.ref('id').as('identifier'), 'name');
+  type _TR5 = ExtendsWitness<typeof r5[0], {identifier: number; name: string}>;
+
+  // $ExpectType (Pick<User, "name"> & { identifier: number; yearsSinceBirth: number; })[]
+  const r6 = await knex<User>('users').select(
+      knex.ref('id').as('identifier'),
+      'name',
+      knex.ref('age').as('yearsSinceBirth')
+  );
+  type _TR6 = ExtendsWitness<typeof r6[0], {identifier: number; name: string; yearsSinceBirth: number}>;
+
+  // $ExpectType { id: number; }[]
+  const r7 = await knex.select(knex.ref('id')).from<User>('users');
+  type _TR7 = ExtendsWitness<typeof r7[0], Pick<User, "id">>;
+
+  // $ExpectType (Pick<User, "name"> & { id: number; })[]
+  const r8 = await knex.select(knex.ref('id'), 'name').from<User>('users');
+  type _TR8 = ExtendsWitness<typeof r8[0], Pick<User, "id" | "name">>;
+
+  // $ExpectType (Pick<User, "name"> & { identifier: number; })[]
+  const r9 = await knex.select(knex.ref('id').as('identifier'), 'name').from<User>('users');
+  type _TR9 = ExtendsWitness<typeof r9[0], {identifier: number; name: string}>;
+
+  // $ExpectType (Pick<User, "name"> & { identifier: number; yearsSinceBirth: number; })[]
+  const r10 = await knex.select(
+      knex.ref('id').as('identifier'),
+      'name',
+      knex.ref('age').as('yearsSinceBirth')
+  ).from<User>('users');
+  type _TR10 = ExtendsWitness<typeof r10[0], {identifier: number; name: string; yearsSinceBirth: number}>;
+
+  // $ExpectType { id: number; age: any; }[]
+  await knex<User>('users').select(knex.ref('id'), {age: 'users.age'});
 
   // $ExpectType { identifier: number; username: string; }[]
   await knex<User>('users')
@@ -265,6 +355,13 @@ const main = async () => {
     .join('departments', 'departments.id', '=', 'users.department_id')
     .orderBy('name');
 
+  // $ExpectType Partial<User>[]
+  await knex
+    .select<Partial<User>[]>(['users.*', 'departments.name as depName'])
+    .from('users')
+    .join('departments', 'departments.id', '=', 'users.department_id')
+    .orderByRaw('name DESC');
+
   // $ExpectType User
   await knex<User>('users')
     .where({ id: 10 })
@@ -287,11 +384,23 @@ const main = async () => {
 
   // ## Aggregation:
 
-  // $ExpectType Partial<User>[]
+  // $ExpectType User[]
   await knex<User>('users')
     .groupBy('count')
     .orderBy('name', 'desc')
     .having('age', '>', 10);
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .groupByRaw('count')
+    .orderBy('name', 'desc')
+    .having('age', '>', 10);
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .groupByRaw('count')
+    .orderBy('name', 'desc')
+    .havingRaw('age > ?', [10]);
 
   // $ExpectType { [key: string]: string | number; }[]
   await knex<User>('users').count();
@@ -555,6 +664,11 @@ const main = async () => {
   // $ExpectType number[]
   await knex<User>('users').insert({ id: 10 });
 
+  const qb2 = knex<User>('users');
+  qb2.returning(['id', 'name']);
+  // $ExpectType Partial<User>[]
+  await qb2.insert<Partial<User>[]>({ id: 10 });
+
   // ## With returning
 
   // $ExpectType any[]
@@ -615,6 +729,11 @@ const main = async () => {
   await knex('users')
     .where('id', 10)
     .update({ active: true });
+
+  const qb1 = knex('users').where('id', 10);
+  qb1.returning(['id', 'name']);
+  // $ExpectType Partial<User>[]
+  await qb1.update<Partial<User>[]>({ active: true });
 
   // $ExpectType number
   await knex<User>('users')
@@ -873,4 +992,24 @@ const main = async () => {
     .withSchema('public')
     .select('*')
     .from<User>('users');
+
+  // Seed:
+
+  // $ExpectType string
+  await knex.seed.make('test');
+
+  // $ExpectType string
+  await knex.seed.make('test', {
+      extension: 'ts',
+      directory: 'src/seeds'
+  });
+
+  // $ExpectType string[]
+  await knex.seed.run();
+
+  // $ExpectType string[]
+  await knex.seed.run({
+      extension: 'ts',
+      directory: 'src/seeds'
+  });
 };

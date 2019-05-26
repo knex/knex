@@ -1423,6 +1423,11 @@ describe('QueryBuilder', function() {
             'select * from "users" where ("a", "b") in ((?, ?), (?, ?), (?, ?))',
           bindings: [1, 2, 3, 4, 5, 6],
         },
+        sqlite3: {
+          sql:
+            'select * from `users` where (`a`, `b`) in ( values (?, ?), (?, ?), (?, ?))',
+          bindings: [1, 2, 3, 4, 5, 6],
+        },
       }
     );
   });
