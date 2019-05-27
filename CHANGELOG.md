@@ -4,6 +4,8 @@
 
 ### New features:
 
+- Add support for returning started transaction without immediately executing it #3099
+- Add support for passing transaction around with only starting it when needed #3099
 - Add clearHaving function #3141
 - Add --all flag for rollback in CLI #3187
 - Add error detail log to knex CLI #3149
