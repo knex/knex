@@ -22,7 +22,7 @@ var pool = {
 var poolSqlite = {
   min: 0,
   max: 1,
-  acquireTimeoutMillis: 5000,
+  acquireTimeoutMillis: 1000,
   afterCreate: function(connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
     callback(null, connection);
