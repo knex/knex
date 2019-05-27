@@ -311,7 +311,7 @@ describe('knex', () => {
   });
 
   it('propagates error correctly when all connections are in use', function() {
-    this.timeout(30000);
+    this.timeout(2000);
     const knex = Knex(sqliteConfig);
     return knex
       .transaction()
