@@ -18,6 +18,16 @@ export default class Transaction extends EventEmitter {
 
     const txid = (this.txid = uniqueId('trx'));
 
+    // If there is no container provided, assume user wants to get instance of transaction and use it directly
+    if (!container) {
+      this.initPromise = new Promise((resolve, reject) => {
+        this.initRejectFn = reject;
+        container = (transactor) => {
+          resolve(transactor);
+        };
+      });
+    }
+
     this.client = client;
     this.logger = client.logger;
     this.outerTx = outerTx;
@@ -67,14 +77,24 @@ export default class Transaction extends EventEmitter {
             }
             return null;
           })
-          .catch((e) => this._rejecter(e));
+          .catch((e) => {
+            if (this.initRejectFn) {
+              this.initRejectFn();
+            }
+            return this._rejecter(e);
+          });
 
         return new Promise((resolver, rejecter) => {
           this._resolver = resolver;
           this._rejecter = rejecter;
         });
       }
-    );
+    ).catch((err) => {
+      if (this.initRejectFn) {
+        this.initRejectFn(err);
+      }
+      throw err;
+    });
 
     this._completed = false;
 

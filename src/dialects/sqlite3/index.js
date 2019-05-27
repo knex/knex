@@ -164,7 +164,7 @@ assign(Client_SQLite3.prototype, {
 
   formatter() {
     return new SQLite3_Formatter(this, ...arguments);
-  }
+  },
 });
 
 export default Client_SQLite3;

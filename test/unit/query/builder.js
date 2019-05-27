@@ -1427,7 +1427,7 @@ describe('QueryBuilder', function() {
           sql:
             'select * from `users` where (`a`, `b`) in ( values (?, ?), (?, ?), (?, ?))',
           bindings: [1, 2, 3, 4, 5, 6],
-        }
+        },
       }
     );
   });

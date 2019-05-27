@@ -19,6 +19,16 @@ var pool = {
   },
 };
 
+var poolSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 5000,
+  afterCreate: function(connection, callback) {
+    assert.ok(typeof connection.__knexUid !== 'undefined');
+    callback(null, connection);
+  },
+};
+
 var mysqlPool = _.extend({}, pool, {
   afterCreate: function(connection, callback) {
     Promise.promisify(connection.query, { context: connection })(
@@ -50,8 +60,8 @@ var testConfigs = {
       charset: 'utf8',
     },
     pool: mysqlPool,
-    migrations: migrations,
-    seeds: seeds,
+    migrations,
+    seeds,
   },
 
   mysql2: {
@@ -65,8 +75,8 @@ var testConfigs = {
       charset: 'utf8',
     },
     pool: mysqlPool,
-    migrations: migrations,
-    seeds: seeds,
+    migrations,
+    seeds,
   },
 
   oracledb: {
@@ -78,8 +88,8 @@ var testConfigs = {
       // https://github.com/oracle/node-oracledb/issues/525
       stmtCacheSize: 0,
     },
-    pool: pool,
-    migrations: migrations,
+    pool,
+    migrations,
   },
 
   postgres: {
@@ -92,9 +102,9 @@ var testConfigs = {
       user: 'testuser',
       password: 'knextest',
     },
-    pool: pool,
-    migrations: migrations,
-    seeds: seeds,
+    pool,
+    migrations,
+    seeds,
   },
 
   redshift: {
@@ -107,9 +117,9 @@ var testConfigs = {
       port: '5439',
       host: process.env.REDSHIFT_HOST || '127.0.0.1',
     },
-    pool: pool,
-    migrations: migrations,
-    seeds: seeds,
+    pool,
+    migrations,
+    seeds,
   },
 
   sqlite3: {
@@ -117,9 +127,9 @@ var testConfigs = {
     connection: testConfig.sqlite3 || {
       filename: __dirname + '/test.sqlite3',
     },
-    pool,
-    migrations: migrations,
-    seeds: seeds,
+    pool: poolSqlite,
+    migrations,
+    seeds,
   },
 
   mssql: {
@@ -132,8 +142,8 @@ var testConfigs = {
       database: 'knex_test',
     },
     pool: pool,
-    migrations: migrations,
-    seeds: seeds,
+    migrations,
+    seeds,
   },
 };
 

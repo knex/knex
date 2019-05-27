@@ -266,8 +266,17 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   __knex__: string;
 
   raw: Knex.RawBuilder<TRecord, TResult>;
+
+  transactionProvider(
+    config?: any
+  ): () => Promise<Knex.Transaction>;
+  transaction(
+    transactionScope?: undefined | null,
+    config?: any
+  ): Promise<Knex.Transaction>;
   transaction<T>(
-    transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void
+    transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void,
+    config?: any
   ): Bluebird<T>;
   initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;

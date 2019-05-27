@@ -672,7 +672,7 @@ describe('OracleDb SchemaBuilder', function() {
     tableSql = client
       .schemaBuilder()
       .table('users', function() {
-        this.dateTime('foo', {useTz: true});
+        this.dateTime('foo', { useTz: true });
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -694,7 +694,7 @@ describe('OracleDb SchemaBuilder', function() {
     tableSql = client
       .schemaBuilder()
       .table('users', function() {
-        this.dateTime('foo', {useTz: false});
+        this.dateTime('foo', { useTz: false });
       })
       .toSQL();
     equal(1, tableSql.length);
