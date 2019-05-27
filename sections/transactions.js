@@ -16,12 +16,10 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var Promise = require('bluebird');
-
       // Using trx as a query builder:
       knex.transaction(function(trx) {
 
-        var books = [
+        const books = [
           {title: 'Canterbury Tales'},
           {title: 'Moby Dick'},
           {title: 'Hamlet'}
@@ -31,12 +29,8 @@ export default [
           .insert({name: 'Old Books'}, 'id')
           .into('catalogues')
           .then(function(ids) {
-            return Promise.map(books, function(book) {
-              book.catalogue_id = ids[0];
-
-              // Some validation could take place here.
-
-              return trx.insert(book).into('books');
+            books.forEach((book) => book.catalogue_id = ids[0]);
+            return trx('books').insert(books);
             });
           });
       })
@@ -58,12 +52,10 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var Promise = require('bluebird');
-
       // Using trx as a transaction object:
       knex.transaction(function(trx) {
 
-        var books = [
+        const books = [
           {title: 'Canterbury Tales'},
           {title: 'Moby Dick'},
           {title: 'Hamlet'}
@@ -73,12 +65,8 @@ export default [
           .into('catalogues')
           .transacting(trx)
           .then(function(ids) {
-            return Promise.map(books, function(book) {
-              book.catalogue_id = ids[0];
-
-              // Some validation could take place here.
-
-              return knex.insert(book).into('books').transacting(trx);
+            books.forEach((book) => book.catalogue_id = ids[0]);
+            return knex('books').insert(books).transacting(trx);
             });
           })
           .then(trx.commit)
@@ -102,5 +90,65 @@ export default [
       "Calling `trx.rollback` will return a rejected Promise. If you don't pass any argument to `trx.rollback`, a generic `Error` object will be created and passed in to ensure the Promise always rejects with something.",
       "Note that Amazon Redshift does not support savepoints in transactions.",
     ]
+  },
+  {
+    type: "text",
+    content: "In some cases you may prefer to create transaction but only execute statements in it later. In such case call method `transaction` without a handler function:"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      // Using trx as a transaction object:
+      const trx = await knex.transaction();
+
+      const books = [
+        {title: 'Canterbury Tales'},
+        {title: 'Moby Dick'},
+        {title: 'Hamlet'}
+      ];
+
+      trx('catalogues')
+        .insert({name: 'Old Books'}, 'id')
+        .then(function(ids) {
+          books.forEach((book) => book.catalogue_id = ids[0]);
+          return trx('books').insert(books);
+        })
+        .then(trx.commit)
+        .catch(trx.rollback);
+      })
+    `
+  },
+  {
+    type: "text",
+    content: "If you want to create a reusable transaction instance, but do not want to actually start it until it is used, you can create a transaction provider instance. It will start transaction after being called for the first time, and return same transaction on subsequent calls:"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      // Does not start a transaction yet
+      const trxProvider = knex.transactionProvider();
+
+      const books = [
+        {title: 'Canterbury Tales'},
+        {title: 'Moby Dick'},
+        {title: 'Hamlet'}
+      ];
+
+      // Starts a transaction
+      const trx = await trxProvider();
+      const ids = await trx('catalogues')
+        .insert({name: 'Old Books'}, 'id')
+      books.forEach((book) => book.catalogue_id = ids[0]);
+      await  trx('books').insert(books);
+      
+      // Reuses same transaction
+      const sameTrx = await trxProvider();
+      const ids2 = await sameTrx('catalogues')
+        .insert({name: 'New Books'}, 'id')
+      books.forEach((book) => book.catalogue_id = ids2[0]);
+      await sameTrx('books').insert(books);
+    `
   }
 ]
