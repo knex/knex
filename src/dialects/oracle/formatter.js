@@ -1,7 +1,7 @@
-import Formatter from '../../formatter';
-import { ReturningHelper } from './utils';
+const Formatter = require('../../formatter');
+const { ReturningHelper } = require('./utils');
 
-export default class Oracle_Formatter extends Formatter {
+class Oracle_Formatter extends Formatter {
   alias(first, second) {
     return first + ' ' + second;
   }
@@ -16,3 +16,5 @@ export default class Oracle_Formatter extends Formatter {
     return super.parameter(value, notSetValue);
   }
 }
+
+module.exports = Oracle_Formatter;

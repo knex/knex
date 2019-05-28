@@ -1,18 +1,18 @@
 // Transaction
 // -------
-import Promise from 'bluebird';
-import { EventEmitter } from 'events';
-import Debug from 'debug';
+const Promise = require('bluebird');
+const { EventEmitter } = require('events');
+const Debug = require('debug');
 
-import makeKnex from './util/make-knex';
+const makeKnex = require('./util/make-knex');
 
 const debug = Debug('knex:tx');
 
-import { uniqueId, isUndefined } from 'lodash';
+const { uniqueId, isUndefined } = require('lodash');
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
-export default class Transaction extends EventEmitter {
+class Transaction extends EventEmitter {
   constructor(client, container, config, outerTx) {
     super();
 
@@ -57,7 +57,7 @@ export default class Transaction extends EventEmitter {
             return makeTransactor(this, connection, trxClient);
           })
           .then((transactor) => {
-            // If we've returned a "thenable" from the transaction container, assume
+            // If we've returned a "thenable" = require(the transaction container, assume
             // the rollback and commit are chained to this object's success / failure.
             // Directly thrown errors are treated as automatic rollbacks.
             let result;
@@ -327,3 +327,5 @@ promiseInterface.forEach(function(method) {
     return this._promise[method].apply(this._promise, arguments);
   };
 });
+
+module.exports = Transaction;

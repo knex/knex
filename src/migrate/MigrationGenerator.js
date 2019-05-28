@@ -1,11 +1,11 @@
-import fs from 'fs';
-import path from 'path';
-import mkdirp from 'mkdirp';
-import Promise from 'bluebird';
-import { template } from 'lodash';
-import { getMergedConfig } from './Migrator';
+const fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
+const Promise = require('bluebird');
+const { template } = require('lodash');
+const { getMergedConfig } = require('./configuration-merger');
 
-export default class MigrationGenerator {
+class MigrationGenerator {
   constructor(migrationConfig) {
     this.config = getMergedConfig(migrationConfig);
   }
@@ -95,3 +95,5 @@ function yyyymmddhhmmss() {
     padDate(d.getSeconds())
   );
 }
+
+module.exports = MigrationGenerator;

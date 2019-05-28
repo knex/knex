@@ -4,8 +4,8 @@
 // columns and changing datatypes.
 // -------
 
-import Promise from 'bluebird';
-import {
+const Promise = require('bluebird');
+const {
   assign,
   uniqueId,
   find,
@@ -14,7 +14,7 @@ import {
   omit,
   invert,
   fromPairs,
-} from 'lodash';
+} = require('lodash');
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
@@ -309,4 +309,4 @@ assign(SQLite3_DDL.prototype, {
   }),
 });
 
-export default SQLite3_DDL;
+module.exports = SQLite3_DDL;

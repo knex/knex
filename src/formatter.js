@@ -1,6 +1,6 @@
-import QueryBuilder from './query/builder';
-import Raw from './raw';
-import { transform } from 'lodash';
+const QueryBuilder = require('./query/builder');
+const Raw = require('./raw');
+const { transform } = require('lodash');
 
 // Valid values for the `order by` clause generation.
 const orderBys = ['asc', 'desc'];
@@ -60,7 +60,7 @@ const operators = transform(
   {}
 );
 
-export default class Formatter {
+class Formatter {
   constructor(client, builder) {
     this.client = client;
     this.builder = builder;
@@ -291,3 +291,5 @@ export default class Formatter {
     return wrapped.join('.');
   }
 }
+
+module.exports = Formatter;

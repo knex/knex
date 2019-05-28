@@ -1,13 +1,13 @@
-import Raw from './raw';
-import Client from './client';
+const Raw = require('./raw');
+const Client = require('./client');
 
-import makeKnex from './util/make-knex';
-import parseConnection from './util/parse-connection';
-import fakeClient from './util/fake-client';
-import { SUPPORTED_CLIENTS } from './constants';
-import { resolveClientNameWithAliases } from './helpers';
+const makeKnex = require('./util/make-knex');
+const parseConnection = require('./util/parse-connection');
+const fakeClient = require('./util/fake-client');
+const { SUPPORTED_CLIENTS } = require('./constants');
+const { resolveClientNameWithAliases } = require('./helpers');
 
-export default function Knex(config) {
+function Knex(config) {
   // If config is a string, try to parse it
   if (typeof config === 'string') {
     const parsedConfig = Object.assign(parseConnection(config), arguments[2]);
@@ -78,3 +78,5 @@ Knex.raw = (sql, bindings) => {
   );
   return new Raw(fakeClient).set(sql, bindings);
 };
+
+module.exports = Knex;

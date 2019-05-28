@@ -152,7 +152,7 @@ function invoke(env) {
       pending = fs
         .readFileAsync(
           path.dirname(env.modulePath) +
-            '/lib/migrate/stub/knexfile-' +
+            '/src/migrate/stub/knexfile-' +
             type +
             '.stub'
         )

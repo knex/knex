@@ -1,9 +1,9 @@
 // MySQL Schema Compiler
 // -------
-import inherits from 'inherits';
-import SchemaCompiler from '../../../schema/compiler';
+const inherits = require('inherits');
+const SchemaCompiler = require('../../../schema/compiler');
 
-import { assign, some } from 'lodash';
+const { assign, some } = require('lodash');
 
 function SchemaCompiler_MySQL(client, builder) {
   SchemaCompiler.call(this, client, builder);
@@ -57,4 +57,4 @@ assign(SchemaCompiler_MySQL.prototype, {
   },
 });
 
-export default SchemaCompiler_MySQL;
+module.exports = SchemaCompiler_MySQL;

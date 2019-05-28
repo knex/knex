@@ -7,7 +7,6 @@ const path = require('path');
 const rimraf = require('rimraf');
 const Promise = require('bluebird');
 const testMemoryMigrations = require('./memory-migrations');
-const { isNode6 } = require('../../../lib/util/version-helper');
 
 module.exports = function(knex) {
   require('rimraf').sync(path.join(__dirname, './migration'));
@@ -73,22 +72,19 @@ module.exports = function(knex) {
       });
     }
 
-    if (!isNode6()) {
-      it('should not fail drop-and-recreate-column operation when using async/await', () => {
-        return knex.migrate
-          .latest({
+    it('should not fail drop-and-recreate-column operation when using async/await', () => {
+      return knex.migrate
+        .latest({
+          directory: 'test/integration/migrate/async-await-drop-and-recreate',
+        })
+        .then(() => {
+          return knex.migrate.rollback({
             directory: 'test/integration/migrate/async-await-drop-and-recreate',
-          })
-          .then(() => {
-            return knex.migrate.rollback({
-              directory:
-                'test/integration/migrate/async-await-drop-and-recreate',
-            });
           });
-      });
-    }
+        });
+    });
 
-    if (!isNode6() && knex.client.driverName === 'pg') {
+    if (knex.client.driverName === 'pg') {
       it('should not fail drop-and-recreate-column operation when using async/await and schema', () => {
         return knex.migrate
           .latest({

@@ -1,10 +1,9 @@
-const Knex = require('../../lib/index');
+const Knex = require('../../src/index');
 const { expect } = require('chai');
 const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
 const { noop } = require('lodash');
-const { isNode6 } = require('../../lib/util/version-helper');
 const inherits = require('inherits');
 
 describe('knex', () => {
@@ -105,10 +104,6 @@ describe('knex', () => {
   });
 
   it('copying does not result in duplicate listeners', () => {
-    if (isNode6()) {
-      return;
-    }
-
     const knex = Knex({
       client: 'sqlite',
     });
@@ -142,10 +137,6 @@ describe('knex', () => {
   });
 
   it('adding listener to copy does not affect base knex', () => {
-    if (isNode6()) {
-      return;
-    }
-
     const knex = Knex({
       client: 'sqlite',
     });
@@ -363,7 +354,7 @@ describe('knex', () => {
 
   it('throws if client module has not been installed', () => {
     // create dummy dialect which always fails when trying to load driver
-    const SqliteClient = require(`../../lib/dialects/sqlite3/index.js`);
+    const SqliteClient = require(`../../src/dialects/sqlite3/index.js`);
     function ClientFoobar(config) {
       SqliteClient.call(this, config);
     }

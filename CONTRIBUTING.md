@@ -35,7 +35,7 @@ So if you like to write your own dialect, you can just inherit own dialect from 
 require('sqlite3-offline');
 const Knex = require('knex');
 
-const Dialect = require(`knex/lib/dialects/sqlite3/index.js`);
+const Dialect = require(`knex/src/dialects/sqlite3/index.js`);
 Dialect.prototype._driver = () => require('sqlite3-offline');
 
 const knex = Knex({

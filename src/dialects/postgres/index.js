@@ -1,15 +1,15 @@
 // PostgreSQL
 // -------
-import { assign, map, extend, isArray, isString, includes } from 'lodash';
-import inherits from 'inherits';
-import Client from '../../client';
-import Promise from 'bluebird';
+const { assign, map, extend, isArray, isString, includes } = require('lodash');
+const inherits = require('inherits');
+const Client = require('../../client');
+const Promise = require('bluebird');
 
-import QueryCompiler from './query/compiler';
-import ColumnCompiler from './schema/columncompiler';
-import TableCompiler from './schema/tablecompiler';
-import SchemaCompiler from './schema/compiler';
-import { makeEscape } from '../../query/string';
+const QueryCompiler = require('./query/compiler');
+const ColumnCompiler = require('./schema/columncompiler');
+const TableCompiler = require('./schema/tablecompiler');
+const SchemaCompiler = require('./schema/compiler');
+const { makeEscape } = require('../../query/string');
 
 function Client_PG(config) {
   Client.apply(this, arguments);
@@ -316,4 +316,4 @@ function arrayString(arr, esc) {
   return result + '}';
 }
 
-export default Client_PG;
+module.exports = Client_PG;

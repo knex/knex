@@ -39,4 +39,4 @@ ReturningHelper.prototype.toString = function() {
   return `[object ReturningHelper:${this.columnName}]`;
 };
 
-export { generateCombinedName, wrapSqlWithCatch, ReturningHelper };
+module.exports = { generateCombinedName, wrapSqlWithCatch, ReturningHelper };

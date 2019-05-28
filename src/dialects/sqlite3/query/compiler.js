@@ -1,8 +1,8 @@
 // SQLite3 Query Builder & Compiler
 
-import inherits from 'inherits';
-import QueryCompiler from '../../../query/compiler';
-import {
+const inherits = require('inherits');
+const QueryCompiler = require('../../../query/compiler');
+const {
   assign,
   each,
   isEmpty,
@@ -10,7 +10,7 @@ import {
   noop,
   reduce,
   identity,
-} from 'lodash';
+} = require('lodash');
 
 function QueryCompiler_SQLite3(client, builder) {
   QueryCompiler.call(this, client, builder);
@@ -23,6 +23,7 @@ function QueryCompiler_SQLite3(client, builder) {
     );
   }
 }
+
 inherits(QueryCompiler_SQLite3, QueryCompiler);
 
 assign(QueryCompiler_SQLite3.prototype, {
@@ -172,4 +173,4 @@ function emptyStr() {
   return '';
 }
 
-export default QueryCompiler_SQLite3;
+module.exports = QueryCompiler_SQLite3;

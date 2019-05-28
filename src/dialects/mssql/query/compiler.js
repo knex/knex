@@ -1,9 +1,9 @@
 // MSSQL Query Compiler
 // ------
-import inherits from 'inherits';
-import QueryCompiler from '../../../query/compiler';
+const inherits = require('inherits');
+const QueryCompiler = require('../../../query/compiler');
 
-import { assign, isEmpty, compact, identity } from 'lodash';
+const { assign, isEmpty, compact, identity } = require('lodash');
 
 function QueryCompiler_MSSQL(client, builder) {
   QueryCompiler.call(this, client, builder);
@@ -257,4 +257,4 @@ assign(QueryCompiler_MSSQL.prototype, {
 
 // Set the QueryBuilder & QueryCompiler on the client object,
 // in case anyone wants to modify things to suit their own purposes.
-export default QueryCompiler_MSSQL;
+module.exports = QueryCompiler_MSSQL;

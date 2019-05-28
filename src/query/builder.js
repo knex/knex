@@ -1,13 +1,13 @@
 // Builder
 // -------
-import assert from 'assert';
-import inherits from 'inherits';
-import { EventEmitter } from 'events';
+const assert = require('assert');
+const inherits = require('inherits');
+const { EventEmitter } = require('events');
 
-import Raw from '../raw';
-import * as helpers from '../helpers';
-import JoinClause from './joinclause';
-import {
+const Raw = require('../raw');
+const helpers = require('../helpers');
+const JoinClause = require('./joinclause');
+const {
   assign,
   clone,
   each,
@@ -22,8 +22,8 @@ import {
   toArray,
   reject,
   includes,
-} from 'lodash';
-import saveAsyncStack from '../util/save-async-stack';
+} = require('lodash');
+const saveAsyncStack = require('../util/save-async-stack');
 
 // Typically called from `knex.builder`,
 // start a new query building chain.
@@ -1219,4 +1219,4 @@ Builder.prototype.del = Builder.prototype.delete;
 require('../interface')(Builder);
 helpers.addQueryContext(Builder);
 
-export default Builder;
+module.exports = Builder;

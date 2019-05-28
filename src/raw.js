@@ -1,20 +1,20 @@
 // Raw
 // -------
-import inherits from 'inherits';
-import * as helpers from './helpers';
-import { EventEmitter } from 'events';
-import debug from 'debug';
+const inherits = require('inherits');
+const helpers = require('./helpers');
+const { EventEmitter } = require('events');
+const debug = require('debug');
 
-import {
+const {
   assign,
   reduce,
   isPlainObject,
   isObject,
   isUndefined,
   isNumber,
-} from 'lodash';
-import saveAsyncStack from './util/save-async-stack';
-import uuid from 'uuid';
+} = require('lodash');
+const saveAsyncStack = require('./util/save-async-stack');
+const uuid = require('uuid');
 
 const debugBindings = debug('knex:bindings');
 
@@ -32,6 +32,7 @@ function Raw(client) {
     saveAsyncStack(this, 4);
   }
 }
+
 inherits(Raw, EventEmitter);
 
 assign(Raw.prototype, {
@@ -185,4 +186,4 @@ function replaceKeyBindings(raw, formatter) {
 require('./interface')(Raw);
 helpers.addQueryContext(Raw);
 
-export default Raw;
+module.exports = Raw;

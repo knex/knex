@@ -3,10 +3,10 @@
 // PostgreSQL Table Builder & Compiler
 // -------
 
-import inherits from 'inherits';
-import TableCompiler from '../../../schema/tablecompiler';
+const inherits = require('inherits');
+const TableCompiler = require('../../../schema/tablecompiler');
 
-import { has } from 'lodash';
+const { has } = require('lodash');
 
 function TableCompiler_PG() {
   TableCompiler.apply(this, arguments);
@@ -180,4 +180,4 @@ TableCompiler_PG.prototype.dropForeign = function(columns, indexName) {
   );
 };
 
-export default TableCompiler_PG;
+module.exports = TableCompiler_PG;

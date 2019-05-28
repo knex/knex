@@ -1,18 +1,18 @@
 // SQLite3
 // -------
-import Promise from 'bluebird';
+const Promise = require('bluebird');
 
-import inherits from 'inherits';
-import { isUndefined, map, assign, defaults } from 'lodash';
+const inherits = require('inherits');
+const { isUndefined, map, assign, defaults } = require('lodash');
 
-import Client from '../../client';
+const Client = require('../../client');
 
-import QueryCompiler from './query/compiler';
-import SchemaCompiler from './schema/compiler';
-import ColumnCompiler from './schema/columncompiler';
-import TableCompiler from './schema/tablecompiler';
-import SQLite3_DDL from './schema/ddl';
-import SQLite3_Formatter from './formatter';
+const QueryCompiler = require('./query/compiler');
+const SchemaCompiler = require('./schema/compiler');
+const ColumnCompiler = require('./schema/columncompiler');
+const TableCompiler = require('./schema/tablecompiler');
+const SQLite3_DDL = require('./schema/ddl');
+const SQLite3_Formatter = require('./formatter');
 
 function Client_SQLite3(config) {
   Client.call(this, config);
@@ -24,6 +24,7 @@ function Client_SQLite3(config) {
     );
   }
 }
+
 inherits(Client_SQLite3, Client);
 
 assign(Client_SQLite3.prototype, {
@@ -167,4 +168,4 @@ assign(Client_SQLite3.prototype, {
   },
 });
 
-export default Client_SQLite3;
+module.exports = Client_SQLite3;

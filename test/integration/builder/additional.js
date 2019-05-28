@@ -5,7 +5,6 @@
 const Knex = require('../../../knex');
 const _ = require('lodash');
 const Promise = require('bluebird');
-const { isNode6 } = require('../../../lib/util/version-helper');
 
 module.exports = function(knex) {
   describe('Additional', function() {
@@ -46,9 +45,6 @@ module.exports = function(knex) {
       });
 
       it('should pass query context for raw responses', () => {
-        if (isNode6()) {
-          return;
-        }
         return knex
           .raw('select * from ??', ['accounts'])
           .queryContext('the context')
@@ -108,9 +104,6 @@ module.exports = function(knex) {
       });
 
       it('should work using camelCased table name', () => {
-        if (isNode6()) {
-          return;
-        }
         return knex('testTableTwo')
           .columnInfo()
           .then((res) => {
@@ -125,9 +118,6 @@ module.exports = function(knex) {
       });
 
       it('should work using snake_cased table name', () => {
-        if (isNode6()) {
-          return;
-        }
         return knex('test_table_two')
           .columnInfo()
           .then((res) => {
@@ -967,9 +957,6 @@ module.exports = function(knex) {
     });
 
     it('Event: query-response', function() {
-      if (isNode6()) {
-        return;
-      }
       let queryCount = 0;
 
       const onQueryResponse = function(response, obj, builder) {
@@ -999,9 +986,6 @@ module.exports = function(knex) {
     });
 
     it('Event: preserves listeners on a copy with user params', function() {
-      if (isNode6()) {
-        return;
-      }
       let queryCount = 0;
 
       const onQueryResponse = function(response, obj, builder) {
@@ -1035,9 +1019,6 @@ module.exports = function(knex) {
     });
 
     it('Event: query-error', function() {
-      if (isNode6()) {
-        return;
-      }
       let queryCountKnex = 0;
       let queryCountBuilder = 0;
       const onQueryErrorKnex = function(error, obj) {
@@ -1073,9 +1054,6 @@ module.exports = function(knex) {
     });
 
     it('Event: start', function() {
-      if (isNode6()) {
-        return;
-      }
       return knex('accounts')
         .insert({ last_name: 'Start event test' })
         .then(function() {

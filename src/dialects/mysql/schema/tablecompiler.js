@@ -2,11 +2,11 @@
 
 // MySQL Table Builder & Compiler
 // -------
-import inherits from 'inherits';
-import TableCompiler from '../../../schema/tablecompiler';
-import Promise from 'bluebird';
+const inherits = require('inherits');
+const TableCompiler = require('../../../schema/tablecompiler');
+const Promise = require('bluebird');
 
-import { assign } from 'lodash';
+const { assign } = require('lodash');
 
 // Table Compiler
 // ------
@@ -14,6 +14,7 @@ import { assign } from 'lodash';
 function TableCompiler_MySQL() {
   TableCompiler.apply(this, arguments);
 }
+
 inherits(TableCompiler_MySQL, TableCompiler);
 
 assign(TableCompiler_MySQL.prototype, {
@@ -262,4 +263,4 @@ assign(TableCompiler_MySQL.prototype, {
   },
 });
 
-export default TableCompiler_MySQL;
+module.exports = TableCompiler_MySQL;

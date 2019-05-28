@@ -1,9 +1,9 @@
 // SQLite3: Column Builder & Compiler
 // -------
-import inherits from 'inherits';
-import SchemaCompiler from '../../../schema/compiler';
+const inherits = require('inherits');
+const SchemaCompiler = require('../../../schema/compiler');
 
-import { some } from 'lodash';
+const { some } = require('lodash');
 
 // Schema Compiler
 // -------
@@ -11,6 +11,7 @@ import { some } from 'lodash';
 function SchemaCompiler_SQLite3() {
   SchemaCompiler.apply(this, arguments);
 }
+
 inherits(SchemaCompiler_SQLite3, SchemaCompiler);
 
 // Compile the query to determine if a table exists.
@@ -45,4 +46,4 @@ SchemaCompiler_SQLite3.prototype.renameTable = function(from, to) {
   );
 };
 
-export default SchemaCompiler_SQLite3;
+module.exports = SchemaCompiler_SQLite3;
