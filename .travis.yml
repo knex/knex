@@ -19,7 +19,6 @@ matrix:
 install:
   - npm i
   - (echo $DB | grep oracledb) && npm install oracledb || true
-  - npm run build
 
 before_script:
   - npm run db:start
