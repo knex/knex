@@ -1,6 +1,6 @@
 # Master (Unreleased)
 
-# 0.17.0 - 27 May, 2019
+# 0.17.0 - 28 May, 2019
 
 ### New features:
 
