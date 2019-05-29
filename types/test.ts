@@ -91,6 +91,33 @@ const main = async () => {
     .select('age')
     .first();
 
+  // $ExpectType any
+  await knex('users').first('id');
+
+  // $ExpectType any
+  await knex('users').first('id', 'name');
+
+  // $ExpectType any
+  await knex('users').first(knex.ref('id').as('identifier'));
+
+  // $ExpectType Pick<User, "id">
+  await knex<User>('users').first('id');
+
+  // $ExpectType Pick<User, "id" | "name">
+  await knex<User>('users').first('id', 'name');
+
+  // $ExpectType { identifier: number; }
+  await knex<User>('users').first(knex.ref('id').as('identifier'));
+
+  // $ExpectType Pick<User, "id">
+  await knex.first('id').from<User>('users');
+
+  // $ExpectType Pick<User, "id" | "name">
+  await knex.first('id', 'name').from<User>('users');
+
+  // $ExpectType { identifier: number; }
+  await knex.first(knex.ref('id').as('identifier')).from<User>('users');
+
   // $ExpectType Pick<User, "id">[]
   await knex<User>('users').select('id');
 
@@ -179,6 +206,9 @@ const main = async () => {
 
   // $ExpectType { id: number; age: any; }[]
   await knex<User>('users').select(knex.ref('id'), {age: 'users.age'});
+
+  // $ExpectType { id: number; age: any; }
+  await knex<User>('users').select(knex.ref('id'), {age: 'users.age'}).first();
 
   // $ExpectType { identifier: number; username: string; }[]
   await knex<User>('users')
@@ -355,6 +385,14 @@ const main = async () => {
     .join('departments', 'departments.id', '=', 'users.department_id')
     .orderBy('name');
 
+  // $ExpectType Partial<User>
+  await knex
+    .select<Partial<User>[]>(['users.*', 'departments.name as depName'])
+    .from('users')
+    .join('departments', 'departments.id', '=', 'users.department_id')
+    .orderBy('name')
+    .first();
+
   // $ExpectType Partial<User>[]
   await knex
     .select<Partial<User>[]>(['users.*', 'departments.name as depName'])
@@ -370,8 +408,20 @@ const main = async () => {
   // $ExpectType any[]
   await knex.where({ id: 10 }).from('users');
 
+  // $ExpectType any
+  await knex.where({ id: 10 }).from('users').first();
+
   // $ExpectType User[]
   await knex.where({ id: 10 }).from<User>('users');
+
+  // $ExpectType User
+  await knex
+    .where({ id: 10 })
+    .from<User>('users')
+    .clearWhere()
+    .where({ id: 11 })
+    .orWhere({ id: 12 })
+    .first();
 
   // $ExpectType User[]
   await knex
@@ -465,6 +515,16 @@ const main = async () => {
     .andWhere(function() {
       this.where('id', '>', 10);
     });
+
+  // $ExpectType User
+  await knex<User>('users')
+    .where((builder) =>
+      builder.whereIn('id', [1, 11, 15]).whereNotIn('id', [17, 19])
+    )
+    .andWhere(function() {
+      this.where('id', '>', 10);
+    })
+    .first();
 
   // $ExpectType User[]
   await knex<User>('users').whereNotExists(function() {
