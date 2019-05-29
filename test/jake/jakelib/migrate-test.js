@@ -467,15 +467,15 @@ test('migrate:down undos only the last run migration', (temp) => {
     --connection=${temp}/db \
     --migrations-directory=${temp}/migrations`,
     'run_all_migrations'
-  ).then(() => {
-    return assertExec(
-      `node ${KNEX} migrate:down \
+  )
+    .then(() => {
+      return assertExec(
+        `node ${KNEX} migrate:down \
       --client=sqlite3 \
       --connection=${temp}/db \
       --migrations-directory=${temp}/migrations`,
-      'undo_migration_002'
-    )
-      .then(({ stdout }) => {
+        'undo_migration_002'
+      ).then(({ stdout }) => {
         assert.include(
           stdout,
           `Batch 1 rolled back the following migrations:\n${migrationFile2}`
@@ -504,43 +504,43 @@ test('migrate:down undos only the last run migration', (temp) => {
             err ? reject(err) : resolve();
           });
         });
-      })
-      .then(() => {
-        return assertExec(
-          `node ${KNEX} migrate:down \
-        --client=sqlite3 \
-        --connection=${temp}/db \
-        --migrations-directory=${temp}/migrations`,
-          'undo_migration_002'
-        ).then(({ stdout }) => {
-          assert.include(
-            stdout,
-            `Batch 1 rolled back the following migrations:\n${migrationFile1}`
-          );
+      });
+    })
+    .then(() => {
+      return assertExec(
+        `node ${KNEX} migrate:down \
+      --client=sqlite3 \
+      --connection=${temp}/db \
+      --migrations-directory=${temp}/migrations`,
+        'undo_migration_002'
+      ).then(({ stdout }) => {
+        assert.include(
+          stdout,
+          `Batch 1 rolled back the following migrations:\n${migrationFile1}`
+        );
 
-          const db = new sqlite3.Database(`${temp}/db`);
+        const db = new sqlite3.Database(`${temp}/db`);
 
-          return new Promise((resolve, reject) => {
-            db.all('SELECT * FROM knex_migrations', (err, rows) => {
-              assert.isEmpty(rows);
+        return new Promise((resolve, reject) => {
+          db.all('SELECT * FROM knex_migrations', (err, rows) => {
+            assert.isEmpty(rows);
 
-              err ? reject(err) : resolve();
-            });
+            err ? reject(err) : resolve();
           });
         });
-      })
-      .then(() => {
-        return assertExec(
-          `node ${KNEX} migrate:down \
-        --client=sqlite3 \
-        --connection=${temp}/db \
-        --migrations-directory=${temp}/migrations`,
-          'undo_migration_002'
-        ).then(({ stdout }) => {
-          assert.include(stdout, 'Already at the base migration');
-        });
       });
-  });
+    })
+    .then(() => {
+      return assertExec(
+        `node ${KNEX} migrate:down \
+      --client=sqlite3 \
+      --connection=${temp}/db \
+      --migrations-directory=${temp}/migrations`,
+        'undo_migration_002'
+      ).then(({ stdout }) => {
+        assert.include(stdout, 'Already at the base migration');
+      });
+    });
 });
 
 module.exports = {
