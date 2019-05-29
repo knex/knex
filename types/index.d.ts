@@ -1734,6 +1734,7 @@ declare namespace Knex {
     status(config?: MigratorConfig): Bluebird<number>;
     currentVersion(config?: MigratorConfig): Bluebird<string>;
     up(config?: MigratorConfig): Bluebird<any>;
+    down(config?: MigratorConfig): Bluebird<any>;
   }
 
   interface SeederConfig {
