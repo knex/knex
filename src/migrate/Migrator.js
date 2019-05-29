@@ -141,43 +141,6 @@ export default class Migrator {
       });
   }
 
-  // Runs the next migration that has not yet been run
-  up(config) {
-    this._disableProcessing();
-    this.config = getMergedConfig(config, this.config);
-
-    return migrationListResolver
-      .listAllAndCompleted(this.config, this.knex)
-      .tap((value) => validateMigrationList(this.config.migrationSource, value))
-      .spread((all, completed) => {
-        const migrationToRun = getNewMigrations(
-          this.config.migrationSource,
-          all,
-          completed
-        ).slice(0, 1);
-
-        const transactionForAll =
-          !this.config.disableTransactions &&
-          isEmpty(
-            filter(migrationToRun, (migration) => {
-              const migrationContents = this.config.migrationSource.getMigration(
-                migration
-              );
-
-              return !this._useTransaction(migrationContents);
-            })
-          );
-
-        if (transactionForAll) {
-          return this.knex.transaction((trx) => {
-            return this._runBatch(migrationToRun, 'up', trx);
-          });
-        } else {
-          return this._runBatch(migrationToRun, 'up');
-        }
-      });
-  }
-
   // Rollback the last "batch", or all, of migrations that were run.
   rollback(config, all = false) {
     this._disableProcessing();
