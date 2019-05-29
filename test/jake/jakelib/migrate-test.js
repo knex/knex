@@ -380,7 +380,7 @@ test('migrate:up runs only the next unrun migration', (temp) => {
         --client=sqlite3 \
         --connection=${temp}/db \
         --migrations-directory=${temp}/migrations`,
-        'create_books_table'
+        'update_books_table'
       ).then(({ stdout }) => {
         assert.include(
           stdout,
@@ -512,7 +512,7 @@ test('migrate:down undos only the last run migration', (temp) => {
       --client=sqlite3 \
       --connection=${temp}/db \
       --migrations-directory=${temp}/migrations`,
-        'undo_migration_002'
+        'undo_migration_001'
       ).then(({ stdout }) => {
         assert.include(
           stdout,
@@ -536,7 +536,7 @@ test('migrate:down undos only the last run migration', (temp) => {
       --client=sqlite3 \
       --connection=${temp}/db \
       --migrations-directory=${temp}/migrations`,
-        'undo_migration_002'
+        'already_at_the_base_migration'
       ).then(({ stdout }) => {
         assert.include(stdout, 'Already at the base migration');
       });
