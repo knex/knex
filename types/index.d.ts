@@ -66,6 +66,8 @@ interface Boxed<T> {
 // If T can't be assigned to TBase fallback to an alternate type TAlt
 type IncompatibleToAlt<T, TBase, TAlt> = T extends TBase ? T : TAlt;
 
+type ArrayIfAlready<T1, T2> = T1 extends any[] ? T2[] : T2;
+
 // Boxing is necessary to prevent distribution of conditional types:
 // https://lorefnon.tech/2019/05/02/using-boxing-to-prevent-distribution-of-conditional-types/
 type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<never>
@@ -142,9 +144,9 @@ declare namespace DeferredKeySelection {
   type ReplaceBase<TSelection, TBase> = UnwrapArrayMember<
     TSelection
   > extends DeferredKeySelection.Any
-    ? DeferredKeySelection.SetBase<UnwrapArrayMember<TSelection>, TBase>[]
+    ? ArrayIfAlready<TSelection, DeferredKeySelection.SetBase<UnwrapArrayMember<TSelection>, TBase>>
     : unknown extends UnwrapArrayMember<TSelection>
-    ? DeferredKeySelection.SetBase<unknown, TBase>[]
+    ? ArrayIfAlready<TSelection, DeferredKeySelection.SetBase<unknown, TBase>>
     : TSelection;
 
   // Type operators to substitute individual type parameters:
@@ -328,6 +330,11 @@ declare namespace Knex {
     | Knex.Raw
     | Knex.QueryBuilder<TRecord, TResult>
     | Dict<string>;
+
+  type InferrableColumnDescriptor<TRecord extends {}> =
+    | keyof TRecord
+    | Knex.Ref<any, any>
+    | Dict<keyof TRecord>;
 
   type TableDescriptor = string | Knex.Raw | Knex.QueryBuilder;
 
@@ -779,49 +786,49 @@ declare namespace Knex {
 
   interface AliasQueryBuilder<TRecord extends {} = any, TResult = unknown[]> {
     <
-          AliasUT extends (keyof TRecord | Ref<any, any> | { [k: string]: keyof TRecord })[],
-      TResult2 = DeferredKeySelection.Augment<
+      AliasUT extends InferrableColumnDescriptor<TRecord>[],
+      TResult2 = ArrayIfAlready<TResult, DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         IntersectAliases<AliasUT>
-      >[]
+      >>
     >(
       ...aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
     <
-          AliasUT extends (keyof TRecord | Ref<any, any> | { [k: string]: keyof TRecord })[],
-      TResult2 = DeferredKeySelection.Augment<
+      AliasUT extends InferrableColumnDescriptor<TRecord>[],
+      TResult2 = ArrayIfAlready<TResult, DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         IntersectAliases<AliasUT>
-      >[]
+      >>
     >(
       aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
     <
       AliasUT extends (Dict | string)[],
-      TResult2 = DeferredKeySelection.Augment<
+      TResult2 = ArrayIfAlready<TResult, DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         IntersectAliases<AliasUT>
-      >[]
+      >>
     >(
       ...aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
     <
       AliasUT extends (Dict | string)[],
-      TResult2 = DeferredKeySelection.Augment<
+      TResult2 = ArrayIfAlready<TResult, DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         IntersectAliases<AliasUT>
-      >[]
+      >>
     >(
       aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
@@ -832,11 +839,11 @@ declare namespace Knex {
       ColumnNameQueryBuilder<TRecord, TResult> {
     (): QueryBuilder<TRecord, TResult>;
 
-    <TResult2 = any[], TInnerRecord = any, TInnerResult = any>(
+    <TResult2 = ArrayIfAlready<TResult, any>, TInnerRecord = any, TInnerResult = any>(
       ...subQueryBuilders: QueryBuilder<TInnerRecord, TInnerResult>[]
     ): QueryBuilder<TRecord, TResult2>;
 
-    <TResult2 = any[], TInnerRecord = any, TInnerResult = any>(
+    <TResult2 = ArrayIfAlready<TResult, any>, TInnerRecord = any, TInnerResult = any>(
       subQueryBuilders: QueryBuilder<TInnerRecord, TInnerResult>[]
     ): QueryBuilder<TRecord, TResult2>;
   }
