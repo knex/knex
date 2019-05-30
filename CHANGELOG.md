@@ -1,5 +1,9 @@
 # Master (Unreleased)
 
+### Bug fixes:
+
+- Do not reject promise on transaction rollback (only for new, non-callback, style of transactions for now to avoid breaking old code) #3235
+
 # 0.17.0 - 28 May, 2019
 
 ### New features:

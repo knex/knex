@@ -376,6 +376,19 @@ module.exports = function(knex) {
         });
     });
 
+    it('does not reject promise when rolling back a transaction', () => {
+      const trxProvider = knex.transactionProvider();
+      const trxPromise = trxProvider();
+
+      return trxPromise
+        .then((trx) => {
+          return trx.rollback();
+        })
+        .then((result) => {
+          expect(result.sql).to.be.ok;
+        });
+    });
+
     it('should allow for nested transactions', function() {
       if (/redshift/i.test(knex.client.driverName)) {
         return Promise.resolve();
