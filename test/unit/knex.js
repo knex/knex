@@ -344,6 +344,20 @@ describe('knex', () => {
       });
   });
 
+  it('does not reject promise when rolling back a transaction', () => {
+    const knex = Knex(sqliteConfig);
+    const trxProvider = knex.transactionProvider();
+    const trxPromise = trxProvider();
+
+    return trxPromise
+      .then((trx) => {
+        return trx.rollback();
+      })
+      .then((result) => {
+        expect(result.sql).to.equal('ROLLBACK');
+      });
+  });
+
   it('creating transaction copy with user params should throw an error', () => {
     if (!sqliteConfig) {
       return;
@@ -364,9 +378,11 @@ describe('knex', () => {
   it('throws if client module has not been installed', () => {
     // create dummy dialect which always fails when trying to load driver
     const SqliteClient = require(`../../lib/dialects/sqlite3/index.js`);
+
     function ClientFoobar(config) {
       SqliteClient.call(this, config);
     }
+
     inherits(ClientFoobar, SqliteClient);
 
     ClientFoobar.prototype._driver = () => {
