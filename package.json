@@ -35,7 +35,7 @@
     "highlight.js": "^9.5.0",
     "http-proxy": "^1.14.0",
     "ip": "^1.1.3",
-    "knex": "*",
+    "knex": "^0.17.0",
     "marked": "^0.5.2",
     "node-static": "^0.7.11",
     "nodemon": "^1.18.10",
