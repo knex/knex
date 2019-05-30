@@ -216,7 +216,7 @@ declare namespace DeferredKeySelection {
 
   // Resolution logic lifted over arrays of deferred selections
   type Resolve<TSelection> = TSelection extends DeferredKeySelection.Any
-    ? ResolveOne<TSelection>
+    ? (ResolveOne<TSelection> | undefined)
     : TSelection extends DeferredKeySelection.Any[]
     ? ResolveOne<TSelection[0]>[]
     : TSelection;
