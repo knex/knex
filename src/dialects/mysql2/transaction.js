@@ -29,6 +29,10 @@ assign(Transaction_MySQL2.prototype, {
         if (status === 1) t._resolver(value);
         if (status === 2) {
           if (isUndefined(value)) {
+            if (t.doNotRejectOnRollback) {
+              t._resolver();
+              return;
+            }
             value = new Error(`Transaction rejected with non-error: ${value}`);
           }
           t._rejecter(value);

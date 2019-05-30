@@ -34,6 +34,10 @@ export default class Oracle_Transaction extends Transaction {
       })
       .then(function() {
         if (isUndefined(err)) {
+          if (self.doNotRejectOnRollback) {
+            self._resolver();
+            return;
+          }
           err = new Error(`Transaction rejected with non-error: ${err}`);
         }
         self._rejecter(err);

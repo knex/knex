@@ -33,6 +33,10 @@ export default class Transaction_MSSQL extends Transaction {
       () => {
         let err = error;
         if (isUndefined(error)) {
+          if (this.doNotRejectOnRollback) {
+            this._resolver();
+            return;
+          }
           err = new Error(`Transaction rejected with non-error: ${error}`);
         }
         this._rejecter(err);
