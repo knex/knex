@@ -1,5 +1,13 @@
 # Master (Unreleased)
 
+# 0.17.1 - 31 May, 2019
+
+### Typings
+
+- Update type of aggregation results to not be arrays when first has been invoked before #3237
+- Include undefined in type of single row results #3231
+- Fix incorrect type definitions for single row queries #3230
+
 # 0.17.0 - 28 May, 2019
 
 ### New features:
