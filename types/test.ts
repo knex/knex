@@ -452,11 +452,29 @@ const main = async () => {
     .orderBy('name', 'desc')
     .havingRaw('age > ?', [10]);
 
-  // $ExpectType { [key: string]: string | number; }[]
+  // $ExpectType Dict<string | number>[]
   await knex<User>('users').count();
+
+  // $ExpectType Dict<string | number>[]
+  await knex<User>('users').count('age');
+
+  // $ExpectType Dict<string | number>[]
+  await knex('users').count('age');
+
+  // $ExpectType Dict<string | number>
+  await knex<User>('users').first().count('age');
+
+  // $ExpectType Dict<string | number>
+  await knex('users').first().count('age', 'id');
+
+  // $ExpectType Dict<string | number>
+  await knex<User>('users').first().count();
 
   // $ExpectType ValueDict[]
   await knex<User>('users').max('age');
+
+  // $ExpectType ValueDict
+  await knex<User>('users').first().max('age');
 
   // $ExpectType ValueDict[]
   await knex('users').max('age');
@@ -464,11 +482,8 @@ const main = async () => {
   // $ExpectType ValueDict[]
   await knex<User>('users').min('age');
 
-  // $ExpectType { [key: string]: string | number; }[]
-  await knex<User>('users').count('age');
-
-  // $ExpectType { [key: string]: string | number; }[]
-  await knex('users').count('age');
+  // $ExpectType ValueDict
+  await knex<User>('users').first().min('age');
 
   // ## With inner query:
 
