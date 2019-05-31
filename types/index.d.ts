@@ -452,76 +452,76 @@ declare namespace Knex {
     limit(limit: number): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
-    count(...columnNames: (keyof TRecord)[]): CountQueryBuilder<TRecord>;
-    count(...columnNames: string[]): CountQueryBuilder<TRecord>;
+    count(...columnNames: (keyof TRecord)[]): CountQueryBuilder<TRecord, TResult>;
+    count(...columnNames: string[]): CountQueryBuilder<TRecord, TResult>;
     count(
       columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
-    ): CountQueryBuilder<TRecord>;
+    ): CountQueryBuilder<TRecord, TResult>;
 
-    countDistinct(columnName: keyof TRecord): CountQueryBuilder<TRecord>;
+    countDistinct(columnName: keyof TRecord): CountQueryBuilder<TRecord, TResult>;
     countDistinct(
       columnName: string | Record<string, string | Knex.Raw> | Knex.Raw
-    ): CountQueryBuilder<TRecord>;
+    ): CountQueryBuilder<TRecord, TResult>;
 
-    min<TResult2 extends {}[] = ValueDict[]>(
+    min<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: keyof TRecord,
       ...columnNames: (keyof TRecord)[]
     ): QueryBuilder<TRecord, TResult2>;
-    min<TResult2 extends {}[] = ValueDict[]>(
+    min<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: string,
       ...columnNames: string[]
     ): QueryBuilder<TRecord, TResult2>;
-    min<TResult2 extends {}[] = ValueDict[]>(
+    min<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
     ): QueryBuilder<TRecord, TResult2>;
 
-    max<TResult2 extends {}[] = ValueDict[]>(
+    max<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: keyof TRecord,
       ...columnNames: (keyof TRecord)[]
     ): QueryBuilder<TRecord, TResult2>;
-    max<TResult2 extends {}[] = ValueDict[]>(
+    max<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: string,
       ...columnNames: string[]
     ): QueryBuilder<TRecord, TResult2>;
-    max<TResult2 extends {}[] = ValueDict[]>(
+    max<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
     ): QueryBuilder<TRecord, TResult2>;
 
-    sum<TResult2 extends {}[] = ValueDict[]>(
+    sum<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: keyof TRecord,
       ...columnNames: (keyof TRecord)[]
     ): QueryBuilder<TRecord, TResult2>;
-    sum<TResult2 extends {}[] = ValueDict[]>(
+    sum<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: string,
       ...columnNames: string[]
     ): QueryBuilder<TRecord, TResult2>;
-    sum<TResult2 extends {}[] = ValueDict[]>(
+    sum<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
     ): QueryBuilder<TRecord, TResult2>;
 
-    sumDistinct<TResult2 extends {}[] = ValueDict[]>(
+    sumDistinct<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: keyof TRecord
     ): QueryBuilder<TRecord, TResult2>;
-    sumDistinct<TResult2 extends {}[] = ValueDict[]>(
+    sumDistinct<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: string | Record<string, string | Knex.Raw> | Knex.Raw
     ): QueryBuilder<TRecord, TResult2>;
 
-    avg<TResult2 extends {}[] = ValueDict[]>(
+    avg<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: keyof TRecord,
       ...columnNames: (keyof TRecord)[]
     ): QueryBuilder<TRecord, TResult2>;
-    avg<TResult2 extends {}[] = ValueDict[]>(
+    avg<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: string,
       ...columnNames: string[]
     ): QueryBuilder<TRecord, TResult2>;
-    avg<TResult2 extends {}[] = ValueDict[]>(
+    avg<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
     ): QueryBuilder<TRecord, TResult2>;
 
-    avgDistinct<TResult2 extends {}[] = ValueDict[]>(
+    avgDistinct<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: keyof TRecord
     ): QueryBuilder<TRecord, TResult2>;
-    avgDistinct<TResult2 extends {}[] = ValueDict[]>(
+    avgDistinct<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: string | Record<string, string | Knex.Raw> | Knex.Raw
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -1327,9 +1327,9 @@ declare namespace Knex {
     queryContext(context: any): QueryBuilder<TRecord, TResult>;
   }
 
-  type CountQueryBuilder<TRecord> = QueryBuilder<
+  type CountQueryBuilder<TRecord, TResult> = QueryBuilder<
     TRecord,
-    { [key: string]: number | string }[]
+    ArrayIfAlready<TResult, Dict<number|string>>
   >;
 
   interface Sql {
