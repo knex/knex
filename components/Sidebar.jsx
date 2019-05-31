@@ -283,6 +283,7 @@ export default class Sidebar extends Component {
             <li>– <a href="#Migrations-latest">latest</a></li>
             <li>– <a href="#Migrations-rollback">rollback</a></li>
             <ii>- <a href="#Migrations-up">up</a></ii>
+            <ii>- <a href="#Migrations-down">down</a></ii>
             <li>– <a href="#Migrations-currentVersion">currentVersion</a></li>
           <li><a href="#Notes-about-locks"><b>Notes about locks</b></a></li>
           <li><a href="#Seeds-API"><b>Seed API</b></a></li>
