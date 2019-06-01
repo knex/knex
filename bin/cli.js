@@ -42,6 +42,21 @@ function checkLocalModule(env) {
   }
 }
 
+function getMigrationExtension(env) {
+  let ext = DEFAULT_EXT;
+  if (argv.x) {
+    ext = argv.x;
+  } else if (
+    env.configuration.migration &&
+    env.configuration.migration.extension
+  ) {
+    ext = env.configuration.migration.extension;
+  } else if (env.configuration.ext) {
+    ext = env.configuration.ext;
+  }
+  return ext.toLowerCase();
+}
+
 function initKnex(env, opts) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
@@ -176,11 +191,7 @@ function invoke(env) {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
       const instance = initKnex(env, opts);
-      const ext = (
-        argv.x ||
-        env.configuration.ext ||
-        DEFAULT_EXT
-      ).toLowerCase();
+      const ext = getMigrationExtension(env);
       pending = instance.migrate
         .make(name, { extension: ext })
         .then((name) => {
