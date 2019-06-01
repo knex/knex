@@ -461,6 +461,18 @@ const main = async () => {
   // $ExpectType Dict<string | number>[]
   await knex('users').count('age');
 
+  // $ExpectType { count: number; }
+  await knex('foo').first().count<{count: number}>({count: '*'});
+
+  // $ExpectType { count: number; }
+  await knex('foo').first().countDistinct<{count: number}>({count: '*'});
+
+  // $ExpectType { count: any; }
+  await knex('foo').first().count({count: '*'});
+
+  // $ExpectType { count: any; }
+  await knex('foo').first().countDistinct({count: '*'});
+
   // $ExpectType Dict<string | number>
   await knex<User>('users').first().count('age');
 

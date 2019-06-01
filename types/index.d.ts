@@ -452,16 +452,24 @@ declare namespace Knex {
     limit(limit: number): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
-    count(...columnNames: (keyof TRecord)[]): CountQueryBuilder<TRecord, TResult>;
-    count(...columnNames: string[]): CountQueryBuilder<TRecord, TResult>;
-    count(
+    count<TResult2 = CountQueryResult<TResult>>(...columnNames: (keyof TRecord)[]): QueryBuilder<TRecord, TResult2>;
+    count<TResult2 = CountQueryResult<TResult>>(...columnNames: string[]): QueryBuilder<TRecord, TResult2>;
+    count<
+      TAliases = Record<string, string | string[] | Knex.Raw>,
+      TResult2 = ArrayIfAlready<TResult, {[k in keyof TAliases]: any}>
+    >(aliases: TAliases): QueryBuilder<TRecord, TResult2>;
+    count<TResult2 = CountQueryResult<TResult>>(
       columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
-    ): CountQueryBuilder<TRecord, TResult>;
+    ): QueryBuilder<TRecord, TResult2>;
 
-    countDistinct(columnName: keyof TRecord): CountQueryBuilder<TRecord, TResult>;
-    countDistinct(
-      columnName: string | Record<string, string | Knex.Raw> | Knex.Raw
-    ): CountQueryBuilder<TRecord, TResult>;
+    countDistinct<TResult2 = CountQueryResult<TResult>>(columnName: keyof TRecord): QueryBuilder<TRecord, TResult2>;
+    countDistinct<
+      TAliases = Record<string, string | string[] | Knex.Raw>,
+      TResult2 = ArrayIfAlready<TResult, {[k in keyof TAliases]: any}>
+    >(alises: TAliases): QueryBuilder<TRecord, TResult2>;
+    countDistinct<TResult2 = CountQueryResult<TResult>>(
+      columnName: string | Knex.Raw | Record<string, string | string[] | Knex.Raw>
+    ): QueryBuilder<TRecord, TResult2>;
 
     min<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
       columnName: keyof TRecord,
@@ -1327,10 +1335,7 @@ declare namespace Knex {
     queryContext(context: any): QueryBuilder<TRecord, TResult>;
   }
 
-  type CountQueryBuilder<TRecord, TResult> = QueryBuilder<
-    TRecord,
-    ArrayIfAlready<TResult, Dict<number|string>>
-  >;
+  type CountQueryResult<TResult> = ArrayIfAlready<TResult, Dict<number|string>>;
 
   interface Sql {
     method: string;
