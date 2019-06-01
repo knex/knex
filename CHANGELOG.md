@@ -1,6 +1,20 @@
 # Master (Unreleased)
 
+# 0.17.2 - 1 June, 2019
+
+### Typings
+
+- Improve count typings #3239
+
+### Bug fixes:
+
+- "colorette" dependency breaks browserify builds #3238
+
 # 0.17.1 - 31 May, 2019
+
+### New features:
+
+- Add migrate:down functionality #3228
 
 ### Typings
 
