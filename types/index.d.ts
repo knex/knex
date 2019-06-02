@@ -1652,6 +1652,7 @@ declare namespace Knex {
     multipleStatements?: boolean;
     flags?: string;
     ssl?: string | MariaSslConfiguration;
+    decimalNumbers?: boolean;
   }
 
   /** Used with SQLite3 adapter */
