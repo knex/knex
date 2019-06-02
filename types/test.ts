@@ -91,6 +91,33 @@ const main = async () => {
     .select('age')
     .first();
 
+  // $ExpectType any
+  await knex('users').first('id');
+
+  // $ExpectType any
+  await knex('users').first('id', 'name');
+
+  // $ExpectType any
+  await knex('users').first(knex.ref('id').as('identifier'));
+
+  // $ExpectType Pick<User, "id"> | undefined
+  await knex<User>('users').first('id');
+
+  // $ExpectType Pick<User, "id" | "name"> | undefined
+  await knex<User>('users').first('id', 'name');
+
+  // $ExpectType { identifier: number; } | undefined
+  await knex<User>('users').first(knex.ref('id').as('identifier'));
+
+  // $ExpectType Pick<User, "id"> | undefined
+  await knex.first('id').from<User>('users');
+
+  // $ExpectType Pick<User, "id" | "name"> | undefined
+  await knex.first('id', 'name').from<User>('users');
+
+  // $ExpectType { identifier: number; } | undefined
+  await knex.first(knex.ref('id').as('identifier')).from<User>('users');
+
   // $ExpectType Pick<User, "id">[]
   await knex<User>('users').select('id');
 
@@ -180,6 +207,9 @@ const main = async () => {
   // $ExpectType { id: number; age: any; }[]
   await knex<User>('users').select(knex.ref('id'), {age: 'users.age'});
 
+  // $ExpectType { id: number; age: any; } | undefined
+  await knex<User>('users').select(knex.ref('id'), {age: 'users.age'}).first();
+
   // $ExpectType { identifier: number; username: string; }[]
   await knex<User>('users')
     .select('id', 'name')
@@ -218,7 +248,7 @@ const main = async () => {
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users').select(['id', 'age']);
 
-  // $ExpectType Pick<User, "id" | "age">
+  // $ExpectType Pick<User, "id" | "age"> | undefined
   await knex<User>('users')
     .select(['id', 'age'])
     .first();
@@ -355,6 +385,14 @@ const main = async () => {
     .join('departments', 'departments.id', '=', 'users.department_id')
     .orderBy('name');
 
+  // $ExpectType Partial<User> | undefined
+  await knex
+    .select<Partial<User>[]>(['users.*', 'departments.name as depName'])
+    .from('users')
+    .join('departments', 'departments.id', '=', 'users.department_id')
+    .orderBy('name')
+    .first();
+
   // $ExpectType Partial<User>[]
   await knex
     .select<Partial<User>[]>(['users.*', 'departments.name as depName'])
@@ -362,7 +400,7 @@ const main = async () => {
     .join('departments', 'departments.id', '=', 'users.department_id')
     .orderByRaw('name DESC');
 
-  // $ExpectType User
+  // $ExpectType User | undefined
   await knex<User>('users')
     .where({ id: 10 })
     .first();
@@ -370,8 +408,20 @@ const main = async () => {
   // $ExpectType any[]
   await knex.where({ id: 10 }).from('users');
 
+  // $ExpectType any
+  await knex.where({ id: 10 }).from('users').first();
+
   // $ExpectType User[]
   await knex.where({ id: 10 }).from<User>('users');
+
+  // $ExpectType User | undefined
+  await knex
+    .where({ id: 10 })
+    .from<User>('users')
+    .clearWhere()
+    .where({ id: 11 })
+    .orWhere({ id: 12 })
+    .first();
 
   // $ExpectType User[]
   await knex
@@ -402,23 +452,122 @@ const main = async () => {
     .orderBy('name', 'desc')
     .havingRaw('age > ?', [10]);
 
-  // $ExpectType { [key: string]: string | number; }[]
+  // $ExpectType Dict<string | number>[]
   await knex<User>('users').count();
 
-  // $ExpectType ValueDict[]
-  await knex<User>('users').max('age');
-
-  // $ExpectType ValueDict[]
-  await knex('users').max('age');
-
-  // $ExpectType ValueDict[]
-  await knex<User>('users').min('age');
-
-  // $ExpectType { [key: string]: string | number; }[]
+  // $ExpectType Dict<string | number>[]
   await knex<User>('users').count('age');
 
-  // $ExpectType { [key: string]: string | number; }[]
+  // $ExpectType Dict<string | number>[]
   await knex('users').count('age');
+
+  // $ExpectType { count: number; }
+  await knex('foo').first().count<{count: number}>({count: '*'});
+
+  // $ExpectType { count: number; }
+  await knex('foo').first().countDistinct<{count: number}>({count: '*'});
+
+  // $ExpectType { count?: string | number | undefined; }
+  await knex('foo').first().count({count: '*'});
+
+  // $ExpectType { count?: string | number | undefined; }
+  await knex('foo').first().countDistinct({count: '*'});
+
+  // $ExpectType Dict<string | number>
+  await knex<User>('users').first().count('age');
+
+  // $ExpectType Dict<string | number>
+  await knex('users').first().count('age', 'id');
+
+  // $ExpectType Dict<string | number>
+  await knex<User>('users').first().count();
+
+  // $ExpectType Dict<string | number>[]
+  await knex.count().from<User>('users');
+
+  // $ExpectType Dict<string | number>[]
+  await knex.count('age').from<User>('users');
+
+  // $ExpectType Dict<string | number>[]
+  await knex.count('age').from('users');
+
+  // $ExpectType { count: number; }
+  await knex.first().count<{count: number}>({count: '*'}).from('foo');
+
+  // $ExpectType { count: number; }
+  await knex.first().countDistinct<{count: number}>({count: '*'}).from('foo');
+
+  // $ExpectType { count?: string | number | undefined; }
+  await knex.first().count({count: '*'}).from('foo');
+
+  // $ExpectType { count?: string | number | undefined; }
+  await knex.first().countDistinct({count: '*'}).from('foo');
+
+  // $ExpectType Dict<string | number>
+  await knex.first().count('age').from<User>('users');
+
+  // $ExpectType Dict<string | number>
+  await knex.first().count('age', 'id').from('users');
+
+  // $ExpectType Dict<string | number>
+  await knex.first().count().from<User>('users');
+
+  // $ExpectType Dict<number>[]
+  await knex<User>('users').max('age');
+
+  // $ExpectType Dict<number>
+  await knex<User>('users').first().max('age');
+
+  // $ExpectType Dict<any>[]
+  await knex('users').max('age');
+
+  // $ExpectType Dict<number>[]
+  await knex<User>('users').min('age');
+
+  // $ExpectType Dict<number>
+  await knex<User>('users').first().min('age');
+
+  // $ExpectType Dict<any>[]
+  await knex.max('age').from<User>('users');
+
+  // $ExpectType Dict<any>
+  await knex.first().max('age').from<User>('users');
+
+  // $ExpectType Dict<any>[]
+  await knex.max('age').from('users');
+
+  // $ExpectType Dict<any>[]
+  await knex.min('age').from<User>('users');
+
+  // $ExpectType Dict<any>
+  await knex.first().min('age').from<User>('users');
+
+  // $ExpectType ({ dep: any; } & { a?: any; } & { b?: any; })[]
+  await knex
+    .select({dep: 'departmentId'})
+    .min({a: 'age'})
+    .max({b: 'age'})
+    .from<User>('users');
+
+  // $ExpectType ({ dep: number; } & { a?: any; } & { b?: any; })[]
+  await knex<User>('users')
+    .select({dep: 'departmentId'})
+    .min({a: 'age'})
+    .max({b: 'age'});
+
+  // $ExpectType ({ dep: number; } & { a?: string | number | undefined; })[]
+  await knex<User>('users')
+    .select({dep: 'departmentId'})
+    .count({a: 'age'});
+
+  // Type of dep can't be inferred if User type is not available
+  // at the time of select
+
+  // $ExpectType ({ dep: any; } & { a?: string | number | undefined; })[]
+  await knex
+    .select({dep: 'departmentId'})
+    .count({a: 'age'})
+    .from<User>('users');
 
   // ## With inner query:
 
@@ -465,6 +614,16 @@ const main = async () => {
     .andWhere(function() {
       this.where('id', '>', 10);
     });
+
+  // $ExpectType User | undefined
+  await knex<User>('users')
+    .where((builder) =>
+      builder.whereIn('id', [1, 11, 15]).whereNotIn('id', [17, 19])
+    )
+    .andWhere(function() {
+      this.where('id', '>', 10);
+    })
+    .first();
 
   // $ExpectType User[]
   await knex<User>('users').whereNotExists(function() {

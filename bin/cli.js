@@ -254,6 +254,28 @@ function invoke(env) {
     });
 
   commander
+    .command('migrate:down')
+    .description('        Undo the last migration performed.')
+    .action(() => {
+      pending = initKnex(env, commander.opts())
+        .migrate.down()
+        .spread((batchNo, log) => {
+          if (log.length === 0) {
+            success(color.cyan('Already at the base migration'));
+          }
+
+          success(
+            color.green(
+              `Batch ${batchNo} rolled back the following migrations:\n${log.join(
+                '\n'
+              )}`
+            )
+          );
+        })
+        .catch(exit);
+    });
+
+  commander
     .command('migrate:currentVersion')
     .description('        View the current version for the migration.')
     .action(() => {

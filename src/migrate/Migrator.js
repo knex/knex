@@ -158,6 +158,29 @@ class Migrator {
     });
   }
 
+  down(config) {
+    this._disableProcessing();
+    this.config = getMergedConfig(config, this.config);
+
+    return migrationListResolver
+      .listAllAndCompleted(this.config, this.knex)
+      .tap((value) => {
+        return validateMigrationList(this.config.migrationSource, value);
+      })
+      .spread((all, completed) => {
+        const migrationToRun = all
+          .filter((migration) => {
+            return completed.includes(
+              this.config.migrationSource.getMigrationName(migration)
+            );
+          })
+          .reverse()
+          .slice(0, 1);
+
+        return this._runBatch(migrationToRun, 'down');
+      });
+  }
+
   status(config) {
     this._disableProcessing();
     this.config = getMergedConfig(config, this.config);
