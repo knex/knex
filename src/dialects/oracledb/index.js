@@ -10,6 +10,7 @@ const ReturningHelper = require('./utils').ReturningHelper;
 const stream = require('stream');
 const Transaction = require('./transaction');
 const Client_Oracle = require('../oracle');
+const Promise = require('bluebird');
 const Oracle_Formatter = require('../oracle/formatter');
 
 function Client_Oracledb() {
