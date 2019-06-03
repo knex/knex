@@ -1,25 +1,25 @@
 'use strict';
 /* eslint no-var: 0 */
 
-var assert = require('assert');
-var testConfig =
+const assert = require('assert');
+const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
-var _ = require('lodash');
-var Promise = require('bluebird');
+const _ = require('lodash');
+const { promisify } = require('util');
 
 // excluding redshift, oracle, and mssql dialects from default integrations test
-var testIntegrationDialects = (
+const testIntegrationDialects = (
   process.env.DB || 'sqlite3 postgres mysql mysql2 mssql oracledb'
 ).match(/\w+/g);
 
-var pool = {
+const pool = {
   afterCreate: function(connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
     callback(null, connection);
   },
 };
 
-var poolSqlite = {
+const poolSqlite = {
   min: 0,
   max: 1,
   acquireTimeoutMillis: 1000,
@@ -29,9 +29,9 @@ var poolSqlite = {
   },
 };
 
-var mysqlPool = _.extend({}, pool, {
+const mysqlPool = _.extend({}, pool, {
   afterCreate: function(connection, callback) {
-    Promise.promisify(connection.query, { context: connection })(
+    promisify(connection.query, { context: connection })(
       "SET sql_mode='TRADITIONAL';",
       []
     ).then(function() {
@@ -40,15 +40,15 @@ var mysqlPool = _.extend({}, pool, {
   },
 });
 
-var migrations = {
+const migrations = {
   directory: 'test/integration/migrate/migration',
 };
 
-var seeds = {
+const seeds = {
   directory: 'test/integration/seed/seeds',
 };
 
-var testConfigs = {
+const testConfigs = {
   mysql: {
     client: 'mysql',
     connection: testConfig.mysql || {

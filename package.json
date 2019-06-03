@@ -8,7 +8,6 @@
     "node": ">=8"
   },
   "dependencies": {
-    "@types/bluebird": "^3.5.27",
     "bluebird": "^3.5.5",
     "colorette": "1.0.8",
     "commander": "^2.20.0",
@@ -79,7 +78,8 @@
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
     "lint:types": "dtslint types",
-    "pretest": "npm run lint && npm run lint:types",
+    "old:pretest": "npm run lint && npm run lint:types",
+    "pretest": "npm run lint",
     "test": "mocha --exit -t 10000 test/index.js && npm run test:tape && npm run test:cli",
     "test:nyc": "nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 test/index.js && npm run test:tape && npm run test:cli",
     "test:sqlite": "cross-env DB=sqlite3 npm test",

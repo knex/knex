@@ -1,6 +1,6 @@
 'use strict';
 const tape = require('tape');
-const Promise = require('bluebird');
+
 const debug = require('debug')('knex:tests');
 
 module.exports = function(tableName, knex) {

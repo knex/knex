@@ -11,11 +11,8 @@ const chai = (global.chai = require('chai'));
 chai.use(require('sinon-chai'));
 chai.should();
 
-const Promise = (global.testPromise = require('bluebird'));
 global.expect = chai.expect;
 global.d = new Date();
-
-Promise.longStackTraces();
 
 describe('Query Building Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);

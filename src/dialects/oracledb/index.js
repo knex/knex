@@ -6,7 +6,7 @@ const QueryCompiler = require('./query/compiler');
 const ColumnCompiler = require('./schema/columncompiler');
 const BlobHelper = require('./utils').BlobHelper;
 const ReturningHelper = require('./utils').ReturningHelper;
-const Promise = require('bluebird');
+
 const stream = require('stream');
 const Transaction = require('./transaction');
 const Client_Oracle = require('../oracle');

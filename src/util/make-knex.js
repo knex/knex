@@ -6,7 +6,6 @@ const FunctionHelper = require('../functionhelper');
 const QueryInterface = require('../query/methods');
 const { assign, merge } = require('lodash');
 const batchInsert = require('./batchInsert');
-const bluebird = require('bluebird');
 
 function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
@@ -212,7 +211,6 @@ function redefineProperties(knex, client) {
   });
 
   initContext(knex);
-  knex.Promise = bluebird;
   knex.client = client;
   knex.client.makeKnex = makeKnex;
   knex.userParams = {};

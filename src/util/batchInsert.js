@@ -1,5 +1,4 @@
 const { isNumber, isArray, chunk, flatten, assign } = require('lodash');
-const Promise = require('bluebird');
 
 module.exports = function batchInsert(
   client,

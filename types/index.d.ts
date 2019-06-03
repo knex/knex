@@ -10,7 +10,6 @@
 
 import events = require('events');
 import stream = require('stream');
-import Bluebird = require('bluebird');
 
 // # Generic type-level utilities
 
@@ -321,12 +320,12 @@ interface Knex<TRecord extends {} = any, TResult = any[]>
     config?: any
   ): Promise<Knex.Transaction>;
   transaction<T>(
-    transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void,
+    transactionScope: (trx: Knex.Transaction) => Promise<T> | Promise<T> | void,
     config?: any
-  ): Bluebird<T>;
+  ): Promise<T>;
   initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
-  destroy(): Bluebird<void>;
+  destroy(): Promise<void>;
   batchInsert(
     tableName: Knex.TableDescriptor,
     data: any[],
@@ -1333,7 +1332,7 @@ declare namespace Knex {
     and: QueryBuilder<TRecord, TResult>;
 
     // TODO: Promise?
-    columnInfo(column?: keyof TRecord): Bluebird<ColumnInfo>;
+    columnInfo(column?: keyof TRecord): Promise<ColumnInfo>;
 
     forUpdate(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forUpdate(tableNames: string[]): QueryBuilder<TRecord, TResult>;
@@ -1365,17 +1364,17 @@ declare namespace Knex {
   // Chainable interface
   //
 
-  interface ChainableInterface<T = any> extends Bluebird<T> {
+  interface ChainableInterface<T = any> extends Promise<T> {
     toQuery(): string;
     options(options: { [key: string]: any }): this;
     connection(connection: any): this;
     debug(enabled: boolean): this;
     transacting(trx: Transaction): this;
-    stream(handler: (readable: stream.PassThrough) => any): Bluebird<any>;
+    stream(handler: (readable: stream.PassThrough) => any): Promise<any>;
     stream(
       options: { [key: string]: any },
       handler: (readable: stream.PassThrough) => any
-    ): Bluebird<any>;
+    ): Promise<any>;
     stream(options?: { [key: string]: any }): stream.PassThrough;
     pipe<T extends NodeJS.WritableStream>(
       writable: T,
@@ -1394,7 +1393,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
     savepoint<T = any>(
       transactionScope: (trx: Transaction) => any
-    ): Bluebird<T>;
+    ): Promise<T>;
     commit(value?: any): QueryBuilder<TRecord, TResult>;
     rollback(error?: any): QueryBuilder<TRecord, TResult>;
   }
@@ -1416,14 +1415,14 @@ declare namespace Knex {
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
     ): SchemaBuilder;
-    renameTable(oldTableName: string, newTableName: string): Bluebird<void>;
+    renameTable(oldTableName: string, newTableName: string): Promise<void>;
     dropTable(tableName: string): SchemaBuilder;
-    hasTable(tableName: string): Bluebird<boolean>;
-    hasColumn(tableName: string, columnName: string): Bluebird<boolean>;
+    hasTable(tableName: string): Promise<boolean>;
+    hasColumn(tableName: string, columnName: string): Promise<boolean>;
     table(
       tableName: string,
       callback: (tableBuilder: AlterTableBuilder) => any
-    ): Bluebird<void>;
+    ): Promise<void>;
     dropTableIfExists(tableName: string): SchemaBuilder;
     raw(statement: string): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
@@ -1745,13 +1744,13 @@ declare namespace Knex {
   }
 
   interface Migrator {
-    make(name: string, config?: MigratorConfig): Bluebird<string>;
-    latest(config?: MigratorConfig): Bluebird<any>;
-    rollback(config?: MigratorConfig, all?: boolean): Bluebird<any>;
-    status(config?: MigratorConfig): Bluebird<number>;
-    currentVersion(config?: MigratorConfig): Bluebird<string>;
-    up(config?: MigratorConfig): Bluebird<any>;
-    down(config?: MigratorConfig): Bluebird<any>;
+    make(name: string, config?: MigratorConfig): Promise<string>;
+    latest(config?: MigratorConfig): Promise<any>;
+    rollback(config?: MigratorConfig, all?: boolean): Promise<any>;
+    status(config?: MigratorConfig): Promise<number>;
+    currentVersion(config?: MigratorConfig): Promise<string>;
+    up(config?: MigratorConfig): Promise<any>;
+    down(config?: MigratorConfig): Promise<any>;
   }
 
   interface SeederConfig {
@@ -1763,8 +1762,8 @@ declare namespace Knex {
   class Seeder {
     constructor(knex: Knex);
     setConfig(config: SeederConfig): SeederConfig;
-    run(config?: SeederConfig): Bluebird<string[]>;
-    make(name: string, config?: SeederConfig): Bluebird<string>;
+    run(config?: SeederConfig): Promise<string[]>;
+    make(name: string, config?: SeederConfig): Promise<string>;
   }
 
   interface FunctionHelper {

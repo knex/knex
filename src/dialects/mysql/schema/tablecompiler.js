@@ -4,7 +4,6 @@
 // -------
 const inherits = require('inherits');
 const TableCompiler = require('../../../schema/tablecompiler');
-const Promise = require('bluebird');
 
 const { assign } = require('lodash');
 

@@ -1,5 +1,3 @@
-const Promise = require('bluebird');
-
 const Raw = require('./raw');
 const Ref = require('./ref');
 const Runner = require('./runner');
@@ -22,6 +20,8 @@ const { EventEmitter } = require('events');
 
 const { makeEscape } = require('./query/string');
 const { assign, uniqueId, cloneDeep, defaults } = require('lodash');
+const { promisify } = require('util');
+const Promise = require('bluebird');
 
 const Logger = require('./logger');
 
@@ -255,7 +255,7 @@ assign(Client.prototype, {
           connection.__knexUid = uniqueId('__knexUid');
 
           if (poolConfig.afterCreate) {
-            return Promise.promisify(poolConfig.afterCreate)(connection);
+            return promisify(poolConfig.afterCreate)(connection);
           }
         });
       },

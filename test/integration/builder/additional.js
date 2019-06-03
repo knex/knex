@@ -4,7 +4,6 @@
 
 const Knex = require('../../../knex');
 const _ = require('lodash');
-const Promise = require('bluebird');
 
 module.exports = function(knex) {
   describe('Additional', function() {

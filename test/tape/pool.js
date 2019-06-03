@@ -6,7 +6,6 @@ const tarn = require('tarn');
 const Pool = tarn.Pool;
 const knexfile = require('../knexfile');
 const makeKnex = require('../../knex');
-const Bluebird = require('bluebird');
 
 test(`pool evicts dead resources when factory.validate rejects`, (t) => {
   t.plan(10);
@@ -31,7 +30,7 @@ test(`pool evicts dead resources when factory.validate rejects`, (t) => {
     },
   });
 
-  Bluebird.resolve(Array.from(Array(5)))
+  Promise.resolve(Array.from(Array(5)))
     .map(() => {
       return pool.acquire().promise.catch((e) => {
         t.fail('1# Could not get resource from pool');
@@ -106,7 +105,7 @@ test('#2321 dead connections are not evicted from pool', (t) => {
     const knex = makeKnex(knexfile['mysql2']);
 
     t.plan(10);
-    Bluebird.all(
+    Promise.all(
       Array.from(Array(30)).map(() => {
         // kill all connections in pool
         return knex.raw(`KILL connection_id()`).catch(() => {
@@ -117,7 +116,7 @@ test('#2321 dead connections are not evicted from pool', (t) => {
       .delay(50) // wait driver to notice connection errors (2ms was enough locally)
       .then(() => {
         // all connections are dead, so they should be evicted from pool and this should work
-        return Bluebird.all(
+        return Promise.all(
           Array.from(Array(10)).map(() =>
             knex.select(1).then(() => t.pass('Read data'))
           )

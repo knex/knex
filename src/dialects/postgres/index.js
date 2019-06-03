@@ -3,7 +3,6 @@
 const { assign, map, extend, isArray, isString, includes } = require('lodash');
 const inherits = require('inherits');
 const Client = require('../../client');
-const Promise = require('bluebird');
 
 const QueryCompiler = require('./query/compiler');
 const ColumnCompiler = require('./schema/columncompiler');

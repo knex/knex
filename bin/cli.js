@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 /* eslint no-console:0, no-var:0 */
 const Liftoff = require('liftoff');
-const Promise = require('bluebird');
+
 const interpret = require('interpret');
 const path = require('path');
 const tildify = require('tildify');
 const commander = require('commander');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
-const fs = Promise.promisifyAll(require('fs'));
+const { promisify } = require('util');
+const writeFileAsync = promisify(require('fs').writeFile);
 const cliPkg = require('../package');
 const {
   mkConfigObj,
@@ -157,7 +158,7 @@ function invoke(env) {
             '.stub'
         )
         .then((code) => {
-          return fs.writeFileAsync(stubPath, code);
+          return writeFileAsync(stubPath, code);
         })
         .then(() => {
           success(color.green(`Created ${stubPath}`));

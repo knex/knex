@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const mkdirp = require('mkdirp');
-const Promise = require('bluebird');
+
 const { template } = require('lodash');
 const { getMergedConfig } = require('./configuration-merger');
 

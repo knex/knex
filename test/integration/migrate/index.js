@@ -5,7 +5,7 @@ const equal = require('assert').equal;
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
-const Promise = require('bluebird');
+
 const testMemoryMigrations = require('./memory-migrations');
 
 module.exports = function(knex) {

@@ -1,5 +1,5 @@
 'use strict';
-const Promise = require('bluebird');
+
 const harness = require('./harness');
 const tape = require('tape');
 const JSONStream = require('JSONStream');
