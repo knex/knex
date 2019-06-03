@@ -87,13 +87,12 @@ describe('Seeder._waterfallBatch', function() {
     seeder = knex(config).seed;
   });
 
-  it('should throw an error with correct file name', () => {
-    return seeder
-      ._waterfallBatch(['1-first.js', '2-second.js'])
-      .catch((error) => {
-        expect(error.message).to.match(
-          /^Error while executing "(\/\w+)+\/1-first\.js" seed: throwing in first file$/
-        );
-      });
+  it('should throw an error with correct file name', (done) => {
+    seeder._waterfallBatch(['1-first.js', '2-second.js']).catch((error) => {
+      expect(error.message).to.match(
+        /^Error while executing "(\/\w+)+\/1-first\.js" seed: throwing in first file$/
+      );
+      done();
+    });
   });
 });
