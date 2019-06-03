@@ -7,7 +7,7 @@ var knex = require('../../../knex');
 
 describe('Seeder.loadExtensions', function() {
   var config = {
-    client: 'pg',
+    client: 'postgres',
     connection: {
       user: 'postgres',
       password: '',
@@ -64,6 +64,36 @@ describe('Seeder.loadExtensions', function() {
       ._listAll({ loadExtensions: ['.ts', '.js'] })
       .then(function(list) {
         expect(list).to.eql(['js-seed.js', 'ts-seed.ts']);
+      });
+  });
+});
+
+describe('Seeder._waterfallBatch', function() {
+  var config = {
+    client: 'postgres',
+    connection: {
+      user: 'postgres',
+      password: '',
+      host: '127.0.0.1',
+      database: 'knex_test',
+    },
+    seeds: {
+      directory: 'test/unit/seed/test',
+    },
+  };
+  var seeder;
+
+  beforeEach(function() {
+    seeder = knex(config).seed;
+  });
+
+  it('should throw an error with correct file name', () => {
+    return seeder
+      ._waterfallBatch(['1-first.js', '2-second.js'])
+      .catch((error) => {
+        expect(error.message).to.match(
+          /^Error while executing "(\/\w+)+\/1-first\.js" seed: throwing in first file$/
+        );
       });
   });
 });
