@@ -1,7 +1,7 @@
 /*eslint max-len: 0, no-var:0 */
 
-export const charsRegex = /[\0\b\t\n\r\x1a"'\\]/g; // eslint-disable-line no-control-regex
-export const charsMap = {
+const charsRegex = /[\0\b\t\n\r\x1a"'\\]/g; // eslint-disable-line no-control-regex
+const charsMap = {
   '\0': '\\0',
   '\b': '\\b',
   '\t': '\\t',
@@ -19,7 +19,7 @@ function wrapEscape(escapeFn) {
   };
 }
 
-export function makeEscape(config = {}) {
+function makeEscape(config = {}) {
   const finalEscapeDate = config.escapeDate || dateToString;
   const finalEscapeArray = config.escapeArray || arrayToList;
   const finalEscapeBuffer = config.escapeBuffer || bufferToString;
@@ -53,7 +53,7 @@ export function makeEscape(config = {}) {
   return finalWrap ? finalWrap(escapeFn) : escapeFn;
 }
 
-export function escapeObject(val, finalEscape, ctx) {
+function escapeObject(val, finalEscape, ctx) {
   if (typeof val.toSQL === 'function') {
     return val.toSQL(ctx);
   } else {
@@ -61,10 +61,10 @@ export function escapeObject(val, finalEscape, ctx) {
   }
 }
 
-export function arrayToList(array, finalEscape, ctx) {
-  var sql = '';
-  for (var i = 0; i < array.length; i++) {
-    var val = array[i];
+function arrayToList(array, finalEscape, ctx) {
+  let sql = '';
+  for (let i = 0; i < array.length; i++) {
+    const val = array[i];
     if (Array.isArray(val)) {
       sql +=
         (i === 0 ? '' : ', ') + '(' + arrayToList(val, finalEscape, ctx) + ')';
@@ -75,14 +75,14 @@ export function arrayToList(array, finalEscape, ctx) {
   return sql;
 }
 
-export function bufferToString(buffer) {
+function bufferToString(buffer) {
   return 'X' + escapeString(buffer.toString('hex'));
 }
 
-export function escapeString(val, finalEscape, ctx) {
-  var chunkIndex = (charsRegex.lastIndex = 0);
-  var escapedVal = '';
-  var match;
+function escapeString(val, finalEscape, ctx) {
+  let chunkIndex = (charsRegex.lastIndex = 0);
+  let escapedVal = '';
+  let match;
 
   while ((match = charsRegex.exec(val))) {
     escapedVal += val.slice(chunkIndex, match.index) + charsMap[match[0]];
@@ -101,17 +101,17 @@ export function escapeString(val, finalEscape, ctx) {
   return "'" + escapedVal + "'";
 }
 
-export function dateToString(date, finalEscape, ctx) {
+function dateToString(date, finalEscape, ctx) {
   const timeZone = ctx.timeZone || 'local';
 
-  var dt = new Date(date);
-  var year;
-  var month;
-  var day;
-  var hour;
-  var minute;
-  var second;
-  var millisecond;
+  const dt = new Date(date);
+  let year;
+  let month;
+  let day;
+  let hour;
+  let minute;
+  let second;
+  let millisecond;
 
   if (timeZone === 'local') {
     year = dt.getFullYear();
@@ -122,7 +122,7 @@ export function dateToString(date, finalEscape, ctx) {
     second = dt.getSeconds();
     millisecond = dt.getMilliseconds();
   } else {
-    var tz = convertTimezone(timeZone);
+    const tz = convertTimezone(timeZone);
 
     if (tz !== false && tz !== 0) {
       dt.setTime(dt.getTime() + tz * 60000);
@@ -177,3 +177,14 @@ function convertTimezone(tz) {
   }
   return false;
 }
+
+module.exports = {
+  arrayToList,
+  bufferToString,
+  dateToString,
+  escapeString,
+  charsRegex,
+  charsMap,
+  escapeObject,
+  makeEscape,
+};

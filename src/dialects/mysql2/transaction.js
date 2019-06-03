@@ -1,7 +1,7 @@
-import Transaction from '../../transaction';
+const Transaction = require('../../transaction');
 const debug = require('debug')('knex:tx');
 
-import { assign, isUndefined } from 'lodash';
+const { assign, isUndefined } = require('lodash');
 
 class Transaction_MySQL2 extends Transaction {}
 
@@ -41,4 +41,4 @@ assign(Transaction_MySQL2.prototype, {
   },
 });
 
-export default Transaction_MySQL2;
+module.exports = Transaction_MySQL2;

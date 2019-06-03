@@ -1,8 +1,8 @@
-import { extend, each, toArray } from 'lodash';
-import { addQueryContext } from '../helpers';
+const { extend, each, toArray } = require('lodash');
+const { addQueryContext } = require('../helpers');
 
 // The chainable interface off the original "column" method.
-export default function ColumnBuilder(client, tableBuilder, type, args) {
+function ColumnBuilder(client, tableBuilder, type, args) {
   this.client = client;
   this._method = 'add';
   this._single = {};
@@ -112,3 +112,5 @@ const columnAlias = {
   string: 'varchar',
   bigint: 'bigInteger',
 };
+
+module.exports = ColumnBuilder;

@@ -1,17 +1,17 @@
 // MSSQL Client
 // -------
-import { assign, map, flatten, values } from 'lodash';
-import inherits from 'inherits';
+const { assign, map, flatten, values } = require('lodash');
+const inherits = require('inherits');
 
-import Client from '../../client';
-import Promise from 'bluebird';
+const Client = require('../../client');
+const Promise = require('bluebird');
 
-import Formatter from '../../formatter';
-import Transaction from './transaction';
-import QueryCompiler from './query/compiler';
-import SchemaCompiler from './schema/compiler';
-import TableCompiler from './schema/tablecompiler';
-import ColumnCompiler from './schema/columncompiler';
+const Formatter = require('../../formatter');
+const Transaction = require('./transaction');
+const QueryCompiler = require('./query/compiler');
+const SchemaCompiler = require('./schema/compiler');
+const TableCompiler = require('./schema/tablecompiler');
+const ColumnCompiler = require('./schema/columncompiler');
 
 const { isArray } = Array;
 
@@ -37,6 +37,7 @@ function Client_MSSQL(config = {}) {
 
   Client.call(this, config);
 }
+
 inherits(Client_MSSQL, Client);
 
 assign(Client_MSSQL.prototype, {
@@ -85,6 +86,7 @@ assign(Client_MSSQL.prototype, {
         this.pool.release(connection);
       }
     }
+
     /* istanbul ignore next */
     function _poolCreate() {
       // implementation is copy-pasted from https://github.com/tediousjs/node-mssql/pull/614
@@ -133,6 +135,7 @@ assign(Client_MSSQL.prototype, {
 
         // prevent calling resolve again on end event
         let alreadyResolved = false;
+
         function safeResolve(err) {
           if (!alreadyResolved) {
             alreadyResolved = true;
@@ -376,4 +379,4 @@ class MSSQL_Formatter extends Formatter {
   }
 }
 
-export default Client_MSSQL;
+module.exports = Client_MSSQL;

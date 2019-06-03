@@ -1,8 +1,8 @@
 // PostgreSQL Schema Compiler
 // -------
 
-import inherits from 'inherits';
-import SchemaCompiler from '../../../schema/compiler';
+const inherits = require('inherits');
+const SchemaCompiler = require('../../../schema/compiler');
 
 function SchemaCompiler_PG() {
   SchemaCompiler.apply(this, arguments);
@@ -106,4 +106,4 @@ SchemaCompiler_PG.prototype.createExtensionIfNotExists = function(
   );
 };
 
-export default SchemaCompiler_PG;
+module.exports = SchemaCompiler_PG;

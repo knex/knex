@@ -1,6 +1,6 @@
-import { pushQuery, pushAdditional, unshiftQuery } from './helpers';
+const { pushQuery, pushAdditional, unshiftQuery } = require('./helpers');
 
-import { assign, isUndefined } from 'lodash';
+const { assign, isUndefined } = require('lodash');
 
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of
@@ -81,4 +81,4 @@ function prefixedTableName(prefix, table) {
   return prefix ? `${prefix}.${table}` : table;
 }
 
-export default SchemaCompiler;
+module.exports = SchemaCompiler;

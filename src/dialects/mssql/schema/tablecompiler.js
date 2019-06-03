@@ -2,12 +2,12 @@
 
 // MSSQL Table Builder & Compiler
 // -------
-import inherits from 'inherits';
-import TableCompiler from '../../../schema/tablecompiler';
-import * as helpers from '../../../helpers';
-import Promise from 'bluebird';
+const inherits = require('inherits');
+const TableCompiler = require('../../../schema/tablecompiler');
+const helpers = require('../../../helpers');
+const Promise = require('bluebird');
 
-import { assign } from 'lodash';
+const { assign } = require('lodash');
 
 // Table Compiler
 // ------
@@ -228,4 +228,4 @@ assign(TableCompiler_MSSQL.prototype, {
   },
 });
 
-export default TableCompiler_MSSQL;
+module.exports = TableCompiler_MSSQL;

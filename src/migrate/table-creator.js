@@ -1,11 +1,11 @@
-import {
+const {
   getTable,
   getLockTableName,
   getLockTableNameWithSchema,
   getTableName,
-} from './table-resolver';
+} = require('./table-resolver');
 
-export function ensureTable(tableName, schemaName, trxOrKnex) {
+function ensureTable(tableName, schemaName, trxOrKnex) {
   const lockTable = getLockTableName(tableName);
   const lockTableWithSchema = getLockTableNameWithSchema(tableName, schemaName);
   return getSchemaBuilder(trxOrKnex, schemaName)
@@ -55,8 +55,13 @@ function _createMigrationLockTable(tableName, schemaName, trxOrKnex) {
 }
 
 //Get schema-aware schema builder for a given schema nam
-export function getSchemaBuilder(trxOrKnex, schemaName) {
+function getSchemaBuilder(trxOrKnex, schemaName) {
   return schemaName
     ? trxOrKnex.schema.withSchema(schemaName)
     : trxOrKnex.schema;
 }
+
+module.exports = {
+  ensureTable,
+  getSchemaBuilder,
+};

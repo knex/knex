@@ -1,8 +1,8 @@
-import { assign, uniq, map } from 'lodash';
-import inherits from 'inherits';
-import Raw from '../../../raw';
-import ColumnCompiler from '../../../schema/columncompiler';
-import Trigger from './trigger';
+const { assign, uniq, map } = require('lodash');
+const inherits = require('inherits');
+const Raw = require('../../../raw');
+const ColumnCompiler = require('../../../schema/columncompiler');
+const Trigger = require('./trigger');
 
 // Column Compiler
 // -------
@@ -136,4 +136,4 @@ assign(ColumnCompiler_Oracle.prototype, {
   },
 });
 
-export default ColumnCompiler_Oracle;
+module.exports = ColumnCompiler_Oracle;

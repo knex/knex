@@ -1,5 +1,5 @@
-import inherits from 'inherits';
-import ColumnCompiler from '../../../schema/columncompiler';
+const inherits = require('inherits');
+const ColumnCompiler = require('../../../schema/columncompiler');
 
 // Column Compiler
 // -------
@@ -24,4 +24,4 @@ ColumnCompiler_SQLite3.prototype.enu = function(allowed) {
 
 ColumnCompiler_SQLite3.prototype.json = 'json';
 
-export default ColumnCompiler_SQLite3;
+module.exports = ColumnCompiler_SQLite3;

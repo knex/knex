@@ -1,15 +1,15 @@
 // Redshift
 // -------
-import inherits from 'inherits';
-import Client_PG from '../postgres';
-import { assign, map } from 'lodash';
+const inherits = require('inherits');
+const Client_PG = require('../postgres');
+const { assign, map } = require('lodash');
 
-import Transaction from './transaction';
-import QueryCompiler from './query/compiler';
-import ColumnBuilder from './schema/columnbuilder';
-import ColumnCompiler from './schema/columncompiler';
-import TableCompiler from './schema/tablecompiler';
-import SchemaCompiler from './schema/compiler';
+const Transaction = require('./transaction');
+const QueryCompiler = require('./query/compiler');
+const ColumnBuilder = require('./schema/columnbuilder');
+const ColumnCompiler = require('./schema/columncompiler');
+const TableCompiler = require('./schema/tablecompiler');
+const SchemaCompiler = require('./schema/compiler');
 
 function Client_Redshift(config) {
   Client_PG.apply(this, arguments);
@@ -70,4 +70,4 @@ assign(Client_Redshift.prototype, {
   },
 });
 
-export default Client_Redshift;
+module.exports = Client_Redshift;

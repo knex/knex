@@ -1,5 +1,5 @@
 const { DEFAULT_EXT, DEFAULT_TABLE_NAME } = require('./constants');
-const { resolveClientNameWithAliases } = require('../../lib/helpers');
+const { resolveClientNameWithAliases } = require('../../src/helpers');
 const fs = require('fs');
 
 function mkConfigObj(opts) {

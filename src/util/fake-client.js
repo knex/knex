@@ -1,4 +1,4 @@
-import Formatter from '../formatter';
+const Formatter = require('../formatter');
 
 const fakeClient = {
   formatter(builder) {
@@ -6,4 +6,4 @@ const fakeClient = {
   },
 };
 
-export default fakeClient;
+module.exports = fakeClient;

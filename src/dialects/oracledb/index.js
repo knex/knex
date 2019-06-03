@@ -358,7 +358,7 @@ function readStream(stream, cb) {
   });
 }
 
-// Process the response as returned from the query.
+// Process the response as returned = require(the query.
 Client_Oracledb.prototype.processResponse = function(obj, runner) {
   let response = obj.response;
   const method = obj.method;

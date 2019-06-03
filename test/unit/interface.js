@@ -1,6 +1,6 @@
 'use strict';
 /*global describe, it*/
-const _interface = require('../../lib/interface');
+const _interface = require('../../src/interface');
 const chai = require('chai');
 
 describe('interface', function() {

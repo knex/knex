@@ -1,4 +1,4 @@
-import * as utils from '../utils';
+const utils = require('../utils');
 
 const trigger = {
   renameColumnTrigger: function(logger, tableName, columnName, to) {
@@ -123,4 +123,4 @@ const trigger = {
   },
 };
 
-export default trigger;
+module.exports = trigger;

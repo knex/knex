@@ -1,11 +1,11 @@
 // Query Compiler
 // -------
-import * as helpers from '../helpers';
-import Raw from '../raw';
-import JoinClause from './joinclause';
-import debug from 'debug';
+const helpers = require('../helpers');
+const Raw = require('../raw');
+const JoinClause = require('./joinclause');
+const debug = require('debug');
 
-import {
+const {
   assign,
   bind,
   compact,
@@ -18,8 +18,8 @@ import {
   reduce,
   has,
   keys,
-} from 'lodash';
-import uuid from 'uuid';
+} = require('lodash');
+const uuid = require('uuid');
 
 const debugBindings = debug('knex:bindings');
 
@@ -831,4 +831,4 @@ Object.defineProperty(QueryCompiler.prototype, 'tableName', {
   },
 });
 
-export default QueryCompiler;
+module.exports = QueryCompiler;
