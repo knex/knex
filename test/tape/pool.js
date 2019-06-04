@@ -1,6 +1,7 @@
 'use strict';
 
 const test = require('tape');
+const Promise = require('bluebird');
 const Client = require('../../src/dialects/sqlite3');
 const tarn = require('tarn');
 const Pool = tarn.Pool;
