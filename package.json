@@ -147,10 +147,10 @@
   "tonicExampleFilename": "scripts/runkit-example.js",
   "nyc": {
     "check-coverage": true,
-    "lines": 84,
-    "statements": 82,
-    "functions": 83,
-    "branches": 69
+    "lines": 70,
+    "statements": 70,
+    "functions": 64,
+    "branches": 60
   },
   "husky": {
     "hooks": {
