@@ -3,6 +3,7 @@
 // MySQL Table Builder & Compiler
 // -------
 const inherits = require('inherits');
+const Promise = require('bluebird');
 const TableCompiler = require('../../../schema/tablecompiler');
 
 const { assign } = require('lodash');

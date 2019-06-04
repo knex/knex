@@ -5,6 +5,7 @@
 * Node.js older than 8 is no longer supported, make sure to update your environment;
 * Knex returns native promises instead of bluebird ones now. You will need to update your code not to rely on bluebird-specific functionality;
 * Knex.Promise was removed, use native promises;
+* Promise is no longer passed to migrations and seeds, use native one.
 * Global Knex.raw was removed, use knex.raw (chain off an initialized knex object)
 
 ### Upgrading to version 0.16.0+
