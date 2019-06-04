@@ -211,32 +211,32 @@ const main = async () => {
   await knex<User>('users').select(knex.ref('id'), {age: 'users.age'}).first();
 
   // $ExpectType { identifier: number; username: string; }[]
-  await knex<User>('users')
-    .select('id', 'name')
+  (await knex<User>('users')
+    .select('id', 'name'))
     .map((u) => ({ identifier: u.id, username: u.name }));
 
   // $ExpectType { identifier: number; username: string; }[]
-  await knex
+  (await knex
     .select('id', 'name')
-    .from<User>('users')
+    .from<User>('users'))
     .map((u) => ({ identifier: u.id, username: u.name }));
 
   // $ExpectType { identifier: any; username: any; }[]
-  await knex
+  (await knex
     .select('id', 'name')
-    .from('users')
+    .from('users'))
     .map((u) => ({ identifier: u.id, username: u.name }));
 
   // $ExpectType number
-  await knex
+  (await knex
     .select('id', 'name', 'age')
-    .from<User>('users')
-    .reduce((maxAge: number, user) => (user.age > maxAge ? user.age : maxAge));
+    .from<User>('users'))
+    .reduce((maxAge: number, user) => (user.age > maxAge ? user.age : maxAge), 0);
 
   // $ExpectType any
-  await knex('table')
+  (await knex('table')
     .select('key', 'value')
-    .where({ namespace: 'foo' })
+    .where({ namespace: 'foo' }))
     .reduce(
       (aggr, { value, key }) => ({
         ...aggr,
@@ -708,8 +708,8 @@ const main = async () => {
   );
 
   // $ExpectType { username: any; }[]
-  await knex<User>('users')
-    .innerJoin('departments', 'users.departmentid', 'departments.id')
+  (await knex<User>('users')
+    .innerJoin('departments', 'users.departmentid', 'departments.id'))
     .map(function(joined) {
       return {
         username: joined.name,
@@ -717,12 +717,12 @@ const main = async () => {
     });
 
   // $ExpectType { username: string; }[]
-  await knex<User>('users')
+  (await knex<User>('users')
     .innerJoin<Department>(
       'departments',
       'users.departmentid',
       'departments.id'
-    )
+    ))
     .map(function(joined) {
       return {
         username: joined.name,
@@ -730,13 +730,13 @@ const main = async () => {
     });
 
   // $ExpectType { username: string; }[]
-  await knex<User>('users')
+  (await knex<User>('users')
     .innerJoin<Department>(
       'departments',
       'users.departmentid',
       'departments.id'
     )
-    .select('*')
+    .select('*'))
     .map(function(joined) {
       return {
         username: joined.name,
@@ -744,13 +744,13 @@ const main = async () => {
     });
 
   // $ExpectType { username: string; }[]
-  await knex<User>('users')
+  (await knex<User>('users')
     .innerJoin<Department>(
       'departments',
       'users.departmentid',
       'departments.id'
     )
-    .select()
+    .select())
     .map(function(joined) {
       return {
         username: joined.name,
@@ -758,13 +758,13 @@ const main = async () => {
     });
 
   // $ExpectType { username: string; }[]
-  await knex<User>('users')
+  (await knex<User>('users')
     .innerJoin<Department>(
       'departments',
       'users.departmentid',
       'departments.id'
     )
-    .select('name', 'age')
+    .select('name', 'age'))
     .map(function(joined) {
       return {
         username: joined.name,
@@ -772,13 +772,13 @@ const main = async () => {
     });
 
   // $ExpectType { username: any; }[]
-  await knex<User>('users')
+  (await knex<User>('users')
     .innerJoin<Department>(
       'departments',
       'users.departmentid',
       'departments.id'
     )
-    .select('users.name', 'age')
+    .select('users.name', 'age'))
     .map(function(joined) {
       return {
         username: joined.name,
