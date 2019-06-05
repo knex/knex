@@ -3,6 +3,7 @@
 const harness = require('./harness');
 const tape = require('tape');
 const JSONStream = require('JSONStream');
+const bluebird = require('bluebird');
 
 module.exports = function(knex) {
   tape(knex.client.driverName + ' - transactions: before', function(t) {
@@ -485,12 +486,13 @@ module.exports = function(knex) {
 
     return knex
       .transaction(function(tx) {
-        Promise.each(
-          ['SET join_collapse_limit to 1', 'SET enable_nestloop = off'],
-          function(request) {
-            return tx.raw(request);
-          }
-        )
+        bluebird
+          .each(
+            ['SET join_collapse_limit to 1', 'SET enable_nestloop = off'],
+            function(request) {
+              return tx.raw(request);
+            }
+          )
           .then(function() {
             const stream = tx.table('test_table').stream();
             stream.on('end', function() {
