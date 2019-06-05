@@ -86,7 +86,8 @@ type MappedAliasType<TBase, TAliasMapping> = {} & {
 // but the keys being selected or additional properties being augmented are not
 // all known at once and we would want to effectively build up a partial/intersection
 // over multiple steps.
-interface DeferredKeySelection<
+// tslint:disable-next-line:interface-over-type-literal
+type DeferredKeySelection<
   // The base of selection. In intermediate stages this may be unknown.
   // If it remains unknown at the point of resolution, the selection will fall back to any
   TBase,
@@ -106,7 +107,7 @@ interface DeferredKeySelection<
   TIntersectProps extends {} = {},
   // Extra props which will be unioned with the result
   TUnionProps = never
-> {
+> = {
   // These properties are not actually used, but exist simply because
   // typescript doesn't end up happy when type parameters are unused
   _base: TBase;
@@ -116,7 +117,7 @@ interface DeferredKeySelection<
   _single: TSingle;
   _intersectProps: TIntersectProps;
   _unionProps: TUnionProps;
-}
+};
 
 // An companion namespace for DeferredKeySelection which provides type operators
 // to build up participants of intersection/partial over multiple invocations
@@ -273,8 +274,7 @@ type AggregationQueryResult<TResult, TIntersectProps2> = ArrayIfAlready<
 // deferring an index access operation (TBase[TKey]) over a potentially
 // unknown initial type of TBase and potentially never initial type of TKey
 
-interface DeferredIndex<TBase, TKey extends string>
-  extends DeferredKeySelection<TBase, TKey, false, {}, true> {}
+type DeferredIndex<TBase, TKey extends string> = DeferredKeySelection<TBase, TKey, false, {}, true>;
 
 declare namespace DeferredIndex {
   type Augment<
