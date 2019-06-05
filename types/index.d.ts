@@ -87,7 +87,6 @@ type MappedAliasType<TBase, TAliasMapping> = {} & {
 // but the keys being selected or additional properties being augmented are not
 // all known at once and we would want to effectively build up a partial/intersection
 // over multiple steps.
-// tslint:disable-next-line:interface-over-type-literal
 type DeferredKeySelection<
   // The base of selection. In intermediate stages this may be unknown.
   // If it remains unknown at the point of resolution, the selection will fall back to any
@@ -298,7 +297,6 @@ type ResolveResult<S> = DeferredKeySelection.Resolve<S>;
 type Callback = Function;
 type Client = Function;
 
-// tslint:disable-next-line:interface-over-type-literal
 type Dict<T = any> = { [k: string]: T; };
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
