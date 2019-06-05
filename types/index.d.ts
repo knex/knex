@@ -11,6 +11,7 @@
 import events = require('events');
 import stream = require('stream');
 import Bluebird = require('bluebird');
+import ResultTypes = require('./result');
 
 // # Generic type-level utilities
 
@@ -297,9 +298,8 @@ type ResolveResult<S> = DeferredKeySelection.Resolve<S>;
 type Callback = Function;
 type Client = Function;
 
-interface Dict<T = any> {
-  [k: string]: T;
-}
+// tslint:disable-next-line:interface-over-type-literal
+type Dict<T = any> = { [k: string]: T; };
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
@@ -381,6 +381,11 @@ declare namespace Knex {
     | Dict<keyof TRecord>;
 
   type TableDescriptor = string | Knex.Raw | Knex.QueryBuilder;
+
+  type Lookup<TRegistry extends {}, TKey extends string, TDefault = never> =
+    TKey extends keyof TRegistry ?
+      TRegistry[TKey] :
+      TDefault;
 
   //
   // QueryInterface
@@ -498,8 +503,8 @@ declare namespace Knex {
     limit(limit: number): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
-    count: AssymetricAggregation<TRecord, TResult, number>;
-    countDistinct: AssymetricAggregation<TRecord, TResult, number>;
+    count: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
+    countDistinct: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
     min: TypePreservingAggregation<TRecord, TResult>;
     max: TypePreservingAggregation<TRecord, TResult>;
     sum: TypePreservingAggregation<TRecord, TResult>;
