@@ -498,8 +498,8 @@ declare namespace Knex {
     limit(limit: number): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
-    count: AssymetricAggregation<TRecord, TResult, number | string>;
-    countDistinct: AssymetricAggregation<TRecord, TResult, number | string>;
+    count: AssymetricAggregation<TRecord, TResult, number>;
+    countDistinct: AssymetricAggregation<TRecord, TResult, number>;
     min: TypePreservingAggregation<TRecord, TResult>;
     max: TypePreservingAggregation<TRecord, TResult>;
     sum: TypePreservingAggregation<TRecord, TResult>;
