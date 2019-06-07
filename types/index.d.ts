@@ -27,6 +27,7 @@ type StrKey<T> = string & keyof T;
 
 // If T is unknown then convert to any, else retain original
 type UnknownToAny<T> = ArrayIfAlready<T, unknown extends UnwrapArrayMember<T> ? any : UnwrapArrayMember<T>>;
+type AnyToUnknown<T> = ArrayIfAlready<T, unknown extends UnwrapArrayMember<T> ? unknown : UnwrapArrayMember<T>>;
 
 // Intersection conditionally applied only when TParams is non-empty
 // This is primarily to keep the signatures more intuitive.
@@ -229,25 +230,35 @@ declare namespace DeferredKeySelection {
     infer TIntersectProps,
     infer TUnionProps
   >
-    ? AugmentParams<
-        TBase extends {}
-          ? TSingle extends true
-            ? TKeys extends keyof TBase
-              ? TBase[TKeys]
-              : any
-            : AugmentParams<
-                true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
-                MappedAliasType<TBase, TAliasMapping>
-              >
-        : unknown,
-        TIntersectProps
-      > | TUnionProps
+    ? UnknownToAny<
+      // ^ We convert final result to any if it is unknown for backward compatibility.
+      //   Historically knex typings have been liberal with returning any and changing
+      //   default return type to unknown would be a major breaking change for users.
+      //
+      //   So we compromise on type safety here and return any.
+        AugmentParams<
+          AnyToUnknown<TBase> extends {}
+            // ^ Conversion of any -> unknown is needed here to prevent distribution
+            //   of any over the conditional
+            ? TSingle extends true
+              ? TKeys extends keyof TBase
+                ? TBase[TKeys]
+                : any
+              : AugmentParams<
+                  true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
+                  MappedAliasType<TBase, TAliasMapping>
+                >
+          : unknown,
+          TIntersectProps
+        > | TUnionProps
+      >
     : TSelection;
 
-  // Resolution logic lifted over arrays of deferred selections
-  type Resolve<TSelection> = UnknownToAny<
-    ArrayIfAlready<TSelection, ResolveOne<UnwrapArrayMember<TSelection>>>
-  >;
+  type Resolve<TSelection> = TSelection extends DeferredKeySelection.Any
+      ? ResolveOne<TSelection>
+      : TSelection extends DeferredKeySelection.Any[]
+      ? ResolveOne<TSelection[0]>[]
+      : TSelection;
 }
 
 type AggregationQueryResult<TResult, TIntersectProps2> = ArrayIfAlready<
