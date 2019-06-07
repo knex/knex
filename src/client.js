@@ -304,17 +304,20 @@ assign(Client.prototype, {
     if (!this.pool) {
       return Promise.reject(new Error('Unable to acquire a connection'));
     }
-
-    return Promise.try(() => this.pool.acquire().promise)
-      .tap((connection) => {
-        debug('acquired connection from pool: %s', connection.__knexUid);
-      })
-      .catch(TimeoutError, () => {
-        throw new Promise.TimeoutError(
-          'Knex: Timeout acquiring a connection. The pool is probably full. ' +
-            'Are you missing a .transacting(trx) call?'
-        );
-      });
+    try {
+      return Promise.try(() => this.pool.acquire().promise)
+        .tap((connection) => {
+          debug('acquired connection from pool: %s', connection.__knexUid);
+        })
+        .catch(TimeoutError, () => {
+          throw new Promise.TimeoutError(
+            'Knex: Timeout acquiring a connection. The pool is probably full. ' +
+              'Are you missing a .transacting(trx) call?'
+          );
+        });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   },
 
   // Releases a connection back to the connection pool,

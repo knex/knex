@@ -85,16 +85,18 @@ assign(TableCompiler_MySQL.prototype, {
           .getFKRefs(runner)
           .get(0)
           .then((refs) =>
-            Promise.try(function() {
-              if (!refs.length) {
-                return;
+            new Promise((resolve, reject) => {
+              try {
+                if (!refs.length) {
+                  resolve();
+                }
+                resolve(compiler.dropFKRefs(runner, refs));
+              } catch (e) {
+                reject(e);
               }
-              return compiler.dropFKRefs(runner, refs);
             })
               .then(function() {
-                let sql = `alter table ${table} change ${wrapped} ${
-                  column.Type
-                }`;
+                let sql = `alter table ${table} change ${wrapped} ${column.Type}`;
 
                 if (String(column.Null).toUpperCase() !== 'YES') {
                   sql += ` NOT NULL`;

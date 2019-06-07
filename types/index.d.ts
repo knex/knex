@@ -315,7 +315,7 @@ interface Knex<TRecord extends {} = any, TResult = any[]>
     config?: any
   ): () => Promise<Knex.Transaction>;
   transaction(
-    transactionScope?: undefined | null,
+    transactionScope?: null,
     config?: any
   ): Promise<Knex.Transaction>;
   transaction<T>(

@@ -183,7 +183,13 @@ class Transaction extends EventEmitter {
   // the original promise is marked completed.
   acquireConnection(client, config, txid) {
     const configConnection = config && config.connection;
-    return Promise.try(() => configConnection || client.acquireConnection())
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(configConnection || client.acquireConnection());
+      } catch (e) {
+        reject(e);
+      }
+    })
       .then(function(connection) {
         connection.__knexTxId = txid;
 
@@ -264,21 +270,29 @@ function makeTxClient(trx, client, connection) {
   const _query = trxClient.query;
   trxClient.query = function(conn, obj) {
     const completed = trx.isCompleted();
-    return Promise.try(function() {
-      if (conn !== connection)
-        throw new Error('Invalid connection for transaction query.');
-      if (completed) completedError(trx, obj);
-      return _query.call(trxClient, conn, obj);
+    return new Promise(function(resolve, reject) {
+      try {
+        if (conn !== connection)
+          throw new Error('Invalid connection for transaction query.');
+        if (completed) completedError(trx, obj);
+        resolve(_query.call(trxClient, conn, obj));
+      } catch (e) {
+        reject(e);
+      }
     });
   };
   const _stream = trxClient.stream;
   trxClient.stream = function(conn, obj, stream, options) {
     const completed = trx.isCompleted();
-    return Promise.try(function() {
-      if (conn !== connection)
-        throw new Error('Invalid connection for transaction query.');
-      if (completed) completedError(trx, obj);
-      return _stream.call(trxClient, conn, obj, stream, options);
+    return new Promise(function(resolve, reject) {
+      try {
+        if (conn !== connection)
+          throw new Error('Invalid connection for transaction query.');
+        if (completed) completedError(trx, obj);
+        resolve(_stream.call(trxClient, conn, obj, stream, options));
+      } catch (e) {
+        reject(e);
+      }
     });
   };
   trxClient.acquireConnection = function() {
