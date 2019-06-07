@@ -4,6 +4,7 @@
 
 const uuid = require('uuid');
 const _ = require('lodash');
+const bluebird = require('bluebird');
 
 module.exports = function(knex) {
   describe('Inserts', function() {
@@ -1150,7 +1151,7 @@ module.exports = function(knex) {
         if (/redshift/i.test(knex.client.driverName)) {
           return;
         }
-        return new Promise(function(resolve, reject) {
+        return new bluebird(function(resolve, reject) {
           return knex.schema
             .dropTableIfExists('batchInsertDuplicateKey')
             .then(function() {

@@ -585,11 +585,11 @@ module.exports = function(knex) {
           .into('accounts');
       });
 
-      return Promise.all([transactionReturning, transactionReturning]).spread(
-        function(ret1, ret2) {
+      return bluebird
+        .all([transactionReturning, transactionReturning])
+        .spread(function(ret1, ret2) {
           expect(ret1).to.equal(ret2);
-        }
-      );
+        });
     });
 
     it('should pass the query context to wrapIdentifier', function() {
