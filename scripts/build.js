@@ -86,8 +86,8 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
           })
           .value()
           .join(' ');
-        var needsDepInstallation = !_.isEmpty(installArgs);
-        var dependenciesInstalledQ = needsDepInstallation
+        const needsDepInstallation = !_.isEmpty(installArgs);
+        const dependenciesInstalledQ = needsDepInstallation
           ? exec('npm install ' + installArgs, opts)
           : Promise.resolve();
         dependenciesInstalledQ
