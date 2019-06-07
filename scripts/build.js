@@ -86,13 +86,11 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
           })
           .value()
           .join(' ');
-
-        Promise.try(function() {
-          if (!_.isEmpty(installArgs)) {
-            console.log('Installing dependencies');
-            return exec('npm install ' + installArgs, opts);
-          }
-        })
+        var needsDepInstallation = !_.isEmpty(installArgs);
+        var dependenciesInstalledQ = needsDepInstallation
+          ? exec('npm install ' + installArgs, opts)
+          : Promise.resolve();
+        dependenciesInstalledQ
           .then(function(stdout, stderr) {
             console.log('✓');
             // Don't need the flag anymore as `postinstall` was already run.

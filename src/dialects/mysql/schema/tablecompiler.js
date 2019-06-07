@@ -84,13 +84,18 @@ assign(TableCompiler_MySQL.prototype, {
         return compiler
           .getFKRefs(runner)
           .get(0)
-          .then((refs) =>
-            Promise.try(function() {
-              if (!refs.length) {
-                return;
-              }
-              return compiler.dropFKRefs(runner, refs);
+          .then((refs) => {
+            return new Promise(function(resolve, reject){
+              try {
+                if (!refs.length) {
+                  resolve();
+                }
+                resolve(compiler.dropFKRefs(runner, refs));
+              } catch (e) {
+                reject(e)
+              } 
             })
+          })
               .then(function() {
                 let sql = `alter table ${table} change ${wrapped} ${
                   column.Type

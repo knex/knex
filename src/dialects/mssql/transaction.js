@@ -59,12 +59,16 @@ module.exports = class Transaction_MSSQL extends Transaction {
   acquireConnection(config) {
     const t = this;
     const configConnection = config && config.connection;
-    return Promise.try(() => {
-      return (
-        (t.outerTx ? t.outerTx.conn : null) ||
-        configConnection ||
-        t.client.acquireConnection()
-      );
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(
+          (t.outerTx ? t.outerTx.conn : null) ||
+            configConnection ||
+            t.client.acquireConnection()
+        );
+      } catch (e) {
+        reject(e);
+      }
     })
       .tap(function(conn) {
         conn.__knexTxId = t.txid;

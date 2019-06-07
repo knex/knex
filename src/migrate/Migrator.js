@@ -133,10 +133,13 @@ class Migrator {
   // Rollback the last "batch", or all, of migrations that were run.
   rollback(config, all = false) {
     this._disableProcessing();
-    return Promise.try(() => {
-      this.config = getMergedConfig(config, this.config);
-
-      return migrationListResolver
+    return new Promise((resolve, reject) => {
+      try {
+        this.config = getMergedConfig(config, this.config);
+      } catch (e) {
+        reject(e);
+      }
+      migrationListResolver
         .listAllAndCompleted(this.config, this.knex)
         .tap((value) =>
           validateMigrationList(this.config.migrationSource, value)
@@ -154,7 +157,8 @@ class Migrator {
         })
         .then((migrations) => {
           return this._runBatch(migrations, 'down');
-        });
+        })
+        .then(resolve, reject);
     });
   }
 

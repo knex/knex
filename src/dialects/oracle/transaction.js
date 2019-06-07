@@ -38,7 +38,13 @@ module.exports = class Oracle_Transaction extends Transaction {
 
   acquireConnection(config) {
     const t = this;
-    return Promise.try(() => config.connection || t.client.acquireConnection())
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(config.connection || t.client.acquireConnection());
+      } catch (e) {
+        reject(e);
+      }
+    })
       .then((connection) => {
         connection.__knexTxId = this.txid;
 

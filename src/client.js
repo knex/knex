@@ -305,7 +305,9 @@ assign(Client.prototype, {
       return Promise.reject(new Error('Unable to acquire a connection'));
     }
 
-    return Promise.try(() => this.pool.acquire().promise)
+    return this.pool
+      .acquire()
+      .promise()
       .tap((connection) => {
         debug('acquired connection from pool: %s', connection.__knexUid);
       })
