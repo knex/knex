@@ -59,17 +59,6 @@ Knex.Client = Client;
 
 /* eslint no-console:0 */
 
-Object.defineProperties(Knex, {
-  Promise: {
-    get() {
-      console.warn(
-        `Knex.Promise is deprecated, either require bluebird or use the global Promise`
-      );
-      return require('bluebird');
-    },
-  },
-});
-
 // Run a "raw" query, though we can't do anything with it other than put
 // it in a query statement.
 Knex.raw = (sql, bindings) => {
