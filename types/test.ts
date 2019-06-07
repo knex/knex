@@ -74,11 +74,17 @@ const main = async () => {
   // $ExpectType any[]
   await knex('users');
 
+  // This test (others similar to it) may seem useless but they are needed
+  // to test for left-to-right inference issues eg: #3260
+  const u1: User[] = await knex('users');
+
   // $ExpectType User[]
   await knex<User>('users');
 
   // $ExpectType any[]
   await knex('users').select('id');
+
+  const u2: Partial<User>[] = await knex('users').select('id');
 
   // $ExpectType any[]
   await knex('users')
@@ -96,6 +102,8 @@ const main = async () => {
 
   // $ExpectType any
   await knex('users').first('id', 'name');
+
+  const u3: User = await knex('users').first('id', 'name');
 
   // $ExpectType any
   await knex('users').first(knex.ref('id').as('identifier'));
@@ -433,6 +441,11 @@ const main = async () => {
   await knex<User>('users').whereNot('age', '>', 100);
 
   // ## Aggregation:
+
+  const u4: User[] = await knex('users')
+    .groupBy('count')
+    .orderBy('name', 'desc')
+    .having('age', '>', 10);
 
   // $ExpectType User[]
   await knex<User>('users')
