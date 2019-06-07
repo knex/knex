@@ -4,7 +4,6 @@
 
 const uuid = require('uuid');
 const _ = require('lodash');
-const Promise = require('bluebird');
 
 module.exports = function(knex) {
   describe('Inserts', function() {

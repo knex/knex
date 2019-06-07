@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const mkdirp = require('mkdirp');
-const Promise = require('bluebird');
+const bluebird = require('bluebird');
 const { template } = require('lodash');
 const { getMergedConfig } = require('./configuration-merger');
 
@@ -30,9 +30,9 @@ class MigrationGenerator {
     const dirs = this._absoluteConfigDirs();
 
     const promises = dirs.map((dir) => {
-      return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
-        Promise.promisify(mkdirp)(dir)
-      );
+      return bluebird
+        .promisify(fs.stat, { context: fs })(dir)
+        .catch(() => bluebird.promisify(mkdirp)(dir));
     });
 
     return Promise.all(promises);
@@ -45,9 +45,9 @@ class MigrationGenerator {
       this.config.stub ||
       path.join(__dirname, 'stub', this.config.extension + '.stub');
 
-    return Promise.promisify(fs.readFile, { context: fs })(stubPath).then(
-      (stub) => template(stub.toString(), { variable: 'd' })
-    );
+    return bluebird
+      .promisify(fs.readFile, { context: fs })(stubPath)
+      .then((stub) => template(stub.toString(), { variable: 'd' }));
   }
 
   // Write a new migration to disk, using the config and generated filename,
@@ -60,10 +60,12 @@ class MigrationGenerator {
     if (name[0] === '-') name = name.slice(1);
     const filename = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
 
-    return Promise.promisify(fs.writeFile, { context: fs })(
-      path.join(dir, filename),
-      tmpl(config.variables || {})
-    ).return(path.join(dir, filename));
+    return bluebird
+      .promisify(fs.writeFile, { context: fs })(
+        path.join(dir, filename),
+        tmpl(config.variables || {})
+      )
+      .return(path.join(dir, filename));
   }
 
   _absoluteConfigDirs() {
