@@ -84,22 +84,19 @@ assign(TableCompiler_MySQL.prototype, {
         return compiler
           .getFKRefs(runner)
           .get(0)
-          .then((refs) => {
-            return new Promise(function(resolve, reject){
+          .then((refs) =>
+            new Promise((resolve, reject) => {
               try {
                 if (!refs.length) {
                   resolve();
                 }
                 resolve(compiler.dropFKRefs(runner, refs));
               } catch (e) {
-                reject(e)
-              } 
+                reject(e);
+              }
             })
-          })
               .then(function() {
-                let sql = `alter table ${table} change ${wrapped} ${
-                  column.Type
-                }`;
+                let sql = `alter table ${table} change ${wrapped} ${column.Type}`;
 
                 if (String(column.Null).toUpperCase() !== 'YES') {
                   sql += ` NOT NULL`;
