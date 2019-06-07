@@ -135,7 +135,7 @@ Seeder.prototype._waterfallBatch = function(seeds) {
     current = current.then(() =>
       // Nesting promise to prevent bubbling up of error on catch
       Promise.resolve()
-        .then(() => seed.seed(knex, Promise))
+        .then(() => seed.seed(knex))
         .then(() => log.push(name))
         .catch((originalError) => {
           const error = new Error(

@@ -438,7 +438,7 @@ class Migrator {
           trxOrKnex.enableProcessing();
           return checkPromise(
             this.knex.client.logger,
-            migrationContent[direction](trxOrKnex, Promise),
+            migrationContent[direction](trxOrKnex),
             name
           );
         })
@@ -469,7 +469,7 @@ class Migrator {
     return knex.transaction((trx) => {
       return checkPromise(
         knex.client.logger,
-        migrationContent[direction](trx, Promise),
+        migrationContent[direction](trx),
         name,
         () => {
           trx.commit();

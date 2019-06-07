@@ -1,5 +1,5 @@
 
-exports.up = (knex, Promise) ->
+exports.up = (knex) ->
   <% if (d.tableName) { %>
   knex.schema.createTable "<%= d.tableName %>", (t) ->
     t.increments()
@@ -7,7 +7,7 @@ exports.up = (knex, Promise) ->
   <% } %>
 
 
-exports.down = (knex, Promise) ->
+exports.down = (knex) ->
   <% if (d.tableName) { %>
   knex.schema.dropTable "<%= d.tableName %>"
   <% } %>
