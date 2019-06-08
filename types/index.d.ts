@@ -9,6 +9,7 @@
 /// <reference types="node" />
 
 import events = require('events');
+import { config as MsSqlConnectionConfig } from 'mssql';
 import stream = require('stream');
 import ResultTypes = require('./result');
 
