@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.17.4",
+  "version": "0.17.5",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "types": "types/index.d.ts",
@@ -155,7 +155,8 @@
     "LICENSE",
     "CHANGELOG.md",
     "scripts/*",
-    "types/index.d.ts"
+    "types/index.d.ts",
+    "types/result.d.ts"
   ],
   "license": "MIT",
   "tonicExampleFilename": "scripts/runkit-example.js",

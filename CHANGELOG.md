@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.17.5 - 8 June, 2019
+
+### Typings
+
+- Include result.d.ts in published package #3271
+
 # 0.17.4 - 8 June, 2019
 
 ### Typings
