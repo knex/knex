@@ -18,6 +18,7 @@ import support from '../sections/support'
 import transactions from '../sections/transactions'
 import upgrading from '../sections/upgrading'
 import utility from '../sections/utility'
+import typescriptSupport from '../sections/typescript-support'
 import parseChangeLog from '../util/parseChangeLog'
 
 const constants = {
@@ -40,6 +41,7 @@ export default class Documentation extends Component {
         <Section id="Prelude" content={prelude(this.props.version)} />
         <Section id="Upgrading" content={upgrading} />
         <Section id="Installation" content={installation} />
+        <Section id="TypeScript Support" content={typescriptSupport} />
         <Section id="Builder" content={builder} />
         <Section id="Transactions" content={transactions} />
         <Section id="Schema" content={schema} />

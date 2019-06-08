@@ -36,6 +36,10 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Installation-log">log</a></li>
         </ul>
 
+        <a className="toc_title" href="#typescript-support">
+          TypeScript Support
+        </a>
+
         <a className="toc_title" href="#Builder">
           Query Builder
         </a>
