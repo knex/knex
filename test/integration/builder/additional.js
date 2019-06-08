@@ -4,7 +4,7 @@
 
 const Knex = require('../../../knex');
 const _ = require('lodash');
-const Promise = require('bluebird');
+const bluebird = require('bluebird');
 
 module.exports = function(knex) {
   describe('Additional', function() {
@@ -803,7 +803,8 @@ module.exports = function(knex) {
           // This query will hang if a connection gets released back to the pool
           // too early.
           // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
-          return Promise.resolve()
+          return bluebird
+            .resolve()
             .then()
             .delay(50)
             .then(function() {

@@ -1,9 +1,8 @@
-/*global describe, expect, it, testPromise, d*/
+/*global describe, expect, it, d*/
 'use strict';
 
 const _ = require('lodash');
 const assert = require('assert');
-const Promise = testPromise;
 const Runner = require('../../../src/runner');
 
 module.exports = function(knex) {
