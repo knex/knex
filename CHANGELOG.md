@@ -1,5 +1,16 @@
 # Master (Unreleased)
 
+# 0.17.4 - 8 June, 2019
+
+### Typings
+
+- Fix some cases of left-to-right inference causing type mismatch #3265
+- Improve count typings #3249
+
+### Bug fixes:
+
+- Fix error message bubbling up on seed error #3248
+
 # 0.17.3 - 2 June, 2019
 
 ### Typings
