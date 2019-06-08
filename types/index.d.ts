@@ -11,6 +11,7 @@
 import events = require('events');
 import stream = require('stream');
 import Bluebird = require('bluebird');
+import ResultTypes = require('./result');
 
 // # Generic type-level utilities
 
@@ -26,6 +27,7 @@ type StrKey<T> = string & keyof T;
 
 // If T is unknown then convert to any, else retain original
 type UnknownToAny<T> = ArrayIfAlready<T, unknown extends UnwrapArrayMember<T> ? any : UnwrapArrayMember<T>>;
+type AnyToUnknown<T> = ArrayIfAlready<T, unknown extends UnwrapArrayMember<T> ? unknown : UnwrapArrayMember<T>>;
 
 // Intersection conditionally applied only when TParams is non-empty
 // This is primarily to keep the signatures more intuitive.
@@ -86,7 +88,7 @@ type MappedAliasType<TBase, TAliasMapping> = {} & {
 // but the keys being selected or additional properties being augmented are not
 // all known at once and we would want to effectively build up a partial/intersection
 // over multiple steps.
-interface DeferredKeySelection<
+type DeferredKeySelection<
   // The base of selection. In intermediate stages this may be unknown.
   // If it remains unknown at the point of resolution, the selection will fall back to any
   TBase,
@@ -106,7 +108,7 @@ interface DeferredKeySelection<
   TIntersectProps extends {} = {},
   // Extra props which will be unioned with the result
   TUnionProps = never
-> {
+> = {
   // These properties are not actually used, but exist simply because
   // typescript doesn't end up happy when type parameters are unused
   _base: TBase;
@@ -116,7 +118,7 @@ interface DeferredKeySelection<
   _single: TSingle;
   _intersectProps: TIntersectProps;
   _unionProps: TUnionProps;
-}
+};
 
 // An companion namespace for DeferredKeySelection which provides type operators
 // to build up participants of intersection/partial over multiple invocations
@@ -228,25 +230,35 @@ declare namespace DeferredKeySelection {
     infer TIntersectProps,
     infer TUnionProps
   >
-    ? AugmentParams<
-        TBase extends {}
-          ? TSingle extends true
-            ? TKeys extends keyof TBase
-              ? TBase[TKeys]
-              : any
-            : AugmentParams<
-                true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
-                MappedAliasType<TBase, TAliasMapping>
-              >
-        : unknown,
-        TIntersectProps
-      > | TUnionProps
+    ? UnknownToAny<
+      // ^ We convert final result to any if it is unknown for backward compatibility.
+      //   Historically knex typings have been liberal with returning any and changing
+      //   default return type to unknown would be a major breaking change for users.
+      //
+      //   So we compromise on type safety here and return any.
+        AugmentParams<
+          AnyToUnknown<TBase> extends {}
+            // ^ Conversion of any -> unknown is needed here to prevent distribution
+            //   of any over the conditional
+            ? TSingle extends true
+              ? TKeys extends keyof TBase
+                ? TBase[TKeys]
+                : any
+              : AugmentParams<
+                  true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
+                  MappedAliasType<TBase, TAliasMapping>
+                >
+          : unknown,
+          TIntersectProps
+        > | TUnionProps
+      >
     : TSelection;
 
-  // Resolution logic lifted over arrays of deferred selections
-  type Resolve<TSelection> = UnknownToAny<
-    ArrayIfAlready<TSelection, ResolveOne<UnwrapArrayMember<TSelection>>>
-  >;
+  type Resolve<TSelection> = TSelection extends DeferredKeySelection.Any
+      ? ResolveOne<TSelection>
+      : TSelection extends DeferredKeySelection.Any[]
+      ? ResolveOne<TSelection[0]>[]
+      : TSelection;
 }
 
 type AggregationQueryResult<TResult, TIntersectProps2> = ArrayIfAlready<
@@ -273,8 +285,7 @@ type AggregationQueryResult<TResult, TIntersectProps2> = ArrayIfAlready<
 // deferring an index access operation (TBase[TKey]) over a potentially
 // unknown initial type of TBase and potentially never initial type of TKey
 
-interface DeferredIndex<TBase, TKey extends string>
-  extends DeferredKeySelection<TBase, TKey, false, {}, true> {}
+type DeferredIndex<TBase, TKey extends string> = DeferredKeySelection<TBase, TKey, false, {}, true>;
 
 declare namespace DeferredIndex {
   type Augment<
@@ -297,9 +308,7 @@ type ResolveResult<S> = DeferredKeySelection.Resolve<S>;
 type Callback = Function;
 type Client = Function;
 
-interface Dict<T = any> {
-  [k: string]: T;
-}
+type Dict<T = any> = { [k: string]: T; };
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
@@ -381,6 +390,11 @@ declare namespace Knex {
     | Dict<keyof TRecord>;
 
   type TableDescriptor = string | Knex.Raw | Knex.QueryBuilder;
+
+  type Lookup<TRegistry extends {}, TKey extends string, TDefault = never> =
+    TKey extends keyof TRegistry ?
+      TRegistry[TKey] :
+      TDefault;
 
   //
   // QueryInterface
@@ -498,8 +512,8 @@ declare namespace Knex {
     limit(limit: number): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
-    count: AssymetricAggregation<TRecord, TResult, number | string>;
-    countDistinct: AssymetricAggregation<TRecord, TResult, number | string>;
+    count: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
+    countDistinct: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
     min: TypePreservingAggregation<TRecord, TResult>;
     max: TypePreservingAggregation<TRecord, TResult>;
     sum: TypePreservingAggregation<TRecord, TResult>;
