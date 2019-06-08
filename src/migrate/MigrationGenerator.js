@@ -72,6 +72,7 @@ export default class MigrationGenerator {
       : [this.config.directory];
     return directories.map((directory) => {
       if (!directory) {
+        // eslint-disable-next-line no-console
         console.warn(
           'Failed to resolve config file, knex cannot determine where to generate migrations'
         );
