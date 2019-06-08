@@ -1613,14 +1613,6 @@ declare namespace Knex {
     requestTimeout?: number;
   }
 
-  interface MsSqlConnectionConfig {
-    user: string;
-    password: string;
-    server: string;
-    database: string;
-    options: MsSqlOptionsConfig;
-  }
-
   // Config object for mariasql: https://github.com/mscdex/node-mariasql#client-methods
   interface MariaSqlConnectionConfig {
     user?: string;
@@ -1684,17 +1676,6 @@ declare namespace Knex {
   interface Sqlite3ConnectionConfig {
     filename: string;
     debug?: boolean;
-  }
-
-  interface MsSqlOptionsConfig {
-    encrypt?: boolean;
-    port?: number;
-    domain?: string;
-    connectionTimeout?: number;
-    requestTimeout?: number;
-    stream?: boolean;
-    parseJSON?: boolean;
-    pool?: PoolConfig;
   }
 
   interface SocketConnectionConfig {
