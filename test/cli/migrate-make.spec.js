@@ -46,12 +46,54 @@ describe('migrate:make', () => {
     );
   });
 
-  it('Create new migration with ts knexfile passed', () => {
+  it('Create new migration with default knexfile', () => {
     fileHelper.registerGlobForCleanup(
       'test/jake-util/knexfile_migrations/*_somename.js'
     );
+    fileHelper.createFile(
+      process.cwd() + '/knexfile.js',
+      `
+module.exports = {
+  client: 'sqlite3',
+  connection: {
+    filename: __dirname + '/test/jake-util/test.sqlite3',
+  },
+  migrations: {
+    directory: __dirname + '/test/jake-util/knexfile_migrations',
+  },
+};    
+    `,
+      { isPathAbsolute: true }
+    );
     return execCommand(
-      `ts-node ${KNEX} migrate:make somename --knexfile=test/jake-util/knexfile/knexfile.js --knexpath=../knex.js`,
+      `node ${KNEX} migrate:make somename --knexpath=../knex.js`,
+      {
+        expectedOutput: 'Created Migration',
+      }
+    );
+  });
+
+  it('Create new migration with default ts knexfile', () => {
+    fileHelper.registerGlobForCleanup(
+      'test/jake-util/knexfile_migrations/*_somename.js'
+    );
+    fileHelper.createFile(
+      process.cwd() + '/knexfile.ts',
+      `
+module.exports = {
+  client: 'sqlite3',
+  connection: {
+    filename: __dirname + '/test/jake-util/test.sqlite3',
+  },
+  migrations: {
+    directory: __dirname + '/test/jake-util/knexfile_migrations',
+  },
+};    
+    `,
+      { isPathAbsolute: true }
+    );
+    return execCommand(
+      `node ${KNEX} migrate:make somename --knexpath=../knex.js`,
       {
         expectedOutput: 'Created Migration',
       }

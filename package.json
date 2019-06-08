@@ -72,7 +72,6 @@
     "tape": "^4.10.2",
     "through": "^2.3.8",
     "toxiproxy-node-client": "^2.0.6",
-    "ts-node": "^8.2.0",
     "typescript": "^3.4.5",
     "webpack-cli": "^3.3.2"
   },
