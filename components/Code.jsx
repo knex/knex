@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import dedent from 'dedent'
-import {js, sql} from '../util/highlight'
+import {js, sql, ts} from '../util/highlight'
 
 export default class Code extends Component {
 
@@ -14,6 +14,7 @@ export default class Code extends Component {
     let fn
     if (language === 'js') fn = js
     if (language === 'sql') fn = sql
+    if (language === 'ts') fn = ts
 
     if (fn) {
       return (

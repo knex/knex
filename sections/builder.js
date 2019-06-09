@@ -41,7 +41,102 @@ export default [
     method: "knex",
     example: "knex(tableName, options={only: boolean}) / knex.[methodName]",
     description: "The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream. Optional second argument for passing options:*   **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data. **NOTE:** only supported in PostgreSQL for now.",
-    children: [    ]
+    children: [{
+      type: "heading",
+      size: "md",
+      content: "Usage with TypeScript"
+    }, {
+      type: "text",
+      content: "If using TypeScript, you can pass the type of database row as a type parameter to get better autocompletion support down the chain."
+    }, {
+      type: "code",
+      language: "ts",
+      content: `
+        interface User {
+          id: number;
+          name: string;
+          age: number;
+        }
+
+        knex('users')
+          .where('id')
+          .first(); // Resolves to any
+
+        knex<User>('users') // User is the type of row in database
+          .where('id', 1) // Your IDE will be able to help with the completion of id
+          .first(); // Resolves to User | undefined
+      `
+    }, {
+      type: "text",
+      content: "It is also possible to take advantage of auto-completion support (in TypeScript-aware IDEs) with generic type params when writing code in plain JavaScript through JSDoc comments."
+    }, {
+      type: "code",
+      language: "ts",
+      content: `
+        /**
+         * @typedef {Object} User
+         * @property {number} id
+         * @property {number} age
+         * @property {string} name
+         *
+         * @returns {Knex.QueryBuilder<User, {}>}
+         */
+        const Users = () => knex('Users')
+
+        Users().where('id', 1) // 'id' property can be autocompleted by editor
+      `
+    }, {
+      type: "heading",
+      size: "md",
+      content: "Caveat with type inference and mutable fluent APIs"
+    }, {
+      type: "text",
+      content: "Most of the knex APIs mutate current object and return it. This pattern does not work well with type-inference."
+    }, {
+      type: "code",
+      language: "ts",
+      content: `
+        knex<User>('users')
+          .select('id')
+          .then((users) => { // Type of users is inferred as Pick<User, "id">[]
+            // Do something with users
+          });
+
+        knex<User>('users')
+          .select('id')
+          .select('age')
+          .then((users) => { // Type of users is inferred as Pick<User, "id" | "age">[]
+            // Do something with users
+          });
+
+        // The type of usersQueryBuilder is determined here
+        const usersQueryBuilder = knex<User>('users').select('id');
+
+        if (someCondition) {
+          // This select will not change the type of usersQueryBuilder
+          // We can not change the type of a pre-declared variabe in TypeScript
+          usersQueryBuilder.select('age');
+        }
+        usersQueryBuilder.then((users) => {
+          // Type of users here will be Pick<User, "id">[]
+          // which may not be what you expect.
+        });
+
+        // You can specify the type of result explicitly through a second type parameter:
+        const queryBuilder = knex<User, Pick<User, "id" | "age">>('users');
+
+        // But there is no type constraint to ensure that these properties have actually been
+        // selected.
+
+        // So, this will compile:
+        queryBuilder.select('name').then((users) => {
+          // Type of users is Pick<User, "id"> but it will only have name
+        })
+      `
+    }, {
+      type: "text",
+      content: "If you don't want to manually specify the result type, it is recommended to always use the type of last value of the chain and assign result of any future chain continuation to a separate variable (which will have a different type)."
+    }]
   },
   {
     type: "method",
@@ -79,6 +174,34 @@ export default [
         type: "runnable",
         content: `
           knex.select().table('books')
+        `
+      },
+      {
+        type: "heading",
+        size: "md",
+        content: "Usage with TypeScript"
+      },
+      {
+        type: "text",
+        content: "We are generally able to infer the result type based on the columns being selected as long as the select arguments match exactly the key names in record type. However, aliasing and scoping can get in the way of inference."
+      },
+      {
+        type: "code",
+        language: "ts",
+        content: `
+          knex.select('id').from<User>('users'); // Resolves to Pick<User, "id">[]
+
+          knex.select('users.id').from<User>('users'); // Resolves to any[]
+          // ^ TypeScript doesn't provide us a way to look into a string and infer the type
+          //   from a substring, so we fall back to any
+
+          // We can side-step this using knex.ref:
+          knex.select(knex.ref('id').withSchema('users')).from<User>('users'); // Resolves to Pick<User, "id">[]
+
+          knex.select('id as identifier').from<User>('users'); // Resolves to any[], for same reason as above
+
+          // Refs are handy here too:
+          knex.select(knex.ref('id').as('identifier')).from<User>('users'); // Resolves to { identifier: number; }[]
         `
       }
     ]
@@ -135,6 +258,24 @@ export default [
         type: "runnable",
         content: `
           knex.select('*').from('users')
+        `
+      },
+      {
+        type: "heading",
+        size: "md",
+        content: "Usage with TypeScript"
+      },
+      {
+        type: "text",
+        content: "We can specify the type of database row through the TRecord type parameter"
+      },
+      {
+        type: "code",
+        language: "ts",
+        content: `
+          knex.select('id').from('users'); // Resolves to any[]
+
+          knex.select('id').from<User>('users'); // Results to Pick<User, "id">[]
         `
       }
     ]
@@ -1639,6 +1780,44 @@ export default [
         type: "runnable",
         content: `
           knex('users').count(knex.raw('??', ['active']))
+        `
+      },
+      {
+        type: "heading",
+        size: "md",
+        content: "Usage with TypeScript"
+      },
+      {
+        type: "text",
+        content: "The value of count will, by default, have type of `string | number`. This may be counter-intuitive but some connectors (eg. postgres) will automatically cast BigInt result to string when javascript's Number type is not large enough for the value."
+      },
+      {
+        type: "code",
+        language: "ts",
+        content: `
+          knex('users').count('age') // Resolves to: Record<string, number | string>
+
+          knex('users').count({count: '*'}) // Resolves to { count?: string | number | undefined; }
+        `
+      },
+      {
+        type: "text",
+        content: "Working with `string | number` can be inconvenient if you are not working with large tables. Two alternatives are available:"
+      },
+      {
+        type: "code",
+        language: "ts",
+        content: `
+          // Be explicit about what you want as a result:
+          knex('users').count<Record<string, number>>('age');
+
+          // Setup a one time declaration to make knex use number as result type for all
+          // count and countDistinct invocations (for any table)
+          declare module "knex/types/result" {
+              interface Registry {
+                  Count: number;
+              }
+          }
         `
       }
     ]
