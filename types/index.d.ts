@@ -25,8 +25,8 @@ type MaybeArray<T> = T | T[];
 type StrKey<T> = string & keyof T;
 
 // If T is unknown then convert to any, else retain original
-type UnknownToAny<T> = ArrayIfAlready<T, unknown extends UnwrapArrayMember<T> ? any : UnwrapArrayMember<T>>;
-type AnyToUnknown<T> = ArrayIfAlready<T, unknown extends UnwrapArrayMember<T> ? unknown : UnwrapArrayMember<T>>;
+type UnknownToAny<T> = unknown extends T ? any : T;
+type AnyToUnknown<T> = unknown extends T ? unknown : T;
 
 // Intersection conditionally applied only when TParams is non-empty
 // This is primarily to keep the signatures more intuitive.
@@ -72,7 +72,7 @@ type ArrayIfAlready<T1, T2> = T1 extends any[] ? T2[] : T2;
 type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<never>
   ? {}
   : Boxed<TKeys> extends Boxed<keyof TBase>
-  ? Pick<TBase, TKeys & keyof TBase>
+  ? SafePick<TBase, TKeys & keyof TBase>
   : any;
 
 // Retain the association of original keys with aliased keys at type level
@@ -257,7 +257,9 @@ declare namespace DeferredKeySelection {
       ? ResolveOne<TSelection>
       : TSelection extends DeferredKeySelection.Any[]
       ? ResolveOne<TSelection[0]>[]
-      : TSelection;
+      : TSelection extends (infer I)[]
+      ? UnknownToAny<I>[]
+      : UnknownToAny<TSelection>;
 }
 
 type AggregationQueryResult<TResult, TIntersectProps2> = ArrayIfAlready<
@@ -1280,15 +1282,15 @@ declare namespace Knex {
   type RawBinding = Value | QueryBuilder<any, any>;
 
   interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
-    <TResult2 = UnknownToAny<TResult>>(
+    <TResult2 = TResult>(
       sql: string,
       ...bindings: RawBinding[]
     ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = UnknownToAny<TResult>>(
+    <TResult2 = TResult>(
       sql: string,
       bindings: RawBinding[] | ValueDict
     ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = UnknownToAny<TResult>>(raw: Raw<TResult2>): QueryBuilder<
+    <TResult2 = TResult>(raw: Raw<TResult2>): QueryBuilder<
       TRecord,
       TResult2
     >;
@@ -1305,9 +1307,9 @@ declare namespace Knex {
   }
 
   interface RawBuilder<TRecord extends {} = any, TResult = unknown[]> {
-    <TResult2 = UnknownToAny<TResult>>(value: Value): Raw<TResult2>;
-    <TResult2 = UnknownToAny<TResult>>(sql: string, ...bindings: RawBinding[]): Raw<TResult2>;
-    <TResult2 = UnknownToAny<TResult>>(sql: string, bindings: RawBinding[] | ValueDict): Raw<TResult2>;
+    <TResult2 = TResult>(value: Value): Raw<TResult2>;
+    <TResult2 = TResult>(sql: string, ...bindings: RawBinding[]): Raw<TResult2>;
+    <TResult2 = TResult>(sql: string, bindings: RawBinding[] | ValueDict): Raw<TResult2>;
   }
 
   interface Ref<TSrc extends string, TMapping extends {}> extends Raw<string> {
