@@ -28,14 +28,25 @@ function mkConfigObj(opts) {
 }
 
 function tryLoadingDefaultConfiguration() {
-  const path = resolveDefaultKnexfilePath();
-  if (fs.existsSync(path)) {
-    return require(path);
+  const jsPath = resolveDefaultKnexfilePath('js');
+  if (fs.existsSync(jsPath)) {
+    return require(jsPath);
   }
+
+  const tsPath = resolveDefaultKnexfilePath('ts');
+  if (fs.existsSync(tsPath)) {
+    return require(tsPath);
+  }
+
+  console.warn(
+    `Failed to find configuration at default location of ${resolveDefaultKnexfilePath(
+      'js'
+    )}`
+  );
 }
 
-function resolveDefaultKnexfilePath() {
-  return process.cwd() + '/knexfile.js';
+function resolveDefaultKnexfilePath(extension) {
+  return process.cwd() + `/knexfile.${extension}`;
 }
 
 module.exports = {
