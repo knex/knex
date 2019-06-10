@@ -1614,12 +1614,43 @@ declare namespace Knex {
     requestTimeout?: number;
   }
 
+  // Config object for mssql: see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/mssql/index.d.ts
   interface MsSqlConnectionConfig {
-    user: string;
-    password: string;
+    driver?: string;
+    user?: string;
+    password?: string;
     server: string;
+    port?: number;
+    domain?: string;
     database: string;
-    options: MsSqlOptionsConfig;
+    connectionTimeout?: number;
+    requestTimeout?: number;
+    stream?: boolean;
+    parseJSON?: boolean;
+    options?: {
+      encrypt?: boolean;
+      instanceName?: string;
+      useUTC?: boolean;
+      tdsVersion?: string;
+      appName?: string;
+      abortTransactionOnError?: boolean;
+      trustedConnection?: boolean;
+    };
+    pool?: {
+      min?: number;
+      max?: number;
+      idleTimeoutMillis?: number;
+      maxWaitingClients?: number;
+      testOnBorrow?: boolean;
+      acquireTimeoutMillis?: number;
+      fifo?: boolean;
+      priorityRange?: number;
+      autostart?: boolean;
+      evictionRunIntervalMillis?: number;
+      numTestsPerRun?: number;
+      softIdleTimeoutMillis?: number;
+      Promise?: any;
+    };
   }
 
   // Config object for mariasql: https://github.com/mscdex/node-mariasql#client-methods
@@ -1685,17 +1716,6 @@ declare namespace Knex {
   interface Sqlite3ConnectionConfig {
     filename: string;
     debug?: boolean;
-  }
-
-  interface MsSqlOptionsConfig {
-    encrypt?: boolean;
-    port?: number;
-    domain?: string;
-    connectionTimeout?: number;
-    requestTimeout?: number;
-    stream?: boolean;
-    parseJSON?: boolean;
-    pool?: PoolConfig;
   }
 
   interface SocketConnectionConfig {
