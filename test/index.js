@@ -62,4 +62,5 @@ if (config.sqlite3) {
 describe('CLI tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
   require('./cli/knexfile-test.spec');
+  require('./cli/migrate-make.spec');
 });
