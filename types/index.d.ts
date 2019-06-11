@@ -1767,6 +1767,7 @@ declare namespace Knex {
     database?: string;
     directory?: string | string[];
     extension?: string;
+    stub?: string;
     tableName?: string;
     schemaName?: string;
     disableTransactions?: boolean;
