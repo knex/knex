@@ -55,9 +55,9 @@ export default [
     content: `
       $ knex init
 
-      # or for .coffee
+      # or for .ts
 
-      $ knex init -x coffee
+      $ knex init -x ts
     `
   },
   {
@@ -67,7 +67,11 @@ export default [
   {
     type: "code",
     content: `
-      $ knex migrate:make migration_name
+      $ knex migrate:make migration_name 
+      
+      # or for .ts
+      
+      $ knex migrate:make migration_name -x ts
     `
   },
   {
@@ -254,6 +258,28 @@ export default [
         client: 'pg',
         migrations: {
           stub: 'migration.stub'
+        }
+      };
+    `
+  },
+  {
+    type: "heading",
+    size: "sm",
+    content: "Generated migration extension:"
+  },
+  {
+    type: "text",
+    size: "sm",
+    content: "You can control extension of generated migrations."
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      module.exports = {
+        client: 'pg',
+        migrations: {
+          extension: 'ts'
         }
       };
     `
