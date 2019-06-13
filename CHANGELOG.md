@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.17.6 - 8 June, 2019
+
+### Bug fixes
+
+- Try to resolve knexfile.ts when knexfile.js does not exist #3272
+
 # 0.17.5 - 8 June, 2019
 
 ### Typings
