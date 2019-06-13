@@ -47,10 +47,10 @@ function getMigrationExtension(env) {
   if (argv.x) {
     ext = argv.x;
   } else if (
-    env.configuration.migration &&
-    env.configuration.migration.extension
+    env.configuration.migrations &&
+    env.configuration.migrations.extension
   ) {
-    ext = env.configuration.migration.extension;
+    ext = env.configuration.migrations.extension;
   } else if (env.configuration.ext) {
     ext = env.configuration.ext;
   }
