@@ -1,13 +1,13 @@
-import Raw from './raw';
-import Client from './client';
+const Raw = require('./raw');
+const Client = require('./client');
 
-import makeKnex from './util/make-knex';
-import parseConnection from './util/parse-connection';
-import fakeClient from './util/fake-client';
-import { SUPPORTED_CLIENTS } from './constants';
-import { resolveClientNameWithAliases } from './helpers';
+const makeKnex = require('./util/make-knex');
+const parseConnection = require('./util/parse-connection');
+const fakeClient = require('./util/fake-client');
+const { SUPPORTED_CLIENTS } = require('./constants');
+const { resolveClientNameWithAliases } = require('./helpers');
 
-export default function Knex(config) {
+function Knex(config) {
   // If config is a string, try to parse it
   if (typeof config === 'string') {
     const parsedConfig = Object.assign(parseConnection(config), arguments[2]);
@@ -59,17 +59,6 @@ Knex.Client = Client;
 
 /* eslint no-console:0 */
 
-Object.defineProperties(Knex, {
-  Promise: {
-    get() {
-      console.warn(
-        `Knex.Promise is deprecated, either require bluebird or use the global Promise`
-      );
-      return require('bluebird');
-    },
-  },
-});
-
 // Run a "raw" query, though we can't do anything with it other than put
 // it in a query statement.
 Knex.raw = (sql, bindings) => {
@@ -78,3 +67,5 @@ Knex.raw = (sql, bindings) => {
   );
   return new Raw(fakeClient).set(sql, bindings);
 };
+
+module.exports = Knex;

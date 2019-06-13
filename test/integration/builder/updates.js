@@ -2,8 +2,6 @@
 
 'use strict';
 
-const Bluebird = require('bluebird');
-
 module.exports = function(knex) {
   describe('Updates', function() {
     it('should handle updates', function() {
@@ -86,9 +84,9 @@ module.exports = function(knex) {
 
       return knex('accounts').then((res) => {
         function runTest() {
-          return Bluebird.all(
+          return Promise.all(
             res.map((origRow) => {
-              return Bluebird.resolve()
+              return Promise.resolve()
                 .then(() => {
                   return knex.transaction((trx) =>
                     trx('accounts')

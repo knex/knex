@@ -1,4 +1,4 @@
-exports.seed = (knex, Promise) ->
+exports.seed = (knex) ->
   # Deletes ALL existing entries
   knex('table_name').del()
   .then(() ->

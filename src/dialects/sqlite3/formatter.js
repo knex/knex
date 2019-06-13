@@ -1,7 +1,7 @@
-import Formatter from '../../formatter';
-import Raw from '../../raw';
+const Formatter = require('../../formatter');
+const Raw = require('../../raw');
 
-export default class SQlite3_Formatter extends Formatter {
+module.exports = class SQlite3_Formatter extends Formatter {
   values(values) {
     if (Array.isArray(values)) {
       if (Array.isArray(values[0])) {
@@ -18,4 +18,4 @@ export default class SQlite3_Formatter extends Formatter {
 
     return this.parameter(values);
   }
-}
+};

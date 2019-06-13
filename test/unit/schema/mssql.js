@@ -3,7 +3,7 @@
 'use strict';
 
 const sinon = require('sinon');
-const MSSQL_Client = require('../../../lib/dialects/mssql');
+const MSSQL_Client = require('../../../src/dialects/mssql');
 const client = new MSSQL_Client({ client: 'mssql' });
 
 describe('MSSQL SchemaBuilder', function() {

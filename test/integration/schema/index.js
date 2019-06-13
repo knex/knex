@@ -1,9 +1,8 @@
-/*global describe, it, expect, testPromise, before, after*/
+/*global describe, it, expect, before, after*/
 
 'use strict';
 
 const _ = require('lodash');
-const Promise = testPromise;
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);

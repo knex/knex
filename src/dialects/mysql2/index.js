@@ -1,9 +1,9 @@
 // MySQL2 Client
 // -------
-import inherits from 'inherits';
-import Client_MySQL from '../mysql';
-import { assign } from 'lodash';
-import Transaction from './transaction';
+const inherits = require('inherits');
+const Client_MySQL = require('../mysql');
+const { assign } = require('lodash');
+const Transaction = require('./transaction');
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
@@ -33,4 +33,4 @@ assign(Client_MySQL2.prototype, {
   },
 });
 
-export default Client_MySQL2;
+module.exports = Client_MySQL2;

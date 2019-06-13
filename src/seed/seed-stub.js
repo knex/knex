@@ -3,7 +3,7 @@
 // available.
 const StubSeed = (module.exports = function() {});
 
-import Promise from 'bluebird';
+const Promise = require('bluebird');
 
 const noSuchMethod = Promise.method(function() {
   throw new Error('Seeds are not supported');

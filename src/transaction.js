@@ -1,18 +1,18 @@
 // Transaction
 // -------
-import Promise from 'bluebird';
-import { EventEmitter } from 'events';
-import Debug from 'debug';
+const Promise = require('bluebird');
+const { EventEmitter } = require('events');
+const Debug = require('debug');
 
-import makeKnex from './util/make-knex';
+const makeKnex = require('./util/make-knex');
 
 const debug = Debug('knex:tx');
 
-import { uniqueId, isUndefined } from 'lodash';
+const { uniqueId, isUndefined } = require('lodash');
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
-export default class Transaction extends EventEmitter {
+class Transaction extends EventEmitter {
   constructor(client, container, config, outerTx) {
     super();
 
@@ -57,7 +57,7 @@ export default class Transaction extends EventEmitter {
             return makeTransactor(this, connection, trxClient);
           })
           .then((transactor) => {
-            // If we've returned a "thenable" from the transaction container, assume
+            // If we've returned a "thenable" = require(the transaction container, assume
             // the rollback and commit are chained to this object's success / failure.
             // Directly thrown errors are treated as automatic rollbacks.
             let result;
@@ -183,7 +183,13 @@ export default class Transaction extends EventEmitter {
   // the original promise is marked completed.
   acquireConnection(client, config, txid) {
     const configConnection = config && config.connection;
-    return Promise.try(() => configConnection || client.acquireConnection())
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(configConnection || client.acquireConnection());
+      } catch (e) {
+        reject(e);
+      }
+    })
       .then(function(connection) {
         connection.__knexTxId = txid;
 
@@ -264,21 +270,29 @@ function makeTxClient(trx, client, connection) {
   const _query = trxClient.query;
   trxClient.query = function(conn, obj) {
     const completed = trx.isCompleted();
-    return Promise.try(function() {
-      if (conn !== connection)
-        throw new Error('Invalid connection for transaction query.');
-      if (completed) completedError(trx, obj);
-      return _query.call(trxClient, conn, obj);
+    return new Promise(function(resolve, reject) {
+      try {
+        if (conn !== connection)
+          throw new Error('Invalid connection for transaction query.');
+        if (completed) completedError(trx, obj);
+        resolve(_query.call(trxClient, conn, obj));
+      } catch (e) {
+        reject(e);
+      }
     });
   };
   const _stream = trxClient.stream;
   trxClient.stream = function(conn, obj, stream, options) {
     const completed = trx.isCompleted();
-    return Promise.try(function() {
-      if (conn !== connection)
-        throw new Error('Invalid connection for transaction query.');
-      if (completed) completedError(trx, obj);
-      return _stream.call(trxClient, conn, obj, stream, options);
+    return new Promise(function(resolve, reject) {
+      try {
+        if (conn !== connection)
+          throw new Error('Invalid connection for transaction query.');
+        if (completed) completedError(trx, obj);
+        resolve(_stream.call(trxClient, conn, obj, stream, options));
+      } catch (e) {
+        reject(e);
+      }
     });
   };
   trxClient.acquireConnection = function() {
@@ -327,3 +341,5 @@ promiseInterface.forEach(function(method) {
     return this._promise[method].apply(this._promise, arguments);
   };
 });
+
+module.exports = Transaction;

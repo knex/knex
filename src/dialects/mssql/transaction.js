@@ -1,9 +1,9 @@
-import Promise from 'bluebird';
-import Transaction from '../../transaction';
-import { isUndefined } from 'lodash';
+const Promise = require('bluebird');
+const Transaction = require('../../transaction');
+const { isUndefined } = require('lodash');
 const debug = require('debug')('knex:tx');
 
-export default class Transaction_MSSQL extends Transaction {
+module.exports = class Transaction_MSSQL extends Transaction {
   begin(conn) {
     debug('%s: begin', this.txid);
     return conn.tx_.begin().then(this._resolver, this._rejecter);
@@ -59,12 +59,16 @@ export default class Transaction_MSSQL extends Transaction {
   acquireConnection(config) {
     const t = this;
     const configConnection = config && config.connection;
-    return Promise.try(() => {
-      return (
-        (t.outerTx ? t.outerTx.conn : null) ||
-        configConnection ||
-        t.client.acquireConnection()
-      );
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(
+          (t.outerTx ? t.outerTx.conn : null) ||
+            configConnection ||
+            t.client.acquireConnection()
+        );
+      } catch (e) {
+        reject(e);
+      }
     })
       .tap(function(conn) {
         conn.__knexTxId = t.txid;
@@ -91,4 +95,4 @@ export default class Transaction_MSSQL extends Transaction {
         }
       });
   }
-}
+};

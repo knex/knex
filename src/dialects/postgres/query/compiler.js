@@ -1,14 +1,15 @@
 // PostgreSQL Query Builder & Compiler
 // ------
-import inherits from 'inherits';
+const inherits = require('inherits');
 
-import QueryCompiler from '../../../query/compiler';
+const QueryCompiler = require('../../../query/compiler');
 
-import { assign, reduce, identity } from 'lodash';
+const { assign, reduce, identity } = require('lodash');
 
 function QueryCompiler_PG(client, builder) {
   QueryCompiler.call(this, client, builder);
 }
+
 inherits(QueryCompiler_PG, QueryCompiler);
 
 assign(QueryCompiler_PG.prototype, {
@@ -150,4 +151,4 @@ assign(QueryCompiler_PG.prototype, {
   },
 });
 
-export default QueryCompiler_PG;
+module.exports = QueryCompiler_PG;

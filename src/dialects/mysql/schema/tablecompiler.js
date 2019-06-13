@@ -2,11 +2,11 @@
 
 // MySQL Table Builder & Compiler
 // -------
-import inherits from 'inherits';
-import TableCompiler from '../../../schema/tablecompiler';
-import Promise from 'bluebird';
+const inherits = require('inherits');
+const TableCompiler = require('../../../schema/tablecompiler');
+const Promise = require('bluebird');
 
-import { assign } from 'lodash';
+const { assign } = require('lodash');
 
 // Table Compiler
 // ------
@@ -14,6 +14,7 @@ import { assign } from 'lodash';
 function TableCompiler_MySQL() {
   TableCompiler.apply(this, arguments);
 }
+
 inherits(TableCompiler_MySQL, TableCompiler);
 
 assign(TableCompiler_MySQL.prototype, {
@@ -84,11 +85,15 @@ assign(TableCompiler_MySQL.prototype, {
           .getFKRefs(runner)
           .get(0)
           .then((refs) =>
-            Promise.try(function() {
-              if (!refs.length) {
-                return;
+            new Promise((resolve, reject) => {
+              try {
+                if (!refs.length) {
+                  resolve();
+                }
+                resolve(compiler.dropFKRefs(runner, refs));
+              } catch (e) {
+                reject(e);
               }
-              return compiler.dropFKRefs(runner, refs);
             })
               .then(function() {
                 let sql = `alter table ${table} change ${wrapped} ${
@@ -262,4 +267,4 @@ assign(TableCompiler_MySQL.prototype, {
   },
 });
 
-export default TableCompiler_MySQL;
+module.exports = TableCompiler_MySQL;

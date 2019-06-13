@@ -1,7 +1,7 @@
-import { isNumber, isArray, chunk, flatten, assign } from 'lodash';
-import Promise from 'bluebird';
+const { isNumber, isArray, chunk, flatten, assign } = require('lodash');
+const Promise = require('bluebird');
 
-export default function batchInsert(
+module.exports = function batchInsert(
   client,
   tableName,
   batch,
@@ -81,4 +81,4 @@ export default function batchInsert(
   );
 
   return wrapper;
-}
+};

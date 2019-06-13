@@ -1,9 +1,9 @@
 // Oracle Schema Compiler
 // -------
-import inherits from 'inherits';
-import SchemaCompiler from '../../../schema/compiler';
-import * as utils from '../utils';
-import Trigger from './trigger';
+const inherits = require('inherits');
+const SchemaCompiler = require('../../../schema/compiler');
+const utils = require('../utils');
+const Trigger = require('./trigger');
 
 function SchemaCompiler_Oracle() {
   SchemaCompiler.apply(this, arguments);
@@ -78,4 +78,4 @@ SchemaCompiler_Oracle.prototype.dropTableIfExists = function(tableName) {
   this._dropRelatedSequenceIfExists(tableName);
 };
 
-export default SchemaCompiler_Oracle;
+module.exports = SchemaCompiler_Oracle;

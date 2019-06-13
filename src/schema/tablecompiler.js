@@ -2,9 +2,9 @@
 
 // Table Compiler
 // -------
-import { pushAdditional, pushQuery, unshiftQuery } from './helpers';
-import * as helpers from '../helpers';
-import {
+const { pushAdditional, pushQuery, unshiftQuery } = require('./helpers');
+const helpers = require('../helpers');
+const {
   groupBy,
   reduce,
   map,
@@ -14,7 +14,7 @@ import {
   indexOf,
   isArray,
   isUndefined,
-} from 'lodash';
+} = require('lodash');
 
 function TableCompiler(client, tableBuilder) {
   this.client = client;
@@ -149,7 +149,7 @@ TableCompiler.prototype.getColumnTypes = (columns) =>
     { sql: [], bindings: [] }
   );
 
-// Adds all of the additional queries from the "column"
+// Adds all of the additional queries = require(the "column"
 TableCompiler.prototype.columnQueries = function(columns) {
   const queries = reduce(
     map(columns, tail),
@@ -303,4 +303,4 @@ TableCompiler.prototype._indexCommand = function(type, tableName, columns) {
   return this.formatter.wrap(indexName);
 };
 
-export default TableCompiler;
+module.exports = TableCompiler;

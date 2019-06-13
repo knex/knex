@@ -1,5 +1,29 @@
 # Master (Unreleased)
 
+# 0.17.5 - 8 June, 2019
+
+### Typings
+
+- Include result.d.ts in published package #3271
+
+# 0.17.4 - 8 June, 2019
+
+### Typings
+
+- Fix some cases of left-to-right inference causing type mismatch #3265
+- Improve count typings #3249
+
+### Bug fixes:
+
+- Fix error message bubbling up on seed error #3248
+
+# 0.17.3 - 2 June, 2019
+
+### Typings
+
+- Improve typings for aggregations #3245
+- Add decimalNumbers to MySqlConnectionConfig interface #3244
+
 # 0.17.2 - 1 June, 2019
 
 ### Typings

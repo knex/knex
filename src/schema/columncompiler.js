@@ -2,9 +2,9 @@
 // Used for designating column definitions
 // during the table "create" / "alter" statements.
 // -------
-import Raw from '../raw';
-import * as helpers from './helpers';
-import { groupBy, first, tail, has, isObject } from 'lodash';
+const Raw = require('../raw');
+const helpers = require('./helpers');
+const { groupBy, first, tail, has, isObject } = require('lodash');
 
 function ColumnCompiler(client, tableCompiler, columnBuilder) {
   this.client = client;
@@ -167,4 +167,4 @@ ColumnCompiler.prototype._num = function(val, fallback) {
   return isNaN(number) ? fallback : number;
 };
 
-export default ColumnCompiler;
+module.exports = ColumnCompiler;

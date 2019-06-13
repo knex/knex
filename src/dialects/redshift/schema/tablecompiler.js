@@ -3,9 +3,9 @@
 // Redshift Table Builder & Compiler
 // -------
 
-import inherits from 'inherits';
-import { has } from 'lodash';
-import TableCompiler_PG from '../../postgres/schema/tablecompiler';
+const inherits = require('inherits');
+const { has } = require('lodash');
+const TableCompiler_PG = require('../../postgres/schema/tablecompiler');
 
 function TableCompiler_Redshift() {
   TableCompiler_PG.apply(this, arguments);
@@ -120,4 +120,4 @@ TableCompiler_Redshift.prototype.addColumns = function(
   }
 };
 
-export default TableCompiler_Redshift;
+module.exports = TableCompiler_Redshift;

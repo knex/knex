@@ -1,29 +1,29 @@
-import Promise from 'bluebird';
+const Promise = require('bluebird');
 
-import Raw from './raw';
-import Ref from './ref';
-import Runner from './runner';
-import Formatter from './formatter';
-import Transaction from './transaction';
+const Raw = require('./raw');
+const Ref = require('./ref');
+const Runner = require('./runner');
+const Formatter = require('./formatter');
+const Transaction = require('./transaction');
 
-import QueryBuilder from './query/builder';
-import QueryCompiler from './query/compiler';
+const QueryBuilder = require('./query/builder');
+const QueryCompiler = require('./query/compiler');
 
-import SchemaBuilder from './schema/builder';
-import SchemaCompiler from './schema/compiler';
-import TableBuilder from './schema/tablebuilder';
-import TableCompiler from './schema/tablecompiler';
-import ColumnBuilder from './schema/columnbuilder';
-import ColumnCompiler from './schema/columncompiler';
+const SchemaBuilder = require('./schema/builder');
+const SchemaCompiler = require('./schema/compiler');
+const TableBuilder = require('./schema/tablebuilder');
+const TableCompiler = require('./schema/tablecompiler');
+const ColumnBuilder = require('./schema/columnbuilder');
+const ColumnCompiler = require('./schema/columncompiler');
 
-import { Pool, TimeoutError } from 'tarn';
-import inherits from 'inherits';
-import { EventEmitter } from 'events';
+const { Pool, TimeoutError } = require('tarn');
+const inherits = require('inherits');
+const { EventEmitter } = require('events');
 
-import { makeEscape } from './query/string';
-import { assign, uniqueId, cloneDeep, defaults } from 'lodash';
+const { makeEscape } = require('./query/string');
+const { assign, uniqueId, cloneDeep, defaults } = require('lodash');
 
-import Logger from './logger';
+const Logger = require('./logger');
 
 const debug = require('debug')('knex:client');
 const debugQuery = require('debug')('knex:query');
@@ -66,6 +66,7 @@ function Client(config = {}) {
     this.valueForUndefined = null;
   }
 }
+
 inherits(Client, EventEmitter);
 
 assign(Client.prototype, {
@@ -303,17 +304,20 @@ assign(Client.prototype, {
     if (!this.pool) {
       return Promise.reject(new Error('Unable to acquire a connection'));
     }
-
-    return Promise.try(() => this.pool.acquire().promise)
-      .tap((connection) => {
-        debug('acquired connection from pool: %s', connection.__knexUid);
-      })
-      .catch(TimeoutError, () => {
-        throw new Promise.TimeoutError(
-          'Knex: Timeout acquiring a connection. The pool is probably full. ' +
-            'Are you missing a .transacting(trx) call?'
-        );
-      });
+    try {
+      return Promise.try(() => this.pool.acquire().promise)
+        .tap((connection) => {
+          debug('acquired connection from pool: %s', connection.__knexUid);
+        })
+        .catch(TimeoutError, () => {
+          throw new Promise.TimeoutError(
+            'Knex: Timeout acquiring a connection. The pool is probably full. ' +
+              'Are you missing a .transacting(trx) call?'
+          );
+        });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   },
 
   // Releases a connection back to the connection pool,
@@ -372,4 +376,4 @@ assign(Client.prototype, {
   },
 });
 
-export default Client;
+module.exports = Client;

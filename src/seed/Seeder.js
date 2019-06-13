@@ -1,13 +1,21 @@
 // Seeder
 // -------
 
-import fs from 'fs';
-import path from 'path';
-import mkdirp from 'mkdirp';
-import Promise from 'bluebird';
-import { filter, includes, map, bind, template, each, extend } from 'lodash';
+const fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
+const Promise = require('bluebird');
+const {
+  filter,
+  includes,
+  map,
+  bind,
+  template,
+  each,
+  extend,
+} = require('lodash');
 
-// The new seeds we're performing, typically called from the `knex.seed`
+// The new seeds we're performing, typically called = require(the `knex.seed`
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the seeds.
 function Seeder(knex) {
@@ -54,7 +62,7 @@ Seeder.prototype._listAll = Promise.method(function(config) {
     );
 });
 
-// Gets the seed file list from the specified seed directory.
+// Gets the seed file list = require(the specified seed directory.
 Seeder.prototype._seedData = function() {
   return Promise.join(this._listAll());
 };
@@ -124,25 +132,26 @@ Seeder.prototype._waterfallBatch = function(seeds) {
     seed = require(name);
 
     // Run each seed file.
-    current = current
-      .then(() => seed.seed(knex, Promise))
-      .then(() => {
-        log.push(name);
-      })
-      .catch((originalError) => {
-        const error = new Error(
-          `Error while executing "${name}" seed: ${originalError.message}`
-        );
-        error.original = originalError;
-        error.stack =
-          error.stack
-            .split('\n')
-            .slice(0, 2)
-            .join('\n') +
-          '\n' +
-          originalError.stack;
-        throw error;
-      });
+    current = current.then(() =>
+      // Nesting promise to prevent bubbling up of error on catch
+      Promise.resolve()
+        .then(() => seed.seed(knex))
+        .then(() => log.push(name))
+        .catch((originalError) => {
+          const error = new Error(
+            `Error while executing "${name}" seed: ${originalError.message}`
+          );
+          error.original = originalError;
+          error.stack =
+            error.stack
+              .split('\n')
+              .slice(0, 2)
+              .join('\n') +
+            '\n' +
+            originalError.stack;
+          throw error;
+        })
+    );
   });
 
   return current.thenReturn([log]);
@@ -173,4 +182,4 @@ Seeder.prototype.setConfig = function(config) {
   );
 };
 
-export default Seeder;
+module.exports = Seeder;

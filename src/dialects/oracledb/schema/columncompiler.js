@@ -1,7 +1,7 @@
 const inherits = require('inherits');
 const ColumnCompiler_Oracle = require('../../oracle/schema/columncompiler');
 
-import { assign, isObject } from 'lodash';
+const { assign, isObject } = require('lodash');
 
 function ColumnCompiler_Oracledb() {
   ColumnCompiler_Oracle.apply(this, arguments);

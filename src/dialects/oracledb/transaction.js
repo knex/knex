@@ -1,10 +1,10 @@
-import { isUndefined } from 'lodash';
+const { isUndefined } = require('lodash');
 
 const Promise = require('bluebird');
 const Transaction = require('../../transaction');
 const debugTx = require('debug')('knex:tx');
 
-export default class Oracle_Transaction extends Transaction {
+module.exports = class Oracle_Transaction extends Transaction {
   // disable autocommit to allow correct behavior (default is true)
   begin() {
     return Promise.resolve();
@@ -46,12 +46,19 @@ export default class Oracle_Transaction extends Transaction {
 
   acquireConnection(config) {
     const t = this;
-    return Promise.try(function() {
-      return t.client.acquireConnection().then(function(cnx) {
-        cnx.__knexTxId = t.txid;
-        cnx.isTransaction = true;
-        return cnx;
-      });
+    return new Promise(function(resolve, reject) {
+      try {
+        t.client
+          .acquireConnection()
+          .then(function(cnx) {
+            cnx.__knexTxId = t.txid;
+            cnx.isTransaction = true;
+            resolve(cnx);
+          })
+          .catch(reject);
+      } catch (e) {
+        reject(e);
+      }
     }).disposer(function(connection) {
       debugTx('%s: releasing connection', t.txid);
       connection.isTransaction = false;
@@ -67,4 +74,4 @@ export default class Oracle_Transaction extends Transaction {
       });
     });
   }
-}
+};

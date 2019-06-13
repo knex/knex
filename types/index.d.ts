@@ -10,7 +10,7 @@
 
 import events = require('events');
 import stream = require('stream');
-import Bluebird = require('bluebird');
+import ResultTypes = require('./result');
 
 // # Generic type-level utilities
 
@@ -25,17 +25,16 @@ type MaybeArray<T> = T | T[];
 type StrKey<T> = string & keyof T;
 
 // If T is unknown then convert to any, else retain original
-type UnknownToAny<T> = unknown[] extends T
-  ? any[]
-  : unknown extends T
-  ? any
-  : T;
+type UnknownToAny<T> = unknown extends T ? any : T;
+type AnyToUnknown<T> = unknown extends T ? unknown : T;
 
 // Intersection conditionally applied only when TParams is non-empty
 // This is primarily to keep the signatures more intuitive.
-type AugmentParams<TTarget, TParams> = {} extends TParams
-  ? TTarget
-    : {} & TTarget & TParams;
+type AugmentParams<TTarget, TParams> = TParams extends {}
+  ? keyof TParams extends never
+    ? TTarget
+    : {} & TTarget & TParams
+  : TTarget;
 
 // Check if provided keys (expressed as a single or union type) are members of TBase
 type AreKeysOf<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
@@ -73,7 +72,7 @@ type ArrayIfAlready<T1, T2> = T1 extends any[] ? T2[] : T2;
 type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<never>
   ? {}
   : Boxed<TKeys> extends Boxed<keyof TBase>
-  ? Pick<TBase, TKeys & keyof TBase>
+  ? SafePick<TBase, TKeys & keyof TBase>
   : any;
 
 // Retain the association of original keys with aliased keys at type level
@@ -88,7 +87,7 @@ type MappedAliasType<TBase, TAliasMapping> = {} & {
 // but the keys being selected or additional properties being augmented are not
 // all known at once and we would want to effectively build up a partial/intersection
 // over multiple steps.
-interface DeferredKeySelection<
+type DeferredKeySelection<
   // The base of selection. In intermediate stages this may be unknown.
   // If it remains unknown at the point of resolution, the selection will fall back to any
   TBase,
@@ -103,8 +102,12 @@ interface DeferredKeySelection<
   TAliasMapping extends {} = {},
   // If enabled, then instead of extracting a partial, during resolution
   // we will pick just a single property.
-  TSingle extends boolean = false
-> {
+  TSingle extends boolean = false,
+  // Extra props which will be intersected with the result
+  TIntersectProps extends {} = {},
+  // Extra props which will be unioned with the result
+  TUnionProps = never
+> = {
   // These properties are not actually used, but exist simply because
   // typescript doesn't end up happy when type parameters are unused
   _base: TBase;
@@ -112,7 +115,9 @@ interface DeferredKeySelection<
   _keys: TKeys;
   _aliases: TAliasMapping;
   _single: TSingle;
-}
+  _intersectProps: TIntersectProps;
+  _unionProps: TUnionProps;
+};
 
 // An companion namespace for DeferredKeySelection which provides type operators
 // to build up participants of intersection/partial over multiple invocations
@@ -121,7 +126,7 @@ interface DeferredKeySelection<
 // While the comments use wordings such as replacement and addition, it is important
 // to keep in mind that types are always immutable and all type operators return new altered types.
 declare namespace DeferredKeySelection {
-  type Any = DeferredKeySelection<any, any, any, any, any>;
+  type Any = DeferredKeySelection<any, any, any, any, any, any, any>;
 
   // Replace the Base if already a deferred selection.
   // If not, create a new deferred selection with specified base.
@@ -130,9 +135,11 @@ declare namespace DeferredKeySelection {
     infer TKeys,
     infer THasSelect,
     infer TAliasMapping,
-    infer TSingle
+    infer TSingle,
+    infer TIntersectProps,
+    infer TUnionProps
   >
-    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle>
+    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps, TUnionProps>
     : DeferredKeySelection<TBase, never>;
 
   // If TSelection is already a deferred selection, then replace the base with TBase
@@ -159,9 +166,11 @@ declare namespace DeferredKeySelection {
     infer TKeys,
     infer THasSelect,
     infer TAliasMapping,
-    any
+    any,
+    infer TIntersectProps,
+    infer TUnionProps
   >
-    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle>
+    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps, TUnionProps>
     : never;
 
   type AddKey<
@@ -172,9 +181,11 @@ declare namespace DeferredKeySelection {
     infer TKeys,
     any,
     infer TAliasMapping,
-    infer TSingle
+    infer TSingle,
+    infer TIntersectProps,
+    infer TUnionProps
   >
-    ? DeferredKeySelection<TBase, TKeys | TKey, true, TAliasMapping, TSingle>
+    ? DeferredKeySelection<TBase, TKeys | TKey, true, TAliasMapping, TSingle, TIntersectProps, TUnionProps>
     : DeferredKeySelection<unknown, TKey, true>;
 
   type AddAliases<TSelection, T> = TSelection extends DeferredKeySelection<
@@ -182,10 +193,24 @@ declare namespace DeferredKeySelection {
     infer TKeys,
     infer THasSelect,
     infer TAliasMapping,
-    infer TSingle
+    infer TSingle,
+    infer TIntersectProps,
+    infer TUnionProps
   >
-    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping & T, TSingle>
+    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping & T, TSingle, TIntersectProps, TUnionProps>
     : DeferredKeySelection<unknown, never, false, T>;
+
+  type AddUnionMember<TSelection, T> = TSelection extends DeferredKeySelection<
+    infer TBase,
+    infer TKeys,
+    infer THasSelect,
+    infer TAliasMapping,
+    infer TSingle,
+    infer TIntersectProps,
+    infer TUnionProps
+  >
+    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps, TUnionProps | T>
+    : DeferredKeySelection<TSelection, never, false, {}, false, {}, T>;
 
   // Convenience utility to set base, keys and aliases in a single type
   // application
@@ -200,27 +225,59 @@ declare namespace DeferredKeySelection {
     infer TKeys,
     infer THasSelect,
     infer TAliasMapping,
-    infer TSingle
+    infer TSingle,
+    infer TIntersectProps,
+    infer TUnionProps
   >
-    ? TBase extends {}
-      ? TSingle extends true
-        ? TKeys extends keyof TBase
-          ? TBase[TKeys]
-          : any
-        : AugmentParams<
-            true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
-            MappedAliasType<TBase, TAliasMapping>
-          >
-      : any
+    ? UnknownToAny<
+      // ^ We convert final result to any if it is unknown for backward compatibility.
+      //   Historically knex typings have been liberal with returning any and changing
+      //   default return type to unknown would be a major breaking change for users.
+      //
+      //   So we compromise on type safety here and return any.
+        AugmentParams<
+          AnyToUnknown<TBase> extends {}
+            // ^ Conversion of any -> unknown is needed here to prevent distribution
+            //   of any over the conditional
+            ? TSingle extends true
+              ? TKeys extends keyof TBase
+                ? TBase[TKeys]
+                : any
+              : AugmentParams<
+                  true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
+                  MappedAliasType<TBase, TAliasMapping>
+                >
+          : unknown,
+          TIntersectProps
+        > | TUnionProps
+      >
     : TSelection;
 
-  // Resolution logic lifted over arrays of deferred selections
   type Resolve<TSelection> = TSelection extends DeferredKeySelection.Any
-    ? (ResolveOne<TSelection> | undefined)
-    : TSelection extends DeferredKeySelection.Any[]
-    ? ResolveOne<TSelection[0]>[]
-    : TSelection;
+      ? ResolveOne<TSelection>
+      : TSelection extends DeferredKeySelection.Any[]
+      ? ResolveOne<TSelection[0]>[]
+      : TSelection extends (infer I)[]
+      ? UnknownToAny<I>[]
+      : UnknownToAny<TSelection>;
 }
+
+type AggregationQueryResult<TResult, TIntersectProps2> = ArrayIfAlready<
+    TResult,
+    UnwrapArrayMember<TResult> extends DeferredKeySelection<
+      infer TBase,
+      infer TKeys,
+      infer THasSelect,
+      infer TAliasMapping,
+      infer TSingle,
+      infer TIntersectProps,
+      infer TUnionProps
+    >
+      ? true extends THasSelect
+        ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps & TIntersectProps2, TUnionProps>
+        : DeferredKeySelection<{}, never, true, {}, false, TIntersectProps2>
+      : TIntersectProps2
+>;
 
 // Convenience alias and associated companion namespace for working
 // with DeferredSelection having TSingle=true.
@@ -229,8 +286,7 @@ declare namespace DeferredKeySelection {
 // deferring an index access operation (TBase[TKey]) over a potentially
 // unknown initial type of TBase and potentially never initial type of TKey
 
-interface DeferredIndex<TBase, TKey extends string>
-  extends DeferredKeySelection<TBase, TKey, false, {}, true> {}
+type DeferredIndex<TBase, TKey extends string> = DeferredKeySelection<TBase, TKey, false, {}, true>;
 
 declare namespace DeferredIndex {
   type Augment<
@@ -253,13 +309,11 @@ type ResolveResult<S> = DeferredKeySelection.Resolve<S>;
 type Callback = Function;
 type Client = Function;
 
-interface Dict<T = any> {
-  [k: string]: T;
-}
+type Dict<T = any> = { [k: string]: T; };
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
-interface Knex<TRecord extends {} = any, TResult = unknown[]>
+interface Knex<TRecord extends {} = any, TResult = any[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
     tableName?: Knex.TableDescriptor | Knex.AliasDict
@@ -273,16 +327,16 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
     config?: any
   ): () => Promise<Knex.Transaction>;
   transaction(
-    transactionScope?: undefined | null,
+    transactionScope?: null,
     config?: any
   ): Promise<Knex.Transaction>;
   transaction<T>(
-    transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void,
+    transactionScope: (trx: Knex.Transaction) => Promise<T> | Promise<T> | void,
     config?: any
-  ): Bluebird<T>;
+  ): Promise<T>;
   initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
-  destroy(): Bluebird<void>;
+  destroy(): Promise<void>;
   batchInsert(
     tableName: Knex.TableDescriptor,
     data: any[],
@@ -338,11 +392,16 @@ declare namespace Knex {
 
   type TableDescriptor = string | Knex.Raw | Knex.QueryBuilder;
 
+  type Lookup<TRegistry extends {}, TKey extends string, TDefault = never> =
+    TKey extends keyof TRegistry ?
+      TRegistry[TKey] :
+      TDefault;
+
   //
   // QueryInterface
   //
 
-  interface QueryInterface<TRecord extends {} = any, TResult = unknown[]> {
+  interface QueryInterface<TRecord extends {} = any, TResult = any[]> {
     select: Select<TRecord, TResult>;
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
@@ -437,6 +496,8 @@ declare namespace Knex {
         infer TKeys,
         true,
         any,
+        any,
+        any,
         any
       >
         ? DeferredKeySelection<TBase, never>[]
@@ -452,86 +513,14 @@ declare namespace Knex {
     limit(limit: number): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
-    count<TResult2 = CountQueryResult<TResult>>(...columnNames: (keyof TRecord)[]): QueryBuilder<TRecord, TResult2>;
-    count<TResult2 = CountQueryResult<TResult>>(...columnNames: string[]): QueryBuilder<TRecord, TResult2>;
-    count<
-      TAliases = Record<string, string | string[] | Knex.Raw>,
-      TResult2 = ArrayIfAlready<TResult, {[k in keyof TAliases]: any}>
-    >(aliases: TAliases): QueryBuilder<TRecord, TResult2>;
-    count<TResult2 = CountQueryResult<TResult>>(
-      columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
-    ): QueryBuilder<TRecord, TResult2>;
-
-    countDistinct<TResult2 = CountQueryResult<TResult>>(columnName: keyof TRecord): QueryBuilder<TRecord, TResult2>;
-    countDistinct<
-      TAliases = Record<string, string | string[] | Knex.Raw>,
-      TResult2 = ArrayIfAlready<TResult, {[k in keyof TAliases]: any}>
-    >(alises: TAliases): QueryBuilder<TRecord, TResult2>;
-    countDistinct<TResult2 = CountQueryResult<TResult>>(
-      columnName: string | Knex.Raw | Record<string, string | string[] | Knex.Raw>
-    ): QueryBuilder<TRecord, TResult2>;
-
-    min<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: keyof TRecord,
-      ...columnNames: (keyof TRecord)[]
-    ): QueryBuilder<TRecord, TResult2>;
-    min<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: string,
-      ...columnNames: string[]
-    ): QueryBuilder<TRecord, TResult2>;
-    min<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
-    ): QueryBuilder<TRecord, TResult2>;
-
-    max<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: keyof TRecord,
-      ...columnNames: (keyof TRecord)[]
-    ): QueryBuilder<TRecord, TResult2>;
-    max<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: string,
-      ...columnNames: string[]
-    ): QueryBuilder<TRecord, TResult2>;
-    max<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
-    ): QueryBuilder<TRecord, TResult2>;
-
-    sum<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: keyof TRecord,
-      ...columnNames: (keyof TRecord)[]
-    ): QueryBuilder<TRecord, TResult2>;
-    sum<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: string,
-      ...columnNames: string[]
-    ): QueryBuilder<TRecord, TResult2>;
-    sum<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
-    ): QueryBuilder<TRecord, TResult2>;
-
-    sumDistinct<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: keyof TRecord
-    ): QueryBuilder<TRecord, TResult2>;
-    sumDistinct<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: string | Record<string, string | Knex.Raw> | Knex.Raw
-    ): QueryBuilder<TRecord, TResult2>;
-
-    avg<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: keyof TRecord,
-      ...columnNames: (keyof TRecord)[]
-    ): QueryBuilder<TRecord, TResult2>;
-    avg<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: string,
-      ...columnNames: string[]
-    ): QueryBuilder<TRecord, TResult2>;
-    avg<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: Record<string, string | string[] | Knex.Raw> | Knex.Raw
-    ): QueryBuilder<TRecord, TResult2>;
-
-    avgDistinct<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: keyof TRecord
-    ): QueryBuilder<TRecord, TResult2>;
-    avgDistinct<TResult2 = ArrayIfAlready<TResult, ValueDict>>(
-      columnName: string | Record<string, string | Knex.Raw> | Knex.Raw
-    ): QueryBuilder<TRecord, TResult2>;
+    count: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
+    countDistinct: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
+    min: TypePreservingAggregation<TRecord, TResult>;
+    max: TypePreservingAggregation<TRecord, TResult>;
+    sum: TypePreservingAggregation<TRecord, TResult>;
+    sumDistinct: TypePreservingAggregation<TRecord, TResult>;
+    avg: TypePreservingAggregation<TRecord, TResult>;
+    avgDistinct: TypePreservingAggregation<TRecord, TResult>;
 
     increment(
       columnName: keyof TRecord,
@@ -552,7 +541,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, number>;
 
     // Others
-    first: Select<TRecord, UnwrapArrayMember<TResult>>;
+    first: Select<TRecord, DeferredKeySelection.AddUnionMember<UnwrapArrayMember<TResult>, undefined>>;
 
     pluck<K extends keyof TRecord>(
       column: K
@@ -858,19 +847,19 @@ declare namespace Knex {
 
   interface Table<TRecord extends {} = any, TResult extends {} = any> {
     <
-      TRecord2 = any,
+      TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       tableName: TableDescriptor | AliasDict
     ): QueryBuilder<TRecord2, TResult2>;
     <
-      TRecord2 = any,
+      TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       callback: Function
     ): QueryBuilder<TRecord2, TResult2>;
     <
-      TRecord2 = any,
+      TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
       raw: Raw
@@ -1138,6 +1127,45 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
   }
 
+  // Note: Attempting to unify AssymetricAggregation & TypePreservingAggregation
+  // by extracting out a common base interface will not work because order of overloads
+  // is significant.
+
+  interface AssymetricAggregation<TRecord = any, TResult = unknown[], TValue = any> {
+    <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
+      ...columnNames: (keyof TRecord)[]
+    ): QueryBuilder<TRecord, TResult2>;
+    <
+      TAliases extends {} = Record<string, string | string[] | Knex.Raw>,
+      TResult2 = AggregationQueryResult<TResult, {[k in keyof TAliases]?: TValue}>
+    >(aliases: TAliases): QueryBuilder<TRecord, TResult2>;
+    <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
+      ...columnNames: Array<Record<string, string | string[] | Knex.Raw> | Knex.Raw | string>
+    ): QueryBuilder<TRecord, TResult2>;
+  }
+
+  interface TypePreservingAggregation<TRecord = any, TResult = unknown[], TValue = any> {
+    <
+      TKey extends keyof TRecord,
+      TResult2 = AggregationQueryResult<TResult, Dict<TRecord[TKey]>>
+    >(
+      ...columnNames: TKey[]
+    ): QueryBuilder<TRecord, TResult2>;
+    <
+      TAliases extends {} = Record<string, string | string[] | Knex.Raw>,
+      TResult2 = AggregationQueryResult<TResult, {
+        // We have optional here because in most dialects aggregating by multiple keys simultaneously
+        // causes rest of the keys to be dropped and only first to be considered
+        [K in keyof TAliases]?: K extends keyof TRecord ?
+          TRecord[K] :
+          TValue
+      }>
+    >(aliases: TAliases): QueryBuilder<TRecord, TResult2>;
+    <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
+      ...columnNames: Array<Record<string, string | string[] | Knex.Raw> | Knex.Raw | string>
+    ): QueryBuilder<TRecord, TResult2>;
+  }
+
   interface GroupBy<TRecord = any, TResult = unknown[]>
     extends RawQueryBuilder<TRecord, TResult>,
       ColumnNameQueryBuilder<TRecord, TResult> {}
@@ -1254,15 +1282,15 @@ declare namespace Knex {
   type RawBinding = Value | QueryBuilder<any, any>;
 
   interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
-    <TResult2 = UnknownToAny<TResult>>(
+    <TResult2 = TResult>(
       sql: string,
       ...bindings: RawBinding[]
     ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = UnknownToAny<TResult>>(
+    <TResult2 = TResult>(
       sql: string,
       bindings: RawBinding[] | ValueDict
     ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = UnknownToAny<TResult>>(raw: Raw<TResult2>): QueryBuilder<
+    <TResult2 = TResult>(raw: Raw<TResult2>): QueryBuilder<
       TRecord,
       TResult2
     >;
@@ -1279,9 +1307,9 @@ declare namespace Knex {
   }
 
   interface RawBuilder<TRecord extends {} = any, TResult = unknown[]> {
-    <TResult2 = UnknownToAny<TResult>>(value: Value): Raw<TResult2>;
-    <TResult2 = UnknownToAny<TResult>>(sql: string, ...bindings: RawBinding[]): Raw<TResult2>;
-    <TResult2 = UnknownToAny<TResult>>(sql: string, bindings: RawBinding[] | ValueDict): Raw<TResult2>;
+    <TResult2 = TResult>(value: Value): Raw<TResult2>;
+    <TResult2 = TResult>(sql: string, ...bindings: RawBinding[]): Raw<TResult2>;
+    <TResult2 = TResult>(sql: string, bindings: RawBinding[] | ValueDict): Raw<TResult2>;
   }
 
   interface Ref<TSrc extends string, TMapping extends {}> extends Raw<string> {
@@ -1320,7 +1348,7 @@ declare namespace Knex {
     and: QueryBuilder<TRecord, TResult>;
 
     // TODO: Promise?
-    columnInfo(column?: keyof TRecord): Bluebird<ColumnInfo>;
+    columnInfo(column?: keyof TRecord): Promise<ColumnInfo>;
 
     forUpdate(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forUpdate(tableNames: string[]): QueryBuilder<TRecord, TResult>;
@@ -1334,8 +1362,6 @@ declare namespace Knex {
 
     queryContext(context: any): QueryBuilder<TRecord, TResult>;
   }
-
-  type CountQueryResult<TResult> = ArrayIfAlready<TResult, Dict<number|string>>;
 
   interface Sql {
     method: string;
@@ -1354,17 +1380,17 @@ declare namespace Knex {
   // Chainable interface
   //
 
-  interface ChainableInterface<T = any> extends Bluebird<T> {
+  interface ChainableInterface<T = any> extends Promise<T> {
     toQuery(): string;
     options(options: { [key: string]: any }): this;
     connection(connection: any): this;
     debug(enabled: boolean): this;
     transacting(trx: Transaction): this;
-    stream(handler: (readable: stream.PassThrough) => any): Bluebird<any>;
+    stream(handler: (readable: stream.PassThrough) => any): Promise<any>;
     stream(
       options: { [key: string]: any },
       handler: (readable: stream.PassThrough) => any
-    ): Bluebird<any>;
+    ): Promise<any>;
     stream(options?: { [key: string]: any }): stream.PassThrough;
     pipe<T extends NodeJS.WritableStream>(
       writable: T,
@@ -1383,7 +1409,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
     savepoint<T = any>(
       transactionScope: (trx: Transaction) => any
-    ): Bluebird<T>;
+    ): Promise<T>;
     commit(value?: any): QueryBuilder<TRecord, TResult>;
     rollback(error?: any): QueryBuilder<TRecord, TResult>;
   }
@@ -1405,14 +1431,14 @@ declare namespace Knex {
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
     ): SchemaBuilder;
-    renameTable(oldTableName: string, newTableName: string): Bluebird<void>;
+    renameTable(oldTableName: string, newTableName: string): Promise<void>;
     dropTable(tableName: string): SchemaBuilder;
-    hasTable(tableName: string): Bluebird<boolean>;
-    hasColumn(tableName: string, columnName: string): Bluebird<boolean>;
+    hasTable(tableName: string): Promise<boolean>;
+    hasColumn(tableName: string, columnName: string): Promise<boolean>;
     table(
       tableName: string,
       callback: (tableBuilder: AlterTableBuilder) => any
-    ): Bluebird<void>;
+    ): Promise<void>;
     dropTableIfExists(tableName: string): SchemaBuilder;
     raw(statement: string): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
@@ -1588,12 +1614,43 @@ declare namespace Knex {
     requestTimeout?: number;
   }
 
+  // Config object for mssql: see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/mssql/index.d.ts
   interface MsSqlConnectionConfig {
-    user: string;
-    password: string;
+    driver?: string;
+    user?: string;
+    password?: string;
     server: string;
+    port?: number;
+    domain?: string;
     database: string;
-    options: MsSqlOptionsConfig;
+    connectionTimeout?: number;
+    requestTimeout?: number;
+    stream?: boolean;
+    parseJSON?: boolean;
+    options?: {
+      encrypt?: boolean;
+      instanceName?: string;
+      useUTC?: boolean;
+      tdsVersion?: string;
+      appName?: string;
+      abortTransactionOnError?: boolean;
+      trustedConnection?: boolean;
+    };
+    pool?: {
+      min?: number;
+      max?: number;
+      idleTimeoutMillis?: number;
+      maxWaitingClients?: number;
+      testOnBorrow?: boolean;
+      acquireTimeoutMillis?: number;
+      fifo?: boolean;
+      priorityRange?: number;
+      autostart?: boolean;
+      evictionRunIntervalMillis?: number;
+      numTestsPerRun?: number;
+      softIdleTimeoutMillis?: number;
+      Promise?: any;
+    };
   }
 
   // Config object for mariasql: https://github.com/mscdex/node-mariasql#client-methods
@@ -1652,23 +1709,13 @@ declare namespace Knex {
     multipleStatements?: boolean;
     flags?: string;
     ssl?: string | MariaSslConfiguration;
+    decimalNumbers?: boolean;
   }
 
   /** Used with SQLite3 adapter */
   interface Sqlite3ConnectionConfig {
     filename: string;
     debug?: boolean;
-  }
-
-  interface MsSqlOptionsConfig {
-    encrypt?: boolean;
-    port?: number;
-    domain?: string;
-    connectionTimeout?: number;
-    requestTimeout?: number;
-    stream?: boolean;
-    parseJSON?: boolean;
-    pool?: PoolConfig;
   }
 
   interface SocketConnectionConfig {
@@ -1733,13 +1780,13 @@ declare namespace Knex {
   }
 
   interface Migrator {
-    make(name: string, config?: MigratorConfig): Bluebird<string>;
-    latest(config?: MigratorConfig): Bluebird<any>;
-    rollback(config?: MigratorConfig, all?: boolean): Bluebird<any>;
-    status(config?: MigratorConfig): Bluebird<number>;
-    currentVersion(config?: MigratorConfig): Bluebird<string>;
-    up(config?: MigratorConfig): Bluebird<any>;
-    down(config?: MigratorConfig): Bluebird<any>;
+    make(name: string, config?: MigratorConfig): Promise<string>;
+    latest(config?: MigratorConfig): Promise<any>;
+    rollback(config?: MigratorConfig, all?: boolean): Promise<any>;
+    status(config?: MigratorConfig): Promise<number>;
+    currentVersion(config?: MigratorConfig): Promise<string>;
+    up(config?: MigratorConfig): Promise<any>;
+    down(config?: MigratorConfig): Promise<any>;
   }
 
   interface SeederConfig {
@@ -1751,8 +1798,8 @@ declare namespace Knex {
   class Seeder {
     constructor(knex: Knex);
     setConfig(config: SeederConfig): SeederConfig;
-    run(config?: SeederConfig): Bluebird<string[]>;
-    make(name: string, config?: SeederConfig): Bluebird<string>;
+    run(config?: SeederConfig): Promise<string[]>;
+    make(name: string, config?: SeederConfig): Promise<string>;
   }
 
   interface FunctionHelper {

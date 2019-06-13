@@ -1,4 +1,4 @@
-import Raw from './raw';
+const Raw = require('./raw');
 
 class Ref extends Raw {
   constructor(client, ref) {
@@ -36,4 +36,4 @@ class Ref extends Raw {
   }
 }
 
-export default Ref;
+module.exports = Ref;

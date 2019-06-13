@@ -6,9 +6,8 @@ const Promise = require('bluebird');
 const { expect } = require('chai');
 const sinon = require('sinon');
 const mockFs = require('mock-fs');
-const migrationListResolver = require('../../../lib/migrate/migration-list-resolver');
-const FsMigrations = require('../../../lib/migrate/sources/fs-migrations')
-  .default;
+const migrationListResolver = require('../../../src/migrate/migration-list-resolver');
+const { FsMigrations } = require('../../../src/migrate/sources/fs-migrations');
 
 describe('migration-list-resolver', () => {
   describe('listAll', () => {

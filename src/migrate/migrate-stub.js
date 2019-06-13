@@ -3,7 +3,7 @@
 // available.
 const StubMigrate = (module.exports = function() {});
 
-import Promise from 'bluebird';
+const Promise = require('bluebird');
 
 const noSuchMethod = Promise.method(function() {
   throw new Error('Migrations are not supported');
