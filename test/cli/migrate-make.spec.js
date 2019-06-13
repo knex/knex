@@ -2,6 +2,7 @@
 
 const path = require('path');
 const { FileTestHelper, execCommand } = require('cli-testlab');
+const expect = require('chai').expect;
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -98,5 +99,55 @@ module.exports = {
         expectedOutput: 'Created Migration',
       }
     );
+  });
+
+  it('Create new migration with ts extension using -x switch', async () => {
+    fileHelper.registerGlobForCleanup(
+      'test/jake-util/knexfile_migrations/*_somename.ts'
+    );
+    await execCommand(
+      `node ${KNEX} migrate:make somename -x ts --knexfile=test/jake-util/knexfile/knexfile.js --knexpath=../knex.js`,
+      {
+        expectedOutput: 'Created Migration',
+      }
+    );
+
+    const fileCount = fileHelper.fileGlobExists(
+      'test/jake-util/knexfile_migrations/*_somename.ts'
+    );
+    expect(fileCount).to.equal(1);
+  });
+
+  it('Create new migration with ts extension using "extension" knexfile param', async () => {
+    fileHelper.registerGlobForCleanup(
+      'test/jake-util/knexfile_migrations/*_somename.ts'
+    );
+    fileHelper.createFile(
+      process.cwd() + '/knexfile.js',
+      `
+module.exports = {
+  client: 'sqlite3',
+  connection: {
+    filename: __dirname + '/test/jake-util/test.sqlite3',
+  },
+  migrations: {
+    extension: 'ts',
+    directory: __dirname + '/test/jake-util/knexfile_migrations',
+  },
+};    
+    `,
+      { isPathAbsolute: true }
+    );
+    await execCommand(
+      `node ${KNEX} migrate:make somename --knexpath=../knex.js`,
+      {
+        expectedOutput: 'Created Migration',
+      }
+    );
+
+    const fileCount = fileHelper.fileGlobExists(
+      'test/jake-util/knexfile_migrations/*_somename.ts'
+    );
+    expect(fileCount).to.equal(1);
   });
 });
