@@ -12,7 +12,7 @@ const fs = Promise.promisifyAll(require('fs'));
 const cliPkg = require('../package');
 const {
   mkConfigObj,
-  tryLoadingDefaultConfiguration,
+  resolveKnexFilePath,
 } = require('./utils/cli-config-utils');
 const { DEFAULT_EXT } = require('./utils/constants');
 
@@ -68,8 +68,15 @@ function initKnex(env, opts) {
   }
 
   if (!opts.knexfile) {
-    const configuration = tryLoadingDefaultConfiguration();
+    const configurationPath = resolveKnexFilePath();
+    const configuration = configurationPath
+      ? require(configurationPath.path)
+      : undefined;
+
     env.configuration = configuration || mkConfigObj(opts);
+    if (!env.configuration.ext && configurationPath) {
+      env.configuration.ext = configurationPath.extension;
+    }
   }
   // If knexfile is specified
   else {
@@ -82,6 +89,12 @@ function initKnex(env, opts) {
       exit(
         'Knexfile not found. Specify a path with --knexfile or pass --client and --connection params in commandline'
       );
+    }
+
+    if (!env.configuration.ext) {
+      env.configuration.ext = path
+        .extname(resolvedKnexfilePath)
+        .replace('.', '');
     }
   }
 

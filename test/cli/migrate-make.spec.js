@@ -35,16 +35,39 @@ describe('migrate:make', () => {
     );
   });
 
-  it('Create new migration with js knexfile passed', () => {
+  it('Create new migration with js knexfile passed', async () => {
     fileHelper.registerGlobForCleanup(
       'test/jake-util/knexfile_migrations/*_somename.js'
     );
-    return execCommand(
+
+    await execCommand(
       `node ${KNEX} migrate:make somename --knexfile=test/jake-util/knexfile/knexfile.js --knexpath=../knex.js`,
       {
         expectedOutput: 'Created Migration',
       }
     );
+
+    const fileCount = fileHelper.fileGlobExists(
+      'test/jake-util/knexfile_migrations/*_somename.js'
+    );
+    expect(fileCount).to.equal(1);
+  });
+
+  it('Create new migration with ts knexfile passed', async () => {
+    fileHelper.registerGlobForCleanup(
+      'test/jake-util/knexfile_migrations/*_somename.ts'
+    );
+    await execCommand(
+      `node ${KNEX} migrate:make somename --knexfile=test/jake-util/knexfile-ts/knexfile.ts --knexpath=../knex.js`,
+      {
+        expectedOutput: 'Created Migration',
+      }
+    );
+
+    const fileCount = fileHelper.fileGlobExists(
+      'test/jake-util/knexfile_migrations/*_somename.ts'
+    );
+    expect(fileCount).to.equal(1);
   });
 
   it('Create new migration with default knexfile', () => {
@@ -74,9 +97,9 @@ module.exports = {
     );
   });
 
-  it('Create new migration with default ts knexfile', () => {
+  it('Create new migration with default ts knexfile', async () => {
     fileHelper.registerGlobForCleanup(
-      'test/jake-util/knexfile_migrations/*_somename.js'
+      'test/jake-util/knexfile_migrations/*_somename.ts'
     );
     fileHelper.createFile(
       process.cwd() + '/knexfile.ts',
@@ -93,12 +116,17 @@ module.exports = {
     `,
       { isPathAbsolute: true }
     );
-    return execCommand(
+    await execCommand(
       `node ${KNEX} migrate:make somename --knexpath=../knex.js`,
       {
         expectedOutput: 'Created Migration',
       }
     );
+
+    const fileCount = fileHelper.fileGlobExists(
+      'test/jake-util/knexfile_migrations/*_somename.ts'
+    );
+    expect(fileCount).to.equal(1);
   });
 
   it('Create new migration with ts extension using -x switch', async () => {
