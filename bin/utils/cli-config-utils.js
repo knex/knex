@@ -27,15 +27,21 @@ function mkConfigObj(opts) {
   };
 }
 
-function tryLoadingDefaultConfiguration() {
+function resolveKnexFilePath() {
   const jsPath = resolveDefaultKnexfilePath('js');
   if (fs.existsSync(jsPath)) {
-    return require(jsPath);
+    return {
+      path: jsPath,
+      extension: 'js',
+    };
   }
 
   const tsPath = resolveDefaultKnexfilePath('ts');
   if (fs.existsSync(tsPath)) {
-    return require(tsPath);
+    return {
+      path: tsPath,
+      extension: 'ts',
+    };
   }
 
   console.warn(
@@ -51,5 +57,5 @@ function resolveDefaultKnexfilePath(extension) {
 
 module.exports = {
   mkConfigObj,
-  tryLoadingDefaultConfiguration,
+  resolveKnexFilePath,
 };
