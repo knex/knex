@@ -586,7 +586,7 @@ module.exports = function(knex) {
       });
 
       return Promise.all([transactionReturning, transactionReturning]).then(
-        (ret1, ret2) => {
+        ([ret1, ret2]) => {
           expect(ret1).to.equal(ret2);
         }
       );
