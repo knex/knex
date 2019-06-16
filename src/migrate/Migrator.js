@@ -307,7 +307,7 @@ class Migrator {
           return this._waterfallBatch(batchNo, migrations, direction, trx);
         })
         .tap(() => this._freeLock(trx))
-        .catch((error) => {
+        .catch(async (error) => {
           let cleanupReady = Promise.resolve();
 
           if (error instanceof LockError) {
@@ -337,9 +337,11 @@ class Migrator {
             cleanupReady = this._freeLock(trx);
           }
 
-          return cleanupReady.finally(function() {
-            throw error;
-          });
+          try {
+            await cleanupReady;
+            // eslint-disable-next-line no-empty
+          } catch (e) {}
+          throw error;
         })
     );
   }
@@ -462,7 +464,7 @@ class Migrator {
         });
     });
 
-    return current.thenReturn([batchNo, log]);
+    return current.then(() => [batchNo, log]);
   }
 
   _transaction(knex, migrationContent, direction, name) {

@@ -111,7 +111,7 @@ assign(SQLite3_DDL.prototype, {
               .then(function() {
                 batch = [];
               })
-              .thenReturn(memo);
+              .then(() => memo);
           }
           return memo;
         },

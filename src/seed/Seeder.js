@@ -134,7 +134,7 @@ Seeder.prototype._waterfallBatch = function(seeds) {
     // Run each seed file.
     current = current.then(() =>
       // Nesting promise to prevent bubbling up of error on catch
-      Bluebird.resolve()
+      Promise.resolve()
         .then(() => seed.seed(knex))
         .then(() => log.push(name))
         .catch((originalError) => {
@@ -154,7 +154,7 @@ Seeder.prototype._waterfallBatch = function(seeds) {
     );
   });
 
-  return current.thenReturn([log]);
+  return current.then(() => [log]);
 };
 
 Seeder.prototype._absoluteConfigDir = function() {
