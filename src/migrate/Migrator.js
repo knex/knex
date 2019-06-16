@@ -65,7 +65,7 @@ class Migrator {
     return migrationListResolver
       .listAllAndCompleted(this.config, this.knex)
       .tap((value) => validateMigrationList(this.config.migrationSource, value))
-      .spread((all, completed) => {
+      .then(([all, completed]) => {
         const migrations = getNewMigrations(
           this.config.migrationSource,
           all,
@@ -101,7 +101,7 @@ class Migrator {
     return migrationListResolver
       .listAllAndCompleted(this.config, this.knex)
       .tap((value) => validateMigrationList(this.config.migrationSource, value))
-      .spread((all, completed) => {
+      .then(([all, completed]) => {
         const migrationToRun = getNewMigrations(
           this.config.migrationSource,
           all,
@@ -171,7 +171,7 @@ class Migrator {
       .tap((value) => {
         return validateMigrationList(this.config.migrationSource, value);
       })
-      .spread((all, completed) => {
+      .then(([all, completed]) => {
         const migrationToRun = all
           .filter((migration) => {
             return completed.includes(
@@ -194,7 +194,7 @@ class Migrator {
         '*'
       ),
       migrationListResolver.listAll(this.config.migrationSource),
-    ]).spread((db, code) => db.length - code.length);
+    ]).then(([db, code]) => db.length - code.length);
   }
 
   // Retrieves and returns the current migration version we're on, as a promise.
