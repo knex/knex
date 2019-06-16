@@ -1,4 +1,4 @@
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const { getTableName } = require('./table-resolver');
 const { ensureTable } = require('./table-creator');
 
@@ -27,7 +27,7 @@ function listCompleted(tableName, schemaName, trxOrKnex) {
 // Gets the migration list = require(the migration directory specified in config, as well as
 // the list of completed migrations to check what should be run.
 function listAllAndCompleted(config, trxOrKnex) {
-  return Promise.all([
+  return Bluebird.all([
     listAll(config.migrationSource, config.loadExtensions),
     listCompleted(config.tableName, config.schemaName, trxOrKnex),
   ]);

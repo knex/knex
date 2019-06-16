@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /* eslint no-console:0, no-var:0 */
 const Liftoff = require('liftoff');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const interpret = require('interpret');
 const path = require('path');
 const tildify = require('tildify');
 const commander = require('commander');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
-const fs = Promise.promisifyAll(require('fs'));
+const fs = Bluebird.promisifyAll(require('fs'));
 const cliPkg = require('../package');
 const {
   mkConfigObj,
@@ -356,7 +356,7 @@ function invoke(env) {
 
   commander.parse(process.argv);
 
-  Promise.resolve(pending).then(() => {
+  Bluebird.resolve(pending).then(() => {
     commander.outputHelp();
     exit('Unknown command-line options, exiting');
   });

@@ -4,7 +4,7 @@ const { assign, map, flatten, values } = require('lodash');
 
 const inherits = require('inherits');
 const Client = require('../../client');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const { bufferToString } = require('../../query/string');
 const Formatter = require('./formatter');
 
@@ -79,10 +79,10 @@ assign(Client_Oracle.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    return new Promise((resolver, rejecter) => {
+    return new Bluebird((resolver, rejecter) => {
       this.driver.connect(this.connectionSettings, (err, connection) => {
         if (err) return rejecter(err);
-        Promise.promisifyAll(connection);
+        Bluebird.promisifyAll(connection);
         if (this.connectionSettings.prefetchRowCount) {
           connection.setPrefetchRowCount(
             this.connectionSettings.prefetchRowCount
@@ -96,7 +96,7 @@ assign(Client_Oracle.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    return Promise.fromCallback(connection.close.bind(connection));
+    return Bluebird.fromCallback(connection.close.bind(connection));
   },
 
   // Return the database for the Oracle client.
@@ -114,7 +114,7 @@ assign(Client_Oracle.prototype, {
   },
 
   _stream(connection, obj, stream, options) {
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       stream.on('error', (err) => {
         if (isConnectionError(err)) {
           connection.__knex__disposed = err;

@@ -4,7 +4,7 @@ const { assign, map, flatten, values } = require('lodash');
 const inherits = require('inherits');
 
 const Client = require('../../client');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 
 const Formatter = require('../../formatter');
 const Transaction = require('./transaction');
@@ -215,7 +215,7 @@ assign(Client_MSSQL.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    return new Promise((resolver, rejecter) => {
+    return new Bluebird((resolver, rejecter) => {
       const settings = Object.assign({}, this.connectionSettings);
       settings.pool = this.mssqlPoolSettings;
 
@@ -262,7 +262,7 @@ assign(Client_MSSQL.prototype, {
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream) {
     if (!obj || typeof obj === 'string') obj = { sql: obj };
-    return new Promise((resolver, rejecter) => {
+    return new Bluebird((resolver, rejecter) => {
       stream.on('error', (err) => {
         rejecter(err);
       });
@@ -288,7 +288,7 @@ assign(Client_MSSQL.prototype, {
   _query(connection, obj) {
     const client = this;
     if (!obj || typeof obj === 'string') obj = { sql: obj };
-    return new Promise((resolver, rejecter) => {
+    return new Bluebird((resolver, rejecter) => {
       const { sql } = obj;
       if (!sql) return resolver();
       const req = (connection.tx_ || connection).request();

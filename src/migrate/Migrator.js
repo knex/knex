@@ -1,6 +1,6 @@
 // Migrator
 // -------
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const {
   differenceWith,
   each,
@@ -409,7 +409,7 @@ class Migrator {
   _waterfallBatch(batchNo, migrations, direction, trx) {
     const trxOrKnex = trx || this.knex;
     const { tableName, schemaName, disableTransactions } = this.config;
-    let current = Promise.bind({ failed: false, failedOn: 0 });
+    let current = Bluebird.bind({ failed: false, failedOn: 0 });
     const log = [];
     each(migrations, (migration) => {
       const name = this.config.migrationSource.getMigrationName(migration);

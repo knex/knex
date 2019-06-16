@@ -1,10 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const bluebird = require('bluebird');
+const Bluebird = require('bluebird');
 const { sortBy, filter } = require('lodash');
 
 const readDirAsync = (path) =>
-  bluebird.promisify(fs.readdir, { context: fs })(path);
+  Bluebird.promisify(fs.readdir, { context: fs })(path);
 
 const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
   '.co',
