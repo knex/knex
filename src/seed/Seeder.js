@@ -28,7 +28,7 @@ Seeder.prototype.run = Bluebird.method(function(config) {
   this.config = this.setConfig(config);
   return this._seedData()
     .bind(this)
-    .spread(function(all) {
+    .then(([all]) => {
       return this._runSeeds(all);
     });
 });

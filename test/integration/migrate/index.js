@@ -192,7 +192,7 @@ module.exports = function(knex) {
               batch: 6,
               migration_time: new Date(),
             }),
-        ]).spread(function(migration1, migration2, migration3) {
+        ]).then(([migration1, migration2, migration3]) => {
           return knex.migrate
             .status({ directory: 'test/integration/migrate/test' })
             .then(function(migrationLevel) {
@@ -397,7 +397,7 @@ module.exports = function(knex) {
       it('should delete the most recent batch from the migration log', function() {
         return knex.migrate
           .rollback({ directory: 'test/integration/migrate/test' })
-          .spread(function(batchNo, log) {
+          .then(([batchNo, log]) => {
             expect(batchNo).to.equal(1);
             expect(log).to.have.length(2);
             expect(log[0]).to.contain(batchNo);
@@ -445,7 +445,7 @@ module.exports = function(knex) {
             },
             true
           )
-          .spread(function(batchNo, log) {
+          .then(([batchNo, log]) => {
             expect(batchNo).to.equal(2);
             expect(log).to.have.length(4);
             return knex('knex_migrations')
@@ -483,7 +483,7 @@ module.exports = function(knex) {
             },
             true
           )
-          .spread(function(batchNo, log) {
+          .then(([batchNo, log]) => {
             expect(batchNo).to.equal(1);
             expect(log).to.have.length(2);
 

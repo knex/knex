@@ -220,7 +220,7 @@ function invoke(env) {
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.latest()
-        .spread((batchNo, log) => {
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
           }
@@ -238,7 +238,7 @@ function invoke(env) {
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.up()
-        .spread((batchNo, log) => {
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
           }
@@ -264,7 +264,7 @@ function invoke(env) {
 
       pending = initKnex(env, commander.opts())
         .migrate.rollback(null, all)
-        .spread((batchNo, log) => {
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
           }
@@ -283,7 +283,7 @@ function invoke(env) {
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.down()
-        .spread((batchNo, log) => {
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
           }
@@ -342,7 +342,7 @@ function invoke(env) {
     .action(() => {
       pending = initKnex(env, commander.opts())
         .seed.run()
-        .spread((log) => {
+        .then(([log]) => {
           if (log.length === 0) {
             success(color.cyan('No seed files exist'));
           }
