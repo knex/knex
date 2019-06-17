@@ -314,8 +314,8 @@ class Migrator {
         .then((batchNo) => {
           return this._waterfallBatch(batchNo, migrations, direction, trx);
         })
-        .then((res) => {
-          this._freeLock(trx);
+        .then(async (res) => {
+          await this._freeLock(trx);
           return res;
         })
         .catch(async (error) => {

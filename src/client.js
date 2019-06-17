@@ -251,11 +251,11 @@ assign(Client.prototype, {
 
     return Object.assign(poolConfig, {
       create: () => {
-        return this.acquireRawConnection().then((connection) => {
+        return this.acquireRawConnection().then(async (connection) => {
           connection.__knexUid = uniqueId('__knexUid');
 
           if (poolConfig.afterCreate) {
-            return Bluebird.promisify(poolConfig.afterCreate)(connection);
+            await Bluebird.promisify(poolConfig.afterCreate)(connection);
           }
           return connection;
         });
