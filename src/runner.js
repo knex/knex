@@ -52,8 +52,9 @@ assign(Runner.prototype, {
 
         // Fire a single "end" event on the builder when
         // all queries have successfully completed.
-        .tap(function() {
+        .then(function(res) {
           runner.builder.emit('end');
+          return res;
         })
     );
   },

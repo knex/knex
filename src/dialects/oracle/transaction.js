@@ -50,10 +50,11 @@ module.exports = class Oracle_Transaction extends Transaction {
 
         return connection;
       })
-      .tap((connection) => {
+      .then((connection) => {
         if (!t.outerTx) {
           connection.setAutoCommit(false);
         }
+        return connection;
       })
       .disposer((connection) => {
         debugTx('%s: releasing connection', t.txid);

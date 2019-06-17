@@ -91,7 +91,6 @@ module.exports = function(Target) {
       'spread',
       'map',
       'reduce',
-      'tap',
       'thenReturn',
       'return',
       'yield',

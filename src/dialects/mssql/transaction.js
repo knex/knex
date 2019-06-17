@@ -70,12 +70,13 @@ module.exports = class Transaction_MSSQL extends Transaction {
         reject(e);
       }
     })
-      .tap(function(conn) {
+      .then(function(conn) {
         conn.__knexTxId = t.txid;
         if (!t.outerTx) {
           t.conn = conn;
           conn.tx_ = conn.transaction();
         }
+        return conn;
       })
       .disposer(function(conn) {
         if (t.outerTx) return;

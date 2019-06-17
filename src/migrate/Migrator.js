@@ -64,7 +64,10 @@ class Migrator {
 
     return migrationListResolver
       .listAllAndCompleted(this.config, this.knex)
-      .tap((value) => validateMigrationList(this.config.migrationSource, value))
+      .then((value) => {
+        validateMigrationList(this.config.migrationSource, value);
+        return value;
+      })
       .spread((all, completed) => {
         const migrations = getNewMigrations(
           this.config.migrationSource,
@@ -100,7 +103,10 @@ class Migrator {
 
     return migrationListResolver
       .listAllAndCompleted(this.config, this.knex)
-      .tap((value) => validateMigrationList(this.config.migrationSource, value))
+      .then((value) => {
+        validateMigrationList(this.config.migrationSource, value);
+        return value;
+      })
       .spread((all, completed) => {
         const migrationToRun = getNewMigrations(
           this.config.migrationSource,
@@ -141,9 +147,10 @@ class Migrator {
       }
       migrationListResolver
         .listAllAndCompleted(this.config, this.knex)
-        .tap((value) =>
-          validateMigrationList(this.config.migrationSource, value)
-        )
+        .then((value) => {
+          validateMigrationList(this.config.migrationSource, value);
+          return value;
+        })
         .then((val) => {
           const [allMigrations, completedMigrations] = val;
 
@@ -168,8 +175,9 @@ class Migrator {
 
     return migrationListResolver
       .listAllAndCompleted(this.config, this.knex)
-      .tap((value) => {
-        return validateMigrationList(this.config.migrationSource, value);
+      .then((value) => {
+        validateMigrationList(this.config.migrationSource, value);
+        return value;
       })
       .spread((all, completed) => {
         const migrationToRun = all
@@ -306,7 +314,10 @@ class Migrator {
         .then((batchNo) => {
           return this._waterfallBatch(batchNo, migrations, direction, trx);
         })
-        .tap(() => this._freeLock(trx))
+        .then((res) => {
+          this._freeLock(trx);
+          return res;
+        })
         .catch((error) => {
           let cleanupReady = Promise.resolve();
 
