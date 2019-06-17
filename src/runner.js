@@ -127,7 +127,7 @@ assign(Runner.prototype, {
   // "Runs" a query, returning a promise. All queries specified by the builder are guaranteed
   // to run in sequence, and on the same connection, especially helpful when schema building
   // and dealing with foreign key constraints, etc.
-  query: Bluebird.method(function(obj) {
+  query: async function(obj) {
     const { __knexUid, __knexTxId } = this.connection;
 
     this.builder.emit('query', assign({ __knexUid, __knexTxId }, obj));
@@ -216,7 +216,7 @@ assign(Runner.prototype, {
         );
         throw error;
       });
-  }),
+  },
 
   // In the case of the "schema builder" we call `queryArray`, which runs each
   // of the queries in sequence.
