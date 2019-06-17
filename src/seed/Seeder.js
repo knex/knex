@@ -24,14 +24,14 @@ function Seeder(knex) {
 }
 
 // Runs all seed files for the given environment.
-Seeder.prototype.run = Bluebird.method(function(config) {
+Seeder.prototype.run = async function(config) {
   this.config = this.setConfig(config);
   return this._seedData()
     .bind(this)
     .then(([all]) => {
       return this._runSeeds(all);
     });
-});
+};
 
 // Creates a new seed file, with a given name.
 Seeder.prototype.make = function(name, config) {
@@ -47,7 +47,7 @@ Seeder.prototype.make = function(name, config) {
 };
 
 // Lists all available seed files as a sorted array.
-Seeder.prototype._listAll = Bluebird.method(function(config) {
+Seeder.prototype._listAll = async function(config) {
   this.config = this.setConfig(config);
   const loadExtensions = this.config.loadExtensions;
   return Bluebird.promisify(fs.readdir, { context: fs })(
@@ -60,7 +60,7 @@ Seeder.prototype._listAll = Bluebird.method(function(config) {
         return includes(loadExtensions, extension);
       }).sort()
     );
-});
+};
 
 // Gets the seed file list = require(the specified seed directory.
 Seeder.prototype._seedData = function() {

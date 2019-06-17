@@ -3,11 +3,9 @@
 // available.
 const StubMigrate = (module.exports = function() {});
 
-const Bluebird = require('bluebird');
-
-const noSuchMethod = Bluebird.method(function() {
+const noSuchMethod = async function() {
   throw new Error('Migrations are not supported');
-});
+};
 
 StubMigrate.prototype = {
   make: noSuchMethod,

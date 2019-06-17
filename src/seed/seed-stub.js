@@ -3,11 +3,9 @@
 // available.
 const StubSeed = (module.exports = function() {});
 
-const Bluebird = require('bluebird');
-
-const noSuchMethod = Bluebird.method(function() {
+const noSuchMethod = async function() {
   throw new Error('Seeds are not supported');
-});
+};
 
 StubSeed.prototype = {
   make: noSuchMethod,
