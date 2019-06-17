@@ -1,6 +1,7 @@
 # [knex.js](http://knexjs.org)
 
 [![npm version](http://img.shields.io/npm/v/knex.svg)](https://npmjs.org/package/knex)
+[![npm downloads](https://img.shields.io/npm/dm/knex.svg)](https://npmjs.org/package/knex)
 [![Build Status](https://travis-ci.org/tgriesser/knex.svg?branch=master)](https://travis-ci.org/tgriesser/knex)
 [![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.svg?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
 [![Dependencies Status](https://david-dm.org/tgriesser/knex.svg)](https://david-dm.org/tgriesser/knex)
