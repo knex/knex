@@ -25,13 +25,14 @@ assign(Transaction_MySQL2.prototype, {
         t._completed = true;
         debug('%s error running transaction query', t.txid);
       })
-      .tap(function() {
+      .then(function(res) {
         if (status === 1) t._resolver(value);
         if (status === 2) {
           if (isUndefined(value)) {
             value = new Error(`Transaction rejected with non-error: ${value}`);
           }
           t._rejecter(value);
+          return res;
         }
       });
     if (status === 1 || status === 2) {

@@ -156,7 +156,7 @@ class Transaction extends EventEmitter {
         this._completed = true;
         debug('%s error running transaction query', this.txid);
       })
-      .tap(() => {
+      .then((res) => {
         if (status === 1) {
           this._resolver(value);
         }
@@ -166,6 +166,7 @@ class Transaction extends EventEmitter {
           }
           this._rejecter(value);
         }
+        return res;
       });
     if (status === 1 || status === 2) {
       this._completed = true;
@@ -322,7 +323,6 @@ const promiseInterface = [
   'spread',
   'map',
   'reduce',
-  'tap',
   'thenReturn',
   'return',
   'yield',

@@ -125,8 +125,9 @@ assign(Client_PG.prototype, {
         }
         resolver(connection);
       });
-    }).tap(function setSearchPath(connection) {
-      return client.setSchemaSearchPath(connection);
+    }).then(function setSearchPath(connection) {
+      client.setSchemaSearchPath(connection);
+      return connection;
     });
   },
 

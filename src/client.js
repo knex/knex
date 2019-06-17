@@ -251,12 +251,13 @@ assign(Client.prototype, {
 
     return Object.assign(poolConfig, {
       create: () => {
-        return this.acquireRawConnection().tap((connection) => {
+        return this.acquireRawConnection().then(async (connection) => {
           connection.__knexUid = uniqueId('__knexUid');
 
           if (poolConfig.afterCreate) {
-            return Bluebird.promisify(poolConfig.afterCreate)(connection);
+            await Bluebird.promisify(poolConfig.afterCreate)(connection);
           }
+          return connection;
         });
       },
 
@@ -306,8 +307,9 @@ assign(Client.prototype, {
     }
     try {
       return Bluebird.try(() => this.pool.acquire().promise)
-        .tap((connection) => {
+        .then((connection) => {
           debug('acquired connection from pool: %s', connection.__knexUid);
+          return connection;
         })
         .catch(TimeoutError, () => {
           throw new Bluebird.TimeoutError(

@@ -95,9 +95,7 @@ assign(TableCompiler_MySQL.prototype, {
               }
             })
               .then(function() {
-                let sql = `alter table ${table} change ${wrapped} ${
-                  column.Type
-                }`;
+                let sql = `alter table ${table} change ${wrapped} ${column.Type}`;
 
                 if (String(column.Null).toUpperCase() !== 'YES') {
                   sql += ` NOT NULL`;
