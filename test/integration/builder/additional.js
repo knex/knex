@@ -192,22 +192,6 @@ module.exports = function(knex) {
       });
     });
 
-    it('should forward the .get() function from bluebird', function() {
-      return knex('accounts')
-        .select()
-        .limit(1)
-        .then(function(accounts) {
-          const firstAccount = accounts[0];
-          return knex('accounts')
-            .select()
-            .limit(1)
-            .get(0)
-            .then(function(account) {
-              expect(account.id == firstAccount.id);
-            });
-        });
-    });
-
     it('should forward the .mapSeries() function from bluebird', function() {
       const asyncTask = function() {
         return new Promise(function(resolve, reject) {

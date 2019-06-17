@@ -80,55 +80,52 @@ assign(TableCompiler_MySQL.prototype, {
       output(resp) {
         const column = resp[0];
         const runner = this;
-        return compiler
-          .getFKRefs(runner)
-          .get(0)
-          .then((refs) =>
-            new Promise((resolve, reject) => {
-              try {
-                if (!refs.length) {
-                  resolve();
-                }
-                resolve(compiler.dropFKRefs(runner, refs));
-              } catch (e) {
-                reject(e);
+        return compiler.getFKRefs(runner).then(([refs]) =>
+          new Promise((resolve, reject) => {
+            try {
+              if (!refs.length) {
+                resolve();
               }
+              resolve(compiler.dropFKRefs(runner, refs));
+            } catch (e) {
+              reject(e);
+            }
+          })
+            .then(function() {
+              let sql = `alter table ${table} change ${wrapped} ${column.Type}`;
+
+              if (String(column.Null).toUpperCase() !== 'YES') {
+                sql += ` NOT NULL`;
+              } else {
+                // This doesn't matter for most cases except Timestamp, where this is important
+                sql += ` NULL`;
+              }
+              if (column.Default !== void 0 && column.Default !== null) {
+                sql += ` DEFAULT '${column.Default}'`;
+              }
+
+              return runner.query({
+                sql,
+              });
             })
-              .then(function() {
-                let sql = `alter table ${table} change ${wrapped} ${column.Type}`;
-
-                if (String(column.Null).toUpperCase() !== 'YES') {
-                  sql += ` NOT NULL`;
-                } else {
-                  // This doesn't matter for most cases except Timestamp, where this is important
-                  sql += ` NULL`;
-                }
-                if (column.Default !== void 0 && column.Default !== null) {
-                  sql += ` DEFAULT '${column.Default}'`;
-                }
-
-                return runner.query({
-                  sql,
-                });
-              })
-              .then(function() {
-                if (!refs.length) {
-                  return;
-                }
-                return compiler.createFKRefs(
-                  runner,
-                  refs.map(function(ref) {
-                    if (ref.REFERENCED_COLUMN_NAME === from) {
-                      ref.REFERENCED_COLUMN_NAME = to;
-                    }
-                    if (ref.COLUMN_NAME === from) {
-                      ref.COLUMN_NAME = to;
-                    }
-                    return ref;
-                  })
-                );
-              })
-          );
+            .then(function() {
+              if (!refs.length) {
+                return;
+              }
+              return compiler.createFKRefs(
+                runner,
+                refs.map(function(ref) {
+                  if (ref.REFERENCED_COLUMN_NAME === from) {
+                    ref.REFERENCED_COLUMN_NAME = to;
+                  }
+                  if (ref.COLUMN_NAME === from) {
+                    ref.COLUMN_NAME = to;
+                  }
+                  return ref;
+                })
+              );
+            })
+        );
       },
     });
   },
