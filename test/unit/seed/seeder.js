@@ -2,11 +2,11 @@
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
-var mockFs = require('mock-fs');
-var knex = require('../../../knex');
+const mockFs = require('mock-fs');
+const knex = require('../../../knex');
 
 describe('Seeder.loadExtensions', function() {
-  var config = {
+  const config = {
     client: 'postgres',
     connection: {
       user: 'postgres',
@@ -18,7 +18,7 @@ describe('Seeder.loadExtensions', function() {
       directory: 'test/integration/seed/seeds',
     },
   };
-  var seeder;
+  let seeder;
 
   before(function() {
     mockFs({
@@ -69,7 +69,7 @@ describe('Seeder.loadExtensions', function() {
 });
 
 describe('Seeder._waterfallBatch', function() {
-  var config = {
+  const config = {
     client: 'postgres',
     connection: {
       user: 'postgres',
@@ -81,7 +81,7 @@ describe('Seeder._waterfallBatch', function() {
       directory: 'test/unit/seed/test',
     },
   };
-  var seeder;
+  let seeder;
 
   beforeEach(function() {
     seeder = knex(config).seed;

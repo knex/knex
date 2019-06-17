@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /* eslint no-console:0, no-var:0 */
 const Liftoff = require('liftoff');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const interpret = require('interpret');
 const path = require('path');
 const tildify = require('tildify');
 const commander = require('commander');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
-const fs = Promise.promisifyAll(require('fs'));
+const fs = Bluebird.promisifyAll(require('fs'));
 const cliPkg = require('../package');
 const {
   mkConfigObj,
@@ -220,7 +220,7 @@ function invoke(env) {
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.latest()
-        .spread((batchNo, log) => {
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
           }
@@ -238,7 +238,7 @@ function invoke(env) {
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.up()
-        .spread((batchNo, log) => {
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
           }
@@ -264,7 +264,7 @@ function invoke(env) {
 
       pending = initKnex(env, commander.opts())
         .migrate.rollback(null, all)
-        .spread((batchNo, log) => {
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
           }
@@ -283,7 +283,7 @@ function invoke(env) {
     .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.down()
-        .spread((batchNo, log) => {
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
           }
@@ -342,7 +342,7 @@ function invoke(env) {
     .action(() => {
       pending = initKnex(env, commander.opts())
         .seed.run()
-        .spread((log) => {
+        .then(([log]) => {
           if (log.length === 0) {
             success(color.cyan('No seed files exist'));
           }
@@ -356,7 +356,7 @@ function invoke(env) {
 
   commander.parse(process.argv);
 
-  Promise.resolve(pending).then(() => {
+  Bluebird.resolve(pending).then(() => {
     commander.outputHelp();
     exit('Unknown command-line options, exiting');
   });

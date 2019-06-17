@@ -5,7 +5,7 @@ const equal = require('assert').equal;
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const testMemoryMigrations = require('./memory-migrations');
 
 module.exports = function(knex) {
@@ -170,7 +170,7 @@ module.exports = function(knex) {
       });
 
       it('should return a positive number if the DB is ahead', function() {
-        return Promise.all([
+        return Bluebird.all([
           knex('knex_migrations')
             .returning('id')
             .insert({
@@ -192,7 +192,7 @@ module.exports = function(knex) {
               batch: 6,
               migration_time: new Date(),
             }),
-        ]).spread(function(migration1, migration2, migration3) {
+        ]).then(([migration1, migration2, migration3]) => {
           return knex.migrate
             .status({ directory: 'test/integration/migrate/test' })
             .then(function(migrationLevel) {
@@ -336,7 +336,7 @@ module.exports = function(knex) {
         // Map the table names to promises that evaluate chai expectations to
         // confirm that the table exists and the 'id' and 'name' columns exist
         // within the table
-        return Promise.map(tables, function(table) {
+        return Bluebird.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
             expect(exists).to.equal(true);
             if (exists) {
@@ -385,7 +385,7 @@ module.exports = function(knex) {
           'migration_test_4_1',
         ];
 
-        return Promise.map(expectedTables, function(table) {
+        return Bluebird.map(expectedTables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
             expect(exists).to.equal(true);
           });
@@ -397,7 +397,7 @@ module.exports = function(knex) {
       it('should delete the most recent batch from the migration log', function() {
         return knex.migrate
           .rollback({ directory: 'test/integration/migrate/test' })
-          .spread(function(batchNo, log) {
+          .then(([batchNo, log]) => {
             expect(batchNo).to.equal(1);
             expect(log).to.have.length(2);
             expect(log[0]).to.contain(batchNo);
@@ -410,7 +410,7 @@ module.exports = function(knex) {
       });
 
       it('should drop tables as specified in the batch', function() {
-        return Promise.map(tables, function(table) {
+        return Bluebird.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
             expect(!!exists).to.equal(false);
           });
@@ -445,7 +445,7 @@ module.exports = function(knex) {
             },
             true
           )
-          .spread(function(batchNo, log) {
+          .then(([batchNo, log]) => {
             expect(batchNo).to.equal(2);
             expect(log).to.have.length(4);
             return knex('knex_migrations')
@@ -457,7 +457,7 @@ module.exports = function(knex) {
       });
 
       it('should drop tables as specified in the batch', () => {
-        return Promise.map(tables, function(table) {
+        return Bluebird.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
             expect(!!exists).to.equal(false);
           });
@@ -483,7 +483,7 @@ module.exports = function(knex) {
             },
             true
           )
-          .spread(function(batchNo, log) {
+          .then(([batchNo, log]) => {
             expect(batchNo).to.equal(1);
             expect(log).to.have.length(2);
 
@@ -502,7 +502,7 @@ module.exports = function(knex) {
       });
 
       it('should drop tables as specified in the batch', () => {
-        return Promise.map(tables, function(table) {
+        return Bluebird.map(tables, function(table) {
           return knex.schema.hasTable(table).then(function(exists) {
             expect(!!exists).to.equal(false);
           });
@@ -672,7 +672,7 @@ module.exports = function(knex) {
     }
 
     it('is not able to run two migrations in parallel when transactions are disabled', function() {
-      return Promise.map(
+      return Bluebird.map(
         [
           knex.migrate
             .latest({
@@ -919,7 +919,7 @@ module.exports = function(knex) {
         'migration_test_2',
         'migration_test_2_1a',
       ];
-      return Promise.map(tables, function(table) {
+      return Bluebird.map(tables, function(table) {
         return knex.schema.hasTable(table).then(function(exists) {
           expect(exists).to.equal(true);
           if (exists) {

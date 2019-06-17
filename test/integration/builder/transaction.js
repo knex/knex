@@ -2,7 +2,7 @@
 
 'use strict';
 
-const bluebird = require('bluebird');
+const Bluebird = require('bluebird');
 const Knex = require('../../../knex');
 const _ = require('lodash');
 const sinon = require('sinon');
@@ -476,7 +476,7 @@ module.exports = function(knex) {
         .then(function() {
           throw new Error('should not get here');
         })
-        .catch(bluebird.TimeoutError, function(error) {});
+        .catch(Bluebird.TimeoutError, function(error) {});
     });
 
     /**
@@ -585,11 +585,11 @@ module.exports = function(knex) {
           .into('accounts');
       });
 
-      return bluebird
-        .all([transactionReturning, transactionReturning])
-        .spread(function(ret1, ret2) {
+      return Promise.all([transactionReturning, transactionReturning]).then(
+        ([ret1, ret2]) => {
           expect(ret1).to.equal(ret2);
-        });
+        }
+      );
     });
 
     it('should pass the query context to wrapIdentifier', function() {

@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const Transaction = require('../../transaction');
 
 module.exports = class Redshift_Transaction extends Transaction {
