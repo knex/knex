@@ -1,4 +1,4 @@
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const Transaction = require('../../transaction');
 const { isUndefined } = require('lodash');
 const debug = require('debug')('knex:tx');
@@ -11,7 +11,7 @@ module.exports = class Transaction_MSSQL extends Transaction {
 
   savepoint(conn) {
     debug('%s: savepoint at', this.txid);
-    return Promise.resolve().then(() =>
+    return Bluebird.resolve().then(() =>
       this.query(conn, `SAVE TRANSACTION ${this.txid}`)
     );
   }
@@ -46,7 +46,7 @@ module.exports = class Transaction_MSSQL extends Transaction {
 
   rollbackTo(conn, error) {
     debug('%s: rolling backTo', this.txid);
-    return Promise.resolve()
+    return Bluebird.resolve()
       .then(() =>
         this.query(conn, `ROLLBACK TRANSACTION ${this.txid}`, 2, error)
       )
@@ -59,7 +59,7 @@ module.exports = class Transaction_MSSQL extends Transaction {
   acquireConnection(config) {
     const t = this;
     const configConnection = config && config.connection;
-    return new Promise((resolve, reject) => {
+    return new Bluebird((resolve, reject) => {
       try {
         resolve(
           (t.outerTx ? t.outerTx.conn : null) ||

@@ -3,7 +3,7 @@
 const { assign, map, extend, isArray, isString, includes } = require('lodash');
 const inherits = require('inherits');
 const Client = require('../../client');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 
 const QueryCompiler = require('./query/compiler');
 const ColumnCompiler = require('./schema/columncompiler');
@@ -105,7 +105,7 @@ assign(Client_PG.prototype, {
   // connection needs to be added to the pool.
   acquireRawConnection() {
     const client = this;
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       const connection = new client.driver.Client(client.connectionSettings);
       connection.connect(function(err, connection) {
         if (err) {
@@ -134,13 +134,13 @@ assign(Client_PG.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    return Promise.fromCallback(connection.end.bind(connection));
+    return Bluebird.fromCallback(connection.end.bind(connection));
   },
 
   // In PostgreSQL, we need to do a version check to do some feature
   // checking on the database.
   checkVersion(connection) {
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       connection.query('select version();', function(err, resp) {
         if (err) return rejecter(err);
         resolver(/^PostgreSQL (.*?)( |$)/.exec(resp.rows[0].version)[1]);
@@ -165,7 +165,7 @@ assign(Client_PG.prototype, {
   setSchemaSearchPath(connection, searchPath) {
     let path = searchPath || this.searchPath;
 
-    if (!path) return Promise.resolve(true);
+    if (!path) return Bluebird.resolve(true);
 
     if (!isArray(path) && !isString(path)) {
       throw new TypeError(
@@ -190,7 +190,7 @@ assign(Client_PG.prototype, {
 
     path = map(path, (schemaName) => `"${schemaName}"`).join(',');
 
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       connection.query(`set search_path to ${path}`, function(err) {
         if (err) return rejecter(err);
         resolver(true);
@@ -204,7 +204,7 @@ assign(Client_PG.prototype, {
       : require('pg-query-stream');
     const sql = obj.sql;
 
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       const queryStream = connection.query(
         new PGQueryStream(sql, obj.bindings, options)
       );
@@ -232,7 +232,7 @@ assign(Client_PG.prototype, {
       queryConfig = extend(queryConfig, obj.options);
     }
 
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       connection.query(queryConfig, function(err, response) {
         if (err) return rejecter(err);
         obj.response = response;

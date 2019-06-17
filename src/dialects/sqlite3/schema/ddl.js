@@ -4,7 +4,7 @@
 // columns and changing datatypes.
 // -------
 
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const {
   assign,
   uniqueId,
@@ -37,7 +37,7 @@ assign(SQLite3_DDL.prototype, {
     return this.formatter(this.tableNameRaw, (value) => value);
   },
 
-  getColumn: Promise.method(function(column) {
+  getColumn: Bluebird.method(function(column) {
     const currentCol = find(this.pragma, (col) => {
       return (
         this.client.wrapIdentifier(col.name) ===
@@ -63,7 +63,7 @@ assign(SQLite3_DDL.prototype, {
       });
   },
 
-  renameTable: Promise.method(function() {
+  renameTable: Bluebird.method(function() {
     return this.trx.raw(
       `ALTER TABLE "${this.tableName()}" RENAME TO "${this.alteredName}"`
     );
@@ -98,7 +98,7 @@ assign(SQLite3_DDL.prototype, {
     return function(result) {
       let batch = [];
       const ddl = this;
-      return Promise.reduce(
+      return Bluebird.reduce(
         result,
         function(memo, row) {
           memo++;
@@ -111,7 +111,7 @@ assign(SQLite3_DDL.prototype, {
               .then(function() {
                 batch = [];
               })
-              .thenReturn(memo);
+              .then(() => memo);
           }
           return memo;
         },
@@ -228,7 +228,7 @@ assign(SQLite3_DDL.prototype, {
   },
 
   // Boy, this is quite a method.
-  renameColumn: Promise.method(function(from, to) {
+  renameColumn: Bluebird.method(function(from, to) {
     return this.client.transaction(
       (trx) => {
         this.trx = trx;
@@ -251,7 +251,7 @@ assign(SQLite3_DDL.prototype, {
                 })
               )
             );
-            return Promise.bind(this)
+            return Bluebird.bind(this)
               .then(this.createTempTable(createTable))
               .then(this.copyData)
               .then(this.dropOriginal)
@@ -271,11 +271,11 @@ assign(SQLite3_DDL.prototype, {
     );
   }),
 
-  dropColumn: Promise.method(function(columns) {
+  dropColumn: Bluebird.method(function(columns) {
     return this.client.transaction(
       (trx) => {
         this.trx = trx;
-        return Promise.all(columns.map((column) => this.getColumn(column)))
+        return Bluebird.all(columns.map((column) => this.getColumn(column)))
           .bind(this)
           .then(this.getTableSql)
           .then(function(sql) {
@@ -293,7 +293,7 @@ assign(SQLite3_DDL.prototype, {
                 fromPairs(columns.map((column) => [column, column]))
               )
             );
-            return Promise.bind(this)
+            return Bluebird.bind(this)
               .then(this.createTempTable(createTable))
               .then(this.copyData)
               .then(this.dropOriginal)

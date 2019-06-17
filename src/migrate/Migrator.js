@@ -1,6 +1,6 @@
 // Migrator
 // -------
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const {
   differenceWith,
   each,
@@ -68,7 +68,7 @@ class Migrator {
         validateMigrationList(this.config.migrationSource, value);
         return value;
       })
-      .spread((all, completed) => {
+      .then(([all, completed]) => {
         const migrations = getNewMigrations(
           this.config.migrationSource,
           all,
@@ -107,7 +107,7 @@ class Migrator {
         validateMigrationList(this.config.migrationSource, value);
         return value;
       })
-      .spread((all, completed) => {
+      .then(([all, completed]) => {
         const migrationToRun = getNewMigrations(
           this.config.migrationSource,
           all,
@@ -179,7 +179,7 @@ class Migrator {
         validateMigrationList(this.config.migrationSource, value);
         return value;
       })
-      .spread((all, completed) => {
+      .then(([all, completed]) => {
         const migrationToRun = all
           .filter((migration) => {
             return completed.includes(
@@ -202,7 +202,7 @@ class Migrator {
         '*'
       ),
       migrationListResolver.listAll(this.config.migrationSource),
-    ]).spread((db, code) => db.length - code.length);
+    ]).then(([db, code]) => db.length - code.length);
   }
 
   // Retrieves and returns the current migration version we're on, as a promise.
@@ -318,7 +318,7 @@ class Migrator {
           this._freeLock(trx);
           return res;
         })
-        .catch((error) => {
+        .catch(async (error) => {
           let cleanupReady = Promise.resolve();
 
           if (error instanceof LockError) {
@@ -348,9 +348,11 @@ class Migrator {
             cleanupReady = this._freeLock(trx);
           }
 
-          return cleanupReady.finally(function() {
-            throw error;
-          });
+          try {
+            await cleanupReady;
+            // eslint-disable-next-line no-empty
+          } catch (e) {}
+          throw error;
         })
     );
   }
@@ -420,7 +422,7 @@ class Migrator {
   _waterfallBatch(batchNo, migrations, direction, trx) {
     const trxOrKnex = trx || this.knex;
     const { tableName, schemaName, disableTransactions } = this.config;
-    let current = Promise.bind({ failed: false, failedOn: 0 });
+    let current = Bluebird.bind({ failed: false, failedOn: 0 });
     const log = [];
     each(migrations, (migration) => {
       const name = this.config.migrationSource.getMigrationName(migration);
@@ -473,7 +475,7 @@ class Migrator {
         });
     });
 
-    return current.thenReturn([batchNo, log]);
+    return current.then(() => [batchNo, log]);
   }
 
   _transaction(knex, migrationContent, direction, name) {

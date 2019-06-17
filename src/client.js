@@ -1,4 +1,4 @@
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 
 const Raw = require('./raw');
 const Ref = require('./ref');
@@ -255,7 +255,7 @@ assign(Client.prototype, {
           connection.__knexUid = uniqueId('__knexUid');
 
           if (poolConfig.afterCreate) {
-            return Promise.promisify(poolConfig.afterCreate)(connection);
+            return Bluebird.promisify(poolConfig.afterCreate)(connection);
           }
           return connection;
         });
@@ -303,22 +303,22 @@ assign(Client.prototype, {
   // Acquire a connection from the pool.
   acquireConnection() {
     if (!this.pool) {
-      return Promise.reject(new Error('Unable to acquire a connection'));
+      return Bluebird.reject(new Error('Unable to acquire a connection'));
     }
     try {
-      return Promise.try(() => this.pool.acquire().promise)
+      return Bluebird.try(() => this.pool.acquire().promise)
         .then((connection) => {
           debug('acquired connection from pool: %s', connection.__knexUid);
           return connection;
         })
         .catch(TimeoutError, () => {
-          throw new Promise.TimeoutError(
+          throw new Bluebird.TimeoutError(
             'Knex: Timeout acquiring a connection. The pool is probably full. ' +
               'Are you missing a .transacting(trx) call?'
           );
         });
     } catch (e) {
-      return Promise.reject(e);
+      return Bluebird.reject(e);
     }
   },
 
@@ -332,14 +332,14 @@ assign(Client.prototype, {
       debug('pool refused connection: %s', connection.__knexUid);
     }
 
-    return Promise.resolve();
+    return Bluebird.resolve();
   },
 
   // Destroy the current connection pool for the client.
   destroy(callback) {
     const maybeDestroy = this.pool && this.pool.destroy();
 
-    return Promise.resolve(maybeDestroy)
+    return Bluebird.resolve(maybeDestroy)
       .then(() => {
         this.pool = void 0;
 
@@ -352,7 +352,7 @@ assign(Client.prototype, {
           callback(err);
         }
 
-        return Promise.reject(err);
+        return Bluebird.reject(err);
       });
   },
 

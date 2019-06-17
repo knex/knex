@@ -1,5 +1,5 @@
 const { isNumber, isArray, chunk, flatten, assign } = require('lodash');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 
 module.exports = function batchInsert(
   client,
@@ -12,7 +12,7 @@ module.exports = function batchInsert(
   let transaction = null;
 
   const getTransaction = () =>
-    new Promise((resolve, reject) => {
+    new Bluebird((resolve, reject) => {
       if (transaction) {
         autoTransaction = false;
         return resolve(transaction);
@@ -23,7 +23,7 @@ module.exports = function batchInsert(
     });
 
   const wrapper = assign(
-    new Promise((resolve, reject) => {
+    new Bluebird((resolve, reject) => {
       const chunks = chunk(batch, chunkSize);
 
       if (!isNumber(chunkSize) || chunkSize < 1) {
@@ -37,10 +37,10 @@ module.exports = function batchInsert(
       }
 
       //Next tick to ensure wrapper functions are called if needed
-      return Promise.delay(1)
+      return Bluebird.delay(1)
         .then(getTransaction)
         .then((tr) => {
-          return Promise.mapSeries(chunks, (items) =>
+          return Bluebird.mapSeries(chunks, (items) =>
             tr(tableName).insert(items, returning)
           )
             .then((result) => {
@@ -48,7 +48,7 @@ module.exports = function batchInsert(
 
               if (autoTransaction) {
                 //TODO: -- Oracle tr.commit() does not return a 'thenable' !? Ugly hack for now.
-                return (tr.commit(result) || Promise.resolve()).then(
+                return (tr.commit(result) || Bluebird.resolve()).then(
                   () => result
                 );
               }
@@ -57,10 +57,10 @@ module.exports = function batchInsert(
             })
             .catch((error) => {
               if (autoTransaction) {
-                return tr.rollback(error).then(() => Promise.reject(error));
+                return tr.rollback(error).then(() => Bluebird.reject(error));
               }
 
-              return Promise.reject(error);
+              return Bluebird.reject(error);
             });
         })
         .then(resolve)

@@ -1,13 +1,13 @@
 const { isUndefined } = require('lodash');
 
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const Transaction = require('../../transaction');
 const debugTx = require('debug')('knex:tx');
 
 module.exports = class Oracle_Transaction extends Transaction {
   // disable autocommit to allow correct behavior (default is true)
   begin() {
-    return Promise.resolve();
+    return Bluebird.resolve();
   }
 
   commit(conn, value) {
@@ -29,7 +29,7 @@ module.exports = class Oracle_Transaction extends Transaction {
     return conn
       .rollbackAsync()
       .timeout(5000)
-      .catch(Promise.TimeoutError, function(e) {
+      .catch(Bluebird.TimeoutError, function(e) {
         self._rejecter(e);
       })
       .then(function() {
@@ -46,7 +46,7 @@ module.exports = class Oracle_Transaction extends Transaction {
 
   acquireConnection(config) {
     const t = this;
-    return new Promise(function(resolve, reject) {
+    return new Bluebird(function(resolve, reject) {
       try {
         t.client
           .acquireConnection()

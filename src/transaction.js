@@ -1,6 +1,6 @@
 // Transaction
 // -------
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const { EventEmitter } = require('events');
 const Debug = require('debug');
 
@@ -20,7 +20,7 @@ class Transaction extends EventEmitter {
 
     // If there is no container provided, assume user wants to get instance of transaction and use it directly
     if (!container) {
-      this.initPromise = new Promise((resolve, reject) => {
+      this.initPromise = new Bluebird((resolve, reject) => {
         this.initRejectFn = reject;
         container = (transactor) => {
           resolve(transactor);
@@ -40,7 +40,7 @@ class Transaction extends EventEmitter {
       outerTx ? 'nested' : 'top level'
     );
 
-    this._promise = Promise.using(
+    this._promise = Bluebird.using(
       this.acquireConnection(client, config, txid),
       (connection) => {
         const trxClient = (this.trxClient = makeTxClient(
@@ -64,7 +64,7 @@ class Transaction extends EventEmitter {
             try {
               result = container(transactor);
             } catch (err) {
-              result = Promise.reject(err);
+              result = Bluebird.reject(err);
             }
             if (result && result.then && typeof result.then === 'function') {
               result
@@ -84,7 +84,7 @@ class Transaction extends EventEmitter {
             return this._rejecter(e);
           });
 
-        return new Promise((resolver, rejecter) => {
+        return new Bluebird((resolver, rejecter) => {
           this._resolver = resolver;
           this._rejecter = rejecter;
         });
@@ -102,7 +102,7 @@ class Transaction extends EventEmitter {
     // transactions to settle (commit or rollback) before we can start, and we
     // need to register ourselves with the parent transaction so any younger
     // siblings can wait for us to complete before they can start.
-    this._previousSibling = Promise.resolve(true);
+    this._previousSibling = Bluebird.resolve(true);
     if (outerTx) {
       if (outerTx._lastChild) this._previousSibling = outerTx._lastChild;
       outerTx._lastChild = this._promise;
@@ -134,7 +134,7 @@ class Transaction extends EventEmitter {
   rollback(conn, error) {
     return this.query(conn, 'ROLLBACK', 2, error)
       .timeout(5000)
-      .catch(Promise.TimeoutError, () => {
+      .catch(Bluebird.TimeoutError, () => {
         this._rejecter(error);
       });
   }
@@ -142,7 +142,7 @@ class Transaction extends EventEmitter {
   rollbackTo(conn, error) {
     return this.query(conn, `ROLLBACK TO SAVEPOINT ${this.txid}`, 2, error)
       .timeout(5000)
-      .catch(Promise.TimeoutError, () => {
+      .catch(Bluebird.TimeoutError, () => {
         this._rejecter(error);
       });
   }
@@ -184,7 +184,7 @@ class Transaction extends EventEmitter {
   // the original promise is marked completed.
   acquireConnection(client, config, txid) {
     const configConnection = config && config.connection;
-    return new Promise((resolve, reject) => {
+    return new Bluebird((resolve, reject) => {
       try {
         resolve(configConnection || client.acquireConnection());
       } catch (e) {
@@ -271,7 +271,7 @@ function makeTxClient(trx, client, connection) {
   const _query = trxClient.query;
   trxClient.query = function(conn, obj) {
     const completed = trx.isCompleted();
-    return new Promise(function(resolve, reject) {
+    return new Bluebird(function(resolve, reject) {
       try {
         if (conn !== connection)
           throw new Error('Invalid connection for transaction query.');
@@ -285,7 +285,7 @@ function makeTxClient(trx, client, connection) {
   const _stream = trxClient.stream;
   trxClient.stream = function(conn, obj, stream, options) {
     const completed = trx.isCompleted();
-    return new Promise(function(resolve, reject) {
+    return new Bluebird(function(resolve, reject) {
       try {
         if (conn !== connection)
           throw new Error('Invalid connection for transaction query.');
@@ -297,10 +297,10 @@ function makeTxClient(trx, client, connection) {
     });
   };
   trxClient.acquireConnection = function() {
-    return Promise.resolve(connection);
+    return Bluebird.resolve(connection);
   };
   trxClient.releaseConnection = function() {
-    return Promise.resolve();
+    return Bluebird.resolve();
   };
 
   return trxClient;

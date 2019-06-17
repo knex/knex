@@ -1,4 +1,4 @@
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const Transaction = require('../../transaction');
 const { isUndefined } = require('lodash');
 const debugTx = require('debug')('knex:tx');
@@ -6,7 +6,7 @@ const debugTx = require('debug')('knex:tx');
 module.exports = class Oracle_Transaction extends Transaction {
   // disable autocommit to allow correct behavior (default is true)
   begin() {
-    return Promise.resolve();
+    return Bluebird.resolve();
   }
 
   commit(conn, value) {
@@ -38,7 +38,7 @@ module.exports = class Oracle_Transaction extends Transaction {
 
   acquireConnection(config) {
     const t = this;
-    return new Promise((resolve, reject) => {
+    return new Bluebird((resolve, reject) => {
       try {
         resolve(config.connection || t.client.acquireConnection());
       } catch (e) {

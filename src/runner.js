@@ -1,5 +1,5 @@
 const { assign, isArray } = require('lodash');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 
 let PassThrough;
 
@@ -23,7 +23,7 @@ assign(Runner.prototype, {
   run() {
     const runner = this;
     return (
-      Promise.using(this.ensureConnection(), function(connection) {
+      Bluebird.using(this.ensureConnection(), function(connection) {
         runner.connection = connection;
 
         runner.client.emit('start', runner.builder);
@@ -80,7 +80,7 @@ assign(Runner.prototype, {
     const stream = new PassThrough({ objectMode: true });
 
     let hasConnection = false;
-    const promise = Promise.using(this.ensureConnection(), function(
+    const promise = Bluebird.using(this.ensureConnection(), function(
       connection
     ) {
       hasConnection = true;
@@ -127,7 +127,7 @@ assign(Runner.prototype, {
   // "Runs" a query, returning a promise. All queries specified by the builder are guaranteed
   // to run in sequence, and on the same connection, especially helpful when schema building
   // and dealing with foreign key constraints, etc.
-  query: Promise.method(function(obj) {
+  query: Bluebird.method(function(obj) {
     const { __knexUid, __knexTxId } = this.connection;
 
     this.builder.emit('query', assign({ __knexUid, __knexTxId }, obj));
@@ -167,7 +167,7 @@ assign(Runner.prototype, {
 
         return postProcessedResponse;
       })
-      .catch(Promise.TimeoutError, (error) => {
+      .catch(Bluebird.TimeoutError, (error) => {
         const { timeout, sql, bindings } = obj;
 
         let cancelQuery;
@@ -179,7 +179,7 @@ assign(Runner.prototype, {
           // return the connection to the pool, it will be useless until the current operation
           // that timed out, finally finishes.
           this.connection.__knex__disposed = error;
-          cancelQuery = Promise.resolve();
+          cancelQuery = Bluebird.resolve();
         }
 
         return cancelQuery
@@ -223,7 +223,7 @@ assign(Runner.prototype, {
   queryArray(queries) {
     return queries.length === 1
       ? this.query(queries[0])
-      : Promise.bind(this)
+      : Bluebird.bind(this)
           .return(queries)
           .reduce(function(memo, query) {
             return this.query(query).then(function(resp) {
@@ -237,15 +237,15 @@ assign(Runner.prototype, {
   ensureConnection() {
     // Use override = require(a builder if passed
     if (this.builder._connection) {
-      return Promise.resolve(this.builder._connection);
+      return Bluebird.resolve(this.builder._connection);
     }
 
     if (this.connection) {
-      return Promise.resolve(this.connection);
+      return Bluebird.resolve(this.connection);
     }
     return this.client
       .acquireConnection()
-      .catch(Promise.TimeoutError, (error) => {
+      .catch(Bluebird.TimeoutError, (error) => {
         if (this.builder) {
           error.sql = this.builder.sql;
           error.bindings = this.builder.bindings;
