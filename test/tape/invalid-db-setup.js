@@ -109,9 +109,7 @@ module.exports = (knexfile) => {
               })
               .catch((e) => {
                 t.fail(
-                  `should have got acquire timeout error, but got ${
-                    e.message
-                  } instead.`
+                  `should have got acquire timeout error, but got ${e.message} instead.`
                 );
               })
               .finally(() => {

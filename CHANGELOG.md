@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+### New features:
+
+- Use extension from knexfile for generating migrations unless overriden #3282
+- Use migrations.extension from config when generating migration #3242
+
+### Test / internal changes:
+
+- Drop support for Node.js 6 #3227
+- Remove Babel #3227
+- Remove Bluebird #3290 #3287 #3285 #3267 #3266 #3263
+
+### Typings
+
+- Add workarounds for degraded inference when strictNullChecks is set to false #3275
+- Add stub type definition for Migrator config #3279
+- Fix MSSQL config typings #3269
+
 # 0.17.5 - 8 June, 2019
 
 ### Typings
