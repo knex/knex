@@ -1612,6 +1612,7 @@ declare namespace Knex {
     instanceName?: string;
     debug?: boolean;
     requestTimeout?: number;
+    keepAlive?: boolean;
   }
 
   // Config object for mssql: see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/mssql/index.d.ts
