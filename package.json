@@ -116,10 +116,12 @@
       "name": "Mikael Lepisto"
     },
     {
-      "name": "Paul Gaurab"
+      "name": "Paul Gaurab",
+      "web": "https://lorefnon.tech"
     },
     {
-      "name": "Igor Savin"
+      "name": "Igor Savin",
+      "web": "https://www.codeflashbacks.com"
     }
   ],
   "browser": {
