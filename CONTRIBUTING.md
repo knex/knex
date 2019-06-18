@@ -1,8 +1,6 @@
 ## How to contribute to Knex.js
 
-- Make changes in the `/src` directory and run `npm run babel` (runs once and
-  then quits) or `npm run dev` (runs once and then watches for changes) to
-  update the files in `/lib`. `npm test` will also do this.
+- Make changes in the `/src` directory. 
 
 - Before sending a pull request for a feature or bug fix, be sure to have
   [tests](https://github.com/tgriesser/knex/tree/master/test). Every pull request that changes the queries should have
@@ -16,7 +14,7 @@
 
 - Pull request description should have link to corresponding PR of documentation branch.
 
-- All pull requests that modify the public API should be updated in [types/knex.d.ts](https://github.com/tgriesser/knex/blob/master/types/knex.d.ts)
+- All pull requests that modify the public API should be updated in [types/index.d.ts](https://github.com/tgriesser/knex/blob/master/types/index.d.ts)
 
 ## Documentation
 

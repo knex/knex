@@ -108,6 +108,22 @@
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"
   },
+  "contributors": [
+    {
+      "name": "Simon Liden"
+    },
+    {
+      "name": "Mikael Lepisto"
+    },
+    {
+      "name": "Paul Gaurab",
+      "web": "https://lorefnon.tech"
+    },
+    {
+      "name": "Igor Savin",
+      "web": "https://www.codeflashbacks.com"
+    }
+  ],
   "browser": {
     "./src/migrate/Migrator.js": "./src/util/noop.js",
     "./src/bin/cli.js": "./src/util/noop.js",

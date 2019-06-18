@@ -4,9 +4,10 @@ Knex version:
 Database + version:
 OS:
 
-Select applicable tempalate from below.
-If issue is about oracledb support tag @ atiertant. For MSSql tag @ smorey2 .
-Rest of dialects doesn't need tags.
+Select applicable template from below.
+If issue is about oracledb support, tag @ atiertant. For MSSql tag @ smorey2.
+Rest of dialects don't need tags.
+If issue is about TypeScript definitions, tag @ lorefnon.
 
 # Bug
 
@@ -15,7 +16,7 @@ Rest of dialects doesn't need tags.
 2. Error message
 
 3. Reduced test code, for example in https://npm.runkit.com/knex or if it needs real
-   database connection to mysql or postgresql, then single file example which initializes
+   database connection to MySQL or PostgreSQL, then single file example which initializes
    needed data and demonstrates the problem.
 
 
@@ -35,6 +36,6 @@ Send issue to documentation repo, or fix it and send PR https://github.com/knex/
 
 # Questions about how to use knex
 
-Github issues are for knex development. Please send questions how to use knex to
-stackoverflow or ask about it in gitter chat.
+GitHub issues are for knex development. Please send questions how to use knex to
+Stack Overflow or ask about it in gitter chat.
 
