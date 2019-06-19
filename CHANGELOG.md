@@ -4,6 +4,12 @@
 
 - Use extension from knexfile for generating migrations unless overriden #3282
 - Use migrations.extension from config when generating migration #3242
+- Expose executionPromise for transactors #3297
+
+### Bug fixes:
+
+- Oracle: Updated handling of connection errors for disposal #2608
+- Fix extension resolution from env configs #3294
 
 ### Test / internal changes:
 
@@ -15,7 +21,9 @@
 
 - Add workarounds for degraded inference when strictNullChecks is set to false #3275
 - Add stub type definition for Migrator config #3279
+- Add stub to seeds type #3296
 - Fix MSSQL config typings #3269
+- Add pgsql specific table builder method typings #3146
 
 # 0.17.5 - 8 June, 2019
 
