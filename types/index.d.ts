@@ -1784,6 +1784,7 @@ declare namespace Knex {
 
   interface SeedsConfig {
     directory?: string;
+    stub?: string;
   }
 
   interface Migrator {
