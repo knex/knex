@@ -177,7 +177,7 @@ class Transaction extends EventEmitter {
         if (status === 2) {
           if (isUndefined(value)) {
             if (
-              get(res, 'context.sql', '').toLowerCase() === 'ROLLBACK' &&
+              get(res, 'context.sql', '').toUpperCase() === 'ROLLBACK' &&
               this.doNotRejectOnRollback
             ) {
               this._resolver();

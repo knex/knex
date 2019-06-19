@@ -31,7 +31,7 @@ assign(Transaction_MySQL2.prototype, {
           if (isUndefined(value)) {
             if (
               sql &&
-              sql.toLowerCase() === 'ROLLBACK' &&
+              sql.toUpperCase() === 'ROLLBACK' &&
               t.doNotRejectOnRollback
             ) {
               t._resolver();
