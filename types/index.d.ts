@@ -1401,6 +1401,8 @@ declare namespace Knex {
 
   interface Transaction<TRecord extends {} = any, TResult = any>
     extends Knex<TRecord, TResult> {
+    executionPromise: Promise<TResult>;
+
     query<TRecord extends {} = any, TResult = void>(
       conn: any,
       sql: any,

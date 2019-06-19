@@ -326,6 +326,66 @@ describe('knex', () => {
       });
   });
 
+  it('supports accessing execution promise from standalone transaction', async () => {
+    const knex = Knex(sqliteConfig);
+
+    const trx = await knex.transaction();
+    const executionPromise = trx.executionPromise;
+    expect(executionPromise).to.be.ok;
+
+    expect(trx.client.transacting).to.equal(true);
+    const rows = await knex.transacting(trx).select(knex.raw('1 as result'));
+    expect(rows[0].result).to.equal(1);
+    await trx.commit();
+
+    const result = await executionPromise;
+    expect(result).to.be.undefined;
+  });
+
+  it('supports accessing execution promise from transaction with a callback', async () => {
+    const knex = Knex(sqliteConfig);
+    const trxPromise = new Promise(async (resolve, reject) => {
+      knex.transaction((transaction) => {
+        resolve(transaction);
+      });
+    });
+    const trx = await trxPromise;
+    const executionPromise = trx.executionPromise;
+    expect(executionPromise).to.be.ok;
+
+    expect(trx.client.transacting).to.equal(true);
+    const rows = await knex.transacting(trx).select(knex.raw('1 as result'));
+    expect(rows[0].result).to.equal(1);
+    await trx.commit();
+
+    const result = await executionPromise;
+    expect(result).to.be.undefined;
+  });
+
+  it('rejects execution promise if there was a rollback', async () => {
+    const knex = Knex(sqliteConfig);
+
+    const trx = await knex.transaction();
+    const executionPromise = trx.executionPromise;
+
+    expect(trx.client.transacting).to.equal(true);
+    const rows = await knex.transacting(trx).select(knex.raw('1 as result'));
+    expect(rows[0].result).to.equal(1);
+    await trx.rollback();
+
+    let errorWasThrown;
+    try {
+      await executionPromise;
+    } catch (err) {
+      errorWasThrown = true;
+      expect(err.message).to.equal(
+        'Transaction rejected with non-error: undefined'
+      );
+    }
+
+    expect(errorWasThrown).to.be.true;
+  });
+
   it('creating transaction copy with user params should throw an error', () => {
     if (!sqliteConfig) {
       return;
