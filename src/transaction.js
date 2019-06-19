@@ -20,7 +20,7 @@ class Transaction extends EventEmitter {
 
     // If there is no container provided, assume user wants to get instance of transaction and use it directly
     if (!container) {
-      this.initPromise = new Bluebird((resolve, reject) => {
+      this.initPromise = new Promise((resolve, reject) => {
         this.initRejectFn = reject;
         container = (transactor) => {
           resolve(transactor);
@@ -57,6 +57,11 @@ class Transaction extends EventEmitter {
             return makeTransactor(this, connection, trxClient);
           })
           .then((transactor) => {
+            transactor.executionPromise = new Promise((resolve, reject) => {
+              this.executionRejectFn = reject;
+              this.executionResolveFn = resolve;
+            });
+
             // If we've returned a "thenable" = require(the transaction container, assume
             // the rollback and commit are chained to this object's success / failure.
             // Directly thrown errors are treated as automatic rollbacks.
@@ -79,14 +84,20 @@ class Transaction extends EventEmitter {
           })
           .catch((e) => {
             if (this.initRejectFn) {
-              this.initRejectFn();
+              this.initRejectFn(e);
             }
             return this._rejecter(e);
           });
 
         return new Bluebird((resolver, rejecter) => {
-          this._resolver = resolver;
-          this._rejecter = rejecter;
+          this._resolver = (value) => {
+            this.executionResolveFn(value);
+            resolver(value);
+          };
+          this._rejecter = (err) => {
+            this.executionRejectFn(err);
+            rejecter(err);
+          };
         });
       }
     ).catch((err) => {
