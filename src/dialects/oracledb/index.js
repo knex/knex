@@ -4,8 +4,7 @@ const _ = require('lodash');
 const inherits = require('inherits');
 const QueryCompiler = require('./query/compiler');
 const ColumnCompiler = require('./schema/columncompiler');
-const BlobHelper = require('./utils').BlobHelper;
-const ReturningHelper = require('./utils').ReturningHelper;
+const { BlobHelper, ReturningHelper, isConnectionError } = require('./utils');
 const Bluebird = require('bluebird');
 const stream = require('stream');
 const Transaction = require('./transaction');
@@ -138,7 +137,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
             result
           ) {
             if (err) {
-              if (client.isConnectionError(err)) {
+              if (isConnectionError(err)) {
                 connection.close().catch(function(err) {});
                 connection.__knex__disposed = err;
               }
@@ -149,7 +148,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
             const fetchRowsFromRS = function(connection, resultSet, numRows) {
               resultSet.getRows(numRows, function(err, rows) {
                 if (err) {
-                  if (client.isConnectionError(err)) {
+                  if (isConnectionError(err)) {
                     connection.close().catch(function(err) {});
                     connection.__knex__disposed = err;
                   }
