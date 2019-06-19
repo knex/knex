@@ -14,7 +14,7 @@ const SchemaCompiler = require('./schema/compiler');
 const ColumnBuilder = require('./schema/columnbuilder');
 const ColumnCompiler = require('./schema/columncompiler');
 const TableCompiler = require('./schema/tablecompiler');
-const { ReturningHelper } = require('./utils');
+const { ReturningHelper, isConnectionError } = require('./utils');
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
@@ -190,19 +190,5 @@ assign(Client_Oracle.prototype, {
     }
   },
 });
-
-// If the error is any of these, we'll assume we need to
-// mark the connection as failed
-const connectionErrors = [
-  'ORA-12514',
-  'NJS-040',
-  'NJS-024',
-  'NJS-003',
-  'NJS-024',
-];
-
-function isConnectionError(err) {
-  return connectionErrors.some((prefix) => err.message.indexOf(prefix) === 0);
-}
 
 module.exports = Client_Oracle;
